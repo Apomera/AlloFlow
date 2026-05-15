@@ -1093,6 +1093,24 @@ window.StemLab = window.StemLab || {
           }, '\uD83D\uDD04 Ask Again')
         ),
 
+        // ── Quiz-mode toggle (Mult / Div / Mixed) ──
+        h('div', { className: 'flex items-center gap-2 flex-wrap' },
+          h('span', { className: 'text-[11px] font-bold text-slate-700' }, 'Direction:'),
+          [
+            { id: 'mult',  label: 'Multiplication', color: 'bg-pink-700' },
+            { id: 'div',   label: 'Division',       color: 'bg-cyan-700' },
+            { id: 'mixed', label: 'Mixed',          color: 'bg-violet-700' }
+          ].map(function(qm) {
+            var active = quizMode === qm.id;
+            return h('button', { key: 'qm-' + qm.id,
+              onClick: function() { playSound('default'); extUpd({ quizMode: qm.id }); },
+              'aria-pressed': active,
+              className: 'px-3 py-1 rounded-lg text-[11px] font-bold transition-all ' +
+                (active ? qm.color + ' text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-400')
+            }, qm.label);
+          })
+        ),
+
         // ── Difficulty selector ──
         h('div', { className: 'flex gap-1 flex-wrap' },
           diffModes.map(function(dm) {
@@ -1219,6 +1237,89 @@ window.StemLab = window.StemLab || {
                 onClick: function() { _mtUpd({ score: 0, total: 0, timeLeft: 120, missed: [], streak: 0 }); },
                 className: 'px-4 py-1.5 bg-emerald-700 text-white font-bold rounded-lg text-xs hover:bg-emerald-600 transition-all'
               }, '\uD83D\uDD04 Try again')
+            )
+          );
+        })(),
+
+        // ── Mastery heatmap (per-fact tracking, persistent) ──
+        (function() {
+          var totalTracked = Object.keys(factScores).length;
+          var masteryRow = h('div', { className: 'flex flex-wrap items-center gap-2 mb-2' },
+            h('label', { className: 'text-[11px] font-bold text-emerald-800 flex items-center gap-1 cursor-pointer' },
+              h('input', { type: 'checkbox', checked: showHeatmap,
+                onChange: function() { playSound('default'); extUpd({ showHeatmap: !showHeatmap }); }
+              }),
+              '📊 Mastery heatmap (' + totalTracked + ' facts tracked)'
+            ),
+            showHeatmap && totalTracked > 0 && h('button', {
+              onClick: function() {
+                if (confirm('Clear all mastery tracking? This resets per-fact stats but keeps badges and totals.')) {
+                  extUpd({ factScores: {} });
+                  announceToSR('Mastery tracking cleared');
+                }
+              },
+              className: 'ml-auto text-[10px] font-bold text-rose-600 hover:text-rose-800 underline'
+            }, 'Clear mastery data')
+          );
+          if (!showHeatmap) return masteryRow;
+          // Build the 12×12 mastery heatmap
+          var rows = [];
+          var headerCells = [h('th', { key: 'mh-corner', scope: 'col', className: 'w-7 h-7 text-[10px] font-bold text-emerald-400' }, '×')];
+          for (var hc = 0; hc < maxNum; hc++) {
+            headerCells.push(h('th', { key: 'mh-' + hc, scope: 'col', className: 'w-7 h-7 text-[10px] font-bold text-emerald-500' }, hc + 1));
+          }
+          for (var hr = 0; hr < maxNum; hr++) {
+            var cells = [h('td', { key: 'mhr-' + hr, className: 'w-7 h-7 text-[10px] font-bold text-emerald-500' }, hr + 1)];
+            for (var hcc = 0; hcc < maxNum; hcc++) {
+              var key = tkey(hr + 1, hcc + 1);
+              var score = factScores[key];
+              var bgColor, textColor, content;
+              if (!score || score.attempts === 0) {
+                bgColor = '#f1f5f9'; textColor = '#94a3b8'; content = (hr + 1) * (hcc + 1);
+              } else {
+                var pct = score.correct / score.attempts;
+                if (pct >= 0.85 && score.attempts >= 2) { bgColor = '#86efac'; textColor = '#14532d'; }
+                else if (pct >= 0.6) { bgColor = '#fcd34d'; textColor = '#78350f'; }
+                else { bgColor = '#fca5a5'; textColor = '#7f1d1d'; }
+                content = (hr + 1) * (hcc + 1);
+              }
+              cells.push(h('td', {
+                key: 'mh-' + hr + '-' + hcc,
+                title: score ? (score.correct + '/' + score.attempts + ' correct (' + Math.round(((score.correct/score.attempts)||0) * 100) + '%)') : 'Not yet attempted',
+                onClick: function(r, c) {
+                  return function() {
+                    setMultTableChallenge({ a: r + 1, b: c + 1, mode: quizMode === 'div' ? 'div' : 'mult', divisor: quizMode === 'div' ? (Math.random() < 0.5 ? r+1 : c+1) : null });
+                    setMultTableAnswer(''); setMultTableFeedback(null);
+                    setHighlightCell(null); setInputDisabled(false);
+                    var _inp = document.getElementById('multtable-input'); if (_inp) _inp.focus();
+                  };
+                }(hr, hcc),
+                style: { backgroundColor: bgColor, color: textColor, cursor: 'pointer' },
+                className: 'w-7 h-7 text-[10px] font-mono border border-slate-200 transition-all hover:scale-110'
+              }, content));
+            }
+            rows.push(h('tr', { key: 'mhrow-' + hr }, cells));
+          }
+          return h('div', { className: 'bg-white rounded-xl border-2 border-emerald-200 p-3' },
+            masteryRow,
+            h('p', { className: 'text-[10px] text-emerald-700 italic mb-2' },
+              'Each cell = a multiplication fact. Color = your mastery so far. Click any cell to drill that exact fact.'
+            ),
+            h('div', { className: 'overflow-x-auto' },
+              h('table', { className: 'border-collapse mx-auto text-center', 'aria-label': 'Mastery heatmap' },
+                h('thead', null, h('tr', null, headerCells)),
+                h('tbody', null, rows)
+              )
+            ),
+            h('div', { className: 'flex items-center justify-center gap-3 mt-2 text-[10px]' },
+              h('span', { className: 'inline-flex items-center gap-1' },
+                h('span', { className: 'inline-block w-3 h-3 rounded', style: { backgroundColor: '#f1f5f9' } }), 'untried'),
+              h('span', { className: 'inline-flex items-center gap-1' },
+                h('span', { className: 'inline-block w-3 h-3 rounded', style: { backgroundColor: '#fca5a5' } }), '<60%'),
+              h('span', { className: 'inline-flex items-center gap-1' },
+                h('span', { className: 'inline-block w-3 h-3 rounded', style: { backgroundColor: '#fcd34d' } }), '60-84%'),
+              h('span', { className: 'inline-flex items-center gap-1' },
+                h('span', { className: 'inline-block w-3 h-3 rounded', style: { backgroundColor: '#86efac' } }), '≥85%')
             )
           );
         })(),

@@ -72,7 +72,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       sampleLength: null,      // null/any | 'short' | 'medium' | 'long' — preferred sample size
       // Visual-reward modes — opt-in image generation after certain drill types.
       storyModeImage: false,   // passage drills: generate an illustration of the passage
-      promptModeImage: false   // custom drills: treat the text as an image prompt, refine on retry
+      promptModeImage: false,  // custom drills: treat the text as an image prompt, refine on retry
+      // Companion mascot in drill view — opt-in for students who want a
+      // small reactive character watching their practice. Default off so
+      // the minimalist drill experience stays clean for students who find
+      // peripheral motion dysregulating. Maps drill state to mascot states
+      // (clean streak → combo, recent errors → danger, paused → sleep,
+      // completion → win/idle). Honors prefers-reduced-motion.
+      showCompanion: false
     },
     accommodationBadges: [],   // badge ids earned for TRYING an accommodation
     masteryLevel: 0,           // progression tier: 0=home-row, 1=top-row, 2=bottom-row, 3=words, 4=passages
@@ -328,10 +335,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         h('line', { x1: 58, y1: 80, x2: 58, y2: 92, stroke: legColor, strokeWidth: 3, strokeLinecap: 'round' }),
         h('path', { d: 'M 38 92 L 42 92 L 46 92 M 54 92 L 58 92 L 62 92', stroke: legColor, strokeWidth: 2.5, strokeLinecap: 'round', fill: 'none' })
       ),
-      // Body — round yellow blob
-      h('ellipse', { cx: 50, cy: 56, rx: 30, ry: 28, fill: bodyColor, stroke: '#eab308', strokeWidth: 1.5, className: 'tp-pip-body' }),
-      // Wing accent (left)
-      h('path', { d: 'M 26 56 Q 22 64 30 70 L 36 64 Z', fill: '#facc15', opacity: 0.7 }),
+      // Body — round yellow blob. Class lets danger state add a subtle puff.
+      h('ellipse', { cx: 50, cy: 56, rx: 30, ry: 28, fill: bodyColor, stroke: '#eab308', strokeWidth: 1.5, className: 'tp-pip-body', style: { transformOrigin: '50px 56px', transformBox: 'fill-box' } }),
+      // Left wing — flaps in combo via CSS rotate around shoulder pivot
+      h('path', { d: 'M 26 56 Q 22 64 30 70 L 36 64 Z', fill: '#facc15', opacity: 0.7, className: 'tp-pip-wing tp-pip-wing-l', style: { transformOrigin: '32px 60px', transformBox: 'fill-box' } }),
+      // Right wing — symmetrical, opposite phase so the flap reads as bilateral
+      h('path', { d: 'M 74 56 Q 78 64 70 70 L 64 64 Z', fill: '#facc15', opacity: 0.7, className: 'tp-pip-wing tp-pip-wing-r', style: { transformOrigin: '68px 60px', transformBox: 'fill-box' } }),
       // Eye whites + pupils
       h('g', { className: 'tp-pip-eyes' },
         h('circle', { cx: 42, cy: 50, r: 5.5, fill: '#fff' }),
@@ -339,11 +348,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         h('circle', { cx: 43, cy: 51, r: 2.4, fill: eyeColor, className: 'tp-pip-pupil-l' }),
         h('circle', { cx: 59, cy: 51, r: 2.4, fill: eyeColor, className: 'tp-pip-pupil-r' })
       ),
-      // Beak — diamond pointing down
-      h('polygon', { points: '50,58 45,62 55,62', fill: beakColor, stroke: '#c2410c', strokeWidth: 1, className: 'tp-pip-beak' }),
-      // Cheek-tuft feathers
-      h('circle', { cx: 30, cy: 62, r: 2, fill: '#facc15', opacity: 0.6 }),
-      h('circle', { cx: 70, cy: 62, r: 2, fill: '#facc15', opacity: 0.6 })
+      // Beak — diamond pointing down. Class lets it open slightly during
+      // attack-out (the chirp / peck moment) via CSS scaleY.
+      h('polygon', { points: '50,58 45,62 55,62', fill: beakColor, stroke: '#c2410c', strokeWidth: 1, className: 'tp-pip-beak', style: { transformOrigin: '50px 60px', transformBox: 'fill-box' } }),
+      // Cheek-tuft feathers — class lets them puff in danger state
+      h('circle', { cx: 30, cy: 62, r: 2, fill: '#facc15', opacity: 0.6, className: 'tp-pip-cheek tp-pip-cheek-l' }),
+      h('circle', { cx: 70, cy: 62, r: 2, fill: '#facc15', opacity: 0.6, className: 'tp-pip-cheek tp-pip-cheek-r' })
     );
   }
 
@@ -399,6 +409,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       h('circle', { cx: 50, cy: 50, r: 1.2, fill: brassDark }),
       h('circle', { cx: 50, cy: 60, r: 1.2, fill: brassDark }),
       h('circle', { cx: 50, cy: 70, r: 1.2, fill: brassDark }),
+      // Pendulum — small brass weight visible behind chest seam, swings
+      // metronomically in idle (slow), faster in combo. Counterweighted
+      // by the gear ears so the silhouette stays balanced.
+      h('g', { className: 'tp-cog-pendulum', style: { transformOrigin: '50px 50px', transformBox: 'fill-box' } },
+        h('line', { x1: 50, y1: 50, x2: 50, y2: 78, stroke: brassDark, strokeWidth: 0.8, opacity: 0.7 }),
+        h('circle', { cx: 50, cy: 78, r: 2.2, fill: brassLight, stroke: brassDark, strokeWidth: 0.8 })
+      ),
       // Goggles — round brass-rim circles with lamp-glow lenses
       h('g', { className: 'tp-cog-eyes' },
         h('circle', { cx: 40, cy: 52, r: 9, fill: lensColor, stroke: goggleRim, strokeWidth: 2.5 }),
@@ -429,17 +446,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       role: 'img', 'aria-label': opts.label || 'Vex the cyberpunk grid-face',
       style: { display: 'block', overflow: 'visible' }
     },
-      // Hex/diamond face panel
+      // Hex/diamond face panel — gets hue-shift / clip distortion on attack
       h('polygon', {
         points: '50,8 86,30 86,70 50,92 14,70 14,30',
         fill: bgColor, stroke: bodyColor, strokeWidth: 2,
-        className: 'tp-vex-panel'
+        className: 'tp-vex-panel',
+        style: { transformOrigin: '50px 50px', transformBox: 'fill-box' }
+      }),
+      // Outer rim glow ring — duplicate hex outline that pulses brighter
+      // on combo (the "rendering at full power" cue)
+      h('polygon', {
+        points: '50,4 90,28 90,72 50,96 10,72 10,28',
+        fill: 'none', stroke: bodyColor, strokeWidth: 0.8, opacity: 0,
+        className: 'tp-vex-rim'
       }),
       // Inner face panel (slightly smaller, neon outlined)
       h('polygon', {
         points: '50,16 78,34 78,66 50,84 22,66 22,34',
         fill: 'none', stroke: bodyColor, strokeWidth: 0.8, opacity: 0.4
       }),
+      // Boot-strip dots — three small dots along the bottom edge that
+      // sequentially light up during win, evoke a power-on sequence;
+      // they fade in reverse during loss (power-down).
+      h('g', { className: 'tp-vex-boot' },
+        h('rect', { x: 38, y: 88, width: 4, height: 2, fill: bodyColor, opacity: 0, className: 'tp-vex-boot-dot tp-vex-boot-1' }),
+        h('rect', { x: 48, y: 88, width: 4, height: 2, fill: bodyColor, opacity: 0, className: 'tp-vex-boot-dot tp-vex-boot-2' }),
+        h('rect', { x: 58, y: 88, width: 4, height: 2, fill: bodyColor, opacity: 0, className: 'tp-vex-boot-dot tp-vex-boot-3' })
+      ),
       // Scanline (animated — single horizontal bar that drifts vertically)
       h('rect', {
         x: 22, y: 32, width: 56, height: 1.5, fill: glowColor, opacity: 0.5,
@@ -492,13 +525,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       role: 'img', 'aria-label': opts.label || 'Mochi the kawaii kitten',
       style: { display: 'block', overflow: 'visible' }
     },
-      // Floating sparkles (animated only on combo)
+      // Floating sparkles (animated only on combo) + heart particles for
+      // combo. Hearts feel right for Mochi's personality — they pop in
+      // sync with the sparkles for a "kawaii burst" effect.
       h('g', { className: 'tp-mochi-sparkles' },
         h('text', { x: 18, y: 22, fill: bowColor, fontSize: 8, opacity: 0 }, '✦'),
         h('text', { x: 78, y: 28, fill: bowColor, fontSize: 6, opacity: 0 }, '✦'),
         h('text', { x: 14, y: 70, fill: bowColor, fontSize: 7, opacity: 0 }, '✧'),
         h('text', { x: 82, y: 76, fill: bowColor, fontSize: 8, opacity: 0 }, '♡')
       ),
+      h('g', { className: 'tp-mochi-hearts' },
+        h('text', { x: 12, y: 40, fill: bowColor, fontSize: 9, opacity: 0 }, '♡'),
+        h('text', { x: 86, y: 44, fill: bowColor, fontSize: 8, opacity: 0 }, '♡'),
+        h('text', { x: 50, y: 14, fill: bowColor, fontSize: 7, opacity: 0 }, '♡')
+      ),
+      // Tail — curls behind the head, sways in idle. Drawn first so the
+      // head occludes its connection to the body.
+      h('path', {
+        d: 'M 78 78 Q 88 76 92 64 Q 88 70 84 74',
+        fill: 'none', stroke: trimColor, strokeWidth: 3, strokeLinecap: 'round',
+        opacity: 0.85, className: 'tp-mochi-tail',
+        style: { transformOrigin: '78px 78px', transformBox: 'fill-box' }
+      }),
       // Left ear (triangle with pink inner)
       h('polygon', { points: '24,40 28,16 42,32', fill: bodyColor, stroke: trimColor, strokeWidth: 1.5 }),
       h('polygon', { points: '28,32 30,22 38,30', fill: '#fbcfe8' }),
@@ -524,8 +572,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       h('path', { d: 'M 47 66 Q 50 70 53 66', stroke: eyeColor, strokeWidth: 1.5, fill: 'none', strokeLinecap: 'round', className: 'tp-mochi-mouth' }),
       // Tiny nose
       h('path', { d: 'M 49 62 L 51 62 L 50 64 Z', fill: bowColor }),
-      // Bow on left ear
-      h('g', { transform: 'translate(28 14) scale(0.6)' },
+      // Bow on left ear — wiggles on combo + win via CSS
+      h('g', { transform: 'translate(28 14) scale(0.6)', className: 'tp-mochi-bow', style: { transformOrigin: '28px 14px' } },
         h('circle', { cx: 0, cy: 0, r: 4, fill: bowColor }),
         h('polygon', { points: '-7,-4 -2,0 -7,4', fill: bowColor }),
         h('polygon', { points: '7,-4 2,0 7,4', fill: bowColor })
@@ -555,20 +603,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     var inkColor  = '#020617';                      // pupil + ink cloud
     var cls = 'tp-mascot tp-mascot-inko tp-mascot-' + st;
 
-    // Eight chromatophore dots scattered across the mantle. Each dot has
-    // its own animation-delay so the wave moves across the body rather
-    // than pulsing in lockstep. Coordinates picked to scatter naturally
-    // across the visible front face (avoiding eyes + arms).
+    // Twelve chromatophore dots scattered across the mantle, in two layers.
+    // Large dots (r ~2.4) dominate the wave; small "satellite" dots (r ~1.2)
+    // sit between them and pulse half-beat off, giving the skin a richer
+    // dappled texture. Each dot carries its own animation-delay so the
+    // color travels left→right→down across the body rather than blinking in
+    // unison. Coordinates avoid eyes + arms and stay inside the mantle path.
     var chromatophores = [
-      { cx: 38, cy: 32, r: 2.2, d: '0s' },
-      { cx: 50, cy: 28, r: 2.6, d: '0.15s' },
-      { cx: 62, cy: 32, r: 2.2, d: '0.3s' },
-      { cx: 32, cy: 44, r: 2.0, d: '0.45s' },
-      { cx: 50, cy: 42, r: 2.4, d: '0.6s' },
-      { cx: 68, cy: 44, r: 2.0, d: '0.75s' },
-      { cx: 40, cy: 56, r: 2.2, d: '0.9s' },
-      { cx: 60, cy: 56, r: 2.2, d: '1.05s' }
+      // Top row — large dots
+      { cx: 38, cy: 32, r: 2.2, d: '0s',     small: false },
+      { cx: 50, cy: 26, r: 2.6, d: '0.12s',  small: false },
+      { cx: 62, cy: 32, r: 2.2, d: '0.24s',  small: false },
+      // Top satellite dots
+      { cx: 44, cy: 28, r: 1.2, d: '0.06s',  small: true },
+      { cx: 56, cy: 28, r: 1.2, d: '0.18s',  small: true },
+      // Middle row — large dots
+      { cx: 32, cy: 44, r: 2.0, d: '0.36s',  small: false },
+      { cx: 50, cy: 42, r: 2.4, d: '0.48s',  small: false },
+      { cx: 68, cy: 44, r: 2.0, d: '0.6s',   small: false },
+      // Middle satellites
+      { cx: 41, cy: 48, r: 1.1, d: '0.42s',  small: true },
+      { cx: 59, cy: 48, r: 1.1, d: '0.54s',  small: true },
+      // Lower row
+      { cx: 40, cy: 56, r: 2.0, d: '0.72s',  small: false },
+      { cx: 60, cy: 56, r: 2.0, d: '0.84s',  small: false }
     ];
+
+    // Tentacle classes (1..10) so each arm can sway with its own phase
+    // offset — the bottom row of arms then reads as a slow underwater wave
+    // instead of a frozen fan. Phase offsets baked into CSS keyframe delays.
+    var armClass = function(i) { return 'tp-inko-arm tp-inko-arm-' + i; };
 
     return h('svg', {
       width: sz, height: sz, viewBox: '0 0 100 100', className: cls,
@@ -612,55 +676,76 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         d: 'M 32 60 Q 50 66 68 60 L 68 68 L 32 68 Z',
         fill: bodyDeep, opacity: 0.25
       }),
-      // Chromatophore dots — color-cycling pigment cells. Each gets its
-      // own className so the global keyframe can target them with
-      // staggered delays.
+      // Bioluminescent rim glow — concentric outline of the mantle that
+      // brightens during win/wow states (and stays soft otherwise). Fills
+      // 'none' so it reads purely as a halo around the silhouette.
+      h('path', {
+        d: 'M 28 30 Q 50 14 72 30 Q 76 50 70 68 L 30 68 Q 24 50 28 30 Z',
+        fill: 'none', stroke: '#67e8f9', strokeWidth: 0.8, opacity: 0,
+        className: 'tp-inko-rim'
+      }),
+      // Chromatophore dots — color-cycling pigment cells. Large + satellite
+      // sub-classes let the small dots pulse half-beat off for richer
+      // skin texture. Each gets its own animation-delay (inline) so the
+      // color wave travels across the body instead of strobing.
       h('g', { className: 'tp-inko-chromatophores' },
         chromatophores.map(function(c, i) {
           return h('circle', {
             key: 'chrom-' + i,
             cx: c.cx, cy: c.cy, r: c.r,
             fill: '#22d3ee',
-            opacity: 0.7,
-            className: 'tp-inko-chrom',
+            opacity: c.small ? 0.5 : 0.7,
+            className: 'tp-inko-chrom' + (c.small ? ' tp-inko-chrom-sat' : ''),
             style: { animationDelay: c.d }
           });
         })
       ),
       // Eyes — outer ring + W-shaped pupil (the real cuttlefish trick).
       // The W is drawn as a polyline path, sitting inside a sclera oval.
+      // Each pupil sits inside its own group (tp-inko-pupil-l/r) so a
+      // small CSS translate can simulate eye-tracking — used during
+      // combo (alert) and danger (darting) states.
       h('g', { className: 'tp-inko-eyes' },
         // Left eye sclera
         h('ellipse', { cx: 40, cy: 40, rx: 5.5, ry: 4.5, fill: eyeWhite, stroke: eyeRing, strokeWidth: 1 }),
-        // Left W-pupil
-        h('path', {
-          d: 'M 36 40 L 38 42.5 L 40 39.5 L 42 42.5 L 44 40',
-          fill: 'none', stroke: inkColor, strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round'
-        }),
+        // Left W-pupil — wrapped for movement
+        h('g', { className: 'tp-inko-pupil tp-inko-pupil-l', style: { transformOrigin: '40px 40px', transformBox: 'fill-box' } },
+          h('path', {
+            d: 'M 36 40 L 38 42.5 L 40 39.5 L 42 42.5 L 44 40',
+            fill: 'none', stroke: inkColor, strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round'
+          })
+        ),
+        // Eye highlight — small white spec, suggests wetness
+        h('circle', { cx: 38, cy: 38, r: 0.8, fill: '#fff', opacity: 0.85 }),
         // Right eye sclera
         h('ellipse', { cx: 60, cy: 40, rx: 5.5, ry: 4.5, fill: eyeWhite, stroke: eyeRing, strokeWidth: 1 }),
-        // Right W-pupil
-        h('path', {
-          d: 'M 56 40 L 58 42.5 L 60 39.5 L 62 42.5 L 64 40',
-          fill: 'none', stroke: inkColor, strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round'
-        })
+        // Right W-pupil — wrapped for movement
+        h('g', { className: 'tp-inko-pupil tp-inko-pupil-r', style: { transformOrigin: '60px 40px', transformBox: 'fill-box' } },
+          h('path', {
+            d: 'M 56 40 L 58 42.5 L 60 39.5 L 62 42.5 L 64 40',
+            fill: 'none', stroke: inkColor, strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round'
+          })
+        ),
+        h('circle', { cx: 58, cy: 38, r: 0.8, fill: '#fff', opacity: 0.85 })
       ),
-      // Eight arms — short, fanning out from the bottom of the mantle.
-      // Drawn as gentle curves so they read as soft tissue rather than
-      // sticks. Two longer feeding tentacles flank the center.
+      // Eight short arms + two long feeding tentacles. Each arm carries its
+      // own className (tp-inko-arm-0..9) so a stagger-delayed CSS sway
+      // animation makes the row read as a slow underwater wave rather than
+      // a frozen fan. Origin pinned at the mantle base so the arm-tip
+      // travels while the connection point stays put.
       h('g', { className: 'tp-inko-arms' },
-        // Long feeding tentacles (center pair)
-        h('path', { d: 'M 46 68 Q 44 80 42 92', fill: 'none', stroke: bodyColor, strokeWidth: 3.2, strokeLinecap: 'round' }),
-        h('path', { d: 'M 54 68 Q 56 80 58 92', fill: 'none', stroke: bodyColor, strokeWidth: 3.2, strokeLinecap: 'round' }),
+        // Long feeding tentacles (center pair) — slowest, deepest sway
+        h('path', { d: 'M 46 68 Q 44 80 42 92', fill: 'none', stroke: bodyColor, strokeWidth: 3.2, strokeLinecap: 'round', className: armClass(0), style: { transformOrigin: '46px 68px', transformBox: 'fill-box' } }),
+        h('path', { d: 'M 54 68 Q 56 80 58 92', fill: 'none', stroke: bodyColor, strokeWidth: 3.2, strokeLinecap: 'round', className: armClass(1), style: { transformOrigin: '54px 68px', transformBox: 'fill-box' } }),
         // Short arms — 4 per side, fanning outward
-        h('path', { d: 'M 38 68 Q 34 76 30 84', fill: 'none', stroke: bodyColor, strokeWidth: 2.6, strokeLinecap: 'round' }),
-        h('path', { d: 'M 34 68 Q 28 74 22 80', fill: 'none', stroke: bodyColor, strokeWidth: 2.4, strokeLinecap: 'round' }),
-        h('path', { d: 'M 32 66 Q 24 70 18 74', fill: 'none', stroke: bodyColor, strokeWidth: 2.2, strokeLinecap: 'round' }),
-        h('path', { d: 'M 30 64 Q 22 64 14 64', fill: 'none', stroke: bodyColor, strokeWidth: 2.0, strokeLinecap: 'round' }),
-        h('path', { d: 'M 62 68 Q 66 76 70 84', fill: 'none', stroke: bodyColor, strokeWidth: 2.6, strokeLinecap: 'round' }),
-        h('path', { d: 'M 66 68 Q 72 74 78 80', fill: 'none', stroke: bodyColor, strokeWidth: 2.4, strokeLinecap: 'round' }),
-        h('path', { d: 'M 68 66 Q 76 70 82 74', fill: 'none', stroke: bodyColor, strokeWidth: 2.2, strokeLinecap: 'round' }),
-        h('path', { d: 'M 70 64 Q 78 64 86 64', fill: 'none', stroke: bodyColor, strokeWidth: 2.0, strokeLinecap: 'round' })
+        h('path', { d: 'M 38 68 Q 34 76 30 84', fill: 'none', stroke: bodyColor, strokeWidth: 2.6, strokeLinecap: 'round', className: armClass(2), style: { transformOrigin: '38px 68px', transformBox: 'fill-box' } }),
+        h('path', { d: 'M 34 68 Q 28 74 22 80', fill: 'none', stroke: bodyColor, strokeWidth: 2.4, strokeLinecap: 'round', className: armClass(3), style: { transformOrigin: '34px 68px', transformBox: 'fill-box' } }),
+        h('path', { d: 'M 32 66 Q 24 70 18 74', fill: 'none', stroke: bodyColor, strokeWidth: 2.2, strokeLinecap: 'round', className: armClass(4), style: { transformOrigin: '32px 66px', transformBox: 'fill-box' } }),
+        h('path', { d: 'M 30 64 Q 22 64 14 64', fill: 'none', stroke: bodyColor, strokeWidth: 2.0, strokeLinecap: 'round', className: armClass(5), style: { transformOrigin: '30px 64px', transformBox: 'fill-box' } }),
+        h('path', { d: 'M 62 68 Q 66 76 70 84', fill: 'none', stroke: bodyColor, strokeWidth: 2.6, strokeLinecap: 'round', className: armClass(6), style: { transformOrigin: '62px 68px', transformBox: 'fill-box' } }),
+        h('path', { d: 'M 66 68 Q 72 74 78 80', fill: 'none', stroke: bodyColor, strokeWidth: 2.4, strokeLinecap: 'round', className: armClass(7), style: { transformOrigin: '66px 68px', transformBox: 'fill-box' } }),
+        h('path', { d: 'M 68 66 Q 76 70 82 74', fill: 'none', stroke: bodyColor, strokeWidth: 2.2, strokeLinecap: 'round', className: armClass(8), style: { transformOrigin: '68px 66px', transformBox: 'fill-box' } }),
+        h('path', { d: 'M 70 64 Q 78 64 86 64', fill: 'none', stroke: bodyColor, strokeWidth: 2.0, strokeLinecap: 'round', className: armClass(9), style: { transformOrigin: '70px 64px', transformBox: 'fill-box' } })
       ),
       // Tiny mantle highlight — wet sheen on the top of the dome
       h('path', {
@@ -715,12 +800,157 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
   // no decorative characters). Returns a React element ready to mount.
   function renderBattleMascot(themeName, state, opts) {
     opts = Object.assign({ state: state }, opts || {});
-    if (themeName === 'steampunk') return _renderCogsworth(opts);
-    if (themeName === 'cyberpunk') return _renderVex(opts);
-    if (themeName === 'kawaii')    return _renderMochi(opts);
-    if (themeName === 'oceanic')   return _renderInko(opts);
-    if (themeName === 'neutral')   return null;
-    return _renderPip(opts);
+    var mascotEl;
+    if (themeName === 'steampunk')      mascotEl = _renderCogsworth(opts);
+    else if (themeName === 'cyberpunk') mascotEl = _renderVex(opts);
+    else if (themeName === 'kawaii')    mascotEl = _renderMochi(opts);
+    else if (themeName === 'oceanic')   mascotEl = _renderInko(opts);
+    else if (themeName === 'neutral')   return null;
+    else                                mascotEl = _renderPip(opts);
+
+    // Bot wrapper — when the mascot represents the opponent, wrap it in a
+    // <div class="tp-mascot-as-bot"> so CSS can add a subtle hue-shift +
+    // small "BOT" corner badge. Distinguishes opponent from player at a
+    // glance without changing the character itself (Inko vs Inko-the-bot
+    // is still recognizably Inko, just visibly the rival).
+    if (opts.isBot) {
+      var React = window.React;
+      var h = React.createElement;
+      return h('div', {
+        className: 'tp-mascot-as-bot',
+        style: { position: 'relative', display: 'inline-block', lineHeight: 0 }
+      },
+        mascotEl,
+        h('span', {
+          className: 'tp-mascot-bot-badge',
+          'aria-hidden': 'true',
+          style: {
+            position: 'absolute', bottom: -2, right: -2,
+            background: '#a78bfa', color: '#1e1b4b',
+            fontSize: 7, fontWeight: 800, letterSpacing: '0.06em',
+            padding: '1px 4px', borderRadius: 999,
+            border: '1px solid #1e1b4b', lineHeight: 1.2,
+            boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
+          }
+        }, 'BOT')
+      );
+    }
+    return mascotEl;
+  }
+
+  // ─────────────────────────────────────────────────────────
+  // Mascot gallery — dev-surface preview grid
+  // ─────────────────────────────────────────────────────────
+  // Triggered by `#mascot-gallery` URL hash. Renders all 5 mascots in
+  // every supported state (10 states × 5 themes = 50 cells). Useful for
+  // visual QA without grinding through Battle Mode. No persistent state,
+  // no event handlers — pure render. Each cell labels the state so design
+  // regressions are obvious at a glance.
+  function _renderMascotGallery(h) {
+    var themes = [
+      { id: 'default',   label: 'Pip',       sub: 'default' },
+      { id: 'steampunk', label: 'Cogsworth', sub: 'steampunk' },
+      { id: 'cyberpunk', label: 'Vex',       sub: 'cyberpunk' },
+      { id: 'kawaii',    label: 'Mochi',     sub: 'kawaii' },
+      { id: 'oceanic',   label: 'Inko',      sub: 'oceanic' }
+    ];
+    var states = [
+      'idle', 'combo', 'attack-out', 'incoming',
+      'danger', 'wow', 'thinking', 'sleep', 'win', 'loss'
+    ];
+    return h('div', {
+      style: {
+        padding: 24, color: '#e2e8f0', fontFamily: 'system-ui, -apple-system, sans-serif',
+        background: '#0f172a', minHeight: '100vh'
+      }
+    },
+      h('div', { style: { marginBottom: 18 } },
+        h('h1', { style: { margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: '-0.01em' } },
+          'Mascot State Gallery'),
+        h('p', { style: { margin: '6px 0 0', fontSize: 12, color: '#94a3b8', lineHeight: 1.55 } },
+          'Dev surface · 5 mascots × ', states.length, ' states. Remove ',
+          h('code', { style: { background: '#1e293b', padding: '1px 5px', borderRadius: 3 } }, '#mascot-gallery'),
+          ' from the URL to return to the tool.')
+      ),
+      // Header row — state names
+      h('div', {
+        style: {
+          display: 'grid',
+          gridTemplateColumns: '120px repeat(' + states.length + ', minmax(80px, 1fr))',
+          gap: 6, marginBottom: 8, alignItems: 'end',
+          position: 'sticky', top: 0, background: '#0f172a', padding: '6px 0', zIndex: 2,
+          borderBottom: '1px solid #334155'
+        }
+      },
+        h('div', { style: { fontSize: 10, color: '#64748b', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' } }, 'theme'),
+        states.map(function(s) {
+          return h('div', { key: 'h-' + s, style: {
+            fontSize: 9, color: '#94a3b8', fontWeight: 700, letterSpacing: '0.04em',
+            textTransform: 'uppercase', textAlign: 'center'
+          } }, s);
+        })
+      ),
+      // Per-mascot rows
+      themes.map(function(t) {
+        return h('div', {
+          key: 'row-' + t.id,
+          style: {
+            display: 'grid',
+            gridTemplateColumns: '120px repeat(' + states.length + ', minmax(80px, 1fr))',
+            gap: 6, marginBottom: 12, alignItems: 'center'
+          }
+        },
+          // Theme label cell
+          h('div', { style: { fontSize: 13, color: '#e2e8f0', fontWeight: 700 } },
+            h('div', null, t.label),
+            h('div', { style: { fontSize: 10, color: '#64748b', fontWeight: 500 } }, t.sub)
+          ),
+          // One cell per state
+          states.map(function(s) {
+            return h('div', {
+              key: 'cell-' + t.id + '-' + s,
+              style: {
+                background: '#1e293b', borderRadius: 8, padding: 8,
+                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                justifyContent: 'center', minHeight: 96,
+                border: '1px solid #334155'
+              }
+            },
+              h('div', { style: { width: 56, height: 56 } },
+                renderBattleMascot(t.id, s, { size: 56, label: t.label + ' — ' + s })
+              ),
+              h('div', { style: { fontSize: 9, color: '#64748b', marginTop: 4 } }, s)
+            );
+          })
+        );
+      }),
+      // Bot-variant row — show oceanic + kawaii as bot to verify the
+      // wrapper treatment renders cleanly across themes
+      h('div', { style: { marginTop: 24, paddingTop: 16, borderTop: '1px solid #334155' } },
+        h('h2', { style: { margin: 0, fontSize: 14, fontWeight: 700, color: '#e2e8f0', marginBottom: 10 } }, 'Bot-variant treatment'),
+        h('div', { style: {
+          display: 'grid',
+          gridTemplateColumns: 'repeat(5, minmax(80px, 1fr))',
+          gap: 8
+        } },
+          themes.map(function(t) {
+            return h('div', {
+              key: 'bot-' + t.id,
+              style: {
+                background: '#1e293b', borderRadius: 8, padding: 12,
+                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                border: '1px solid #334155'
+              }
+            },
+              h('div', { style: { width: 56, height: 56 } },
+                renderBattleMascot(t.id, 'idle', { size: 56, isBot: true, bodyColor: '#a78bfa', label: t.label + ' (bot)' })
+              ),
+              h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 6 } }, t.label + ' · bot')
+            );
+          })
+        )
+      )
+    );
   }
 
   // ─────────────────────────────────────────────────────────
@@ -2154,6 +2384,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '@keyframes tp-mascot-arch { 0% { transform: translateY(0) scale(1); } 30% { transform: translateY(-3px) scale(1.06); } 60% { transform: translateY(-1px) scale(1.04); } 100% { transform: translateY(0) scale(1); } }',
       '@keyframes tp-mascot-drift { 0%,100% { transform: translateY(0) rotate(0); opacity: 0.85; } 50% { transform: translateY(-3px) rotate(2deg); opacity: 1; } }',
       '@keyframes tp-mascot-zfloat { 0% { transform: translate(0,0); opacity: 0; } 30% { opacity: 0.9; } 100% { transform: translate(8px,-14px); opacity: 0; } }',
+      // Thinking state — mascot tilts its head slightly back-and-forth
+      // (the "watching you decide" beat). Used while the attack-picker
+      // overlay is open. Slightly slower + softer than the bob.
+      '@keyframes tp-mascot-think { 0%, 100% { transform: rotate(-2deg) translateY(0); } 50% { transform: rotate(2deg) translateY(-1px); } }',
       // Per-mascot internal animations
       '@keyframes tp-pip-blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }',
       '@keyframes tp-cog-rotate { from { transform: rotate(0); } to { transform: rotate(360deg); } }',
@@ -2164,6 +2398,168 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '@keyframes tp-vex-alert { 0%, 100% { opacity: 0; } 50% { opacity: 0.55; } }',
       '@keyframes tp-vex-glitch { 0%, 100% { transform: translateX(0); filter: hue-rotate(0deg); } 25% { transform: translateX(-2px); filter: hue-rotate(30deg); } 50% { transform: translateX(2px); filter: hue-rotate(-30deg); } 75% { transform: translateX(-1px); filter: hue-rotate(15deg); } }',
       '@keyframes tp-mochi-sparkle { 0%, 100% { opacity: 0; transform: scale(0.6); } 50% { opacity: 1; transform: scale(1.1); } }',
+      // Pip wing flap — symmetrical rotation around shoulder pivot.
+      // Idle = subtle sway; combo = aggressive flap; loss = drooped.
+      '@keyframes tp-pip-wing-flap { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(8deg); } }',
+      '@keyframes tp-pip-wing-flap-r { 0%, 100% { transform: rotate(4deg); } 50% { transform: rotate(-8deg); } }',
+      '@keyframes tp-pip-wing-sway { 0%, 100% { transform: rotate(-1deg); } 50% { transform: rotate(2deg); } }',
+      '@keyframes tp-pip-wing-sway-r { 0%, 100% { transform: rotate(1deg); } 50% { transform: rotate(-2deg); } }',
+      // Pip cheek puff — tiny scale on cheek tufts during danger
+      '@keyframes tp-pip-cheek-puff { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.6); } }',
+      // Pip beak chirp — open vertically during attack-out
+      '@keyframes tp-pip-beak-chirp { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(1.4); } }',
+      // Pip body squash on combo — small breathing-style scale
+      '@keyframes tp-pip-body-pulse { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.96); } }',
+      // Cogsworth pendulum — slow swing in idle, faster in combo
+      '@keyframes tp-cog-pendulum { 0%, 100% { transform: rotate(-12deg); } 50% { transform: rotate(12deg); } }',
+      // Vex hex distortion — subtle skew + hue-shift on attack
+      '@keyframes tp-vex-hex-distort { 0%, 100% { transform: skewX(0deg); filter: hue-rotate(0deg); } 33% { transform: skewX(-1.5deg); filter: hue-rotate(20deg); } 66% { transform: skewX(1.5deg); filter: hue-rotate(-20deg); } }',
+      // Vex rim-glow pulse — outer hex ring brightens on combo
+      '@keyframes tp-vex-rim-pulse { 0%, 100% { opacity: 0; } 50% { opacity: 0.7; } }',
+      // Vex boot dots — sequential power-on
+      '@keyframes tp-vex-boot-on { 0% { opacity: 0; } 50%, 100% { opacity: 1; } }',
+      '@keyframes tp-vex-boot-off { 0% { opacity: 1; } 50%, 100% { opacity: 0.15; } }',
+      // Mochi tail — slow rocking sway
+      '@keyframes tp-mochi-tail-sway { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(6deg); } }',
+      '@keyframes tp-mochi-tail-wag { 0%, 100% { transform: rotate(-12deg); } 50% { transform: rotate(14deg); } }',
+      // Mochi heart pop — used on combo, scale-and-fade for one-shot
+      '@keyframes tp-mochi-heart-pop { 0% { opacity: 0; transform: translateY(0) scale(0.4); } 30% { opacity: 1; transform: translateY(-3px) scale(1.1); } 100% { opacity: 0; transform: translateY(-10px) scale(1); } }',
+      // Mochi bow wiggle — bow rocks side to side during combo + win
+      '@keyframes tp-mochi-bow-wiggle { 0%, 100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg); } }',
+      // Vex eye-bar heartbeat — subtle pulse in idle, like a system readout
+      '@keyframes tp-vex-eye-pulse { 0%, 100% { opacity: 0.85; } 50% { opacity: 1; } }',
+      // Cogsworth chest-rivet glow — slow alternating warm-tip pulse
+      '@keyframes tp-cog-rivet-glow { 0%, 100% { fill: #713f12; } 50% { fill: #d4884c; } }',
+      // Inko tentacle fidget — center pair occasionally touch tips, like
+      // a self-soothing gesture cuttlefish actually do in the wild
+      '@keyframes tp-inko-fidget-l { 0%, 88%, 100% { transform: rotate(-2deg); } 92% { transform: rotate(8deg); } 96% { transform: rotate(2deg); } }',
+      '@keyframes tp-inko-fidget-r { 0%, 88%, 100% { transform: rotate(2deg); } 92% { transform: rotate(-8deg); } 96% { transform: rotate(-2deg); } }',
+      // Bot mascot scanline — adds a subtle horizontal sweep across any
+      // mascot when it\'s rendered as the opponent. Reads as "AI-driven"
+      // without changing the character itself.
+      '@keyframes tp-bot-scanline { 0% { background-position: 0 -100%; } 100% { background-position: 0 200%; } }',
+      // Stack column danger pulse — red border ring scales out when stack
+      // is high (≥7 of 9 rows). Reads peripherally as "you are losing
+      // headroom." Box-shadow approach so it doesn\'t fight the column
+      // border itself.
+      '@keyframes tp-stack-col-danger-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.0); } 50% { box-shadow: 0 0 0 4px rgba(239,68,68,0.35); } }',
+      '.tp-stack-col-danger { animation: tp-stack-col-danger-pulse 1.4s ease-in-out infinite; }',
+      // Stack column hit shake — fires when an incoming attack lands on
+      // the player column. Short, sharp; one-shot via JS-driven className.
+      '@keyframes tp-stack-col-hit-shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-4px); } 40% { transform: translateX(4px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(2px); } }',
+      '.tp-stack-col-hit { animation: tp-stack-col-hit-shake 0.32s ease-out 1; }',
+      // Attack-ready chip — when combo crosses send-threshold, the chip
+      // gets a brighter pulse so the eye lands on it immediately. Layered
+      // on top of the existing static accent style.
+      '@keyframes tp-attack-ready-pulse { 0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 currentColor; } 50% { transform: scale(1.06); box-shadow: 0 0 8px 1px currentColor; } }',
+      '.tp-attack-ready { animation: tp-attack-ready-pulse 0.7s ease-in-out infinite; }',
+      // Combo counter bump — fires when the combo number remounts via
+      // key={combo}. One-shot scale-pop with a satisfying overshoot so
+      // each successful clear gives a punchy visual receipt that scales
+      // with the combo number itself (set via inline fontSize).
+      '@keyframes tp-combo-bump { 0% { transform: scale(0.7); opacity: 0.5; } 60% { transform: scale(1.25); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }',
+      '.tp-combo-bump { animation: tp-combo-bump 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 1; transform-origin: center; }',
+      // ─── Personal-best cell celebration (Battle summary) ───────────────
+      // Three layered effects when a stat is a new PB:
+      //   (1) tp-pb-cell-glow — soft success-color outer glow on the cell
+      //   (2) tp-pb-value-pop — value scale-pops in (0→1.2→1) over 600ms
+      //   (3) tp-pb-tag-flip   — "★ Personal best" tag flips in vertically
+      // All one-shot. PB cells get noticed without lording over the screen.
+      '@keyframes tp-pb-cell-glow { 0% { box-shadow: 0 0 0 0 rgba(74,154,106,0); } 30% { box-shadow: 0 0 0 6px rgba(74,154,106,0.30); } 60% { box-shadow: 0 0 0 12px rgba(74,154,106,0.0); } 100% { box-shadow: 0 0 0 0 rgba(74,154,106,0); } }',
+      '@keyframes tp-pb-value-pop { 0% { opacity: 0; transform: scale(0.4); } 60% { opacity: 1; transform: scale(1.15); } 100% { opacity: 1; transform: scale(1); } }',
+      '@keyframes tp-pb-tag-flip { 0% { opacity: 0; transform: scaleY(0); } 50% { opacity: 1; } 100% { opacity: 1; transform: scaleY(1); } }',
+      '.tp-pb-cell { animation: tp-pb-cell-glow 1.6s ease-out 1; }',
+      '.tp-pb-value { animation: tp-pb-value-pop 0.6s cubic-bezier(0.34,1.56,0.64,1) 1; transform-origin: center; }',
+      '.tp-pb-tag { animation: tp-pb-tag-flip 0.5s ease-out 1 0.4s; transform-origin: top; animation-fill-mode: backwards; }',
+      // ─── Battle-stage ambient particles (per theme) ────────────────────
+      // Each .tp-amb-N slot is given size + start position via base rules,
+      // then shape + color + animation timing via the parent theme class.
+      // 6 particles per stage; staggered delays via :nth-child so they
+      // never spawn in lockstep. Slow (10–18s) so the playfield stays
+      // calm; opacity capped at ~0.25 so reading the stack remains easy.
+      '.tp-amb { position: absolute; pointer-events: none; opacity: 0; }',
+      // ── Oceanic: bubbles drift up from the bottom edge ──
+      '@keyframes tp-amb-bubble { 0% { opacity: 0; transform: translateY(0) translateX(0) scale(0.8); } 10% { opacity: 0.4; } 90% { opacity: 0.4; } 100% { opacity: 0; transform: translateY(-110vh) translateX(8px) scale(1); } }',
+      '.tp-battle-stage-oceanic .tp-amb { width: 8px; height: 8px; bottom: -10px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, rgba(240,253,250,0.7), rgba(103,232,249,0.3) 60%, transparent 100%); border: 1px solid rgba(103,232,249,0.4); animation: tp-amb-bubble 14s linear infinite; }',
+      '.tp-battle-stage-oceanic .tp-amb-0 { left: 8%;  animation-duration: 16s; animation-delay: 0s; }',
+      '.tp-battle-stage-oceanic .tp-amb-1 { left: 22%; animation-duration: 13s; animation-delay: 4s; width: 5px; height: 5px; }',
+      '.tp-battle-stage-oceanic .tp-amb-2 { left: 38%; animation-duration: 18s; animation-delay: 9s; width: 10px; height: 10px; }',
+      '.tp-battle-stage-oceanic .tp-amb-3 { left: 58%; animation-duration: 15s; animation-delay: 2s; }',
+      '.tp-battle-stage-oceanic .tp-amb-4 { left: 76%; animation-duration: 12s; animation-delay: 7s; width: 4px; height: 4px; }',
+      '.tp-battle-stage-oceanic .tp-amb-5 { left: 90%; animation-duration: 17s; animation-delay: 11s; }',
+      // ── Steampunk: embers drift up + drift sideways like a forge ──
+      '@keyframes tp-amb-ember { 0% { opacity: 0; transform: translateY(0) translateX(0); } 10% { opacity: 0.55; } 90% { opacity: 0.4; } 100% { opacity: 0; transform: translateY(-100vh) translateX(20px); } }',
+      '.tp-battle-stage-steampunk .tp-amb { width: 4px; height: 4px; bottom: -10px; border-radius: 50%; background: radial-gradient(circle, rgba(251,191,36,0.85), rgba(212,136,76,0.4) 60%, transparent 100%); box-shadow: 0 0 4px rgba(251,191,36,0.5); animation: tp-amb-ember 12s linear infinite; }',
+      '.tp-battle-stage-steampunk .tp-amb-0 { left: 12%; animation-duration: 14s; animation-delay: 0s; }',
+      '.tp-battle-stage-steampunk .tp-amb-1 { left: 26%; animation-duration: 11s; animation-delay: 3s; }',
+      '.tp-battle-stage-steampunk .tp-amb-2 { left: 44%; animation-duration: 16s; animation-delay: 7s; width: 3px; height: 3px; }',
+      '.tp-battle-stage-steampunk .tp-amb-3 { left: 60%; animation-duration: 13s; animation-delay: 5s; }',
+      '.tp-battle-stage-steampunk .tp-amb-4 { left: 78%; animation-duration: 15s; animation-delay: 9s; }',
+      '.tp-battle-stage-steampunk .tp-amb-5 { left: 92%; animation-duration: 12s; animation-delay: 2s; width: 5px; height: 5px; }',
+      // ── Cyberpunk: pixel rain drops down (digital matrix) ──
+      '@keyframes tp-amb-pixel { 0% { opacity: 0; transform: translateY(-10vh); } 5% { opacity: 0.5; } 95% { opacity: 0.5; } 100% { opacity: 0; transform: translateY(110vh); } }',
+      '.tp-battle-stage-cyberpunk .tp-amb { width: 2px; height: 14px; top: 0; background: linear-gradient(180deg, transparent, rgba(255,0,168,0.8), transparent); animation: tp-amb-pixel 10s linear infinite; }',
+      '.tp-battle-stage-cyberpunk .tp-amb-0 { left: 8%;  animation-duration: 8s;  animation-delay: 0s; }',
+      '.tp-battle-stage-cyberpunk .tp-amb-1 { left: 24%; animation-duration: 12s; animation-delay: 1.5s; }',
+      '.tp-battle-stage-cyberpunk .tp-amb-2 { left: 40%; animation-duration: 9s;  animation-delay: 3s; }',
+      '.tp-battle-stage-cyberpunk .tp-amb-3 { left: 56%; animation-duration: 11s; animation-delay: 4.5s; }',
+      '.tp-battle-stage-cyberpunk .tp-amb-4 { left: 72%; animation-duration: 8.5s; animation-delay: 6s; }',
+      '.tp-battle-stage-cyberpunk .tp-amb-5 { left: 88%; animation-duration: 10s; animation-delay: 7.5s; }',
+      // ── Kawaii: petals drift down with a side wobble ──
+      '@keyframes tp-amb-petal { 0% { opacity: 0; transform: translateY(-10vh) translateX(0) rotate(0deg); } 10% { opacity: 0.65; } 90% { opacity: 0.5; } 100% { opacity: 0; transform: translateY(110vh) translateX(40px) rotate(360deg); } }',
+      '.tp-battle-stage-kawaii .tp-amb { width: 8px; height: 8px; top: 0; border-radius: 50% 0 50% 0; background: rgba(244,114,182,0.6); animation: tp-amb-petal 14s ease-in-out infinite; }',
+      '.tp-battle-stage-kawaii .tp-amb-0 { left: 10%; animation-duration: 16s; animation-delay: 0s; }',
+      '.tp-battle-stage-kawaii .tp-amb-1 { left: 28%; animation-duration: 13s; animation-delay: 3s; width: 6px; height: 6px; }',
+      '.tp-battle-stage-kawaii .tp-amb-2 { left: 46%; animation-duration: 18s; animation-delay: 7s; width: 10px; height: 10px; }',
+      '.tp-battle-stage-kawaii .tp-amb-3 { left: 64%; animation-duration: 15s; animation-delay: 4s; }',
+      '.tp-battle-stage-kawaii .tp-amb-4 { left: 80%; animation-duration: 12s; animation-delay: 9s; width: 7px; height: 7px; }',
+      '.tp-battle-stage-kawaii .tp-amb-5 { left: 94%; animation-duration: 17s; animation-delay: 12s; }',
+      // ── Default: feathers drift down softly (Pip\'s feather motif) ──
+      '@keyframes tp-amb-feather { 0% { opacity: 0; transform: translateY(-10vh) rotate(-15deg); } 10% { opacity: 0.4; } 90% { opacity: 0.3; } 100% { opacity: 0; transform: translateY(110vh) translateX(30px) rotate(15deg); } }',
+      '.tp-battle-stage-default .tp-amb { width: 4px; height: 12px; top: 0; border-radius: 50% 50% 50% 0; background: rgba(253,224,71,0.55); animation: tp-amb-feather 16s ease-in-out infinite; }',
+      '.tp-battle-stage-default .tp-amb-0 { left: 12%; animation-duration: 18s; animation-delay: 0s; }',
+      '.tp-battle-stage-default .tp-amb-1 { left: 30%; animation-duration: 15s; animation-delay: 4s; }',
+      '.tp-battle-stage-default .tp-amb-2 { left: 48%; animation-duration: 20s; animation-delay: 8s; }',
+      '.tp-battle-stage-default .tp-amb-3 { left: 64%; animation-duration: 17s; animation-delay: 5s; }',
+      '.tp-battle-stage-default .tp-amb-4 { left: 80%; animation-duration: 13s; animation-delay: 11s; }',
+      '.tp-battle-stage-default .tp-amb-5 { left: 92%; animation-duration: 19s; animation-delay: 14s; }',
+      // Neutral theme — no ambient particles by design (theme is "quiet")
+      '.tp-battle-stage-neutral .tp-amb { display: none; }',
+      // Reduced motion — kill all ambient particles
+      '@media (prefers-reduced-motion: reduce) { .tp-battle-ambience, .tp-amb { display: none !important; } }',
+      // ─── Cleared-word burst (theme-flavored expanding ring) ────────────
+      // Triggered at the moment a word clears the player\'s stack. A small
+      // ring expands out from the word\'s position then fades. Two layered
+      // rings (one delayed 60ms) give a "double pulse" satisfying feel.
+      // Colors per theme; size capped at 64px so it stays inside the
+      // column. Pure CSS one-shot — replays on key change in React.
+      '@keyframes tp-clear-burst-ring { 0% { opacity: 0.85; transform: translate(-50%,-50%) scale(0.2); } 60% { opacity: 0.55; } 100% { opacity: 0; transform: translate(-50%,-50%) scale(1.4); } }',
+      '.tp-clear-burst { position: absolute; left: 0; top: 0; width: 64px; height: 64px; border-radius: 50%; border: 2px solid currentColor; animation: tp-clear-burst-ring 0.6s ease-out 1 forwards; pointer-events: none; }',
+      '.tp-clear-burst-2 { width: 48px; height: 48px; border-width: 1.5px; }',
+      // Per-theme color (uses currentColor so the ring picks it up)
+      '.tp-clear-burst-default { color: #fde047; }',
+      '.tp-clear-burst-steampunk { color: #d4884c; }',
+      '.tp-clear-burst-cyberpunk { color: #06b6d4; }',
+      '.tp-clear-burst-kawaii { color: #f472b6; }',
+      '.tp-clear-burst-oceanic { color: #22d3ee; box-shadow: 0 0 12px rgba(34,211,238,0.45); }',
+      '.tp-clear-burst-neutral { color: #b8a080; }',
+      '@media (prefers-reduced-motion: reduce) { .tp-clear-burst { display: none !important; } }',
+      // Bot wrapper — slight violet hue-shift + faint scanline overlay
+      // distinguishes the opponent mascot from the player\'s. The character
+      // is unchanged (Inko is still Inko); the framing reads as "rival."
+      '.tp-mascot-as-bot .tp-mascot { filter: hue-rotate(40deg) saturate(0.85); }',
+      '.tp-mascot-as-bot::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, transparent 0, transparent 3px, rgba(167,139,250,0.10) 3px, rgba(167,139,250,0.10) 4px); border-radius: 4px; mix-blend-mode: screen; }',
+      // Bot badge has its own subtle pulse so the eye finds it
+      '@keyframes tp-bot-badge-pulse { 0%, 100% { opacity: 0.85; transform: scale(1); } 50% { opacity: 1; transform: scale(1.06); } }',
+      '.tp-mascot-bot-badge { animation: tp-bot-badge-pulse 2.4s ease-in-out infinite; }',
+      // Atmospheric idle pulses — long-cycle background life. The mascot
+      // emits a tiny flourish (a bubble, a steam puff, a sparkle) every
+      // ~6 seconds in idle so it never feels frozen. Each is mostly empty
+      // (90% off, 10% visible) so the screen doesn\'t feel busy.
+      '@keyframes tp-inko-bubble-drift { 0%, 80%, 100% { opacity: 0; transform: translateY(0); } 85%, 95% { opacity: 0.6; } 100% { opacity: 0; transform: translateY(-18px); } }',
+      '@keyframes tp-cog-steam-drift   { 0%, 85%, 100% { opacity: 0; transform: translateY(0); } 90% { opacity: 0.5; } 100% { opacity: 0; transform: translateY(-6px); } }',
+      '@keyframes tp-mochi-sparkle-drift { 0%, 88%, 100% { opacity: 0; transform: scale(0.6); } 92% { opacity: 0.7; transform: scale(1); } 100% { opacity: 0; transform: scale(1.1); } }',
+      '@keyframes tp-pip-twitch        { 0%, 92%, 100% { transform: rotate(0deg); } 94% { transform: rotate(-3deg); } 96% { transform: rotate(3deg); } 98% { transform: rotate(0deg); } }',
       // Inko (cuttlefish) — chromatophore color cycle. Idle is a slow cool
       // cyan-to-teal wash; combo is fast warm yellow-orange flashes; danger
       // is alarmed red; wow is rainbow burst; loss desaturates to gray.
@@ -2177,29 +2573,142 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '@keyframes tp-inko-ink-spurt { 0% { opacity: 0; transform: translateX(0) scale(0.6); } 30% { opacity: 0.85; transform: translateX(8px) scale(1.2); } 100% { opacity: 0; transform: translateX(20px) scale(1.6); } }',
       '@keyframes tp-inko-bubble-rise { 0% { opacity: 0; transform: translateY(0); } 30% { opacity: 0.85; } 100% { opacity: 0; transform: translateY(-22px); } }',
       '@keyframes tp-inko-fin-undulate { 0%, 100% { transform: translateX(0) scaleY(1); } 50% { transform: translateX(-1px) scaleY(1.04); } }',
-      // Idle (default for any state without overrides)
+      // Arm sway — gentle swing of the tip; transformOrigin set inline at
+      // the mantle attachment so the connection point stays put. Long
+      // tentacles use a deeper, slower swing; short arms a quick brush.
+      '@keyframes tp-inko-arm-long  { 0%, 100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }',
+      '@keyframes tp-inko-arm-short { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }',
+      '@keyframes tp-inko-arm-flick { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }',
+      // Satellite chromatophore — half-beat off the main wave so the small
+      // dots add a "pulse between pulses" texture instead of doubling up.
+      '@keyframes tp-inko-chrom-sat-idle { 0%, 100% { fill: #5eead4; opacity: 0.35; transform: scale(0.85); } 50% { fill: #22d3ee; opacity: 0.7; transform: scale(1.1); } }',
+      // Rim glow — concentric outline brightens for win/wow celebration
+      '@keyframes tp-inko-rim-glow { 0%, 100% { opacity: 0; stroke-width: 0.8; } 50% { opacity: 0.8; stroke-width: 2.2; } }',
+      // Pupil dart — tiny translate on the W-pupil for "alert" / "scanning"
+      // feel during combo + danger states. Stays sub-pixel-tiny so the
+      // anatomy still reads correct, just *aware*.
+      '@keyframes tp-inko-pupil-dart { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(-0.6px, -0.3px); } 75% { transform: translate(0.6px, 0.3px); } }',
+      // Mantle breathing — subtle scale across the whole body in idle, gives
+      // a sense the cuttlefish is alive instead of frozen
+      '@keyframes tp-inko-mantle-breathe { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(1.02); } }',
+      // Idle (default for any state without overrides). Subtle theme-tinted
+      // drop-shadow so each mascot reads as belonging to its theme palette
+      // even at small sizes. Filter ignored under prefers-reduced-motion
+      // (the universal block at the bottom turns animations off, but the
+      // shadow stays since it's not motion).
       '.tp-mascot { animation: tp-mascot-bob 3.2s ease-in-out infinite; transform-origin: center; }',
+      '.tp-mascot-pip { filter: drop-shadow(0 2px 6px rgba(253,224,71,0.25)); transition: filter 240ms ease, transform 240ms ease; }',
+      '.tp-mascot-cogsworth { filter: drop-shadow(0 2px 6px rgba(212,136,76,0.25)); transition: filter 240ms ease, transform 240ms ease; }',
+      '.tp-mascot-vex { filter: drop-shadow(0 0 8px rgba(6,182,212,0.30)); transition: filter 240ms ease, transform 240ms ease; }',
+      '.tp-mascot-mochi { filter: drop-shadow(0 3px 8px rgba(232,90,138,0.20)); transition: filter 240ms ease, transform 240ms ease; }',
+      '.tp-mascot-inko { filter: drop-shadow(0 0 10px rgba(34,211,238,0.30)); transition: filter 240ms ease, transform 240ms ease; }',
+      // Stronger glow during combo / win — drop-shadow scales up so the
+      // mascot reads as energized at a glance even before you parse the
+      // body animation.
+      '.tp-mascot-pip.tp-mascot-combo,    .tp-mascot-pip.tp-mascot-win    { filter: drop-shadow(0 2px 10px rgba(253,224,71,0.55)); }',
+      '.tp-mascot-cogsworth.tp-mascot-combo, .tp-mascot-cogsworth.tp-mascot-win { filter: drop-shadow(0 2px 12px rgba(212,136,76,0.55)); }',
+      '.tp-mascot-vex.tp-mascot-combo,    .tp-mascot-vex.tp-mascot-win    { filter: drop-shadow(0 0 14px rgba(6,182,212,0.60)); }',
+      '.tp-mascot-mochi.tp-mascot-combo,  .tp-mascot-mochi.tp-mascot-win  { filter: drop-shadow(0 3px 12px rgba(232,90,138,0.50)); }',
+      '.tp-mascot-inko.tp-mascot-combo,   .tp-mascot-inko.tp-mascot-win   { filter: drop-shadow(0 0 16px rgba(34,211,238,0.60)); }',
+      // Loss desaturation is universal — overrides the bright theme glow
+      // so the mascot reads as visibly drained rather than just sad-posed.
+      '.tp-mascot.tp-mascot-loss { filter: saturate(0.4) brightness(0.85) drop-shadow(0 1px 4px rgba(0,0,0,0.3)) !important; }',
+      // Hover perk — when a mascot card in the "Meet the cast" panel
+      // is hovered, the inner mascot scales up slightly + shadow lifts.
+      // Reads as the character noticing you. Suppressed under reduced-motion.
+      '.tp-root [aria-pressed] .tp-mascot { transition: transform 180ms cubic-bezier(0.34,1.56,0.64,1), filter 220ms ease; }',
+      '.tp-root [aria-pressed]:hover .tp-mascot { transform: scale(1.08); }',
+      '.tp-root [aria-pressed]:hover .tp-mascot-pip { filter: drop-shadow(0 4px 10px rgba(253,224,71,0.45)); }',
+      '.tp-root [aria-pressed]:hover .tp-mascot-cogsworth { filter: drop-shadow(0 4px 10px rgba(212,136,76,0.45)); }',
+      '.tp-root [aria-pressed]:hover .tp-mascot-vex { filter: drop-shadow(0 0 14px rgba(6,182,212,0.55)); }',
+      '.tp-root [aria-pressed]:hover .tp-mascot-mochi { filter: drop-shadow(0 5px 12px rgba(232,90,138,0.40)); }',
+      '.tp-root [aria-pressed]:hover .tp-mascot-inko { filter: drop-shadow(0 0 18px rgba(34,211,238,0.55)); }',
       '.tp-mascot-pip .tp-pip-pupil-l, .tp-mascot-pip .tp-pip-pupil-r { transform-origin: center; transform-box: fill-box; animation: tp-pip-blink 5s ease-in-out infinite; }',
+      // Pip idle wings — slow, sleepy sway. Becomes a real flap on combo.
+      '.tp-mascot-pip .tp-pip-wing-l { animation: tp-pip-wing-sway 3.6s ease-in-out infinite; }',
+      '.tp-mascot-pip .tp-pip-wing-r { animation: tp-pip-wing-sway-r 3.6s ease-in-out infinite; }',
       '.tp-mascot-cogsworth .tp-cog-gear-l { animation: tp-cog-rotate 6s linear infinite; }',
       '.tp-mascot-cogsworth .tp-cog-gear-r { animation: tp-cog-rotate-rev 7s linear infinite; }',
+      // Cogsworth pendulum — metronomic swing
+      '.tp-mascot-cogsworth .tp-cog-pendulum { animation: tp-cog-pendulum 2.4s ease-in-out infinite; }',
+      // Mochi idle tail sway
+      '.tp-mascot-mochi .tp-mochi-tail { animation: tp-mochi-tail-sway 2.8s ease-in-out infinite; }',
+      // Vex eye-bar idle pulse — slow LED-readout heartbeat
+      '.tp-mascot-vex .tp-vex-eye-l, .tp-mascot-vex .tp-vex-eye-r { animation: tp-vex-eye-blink 4.5s ease-in-out infinite, tp-vex-eye-pulse 1.6s ease-in-out infinite; }',
+      // Cogsworth chest-rivets glow softly in alternating phase
+      '.tp-mascot-cogsworth .tp-cog-body ~ circle:nth-of-type(1) { animation: tp-cog-rivet-glow 3s ease-in-out infinite; }',
+      // Inko center tentacles fidget every ~10s in idle
+      '.tp-mascot-inko.tp-mascot-idle .tp-inko-arm-0 { animation: tp-inko-arm-long 3.8s ease-in-out infinite, tp-inko-fidget-l 10s ease-in-out infinite; }',
+      '.tp-mascot-inko.tp-mascot-idle .tp-inko-arm-1 { animation: tp-inko-arm-long 3.8s ease-in-out infinite 0.5s, tp-inko-fidget-r 10s ease-in-out infinite; }',
+      // Atmospheric idle background — the mascot emits a tiny flourish
+      // every ~6 seconds when idle. Adds life without becoming visually
+      // noisy. Suppressed when active states (combo/danger/etc.) override
+      // the same sub-elements.
+      '.tp-mascot-inko.tp-mascot-idle .tp-inko-bubbles circle:first-child { animation: tp-inko-bubble-drift 6s ease-out infinite; }',
+      '.tp-mascot-cogsworth.tp-mascot-idle .tp-cog-steam circle:nth-child(2) { animation: tp-cog-steam-drift 7s ease-out infinite; }',
+      '.tp-mascot-mochi.tp-mascot-idle .tp-mochi-sparkles text:first-child { animation: tp-mochi-sparkle-drift 8s ease-out infinite; }',
+      '.tp-mascot-pip.tp-mascot-idle { animation: tp-mascot-bob 3.2s ease-in-out infinite, tp-pip-twitch 9s ease-in-out infinite; }',
       '.tp-mascot-vex .tp-vex-scanline { animation: tp-vex-scan 2.4s linear infinite; }',
       '.tp-mascot-vex .tp-vex-eye-l, .tp-mascot-vex .tp-vex-eye-r { transform-origin: center; transform-box: fill-box; animation: tp-vex-eye-blink 4.5s ease-in-out infinite; }',
-      // Inko idle — chromatophore wash + fin undulation. Each dot uses its
-      // own inline animationDelay so the color wave moves left-to-right.
+      // Inko idle — chromatophore wash + fin undulation + arm sway + mantle
+      // breathing + satellite half-beat pulse. Each dot uses its own inline
+      // animationDelay so the color wave moves left-to-right; the long
+      // tentacles wave slowly while short arms flick at faster rates with
+      // staggered delays for a natural underwater feel.
       '.tp-mascot-inko .tp-inko-chrom { transform-origin: center; transform-box: fill-box; animation: tp-inko-chrom-idle 2.4s ease-in-out infinite; }',
+      '.tp-mascot-inko .tp-inko-chrom-sat { animation: tp-inko-chrom-sat-idle 2.4s ease-in-out infinite; }',
       '.tp-mascot-inko .tp-inko-fins path { transform-origin: center; transform-box: fill-box; animation: tp-inko-fin-undulate 2.6s ease-in-out infinite; }',
+      '.tp-mascot-inko .tp-inko-mantle { animation: tp-inko-mantle-breathe 3.4s ease-in-out infinite; transform-origin: 50px 40px; transform-box: fill-box; }',
+      // Long feeding tentacles (0, 1) — slow, deep sway
+      '.tp-mascot-inko .tp-inko-arm-0 { animation: tp-inko-arm-long 3.8s ease-in-out infinite; }',
+      '.tp-mascot-inko .tp-inko-arm-1 { animation: tp-inko-arm-long 3.8s ease-in-out infinite 0.5s; }',
+      // Short arms (2..9) — quicker, staggered phases give a wave across the row
+      '.tp-mascot-inko .tp-inko-arm-2 { animation: tp-inko-arm-short 3.2s ease-in-out infinite 0s; }',
+      '.tp-mascot-inko .tp-inko-arm-3 { animation: tp-inko-arm-short 3.2s ease-in-out infinite 0.2s; }',
+      '.tp-mascot-inko .tp-inko-arm-4 { animation: tp-inko-arm-short 3.2s ease-in-out infinite 0.4s; }',
+      '.tp-mascot-inko .tp-inko-arm-5 { animation: tp-inko-arm-short 3.2s ease-in-out infinite 0.6s; }',
+      '.tp-mascot-inko .tp-inko-arm-6 { animation: tp-inko-arm-short 3.2s ease-in-out infinite 0.1s; }',
+      '.tp-mascot-inko .tp-inko-arm-7 { animation: tp-inko-arm-short 3.2s ease-in-out infinite 0.3s; }',
+      '.tp-mascot-inko .tp-inko-arm-8 { animation: tp-inko-arm-short 3.2s ease-in-out infinite 0.5s; }',
+      '.tp-mascot-inko .tp-inko-arm-9 { animation: tp-inko-arm-short 3.2s ease-in-out infinite 0.7s; }',
       // Combo state — excitement burst
       '.tp-mascot-combo { animation: tp-mascot-pop 0.6s ease-out 1, tp-mascot-bob 3.2s ease-in-out infinite 0.6s; }',
       '.tp-mascot-mochi.tp-mascot-combo .tp-mochi-sparkles text { animation: tp-mochi-sparkle 0.8s ease-out forwards; }',
       '.tp-mascot-cogsworth.tp-mascot-combo .tp-cog-steam circle { animation: tp-cog-steam 0.9s ease-out forwards; }',
+      // Pip combo — wings flap fast, body pulses
+      '.tp-mascot-pip.tp-mascot-combo .tp-pip-wing-l { animation: tp-pip-wing-flap 0.32s ease-in-out infinite; }',
+      '.tp-mascot-pip.tp-mascot-combo .tp-pip-wing-r { animation: tp-pip-wing-flap-r 0.32s ease-in-out infinite; }',
+      '.tp-mascot-pip.tp-mascot-combo .tp-pip-body { animation: tp-pip-body-pulse 0.32s ease-in-out infinite; }',
+      // Cogsworth combo — pendulum swings faster, gears spin double-time
+      '.tp-mascot-cogsworth.tp-mascot-combo .tp-cog-pendulum { animation-duration: 0.8s; }',
+      '.tp-mascot-cogsworth.tp-mascot-combo .tp-cog-gear-l { animation-duration: 2s; }',
+      '.tp-mascot-cogsworth.tp-mascot-combo .tp-cog-gear-r { animation-duration: 2.4s; }',
+      // Vex combo — outer rim pulses neon
+      '.tp-mascot-vex.tp-mascot-combo .tp-vex-rim { animation: tp-vex-rim-pulse 0.8s ease-in-out infinite; }',
+      // Mochi combo — heart particles + faster tail wag
+      '.tp-mascot-mochi.tp-mascot-combo .tp-mochi-hearts text { animation: tp-mochi-heart-pop 1.1s ease-out infinite; }',
+      '.tp-mascot-mochi.tp-mascot-combo .tp-mochi-hearts text:nth-child(2) { animation-delay: 0.35s; }',
+      '.tp-mascot-mochi.tp-mascot-combo .tp-mochi-hearts text:nth-child(3) { animation-delay: 0.7s; }',
+      '.tp-mascot-mochi.tp-mascot-combo .tp-mochi-tail { animation: tp-mochi-tail-wag 0.5s ease-in-out infinite; }',
+      '.tp-mascot-mochi.tp-mascot-combo .tp-mochi-bow { animation: tp-mochi-bow-wiggle 0.4s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }',
+      '.tp-mascot-mochi.tp-mascot-win .tp-mochi-bow { animation: tp-mochi-bow-wiggle 0.5s ease-in-out 4; transform-origin: center; transform-box: fill-box; }',
       // Inko combo — warm yellow-orange chromatophore flash + bubble stream
+      // + alert pupil-dart + arms flick faster, all coordinated for an
+      // "excited and aware" read.
       '.tp-mascot-inko.tp-mascot-combo .tp-inko-chrom { animation: tp-inko-chrom-combo 0.6s ease-in-out infinite; }',
+      '.tp-mascot-inko.tp-mascot-combo .tp-inko-chrom-sat { animation: tp-inko-chrom-combo 0.6s ease-in-out infinite 0.3s; }',
       '.tp-mascot-inko.tp-mascot-combo .tp-inko-bubbles circle { animation: tp-inko-bubble-rise 1.1s ease-out infinite; }',
       '.tp-mascot-inko.tp-mascot-combo .tp-inko-bubbles circle:nth-child(2) { animation-delay: 0.25s; }',
       '.tp-mascot-inko.tp-mascot-combo .tp-inko-bubbles circle:nth-child(3) { animation-delay: 0.5s; }',
+      '.tp-mascot-inko.tp-mascot-combo .tp-inko-pupil { animation: tp-inko-pupil-dart 0.8s ease-in-out infinite; }',
+      '.tp-mascot-inko.tp-mascot-combo .tp-inko-arm-2, .tp-mascot-inko.tp-mascot-combo .tp-inko-arm-3, .tp-mascot-inko.tp-mascot-combo .tp-inko-arm-4, .tp-mascot-inko.tp-mascot-combo .tp-inko-arm-5, .tp-mascot-inko.tp-mascot-combo .tp-inko-arm-6, .tp-mascot-inko.tp-mascot-combo .tp-inko-arm-7, .tp-mascot-inko.tp-mascot-combo .tp-inko-arm-8, .tp-mascot-inko.tp-mascot-combo .tp-inko-arm-9 { animation: tp-inko-arm-flick 0.7s ease-in-out infinite; }',
       // Attack-out state — throw motion
       '.tp-mascot-attack-out { animation: tp-mascot-throw 0.7s ease-out 1; }',
       '.tp-mascot-vex.tp-mascot-attack-out { animation: tp-mascot-throw 0.7s ease-out 1, tp-vex-glitch 0.7s ease-out 1; }',
+      // Vex attack-out — hex panel distorts (skew + hue shift) for a glitch-strike feel
+      '.tp-mascot-vex.tp-mascot-attack-out .tp-vex-panel { animation: tp-vex-hex-distort 0.7s ease-out 1; }',
+      // Pip attack-out — beak chirps open
+      '.tp-mascot-pip.tp-mascot-attack-out .tp-pip-beak { animation: tp-pip-beak-chirp 0.5s ease-out 1; }',
       // Inko attack-out — ink spurts behind the body during the throw motion
       '.tp-mascot-inko.tp-mascot-attack-out .tp-inko-ink circle { animation: tp-inko-ink-spurt 0.8s ease-out 1; }',
       // Incoming state — flinch
@@ -2211,17 +2720,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '.tp-mascot-win { animation: tp-mascot-celebrate 0.9s ease-in-out 1; }',
       '.tp-mascot-loss { animation: tp-mascot-droop 1s ease-out forwards; }',
       '.tp-mascot-mochi.tp-mascot-loss .tp-mochi-tear { opacity: 0.85; transition: opacity 600ms ease-in; }',
+      // Mochi loss — tail droops still
+      '.tp-mascot-mochi.tp-mascot-loss .tp-mochi-tail { animation: none; transform: rotate(-15deg); }',
+      // Vex win — boot dots sequence on
+      '.tp-mascot-vex.tp-mascot-win .tp-vex-boot-1 { animation: tp-vex-boot-on 0.4s ease-out 1 forwards; }',
+      '.tp-mascot-vex.tp-mascot-win .tp-vex-boot-2 { animation: tp-vex-boot-on 0.4s ease-out 1 forwards 0.15s; }',
+      '.tp-mascot-vex.tp-mascot-win .tp-vex-boot-3 { animation: tp-vex-boot-on 0.4s ease-out 1 forwards 0.30s; }',
+      // Vex loss — boot dots reverse-sequence off (power-down)
+      '.tp-mascot-vex.tp-mascot-loss .tp-vex-boot-1 { animation: tp-vex-boot-off 0.4s ease-out 1 forwards 0.30s; }',
+      '.tp-mascot-vex.tp-mascot-loss .tp-vex-boot-2 { animation: tp-vex-boot-off 0.4s ease-out 1 forwards 0.15s; }',
+      '.tp-mascot-vex.tp-mascot-loss .tp-vex-boot-3 { animation: tp-vex-boot-off 0.4s ease-out 1 forwards; }',
+      // Pip win — wings flap proud once
+      '.tp-mascot-pip.tp-mascot-win .tp-pip-wing-l { animation: tp-pip-wing-flap 0.5s ease-out 2; }',
+      '.tp-mascot-pip.tp-mascot-win .tp-pip-wing-r { animation: tp-pip-wing-flap-r 0.5s ease-out 2; }',
+      // Cogsworth win — pendulum swings dramatic
+      '.tp-mascot-cogsworth.tp-mascot-win .tp-cog-pendulum { animation-duration: 0.6s; }',
       // Inko loss — ink cloud + chromatophore desaturation
       '.tp-mascot-inko.tp-mascot-loss .tp-inko-chrom { animation: none; fill: #475569; opacity: 0.4; }',
       '.tp-mascot-inko.tp-mascot-loss .tp-inko-ink circle { opacity: 0.55; transition: opacity 800ms ease-in; }',
-      // Inko win — rainbow chromatophore burst
+      // Inko win — rainbow chromatophore burst + rim glow + bubble joy
       '.tp-mascot-inko.tp-mascot-win .tp-inko-chrom { animation: tp-inko-chrom-wow 0.9s linear infinite; }',
+      '.tp-mascot-inko.tp-mascot-win .tp-inko-chrom-sat { animation: tp-inko-chrom-wow 0.9s linear infinite 0.45s; }',
+      '.tp-mascot-inko.tp-mascot-win .tp-inko-rim { animation: tp-inko-rim-glow 1.2s ease-in-out infinite; }',
+      '.tp-mascot-inko.tp-mascot-win .tp-inko-bubbles circle { animation: tp-inko-bubble-rise 1.4s ease-out infinite; }',
       // Danger / wow / sleep — new states
       '.tp-mascot-danger { animation: tp-mascot-tremble 0.45s ease-in-out infinite, tp-mascot-bob 3.2s ease-in-out infinite; filter: drop-shadow(0 0 6px rgba(239,68,68,0.55)); }',
       '.tp-mascot-wow { animation: tp-mascot-arch 0.7s ease-out 1; filter: drop-shadow(0 0 8px rgba(251,191,36,0.6)); }',
       '.tp-mascot-sleep { animation: tp-mascot-drift 4s ease-in-out infinite; }',
       '.tp-mascot-sleep .tp-mascot-z { animation: tp-mascot-zfloat 2.5s ease-out infinite; }',
       '.tp-mascot-sleep .tp-mascot-z-2 { animation-delay: 1.25s; }',
+      // Thinking — gentle head-tilt while waiting for input (picker open)
+      '.tp-mascot-thinking { animation: tp-mascot-think 2.4s ease-in-out infinite; }',
       // Per-mascot state-specific overrides
       '.tp-mascot-pip.tp-mascot-sleep .tp-pip-pupil-l, .tp-mascot-pip.tp-mascot-sleep .tp-pip-pupil-r { transform: scaleY(0.1); animation: none; }',
       '.tp-mascot-mochi.tp-mascot-sleep .tp-mochi-eyes ellipse { transform: scaleY(0.15); transform-origin: center; transform-box: fill-box; }',
@@ -2229,11 +2758,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '.tp-mascot-vex.tp-mascot-sleep .tp-vex-eye-l, .tp-mascot-vex.tp-mascot-sleep .tp-vex-eye-r { animation: none; opacity: 0.3; transform: scaleY(0.15); transform-origin: center; transform-box: fill-box; }',
       '.tp-mascot-cogsworth.tp-mascot-sleep .tp-cog-gear-l, .tp-mascot-cogsworth.tp-mascot-sleep .tp-cog-gear-r { animation-duration: 18s; }',
       '.tp-mascot-pip.tp-mascot-danger .tp-pip-eyes circle:not(.tp-pip-pupil-l):not(.tp-pip-pupil-r) { transform: scale(1.15); transform-origin: center; transform-box: fill-box; }',
+      // Pip danger — cheek tufts puff out anxiously
+      '.tp-mascot-pip.tp-mascot-danger .tp-pip-cheek { animation: tp-pip-cheek-puff 0.6s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }',
       '.tp-mascot-mochi.tp-mascot-danger .tp-mochi-mouth { transform: translateY(2px) scaleY(-1); transform-origin: 50px 67px; }',
-      // Inko danger — chromatophores flash red
+      // Mochi danger — tail freezes mid-sway
+      '.tp-mascot-mochi.tp-mascot-danger .tp-mochi-tail { animation: none; transform: rotate(0deg); }',
+      // Inko danger — chromatophores flash red + pupils dart anxiously
       '.tp-mascot-inko.tp-mascot-danger .tp-inko-chrom { animation: tp-inko-chrom-danger 0.5s ease-in-out infinite; }',
-      // Inko wow — rainbow burst (long-word clear celebration)
+      '.tp-mascot-inko.tp-mascot-danger .tp-inko-chrom-sat { animation: tp-inko-chrom-danger 0.5s ease-in-out infinite 0.25s; }',
+      '.tp-mascot-inko.tp-mascot-danger .tp-inko-pupil { animation: tp-inko-pupil-dart 0.4s ease-in-out infinite; }',
+      // Inko wow — rainbow burst (long-word clear celebration) + rim flash
       '.tp-mascot-inko.tp-mascot-wow .tp-inko-chrom { animation: tp-inko-chrom-wow 0.7s linear 1; }',
+      '.tp-mascot-inko.tp-mascot-wow .tp-inko-chrom-sat { animation: tp-inko-chrom-wow 0.7s linear 1 0.35s; }',
+      '.tp-mascot-inko.tp-mascot-wow .tp-inko-rim { animation: tp-inko-rim-glow 0.7s ease-out 1; }',
       // Inko sleep — chromatophores still, fins stop, eyes close (W-pupil scaled flat)
       '.tp-mascot-inko.tp-mascot-sleep .tp-inko-chrom { animation: none; opacity: 0.3; }',
       '.tp-mascot-inko.tp-mascot-sleep .tp-inko-fins path { animation: none; }',
@@ -2340,6 +2877,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '  transform: translateY(-3px) scale(1.01);',
       '  box-shadow: 0 8px 20px rgba(232,90,138,0.18), 0 2px 4px rgba(0,0,0,0.04);',
       '}',
+      '.tp-root.tp-theme-oceanic .tp-drill-card:hover,',
+      '.tp-root.tp-theme-oceanic .tp-drill-card:focus-visible {',
+      '  transform: translateY(-2px);',
+      '  box-shadow: 0 0 0 1px rgba(34,211,238,0.40), 0 0 16px rgba(34,211,238,0.30), 0 4px 12px rgba(3,27,46,0.6);',
+      '}',
       '.tp-root.tp-theme-neutral .tp-drill-card:hover,',
       '.tp-root.tp-theme-neutral .tp-drill-card:focus-visible {',
       '  transform: translateY(-1px);',
@@ -2387,6 +2929,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         var useEffect = React.useEffect;
         var useRef = React.useRef;
         var useCallback = React.useCallback;
+
+        // Mascot gallery dev surface — a static grid of every mascot in
+        // every state. Triggered by a URL hash (#mascot-gallery), so it
+        // never appears for normal users but is one click away for design
+        // QA. Returns early before any state hooks fire so toggling the
+        // hash on/off doesn\'t lose the in-progress drill.
+        var hashStr = (typeof window !== 'undefined' && window.location && window.location.hash) || '';
+        if (hashStr.indexOf('mascot-gallery') >= 0) {
+          return _renderMascotGallery(h);
+        }
 
         // Pull persistent state, merged with defaults for forward-compatibility
         var rawState = (ctx.toolData && ctx.toolData['typingPractice']) || {};
@@ -7830,34 +8382,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     style: {
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '8px',
-                      padding: '6px 10px',
-                      borderRadius: '8px',
+                      gap: '10px',
+                      padding: '8px 12px',
+                      borderRadius: '10px',
                       border: '2px solid ' + (isActive ? palette.text : palette.border),
-                      background: 'transparent',
+                      background: isActive ? (opt.accentSample + '14') : 'transparent',
                       color: palette.textDim,
                       fontSize: '12px',
                       fontWeight: isActive ? 700 : 500,
                       cursor: 'pointer',
                       fontFamily: 'inherit',
-                      textAlign: 'left'
+                      textAlign: 'left',
+                      transition: 'background 160ms ease, border-color 160ms ease'
                     }
                   },
-                    // Swatch showing bg + accent for the theme
-                    h('span', {
-                      'aria-hidden': 'true',
-                      style: {
-                        display: 'inline-flex',
-                        width: '32px',
-                        height: '32px',
-                        borderRadius: '6px',
-                        border: '1px solid ' + palette.border,
-                        overflow: 'hidden',
-                        flexShrink: 0
-                      }
-                    },
-                      h('span', { style: { flex: 1, background: opt.bgSample } }),
-                      h('span', { style: { flex: 1, background: opt.accentSample } })
+                    // Live mascot preview — 36px in idle. Shows the actual
+                    // character associated with the theme so students can
+                    // browse the cast before committing to a switch. Neutral
+                    // theme has no mascot, so the swatch carries the visual
+                    // weight on its own.
+                    h('span', { 'aria-hidden': 'true', style: { width: '36px', height: '36px', flexShrink: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' } },
+                      renderBattleMascot(opt.id, 'idle', { size: 36, label: opt.label + ' mascot preview' })
+                        || h('span', {
+                          style: {
+                            width: '32px', height: '32px', borderRadius: '6px',
+                            border: '1px solid ' + palette.border, display: 'inline-flex',
+                            overflow: 'hidden'
+                          }
+                        },
+                          h('span', { style: { flex: 1, background: opt.bgSample } }),
+                          h('span', { style: { flex: 1, background: opt.accentSample } })
+                        )
                     ),
                     h('span', null,
                       h('div', { style: { fontSize: '12px', fontWeight: isActive ? 700 : 600 } }, opt.label),
@@ -10586,7 +11141,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   cleared: battleSt.cleared + 1,
                   combo: newCombo,
                   bestCombo: Math.max(battleSt.bestCombo, newCombo),
-                  pauseUntil: nowMs + diff.postClearPauseMs
+                  pauseUntil: nowMs + diff.postClearPauseMs,
+                  // Burst trigger — keyed by clear count so React remounts
+                  // the burst element each time, replaying the CSS one-shot.
+                  clearBurstAt: nowMs,
+                  clearBurstCount: (battleSt.clearBurstCount || 0) + 1
                 }));
               } else {
                 setBattleSt(Object.assign({}, battleSt, { typed: nextTyped }));
@@ -10916,6 +11475,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           // word having been cleared just now. Future ship can add a
           // dedicated wowFlashTo timer for granular control.
           var playerMascotState = battleSt.paused ? 'sleep'
+            : battleSt.pickerOpen ? 'thinking'
             : battleSt.incomingFlashTo > nowMs ? 'incoming'
             : battleSt.outgoingFlashTo > nowMs ? 'attack-out'
             : playerStackHi ? 'danger'
@@ -10934,12 +11494,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             var top = s[0] || '';
             var pct = Math.min(100, (s.length / BATTLE_STACK_LIMIT) * 100);
             var headerColor = opts.headerColor;
+            // State-driven column class: danger (≥7 of 9) gets a pulsing
+            // red border; incoming-attack (only on player column) shakes
+            // briefly to register the hit. Both gated under reduced-motion.
+            var colHi = s.length >= 7;
+            var hitFlash = !opts.isBot && battleSt.incomingFlashTo > nowMs;
+            var colClasses = ['tp-stack-col'];
+            if (colHi) colClasses.push('tp-stack-col-danger');
+            if (hitFlash) colClasses.push('tp-stack-col-hit');
             return h('div', {
+              className: colClasses.join(' '),
               style: {
                 flex: 1, minWidth: 220, padding: 12,
                 background: opts.bg,
                 border: '2px solid ' + opts.border, borderRadius: 12, minHeight: 360,
-                display: 'flex', flexDirection: 'column', gap: 6
+                display: 'flex', flexDirection: 'column', gap: 6,
+                position: 'relative'
               }
             },
               // Header for this column (player/bot) — now hosts a 48px mascot
@@ -10950,6 +11520,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     renderBattleMascot(themeName, opts.mascotState, {
                       size: 48,
                       bodyColor: opts.isBot ? '#a78bfa' : undefined,
+                      isBot: opts.isBot,
                       label: (opts.isBot ? 'Opponent' : 'Your') + ' mascot — ' + opts.mascotState
                     })
                   ) : null,
@@ -10969,6 +11540,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   transition: 'width 200ms ease, background 200ms ease'
                 } })
               ),
+              // Cleared-word burst — theme-flavored particle ring that
+              // fires when a word is cleared. Player-column only; remounts
+              // each clear via key=clearBurstCount so the CSS one-shot
+              // animation replays. The burst sits inside a 0×0 wrapper so
+              // it doesn\'t affect layout — purely visual feedback.
+              (!opts.isBot && battleSt.clearBurstCount > 0 && (nowMs - (battleSt.clearBurstAt || 0)) < 700) ? h('div', {
+                key: 'burst-' + battleSt.clearBurstCount,
+                'aria-hidden': 'true',
+                style: { position: 'absolute', left: '50%', top: '70px', width: 0, height: 0, pointerEvents: 'none' }
+              },
+                h('div', { className: 'tp-clear-burst tp-clear-burst-' + themeName }),
+                h('div', { className: 'tp-clear-burst tp-clear-burst-2 tp-clear-burst-' + themeName, style: { animationDelay: '60ms' } })
+              ) : null,
               // Top word with character feedback. Background = palette.bg
               // (theme-aware) so oceanic = deep-sea midnight, kawaii = pale
               // cream, etc., instead of always-slate-900.
@@ -11006,8 +11590,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             );
           }
           return h('div', {
-            style: { padding: 24, maxWidth: isVsBot ? 900 : 720, margin: '0 auto', color: palette.text, fontFamily: fontFamily, background: palette.bg, minHeight: '60vh' }
+            className: 'tp-battle-stage tp-battle-stage-' + themeName,
+            style: { padding: 24, maxWidth: isVsBot ? 900 : 720, margin: '0 auto', color: palette.text, fontFamily: fontFamily, background: palette.bg, minHeight: '60vh', position: 'relative', overflow: 'hidden' }
           },
+            // Theme-flavored ambient particles — drift through the playfield
+            // background. Pure CSS keyframes per `.tp-amb-N` slot; the parent
+            // theme class chooses each slot\'s shape, color, and timing
+            // (bubbles for oceanic, embers for steam, pixels for cyber,
+            // petals for kawaii, feathers for default). Pointer-events: none
+            // so they never block clicks. Absolutely-positioned so the
+            // following normal-flow children naturally paint above them.
+            h('div', {
+              className: 'tp-battle-ambience',
+              'aria-hidden': 'true',
+              style: { position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }
+            },
+              [0, 1, 2, 3, 4, 5].map(function(i) {
+                return h('span', { key: 'amb-' + i, className: 'tp-amb tp-amb-' + i });
+              })
+            ),
             // HUD bar
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, flexWrap: 'wrap' } },
               h('button', {
@@ -11023,15 +11624,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 // SEND SLOT chip — vs-bot only, lights up when combo is one shy of threshold (preview).
                 // Amber chip = "one more clear ⚡"; pink chip = "attack ready ⚡⚡⚡".
                 isVsBot && battleSt.combo >= COMBO_SEND_THRESHOLD - 1 ? h('span', {
+                  className: battleSt.combo >= COMBO_SEND_THRESHOLD ? 'tp-attack-ready' : undefined,
                   style: {
                     padding: '2px 8px', borderRadius: 999,
                     background: battleSt.combo >= COMBO_SEND_THRESHOLD ? (palette.accent + '33') : 'rgba(251,191,36,0.18)',
                     border: '1px solid ' + (battleSt.combo >= COMBO_SEND_THRESHOLD ? palette.accent : '#fbbf24'),
                     color: battleSt.combo >= COMBO_SEND_THRESHOLD ? palette.accent : '#fcd34d',
-                    fontSize: 10, fontWeight: 700, letterSpacing: '0.04em'
+                    fontSize: 10, fontWeight: 700, letterSpacing: '0.04em',
+                    display: 'inline-block'
                   }
                 }, battleSt.combo >= COMBO_SEND_THRESHOLD ? '⚡ ATTACK READY' : '⚡ next clear sends') : null,
-                h('span', { style: { color: palette.textMute } }, 'Combo: ', h('strong', { style: { color: battleSt.combo >= 3 ? palette.accent : palette.text } }, battleSt.combo))
+                // Combo counter — the number scales with combo height so
+                // a 6-combo visibly looms larger than a 3-combo. The
+                // tp-combo-pulse class adds a subtle bounce when the
+                // count remounts (key=combo) so each successful clear
+                // gives a punchy visual receipt.
+                h('span', { style: { color: palette.textMute } }, 'Combo: ',
+                  h('strong', {
+                    key: 'combo-' + battleSt.combo,
+                    className: battleSt.combo >= 3 ? 'tp-combo-bump' : undefined,
+                    style: {
+                      color: battleSt.combo >= 3 ? palette.accent : palette.text,
+                      fontSize: battleSt.combo >= 8 ? 22
+                              : battleSt.combo >= 6 ? 18
+                              : battleSt.combo >= 4 ? 16
+                              : battleSt.combo >= 3 ? 14
+                              : 12,
+                      transition: 'font-size 200ms cubic-bezier(0.34,1.56,0.64,1), color 160ms ease',
+                      display: 'inline-block',
+                      lineHeight: 1
+                    }
+                  }, battleSt.combo)
+                )
               )
             ),
             // Brief flash banners for attacks landing. Theme-flavored copy
@@ -11228,14 +11852,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             label: 'Match-result mascot — ' + outcomeMascotState
           });
           return h('div', {
-            style: { padding: 24, maxWidth: 720, margin: '0 auto', color: palette.text, fontFamily: fontFamily, background: palette.bg, minHeight: '60vh' }
+            className: 'tp-battle-stage tp-battle-stage-' + summaryThemeName,
+            style: { padding: 24, maxWidth: 720, margin: '0 auto', color: palette.text, fontFamily: fontFamily, background: palette.bg, minHeight: '60vh', position: 'relative', overflow: 'hidden' }
           },
+            // Theme-flavored ambience layer — same particles as the playfield
+            // so the celebration screen carries the theme through. Doubled
+            // to 8 particles (vs 6 in playfield) since the summary screen
+            // is shorter + less visually busy, can absorb more atmosphere.
+            h('div', {
+              className: 'tp-battle-ambience',
+              'aria-hidden': 'true',
+              style: { position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }
+            },
+              [0, 1, 2, 3, 4, 5, 6, 7].map(function(i) {
+                return h('span', { key: 'amb-' + i, className: 'tp-amb tp-amb-' + (i % 6) });
+              })
+            ),
             renderBackButton(function() { go('menu'); }, palette),
             h('div', {
               style: {
                 marginTop: 16, padding: 24, borderRadius: 14, textAlign: 'center',
                 background: 'radial-gradient(ellipse at 50% 30%, ' + outcomeAccent + '22, rgba(15,23,42,0.4))',
-                border: '1px solid ' + outcomeAccent + '55'
+                border: '1px solid ' + outcomeAccent + '55',
+                position: 'relative'
               }
             },
               // Mascot if theme has one, else fall back to the outcome emoji
@@ -11258,12 +11897,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 { label: 'Duration', value: r.durationSec + 's', color: palette.text, isPb: false },
                 { label: 'Errors', value: r.errors, color: palette.textMute, isPb: false }
               ]).map(function(s, i) {
-                return h('div', { key: i, style: {
-                  padding: '12px 14px', background: palette.surface, border: '1px solid ' + (s.isPb ? palette.success : palette.border), borderRadius: 10
-                } },
+                // PB cells get a soft success-colored glow + a one-shot
+                // celebration on the value (scale-pop) + the ★ label flips
+                // in. Non-PB cells stay quiet so the PBs visually pop.
+                return h('div', {
+                  key: i,
+                  className: s.isPb ? 'tp-pb-cell' : undefined,
+                  style: {
+                    padding: '12px 14px',
+                    background: palette.surface,
+                    border: '1px solid ' + (s.isPb ? palette.success : palette.border),
+                    borderRadius: 10,
+                    position: 'relative'
+                  }
+                },
                   h('div', { style: { fontSize: 10, color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 800 } }, s.label),
-                  h('div', { style: { fontSize: 22, fontWeight: 800, color: s.color, fontVariantNumeric: 'tabular-nums', marginTop: 2 } }, s.value),
-                  s.isPb ? h('div', { style: { fontSize: 10, color: palette.success, fontWeight: 700, marginTop: 2 } }, '★ Personal best') : null
+                  h('div', {
+                    className: s.isPb ? 'tp-pb-value' : undefined,
+                    style: {
+                      fontSize: 22, fontWeight: 800, color: s.color, fontVariantNumeric: 'tabular-nums', marginTop: 2,
+                      display: 'inline-block'
+                    }
+                  }, s.value),
+                  s.isPb ? h('div', {
+                    className: 'tp-pb-tag',
+                    style: { fontSize: 10, color: palette.success, fontWeight: 700, marginTop: 2 }
+                  }, '★ Personal best') : null
                 );
               })
             ),

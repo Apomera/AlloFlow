@@ -496,6 +496,7 @@
     // touches the options.
     printOptions: {
       companion:      true,
+      lifeJourney:    true,  // Phase L5 — Tamagotchi life stages, career, hobby, peers, scrapbook
       achievements:   true,
       goals:          true,
       memoryDecks:    true,
@@ -18088,6 +18089,7 @@
     // ─────────────────────────────────────────────────
     var PRINT_SECTION_DEFS = [
       { id: 'companion',      emoji: '🌿', label: 'Companion + skills',    hint: 'Critter, name, skill levels, longest streak.' },
+      { id: 'lifeJourney',    emoji: '📔', label: 'Life Journey',          hint: 'Life stage, career, hobby, top knowledge topics, peer relationships, and the Life Story scrapbook of major moments.' },
       { id: 'achievements',   emoji: '🏆', label: 'Achievements',          hint: 'Recent unlocks + total progress.' },
       { id: 'goals',          emoji: '🎯', label: 'Goals',                 hint: 'Active and completed goals with metric progress.' },
       { id: 'memoryDecks',    emoji: '📖', label: 'Memory decks',          hint: 'Flashcards, acronyms, notes attached to decorations.' },
@@ -18900,6 +18902,21 @@
         if (secId === 'companion') {
           var has = !!(s.companion && s.companion.species);
           return { count: has ? 1 : 0, label: has ? '1 companion' : 'no companion yet' };
+        }
+        if (secId === 'lifeJourney') {
+          var c = s.companion;
+          if (!c || !c.species) return { count: 0, label: 'no companion yet' };
+          var lmCount = (c.lifeMoments || []).length;
+          var peerCount = (c.peers || []).length;
+          var hasCareer = !!(c.career && c.career.careerId);
+          var hasHobby = !!(c.hobby && c.hobby.topic);
+          var bits = [];
+          bits.push((c.stage || 'hatchling').replace(/-/g, ' ') + ' stage');
+          if (hasCareer) bits.push('career chosen');
+          if (hasHobby) bits.push('hobby');
+          if (peerCount > 0) bits.push(peerCount + ' peer' + (peerCount === 1 ? '' : 's'));
+          if (lmCount > 0) bits.push(lmCount + ' scrapbook page' + (lmCount === 1 ? '' : 's'));
+          return { count: 1 + lmCount + peerCount + (hasCareer ? 1 : 0) + (hasHobby ? 1 : 0), label: bits.join(' · ') };
         }
         if (secId === 'achievements') {
           var ach = s.achievements || {};
@@ -25121,6 +25138,211 @@
                   );
                 })
               )
+            ) : null
+          );
+        })(),
+        // ── Life Journey (Phase L5) ──
+        // Tamagotchi life-sim narrative for the IEP / parent-conference
+        // packet: current life stage + how-far-to-next, career, hobby,
+        // top knowledge topics with sample vocabulary, peer relationships,
+        // and the full Life Story scrapbook (generative images + AI
+        // narratives). Paper-friendly B&W styling with image inserts.
+        (function() {
+          if (state.printOptions && state.printOptions.lifeJourney === false) return null;
+          var c = state.companion;
+          if (!c || !c.species) return null;
+          var spLJ = getCompanionSpecies(c.species);
+          var nameLJ = (c.name || (spLJ && spLJ.label) || 'Your buddy').trim();
+          var currentStage = getLifeStage(c.stage || 'hatchling');
+          var prog = checkStageProgress(c);
+          var careerObj = (c.career && c.career.careerId)
+            ? getCareer(c.career.vocationType, c.career.careerId) : null;
+          var hobbyTopic = (c.hobby && c.hobby.topic) ? c.hobby.topic : null;
+          var peersLJ = Array.isArray(c.peers) ? c.peers.slice() : [];
+          var lifeMomentsLJ = Array.isArray(c.lifeMoments) ? c.lifeMoments.slice() : [];
+          // Sort moments newest-first for chronological reading
+          lifeMomentsLJ.reverse();
+          // Top 5 topics by reinforcedCount
+          var topTopics = (c.knowledgeTopics || []).slice()
+            .sort(function(a, b) { return (b.reinforcedCount || 0) - (a.reinforcedCount || 0); })
+            .slice(0, 5);
+
+          // Career-vignette count (a proxy for "days worked + reflected on")
+          var vignettes = state.companionVignettes || {};
+          var vignetteCount = Object.keys(vignettes).filter(function(k) {
+            return vignettes[k] && vignettes[k].text;
+          }).length;
+          var careerStartedDays = (c.career && c.career.startedAt)
+            ? Math.floor((Date.now() - new Date(c.career.startedAt).getTime()) / (24 * 60 * 60 * 1000))
+            : 0;
+
+          var pillStyle = {
+            display: 'inline-block', padding: '3px 8px', marginRight: '6px', marginBottom: '4px',
+            background: '#f0f0f0', border: '1px solid #999', borderRadius: '3px',
+            fontSize: '10px', color: '#222', fontWeight: 600
+          };
+          var statCard = {
+            border: '1px solid #999', background: '#fafafa', borderRadius: '4px',
+            padding: '8px 10px', flex: '1 1 140px', minWidth: '140px'
+          };
+
+          return h('div', { style: sectionStyle, className: 'ah-print-section' },
+            h('h2', { style: sectionTitleStyle }, '📔 Life Journey'),
+            // Lead paragraph
+            h('p', { style: Object.assign({}, bodyTextStyle, { marginBottom: '10px' }) },
+              nameLJ + ' is at the ',
+              h('strong', null, currentStage.label.toLowerCase() + ' stage'),
+              '. ',
+              currentStage.blurb
+            ),
+            // Summary stat cards
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '12px' } },
+              h('div', { style: statCard },
+                h('div', { style: { fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#555', fontWeight: 700 } }, 'Stage'),
+                h('div', { style: { fontSize: '13px', fontWeight: 700, color: '#000', marginTop: '2px' } }, currentStage.badge + ' ' + currentStage.label),
+                h('div', { style: { fontSize: '10px', color: '#444', marginTop: '2px' } },
+                  prog.nextStage
+                    ? ('Next: ' + getLifeStage(prog.nextStage).label + (prog.canAdvance ? ' (ready to advance)' : ''))
+                    : 'Fully grown.')
+              ),
+              h('div', { style: statCard },
+                h('div', { style: { fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#555', fontWeight: 700 } }, 'Career'),
+                h('div', { style: { fontSize: '13px', fontWeight: 700, color: '#000', marginTop: '2px' } },
+                  careerObj ? (careerObj.icon + ' ' + careerObj.label) : '— not yet chosen'),
+                careerObj ? h('div', { style: { fontSize: '10px', color: '#444', marginTop: '2px' } },
+                  careerStartedDays + ' day' + (careerStartedDays === 1 ? '' : 's') + ' on the job · ' +
+                  vignetteCount + ' workday' + (vignetteCount === 1 ? '' : 's') + ' logged'
+                ) : null
+              ),
+              h('div', { style: statCard },
+                h('div', { style: { fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#555', fontWeight: 700 } }, 'Hobby'),
+                h('div', { style: { fontSize: '13px', fontWeight: 700, color: '#000', marginTop: '2px' } },
+                  hobbyTopic ? ('🌟 ' + hobbyTopic) : '— not yet found')
+              ),
+              h('div', { style: statCard },
+                h('div', { style: { fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#555', fontWeight: 700 } }, 'Learning'),
+                h('div', { style: { fontSize: '13px', fontWeight: 700, color: '#000', marginTop: '2px' } },
+                  (c.knowledgeFed || 0) + ' stor' + ((c.knowledgeFed || 0) === 1 ? 'y' : 'ies') + ' fed'),
+                h('div', { style: { fontSize: '10px', color: '#444', marginTop: '2px' } },
+                  (c.knowledgeTopics || []).length + ' topic' + ((c.knowledgeTopics || []).length === 1 ? '' : 's') + ' explored')
+              )
+            ),
+
+            // Top knowledge topics
+            topTopics.length > 0 ? h('div', { style: { marginBottom: '12px' } },
+              h('h3', { style: subTitleStyle }, '🧠 Top knowledge topics'),
+              topTopics.map(function(t, ti) {
+                return h('div', {
+                  key: 'lj-topic-' + ti,
+                  style: { marginBottom: '6px', padding: '6px 10px', background: '#fafafa', border: '1px solid #ddd', borderRadius: '4px' }
+                },
+                  h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#000' } },
+                    t.topic, ' · ', t.reinforcedCount || 1, ' reinforcement', (t.reinforcedCount === 1 ? '' : 's')),
+                  Array.isArray(t.vocab) && t.vocab.length > 0 ? h('div', { style: { marginTop: '3px' } },
+                    t.vocab.slice(0, 10).map(function(v, vi) {
+                      return h('span', { key: 'lj-vocab-' + ti + '-' + vi, style: pillStyle }, v);
+                    })
+                  ) : null
+                );
+              })
+            ) : null,
+
+            // Peer relationships
+            peersLJ.length > 0 ? h('div', { style: { marginBottom: '12px' } },
+              h('h3', { style: subTitleStyle }, '🤝 Peer relationships'),
+              h('table', {
+                style: { width: '100%', borderCollapse: 'collapse', fontSize: '11px', color: '#222' }
+              },
+                h('thead', null,
+                  h('tr', { style: { background: '#f0f0f0' } },
+                    h('th', { style: { textAlign: 'left', padding: '4px 8px', border: '1px solid #ccc', fontWeight: 700 } }, 'Peer'),
+                    h('th', { style: { textAlign: 'left', padding: '4px 8px', border: '1px solid #ccc', fontWeight: 700 } }, 'Career'),
+                    h('th', { style: { textAlign: 'left', padding: '4px 8px', border: '1px solid #ccc', fontWeight: 700 } }, 'Personality'),
+                    h('th', { style: { textAlign: 'left', padding: '4px 8px', border: '1px solid #ccc', fontWeight: 700 } }, 'Relationship')
+                  )
+                ),
+                h('tbody', null,
+                  peersLJ.map(function(pr, pi) {
+                    var pCar = pr.career ? getCareer(pr.career.vocationType, pr.career.careerId) : null;
+                    var rel = pr.relationship || 0;
+                    var relLabel = rel >= 5 ? 'close friend' : rel >= 3 ? 'getting closer' : rel >= 1 ? 'acquainted' : 'new';
+                    return h('tr', { key: 'lj-peer-' + pi },
+                      h('td', { style: { padding: '4px 8px', border: '1px solid #ccc' } }, pr.name),
+                      h('td', { style: { padding: '4px 8px', border: '1px solid #ccc' } }, pCar ? pCar.label : 'student'),
+                      h('td', { style: { padding: '4px 8px', border: '1px solid #ccc' } }, pr.personality || '—'),
+                      h('td', { style: { padding: '4px 8px', border: '1px solid #ccc' } },
+                        relLabel + ' (' + rel + ')')
+                    );
+                  })
+                )
+              )
+            ) : null,
+
+            // Today's vignette (if present)
+            (function() {
+              var todayK = new Date().toISOString().slice(0, 10);
+              var tv = (state.companionVignettes || {})[todayK];
+              if (!tv || !tv.text) return null;
+              return h('div', {
+                style: { marginBottom: '12px', padding: '8px 10px', background: '#fafafa', border: '1px solid #ddd', borderRadius: '4px' }
+              },
+                h('div', { style: { fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#555', fontWeight: 700, marginBottom: '3px' } },
+                  'Today · ' + (careerObj ? careerObj.label : 'work')),
+                h('p', { style: Object.assign({}, bodyTextStyle, { fontStyle: 'italic', margin: 0 }) }, tv.text)
+              );
+            })(),
+
+            // Life Story scrapbook
+            lifeMomentsLJ.length > 0 ? h('div', { style: { marginTop: '6px' } },
+              h('h3', { style: subTitleStyle },
+                '📔 Life Story scrapbook · ' + lifeMomentsLJ.length + ' page' + (lifeMomentsLJ.length === 1 ? '' : 's')),
+              lifeMomentsLJ.map(function(m) {
+                var dateStr = '';
+                try { dateStr = new Date(m.capturedAt).toLocaleDateString(); }
+                catch (e) { dateStr = m.capturedAt || ''; }
+                var typeIconLJ = m.type === 'stage-up' ? '🌱'
+                              : m.type === 'career-chosen' ? '🎓'
+                              : m.type === 'hobby-unlocked' ? '🌟'
+                              : m.type === 'close-friend' ? '💞'
+                              : '📔';
+                return h('div', {
+                  key: 'lj-lm-' + m.id,
+                  style: {
+                    marginBottom: '10px', padding: '8px 10px',
+                    background: '#fafafa', border: '1px solid #ddd', borderRadius: '4px',
+                    display: 'flex', gap: '10px', alignItems: 'flex-start'
+                  }
+                },
+                  // Generative image (left) if present
+                  m.imageDataUrl ? h('img', {
+                    src: m.imageDataUrl,
+                    alt: '',
+                    style: {
+                      width: '90px', height: '90px',
+                      objectFit: 'cover',
+                      border: '1px solid #999',
+                      borderRadius: '4px',
+                      flexShrink: 0
+                    }
+                  }) : h('div', {
+                    style: {
+                      width: '90px', height: '90px',
+                      border: '1px dashed #999',
+                      borderRadius: '4px',
+                      flexShrink: 0,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '24px', color: '#999'
+                    }
+                  }, typeIconLJ),
+                  // Title + date + narrative (right)
+                  h('div', { style: { flex: 1, minWidth: 0 } },
+                    h('div', { style: { fontSize: '12px', fontWeight: 700, color: '#000' } },
+                      typeIconLJ + ' ' + m.title),
+                    h('div', { style: { fontSize: '10px', color: '#666', fontStyle: 'italic', marginBottom: '4px' } }, dateStr),
+                    m.description ? h('p', { style: Object.assign({}, bodyTextStyle, { margin: 0, fontStyle: 'italic' }) }, m.description) : null
+                  )
+                );
+              })
             ) : null
           );
         })(),

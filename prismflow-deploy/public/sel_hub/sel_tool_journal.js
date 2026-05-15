@@ -1853,6 +1853,21 @@ window.SelHub = window.SelHub || {
                       var mObj = MOODS.find(function(m) { return m.id === ci.mood; });
                       return (mObj ? mObj.label : 'Unknown') + ' (triggers: ' + (ci.triggers || []).join(', ') + ')';
                     }).join('; ');
+                    // Pre-flight regex gate: if a critical keyword shows up in
+                    // user-typed trigger text, surface crisis resources now
+                    // instead of waiting for the slower assessSafety LLM pass.
+                    if (window.SelHub && window.SelHub.safeRehearseCheck) {
+                      var _preflight = window.SelHub.safeRehearseCheck(moodSummary, { toolId: 'journal', onSafetyFlag: onSafetyFlag });
+                      if (_preflight.action === 'block') {
+                        upd({
+                          aiLoading: false,
+                          _journalTier: 3,
+                          aiInsight: 'I noticed something in your triggers that I want to make sure you have support for. Please reach out to a trusted adult, or use one of the crisis lines below. You are not alone.'
+                        });
+                        addToast('Please talk to a trusted adult.', 'warning');
+                        return;
+                      }
+                    }
                     var prompt = 'You are a supportive SEL coach for a ' + band + ' school student. Based on their recent mood check-ins: [' + moodSummary + ']. Provide a brief, warm, ' +
                       (band === 'elementary' ? 'simple and encouraging' : band === 'middle' ? 'relatable and supportive' : 'thoughtful and empowering') +
                       ' insight about patterns you notice. Keep it to 2-3 sentences. Be specific about what you observe. Do NOT diagnose or give medical advice.';
@@ -1945,6 +1960,7 @@ window.SelHub = window.SelHub || {
         var content = checkinContent || journalContent || calendarContent || insightsContent || badgesContent;
 
         return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
+          (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('journal', h, ctx) : null),
           tabBar,
           heroBand,
           badgePopup,

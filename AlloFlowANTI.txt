@@ -3475,6 +3475,21 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       _setIsAlloHavenOpenRaw(v);
     }
   }, []);
+  // Dynamic Assessment Studio (Phase A+B) — clinical tool, lazy-loaded.
+  const [isDynamicAssessmentOpen, _setIsDynamicAssessmentOpenRaw] = useState(false);
+  const setIsDynamicAssessmentOpen = React.useCallback((v) => {
+    if (v && typeof window.__alloLazyDynamicAssessment === 'function') {
+      try { window.__alloLazyDynamicAssessment(); } catch(_) {}
+    }
+    _setIsDynamicAssessmentOpenRaw(v);
+  }, []);
+  // Expose a global opener so the tool is reachable from devtools while
+  // the UI button is still being designed. Aaron uses this for smoke
+  // testing: `window.__alloOpenDynamicAssessment()` from the console.
+  React.useEffect(() => {
+    window.__alloOpenDynamicAssessment = () => setIsDynamicAssessmentOpen(true);
+    return () => { try { delete window.__alloOpenDynamicAssessment; } catch(_) {} };
+  }, [setIsDynamicAssessmentOpen]);
   const [showStoryForge, _setShowStoryForgeRaw] = useState(false);
   const setShowStoryForge = React.useCallback((v) => { if (v && window.__alloLazyStoryForge) { try { window.__alloLazyStoryForge(); } catch(_) {} } _setShowStoryForgeRaw(v); }, []);
   const [showLitLab, _setShowLitLabRaw] = useState(false);
@@ -3729,6 +3744,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js');
     window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js'); }; })();
     window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js'); }; })();
+    // Dynamic Assessment Studio (Phase A+B) — clinical tool, lazy-loaded.
+    // School-psych workflow: pretest → AI-mediated or clinician-led mediation
+    // → posttest with graduated prompt hierarchies + modifiability scoring.
+    window.__alloLazyDynamicAssessment = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DynamicAssessment', 'https://alloflow-cdn.pages.dev/dynamic_assessment_module.js'); }; })();
     // Voice infrastructure (Phase 3v) — shared dictation + audio surface.
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
@@ -4996,25 +5015,88 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const annotationPrevStickersRef = useRef(stickers);
   const isUndoingAnnotationRef = useRef(false);
   const [annotationUndoCount, setAnnotationUndoCount] = useState(0);
+  // 2D: voice audio registry. Voice notes carry base64 audio (~300KB / min),
+  // which would blow memory if every undo snapshot copied it. Keep a
+  // session-scoped registry; snapshots store only the envelope; undo
+  // re-attaches audio by id.
+  const voiceAudioRegistryRef = useRef({});
   React.useEffect(() => {
     if (annotationPrevStickersRef.current === stickers) return;
     if (isUndoingAnnotationRef.current) {
       isUndoingAnnotationRef.current = false;
     } else {
-      annotationUndoStackRef.current.push(annotationPrevStickersRef.current);
+      // Refresh registry from current state so any new voice notes are tracked.
+      const cur = annotationPrevStickersRef.current;
+      if (Array.isArray(cur)) {
+        cur.forEach((a) => {
+          if (a && a.kind === 'voice' && a.audioBase64) {
+            voiceAudioRegistryRef.current[a.id] = {
+              audioBase64: a.audioBase64,
+              mimeType: a.mimeType,
+              durationSec: a.durationSec,
+            };
+          }
+        });
+      }
+      // Build a lite snapshot — strip audioBase64 to keep memory bounded.
+      const lite = Array.isArray(cur)
+        ? cur.map((a) => {
+            if (a && a.kind === 'voice' && a.audioBase64) {
+              const copy = Object.assign({}, a);
+              delete copy.audioBase64;
+              return copy;
+            }
+            return a;
+          })
+        : cur;
+      annotationUndoStackRef.current.push(lite);
       if (annotationUndoStackRef.current.length > 20) annotationUndoStackRef.current.shift();
       setAnnotationUndoCount(annotationUndoStackRef.current.length);
     }
     annotationPrevStickersRef.current = stickers;
   }, [stickers]);
   const handleAnnotationUndo = React.useCallback(() => {
+    // 2E guard: voice recording in flight. Cancelling through setStickers
+    // would push another snapshot, making undo pop the wrong thing.
+    // Cleaner to refuse and prompt the user to use the Cancel button.
+    if (voiceRecording) {
+      if (addToast) addToast('Cancel the active recording before undoing.', 'warning');
+      return;
+    }
     const stack = annotationUndoStackRef.current;
     if (stack.length === 0) return;
-    const prev = stack.pop();
+    let prev = stack.pop();
     setAnnotationUndoCount(stack.length);
     isUndoingAnnotationRef.current = true;
+    // 2D: re-attach voice audio from the registry. Snapshots strip
+    // audioBase64 to bound memory; this hydrates the popped state.
+    if (Array.isArray(prev)) {
+      const reg = voiceAudioRegistryRef.current;
+      prev = prev.map((a) => {
+        if (a && a.kind === 'voice' && !a.audioBase64 && reg[a.id]) {
+          return Object.assign({}, a, reg[a.id]);
+        }
+        return a;
+      });
+    }
     setStickers(prev);
-  }, []);
+    // 2B: visual confirmation so Ctrl/Cmd+Z isn't an invisible action.
+    if (addToast) addToast('↩ Undid last annotation', 'info');
+    try {
+      const btn = document.querySelector('[data-allo-undo-btn]');
+      if (btn) {
+        btn.classList.remove('alloflow-undo-flash');
+        void btn.offsetWidth; // force reflow so the re-add re-triggers
+        btn.classList.add('alloflow-undo-flash');
+        setTimeout(() => { try { btn.classList.remove('alloflow-undo-flash'); } catch (_) {} }, 500);
+      }
+    } catch (_) {}
+    // Note: `addToast` is intentionally NOT in deps — it's declared later
+    // in the component body (line ~6408). Listing it in deps causes a TDZ
+    // ReferenceError on first render because React reads the deps array
+    // synchronously at useCallback call time. The closure still resolves
+    // `addToast` at click time when it's safely initialized.
+  }, [voiceRecording]);
   // Ctrl/Cmd+Z keyboard shortcut. Scoped to the document so it works from
   // anywhere on the page; ignored if a textarea/input is focused so the
   // user can still use system undo inside text fields.
@@ -7577,6 +7659,16 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       if (!history) return null;
       return history.slice().reverse().find(h => h && h.type === 'lesson-plan');
   }, [history]);
+  const notebookEntryCount = React.useMemo(() => {
+      if (!history) return 0;
+      return history.filter(h => h && h.type === 'note-taking').length;
+  }, [history]);
+  const handleSelectNotebookEntry = React.useCallback((entry) => {
+      if (!entry) return;
+      setGeneratedContent(entry);
+      setActiveView('note-taking');
+      setShowNotebook(false);
+  }, []);
   const fetchCloudHistory = async () => {
       if (!user || !appId || !isCloudSyncEnabled) {
           setIsCloudInitialized(true);
@@ -9184,6 +9276,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   // minimal monolith state needed to drive template-type selection and
   // editable updates on generatedContent.data.
   const [noteTakingTemplateType, setNoteTakingTemplateType] = useState('cornell-notes');
+  const [showNotebook, setShowNotebook] = useState(false);
   const handleNoteUpdate = useCallback((key, value) => {
     setGeneratedContent(prev => {
       if (!prev || prev.type !== 'note-taking') return prev;
@@ -21191,7 +21284,7 @@ Return ONLY valid JSON in this format:
       >
         {t('a11y.skip_content')}
       </a>
-      {!isZenMode && <HeaderBar APP_CONFIG={APP_CONFIG} AnimatedNumber={AnimatedNumber} EDGE_TTS_VOICES={EDGE_TTS_VOICES} FONT_OPTIONS={FONT_OPTIONS} GEMINI_VOICES={GEMINI_VOICES} GlobalMuteButton={GlobalMuteButton} KOKORO_VOICES={KOKORO_VOICES} UiLanguageSelector={UiLanguageSelector} _isCanvasEnv={_isCanvasEnv} activeSessionCode={activeSessionCode} addToast={addToast} ai={ai} appId={appId} currentLevelXP={currentLevelXP} customExportCSS={customExportCSS} dismissHelpOnboarding={dismissHelpOnboarding} focusNarrationEnabled={focusNarrationEnabled} generatedContent={generatedContent} globalLevel={globalLevel} globalProgress={globalProgress} globalXPNext={globalXPNext} handleCloudToggleClick={handleCloudToggleClick} handleExportIMS={handleExportIMS} handleExportQTI={handleExportQTI} handleRestoreView={handleRestoreView} handleSetActiveViewToDashboard={handleSetActiveViewToDashboard} handleSetIsJoinPopoverOpenToFalse={handleSetIsJoinPopoverOpenToFalse} handleSetIsTranslateModalOpenToTrue={handleSetIsTranslateModalOpenToTrue} handleSetShowExportMenuToFalse={handleSetShowExportMenuToFalse} handleSetShowHintsModalToTrue={handleSetShowHintsModalToTrue} handleSetShowInfoModalToTrue={handleSetShowInfoModalToTrue} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleSetShowTextSettingsToFalse={handleSetShowTextSettingsToFalse} handleSetShowVoiceSettingsToFalse={handleSetShowVoiceSettingsToFalse} handleSetShowXPModalToTrue={handleSetShowXPModalToTrue} handleToggleDisableAnimations={handleToggleDisableAnimations} handleToggleFocusMode={handleToggleFocusMode} handleToggleIsBotVisible={handleToggleIsBotVisible} handleToggleIsHelpMode={handleToggleIsHelpMode} handleToggleIsJoinPopoverOpen={handleToggleIsJoinPopoverOpen} handleToggleShowExportMenu={handleToggleShowExportMenu} hasConnectedRef={hasConnectedRef} hintHistory={hintHistory} isBotVisible={isBotVisible} isCloudSyncEnabled={isCloudSyncEnabled} isExtracting={isExtracting} isGeneratingSource={isGeneratingSource} isHelpMode={isHelpMode} isJoinPopoverOpen={isJoinPopoverOpen} isProcessing={isProcessing} isStudentLinkMode={isStudentLinkMode} isZenMode={isZenMode} joinAppIdInput={joinAppIdInput} joinClassSession={joinClassSession} joinCodeInput={joinCodeInput} languageToTTSCode={languageToTTSCode} latestLessonPlan={latestLessonPlan} leveledTextLanguage={leveledTextLanguage} openExportPreview={openExportPreview} pptxLoaded={pptxLoaded} resetFontSize={resetFontSize} safeRemoveItem={safeRemoveItem} selectedVoice={selectedVoice} sessionData={sessionData} sessionUnsubscribeRef={sessionUnsubscribeRef} setActiveSessionCode={setActiveSessionCode} setHistory={setHistory} setIsGateOpen={setIsGateOpen} setJoinAppIdInput={setJoinAppIdInput} setJoinCodeInput={setJoinCodeInput} setPendingRole={setPendingRole} setRunTour={setRunTour} setSelectedVoice={setSelectedVoice} setSessionData={setSessionData} setShowAIBackendModal={setShowAIBackendModal} setShowClassAnalytics={setShowClassAnalytics} setShowEducatorHub={setShowEducatorHub} setShowExportMenu={setShowExportMenu} setShowReadThisPage={setShowReadThisPage} setShowSessionModal={setShowSessionModal} setShowTextSettings={setShowTextSettings} setShowVoiceSettings={setShowVoiceSettings} setShowWizard={setShowWizard} setSliderFontSize={setSliderFontSize} setSpotlightMessage={setSpotlightMessage} setTourStep={setTourStep} setVoiceSpeed={setVoiceSpeed} setVoiceVolume={setVoiceVolume} showExportMenu={showExportMenu} showHelpOnboarding={showHelpOnboarding} showReadThisPage={showReadThisPage} showTextSettings={showTextSettings} showVoiceSettings={showVoiceSettings} sliderFontSize={sliderFontSize} startClassSession={startClassSession} t={t} voiceSpeed={voiceSpeed} voiceVolume={voiceVolume} />}
+      {!isZenMode && <HeaderBar APP_CONFIG={APP_CONFIG} AnimatedNumber={AnimatedNumber} EDGE_TTS_VOICES={EDGE_TTS_VOICES} FONT_OPTIONS={FONT_OPTIONS} GEMINI_VOICES={GEMINI_VOICES} GlobalMuteButton={GlobalMuteButton} KOKORO_VOICES={KOKORO_VOICES} UiLanguageSelector={UiLanguageSelector} _isCanvasEnv={_isCanvasEnv} activeSessionCode={activeSessionCode} addToast={addToast} ai={ai} appId={appId} currentLevelXP={currentLevelXP} customExportCSS={customExportCSS} dismissHelpOnboarding={dismissHelpOnboarding} focusNarrationEnabled={focusNarrationEnabled} generatedContent={generatedContent} globalLevel={globalLevel} globalProgress={globalProgress} globalXPNext={globalXPNext} handleCloudToggleClick={handleCloudToggleClick} handleExportIMS={handleExportIMS} handleExportQTI={handleExportQTI} handleRestoreView={handleRestoreView} handleSetActiveViewToDashboard={handleSetActiveViewToDashboard} handleSetIsJoinPopoverOpenToFalse={handleSetIsJoinPopoverOpenToFalse} handleSetIsTranslateModalOpenToTrue={handleSetIsTranslateModalOpenToTrue} handleSetShowExportMenuToFalse={handleSetShowExportMenuToFalse} handleSetShowHintsModalToTrue={handleSetShowHintsModalToTrue} handleSetShowInfoModalToTrue={handleSetShowInfoModalToTrue} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleSetShowTextSettingsToFalse={handleSetShowTextSettingsToFalse} handleSetShowVoiceSettingsToFalse={handleSetShowVoiceSettingsToFalse} handleSetShowXPModalToTrue={handleSetShowXPModalToTrue} handleToggleDisableAnimations={handleToggleDisableAnimations} handleToggleFocusMode={handleToggleFocusMode} handleToggleIsBotVisible={handleToggleIsBotVisible} handleToggleIsHelpMode={handleToggleIsHelpMode} handleToggleIsJoinPopoverOpen={handleToggleIsJoinPopoverOpen} handleToggleShowExportMenu={handleToggleShowExportMenu} hasConnectedRef={hasConnectedRef} hintHistory={hintHistory} isBotVisible={isBotVisible} isCloudSyncEnabled={isCloudSyncEnabled} isExtracting={isExtracting} isGeneratingSource={isGeneratingSource} isHelpMode={isHelpMode} isJoinPopoverOpen={isJoinPopoverOpen} isProcessing={isProcessing} isStudentLinkMode={isStudentLinkMode} isZenMode={isZenMode} joinAppIdInput={joinAppIdInput} joinClassSession={joinClassSession} joinCodeInput={joinCodeInput} languageToTTSCode={languageToTTSCode} latestLessonPlan={latestLessonPlan} leveledTextLanguage={leveledTextLanguage} notebookEntryCount={notebookEntryCount} setShowNotebook={setShowNotebook} openExportPreview={openExportPreview} pptxLoaded={pptxLoaded} resetFontSize={resetFontSize} safeRemoveItem={safeRemoveItem} selectedVoice={selectedVoice} sessionData={sessionData} sessionUnsubscribeRef={sessionUnsubscribeRef} setActiveSessionCode={setActiveSessionCode} setHistory={setHistory} setIsGateOpen={setIsGateOpen} setJoinAppIdInput={setJoinAppIdInput} setJoinCodeInput={setJoinCodeInput} setPendingRole={setPendingRole} setRunTour={setRunTour} setSelectedVoice={setSelectedVoice} setSessionData={setSessionData} setShowAIBackendModal={setShowAIBackendModal} setShowClassAnalytics={setShowClassAnalytics} setShowEducatorHub={setShowEducatorHub} setShowExportMenu={setShowExportMenu} setShowReadThisPage={setShowReadThisPage} setShowSessionModal={setShowSessionModal} setShowTextSettings={setShowTextSettings} setShowVoiceSettings={setShowVoiceSettings} setShowWizard={setShowWizard} setSliderFontSize={setSliderFontSize} setSpotlightMessage={setSpotlightMessage} setTourStep={setTourStep} setVoiceSpeed={setVoiceSpeed} setVoiceVolume={setVoiceVolume} showExportMenu={showExportMenu} showHelpOnboarding={showHelpOnboarding} showReadThisPage={showReadThisPage} showTextSettings={showTextSettings} showVoiceSettings={showVoiceSettings} sliderFontSize={sliderFontSize} startClassSession={startClassSession} t={t} voiceSpeed={voiceSpeed} voiceVolume={voiceVolume} />}
       {showInfoModal && <InfoModal handleSetInfoModalTabToAbout={handleSetInfoModalTabToAbout} handleSetInfoModalTabToFeatures={handleSetInfoModalTabToFeatures} handleSetShowInfoModalToFalse={handleSetShowInfoModalToFalse} infoModalTab={infoModalTab} safeRemoveItem={safeRemoveItem} setShowInfoModal={setShowInfoModal} setShowWizard={setShowWizard} t={t} />}
       {showHintsModal && <HintsModal handleApplyHint={handleApplyHint} handleGenerateLessonIdeas={handleGenerateLessonIdeas} handleSaveExtensionToHistory={handleSaveExtensionToHistory} handleSetShowHintsModalToFalse={handleSetShowHintsModalToFalse} hintHistory={hintHistory} history={history} isGeneratingExtension={isGeneratingExtension} renderFormattedText={renderFormattedText} t={t} />}
       {showXPModal && <XPModal currentLevelXP={currentLevelXP} globalLevel={globalLevel} globalPoints={globalPoints} globalProgress={globalProgress} globalXPNext={globalXPNext} handleSetShowXPModalToFalse={handleSetShowXPModalToFalse} pointHistory={pointHistory} t={t} />}
@@ -21215,6 +21308,15 @@ Return ONLY valid JSON in this format:
           />
       )}
       {showStorybookExportModal && <StorybookExportModal handleExportStorybook={handleExportStorybook} handleSetShowStorybookExportModalToFalse={handleSetShowStorybookExportModalToFalse} isProcessing={isProcessing} setShowStorybookExportModal={setShowStorybookExportModal} t={t} />}
+      {showNotebook && window.AlloModules && window.AlloModules.NotebookOverlay
+        ? React.createElement(window.AlloModules.NotebookOverlay, {
+            isOpen: true,
+            onClose: () => setShowNotebook(false),
+            history,
+            onSelectEntry: handleSelectNotebookEntry,
+            t,
+          })
+        : null}
       {!isTeacherMode && activeSessionCode && sessionData && (
           <ErrorBoundary fallbackMessage="Live Quiz encountered an error. waiting for sync...">
             <StudentQuizOverlay
@@ -22101,6 +22203,7 @@ Return ONLY valid JSON in this format:
                             return (
                                 <button
                                     type="button"
+                                    data-allo-undo-btn="true"
                                     onClick={canUndo ? handleAnnotationUndo : undefined}
                                     disabled={!canUndo}
                                     className={'p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 mr-1 ' + (canUndo ? 'text-slate-600 hover:bg-slate-100' : 'text-slate-300 cursor-not-allowed')}
@@ -24288,6 +24391,35 @@ Return ONLY valid JSON in this format:
                     <p className="text-lg font-bold text-slate-700">Loading AlloHaven...</p>
                     <p className="text-sm text-slate-600 mt-2">Module loading from CDN. If this persists, check your connection.</p>
                     <button onClick={() => setIsAlloHavenOpen(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
+                </div>
+            </div>
+            );
+        })()}
+        {isDynamicAssessmentOpen && (() => {
+            const DA = window.AlloModules && window.AlloModules.DynamicAssessment;
+            if (DA) {
+                return (
+                <div className="fixed inset-0 z-[60] bg-black/50 overflow-y-auto" onClick={() => setIsDynamicAssessmentOpen(false)}>
+                    <div className="bg-white rounded-2xl mx-auto my-8 shadow-2xl max-w-4xl" onClick={(e) => e.stopPropagation()}>
+                        {React.createElement(DA, {
+                            React: React,
+                            onClose: () => setIsDynamicAssessmentOpen(false),
+                            callGemini: callGemini,
+                            addToast,
+                            t,
+                            studentNickname: studentNickname || ''
+                        })}
+                    </div>
+                </div>
+                );
+            }
+            return (
+            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setIsDynamicAssessmentOpen(false)}>
+                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                    <div className="text-4xl mb-3">🔬</div>
+                    <p className="text-lg font-bold text-slate-700">Loading Dynamic Assessment Studio...</p>
+                    <p className="text-sm text-slate-600 mt-2">Module loading from CDN. If this persists, check your connection.</p>
+                    <button onClick={() => setIsDynamicAssessmentOpen(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
                 </div>
             </div>
             );

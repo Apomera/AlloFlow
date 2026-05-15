@@ -396,6 +396,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
       // ═══════════════════════════════════════════════════════
       function renderAbout() {
         return h('div', null,
+          (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('quietQuestions', h, ctx) : null),
           h('div', { style: { padding: 16, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: '#c4b5fd', fontSize: 16 } }, 'What this practice is'),
             h('p', { style: { margin: '0 0 8px', color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.7 } },

@@ -852,6 +852,7 @@ window.SelHub = window.SelHub || {
           })
         ),
 
+        (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('civicAction', h, ctx) : null),
         // ── Tab Navigation ──
         h('div', { role: 'tablist', className: 'flex gap-1 bg-teal-50 rounded-xl p-1 border border-teal-200 overflow-x-auto' },
           TABS.map(function(t) {

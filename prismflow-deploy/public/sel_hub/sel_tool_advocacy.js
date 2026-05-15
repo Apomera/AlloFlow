@@ -1260,7 +1260,8 @@ window.SelHub = window.SelHub || {
         { id: 'phrases',   label: '\uD83D\uDCAC Phrases' },
         { id: 'assessment', label: '\uD83D\uDCCB Quiz' },
         { id: 'letters',   label: '\u2709\uFE0F Letters' },
-        { id: 'progress',  label: '\uD83D\uDCCA Progress' }
+        { id: 'progress',  label: '\uD83D\uDCCA Progress' },
+        { id: 'print',     label: '\uD83D\uDDA8 Print' }
       ];
 
       var tabBar = h('div', {         role: 'tablist', 'aria-label': 'Self-Advocacy tabs',
@@ -2334,9 +2335,83 @@ window.SelHub = window.SelHub || {
       // ══════════════════════════════════════════════════════════
       // ── Final Render ──
       // ══════════════════════════════════════════════════════════
-      var content = scenariosContent || scriptsContent || advocacyScriptsContent || rightsContent || voiceContent || phrasesContent || assessmentContent || lettersContent || progressContent;
+      // ══════════════════════════════════════════════════════════
+      // ── TAB: Print ──
+      // ══════════════════════════════════════════════════════════
+      var printContent = null;
+      if (activeTab === 'print') {
+        var lastLetter = null;
+        if (ltFields && Object.keys(ltFields).length > 0) {
+          var ltTemplate = LETTER_TEMPLATES[ltIdx % LETTER_TEMPLATES.length];
+          if (ltTemplate && ltTemplate.format) lastLetter = { title: ltTemplate.title, body: ltTemplate.format(ltFields) };
+        }
+        printContent = h('div', { style: { padding: 20, maxWidth: 720, margin: '0 auto' } },
+          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: ACCENT_DIM, border: '1px solid ' + ACCENT_MED, borderLeft: '3px solid ' + ACCENT, marginBottom: 12, fontSize: 12.5, color: '#c7d2fe', lineHeight: 1.65 } },
+            h('strong', null, '\uD83D\uDDA8 Advocacy artifact. '),
+            'A one-page reference: an assertive-script template you can use anywhere, your most recent drafted letter (if you wrote one), and a short summary of the rights you have at school. Useful for IEP meetings, doctor visits, and any moment you need to ask for something hard.'
+          ),
+          h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
+            h('button', { onClick: function() { try { window.print(); } catch (e) {} }, 'aria-label': 'Print or save as PDF',
+              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, '\uD83D\uDDA8 Print / Save as PDF')
+          ),
+          h('style', null,
+            '@media print { body * { visibility: hidden !important; } ' +
+            '#adv-print-region, #adv-print-region * { visibility: visible !important; } ' +
+            '#adv-print-region { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; background: #fff !important; color: #0f172a !important; } ' +
+            '#adv-print-region * { background: transparent !important; color: #0f172a !important; border-color: #888 !important; } ' +
+            '.no-print { display: none !important; } }'
+          ),
+          h('div', { id: 'adv-print-region', style: { padding: 18, borderRadius: 12, background: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0' } },
+            h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', borderBottom: '2px solid #0f172a', paddingBottom: 8, marginBottom: 14 } },
+              h('h2', { style: { margin: 0, fontSize: 22, fontWeight: 900, color: '#0f172a' } }, 'My Advocacy Toolkit'),
+              h('div', { style: { fontSize: 11, color: '#475569' } }, 'IDEA \u00b7 504 \u00b7 ADA \u00b7 Self-Determination')
+            ),
+
+            h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 12, pageBreakInside: 'avoid' } },
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, 'Assertive-script template'),
+              h('div', { style: { fontSize: 12, color: '#475569', marginBottom: 8, fontStyle: 'italic', lineHeight: 1.55 } }, 'Five sentences that work for most asks. Read off paper if you need to; that counts.'),
+              h('ol', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12.5, color: '#0f172a', lineHeight: 1.8 } },
+                h('li', null, h('strong', null, 'Name the moment. '), '"I want to talk about something that is hard for me to bring up."'),
+                h('li', null, h('strong', null, 'State the situation. '), '"In ____, I am noticing that ____."'),
+                h('li', null, h('strong', null, 'Name the impact. '), '"This is affecting me because ____."'),
+                h('li', null, h('strong', null, 'Make the ask. '), '"What would help me is ____."'),
+                h('li', null, h('strong', null, 'Invite a response. '), '"Is this something we can work on together?"')
+              )
+            ),
+
+            lastLetter ? h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 12, pageBreakInside: 'avoid' } },
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, 'My drafted letter: ' + lastLetter.title),
+              h('div', { style: { fontSize: 12, color: '#0f172a', whiteSpace: 'pre-wrap', lineHeight: 1.6, padding: 10, background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: 6 } }, lastLetter.body)
+            ) : null,
+
+            h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 12, pageBreakInside: 'avoid' } },
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, 'Rights I have at school (US)'),
+              h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 11.5, color: '#0f172a', lineHeight: 1.7 } },
+                h('li', { style: { marginBottom: 3 } }, h('strong', null, 'IDEA: '), 'a free appropriate public education (FAPE) in the least restrictive environment (LRE) if I have a disability that affects learning. I can request an evaluation in writing.'),
+                h('li', { style: { marginBottom: 3 } }, h('strong', null, 'Section 504: '), 'reasonable accommodations for any disability that substantially limits a major life activity, even without special-ed services.'),
+                h('li', { style: { marginBottom: 3 } }, h('strong', null, 'ADA: '), 'protection from disability discrimination in any program receiving federal funds, including all public schools and most private ones.'),
+                h('li', { style: { marginBottom: 3 } }, h('strong', null, 'FERPA: '), 'access to my educational records. At 18, those rights transfer to me from my parents.'),
+                h('li', { style: { marginBottom: 3 } }, h('strong', null, 'Student-led IEP: '), 'I have the right to attend and meaningfully participate in my own IEP meetings.'),
+                h('li', null, h('strong', null, 'Advocate or parent at any meeting: '), 'I can bring a parent, family member, friend, or advocate to any school meeting that is about me.')
+              )
+            ),
+
+            h('div', { style: { padding: 10, background: '#eef2ff', border: '1px solid #c7d2fe', borderRadius: 8, marginBottom: 12, fontSize: 11.5, color: '#3730a3', lineHeight: 1.6 } },
+              h('strong', null, 'Helpful organizations: '),
+              'ASAN (autisticadvocacy.org) \u00b7 Disability Rights Education and Defense Fund (dredf.org) \u00b7 Wrightslaw (wrightslaw.com) \u00b7 your state\u2019s Parent Training and Information Center (parentcenterhub.org/find-your-center)'
+            ),
+
+            h('div', { style: { marginTop: 14, padding: 10, borderTop: '2px solid #0f172a', fontSize: 10.5, color: '#475569', lineHeight: 1.5 } },
+              'Sources: Deci, E. L. & Ryan, R. M. (1985), Self-Determination Theory \u00b7 IDEA (ed.gov/idea) \u00b7 ADA (ada.gov) \u00b7 Section 504. Printed from AlloFlow SEL Hub.'
+            )
+          )
+        );
+      }
+
+      var content = scenariosContent || scriptsContent || advocacyScriptsContent || rightsContent || voiceContent || phrasesContent || assessmentContent || lettersContent || progressContent || printContent;
 
       return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
+        (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('advocacy', h, ctx) : null),
         tabBar,
         heroBand,
         badgePopup,

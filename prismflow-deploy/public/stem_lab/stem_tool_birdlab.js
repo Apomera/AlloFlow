@@ -104,6 +104,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       '  0%, 100% { box-shadow: 0 0 0 0 rgba(5,150,105,0.55); }',
       '  50%      { box-shadow: 0 0 0 8px rgba(5,150,105,0); }',
       '}',
+      // Hint pulse (SVG circle on the scene at the hinted bird position).
+      // r animates outward + opacity fades — a clearly-visible "look here" cue.
+      '@keyframes birdlab-hint-pulse {',
+      '  0%   { r: 12; opacity: 0.95; }',
+      '  100% { r: 38; opacity: 0; }',
+      '}',
+      '.birdlab-hint-ring { animation: birdlab-hint-pulse 1.4s ease-out infinite; transform-box: fill-box; }',
+      // Clean Habitat celebration: enters with scale + fades, exits at the end.
+      '@keyframes birdlab-clean-celebrate {',
+      '  0%   { transform: scale(0.55) translateY(20px); opacity: 0; }',
+      '  18%  { transform: scale(1.08) translateY(0);    opacity: 1; }',
+      '  30%  { transform: scale(1);    translateY(0);   opacity: 1; }',
+      '  82%  { transform: scale(1);    translateY(0);   opacity: 1; }',
+      '  100% { transform: scale(0.95) translateY(-12px); opacity: 0; }',
+      '}',
+      '.birdlab-clean-celebrate { animation: birdlab-clean-celebrate 3.6s ease-out forwards; }',
+      // Trophy sparkle — a slow gold rotation behind the trophy
+      '@keyframes birdlab-trophy-spin {',
+      '  0%   { transform: rotate(0deg);   opacity: 0.4; }',
+      '  50%  { transform: rotate(180deg); opacity: 0.7; }',
+      '  100% { transform: rotate(360deg); opacity: 0.4; }',
+      '}',
+      '.birdlab-trophy-spin { animation: birdlab-trophy-spin 4s linear infinite; }',
+      // Confetti — each particle reads its own --dx/--dy/--rot for spread + rotation
+      '@keyframes birdlab-confetti-fly {',
+      '  0%   { transform: translate(-50%, -50%) rotate(0deg);              opacity: 0; }',
+      '  10%  { transform: translate(-50%, -50%) rotate(0deg);              opacity: 1; }',
+      '  70%  { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) rotate(var(--rot)); opacity: 1; }',
+      '  100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy) + 80px)) rotate(calc(var(--rot) + 90deg)); opacity: 0; }',
+      '}',
+      '.birdlab-confetti { animation: birdlab-confetti-fly 2.6s cubic-bezier(0.25, 0.6, 0.35, 1) forwards; }',
+      // Reduced-motion: collapse celebration animations
+      '@media (prefers-reduced-motion: reduce) {',
+      '  .birdlab-clean-celebrate, .birdlab-trophy-spin, .birdlab-hint-ring, .birdlab-confetti { animation: none !important; }',
+      '  .birdlab-confetti { opacity: 0 !important; }',
+      '}',
       // Lifer celebration: rises in from above, holds, fades out at the end.
       // Auto-cleared by setTimeout in handleBirdClick after 3.2s.
       '@keyframes birdlab-lifer-rise {',
@@ -2977,26 +3013,487 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var picked = picked_state[0], setPicked = picked_state[1];
         var foundByHabitat_state = useState(d.foundByHabitat || {});
         var foundByHabitat = foundByHabitat_state[0], setFoundByHabitat = foundByHabitat_state[1];
+        // ── Hint mode (Aaron's UX ask): keyboard-alt buttons become limited
+        // hint highlights by default. Spatial click is the primary path.
+        // Accessibility toggle restores unlimited direct-identify behavior.
+        // Difficulty controls the per-habitat hint budget.
+        var DIFFICULTY_BUDGETS = { easy: 5, normal: 3, hard: 1, expert: 0 };
+        var DIFFICULTY_LABELS = { easy: '🌱 Easy', normal: '🎯 Normal', hard: '🦅 Hard', expert: '👑 Expert' };
+        var DIFFICULTY_RANK = { easy: 1, normal: 2, hard: 3, expert: 4 };
+        // Tiered medal for a clean clear at each difficulty.
+        var DIFFICULTY_MEDAL = { easy: '🥉', normal: '🥈', hard: '🥇', expert: '👑' };
+        var DIFFICULTY_TIER_LABEL = { easy: 'Bronze', normal: 'Silver', hard: 'Gold', expert: 'Crown' };
+        // Backward compat: if cleanHabitats stored a boolean (old shape) treat it as
+        // bronze-tier ('easy'). Normalize on read.
+        function getCleanTier(habitatIdLookup) {
+          var v = cleanHabitats[habitatIdLookup];
+          if (!v) return null;
+          if (v === true) return 'easy'; // legacy shape
+          return v.difficulty || 'easy';
+        }
+        function bestMedalDifficulty(habitatIdLookup) {
+          var t = getCleanTier(habitatIdLookup);
+          return t || null;
+        }
+        var difficulty_state = useState(d.blDifficulty || 'normal');
+        var difficulty = difficulty_state[0], setDifficulty = difficulty_state[1];
+        var HINT_BUDGET = DIFFICULTY_BUDGETS[difficulty] != null ? DIFFICULTY_BUDGETS[difficulty] : 3;
+        var hintMode_state = useState(d.blHintMode !== false); // default true
+        var hintMode = hintMode_state[0], setHintMode = hintMode_state[1];
+        var hintsUsed_state = useState(d.blHintsUsed || {});
+        var hintsUsed = hintsUsed_state[0], setHintsUsed = hintsUsed_state[1];
+        var hintActive_state = useState(null); // { species, ts } — currently pulsing bird
+        var hintActive = hintActive_state[0], setHintActive = hintActive_state[1];
+        var foundVia_state = useState(d.blFoundVia || {});
+        var foundVia = foundVia_state[0], setFoundVia = foundVia_state[1];
+        // ── Spotter Streak: rewards consecutive spatial-spots (no hints) ──
+        // Resets when a student uses a hint OR identifies via accessibility-mode button.
+        // Persists across habitats so a strong run carries through.
+        var spotStreak_state = useState(d.blSpotStreak || 0);
+        var spotStreak = spotStreak_state[0], setSpotStreak = spotStreak_state[1];
+        var bestStreak_state = useState(d.blBestStreak || 0);
+        var bestStreak = bestStreak_state[0], setBestStreak = bestStreak_state[1];
+        var cleanHabitats_state = useState(d.blCleanHabitats || {});
+        var cleanHabitats = cleanHabitats_state[0], setCleanHabitats = cleanHabitats_state[1];
+        // Per-habitat hint usage flag (any hint = not clean)
+        var habitatHinted_state = useState(d.blHabitatHinted || {});
+        var habitatHinted = habitatHinted_state[0], setHabitatHinted = habitatHinted_state[1];
+        // Clean Habitat celebration overlay (transient, auto-clears)
+        var cleanCelebration_state = useState(null);
+        var cleanCelebration = cleanCelebration_state[0], setCleanCelebration = cleanCelebration_state[1];
+        // ── Spot-time tracking ──
+        // Silent timer starts when a habitat opens (first paint), stops on clean clear.
+        // Records best time per habitat × difficulty combo.
+        var habitatStartTs_state = useState({}); // { habitatId: timestamp }
+        var habitatStartTs = habitatStartTs_state[0], setHabitatStartTs = habitatStartTs_state[1];
+        var bestTimes_state = useState(d.blBestTimes || {});  // { 'habitatId|difficulty': seconds }
+        var bestTimes = bestTimes_state[0], setBestTimes = bestTimes_state[1];
+        function formatTime(seconds) {
+          if (seconds == null || !isFinite(seconds)) return '—';
+          var m = Math.floor(seconds / 60);
+          var s = Math.floor(seconds % 60);
+          return m + ':' + (s < 10 ? '0' + s : s);
+        }
+        function getCurrentBest(hid, diff) {
+          var key = hid + '|' + diff;
+          return bestTimes[key];
+        }
+        // ── Challenge of the Day ──
+        // Rotates daily via date hash; each completed challenge sticks for that
+        // date so a student can't earn the same one twice.
+        var DAILY_CHALLENGES = [
+          { id: 'spot5',        icon: '🔥', title: 'Hit a 5-spot streak', desc: 'Spot 5 birds in a row without using a hint.', xp: 25 },
+          { id: 'clean_any',    icon: '🏆', title: 'Clean any habitat', desc: 'Find every bird in one habitat without a single hint.', xp: 35 },
+          { id: 'clean_hard',   icon: '🥇', title: 'Clean on Hard or better', desc: 'Clear a habitat at Hard or Expert difficulty.', xp: 50 },
+          { id: 'new_lifer',    icon: '✨', title: 'Add a new lifer', desc: 'Spot a species you have never seen before.', xp: 20 },
+          { id: 'visit3',       icon: '🗺️', title: 'Visit three habitats', desc: 'Open any three different habitat scenes today.', xp: 15 },
+          { id: 'spot10',       icon: '🦅', title: 'Eagle Eye — 10 in a row', desc: 'Spot 10 birds in a row without a hint. Tough one.', xp: 60 }
+        ];
+        function getDailyChallenge() {
+          var today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+          // Simple deterministic hash of date → challenge index
+          var hash = 0;
+          for (var ci = 0; ci < today.length; ci++) hash = (hash * 31 + today.charCodeAt(ci)) & 0xffffffff;
+          var idx = Math.abs(hash) % DAILY_CHALLENGES.length;
+          var c = DAILY_CHALLENGES[idx];
+          return Object.assign({}, c, { date: today });
+        }
+        var dailyChallenge = getDailyChallenge();
+        var dailyDone_state = useState(d.blDailyDone || {});
+        var dailyDone = dailyDone_state[0], setDailyDone = dailyDone_state[1];
+        var dailyKey = dailyChallenge.date + ':' + dailyChallenge.id;
+        var dailyComplete = !!dailyDone[dailyKey];
+        // Visited-habitats today tracker (for 'visit3' challenge)
+        var visitedToday_state = useState(d.blVisitedToday || { date: '', habitats: {} });
+        var visitedToday = visitedToday_state[0], setVisitedToday = visitedToday_state[1];
+        if (visitedToday.date !== dailyChallenge.date) {
+          // New day — reset
+          visitedToday = { date: dailyChallenge.date, habitats: {} };
+          setVisitedToday(visitedToday);
+          upd('blVisitedToday', visitedToday);
+        }
+        function completeDailyChallenge() {
+          if (dailyComplete) return;
+          var nd = Object.assign({}, dailyDone);
+          nd[dailyKey] = { ts: Date.now(), challenge: dailyChallenge.id };
+          setDailyDone(nd);
+          upd('blDailyDone', nd);
+          announce('Daily challenge complete: ' + dailyChallenge.title);
+          if (typeof addToast === 'function') addToast(dailyChallenge.icon + ' Daily Challenge complete! ' + dailyChallenge.title, 'success');
+          chirpClean();
+        }
+        // ── Audio feedback (chirps for spot/hint/clean) ──
+        // Reuses the shared getBirdAudioCtx() defined later for bird calls.
+        var soundOn_state = useState(d.blSpotSounds !== false); // default true
+        var soundOn = soundOn_state[0], setSoundOn = soundOn_state[1];
+        function playChirp(frequencies, durations, gain) {
+          if (!soundOn) return;
+          if (typeof getBirdAudioCtx !== 'function') return;
+          var ctx = getBirdAudioCtx();
+          if (!ctx) return;
+          try {
+            if (ctx.state === 'suspended' && ctx.resume) ctx.resume();
+            var now = ctx.currentTime;
+            var g = ctx.createGain();
+            g.gain.setValueAtTime(0.0001, now);
+            g.gain.exponentialRampToValueAtTime(gain || 0.08, now + 0.01);
+            g.connect(ctx.destination);
+            var t = now;
+            frequencies.forEach(function(f, i) {
+              var dur = durations[i] || 0.08;
+              var o = ctx.createOscillator();
+              o.type = 'sine';
+              o.frequency.setValueAtTime(f, t);
+              o.connect(g);
+              o.start(t);
+              o.stop(t + dur);
+              t += dur;
+            });
+            // Tail fade
+            g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
+            setTimeout(function() { try { g.disconnect(); } catch(_) {} }, (t - now + 0.2) * 1000);
+          } catch (_) { /* silently no-op */ }
+        }
+        // Two-tone ascending "you got it" — bright, like a real songbird trill
+        function chirpSpot() { playChirp([880, 1320], [0.07, 0.10], 0.07); }
+        // Descending "look here" — softer, warning-ish
+        function chirpHint() { playChirp([660, 520], [0.08, 0.10], 0.05); }
+        // Triumphant 4-note ascending for Clean Habitat
+        function chirpClean() { playChirp([523, 659, 784, 1047], [0.10, 0.10, 0.10, 0.22], 0.09); }
+
+        // ── Spotter's Diary: printable summary of accomplishments ──
+        function openSpotterDiary() {
+          var esc = function(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); };
+          var dateStr = new Date().toLocaleDateString();
+          var allHabitats = Object.keys(HABITATS);
+          var totalHabitats = allHabitats.length;
+          var cleanCount = Object.keys(cleanHabitats).length;
+          var lifeList = d.blLifeList || {};
+          var lifers = Object.keys(lifeList).map(function(sp) {
+            var entry = lifeList[sp];
+            var meta = BIRDS[sp] || {};
+            return {
+              species: sp,
+              name: meta.name || sp,
+              sciName: meta.sciName || '',
+              firstSeen: entry.firstSeen ? new Date(entry.firstSeen).toLocaleDateString() : '',
+              firstHabitat: entry.firstHabitat ? (HABITATS[entry.firstHabitat] || {}).name : '',
+              habitats: entry.habitats || {}
+            };
+          });
+          // Sort lifers by first-seen ascending (oldest first)
+          lifers.sort(function(a, b) {
+            var aTs = (lifeList[a.species] || {}).firstSeen || '';
+            var bTs = (lifeList[b.species] || {}).firstSeen || '';
+            return aTs < bTs ? -1 : aTs > bTs ? 1 : 0;
+          });
+          var tierCounts = { easy: 0, normal: 0, hard: 0, expert: 0 };
+          allHabitats.forEach(function(hid) {
+            var t = getCleanTier(hid);
+            if (t && tierCounts[t] != null) tierCounts[t]++;
+          });
+          var allExpert = tierCounts.expert === totalHabitats;
+          var allHardOrBetter = (tierCounts.hard + tierCounts.expert) === totalHabitats && cleanCount === totalHabitats;
+          var masterPill = allExpert ? '👑 GRAND MASTER SPOTTER'
+            : allHardOrBetter ? '🥇 MASTER SPOTTER'
+            : cleanCount === totalHabitats ? '✨ SPOTTER'
+            : null;
+          var html =
+            '<!doctype html><html><head><meta charset="utf-8"><title>Spotter\'s Diary</title>' +
+            '<style>' +
+              'body { font-family: system-ui, -apple-system, sans-serif; color: #0f172a; max-width: 760px; margin: 32px auto; padding: 24px; line-height: 1.55; }' +
+              'h1 { color: #047857; margin: 0 0 6px; font-size: 24px; display: flex; align-items: center; gap: 10px; }' +
+              'h2 { color: #0f172a; font-size: 16px; margin: 22px 0 8px; border-bottom: 2px solid #10b981; padding-bottom: 4px; }' +
+              '.meta { color: #64748b; font-size: 12px; margin-bottom: 18px; }' +
+              '.master-pill { display: inline-block; padding: 6px 14px; background: linear-gradient(90deg, #fde047, #fbbf24, #fde047); border: 2px solid #d97706; border-radius: 999px; font-weight: 900; letter-spacing: 1px; font-size: 12px; color: #78350f; margin-bottom: 16px; }' +
+              '.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; margin-bottom: 16px; }' +
+              '.stat { padding: 10px 12px; background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; text-align: center; }' +
+              '.stat-num { font-size: 22px; font-weight: 900; color: #047857; line-height: 1; }' +
+              '.stat-lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #475569; margin-top: 4px; }' +
+              '.habitat-row { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #f8fafc; border-left: 4px solid #cbd5e1; border-radius: 4px; margin: 4px 0; font-size: 13px; }' +
+              '.habitat-row.clean { background: #fef3c7; border-left-color: #d97706; }' +
+              '.habitat-row .name { flex: 1; font-weight: 700; }' +
+              '.habitat-row .medal { font-size: 16px; }' +
+              '.habitat-row .pb { font-family: ui-monospace, monospace; font-size: 12px; color: #0e7490; font-weight: 700; }' +
+              '.lifer-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }' +
+              '.lifer { padding: 10px 12px; background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 12px; }' +
+              '.lifer .name { font-weight: 700; color: #0f172a; }' +
+              '.lifer .sci { font-style: italic; color: #64748b; font-size: 11px; }' +
+              '.lifer .meta { color: #475569; font-size: 10px; margin-top: 4px; margin-bottom: 0; }' +
+              '.empty { padding: 16px; text-align: center; color: #94a3b8; font-style: italic; background: #f8fafc; border-radius: 8px; }' +
+              '.note { font-size: 11px; color: #64748b; font-style: italic; margin-top: 24px; padding-top: 12px; border-top: 1px solid #e2e8f0; }' +
+              '.print-btn { padding: 8px 16px; background: #047857; color: #fff; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; margin-bottom: 16px; }' +
+              '@media print { .print-btn { display: none; } body { margin: 0; padding: 16px; } }' +
+            '</style></head><body>' +
+            '<button class="print-btn" onclick="window.print()">🖨️ Print this diary</button>' +
+            '<h1>🦅 Spotter\'s Diary</h1>' +
+            '<div class="meta">Generated ' + esc(dateStr) + ' &middot; BirdLab — I-Spy Ornithology</div>' +
+            (masterPill ? '<div class="master-pill">' + esc(masterPill) + '</div>' : '') +
+            // Stats summary
+            '<div class="stats">' +
+              '<div class="stat"><div class="stat-num">' + lifers.length + '</div><div class="stat-lbl">Lifers</div></div>' +
+              '<div class="stat"><div class="stat-num">' + bestStreak + '</div><div class="stat-lbl">Best Streak</div></div>' +
+              '<div class="stat"><div class="stat-num">' + cleanCount + '/' + totalHabitats + '</div><div class="stat-lbl">Clean Habitats</div></div>' +
+              '<div class="stat"><div class="stat-num">' +
+                (tierCounts.easy ? '🥉' + tierCounts.easy + ' ' : '') +
+                (tierCounts.normal ? '🥈' + tierCounts.normal + ' ' : '') +
+                (tierCounts.hard ? '🥇' + tierCounts.hard + ' ' : '') +
+                (tierCounts.expert ? '👑' + tierCounts.expert : '') +
+                (cleanCount === 0 ? '—' : '') +
+              '</div><div class="stat-lbl">Medal Distribution</div></div>' +
+            '</div>' +
+            // Habitats table
+            '<h2>Habitats</h2>' +
+            allHabitats.map(function(hid) {
+              var hab = HABITATS[hid];
+              var hf = (foundByHabitat[hid] || {});
+              var hfCount = Object.keys(hf).length;
+              var hbCount = hab.birds.length;
+              var tier = getCleanTier(hid);
+              var medal = tier ? DIFFICULTY_MEDAL[tier] : '';
+              var pbBits = [];
+              ['easy', 'normal', 'hard', 'expert'].forEach(function(d2) {
+                var t = getCurrentBest(hid, d2);
+                if (t != null) pbBits.push(DIFFICULTY_MEDAL[d2] + ' ' + formatTime(t));
+              });
+              return '<div class="habitat-row' + (tier ? ' clean' : '') + '">' +
+                '<span class="medal">' + esc(medal || '·') + '</span>' +
+                '<span class="name">' + esc(hab.name) + '</span>' +
+                '<span style="color: #475569;">' + hfCount + ' / ' + hbCount + ' birds</span>' +
+                (pbBits.length ? '<span class="pb">⏱️ ' + esc(pbBits.join(' · ')) + '</span>' : '') +
+              '</div>';
+            }).join('') +
+            // Lifers list
+            '<h2>Life list — ' + lifers.length + ' species</h2>' +
+            (lifers.length === 0
+              ? '<div class="empty">No lifers yet. Find your first bird in any habitat to start the list.</div>'
+              : '<div class="lifer-grid">' + lifers.map(function(l) {
+                  var sightingsCount = Object.keys(l.habitats).reduce(function(sum, hid) { return sum + (l.habitats[hid] || 0); }, 0);
+                  return '<div class="lifer">' +
+                    '<div class="name">' + esc(l.name) + '</div>' +
+                    (l.sciName ? '<div class="sci">' + esc(l.sciName) + '</div>' : '') +
+                    '<div class="meta">First: ' + esc(l.firstHabitat || '—') + ' &middot; ' + esc(l.firstSeen || '—') +
+                      (sightingsCount > 1 ? ' &middot; <strong>' + sightingsCount + ' sightings</strong>' : '') +
+                    '</div>' +
+                  '</div>';
+                }).join('') + '</div>'
+            ) +
+            '<div class="note">Generated by BirdLab (STEM Lab). Lifers + clean-habitat records persist on this device. Bring this to a teacher or counselor if you want to share what you have spotted.</div>' +
+            '</body></html>';
+          try {
+            var w = window.open('', '_blank', 'width=860,height=900');
+            if (!w) {
+              if (typeof addToast === 'function') addToast('Pop-up blocked. Allow pop-ups and try again.', 'warning');
+              return;
+            }
+            w.document.open(); w.document.write(html); w.document.close();
+            announce('Spotter\'s Diary opened in a new window.');
+          } catch (e) {
+            if (typeof addToast === 'function') addToast('Could not open the diary: ' + (e.message || e), 'error');
+          }
+        }
 
         var habitat = HABITATS[habitatId];
         var found = foundByHabitat[habitatId] || {};
         var totalBirds = habitat.birds.length;
         var foundCount = Object.keys(found).length;
+        var habitatHintsUsed = hintsUsed[habitatId] || 0;
+        var hintsLeft = Math.max(0, HINT_BUDGET - habitatHintsUsed);
+
+        function fireHint(bird) {
+          // Already used max hints AND in hint mode → block
+          if (hintMode && habitatHintsUsed >= HINT_BUDGET) return;
+          // Mark a hint used (only in hint mode — accessibility mode doesn't deplete)
+          if (hintMode) {
+            var nextHints = Object.assign({}, hintsUsed);
+            nextHints[habitatId] = habitatHintsUsed + 1;
+            setHintsUsed(nextHints);
+            upd('blHintsUsed', nextHints);
+          }
+          // Using a hint disqualifies this habitat from "Clean Habitat" status
+          // AND resets the current spotter streak (was a run of unaided spots).
+          if (!habitatHinted[habitatId]) {
+            var nh = Object.assign({}, habitatHinted); nh[habitatId] = true;
+            setHabitatHinted(nh);
+            upd('blHabitatHinted', nh);
+          }
+          if (spotStreak > 0) {
+            setSpotStreak(0);
+            upd('blSpotStreak', 0);
+            if (spotStreak >= 3) announce('Hint used — streak reset (was ' + spotStreak + ').');
+          }
+          setHintActive({ species: bird.species, ts: Date.now() });
+          chirpHint();
+          announce('Hint: ' + bird.hint);
+          // Auto-clear pulse after 3.5 seconds
+          setTimeout(function() {
+            setHintActive(function(cur) {
+              return (cur && cur.species === bird.species) ? null : cur;
+            });
+          }, 3500);
+        }
+
+        function toggleHintMode() {
+          var next = !hintMode;
+          setHintMode(next);
+          upd('blHintMode', next);
+          announce(next ? 'Hint mode on. Buttons now reveal a hint instead of identifying.' : 'Accessibility mode on. Buttons identify birds directly. Unlimited use.');
+        }
 
         function switchHabitat(newId) {
           setHabitatId(newId);
           setPicked(null);
           upd('activeHabitat', newId);
           announce('Switched to ' + HABITATS[newId].name + ' habitat. ' + HABITATS[newId].birds.length + ' birds to find.');
+          // Start the silent spot-time clock if not already running for this habitat
+          // (only counts toward a personal best on a clean clear at the current difficulty)
+          if (!habitatStartTs[newId]) {
+            var hs = Object.assign({}, habitatStartTs); hs[newId] = Date.now();
+            setHabitatStartTs(hs);
+          }
+          // Track for 'visit3' daily challenge
+          if (!visitedToday.habitats[newId]) {
+            var nv = { date: visitedToday.date, habitats: Object.assign({}, visitedToday.habitats) };
+            nv.habitats[newId] = true;
+            setVisitedToday(nv);
+            upd('blVisitedToday', nv);
+            if (!dailyComplete && dailyChallenge.id === 'visit3'
+              && Object.keys(nv.habitats).length >= 3) completeDailyChallenge();
+          }
+        }
+        // Make sure the current habitat's timer is running (for direct landings)
+        if (!habitatStartTs[habitatId] && foundCount === 0) {
+          // Defer to avoid setState during render
+          setTimeout(function() {
+            setHabitatStartTs(function(prev) {
+              if (prev[habitatId]) return prev;
+              var hs2 = Object.assign({}, prev); hs2[habitatId] = Date.now();
+              return hs2;
+            });
+          }, 0);
         }
 
-        function handleBirdClick(bird) {
+        function handleBirdClick(bird, source) {
+          // source: 'spotted' (spatial click) | 'hinted' (no-longer-anonymous identify-via-button in accessibility mode)
+          // Default 'spotted' so existing call sites work.
+          var src = source || 'spotted';
           var species = BIRDS[bird.species];
           var habitatFound = Object.assign({}, found); habitatFound[bird.species] = true;
           var nextByHabitat = Object.assign({}, foundByHabitat); nextByHabitat[habitatId] = habitatFound;
           setFoundByHabitat(nextByHabitat);
           upd('foundByHabitat', nextByHabitat);
+          // Track find source — only record FIRST find. A subsequent re-click does not downgrade
+          // a previously-spotted bird to hinted.
+          var foundViaKey = habitatId + ':' + bird.species;
+          var isFirstFind = !foundVia[foundViaKey];
+          if (isFirstFind) {
+            var nextVia = Object.assign({}, foundVia);
+            nextVia[foundViaKey] = src;
+            setFoundVia(nextVia);
+            upd('blFoundVia', nextVia);
+            // Audio: bright ascending chirp on a real spot, quieter beep on direct-identify
+            if (src === 'spotted') chirpSpot();
+            // ── Spotter Streak management ──
+            if (src === 'spotted') {
+              var newStreak = spotStreak + 1;
+              setSpotStreak(newStreak);
+              upd('blSpotStreak', newStreak);
+              // Track personal best
+              if (newStreak > bestStreak) {
+                setBestStreak(newStreak);
+                upd('blBestStreak', newStreak);
+              }
+              // Milestone celebrations
+              if (newStreak === 3) announce('3 in a row spotted! Streak going.');
+              else if (newStreak === 5) {
+                announce('Hot streak — 5 unaided spots in a row!');
+                if (typeof addToast === 'function') addToast('🔥 Hot streak — 5 spotted in a row!', 'success');
+                if (!dailyComplete && dailyChallenge.id === 'spot5') completeDailyChallenge();
+              }
+              else if (newStreak === 10) {
+                announce('Eagle Eye — 10 in a row!');
+                if (typeof addToast === 'function') addToast('🦅 Eagle Eye — 10 spotted in a row!', 'success');
+                if (!dailyComplete && dailyChallenge.id === 'spot10') completeDailyChallenge();
+              }
+              // 'new_lifer' check
+              if (!dailyComplete && dailyChallenge.id === 'new_lifer') {
+                var prevLifeList2 = (d.blLifeList && typeof d.blLifeList === 'object') ? d.blLifeList : {};
+                if (!prevLifeList2[bird.species]) completeDailyChallenge();
+              }
+            } else {
+              // Accessibility-mode direct identify = not a spot. Resets the streak.
+              if (spotStreak > 0) {
+                setSpotStreak(0);
+                upd('blSpotStreak', 0);
+              }
+              if (!habitatHinted[habitatId]) {
+                var nh2 = Object.assign({}, habitatHinted); nh2[habitatId] = true;
+                setHabitatHinted(nh2);
+                upd('blHabitatHinted', nh2);
+              }
+            }
+          }
+          // Clear any active hint pulse — they got the bird, no need to keep pulsing.
+          setHintActive(null);
           setPicked(species);
+          // ── Clean Habitat detection ──
+          // If this find completes the habitat AND no hints have been used in it, it's "clean."
+          // Check AFTER state updates by computing the would-be next found state.
+          var nextHabitatFound = Object.assign({}, found); nextHabitatFound[bird.species] = true;
+          var nextHabitatFoundCount = Object.keys(nextHabitatFound).length;
+          // Allow re-clear if the new attempt is at a HIGHER difficulty than the recorded clear.
+          var existingTier = getCleanTier(habitatId);
+          var newRank = DIFFICULTY_RANK[difficulty] || 0;
+          var existingRank = existingTier ? (DIFFICULTY_RANK[existingTier] || 0) : 0;
+          var wouldBeClean = (nextHabitatFoundCount >= habitat.birds.length)
+            && !habitatHinted[habitatId]
+            && src === 'spotted'
+            && newRank > existingRank;
+          if (wouldBeClean) {
+            var isUpgrade = existingRank > 0;
+            var nc = Object.assign({}, cleanHabitats);
+            nc[habitatId] = { difficulty: difficulty, date: new Date().toISOString() };
+            setCleanHabitats(nc);
+            upd('blCleanHabitats', nc);
+            var medal = DIFFICULTY_MEDAL[difficulty];
+            var tierLabel = DIFFICULTY_TIER_LABEL[difficulty];
+            var actionWord = isUpgrade ? 'upgraded to' : 'cleared on';
+            announce('Clean habitat ' + actionWord + ' ' + tierLabel + ' tier! All ' + habitat.birds.length + ' birds spotted in ' + habitat.name + '.');
+            if (typeof addToast === 'function') addToast(medal + ' ' + tierLabel + ' — ' + habitat.name + ' ' + actionWord + ' ' + tierLabel + ' tier!', 'success');
+            chirpClean();
+            // Record personal best clear time (habitat × difficulty)
+            var startedAt = habitatStartTs[habitatId];
+            if (startedAt) {
+              var elapsed = Math.floor((Date.now() - startedAt) / 1000);
+              var btKey = habitatId + '|' + difficulty;
+              var prev = bestTimes[btKey];
+              if (prev == null || elapsed < prev) {
+                var nbt = Object.assign({}, bestTimes); nbt[btKey] = elapsed;
+                setBestTimes(nbt);
+                upd('blBestTimes', nbt);
+                if (prev != null) announce('New personal best: ' + formatTime(elapsed));
+              }
+              // Reset the timer for this habitat (so a re-run can earn a new PB later)
+              var hsr = Object.assign({}, habitatStartTs); delete hsr[habitatId];
+              setHabitatStartTs(hsr);
+            }
+            // Daily-challenge wins from cleaning
+            if (!dailyComplete && dailyChallenge.id === 'clean_any') completeDailyChallenge();
+            if (!dailyComplete && dailyChallenge.id === 'clean_hard'
+              && (difficulty === 'hard' || difficulty === 'expert')) completeDailyChallenge();
+            // Trigger celebratory overlay; auto-clears after ~3.6s
+            setCleanCelebration({
+              habitatName: habitat.name,
+              birdCount: habitat.birds.length,
+              difficulty: difficulty,
+              medal: medal,
+              tierLabel: tierLabel,
+              isUpgrade: isUpgrade,
+              streak: spotStreak + 1,  // +1 because this find is the one completing it
+              ts: Date.now()
+            });
+            setTimeout(function() { setCleanCelebration(null); }, 3600);
+          }
 
           // ── Life list tracking: detect new lifer + record habitat sighting ──
           // The life list persists across habitats; if a kid spots a chickadee
@@ -3064,6 +3561,115 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             )
           ),
           h('div', { className: 'p-4 max-w-6xl mx-auto space-y-4' },
+            // ── Challenge of the Day ──
+            h('div', { className: 'rounded-2xl border-2 shadow-sm overflow-hidden ' +
+              (dailyComplete ? 'border-emerald-400 bg-gradient-to-r from-emerald-50 to-emerald-100' : 'border-indigo-300 bg-gradient-to-r from-indigo-50 via-fuchsia-50 to-amber-50')
+            },
+              h('div', { className: 'flex items-center gap-3 p-3 flex-wrap' },
+                h('div', { 'aria-hidden': 'true', className: 'flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center text-2xl shadow-md ' +
+                  (dailyComplete ? 'bg-emerald-500 text-white' : 'bg-gradient-to-br from-indigo-500 to-fuchsia-500 text-white')
+                }, dailyComplete ? '✓' : dailyChallenge.icon),
+                h('div', { className: 'flex-1 min-w-0' },
+                  h('div', { className: 'flex items-center gap-2 flex-wrap' },
+                    h('span', { className: 'text-[10px] font-black uppercase tracking-widest ' + (dailyComplete ? 'text-emerald-700' : 'text-indigo-700') },
+                      '🎯 Challenge of the day'),
+                    dailyComplete && h('span', { className: 'text-[10px] font-bold px-2 py-0.5 bg-emerald-200 text-emerald-900 border border-emerald-400 rounded-full' },
+                      '✓ COMPLETE'),
+                    !dailyComplete && h('span', { className: 'text-[10px] font-mono text-indigo-700' }, '+' + dailyChallenge.xp + ' XP')
+                  ),
+                  h('div', { className: 'text-sm font-black text-slate-900 mt-0.5' },
+                    dailyChallenge.title),
+                  h('div', { className: 'text-xs text-slate-700 mt-0.5 leading-snug' },
+                    dailyChallenge.desc),
+                  // 'visit3' shows progress
+                  !dailyComplete && dailyChallenge.id === 'visit3' && h('div', { className: 'text-[10px] text-indigo-700 font-bold mt-1' },
+                    'Visited today: ' + Object.keys(visitedToday.habitats).length + ' / 3')
+                )
+              )
+            ),
+            // ── Personal records summary panel ──
+            (function() {
+              var totalLifers = Object.keys(d.blLifeList || {}).length;
+              var totalHabitats = Object.keys(HABITATS).length;
+              var cleanCount = Object.keys(cleanHabitats).length;
+              var allHabitatsClean = cleanCount >= totalHabitats;
+              // Detect highest tier earned across all habitats AND whether ALL habitats are at that tier
+              var tierCounts = { easy: 0, normal: 0, hard: 0, expert: 0 };
+              Object.keys(cleanHabitats).forEach(function(hid) {
+                var t = getCleanTier(hid);
+                if (t && tierCounts[t] != null) tierCounts[t]++;
+              });
+              var allExpertClean = allHabitatsClean && tierCounts.expert === totalHabitats;
+              var allHardOrBetter = allHabitatsClean && (tierCounts.hard + tierCounts.expert) === totalHabitats;
+              return h('div', { className: 'bg-gradient-to-r from-emerald-50 via-amber-50 to-sky-50 border-2 border-emerald-200 rounded-2xl p-3 shadow-sm' },
+                h('div', { className: 'flex items-center justify-between gap-3 flex-wrap' },
+                  h('div', { className: 'text-[10px] font-black uppercase tracking-widest text-slate-600 flex items-center gap-2 flex-wrap' },
+                    h('span', { 'aria-hidden': 'true' }, '📋'),
+                    h('span', null, 'Personal records'),
+                    // Sound toggle — small unobtrusive button
+                    h('button', {
+                      onClick: function() {
+                        var next = !soundOn;
+                        setSoundOn(next);
+                        upd('blSpotSounds', next);
+                        announce(next ? 'Spot sounds on' : 'Spot sounds off');
+                        if (next) chirpSpot(); // preview when turning on
+                      },
+                      'aria-pressed': soundOn ? 'true' : 'false',
+                      'aria-label': soundOn ? 'Mute spot sounds' : 'Turn on spot sounds',
+                      className: 'text-[10px] px-1.5 py-0.5 rounded border ' + (soundOn ? 'bg-emerald-100 border-emerald-300 text-emerald-800' : 'bg-slate-100 border-slate-300 text-slate-600 opacity-60'),
+                      title: soundOn ? 'Sounds on (click to mute)' : 'Sounds off (click to enable)'
+                    }, soundOn ? '🔊' : '🔇'),
+                    // Spotter's Diary — printable summary
+                    h('button', {
+                      onClick: openSpotterDiary,
+                      'aria-label': 'Open Spotter\'s Diary — printable summary of your achievements',
+                      className: 'text-[10px] px-2 py-0.5 rounded border bg-white border-emerald-300 text-emerald-800 hover:bg-emerald-50 normal-case tracking-normal font-bold focus:outline-none focus:ring-2 ring-emerald-500/40',
+                      title: 'Open your Spotter\'s Diary — print or save a summary'
+                    }, '📔 Diary')
+                  ),
+                  h('div', { className: 'flex items-center gap-3 flex-wrap text-center' },
+                    h('div', { className: 'flex-shrink-0', 'aria-label': 'Lifers: ' + totalLifers + ' unique species' },
+                      h('div', { className: 'text-xl font-black text-emerald-700', 'aria-hidden': 'true' }, totalLifers),
+                      h('div', { className: 'text-[9px] uppercase tracking-wider text-slate-700' }, 'lifers')
+                    ),
+                    h('div', { className: 'w-px h-8 bg-slate-300', 'aria-hidden': 'true' }),
+                    h('div', { className: 'flex-shrink-0', 'aria-label': 'Best streak: ' + bestStreak + ' in a row' },
+                      h('div', { className: 'text-xl font-black ' + (bestStreak >= 10 ? 'text-amber-700' : bestStreak >= 5 ? 'text-orange-700' : 'text-slate-700'), 'aria-hidden': 'true' },
+                        (bestStreak >= 10 ? '🦅 ' : bestStreak >= 5 ? '🔥 ' : '') + bestStreak),
+                      h('div', { className: 'text-[9px] uppercase tracking-wider text-slate-700' }, 'best streak')
+                    ),
+                    h('div', { className: 'w-px h-8 bg-slate-300', 'aria-hidden': 'true' }),
+                    h('div', { className: 'flex-shrink-0', 'aria-label': 'Clean habitats: ' + cleanCount + ' of ' + totalHabitats },
+                      h('div', { className: 'text-xl font-black ' + (allHabitatsClean ? 'text-amber-700' : 'text-slate-700'), 'aria-hidden': 'true' },
+                        (allHabitatsClean ? '🏆 ' : '') + cleanCount + '/' + totalHabitats),
+                      // Mini medal tally — shows distribution of tier achievements
+                      cleanCount > 0 && h('div', { className: 'text-[10px] text-slate-600 mt-0.5', 'aria-hidden': 'true' },
+                        tierCounts.easy   > 0 ? '🥉' + tierCounts.easy + ' ' : '',
+                        tierCounts.normal > 0 ? '🥈' + tierCounts.normal + ' ' : '',
+                        tierCounts.hard   > 0 ? '🥇' + tierCounts.hard + ' ' : '',
+                        tierCounts.expert > 0 ? '👑' + tierCounts.expert : ''
+                      ),
+                      h('div', { className: 'text-[9px] uppercase tracking-wider text-slate-700' }, 'clean habitats')
+                    ),
+                    // Tiered Master Spotter pill — escalates with achievement level
+                    allExpertClean
+                      ? h('div', { className: 'flex-shrink-0 px-3 py-1 bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-300 border-2 border-amber-600 rounded-full text-[10px] font-black uppercase tracking-wider text-amber-900 shadow-md',
+                          'aria-label': 'Grand Master Spotter: all habitats cleared on Expert difficulty'
+                        }, '👑 Grand Master')
+                      : allHardOrBetter
+                        ? h('div', { className: 'flex-shrink-0 px-3 py-1 bg-amber-200 border-2 border-amber-500 rounded-full text-[10px] font-black uppercase tracking-wider text-amber-900',
+                            'aria-label': 'Master Spotter: all habitats cleared on Hard or Expert'
+                          }, '🥇 Master Spotter')
+                        : allHabitatsClean
+                          ? h('div', { className: 'flex-shrink-0 px-3 py-1 bg-emerald-100 border-2 border-emerald-400 rounded-full text-[10px] font-black uppercase tracking-wider text-emerald-900',
+                              'aria-label': 'Spotter: all habitats cleared without hints'
+                            }, '✨ Spotter')
+                          : null
+                  )
+                )
+              );
+            })(),
             // Habitat picker (tab strip)
             h('div', { className: 'bg-white rounded-2xl border-2 border-slate-300 shadow p-3' },
               h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, 'Pick a habitat'),
@@ -3086,34 +3692,145 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     h('span', { className: 'mr-1', 'aria-hidden': true }, habitatIcon),
                     hab.name,
                     h('span', { className: 'ml-2 text-[11px] font-mono ' + (sel ? 'text-emerald-100' : 'text-slate-700') },
-                      hfCount + '/' + hbCount)
+                      hfCount + '/' + hbCount),
+                    (function() {
+                      var tier = getCleanTier(hid);
+                      if (!tier) return null;
+                      return h('span', {
+                        title: 'Clean Habitat — ' + DIFFICULTY_TIER_LABEL[tier] + ' tier (' + DIFFICULTY_LABELS[tier] + ')',
+                        'aria-label': 'Clean Habitat ' + DIFFICULTY_TIER_LABEL[tier] + ' tier',
+                        className: 'ml-1.5 text-[12px]'
+                      }, DIFFICULTY_MEDAL[tier]);
+                    })()
                   );
                 })
               )
             ),
-            // Habitat description + find counter
+            // Habitat description + find counter + streak meter
             h('div', { className: 'bg-emerald-50 border-2 border-emerald-300 rounded-xl p-4 flex items-start justify-between gap-4 flex-wrap' },
               h('div', { className: 'flex-1 min-w-0' },
-                h('h2', { className: 'text-base font-black text-emerald-900 mb-1' }, habitat.name + ' habitat'),
+                h('h2', { className: 'text-base font-black text-emerald-900 mb-1 flex items-center gap-2 flex-wrap' },
+                  habitat.name + ' habitat',
+                  (function() {
+                    var tier = getCleanTier(habitatId);
+                    if (!tier) return null;
+                    return h('span', {
+                      title: 'Cleared without a single hint on ' + DIFFICULTY_LABELS[tier] + ' difficulty',
+                      className: 'inline-flex items-center gap-1 text-[10px] font-black bg-amber-300 text-amber-900 border-2 border-amber-500 px-2 py-0.5 rounded-full uppercase tracking-wider'
+                    }, DIFFICULTY_MEDAL[tier] + ' ' + DIFFICULTY_TIER_LABEL[tier]);
+                  })(),
+                  (function() {
+                    // Personal-best clear-time badge for current difficulty
+                    var pb = getCurrentBest(habitatId, difficulty);
+                    if (pb == null) return null;
+                    return h('span', {
+                      title: 'Your fastest clean clear of ' + habitat.name + ' on ' + DIFFICULTY_LABELS[difficulty],
+                      className: 'inline-flex items-center gap-1 text-[10px] font-black bg-sky-100 text-sky-900 border border-sky-400 px-2 py-0.5 rounded-full uppercase tracking-wider'
+                    }, '⏱️ PB ' + formatTime(pb));
+                  })()
+                ),
                 h('p', { className: 'text-sm text-slate-800' }, habitat.description)
               ),
-              h('div', { className: 'text-center flex-shrink-0' },
-                h('div', { className: 'text-3xl font-black text-emerald-700' }, foundCount + ' / ' + totalBirds),
-                h('div', { className: 'text-[10px] uppercase tracking-wider text-slate-700' }, 'birds found')
+              h('div', { className: 'flex items-center gap-3 flex-wrap justify-end' },
+                // Streak meter
+                h('div', {
+                  className: 'text-center px-3 py-2 rounded-lg border-2 ' +
+                    (spotStreak >= 5 ? 'bg-amber-100 border-amber-400'
+                      : spotStreak >= 3 ? 'bg-orange-100 border-orange-400'
+                      : 'bg-white border-slate-300'),
+                  'aria-label': 'Spotter streak: ' + spotStreak + ' in a row. Personal best ' + bestStreak + '.'
+                },
+                  h('div', { className: 'text-xl font-black ' + (spotStreak >= 5 ? 'text-amber-700' : spotStreak >= 3 ? 'text-orange-700' : 'text-slate-700'),
+                    'aria-hidden': 'true'
+                  }, (spotStreak >= 10 ? '🦅 ' : spotStreak >= 5 ? '🔥 ' : '') + spotStreak),
+                  h('div', { className: 'text-[9px] uppercase tracking-wider text-slate-700', 'aria-hidden': 'true' }, 'streak'),
+                  bestStreak > 0 && h('div', { className: 'text-[9px] text-slate-600 mt-0.5', 'aria-hidden': 'true' }, 'best ' + bestStreak)
+                ),
+                // Find counter
+                h('div', { className: 'text-center flex-shrink-0' },
+                  h('div', { className: 'text-3xl font-black text-emerald-700' }, foundCount + ' / ' + totalBirds),
+                  h('div', { className: 'text-[10px] uppercase tracking-wider text-slate-700' }, 'birds found')
+                )
               )
             ),
             // The habitat scene
             h('div', { className: 'relative bg-white rounded-2xl border-2 border-slate-300 shadow-lg overflow-hidden', style: { aspectRatio: (habitat.width / habitat.height).toString(), minHeight: '300px' } },
+              // ── Clean Habitat celebration overlay (auto-dismiss after ~3.6s) ──
+              cleanCelebration && h('div', {
+                role: 'status',
+                'aria-live': 'assertive',
+                className: 'absolute inset-0 z-50 flex items-center justify-center pointer-events-none overflow-hidden',
+                style: { background: 'radial-gradient(ellipse at center, rgba(254,243,199,0.85) 0%, rgba(254,243,199,0.5) 50%, rgba(255,255,255,0.2) 100%)' }
+              },
+                // ── Confetti burst (16 particles fanning out + falling) ──
+                Array.from({ length: 18 }, function(_, ci) {
+                  // Deterministic-ish spread so it looks like a burst
+                  var angle = (ci / 18) * Math.PI * 2;
+                  var distance = 120 + (ci % 4) * 22;
+                  var dx = Math.cos(angle) * distance;
+                  var dy = Math.sin(angle) * distance + 40; // bias downward for gravity
+                  var colors = ['#fbbf24', '#f87171', '#34d399', '#60a5fa', '#a78bfa', '#fb923c'];
+                  var color = colors[ci % colors.length];
+                  var size = 6 + (ci % 3) * 3;
+                  var rotate = (ci * 47) % 360;
+                  var delay = (ci % 6) * 0.04;
+                  return h('div', {
+                    key: 'cnf-' + ci,
+                    'aria-hidden': 'true',
+                    className: 'birdlab-confetti',
+                    style: {
+                      position: 'absolute',
+                      top: '50%', left: '50%',
+                      width: size + 'px', height: (size * (ci % 2 ? 1 : 1.6)) + 'px',
+                      background: color,
+                      borderRadius: ci % 3 === 0 ? '50%' : '2px',
+                      transform: 'translate(-50%, -50%)',
+                      // Pass per-particle motion via CSS custom properties (read by keyframe)
+                      '--dx': dx + 'px',
+                      '--dy': dy + 'px',
+                      '--rot': rotate + 'deg',
+                      animationDelay: delay + 's'
+                    }
+                  });
+                }),
+                h('div', { className: 'birdlab-clean-celebrate relative bg-white border-4 border-amber-500 rounded-2xl shadow-2xl px-6 py-5 text-center max-w-sm mx-4',
+                  style: { boxShadow: '0 12px 36px rgba(217, 119, 6, 0.45), 0 4px 12px rgba(217, 119, 6, 0.25)' }
+                },
+                  // Spinning gold halo behind the medal
+                  h('div', { 'aria-hidden': 'true', className: 'absolute birdlab-trophy-spin',
+                    style: { top: '-12px', left: '50%', width: '96px', height: '96px', transform: 'translateX(-50%)', borderRadius: '50%', background: 'conic-gradient(from 0deg, #fbbf24, #fde047, #f59e0b, #fbbf24)', filter: 'blur(8px)', opacity: 0.55 }
+                  }),
+                  h('div', { 'aria-hidden': 'true', className: 'text-5xl mb-2 relative', style: { textShadow: '0 4px 12px rgba(217, 119, 6, 0.45)' } },
+                    cleanCelebration.medal || '🏆'),
+                  h('div', { className: 'text-[10px] font-black uppercase tracking-widest text-amber-700 mb-1' },
+                    (cleanCelebration.isUpgrade ? 'TIER UPGRADED — ' : '') + (cleanCelebration.tierLabel || 'Clean') + ' Tier'),
+                  h('div', { className: 'text-xl font-black text-slate-900 mb-1' },
+                    cleanCelebration.habitatName + (cleanCelebration.isUpgrade ? ' re-cleared!' : ' cleared!')),
+                  h('div', { className: 'text-sm text-slate-700 mb-2' },
+                    'All ' + cleanCelebration.birdCount + ' birds spotted ',
+                    h('span', { className: 'font-bold text-amber-700' }, 'without a single hint'),
+                    '.'),
+                  h('div', { className: 'flex items-center justify-center gap-2 text-[11px] font-bold text-slate-600 flex-wrap' },
+                    h('span', { className: 'px-2 py-0.5 bg-amber-100 border border-amber-300 rounded-full' },
+                      DIFFICULTY_LABELS[cleanCelebration.difficulty]),
+                    cleanCelebration.streak >= 3 && h('span', { className: 'px-2 py-0.5 bg-orange-100 border border-orange-300 rounded-full' },
+                      '🔥 ' + cleanCelebration.streak + '-streak')
+                  )
+                )
+              ),
               h('div', {
                 role: 'img',
                 'aria-label': habitatAriaLabel,
                 className: 'relative w-full h-full',
                 style: { background: habitat.bgGradient }
               },
-                // Layered SVG scene — birds and habitat layers stacked in z-order
+                // Layered SVG scene — birds and habitat layers stacked in z-order.
+                // No `pointer-events-none` here: click targets are foreignObject
+                // buttons rendered INSIDE this SVG (see below), so they share the
+                // same viewBox transform as the birds and stay glued to them.
                 h('svg', {
                   viewBox: '0 0 ' + habitat.width + ' ' + habitat.height,
-                  className: 'absolute inset-0 w-full h-full pointer-events-none',
+                  className: 'absolute inset-0 w-full h-full',
                   preserveAspectRatio: 'xMidYMid slice'
                 },
                   // Static habitat layers 0-3
@@ -3124,9 +3841,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     var sp = BIRDS[b.species];
                     return h('g', {
                       key: 'bird2-' + i,
-                      transform: 'translate(' + b.x + ',' + b.y + ') scale(' + b.scale + ')',
-                      className: 'birdlab-' + sp.movement
-                    }, sp.svg(h));
+                      transform: 'translate(' + b.x + ',' + b.y + ') scale(' + b.scale + ')'
+                    },
+                      // Inner <g> carries the CSS animation class so its keyframe
+                      // transforms cannot override the outer position translate.
+                      h('g', { className: 'birdlab-' + sp.movement }, sp.svg(h))
+                    );
                   }),
                   // Habitat layer 3 (midground trees) on top of layer-2 birds
                   habitat.renderLayer(h, 3),
@@ -3135,9 +3855,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     var sp = BIRDS[b.species];
                     return h('g', {
                       key: 'bird3-' + i,
-                      transform: 'translate(' + b.x + ',' + b.y + ') scale(' + b.scale + ')',
-                      className: 'birdlab-' + sp.movement
-                    }, sp.svg(h));
+                      transform: 'translate(' + b.x + ',' + b.y + ') scale(' + b.scale + ')'
+                    },
+                      // Inner <g> carries the CSS animation class so its keyframe
+                      // transforms cannot override the outer position translate.
+                      h('g', { className: 'birdlab-' + sp.movement }, sp.svg(h))
+                    );
                   }),
                   // Habitat layer 4 (foreground trees / ground / foliage)
                   habitat.renderLayer(h, 4),
@@ -3146,39 +3869,107 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     var sp = BIRDS[b.species];
                     return h('g', {
                       key: 'bird4-' + i,
-                      transform: 'translate(' + b.x + ',' + b.y + ') scale(' + b.scale + ')',
-                      className: 'birdlab-' + sp.movement
-                    }, sp.svg(h));
+                      transform: 'translate(' + b.x + ',' + b.y + ') scale(' + b.scale + ')'
+                    },
+                      // Inner <g> carries the CSS animation class so its keyframe
+                      // transforms cannot override the outer position translate.
+                      h('g', { className: 'birdlab-' + sp.movement }, sp.svg(h))
+                    );
                   }),
                   // Birds at layer 5 (highest — soaring raptor)
                   habitat.birds.filter(function(b) { return b.layer === 5; }).map(function(b, i) {
                     var sp = BIRDS[b.species];
                     return h('g', {
                       key: 'bird5-' + i,
-                      transform: 'translate(' + b.x + ',' + b.y + ') scale(' + b.scale + ')',
-                      className: 'birdlab-' + sp.movement
-                    }, sp.svg(h));
+                      transform: 'translate(' + b.x + ',' + b.y + ') scale(' + b.scale + ')'
+                    },
+                      // Inner <g> carries the CSS animation class so its keyframe
+                      // transforms cannot override the outer position translate.
+                      h('g', { className: 'birdlab-' + sp.movement }, sp.svg(h))
+                    );
+                  }),
+                  // ── Hint pulse: a pulsing amber ring on the hinted bird's position ──
+                  // Rendered above all bird layers so it's clearly visible even on
+                  // tightly-clustered birds. Auto-clears 3.5s after triggered.
+                  hintActive && (function() {
+                    var hintedBird = null;
+                    for (var bi = 0; bi < habitat.birds.length; bi++) {
+                      if (habitat.birds[bi].species === hintActive.species) { hintedBird = habitat.birds[bi]; break; }
+                    }
+                    if (!hintedBird) return null;
+                    return h('g', { key: 'hint-pulse', 'aria-hidden': 'true' },
+                      // Outer pulsing ring (animates outward + fades)
+                      h('circle', { cx: hintedBird.x, cy: hintedBird.y, r: 12,
+                        fill: 'none', stroke: '#f59e0b', strokeWidth: 3,
+                        className: 'birdlab-hint-ring' }),
+                      // Static inner dot so the location is always pinned
+                      h('circle', { cx: hintedBird.x, cy: hintedBird.y, r: 6,
+                        fill: '#f59e0b', opacity: 0.85,
+                        stroke: '#fef3c7', strokeWidth: 2 })
+                    );
+                  })(),
+                  // ── Click hotspots — foreignObject buttons positioned in SVG
+                  // viewBox coords so they stay glued to the bird sprites no
+                  // matter how the container aspect ratio shifts (minHeight,
+                  // narrow viewports, sliced preserveAspectRatio). Earlier the
+                  // sibling-div % buttons drifted on narrow screens.
+                  habitat.birds.map(function(b, i) {
+                    var sp = BIRDS[b.species];
+                    var isFound = !!found[b.species];
+                    var yFrac = b.y / habitat.height;
+                    var xFrac = b.x / habitat.width;
+                    var vDesc = yFrac < 0.33 ? 'upper sky' : yFrac < 0.66 ? 'mid scene' : 'ground level';
+                    var hDesc = xFrac < 0.33 ? 'left' : xFrac > 0.66 ? 'right' : 'center';
+                    var areaDesc = vDesc + ', ' + hDesc;
+                    var hitSize = 60; // SVG units — scales with the scene
+                    return h('foreignObject', {
+                      key: 'btn-' + i,
+                      x: b.x - hitSize / 2,
+                      y: b.y - hitSize / 2,
+                      width: hitSize,
+                      height: hitSize,
+                      style: { pointerEvents: 'auto', overflow: 'visible' }
+                    },
+                      h('button', {
+                        onClick: function() { handleBirdClick(b, 'spotted'); },
+                        'aria-label': (isFound
+                          ? 'Identified: ' + sp.name + '. Click to review.'
+                          : 'Bird in ' + areaDesc + ': ' + b.hint + '. Click to identify.'),
+                        className: 'birdlab-bird-btn',
+                        style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }
+                      },
+                        isFound && h('span', {
+                          'aria-hidden': true,
+                          style: { position: 'absolute', top: '-4px', right: '-4px', background: '#059669', color: '#fff', fontSize: '10px', fontWeight: 800, borderRadius: '999px', padding: '2px 5px' }
+                        }, '✓')
+                      )
+                    );
                   })
                 ),
-                // Click hotspots — invisible buttons positioned over each bird (uses % positioning to scale with the SVG)
-                habitat.birds.map(function(b, i) {
-                  var sp = BIRDS[b.species];
-                  var leftPct = (b.x / habitat.width) * 100;
-                  var topPct  = (b.y / habitat.height) * 100;
-                  var isFound = !!found[b.species];
-                  return h('button', {
-                    key: 'btn-' + i,
-                    onClick: function() { handleBirdClick(b); },
-                    'aria-label': (isFound ? 'Identified: ' + sp.name + '. Click to review.' : 'Bird at upper area: ' + b.hint + '. Click to identify.'),
-                    className: 'birdlab-bird-btn',
-                    style: { left: leftPct + '%', top: topPct + '%', width: '40px', height: '40px', transform: 'translate(-50%, -50%)' }
-                  },
-                    isFound && h('span', {
-                      'aria-hidden': true,
-                      style: { position: 'absolute', top: '-4px', right: '-4px', background: '#059669', color: '#fff', fontSize: '10px', fontWeight: 800, borderRadius: '999px', padding: '2px 5px' }
-                    }, '✓')
+                // ── Hint banner: shows above the keyboard alternative when a hint is active ──
+                hintActive && (function() {
+                  var hb = null;
+                  for (var bi = 0; bi < habitat.birds.length; bi++) {
+                    if (habitat.birds[bi].species === hintActive.species) { hb = habitat.birds[bi]; break; }
+                  }
+                  if (!hb) return null;
+                  var sp = BIRDS[hb.species];
+                  return h('div', { 'aria-live': 'polite', className: 'absolute top-2 left-2 right-2 bg-amber-100 border-2 border-amber-400 rounded-lg px-3 py-2 shadow-lg flex items-center gap-3 text-sm font-bold text-amber-900' },
+                    // Bird silhouette so the student knows what shape they're looking for
+                    h('div', { 'aria-hidden': 'true', className: 'flex-shrink-0 bg-white border-2 border-amber-300 rounded-md p-1', style: { width: '48px', height: '48px' } },
+                      h('svg', { viewBox: '0 0 30 30', style: { width: '100%', height: '100%' } },
+                        h('g', { transform: 'translate(2, 2)' }, sp.svg(h))
+                      )
+                    ),
+                    h('span', { className: 'flex-1 leading-snug min-w-0' },
+                      h('span', { className: 'font-black mr-1' }, '💡 Looking for ' + sp.name + ':'),
+                      hb.hint,
+                      h('span', { className: 'block text-[11px] font-normal mt-0.5 text-amber-800' },
+                        '👉 Now find and click it in the scene to identify.')
+                    )
                   );
-                })
+                })(),
+                // (Click hotspots now rendered inside the SVG above as foreignObject buttons)
               )
             ),
             // Info panel for picked bird
@@ -3263,7 +4054,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                       h('span', { className: 'inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-200 text-emerald-900 border border-emerald-400' },
                         '🐾 ' + (picked.movement || '').replace(/-/g, ' ')),
                       h('span', { className: 'inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-200 text-sky-900 border border-sky-400' },
-                        '📍 ' + foundCount + '/' + totalBirds + ' in this habitat')
+                        '📍 ' + foundCount + '/' + totalBirds + ' in this habitat'),
+                      // Find-source tag — spotted in the scene gets a star, hinted gets the lightbulb
+                      (function() {
+                        var src = foundVia[habitatId + ':' + (function() {
+                          // Look up species id by name (picked is the species object, not the placement)
+                          for (var k in BIRDS) { if (BIRDS[k] === picked) return k; }
+                          return '';
+                        })()];
+                        if (src === 'spotted') {
+                          return h('span', { className: 'inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-200 text-amber-900 border border-amber-500',
+                            title: 'You spotted this one in the scene without using a hint button.' },
+                            '🌟 Spotted!');
+                        }
+                        if (src === 'hinted') {
+                          return h('span', { className: 'inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-200 text-slate-700 border border-slate-400',
+                            title: 'Identified via the keyboard-alternative button in accessibility mode.' },
+                            '💡 Hinted');
+                        }
+                        return null;
+                      })()
                     )
                   )
                 )
@@ -3290,25 +4100,95 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 )
               )
             ),
-            // Keyboard alternative — list of birds for tabbing
+            // Birds in this scene — hint mode by default, accessibility toggle for direct ID
             h('div', { className: 'bg-white rounded-2xl border-2 border-slate-300 shadow p-4' },
-              h('div', { className: 'flex items-center justify-between mb-2 flex-wrap gap-2' },
-                h('h3', { className: 'text-sm font-bold uppercase tracking-wider text-slate-700' }, 'Birds in this scene (keyboard alternative)'),
-                h('span', { className: 'text-xs text-slate-700' }, 'Use these buttons if you can\'t use the spatial hotspots above')
+              h('div', { className: 'flex items-center justify-between mb-3 flex-wrap gap-2' },
+                h('h3', { className: 'text-sm font-bold uppercase tracking-wider text-slate-700' },
+                  'Birds in this scene',
+                  hintMode
+                    ? h('span', { className: 'ml-2 text-[10px] font-mono text-amber-700 bg-amber-100 border border-amber-300 px-2 py-0.5 rounded-full normal-case tracking-normal' },
+                        HINT_BUDGET === 0 ? '👑 Expert · 0 hints' : '💡 Hint mode · ' + hintsLeft + '/' + HINT_BUDGET + ' left')
+                    : h('span', { className: 'ml-2 text-[10px] font-mono text-blue-700 bg-blue-100 border border-blue-300 px-2 py-0.5 rounded-full normal-case tracking-normal' },
+                        '♿ Accessibility mode')
+                ),
+                h('button', {
+                  onClick: toggleHintMode,
+                  'aria-pressed': hintMode ? 'false' : 'true',
+                  'aria-label': hintMode ? 'Switch to accessibility mode (direct identify, unlimited)' : 'Switch to hint mode (spotting challenge)',
+                  className: 'text-[11px] font-bold px-2 py-1 rounded-md border-2 transition focus:outline-none focus:ring-2 ring-emerald-500/40 ' +
+                    (hintMode ? 'bg-white text-slate-700 border-slate-300 hover:border-blue-500' : 'bg-blue-50 text-blue-800 border-blue-400')
+                }, hintMode ? '♿ I need direct access' : '💡 Back to hint mode')
               ),
+              // Difficulty selector — only visible in hint mode (accessibility mode is unlimited)
+              hintMode && h('div', { className: 'mb-3 flex items-center gap-2 flex-wrap', role: 'radiogroup', 'aria-label': 'Hint budget difficulty' },
+                h('span', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-600 mr-1' }, 'Difficulty:'),
+                ['easy', 'normal', 'hard', 'expert'].map(function(diffKey) {
+                  var isActive = difficulty === diffKey;
+                  var budget = DIFFICULTY_BUDGETS[diffKey];
+                  return h('button', {
+                    key: diffKey,
+                    role: 'radio',
+                    'aria-checked': isActive ? 'true' : 'false',
+                    onClick: function() {
+                      setDifficulty(diffKey);
+                      upd('blDifficulty', diffKey);
+                      announce('Difficulty: ' + DIFFICULTY_LABELS[diffKey] + '. ' + budget + ' hint' + (budget === 1 ? '' : 's') + ' per habitat.');
+                    },
+                    className: 'text-[10px] font-bold px-2 py-1 rounded-md border-2 transition focus:outline-none focus:ring-2 ring-emerald-500/40 ' +
+                      (isActive ? 'bg-amber-100 text-amber-900 border-amber-500' : 'bg-white text-slate-700 border-slate-300 hover:border-amber-400'),
+                    title: budget + ' hint' + (budget === 1 ? '' : 's') + ' per habitat'
+                  }, DIFFICULTY_LABELS[diffKey], h('span', { className: 'ml-1 text-slate-500 font-mono' }, '(' + budget + ')'));
+                })
+              ),
+              h('p', { className: 'text-[11px] text-slate-700 mb-3 leading-snug' },
+                hintMode
+                  ? h('span', null,
+                      h('strong', { className: 'text-amber-800' }, 'Hint mode: '),
+                      'each button reveals where the bird is — but you still have to find and click it in the scene to identify it. ',
+                      h('strong', null, 'Spotting beats button-clicking.'),
+                      ' If you need direct access, tap the toggle above (unlimited).'
+                    )
+                  : h('span', null,
+                      h('strong', { className: 'text-blue-800' }, 'Accessibility mode: '),
+                      'buttons identify birds directly. Unlimited use.'
+                    )
+              ),
+              hintMode && hintsLeft === 0 && h('div', { 'aria-live': 'polite', className: 'mb-3 p-2 bg-amber-50 border-2 border-amber-300 rounded-lg text-[11px] text-amber-900' },
+                'Out of hints for this habitat. Keep scanning the scene — the birds are there. Or switch to accessibility mode if you need direct identification.'),
               h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2' },
                 habitat.birds.map(function(b, i) {
                   var sp = BIRDS[b.species];
                   var isFound = !!found[b.species];
+                  var btnDisabled = hintMode && !isFound && hintsLeft === 0;
+                  var foundViaThis = foundVia[habitatId + ':' + b.species];
                   return h('button', {
                     key: 'kbd-' + i,
-                    onClick: function() { handleBirdClick(b); },
+                    disabled: btnDisabled,
+                    onClick: function() {
+                      if (isFound) {
+                        // Already found — show the info panel (no double-credit, no hint cost)
+                        setPicked(BIRDS[b.species]);
+                        return;
+                      }
+                      if (hintMode) fireHint(b);
+                      else handleBirdClick(b, 'hinted'); // accessibility direct-identify
+                    },
+                    'aria-label': isFound
+                      ? sp.name + ' — found. Click to review.'
+                      : (hintMode
+                          ? 'Reveal hint for ' + sp.name + (btnDisabled ? ' (no hints remaining)' : '')
+                          : 'Identify ' + sp.name + ' directly'),
                     className: 'text-left p-2 rounded-lg border-2 transition focus:outline-none focus:ring-2 ring-emerald-500/40 ' +
-                      (isFound ? 'bg-emerald-50 border-emerald-400' : 'bg-white border-slate-300 hover:border-emerald-500')
+                      (isFound
+                        ? 'bg-emerald-50 border-emerald-400'
+                        : btnDisabled
+                          ? 'bg-slate-50 border-slate-200 opacity-50 cursor-not-allowed'
+                          : 'bg-white border-slate-300 hover:border-emerald-500')
                   },
                     h('div', { className: 'text-xs font-bold text-slate-800 flex items-center gap-1.5' },
-                      isFound ? h('span', { className: 'text-emerald-700' }, '✓') : h('span', { className: 'text-slate-500' }, '○'),
-                      sp.name
+                      isFound ? h('span', { className: 'text-emerald-700' }, '✓') : h('span', { className: 'text-slate-500' }, hintMode ? '💡' : '○'),
+                      sp.name,
+                      isFound && foundViaThis === 'spotted' && h('span', { 'aria-label': 'Spotted in the scene', title: 'You spotted this one in the scene', className: 'ml-1 text-[10px] text-amber-600' }, '🌟')
                     ),
                     h('div', { className: 'text-[10px] text-slate-700 mt-0.5 italic' }, b.hint)
                   );
@@ -3434,22 +4314,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     opacity: isPicked ? 1 : 0.85,
                     'aria-hidden': true
                   });
+                }),
+                // Hotspot buttons — positioned inside the SVG via foreignObject
+                // so they stay aligned to the visual circles regardless of the
+                // container aspect ratio. Earlier sibling-div % buttons drifted
+                // when minHeight broke the implied aspectRatio on narrow views.
+                fm.hotspots.map(function(hs) {
+                  var hitR = Math.max(hs.r, 18);
+                  return h('foreignObject', {
+                    key: 'btn-' + hs.id,
+                    x: hs.x - hitR,
+                    y: hs.y - hitR,
+                    width: hitR * 2,
+                    height: hitR * 2,
+                    style: { pointerEvents: 'auto', overflow: 'visible' }
+                  },
+                    h('button', {
+                      onClick: function() { pickHotspot(hs); },
+                      'aria-label': hs.label + (hsVisited(hs) ? ' (explored)' : ''),
+                      'aria-pressed': picked && picked.id === hs.id ? 'true' : 'false',
+                      className: 'birdlab-bird-btn',
+                      style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }
+                    })
+                  );
                 })
-              ),
-              // Hotspot buttons (positioned over the SVG using percent-based positioning)
-              fm.hotspots.map(function(hs) {
-                var leftPct = (hs.x / 320) * 100;
-                var topPct  = (hs.y / 240) * 100;
-                var sizePct = (hs.r * 2 / 320) * 100;
-                return h('button', {
-                  key: 'btn-' + hs.id,
-                  onClick: function() { pickHotspot(hs); },
-                  'aria-label': hs.label + (hsVisited(hs) ? ' (explored)' : ''),
-                  'aria-pressed': picked && picked.id === hs.id ? 'true' : 'false',
-                  className: 'birdlab-bird-btn',
-                  style: { left: leftPct + '%', top: topPct + '%', width: sizePct + '%', aspectRatio: '1', transform: 'translate(-50%, -50%)' }
-                });
-              })
+              )
             ),
             // Detail card for picked hotspot — specimen-card layout with zoom inset
             picked && (function() {
@@ -4058,6 +4947,193 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           }, '?')
         );
       }
+
+      // Visual SPECTROGRAM strip — same mnemonic → frequency-vs-time view.
+      // Pairs with songRhythmStrip (which shows only timing): each note is
+      // rendered as a thin horizontal band at its actual pitch, so students
+      // can see the SHAPE of the call (rising? falling? steady? "see-bee"?).
+      // This is how field guides teach call ID — the spectrogram silhouette
+      // is the visual fingerprint. UDL: pairs the audio playback with a
+      // visual representation for learners who decode visuals faster than
+      // sustained audio.
+      // Classify the OVERALL CALL SHAPE from a note list. Returns one of:
+      // 'rising' | 'falling' | 'steady' | 'two-note' | 'trill' | 'complex'.
+      // This is the language real field guides use to describe call patterns;
+      // the spectrogram visualizes it, this descriptor names it.
+      function classifyCallShape(notes) {
+        if (!notes || notes.length === 0) return null;
+        if (notes.length === 1) return 'steady';
+        // Frequency stats
+        var freqs = notes.map(function(n) { return n.freq; });
+        var minF = Math.min.apply(null, freqs);
+        var maxF = Math.max.apply(null, freqs);
+        var range = maxF - minF;
+        var first = notes[0].freq;
+        var last = notes[notes.length - 1].freq;
+        var delta = last - first;
+        // Trill: 4+ short repeating same-freq notes
+        if (notes.length >= 4 && range < 120) {
+          var allShort = notes.every(function(n) { return n.dur < 0.2; });
+          if (allShort) return 'trill';
+        }
+        // Two-note: exactly 2 distinct freqs
+        if (notes.length === 2 && range > 200) return 'two-note';
+        // Steady: range under 150 Hz
+        if (range < 150) return 'steady';
+        // Rising / falling: overall trend strong + monotonic-ish
+        if (Math.abs(delta) > 250) {
+          // Check monotonic-ish: count notes that follow the trend
+          var sign = delta > 0 ? 1 : -1;
+          var followers = 0;
+          for (var i = 1; i < notes.length; i++) {
+            if ((notes[i].freq - notes[i - 1].freq) * sign >= -30) followers++;
+          }
+          if (followers / (notes.length - 1) >= 0.65) {
+            return delta > 0 ? 'rising' : 'falling';
+          }
+        }
+        return 'complex';
+      }
+
+      // Visual SPECTROGRAM strip — same mnemonic → frequency-vs-time view.
+      // v2: includes an animated playhead that sweeps across during playback +
+      // a call-shape descriptor badge that translates the silhouette into the
+      // field-guide language students need to read real bird guides.
+      // `isPlaying` (optional) toggles the playhead sweep animation.
+      function songSpectrogram(mnemonic, color, isPlaying) {
+        if (!mnemonic) return null;
+        var notes = mnemonicToTones(mnemonic);
+        if (!notes.length) return null;
+        var stripColor = color || '#0ea5e9';
+        // Time scale: pixels per second so the strip is comfortable to read.
+        var PX_PER_SEC = 90;
+        var H = 56;
+        var leftPad = 24;  // room for frequency-axis label
+        // Build x-positions in seconds first
+        var tCursor = 0;
+        var noteRects = notes.map(function(n) {
+          var rect = { x0: tCursor, x1: tCursor + n.dur, freq: n.freq, emph: n.emph };
+          tCursor += n.dur + n.gap;
+          return rect;
+        });
+        var totalSec = tCursor;
+        var widthPx = leftPad + Math.max(60, totalSec * PX_PER_SEC);
+        // Frequency range: songbird mid 2300–3500 Hz works for our mnemonic synth.
+        // Pad ±100 Hz so notes don't sit flush against edges.
+        var FMIN = 2200, FMAX = 3500;
+        function freqToY(f) {
+          var clamped = Math.max(FMIN, Math.min(FMAX, f));
+          // Higher freq = top of strip (smaller y)
+          return 4 + (1 - (clamped - FMIN) / (FMAX - FMIN)) * (H - 14);
+        }
+        // Classify the call shape for the descriptor badge
+        var shape = classifyCallShape(notes);
+        var shapeLabels = {
+          rising:    { icon: '↗', text: 'Rising',   bg: '#0e7490', fg: '#cffafe' },
+          falling:   { icon: '↘', text: 'Falling',  bg: '#a16207', fg: '#fef3c7' },
+          steady:    { icon: '→', text: 'Steady',   bg: '#475569', fg: '#e2e8f0' },
+          'two-note':{ icon: '⤴', text: 'Two-note', bg: '#7c3aed', fg: '#ede9fe' },
+          trill:     { icon: '∿', text: 'Trill',    bg: '#be185d', fg: '#fce7f3' },
+          complex:   { icon: '⤳', text: 'Complex',  bg: '#1e40af', fg: '#dbeafe' }
+        };
+        var shapeStyle = shape && shapeLabels[shape];
+
+        // Inject playhead CSS once per page
+        try {
+          if (typeof document !== 'undefined' && !document.getElementById('birdlab-playhead-css')) {
+            var st = document.createElement('style');
+            st.id = 'birdlab-playhead-css';
+            st.textContent =
+              '@keyframes birdlab-playhead-sweep {' +
+              '  0%   { transform: translateX(0); opacity: 0.95; }' +
+              '  98%  { opacity: 0.95; }' +
+              '  100% { transform: translateX(var(--birdlab-sweep-x, 0)); opacity: 0; }' +
+              '}' +
+              '.birdlab-playhead { animation: birdlab-playhead-sweep var(--birdlab-sweep-dur, 2s) linear forwards; }' +
+              '@media (prefers-reduced-motion: reduce) { .birdlab-playhead { animation: none !important; opacity: 0 !important; } }';
+            document.head.appendChild(st);
+          }
+        } catch (e) { /* SSR-safe */ }
+
+        var sweepDistance = (widthPx - leftPad - 2);
+        return h('div', { style: { display: 'flex', flexDirection: 'column', gap: 2 } },
+          h('svg', {
+            viewBox: '0 0 ' + widthPx + ' ' + H,
+            width: '100%',
+            style: { maxWidth: widthPx + 'px', height: H, display: 'block' },
+            'aria-hidden': 'true'
+          },
+            // Spectrogram background panel (dark like a real spectrogram)
+            h('rect', { x: leftPad, y: 2, width: widthPx - leftPad - 2, height: H - 4,
+              rx: 3, fill: '#0f172a', opacity: 0.92 }),
+            // Faint frequency grid lines (3 horizontal divisions)
+            [0.25, 0.5, 0.75].map(function(gp, i) {
+              var y = 4 + gp * (H - 14);
+              return h('line', { key: 'gl' + i,
+                x1: leftPad, x2: widthPx - 2, y1: y, y2: y,
+                stroke: '#334155', strokeWidth: 0.5, strokeDasharray: '2,3' });
+            }),
+            // Frequency-axis labels (just "high"/"low" — kid-friendly)
+            h('text', { x: 2, y: 9, fontSize: 7, fontWeight: 'bold', fill: '#0ea5e9' }, 'high'),
+            h('text', { x: 2, y: H - 6, fontSize: 7, fontWeight: 'bold', fill: '#0ea5e9' }, 'low'),
+            h('text', { x: 2, y: H / 2 + 3, fontSize: 6, fill: '#64748b' }, 'pitch'),
+            // Each note: a thin colored band centered on its frequency.
+            noteRects.map(function(r, i) {
+              var x = leftPad + r.x0 * PX_PER_SEC;
+              var w = Math.max(4, (r.x1 - r.x0) * PX_PER_SEC);
+              var y = freqToY(r.freq);
+              // Color shifts up with emphasis (cyan → amber for emphasized notes)
+              var fill = r.emph ? '#fbbf24' : stripColor;
+              return h('g', { key: 'sp' + i },
+                // Soft glow (wider, fainter)
+                h('rect', { x: x - 0.5, y: y - 3, width: w + 1, height: 9,
+                  rx: 4, fill: fill, opacity: 0.22 }),
+                // Solid band
+                h('rect', { x: x, y: y - 1.5, width: w, height: 4,
+                  rx: 2, fill: fill, opacity: r.emph ? 0.95 : 0.85 })
+              );
+            }),
+            // Animated playhead — vertical line that sweeps across during
+            // playback. Keyed by `isPlaying` so toggling restarts the animation.
+            isPlaying && h('line', {
+              key: 'ph-' + Date.now(),  // forces fresh animation on each play
+              x1: leftPad, y1: 2, x2: leftPad, y2: H - 2,
+              stroke: '#fef9c3', strokeWidth: 1.6,
+              className: 'birdlab-playhead',
+              style: {
+                '--birdlab-sweep-x': sweepDistance + 'px',
+                '--birdlab-sweep-dur': Math.max(0.6, totalSec) + 's'
+              }
+            })
+          ),
+          // Call-shape descriptor — small badge under the strip
+          shapeStyle && h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 } },
+            h('span', { style: { fontSize: 9, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Shape'),
+            h('span', {
+              style: {
+                display: 'inline-flex', alignItems: 'center', gap: 4,
+                padding: '1px 7px', borderRadius: 999,
+                background: shapeStyle.bg, color: shapeStyle.fg,
+                fontSize: 10, fontWeight: 700, letterSpacing: 0.3
+              }
+            },
+              h('span', { 'aria-hidden': true, style: { fontSize: 11 } }, shapeStyle.icon),
+              shapeStyle.text
+            ),
+            h('span', { style: { fontSize: 9, color: '#94a3b8', fontStyle: 'italic' } },
+              ({
+                rising: 'pitch climbs upward',
+                falling: 'pitch drops downward',
+                steady: 'pitch stays level',
+                'two-note': 'two distinct pitches',
+                trill: 'rapid same-pitch repetition',
+                complex: 'mixed pattern'
+              })[shape] || ''
+            )
+          )
+        );
+      }
+
       // ───────────────────────────────────────────────
       // Web Audio "tone sketch" — synthesized whistled
       // rhythms from a mnemonic. Each syllable maps to a
@@ -4463,10 +5539,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                         )
                       ),
                       h('p', { className: 'text-sm text-slate-800 italic mb-1.5' }, c.mnemonic),
-                      // Rhythm strip — visual cadence
+                      // Rhythm strip — visual cadence (time only)
                       h('div', { className: 'flex items-end gap-2 mt-1.5 pt-1.5 border-t border-violet-200' },
                         h('span', { className: 'text-[9px] font-bold uppercase tracking-wider text-violet-700 flex-shrink-0', style: { lineHeight: '22px' } }, 'Rhythm'),
                         h('div', { style: { flex: 1, minWidth: 0 } }, songRhythmStrip(c.mnemonic, '#7c3aed'))
+                      ),
+                      // Spectrogram strip — frequency-vs-time view of the same call.
+                      // Animated playhead sweeps across during playback, pairing
+                      // the audio with the visual silhouette field guides use.
+                      h('div', { className: 'flex items-start gap-2 mt-1.5 pt-1.5 border-t border-violet-100' },
+                        h('span', { className: 'text-[9px] font-bold uppercase tracking-wider text-cyan-700 flex-shrink-0', style: { lineHeight: '14px', paddingTop: 2 } }, 'Spectrogram'),
+                        h('div', { style: { flex: 1, minWidth: 0 } }, songSpectrogram(c.mnemonic, '#22d3ee', isPlaying))
                       ),
                       isPlaying && h('div', { className: 'mt-1 text-[10px] italic text-violet-700', 'aria-live': 'polite' },
                         '🎶 Playing synthesized rhythm — open Merlin Bird ID for the real recording.')

@@ -369,7 +369,7 @@ const StudentQuizOverlay = React.memo(({
   }), " Explanation"), /*#__PURE__*/React.createElement("div", {
     className: "prose prose-sm max-w-none text-slate-700 leading-relaxed whitespace-pre-wrap",
     dangerouslySetInnerHTML: {
-      __html: currentQuestion.factCheck.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br/>')
+      __html: String(currentQuestion.factCheck).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br/>')
     }
   }), showTranslated && currentQuestion.factCheck_en && /*#__PURE__*/React.createElement("div", {
     className: "mt-3 pt-3 border-t border-slate-200"

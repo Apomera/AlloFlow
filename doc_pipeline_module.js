@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -8848,7 +8848,7 @@ window.__pdfCropImage = function(imgId) {
 <main id="main-content" role="main">
 ${bodyContent}
 </main>
-<footer role="contentinfo" style="margin-top:3rem;padding-top:1rem;border-top:1px solid #e2e8f0;font-size:0.75rem;color:#94a3b8;">
+<footer role="contentinfo" style="margin-top:3rem;padding-top:1rem;border-top:1px solid #e2e8f0;font-size:0.75rem;color:#64748b;">
 <p>This document was automatically transformed for accessibility compliance (WCAG 2.1 AA) by AlloFlow. Original: ${(_fileName || 'unknown')} (${pageCount} pages). Transformed: ${new Date().toLocaleDateString()}.</p>
 </footer>
 </body>
@@ -9907,7 +9907,7 @@ h2 { color: #1e3a5f; font-size: 1.15rem; margin-top: 2rem; }
 table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; }
 th { background: #f1f5f9; padding: 8px; border: 1px solid #e2e8f0; text-align: left; font-size: 12px; font-weight: 700; }
 .pass-item { padding: 4px 0; font-size: 13px; color: #16a34a; page-break-inside: avoid; }
-.footer { margin-top: 3rem; padding-top: 1rem; border-top: 2px solid #e2e8f0; font-size: 11px; color: #94a3b8; }
+.footer { margin-top: 3rem; padding-top: 1rem; border-top: 2px solid #e2e8f0; font-size: 11px; color: #64748b; }
 h2, h3 { page-break-after: avoid; }
 table { page-break-inside: auto; }
 tr { page-break-inside: avoid; }
@@ -9927,7 +9927,7 @@ tr { page-break-inside: avoid; }
     if (beforeScore !== null) {
       html += `<div style="display:flex;align-items:center;justify-content:center;gap:24px">
         <div><div class="score-num" style="color:${scoreColor(beforeScore)}">${beforeScore}</div><div class="meta-label">Before</div></div>
-        <div style="font-size:2rem;color:#94a3b8">&rarr;</div>
+        <div style="font-size:2rem;color:#64748b">&rarr;</div>
         <div><div class="score-num" style="color:${typeof score === 'number' ? scoreColor(score) : '#64748b'}">${score}</div><div class="meta-label">After</div></div>
         ${typeof score === 'number' && score > beforeScore ? '<div style="background:#dcfce7;color:#16a34a;padding:4px 12px;border-radius:20px;font-weight:bold;font-size:14px">+' + (score - beforeScore) + '</div>' : ''}
       </div>`;
@@ -9982,8 +9982,8 @@ tr { page-break-inside: avoid; }
       html += `<p style="font-size:11px;color:#6b7280;margin:4px 0 8px">${isBeforeAfter ? 'Checks that passed during the initial AI audit (before remediation)' : 'Checks verified as accessible by the AI auditors'}</p>`;
       issueSource.passes.forEach(p => {
         const text = typeof p === 'string' ? p : p.description || p.id || '';
-        const wcag = typeof p === 'object' && p.wcag ? ` <span style="color:#94a3b8;font-size:0.85em">[${p.wcag}]</span>` : '';
-        const ruleId = typeof p === 'object' && p.id ? ` <span style="color:#94a3b8;font-size:0.85em;font-family:monospace">(${p.id})</span>` : '';
+        const wcag = typeof p === 'object' && p.wcag ? ` <span style="color:#64748b;font-size:0.85em">[${p.wcag}]</span>` : '';
+        const ruleId = typeof p === 'object' && p.id ? ` <span style="color:#64748b;font-size:0.85em;font-family:monospace">(${p.id})</span>` : '';
         html += `<div class="pass-item">&#10003; ${text}${ruleId}${wcag}</div>`;
       });
     }
@@ -12597,7 +12597,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                               : '';
                           // For language-cards mode, the "back" emphasizes translations; the def is collapsed beneath.
                           const backContent = showTranslations
-                              ? `<div style="font-size:0.95em;color:#1e293b;font-weight:600;">${translationsHtml || `<span style="font-style:italic;color:#94a3b8;">(no translations)</span>`}</div><div style="margin-top:8px;font-size:0.8em;color:#64748b;line-height:1.4;">${gItem.def}</div>`
+                              ? `<div style="font-size:0.95em;color:#1e293b;font-weight:600;">${translationsHtml || `<span style="font-style:italic;color:#64748b;">(no translations)</span>`}</div><div style="margin-top:8px;font-size:0.8em;color:#64748b;line-height:1.4;">${gItem.def}</div>`
                               : `<div style="font-size:0.95em;line-height:1.5;color:#1e293b;">${gItem.def}</div>${translationsHtml ? `<div style="margin-top:8px;color:#64748b;">${translationsHtml}</div>` : ''}`;
                           return `
                               <div role="listitem" class="alloflow-glossary-card" data-card-idx="${idx}" style="border:2px dashed #94a3b8; border-radius:12px; overflow:hidden; background:white; break-inside:avoid; page-break-inside:avoid;">
@@ -12606,7 +12606,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                       <strong style="font-size:1.15em; color:#1e293b; line-height:1.3;">${gItem.term}</strong>
                                       ${gItem.term_en && gItem.term_en !== gItem.term ? `<div style="font-size:0.8em; color:#64748b; margin-top:4px;">(${gItem.term_en})</div>` : ''}
                                   </div>
-                                  <div class="alloflow-glossary-card-fold" aria-hidden="true" style="border-top:2px dashed #cbd5e1; padding:3px 0; text-align:center; font-family:monospace; font-size:0.65em; color:#94a3b8; letter-spacing:0.1em; background:#f8fafc;">▼ fold here / click to flip ▼</div>
+                                  <div class="alloflow-glossary-card-fold" aria-hidden="true" style="border-top:2px dashed #cbd5e1; padding:3px 0; text-align:center; font-family:monospace; font-size:0.65em; color:#64748b; letter-spacing:0.1em; background:#f8fafc;">▼ fold here / click to flip ▼</div>
                                   <div class="alloflow-glossary-card-back" style="padding:14px; background:#f8fafc; min-height:90px;">
                                       ${backContent}
                                   </div>
@@ -12645,9 +12645,34 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           const _hideCell = (content) => _glossarySelfTest
               ? `<details class="alloflow-glossary-cell"><summary style="list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:#ecfdf5;color:#065f46;font-size:0.78em;font-weight:600;border:1px solid #6ee7b7;border-radius:9999px;outline-offset:2px;"><span class="alloflow-glossary-caret" aria-hidden="true">▶</span>Reveal</summary><div style="margin-top:6px;">${content}</div></details>`
               : content;
+          // Glossary image size: configurable via cfg.glossaryImageSize.
+          // Small/medium/large/xl map to 40 / 64 / 96 / 140 px square caps.
+          // Medium matches the prior hardcoded 60px so existing exports
+          // visually only shift if the user explicitly opts in.
+          const _glossImgPxMap = { small: 40, medium: 64, large: 96, xl: 140 };
+          const _glossImgPx = _glossImgPxMap[cfg.glossaryImageSize] || _glossImgPxMap.medium;
           return `
-              <div class="section alloflow-glossary-section" id="${item.id}" data-glossary-section="${item.id}" style="border-left:4px solid #059669;border-radius:12px;">
+              <div class="section alloflow-glossary-section" id="${item.id}" data-glossary-section="${item.id}" style="--gloss-img: ${_glossImgPx}px; border-left:4px solid #059669;border-radius:12px;">
                   ${enhancedHeader}
+                  <style>
+                    /* Scoped glossary polish — overrides the global zebra/hover
+                       which rendered as muddy dark-gray over the section card
+                       (rgba alpha let the parent bleed through). Switching to
+                       opaque colors guarantees consistent contrast, and the
+                       hover gets a subtle lift instead of just a color shift. */
+                    .alloflow-glossary-section table { border-collapse: separate; border-spacing: 0; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+                    .alloflow-glossary-section thead tr { background: linear-gradient(180deg, #ecfdf5, #d1fae5) !important; }
+                    .alloflow-glossary-section thead th { color: #047857 !important; border-bottom: 2px solid #6ee7b7 !important; font-size: 0.78rem !important; padding: 0.65rem 1rem !important; }
+                    .alloflow-glossary-section tbody tr { background-color: #ffffff !important; transition: background-color 0.15s ease, box-shadow 0.15s ease; }
+                    .alloflow-glossary-section tbody tr:nth-child(even) { background-color: #f0fdf4 !important; }
+                    .alloflow-glossary-section tbody tr:hover { background-color: #ecfdf5 !important; box-shadow: inset 3px 0 0 #10b981; }
+                    .alloflow-glossary-section tbody td { color: #1e293b !important; padding: 0.7rem 1rem !important; line-height: 1.55 !important; }
+                    .alloflow-glossary-section tbody .gloss-term { font-weight: 700 !important; color: #047857 !important; letter-spacing: -0.01em; }
+                    .alloflow-glossary-section tbody .gloss-img-cell { background: #ffffff !important; }
+                    .alloflow-glossary-section tbody .gloss-img-cell img { width: var(--gloss-img) !important; height: var(--gloss-img) !important; max-width: var(--gloss-img) !important; max-height: var(--gloss-img) !important; object-fit: contain; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.04); transition: transform 0.18s ease, box-shadow 0.18s ease; }
+                    .alloflow-glossary-section tbody tr:hover .gloss-img-cell img { transform: scale(1.08); box-shadow: 0 4px 12px rgba(16,185,129,0.18); }
+                    @media print { .alloflow-glossary-section tbody tr:hover { background-color: inherit !important; box-shadow: none !important; } .alloflow-glossary-section tbody tr:hover .gloss-img-cell img { transform: none; box-shadow: 0 1px 2px rgba(0,0,0,0.04); } }
+                  </style>
                   ${_glossarySelfTest ? `
                     <div class="alloflow-glossary-controls" style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
                         <button type="button" class="alloflow-glossary-reveal-all" data-glossary-target="${item.id}" style="padding:6px 12px;font-size:12px;font-weight:600;background:#ecfdf5;color:#065f46;border:1px solid #6ee7b7;border-radius:9999px;cursor:pointer;">▾ Reveal all</button>
@@ -12655,19 +12680,19 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         <span style="font-size:11px;color:#64748b;font-style:italic;">Self-test: try to recall each definition, then reveal to check.</span>
                     </div>
                   ` : ''}
-                  <table style="border-radius:8px;overflow:hidden;">
-                  <thead><tr style="background:#ecfdf5;">
-                      ${hasAnyImages ? `<th scope="col" style="text-align: center; width: 70px;color:#059669;">${t('output.col_image') || 'Image'}</th>` : ''}
-                      <th scope="col" style="text-align: ${align};color:#059669;">${t('output.col_term')}</th>
-                      <th scope="col" style="text-align: ${align};color:#059669;">${t('output.col_def')}</th>
-                      ${hasAnyTranslations ? `<th scope="col" style="text-align: ${align};color:#059669;">${t('output.col_trans')}</th>` : ''}
+                  <table>
+                  <thead><tr>
+                      ${hasAnyImages ? `<th scope="col" style="text-align: center; width: ${_glossImgPx + 24}px;">${t('output.col_image') || 'Image'}</th>` : ''}
+                      <th scope="col" style="text-align: ${align};">${t('output.col_term')}</th>
+                      <th scope="col" style="text-align: ${align};">${t('output.col_def')}</th>
+                      ${hasAnyTranslations ? `<th scope="col" style="text-align: ${align};">${t('output.col_trans')}</th>` : ''}
                   </tr></thead>
                   <tbody>
                       ${item.data.map(gItem => `
                       <tr>
-                          ${hasAnyImages ? `<td style="text-align: center; vertical-align: middle;">${gItem.image ? `<img loading="lazy" src="${gItem.image}" style="max-width: 60px; max-height: 60px; border-radius: 4px; display: block; margin: 0 auto;" alt="${gItem.term}" />` : ''}</td>` : ''}
+                          ${hasAnyImages ? `<td class="gloss-img-cell" style="text-align: center; vertical-align: middle;">${gItem.image ? `<img loading="lazy" src="${gItem.image}" alt="${gItem.term}" />` : ''}</td>` : ''}
                           <td style="text-align: ${align}">
-                            <strong>${gItem.term}</strong>
+                            <strong class="gloss-term">${gItem.term}</strong>
                           </td>
                           <td style="text-align: ${align}">${_hideCell(gItem.def)}</td>
                           ${hasAnyTranslations ? `<td style="text-align: ${align}">${_hideCell(Object.entries(gItem.translations || {}).map(([k, v]) => `<strong>${k}:</strong> ${v}`).join('<br><br>'))}</td>` : ''}
@@ -12900,7 +12925,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         ${main_en ? `<div style="font-size:1em; color:#64748b; font-style:italic; margin-top:6px;">(${main_en})</div>` : ''}
                         <div style="display:inline-flex; align-items:center; gap:8px; margin-top:10px; font-size:0.7em; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.08em;">
                           <span>${causeLabel}</span>
-                          <span aria-hidden="true" style="color:#94a3b8;">&rarr;</span>
+                          <span aria-hidden="true" style="color:#64748b;">&rarr;</span>
                           <span>${effectLabel}</span>
                         </div>
                       </div>
@@ -13077,7 +13102,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                           <div style="color: #581c87; font-weight: 800; font-size: 0.85em; text-transform: uppercase; letter-spacing: 0.05em;">${branch.title || `Category ${bi + 1}`}</div>
                           ${branch.title_en ? `<div style="font-size: 0.75em; color: #7c3aed; font-style: italic;">(${branch.title_en})</div>` : ''}
                         </div>
-                        <ul style="list-style: none; padding: 12px; margin: 0;">${items || '<li style="font-style: italic; color: #94a3b8; font-size: 0.85em; text-align: center;">No causes</li>'}</ul>
+                        <ul style="list-style: none; padding: 12px; margin: 0;">${items || '<li style="font-style: italic; color: #64748b; font-size: 0.85em; text-align: center;">No causes</li>'}</ul>
                       </div>`;
                   }).join('');
                   innerContent = `
@@ -13403,7 +13428,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               return `
                   <figure class="vp-panel" style="margin:0;background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
                       <div class="vp-image-wrap" style="position:relative;">
-                          ${_imgUrl ? `<img loading="lazy" src="${_vpEsc(_imgUrl)}" alt="${_vpEsc(_cap || 'Panel ' + (idx + 1))}" style="width:100%;height:auto;display:block;" />` : '<div style="padding:32px;text-align:center;color:#94a3b8;">(no image)</div>'}
+                          ${_imgUrl ? `<img loading="lazy" src="${_vpEsc(_imgUrl)}" alt="${_vpEsc(_cap || 'Panel ' + (idx + 1))}" style="width:100%;height:auto;display:block;" />` : '<div style="padding:32px;text-align:center;color:#64748b;">(no image)</div>'}
                           ${_svgHtml}
                           ${_aiLabelHtml}
                           ${_userLabelHtml}
@@ -13430,7 +13455,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   0
               );
           } else {
-              _vpBody = '<p style="text-align:center;color:#94a3b8;font-style:italic;">No visual content.</p>';
+              _vpBody = '<p style="text-align:center;color:#64748b;font-style:italic;">No visual content.</p>';
           }
           return `
               <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
@@ -13681,7 +13706,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                               <summary style="list-style:none;cursor:pointer;padding:14px 16px;display:flex;align-items:flex-start;gap:10px;outline-offset:2px;">
                                   <span aria-hidden="true" style="background:#0891b2;color:white;font-weight:800;font-size:11px;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${i+1}</span>
                                   <h3 style="font-weight:700;color:#0891b2;margin:0;font-size:1em;flex:1;">${faq.question}</h3>
-                                  <span class="alloflow-faq-caret" aria-hidden="true" style="color:#94a3b8;font-size:12px;flex-shrink:0;transition:transform 0.2s;">▼</span>
+                                  <span class="alloflow-faq-caret" aria-hidden="true" style="color:#64748b;font-size:12px;flex-shrink:0;transition:transform 0.2s;">▼</span>
                               </summary>
                               ${faq.question_en ? `<p style="font-size: 0.9em; color: #64748b; margin: 0 16px 8px 50px; font-style: italic;">(${faq.question_en})</p>` : ''}
                               <div class="alloflow-faq-answer" style="padding:0 16px 14px 50px;color:#334155;line-height:1.7;">
@@ -13694,11 +13719,21 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   <style>
                       .alloflow-faq-section summary::-webkit-details-marker { display: none; }
                       .alloflow-faq-section summary::marker { content: ''; }
-                      .alloflow-faq-section details[open] .alloflow-faq-caret { transform: rotate(180deg); }
-                      .alloflow-faq-section summary:focus-visible { outline: 2px solid #0891b2; border-radius: 8px; }
+                      /* Caret rotation + brighter color when expanded so the
+                         disclosure state is obvious without reading the body. */
+                      .alloflow-faq-section .alloflow-faq-caret { color: #64748b; }
+                      .alloflow-faq-section details[open] .alloflow-faq-caret { transform: rotate(180deg); color: #0891b2; }
+                      /* Hover gives a soft cyan tint so students see panels are clickable. */
+                      .alloflow-faq-section details:hover { border-color: #67e8f9; }
+                      .alloflow-faq-section details summary:hover h3 { color: #155e75; }
+                      /* Expanded state: cyan left-bar accent + white background
+                         so an opened answer reads as a distinct, "active" panel. */
+                      .alloflow-faq-section details[open] { background: #ffffff; border-color: #67e8f9; border-left: 3px solid #0891b2; box-shadow: 0 2px 6px rgba(8,145,178,0.10); }
+                      .alloflow-faq-section details[open] summary { padding-bottom: 8px; }
+                      .alloflow-faq-section summary:focus-visible { outline: 2px solid #0891b2; border-radius: 8px; outline-offset: 2px; }
                       @media print {
                           .alloflow-faq-controls { display: none !important; }
-                          .alloflow-faq-section details { border: 1px solid #cbd5e1; }
+                          .alloflow-faq-section details { border: 1px solid #cbd5e1; box-shadow: none !important; }
                           .alloflow-faq-section details > *:not(summary) { display: block !important; }
                           .alloflow-faq-caret { display: none !important; }
                       }
@@ -13772,18 +13807,46 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   </div>
               `;
           }
+          // Brainstorm grid (default mode): give each card a colored top
+          // accent stripe + numbered idea badge so the grid feels as alive
+          // as the mind-map mode (which already uses color-coded spokes).
+          // Cycle through the same 8-color palette the mind-map uses for
+          // visual coherence between the two modes.
+          const _bsColors = ['#dc2626','#2563eb','#059669','#d97706','#7c3aed','#be185d','#0891b2','#ca8a04'];
           return `
-              <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
+              <div class="section alloflow-brainstorm-grid" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
+                  <style>
+                    /* Scoped polish — overrides the global flat .card style
+                       (shadow alpha 0.03, basically invisible). Colored top
+                       stripe + numbered badge + hover lift turns each idea
+                       into a discrete, scannable unit. Print rule removes
+                       hover transforms so paper output stays static. */
+                    .alloflow-brainstorm-grid .grid { gap: 1rem; }
+                    .alloflow-brainstorm-grid .alloflow-bs-card { position: relative; border: 1px solid #e2e8f0; border-top-width: 4px; border-radius: 12px; background: #fff; padding: 1.1rem 1.25rem 1.25rem; box-shadow: 0 1px 3px rgba(15,23,42,0.05); transition: transform 0.18s ease, box-shadow 0.18s ease; break-inside: avoid; page-break-inside: avoid; }
+                    .alloflow-brainstorm-grid .alloflow-bs-card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(15,23,42,0.10); }
+                    .alloflow-brainstorm-grid .alloflow-bs-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 3px 9px; border-radius: 9999px; margin-bottom: 8px; }
+                    .alloflow-brainstorm-grid .alloflow-bs-title { margin: 0 0 10px 0; font-size: 1.05em; font-weight: 700; color: #0f172a; line-height: 1.3; letter-spacing: -0.01em; }
+                    .alloflow-brainstorm-grid .alloflow-bs-row { margin: 6px 0; font-size: 0.92em; line-height: 1.5; color: #334155; }
+                    .alloflow-brainstorm-grid .alloflow-bs-row strong { color: #1e293b; }
+                    .alloflow-brainstorm-grid .alloflow-bs-connection { font-style: italic; color: #475569; }
+                    .alloflow-brainstorm-grid .alloflow-bs-guide { margin-top: 12px; padding: 10px 12px; background: #f8fafc; border-left: 3px solid #cbd5e1; border-radius: 0 6px 6px 0; font-size: 0.88em; color: #334155; line-height: 1.55; }
+                    .alloflow-brainstorm-grid .alloflow-bs-guide strong { color: #1e293b; }
+                    @media print { .alloflow-brainstorm-grid .alloflow-bs-card { transform: none !important; box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important; } }
+                  </style>
                   <div class="grid" role="list">
-                       ${item.data.map(idea => `
-                          <div class="card" role="listitem">
-                              <h3 style="margin:0 0 8px 0;font-size:1em;color:#1e293b">${idea.title}</h3>
-                              <p><strong>Activity:</strong> ${idea.description}</p>
-                              <p style="font-style:italic; color:#666; font-size:0.9em;"><strong>Connection:</strong> ${idea.connection}</p>
-                              ${idea.guide ? `<div style="margin-top:15px; padding-top:15px; border-top:1px dashed #ccc; font-size:0.9em; background:#fafafa; padding:10px; border-radius:4px;"><strong>Step-by-Step Guide:</strong><br/>${parseMarkdownToHTML(idea.guide)}</div>` : ''}
+                       ${item.data.map((idea, _bsIdx) => {
+                          const _bsColor = _bsColors[_bsIdx % _bsColors.length];
+                          return `
+                          <div class="card alloflow-bs-card" role="listitem" style="border-top-color: ${_bsColor};">
+                              <span class="alloflow-bs-badge" style="background: ${_bsColor}1a; color: ${_bsColor};">Idea ${_bsIdx + 1}</span>
+                              <h3 class="alloflow-bs-title">${idea.title}</h3>
+                              <p class="alloflow-bs-row"><strong>Activity:</strong> ${idea.description}</p>
+                              <p class="alloflow-bs-row alloflow-bs-connection"><strong>Connection:</strong> ${idea.connection}</p>
+                              ${idea.guide ? `<div class="alloflow-bs-guide"><strong>Step-by-Step Guide:</strong><br/>${parseMarkdownToHTML(idea.guide)}</div>` : ''}
                           </div>
-                       `).join('')}
+                       `;
+                       }).join('')}
                   </div>
               </div>
           `;
@@ -14058,6 +14121,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           const rawItems = Array.isArray(item.data) ? item.data : (item.data?.items || []);
           const progression = (!Array.isArray(item.data) && item.data?.progressionLabel) || '';
           const timelineMode = cfg.timelineDisplayMode || 'list';
+          // Timeline image size: parallel to cfg.glossaryImageSize. Default
+          // 'medium' = 64px matches the prior hardcoded value so existing
+          // exports look identical until the teacher opts in.
+          const _tlImgPxMap = { small: 48, medium: 64, large: 96, xl: 140 };
+          const _tlImgPx = _tlImgPxMap[cfg.timelineImageSize] || _tlImgPxMap.medium;
           if (timelineMode === 'cuttable-strips' && rawItems.length > 1) {
               // Cuttable chronology strips: shuffled event cards students arrange
               // in order. Answer key on a fresh page so teacher can withhold it.
@@ -14068,17 +14136,17 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   <div class="alloflow-tl-strips" data-tl-section="${item.id}" role="list" aria-label="Timeline events to sequence" style="margin-top:8px;">
                       ${rawItems.map((te, idx) => `
                           <div class="alloflow-tl-strip" data-original-index="${idx}" data-strip-idx="${idx}" role="listitem" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border:2px dashed #94a3b8;border-radius:8px;margin-bottom:10px;background:white;break-inside:avoid;page-break-inside:avoid;">
-                              <div class="alloflow-tl-scissor" style="font-family:monospace;font-size:0.75em;color:#94a3b8;min-width:28px;" aria-hidden="true">✂ ${idx + 1}</div>
+                              <div class="alloflow-tl-scissor" style="font-family:monospace;font-size:0.75em;color:#64748b;min-width:28px;" aria-hidden="true">✂ ${idx + 1}</div>
                               ${_tlInteractive ? `<div class="alloflow-tl-arrows" style="display:flex;flex-direction:column;gap:2px;">
                                   <button type="button" class="alloflow-tl-up" aria-label="Move event up" title="Move up" style="width:24px;height:20px;border:1px solid #cbd5e1;background:#f8fafc;border-radius:4px;cursor:pointer;font-size:11px;line-height:1;color:#475569;padding:0;">▲</button>
                                   <button type="button" class="alloflow-tl-down" aria-label="Move event down" title="Move down" style="width:24px;height:20px;border:1px solid #cbd5e1;background:#f8fafc;border-radius:4px;cursor:pointer;font-size:11px;line-height:1;color:#475569;padding:0;">▼</button>
                               </div>` : ''}
-                              ${te.image ? `<img src="${te.image}" alt="" style="width:60px;height:60px;object-fit:contain;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;flex-shrink:0;" />` : ''}
+                              ${te.image ? `<img src="${te.image}" alt="" style="width:${_tlImgPx}px;height:${_tlImgPx}px;object-fit:contain;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;flex-shrink:0;" />` : ''}
                               <div style="flex:1;font-size:1em;line-height:1.5;color:#1e293b;">
                                   ${te.event}
                                   ${te.event_en ? `<div style="color:#64748b;font-size:0.85em;margin-top:4px;font-style:italic;">${te.event_en}</div>` : ''}
                               </div>
-                              <div style="border:1px solid #cbd5e1;border-radius:6px;padding:6px 10px;font-size:0.75em;color:#94a3b8;text-align:center;min-width:80px;background:#f8fafc;">date:<br/><span style="display:inline-block;border-bottom:1.5px solid #475569;height:1.2em;min-width:60px;margin-top:2px;"></span></div>
+                              <div style="border:1px solid #cbd5e1;border-radius:6px;padding:6px 10px;font-size:0.75em;color:#64748b;text-align:center;min-width:80px;background:#f8fafc;">date:<br/><span style="display:inline-block;border-bottom:1.5px solid #475569;height:1.2em;min-width:60px;margin-top:2px;"></span></div>
                           </div>
                       `).join('')}
                   </div>
@@ -14095,7 +14163,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                           ${rawItems.map((te) => `
                               <li style="margin-bottom:8px;break-inside:avoid;">
                                   <strong style="color:#4338ca;">${te.date}</strong> — ${te.event}
-                                  ${te.event_en ? ` <em style="color:#94a3b8;font-size:0.9em;">(${te.event_en})</em>` : ''}
+                                  ${te.event_en ? ` <em style="color:#64748b;font-size:0.9em;">(${te.event_en})</em>` : ''}
                               </li>
                           `).join('')}
                       </ol>
@@ -14136,7 +14204,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                           <li style="margin-bottom: 20px; position: relative;">
                               <div aria-hidden="true" style="position: absolute; left: -32px; top: 0; width: 16px; height: 16px; background: #4f46e5; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 0 2px #4338ca;"></div>
                               <div style="background: ${i % 2 === 0 ? '#f8fafc' : '#eef2ff'}; border: 1px solid #e2e8f0; padding: 10px; border-radius: 6px; display:flex; gap:12px; align-items:flex-start;">
-                                  ${t.image ? `<img src="${t.image}" alt="${(t.date ? t.date + ': ' : '') + (t.event || '')}" style="width:64px;height:64px;object-fit:contain;border:1px solid #e2e8f0;border-radius:6px;background:white;flex-shrink:0;" />` : ''}
+                                  ${t.image ? `<img src="${t.image}" alt="${(t.date ? t.date + ': ' : '') + (t.event || '')}" style="width:${_tlImgPx}px;height:${_tlImgPx}px;object-fit:contain;border:1px solid #e2e8f0;border-radius:6px;background:white;flex-shrink:0;" />` : ''}
                                   <div style="flex:1;min-width:0;">
                                       <div style="margin-bottom: 4px;">
                                           <span style="display:inline-block;background:#4338ca;color:white;padding:2px 10px;border-radius:999px;font-size:0.8em;font-weight:700;">${t.date}</span>
@@ -14158,6 +14226,10 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           const sortItems = item.data.items || [];
           const catColors = ['#dc2626','#2563eb','#059669','#d97706','#7c3aed','#be185d','#0891b2','#ca8a04'];
           const hasAnyImage = sortItems.some(ci => ci.image);
+          // Concept-sort image size: parallel to glossary/timeline. Default
+          // 'medium' = 80px matches the prior hardcoded value.
+          const _csImgPxMap = { small: 56, medium: 80, large: 110, xl: 150 };
+          const _csImgPx = _csImgPxMap[cfg.conceptSortImageSize] || _csImgPxMap.medium;
 
           const categoryCardsHtml = `
               <div class="alloflow-cs-categories" data-cs-section="${item.id}" style="display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;" role="list" aria-label="Sorting categories">
@@ -14184,11 +14256,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               <div role="list" aria-label="Sortable items" class="alloflow-cs-strips" data-cs-section="${item.id}">
                   ${sortItems.map((ci, idx) => {
                       const imageHtml = ci.image
-                          ? `<div style="flex-shrink: 0; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; background: #f8fafc; border-radius: 6px; overflow: hidden;"><img src="${ci.image}" alt="" style="max-width: 100%; max-height: 100%; object-fit: contain;"/></div>`
+                          ? `<div style="flex-shrink: 0; width: ${_csImgPx}px; height: ${_csImgPx}px; display: flex; align-items: center; justify-content: center; background: #f8fafc; border-radius: 6px; overflow: hidden;"><img src="${ci.image}" alt="" style="max-width: 100%; max-height: 100%; object-fit: contain;"/></div>`
                           : '';
                       return `
                           <div role="listitem" class="alloflow-cs-strip" data-strip-idx="${idx}" data-category-id="${ci.categoryId || ''}" style="display: flex; align-items: center; gap: 14px; padding: 14px 16px; border: 2px dashed #94a3b8; border-radius: 8px; margin-bottom: 10px; background: white; break-inside: avoid; page-break-inside: avoid;">
-                              <div style="font-family: monospace; font-size: 0.75em; color: #94a3b8; min-width: 28px;" aria-hidden="true">✂ ${idx + 1}</div>
+                              <div style="font-family: monospace; font-size: 0.75em; color: #64748b; min-width: 28px;" aria-hidden="true">✂ ${idx + 1}</div>
                               ${imageHtml}
                               <div style="flex: 1; font-size: 1em; line-height: 1.5; color: #1e293b;">${ci.content}</div>
                           </div>
@@ -14270,7 +14342,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       } else if (item.type === 'fluency-record') {
         const { metrics, wordData, audioRecording, mimeType, feedback } = item.data;
         const heatmapHtml = wordData.map(w => {
-            let colorStyle = "color: #94a3b8;";
+            let colorStyle = "color: #64748b;";
             if (w.status === 'correct') colorStyle = "color: #15803d; font-weight: bold;";
             else if (w.status === 'missed') colorStyle = "color: #ef4444; text-decoration: line-through;";
             else if (w.status === 'stumbled') colorStyle = "color: #d97706; border-bottom: 2px dotted #f59e0b;";
@@ -14297,7 +14369,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     <div style="margin-bottom: 20px; background: #f8fafc; padding: 10px; border-radius: 50px; border: 1px solid #e2e8f0;">
                         <audio controls src="data:${mimeType};base64,${audioRecording}" style="width: 100%;"></audio>
                     </div>
-                ` : '<p style="font-style:italic; color: #94a3b8;">No audio recording available.</p>')}
+                ` : '<p style="font-style:italic; color: #64748b;">No audio recording available.</p>')}
                 <!-- AI Feedback -->
                 <div style="background: #fffbeb; padding: 15px; border-radius: 8px; border: 1px solid #fcd34d; margin-bottom: 20px; font-style: italic; color: #92400e;">
                     <strong>AI Feedback:</strong> "${feedback}"
@@ -14901,7 +14973,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           <p style="margin:0 0 12px 0;font-size:1.05rem;color:#166534;font-weight:700;">Done with your work?</p>
           <p style="margin:0 0 16px 0;font-size:0.9rem;color:#475569;">Click below to save an encrypted file with your answers. Send the downloaded file to your teacher.</p>
           <button type="button" id="alloflow-save-submission-btn" style="padding:12px 28px;background:#16a34a;color:white;border:none;border-radius:10px;font-weight:700;font-size:1rem;cursor:pointer;box-shadow:0 2px 6px rgba(22,163,74,0.3);">📝 Save my work</button>
-          <p style="margin:12px 0 0 0;font-size:0.75rem;color:#94a3b8;">🔐 Your responses are encrypted with your class key. Only your teacher can open the file.</p>
+          <p style="margin:12px 0 0 0;font-size:0.75rem;color:#64748b;">🔐 Your responses are encrypted with your class key. Only your teacher can open the file.</p>
         </div>
       ` : '';
       // Click handler — appended inside the existing DOMContentLoaded block.
@@ -15028,8 +15100,13 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
              readers and sighted users can both tell the first column is a
              label, not data. Subtle left accent + slightly heavier text. */
           tbody th[scope="row"] { background: ${theme.cardBg}; font-weight: 600; text-transform: none; letter-spacing: normal; font-size: 0.95rem; color: ${theme.headingColor}; border-left: 3px solid ${theme.accentColor}; text-align: ${textAlign}; }
-          tbody tr:nth-child(even) { background-color: rgba(248,250,252,0.5); }
-          tbody tr:hover { background-color: rgba(241,245,249,0.8); }
+          /* Opaque zebra + hover. The prior rgba(...,0.5/0.8) values let
+             whatever was behind the table bleed through, producing muddy
+             dark-gray rows when a table sat on a darker section card. Pure
+             opaque values guarantee the intended slate-50 / slate-100 read
+             regardless of parent background. */
+          tbody tr:nth-child(even) { background-color: #f8fafc; }
+          tbody tr:hover { background-color: #f1f5f9; }
           /* Cap image height in the interactive view so a tall extracted
              PDF image (e.g. a full-page scan) doesn't push everything else
              off-screen on small displays. Print rules below remove the cap
@@ -15074,7 +15151,10 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           .meta { color: #64748b; font-size: 0.9rem; margin-bottom: 2rem; }
           .tag { display: inline-block; padding: 0.25rem 0.6rem; background: #eef2ff; color: #4f46e5; border-radius: 6px; font-size: 0.8rem; font-weight: 600; margin-right: 0.5rem; }
           .resource-header { padding: 14px 18px; border-radius: 10px 10px 0 0; margin-bottom: 0; font-weight: 800; color: #334155; font-size: 1.05em; letter-spacing: -0.01em; border-bottom: 1px solid rgba(0,0,0,0.06); }
-          .quiz-box { background: #fff; border: 1px solid #e2e8f0; padding: 24px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+          /* Quiz-box: indigo top accent + lifted shadow so quiz/FAQ blocks
+             read as distinct interactive sections rather than blank panels.
+             Matches the visual weight of the brainstorm card refresh. */
+          .quiz-box { background: #fff; border: 1px solid #e2e8f0; border-top: 4px solid #6366f1; padding: 24px; border-radius: 12px; box-shadow: 0 2px 8px rgba(15,23,42,0.06); }
           .question { margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #f1f5f9; }
           .question:last-child { border-bottom: none; margin-bottom: 0; }
           .options { list-style-type: none; padding-left: 0; }
@@ -15102,10 +15182,27 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           .interactive-textarea:focus { outline: 2px solid #6366f1; border-color: #6366f1; }
           .interactive-blank { border: none; border-bottom: 2px solid #cbd5e1; padding: 0 5px; background: transparent; font-family: inherit; width: 150px; transition: border-color 0.2s; font-weight: bold; color: #1e40af; }
           .interactive-blank:focus { border-bottom-color: #4f46e5; outline: none; }
-          .mcq-label { display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 6px; padding: 8px 12px; border-radius: 8px; transition: background-color 0.2s; border: 1px solid transparent; }
-          .mcq-label:hover { background-color: #f1f5f9; border-color: #e2e8f0; }
-          .mcq-label input[type="radio"] { width: 18px; height: 18px; accent-color: #4f46e5; }
-          .reflection-block { margin-bottom: 20px; page-break-inside: avoid; }
+          .mcq-label { display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 6px; padding: 8px 12px; border-radius: 8px; transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s; border: 1px solid transparent; }
+          .mcq-label:hover { background-color: #f1f5f9; border-color: #cbd5e1; }
+          /* Keyboard focus: a visible 2px indigo outline + soft outer ring.
+             Replaces the browser default focus ring (which the radio sometimes
+             eats) so keyboard-only users can see what they're about to pick.
+             WCAG 2.4.7 (Focus Visible). */
+          .mcq-label:focus-within { background-color: #eef2ff; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.18); outline: none; }
+          /* Selected state: the option containing a checked radio gets a
+             persistent indigo accent so students can scan back and see what
+             they already picked. WCAG 1.4.11 (Non-text Contrast). */
+          .mcq-label:has(input[type="radio"]:checked) { background-color: #eef2ff; border-color: #4f46e5; font-weight: 600; }
+          .mcq-label:has(input[type="radio"]:checked)::before { content: "✓"; color: #4f46e5; font-weight: 700; margin-right: 2px; }
+          .mcq-label input[type="radio"] { width: 18px; height: 18px; accent-color: #4f46e5; flex-shrink: 0; }
+          /* Quiz options list: parallel focus-visible state for plain <li>
+             options that don't use the .mcq-label wrapper. */
+          .options li:focus-within { background-color: #eef2ff; outline: 2px solid #6366f1; outline-offset: 1px; }
+          /* Reflection-block accent: subtle indigo left bar so each prompt
+             reads as its own discrete question rather than a loose paragraph.
+             Page-break rule preserved for printability. */
+          .reflection-block { margin-bottom: 20px; padding: 10px 14px 4px; border-left: 3px solid #c7d2fe; background: rgba(238,242,255,0.4); border-radius: 0 8px 8px 0; page-break-inside: avoid; }
+          .reflection-block > p:first-child { color: #3730a3; }
           .worksheet-header { margin-bottom: 40px; padding: 20px; border: 2px solid #e2e8f0; border-radius: 8px; background: #f8fafc; }
           .header-row { display: flex; gap: 30px; }
           .header-item { display: flex; align-items: flex-end; gap: 10px; }
@@ -15189,10 +15286,1230 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           }
           ${theme.extraCSS || ''}
           ${customExportCSS ? `/* Custom AI-generated style */\n${customExportCSS}` : ''}
+
+          /* ═══ Reading Tools toolbar + runtime theme switcher ═══
+             Lets students flip the exported doc between Light / Dark /
+             Sepia / High Contrast at any time, persisted in localStorage.
+             The teacher-chosen exportTheme is the baseline (Light = no
+             override). Print rule hides the toolbar on paper output. */
+          .alloflow-reading-tools { position: sticky; top: 0; z-index: 9999; background: rgba(255,255,255,0.96); border-bottom: 1px solid #e2e8f0; padding: 8px 12px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); font-family: system-ui, -apple-system, sans-serif; font-size: 13px; }
+          .alloflow-reading-tools-group { display: inline-flex; gap: 0; align-items: stretch; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; overflow: hidden; }
+          .alloflow-reading-tools-label { font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; padding: 0 10px; align-self: center; background: #f1f5f9; border-right: 1px solid #cbd5e1; }
+          .alloflow-rt-btn { padding: 6px 12px; font-size: 12px; font-weight: 600; background: transparent; color: #334155; border: 0; border-left: 1px solid #cbd5e1; cursor: pointer; transition: background 0.15s, color 0.15s; font-family: inherit; }
+          .alloflow-rt-btn:first-of-type { border-left: 0; }
+          .alloflow-rt-btn:hover { background: #e2e8f0; }
+          .alloflow-rt-btn[aria-pressed="true"] { background: #4f46e5; color: white; }
+          .alloflow-rt-btn:focus-visible { outline: 2px solid #6366f1; outline-offset: -2px; }
+          @media print { .alloflow-reading-tools { display: none !important; } }
+
+          /* ─── Annotation color pickers (Tier 1 parity with in-app) ─── */
+          .alloflow-anno-colors { display: none; align-items: center; gap: 6px; padding: 6px 12px 8px; border-bottom: 1px solid #e2e8f0; background: #fafbfc; }
+          .alloflow-reading-tools.mode-note .alloflow-anno-colors-note,
+          .alloflow-reading-tools.mode-highlight .alloflow-anno-colors-hl { display: flex; }
+          .alloflow-anno-colors-label { font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; }
+          .alloflow-anno-swatch { width: 22px; height: 22px; border-radius: 6px; cursor: pointer; transition: transform 0.12s; padding: 0; }
+          .alloflow-anno-swatch:hover { transform: scale(1.15); }
+          .alloflow-anno-swatch[aria-pressed="true"] { transform: scale(1.18); box-shadow: 0 0 0 2px #4f46e5; }
+
+          /* ─── Inline note editor (Tier 1: replaces prompt()) ─── */
+          .alloflow-note-editor { position: absolute; min-width: 200px; max-width: 280px; border-radius: 8px; box-shadow: 0 4px 14px rgba(15,23,42,0.18); z-index: 56; font-family: system-ui, -apple-system, sans-serif; pointer-events: auto; }
+          .alloflow-note-editor-header { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 4px 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; border-radius: 6px 6px 0 0; }
+          .alloflow-note-editor-btn { background: rgba(255,255,255,0.75); border: 0; padding: 1px 6px; border-radius: 3px; font-weight: 700; cursor: pointer; font-size: 10px; }
+          .alloflow-note-editor-btn:hover { background: rgba(255,255,255,1); }
+          .alloflow-note-editor textarea { width: 100%; min-height: 60px; padding: 6px 8px; font-size: 12px; resize: vertical; border: 0; background: transparent; outline: none; font-family: inherit; box-sizing: border-box; }
+
+          /* ─── Annotation pulse animation (Phase 5) ─── */
+          @keyframes alloflow-anno-pulse { 0% { transform: scale(0.6); opacity: 1; } 100% { transform: scale(1.8); opacity: 0; } }
+          /* ─── Undo button flash (Tier 2B) ─── */
+          @keyframes alloflow-undo-flash { 0% { background-color: rgba(99,102,241,0.55); transform: scale(0.94); } 60% { background-color: rgba(99,102,241,0.25); } 100% { background-color: transparent; transform: scale(1); } }
+          .alloflow-undo-flash { animation: alloflow-undo-flash 0.45s ease-out; }
+
+          /* ─── Annotation Sidebar (Phase 5 export-side) ─── */
+          .alloflow-anno-sb { position: fixed; top: 64px; right: 12px; width: 300px; max-height: calc(100vh - 100px); background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; box-shadow: 0 8px 24px rgba(15,23,42,0.18); display: flex; flex-direction: column; z-index: 9998; font-family: system-ui, -apple-system, sans-serif; font-size: 13px; color: #1e293b; }
+          .alloflow-anno-sb-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; border-radius: 12px 12px 0 0; }
+          .alloflow-anno-sb-title { font-size: 12px; font-weight: 700; color: #334155; }
+          .alloflow-anno-sb-count { font-weight: 400; color: #94a3b8; }
+          .alloflow-anno-sb-close { background: transparent; border: 0; cursor: pointer; padding: 4px 6px; border-radius: 50%; color: #64748b; font-size: 12px; }
+          .alloflow-anno-sb-close:hover { color: #dc2626; background: #ffffff; }
+          .alloflow-anno-sb-pills { display: flex; gap: 4px; padding: 8px 12px; border-bottom: 1px solid #e2e8f0; }
+          .alloflow-anno-pill { padding: 2px 10px; border-radius: 9999px; border: 0; cursor: pointer; font-size: 10px; font-weight: 700; background: #f1f5f9; color: #475569; transition: background 0.15s, color 0.15s; }
+          .alloflow-anno-pill:hover { background: #e2e8f0; }
+          .alloflow-anno-pill.active { background: #4f46e5; color: white; }
+          .alloflow-anno-sb-list { overflow-y: auto; flex: 1; padding: 4px; }
+          .alloflow-anno-empty { padding: 20px 12px; text-align: center; font-size: 11px; color: #94a3b8; font-style: italic; }
+          .alloflow-anno-item { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; padding: 6px 8px; margin-bottom: 2px; border-radius: 6px; cursor: pointer; transition: background 0.12s; border-left: 2px solid transparent; }
+          .alloflow-anno-item.teacher { background: rgba(238,242,255,0.6); border-left-color: #818cf8; }
+          .alloflow-anno-item.teacher:hover { background: #e0e7ff; }
+          .alloflow-anno-item.student { background: rgba(254,243,199,0.4); border-left-color: #fbbf24; }
+          .alloflow-anno-item.student:hover { background: #fef3c7; }
+          .alloflow-anno-item-body { flex: 1; min-width: 0; }
+          .alloflow-anno-item-text { font-weight: 500; color: #1e293b; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+          .alloflow-anno-item-meta { font-size: 10px; color: #64748b; margin-top: 2px; }
+          .alloflow-anno-item-del { opacity: 0; background: transparent; border: 0; color: #94a3b8; cursor: pointer; padding: 2px 4px; border-radius: 4px; font-size: 11px; }
+          .alloflow-anno-item:hover .alloflow-anno-item-del, .alloflow-anno-item-del:focus { opacity: 1; }
+          .alloflow-anno-item-del:hover { color: #dc2626; background: #ffffff; }
+          @media print { .alloflow-anno-sb { display: none !important; } }
+
+          /* ─── Sidebar dark/sepia/HC overrides ─── */
+          html[data-alloflow-theme="dark"] .alloflow-anno-sb { background: #1e293b; border-color: #334155; color: #e2e8f0; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+          html[data-alloflow-theme="dark"] .alloflow-anno-sb-header { background: #0f172a; border-bottom-color: #334155; }
+          html[data-alloflow-theme="dark"] .alloflow-anno-sb-title { color: #e2e8f0; }
+          html[data-alloflow-theme="dark"] .alloflow-anno-sb-pills { border-bottom-color: #334155; }
+          html[data-alloflow-theme="dark"] .alloflow-anno-pill { background: #334155; color: #cbd5e1; }
+          html[data-alloflow-theme="dark"] .alloflow-anno-pill.active { background: #6366f1; color: white; }
+          html[data-alloflow-theme="dark"] .alloflow-anno-item.teacher { background: rgba(99,102,241,0.18); border-left-color: #818cf8; }
+          html[data-alloflow-theme="dark"] .alloflow-anno-item.teacher:hover { background: rgba(99,102,241,0.28); }
+          html[data-alloflow-theme="dark"] .alloflow-anno-item.student { background: rgba(251,191,36,0.12); border-left-color: #fbbf24; }
+          html[data-alloflow-theme="dark"] .alloflow-anno-item.student:hover { background: rgba(251,191,36,0.20); }
+          html[data-alloflow-theme="dark"] .alloflow-anno-item-text { color: #e2e8f0; }
+          html[data-alloflow-theme="dark"] .alloflow-anno-item-meta { color: #94a3b8; }
+          html[data-alloflow-theme="sepia"] .alloflow-anno-sb { background: #fdf6e3; border-color: #d4c5a0; color: #5b4636; }
+          html[data-alloflow-theme="sepia"] .alloflow-anno-sb-header { background: #f5ecd9; border-bottom-color: #d4c5a0; }
+          html[data-alloflow-theme="sepia"] .alloflow-anno-sb-title { color: #4a3a2a; }
+          html[data-alloflow-theme="hc"] .alloflow-anno-sb { background: #ffffff; border: 2px solid #000000; color: #000000; }
+          html[data-alloflow-theme="hc"] .alloflow-anno-sb-pills .active { background: #000000; color: #ffff00; }
+
+          /* ─── Dark theme ─── */
+          html[data-alloflow-theme="dark"] { color-scheme: dark; background: #0f172a !important; }
+          html[data-alloflow-theme="dark"] body { background: #0f172a !important; color: #e2e8f0 !important; }
+          html[data-alloflow-theme="dark"] h1, html[data-alloflow-theme="dark"] h2, html[data-alloflow-theme="dark"] h3, html[data-alloflow-theme="dark"] h4 { color: #f1f5f9 !important; }
+          html[data-alloflow-theme="dark"] .section { background: #1e293b !important; }
+          html[data-alloflow-theme="dark"] .card, html[data-alloflow-theme="dark"] .quiz-box, html[data-alloflow-theme="dark"] .alloflow-bs-card { background: #1e293b !important; border-color: #334155 !important; color: #e2e8f0 !important; }
+          html[data-alloflow-theme="dark"] .resource-header { color: #e2e8f0 !important; background: #1e293b !important; }
+          html[data-alloflow-theme="dark"] th { background: #1e293b !important; color: #f1f5f9 !important; border-color: #334155 !important; }
+          html[data-alloflow-theme="dark"] td { color: #e2e8f0 !important; border-color: #334155 !important; }
+          html[data-alloflow-theme="dark"] tbody tr { background: #0f172a !important; }
+          html[data-alloflow-theme="dark"] tbody tr:nth-child(even) { background: #1e293b !important; }
+          html[data-alloflow-theme="dark"] tbody tr:hover { background: #334155 !important; }
+          html[data-alloflow-theme="dark"] .interactive-textarea { background: #1e293b !important; color: #e2e8f0 !important; border-color: #475569 !important; background-image: linear-gradient(#334155 1px, transparent 1px) !important; }
+          html[data-alloflow-theme="dark"] .interactive-blank { color: #93c5fd !important; border-bottom-color: #475569 !important; }
+          html[data-alloflow-theme="dark"] .mcq-label { color: #e2e8f0 !important; }
+          html[data-alloflow-theme="dark"] .mcq-label:hover { background: #334155 !important; }
+          html[data-alloflow-theme="dark"] .mcq-label:has(input[type="radio"]:checked) { background: #312e81 !important; border-color: #818cf8 !important; }
+          html[data-alloflow-theme="dark"] .reflection-block { background: rgba(79,70,229,0.12) !important; border-left-color: #6366f1 !important; }
+          html[data-alloflow-theme="dark"] .reflection-block > p:first-child { color: #c7d2fe !important; }
+          html[data-alloflow-theme="dark"] details { background: #1e293b !important; border-color: #334155 !important; color: #e2e8f0 !important; }
+          html[data-alloflow-theme="dark"] details summary, html[data-alloflow-theme="dark"] details summary h3 { color: #93c5fd !important; }
+          html[data-alloflow-theme="dark"] .alloflow-reading-tools { background: rgba(15,23,42,0.96); border-bottom-color: #334155; }
+          html[data-alloflow-theme="dark"] .alloflow-reading-tools-group { background: #1e293b; border-color: #475569; }
+          html[data-alloflow-theme="dark"] .alloflow-reading-tools-label { background: #0f172a; color: #94a3b8; border-right-color: #475569; }
+          html[data-alloflow-theme="dark"] .alloflow-rt-btn { color: #cbd5e1; border-left-color: #475569; }
+          html[data-alloflow-theme="dark"] .alloflow-rt-btn:hover { background: #334155; }
+          html[data-alloflow-theme="dark"] .alloflow-rt-btn[aria-pressed="true"] { background: #6366f1; color: white; }
+          html[data-alloflow-theme="dark"] img { opacity: 0.92; }
+
+          /* ─── Sepia theme (warm, low-glare; popular for dyslexic readers) ─── */
+          html[data-alloflow-theme="sepia"] { background: #f5ecd9 !important; }
+          html[data-alloflow-theme="sepia"] body { background: #f5ecd9 !important; color: #5b4636 !important; }
+          html[data-alloflow-theme="sepia"] h1, html[data-alloflow-theme="sepia"] h2, html[data-alloflow-theme="sepia"] h3, html[data-alloflow-theme="sepia"] h4 { color: #4a3a2a !important; }
+          html[data-alloflow-theme="sepia"] .section, html[data-alloflow-theme="sepia"] .card, html[data-alloflow-theme="sepia"] .quiz-box, html[data-alloflow-theme="sepia"] .alloflow-bs-card { background: #fdf6e3 !important; border-color: #d4c5a0 !important; color: #5b4636 !important; }
+          html[data-alloflow-theme="sepia"] th { background: #ede0c4 !important; color: #4a3a2a !important; }
+          html[data-alloflow-theme="sepia"] td { color: #5b4636 !important; }
+          html[data-alloflow-theme="sepia"] tbody tr { background: #fdf6e3 !important; }
+          html[data-alloflow-theme="sepia"] tbody tr:nth-child(even) { background: #f5ecd9 !important; }
+          html[data-alloflow-theme="sepia"] tbody tr:hover { background: #ede0c4 !important; }
+          html[data-alloflow-theme="sepia"] .interactive-textarea { background: #fdf6e3 !important; color: #5b4636 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-reading-tools { background: rgba(245,236,217,0.96); border-bottom-color: #d4c5a0; }
+          html[data-alloflow-theme="sepia"] .alloflow-reading-tools-group { background: #fdf6e3; border-color: #d4c5a0; }
+          html[data-alloflow-theme="sepia"] .alloflow-reading-tools-label { background: #ede0c4; color: #8b6f4a; border-right-color: #d4c5a0; }
+          html[data-alloflow-theme="sepia"] .alloflow-rt-btn { color: #5b4636; border-left-color: #d4c5a0; }
+          html[data-alloflow-theme="sepia"] .alloflow-rt-btn:hover { background: #ede0c4; }
+          html[data-alloflow-theme="sepia"] .alloflow-rt-btn[aria-pressed="true"] { background: #8b6f4a; color: #fdf6e3; }
+
+          /* ─── High Contrast theme (WCAG AAA target — black/white/blue links) ─── */
+          html[data-alloflow-theme="hc"] { background: #ffffff !important; color: #000000 !important; }
+          html[data-alloflow-theme="hc"] body { background: #ffffff !important; color: #000000 !important; }
+          html[data-alloflow-theme="hc"] h1, html[data-alloflow-theme="hc"] h2, html[data-alloflow-theme="hc"] h3, html[data-alloflow-theme="hc"] h4 { color: #000000 !important; }
+          html[data-alloflow-theme="hc"] .section, html[data-alloflow-theme="hc"] .card, html[data-alloflow-theme="hc"] .quiz-box, html[data-alloflow-theme="hc"] .alloflow-bs-card { background: #ffffff !important; border: 2px solid #000000 !important; color: #000000 !important; }
+          html[data-alloflow-theme="hc"] th { background: #000000 !important; color: #ffffff !important; border: 2px solid #000000 !important; }
+          html[data-alloflow-theme="hc"] td { background: #ffffff !important; color: #000000 !important; border: 2px solid #000000 !important; }
+          html[data-alloflow-theme="hc"] tbody tr { background: #ffffff !important; }
+          html[data-alloflow-theme="hc"] tbody tr:nth-child(even) { background: #ffffff !important; }
+          html[data-alloflow-theme="hc"] tbody tr:hover { background: #ffff00 !important; }
+          html[data-alloflow-theme="hc"] a { color: #0000ee !important; text-decoration: underline !important; }
+          html[data-alloflow-theme="hc"] .interactive-textarea { background: #ffffff !important; color: #000000 !important; border: 2px solid #000000 !important; }
+          html[data-alloflow-theme="hc"] .alloflow-reading-tools-group { background: #ffffff; border: 2px solid #000000; }
+          html[data-alloflow-theme="hc"] .alloflow-rt-btn[aria-pressed="true"] { background: #000000; color: #ffff00; }
         </style>
       </head>
       <body>
         <a href="#main-export-content" class="sr-only" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:100;">Skip to content</a>
+        <div class="alloflow-reading-tools" role="region" aria-label="Reading tools">
+          <div class="alloflow-reading-tools-group" role="group" aria-label="Reading theme">
+            <span class="alloflow-reading-tools-label">Theme</span>
+            <button type="button" class="alloflow-rt-btn" data-rt-theme="light" aria-pressed="true" title="Light (teacher default)">☀ Light</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-theme="dark" aria-pressed="false" title="Dark mode">\u{1F319} Dark</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-theme="sepia" aria-pressed="false" title="Sepia (warm, low-glare)">\u{1F4DC} Sepia</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-theme="hc" aria-pressed="false" title="High Contrast (WCAG AAA)">◼ High Contrast</button>
+          </div>
+          <div class="alloflow-reading-tools-group" role="group" aria-label="Annotations">
+            <span class="alloflow-reading-tools-label">Annotate</span>
+            <button type="button" class="alloflow-rt-btn" data-rt-anno="off" aria-pressed="true" title="Off">✖ Off</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-anno="note" aria-pressed="false" title="Add a sticky note">\u{1F4DD} Note</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-anno="highlight" aria-pressed="false" title="Highlight text">\u{1F58D} Highlight</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-anno="voice" aria-pressed="false" title="Voice note: click to start recording (max 60s, stays on your device)">\u{1F3A4} Voice</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-anno-undo disabled style="opacity:0.4;cursor:not-allowed;" title="Undo last annotation (Ctrl/Cmd+Z)">\u{21A9} Undo</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-anno-clear="mine" title="Clear my notes/highlights (teacher annotations stay)">\u{1F9F9} Mine</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-anno-list aria-pressed="false" title="Show all annotations">\u{1F4CB} List</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-anno-download title="Download my annotations as JSON">\u{2B07} Save mine</button>
+          </div>
+        </div>
+        <div class="alloflow-anno-colors alloflow-anno-colors-note">
+          <span class="alloflow-anno-colors-label">Note color:</span>
+          <button type="button" class="alloflow-anno-swatch" data-rt-note-color="yellow" aria-label="Yellow note" aria-pressed="true" style="background:#fef9c3;border:2px solid #facc15;"></button>
+          <button type="button" class="alloflow-anno-swatch" data-rt-note-color="green" aria-label="Green note" aria-pressed="false" style="background:#dcfce7;border:2px solid #4ade80;"></button>
+          <button type="button" class="alloflow-anno-swatch" data-rt-note-color="blue" aria-label="Blue note" aria-pressed="false" style="background:#dbeafe;border:2px solid #60a5fa;"></button>
+          <button type="button" class="alloflow-anno-swatch" data-rt-note-color="pink" aria-label="Pink note" aria-pressed="false" style="background:#fce7f3;border:2px solid #f472b6;"></button>
+        </div>
+        <div class="alloflow-anno-colors alloflow-anno-colors-hl">
+          <span class="alloflow-anno-colors-label">Highlight color:</span>
+          <button type="button" class="alloflow-anno-swatch" data-rt-hl-color="yellow" aria-label="Yellow highlight" aria-pressed="true" style="background:rgba(250,204,21,0.40);border:2px solid rgba(202,138,4,0.55);"></button>
+          <button type="button" class="alloflow-anno-swatch" data-rt-hl-color="green" aria-label="Green highlight" aria-pressed="false" style="background:rgba(74,222,128,0.38);border:2px solid rgba(22,163,74,0.55);"></button>
+          <button type="button" class="alloflow-anno-swatch" data-rt-hl-color="blue" aria-label="Blue highlight" aria-pressed="false" style="background:rgba(96,165,250,0.36);border:2px solid rgba(37,99,235,0.55);"></button>
+          <button type="button" class="alloflow-anno-swatch" data-rt-hl-color="pink" aria-label="Pink highlight" aria-pressed="false" style="background:rgba(244,114,182,0.36);border:2px solid rgba(219,39,119,0.55);"></button>
+        </div>
+        <script type="application/json" id="alloflow-teacher-annotations">${JSON.stringify(Array.isArray(cfg.annotations) ? cfg.annotations : [])}</script>
+        <script>
+          // Reading Tools — runtime theme switcher.
+          // Applies saved theme (or prefers-color-scheme dark) immediately on
+          // parse so there's no Flash of Unstyled Content. Click handler
+          // attaches via event delegation; light = removeAttribute so the
+          // teacher's exportTheme baseline shines through.
+          (function () {
+            var KEY = 'alloflow-reading-theme';
+            var root = document.documentElement;
+            function setPressed(theme) {
+              var btns = document.querySelectorAll('[data-rt-theme]');
+              for (var i = 0; i < btns.length; i++) {
+                btns[i].setAttribute('aria-pressed', btns[i].getAttribute('data-rt-theme') === theme ? 'true' : 'false');
+              }
+            }
+            function applyTheme(theme, save) {
+              if (!theme || theme === 'light') {
+                root.removeAttribute('data-alloflow-theme');
+                theme = 'light';
+              } else {
+                root.setAttribute('data-alloflow-theme', theme);
+              }
+              setPressed(theme);
+              if (save) { try { localStorage.setItem(KEY, theme); } catch (e) {} }
+            }
+            var initial = null;
+            try { initial = localStorage.getItem(KEY); } catch (e) {}
+            if (!initial && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+              initial = 'dark';
+            }
+            if (initial) applyTheme(initial, false);
+            document.addEventListener('click', function (e) {
+              var btn = e.target && e.target.closest && e.target.closest('[data-rt-theme]');
+              if (!btn) return;
+              applyTheme(btn.getAttribute('data-rt-theme'), true);
+            });
+          })();
+        </script>
+        <script>
+          // ═══ Annotation runtime (Phase 4 export-side) ═══
+          // Renders the teacher's embedded annotations PLUS any annotations
+          // the student has added locally (stored in localStorage keyed on
+          // doc title + body-length hash). Teacher annotations are
+          // read-only (frozen snapshot); student annotations are editable
+          // by the student who placed them. Vanilla JS so the export stays
+          // a single self-contained file — no module fetching needed.
+          (function () {
+            // Storage key — same scheme as the existing interactive-textarea
+            // autosave so different exports don't collide.
+            var docTitle = (document.title || 'doc').slice(0, 40);
+            var bodyLen = (document.body.textContent || '').length;
+            var STORE_KEY = 'alloflow-annotations|' + docTitle + '|' + bodyLen;
+
+            // Load teacher annotations from embedded script tag.
+            var teacherAnno = [];
+            try {
+              var slot = document.getElementById('alloflow-teacher-annotations');
+              if (slot && slot.textContent) {
+                var parsed = JSON.parse(slot.textContent);
+                if (Array.isArray(parsed)) teacherAnno = parsed;
+              }
+            } catch (e) { /* malformed — render none */ }
+
+            // Load student annotations from localStorage.
+            var studentAnno = [];
+            try {
+              var saved = localStorage.getItem(STORE_KEY);
+              if (saved) {
+                var arr = JSON.parse(saved);
+                if (Array.isArray(arr)) studentAnno = arr;
+              }
+            } catch (e) {}
+
+            function saveStudent() {
+              try { localStorage.setItem(STORE_KEY, JSON.stringify(studentAnno)); } catch (e) {}
+            }
+
+            // ── Undo stack (Phase 7b: export-side) ──
+            // Snapshots of studentAnno before each mutation. Ctrl/Cmd+Z
+            // pops the last snapshot. Capped at 20. Session-only — not
+            // persisted, so a reload clears the undo history.
+            var undoStack = [];
+            // 2D: voice audio is bulky base64 (~300KB per minute). Storing
+            // it in every snapshot blows memory fast. Keep a separate
+            // registry keyed by id; snapshots store the annotation envelope
+            // without audioBase64; undo re-attaches from the registry.
+            var voiceAudioRegistry = {};
+            function snapshot() {
+              try {
+                // Refresh the registry from the CURRENT state so any voice
+                // notes recorded since the last snapshot are remembered.
+                studentAnno.forEach(function (a) {
+                  if (a && a.kind === 'voice' && a.audioBase64) {
+                    voiceAudioRegistry[a.id] = {
+                      audioBase64: a.audioBase64,
+                      mimeType: a.mimeType,
+                      durationSec: a.durationSec,
+                    };
+                  }
+                });
+                // Build the lite snapshot — strip audioBase64 from voice notes.
+                var lite = studentAnno.map(function (a) {
+                  if (a && a.kind === 'voice' && a.audioBase64) {
+                    var copy = Object.assign({}, a);
+                    delete copy.audioBase64;
+                    return copy;
+                  }
+                  return a;
+                });
+                undoStack.push(JSON.parse(JSON.stringify(lite)));
+                if (undoStack.length > 20) undoStack.shift();
+                updateUndoBtnState();
+              } catch (e) {}
+            }
+            function performUndo() {
+              // 2E guard: voice recording in flight. Undoing while recording
+              // would orphan the MediaRecorder + leave the overlay stuck.
+              // Better to require an explicit Cancel.
+              if (voiceRec || voicePlaceholder) {
+                showInlineToast('Cancel the active recording before undoing.');
+                return;
+              }
+              if (undoStack.length === 0) return;
+              var prev = undoStack.pop();
+              // 2D: re-attach voice audio from the registry. The snapshot
+              // doesn't carry base64 (memory cost), but the registry holds
+              // every voice clip we've ever seen during this session.
+              prev = prev.map(function (a) {
+                if (a && a.kind === 'voice' && !a.audioBase64 && voiceAudioRegistry[a.id]) {
+                  return Object.assign({}, a, voiceAudioRegistry[a.id]);
+                }
+                return a;
+              });
+              studentAnno = prev;
+              saveStudent();
+              render();
+              if (typeof renderSidebar === 'function') renderSidebar();
+              updateUndoBtnState();
+              // 2B: visual confirmation. Toast + brief button flash.
+              showInlineToast('↩ Undid last annotation');
+              flashUndoButton();
+            }
+
+            // Inline toast for the export (no addToast available). Builds
+            // a one-shot div appended to body that fades after ~2 seconds.
+            // role="status" + aria-live="polite" so screen readers hear it.
+            function showInlineToast(message) {
+              try {
+                var t = document.createElement('div');
+                t.setAttribute('role', 'status');
+                t.setAttribute('aria-live', 'polite');
+                t.textContent = message;
+                t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e293b;color:white;padding:8px 16px;border-radius:9999px;font-size:13px;font-weight:600;font-family:system-ui,sans-serif;box-shadow:0 4px 12px rgba(0,0,0,0.25);z-index:99999;opacity:0;transition:opacity 0.2s;';
+                document.body.appendChild(t);
+                setTimeout(function () { t.style.opacity = '1'; }, 10);
+                setTimeout(function () {
+                  t.style.opacity = '0';
+                  setTimeout(function () { try { t.remove(); } catch (e) {} }, 250);
+                }, 2000);
+              } catch (e) {}
+            }
+            function flashUndoButton() {
+              try {
+                var btn = document.querySelector('[data-rt-anno-undo]');
+                if (!btn) return;
+                btn.classList.remove('alloflow-undo-flash');
+                void btn.offsetWidth;
+                btn.classList.add('alloflow-undo-flash');
+                setTimeout(function () { try { btn.classList.remove('alloflow-undo-flash'); } catch (e) {} }, 500);
+              } catch (e) {}
+            }
+            function updateUndoBtnState() {
+              var btn = document.querySelector('[data-rt-anno-undo]');
+              if (!btn) return;
+              if (undoStack.length === 0) {
+                btn.setAttribute('disabled', 'disabled');
+                btn.style.opacity = '0.4';
+                btn.style.cursor = 'not-allowed';
+              } else {
+                btn.removeAttribute('disabled');
+                btn.style.opacity = '';
+                btn.style.cursor = '';
+              }
+            }
+
+            var MAIN_ID = 'main-export-content';
+            var host = document.getElementById(MAIN_ID);
+            if (!host) return;
+            // Host MUST be position:relative so absolute overlays land
+            // inside it. The export already has main with default static —
+            // promote to relative.
+            try { host.style.position = 'relative'; } catch (e) {}
+
+            // Sticker icons & note/highlight color palettes (mirror the
+            // in-app module so visuals match).
+            var STICKER_ICONS = { star: '⭐', check: '✅', idea: '💡', love: '❤️' };
+            var NOTE_COLORS = {
+              yellow: { fill: '#fef9c3', border: '#facc15', text: '#713f12' },
+              green:  { fill: '#dcfce7', border: '#4ade80', text: '#14532d' },
+              blue:   { fill: '#dbeafe', border: '#60a5fa', text: '#1e3a8a' },
+              pink:   { fill: '#fce7f3', border: '#f472b6', text: '#831843' },
+            };
+            var HL_COLORS = {
+              yellow: { fill: 'rgba(250,204,21,0.40)', border: 'rgba(202,138,4,0.55)' },
+              green:  { fill: 'rgba(74,222,128,0.38)', border: 'rgba(22,163,74,0.55)' },
+              blue:   { fill: 'rgba(96,165,250,0.36)', border: 'rgba(37,99,235,0.55)' },
+              pink:   { fill: 'rgba(244,114,182,0.36)', border: 'rgba(219,39,119,0.55)' },
+            };
+
+            function buildTitle(a) {
+              var parts = [];
+              if (a.author === 'teacher') parts.push('Teacher feedback');
+              else if (a.author === 'student') parts.push(a.authorName || 'You');
+              if (a.createdAt) {
+                try {
+                  var d = new Date(a.createdAt);
+                  if (!isNaN(d.getTime())) parts.push(d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }));
+                } catch (e) {}
+              }
+              return parts.join(' • ');
+            }
+
+            // Attach a drag handler to a DOM element representing an
+            // annotation. Same contract as the in-app version: only fires
+            // when annotation mode is off, only allowed for student-
+            // authored annotations (no editing teacher's frozen feedback
+            // on the export side).
+            function attachDrag(el, a) {
+              if (!el || !a) return;
+              if (a.author !== 'student') return;
+              var movedFlag = { v: false };
+              el.style.cursor = 'grab';
+              el.addEventListener('pointerdown', function (e) {
+                if (mode && mode !== 'off') return; // only in non-creation mode
+                if (e.button !== undefined && e.button !== 0) return;
+                e.preventDefault();
+                e.stopPropagation();
+                el.style.cursor = 'grabbing';
+                movedFlag.v = false;
+                var startCX = e.clientX;
+                var startCY = e.clientY;
+                var startX = a.x;
+                var startY = a.y;
+                function onMv(mv) {
+                  var dx = mv.clientX - startCX;
+                  var dy = mv.clientY - startCY;
+                  if (Math.abs(dx) > 2 || Math.abs(dy) > 2) movedFlag.v = true;
+                  el.style.top = (startY + dy - 14) + 'px';
+                  el.style.left = (startX + dx - 14) + 'px';
+                }
+                function onUp(mv) {
+                  window.removeEventListener('pointermove', onMv);
+                  window.removeEventListener('pointerup', onUp);
+                  el.style.cursor = 'grab';
+                  if (!movedFlag.v) return;
+                  snapshot();
+                  var dx = mv.clientX - startCX;
+                  var dy = mv.clientY - startCY;
+                  // Clamp to host bounds so an annotation can't be dragged
+                  // off the bottom-right and disappear from view.
+                  var sw = host.scrollWidth || host.clientWidth || 999999;
+                  var sh = host.scrollHeight || host.clientHeight || 999999;
+                  var finalX = Math.max(0, Math.min(sw - 14, startX + dx));
+                  var finalY = Math.max(0, Math.min(sh - 14, startY + dy));
+                  studentAnno = studentAnno.map(function (x) {
+                    if (!x || x.id !== a.id) return x;
+                    return Object.assign({}, x, { x: finalX, y: finalY });
+                  });
+                  saveStudent();
+                  render();
+                }
+                window.addEventListener('pointermove', onMv);
+                window.addEventListener('pointerup', onUp);
+              });
+              // Block click-to-expand if a drag just happened.
+              el.addEventListener('click', function (e) {
+                if (movedFlag.v) { e.stopPropagation(); e.preventDefault(); movedFlag.v = false; }
+              }, true);
+            }
+
+            // Render a single annotation into a DOM element. Returns null
+            // if the annotation kind is unrecognized.
+            function renderAnno(a, isTeacher) {
+              if (!a) return null;
+              var kind = a.kind || (a.type && STICKER_ICONS[a.type] ? 'sticker' : null);
+              if (!kind) return null;
+              if (kind === 'sticker') {
+                var el = document.createElement('div');
+                el.className = 'alloflow-anno alloflow-anno-sticker';
+                // pointer-events:auto for student-authored so they can be
+                // dragged; teacher stickers stay non-interactive (frozen).
+                var stickerPe = a.author === 'student' ? 'auto' : 'none';
+                el.style.cssText = 'position:absolute;top:' + (a.y - 15) + 'px;left:' + (a.x - 15) + 'px;font-size:1.8rem;pointer-events:' + stickerPe + ';z-index:50;user-select:none;filter:drop-shadow(0 2px 3px rgba(0,0,0,0.18));touch-action:none;' + (a.author === 'teacher' ? 'border:2px solid rgba(99,102,241,0.7);border-radius:50%;background:rgba(255,255,255,0.85);padding:2px;' : '');
+                el.title = buildTitle(a) || (STICKER_ICONS[a.type] || '');
+                el.textContent = STICKER_ICONS[a.type] || '';
+                attachDrag(el, a);
+                return el;
+              }
+              if (kind === 'note') {
+                // Pending notes: editor is open, skip the bubble.
+                if (a.pending) return null;
+                var palette = NOTE_COLORS[a.color] || NOTE_COLORS.yellow;
+                var note = document.createElement('div');
+                note.className = 'alloflow-anno alloflow-anno-note';
+                note.style.cssText = 'position:absolute;top:' + (a.y - 14) + 'px;left:' + (a.x - 14) + 'px;width:28px;height:28px;background:' + palette.fill + ';border:2px solid ' + palette.border + ';color:' + palette.text + ';border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;z-index:50;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,0.15);';
+                note.textContent = '📝';
+                note.title = (a.content ? '"' + a.content + '" — ' : '') + buildTitle(a);
+                note.setAttribute('role', 'button');
+                note.setAttribute('tabindex', '0');
+                note.setAttribute('aria-label', 'Sticky note: ' + (a.content || '(empty)') + ' from ' + buildTitle(a));
+                note.addEventListener('click', function (e) {
+                  e.stopPropagation();
+                  alert((a.content || '(empty note)') + (buildTitle(a) ? '\n\n— ' + buildTitle(a) : ''));
+                });
+                attachDrag(note, a);
+                return note;
+              }
+              if (kind === 'highlight' && Array.isArray(a.rects)) {
+                var palette2 = HL_COLORS[a.color] || HL_COLORS.yellow;
+                var wrap = document.createElement('div');
+                wrap.className = 'alloflow-anno alloflow-anno-highlight-wrap';
+                wrap.style.cssText = 'position:absolute;top:0;left:0;width:0;height:0;pointer-events:none;';
+                a.rects.forEach(function (r) {
+                  var rect = document.createElement('div');
+                  rect.style.cssText = 'position:absolute;top:' + r.y + 'px;left:' + r.x + 'px;width:' + r.w + 'px;height:' + r.h + 'px;background:' + palette2.fill + ';box-shadow:inset 0 -1px 0 ' + palette2.border + ';border-radius:2px;pointer-events:none;z-index:40;';
+                  rect.title = (a.text ? '"' + a.text.slice(0, 80) + (a.text.length > 80 ? '…' : '') + '" — ' : '') + buildTitle(a);
+                  wrap.appendChild(rect);
+                });
+                return wrap;
+              }
+              if (kind === 'voice') {
+                // Voice notes render as a 🎤 bubble; click expands to an
+                // <audio controls> player. Pending placeholders (no audio
+                // attached) are skipped — they only happen in-app during
+                // active recording, never reach the export.
+                if (!a.audioBase64) return null;
+                var dur = typeof a.durationSec === 'number' ? Math.round(a.durationSec) + 's' : '';
+                var isT = a.author === 'teacher';
+                var accent = isT ? '#6366f1' : '#f59e0b';
+                var voiceWrap = document.createElement('div');
+                voiceWrap.className = 'alloflow-anno alloflow-anno-voice';
+                voiceWrap.style.cssText = 'position:absolute;top:' + (a.y - 14) + 'px;left:' + (a.x - 14) + 'px;z-index:50;';
+                voiceWrap.title = buildTitle(a) + (dur ? ' • ' + dur : '');
+                voiceWrap.setAttribute('role', 'button');
+                voiceWrap.setAttribute('tabindex', '0');
+                voiceWrap.setAttribute('aria-label', 'Voice note from ' + buildTitle(a) + (dur ? ', ' + dur : ''));
+                var collapsed = document.createElement('div');
+                collapsed.style.cssText = 'width:28px;height:28px;background:white;border:2px solid ' + accent + ';color:' + accent + ';border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,0.15);';
+                collapsed.textContent = '🎤';
+                voiceWrap.appendChild(collapsed);
+                // Lazy-create the player on first click so we don't decode
+                // every voice note up-front (could be many on one page).
+                var expanded = null;
+                var open = false;
+                function togglePlayer(e) {
+                  if (e) e.stopPropagation();
+                  if (!open) {
+                    if (!expanded) {
+                      expanded = document.createElement('div');
+                      expanded.style.cssText = 'min-width:240px;max-width:320px;background:white;border:2px solid ' + accent + ';border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);padding:0;';
+                      var hdr = document.createElement('div');
+                      hdr.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:6px;padding:4px 8px;background:' + accent + ';color:white;font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:0.04em;border-radius:6px 6px 0 0;';
+                      hdr.innerHTML = '<span>🎤 ' + (isT ? 'Teacher voice note' : (a.authorName || 'Voice note')) + (dur ? ' • ' + dur : '') + '</span>';
+                      var closeBtn = document.createElement('button');
+                      closeBtn.type = 'button';
+                      closeBtn.textContent = '✓';
+                      closeBtn.style.cssText = 'background:rgba(255,255,255,0.7);border:0;color:' + accent + ';padding:1px 6px;border-radius:3px;font-weight:bold;cursor:pointer;font-size:10px;';
+                      closeBtn.setAttribute('aria-label', 'Close voice note');
+                      closeBtn.addEventListener('click', function (ev) { ev.stopPropagation(); togglePlayer(); });
+                      hdr.appendChild(closeBtn);
+                      expanded.appendChild(hdr);
+                      var audWrap = document.createElement('div');
+                      audWrap.style.cssText = 'padding:6px;';
+                      var aud = document.createElement('audio');
+                      aud.controls = true;
+                      aud.preload = 'metadata';
+                      aud.src = 'data:' + (a.mimeType || 'audio/webm') + ';base64,' + a.audioBase64;
+                      aud.style.cssText = 'width:100%;height:32px;';
+                      audWrap.appendChild(aud);
+                      expanded.appendChild(audWrap);
+                    }
+                    voiceWrap.removeChild(collapsed);
+                    voiceWrap.appendChild(expanded);
+                    open = true;
+                  } else {
+                    voiceWrap.removeChild(expanded);
+                    voiceWrap.appendChild(collapsed);
+                    open = false;
+                  }
+                }
+                collapsed.addEventListener('click', togglePlayer);
+                voiceWrap.addEventListener('keydown', function (ev) {
+                  if ((ev.key === 'Enter' || ev.key === ' ') && !open) {
+                    ev.preventDefault();
+                    togglePlayer(ev);
+                  }
+                });
+                attachDrag(voiceWrap, a);
+                return voiceWrap;
+              }
+              return null;
+            }
+
+            // (Re)render everything. Clears old overlay divs first.
+            function render() {
+              var existing = host.querySelectorAll('.alloflow-anno');
+              for (var i = 0; i < existing.length; i++) existing[i].remove();
+              teacherAnno.concat(studentAnno).forEach(function (a) {
+                var el = renderAnno(a, a && a.author === 'teacher');
+                if (el) host.appendChild(el);
+              });
+            }
+
+            // Annotation mode state (off / note / highlight / voice). Sticker
+            // tool not exposed in export — teachers add stickers in-app;
+            // export is for note/highlight/voice student-side feedback.
+            var mode = 'off';
+            // Student-selected colors for newly placed notes + highlights.
+            // Persisted via localStorage so the choice survives reloads.
+            var noteColor = 'yellow';
+            var hlColor = 'yellow';
+            try {
+              var savedNc = localStorage.getItem('alloflow-anno-note-color');
+              var savedHc = localStorage.getItem('alloflow-anno-hl-color');
+              if (savedNc && ['yellow','green','blue','pink'].indexOf(savedNc) !== -1) noteColor = savedNc;
+              if (savedHc && ['yellow','green','blue','pink'].indexOf(savedHc) !== -1) hlColor = savedHc;
+            } catch (e) {}
+            function applyColorSwatchPressed() {
+              var nBtns = document.querySelectorAll('[data-rt-note-color]');
+              for (var i = 0; i < nBtns.length; i++) {
+                nBtns[i].setAttribute('aria-pressed', nBtns[i].getAttribute('data-rt-note-color') === noteColor ? 'true' : 'false');
+              }
+              var hBtns = document.querySelectorAll('[data-rt-hl-color]');
+              for (var j = 0; j < hBtns.length; j++) {
+                hBtns[j].setAttribute('aria-pressed', hBtns[j].getAttribute('data-rt-hl-color') === hlColor ? 'true' : 'false');
+              }
+            }
+            function setMode(m) {
+              mode = m || 'off';
+              var btns = document.querySelectorAll('[data-rt-anno]');
+              for (var i = 0; i < btns.length; i++) {
+                btns[i].setAttribute('aria-pressed', btns[i].getAttribute('data-rt-anno') === mode ? 'true' : 'false');
+              }
+              // Toggle color picker visibility via class on the toolbar.
+              var bar = document.querySelector('.alloflow-reading-tools');
+              if (bar) {
+                bar.classList.toggle('mode-note', mode === 'note');
+                bar.classList.toggle('mode-highlight', mode === 'highlight');
+              }
+              // Cursor hint on host
+              host.style.cursor = (mode === 'note' || mode === 'voice') ? 'crosshair' : (mode === 'highlight' ? 'text' : '');
+            }
+
+            // ── Voice recording (Phase 6b: export-side) ──
+            // Uses MediaRecorder directly — no module dependency since the
+            // export is a self-contained HTML. Mirrors the in-app voice
+            // flow: click → placeholder + start, then stop or cancel via
+            // a vanilla DOM overlay pinned at the placeholder position.
+            // No network — audio stays in localStorage with every other
+            // student annotation.
+            var VOICE_MAX_SEC = 60;
+            var VOICE_MAX_B64 = 500 * 1024;
+            var voiceRec = null;        // active MediaRecorder
+            var voiceStream = null;     // captured MediaStream (for cleanup)
+            var voiceChunks = [];       // dataavailable chunks
+            var voicePlaceholder = null;// id of the pending annotation
+            var voiceStart = 0;         // ms epoch when recording started
+            var voiceTick = null;       // setInterval handle for elapsed display
+            var voiceCapTimer = null;   // setTimeout handle for the 60s auto-stop
+            var voiceOverlayEl = null;  // recording-UI DOM element
+
+            function buildVoiceOverlay(x, y) {
+              var el = document.createElement('div');
+              el.className = 'alloflow-voice-rec-overlay';
+              el.style.cssText = 'position:absolute;top:' + (y - 14) + 'px;left:' + (x - 14) + 'px;min-width:220px;max-width:280px;background:white;border:2px solid #dc2626;border-radius:8px;box-shadow:0 8px 16px rgba(220,38,38,0.25);z-index:55;font-family:system-ui,-apple-system,sans-serif;';
+              el.innerHTML =
+                '<div style="display:flex;align-items:center;gap:8px;padding:6px 12px;background:#dc2626;color:white;font-size:12px;font-weight:bold;border-radius:6px 6px 0 0;">' +
+                  '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:white;animation:alloflow-anno-pulse 1.2s ease-out infinite;"></span>' +
+                  '<span>RECORDING</span>' +
+                  '<span class="alloflow-voice-elapsed" style="margin-left:auto;font-family:monospace;">0s / ' + VOICE_MAX_SEC + 's</span>' +
+                '</div>' +
+                '<div style="padding:8px 12px;">' +
+                  '<div style="width:100%;height:6px;border-radius:9999px;background:#e2e8f0;overflow:hidden;">' +
+                    '<div class="alloflow-voice-bar" style="height:100%;background:#dc2626;width:0%;transition:width 0.2s;"></div>' +
+                  '</div>' +
+                  '<div style="display:flex;justify-content:flex-end;gap:6px;margin-top:8px;">' +
+                    '<button type="button" data-rt-voice-cancel style="padding:4px 10px;border:0;border-radius:4px;font-size:11px;font-weight:bold;background:#f1f5f9;color:#334155;cursor:pointer;">Cancel</button>' +
+                    '<button type="button" data-rt-voice-stop style="padding:4px 12px;border:0;border-radius:4px;font-size:11px;font-weight:bold;background:#dc2626;color:white;cursor:pointer;display:inline-flex;align-items:center;gap:4px;">' +
+                      '<span style="display:inline-block;width:8px;height:8px;background:white;"></span> Stop' +
+                    '</button>' +
+                  '</div>' +
+                '</div>';
+              return el;
+            }
+
+            function tickVoiceOverlay() {
+              if (!voiceOverlayEl) return;
+              var sec = (Date.now() - voiceStart) / 1000;
+              var pct = Math.min(100, (sec / VOICE_MAX_SEC) * 100);
+              var lbl = voiceOverlayEl.querySelector('.alloflow-voice-elapsed');
+              var bar = voiceOverlayEl.querySelector('.alloflow-voice-bar');
+              if (lbl) lbl.textContent = Math.floor(sec) + 's / ' + VOICE_MAX_SEC + 's';
+              if (bar) bar.style.width = pct + '%';
+            }
+
+            function cleanupVoice() {
+              if (voiceTick) { clearInterval(voiceTick); voiceTick = null; }
+              if (voiceCapTimer) { clearTimeout(voiceCapTimer); voiceCapTimer = null; }
+              if (voiceOverlayEl) { try { voiceOverlayEl.remove(); } catch (e) {} voiceOverlayEl = null; }
+              if (voiceStream) {
+                try { voiceStream.getTracks().forEach(function (t) { t.stop(); }); } catch (e) {}
+                voiceStream = null;
+              }
+              voiceRec = null;
+              voiceChunks = [];
+              voicePlaceholder = null;
+            }
+
+            function startVoiceAt(x, y) {
+              if (voiceRec) return; // already recording
+              if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                alert('Voice recording is not supported in this browser.');
+                return;
+              }
+              snapshot();
+              // Drop a placeholder so a future render can show "recording"
+              // state if needed (we render the overlay independently below).
+              var id = Date.now();
+              voicePlaceholder = id;
+              studentAnno.push({
+                id: id, kind: 'voice', x: x, y: y, pending: true,
+                author: 'student', authorName: '', createdAt: new Date().toISOString(),
+              });
+              saveStudent(); // persist the placeholder so reload-mid-recording doesn't orphan
+              // Build + attach the recording overlay immediately so the
+              // user sees feedback even before mic permission resolves.
+              voiceOverlayEl = buildVoiceOverlay(x, y);
+              host.appendChild(voiceOverlayEl);
+              voiceOverlayEl.addEventListener('click', function (e) { e.stopPropagation(); });
+              navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
+                voiceStream = stream;
+                try {
+                  voiceRec = new MediaRecorder(stream);
+                } catch (e) {
+                  cleanupVoice();
+                  studentAnno = studentAnno.filter(function (a) { return a && a.id !== id; });
+                  saveStudent();
+                  render();
+                  alert('Voice recording is not supported on this device.');
+                  return;
+                }
+                voiceChunks = [];
+                voiceRec.ondataavailable = function (e) { if (e.data && e.data.size > 0) voiceChunks.push(e.data); };
+                voiceRec.start();
+                voiceStart = Date.now();
+                voiceTick = setInterval(tickVoiceOverlay, 250);
+                voiceCapTimer = setTimeout(function () { stopVoiceRecording(); }, VOICE_MAX_SEC * 1000 + 100);
+              }).catch(function (err) {
+                cleanupVoice();
+                studentAnno = studentAnno.filter(function (a) { return a && a.id !== id; });
+                saveStudent();
+                render();
+                alert('Microphone access was denied. Allow microphone access in your browser settings to record voice notes.');
+              });
+            }
+
+            function stopVoiceRecording() {
+              if (!voiceRec) { cleanupVoice(); render(); return; }
+              var elapsedSec = (Date.now() - voiceStart) / 1000;
+              var placeholderId = voicePlaceholder;
+              try {
+                voiceRec.onstop = function () {
+                  var blob = new Blob(voiceChunks, { type: 'audio/webm' });
+                  var reader = new FileReader();
+                  reader.onloadend = function () {
+                    var b64 = (reader.result || '').split(',')[1] || '';
+                    // Size guard — same 500KB cap as in-app.
+                    if (b64.length > VOICE_MAX_B64) {
+                      studentAnno = studentAnno.filter(function (a) { return a && a.id !== placeholderId; });
+                      cleanupVoice();
+                      saveStudent();
+                      render();
+                      alert('Voice note too long to save (over 500KB). Try a shorter clip.');
+                      return;
+                    }
+                    if (!b64) {
+                      // Empty recording — bail.
+                      studentAnno = studentAnno.filter(function (a) { return a && a.id !== placeholderId; });
+                      cleanupVoice();
+                      saveStudent();
+                      render();
+                      alert('Voice recording was empty.');
+                      return;
+                    }
+                    // Attach audio to the placeholder.
+                    studentAnno = studentAnno.map(function (a) {
+                      if (!a || a.id !== placeholderId) return a;
+                      return Object.assign({}, a, {
+                        audioBase64: b64,
+                        mimeType: 'audio/webm',
+                        durationSec: elapsedSec,
+                        pending: false,
+                      });
+                    });
+                    cleanupVoice();
+                    saveStudent();
+                    render();
+                    if (typeof renderSidebar === 'function') renderSidebar();
+                  };
+                  reader.readAsDataURL(blob);
+                };
+                voiceRec.stop();
+              } catch (e) {
+                studentAnno = studentAnno.filter(function (a) { return a && a.id !== placeholderId; });
+                cleanupVoice();
+                saveStudent();
+                render();
+              }
+            }
+
+            function cancelVoiceRecording() {
+              if (!voicePlaceholder) { cleanupVoice(); render(); return; }
+              var placeholderId = voicePlaceholder;
+              try { if (voiceRec && voiceRec.state !== 'inactive') voiceRec.stop(); } catch (e) {}
+              studentAnno = studentAnno.filter(function (a) { return a && a.id !== placeholderId; });
+              cleanupVoice();
+              saveStudent();
+              render();
+            }
+
+            // Inline note editor (replaces prompt()). Builds an absolutely-
+            // positioned editor DOM at click point with header (color +
+            // save/delete) and textarea. Drops a pending annotation up
+            // front so it persists if the user reloads mid-edit; on save
+            // the pending flag clears and the editor is replaced by the
+            // collapsed bubble. Cancel removes the placeholder.
+            function openInlineNoteEditor(x, y) {
+              snapshot();
+              var id = Date.now();
+              var palette = NOTE_COLORS[noteColor] || NOTE_COLORS.yellow;
+              studentAnno.push({
+                id: id, kind: 'note', x: x, y: y,
+                content: '',
+                color: noteColor,
+                pending: true,
+                author: 'student', authorName: '',
+                createdAt: new Date().toISOString(),
+              });
+              saveStudent();
+              // Build editor DOM
+              var editor = document.createElement('div');
+              editor.className = 'alloflow-note-editor alloflow-anno';
+              editor.setAttribute('data-allo-note-editor', String(id));
+              editor.style.top = (y - 14) + 'px';
+              editor.style.left = (x - 14) + 'px';
+              editor.style.background = palette.fill;
+              editor.style.border = '2px solid ' + palette.border;
+              editor.style.color = palette.text;
+              var hdr = document.createElement('div');
+              hdr.className = 'alloflow-note-editor-header';
+              hdr.style.background = palette.border;
+              hdr.style.color = palette.text;
+              hdr.innerHTML = '<span>\u{1F4DD} Your note</span>';
+              var btns = document.createElement('div');
+              btns.style.cssText = 'display:flex;gap:4px;';
+              var saveBtn = document.createElement('button');
+              saveBtn.type = 'button';
+              saveBtn.className = 'alloflow-note-editor-btn';
+              saveBtn.style.color = palette.text;
+              saveBtn.textContent = '✓';
+              saveBtn.setAttribute('aria-label', 'Save note');
+              saveBtn.title = 'Save & close';
+              var delBtn = document.createElement('button');
+              delBtn.type = 'button';
+              delBtn.className = 'alloflow-note-editor-btn';
+              delBtn.style.color = palette.text;
+              delBtn.textContent = '✕';
+              delBtn.setAttribute('aria-label', 'Delete note');
+              delBtn.title = 'Delete';
+              btns.appendChild(saveBtn);
+              btns.appendChild(delBtn);
+              hdr.appendChild(btns);
+              editor.appendChild(hdr);
+              var ta = document.createElement('textarea');
+              ta.placeholder = 'Type your note…';
+              ta.setAttribute('aria-label', 'Note content');
+              ta.style.color = palette.text;
+              editor.appendChild(ta);
+              // Stop click propagation so clicks inside editor don't drop a new note
+              editor.addEventListener('click', function (e) { e.stopPropagation(); });
+              host.appendChild(editor);
+              setTimeout(function () { try { ta.focus(); } catch (e) {} }, 0);
+              function commit() {
+                var content = (ta.value || '').trim();
+                if (!content) {
+                  // Empty save = cancel (don't keep empty placeholders).
+                  studentAnno = studentAnno.filter(function (a) { return a && a.id !== id; });
+                } else {
+                  studentAnno = studentAnno.map(function (a) {
+                    if (!a || a.id !== id) return a;
+                    return Object.assign({}, a, { content: content, pending: false });
+                  });
+                }
+                saveStudent();
+                try { editor.remove(); } catch (e) {}
+                render();
+                if (typeof renderSidebar === 'function') renderSidebar();
+              }
+              function cancelEdit() {
+                studentAnno = studentAnno.filter(function (a) { return a && a.id !== id; });
+                saveStudent();
+                try { editor.remove(); } catch (e) {}
+                render();
+              }
+              saveBtn.addEventListener('click', commit);
+              delBtn.addEventListener('click', cancelEdit);
+              // Save on blur so clicking elsewhere still captures the note
+              // (matching the in-app NoteBubble behavior).
+              ta.addEventListener('blur', function () {
+                // Defer so the save/delete button click can fire first
+                setTimeout(function () {
+                  if (!document.body.contains(editor)) return;
+                  commit();
+                }, 100);
+              });
+              // Escape cancels, Ctrl/Cmd+Enter saves.
+              ta.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') { e.preventDefault(); cancelEdit(); }
+                else if ((e.key === 'Enter') && (e.ctrlKey || e.metaKey)) { e.preventDefault(); commit(); }
+              });
+            }
+
+            // Click-to-place note handler (also handles voice mode below).
+            host.addEventListener('click', function (e) {
+              if (!e.target || e.target.closest('.alloflow-anno') || e.target.closest('.alloflow-voice-rec-overlay') || e.target.closest('button') || e.target.closest('input') || e.target.closest('textarea')) return;
+              var rect = host.getBoundingClientRect();
+              var x = e.clientX - rect.left + (host.scrollLeft || 0);
+              var y = e.clientY - rect.top + (host.scrollTop || 0);
+              if (mode === 'voice') {
+                startVoiceAt(x, y);
+                return;
+              }
+              if (mode !== 'note') return;
+              openInlineNoteEditor(x, y);
+            });
+
+            // Mouseup-on-selection handler for highlight mode.
+            host.addEventListener('mouseup', function () {
+              if (mode !== 'highlight') return;
+              var sel = window.getSelection && window.getSelection();
+              if (!sel || sel.isCollapsed || sel.rangeCount === 0) return;
+              var text = (sel.toString() || '').trim();
+              if (!text) return;
+              var range = sel.getRangeAt(0);
+              var anchor = range.commonAncestorContainer;
+              var anchorEl = anchor && (anchor.nodeType === 1 ? anchor : anchor.parentNode);
+              if (!anchorEl || !host.contains(anchorEl)) return;
+              var crs = range.getClientRects();
+              if (!crs || crs.length === 0) return;
+              var hostRect = host.getBoundingClientRect();
+              var rects = [];
+              for (var i = 0; i < crs.length; i++) {
+                var cr = crs[i];
+                if (cr.width <= 1 || cr.height <= 1) continue;
+                rects.push({
+                  x: Math.round(cr.left - hostRect.left + (host.scrollLeft || 0)),
+                  y: Math.round(cr.top - hostRect.top + (host.scrollTop || 0)),
+                  w: Math.round(cr.width),
+                  h: Math.round(cr.height),
+                });
+              }
+              if (rects.length === 0) return;
+              snapshot();
+              studentAnno.push({
+                id: Date.now(),
+                kind: 'highlight',
+                rects: rects,
+                text: text.slice(0, 500),
+                color: hlColor,
+                author: 'student',
+                authorName: '',
+                createdAt: new Date().toISOString(),
+              });
+              try { sel.removeAllRanges(); } catch (e) {}
+              saveStudent();
+              render();
+            });
+
+            // ── Sidebar (Phase 5 export-side) ──
+            // Fixed-position panel listing all annotations grouped by author
+            // with filter pills + click-to-jump (scroll + pulse) + per-item
+            // delete for student-placed ones.
+            var sidebarEl = null;
+            var sidebarFilter = 'all';
+            function annoPreview(a) {
+              if (!a) return '';
+              if (a.kind === 'note') {
+                var c = (a.content || '').trim();
+                return '📝 ' + (c ? (c.length > 60 ? c.slice(0, 60) + '…' : c) : '(empty note)');
+              }
+              if (a.kind === 'highlight') {
+                var ct = (a.text || '').trim();
+                return '🖍 ' + (ct ? '"' + (ct.length > 60 ? ct.slice(0, 60) + '…' : ct) + '"' : '(highlight)');
+              }
+              if (a.kind === 'voice') {
+                var vd = typeof a.durationSec === 'number' ? Math.round(a.durationSec) + 's' : '';
+                return '🎤 Voice note' + (vd ? ' (' + vd + ')' : '');
+              }
+              if (a.kind === 'sticker' || STICKER_ICONS[a.type]) return (STICKER_ICONS[a.type] || '') + ' ' + (a.type || 'sticker');
+              return '';
+            }
+            function focusOn(a) {
+              if (!a) return;
+              var fx = a.x, fy = a.y;
+              if (a.kind === 'highlight' && Array.isArray(a.rects) && a.rects.length > 0) {
+                fx = a.rects[0].x + (a.rects[0].w || 0) / 2;
+                fy = a.rects[0].y + (a.rects[0].h || 0) / 2;
+              }
+              if (typeof fy === 'number') {
+                // Scroll the WINDOW (export uses page scrolling, not a
+                // scrollable host like the in-app version).
+                var hostRect = host.getBoundingClientRect();
+                var targetY = hostRect.top + window.scrollY + fy - window.innerHeight * 0.30;
+                try { window.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' }); }
+                catch (e) { window.scrollTo(0, Math.max(0, targetY)); }
+              }
+              try {
+                var pulse = document.createElement('div');
+                pulse.style.cssText = 'position:absolute;top:' + (fy - 24) + 'px;left:' + (fx - 24) + 'px;width:48px;height:48px;border-radius:50%;border:3px solid #6366f1;pointer-events:none;z-index:60;animation:alloflow-anno-pulse 1.2s ease-out forwards;';
+                host.appendChild(pulse);
+                setTimeout(function () { try { pulse.remove(); } catch (e) {} }, 1300);
+              } catch (e) {}
+            }
+            function renderSidebar() {
+              if (!sidebarEl) return;
+              var all = teacherAnno.concat(studentAnno);
+              var counts = { teacher: 0, student: 0, total: all.length };
+              all.forEach(function (a) {
+                if (!a) return;
+                if (a.author === 'teacher') counts.teacher++;
+                else counts.student++;
+              });
+              var visible = all.filter(function (a) {
+                if (!a) return false;
+                if (sidebarFilter === 'teacher') return a.author === 'teacher';
+                if (sidebarFilter === 'mine') return a.author === 'student';
+                return true;
+              });
+              visible.sort(function (a, b) {
+                if ((a.author === 'teacher') !== (b.author === 'teacher')) return a.author === 'teacher' ? -1 : 1;
+                return (b.createdAt || '').localeCompare(a.createdAt || '');
+              });
+              var pillBtn = function (key, label, count, active) {
+                return '<button type="button" data-rt-anno-filter="' + key + '" class="alloflow-anno-pill ' + (active ? 'active' : '') + '" aria-pressed="' + (active ? 'true' : 'false') + '">' + label + (count > 0 ? ' (' + count + ')' : '') + '</button>';
+              };
+              var listHtml = '';
+              if (visible.length === 0) {
+                listHtml = '<div class="alloflow-anno-empty">No annotations match this filter.</div>';
+              } else {
+                visible.forEach(function (a) {
+                  var isT = a.author === 'teacher';
+                  var canDelete = a.author === 'student';
+                  var titleParts = [];
+                  if (isT) titleParts.push('Teacher feedback');
+                  else titleParts.push(a.authorName || 'You');
+                  if (a.createdAt) {
+                    try {
+                      var d = new Date(a.createdAt);
+                      if (!isNaN(d.getTime())) titleParts.push(d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }));
+                    } catch (e) {}
+                  }
+                  var title = titleParts.join(' • ');
+                  listHtml += '<div class="alloflow-anno-item ' + (isT ? 'teacher' : 'student') + '" data-rt-anno-focus="' + a.id + '" role="button" tabindex="0" aria-label="Jump to annotation">' +
+                    '<div class="alloflow-anno-item-body">' +
+                      '<div class="alloflow-anno-item-text">' + annoPreview(a).replace(/</g, '&lt;') + '</div>' +
+                      '<div class="alloflow-anno-item-meta">' + title + '</div>' +
+                    '</div>' +
+                    (canDelete ? '<button type="button" class="alloflow-anno-item-del" data-rt-anno-del="' + a.id + '" aria-label="Delete this annotation" title="Delete">✕</button>' : '') +
+                    '</div>';
+                });
+              }
+              sidebarEl.innerHTML =
+                '<div class="alloflow-anno-sb-header">' +
+                  '<span class="alloflow-anno-sb-title">📋 Annotations <span class="alloflow-anno-sb-count">(' + counts.total + ')</span></span>' +
+                  '<button type="button" class="alloflow-anno-sb-close" data-rt-anno-list-close aria-label="Close annotation list">✕</button>' +
+                '</div>' +
+                '<div class="alloflow-anno-sb-pills">' +
+                  pillBtn('all', 'All', counts.total, sidebarFilter === 'all') +
+                  pillBtn('teacher', 'Teacher', counts.teacher, sidebarFilter === 'teacher') +
+                  pillBtn('mine', 'Mine', counts.student, sidebarFilter === 'mine') +
+                '</div>' +
+                '<div class="alloflow-anno-sb-list">' + listHtml + '</div>';
+            }
+            function setSidebarVisible(v) {
+              if (v && !sidebarEl) {
+                sidebarEl = document.createElement('div');
+                sidebarEl.className = 'alloflow-anno-sb';
+                document.body.appendChild(sidebarEl);
+                renderSidebar();
+              } else if (!v && sidebarEl) {
+                try { sidebarEl.remove(); } catch (e) {}
+                sidebarEl = null;
+              }
+              var btn = document.querySelector('[data-rt-anno-list]');
+              if (btn) btn.setAttribute('aria-pressed', v ? 'true' : 'false');
+            }
+            // Download student annotations as JSON for sharing back to the
+            // teacher (manual workflow — student saves, emails/uploads file).
+            function downloadStudentAnno() {
+              if (studentAnno.length === 0) {
+                alert('No annotations to save yet — add a note or highlight first.');
+                return;
+              }
+              var payload = {
+                docTitle: docTitle,
+                exportedAt: new Date().toISOString(),
+                count: studentAnno.length,
+                annotations: studentAnno,
+              };
+              try {
+                var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+                var url = URL.createObjectURL(blob);
+                var link = document.createElement('a');
+                link.href = url;
+                link.download = (docTitle || 'annotations').replace(/[^a-z0-9-_]+/gi, '_') + '_annotations.json';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                setTimeout(function () { try { URL.revokeObjectURL(url); } catch (e) {} }, 1000);
+              } catch (e) {
+                alert('Could not save annotations. Try a different browser.');
+              }
+            }
+
+            // Toolbar button clicks (mode + clear + list + download + voice rec + color swatches).
+            document.addEventListener('click', function (e) {
+              var voiceStopBtn = e.target && e.target.closest && e.target.closest('[data-rt-voice-stop]');
+              if (voiceStopBtn) { stopVoiceRecording(); return; }
+              var voiceCancelBtn = e.target && e.target.closest && e.target.closest('[data-rt-voice-cancel]');
+              if (voiceCancelBtn) { cancelVoiceRecording(); return; }
+              var ncBtn = e.target && e.target.closest && e.target.closest('[data-rt-note-color]');
+              if (ncBtn) {
+                noteColor = ncBtn.getAttribute('data-rt-note-color');
+                try { localStorage.setItem('alloflow-anno-note-color', noteColor); } catch (er) {}
+                applyColorSwatchPressed();
+                return;
+              }
+              var hcBtn = e.target && e.target.closest && e.target.closest('[data-rt-hl-color]');
+              if (hcBtn) {
+                hlColor = hcBtn.getAttribute('data-rt-hl-color');
+                try { localStorage.setItem('alloflow-anno-hl-color', hlColor); } catch (er) {}
+                applyColorSwatchPressed();
+                return;
+              }
+              var modeBtn = e.target && e.target.closest && e.target.closest('[data-rt-anno]');
+              if (modeBtn) {
+                // If a recording is in progress and the user clicks a mode
+                // button, cancel cleanly so we don't leak a MediaStream.
+                if (voiceRec || voicePlaceholder) cancelVoiceRecording();
+                setMode(modeBtn.getAttribute('data-rt-anno'));
+                return;
+              }
+              var undoBtn = e.target && e.target.closest && e.target.closest('[data-rt-anno-undo]');
+              if (undoBtn && !undoBtn.disabled) { performUndo(); return; }
+              var clearBtn = e.target && e.target.closest && e.target.closest('[data-rt-anno-clear]');
+              if (clearBtn && clearBtn.getAttribute('data-rt-anno-clear') === 'mine') {
+                if (studentAnno.length === 0) return;
+                if (window.confirm('Remove all your notes and highlights? Teacher annotations will stay.')) {
+                  snapshot();
+                  studentAnno = [];
+                  saveStudent();
+                  render();
+                  renderSidebar();
+                }
+                return;
+              }
+              var listBtn = e.target && e.target.closest && e.target.closest('[data-rt-anno-list]');
+              if (listBtn) { setSidebarVisible(!sidebarEl); return; }
+              var dlBtn = e.target && e.target.closest && e.target.closest('[data-rt-anno-download]');
+              if (dlBtn) { downloadStudentAnno(); return; }
+              var closeBtn = e.target && e.target.closest && e.target.closest('[data-rt-anno-list-close]');
+              if (closeBtn) { setSidebarVisible(false); return; }
+              var pillBtn2 = e.target && e.target.closest && e.target.closest('[data-rt-anno-filter]');
+              if (pillBtn2) { sidebarFilter = pillBtn2.getAttribute('data-rt-anno-filter'); renderSidebar(); return; }
+              var focusItem = e.target && e.target.closest && e.target.closest('[data-rt-anno-focus]');
+              if (focusItem && !e.target.closest('[data-rt-anno-del]')) {
+                var fid = focusItem.getAttribute('data-rt-anno-focus');
+                if (fid) {
+                  var all = teacherAnno.concat(studentAnno);
+                  for (var j = 0; j < all.length; j++) {
+                    if (String(all[j].id) === String(fid)) { focusOn(all[j]); break; }
+                  }
+                }
+                return;
+              }
+              var delItem = e.target && e.target.closest && e.target.closest('[data-rt-anno-del]');
+              if (delItem) {
+                var did = delItem.getAttribute('data-rt-anno-del');
+                snapshot();
+                studentAnno = studentAnno.filter(function (a) { return String(a.id) !== String(did); });
+                saveStudent();
+                render();
+                renderSidebar();
+                return;
+              }
+            });
+
+            // Ctrl/Cmd+Z keyboard shortcut for undo. Ignored inside text
+            // fields so the browser's native undo still works there.
+            document.addEventListener('keydown', function (e) {
+              if (!(e.key === 'z' || e.key === 'Z')) return;
+              if (!(e.ctrlKey || e.metaKey)) return;
+              if (e.shiftKey) return;
+              var tg = (e.target && e.target.tagName) || '';
+              if (tg === 'INPUT' || tg === 'TEXTAREA') return;
+              if (e.target && e.target.isContentEditable) return;
+              if (undoStack.length === 0) return;
+              e.preventDefault();
+              performUndo();
+            });
+
+            // Initial paint. Defer until DOM ready (we're already inline at
+            // end of body so this is effectively next tick).
+            setMode('off');
+            applyColorSwatchPressed();
+            render();
+            // Re-render on resize so multi-line highlights track wrapping
+            // changes. Debounced lightly via requestAnimationFrame.
+            var resizePending = false;
+            window.addEventListener('resize', function () {
+              if (resizePending) return;
+              resizePending = true;
+              requestAnimationFrame(function () {
+                resizePending = false;
+                // Coordinates are frozen at placement time; redraw is just
+                // to be safe if some overlay element got knocked loose.
+                render();
+              });
+            });
+          })();
+        </script>
         <main id="main-export-content" role="main">
         <div class="export-header" style="background:${theme.headerBg};color:${theme.headerText};padding:28px 36px;border-radius:${theme.borderRadius || '14px'};margin-bottom:28px;box-shadow:0 4px 12px rgba(0,0,0,0.1);">
           <h1 style="color:${theme.headerText};margin:0 0 6px 0;font-size:1.85rem;letter-spacing:-0.02em;">${studentTitlePrefix}${lessonTopic}</h1>
@@ -15215,8 +16532,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         </div>
         </main>
         ${_submissionSaveButton}
-        <footer role="contentinfo" style="text-align:center;color:#94a3b8;font-size:0.8rem;margin-top:3rem;padding:24px 0;border-top:1px solid #e2e8f0;">
-            <p style="margin:0;">${t('output.generated_via')} • <a href="https://Ko-fi.com/aaronpomeranz207" target="_blank" rel="noopener noreferrer" style="color:#94a3b8;text-decoration:underline;">${t('export.support_dev')}</a></p>
+        <footer role="contentinfo" style="text-align:center;color:#64748b;font-size:0.8rem;margin-top:3rem;padding:24px 0;border-top:1px solid #e2e8f0;">
+            <p style="margin:0;">${t('output.generated_via')} • <a href="https://Ko-fi.com/aaronpomeranz207" target="_blank" rel="noopener noreferrer" style="color:#64748b;text-decoration:underline;">${t('export.support_dev')}</a></p>
         </footer>
         <script>
             document.addEventListener('DOMContentLoaded', () => {
@@ -15747,11 +17064,6 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     downloadBatchResults: _wrapAsync(downloadBatchResults),
   };
 };
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
 
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.createDocPipeline = createDocPipeline;

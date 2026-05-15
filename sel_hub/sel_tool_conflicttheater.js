@@ -749,6 +749,26 @@ window.SelHub = window.SelHub || {
         var msg = (studentInput || '').trim();
         if (!msg || loading) return;
 
+        // Pre-flight regex gate: a critical keyword in the mediator's turn
+        // breaks character on both AI actors and surfaces crisis support.
+        if (window.SelHub && window.SelHub.safeRehearseCheck) {
+          var _preflight = window.SelHub.safeRehearseCheck(msg, { toolId: 'conflicttheater', onSafetyFlag: onSafetyFlag });
+          if (_preflight.action === 'block') {
+            var _breakText = (window.SelHub.rehearseBreakCharacterText && window.SelHub.rehearseBreakCharacterText(_preflight.severity)) ||
+              'I want to step out of the scene for a moment. What you wrote sounds heavy, and that matters more than the practice. Please reach out to a trusted adult or one of the crisis lines below.';
+            var _firstResponder = (addressing === 'both' ? scenario.characterIds[0] : addressing);
+            upd({
+              dialogue: dialogue.concat([
+                { speaker: 'student', text: msg, ts: Date.now() },
+                { speaker: _firstResponder, text: _breakText, mood: 'calm', bodyLanguage: '', ts: Date.now(), _crisis: true }
+              ]),
+              studentInput: '',
+              _userTier: 3
+            });
+            return;
+          }
+        }
+
         var newDialogue = dialogue.concat([{ speaker: 'student', text: msg, ts: Date.now() }]);
         upd({ dialogue: newDialogue, loading: true, studentInput: '', turnCount: turnCount + 1 });
 
@@ -1476,6 +1496,7 @@ window.SelHub = window.SelHub || {
 
       return h('div', { style: { padding: 16, maxWidth: 640, margin: '0 auto' } },
         crisisSurface,
+        (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('conflicttheater', h, ctx) : null),
         stage,
         meters,
         dialogueView,

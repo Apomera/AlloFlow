@@ -483,6 +483,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
       // ═══════════════════════════════════════════════════════
       function renderAbout() {
         return h('div', null,
+          (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('orientations', h, ctx) : null),
           h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 8px', color: '#c4b5fd', fontSize: 16 } }, 'What this tool is for'),
             h('p', { style: { margin: '0 0 10px', color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.75 } },

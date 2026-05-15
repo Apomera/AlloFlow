@@ -626,7 +626,8 @@ window.SelHub = window.SelHub || {
         { id: 'realworld', label: '\uD83C\uDF0D Real-World Decisions' },
         { id: 'compass',  label: '\uD83E\uDDED Moral Compass' },
         { id: 'advisor',  label: '\u2728 AI Advisor' },
-        { id: 'progress', label: '\uD83D\uDCCA Progress' }
+        { id: 'progress', label: '\uD83D\uDCCA Progress' },
+        { id: 'print',    label: '\uD83D\uDDA8 Print' }
       ];
 
       var tabBar = h('div', {         role: 'tablist', 'aria-label': 'Decision Making tabs',
@@ -1859,9 +1860,114 @@ window.SelHub = window.SelHub || {
       // ══════════════════════════════════════════════════════════
       // ── Final Render ──
       // ══════════════════════════════════════════════════════════
-      var content = dtContent || edContent || csContent || biasContent || vsContent || rwContent || compassContent || advContent || progressContent;
+      // ══════════════════════════════════════════════════════════
+      // ── TAB: Print ──
+      // ══════════════════════════════════════════════════════════
+      var printContent = null;
+      if (activeTab === 'print') {
+        printContent = h('div', { style: { padding: 20, maxWidth: 720, margin: '0 auto' } },
+          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.4)', borderLeft: '3px solid #f59e0b', marginBottom: 12, fontSize: 12.5, color: '#78350f', lineHeight: 1.65 } },
+            h('strong', null, '\uD83D\uDDA8 Decision template. '),
+            'A one-page structured-decision worksheet you can carry. Apply it to anything from "what classes do I sign up for?" to "do I confront this friend?" The structure slows down the choice enough that the wise answer can show up.'
+          ),
+          h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
+            h('button', { onClick: function() { try { window.print(); } catch (e) {} }, 'aria-label': 'Print or save as PDF',
+              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #b45309 0%, #f59e0b 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, '\uD83D\uDDA8 Print / Save as PDF')
+          ),
+          h('style', null,
+            '@media print { body * { visibility: hidden !important; } ' +
+            '#dec-print-region, #dec-print-region * { visibility: visible !important; } ' +
+            '#dec-print-region { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; background: #fff !important; color: #0f172a !important; } ' +
+            '#dec-print-region * { background: transparent !important; color: #0f172a !important; border-color: #888 !important; } ' +
+            '.no-print { display: none !important; } }'
+          ),
+          h('div', { id: 'dec-print-region', style: { padding: 18, borderRadius: 12, background: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0' } },
+            h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', borderBottom: '2px solid #0f172a', paddingBottom: 8, marginBottom: 14 } },
+              h('h2', { style: { margin: 0, fontSize: 22, fontWeight: 900, color: '#0f172a' } }, 'My Decision Worksheet'),
+              h('div', { style: { fontSize: 11, color: '#475569' } }, 'Structured decision-making')
+            ),
+
+            h('div', { style: { padding: 10, background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 8, marginBottom: 14, fontSize: 12, lineHeight: 1.55, color: '#78350f' } },
+              h('strong', null, 'How to use: '),
+              'fill the worksheet by hand on a single decision. Doing this slowly is the work. "Sleeping on it" \u00b7 "talking it through with one person you trust" \u00b7 "writing it out" all live here.'
+            ),
+
+            h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 10, pageBreakInside: 'avoid' } },
+              h('div', { style: { fontSize: 12, color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, '1. The decision in one sentence'),
+              h('div', { style: { height: 40, borderBottom: '1px solid #cbd5e1' } })
+            ),
+
+            h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 10, pageBreakInside: 'avoid' } },
+              h('div', { style: { fontSize: 12, color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, '2. Why this matters to me (values at stake)'),
+              h('div', { style: { height: 50, borderBottom: '1px solid #cbd5e1' } })
+            ),
+
+            h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 10, pageBreakInside: 'avoid' } },
+              h('div', { style: { fontSize: 12, color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, '3. The options I can see'),
+              h('div', { style: { fontSize: 11.5, color: '#475569', marginBottom: 6, fontStyle: 'italic' } }, 'Force yourself to list at least 3, even if the third feels silly. The third option is often where the wise answer hides.'),
+              [1, 2, 3].map(function(i) { return h('div', { key: i, style: { height: 28, borderBottom: '1px solid #cbd5e1', marginBottom: 4 } }); })
+            ),
+
+            h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 10, pageBreakInside: 'avoid' } },
+              h('div', { style: { fontSize: 12, color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, '4. Consequences across time'),
+              h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11.5 } },
+                h('thead', null, h('tr', null,
+                  h('th', { style: { padding: 6, border: '1px solid #cbd5e1', background: '#f1f5f9', textAlign: 'left' } }, 'Option'),
+                  h('th', { style: { padding: 6, border: '1px solid #cbd5e1', background: '#f1f5f9', textAlign: 'left' } }, 'Short term'),
+                  h('th', { style: { padding: 6, border: '1px solid #cbd5e1', background: '#f1f5f9', textAlign: 'left' } }, 'Long term')
+                )),
+                h('tbody', null,
+                  [1, 2, 3].map(function(i) {
+                    return h('tr', { key: i },
+                      h('td', { style: { padding: 6, border: '1px solid #cbd5e1', height: 32 } }, String(i)),
+                      h('td', { style: { padding: 6, border: '1px solid #cbd5e1' } }, ''),
+                      h('td', { style: { padding: 6, border: '1px solid #cbd5e1' } }, '')
+                    );
+                  })
+                )
+              )
+            ),
+
+            h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 10, pageBreakInside: 'avoid' } },
+              h('div', { style: { fontSize: 12, color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, '5. Whose voices should be in the room?'),
+              h('div', { style: { fontSize: 11.5, color: '#475569', marginBottom: 4, fontStyle: 'italic' } }, 'A trusted adult, a friend who knows your context, the person most affected, your own future self looking back.'),
+              h('div', { style: { height: 50, borderBottom: '1px solid #cbd5e1' } })
+            ),
+
+            h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 10, pageBreakInside: 'avoid' } },
+              h('div', { style: { fontSize: 12, color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, '6. Bias check'),
+              h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 11.5, color: '#0f172a', lineHeight: 1.6 } },
+                h('li', null, 'Am I deciding fast because I am uncomfortable, or because the situation actually requires speed?'),
+                h('li', null, 'Am I weighing the short term more than the long term because the short term is louder?'),
+                h('li', null, 'Whose approval am I trying to win? Is that approval worth the cost?'),
+                h('li', null, 'If a friend brought me this decision, what would I tell them?')
+              )
+            ),
+
+            h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 10, pageBreakInside: 'avoid' } },
+              h('div', { style: { fontSize: 12, color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, '7. My choice and my first step'),
+              h('div', { style: { fontSize: 11.5, color: '#475569', marginBottom: 4 } }, 'Choice:'),
+              h('div', { style: { height: 32, borderBottom: '1px solid #cbd5e1', marginBottom: 8 } }),
+              h('div', { style: { fontSize: 11.5, color: '#475569', marginBottom: 4 } }, 'First step within 24 hours:'),
+              h('div', { style: { height: 32, borderBottom: '1px solid #cbd5e1' } })
+            ),
+
+            h('div', { style: { padding: 10, background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 8, marginBottom: 10, fontSize: 11.5, color: '#78350f', lineHeight: 1.55 } },
+              h('strong', null, 'A decision is not final until it is in motion. '),
+              'Naming a first step within 24 hours converts deliberation into action. If 24 hours pass without movement, you have actually decided not to.'
+            ),
+
+            h('div', { style: { marginTop: 14, padding: 10, borderTop: '2px solid #0f172a', fontSize: 10.5, color: '#475569', lineHeight: 1.5 } },
+              'Sources: Kahneman, D. (2011), Thinking, Fast and Slow \u00b7 Heath, C. & Heath, D. (2013), Decisive \u00b7 Linehan, M. (DBT pros and cons skill). Printed from AlloFlow SEL Hub.'
+            )
+          )
+        );
+      }
+
+      var content = dtContent || edContent || csContent || biasContent || vsContent || rwContent || compassContent || advContent || progressContent || printContent;
 
       return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
+        (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('decisions', h, ctx) : null),
         tabBar,
         heroBand,
         badgePopup,

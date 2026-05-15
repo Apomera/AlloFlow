@@ -1665,6 +1665,19 @@ window.SelHub = window.SelHub || {
               callGemini && journalDraft.trim().length > 10 && h('button', { 'aria-label': 'Toggle sound',
                 onClick: function() {
                   upd('journalAiLoading', true);
+                  // Pre-flight regex gate: if journal draft contains a critical
+                  // safety keyword, surface crisis support before AI ever sees it.
+                  if (window.SelHub && window.SelHub.safeRehearseCheck) {
+                    var _preflight = window.SelHub.safeRehearseCheck(journalDraft, { toolId: 'emotions', onSafetyFlag: onSafetyFlag });
+                    if (_preflight.action === 'block') {
+                      upd({
+                        journalAiLoading: false,
+                        _emotionsTier: 3,
+                        journalAiResp: 'I noticed something in your entry that I want to make sure you have support for. Please reach out to a trusted adult, or use one of the crisis lines below. Your feelings are real, and you do not have to carry this alone.'
+                      });
+                      return;
+                    }
+                  }
                   var prompt = 'You are a warm, supportive school counselor. A ' + band + ' school student wrote this emotion journal entry about feeling ' + (journalEmotion || 'something') + ':\n\n"' + journalDraft + '"\n\n' +
                     'Respond in 3-4 sentences. ' +
                     (band === 'elementary' ? 'Use simple, warm language. Validate their feeling, name what you notice, and suggest one small thing they could try.' :
@@ -2123,6 +2136,7 @@ window.SelHub = window.SelHub || {
       // ── Final Render ──
       // ══════════════════════════════════════════════════════════
       return h('div', { style: { minHeight: '100%' } },
+        (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('emotions', h, ctx) : null),
         tabBar,
         heroBand,
         badgePopup,

@@ -78,13 +78,14 @@ var Cpu = _lazyIcon('Cpu');
 var Headphones = _lazyIcon('Headphones');
 ${compiled}
 window.AlloModules = window.AlloModules || {};
-window.AlloModules.GroupSessionModal = (typeof GroupSessionModal !== 'undefined') ? GroupSessionModal : null;
-window.AlloModules.PdfDiffViewer = (typeof PdfDiffViewer !== 'undefined') ? PdfDiffViewer : null;
+// GroupSessionModal + PdfDiffViewer live in view_misc_panels_module.js; this module only owns
+// UDLGuideModal + AIBackendModal. Registering the other two from here resolves them to null
+// (they aren't defined in this scope) and is harmless only because view_misc_panels loads later.
 window.AlloModules.UDLGuideModal = (typeof UDLGuideModal !== 'undefined') ? UDLGuideModal : null;
 window.AlloModules.AIBackendModal = (typeof AIBackendModal !== 'undefined') ? AIBackendModal : null;
 window.AlloModules.ViewMiscModalsModule = true;
 window.AlloModules.MiscModals = true;  // satisfies loadModule('MiscModals', ...) registration check
-console.log('[CDN] ViewMiscModalsModule loaded — 4 modals registered');
+console.log('[CDN] ViewMiscModalsModule loaded — 2 modals registered (UDLGuide, AIBackend)');
 })();
 `;
 

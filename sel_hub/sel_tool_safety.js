@@ -111,7 +111,8 @@ window.SelHub = window.SelHub || {
       { id: 'consent', icon: '\u2705', title: 'Consent', desc: 'Consent means someone freely and clearly says YES. It must be enthusiastic, informed, and reversible. Silence or pressure is NOT consent. You can change your mind at any time.', tip: 'Remember: Consent must be enthusiastic, informed, and reversible \u2014 every time.' },
       { id: 'digital_safety', icon: '\uD83D\uDCF1', title: 'Digital Safety', desc: 'Everything you share online can be screenshotted, saved, and shared without your knowledge. Think before you send. Protect your digital footprint.', tip: 'Remember: Screenshots are forever. If you would not want it on a billboard, do not send it.' },
       { id: 'peer_pressure', icon: '\uD83E\uDDD2', title: 'Peer Pressure', desc: 'Real friends respect your boundaries and never make you feel bad for saying no. If someone pressures you, that is about their needs, not yours.', tip: 'Remember: Real friends do not pressure you. Your NO is enough \u2014 no explanation needed.' },
-      { id: 'grooming', icon: '\u26A0\uFE0F', title: 'Recognizing Grooming', desc: 'Grooming is when someone builds trust to take advantage of you. Warning signs: special treatment, secret-keeping, rule-breaking "just for you," and making you feel like you owe them.', tip: 'Remember: Adults who break rules "just for you" are testing your limits. Tell someone you trust.' },
+      { id: 'grooming', icon: '\u26A0\uFE0F', title: 'Recognizing Grooming', desc: 'Grooming is when someone builds trust to take advantage of you. Warning signs: special treatment, secret-keeping, rule-breaking "just for you," and making you feel like you owe them. Groomers can be adults OR peers (older teens, older siblings, older dating partners). The patterns look the same; the person is younger.', tip: 'Remember: Adults who break rules "just for you" are testing your limits. Tell someone you trust. The same pattern from an older peer is still grooming.' },
+      { id: 'sextortion', icon: '\uD83D\uDCF8', title: 'Sextortion', desc: 'Sextortion is when someone pressures you into sending a nude or intimate image, then threatens to send it to your family, school, sports team, or post it online unless you send more (or pay money). It is the fastest-growing online crime against young people. It is NOT your fault. You did not do anything wrong by being tricked. Help exists.', tip: 'Remember: If this is happening, STOP sending. Tell a trusted adult. Report to CyberTipline 1-800-843-5678. NCMEC has a free \"Take It Down\" service that helps remove the image. You are not alone, and you are not in trouble.' },
       { id: 'self_advocacy', icon: '\uD83D\uDDE3\uFE0F', title: 'Self-Advocacy', desc: 'Speaking up about something that is wrong \u2014 or asking for help \u2014 is brave. It is NOT tattling. You have the right to be heard and believed.', tip: 'Remember: Speaking up is brave, not tattling. You deserve to be safe.' },
       { id: 'bystander', icon: '\uD83D\uDC65', title: 'Bystander Action', desc: 'If you see someone being hurt, harassed, or bullied, you have the power to help. Tell a trusted adult, support the person, or safely intervene.', tip: 'Remember: See something? Say something. Your voice can protect others.' },
       { id: 'crisis_resources', icon: '\uD83D\uDCDE', title: 'Crisis Resources', desc: 'You are NEVER alone. No matter what you are going through, trained helpers are available 24/7. You do NOT need to handle hard things by yourself.', tip: 'Remember: You are NEVER alone \u2014 help is always available. Reaching out is the bravest thing you can do.' }
@@ -2110,6 +2111,72 @@ window.SelHub = window.SelHub || {
             '\uD83D\uDCDE Need help? 988 (call/text) \u2022 Text HOME to 741741 \u2022 1-800-422-4453'
           );
 
+          // ── Print-as-PDF region: a clinical artifact view of the plan,
+          //    hidden on screen but revealed by @media print. Plus an
+          //    explicit "Print as PDF" button alongside the existing
+          //    text-export button.
+          var printRegion = h('div', { id: 'safety-print-region',
+            style: { position: 'fixed', left: '-9999px', top: '0', width: 'auto', background: '#fff', color: '#0f172a', padding: 24, fontFamily: 'system-ui, -apple-system, sans-serif' } },
+            h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', borderBottom: '2px solid #0f172a', paddingBottom: 8, marginBottom: 14 } },
+              h('h2', { style: { margin: 0, fontSize: 22, fontWeight: 900, color: '#0f172a' } }, 'My Safety Plan'),
+              h('div', { style: { fontSize: 11, color: '#475569' } }, 'Stanley & Brown, 2012')
+            ),
+            h('div', { style: { padding: 10, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, marginBottom: 14, fontSize: 12, lineHeight: 1.55, color: '#7f1d1d' } },
+              h('strong', null, 'When I feel unsafe, this plan is what I do. '),
+              'Crisis lines: 988 (call/text) · Text HOME to 741741 · Childhelp 1-800-422-4453.'
+            ),
+            h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 10 } },
+              h('div', { style: { fontSize: 11, color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, '1. If I feel unsafe, I will:'),
+              h('div', { style: { fontSize: 14, color: '#0f172a', lineHeight: 1.55 } }, safetyPlanStep1 || '(not filled in)')
+            ),
+            h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 10 } },
+              h('div', { style: { fontSize: 11, color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, '2. Then I will:'),
+              h('div', { style: { fontSize: 14, color: '#0f172a', lineHeight: 1.55 } }, safetyPlanStep2 || '(not filled in)')
+            ),
+            h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 10 } },
+              h('div', { style: { fontSize: 11, color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, '3. If that does not work:'),
+              h('div', { style: { fontSize: 14, color: '#0f172a', lineHeight: 1.55 } }, safetyPlanStep3 || '(not filled in)')
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 } },
+              h('div', { style: { padding: 10, border: '1px solid #475569', borderRadius: 8 } },
+                h('div', { style: { fontSize: 10.5, color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'My safe place'),
+                h('div', { style: { fontSize: 13, color: '#0f172a' } }, safetyPlanPlace || '(not filled in)')
+              ),
+              h('div', { style: { padding: 10, border: '1px solid #475569', borderRadius: 8 } },
+                h('div', { style: { fontSize: 10.5, color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'My code word'),
+                h('div', { style: { fontSize: 13, color: '#0f172a' } }, safetyPlanCode || '(not filled in)')
+              )
+            ),
+            h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 14 } },
+              h('div', { style: { fontSize: 11, color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'Emergency numbers I know by heart'),
+              h('pre', { style: { margin: 0, fontSize: 13, color: '#0f172a', fontFamily: 'ui-monospace, monospace', whiteSpace: 'pre-wrap', lineHeight: 1.5 } }, safetyPlanNums || '(not filled in)')
+            ),
+            trustedAdults && trustedAdults.length > 0 && h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 14 } },
+              h('div', { style: { fontSize: 11, color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'My trusted adults'),
+              h('ul', { style: { margin: 0, padding: '0 0 0 20px', fontSize: 13, color: '#0f172a', lineHeight: 1.6 } },
+                trustedAdults.map(function(a, i) { return h('li', { key: i }, (a.name || '(unnamed)') + (a.role ? ' · ' + a.role : '')); })
+              )
+            ),
+            h('div', { style: { padding: 10, background: '#0f172a', color: '#fff', borderRadius: 8, fontSize: 12, lineHeight: 1.6, textAlign: 'center', marginTop: 14 } },
+              h('strong', null, 'You are never alone. It is never your fault. '),
+              'Printed from AlloFlow SEL Hub. Source: Stanley, B. & Brown, G. K. (2012). Safety Planning Intervention.'
+            )
+          );
+
+          var printButton = (safetyPlanStep1.trim() || safetyPlanPlace.trim()) && h('button', { 'aria-label': 'Print safety plan as PDF',
+            onClick: function() { try { window.print(); } catch (e) {} },
+            style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #be123c 0%, #f43f5e 100%)', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+          }, '🖨 Print as PDF');
+
+          var printStyle = h('style', null,
+            '@media print { body * { visibility: hidden !important; } ' +
+            '#safety-print-region, #safety-print-region * { visibility: visible !important; } ' +
+            '#safety-print-region { position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; padding: 24px !important; background: #fff !important; color: #0f172a !important; } ' +
+            '.no-print { display: none !important; } }'
+          );
+
+          var printRow = h('div', { className: 'no-print', style: { padding: '0 16px 10px', display: 'flex', justifyContent: 'flex-end' } }, printButton);
+
           planContent = h('div', { style: { padding: '12px 0 16px' } },
             h('div', { style: { padding: '0 16px 10px', fontSize: 13, color: '#94a3b8' } },
               band === 'elementary'
@@ -2117,8 +2184,11 @@ window.SelHub = window.SelHub || {
                 : 'Build your personal safety plan. When you are prepared, you do not have to figure things out under stress.'
             ),
             planForm,
+            printRow,
             planAffirm,
-            planCrisis
+            planCrisis,
+            printStyle,
+            printRegion
           );
         }
 
@@ -2171,6 +2241,7 @@ window.SelHub = window.SelHub || {
         var content = learnContent || digitalContent || circleContent || scenariosContent || assertiveContent || quizContent || flagsContent || emergencyContent || planContent || badgesContent;
 
         return h('div', { className: 'selh-safety', style: { display: 'flex', flexDirection: 'column', height: '100%' } },
+          (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('safety', h, ctx) : null),
           tabBar,
           heroBand,
           badgePopup,

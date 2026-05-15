@@ -14,6 +14,7 @@ const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { defineSecret } = require("firebase-functions/params");
 const crypto = require("crypto");
 const admin = require("firebase-admin");
+const { createRemoteJWKSet, jwtVerify } = require("jose");
 if (!admin.apps.length) admin.initializeApp();
 
 // ── Secrets stored in Firebase Secret Manager ──
@@ -21,8 +22,23 @@ const SERPER_API_KEY = defineSecret("SERPER_API_KEY");
 const LTI_CLIENT_ID = defineSecret("LTI_CLIENT_ID");
 const LTI_DEPLOYMENT_ID = defineSecret("LTI_DEPLOYMENT_ID");
 const LTI_PLATFORM_URL = defineSecret("LTI_PLATFORM_URL"); // e.g. https://usm.brightspace.com
+// LTI_JWKS_URL: the JWK Set URL published by the LMS platform. Brightspace defaults to
+// `${LTI_PLATFORM_URL}/d2l/.well-known/jwks`; Canvas to `${platformUrl}/api/lti/security/jwks`.
+// If unset at runtime, code below falls back to the Brightspace path.
+const LTI_JWKS_URL = defineSecret("LTI_JWKS_URL");
 const LMS_CLIENT_ID = defineSecret("LMS_CLIENT_ID"); // Brightspace OAuth2 app client ID
 const LMS_CLIENT_SECRET = defineSecret("LMS_CLIENT_SECRET"); // Brightspace OAuth2 app client secret
+
+// ── LTI JWKS cache ──
+// jose's createRemoteJWKSet handles HTTP fetch + caching internally (default 600s TTL).
+// We memoize per-platform-URL so repeated launches reuse the cached key set.
+const _jwksCache = new Map();
+function getJwks(jwksUrl) {
+  if (!_jwksCache.has(jwksUrl)) {
+    _jwksCache.set(jwksUrl, createRemoteJWKSet(new URL(jwksUrl)));
+  }
+  return _jwksCache.get(jwksUrl);
+}
 
 const db = admin.firestore();
 
@@ -243,7 +259,7 @@ exports.ltiLogin = onRequest(
  */
 exports.ltiLaunch = onRequest(
   {
-    secrets: [LTI_CLIENT_ID, LTI_DEPLOYMENT_ID, LTI_PLATFORM_URL],
+    secrets: [LTI_CLIENT_ID, LTI_DEPLOYMENT_ID, LTI_PLATFORM_URL, LTI_JWKS_URL],
     region: "us-central1",
     timeoutSeconds: 15,
     memory: "256MiB",
@@ -259,7 +275,9 @@ exports.ltiLaunch = onRequest(
       return;
     }
 
-    // Verify state matches (CSRF protection)
+    // Step 1: Verify state matches (CSRF protection — binds login → launch).
+    // This is necessary but NOT sufficient on its own: it prevents request
+    // forgery from a logged-in victim, but does NOT prevent token forgery.
     const storedNonce = nonceStore.get(state);
     if (!storedNonce) {
       res.status(403).json({ error: "Invalid state — possible CSRF attack or session expired" });
@@ -267,19 +285,79 @@ exports.ltiLaunch = onRequest(
     }
     nonceStore.delete(state);
 
-    // Decode JWT (in production, verify signature with platform's public key)
-    // For now, decode without verification (the state check provides CSRF protection)
+    // Step 2: Verify JWT signature against the platform's published JWKS.
+    // This is what makes the launch unforgeable — without it, an attacker who
+    // can craft a JWT with the right structure could impersonate any user.
+    //
+    // Per LTI 1.3 spec, the platform publishes its public keys at a JWKS URL
+    // (typically `{platformUrl}/.well-known/jwks` or the LMS-specific path).
+    // jose's createRemoteJWKSet handles fetching + caching automatically.
+    let payload;
     try {
-      const parts = id_token.split(".");
-      if (parts.length !== 3) throw new Error("Invalid JWT format");
+      const platformUrl = LTI_PLATFORM_URL.value();
+      const expectedClientId = LTI_CLIENT_ID.value();
+      // JWKS URL must be set explicitly per LMS — fail closed if missing, since
+      // guessing the wrong URL would mean signature verification silently uses
+      // a wrong key set (or 404s) and either way produces opaque errors.
+      // Per-LMS JWKS URL templates:
+      //   Brightspace: {platformUrl}/d2l/.well-known/jwks
+      //   Canvas:      {platformUrl}/api/lti/security/jwks
+      //   Moodle:      {platformUrl}/mod/lti/certs.php
+      //   Schoology:   contact your Schoology admin for actual URL
+      // Set via:  firebase functions:secrets:set LTI_JWKS_URL
+      const jwksUrl = LTI_JWKS_URL.value();
+      if (!jwksUrl) {
+        throw new Error("LTI_JWKS_URL secret is not set — cannot verify JWT signature. " +
+          "Run: firebase functions:secrets:set LTI_JWKS_URL");
+      }
+      const jwks = getJwks(jwksUrl);
 
-      const payload = JSON.parse(Buffer.from(parts[1], "base64url").toString());
+      // jwtVerify: validates signature + standard claims (exp, iat, nbf if present)
+      // and the issuer + audience we pass in. Throws if any check fails.
+      const verified = await jwtVerify(id_token, jwks, {
+        issuer: platformUrl,           // iss claim must match the configured platform
+        audience: expectedClientId,    // aud claim must contain our client_id
+      });
+      payload = verified.payload;
 
-      // Extract LTI claims
+      // Step 3: Validate LTI-specific claims that jose doesn't know about.
+      // Per LTI 1.3 spec, the deployment_id MUST match what we registered with
+      // the platform — prevents launches from rogue deployments of the same tool.
+      const deploymentId = payload["https://purl.imsglobal.org/spec/lti/claim/deployment_id"];
+      const expectedDeploymentId = LTI_DEPLOYMENT_ID.value();
+      if (deploymentId !== expectedDeploymentId) {
+        throw new Error(`Deployment ID mismatch: got ${deploymentId}, expected ${expectedDeploymentId}`);
+      }
+
+      // Step 4: Validate nonce in payload matches the one we generated at login.
+      // The nonce binds this specific launch to the login that initiated it,
+      // preventing replay attacks where an attacker captures a valid token
+      // and re-submits it later.
+      if (payload.nonce && payload.nonce !== storedNonce.nonce) {
+        throw new Error("Nonce mismatch — possible replay attack");
+      }
+
+      // Step 5: Validate message_type — only LtiResourceLinkRequest is allowed
+      // for the standard launch flow (DeepLinkingRequest is a different endpoint).
+      const messageType = payload["https://purl.imsglobal.org/spec/lti/claim/message_type"];
+      if (messageType && messageType !== "LtiResourceLinkRequest") {
+        throw new Error(`Unsupported LTI message type: ${messageType}`);
+      }
+    } catch (err) {
+      // Verification failures are security events — log + return 401 (not 500)
+      // so the LMS treats this as "your token isn't accepted" rather than "tool
+      // is broken." Don't leak verification details to the client.
+      console.error("[LTI] JWT verification failed:", err.message);
+      res.status(401).json({ error: "LTI launch authentication failed" });
+      return;
+    }
+
+    // Step 6: Extract claims from the now-verified payload.
+    try {
       const ltiClaims = {
-        sub: payload.sub,                                           // User ID
-        name: payload.name || "User",                               // Display name
-        email: payload.email || null,                               // Email (if shared)
+        sub: payload.sub,                                           // User ID (verified)
+        name: payload.name || "User",
+        email: payload.email || null,
         roles: payload["https://purl.imsglobal.org/spec/lti/claim/roles"] || [],
         context: payload["https://purl.imsglobal.org/spec/lti/claim/context"] || {},
         resourceLink: payload["https://purl.imsglobal.org/spec/lti/claim/resource_link"] || {},

@@ -113,11 +113,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
         );
       }
 
+      function printNow() { try { window.print(); } catch (e) {} }
+
       function navTabs() {
         var tabs = [
           { id: 'map', label: 'My constellation', icon: '🌌' },
           { id: 'add', label: 'Add a connection', icon: '+' },
           { id: 'reflect', label: 'Reflect', icon: '🧭' },
+          { id: 'print', label: 'Print', icon: '🖨' },
           { id: 'about', label: 'About: Care of Self', icon: '📜' }
         ];
         return h('div', { role: 'tablist', 'aria-label': 'Care Constellations sections',
@@ -423,6 +426,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
       // ═══════════════════════════════════════════════════════
       function renderAbout() {
         return h('div', null,
+          (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('careConstellations', h, ctx) : null),
           h('div', { style: { padding: 14, borderRadius: 12, background: 'rgba(253,164,175,0.10)', border: '1px solid rgba(253,164,175,0.4)', borderLeft: '4px solid #fda4af', marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 8px', color: '#fecaca', fontSize: 17, fontWeight: 800 } }, 'Why this is called Care of Self, not Self-Care'),
             h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.75 } },
@@ -521,10 +525,89 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
         );
       }
 
+      function renderPrintView() {
+        var connections = d.connections || [];
+        var byCategory = {};
+        connections.forEach(function(c) {
+          var key = c.categoryId || 'other';
+          if (!byCategory[key]) byCategory[key] = [];
+          byCategory[key].push(c);
+        });
+        var dirLabel = { 'to-me': 'cares for me', 'from-me': 'I care for', 'mutual': 'mutual care' };
+
+        return h('div', null,
+          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(253,164,175,0.10)', border: '1px solid rgba(253,164,175,0.4)', borderLeft: '3px solid #fda4af', marginBottom: 12, fontSize: 12.5, color: '#fecaca', lineHeight: 1.65 } },
+            h('strong', null, '🖨 My constellation map. '),
+            'A relational artifact: who cares for me, who I care for, and the mutual care that runs both ways. Useful for IEPs, family meetings, intake with a new counselor, or just to remember on a thin day. Private; you decide who to share it with.'
+          ),
+          h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
+            h('button', { onClick: printNow, 'aria-label': 'Print or save as PDF',
+              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #fda4af 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
+          ),
+          h('style', null,
+            '@media print { body * { visibility: hidden !important; } ' +
+            '#cc-print-region, #cc-print-region * { visibility: visible !important; } ' +
+            '#cc-print-region { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; background: #fff !important; color: #0f172a !important; } ' +
+            '#cc-print-region * { background: transparent !important; color: #0f172a !important; border-color: #888 !important; } ' +
+            '.no-print { display: none !important; } }'
+          ),
+          h('div', { id: 'cc-print-region', style: { padding: 18, borderRadius: 12, background: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0' } },
+            h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', borderBottom: '2px solid #0f172a', paddingBottom: 8, marginBottom: 14 } },
+              h('h2', { style: { margin: 0, fontSize: 22, fontWeight: 900, color: '#0f172a' } }, 'My Care Constellation'),
+              h('div', { style: { fontSize: 11, color: '#475569' } }, 'Care Ethics · Noddings · Foucault')
+            ),
+
+            h('div', { style: { padding: 10, background: '#fff1f2', border: '1px solid #fecdd3', borderRadius: 8, marginBottom: 14, fontSize: 12, lineHeight: 1.55, color: '#9f1239' } },
+              h('strong', null, 'Care is something received and given through relationship, '),
+              'not a product to consume alone. This map is the shape of that relationship in your life right now.'
+            ),
+
+            connections.length === 0 ? h('div', { style: { padding: 14, border: '2px dashed #cbd5e1', borderRadius: 10, fontSize: 12.5, color: '#475569', fontStyle: 'italic', textAlign: 'center' } },
+              '(no connections yet — open the Add a connection tab to add them)'
+            ) : null,
+
+            CARE_CATEGORIES.map(function(cat) {
+              var entries = byCategory[cat.id] || [];
+              if (entries.length === 0) return null;
+              return h('div', { key: cat.id, style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 10, pageBreakInside: 'avoid' } },
+                h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, cat.icon + ' ' + cat.label),
+                h('ul', { style: { margin: 0, padding: '0 0 0 20px', fontSize: 12, color: '#0f172a', lineHeight: 1.65 } },
+                  entries.map(function(c) {
+                    var dir = dirLabel[c.direction] || c.direction;
+                    return h('li', { key: c.id, style: { marginBottom: 4 } },
+                      h('strong', null, c.name || '(unnamed)'),
+                      h('span', { style: { color: '#475569' } }, ' · ' + dir + ' · strength ' + (c.strength || '—') + '/5'),
+                      c.notes ? h('div', { style: { fontSize: 11.5, color: '#475569', fontStyle: 'italic', marginTop: 2 } }, c.notes) : null
+                    );
+                  })
+                )
+              );
+            }),
+
+            d.reflectionAnswers && Object.keys(d.reflectionAnswers).length > 0 ? h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 10, pageBreakInside: 'avoid' } },
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, 'My reflections'),
+              Object.keys(d.reflectionAnswers).map(function(k, i) {
+                var a = d.reflectionAnswers[k];
+                if (!a) return null;
+                return h('div', { key: k, style: { marginBottom: 8 } },
+                  h('div', { style: { fontSize: 11.5, color: '#475569', fontStyle: 'italic', marginBottom: 2 } }, k),
+                  h('div', { style: { fontSize: 12.5, color: '#0f172a', whiteSpace: 'pre-wrap', lineHeight: 1.55 } }, a)
+                );
+              })
+            ) : null,
+
+            h('div', { style: { marginTop: 14, padding: 10, borderTop: '2px solid #0f172a', fontSize: 10.5, color: '#475569', lineHeight: 1.5 } },
+              'Sources: Noddings, N. (1984), Caring: A Relational Approach to Ethics and Moral Education · Foucault, M., The Care of the Self. Printed from AlloFlow SEL Hub.'
+            )
+          )
+        );
+      }
+
       // ── Root ──
       var body;
       if (view === 'add') body = renderAdd();
       else if (view === 'reflect') body = renderReflect();
+      else if (view === 'print') body = renderPrintView();
       else if (view === 'about') body = renderAbout();
       else body = renderMap();
 

@@ -8,17 +8,17 @@
 > [architecture.md](architecture.md). The two documents pair deliberately:
 > feature inventory for product/educator review, architecture for engineering review.
 
-**Generated:** 2026-05-09 (last revised May 10, 2026 — counts reconciled with on-disk file inventory)
+**Generated:** 2026-05-09 (last revised May 15, 2026 — May 14-15 annotation-suite + doc-pipeline-polish + physics-lab + flightsim additions integrated)
 **Codebase scale:** ~656,000 lines of non-redundant source code, 1 maintainer (Aaron Pomeranz, PsyD)
 **Monolith size:** ~24,000 lines (`AlloFlowANTI.txt`) after May 10 2026 refactor session (down from 26,754 at initial inventory)
-**Total user-facing features:** ~520+ documented (was ~177 in initial draft; deepened across 8 review passes)
+**Total user-facing features:** ~570+ documented (was ~177 in initial draft; deepened across 10 review passes — most recent May 14-15 added the annotation suite (§10), in-doc theme switcher in exports, image-size controls across 3 resource types, expanded physics-lab pedagogy, and the resolved Skylab takeoff bug)
 - ~95 monolith-level features across 16 categories + 25 deep-dive subsections (§3.17–§3.41)
-- **94 STEM Lab tools** across 9 subject areas (on-disk file count May 10 2026; multi-module sub-feature counts: DNA Lab 11, Chemistry 8, Punnett 8, Optics 8, Baking 7, Economics 5)
-- **34 SEL Hub items** (32 tools + 2 infrastructure files: `sel_hub_module.js` registry shell + `sel_safety_layer.js` shared safety infrastructure) mapped to CASEL competencies + Civic & Hope
-- ~280 deep-feature enumerations inside major subsystems (Doc Pipeline 35+ exports, Behavior Lens 15+, Symbol Studio 10+, AlloHaven 4+18, AlloBot Sage 19+5+3, Quiz subsystem 4 modes + AI grader + live aggregator, Adventure 7 components + handlers, Voice + TTS multi-provider, Adaptive Controller gamepad layer, 28 view modules, 20 infrastructure modules, etc.)
+- **95 STEM Lab tools** across 9 subject areas (on-disk file count May 14 2026; PrintingPress added May 10 for King Middle demo. Multi-module sub-feature counts: DNA Lab 11, Chemistry 8, Punnett 8, Optics 8, Baking 7, PrintingPress 7, Economics 5)
+- **34 SEL Hub items** (32 tools + 2 infrastructure files: `sel_hub_module.js` registry shell + `sel_safety_layer.js` shared safety infrastructure) mapped to CASEL competencies + Civic & Hope. **5 tools gained generative-AI Rehearse tabs May 11-14** (Upstander, Restorative Circle, Self-Advocacy, Coping, Friendship) — see §5.8 for the cross-cutting safety pipeline that protects 33 student-free-text AI surfaces across 18 SEL Hub tools + 1 STEM Lab surface (defense-in-depth pre-flight regex gate layered on top of existing assessSafety LLM checks).
+- ~290 deep-feature enumerations inside major subsystems (Doc Pipeline 35+ exports, Behavior Lens 15+, Symbol Studio 10+, AlloHaven 4+18, AlloBot Sage 19+5+3, Quiz subsystem 4 modes + AI grader + live aggregator, Adventure 7 components + handlers, Voice + TTS multi-provider, Adaptive Controller gamepad layer, 28 view modules, 20 infrastructure modules, **5 SEL Hub Rehearse tabs with multi-turn role-play + scene generation + break-character coach + end-reflect**, etc.)
 **Inventory completeness:** ~99% — remaining gaps are translation-string libraries, individual quest content, and per-tool internal sub-modes that are largely cosmetic. Every major subsystem and every CDN module is now documented with discoverability.
-**Bugs fixed during this audit:** 6 net new (Report Writer never loaded, Immersive Reader null overwrites, Teacher Dashboard 10 components unregistered, WordSoundsReviewPanel duplicate registration, view_misc_modals null registrations, GeminiBridgeView deleted-but-consumed) — see §7
-**Distribution model:** Runs as a Gemini Canvas artifact; districts pay $0 by riding existing Google Education Gemini quotas
+**Bugs fixed during this audit:** 6 net new (Report Writer never loaded, Immersive Reader null overwrites, Teacher Dashboard 10 components unregistered, WordSoundsReviewPanel duplicate registration, view_misc_modals null registrations, GeminiBridgeView deleted-but-consumed) + additional May 11-15 fixes (ExportPreviewView missing `history` prop, doc_pipeline missing `setError`/`pdfBatchSummary`, teacher `LearnerProgressView` missing `isTeacherMode`, word_sounds probe-mode `probeActivity` crash, Space Colony minimap `ctx` typo, Crisis Companion exit-button silent no-op, misleading "monitored for your safety" copy in 5 tools, **launch pad Learning Tools modal showed only after second click** (setTimeout race), **Physics target-destruction mode stale closure** (first-target-disappears + projectile-passes-through-targets, 2-in-1), **Skylab takeoff bleached ground + jolt + missing motion cue**, **Tier 1 bug-fix pass (May 15) on annotation-suite drag**: Rules-of-Hooks violation in NoteBubble/VoiceNoteBubble, drag flooding undo stack with intermediate positions, missing right/bottom drag clamp) — see §7
+**Distribution model:** Runs as a Gemini Canvas artifact; districts pay $0 by riding existing Google Education Gemini quotas. **Primary CDN migrated to Cloudflare Pages** (`alloflow-cdn.pages.dev`, May 12 2026); jsdelivr/GitHub is fallback (25 MiB per-file cap; m4a/mp4/onnx gitignored).
 
 ---
 
@@ -43,12 +43,15 @@ This inventory complements those by adding **discoverability paths** (where in t
 1. [How to navigate this document](#1-how-to-navigate)
 2. [Architectural primer](#2-architectural-primer)
 3. [Monolith features (16 categories)](#3-monolith-features)
-4. [STEM Lab tools (94 tools, 9 subject areas)](#4-stem-lab-tools)
-5. [SEL Hub tools (34 items: 32 tools + 2 infrastructure)](#5-sel-hub-tools)
+4. [STEM Lab tools (95 tools, 9 subject areas)](#4-stem-lab-tools)
+5. [SEL Hub tools (34 items: 32 tools + 2 infrastructure) + §5.8 cross-cutting safety pipeline](#5-sel-hub-tools)
 6. [Discoverability cheat sheet](#6-discoverability-cheat-sheet)
 7. [Status & known gaps](#7-status--known-gaps)
 8. [Architectural patterns by family](#8-architectural-patterns)
 9. [Cross-references](#9-cross-references)
+10. [Annotation Suite — cross-cutting feature (May 14-15 2026)](#10-annotation-suite)
+11. [Doc Pipeline export-side capabilities (May 14-15 2026 expansion)](#11-doc-pipeline-export-capabilities)
+12. [Physics + Flightsim refinements (May 14-15 2026)](#12-physics-flightsim-refinements)
 
 ---
 
@@ -861,7 +864,7 @@ This makes Persona Chat closer to a narrative role-play game than a chatbot — 
 | `throwlab` | ThrowLab | Sports physics: full 3D drag + Magnus integrator; Pitcher's Mound MVP with 6 pitch types | 6-12 |
 | `playlab` | PlayLab | Sports strategy: football + soccer play-design, drag-to-place, animated sim, Coach Mode, drills | 6-12 |
 
-### 4.6 Engineering & Technology (9 tools)
+### 4.6 Engineering & Technology (10 tools)
 
 | ID | Display name | Purpose | Grade band |
 |---|---|---|---|
@@ -874,6 +877,7 @@ This makes Persona Chat closer to a narrative role-play game than a chatbot — 
 | `flightsim` | Flight Sim | Aircraft physics + flight dynamics | 6-12 |
 | `weldlab` | Weld Lab | 8 modules: Heat Input, Bead Lab, Defect Hunt, Process Compare, Joint Catalog, Symbols Reader, PPE & Safety, Career Pathways; Maine BIW/EMCC/AWS data | 9-12 |
 | `roadready` | RoadReady (Driver's Ed) | Raycaster driving sim + permit test + parking 2D + hypermiling lab; Maine focus | 9-12 |
+| `printingpress` | Printing Press | Gutenberg screw-press simulation with Guided Tour mode + 7 modules (mechanics, type-setting, ink/composition, pull/proof, People view with Gutenberg/Erasmus/etc., AD FONTES compose-stick challenge, Who-Said-This attribution game). Built for King Middle EL Education demo May 12 2026; ~2,023 lines. Atmospheric backdrop pass: planet-and-atmosphere layered glow. | 6-12 |
 
 ### 4.7 Creativity & Arts (5 tools)
 
@@ -952,13 +956,13 @@ When sub-modules count as discrete features, the STEM count expands from 95 tool
 
 | ID | Display name | Purpose | Grade band | Notes |
 |---|---|---|---|---|
-| `coping` | Coping Toolkit | 6 strategy types × 15+ strategies; Calm Plan builder; AI strategy matcher | K-12 | |
+| `coping` | Coping Toolkit | 6 strategy types × 15+ strategies; Calm Plan builder; AI strategy matcher. **🎭 Rehearse tab** (May 13 2026): in-vivo coping-skill rehearsal where AI plays the TRIGGER itself (not a peer). 4 trigger configs: 🌀 **anxious voice in your head** (catastrophizing internal voice before a presentation/test; louder if argued with, quieter if named or grounded physically), 🔥 **escalating parent** (frustrated parent raising volume; de-escalates when student validates underlying concern without folding), 📵 **friend bailing on plans** (vague last-minute cancellation; opens up if student doesn't spiral, lashes out, or guilt-trip), 🎆 **sensory overload at school event** (the environment itself — pep rally bass drops, bleachers stomping; levels off when student names a grounding move). AI generates fresh scene + opener each playthrough; "🪶 Pause — coach me" surfaces a coping-specific technique to try in the moment; "End & reflect" gives 2-3 sentence reflection on what worked + one skill to try next time. Crisis-rehearsal-not-therapy disclaimer plus always-on resource footer with 988/Crisis Text Line. | K-12 | |
 | `mindfulness` | Mindfulness Corner | Breathing animations (box / 4-7-8 / belly), body scan, 5-4-3-2-1 grounding, gratitude | K-12 | Web Audio bowls + chimes |
 | `execfunction` | Executive Function Workshop | 6 tabs (Map/Start/Hold/Plan/Time/Coach); ADHD + planning paralysis + working memory | 3-12 | Barkley + Dawson framework |
 | `goals` | Goals Setter | SMART goals, habit-streak counter, AI coach, vision board, goal buddy | K-12 | |
 | `advocacy` | Advocacy Workshop | Branching scenarios (silent/aggressive/assertive), script builder, rights ed | K-12 | |
 | `transitions` | Transitions Workshop | Change Curve (Kubler-Ross/Bridges adapted); 8 change types + coping anchors | K-12 | |
-| `selfadvocacy` | Self-Advocacy Studio | IDEA, FAPE, LRE, Section 504; IEP/504 plans; accommodation requests; disclosure decisions; transition planning | 6-12 | Print-friendly CSS |
+| `selfadvocacy` | Self-Advocacy Studio | IDEA, FAPE, LRE, Section 504; IEP/504 plans; accommodation requests; disclosure decisions; transition planning. **Practice tab Rehearsal mode** (May 12 2026): every existing Practice scenario gained a "Start rehearsal →" button that opens a multi-turn role-play with AI playing the OTHER person specific to that scenario. 12 hand-cast peer characters — middle school: busy math teacher who hasn't read the 504, skeptical-but-fair teacher for retakes, slightly-defensive teacher for seat change, curious-not-malicious friend asking about accommodations, warm case manager prepping for IEP, no-exceptions substitute. High school: friendly college Disability Services intake, openly-resistant calculus teacher refusing IEP, friendly internship interviewer, busy non-specialist pediatrician, well-meaning counselor pushing community college, romantic partner of a couple months. Each character has a tuned disposition (softens vs hardens by turn 4-5 depending on whether the student advocates effectively). Send → / 🪶 Break character — coach me / End & reflect. Complementary to existing Write-and-Critique flow. | 6-12 | Print-friendly CSS |
 | `digitalWellbeing` | Digital Wellbeing Studio | Internal-regulation companion to safety.js: social media moderation / FOMO / doom-scrolling / sleep impact, recognizing online harm to mental health, cyberbullying recovery, media literacy (AI-generated content, engagement bait, lateral reading), crisis hand-off when online experiences turn dangerous | 6-12 | Scoped stylesheet (`.dw-root`); platform-specific cards (Instagram, TikTok, Snap, Discord, Roblox); complements `safety` which covers external hazards |
 
 ### 5.3 Social Awareness (4 tools)
@@ -967,7 +971,7 @@ When sub-modules count as discrete features, the STEM count expands from 95 tool
 |---|---|---|---|---|
 | `community` | Community & Culture | Cultural awareness, identity mapping, navigating differences | K-12 | Anti-racist, microaggression literacy |
 | `cultureexplorer` | Culture Explorer | AI deep dives into world cultures with Imagen + TTS pronunciations | 3-12 | 7 regions × 8 lenses |
-| `upstander` | Upstander Workshop | Bullying through 3 lenses (target/perpetrator/bystander); upstander moves | K-12 | Cites Olweus, Hawkins; APA Zero Tolerance critique |
+| `upstander` | Upstander Workshop | Bullying through 3 lenses (target/perpetrator/bystander); upstander moves. **🎲 Generative Scenarios** (May 12 2026): student picks any 2-3 of setting (10: cafeteria/hallway/classroom/gym/bus/recess/lockers/bathroom/sports/party), relationship (8: close friend / friend group / classmate / higher or lower social status / sibling / teammate / new student), kind of harm (9: exclusion / mocking / rumor / physical intimidation / appearance-based / family put-downs / pressure to join in / punching-down humor / friendship manipulation), plus optional free-text. AI returns a fresh 4-choice scenario in the SAME rated/feedback format as the 9 hand-crafted ones. Validation rejects malformed JSON or missing rating distribution. **🎭 Rehearse tab** (May 11-12 2026): multi-turn role-play where AI plays a peer character. 3 roles — 🛡️ **AI plays someone being cruel (you intervene)**, 🤝 **AI plays someone who just got bullied (you support them)**, 🪞 **AI plays a friend going along with it (you push back)**. AI generates fresh scene + opener each playthrough (variation in setting, target name, trigger detail). Send → / 🪶 Break character — coach me / End & reflect. Bridge button "Try this as a role-play →" on every generated scenario carries the scenario setup over as the scene. **AI Coach tab renamed** from "Safe Space" → "Talk it through" May 13 2026 (the old name implied adult oversight that doesn't exist in solo mode). | K-12 | Cites Olweus, Hawkins; APA Zero Tolerance critique |
 | `ethicalreasoning` | Ethical Reasoning Lab | Dilemmas + frameworks; stakeholder mapping; AI Socratic dialogue | K-12 | Mill, Kant, Aristotle, Gilligan, Noddings, Rawls, bell hooks, Ubuntu |
 
 ### 5.4 Relationship Skills (8 tools)
@@ -976,12 +980,12 @@ When sub-modules count as discrete features, the STEM count expands from 95 tool
 |---|---|---|---|---|
 | `conflict` | Conflict Resolution Lab | Branching conflict scenarios; I-statement builder; de-escalation; repair | K-12 | |
 | `conflicttheater` | Conflict Theater | Immersive multi-NPC mediation with persistent personalities, body language, harmony meter, restorative scoring | 6-12 | **MVP v0.1** — 1 scene (cafeteria), 1 scenario, 2 characters; Phase 2 pending |
-| `friendship` | Friendship Workshop | 6 friendship styles self-assessment; conversation starters; repair/forgiveness | K-12 | ASD + ADHD social communication aware |
+| `friendship` | Friendship Workshop | 6 friendship styles self-assessment; conversation starters; repair/forgiveness. **🎭 Rehearse tab** (May 13 2026): multi-turn role-play with AI playing the friend in 6 high-frequency real-life friendship conversations students avoid because they don't know how to start. 💬 **New person, new invite** (potential friend; says yes if invite is specific + low-pressure, hedges if vague), 🩹 **Repair after a fight** (friend still hurt; tests if apology is real or performative), 🛡️ **Setting a boundary** (boundary-pushing friend who borrows / cancels / pulls into drama; defensive when called on it but adjusts if named without attacking their character), 💔 **Naming the hurt — left out** (friend who was at the group hang you missed; engages honestly if hurt is named without guilt-tripping), 🪞 **Calling in, not calling out** (friend who messed up — joke at someone's expense; defensive at first, softens if kept private + specific + shame-free), 🌱 **Reaching out after months** (old drifted friend; re-engages easily if kept light). Each character has a tuned disposition for "stay consistent or harden" if student lectures, threatens the friendship, or attacks character. Casual texting-style guidance in prompts (lowercase) for text scenarios. Complementary to the existing AI Practice tab (which is Q&A advice, not in-conversation simulation). | K-12 | ASD + ADHD social communication aware |
 | `social` | Social Skills Lab | Conversation starters, listening challenges, body language decoder, cooperation scenarios | K-12 | Socially anxious / neurodivergent supportive |
 | `sociallab` | Social Lab (Pragmatic Language) | Two-tier: static branching scenarios + AI roleplay; ASD pragmatic focus | 3-12 | 8 skill categories |
 | `peersupport` | Peer Support Coach | OARS (Open / Affirmation / Reflection / Summary) skills; safety signal training; 5-step safety response | 6-12 | Teen MHFA + MI + Sources of Strength + QPR |
 | `teamwork` | Teamwork Builder | Team role discovery; collaborative challenges; team contracts | K-12 | |
-| `restorativecircle` | Restorative Circle Process | Circle types (community/repair/celebration/academic/check-in); talking piece traditions; Indigenous roots education | K-12 | Honors Navajo Peacemaking, Haudenosaunee, Maori hui, Aboriginal Australian practices |
+| `restorativecircle` | Restorative Circle Process | Circle types (community/repair/celebration/academic/check-in); talking piece traditions; Indigenous roots education. **🎭 Rehearse tab** (May 12 2026): multi-turn role-play tailored to restorative dynamics (distinct from bullying or peer dynamics). 3 roles — 🪶 **Practice being the facilitator** (AI plays a defensive participant in a circle who minimizes the conflict; softens only if facilitator asks open, curious, non-blaming questions), 🩹 **Practice taking accountability** (AI plays the person you hurt — quiet, hurt, distrustful; tests if the apology is real or performative; softens when impact is named, not when excuses arrive), 👂 **Practice listening when someone shares their hurt** (AI plays a peer telling you why something hurt; shuts down if defended or fixed, opens up if just reflected back). Coach prompts include role-specific reminders ("Restorative facilitation centers curiosity over judgment", "Real accountability is naming what you did, naming the impact not the intent", "Restorative listening is reflecting back what you heard before you respond"). Reflection prompts use "curious, not corrective" framing. AI character descriptions explicitly forbid pre-forgiveness so students can't shortcut to easy resolution. | K-12 | Honors Navajo Peacemaking, Haudenosaunee, Maori hui, Aboriginal Australian practices |
 
 ### 5.5 Responsible Decision-Making (3 tools)
 
@@ -1001,8 +1005,46 @@ When sub-modules count as discrete features, the STEM count expands from 95 tool
 
 | File | Purpose |
 |---|---|
-| `sel_safety_layer.js` | Shared safety infrastructure used by Crisis Companion + Peer Support + other high-stakes SEL tools. **9 exported functions**: `hasCoachConsent()` / `giveCoachConsent()` (consent gate before AI coaching), `renderConsentScreen()` (consent UI), `assessSafety(message, band, toolId, callGemini)` (Gemini-powered triangulated tier detection — categorizes student messages by risk level), `parseTier()` (interpret safety assessment response), `storeTranscript()` / `getTranscript()` / `getAllTranscripts()` (persistence for flagged interactions — for school-counselor follow-up), `safeCoach()` (wrapped coach function that pre-checks via `SafetyContentChecker`), `renderCrisisResources()` + `renderResourceFooter()` (Maine-specific crisis resource lists with 988 / Maine Crisis Line / NAMI Maine / Trevor Project / Crisis Text Line), `getSessionFlagLog()` (per-session flagged-message log) |
-| `sel_hub_module.js` | Registry shell + modal frame + tile grid layout |
+| `sel_safety_layer.js` | Shared safety infrastructure used by every AI-coaching surface across SEL Hub. **12 exported functions** (was 9 before May 13 2026 expansion): `hasCoachConsent()` / `giveCoachConsent()` (consent gate before AI coaching), `renderConsentScreen()` (consent UI), `assessSafety(message, band, toolId, callGemini)` (Gemini-powered triangulated tier detection — categorizes student messages by risk level), `parseTier()` (interpret safety assessment response), `storeTranscript()` / `getTranscript()` / `getAllTranscripts()` (persistence for flagged interactions — for school-counselor follow-up), `safeCoach()` (wrapped coach function that pre-checks via `SafetyContentChecker` + calls assessSafety in parallel + appends crisis text on tier-3), `renderCrisisResources()` (loud red 988 / Maine Crisis Line / NAMI Maine / Trevor Project / Crisis Text Line block, role=alert, aria-live=assertive), `renderResourceFooter()` (quieter always-on resource strip for sensitive-content tools), `getSessionFlagLog()` (per-session flagged-message log). **New May 13-14 2026**: `safeRehearseCheck(message, opts)` — synchronous regex-only gate (no extra LLM call) for use in Rehearse/role-play sendTurn handlers; returns `{ action: 'block' \| 'nudge' \| 'continue', severity, flag }`. Critical-tier content blocks the AI call entirely; high-tier content lets the AI turn proceed with a soft "talk to a trusted adult" nudge appended. Fires `onSafetyFlag` through the same pipeline as `safeCoach`. `rehearseBreakCharacterText(severity)` — single-source-of-truth coach break-character message used across all 28+ wired surfaces, so the warm/non-judgmental tone is consistent. `renderSafetyDisclosure(h, band, activeSessionCode)` — conditional honest disclosure (solo mode: "This conversation stays on your device, we run safety checks for crisis words, please talk to a trusted adult for real safety concerns" / live-session mode: "Your teacher is hosting a live session, anything you save or submit can be seen by them, ..."). Replaces the prior misleading "this space is monitored for your safety" copy that shipped in 5 tools (Upstander, Compassion, Friendship, Transitions, Growth Mindset) until May 13 2026 |
+| `sel_hub_module.js` | Registry shell + modal frame + tile grid layout. **Added May 13 2026**: `activeSessionCode` is now received as a prop from the monolith (parallel to `studentCodename` and `selectedVoice`) and threaded into the plugin `ctx` object so every SEL tool can render the correct truthful safety disclosure depending on whether a teacher is actively hosting a live session |
+
+### 5.8 Cross-cutting safety pipeline (added May 13-14 2026)
+
+A single regex-based safety gate (`window.SelHub.safeRehearseCheck`, backed by `window.SafetyContentChecker` on `window.__alloShared`) now protects **33 student-free-text AI surfaces** across **18 SEL Hub tools** plus **1 STEM Lab surface**. Critical-tier content (self_harm or harm_to_others keyword categories) aborts the AI call, swaps the output for a coach-style break-character message, surfaces the loud red crisis-resources block (988 / Crisis Text Line / trusted adult), and fires `onSafetyFlag` (which writes to `localStorage` in solo mode and surfaces to a hosting teacher in live sessions). High-tier content (bullying, concerning_content) lets the AI turn proceed but appends a soft "if this is close to real, talking to a trusted adult is always an option" reminder.
+
+**Wired surfaces inventory:**
+
+| Tool | Surfaces | Notes |
+|---|---|---|
+| Upstander | 4 | Legacy AI coach ("Talk it through"), AI Rehearsal (Moves tab), AI Apology Coach (Repair pathway), Rehearse tab sendTurn |
+| Restorative Circle | 2 | Facilitator Q&A, Rehearse tab sendTurn |
+| Self-Advocacy | 2 | Practice critique, Rehearse mode sendTurn |
+| Coping | 3 | Thought-Flipper AI, Self-Talk AI, Rehearse tab sendTurn |
+| Friendship Workshop | 2 | Legacy AI Practice coach, Rehearse tab sendTurn |
+| Compassion | 1 | AI Compassion Coach |
+| Transitions | 1 | AI Support coach |
+| Growth Mindset | 1 | AI Growth Coach |
+| Mindfulness | 1 | Gratitude journal AI |
+| Digital Wellbeing | 1 | Comparison-thought reframe AI |
+| Perspective | 3 | Coach situation describe, journal reflection AI, scenario-response evaluator |
+| Social | 2 | Conversation drafts, life-listening drafts |
+| Social Lab | 1 | Multi-turn peer roleplay sendChat |
+| Strengths | 3 | Coach question, interview answers, full story draft |
+| Teamwork | 3 | Role reflection, teamwork challenge, conflict description |
+| Culture Explorer | 1 | Follow-up question |
+| Goals Setter | 1 | Goal coach Q&A |
+| Journal | 1 | AI Insight from mood check-in summary (defense in depth on top of existing assessSafety LLM tier check) |
+| Emotions Explorer | 1 | Emotion Coach on student journal draft (defense in depth on top of existing assessSafety LLM tier check) |
+| Conflict Studio | 2 | Role-play sendRPMessage + mediation sendMedMessage (defense in depth on top of existing assessSafety) |
+| Conflict Theater | 1 | Multi-character sendTurn — break-character on first responder if critical |
+| **STEM Lab** | | |
+| LLM Literacy Lab | 1 | Temperature playground (only STEM AI surface explicitly invites "type ANY prompt"; AlloBot Sage audited and confirmed safe — quiz-gen not chat) |
+
+**Coverage architecture**: every tool that captures `safeCoach()` results now also stores `result.tier` into a tool-local `_lastTier` state field (or appends a `_crisis` marker into chat history for tools using `React.useState` directly like Social Lab). The crisis-resources render is conditional on `_lastTier >= 3` and is placed at the top of each tool's render so it persists across sub-tab navigation. For tools that don't have `_lastTier`-style state (Social Lab specifically), the chat-render explicitly handles `msg.role === 'coach'` entries and embeds `renderCrisisResources` inline.
+
+**Defense in depth**: every legacy coach tab's `else { callGemini(...) }` fallback path (used only if `window.SelHub.safeCoach` somehow doesn't load) was hardened to call `safeRehearseCheck` synchronously before the unguarded `callGemini`, so even the failure path has at least keyword-level protection.
+
+**Disclosure rewrite**: the previously-shipped "This space is monitored for your safety" copy in 5 AI-coach intros (Upstander, Compassion, Friendship, Transitions, Growth Mindset) was misleading in solo mode (no adult was monitoring; the keyword check writes to `localStorage` only). All 5 now call `renderSafetyDisclosure` which picks the truthful variant based on `activeSessionCode`. Upstander's coach tab title also renamed from "Safe Space" → "Talk it through" because the old label implied adult-supervised safety the tool doesn't actually provide.
 
 ---
 
@@ -1130,7 +1172,12 @@ Five latent bugs surfaced by extraction work and fixed:
 - Runs as a single Gemini Canvas artifact
 - Districts pay $0; rides on existing Google Education Gemini quotas
 - No SaaS install, no LMS integration required
-- jsdelivr CDN serves all module files at git-pinned hashes for reproducibility
+- **CDN architecture (May 12 2026 migration):**
+  - **Primary:** Cloudflare Pages at `alloflow-cdn.pages.dev` (faster edge cache, no per-org rate-limit, no 25 MiB-per-file concern for typical modules)
+  - **Fallback:** jsdelivr/GitHub raw (kept for redundancy in case Cloudflare is unreachable)
+  - 25 MiB per-file cap on Cloudflare Pages; m4a / mp4 / onnx assets are gitignored and not served via CDN
+  - All module files git-pinned at commit hashes for reproducibility (deploy.sh rewrites `loadModule('X', 'https://.../X_module.js')` URLs to include the commit hash)
+- **Build pipeline:** `prismflow-deploy/public/*` files are auto-synced from repo-root sources by a `build.js` watcher; edit ROOT files only (deploy mirrors get silently overwritten within seconds otherwise)
 
 ---
 
@@ -1155,4 +1202,126 @@ Five latent bugs surfaced by extraction work and fixed:
 
 ---
 
-**End of inventory.** Total documented features: ~177 user-facing across ~160 files (98 monolith CDN modules + 94 STEM Lab tools + 34 SEL Hub items, with overlap).
+---
+
+## 10. Annotation Suite
+
+Cross-cutting feature shipped across 7 phases on May 14-15 2026. Lives in `annotation_suite_source.jsx` → `annotation_suite_module.js` (CDN module, ~1,117 lines compiled), plus a parallel vanilla-JS runtime baked into `doc_pipeline_source.jsx` for the export side. Data envelope: `{id, kind, x, y, author, authorName, createdAt}` shared across all annotation types; kind-specific fields layered on (notes get `content + color`, highlights get `rects + text + color`, voice notes get `audioBase64 + mimeType + durationSec`).
+
+### 10.1 Annotation kinds
+
+| Kind | Surface | Description |
+|---|---|---|
+| `sticker` | in-app | Decorative 4-emoji stamp (⭐ ✅ 💡 ❤️). Pure decoration; no content field. |
+| `note` | in-app + export | Sticky-note bubble with inline editor (4 color palettes). Click-to-place, click-to-expand-and-edit. |
+| `highlight` | in-app + export | Multi-rect text-selection overlay (4 color palettes). Drag-to-select; hover-to-delete via corner X. |
+| `voice` | in-app + export | 60-second audio note recorded via MediaRecorder, stored as base64, played via `<audio>` element. No cloud round-trip. |
+
+### 10.2 In-app annotation toolbar
+
+Located in the main app output-area header. Toggle buttons cycle one of: `''` (off) / `'sticker'` / `'note'` / `'highlight'` / `'voice'`. Sub-controls appear contextually when the mode is active:
+- **Sticker mode**: 4 icon picker buttons + Clear All.
+- **Note mode**: 4 color swatches + Templates dropdown (role-aware: teacher gets grading stamps like "⭐ Great work!", "🧮 Show your work"; student gets reflection stamps like "❓ Question", "💡 Reminds me of…") + Clear All.
+- **Highlight mode**: 4 color swatches + Clear All.
+- **Voice mode**: cursor switches to crosshair; click drops a placeholder and starts recording via the existing `useAudioRecorder` hook (same battle-tested mic + permission infra fluency uses).
+
+Additional toolbar controls: **↩ Undo** (Ctrl/Cmd+Z), **📋 List** (opens sidebar; count badge shows total).
+
+### 10.3 Sidebar (in-app + export)
+
+Floating right-edge panel, 300px, max 100vh-120px tall. Lists every annotation grouped by author with click-to-jump (smooth-scroll + indigo pulse ring at the target). Filter pills: All / Teacher / Mine. Per-item delete with permission gating (students can only delete their own; teachers can delete any). In-app header has 📂 **Import** button (loads a student's downloaded annotations JSON via hidden file input); export header has Close.
+
+### 10.4 Export-side runtime
+
+Vanilla-JS IIFE baked into the exported HTML by `doc_pipeline_source.jsx`. Reads teacher annotations from an embedded `<script type="application/json" id="alloflow-teacher-annotations">` blob; loads student annotations from `localStorage` (key `alloflow-annotations|<docTitle>|<bodyLen>`). Renders both layers with kind-dispatch matching the in-app `Overlay`. Teacher annotations are frozen (read-only); student annotations are fully editable + draggable.
+
+Export toolbar (in the Reading Tools strip): theme switcher (4 themes) + annotate row (Off / Note / Highlight / Voice / Undo / Mine / List / Save mine) + conditional color-swatch row for note + highlight modes. **⬇ Save mine** downloads `<docTitle>_annotations.json` for student → teacher sharing back.
+
+### 10.5 Save / Load workflow
+
+- **In-app save**: Stickers ride the project JSON via `executeSaveFile` ([phase_k_helpers_source.jsx:752+](phase_k_helpers_source.jsx)) — both teacher and student save flavors include `stickers: [...]`.
+- **In-app load**: `handleLoadProject` ([misc_handlers_source.jsx:154](misc_handlers_source.jsx)) calls `setStickers(rawData.stickers || [])`.
+- **Import**: `_m.importAnnotations(existing, payload, { forceAuthor: 'student' })` — accepts either bare array or wrapped `{annotations: [...]}`; dedupes by id; tracks provenance via `importedFrom + importedAt`.
+- **Migration**: `migrateLegacyShape(annotations)` stamps `kind: 'sticker'` on pre-Phase-3 saves that lack the field.
+
+### 10.6 Voice note privacy guarantees
+
+Zero network calls in the voice path. `MediaRecorder` → `Blob` → `FileReader.readAsDataURL` → base64 → React state → project JSON / localStorage. MediaStream tracks explicitly released on stop or cancel. 60s recording cap (`VOICE_MAX_SECONDS`); 500 KB base64 size cap (`VOICE_MAX_BYTES`). Refuses to attach over-size clips with a clear warning.
+
+### 10.7 Drag-to-reposition (May 15 2026)
+
+Stickers, notes (collapsed), and voice bubbles (collapsed) all draggable when annotation mode is off. Permission: students can drag their own; teachers can drag anything in their view; export-side cannot drag teacher annotations (frozen). Implementation uses DOM-only style mutation during the drag (no React state churn) and commits a single setState on `pointerup`, so the undo stack records one snapshot per drag rather than ~60 intermediate positions. Position is clamped to host `scrollWidth × scrollHeight` so annotations can't be lost off the bottom-right edge.
+
+### 10.8 Undo (session-only, both surfaces)
+
+20-slot snapshot stack. In-app: `useEffect` auto-snapshots the previous stickers state on every change, with an `isUndoingAnnotationRef` flag to prevent the undo itself from being recorded. Export: explicit `snapshot()` calls before each mutation entry point. **Ctrl/Cmd+Z** keyboard shortcut on both surfaces, scoped to ignore presses inside text fields so native browser undo still works during typing.
+
+### 10.9 Module surface (window.AlloModules.AnnotationSuite)
+
+Components: `StickerNode`, `NoteBubble`, `HighlightOverlay`, `VoiceNoteBubble`, `RecordingOverlay`, `Overlay`, `Toolbar`, `Sidebar`. Helpers: `createStickerFromClick`, `createNoteFromClick`, `createHighlightFromSelection`, `createVoicePlaceholder`, `attachAudioToVoiceNote`, `importAnnotations`, `updateAnnotation`, `removeAnnotation`, `migrateLegacyShape`, `focusAnnotation`, `countByAuthor`, `annotationPreview`, `buildStickerTitle`. Constants: `STICKER_ICONS`, `STICKER_TYPES`, `NOTE_COLORS`, `NOTE_COLOR_KEYS`, `HIGHLIGHT_COLORS`, `HIGHLIGHT_COLOR_KEYS`, `ANNOTATION_KINDS`, `TEACHER_NOTE_TEMPLATES` (9 grading stamps), `STUDENT_NOTE_TEMPLATES` (6 reflection stamps), `VOICE_MAX_SECONDS`, `VOICE_MAX_BYTES`.
+
+---
+
+## 11. Doc Pipeline export-side capabilities
+
+Significant expansion in May 14-15 2026 of what the exported HTML does at student-load time. All shipped via `doc_pipeline_source.jsx` → rebuilt to `doc_pipeline_module.js` (~16,997 lines).
+
+### 11.1 In-doc theme switcher (Reading Tools)
+
+Sticky toolbar at the top of every exported lesson with 4 themes (☀ Light / 🌙 Dark / 📜 Sepia / ◼ High Contrast). Light = teacher's chosen `exportTheme` baseline. Dark uses slate-900 with full table/card/MCQ overrides. Sepia uses parchment cream tones (low-glare, dyslexia-friendly). High Contrast targets WCAG AAA with 2px black borders + black-on-yellow row hover. Selection persists via `localStorage` (`alloflow-reading-theme`). OS-responsive default: `prefers-color-scheme: dark` opens in Dark on first load when no saved preference. Anti-FOUC inline init script applies theme before body paints.
+
+### 11.2 Resource-specific image-size controls
+
+`cfg.glossaryImageSize`, `cfg.timelineImageSize`, `cfg.conceptSortImageSize` — each accepts `'small' / 'medium' / 'large' / 'xl'` mapped to pixel sizes (40/64/96/140 for glossary; 48/64/96/140 for timeline; 56/80/110/150 for concept-sort). Wired through Export Preview UI as 4-button SMLXL strips with color-keyed selection (emerald for glossary, indigo for timeline, rose for concept-sort).
+
+### 11.3 Resource visual refresh
+
+- **Glossary table**: scoped CSS overrides global zebra (opaque slate-50 even rows, slate-100 hover), header gets emerald-50→100 gradient + 2px lower border, term column bold emerald accent, image cell with white inner pad + light gray border + soft shadow + 1.08× hover scale.
+- **Generic table block**: global zebra/hover changed from `rgba(...,0.5)` to opaque `#f8fafc / #f1f5f9` — fixes muddy-dark-gray rendering everywhere.
+- **MCQ option labels** (`.mcq-label`): `:focus-within` indigo glow (WCAG 2.4.7), `:has(input:checked)` background + bold weight + ✓ prefix (WCAG 1.4.11).
+- **Brainstorm grid cards**: 4px top accent in cycling 8-color palette, numbered "Idea N" pill badge, hover lift (translateY -2px + 6/18 shadow), bolder title.
+- **Timeline strip**: image-size cfg wired (both list mode and cuttable-strips mode).
+- **Quiz-box**: indigo top accent + lifted shadow (matches brainstorm).
+- **FAQ panels**: caret rotates 180° on open with color shift, expanded state gets cyan left accent + white bg, hover tints cyan, full theme-aware overrides for dark/sepia/HC.
+- **Reflection blocks** in quiz: subtle indigo left-bar accent + soft bg tint.
+- **Muted text**: 32 sites bumped from slate-400 (#94a3b8, 2.6:1 fails AA on white) → slate-500 (#64748b, 4.6:1 passes AA both light + dark).
+
+### 11.4 Annotation runtime
+
+See §10.4 above. All four annotation kinds render inside the exported HTML; student can place notes/highlights/voice notes that persist locally. Sidebar mirrors the in-app version with theme-aware overrides (light/dark/sepia/HC).
+
+---
+
+## 12. Physics + Flightsim refinements
+
+### 12.1 Physics Lab (`stem_lab/stem_tool_physics.js`) — Target Mode + pedagogy expansion
+
+**Bug fixes:**
+- **Stale `_onTargetLand` closure** rebound on every canvasRef call (was bound once at first mount; `d.targetList` was null, so hits silently no-op'd AND the write-back overwrote live state with a stale snapshot — root cause of "projectile passes through targets" + "first target disappears on launch").
+- **Mid-flight collision** added in the physics step: ball intersecting a crate's volume (`|ball.mX - target.x| ≤ target.radius` AND `ball.mY ≤ 2.5m`) snaps to target position so the existing landing branch handles the hit. Projectiles no longer fly through crates.
+
+**New pedagogy features (10+):**
+- **Live "Show Your Work" formulas panel** (📝 toggle): Range / Max Height / Flight Time each displayed in 3 forms (symbolic → values-substituted → numeric), updating live as sliders move.
+- **Predict-then-launch**: input next to Launch button; snapshot at launch + comparison on landing; tiered XP (bullseye ≤5% +25 XP, close ≤15% +10 XP, miss reset streak); 🔮 streak counter.
+- **Trajectory comparison overlay** (📈 Compare): past trails tagged with `{angle, velocity, gravity, drag}`; brighter alpha + HSL hue by angle (red 0° → blue 90°); labeled apex chip per trail; cap 5 trails + 🧹 Clear button.
+- **Predicted-landing pin**: fuchsia dashed pin at the closed-form R when Show Work panel is open; slides live with slider changes.
+- **No-drag ghost trajectory**: when drag is on + projectile in flight, faint white dashed parabola of the ideal vacuum trajectory alongside the actual trail. Direct visualization of drag's effect.
+- **Slow-motion / pause / step**: 1× / ½× / ¼× / ⏸ button group; ⏭ Step button advances one tick when paused (one-shot via `_stepNext` flag in draw loop).
+- **Symmetry Demo button**: auto-fires current angle, then 90°−θ at same velocity; overlay mode auto-enables; toast names the insight after the second land ("Same range! 30° and 60° are complementary…"). Refuses to run at 45°.
+- **Apex annotation chip**: detects `Vy` zero-crossing, pins crosshair + chip showing `H = … m`, `t = … s`, `Vy = 0 (Vx = … m/s)`. Fades over 3 seconds.
+- **Motion component graphs** (📉 Motion): SVG charts of `Vx-vs-t` (flat) and `Vy-vs-t` (linear, crosses zero). Caption: "Horizontal and vertical motion are independent. Gravity only affects Vy."
+- **Range-vs-Angle parameter sweep**: third sub-chart inside Motion panel; plots R(θ) across [0°, 90°] at current velocity/gravity; current-angle marker + 45° optimum reference line + drag-aware footer caption.
+
+### 12.2 Flightsim / Skylab fixes
+
+- **Crepuscular sun rays bleaching the ground**: `globalCompositeOperation = 'lighter'` rays drew triangles all the way to `H * 1.1`, washing the grass/runway near-white. Added a `gfx.clip()` to the sky region (`0 → horizonY`) so rays now stop at the horizon; dropped strength 0.28 → 0.18.
+- **Takeoff jolt**: `horizonY` was computed from raw `ctrl.pitch` (raw control input slewing +30°/sec). Added `horizonYRef` and damped the rendered horizon with `0.88 * prev + 0.12 * target` so climb-out pans smoothly. PFD artificial horizon still reads `ctrl.pitch` directly so instruments stay snappy.
+- **Motion cue strengthened**: runway centerline-dash scroll multiplier bumped from `speed * 0.015` to `speed * 0.045` so optical flow is obvious even at taxi speed.
+
+### 12.3 Launch pad bug (resolved)
+
+The Learning Tools card's `onClick` deferred `setShowLearningHub(true)` through `setTimeout(..., 0)`. The first four setters caused the launch pad to unmount and the main app to mount immediately; the modal flag was queued as a separate task, so the user saw the main app first and the modal only appeared on the next React commit cycle (often requiring another interaction). Fix: removed the `setTimeout`, reordered so the modal flag is set first, in the same React batch. Rebuilt via `node build_view_launch_pad.js`.
+
+---
+
+**End of inventory.** Total documented features: ~570+ user-facing across ~165 files (98 monolith CDN modules + 95 STEM Lab tools + 34 SEL Hub items + 1 annotation suite cross-cutting + expanded doc pipeline export runtime, with overlap).

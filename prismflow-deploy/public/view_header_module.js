@@ -16,6 +16,7 @@ function HeaderBar(props) {
   const noop = () => null;
   const AlertCircle = window.AlertCircle || noop;
   const ArrowRight = window.ArrowRight || noop;
+  const BookOpen = window.BookOpen || noop;
   const CheckCircle2 = window.CheckCircle2 || noop;
   const ChevronDown = window.ChevronDown || noop;
   const ChevronUp = window.ChevronUp || noop;
@@ -137,6 +138,7 @@ function HeaderBar(props) {
     languageToTTSCode,
     latestLessonPlan,
     leveledTextLanguage,
+    notebookEntryCount,
     openExportPreview,
     pptxLoaded,
     resetFontSize,
@@ -157,6 +159,7 @@ function HeaderBar(props) {
     setShowClassAnalytics,
     setShowEducatorHub,
     setShowExportMenu,
+    setShowNotebook,
     setShowReadThisPage,
     setShowSessionModal,
     setShowTextSettings,
@@ -487,6 +490,17 @@ function HeaderBar(props) {
       "aria-label": t("header.jump_to_lesson")
     },
     /* @__PURE__ */ React.createElement(ClipboardList, { size: 20 })
+  ), notebookEntryCount > 0 && setShowNotebook && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => setShowNotebook(true),
+      "data-help-key": "header_open_notebook",
+      className: "p-2 rounded-xl transition-all flex items-center gap-1.5 hover:bg-white/10 text-white/80 hover:text-white",
+      title: `Open my notebook (${notebookEntryCount} ${notebookEntryCount === 1 ? "entry" : "entries"})`,
+      "aria-label": `Open my notebook, ${notebookEntryCount} ${notebookEntryCount === 1 ? "entry" : "entries"}`
+    },
+    /* @__PURE__ */ React.createElement(BookOpen, { size: 20 }),
+    /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold leading-none bg-white/20 rounded-full px-1.5 py-0.5 min-w-[18px] text-center" }, notebookEntryCount)
   ))), /* @__PURE__ */ React.createElement("div", { id: "tour-header-utils", className: `relative z-[100] flex items-center gap-3 p-2 rounded-2xl backdrop-blur-xl border shadow-inner transition-all ${theme === "contrast" ? "border-yellow-400 bg-black" : "bg-white/10 border-white/20"}` }, isTeacherMode && /* @__PURE__ */ React.createElement(
     "button",
     {

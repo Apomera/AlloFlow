@@ -395,6 +395,7 @@ window.SelHub = window.SelHub || {
       if (mode === 'menu') {
         var allTimeAcc = (toolData._totalTrials || 0) > 0 ? Math.round(((toolData._totalCorrect || 0) / (toolData._totalTrials || 1)) * 100) : 0;
         return h('div', { style: { maxWidth: '600px', margin: '0 auto', padding: '20px' } },
+          (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('voicedetective', h, ctx) : null),
           h('div', { style: { textAlign: 'center', marginBottom: '24px' } },
             h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '🔊'),
             h('h2', { style: { fontSize: '24px', fontWeight: 900, color: '#1e293b' } }, 'Voice Detective'),

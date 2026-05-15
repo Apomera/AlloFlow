@@ -328,6 +328,7 @@ window.SelHub = window.SelHub || {
       // ── MENU ──
       if (mode === 'menu') {
         return h('div', { style: { maxWidth: '650px', margin: '0 auto', padding: '20px' } },
+          (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('peersupport', h, ctx) : null),
           h('div', { style: { textAlign: 'center', marginBottom: '24px' } },
             h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '🤝'),
             h('h2', { style: { fontSize: '24px', fontWeight: 900, color: '#1e293b' } }, 'Peer Support Coach'),
@@ -402,7 +403,89 @@ window.SelHub = window.SelHub || {
             'Evidence base: Teen Mental Health First Aid, Sources of Strength (Wyman et al., 2010), Motivational Interviewing in Schools (Rollnick et al., 2016). ',
             'This tool does NOT train students as counselors — it teaches them to be better listeners and to know their limits.'
           ),
+          // Print pocket card
+          h('div', { style: { marginTop: '12px', textAlign: 'center' } },
+            h('button', { onClick: function() { setMode('print'); },
+              style: { padding: '10px 18px', borderRadius: '10px', border: '1px solid #059669', background: '#ecfdf5', color: '#065f46', fontWeight: 700, fontSize: '13px', cursor: 'pointer' } }, '🖨 Print OARS pocket card')
+          ),
           window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, gradeBand)
+        );
+      }
+
+      // ── PRINT MODE ──
+      if (mode === 'print') {
+        return h('div', { style: { maxWidth: '650px', margin: '0 auto', padding: '20px' } },
+          h('div', { className: 'no-print', style: { marginBottom: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' } },
+            h('button', { onClick: function() { setMode('menu'); }, style: btn('#f1f5f9', '#374151', false) }, '← Back'),
+            h('button', { onClick: function() { try { window.print(); } catch (e) {} }, 'aria-label': 'Print or save as PDF',
+              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
+          ),
+          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: '#ecfdf5', border: '1px solid #6ee7b7', borderLeft: '3px solid #059669', marginBottom: 14, fontSize: 12.5, color: '#065f46', lineHeight: 1.65 } },
+            h('strong', null, '🖨 OARS pocket card. '),
+            'A reference for peer support: the four OARS skills, common pitfalls, and the safety signals that mean STOP and get an adult. Designed to fold and carry. Print on one page.'
+          ),
+          h('style', null,
+            '@media print { body * { visibility: hidden !important; } ' +
+            '#peer-print-region, #peer-print-region * { visibility: visible !important; } ' +
+            '#peer-print-region { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; background: #fff !important; color: #0f172a !important; } ' +
+            '#peer-print-region * { background: transparent !important; color: #0f172a !important; border-color: #888 !important; } ' +
+            '.no-print { display: none !important; } }'
+          ),
+          h('div', { id: 'peer-print-region', style: { padding: 18, borderRadius: 12, background: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0' } },
+            h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', borderBottom: '2px solid #0f172a', paddingBottom: 8, marginBottom: 14 } },
+              h('h2', { style: { margin: 0, fontSize: 22, fontWeight: 900, color: '#0f172a' } }, 'Peer Support · OARS Pocket Card'),
+              h('div', { style: { fontSize: 11, color: '#475569' } }, 'Miller & Rollnick · Sources of Strength')
+            ),
+
+            h('div', { style: { padding: 10, background: '#ecfdf5', border: '1px solid #6ee7b7', borderRadius: 8, marginBottom: 14, fontSize: 12, lineHeight: 1.55, color: '#065f46' } },
+              h('strong', null, 'OARS = better listening, not counseling. '),
+              'The goal is not to fix; the goal is to help the other person feel heard and find their own next step. If you ever hear a safety signal (below), stop OARS and get an adult.'
+            ),
+
+            h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 12, pageBreakInside: 'avoid' } },
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, 'The four OARS skills'),
+              OARS.map(function(s, i) {
+                return h('div', { key: s.id, style: { marginBottom: 8, paddingBottom: 8, borderBottom: i < OARS.length - 1 ? '1px dashed #cbd5e1' : 'none' } },
+                  h('div', { style: { fontSize: 12.5, fontWeight: 800, color: '#0f172a' } }, s.icon + ' ' + s.label),
+                  h('div', { style: { fontSize: 11.5, color: '#475569', lineHeight: 1.5, marginBottom: 4 } }, s.what),
+                  s.examples && s.examples.length ? h('ul', { style: { margin: '4px 0 0 18px', padding: 0, fontSize: 11, color: '#0f172a', lineHeight: 1.55 } },
+                    s.examples.slice(0, 3).map(function(ex, ei) { return h('li', { key: ei, style: { fontStyle: 'italic' } }, ex); })
+                  ) : null
+                );
+              })
+            ),
+
+            h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 12, pageBreakInside: 'avoid' } },
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, 'Common pitfalls'),
+              h('ul', { style: { margin: 0, padding: '0 0 0 20px', fontSize: 12, color: '#0f172a', lineHeight: 1.65 } },
+                h('li', null, h('strong', null, 'Jumping to advice. '), 'Most of the time, the person is not asking for advice; they are asking to be heard. Reflect first, advise rarely.'),
+                h('li', null, h('strong', null, 'Yes-set / cheerleading. '), '"Don\'t worry, it will be fine" closes the conversation. "It sounds like this is really weighing on you" opens it.'),
+                h('li', null, h('strong', null, 'Asking why. '), '"Why did you do that?" sounds like judgment. "What was going on for you?" sounds like curiosity.'),
+                h('li', null, h('strong', null, 'Comparing. '), '"That happened to me too" can be helpful or can erase the other person\'s experience. Use sparingly.'),
+                h('li', null, h('strong', null, 'Going past your role. '), 'You are a friend, not a therapist. Knowing your limit is part of being supportive.')
+              )
+            ),
+
+            h('div', { style: { padding: 12, border: '2px solid #b91c1c', borderRadius: 10, marginBottom: 12, background: '#fef2f2', pageBreakInside: 'avoid' } },
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#7f1d1d', marginBottom: 8 } }, '🚨 STOP and get an adult if you hear:'),
+              SAFETY_SIGNALS.map(function(sig, i) {
+                return h('div', { key: sig.id, style: { marginBottom: 6 } },
+                  h('div', { style: { fontSize: 12, fontWeight: 700, color: '#7f1d1d' } }, sig.icon + ' ' + sig.label),
+                  h('div', { style: { fontSize: 11, color: '#7f1d1d', fontStyle: 'italic', lineHeight: 1.55, marginLeft: 8 } }, '"' + (sig.examples[0] || '') + '"')
+                );
+              }),
+              h('div', { style: { marginTop: 8, padding: 8, background: '#fee2e2', borderRadius: 6, fontSize: 11.5, color: '#7f1d1d', fontWeight: 700, lineHeight: 1.55 } }, 'Telling an adult is NOT betraying your friend. It is saving them. You can say, "I care about you too much to carry this alone. Let\'s tell someone together."')
+            ),
+
+            h('div', { style: { padding: 10, background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: 8, marginBottom: 12, fontSize: 11.5, color: '#0f172a', lineHeight: 1.6 } },
+              h('strong', null, 'Crisis lines for them (or you): '),
+              '988 Suicide & Crisis Lifeline · Crisis Text Line text HOME to 741741 · Trevor Project for LGBTQ+ youth 1-866-488-7386. Save these in your phone before you need them.'
+            ),
+
+            h('div', { style: { marginTop: 14, padding: 10, borderTop: '2px solid #0f172a', fontSize: 10.5, color: '#475569', lineHeight: 1.5 } },
+              'Sources: Miller, W. R. & Rollnick, S. (2013), Motivational Interviewing (3rd ed.) · Rollnick, S., et al. (2016), Motivational Interviewing in Schools · Wyman, P., et al. (2010), Sources of Strength · Teen Mental Health First Aid (mhfa.com.au). Printed from AlloFlow SEL Hub.'
+            )
+          )
         );
       }
 

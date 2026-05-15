@@ -1396,9 +1396,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
         };
 
         // Keyboard handler
+        // Bug fix: ATC commands (T H R G P D U), Tab, Space, arrows
+        // weren't preventDefault'd. Tab in particular pulled focus
+        // away from the canvas mid-game, and the ? / shortcut keys
+        // could trigger browser quick-find. Now any key the game
+        // actually consumes swallows its default action so the page
+        // doesn't fight the player.
+        var ATC_GAME_KEYS = {
+          // Math challenge entry
+          a: 1, b: 1, '0': 1, '1': 1, '2': 1, '3': 1, '4': 1, '5': 1,
+          '6': 1, '7': 1, '8': 1, '9': 1, enter: 1, backspace: 1,
+          // Aircraft cycling + commands
+          tab: 1, ' ': 1, escape: 1,
+          t: 1, h: 1, r: 1, g: 1, p: 1, d: 1, u: 1,
+          // Help shortcuts
+          '?': 1, '/': 1
+        };
         var onKey = function(e) {
           var game = gameRef.current;
           var key = e.key.toLowerCase();
+          if (ATC_GAME_KEYS[key]) e.preventDefault();
 
           // Math challenge input
           if (game.mathChallenge && !game.mathChallenge.answered) {
@@ -1706,7 +1723,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
 
       // ═══ PLAYING VIEW ═══
       if (view === 'playing') {
-        return h('div', { style: { position: 'relative', width: '100%', height: '500px', borderRadius: '12px', overflow: 'hidden', background: '#0a1a0a' } },
+        return h('div', { id: 'atctower-fs-wrap', style: { position: 'relative', width: '100%', height: '500px', borderRadius: '12px', overflow: 'hidden', background: '#0a1a0a' } },
           h('canvas', {
             ref: canvasRef,
             role: 'application',
@@ -1717,7 +1734,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             onFocusCapture: function(e) { e.currentTarget.style.boxShadow = '0 0 0 3px rgba(74,222,128,0.7)'; },
             onBlurCapture: function(e) { e.currentTarget.style.boxShadow = 'none'; },
             onFocus: function() { announce('ATC radar display focused. ' + (tutorialRef.current.active ? 'Tutorial active. ' : '') + 'Press I for status summary. Tab to select aircraft.'); }
-          })
+          }),
+          // Fullscreen toggle (top-right). Wraps the whole radar
+          // container so the canvas + any HUD overlay drawn on top
+          // ride along into fullscreen.
+          h('button', {
+            'aria-label': 'Toggle fullscreen for the ATC radar',
+            title: 'Fullscreen',
+            onClick: function() {
+              var el = document.getElementById('atctower-fs-wrap');
+              if (!el) return;
+              var inFull = document.fullscreenElement === el
+                || document.webkitFullscreenElement === el
+                || document.mozFullScreenElement === el;
+              if (inFull) {
+                var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen;
+                if (ex) ex.call(document);
+              } else {
+                var rq = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen;
+                if (rq) rq.call(el);
+              }
+            },
+            style: {
+              position: 'absolute', top: 8, right: 8, zIndex: 20,
+              width: 32, height: 32, borderRadius: 8,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'rgba(10,46,26,0.85)',
+              backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
+              border: '1px solid rgba(74,222,128,0.45)',
+              color: '#4ade80',
+              fontSize: 16, fontWeight: 700, cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
+            }
+          }, '⛶')
         );
       }
 

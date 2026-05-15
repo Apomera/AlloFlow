@@ -532,6 +532,220 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
     { name: 'Audubon Raptor Watch', url: 'https://www.audubon.org/bird-guide', desc: 'Bird guide + alerts + advocacy via Audubon chapters. Many chapters run local raptor monitoring.' }
   ];
 
+  // ───────────────────────────────────────────────────────────
+  // MIGRATION — flyways, watch sites, banding, irruptions
+  // ───────────────────────────────────────────────────────────
+  var MIGRATION = {
+    overview: 'Every fall, ~5 million raptors funnel through the Western Hemisphere\'s migration corridors. Sites like Hawk Mountain (PA), Cape May (NJ), Veracruz (Mexico), Eilat (Israel), and Batumi (Georgia) sit at geographic bottlenecks where soaring raptors converge — and where standardized counts have built the longest continuous wildlife datasets in conservation history. A broad-winged hawk hatched in Maine in July may winter in Bolivia, fly through the Veracruz River of Raptors in late September with 4 million companions, and never flap its wings for hundreds of miles — riding thermals + ridge lift from cold front to cold front.',
+
+    flyways: [
+      {
+        id: 'atlantic', name: 'Atlantic Flyway', emoji: '🌊',
+        species: 'Sharp-shinned + Cooper\'s + American kestrel + merlin + broadwing + osprey + bald eagle',
+        path: 'Northern New England → Appalachian ridges → coastal Atlantic → Caribbean basin → S. America for some',
+        peakDates: 'Mid-Sept (broadwings) · Oct (Coops + sharps) · Nov (bald eagles + golden)',
+        bottleneck: 'Cape May, NJ (Atlantic coastal funnel) · Hawk Mountain, PA (Kittatinny Ridge)',
+        notes: 'Atlantic ridges create updrafts; coastal funneling adds NW-wind concentration. Cape May counts ~40K raptors per fall.'
+      },
+      {
+        id: 'mississippi', name: 'Mississippi Flyway', emoji: '🏞️',
+        species: 'Bald eagle (wintering on Mississippi) + broadwing + red-tailed + sharp-shin',
+        path: 'Boreal Canada → Mississippi River corridor → Texas Gulf coast → Mexico',
+        peakDates: 'Late Sept (broadwings kettling) · Oct-Nov (buteos + eagles)',
+        bottleneck: 'Whitefish Point, MI · Duluth, MN (Hawk Ridge) · Smith Point, TX (Gulf Coast funnel)',
+        notes: 'Hawk Ridge in Duluth counts 60K-90K raptors annually. The cold-front + NW-wind days produce the spectacular kettles.'
+      },
+      {
+        id: 'central', name: 'Central Flyway', emoji: '🌾',
+        species: 'Swainson\'s hawk + ferruginous hawk + Mississippi kite + golden eagle',
+        path: 'Canadian prairie → Great Plains → Mexico → Argentina (Swainson\'s)',
+        peakDates: 'Sept-early Oct (Swainson\'s) · Oct-Nov (ferruginous + golden)',
+        bottleneck: 'Veracruz, Mexico (where Atlantic + Central + Mississippi flyways converge)',
+        notes: 'Swainson\'s hawks fly the longest raptor migration in the Americas — 14,000+ miles round-trip. Most stop briefly in S. Texas + the Yucatan to feed on grasshoppers.'
+      },
+      {
+        id: 'pacific', name: 'Pacific Flyway', emoji: '🌲',
+        species: 'Sharp-shin + Cooper\'s + osprey + bald + golden eagle + rough-legged (winter)',
+        path: 'Alaska + boreal Canada → Pacific Northwest ridges → California → Baja Mexico',
+        peakDates: 'Sept-Oct',
+        bottleneck: 'Goshute Mountains (NV) · Bonney Butte (OR) · Cape Mendocino (CA) · Marin Headlands (Golden Gate Raptor Observatory)',
+        notes: 'GGRO at Marin Headlands counts ~30K raptors/year. Golden Gate funneling concentrates birds that don\'t cross open Pacific.'
+      },
+      {
+        id: 'eurasian', name: 'European-African Flyway', emoji: '🌍',
+        species: 'Honey buzzard + Eurasian sparrowhawk + booted eagle + lesser spotted eagle + Eleonora\'s falcon',
+        path: 'European breeding grounds → Gibraltar/Bosphorus/Sinai bottlenecks → African wintering',
+        peakDates: 'Sept (honey buzzards) · Oct-Nov (eagles + buteos)',
+        bottleneck: 'Strait of Gibraltar · Bosphorus, Turkey · Eilat, Israel · Batumi, Georgia · Bab-el-Mandeb (Yemen)',
+        notes: 'Israeli-Palestinian Raptor Watch Eilat counts 1+ million raptors per spring. Batumi (Georgia) is currently the world\'s largest single-site count (~1 million/fall) — and a hotspot for illegal shooting that conservation groups actively combat.'
+      }
+    ],
+
+    watchSites: [
+      {
+        name: 'Hawk Mountain Sanctuary, Pennsylvania',
+        founded: 1934,
+        founder: 'Rosalie Edge — conservationist who bought the land to stop the shooters who were killing thousands of migrating raptors per year for sport',
+        annualCount: '~17,000 raptors (12 species commonly seen)',
+        highlight: 'The world\'s longest-running raptor migration count (90+ years). The data anchored the post-DDT recovery story. North Lookout is open to the public Sept-Nov.',
+        latLon: '40.6°N, 75.9°W'
+      },
+      {
+        name: 'Cape May Hawkwatch, New Jersey',
+        founded: 1976,
+        founder: 'Pat Sutton + others (Cape May Bird Observatory)',
+        annualCount: '~40,000 raptors',
+        highlight: 'NW wind days in October concentrate sharp-shinned hawks + American kestrels. Coastal funnel effect — birds reluctant to cross Delaware Bay accumulate along the Cape May peninsula.',
+        latLon: '38.9°N, 74.9°W'
+      },
+      {
+        name: 'Veracruz River of Raptors, Mexico',
+        founded: 1991,
+        founder: 'Pronatura Veracruz (Mexican conservation org)',
+        annualCount: '~5 million raptors per fall — the world\'s largest single migration count',
+        highlight: 'Where the Atlantic, Mississippi, and Central flyways converge before crossing into Central America. On peak days in mid-Sept, observers count 1+ million broad-winged hawks in a single 12-hour shift.',
+        latLon: '19.2°N, 96.1°W'
+      },
+      {
+        name: 'Eilat Spring Migration, Israel',
+        founded: 1980s,
+        founder: 'International Birding Centre Eilat',
+        annualCount: '~1 million raptors per spring (Mar-May)',
+        highlight: 'Sinai-Negev land bridge between Africa + Eurasia. Critical refueling stop. Reverse-direction kettles compared to fall sites.',
+        latLon: '29.6°N, 34.9°E'
+      },
+      {
+        name: 'Batumi Raptor Count, Georgia',
+        founded: 2008,
+        founder: 'Wouter Vansteelant + Dutch + Georgian volunteers',
+        annualCount: '~1 million raptors per fall',
+        highlight: 'Caucasus Mountains funnel birds between Russia/Siberian breeding + African wintering. Currently the world\'s largest fall count site outside Veracruz. Active anti-shooting conservation work — illegal raptor shooting is a serious local problem this watch helps document + reduce.',
+        latLon: '41.7°N, 41.6°E'
+      },
+      {
+        name: 'Golden Gate Raptor Observatory, California',
+        founded: 1985,
+        founder: 'National Park Service + Marin Audubon',
+        annualCount: '~30,000 raptors',
+        highlight: 'Pacific coast bottleneck. SF Bay\'s mouth concentrates birds reluctant to cross open ocean. Trains 100+ citizen scientists every fall.',
+        latLon: '37.8°N, 122.5°W'
+      }
+    ],
+
+    kettlePhysics: {
+      title: 'How a thermal kettle works',
+      explanation: 'A "kettle" is a tornado of migrating hawks. Here\'s the physics: sun heats dark ground (plowed field, bare rock) faster than light surrounding terrain. Hot air rises in a column — a thermal. Soaring raptors find the thermal, circle inside it, gain altitude effortlessly (their wings cup the rising air like a parachute upside-down). When they reach the top of the lift (often the cloud base, ~3,000-7,000 ft), they peel off and glide downward in the direction of travel until they find the next thermal. Result: hundreds or thousands of meters gained for free, miles covered for the cost of one circle. A broad-winged hawk may travel 250 miles in a day this way — barely flapping. That\'s why migration counts spike on sunny days after a cold front — the cold air provides a sharp thermal contrast, the high pressure brings clear skies for solar heating, and the NW wind blows birds toward the geographic bottleneck.',
+      diagram: [
+        '☀ → ground heats → thermal column rises',
+        '↻ raptor circles inside thermal → gains altitude',
+        '↗ at the top, raptor peels off + glides downward',
+        '… repeat with next thermal'
+      ]
+    },
+
+    irruptions: {
+      title: 'Irruption years — when northern raptors come south',
+      explanation: 'In some winters, northern owls + buteos arrive far south of their typical range — sometimes by thousands of miles. This is called an "irruption." It is NOT a permanent range shift; it\'s a one-winter food crisis. Driver: a boom-bust cycle in northern prey populations (snowshoe hares, voles, lemmings). After a peak year, prey populations crash. Birds that depended on them must move south to find food.',
+      species: [
+        { name: 'Snowy Owl', cycle: 'Roughly every 3-5 years; tied to lemming peak years in the Arctic', range: 'In big years, snowy owls reach Texas, Florida, even Bermuda. Famous 2013-14 irruption saw birds on every East Coast beach.' },
+        { name: 'Rough-legged Hawk', cycle: 'Annual winter southward migration, but irruption years bring more birds further south', range: 'In peak years, common across the central + southern US plains; otherwise mostly Canada + N. plains.' },
+        { name: 'Great Gray Owl', cycle: '~3-4 year cycle; tied to vole populations in boreal forest', range: '2004-05 had a famous irruption — hundreds in Minnesota + Wisconsin.' },
+        { name: 'Northern Hawk Owl', cycle: 'Irruptive based on rodent peaks', range: 'Almost never seen below S. Canada in normal years; in peak years reaches Iowa + Pennsylvania.' },
+        { name: 'Boreal Owl', cycle: 'Irrutive', range: 'Hard to see even in big years — silent + nocturnal.' }
+      ]
+    },
+
+    banding: {
+      title: 'Banding + tracking science',
+      explanation: 'Raptor migration research relies on three generations of tracking technology:',
+      methods: [
+        { tech: 'Leg bands', since: '1920s', what: 'Aluminum + colored plastic numbered bands. Bird is captured, weighed, measured, banded, released. Re-encounter (recovery) gives location + age + lifespan data. ~3% recovery rate but huge sample size over decades.' },
+        { tech: 'Geolocators (light-level)', since: '2000s', what: 'Tiny logger records ambient light every 5 minutes. After 1 year of attached time, bird is recaptured + data downloaded. Lat/lon derived from sunrise/sunset times. Inexpensive but requires recapture to read.' },
+        { tech: 'GPS tags', since: '2010s', what: 'Solar-charged GPS units that text location data via cell or satellite networks. Bird never needs to be recaptured. Have revealed previously-unknown stopover sites + exact wintering grounds. Used on golden eagles, condors, snowy owls.' },
+        { tech: 'Satellite (PTT) tags', since: '1990s', what: 'Argos system relay tags — track even from polar/oceanic locations. Used for bald eagles, ospreys, snowy owls in the Arctic.' },
+        { tech: 'Stable isotope analysis', since: '2000s', what: 'Feather chemistry encodes diet + location signature from where the feather grew. Used to reconstruct year-round migration routes without electronic tracking.' }
+      ]
+    },
+
+    climateImpact: {
+      title: 'Climate change is shifting migration',
+      points: [
+        'Many migrant raptors are arriving earlier each spring + leaving later each fall — shifts of 1-3 days per decade documented in long-running datasets',
+        'Northward range expansion in species like turkey vultures + black vultures — now wintering in places they never did before (TVs now common in New England in winter)',
+        'Mismatch risk: songbird prey arrival times are also shifting; if raptors and prey shift at different rates, hunting success declines',
+        'Hawk Mountain + Cape May data is now central to climate-shift research because the 60-90 year time series is long enough to detect signal',
+        'Some shifts are positive: bald eagles wintering further north reduces the lead-shot exposure from southern hunting season carcasses'
+      ]
+    }
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // FIELD ID QUIZ — gamified retrieval practice
+  // ───────────────────────────────────────────────────────────
+  // 18 questions across 3 difficulty bands.
+  // Fields: id, q, options (array of 4), correctIdx, explanation, difficulty
+  var QUIZ_QUESTIONS = [
+    // EASY (silhouette + obvious)
+    { id: 'q1', difficulty: 'easy', q: 'You see a bird with very long pointed wings, swept back like a paper airplane, gliding fast on rapid wingbeats. What family is it?',
+      options: ['Falcon', 'Eagle', 'Buteo Hawk', 'Owl'], correctIdx: 0,
+      explanation: 'Pointed swept wings + rapid wingbeats = falcon. Eagles + buteos have broad rounded wings, not pointed.' },
+    { id: 'q2', difficulty: 'easy', q: 'A massive bird is soaring in slow circles, wingtips spread with daylight visible between the primaries (the "fingers"). Most likely:',
+      options: ['Peregrine falcon', 'Cooper\'s hawk', 'Eagle (bald or golden)', 'Barn owl'], correctIdx: 2,
+      explanation: 'Slotted "fingered" wingtips during slow soaring = eagle. The slots reduce induced drag for efficient thermal soaring.' },
+    { id: 'q3', difficulty: 'easy', q: 'Which raptor sees ULTRAVIOLET light?',
+      options: ['Red-tailed hawk', 'American kestrel', 'Bald eagle', 'Great horned owl'], correctIdx: 1,
+      explanation: 'Kestrels (Falconidae) can see UV light. Vole urine + dung trails reflect UV strongly, so the kestrel sees "highways" of rodent travel routes glowing across the meadow. Viitala et al 1995 Nature.' },
+    { id: 'q4', difficulty: 'easy', q: 'You see a hawk hovering with active wingbeats over a roadside field. The most likely species is:',
+      options: ['Red-tailed hawk', 'American kestrel', 'Bald eagle', 'Cooper\'s hawk'], correctIdx: 1,
+      explanation: 'Active hovering over open ground = American kestrel (or, in winter, rough-legged hawk). Red-tails kite but don\'t actively hover; eagles don\'t hover; Cooper\'s hawks don\'t hover.' },
+    { id: 'q5', difficulty: 'easy', q: 'Which sense is MOST important to a great horned owl hunting at midnight?',
+      options: ['Vision', 'Hearing', 'Smell', 'Touch'], correctIdx: 1,
+      explanation: 'Owl ear asymmetry + facial-disc sound funneling enable 3D acoustic localization accurate to ~1° in total darkness (Payne 1962). Vision is supplementary at full dark; smell is barely used; touch via beak is for prey processing, not detection.' },
+
+    // MEDIUM (combinations + science)
+    { id: 'q6', difficulty: 'medium', q: 'A peregrine falcon\'s stoop reaches ~242 mph. What single anatomical adaptation lets the bird keep its eyes open during the dive?',
+      options: ['Tinted iris', 'Telescoping eye lens', 'Nictitating membrane (third eyelid)', 'Cornea hardening'], correctIdx: 2,
+      explanation: 'A clear nictitating membrane (third eyelid) slides over the eye during high-speed dive, protecting against debris + drying airflow while still letting light through. All birds have one; peregrines depend on it.' },
+    { id: 'q7', difficulty: 'medium', q: 'Owls fly silently because their feathers have THREE silencing mechanisms. Which is NOT one of them?',
+      options: ['Comb-edged leading primaries', 'Fringed trailing edge', 'Velvety dorsal surface', 'Hollow feather shafts'], correctIdx: 3,
+      explanation: 'Hollow feather shafts are universal in birds and have nothing to do with silence. The three actual silencing mechanisms are (1) comb leading edge, (2) fringe trailing edge, (3) velvet dorsal surface.' },
+    { id: 'q8', difficulty: 'medium', q: 'Which raptor has the HIGHEST documented talon grip force in psi?',
+      options: ['Bald eagle (400 psi)', 'Harpy eagle (530 psi)', 'Golden eagle (750 psi)', 'Great horned owl (500 psi)'], correctIdx: 2,
+      explanation: 'Golden eagle ~750 psi — the highest documented grip strength for any raptor. They\'re trained by Mongolian Berkutchi hunters to take wolves from horseback, a tradition dating to Genghis Khan.' },
+    { id: 'q9', difficulty: 'medium', q: 'A bird perched at a forest edge, with short broad wings and a very long banded tail, "flap-flap-glides" through the trees after a songbird. What family?',
+      options: ['Falcon', 'Buteo Hawk', 'Accipiter Hawk', 'Eagle'], correctIdx: 2,
+      explanation: 'Short wings + very long tail + forest-interior chase = accipiter (Cooper\'s, sharp-shinned, or northern goshawk). Falcons hunt in open air; buteos perch-and-pounce; eagles soar.' },
+    { id: 'q10', difficulty: 'medium', q: 'Why does an osprey have a REVERSIBLE outer toe + barbed scales on its footpads?',
+      options: ['To climb tree bark', 'To grip slippery wet fish', 'To dig burrows', 'To protect against snakebite'], correctIdx: 1,
+      explanation: 'Ospreys are fish specialists (99% of diet). The reversible outer toe gives them a 2-and-2 zygodactyl grip, and barbed scales (spicules) on the footpad lock onto wet scales. No other raptor has these adaptations.' },
+    { id: 'q11', difficulty: 'medium', q: 'A thermal kettle of soaring raptors is most likely formed when the weather conditions are:',
+      options: ['Heavy rain + low pressure', 'Sunny + dry, just after a cold front', 'Foggy + still', 'Snowy + cold'], correctIdx: 1,
+      explanation: 'Cold front + sunny + NW wind = ideal kettle weather. Cold air below + sun heating dark ground creates strong thermal lift; clear skies allow heating; high pressure brings stable lift columns. Hawk Mountain + Veracruz peak counts happen on these days.' },
+    { id: 'q12', difficulty: 'medium', q: 'Compared to a hawk, an OWL retina has:',
+      options: ['More cones, fewer rods', 'More rods, fewer cones', 'Equal proportions', 'No rods or cones (uses different sensor)'], correctIdx: 1,
+      explanation: 'Owls have ~95% rods, 5% cones (reverse of diurnal raptors). Rods detect low light but not color; cones detect color but need bright light. This is the day-eye / night-eye tradeoff.' },
+
+    // HARD (deep science + nuance)
+    { id: 'q13', difficulty: 'hard', q: 'The DDT-era population crash of peregrine + bald eagle + osprey was caused by what specific mechanism?',
+      options: ['DDT poisoned the birds directly', 'DDT killed all their prey', 'DDT caused eggshell thinning via calcium metabolism interference', 'DDT made the birds infertile'], correctIdx: 2,
+      explanation: 'DDT (and its breakdown product DDE) interfered with calcium metabolism, making eggshells thin enough to crack under brooding parents. Adults survived but failed to reproduce. The 1972 US DDT ban started the recovery.' },
+    { id: 'q14', difficulty: 'hard', q: 'A peregrine\'s stoop has a drag coefficient (Cd) of about:',
+      options: ['0.04 (teardrop)', '0.18 (tucked falcon)', '0.47 (sphere)', '0.7 (human freefaller)'], correctIdx: 1,
+      explanation: 'Peregrine stoop Cd ≈ 0.18, measured by wind-tunnel taxidermy + later confirmed by drone-cameras. Better than a sphere (0.47) or human freefaller (0.7), but not as good as an ideal teardrop (0.04). This is what enables ~242 mph terminal.' },
+    { id: 'q15', difficulty: 'hard', q: 'A raptor with HIGH wing loading (kg/m²) and HIGH aspect ratio (wingspan² / wing area) will be best at:',
+      options: ['Slow soaring + thermal kettling', 'Fast level flight + high-speed diving', 'Forest-interior chase agility', 'Silent hovering'], correctIdx: 1,
+      explanation: 'High wing loading = fast/heavy = high stall speed = bad at slow flight. High aspect ratio = thin long wings = efficient glide. Together: a fast cruiser + diver. This is the falcon profile (peregrine: 8.8 kg/m², AR 10.2).' },
+    { id: 'q16', difficulty: 'hard', q: 'Veracruz, Mexico is the world\'s largest single raptor migration count site because:',
+      options: ['It\'s the southernmost wintering ground', 'Atlantic + Mississippi + Central flyways all converge there', 'Mexican government pays the watchers', 'It has the most thermal kettles'], correctIdx: 1,
+      explanation: 'Three of the four North American flyways converge at Veracruz before crossing into Central America. Peak days in mid-September count 1+ million broad-winged hawks in a single 12-hour shift — the largest single-day count anywhere on Earth.' },
+    { id: 'q17', difficulty: 'hard', q: 'A snowy owl is reported in southern Texas in winter. The most likely cause is:',
+      options: ['Climate change permanent range shift', 'Escaped pet bird', 'Irruption year — lemming/vole crash in Arctic', 'Released by a conservation group'], correctIdx: 2,
+      explanation: 'Snowy owl irruptions are tied to Arctic lemming + vole population crashes after peak years. Birds that depended on those prey populations move far south to find food. NOT a permanent range shift — irruption birds don\'t breed in the south + return north next spring.' },
+    { id: 'q18', difficulty: 'hard', q: 'Why do peregrines fly a LOGARITHMIC SPIRAL approach to their prey during a stoop rather than a straight line?',
+      options: ['The spiral is faster', 'It keeps the prey at a constant viewing angle (head doesn\'t need to turn at terminal velocity)', 'It conserves energy', 'To confuse the prey'], correctIdx: 1,
+      explanation: 'Tucker 1998 computer model showed peregrines fly a logarithmic spiral that keeps the prey image at a fixed retinal angle. This way the falcon doesn\'t need to turn its head at terminal velocity (which would create drag + impair aerodynamic streamlining). Identical to the proportional-navigation algorithm used by air-to-air missiles.' }
+  ];
+
   // ═══════════════════════════════════════════════════════════
   // TOOL REGISTRATION
   // ═══════════════════════════════════════════════════════════
@@ -580,6 +794,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         { id: 'senses', label: 'Day Eye vs Night Eye', icon: '🌗' },
         { id: 'conservation', label: 'Conservation', icon: '🌍' },
         { id: 'fieldid', label: 'Field ID', icon: '🔍' },
+        { id: 'migration', label: 'Migration', icon: '🧭' },
+        { id: 'quiz', label: 'Field ID Quiz', icon: '🎓' },
         { id: 'resources', label: 'Resources', icon: '📚' }
       ];
 
@@ -594,7 +810,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('div', { className: 'flex-1' },
                 h('div', { className: 'text-xl font-bold text-amber-200' }, 'Raptor Hunt: Predator Physics + Biology'),
                 h('div', { className: 'text-sm text-amber-100/80 mt-1' }, 'Hunt as a peregrine at 240 mph. Crush bones at 530 psi as a harpy. See vole urine trails in UV like a kestrel. Glide silently on owl feathers. Then study the biology that makes it all possible.'),
-                h('div', { className: 'text-xs text-amber-300/70 mt-2 italic' }, '12 sections · 8 species · 3D Three.js simulator · evidence-based science')
+                h('div', { className: 'text-xs text-amber-300/70 mt-2 italic' }, '14 sections · 8 species · 3D Three.js simulator · 18-question quiz · evidence-based science')
               )
             )
           ),
@@ -1910,6 +2126,296 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       }
 
       // ────────────────────────────────────────────────────────
+      // RENDER: MIGRATION
+      // ────────────────────────────────────────────────────────
+      function renderMigration() {
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-cyan-900/40 to-teal-900/40 border border-cyan-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-lg font-bold text-cyan-200 mb-2' }, '🧭 Migration: 5 Million Birds, 5 Major Flyways'),
+            h('div', { className: 'text-sm text-cyan-100/90 leading-relaxed' }, MIGRATION.overview)
+          ),
+
+          // Flyways
+          h('div', { className: 'space-y-3' },
+            h('div', { className: 'text-sm font-bold text-amber-300' }, '🌎 The 5 Major Flyways'),
+            MIGRATION.flyways.map(function(f, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-slate-700/50 rounded-lg p-4' },
+                h('div', { className: 'flex items-center gap-2 mb-2' },
+                  h('div', { className: 'text-2xl' }, f.emoji),
+                  h('div', { className: 'text-base font-bold text-cyan-300' }, f.name)
+                ),
+                h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2 text-xs' },
+                  h('div', null, h('span', { className: 'text-slate-500' }, 'Species: '), h('span', { className: 'text-slate-200' }, f.species)),
+                  h('div', null, h('span', { className: 'text-slate-500' }, 'Peak: '), h('span', { className: 'text-amber-300' }, f.peakDates)),
+                  h('div', { className: 'md:col-span-2' }, h('span', { className: 'text-slate-500' }, 'Path: '), h('span', { className: 'text-slate-200' }, f.path)),
+                  h('div', { className: 'md:col-span-2' }, h('span', { className: 'text-slate-500' }, 'Bottleneck: '), h('span', { className: 'text-amber-300' }, f.bottleneck))
+                ),
+                h('div', { className: 'mt-2 text-xs italic text-cyan-100/80' }, f.notes)
+              );
+            })
+          ),
+
+          // Famous watch sites
+          h('div', { className: 'space-y-3' },
+            h('div', { className: 'text-sm font-bold text-amber-300' }, '🗺 Famous Hawk-Watch Sites'),
+            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
+              MIGRATION.watchSites.map(function(w, i) {
+                return h('div', { key: i, className: 'bg-slate-800/40 border border-slate-700/50 rounded-lg p-3' },
+                  h('div', { className: 'text-sm font-bold text-cyan-300 mb-1' }, w.name),
+                  h('div', { className: 'text-[10px] text-slate-500 mb-2 font-mono' }, 'Est. ' + w.founded + ' · ' + w.latLon + ' · ' + w.annualCount),
+                  h('div', { className: 'text-xs text-slate-300 mb-2' }, h('span', { className: 'text-slate-500' }, 'Founder: '), w.founder),
+                  h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, w.highlight)
+                );
+              })
+            )
+          ),
+
+          // Kettle physics
+          h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded-xl p-5' },
+            h('div', { className: 'text-base font-bold text-amber-300 mb-2' }, '🌀 ' + MIGRATION.kettlePhysics.title),
+            h('div', { className: 'text-sm text-amber-100/90 leading-relaxed mb-3' }, MIGRATION.kettlePhysics.explanation),
+            h('div', { className: 'bg-slate-900/50 rounded-lg p-3 font-mono text-xs text-amber-200' },
+              MIGRATION.kettlePhysics.diagram.map(function(line, i) {
+                return h('div', { key: i, className: 'py-0.5' }, line);
+              })
+            )
+          ),
+
+          // Irruptions
+          h('div', { className: 'bg-indigo-900/20 border border-indigo-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-base font-bold text-indigo-300 mb-2' }, '❄ ' + MIGRATION.irruptions.title),
+            h('div', { className: 'text-sm text-indigo-100/90 leading-relaxed mb-3' }, MIGRATION.irruptions.explanation),
+            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2 text-xs' },
+              MIGRATION.irruptions.species.map(function(s, i) {
+                return h('div', { key: i, className: 'bg-slate-800/40 rounded p-2.5 border border-slate-700/40' },
+                  h('div', { className: 'font-bold text-indigo-300 mb-0.5' }, s.name),
+                  h('div', { className: 'text-slate-400 mb-1 text-[10px]' }, s.cycle),
+                  h('div', { className: 'text-slate-200' }, s.range)
+                );
+              })
+            )
+          ),
+
+          // Banding + tracking
+          h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-base font-bold text-amber-300 mb-2' }, '📡 ' + MIGRATION.banding.title),
+            h('div', { className: 'text-sm text-slate-300 mb-3' }, MIGRATION.banding.explanation),
+            h('div', { className: 'space-y-2' },
+              MIGRATION.banding.methods.map(function(m, i) {
+                return h('div', { key: i, className: 'flex items-start gap-3 bg-slate-800/40 rounded p-2.5' },
+                  h('div', { className: 'flex-shrink-0 text-xs font-mono text-amber-300 w-24' }, m.tech),
+                  h('div', { className: 'flex-shrink-0 text-[10px] text-slate-500 w-16' }, m.since),
+                  h('div', { className: 'text-xs text-slate-200 flex-1' }, m.what)
+                );
+              })
+            )
+          ),
+
+          // Climate impact
+          h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-base font-bold text-emerald-300 mb-2' }, '🌡 ' + MIGRATION.climateImpact.title),
+            h('ul', { className: 'space-y-1 text-xs text-emerald-100/90 list-disc list-inside' },
+              MIGRATION.climateImpact.points.map(function(p, i) { return h('li', { key: i }, p); })
+            )
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: FIELD ID QUIZ
+      // ────────────────────────────────────────────────────────
+      function renderQuiz() {
+        var quizState = rh.quiz || { ix: 0, score: 0, selected: -1, answered: false, started: false, difficulty: 'all', bestScore: 0, completedRuns: 0 };
+        function setQuiz(patch) {
+          setRH(function(prev) {
+            var cur = prev.quiz || { ix: 0, score: 0, selected: -1, answered: false, started: false, difficulty: 'all', bestScore: 0, completedRuns: 0 };
+            return Object.assign({}, prev, { quiz: Object.assign({}, cur, patch) });
+          });
+        }
+        // Build active question list per difficulty
+        var pool = QUIZ_QUESTIONS.filter(function(q) {
+          return quizState.difficulty === 'all' || q.difficulty === quizState.difficulty;
+        });
+        var total = pool.length;
+        var question = pool[quizState.ix] || pool[0];
+
+        // Start screen
+        if (!quizState.started) {
+          return h('div', { className: 'space-y-4' },
+            h('div', { className: 'bg-gradient-to-br from-amber-900/40 to-orange-900/40 border border-amber-700/40 rounded-xl p-5' },
+              h('div', { className: 'flex items-start gap-3' },
+                h('div', { className: 'text-5xl' }, '🎓'),
+                h('div', { className: 'flex-1' },
+                  h('div', { className: 'text-xl font-bold text-amber-200' }, 'Field ID Quiz'),
+                  h('div', { className: 'text-sm text-amber-100/80 mt-1' }, 'Active retrieval practice across silhouettes, behavior, talon mechanics, vision, flight physics, and conservation. Each question has a detailed explanation — wrong answers are the best teachers.'),
+                  h('div', { className: 'text-xs text-amber-300/70 mt-2 italic' }, '18 questions · 3 difficulty bands · explanations included')
+                )
+              )
+            ),
+            // Difficulty selector
+            h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4' },
+              h('div', { className: 'text-sm font-bold text-amber-300 mb-3' }, 'Choose difficulty'),
+              h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-2' },
+                [
+                  { id: 'easy', label: 'Easy', desc: '5 silhouette + obvious questions', count: QUIZ_QUESTIONS.filter(function(q) { return q.difficulty === 'easy'; }).length },
+                  { id: 'medium', label: 'Medium', desc: '7 deeper combos', count: QUIZ_QUESTIONS.filter(function(q) { return q.difficulty === 'medium'; }).length },
+                  { id: 'hard', label: 'Hard', desc: '6 deep science + nuance', count: QUIZ_QUESTIONS.filter(function(q) { return q.difficulty === 'hard'; }).length },
+                  { id: 'all', label: 'All 18', desc: 'Full quiz', count: QUIZ_QUESTIONS.length }
+                ].map(function(d) {
+                  var active = quizState.difficulty === d.id;
+                  return h('button', {
+                    key: d.id,
+                    onClick: function() { setQuiz({ difficulty: d.id }); },
+                    className: 'p-3 rounded-lg border transition-all text-left ' + (active
+                      ? 'bg-amber-700/50 border-amber-400 ring-2 ring-amber-400/40'
+                      : 'bg-slate-800/50 border-slate-700/50 hover:border-amber-600/40'),
+                    'aria-label': d.label + ' · ' + d.count + ' questions'
+                  },
+                    h('div', { className: 'text-sm font-bold text-amber-200' }, d.label + ' (' + d.count + ')'),
+                    h('div', { className: 'text-[10px] text-slate-300 mt-1' }, d.desc)
+                  );
+                })
+              )
+            ),
+            // Best score
+            (quizState.completedRuns > 0) && h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded-xl p-3 text-sm text-emerald-200' },
+              '🏆 Best score: ', h('span', { className: 'font-bold text-emerald-300' }, quizState.bestScore + '/' + total),
+              ' · ', quizState.completedRuns + ' completed runs'
+            ),
+            // Start button
+            h('button', {
+              onClick: function() { setQuiz({ started: true, ix: 0, score: 0, selected: -1, answered: false }); rhAnnounce('Quiz started · ' + total + ' questions'); },
+              className: 'w-full px-5 py-4 rounded-xl text-base font-bold bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-lg hover:from-amber-700 hover:to-orange-700 transition-all',
+              'aria-label': 'Start quiz with ' + total + ' questions'
+            }, '▶ Start ' + total + '-question quiz')
+          );
+        }
+
+        // End screen
+        if (quizState.ix >= total) {
+          var pct = Math.round((quizState.score / total) * 100);
+          var verdict = pct >= 90 ? { txt: 'Master raptor scientist', color: 'emerald', emoji: '🦅' } :
+                        pct >= 75 ? { txt: 'Strong field ornithologist', color: 'amber', emoji: '🏆' } :
+                        pct >= 50 ? { txt: 'Growing knowledge', color: 'cyan', emoji: '📈' } :
+                                    { txt: 'Worth a second pass', color: 'indigo', emoji: '🔁' };
+          return h('div', { className: 'space-y-4' },
+            h('div', { className: 'bg-gradient-to-br from-' + verdict.color + '-900/50 to-' + verdict.color + '-800/30 border border-' + verdict.color + '-700/50 rounded-xl p-6 text-center' },
+              h('div', { className: 'text-6xl mb-3' }, verdict.emoji),
+              h('div', { className: 'text-2xl font-bold text-' + verdict.color + '-200 mb-1' }, quizState.score + ' / ' + total + ' correct'),
+              h('div', { className: 'text-3xl font-bold text-' + verdict.color + '-300 mb-2' }, pct + '%'),
+              h('div', { className: 'text-base text-' + verdict.color + '-100/90 italic' }, verdict.txt)
+            ),
+            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
+              h('button', {
+                onClick: function() {
+                  var newBest = Math.max(quizState.bestScore, quizState.score);
+                  var newRuns = quizState.completedRuns + 1;
+                  setQuiz({ started: false, ix: 0, score: 0, selected: -1, answered: false, bestScore: newBest, completedRuns: newRuns });
+                },
+                className: 'px-4 py-3 rounded-lg text-sm font-bold bg-slate-700 text-amber-300 hover:bg-slate-600 transition-all',
+                'aria-label': 'Back to quiz menu'
+              }, '↶ Back to Quiz Menu'),
+              h('button', {
+                onClick: function() {
+                  var newBest = Math.max(quizState.bestScore, quizState.score);
+                  var newRuns = quizState.completedRuns + 1;
+                  setQuiz({ started: true, ix: 0, score: 0, selected: -1, answered: false, bestScore: newBest, completedRuns: newRuns });
+                },
+                className: 'px-4 py-3 rounded-lg text-sm font-bold bg-gradient-to-r from-amber-600 to-orange-600 text-white hover:from-amber-700 hover:to-orange-700 transition-all',
+                'aria-label': 'Try again'
+              }, '🔁 Try Again')
+            )
+          );
+        }
+
+        // Question screen
+        var isCorrect = quizState.selected === question.correctIdx;
+        var diffColor = question.difficulty === 'easy' ? 'emerald' : question.difficulty === 'medium' ? 'amber' : 'red';
+        return h('div', { className: 'space-y-4' },
+          // Progress
+          h('div', { className: 'flex items-center justify-between text-xs' },
+            h('div', { className: 'text-slate-300' }, 'Question ' + (quizState.ix + 1) + ' of ' + total),
+            h('div', { className: 'flex gap-3' },
+              h('div', { className: 'px-2 py-0.5 rounded font-mono text-[10px] bg-' + diffColor + '-900/40 text-' + diffColor + '-300 border border-' + diffColor + '-700/40' }, question.difficulty.toUpperCase()),
+              h('div', { className: 'text-amber-300' }, '🏆 Score: ', h('span', { className: 'font-bold' }, quizState.score))
+            )
+          ),
+          // Progress bar
+          h('div', { className: 'bg-slate-800 rounded-full h-2 overflow-hidden' },
+            h('div', {
+              className: 'bg-gradient-to-r from-amber-500 to-orange-500 h-full transition-all',
+              style: { width: ((quizState.ix / total) * 100) + '%' },
+              role: 'progressbar',
+              'aria-valuenow': quizState.ix, 'aria-valuemin': 0, 'aria-valuemax': total
+            })
+          ),
+          // Question card
+          h('div', { className: 'bg-slate-900/50 border border-amber-700/40 rounded-xl p-5' },
+            h('div', { className: 'text-base font-bold text-amber-200 leading-relaxed' }, question.q)
+          ),
+          // Options
+          h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
+            question.options.map(function(opt, i) {
+              var selected = quizState.selected === i;
+              var correctOpt = i === question.correctIdx;
+              var showResult = quizState.answered;
+              var btnClass = 'p-3 rounded-lg text-left text-sm transition-all border-2 ';
+              if (showResult) {
+                if (correctOpt) btnClass += 'bg-emerald-900/40 border-emerald-500 text-emerald-100';
+                else if (selected) btnClass += 'bg-red-900/40 border-red-500 text-red-100';
+                else btnClass += 'bg-slate-800/50 border-slate-700 text-slate-400';
+              } else {
+                btnClass += selected ? 'bg-amber-900/40 border-amber-400 text-amber-100' : 'bg-slate-800/50 border-slate-700 text-slate-200 hover:border-amber-600/60';
+              }
+              return h('button', {
+                key: i,
+                onClick: function() { if (!quizState.answered) setQuiz({ selected: i }); },
+                disabled: quizState.answered,
+                className: btnClass,
+                'aria-label': opt
+              },
+                h('span', { className: 'font-bold mr-2' }, String.fromCharCode(65 + i) + '.'),
+                opt,
+                showResult && correctOpt && h('span', { className: 'ml-2' }, '✓'),
+                showResult && selected && !correctOpt && h('span', { className: 'ml-2' }, '✗')
+              );
+            })
+          ),
+          // Action / feedback
+          !quizState.answered && h('button', {
+            onClick: function() {
+              if (quizState.selected < 0) return;
+              var nowCorrect = quizState.selected === question.correctIdx;
+              setQuiz({ answered: true, score: quizState.score + (nowCorrect ? 1 : 0) });
+              rhAnnounce(nowCorrect ? 'Correct' : 'Incorrect. See explanation.');
+              if (nowCorrect && ctx.awardXP) ctx.awardXP(question.difficulty === 'hard' ? 5 : question.difficulty === 'medium' ? 3 : 2, 'Raptor Hunt quiz: ' + question.difficulty);
+            },
+            disabled: quizState.selected < 0,
+            className: 'w-full px-4 py-3 rounded-lg text-sm font-bold transition-all ' + (quizState.selected < 0
+              ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
+              : 'bg-gradient-to-r from-amber-600 to-orange-600 text-white hover:from-amber-700 hover:to-orange-700'),
+            'aria-label': 'Submit answer'
+          }, '✔ Submit Answer'),
+          quizState.answered && h('div', { className: 'space-y-3' },
+            h('div', { className: 'p-4 rounded-lg ' + (isCorrect ? 'bg-emerald-900/30 border border-emerald-700/40' : 'bg-red-900/30 border border-red-700/40') },
+              h('div', { className: 'flex items-start gap-2 mb-2' },
+                h('div', { className: 'text-2xl' }, isCorrect ? '✓' : '✗'),
+                h('div', { className: 'font-bold ' + (isCorrect ? 'text-emerald-300' : 'text-red-300') }, isCorrect ? 'Correct! +' + (question.difficulty === 'hard' ? 5 : question.difficulty === 'medium' ? 3 : 2) + ' XP' : 'Not quite — see explanation')
+              ),
+              h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, question.explanation)
+            ),
+            h('button', {
+              onClick: function() {
+                setQuiz({ ix: quizState.ix + 1, selected: -1, answered: false });
+              },
+              className: 'w-full px-4 py-3 rounded-lg text-sm font-bold bg-gradient-to-r from-amber-600 to-orange-600 text-white hover:from-amber-700 hover:to-orange-700 transition-all',
+              'aria-label': quizState.ix + 1 >= total ? 'See final results' : 'Next question'
+            }, quizState.ix + 1 >= total ? '🏁 See Results →' : '➡ Next Question')
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
       // RENDER: RESOURCES
       // ────────────────────────────────────────────────────────
       function renderResources() {
@@ -1941,7 +2447,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // ────────────────────────────────────────────────────────
       return h('div', { className: 'space-y-4', role: 'region', 'aria-label': 'Raptor Hunt tool' },
         // Section count chip
-        h('div', { className: 'text-[11px] text-slate-500 uppercase tracking-wider' }, '12 sections · 8 species · 3D simulator'),
+        h('div', { className: 'text-[11px] text-slate-500 uppercase tracking-wider' }, '14 sections · 8 species · 3D simulator · 18-question quiz'),
         // Tab nav (scrollable horizontal)
         h('div', { className: 'flex gap-1.5 overflow-x-auto pb-1', role: 'tablist', 'aria-label': 'Raptor Hunt sections' },
           SECTIONS.map(function(s) {
@@ -1972,6 +2478,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           activeSection === 'senses' && renderSenses(),
           activeSection === 'conservation' && renderConservation(),
           activeSection === 'fieldid' && renderFieldId(),
+          activeSection === 'migration' && renderMigration(),
+          activeSection === 'quiz' && renderQuiz(),
           activeSection === 'resources' && renderResources()
         )
       );

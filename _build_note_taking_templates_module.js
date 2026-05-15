@@ -40,7 +40,7 @@ const entry = `
 
 ${source}
 
-window.__noteTakingExports = { CornellNotesView, LabReportView, ReadingResponseView, NoteTakingView };
+window.__noteTakingExports = { CornellNotesView, LabReportView, ReadingResponseView, NoteTakingView, NotebookOverlay };
 `;
 
 fs.writeFileSync(TMP, entry, 'utf-8');
@@ -131,9 +131,10 @@ ${compiled}
   window.AlloModules.LabReportView = LabReportView;
   window.AlloModules.ReadingResponseView = ReadingResponseView;
   window.AlloModules.NoteTakingView = NoteTakingView;
+  window.AlloModules.NotebookOverlay = NotebookOverlay;
   window.AlloModules.NoteTakingTemplatesModule = true;
 
-  console.log('[NoteTakingTemplatesModule] 4 components registered');
+  console.log('[NoteTakingTemplatesModule] 5 components registered');
 })();
 `;
 

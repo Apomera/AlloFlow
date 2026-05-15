@@ -17,6 +17,7 @@ function HeaderBar(props) {
   const noop = () => null;
   const AlertCircle = window.AlertCircle || noop;
   const ArrowRight = window.ArrowRight || noop;
+  const BookOpen = window.BookOpen || noop;
   const CheckCircle2 = window.CheckCircle2 || noop;
   const ChevronDown = window.ChevronDown || noop;
   const ChevronUp = window.ChevronUp || noop;
@@ -93,13 +94,13 @@ function HeaderBar(props) {
     isGeneratingSource, isHelpMode, isJoinPopoverOpen, isProcessing,
     isStudentLinkMode, isZenMode, joinAppIdInput, joinClassSession,
     joinCodeInput, languageToTTSCode, latestLessonPlan,
-    leveledTextLanguage, openExportPreview, pptxLoaded,
+    leveledTextLanguage, notebookEntryCount, openExportPreview, pptxLoaded,
     resetFontSize, safeRemoveItem, selectedVoice, sessionData,
     sessionUnsubscribeRef, setActiveSessionCode, setHistory,
     setIsGateOpen, setJoinAppIdInput, setJoinCodeInput,
     setPendingRole, setRunTour,
     setSelectedVoice, setSessionData, setShowAIBackendModal,
-    setShowClassAnalytics, setShowEducatorHub, setShowExportMenu, setShowReadThisPage,
+    setShowClassAnalytics, setShowEducatorHub, setShowExportMenu, setShowNotebook, setShowReadThisPage,
     setShowSessionModal, setShowTextSettings, setShowVoiceSettings, setShowWizard,
     setSliderFontSize, setSpotlightMessage, setTourStep, setVoiceSpeed, setVoiceVolume,
     showExportMenu, showHelpOnboarding, showReadThisPage, showTextSettings,
@@ -564,6 +565,18 @@ function HeaderBar(props) {
                                         aria-label={t('header.jump_to_lesson')}
                                     >
                                         <ClipboardList size={20} />
+                                    </button>
+                                )}
+                                {notebookEntryCount > 0 && setShowNotebook && (
+                                    <button
+                                        onClick={() => setShowNotebook(true)}
+                                        data-help-key="header_open_notebook"
+                                        className="p-2 rounded-xl transition-all flex items-center gap-1.5 hover:bg-white/10 text-white/80 hover:text-white"
+                                        title={`Open my notebook (${notebookEntryCount} ${notebookEntryCount === 1 ? 'entry' : 'entries'})`}
+                                        aria-label={`Open my notebook, ${notebookEntryCount} ${notebookEntryCount === 1 ? 'entry' : 'entries'}`}
+                                    >
+                                        <BookOpen size={20} />
+                                        <span className="text-[10px] font-bold leading-none bg-white/20 rounded-full px-1.5 py-0.5 min-w-[18px] text-center">{notebookEntryCount}</span>
                                     </button>
                                 )}
                             </>

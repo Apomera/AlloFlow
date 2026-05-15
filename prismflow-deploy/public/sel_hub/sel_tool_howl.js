@@ -221,6 +221,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('howlTracker'))) 
         );
       }
 
+      function printNow() { try { window.print(); } catch (e) {} }
+
       // ─── Nav tabs ───
       function navTabs() {
         var tabs = [
@@ -228,7 +230,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('howlTracker'))) 
           { id: 'goals', label: 'Goals', icon: '🎯' },
           { id: 'checkin', label: 'Weekly check-in', icon: '✏️' },
           { id: 'history', label: 'History', icon: '📈' },
-          { id: 'crew', label: 'Crew prompts', icon: '🤝' }
+          { id: 'crew', label: 'Crew prompts', icon: '🤝' },
+          { id: 'print', label: 'Print', icon: '🖨' }
         ];
         return h('div', { role: 'tablist', 'aria-label': 'HOWL Tracker sections',
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
@@ -629,6 +632,97 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('howlTracker'))) 
       }
 
       // ═══════════════════════════════════════════════════════
+      // PRINT VIEW — quarter snapshot for Crew binders + IEP meetings
+      // ═══════════════════════════════════════════════════════
+      function renderPrint() {
+        // Latest check-in per HOWL
+        var latestPerHowl = {};
+        quarterCheckins.forEach(function(c) {
+          activeHowls.forEach(function(hw) {
+            var entry = (c.perHowl || {})[hw.id];
+            if (entry && typeof entry.rating === 'number') {
+              if (!latestPerHowl[hw.id] || c.week > latestPerHowl[hw.id].week) {
+                latestPerHowl[hw.id] = { week: c.week, rating: entry.rating, note: entry.note || '' };
+              }
+            }
+          });
+        });
+        var avgPerHowl = {};
+        activeHowls.forEach(function(hw) {
+          var sum = 0, n = 0;
+          quarterCheckins.forEach(function(c) {
+            var entry = (c.perHowl || {})[hw.id];
+            if (entry && typeof entry.rating === 'number') { sum += entry.rating; n++; }
+          });
+          if (n > 0) avgPerHowl[hw.id] = { avg: (sum / n).toFixed(1), n: n };
+        });
+
+        return h('div', null,
+          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(167,139,250,0.10)', border: '1px solid rgba(167,139,250,0.4)', borderLeft: '3px solid #a78bfa', marginBottom: 12, fontSize: 12.5, color: '#e9d5ff', lineHeight: 1.65 } },
+            h('strong', null, '🖨 Quarter snapshot. '),
+            'Print or save as PDF for your Crew binder, student-led conference, or IEP meeting. Includes your goals, your most recent rating per HOWL, and your quarter average per HOWL.'
+          ),
+          h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
+            h('button', { onClick: printNow, 'aria-label': 'Print or save as PDF',
+              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #6d28d9 0%, #a78bfa 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
+          ),
+
+          h('style', null,
+            '@media print { body * { visibility: hidden !important; } ' +
+            '#howl-print-region, #howl-print-region * { visibility: visible !important; } ' +
+            '#howl-print-region { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; background: #fff !important; color: #0f172a !important; } ' +
+            '#howl-print-region * { background: transparent !important; color: #0f172a !important; border-color: #888 !important; } ' +
+            '.no-print { display: none !important; } }'
+          ),
+
+          h('div', { id: 'howl-print-region', style: { padding: 18, borderRadius: 12, background: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0' } },
+            h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', borderBottom: '2px solid #0f172a', paddingBottom: 8, marginBottom: 14 } },
+              h('h2', { style: { margin: 0, fontSize: 22, fontWeight: 900, color: '#0f172a' } }, 'HOWL Tracker · ' + quarterLabel(qid)),
+              h('div', { style: { fontSize: 11, color: '#475569' } }, 'Habits of Work and Learning · EL Education')
+            ),
+
+            // Goals section
+            h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 12, pageBreakInside: 'avoid' } },
+              h('div', { style: { fontSize: 12, color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, 'My goals this quarter'),
+              Object.keys(goals).length === 0
+                ? h('div', { style: { fontSize: 13, fontStyle: 'italic', color: '#475569' } }, '(no goals set yet)')
+                : activeHowls.map(function(hw) {
+                    var g = goals[hw.id];
+                    if (!g) return null;
+                    return h('div', { key: hw.id, style: { marginBottom: 8, paddingBottom: 8, borderBottom: '1px dashed #cbd5e1' } },
+                      h('div', { style: { fontSize: 11, color: '#6b21a8', fontWeight: 700 } }, hw.label),
+                      h('div', { style: { fontSize: 13, color: '#0f172a', lineHeight: 1.55 } }, g)
+                    );
+                  })
+            ),
+
+            // Per-HOWL ratings
+            h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 12 } },
+              h('div', { style: { fontSize: 12, color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, 'My ratings this quarter'),
+              activeHowls.map(function(hw) {
+                var latest = latestPerHowl[hw.id];
+                var avg = avgPerHowl[hw.id];
+                return h('div', { key: hw.id, style: { marginBottom: 10, paddingBottom: 8, borderBottom: '1px dashed #cbd5e1', pageBreakInside: 'avoid' } },
+                  h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 4 } },
+                    h('div', { style: { fontSize: 13, fontWeight: 700, color: '#0f172a' } }, hw.label),
+                    h('div', { style: { fontSize: 11, color: '#475569' } }, avg ? 'avg ' + avg.avg + ' / 5 over ' + avg.n + ' check-ins' : 'no check-ins yet')
+                  ),
+                  latest ? h('div', { style: { fontSize: 12, color: '#475569', lineHeight: 1.55 } },
+                    'Most recent (' + latest.week + '): ' + latest.rating + ' / 5' + (latest.note ? ' — ' + latest.note : '')
+                  ) : null
+                );
+              })
+            ),
+
+            // Footer
+            h('div', { style: { marginTop: 14, padding: 10, borderTop: '2px solid #0f172a', fontSize: 10.5, color: '#475569', lineHeight: 1.5, textAlign: 'center' } },
+              'A HOWL snapshot is a starting point for conversation, not a final grade. Bring this to Crew check-ins, student-led conferences, IEP meetings. Printed from AlloFlow SEL Hub.'
+            )
+          )
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════
       // ROOT RENDER
       // ═══════════════════════════════════════════════════════
       var subtitle = 'Habits of Work and Learning · ' + quarterLabel(qid) + ' · Weekly self-assessment for Crew time.';
@@ -637,10 +731,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('howlTracker'))) 
       else if (view === 'checkin') body = renderCheckin();
       else if (view === 'history') body = renderHistory();
       else if (view === 'crew') body = renderCrew();
+      else if (view === 'print') body = renderPrint();
       else body = renderHome();
 
       return h('div', { style: { maxWidth: 820, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'HOWL Tracker' },
         header(null, subtitle),
+        (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('howlTracker', h, ctx) : null),
         navTabs(),
         body
       );

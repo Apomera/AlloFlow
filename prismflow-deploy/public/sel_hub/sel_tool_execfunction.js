@@ -258,8 +258,18 @@ window.SelHub = window.SelHub || {
         { id: 'hold',  icon: '🧠', label: 'Hold' },
         { id: 'plan',  icon: '📐', label: 'Plan' },
         { id: 'time',  icon: '⏱️', label: 'Time' },
-        { id: 'coach', icon: '🤖', label: 'Coach' }
+        { id: 'coach', icon: '🤖', label: 'Coach' },
+        { id: 'print', icon: '🖨', label: 'Print' }
       ];
+
+      // Accommodation suggestions per domain — what to ask for in 504/IEP meetings
+      var ACCOMMODATIONS = {
+        init:  ['Extra time to transition between activities and start work', 'Teacher cue or check-in to begin (silent signal, sticky note, brief 1:1 prompt)', 'Permission to use a 5-minute warm-up timer instead of starting cold', 'Permission to start with the easiest sub-task first to build momentum'],
+        hold:  ['Written task lists provided alongside verbal instructions', 'Permission to use a note-taking app or paper capture system at all times', 'Steps broken into one-at-a-time chunks rather than multi-step directions', 'Repeat-back of directions allowed without it counting as "off task"'],
+        plan:  ['Long projects broken into smaller graded checkpoints (not just one final deadline)', 'Backward-planning template provided at project assignment', 'Permission to check in with teacher at planning stage before working', 'Extended time on multi-step assignments'],
+        time:  ['Visual timers visible during independent work', 'Time estimates provided for each assignment', 'Extended time on tests and timed assignments', 'Frequent natural breaks (Pomodoro-style structure)'],
+        flex:  ['Advance warning of schedule changes whenever possible', 'A predictable transition routine (5-minute warning, end-of-class checklist)', 'Permission to take a 2-minute reset when a plan changes', 'A pass to a regulation space when overwhelmed by an unexpected change']
+      };
 
       var exploredTabs = d.exploredTabs || {};
       if (!exploredTabs[activeTab]) { var ne = Object.assign({}, exploredTabs); ne[activeTab] = true; upd('exploredTabs', ne); }
@@ -813,8 +823,110 @@ window.SelHub = window.SelHub || {
         }
       }
 
-      var content = mapContent || startContent || holdContent || planContent || timeContent || coachContent;
+      // ── Print: IEP / 504 accommodations artifact ──
+      var printContent = null;
+      if (activeTab === 'print') {
+        var domainScores = DOMAINS.map(function(dom) {
+          var scores = mapAnswers[dom.id] || [];
+          var sum = 0, n = 0;
+          scores.forEach(function(s) { if (typeof s === 'number') { sum += s; n++; } });
+          var avg = n > 0 ? (sum / n) : null;
+          return { dom: dom, avg: avg, n: n };
+        });
+        var topDomains = domainScores.filter(function(x) { return x.avg !== null; }).sort(function(a, b) { return b.avg - a.avg; }).slice(0, 3);
+
+        printContent = h('div', { style: { padding: 16 } },
+          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: '#ecfeff', border: '1px solid #67e8f9', borderLeft: '3px solid ' + CYAN, marginBottom: 12, fontSize: 12.5, color: CYAN_DARK, lineHeight: 1.65 } },
+            h('strong', null, '🖨 Executive function snapshot + accommodation list. '),
+            'A one-page artifact for student-led conferences, 504/IEP meetings, or teacher conversations. Includes your self-assessment of where executive function is hardest, your active plan, and a list of accommodations to consider asking for, grouped by which executive function domain they support.'
+          ),
+          h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
+            h('button', { onClick: function() { try { window.print(); } catch (e) {} }, 'aria-label': 'Print or save as PDF',
+              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, ' + CYAN + ', #0e7490)', color: '#fff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
+          ),
+          h('style', null,
+            '@media print { body * { visibility: hidden !important; } ' +
+            '#ef-print-region, #ef-print-region * { visibility: visible !important; } ' +
+            '#ef-print-region { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; background: #fff !important; color: #0f172a !important; } ' +
+            '#ef-print-region * { background: transparent !important; color: #0f172a !important; border-color: #888 !important; } ' +
+            '.no-print { display: none !important; } }'
+          ),
+          h('div', { id: 'ef-print-region', style: { padding: 18, borderRadius: 12, background: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0' } },
+            h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', borderBottom: '2px solid #0f172a', paddingBottom: 8, marginBottom: 14 } },
+              h('h2', { style: { margin: 0, fontSize: 22, fontWeight: 900, color: '#0f172a' } }, 'Executive Function Snapshot'),
+              h('div', { style: { fontSize: 11, color: '#475569' } }, 'Dawson & Guare framework')
+            ),
+
+            h('div', { style: { padding: 10, background: '#f0fdfa', border: '1px solid #99f6e4', borderRadius: 8, marginBottom: 14, fontSize: 12, lineHeight: 1.55, color: '#0f766e' } },
+              h('strong', null, 'How to use this artifact. '),
+              'This is a starting point for conversation with a teacher, school psychologist, case manager, or 504/IEP team. Not every accommodation listed will be right for every classroom. Pick the 3 to 5 that would help most and ask for those by name. The goal is access, not advantage.'
+            ),
+
+            // Self-assessment
+            h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 12 } },
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, 'My self-assessment'),
+              !mapDone ? h('div', { style: { fontSize: 12.5, color: '#475569', fontStyle: 'italic' } }, '(map not completed yet — go to the Map tab to fill it out)') : null,
+              domainScores.map(function(s) {
+                return h('div', { key: s.dom.id, style: { marginBottom: 6, paddingBottom: 6, borderBottom: '1px dashed #cbd5e1' } },
+                  h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' } },
+                    h('div', { style: { fontSize: 12.5, fontWeight: 700, color: '#0f172a' } }, s.dom.icon + ' ' + s.dom.label),
+                    h('div', { style: { fontSize: 11.5, color: '#475569' } }, s.avg === null ? 'not rated' : 'avg ' + s.avg.toFixed(1) + ' / 4')
+                  ),
+                  h('div', { style: { fontSize: 11.5, color: '#475569', lineHeight: 1.5, marginTop: 2 } }, s.dom.desc)
+                );
+              }),
+              topDomains.length > 0 ? h('div', { style: { marginTop: 10, padding: 8, background: '#ecfeff', borderRadius: 6, border: '1px solid #67e8f9', fontSize: 12, color: '#0c4a6e', lineHeight: 1.55 } },
+                h('strong', null, 'Hardest right now: '),
+                topDomains.map(function(t) { return t.dom.label; }).join(', '),
+                '. Accommodations matching these domains are highlighted below.'
+              ) : null
+            ),
+
+            // Active plan
+            planGoal ? h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 12, pageBreakInside: 'avoid' } },
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, 'My active plan'),
+              h('div', { style: { fontSize: 12, color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Goal'),
+              h('div', { style: { fontSize: 13, color: '#0f172a', marginBottom: 8 } }, planGoal),
+              planDeadline ? h('div', { style: { fontSize: 12, color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Deadline') : null,
+              planDeadline ? h('div', { style: { fontSize: 13, color: '#0f172a', marginBottom: 8 } }, planDeadline) : null,
+              planChunks && planChunks.filter(function(c) { return c && c.trim(); }).length > 0 ? h('div', null,
+                h('div', { style: { fontSize: 12, color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Steps'),
+                h('ol', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12.5, color: '#0f172a', lineHeight: 1.6 } },
+                  planChunks.filter(function(c) { return c && c.trim(); }).map(function(c, i) { return h('li', { key: i }, c); })
+                )
+              ) : null
+            ) : null,
+
+            // Accommodation suggestions by domain
+            h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 12 } },
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, 'Accommodations to consider'),
+              h('div', { style: { fontSize: 11.5, color: '#475569', marginBottom: 10, fontStyle: 'italic' } }, 'Grouped by the executive function domain each one supports. Bring this to a 504/IEP meeting or a teacher conversation. Pick the few that would help most in your specific classrooms.'),
+              DOMAINS.map(function(dom) {
+                var isTop = topDomains.some(function(t) { return t.dom.id === dom.id; });
+                var accs = ACCOMMODATIONS[dom.id] || [];
+                return h('div', { key: dom.id, style: { marginBottom: 10, paddingBottom: 8, borderBottom: '1px dashed #cbd5e1', pageBreakInside: 'avoid' } },
+                  h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 4 } },
+                    h('div', { style: { fontSize: 12.5, fontWeight: 700, color: '#0f172a' } }, dom.icon + ' ' + dom.label),
+                    isTop ? h('div', { style: { fontSize: 10, fontWeight: 800, padding: '2px 8px', borderRadius: 4, border: '1px solid #0891b2', color: '#0e7490', background: '#ecfeff' } }, 'TOP PRIORITY') : null
+                  ),
+                  h('ul', { style: { margin: 0, padding: '0 0 0 20px', fontSize: 11.5, color: '#0f172a', lineHeight: 1.55 } },
+                    accs.map(function(a, i) { return h('li', { key: i, style: { marginBottom: 2 } }, a); })
+                  )
+                );
+              })
+            ),
+
+            // Footer
+            h('div', { style: { marginTop: 14, padding: 10, borderTop: '2px solid #0f172a', fontSize: 10.5, color: '#475569', lineHeight: 1.5 } },
+              'Sources: Dawson, P. & Guare, R. (2018), Executive Skills in Children and Adolescents (3rd ed.). Self-assessment is not a diagnostic instrument. Accommodations require a 504 plan or IEP for legal protections. Printed from AlloFlow SEL Hub.'
+            )
+          )
+        );
+      }
+
+      var content = mapContent || startContent || holdContent || planContent || timeContent || coachContent || printContent;
       return h('div', { className: 'selh-execfunction', style: { display: 'flex', flexDirection: 'column', height: '100%' } },
+        (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('execfunction', h, ctx) : null),
         tabBar,
         h('div', { style: { flex: 1, overflow: 'auto' } }, content)
       );

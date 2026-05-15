@@ -2188,7 +2188,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                 return h('div', { key: b.code, className: 'p-3 rounded-lg bg-slate-900/60 border border-cyan-500/20' },
                   h('div', { className: 'text-xs font-black text-cyan-200 mb-1' }, b.code + ' — ' + b.name),
                   h('div', { className: 'text-xs text-slate-300 mb-1' }, b.desc),
-                  h('div', { className: 'text-xs text-slate-400 italic' }, 'Example: ' + b.example)
+                  h('div', { className: 'text-xs text-slate-300 italic' }, 'Example: ' + b.example)
                 );
               })
             )
@@ -2202,7 +2202,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                 return h('div', { key: p.code, className: 'p-3 rounded-lg bg-slate-900/60 border border-purple-500/20' },
                   h('div', { className: 'text-xs font-black text-purple-200 mb-1' }, p.code + ' — ' + p.name),
                   h('div', { className: 'text-xs text-slate-300 mb-1' }, p.desc),
-                  h('div', { className: 'text-xs text-slate-400 italic' }, p.example)
+                  h('div', { className: 'text-xs text-slate-300 italic' }, p.example)
                 );
               })
             )
@@ -2297,7 +2297,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                 className: 'text-left p-3 rounded-lg border-2 transition focus:ring-2 focus:ring-cyan-400 focus:outline-none ' + (sel ? 'bg-cyan-900/40 border-cyan-400' : 'bg-slate-800/60 border-slate-600 hover:border-cyan-500/50')
               },
                 h('div', { className: 'text-xs font-black ' + (sel ? 'text-cyan-100' : 'text-slate-200') }, b.code + ' — ' + b.name),
-                h('div', { className: 'text-xs mt-1 ' + (sel ? 'text-cyan-200' : 'text-slate-400') }, b.desc)
+                h('div', { className: 'text-xs mt-1 ' + (sel ? 'text-cyan-200' : 'text-slate-300') }, b.desc)
               );
             })
           ),
@@ -2305,11 +2305,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             h('button', {
               onClick: runCritique,
               disabled: loading || battery.length < 2,
-              className: 'px-5 py-2 rounded-xl font-bold text-sm ' + (loading || battery.length < 2 ? 'bg-slate-700 text-slate-400' : 'bg-cyan-600 text-white hover:bg-cyan-500')
+              className: 'px-5 py-2 rounded-xl font-bold text-sm ' + (loading || battery.length < 2 ? 'bg-slate-700 text-slate-300' : 'bg-cyan-600 text-white hover:bg-cyan-500')
             }, loading ? 'Thinking…' : '\u2728 Critique my battery'),
-            h('span', { className: 'text-xs text-slate-400' }, battery.length + ' / ' + CHC_BROAD.length + ' broad abilities selected')
+            h('span', { className: 'text-xs text-slate-300' }, battery.length + ' / ' + CHC_BROAD.length + ' broad abilities selected')
           ),
-          critique && h('section', { className: 'p-4 rounded-xl bg-slate-900/60 border border-cyan-500/30' },
+          critique && h('section', { className: 'p-4 rounded-xl bg-slate-900/60 border border-cyan-500/30', 'aria-live': 'polite', role: 'region', 'aria-label': 'AI critique of selected battery' },
             h('h3', { className: 'text-sm font-black text-cyan-300 mb-2' }, 'Critique'),
             h('pre', { className: 'text-xs text-slate-200 whitespace-pre-wrap font-sans leading-relaxed' }, critique),
             h('div', { className: 'mt-3 no-print' },
@@ -2328,7 +2328,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             return h('section', { key: b.abbr, className: 'p-4 rounded-xl bg-slate-800/60 border border-cyan-500/30' },
               h('div', { className: 'flex items-baseline gap-3 mb-2' },
                 h('span', { className: 'text-lg font-black text-cyan-200' }, b.abbr),
-                h('span', { className: 'text-xs text-slate-400' }, '(' + b.ages + ')')
+                h('span', { className: 'text-xs text-slate-300' }, '(' + b.ages + ')')
               ),
               h('div', { className: 'text-sm font-bold text-cyan-100 mb-1' }, b.name),
               h('div', { className: 'text-xs text-slate-300 mb-2' }, h('strong', null, 'Theory: '), b.theory),
@@ -2449,7 +2449,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                 type: 'range', min: 1950, max: 2020, step: 1, value: yr,
                 onChange: function(e) { upd({ flynnYear: parseInt(e.target.value, 10) }); },
                 className: 'w-full',
-                'aria-label': 'Norm year'
+                'aria-label': 'Norm year',
+                'aria-valuetext': 'norm year ' + yr
               }),
               h('div', { className: 'flex justify-between text-xs text-slate-300 mt-1' },
                 h('span', null, '1950'), h('span', null, '1985'), h('span', null, '2020')
@@ -2457,14 +2458,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             ),
             h('div', { className: 'grid grid-cols-2 gap-3' },
               h('div', { className: 'p-3 rounded bg-slate-900/60' },
-                h('div', { className: 'text-xs text-slate-400' }, 'Classic Flynn (3 pts/decade)'),
+                h('div', { className: 'text-xs text-slate-300' }, 'Classic Flynn (3 pts/decade)'),
                 h('div', { className: 'text-2xl font-black text-cyan-200' }, (100 - shift).toFixed(1)),
-                h('div', { className: 'text-xs text-slate-400' }, 'Expected score today (' + shiftLabel + ' shift)')
+                h('div', { className: 'text-xs text-slate-300' }, 'Expected score today (' + shiftLabel + ' shift)')
               ),
               h('div', { className: 'p-3 rounded bg-slate-900/60' },
-                h('div', { className: 'text-xs text-slate-400' }, 'Attenuated model (post-2000)'),
+                h('div', { className: 'text-xs text-slate-300' }, 'Attenuated model (post-2000)'),
                 h('div', { className: 'text-2xl font-black text-cyan-200' }, (100 - shiftAttenuated).toFixed(1)),
-                h('div', { className: 'text-xs text-slate-400' }, 'Accounts for recent slowdown in gains')
+                h('div', { className: 'text-xs text-slate-300' }, 'Accounts for recent slowdown in gains')
               )
             ),
             h('p', { className: 'text-xs text-slate-300 mt-3 italic' }, 'Translation: a person who performed "average" on a 1960 test would score below average on today\'s norms. Not because they\'re less able — but because the population shifted upward around them, and norms were reset.')
@@ -2510,13 +2511,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
 
       function renderBiasSpotter() {
         // Six core validity issues. Order matters — used as both labels and answer keys.
+        // `color` = saturated 500-tier used for borders + background tints.
+        // `textColor` = 300-tier used for the LABEL TEXT, since saturated 500s
+        // fail WCAG AA when used as small bold text on dark slate.
         var ISSUES = [
-          { id: 'linguistic',   label: 'Linguistic bias',           color: '#0ea5e9', icon: '\uD83D\uDDE3\uFE0F', def: 'Test was administered in a language the examinee is not fully fluent in, or item language is too complex for the examinee\'s reading/comprehension level.' },
-          { id: 'cultural',     label: 'Cultural bias',             color: '#a855f7', icon: '\uD83C\uDF0E', def: 'Item content assumes familiarity with cultural references, customs, or environments not shared by the examinee.' },
-          { id: 'outdatedNorms', label: 'Outdated norms',           color: '#f59e0b', icon: '\uD83D\uDCC5', def: 'Test norms are too old to validly compare current performance (Flynn effect, demographic shifts).' },
-          { id: 'underRep',     label: 'Construct under-representation', color: '#22c55e', icon: '\uD83D\uDCD0', def: 'Test samples too narrow a slice of the construct it claims to measure (e.g., "reading" via decoding only).' },
-          { id: 'examiner',     label: 'Examiner / administration effect', color: '#ef4444', icon: '\uD83D\uDC65', def: 'Examiner behavior, rapport, race-of-examiner effects, distractions, or protocol deviations affect the score.' },
-          { id: 'ceilingFloor', label: 'Ceiling / floor effect',    color: '#6366f1', icon: '\uD83D\uDCCF', def: 'Test items don\'t span the examinee\'s true ability range \u2014 score is artificially capped at top or bottom.' }
+          { id: 'linguistic',   label: 'Linguistic bias',           color: '#0ea5e9', textColor: '#7dd3fc', icon: '\uD83D\uDDE3\uFE0F', def: 'Test was administered in a language the examinee is not fully fluent in, or item language is too complex for the examinee\'s reading/comprehension level.' },
+          { id: 'cultural',     label: 'Cultural bias',             color: '#a855f7', textColor: '#d8b4fe', icon: '\uD83C\uDF0E', def: 'Item content assumes familiarity with cultural references, customs, or environments not shared by the examinee.' },
+          { id: 'outdatedNorms', label: 'Outdated norms',           color: '#f59e0b', textColor: '#fcd34d', icon: '\uD83D\uDCC5', def: 'Test norms are too old to validly compare current performance (Flynn effect, demographic shifts).' },
+          { id: 'underRep',     label: 'Construct under-representation', color: '#22c55e', textColor: '#86efac', icon: '\uD83D\uDCD0', def: 'Test samples too narrow a slice of the construct it claims to measure (e.g., "reading" via decoding only).' },
+          { id: 'examiner',     label: 'Examiner / administration effect', color: '#ef4444', textColor: '#fca5a5', icon: '\uD83D\uDC65', def: 'Examiner behavior, rapport, race-of-examiner effects, distractions, or protocol deviations affect the score.' },
+          { id: 'ceilingFloor', label: 'Ceiling / floor effect',    color: '#6366f1', textColor: '#a5b4fc', icon: '\uD83D\uDCCF', def: 'Test items don\'t span the examinee\'s true ability range \u2014 score is artificially capped at top or bottom.' }
         ];
         // 12 vignettes. `correct` indexes into ISSUES.
         var VIGNETTES = [
@@ -2594,7 +2598,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                   },
                     h('div', { className: 'flex items-center gap-2 mb-1' },
                       h('span', { style: { fontSize: 16 }, 'aria-hidden': 'true' }, iss.icon),
-                      h('span', { style: { color: iss.color, fontWeight: 800, fontSize: 12 } }, iss.label)
+                      h('span', { style: { color: iss.textColor || iss.color, fontWeight: 800, fontSize: 12 } }, iss.label)
                     ),
                     h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, iss.def)
                   );
@@ -2637,7 +2641,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               if (biasAnswered) {
                 if (isRight) { bg = 'rgba(34,197,94,0.15)'; border = '#22c55e'; color = '#bbf7d0'; }
                 else if (picked) { bg = 'rgba(239,68,68,0.15)'; border = '#ef4444'; color = '#fecaca'; }
-                else { bg = 'rgba(30,41,59,0.6)'; border = 'rgba(100,116,139,0.4)'; color = '#94a3b8'; }
+                else { bg = 'rgba(30,41,59,0.6)'; border = 'rgba(100,116,139,0.4)'; color = '#cbd5e1'; }
               } else {
                 bg = iss.color + '12'; border = iss.color + '60'; color = '#e2e8f0';
               }
@@ -2650,7 +2654,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               },
                 h('div', { className: 'flex items-center gap-2 mb-1' },
                   h('span', { style: { fontSize: 18 }, 'aria-hidden': 'true' }, iss.icon),
-                  h('span', { style: { color: biasAnswered ? color : iss.color, fontSize: 13, fontWeight: 800 } }, iss.label)
+                  h('span', { style: { color: biasAnswered ? color : (iss.textColor || iss.color), fontSize: 13, fontWeight: 800 } }, iss.label)
                 ),
                 h('div', { style: { fontSize: 11, fontWeight: 500, color: biasAnswered ? color : '#cbd5e1', lineHeight: 1.45 } }, iss.def)
               );
@@ -2750,7 +2754,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                 items.map(function(item, i) {
                   return h('li', { key: i, className: 'p-2 rounded bg-slate-900/60' },
                     h('div', { className: 'text-xs text-slate-100 leading-relaxed' }, item.cite),
-                    h('div', { className: 'text-xs text-slate-400 italic mt-1' }, item.note)
+                    h('div', { className: 'text-xs text-slate-300 italic mt-1' }, item.note)
                   );
                 })
               )
@@ -2935,9 +2939,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               placeholder: 'Filter by term, definition, or module',
               className: 'w-full p-2 rounded bg-slate-800/80 border border-stone-500 text-xs text-slate-100'
             }),
-            filter && h('div', { className: 'text-xs text-slate-400 mt-1' }, filtered.length + ' of ' + GLOSSARY_TERMS.length + ' terms matching "' + filter + '"')
+            filter && h('div', { className: 'text-xs text-slate-300 mt-1' }, filtered.length + ' of ' + GLOSSARY_TERMS.length + ' terms matching "' + filter + '"')
           ),
-          filtered.length === 0 ? h('div', { className: 'p-6 rounded bg-slate-800/40 text-center text-sm text-slate-400' }, 'No terms match your filter.') :
+          filtered.length === 0 ? h('div', { className: 'p-6 rounded bg-slate-800/40 text-center text-sm text-slate-100', role: 'status' }, 'No terms match your filter.') :
           letters.map(function(letter) {
             return h('section', { key: letter, className: 'space-y-2' },
               h('h3', { className: 'text-lg font-black text-stone-300 border-b border-stone-500/30 pb-1' }, letter),
@@ -3055,7 +3059,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                 h('div', { className: 'h-3 rounded-full bg-slate-700 overflow-hidden' },
                   h('div', { className: 'h-full bg-purple-500', style: { width: v + '%' } })
                 ),
-                h('div', { className: 'text-xs text-slate-400 mt-1' },
+                h('div', { className: 'text-xs text-slate-300 mt-1' },
                   v >= 60 ? t.high : (v <= 40 ? t.low : 'Mid-range — both patterns may apply.'),
                   ' ',
                   h('span', { className: 'italic' }, t.empirical)
@@ -3070,7 +3074,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           h('p', { className: 'text-xs text-slate-300 mb-3' }, 'Here\'s your Big 5 profile forced into MBTI\'s 4-letter binary format:'),
           h('div', { className: 'text-center py-4' },
             h('div', { className: 'text-5xl font-black text-pink-200 tracking-widest' }, mbti),
-            h('div', { className: 'text-xs text-slate-400 mt-2' }, '(E/I from E; S/N from O; T/F from A; J/P from C)')
+            h('div', { className: 'text-xs text-slate-300 mt-2' }, '(E/I from E; S/N from O; T/F from A; J/P from C)')
           ),
           h('p', { className: 'text-xs text-slate-200 mt-3 leading-relaxed' }, 'Notice what just happened: your continuous trait scores (say, 52 on Extraversion) got flattened into a binary letter (E). A person who scored 48 got the opposite letter (I). You two are nearly identical, but MBTI calls you different types. This is what "binarization destroys information" means.')
         ),
@@ -3096,7 +3100,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             h('div', { className: 'grid grid-cols-4 gap-2 text-center' },
               Object.keys(sim.letterFlipPct).map(function(k) {
                 return h('div', { key: k, className: 'p-2 rounded bg-slate-800/60' },
-                  h('div', { className: 'text-xs font-bold text-slate-400' }, k + ' flips'),
+                  h('div', { className: 'text-xs font-bold text-slate-300' }, k + ' flips'),
                   h('div', { className: 'text-sm font-black text-rose-300' }, sim.letterFlipPct[k] + '%')
                 );
               })
@@ -3409,7 +3413,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         h('section', { className: 'p-4 rounded-xl bg-gradient-to-br from-purple-900/40 to-pink-900/40 border border-purple-500/30' },
           h('div', { className: 'text-center mb-3' },
             h('div', { className: 'text-3xl font-black text-purple-200' }, agreement + '%'),
-            h('div', { className: 'text-xs text-slate-400' }, label + ' · (average trait agreement)')
+            h('div', { className: 'text-xs text-slate-300' }, label + ' · (average trait agreement)')
           ),
           h('p', { className: 'text-xs text-slate-300 italic leading-relaxed text-center' }, 'Research on self-other agreement typically finds correlations of r=0.35-0.55 for close observers, with highest agreement on observable traits (Extraversion, Conscientiousness) and lowest on internal ones (Neuroticism, Openness).')
         ),
@@ -3434,7 +3438,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                   h('div', { className: 'absolute top-0 bottom-0 w-1 bg-blue-400', style: { left: d.selfVal + '%' }, title: 'Self: ' + d.selfVal }),
                   h('div', { className: 'absolute top-0 bottom-0 w-1 bg-pink-400', style: { left: d.peerVal + '%' }, title: 'Peer: ' + d.peerVal })
                 ),
-                h('div', { className: 'text-xs text-slate-400 mt-1' }, interpretation)
+                h('div', { className: 'text-xs text-slate-300 mt-1' }, interpretation)
               );
             })
           ),
@@ -3640,7 +3644,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               ),
               h('div', { style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } },
                 h('div', { style: { fontSize: 30, fontWeight: 900, color: tierColor, lineHeight: 1, letterSpacing: '0.04em' } }, code),
-                h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#94a3b8' } }, topScore + '/100')
+                h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#cbd5e1' } }, topScore + '/100')
               )
             ),
             // Holland hexagon
@@ -3659,7 +3663,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                 var rOut = inCode ? (rank === 0 ? 14 : (rank === 1 ? 12 : 10)) : 9;
                 return h('g', { key: v.letter },
                   h('circle', { cx: v.x, cy: v.y, r: rOut, fill: fill, stroke: inCode ? '#0f172a' : 'rgba(15,23,42,0.6)', strokeWidth: 2 }),
-                  h('text', { x: v.x, y: v.y + 4, textAnchor: 'middle', fontSize: 12, fontWeight: 900, fill: inCode ? '#0f172a' : '#94a3b8' }, v.letter)
+                  h('text', { x: v.x, y: v.y + 4, textAnchor: 'middle', fontSize: 12, fontWeight: 900, fill: inCode ? '#0f172a' : '#cbd5e1' }, v.letter)
                 );
               })
             ),
@@ -3681,7 +3685,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                   background: inCode ? (tierColor + '33') : 'rgba(148,163,184,0.10)',
                   border: '1px solid ' + (inCode ? tierColor + '88' : 'rgba(148,163,184,0.25)'),
                   fontSize: 11, fontWeight: 800,
-                  color: inCode ? tierColor : '#94a3b8'
+                  color: inCode ? tierColor : '#cbd5e1'
                 }
               },
                 h('span', { style: { fontFamily: 'monospace', fontSize: 12 } }, '#' + (i + 1)),
@@ -3696,7 +3700,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         h('section', { className: 'p-4 rounded-xl bg-gradient-to-br from-emerald-900/40 to-teal-900/40 border border-emerald-500/30' },
           h('div', { className: 'text-center mb-3' },
             h('div', { className: 'text-xs uppercase tracking-widest text-emerald-300 font-bold' }, 'Detailed type breakdown'),
-            h('div', { className: 'text-xs text-slate-400 mt-1' }, 'Top 3 interest types, in order \u2014 with what each one prefers')
+            h('div', { className: 'text-xs text-slate-300 mt-1' }, 'Top 3 interest types, in order \u2014 with what each one prefers')
           ),
           h('div', { className: 'space-y-2' },
             ['R', 'I', 'A', 'S', 'E', 'C'].map(function(k) {
@@ -3711,7 +3715,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                 h('div', { className: 'h-3 rounded-full bg-slate-700 overflow-hidden' },
                   h('div', { className: 'h-full bg-emerald-500', style: { width: v + '%' } })
                 ),
-                h('div', { className: 'text-xs text-slate-400 mt-1' }, t.desc)
+                h('div', { className: 'text-xs text-slate-300 mt-1' }, t.desc)
               );
             })
           )
@@ -3730,7 +3734,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           h('button', {
             onClick: explore,
             disabled: loading,
-            className: 'px-4 py-2 rounded-lg text-xs font-bold ' + (loading ? 'bg-slate-700 text-slate-400' : 'bg-emerald-600 text-white hover:bg-emerald-500')
+            className: 'px-4 py-2 rounded-lg text-xs font-bold ' + (loading ? 'bg-slate-700 text-slate-300' : 'bg-emerald-600 text-white hover:bg-emerald-500')
           }, loading ? 'Thinking…' : '\u2728 Explore occupations'),
           result && h('pre', { className: 'text-xs text-slate-200 whitespace-pre-wrap font-sans leading-relaxed mt-3 p-3 rounded bg-slate-900/60' }, result)
         ),
@@ -3874,7 +3878,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               return h('li', { key: k, className: 'p-3 rounded bg-slate-900/60' },
                 h('div', { className: 'flex justify-between items-baseline mb-1' },
                   h('span', { className: 'text-sm font-black text-emerald-200' }, (i + 1) + '. ' + val.name),
-                  h('span', { className: 'text-xs text-slate-400' }, (score > 0 ? '+' : '') + score + ' (' + val.higherOrder + ')')
+                  h('span', { className: 'text-xs text-slate-300' }, (score > 0 ? '+' : '') + score + ' (' + val.higherOrder + ')')
                 ),
                 h('div', { className: 'h-2 rounded-full bg-slate-700 overflow-hidden mb-1' },
                   h('div', { className: 'h-full bg-emerald-500', style: { width: barWidth + '%' } })
@@ -4003,7 +4007,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           className: 'inline-flex items-center gap-1 text-xs font-bold text-amber-300 hover:text-amber-200 mb-1'
         }, '← All tests'),
         h('h2', { className: 'text-2xl font-black text-amber-200' }, test.name),
-        h('p', { className: 'text-xs text-slate-400 italic' }, test.full),
+        h('p', { className: 'text-xs text-slate-300 italic' }, test.full),
 
         h('section', { className: 'p-4 rounded-xl bg-slate-800/60 border border-amber-500/30' },
           h('h3', { className: 'text-sm font-black text-amber-300 mb-2' }, 'What it measures'),
@@ -4037,7 +4041,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           h('button', {
             onClick: loadPractice,
             disabled: practiceLoading,
-            className: 'px-4 py-2 rounded-lg text-xs font-bold ' + (practiceLoading ? 'bg-slate-700 text-slate-400' : 'bg-amber-600 text-white hover:bg-amber-500')
+            className: 'px-4 py-2 rounded-lg text-xs font-bold ' + (practiceLoading ? 'bg-slate-700 text-slate-300' : 'bg-amber-600 text-white hover:bg-amber-500')
           }, practiceLoading ? 'Generating…' : (practice.length ? '\uD83D\uDD04 Regenerate' : '\u2728 Generate practice items')),
           practiceFeedback && h('div', { className: 'mt-3 p-3 rounded bg-rose-900/30 text-xs text-rose-200' }, practiceFeedback),
           practice.length > 0 && h('pre', { className: 'text-xs text-slate-100 whitespace-pre-wrap font-sans leading-relaxed mt-3 p-3 rounded bg-slate-900/70 max-h-96 overflow-y-auto' }, practice[0])
@@ -4058,7 +4062,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               className: 'text-left p-4 rounded-xl bg-slate-800/60 border border-amber-500/30 hover:bg-slate-700/60 focus:ring-2 focus:ring-amber-400 focus:outline-none'
             },
               h('div', { className: 'text-sm font-black text-amber-200 mb-1' }, t.name),
-              h('div', { className: 'text-xs text-slate-400 italic mb-2' }, t.full),
+              h('div', { className: 'text-xs text-slate-300 italic mb-2' }, t.full),
               h('div', { className: 'text-xs text-slate-300 leading-snug' }, t.what)
             );
           })
@@ -4092,7 +4096,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             if (/Situational Judgment/i.test(name))   return { fill: '#0ea5e9', border: '#0369a1' };
             if (/Reference/i.test(name))              return { fill: '#f59e0b', border: '#b45309' };
             if (/AI-Scored/i.test(name))              return { fill: '#f43f5e', border: '#be123c' };
-            return { fill: '#94a3b8', border: '#475569' };
+            return { fill: '#cbd5e1', border: '#475569' };
           }
           return h('div', { className: 'p-4 rounded-xl bg-slate-900/60 border border-amber-500/30' },
             h('div', { className: 'text-[10px] font-bold uppercase tracking-widest text-amber-300 mb-3' }, '📏 Predictive validity at a glance'),
@@ -4125,13 +4129,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                 );
               })
             ),
-            h('div', { className: 'mt-2 flex justify-between text-[9px] font-mono text-slate-400' },
+            h('div', { className: 'mt-2 flex justify-between text-[10px] font-mono text-slate-300' },
               h('span', null, '0.0'),
               h('span', null, '0.2 small'),
               h('span', null, '0.4 medium'),
               h('span', null, '0.6 large')
             ),
-            h('div', { className: 'mt-1 text-[10px] italic text-slate-400' }, '* AI-Scored video validity is contested — vendor claims 0.30–0.45, independent replication limited. Bar shows midpoint estimate.')
+            h('div', { className: 'mt-1 text-xs italic text-slate-300' }, '* AI-Scored video validity is contested — vendor claims 0.30–0.45, independent replication limited. Bar shows midpoint estimate.')
           );
         })(),
         HIRING_METHODS.map(function(m, i) {
@@ -4237,7 +4241,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             h('button', {
               onClick: genQuestion,
               disabled: qLoading || !compId,
-              className: 'px-5 py-2 rounded-xl font-bold text-sm no-print ' + (qLoading || !compId ? 'bg-slate-700 text-slate-400' : 'bg-amber-600 text-white hover:bg-amber-500')
+              className: 'px-5 py-2 rounded-xl font-bold text-sm no-print ' + (qLoading || !compId ? 'bg-slate-700 text-slate-300' : 'bg-amber-600 text-white hover:bg-amber-500')
             }, qLoading ? 'Thinking…' : '\u2728 Generate interview question')
           ),
           q && h('div', { className: 'mt-4 p-3 rounded bg-slate-900/70' },
@@ -4253,12 +4257,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               rows: 10,
               className: 'w-full p-2 rounded bg-slate-900/60 border border-slate-600 text-xs text-slate-100 font-sans leading-relaxed'
             }),
-            h('div', { className: 'flex justify-between items-center text-xs text-slate-400' },
+            h('div', { className: 'flex justify-between items-center text-xs text-slate-300' },
               h('span', null, ans.length + ' characters'),
               h('button', {
                 onClick: critiqueAnswer,
                 disabled: cLoading || ans.length < 50,
-                className: 'px-4 py-2 rounded-lg font-bold no-print ' + (cLoading || ans.length < 50 ? 'bg-slate-700 text-slate-400' : 'bg-amber-600 text-white hover:bg-amber-500')
+                className: 'px-4 py-2 rounded-lg font-bold no-print ' + (cLoading || ans.length < 50 ? 'bg-slate-700 text-slate-300' : 'bg-amber-600 text-white hover:bg-amber-500')
               }, cLoading ? 'Thinking…' : '\u2728 Critique my answer')
             )
           ),
@@ -4307,7 +4311,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         AI_ASSESSMENT_DOMAINS.map(function(d) {
           return h('section', { key: d.id, className: 'p-4 rounded-xl bg-slate-800/60 border border-amber-500/30' },
             h('h3', { className: 'text-base font-black text-amber-200 mb-1' }, d.name),
-            h('div', { className: 'text-xs text-slate-400 italic mb-2' }, 'Examples: ' + d.examples),
+            h('div', { className: 'text-xs text-slate-300 italic mb-2' }, 'Examples: ' + d.examples),
             h('div', { className: 'text-xs text-slate-200 mb-2' }, h('strong', { className: 'text-amber-300' }, 'What it does: '), d.what),
             h('div', { className: 'text-xs text-slate-200 mb-2 p-2 rounded bg-rose-900/20 border border-rose-500/30' }, h('strong', { className: 'text-rose-300' }, 'Known concerns: '), d.concerns),
             h('div', { className: 'text-xs text-slate-200 mb-2 p-2 rounded bg-emerald-900/20 border border-emerald-500/30' }, h('strong', { className: 'text-emerald-300' }, 'Your strategy: '), d.strategy),
@@ -4416,7 +4420,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               type: 'range', min: 40, max: 160, step: 1, value: score,
               onChange: function(e) { upd({ semScore: parseInt(e.target.value, 10) }); },
               className: 'w-full',
-              'aria-label': 'Standard score'
+              'aria-label': 'Standard score',
+              'aria-valuetext': score + ', ' + bandLabel(score)
             }),
             h('div', { className: 'flex justify-between text-xs text-slate-300 mt-1' },
               h('span', null, '40'), h('span', null, '100'), h('span', null, '160')
@@ -4428,12 +4433,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               type: 'range', min: 0.60, max: 0.99, step: 0.01, value: rel,
               onChange: function(e) { upd({ semReliability: parseFloat(e.target.value) }); },
               className: 'w-full',
-              'aria-label': 'Reliability coefficient'
+              'aria-label': 'Reliability coefficient',
+              'aria-valuetext': 'reliability ' + rel.toFixed(2)
             }),
             h('div', { className: 'flex justify-between text-xs text-slate-300 mt-1' },
               h('span', null, '0.60 (weak)'), h('span', null, '0.80'), h('span', null, '0.99 (excellent)')
             ),
-            h('div', { className: 'text-xs text-slate-400 mt-1 italic' }, 'Benchmarks: WISC-V FSIQ ≈ 0.96; WJ-IV GIA ≈ 0.97; BASC-3 parent ≈ 0.82; BRIEF-2 teacher ≈ 0.84; MBTI retest ≈ 0.50.')
+            h('div', { className: 'text-xs text-slate-300 mt-1 italic' }, 'Benchmarks: WISC-V FSIQ ≈ 0.96; WJ-IV GIA ≈ 0.97; BASC-3 parent ≈ 0.82; BRIEF-2 teacher ≈ 0.84; MBTI retest ≈ 0.50.')
           )
         ),
 
@@ -4441,26 +4447,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           h('h3', { className: 'text-sm font-black text-sky-200 mb-3' }, 'Measurement Results'),
           h('div', { className: 'grid grid-cols-2 gap-3' },
             h('div', { className: 'p-3 rounded bg-slate-900/60' },
-              h('div', { className: 'text-xs text-slate-400' }, 'Standard Error of Measurement (SEM)'),
+              h('div', { className: 'text-xs text-slate-300' }, 'Standard Error of Measurement (SEM)'),
               h('div', { className: 'text-2xl font-black text-sky-200' }, '±' + sem.toFixed(2)),
-              h('div', { className: 'text-xs text-slate-400 italic' }, 'SEM = SD × √(1 − reliability)')
+              h('div', { className: 'text-xs text-slate-300 italic' }, 'SEM = SD × √(1 − reliability)')
             ),
             h('div', { className: 'p-3 rounded bg-slate-900/60' },
-              h('div', { className: 'text-xs text-slate-400' }, 'Percentile Rank (point estimate)'),
+              h('div', { className: 'text-xs text-slate-300' }, 'Percentile Rank (point estimate)'),
               h('div', { className: 'text-2xl font-black text-sky-200' }, percentile(score).toFixed(1) + '%'),
-              h('div', { className: 'text-xs text-slate-400 italic' }, 'Position relative to age peers')
+              h('div', { className: 'text-xs text-slate-300 italic' }, 'Position relative to age peers')
             )
           ),
           h('div', { className: 'mt-4 space-y-3' },
             h('div', null,
               h('div', { className: 'text-xs font-bold text-sky-300 mb-1' }, '68% Confidence Interval (±1 SEM)'),
               h('div', { className: 'text-sm text-slate-100' }, 'The student\'s "true score" has a 68% chance of falling between ', h('strong', { className: 'text-sky-200' }, ci68.low + ' and ' + ci68.high), '.'),
-              h('div', { className: 'text-xs text-slate-400' }, 'Percentile range: ' + percentile(ci68.low).toFixed(1) + '% to ' + percentile(ci68.high).toFixed(1) + '%')
+              h('div', { className: 'text-xs text-slate-300' }, 'Percentile range: ' + percentile(ci68.low).toFixed(1) + '% to ' + percentile(ci68.high).toFixed(1) + '%')
             ),
             h('div', null,
               h('div', { className: 'text-xs font-bold text-sky-300 mb-1' }, '95% Confidence Interval (±1.96 SEM) — what psych reports usually report'),
               h('div', { className: 'text-sm text-slate-100' }, 'The student\'s "true score" has a 95% chance of falling between ', h('strong', { className: 'text-sky-200' }, ci95.low + ' and ' + ci95.high), '.'),
-              h('div', { className: 'text-xs text-slate-400' }, 'Percentile range: ' + percentile(ci95.low).toFixed(1) + '% to ' + percentile(ci95.high).toFixed(1) + '%')
+              h('div', { className: 'text-xs text-slate-300' }, 'Percentile range: ' + percentile(ci95.low).toFixed(1) + '% to ' + percentile(ci95.high).toFixed(1) + '%')
             )
           ),
           h('div', { className: 'mt-3 h-8 rounded bg-slate-700 relative overflow-hidden' },
@@ -4512,14 +4518,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                 style: { background: '#0f172a', borderRadius: 8 }
               },
                 // 95% CI band fill under the curve
-                h('path', { d: ciPath, fill: '#0ea5e9', opacity: 0.40 }),
+                h('path', { d: ciPath, fill: '#0ea5e9', opacity: 0.55 }),
                 // Bell curve outline
                 h('path', { d: curvePath, fill: 'none', stroke: '#7dd3fc', strokeWidth: 2 }),
                 // Standard-score band gridlines (every 1 SD)
                 bandTicks.map(function(t, ti) {
                   return h('g', { key: ti },
-                    h('line', { x1: sxFn(t), y1: pad.t, x2: sxFn(t), y2: H - pad.b, stroke: '#475569', strokeWidth: 1, strokeDasharray: '2 3', opacity: 0.45 }),
-                    h('text', { x: sxFn(t), y: H - pad.b + 14, textAnchor: 'middle', fontSize: 10, fill: '#94a3b8' }, t)
+                    h('line', { x1: sxFn(t), y1: pad.t, x2: sxFn(t), y2: H - pad.b, stroke: '#64748b', strokeWidth: 1, strokeDasharray: '2 3', opacity: 0.7 }),
+                    h('text', { x: sxFn(t), y: H - pad.b + 14, textAnchor: 'middle', fontSize: 10, fill: '#cbd5e1' }, t)
                   );
                 }),
                 // Score marker — vertical line + label
@@ -4532,7 +4538,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                 h('line', { x1: sxFn(ci95.low), y1: H - pad.b - 8, x2: sxFn(ci95.low), y2: H - pad.b, stroke: '#0ea5e9', strokeWidth: 2 }),
                 h('line', { x1: sxFn(ci95.high), y1: H - pad.b - 8, x2: sxFn(ci95.high), y2: H - pad.b, stroke: '#0ea5e9', strokeWidth: 2 }),
                 // Axis label
-                h('text', { x: W / 2, y: H - 4, textAnchor: 'middle', fontSize: 10, fill: '#94a3b8' }, 'Standard Score (mean 100, SD 15) — blue band = 95% CI')
+                h('text', { x: W / 2, y: H - 4, textAnchor: 'middle', fontSize: 10, fill: '#cbd5e1' }, 'Standard Score (mean 100, SD 15) — blue band = 95% CI')
               ),
               h('div', { className: 'mt-2 text-xs text-slate-300 italic' },
                 'The 95% CI band reflects the score\'s real uncertainty. A "true score" anywhere in the blue band is consistent with what we observed. Notice how the band widens dramatically when you drag reliability down.'
@@ -4575,14 +4581,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                 [0.60, 0.70, 0.80, 0.90, 0.99].map(function(r0, ti) {
                   return h('g', { key: ti },
                     h('line', { x1: sxFn2(r0), y1: H - pad.b, x2: sxFn2(r0), y2: H - pad.b + 4, stroke: '#475569' }),
-                    h('text', { x: sxFn2(r0), y: H - pad.b + 14, textAnchor: 'middle', fontSize: 10, fill: '#94a3b8' }, r0.toFixed(2))
+                    h('text', { x: sxFn2(r0), y: H - pad.b + 14, textAnchor: 'middle', fontSize: 10, fill: '#cbd5e1' }, r0.toFixed(2))
                   );
                 }),
                 [0, 5, 10].map(function(sm0, ti) {
-                  return h('text', { key: ti, x: pad.l - 4, y: syFn2(sm0) + 4, textAnchor: 'end', fontSize: 10, fill: '#94a3b8' }, sm0);
+                  return h('text', { key: ti, x: pad.l - 4, y: syFn2(sm0) + 4, textAnchor: 'end', fontSize: 10, fill: '#cbd5e1' }, sm0);
                 }),
-                h('text', { x: W / 2, y: H - 4, textAnchor: 'middle', fontSize: 10, fill: '#94a3b8' }, 'Reliability →   (lower reliability = larger SEM = wider CIs)'),
-                h('text', { x: 6, y: H / 2, textAnchor: 'start', fontSize: 10, fill: '#94a3b8', transform: 'rotate(-90 6 ' + (H / 2) + ')' }, 'SEM')
+                h('text', { x: W / 2, y: H - 4, textAnchor: 'middle', fontSize: 10, fill: '#cbd5e1' }, 'Reliability →   (lower reliability = larger SEM = wider CIs)'),
+                h('text', { x: 6, y: H / 2, textAnchor: 'start', fontSize: 10, fill: '#cbd5e1', transform: 'rotate(-90 6 ' + (H / 2) + ')' }, 'SEM')
               )
             );
           })()
@@ -4716,7 +4722,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             if (elgAnswered) {
               if (isRight) { bg = 'rgba(34,197,94,0.18)'; border = '#22c55e'; color = '#bbf7d0'; }
               else if (picked) { bg = 'rgba(239,68,68,0.18)'; border = '#ef4444'; color = '#fecaca'; }
-              else { bg = 'rgba(30,41,59,0.6)'; border = 'rgba(100,116,139,0.4)'; color = '#94a3b8'; }
+              else { bg = 'rgba(30,41,59,0.6)'; border = 'rgba(100,116,139,0.4)'; color = '#cbd5e1'; }
             } else {
               bg = 'rgba(14,165,233,0.10)'; border = 'rgba(14,165,233,0.40)'; color = '#e2e8f0';
             }
@@ -4872,7 +4878,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           [FIVE04_VS_IEP.fiveoFour, FIVE04_VS_IEP.iep].map(function(p, i) {
             return h('section', { key: i, className: 'p-4 rounded-xl bg-slate-800/60 border ' + (i === 0 ? 'border-emerald-500/40' : 'border-purple-500/40') },
               h('h3', { className: 'text-base font-black mb-2 ' + (i === 0 ? 'text-emerald-200' : 'text-purple-200') }, p.name),
-              h('div', { className: 'text-xs text-slate-400 italic mb-3' }, p.law),
+              h('div', { className: 'text-xs text-slate-300 italic mb-3' }, p.law),
               h('div', { className: 'text-xs text-slate-200 mb-2' }, h('strong', { className: i === 0 ? 'text-emerald-300' : 'text-purple-300' }, 'Eligibility: '), p.eligibility),
               h('div', { className: 'text-xs text-slate-200 mb-2' }, h('strong', { className: i === 0 ? 'text-emerald-300' : 'text-purple-300' }, 'Provides: '), p.provides),
               h('div', { className: 'text-xs text-slate-200 mb-2' }, h('strong', { className: i === 0 ? 'text-emerald-300' : 'text-purple-300' }, 'Process: '), p.process),
@@ -4928,7 +4934,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           h('h3', { className: 'text-base font-black text-sky-200 mb-1' }, cat.code + ' — ' + cat.name),
           h('div', { className: 'text-xs text-slate-200 leading-relaxed mb-3' }, h('strong', { className: 'text-sky-300' }, 'IDEA definition: '), cat.def),
           h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, h('strong', { className: 'text-sky-300' }, 'Typical evaluation battery: '), cat.typicalEval)
-        ) : h('div', { className: 'p-4 rounded-xl bg-slate-900/60 text-xs text-slate-400 text-center italic' }, 'Select a category above to view details.'),
+        ) : h('div', { className: 'p-4 rounded-xl bg-slate-900/60 text-xs text-slate-300 text-center italic' }, 'Select a category above to view details.'),
         h('section', { className: 'p-4 rounded-xl bg-amber-900/30 border border-amber-500/40' },
           h('h3', { className: 'text-sm font-black text-amber-300 mb-2' }, 'Three-prong requirement'),
           h('p', { className: 'text-xs text-slate-200 leading-relaxed mb-2' }, 'Meeting a category definition is NOT sufficient for IEP eligibility. All three prongs must be documented:'),
@@ -5373,8 +5379,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           h('h3', { className: 'text-sm font-black text-sky-300' }, 'Inputs'),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
             h('div', null,
-              h('label', { className: 'text-xs font-bold text-sky-300 mb-1 block' }, 'Student first name / pseudonym'),
+              h('label', { htmlFor: 'al-handout-student', className: 'text-xs font-bold text-sky-300 mb-1 block' }, 'Student first name / pseudonym'),
               h('input', {
+                id: 'al-handout-student',
                 type: 'text', value: hStudent,
                 onChange: function(e) { upd({ handoutStudent: e.target.value }); },
                 placeholder: 'e.g., Malia or "Student M"',
@@ -5382,8 +5389,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               })
             ),
             h('div', null,
-              h('label', { className: 'text-xs font-bold text-sky-300 mb-1 block' }, 'Grade / age'),
+              h('label', { htmlFor: 'al-handout-grade', className: 'text-xs font-bold text-sky-300 mb-1 block' }, 'Grade / age'),
               h('input', {
+                id: 'al-handout-grade',
                 type: 'text', value: hGrade,
                 onChange: function(e) { upd({ handoutGrade: e.target.value }); },
                 placeholder: 'e.g., "3rd grade" or "age 8"',
@@ -5392,8 +5400,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             )
           ),
           h('div', null,
-            h('label', { className: 'text-xs font-bold text-sky-300 mb-1 block' }, 'Key findings (strengths and concerns)'),
+            h('label', { htmlFor: 'al-handout-findings', className: 'text-xs font-bold text-sky-300 mb-1 block' }, 'Key findings (strengths and concerns)'),
             h('textarea', {
+              id: 'al-handout-findings',
               value: hFindings,
               onChange: function(e) { upd({ handoutFindings: e.target.value }); },
               placeholder: 'Summarize the eval findings in professional terms. Examples: "Strong verbal reasoning (VCI 118). Below-average phonological processing (CTOPP-2 SS 78). Age-appropriate math achievement. Teacher reports classroom struggle with reading passages but strong oral participation."',
@@ -5402,8 +5411,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             })
           ),
           h('div', null,
-            h('label', { className: 'text-xs font-bold text-sky-300 mb-1 block' }, 'Eligibility determination (if any)'),
+            h('label', { htmlFor: 'al-handout-eligibility', className: 'text-xs font-bold text-sky-300 mb-1 block' }, 'Eligibility determination (if any)'),
             h('input', {
+              id: 'al-handout-eligibility',
               type: 'text', value: hEligibility,
               onChange: function(e) { upd({ handoutEligibility: e.target.value }); },
               placeholder: 'e.g., "SLD in basic reading skills (dyslexia profile)"',
@@ -5411,8 +5421,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             })
           ),
           h('div', null,
-            h('label', { className: 'text-xs font-bold text-sky-300 mb-1 block' }, 'Key recommendations'),
+            h('label', { htmlFor: 'al-handout-recs', className: 'text-xs font-bold text-sky-300 mb-1 block' }, 'Key recommendations'),
             h('textarea', {
+              id: 'al-handout-recs',
               value: hRecs,
               onChange: function(e) { upd({ handoutRecs: e.target.value }); },
               placeholder: 'e.g., "Tier 3 systematic phonics intervention 30 min/day 5x/week (Wilson or similar). Extended time on reading tasks. Weekly DIBELS ORF progress monitoring. Consider co-occurring anxiety screening given avoidance behaviors."',
@@ -5439,11 +5450,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           h('button', {
             onClick: genHandout,
             disabled: hLoading || !hStudent || !hFindings,
-            className: 'w-full py-2 rounded-xl font-bold text-sm no-print ' + (hLoading || !hStudent || !hFindings ? 'bg-slate-700 text-slate-400' : 'bg-sky-600 text-white hover:bg-sky-500')
+            className: 'w-full py-2 rounded-xl font-bold text-sm no-print ' + (hLoading || !hStudent || !hFindings ? 'bg-slate-700 text-slate-300' : 'bg-sky-600 text-white hover:bg-sky-500')
           }, hLoading ? 'Generating…' : '\u2728 Generate parent handout')
         ),
 
-        hOut && h('section', { className: 'p-4 rounded-xl bg-slate-900/60 border border-emerald-500/30' },
+        hOut && h('section', { className: 'p-4 rounded-xl bg-slate-900/60 border border-emerald-500/30', 'aria-live': 'polite', role: 'region', 'aria-label': 'Draft parent handout' },
           h('h3', { className: 'text-sm font-black text-emerald-300 mb-2' }, 'Draft handout'),
           h('pre', { className: 'text-sm text-slate-100 whitespace-pre-wrap font-sans leading-relaxed p-3 rounded bg-slate-800/60 border border-slate-600' }, hOut),
           h('div', { className: 'mt-3 space-y-2 no-print' },
@@ -5851,7 +5862,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               return h('div', { key: i, className: 'p-3 rounded bg-slate-900/60' },
                 h('div', { className: 'text-xs font-black text-purple-200 mb-1' }, p.part),
                 h('div', { className: 'text-xs text-slate-200 mb-1' }, p.desc),
-                h('div', { className: 'text-xs text-slate-400 italic' }, 'Example: ' + p.example)
+                h('div', { className: 'text-xs text-slate-300 italic' }, 'Example: ' + p.example)
               );
             })
           ),
@@ -5868,7 +5879,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               return h('div', { key: i, className: 'p-3 rounded bg-slate-900/60' },
                 h('div', { className: 'text-xs font-black text-emerald-200 mb-1' }, g.domain),
                 h('div', { className: 'text-xs text-slate-100 leading-relaxed mb-1' }, g.goal),
-                h('div', { className: 'text-xs text-slate-400 italic' }, g.notes)
+                h('div', { className: 'text-xs text-slate-300 italic' }, g.notes)
               );
             })
           )
@@ -6038,14 +6049,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               className: 'text-left p-3 rounded-lg border-2 transition focus:ring-2 focus:ring-sky-400 focus:outline-none ' + (selected ? 'bg-sky-900/50 border-sky-400' : 'bg-slate-800/60 border-slate-600 hover:border-sky-500/50')
             },
               h('div', { className: 'text-sm font-bold ' + (selected ? 'text-sky-100' : 'text-sky-200') }, c.title),
-              h('div', { className: 'text-xs ' + (selected ? 'text-sky-200' : 'text-slate-400') }, c.student)
+              h('div', { className: 'text-xs ' + (selected ? 'text-sky-200' : 'text-slate-300') }, c.student)
             );
           })
         ),
 
         selCase && h('section', { className: 'p-4 rounded-xl bg-slate-800/60 border border-sky-500/30' },
           h('h3', { className: 'text-sm font-black text-sky-200 mb-2' }, 'Referral'),
-          h('div', { className: 'text-xs text-slate-400 italic mb-2' }, selCase.student),
+          h('div', { className: 'text-xs text-slate-300 italic mb-2' }, selCase.student),
           h('p', { className: 'text-xs text-slate-100 leading-relaxed mb-3' }, selCase.referral),
           h('div', { className: 'text-xs text-slate-300 p-2 rounded bg-slate-900/60' }, h('strong', { className: 'text-sky-300' }, 'Prior intervention: '), selCase.tier2_3_response)
         ),
@@ -6068,13 +6079,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             h('button', {
               onClick: runCritique,
               disabled: loading || domains.length === 0,
-              className: 'px-4 py-2 rounded-lg text-xs font-bold ' + (loading || domains.length === 0 ? 'bg-slate-700 text-slate-400' : 'bg-sky-600 text-white hover:bg-sky-500')
+              className: 'px-4 py-2 rounded-lg text-xs font-bold ' + (loading || domains.length === 0 ? 'bg-slate-700 text-slate-300' : 'bg-sky-600 text-white hover:bg-sky-500')
             }, loading ? 'Thinking…' : '\u2728 Get AI critique of my plan'),
-            h('span', { className: 'text-xs text-slate-400' }, domains.length + ' / ' + CASE_DOMAIN_OPTIONS.length + ' domains selected')
+            h('span', { className: 'text-xs text-slate-300' }, domains.length + ' / ' + CASE_DOMAIN_OPTIONS.length + ' domains selected')
           )
         ),
 
-        critique && h('section', { className: 'p-4 rounded-xl bg-slate-900/60 border border-sky-500/30' },
+        critique && h('section', { className: 'p-4 rounded-xl bg-slate-900/60 border border-sky-500/30', 'aria-live': 'polite', role: 'region', 'aria-label': 'AI critique of evaluation plan' },
           h('h3', { className: 'text-sm font-black text-sky-300 mb-2' }, 'AI Critique'),
           h('pre', { className: 'text-xs text-slate-200 whitespace-pre-wrap font-sans leading-relaxed' }, critique),
           h('div', { className: 'mt-3 p-3 rounded bg-slate-800/60 border border-emerald-500/30' },
@@ -6217,10 +6228,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
   // ═══════════════════════════════════════════════════════════════
 
   function _renderReliabilitySleuth(h, s, upd, addToast, backBtn) {
+    // `color` for borders + background tints; `textColor` for the small bold
+    // label text, since the saturated 500/600 hues fail WCAG AA on dark slate.
     var VERDICTS = [
-      { id: 'defensible',   label: 'Defensible',           color: '#16a34a', icon: '\u2705', def: 'Reliable enough for this specific use case. Common for r \u2265 0.90 on high-stakes decisions, lower thresholds for screeners.' },
-      { id: 'borderline',   label: 'Borderline',           color: '#f59e0b', icon: '\u26A0\uFE0F', def: 'The reliability is acceptable in principle, but something else (single measure, missing component, high-stakes decision) limits the defensibility.' },
-      { id: 'insufficient', label: 'Insufficient',         color: '#dc2626', icon: '\u274C', def: 'Reliability too low for the stakes, OR norms are outdated, OR reliability is unreported. Should not anchor the decision.' }
+      { id: 'defensible',   label: 'Defensible',           color: '#16a34a', textColor: '#86efac', icon: '\u2705', def: 'Reliable enough for this specific use case. Common for r \u2265 0.90 on high-stakes decisions, lower thresholds for screeners.' },
+      { id: 'borderline',   label: 'Borderline',           color: '#f59e0b', textColor: '#fcd34d', icon: '\u26A0\uFE0F', def: 'The reliability is acceptable in principle, but something else (single measure, missing component, high-stakes decision) limits the defensibility.' },
+      { id: 'insufficient', label: 'Insufficient',         color: '#dc2626', textColor: '#fca5a5', icon: '\u274C', def: 'Reliability too low for the stakes, OR norms are outdated, OR reliability is unreported. Should not anchor the decision.' }
     ];
     var V = [
       { id: 1, scenario: 'WISC-V Full Scale IQ has reliability r = 0.96 (manual). Used for SLD eligibility determination, alongside an achievement battery and observation.', correct: 'defensible',
@@ -6288,7 +6301,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               },
                 h('div', { className: 'flex items-center gap-2 mb-1' },
                   h('span', { style: { fontSize: 16 }, 'aria-hidden': 'true' }, v.icon),
-                  h('span', { style: { color: v.color, fontWeight: 800, fontSize: 13 } }, v.label)
+                  h('span', { style: { color: v.textColor || v.color, fontWeight: 800, fontSize: 13 } }, v.label)
                 ),
                 h('div', { className: 'text-xs text-slate-100 leading-relaxed' }, v.def)
               );
@@ -6338,7 +6351,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           if (rsAns) {
             if (isRight) { bg = 'rgba(34,197,94,0.18)'; border = '#22c55e'; color = '#bbf7d0'; }
             else if (picked) { bg = 'rgba(239,68,68,0.18)'; border = '#ef4444'; color = '#fecaca'; }
-            else { bg = 'rgba(30,41,59,0.6)'; border = 'rgba(100,116,139,0.4)'; color = '#94a3b8'; }
+            else { bg = 'rgba(30,41,59,0.6)'; border = 'rgba(100,116,139,0.4)'; color = '#cbd5e1'; }
           } else {
             bg = vi.color + '15'; border = vi.color + '60'; color = '#e2e8f0';
           }
@@ -6352,7 +6365,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           },
             h('div', { className: 'flex items-center gap-2 mb-1' },
               h('span', { style: { fontSize: 18 }, 'aria-hidden': 'true' }, vi.icon),
-              h('span', { style: { color: rsAns ? color : vi.color, fontSize: 13, fontWeight: 800 } }, vi.label)
+              h('span', { style: { color: rsAns ? color : (vi.textColor || vi.color), fontSize: 13, fontWeight: 800 } }, vi.label)
             ),
             h('div', { style: { fontSize: 11, fontWeight: 500, lineHeight: 1.4, color: rsAns ? color : '#cbd5e1' } }, vi.def)
           );
@@ -6489,7 +6502,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               return h('div', { key: qIdx, className: 'p-3 rounded-lg ' + (ok ? 'bg-emerald-900/20 border border-emerald-500/30' : 'bg-rose-900/20 border border-rose-500/30') },
                 h('div', { className: 'flex justify-between items-start mb-1' },
                   h('span', { className: 'text-xs font-bold ' + (ok ? 'text-emerald-300' : 'text-rose-300') }, (ok ? '\u2713' : '\u2717') + ' Item ' + (qIdx + 1)),
-                  h('span', { className: 'text-xs text-slate-400' }, 'Your: ' + (yours || '—') + ' · Correct: ' + sc.verdict)
+                  h('span', { className: 'text-xs text-slate-300' }, 'Your: ' + (yours || '—') + ' · Correct: ' + sc.verdict)
                 ),
                 h('div', { className: 'text-xs text-slate-200 line-clamp-2' }, sc.claim.substring(0, 140) + (sc.claim.length > 140 ? '…' : ''))
               );
@@ -6538,7 +6551,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
       backBtn('menu', null, 'Main menu'),
       h('div', { className: 'flex items-center justify-between' },
         h('h2', { className: 'text-2xl font-black text-fuchsia-200' }, '\uD83D\uDD0D Spot the Junk Science'),
-        h('span', { className: 'text-xs font-bold text-slate-400' }, 'Item ' + (idx + 1) + ' / ' + total)
+        h('span', { className: 'text-xs font-bold text-slate-300' }, 'Item ' + (idx + 1) + ' / ' + total)
       ),
       h('p', { className: 'text-xs text-slate-300 leading-relaxed' }, 'Read the claim. Decide: is this legitimate psychometric evidence, suspect framing, or outright pseudoscience? You get one guess per item. Reasoning is revealed after you answer.'),
       // Cross-attempt mastery summary (only shown when student has \u22651 correct).
@@ -6548,7 +6561,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           h('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, '\uD83C\uDFC5'),
           h('div', { className: 'flex-1' },
             h('div', { className: 'text-xs font-bold text-fuchsia-200' }, 'Junk-Science Mastery: ' + _masteredCount + ' / ' + JUNK_SCENARIOS.length + ' scenarios locked in'),
-            h('div', { className: 'text-[10px] text-slate-400 italic mt-1' }, 'Per-attempt scores reset; mastery sticks across every retake.')
+            h('div', { className: 'text-xs text-slate-300 italic mt-1' }, 'Per-attempt scores reset; mastery sticks across every retake.')
           )
         )
       ),
@@ -6586,7 +6599,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
       reveal && h('section', { className: 'p-4 rounded-xl ' + (correct ? 'bg-emerald-900/30 border border-emerald-500/40' : 'bg-rose-900/30 border border-rose-500/40') },
         h('div', { className: 'flex items-center gap-2 mb-2' },
           h('span', { className: 'text-sm font-black ' + (correct ? 'text-emerald-300' : 'text-rose-300') }, correct ? '\u2713 Correct' : '\u2717 Not quite'),
-          h('span', { className: 'text-xs text-slate-400' }, 'Correct verdict:'),
+          h('span', { className: 'text-xs text-slate-300' }, 'Correct verdict:'),
           verdictBadge(sc.verdict)
         ),
         h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, sc.reasoning)

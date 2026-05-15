@@ -19,7 +19,7 @@ Lessons applied:
   * Per-handler deps lists (handleLoadProject is enormous; the other
     two are small).
   * Self-injecting loadModule line.
-  * Extracted module audited via _audit_extracted_module.py before deploy.
+  * Extracted module audited via dev-tools/audit_extracted_module.py before deploy.
 """
 import os
 import re

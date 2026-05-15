@@ -331,13 +331,13 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                                  <h4 className="text-xs font-black text-indigo-600 uppercase tracking-widest mb-3 flex items-center gap-2 border-b border-slate-100 pb-2">
                                      <Sparkles size={14} className="fill-yellow-400 text-yellow-500"/> Explanation
                                  </h4>
+                                 {/* XSS guard: factCheck is AI-generated; escape <,>,& BEFORE the markdown-to-HTML replacements so injected tags can't echo through. */}
                                  <div
                                     className="prose prose-sm max-w-none text-slate-700 leading-relaxed whitespace-pre-wrap"
-                                    dangerouslySetInnerHTML={{
-                                        __html: currentQuestion.factCheck
-                                            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                                            .replace(/\n/g, '<br/>')
-                                    }}
+                                    dangerouslySetInnerHTML={{ __html: String(currentQuestion.factCheck)
+                                        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                                        .replace(/\n/g, '<br/>') }}
                                  />
                                  {showTranslated && currentQuestion.factCheck_en && (
                                      <div className="mt-3 pt-3 border-t border-slate-200">

@@ -612,6 +612,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       var flyingRef = useRef(false);
       var timeRef = useRef(0);
       var pausedRef = useRef(false);
+      // Smoothed horizon Y position. The raw expression
+      // (H*0.55 + vsi*0.05 + ctrl.pitch*3) jumps instantly when the player
+      // pulls up at rotation (ctrl.pitch is the raw control input, which can
+      // change +1°/frame). Damping the rendered horizon makes liftoff feel
+      // continuous instead of jolting up. Initialized lazily inside the
+      // render loop so it can latch onto the first computed target.
+      var horizonYRef = useRef(null);
 
       // ── WCAG: Accessible state narration ──
       var skyA11yRef = useRef(null);
@@ -2338,9 +2345,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         var sunY = Math.max(20, horizonY * (0.15 + Math.abs(sunT - 0.5) * 0.6));
         // Fade rays out at noon (when sun is high overhead, less of an effect)
         // and at extreme dawn/dusk (when sky already dramatic).
-        var rayStrength = 0.28 * (1 - Math.abs(sunT - 0.5) * 1.6);
+        var rayStrength = 0.18 * (1 - Math.abs(sunT - 0.5) * 1.6);
         if (rayStrength <= 0.04) return;
         gfx.save();
+        // Clip to the sky so 'lighter' composite rays do not bleach the
+        // ground below the horizon. Previously the ray triangles extended
+        // to H * 1.1 with lighter blend, washing the grass/runway near-white.
+        gfx.beginPath();
+        gfx.rect(0, 0, W, horizonY);
+        gfx.clip();
         gfx.globalCompositeOperation = 'lighter';
         gfx.fillStyle = 'rgba(255,240,200,' + rayStrength.toFixed(3) + ')';
         // 5 fan rays radiating from sun position
@@ -5973,7 +5986,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         // runway looks frozen. Reset scroll phase each dash-cycle.
         gfx.fillStyle = '#fdf3a6';
         var dashCount = 14;
-        var scrollPh = ((timeRef.current * (state.speed * 0.015 + 0.02)) % 1);
+        // Scroll rate ~3x stronger than the prior 0.015 coefficient so the
+        // takeoff roll has obvious optical flow even at 30 kt taxi speed.
+        // The +0.02 idle term keeps a slow drift visible at engine start.
+        var scrollPh = ((timeRef.current * (state.speed * 0.045 + 0.02)) % 1);
         for (var di = 0; di < dashCount; di++) {
           var tRaw = ((di + scrollPh) % dashCount) / dashCount;
           var dashY = rwyTopY + (rwyBotY - rwyTopY) * (tRaw * tRaw); // squared for perspective
@@ -8038,10 +8054,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
           // Horizon & ground
           // Third-person: horizon is higher (camera above/behind), first-person: normal
-          var horizonY = d.thirdPerson
+          var horizonYTarget = d.thirdPerson
             ? H * 0.4 + state.vsi * 0.03 + ctrl.pitch * 2  // Higher horizon = see more ground
             : H * 0.55 + state.vsi * 0.05 + ctrl.pitch * 3;
-          horizonY = Math.max(H * 0.2, Math.min(H * 0.8, horizonY));
+          horizonYTarget = Math.max(H * 0.2, Math.min(H * 0.8, horizonYTarget));
+          // Damped horizon: ctrl.pitch is raw control input (~30°/sec slew on
+          // hold) and would otherwise snap the horizon ~30 px on rotation.
+          // First-frame latch so we don't pan from H*0.55 at mount.
+          if (horizonYRef.current == null) horizonYRef.current = horizonYTarget;
+          horizonYRef.current = horizonYRef.current * 0.88 + horizonYTarget * 0.12;
+          var horizonY = horizonYRef.current;
 
           // ── Sunrise / sunset horizon wash ──
           // Radial orange-to-pink glow centered on the sun's side of the sky,

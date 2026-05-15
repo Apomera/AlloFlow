@@ -264,9 +264,9 @@ window.StemLab = window.StemLab || {
                 try {
                   var sr = await callGemini('Review this HTML section for bugs, a11y gaps, and UX issues. Section: "' + sec.name + '"\n\nCODE:\n```html\n' + secHtml.substring(0, 6000) + '\n```\n\nReturn JSON array: [{"type":"error|warning|a11y","description":"...","fix":"..."}]. If perfect, return [].', true);
                   sr = (typeof sr === 'string' ? sr : JSON.stringify(sr)).replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-                  try { secIssues = JSON.parse(sr); } catch(e2) {}
+                  try { secIssues = JSON.parse(sr); } catch(e2) { console.warn('[applab section-reviewer] parse failed for section "' + sec.name + '":', e2); }
                   if (!Array.isArray(secIssues)) secIssues = [];
-                } catch(e3) {}
+                } catch(e3) { console.warn('[applab section-reviewer] AI call failed for section "' + sec.name + '"; skipping review:', e3); }
                 secLog.children.push({ agent: 'Reviewer', icon: '\uD83D\uDD0D', result: secIssues.length === 0 ? 'Passed \u2705' : secIssues.length + ' issue(s)' });
 
                 // FIX this section's issues
@@ -278,7 +278,7 @@ window.StemLab = window.StemLab || {
                     var secFixed = await callGemini('Fix these issues in this HTML section.\n\nISSUES:\n' + secFixList + '\n\nCODE:\n```html\n' + secHtml.substring(0, 8000) + '\n```\n\nReturn ONLY the fixed section HTML.', false);
                     secFixed = (secFixed || '').replace(/^```html\s*/i, '').replace(/```\s*$/i, '').trim();
                     if (secFixed && secFixed.length > secHtml.length * 0.3) secHtml = secFixed;
-                  } catch(e4) {}
+                  } catch(e4) { console.warn('[applab section-fixer] AI call failed for section "' + sec.name + '"; keeping unfixed section:', e4); }
                   secLog.children.push({ agent: 'Fixer', icon: '\uD83D\uDD27', result: 'Fixed ' + secIssues.length + ' issue(s)' });
                 }
               }
@@ -327,9 +327,9 @@ window.StemLab = window.StemLab || {
               try {
                 var rr = await callGemini('Review this HTML app for bugs/a11y/UX issues.\n\nCODE:\n```html\n' + finalHtml.substring(0, 12000) + '\n```\n\nReturn JSON array of issues. If perfect, return [].', true);
                 rr = (typeof rr === 'string' ? rr : JSON.stringify(rr)).replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-                try { issues = JSON.parse(rr); } catch(e) {}
+                try { issues = JSON.parse(rr); } catch(e) { console.warn('[applab linear-reviewer] JSON parse failed:', e); }
                 if (!Array.isArray(issues)) issues = [];
-              } catch(e) {}
+              } catch(e) { console.warn('[applab linear-reviewer] AI call failed; skipping review:', e); }
               pipelineLog.push({ agent: 'Reviewer', icon: '\uD83D\uDD0D', result: issues.length === 0 ? 'Passed \u2705' : issues.length + ' issue(s)' });
               if (useFixer && issues.length > 0) {
                 setPipelineLive('fixer');
@@ -338,7 +338,7 @@ window.StemLab = window.StemLab || {
                 try {
                   var fixed = cleanHtmlResponse(await callGemini('Fix these issues:\n' + fixList + '\n\nCODE:\n```html\n' + finalHtml.substring(0, 15000) + '\n```\n\nReturn COMPLETE fixed HTML.', false));
                   if (fixed && fixed.length > finalHtml.length * 0.5) finalHtml = fixed;
-                } catch(e) {}
+                } catch(e) { console.warn('[applab linear-fixer] AI call failed; keeping unfixed HTML:', e); }
                 pipelineLog.push({ agent: 'Fixer', icon: '\uD83D\uDD27', result: 'Fixed ' + issues.length + ' issue(s)' });
               }
             }

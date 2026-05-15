@@ -2084,6 +2084,24 @@ window.SelHub = window.SelHub || {
             function sendRPMessage() {
               var userMsg = rpInputText.trim();
               if (!userMsg || rpLoadingRP) return;
+              // Pre-flight regex gate: if user's role-play turn contains a critical
+              // safety keyword, break character before the AI ever sees it.
+              if (window.SelHub && window.SelHub.safeRehearseCheck) {
+                var _preflight = window.SelHub.safeRehearseCheck(userMsg, { toolId: 'conflict', onSafetyFlag: onSafetyFlag });
+                if (_preflight.action === 'block') {
+                  var _breakText = (window.SelHub.rehearseBreakCharacterText && window.SelHub.rehearseBreakCharacterText(_preflight.severity)) ||
+                    'I want to pause the role-play. What you wrote sounds heavy, and that matters more than the practice. Please reach out to a trusted adult or one of the crisis lines below.';
+                  upd({
+                    rpChatHistory: rpChatHistory.concat([
+                      { role: 'user', text: userMsg },
+                      { role: 'character', text: _breakText, _crisis: true }
+                    ]),
+                    rpInputText: '',
+                    _rpUserTier: 3
+                  });
+                  return;
+                }
+              }
               var newHistory = rpChatHistory.concat([{ role: 'user', text: userMsg }]);
               upd({ rpChatHistory: newHistory, rpLoadingRP: true, rpTurnCount: rpTurnCount + 1, rpInputText: '' });
 
@@ -2326,6 +2344,24 @@ window.SelHub = window.SelHub || {
             function sendMedMessage() {
               var userMsg = medInputText.trim();
               if (!userMsg || medLoadingRP) return;
+              // Pre-flight regex gate: critical content breaks the mediation
+              // and surfaces crisis resources before any AI call.
+              if (window.SelHub && window.SelHub.safeRehearseCheck) {
+                var _preflight = window.SelHub.safeRehearseCheck(userMsg, { toolId: 'conflict_med', onSafetyFlag: onSafetyFlag });
+                if (_preflight.action === 'block') {
+                  var _breakText = (window.SelHub.rehearseBreakCharacterText && window.SelHub.rehearseBreakCharacterText(_preflight.severity)) ||
+                    'I want to pause the mediation. What you wrote sounds heavy, and that matters more than the practice. Please reach out to a trusted adult or one of the crisis lines below.';
+                  upd({
+                    medChatHistory2: medChatHistory2.concat([
+                      { role: 'mediator', text: userMsg },
+                      { role: 'charA', text: _breakText, _crisis: true }
+                    ]),
+                    medInputText: '',
+                    _medUserTier: 3
+                  });
+                  return;
+                }
+              }
               var newHistory = medChatHistory2.concat([{ role: 'mediator', text: userMsg }]);
               upd({ medChatHistory2: newHistory, medLoadingRP: true, medTurnCount: medTurnCount + 1, medInputText: '' });
 
@@ -2508,6 +2544,7 @@ window.SelHub = window.SelHub || {
       var content = cfContent || isContent || deContent || rpContent || stylesContent || apologyContent || cooldownContent || medContent || roleplayContent || progressContent;
 
       return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
+        (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('conflict', h, ctx) : null),
         tabBar,
         heroBand,
         badgePopup,

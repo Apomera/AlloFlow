@@ -1981,6 +1981,7 @@ window.SelHub = window.SelHub || {
         var content = exploreContent || identityContent || scenariosContent || privilegeContent || microaggContent || heritageContent || commtipsContent || quizContent || battleContent || badgesContent;
 
         return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
+          (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('community', h, ctx) : null),
           tabBar,
           heroBand,
           badgePopup,

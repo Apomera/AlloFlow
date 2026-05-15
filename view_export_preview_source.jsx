@@ -422,6 +422,39 @@ function ExportPreviewView(props) {
                         🌐 Language cards (emphasizes translations)
                       </label>
                     </div>
+                    {/* Image size — only relevant for table mode (cards have their own sizing). */}
+                    {(exportConfig.glossaryDisplayMode || 'table') === 'table' && (
+                      <div className="mt-2 pl-1">
+                        <div className="text-[10px] font-semibold text-slate-500 mb-1">Image size</div>
+                        <div className="flex flex-wrap gap-1">
+                          {[
+                            { v: 'small',  label: 'S',  px: 40 },
+                            { v: 'medium', label: 'M',  px: 64 },
+                            { v: 'large',  label: 'L',  px: 96 },
+                            { v: 'xl',     label: 'XL', px: 140 },
+                          ].map(opt => {
+                            const cur = exportConfig.glossaryImageSize || 'medium';
+                            const isActive = cur === opt.v;
+                            return (
+                              <button
+                                key={opt.v}
+                                type="button"
+                                disabled={!exportConfig.includeGlossary}
+                                onClick={() => setExportConfigAndRefresh(p => ({ ...p, glossaryImageSize: opt.v }))}
+                                title={opt.label + ' (' + opt.px + ' px)'}
+                                aria-label={'Glossary image size ' + opt.label + ' ' + opt.px + ' pixels'}
+                                aria-pressed={isActive}
+                                className={'px-2 py-0.5 rounded text-[10px] font-bold border transition-colors ' + (isActive
+                                  ? 'bg-emerald-600 text-white border-emerald-700'
+                                  : 'bg-white text-slate-600 border-slate-300 hover:bg-emerald-50')}
+                              >
+                                {opt.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Timeline display: list / cuttable strips */}
@@ -436,6 +469,36 @@ function ExportPreviewView(props) {
                         <input type="radio" name="timelineDisplayMode" checked={exportConfig.timelineDisplayMode === 'cuttable-strips'} onChange={() => setExportConfigAndRefresh(p => ({ ...p, timelineDisplayMode: 'cuttable-strips' }))} />
                         ✂ Cuttable chronology strips
                       </label>
+                    </div>
+                    {/* Image size — same SMLXL pattern as glossary. Affects both list + strips modes. */}
+                    <div className="mt-2 pl-1">
+                      <div className="text-[10px] font-semibold text-slate-500 mb-1">Image size</div>
+                      <div className="flex flex-wrap gap-1">
+                        {[
+                          { v: 'small',  label: 'S',  px: 48 },
+                          { v: 'medium', label: 'M',  px: 64 },
+                          { v: 'large',  label: 'L',  px: 96 },
+                          { v: 'xl',     label: 'XL', px: 140 },
+                        ].map(opt => {
+                          const cur = exportConfig.timelineImageSize || 'medium';
+                          const isActive = cur === opt.v;
+                          return (
+                            <button
+                              key={opt.v}
+                              type="button"
+                              onClick={() => setExportConfigAndRefresh(p => ({ ...p, timelineImageSize: opt.v }))}
+                              title={opt.label + ' (' + opt.px + ' px)'}
+                              aria-label={'Timeline image size ' + opt.label + ' ' + opt.px + ' pixels'}
+                              aria-pressed={isActive}
+                              className={'px-2 py-0.5 rounded text-[10px] font-bold border transition-colors ' + (isActive
+                                ? 'bg-indigo-600 text-white border-indigo-700'
+                                : 'bg-white text-slate-600 border-slate-300 hover:bg-indigo-50')}
+                            >
+                              {opt.label}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
 
@@ -454,12 +517,41 @@ function ExportPreviewView(props) {
                     </div>
                   </div>
 
-                  {/* Concept-sort interactive */}
+                  {/* Concept-sort interactive + image size */}
                   <div>
                     <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5">
                       <input type="checkbox" checked={exportConfig.conceptSortInteractive !== false} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, conceptSortInteractive: e.target.checked }))} className="rounded" />
                       🧩 Concept sort: drag-to-sort on digital
                     </label>
+                    <div className="mt-1 pl-1">
+                      <div className="text-[10px] font-semibold text-slate-500 mb-1">Sort strip image size</div>
+                      <div className="flex flex-wrap gap-1">
+                        {[
+                          { v: 'small',  label: 'S',  px: 56 },
+                          { v: 'medium', label: 'M',  px: 80 },
+                          { v: 'large',  label: 'L',  px: 110 },
+                          { v: 'xl',     label: 'XL', px: 150 },
+                        ].map(opt => {
+                          const cur = exportConfig.conceptSortImageSize || 'medium';
+                          const isActive = cur === opt.v;
+                          return (
+                            <button
+                              key={opt.v}
+                              type="button"
+                              onClick={() => setExportConfigAndRefresh(p => ({ ...p, conceptSortImageSize: opt.v }))}
+                              title={opt.label + ' (' + opt.px + ' px)'}
+                              aria-label={'Concept sort image size ' + opt.label + ' ' + opt.px + ' pixels'}
+                              aria-pressed={isActive}
+                              className={'px-2 py-0.5 rounded text-[10px] font-bold border transition-colors ' + (isActive
+                                ? 'bg-rose-600 text-white border-rose-700'
+                                : 'bg-white text-slate-600 border-slate-300 hover:bg-rose-50')}
+                            >
+                              {opt.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
                   </div>
                 </div>
 

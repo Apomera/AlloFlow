@@ -387,6 +387,162 @@ const NoteTakingView = React.memo((props) => {
   if (templateType === "reading-response") return React.createElement(ReadingResponseView, props);
   return null;
 });
+const NOTEBOOK_TEMPLATE_META = {
+  "cornell-notes": { label: "Cornell Notes", accent: "indigo", short: "Cornell", icon: "\u{1F4D3}" },
+  "lab-report": { label: "Lab Report", accent: "sky", short: "Lab", icon: "\u{1F9EA}" },
+  "reading-response": { label: "Reading Response", accent: "violet", short: "Reading", icon: "\u{1F4D6}" }
+};
+const _accentClasses = (accent, kind) => {
+  const map = {
+    indigo: { chip: "bg-indigo-600 text-white border-indigo-700", chipOff: "bg-white text-indigo-700 border-indigo-300 hover:bg-indigo-50", badge: "bg-indigo-100 text-indigo-800 border-indigo-300", bar: "bg-indigo-500" },
+    sky: { chip: "bg-sky-600 text-white border-sky-700", chipOff: "bg-white text-sky-700 border-sky-300 hover:bg-sky-50", badge: "bg-sky-100 text-sky-800 border-sky-300", bar: "bg-sky-500" },
+    violet: { chip: "bg-violet-600 text-white border-violet-700", chipOff: "bg-white text-violet-700 border-violet-300 hover:bg-violet-50", badge: "bg-violet-100 text-violet-800 border-violet-300", bar: "bg-violet-500" },
+    slate: { chip: "bg-slate-700 text-white border-slate-800", chipOff: "bg-white text-slate-700 border-slate-300 hover:bg-slate-50", badge: "bg-slate-100 text-slate-700 border-slate-300", bar: "bg-slate-500" }
+  };
+  return (map[accent] || map.slate)[kind] || "";
+};
+const _entryPreview = (entry) => {
+  const data = entry && entry.data || {};
+  const tt = data.templateType;
+  if (tt === "cornell-notes") {
+    const firstNote = (Array.isArray(data.notes) ? data.notes : []).find((n) => n && (n.text || "").trim());
+    if (firstNote) return firstNote.text;
+    const firstCue = (Array.isArray(data.cues) ? data.cues : []).find((n) => n && (n.text || "").trim());
+    if (firstCue) return firstCue.text;
+    if (data.summary) return data.summary;
+    return "";
+  }
+  if (tt === "lab-report") {
+    return data.question || data.hypothesis || data.conclusion || "";
+  }
+  if (tt === "reading-response") {
+    return data.thinkings || data.favoriteLine || data.connection && data.connection.text || "";
+  }
+  return "";
+};
+const _entryTitle = (entry) => {
+  const data = entry && entry.data || {};
+  if (data.title && data.title.trim()) return data.title.trim();
+  const meta = NOTEBOOK_TEMPLATE_META[data.templateType];
+  return meta ? `Untitled ${meta.label}` : "Untitled entry";
+};
+const NotebookOverlay = React.memo((props) => {
+  const isOpen = !!props.isOpen;
+  const onClose = props.onClose || (() => {
+  });
+  const history = Array.isArray(props.history) ? props.history : [];
+  const onSelectEntry = props.onSelectEntry || (() => {
+  });
+  const t = props.t || ((k, d) => d || k);
+  const [activeFilter, setActiveFilter] = React.useState("all");
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const handleKey = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [isOpen, onClose]);
+  if (!isOpen) return null;
+  const noteTakingEntries = history.filter((h) => h && h.type === "note-taking");
+  const sortedEntries = noteTakingEntries.slice().sort((a, b) => {
+    const aTime = a.id || 0;
+    const bTime = b.id || 0;
+    return bTime - aTime;
+  });
+  const filtered = activeFilter === "all" ? sortedEntries : sortedEntries.filter((e) => (e.data && e.data.templateType || "cornell-notes") === activeFilter);
+  const counts = {
+    all: sortedEntries.length,
+    "cornell-notes": sortedEntries.filter((e) => (e.data && e.data.templateType) === "cornell-notes").length,
+    "lab-report": sortedEntries.filter((e) => (e.data && e.data.templateType) === "lab-report").length,
+    "reading-response": sortedEntries.filter((e) => (e.data && e.data.templateType) === "reading-response").length
+  };
+  const handlePrintAll = () => {
+    try {
+      window.print();
+    } catch (_) {
+    }
+  };
+  const filters = [
+    { id: "all", label: "All", accent: "slate" },
+    { id: "cornell-notes", label: "Cornell Notes", accent: "indigo" },
+    { id: "lab-report", label: "Lab Reports", accent: "sky" },
+    { id: "reading-response", label: "Reading", accent: "violet" }
+  ];
+  return /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      className: "fixed inset-0 z-[100] flex items-center justify-center p-4 nt-no-print",
+      role: "dialog",
+      "aria-modal": "true",
+      "aria-label": "Notebook \u2014 all note-taking entries"
+    },
+    /* @__PURE__ */ React.createElement(
+      "div",
+      {
+        className: "absolute inset-0 bg-slate-900/60 backdrop-blur-sm",
+        onClick: onClose,
+        "aria-hidden": "true"
+      }
+    ),
+    /* @__PURE__ */ React.createElement("div", { className: "relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden border border-slate-200" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between p-5 border-b border-slate-200 bg-gradient-to-r from-indigo-50 via-sky-50 to-violet-50" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-indigo-700 uppercase tracking-wider" }, "My Notebook"), /* @__PURE__ */ React.createElement("h2", { className: "text-2xl font-black text-slate-800 mt-0.5" }, "\u{1F4D3} Notebook"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1 leading-snug" }, "All your note-taking entries across sessions \u2014 Cornell Notes, Lab Reports, Reading Responses.")), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: onClose,
+        className: "text-slate-400 hover:text-slate-700 text-2xl leading-none p-1 -mt-1 -mr-1 rounded hover:bg-slate-100",
+        "aria-label": "Close notebook",
+        title: "Close (Esc)"
+      },
+      "\u2715"
+    )), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 px-5 py-3 border-b border-slate-100 bg-white" }, filters.map((f) => {
+      const isActive = activeFilter === f.id;
+      const count = counts[f.id] || 0;
+      return /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          key: f.id,
+          onClick: () => setActiveFilter(f.id),
+          className: `px-3 py-1.5 text-xs font-bold rounded-full border transition-colors ${isActive ? _accentClasses(f.accent, "chip") : _accentClasses(f.accent, "chipOff")}`,
+          "aria-pressed": isActive
+        },
+        f.label,
+        " ",
+        /* @__PURE__ */ React.createElement("span", { className: "opacity-75 ml-1" }, "(", count, ")")
+      );
+    }), /* @__PURE__ */ React.createElement("div", { className: "ml-auto" }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: handlePrintAll,
+        className: "px-3 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 border border-slate-300 rounded-full hover:bg-slate-200",
+        "aria-label": "Print or export notebook as PDF",
+        title: "Print or save as PDF"
+      },
+      "\u{1F5A8}\uFE0F Print / PDF"
+    ))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto px-5 py-4 bg-slate-50" }, filtered.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-12" }, /* @__PURE__ */ React.createElement("div", { className: "text-5xl mb-3 opacity-50" }, "\u{1F4D3}"), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 font-bold mb-1" }, sortedEntries.length === 0 ? "Your notebook is empty." : "No entries match this filter."), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 max-w-sm mx-auto leading-relaxed" }, sortedEntries.length === 0 ? "Open Note-Taking from the sidebar to start a Cornell Notes page, Lab Report, or Reading Response. Each one you finish lands here." : "Switch filters above to see other entry types.")) : /* @__PURE__ */ React.createElement("ul", { className: "space-y-2" }, filtered.map((entry) => {
+      const tt = entry.data && entry.data.templateType || "cornell-notes";
+      const meta = NOTEBOOK_TEMPLATE_META[tt] || NOTEBOOK_TEMPLATE_META["cornell-notes"];
+      const title = _entryTitle(entry);
+      const preview = _entryPreview(entry);
+      const previewTruncated = preview && preview.length > 140 ? preview.slice(0, 137) + "\u2026" : preview;
+      const ts = entry.data && entry.data.lessonRef && entry.data.lessonRef.generatedAt ? entry.data.lessonRef.generatedAt : entry.id;
+      let when = "";
+      try {
+        when = new Date(ts).toLocaleString();
+      } catch (_) {
+        when = "";
+      }
+      return /* @__PURE__ */ React.createElement("li", { key: entry.id }, /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          onClick: () => onSelectEntry(entry),
+          className: "w-full text-left bg-white border border-slate-200 rounded-lg p-3 hover:border-indigo-400 hover:shadow-md transition-all group focus:outline-none focus:ring-2 focus:ring-indigo-400",
+          "aria-label": `Open ${meta.label}: ${title}`
+        },
+        /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement("div", { className: `w-1 self-stretch rounded-full ${_accentClasses(meta.accent, "bar")}`, "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap mb-1" }, /* @__PURE__ */ React.createElement("span", { className: `text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${_accentClasses(meta.accent, "badge")}` }, meta.icon, " ", meta.short), when ? /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-400" }, when) : null), /* @__PURE__ */ React.createElement("div", { className: "font-bold text-slate-800 text-sm truncate group-hover:text-indigo-700" }, title), previewTruncated ? /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-500 mt-1 leading-snug line-clamp-2" }, previewTruncated) : /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-400 italic mt-1" }, "No notes yet \u2014 open to start writing.")))
+      ));
+    }))), /* @__PURE__ */ React.createElement("div", { className: "px-5 py-3 border-t border-slate-200 bg-white text-[11px] text-slate-500 flex items-center justify-between" }, /* @__PURE__ */ React.createElement("span", null, "Click any entry to open it. Your notebook stays with you across sessions."), /* @__PURE__ */ React.createElement("span", { className: "font-mono" }, sortedEntries.length, " total")))
+  );
+});
 
 
   // ═══════════════════════════════════════════════════════════════
@@ -397,7 +553,8 @@ const NoteTakingView = React.memo((props) => {
   window.AlloModules.LabReportView = LabReportView;
   window.AlloModules.ReadingResponseView = ReadingResponseView;
   window.AlloModules.NoteTakingView = NoteTakingView;
+  window.AlloModules.NotebookOverlay = NotebookOverlay;
   window.AlloModules.NoteTakingTemplatesModule = true;
 
-  console.log('[NoteTakingTemplatesModule] 4 components registered');
+  console.log('[NoteTakingTemplatesModule] 5 components registered');
 })();

@@ -861,6 +861,7 @@ window.SelHub = window.SelHub || {
           )
         ),
 
+        (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('ethicalReasoning', h, ctx) : null),
         // Tabs
         h('div', { role: 'tablist', 'aria-label': 'Ethical Reasoning tabs', className: 'flex gap-1 bg-slate-100 rounded-xl p-1 border border-slate-400 flex-wrap' },
           [

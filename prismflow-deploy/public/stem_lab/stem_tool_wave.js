@@ -148,6 +148,93 @@ const d = labToolData.wave;
             canvasEl._waveInit = true;
 
             canvasRef._lastCanvas = canvasEl;
+
+            // ── Interactive drag state (ripple tank sources, reflection wall) ──
+            // Sources start centered; reflection wall starts at 75%. Stored on
+            // canvas element so the draw loop can read them; dataset fields
+            // also expose them so future React state syncs are possible.
+            canvasEl._drag = {
+              ripple1: null, ripple2: null, // null = use default positions; { x, y } when dragged
+              wallX: null,                   // null = use default wall pos
+              activeHandle: null,            // 'r1' | 'r2' | 'wall' during a drag
+              dragOffset: { x: 0, y: 0 }
+            };
+
+            // Get pointer position in canvas coordinates (account for DPR).
+            function getCanvasPt(evt) {
+              var rect = canvasEl.getBoundingClientRect();
+              var clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
+              var clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
+              return {
+                x: (clientX - rect.left) * (canvasEl.width / rect.width),
+                y: (clientY - rect.top) * (canvasEl.height / rect.height)
+              };
+            }
+            // Hit-test the draggable handles for the current mode. Returns
+            // the handle id or null.
+            function pickHandle(pt) {
+              var hitR = 18 * 2; // 18px on-screen × dpr
+              var mode = canvasEl.dataset.waveMode || 'free';
+              if (mode === 'ripple') {
+                var sep = parseFloat(canvasEl.dataset.rippleSeparation || '80') * 2;
+                var defaults1 = { x: canvasEl.width / 2 - sep / 2, y: canvasEl.height / 2 };
+                var defaults2 = { x: canvasEl.width / 2 + sep / 2, y: canvasEl.height / 2 };
+                var r1 = canvasEl._drag.ripple1 || defaults1;
+                var r2 = canvasEl._drag.ripple2 || defaults2;
+                if (Math.hypot(pt.x - r1.x, pt.y - r1.y) < hitR) return 'r1';
+                if (Math.hypot(pt.x - r2.x, pt.y - r2.y) < hitR) return 'r2';
+              } else if (mode === 'reflection') {
+                var wallDefault = canvasEl.width * 0.75;
+                var wallX = canvasEl._drag.wallX != null ? canvasEl._drag.wallX : wallDefault;
+                if (Math.abs(pt.x - wallX) < hitR) return 'wall';
+              }
+              return null;
+            }
+            function onPointerDown(evt) {
+              evt.preventDefault();
+              var pt = getCanvasPt(evt);
+              var handle = pickHandle(pt);
+              if (!handle) return;
+              canvasEl._drag.activeHandle = handle;
+              canvasEl.style.cursor = 'grabbing';
+              if (handle === 'r1') {
+                var r1 = canvasEl._drag.ripple1 || { x: pt.x, y: pt.y };
+                canvasEl._drag.dragOffset = { x: r1.x - pt.x, y: r1.y - pt.y };
+              } else if (handle === 'r2') {
+                var r2 = canvasEl._drag.ripple2 || { x: pt.x, y: pt.y };
+                canvasEl._drag.dragOffset = { x: r2.x - pt.x, y: r2.y - pt.y };
+              } else if (handle === 'wall') {
+                canvasEl._drag.dragOffset = { x: 0, y: 0 };
+              }
+            }
+            function onPointerMove(evt) {
+              if (!canvasEl._drag.activeHandle) {
+                // Hover-cursor feedback
+                var pt0 = getCanvasPt(evt);
+                canvasEl.style.cursor = pickHandle(pt0) ? 'grab' : '';
+                return;
+              }
+              evt.preventDefault();
+              var pt = getCanvasPt(evt);
+              var newX = pt.x + canvasEl._drag.dragOffset.x;
+              var newY = pt.y + canvasEl._drag.dragOffset.y;
+              // Clamp to canvas
+              newX = Math.max(20, Math.min(canvasEl.width - 20, newX));
+              newY = Math.max(20, Math.min(canvasEl.height - 20, newY));
+              if (canvasEl._drag.activeHandle === 'r1') canvasEl._drag.ripple1 = { x: newX, y: newY };
+              else if (canvasEl._drag.activeHandle === 'r2') canvasEl._drag.ripple2 = { x: newX, y: newY };
+              else if (canvasEl._drag.activeHandle === 'wall') canvasEl._drag.wallX = newX;
+            }
+            function onPointerUp() {
+              canvasEl._drag.activeHandle = null;
+              canvasEl.style.cursor = '';
+            }
+            canvasEl.addEventListener('mousedown', onPointerDown);
+            canvasEl.addEventListener('mousemove', onPointerMove);
+            window.addEventListener('mouseup', onPointerUp);
+            canvasEl.addEventListener('touchstart', onPointerDown, { passive: false });
+            canvasEl.addEventListener('touchmove', onPointerMove, { passive: false });
+            window.addEventListener('touchend', onPointerUp);
             // Canvas Narration: tool init
             if (typeof canvasNarrate === 'function') canvasNarrate('wave', 'init', {
               first: 'Wave Simulator loaded. An underwater ocean scene shows animated waves. Adjust amplitude and frequency with sliders. Switch between Free Wave, Standing, Ripple Tank, Longitudinal, Doppler, and Spectrum modes.',
@@ -921,7 +1008,14 @@ const d = labToolData.wave;
                 // ========== 2D RIPPLE TANK MODE ==========
                 var rippleCx = cW / 2, rippleCy = cH / 2;
                 var rippleSep = parseFloat(canvasEl.dataset.rippleSeparation || '80') * dpr;
-                var src1x = rippleCx - rippleSep / 2, src2x = rippleCx + rippleSep / 2;
+                // Draggable source positions: fall back to slider-driven defaults
+                // if user hasn't dragged. Once dragged, the drag-state wins.
+                var defR1 = { x: rippleCx - rippleSep / 2, y: rippleCy };
+                var defR2 = { x: rippleCx + rippleSep / 2, y: rippleCy };
+                var pos1 = canvasEl._drag.ripple1 || defR1;
+                var pos2 = canvasEl._drag.ripple2 || defR2;
+                var src1x = pos1.x, src1y = pos1.y;
+                var src2x = pos2.x, src2y = pos2.y;
                 var rippleWL = Math.max(20, cW / (freq * 2));
                 var rippleDamp = parseFloat(canvasEl.dataset.dampingCoeff || '0.002');
 
@@ -930,8 +1024,8 @@ const d = labToolData.wave;
                 var data = imgData.data;
                 for (var py = 0; py < cH; py += 2) {
                   for (var px = 0; px < cW; px += 2) {
-                    var d1 = Math.sqrt((px - src1x) * (px - src1x) + (py - rippleCy) * (py - rippleCy));
-                    var d2 = Math.sqrt((px - src2x) * (px - src2x) + (py - rippleCy) * (py - rippleCy));
+                    var d1 = Math.sqrt((px - src1x) * (px - src1x) + (py - src1y) * (py - src1y));
+                    var d2 = Math.sqrt((px - src2x) * (px - src2x) + (py - src2y) * (py - src2y));
                     var v1 = amp * Math.sin(2 * Math.PI * (d1 / rippleWL - t * freq * 0.05)) * Math.exp(-rippleDamp * d1);
                     var v2 = amp * Math.sin(2 * Math.PI * (d2 / rippleWL - t * freq * 0.05)) * Math.exp(-rippleDamp * d2);
                     var vSum = (v1 + v2) / 2;
@@ -954,24 +1048,34 @@ const d = labToolData.wave;
                 }
                 ctx.putImageData(imgData, 0, 0);
 
-                // Mark sources
-                ctx.fillStyle = '#ff6b6b';
-                ctx.beginPath(); ctx.arc(src1x, rippleCy, 5 * dpr, 0, 2 * Math.PI); ctx.fill();
-                ctx.beginPath(); ctx.arc(src2x, rippleCy, 5 * dpr, 0, 2 * Math.PI); ctx.fill();
+                // Mark sources with prominent drag handles (rendered larger
+                // when the user is hovering or dragging them).
+                var active = canvasEl._drag.activeHandle;
+                function drawSourceHandle(x, y, label, isActive) {
+                  // Outer pulsing ring (hint that it's draggable)
+                  var ringR = 14 * dpr * (1 + 0.15 * Math.sin(t * 0.1));
+                  ctx.strokeStyle = isActive ? 'rgba(255,255,255,0.9)' : 'rgba(255,107,107,0.5)';
+                  ctx.lineWidth = isActive ? 2 * dpr : 1.5 * dpr;
+                  ctx.beginPath(); ctx.arc(x, y, ringR, 0, 2 * Math.PI); ctx.stroke();
+                  // Solid core
+                  ctx.fillStyle = '#ff6b6b';
+                  ctx.beginPath(); ctx.arc(x, y, 7 * dpr, 0, 2 * Math.PI); ctx.fill();
+                  ctx.fillStyle = '#fff';
+                  ctx.font = 'bold ' + (8 * dpr) + 'px sans-serif';
+                  ctx.fillText(label, x - 6 * dpr, y + 3 * dpr);
+                }
+                drawSourceHandle(src1x, src1y, 'S\u2081', active === 'r1');
+                drawSourceHandle(src2x, src2y, 'S\u2082', active === 'r2');
 
-                // Labels
-                ctx.fillStyle = '#fff';
-                ctx.font = 'bold ' + (8 * dpr) + 'px sans-serif';
-                ctx.fillText('S\u2081', src1x - 6 * dpr, rippleCy - 10 * dpr);
-                ctx.fillText('S\u2082', src2x - 6 * dpr, rippleCy - 10 * dpr);
-
-                // Legend
-                ctx.fillStyle = 'rgba(0,0,0,0.6)';
-                ctx.fillRect(4, 4, 180 * dpr, 36 * dpr);
+                // Legend + drag hint
+                ctx.fillStyle = 'rgba(0,0,0,0.65)';
+                ctx.fillRect(4, 4, 220 * dpr, 50 * dpr);
                 ctx.fillStyle = '#67e8f9';
                 ctx.font = (7 * dpr) + 'px sans-serif';
                 ctx.fillText('2D Ripple Tank \u2014 Two-Source Interference', 8 * dpr, 14 * dpr);
                 ctx.fillText('Bright = Constructive | Dark = Destructive', 8 * dpr, 26 * dpr);
+                ctx.fillStyle = '#fbbf24';
+                ctx.fillText('\u2702 DRAG the red sources to explore patterns', 8 * dpr, 40 * dpr);
 
               } else if (currentMode === 'longitudinal') {
                 // ========== LONGITUDINAL WAVE MODE ==========
@@ -1154,6 +1258,111 @@ const d = labToolData.wave;
                 ctx.fillStyle = '#c084fc';
                 ctx.fillText('Top: Waveform | Bottom: Frequency Spectrum (FFT)', 8 * dpr, 26 * dpr);
 
+              } else if (currentMode === 'reflection') {
+                // ========== REFLECTION / BOUNDARY MODE ==========
+                // A traveling wave moves right and hits a wall. Reflected wave
+                // travels back leftward. They superpose into the visible wave.
+                // Pedagogy: fixed-end reflection inverts phase (string tied
+                // down); free-end does NOT invert. We pick by dataset toggle.
+                var midY_r = cH / 2;
+                var defWall = cW * 0.75;
+                var wallX = canvasEl._drag.wallX != null ? canvasEl._drag.wallX : defWall;
+                var endType = canvasEl.dataset.reflectionEnd || 'fixed'; // 'fixed' | 'free'
+                var phaseFlip = endType === 'fixed' ? -1 : 1; // fixed-end inverts
+                var refReflectivity = parseFloat(canvasEl.dataset.reflectivity || '0.9');
+                var refAmp = amp * dpr;
+                var k = 2 * Math.PI * freq / cW;
+                var omega = freq * 0.05 * speed;
+
+                // Build the incident + reflected wave at each x position.
+                // For x < wallX:
+                //   incident y_i(x,t) = A sin(k x - ω t)
+                //   reflected y_r(x,t) = phaseFlip * R * A sin(k (2*wallX - x) - ω t)
+                //                        = phaseFlip * R * A sin(k (2*wallX - x) - ω t)
+                // For x > wallX: no wave (transmitted = 0 — perfect wall).
+                ctx.lineWidth = 3 * dpr;
+                ctx.strokeStyle = '#22d3ee';
+                ctx.shadowColor = '#22d3ee';
+                ctx.shadowBlur = 6;
+                ctx.beginPath();
+                var started = false;
+                for (var rx = 0; rx < wallX; rx += 2) {
+                  var phaseIn = k * rx - omega * t;
+                  var phaseRe = k * (2 * wallX - rx) - omega * t;
+                  var yi = Math.sin(phaseIn);
+                  var yre = phaseFlip * refReflectivity * Math.sin(phaseRe);
+                  var ry = midY_r - (yi + yre) * refAmp;
+                  if (!started) { ctx.moveTo(rx, ry); started = true; }
+                  else ctx.lineTo(rx, ry);
+                }
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+
+                // Faintly show the incident component alone (dashed)
+                ctx.strokeStyle = 'rgba(96,165,250,0.45)';
+                ctx.lineWidth = 1.5 * dpr;
+                ctx.setLineDash([6, 5]);
+                ctx.beginPath();
+                for (var rx2 = 0; rx2 < cW; rx2 += 2) {
+                  var yi2 = Math.sin(k * rx2 - omega * t);
+                  var ry2 = midY_r - yi2 * refAmp;
+                  if (rx2 === 0) ctx.moveTo(rx2, ry2); else ctx.lineTo(rx2, ry2);
+                }
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Faintly show the reflected component alone (dashed, magenta)
+                ctx.strokeStyle = 'rgba(244,114,182,0.45)';
+                ctx.setLineDash([4, 6]);
+                ctx.beginPath();
+                for (var rx3 = 0; rx3 < wallX; rx3 += 2) {
+                  var yre3 = phaseFlip * refReflectivity * Math.sin(k * (2 * wallX - rx3) - omega * t);
+                  var ry3 = midY_r - yre3 * refAmp;
+                  if (rx3 === 0) ctx.moveTo(rx3, ry3); else ctx.lineTo(rx3, ry3);
+                }
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Draw the wall (draggable handle)
+                var wallActive = canvasEl._drag.activeHandle === 'wall';
+                ctx.fillStyle = wallActive ? 'rgba(251,191,36,0.95)' : 'rgba(251,191,36,0.75)';
+                ctx.fillRect(wallX - 3 * dpr, 30 * dpr, 6 * dpr, cH - 60 * dpr);
+                // Wall hatching (visual texture)
+                ctx.strokeStyle = wallActive ? '#fff' : 'rgba(0,0,0,0.5)';
+                ctx.lineWidth = 1;
+                for (var wh = 30 * dpr; wh < cH - 30 * dpr; wh += 8 * dpr) {
+                  ctx.beginPath();
+                  ctx.moveTo(wallX + 3 * dpr, wh);
+                  ctx.lineTo(wallX + 12 * dpr, wh + 6 * dpr);
+                  ctx.stroke();
+                }
+                // Wall drag handle indicator
+                ctx.fillStyle = '#fbbf24';
+                ctx.beginPath(); ctx.arc(wallX, midY_r, 10 * dpr, 0, 2 * Math.PI); ctx.fill();
+                ctx.fillStyle = '#000';
+                ctx.font = 'bold ' + (8 * dpr) + 'px sans-serif';
+                ctx.fillText('⇔', wallX - 6 * dpr, midY_r + 3 * dpr);
+
+                // End-type label near the wall
+                ctx.fillStyle = endType === 'fixed' ? '#ef4444' : '#22c55e';
+                ctx.font = 'bold ' + (7 * dpr) + 'px sans-serif';
+                ctx.fillText(endType === 'fixed' ? 'FIXED END' : 'FREE END', wallX - 24 * dpr, 20 * dpr);
+                ctx.fillStyle = 'rgba(255,255,255,0.6)';
+                ctx.font = (5 * dpr) + 'px sans-serif';
+                ctx.fillText(endType === 'fixed' ? '(phase inverts)' : '(phase preserved)', wallX - 28 * dpr, 28 * dpr);
+
+                // Legend
+                ctx.fillStyle = 'rgba(0,0,0,0.65)';
+                ctx.fillRect(4, 4, 280 * dpr, 60 * dpr);
+                ctx.fillStyle = '#67e8f9';
+                ctx.font = (7 * dpr) + 'px sans-serif';
+                ctx.fillText('Reflection / Boundary — Wave hits a wall', 8 * dpr, 14 * dpr);
+                ctx.fillStyle = '#60a5fa';
+                ctx.fillText('— Solid: incident + reflected (real wave)', 8 * dpr, 26 * dpr);
+                ctx.fillStyle = '#f472b6';
+                ctx.fillText('-- Dashed magenta: reflected component', 8 * dpr, 38 * dpr);
+                ctx.fillStyle = '#fbbf24';
+                ctx.fillText('✂ DRAG the gold wall left/right', 8 * dpr, 50 * dpr);
               }
 
               // Wavelength annotation
@@ -1382,13 +1591,13 @@ const d = labToolData.wave;
 
             React.createElement("div", { className: "flex gap-2 mb-3" },
 
-              [['free', '\uD83C\uDF0A Free Wave'], ['standing', '\uD83C\uDFB8 Standing'], ['ripple', '\uD83D\uDCA7 Ripple Tank'], ['longitudinal', '\u2261 Longitudinal'], ['doppler', '\uD83D\uDE97 Doppler'], ['spectrum', '\uD83D\uDCCA Spectrum']].map(function (m) {
+              [['free', '\uD83C\uDF0A Free Wave'], ['standing', '\uD83C\uDFB8 Standing'], ['ripple', '\uD83D\uDCA7 Ripple Tank'], ['reflection', '\uD83E\uDE9E Reflection'], ['longitudinal', '\u2261 Longitudinal'], ['doppler', '\uD83D\uDE97 Doppler'], ['spectrum', '\uD83D\uDCCA Spectrum']].map(function (m) {
 
                 return React.createElement("button", { "aria-label": "Switch to " + m[1] + " mode", key: m[0], onClick: function () {
                   upd('waveMode', m[0]);
                   // Canvas Narration: mode switch
                   if (typeof canvasNarrate === 'function') {
-                    var modeDescs = { free: 'Free wave mode. Observe sine, square, triangle, and sawtooth waveforms.', standing: 'Standing wave mode. See nodes and antinodes form on a vibrating string.', ripple: 'Ripple tank mode. Two point sources create interference patterns.', longitudinal: 'Longitudinal wave mode. See compression and rarefaction in a spring.', doppler: 'Doppler effect mode. A moving source shifts the observed frequency.', spectrum: 'Spectrum analysis mode. See the frequency components of your wave.' };
+                    var modeDescs = { free: 'Free wave mode. Observe sine, square, triangle, and sawtooth waveforms.', standing: 'Standing wave mode. See nodes and antinodes form on a vibrating string.', ripple: 'Ripple tank mode. Drag two point sources to explore interference patterns.', reflection: 'Reflection mode. A wave hits a wall — drag the wall to see fixed vs free end behavior.', longitudinal: 'Longitudinal wave mode. See compression and rarefaction in a spring.', doppler: 'Doppler effect mode. A moving source shifts the observed frequency.', spectrum: 'Spectrum analysis mode. See the frequency components of your wave.' };
                     canvasNarrate('wave', 'modeSwitch', {
                       first: 'Switched to ' + m[1] + '. ' + (modeDescs[m[0]] || ''),
                       repeat: m[1] + ' mode active.',
@@ -1470,6 +1679,8 @@ const d = labToolData.wave;
                 "data-target-freq": d.matchTarget ? d.matchTarget.freq : 0,
 
                 "data-target-is-equation": (d.matchTarget && d.matchTarget.isEquation) ? 'true' : 'false',
+                "data-reflection-end": d.reflectionEnd || 'fixed',
+                "data-reflectivity": d.reflectivity != null ? d.reflectivity : 0.9,
 
                 onKeyDown: function (e) {
 
@@ -1674,8 +1885,54 @@ const d = labToolData.wave;
 
                 React.createElement("span", { className: "text-xs text-indigo-900 font-bold w-12" }, (d.dampingCoeff !== undefined ? d.dampingCoeff : 0.002).toFixed(3))
 
-              )
+              ),
 
+              React.createElement("button", {
+                onClick: function() {
+                  // Reset draggable source positions to centered defaults.
+                  var c = canvasRef._lastCanvas;
+                  if (c && c._drag) { c._drag.ripple1 = null; c._drag.ripple2 = null; }
+                  if (typeof addToast === 'function') addToast('Sources reset to defaults', 'info');
+                },
+                className: "px-3 py-1 rounded-md text-[11px] font-bold bg-indigo-600 text-white hover:bg-indigo-700",
+                'aria-label': 'Reset source positions to defaults'
+              }, '↻ Reset sources'),
+              React.createElement("span", { className: "text-[10px] text-indigo-700 italic ml-auto" }, '💡 Drag the red sources on the canvas')
+
+            ),
+
+            // Reflection / boundary controls
+            waveMode === 'reflection' && React.createElement("div", { className: "flex items-center flex-wrap gap-4 mb-3 p-2 bg-amber-50 rounded-lg border border-amber-200" },
+              React.createElement("div", { className: "flex items-center gap-2" },
+                React.createElement("span", { className: "text-xs font-bold text-amber-800" }, "End Type:"),
+                React.createElement("div", { className: "flex rounded-md overflow-hidden border border-amber-300" },
+                  ['fixed', 'free'].map(function(et) {
+                    var active = (d.reflectionEnd || 'fixed') === et;
+                    return React.createElement('button', {
+                      key: et,
+                      onClick: function() { upd('reflectionEnd', et); },
+                      className: 'px-2.5 py-1 text-[11px] font-bold transition ' + (active ? (et === 'fixed' ? 'bg-red-600 text-white' : 'bg-emerald-600 text-white') : 'bg-white text-slate-600 hover:bg-amber-100'),
+                      'aria-pressed': active,
+                      'aria-label': et === 'fixed' ? 'Fixed end (string tied down — phase inverts on reflection)' : 'Free end (string free to move — phase preserved on reflection)'
+                    }, et === 'fixed' ? '🔒 Fixed' : '🪁 Free');
+                  })
+                )
+              ),
+              React.createElement("div", { className: "flex items-center gap-2" },
+                React.createElement("span", { className: "text-xs font-bold text-amber-800" }, "Reflectivity:"),
+                React.createElement("input", { type: "range", min: 0.0, max: 1.0, step: 0.05, value: d.reflectivity != null ? d.reflectivity : 0.9, 'aria-label': 'Wall reflectivity 0 to 1', onChange: e => upd('reflectivity', parseFloat(e.target.value)), className: "w-24 accent-amber-600" }),
+                React.createElement("span", { className: "text-xs text-amber-900 font-bold w-10" }, (d.reflectivity != null ? d.reflectivity : 0.9).toFixed(2))
+              ),
+              React.createElement("button", {
+                onClick: function() {
+                  var c = canvasRef._lastCanvas;
+                  if (c && c._drag) { c._drag.wallX = null; }
+                  if (typeof addToast === 'function') addToast('Wall reset to 75% across', 'info');
+                },
+                className: "px-3 py-1 rounded-md text-[11px] font-bold bg-amber-600 text-white hover:bg-amber-700",
+                'aria-label': 'Reset wall position'
+              }, '↻ Reset wall'),
+              React.createElement("span", { className: "text-[10px] text-amber-800 italic ml-auto" }, '💡 Drag the gold wall on the canvas')
             ),
 
             // Doppler specific controls

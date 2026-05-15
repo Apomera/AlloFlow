@@ -521,6 +521,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
 
       return h('div', { style: { maxWidth: 840, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Land and Place Stewardship Studio' },
         header(),
+        (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('landPlace', h, ctx) : null),
         navTabs(),
         body
       );
