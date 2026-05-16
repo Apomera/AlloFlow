@@ -850,7 +850,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       explanation: 'Gyrfalcons specialize in level-pursuit hunting at 80+ mph rather than the peregrine\'s vertical stoop. They run down ptarmigan in long open-country chases — well-adapted to the treeless Arctic tundra where there\'s nowhere for prey to hide. Despite being the largest falcon, they were historically the diplomatic gift of medieval European kings (the Iceland gyrfalcons sent to European courts).' },
     { id: 'q23', difficulty: 'hard', q: 'The Mississippi Kite is unusual among raptors because its primary prey is:',
       options: ['Other birds of prey', 'Fish caught in mid-flight', 'Large insects (cicadas, dragonflies) caught + consumed on the wing', 'Carrion'], correctIdx: 2,
-      explanation: 'Mississippi kites are aerial insectivores — they catch dragonflies, cicadas, and other large insects with their talons + eat them while still flying. They\'re among the very few raptors whose primary diet is insects, not vertebrates. Their range is expanding northward into the Great Plains, helped by cottonwood + urban tree nest sites.' }
+      explanation: 'Mississippi kites are aerial insectivores — they catch dragonflies, cicadas, and other large insects with their talons + eat them while still flying. They\'re among the very few raptors whose primary diet is insects, not vertebrates. Their range is expanding northward into the Great Plains, helped by cottonwood + urban tree nest sites.' },
+
+    // ── NEW v0.22: 5 questions covering climate + dimorphism + vocalizations ──
+    { id: 'q24', difficulty: 'easy', q: 'You hear a deep four-note hoot at dusk: "Whose awake? Me too!" Which species is this?',
+      options: ['Barred owl', 'Great horned owl', 'Snowy owl', 'Screech owl'], correctIdx: 1,
+      explanation: 'Great horned owl. Its territorial call is the iconic "hoo-h\'HOO-hoo-hoo" — birders memorize it as "Whose awake? Me too!" Barred owls have a different cadence ("Who cooks for you?"). Snowy owls are mostly silent in winter when most people see them.' },
+    { id: 'q25', difficulty: 'medium', q: 'A pair of mated raptors hunt different prey size classes during the breeding season. This pattern best supports which hypothesis for reverse sexual size dimorphism (RSD)?',
+      options: ['Small-male hypothesis only', 'Big-female hypothesis only', 'Niche-divergence hypothesis — BOTH genders evolved into different prey-size niches', 'Climate adaptation hypothesis'], correctIdx: 2,
+      explanation: 'The niche-divergence hypothesis is the current scientific consensus. Mated pairs hunting different prey size classes lets a pair harvest more total biomass than either could alone. Most extreme in accipiters + falcons that specialize in agile prey — exactly where prey-size divergence matters most.' },
+    { id: 'q26', difficulty: 'medium', q: 'Long-term datasets (Hawk Mountain, Cape May) show migration timing has shifted ~1-3 days earlier per decade. The most plausible mechanism is:',
+      options: ['Volunteers counting more carefully now', 'Phenological mismatch — songbird + insect prey shifted earlier with warming, raptors are tracking', 'Magnetic field shifts', 'Random year-to-year variation'], correctIdx: 1,
+      explanation: 'Phenological mismatch: raptors track prey availability, prey shifts with temperature. Documented in European honey buzzards (Both et al. 2009) where chicks now fledge AFTER the wasp peak passes. Hawk Mountain\'s 90+ year dataset is the canonical evidence base for this shift.' },
+    { id: 'q27', difficulty: 'hard', q: 'According to the IUCN Red List status table, which raptor is the MOST AT RISK among the major North American species?',
+      options: ['Bald eagle (LC)', 'Peregrine falcon (LC)', 'Snowy owl (VU)', 'Red-tailed hawk (LC)'], correctIdx: 2,
+      explanation: 'Snowy owl was recently uplisted to Vulnerable (VU) by IUCN due to climate-change-driven Arctic habitat loss + lemming-cycle disruption. Bald eagle + peregrine + red-tail are all Least Concern. Among the 13 species in this tool, snowy owl + harpy eagle are the only VU; all others are LC.' },
+    { id: 'q28', difficulty: 'hard', q: 'Why do Arctic species (snowy owl, gyrfalcon) face the worst climate change impacts among raptors?',
+      options: ['They live further from the equator', 'The Arctic is warming ~4× faster than the global average, disrupting prey cycles + habitat', 'They have shorter migration distances', 'They eat lemmings'], correctIdx: 1,
+      explanation: 'Arctic amplification: high-latitude regions warm ~4× faster than the global average due to ice-albedo feedback. This flattens lemming cycles, alters tundra vegetation, shifts snow timing, and constricts breeding range northward. Snowy owls + gyrfalcons + ptarmigans face all these stressors simultaneously.' }
   ];
 
   // ───────────────────────────────────────────────────────────
@@ -1357,7 +1374,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('div', { className: 'flex-1' },
                 h('div', { className: 'text-xl font-bold text-amber-200' }, 'Raptor Hunt: Predator Physics + Biology'),
                 h('div', { className: 'text-sm text-amber-100/80 mt-1' }, 'Hunt as a peregrine at 240 mph. Crush bones at 530 psi as a harpy. See vole urine trails in UV like a kestrel. Glide silently on owl feathers. Then study the biology that makes it all possible.'),
-                h('div', { className: 'text-xs text-amber-300/70 mt-2 italic' }, '25 sections · 13 species · 6 interactive labs · anatomy + acuity demo · case studies · 42-term glossary · 23-question quiz')
+                h('div', { className: 'text-xs text-amber-300/70 mt-2 italic' }, '25 sections · 13 species · 6 interactive labs · anatomy + acuity demo · case studies · 42-term glossary · 28-question quiz')
               )
             ),
             // ── NEW v0.20: "Surprise me" random-section button ──
@@ -1507,6 +1524,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 )
               ),
               h('div', { className: 'text-[10px] text-slate-500 italic mt-2 text-right' }, 'New challenge tomorrow.')
+            );
+          })(),
+
+          // ── NEW v0.22: Recently Viewed panel ──
+          (function() {
+            var recent = rh.recentlyViewed || [];
+            if (!Array.isArray(recent) || recent.length === 0) return null;
+            // Filter to known sections + dedupe (keep most-recent occurrence)
+            var seenIds = {};
+            var unique = [];
+            for (var i = recent.length - 1; i >= 0; i--) {
+              if (!seenIds[recent[i]]) {
+                seenIds[recent[i]] = true;
+                unique.unshift(recent[i]);
+              }
+            }
+            unique = unique.slice(-5); // last 5 unique
+            if (unique.length < 2) return null; // not interesting until 2+ unique
+            return h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-3' },
+              h('div', { className: 'text-xs font-bold text-amber-300 mb-2' }, '🕒 Recently viewed (this session)'),
+              h('div', { className: 'flex gap-2 flex-wrap' },
+                unique.map(function(sid) {
+                  var sec = SECTIONS.filter(function(x) { return x.id === sid; })[0];
+                  if (!sec) return null;
+                  return h('button', { key: sid,
+                    onClick: function() {
+                      setRH(function(cur) {
+                        var visited = Object.assign({}, cur.visited || {});
+                        visited[sid] = (visited[sid] || 0) + 1;
+                        var newRecent = (cur.recentlyViewed || []).slice();
+                        newRecent.push(sid);
+                        if (newRecent.length > 20) newRecent = newRecent.slice(-20);
+                        return Object.assign({}, cur, { activeSection: sid, visited: visited, recentlyViewed: newRecent });
+                      });
+                    },
+                    className: 'px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 text-amber-200 hover:bg-slate-700 border border-slate-700',
+                    'aria-label': 'Jump back to ' + sec.label
+                  }, sec.icon + ' ' + sec.label);
+                })
+              )
             );
           })(),
 
@@ -7826,6 +7883,102 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             );
           })(),
 
+          // ── NEW v0.22: Field-Trip Planning Checklist ──
+          h('details', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded-xl p-3' },
+            h('summary', { className: 'text-sm font-bold text-cyan-300 cursor-pointer' }, '🚌 Field-Trip Planning Checklist — printable for hawkwatch trips'),
+            h('div', { className: 'mt-3 bg-white text-slate-900 rounded-lg p-4' },
+              h('div', { className: 'border-b-2 border-slate-800 pb-2 mb-3' },
+                h('div', { className: 'text-base font-bold' }, '🦅 RAPTOR FIELD TRIP — Planning Checklist'),
+                h('div', { className: 'text-xs italic mt-1' }, 'Print + use to organize a 1-day class trip to a local hawkwatch site.')
+              ),
+              h('div', { className: 'grid grid-cols-3 gap-3 text-xs mb-3' },
+                h('div', null, h('div', { className: 'font-bold' }, 'Trip leader:'), h('div', { className: 'border-b border-slate-400 h-5' })),
+                h('div', null, h('div', { className: 'font-bold' }, 'Target date:'), h('div', { className: 'border-b border-slate-400 h-5' })),
+                h('div', null, h('div', { className: 'font-bold' }, '# students:'), h('div', { className: 'border-b border-slate-400 h-5' }))
+              ),
+              // Section 1: Site selection
+              h('div', { className: 'border border-slate-300 rounded p-3 mb-3 text-xs' },
+                h('div', { className: 'font-bold mb-2' }, '📍 1. Site selection (use the Resources by-region panel in the tool)'),
+                h('div', { className: 'space-y-1 text-[11px]' },
+                  h('div', null, '☐ Identified nearby hawkwatch site (within 2-hour drive)'),
+                  h('div', null, '☐ Confirmed site is OPEN for visitors on target date'),
+                  h('div', null, '☐ Site coordinator contacted (introduce yourself + group size)'),
+                  h('div', null, '☐ Backup site identified in case of weather/closure')
+                )
+              ),
+              // Section 2: Timing
+              h('div', { className: 'border border-slate-300 rounded p-3 mb-3 text-xs' },
+                h('div', { className: 'font-bold mb-2' }, '🗓 2. Timing (use the Migration Calendar in the tool)'),
+                h('div', { className: 'space-y-1 text-[11px]' },
+                  h('div', null, '☐ Check target month: peak migration window for your region'),
+                  h('div', null, '☐ Check weather forecast 3 days out: cold-front + NW wind = best raptor activity'),
+                  h('div', null, '☐ Plan arrival 8-9 AM (raptors start moving after thermals build)'),
+                  h('div', null, '☐ Allow 4-6 hours on site (raptor watching is patient work)')
+                )
+              ),
+              // Section 3: Equipment
+              h('div', { className: 'border border-slate-300 rounded p-3 mb-3 text-xs' },
+                h('div', { className: 'font-bold mb-2' }, '🎒 3. Equipment per student'),
+                h('div', { className: 'grid grid-cols-2 gap-x-3 gap-y-1 text-[11px]' },
+                  h('div', null, '☐ Binoculars (8× or 10× — ask the site if they loan'),
+                  h('div', null, '☐ Field guide (Sibley, Crossley, or printed Raptor Hunt silhouettes)'),
+                  h('div', null, '☐ Notebook + pencil (no pen — pens freeze in cold)'),
+                  h('div', null, '☐ Water + snacks'),
+                  h('div', null, '☐ Warm layers (windy ridgetop sites are cold)'),
+                  h('div', null, '☐ Hat + sunscreen (yes, even in October)'),
+                  h('div', null, '☐ Phone for photos + eBird submission'),
+                  h('div', null, '☐ Print-out of the Field Journal worksheet (Resources section)')
+                )
+              ),
+              // Section 4: Safety + logistics
+              h('div', { className: 'border border-slate-300 rounded p-3 mb-3 text-xs' },
+                h('div', { className: 'font-bold mb-2' }, '🛡 4. Safety + permissions'),
+                h('div', { className: 'space-y-1 text-[11px]' },
+                  h('div', null, '☐ Parent/guardian permission forms collected'),
+                  h('div', null, '☐ Bus or van transport arranged'),
+                  h('div', null, '☐ Adult chaperones at 1:8 ratio minimum'),
+                  h('div', null, '☐ First aid kit + emergency contacts list'),
+                  h('div', null, '☐ Lunch plan (bag lunch or pre-arranged stop)'),
+                  h('div', null, '☐ Restroom availability checked at site')
+                )
+              ),
+              // Section 5: Educational content
+              h('div', { className: 'border border-slate-300 rounded p-3 mb-3 text-xs' },
+                h('div', { className: 'font-bold mb-2' }, '📚 5. Pre-trip prep (1 week before)'),
+                h('div', { className: 'space-y-1 text-[11px]' },
+                  h('div', null, '☐ Students complete Raptor Hunt Hub + Roster sections'),
+                  h('div', null, '☐ Students complete the Field ID section (silhouettes) + take the 28-question quiz'),
+                  h('div', null, '☐ Practice with binoculars in classroom or schoolyard'),
+                  h('div', null, '☐ Review what to record: date / location / weather / species / behavior')
+                )
+              ),
+              // Section 6: At the site
+              h('div', { className: 'border border-slate-300 rounded p-3 mb-3 text-xs' },
+                h('div', { className: 'font-bold mb-2' }, '👁 6. At the site'),
+                h('div', { className: 'space-y-1 text-[11px]' },
+                  h('div', null, '☐ Sign in with the site coordinator'),
+                  h('div', null, '☐ Each student fills out a Field Journal page'),
+                  h('div', null, '☐ Use binoculars in pairs — one spots, one counts'),
+                  h('div', null, '☐ Listen to the site\'s on-staff naturalist if available'),
+                  h('div', null, '☐ Submit a group eBird checklist before leaving'),
+                  h('div', null, '☐ Take a class photo for the school newsletter')
+                )
+              ),
+              // Section 7: Post-trip
+              h('div', { className: 'border border-slate-300 rounded p-3 mb-3 text-xs' },
+                h('div', { className: 'font-bold mb-2' }, '✍ 7. Post-trip (within 1 week)'),
+                h('div', { className: 'space-y-1 text-[11px]' },
+                  h('div', null, '☐ Class discussion: what did each student see?'),
+                  h('div', null, '☐ Each student writes a 1-page reflection (species + behavior + what surprised them)'),
+                  h('div', null, '☐ Compile group sightings into a class poster'),
+                  h('div', null, '☐ Send thank-you note to the hawkwatch site'),
+                  h('div', null, '☐ Plan a follow-up trip OR a "raptor in our schoolyard" observation week')
+                )
+              ),
+              h('div', { className: 'text-[10px] text-slate-500 italic text-center mt-3' }, 'For Raptor Hunt — alloflow.app · Adapt freely for your group.')
+            )
+          ),
+
           // ── NEW v0.17: 5-Day Lesson Plan Template ──
           h('details', { className: 'bg-purple-900/20 border border-purple-700/40 rounded-xl p-3' },
             h('summary', { className: 'text-sm font-bold text-purple-300 cursor-pointer' }, '🗓 5-Day Lesson Plan Template — teacher unit outline'),
@@ -8202,7 +8355,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // ────────────────────────────────────────────────────────
       return h('div', { className: 'space-y-4', role: 'region', 'aria-label': 'Raptor Hunt tool' },
         // Section count chip
-        h('div', { className: 'text-[11px] text-slate-500 uppercase tracking-wider' }, '25 sections · 13 species · 6 interactive labs · acuity demo · 5 recoveries · famous birds · 42-term glossary · 23-question quiz'),
+        h('div', { className: 'text-[11px] text-slate-500 uppercase tracking-wider' }, '25 sections · 13 species · 6 interactive labs · acuity demo · 5 recoveries · famous birds · 42-term glossary · 28-question quiz'),
         // Tab nav (scrollable horizontal)
         h('div', { className: 'flex gap-1.5 overflow-x-auto pb-1', role: 'tablist', 'aria-label': 'Raptor Hunt sections' },
           SECTIONS.map(function(s) {
@@ -8213,11 +8366,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               'aria-selected': active,
               'aria-controls': 'rh-panel-' + s.id,
               onClick: function() {
-                // Track section visit for progress tracker
+                // Track section visit for progress tracker + recently-viewed
                 setRH(function(cur) {
                   var visited = Object.assign({}, cur.visited || {});
                   visited[s.id] = (visited[s.id] || 0) + 1;
-                  return Object.assign({}, cur, { activeSection: s.id, visited: visited });
+                  var recent = (cur.recentlyViewed || []).slice();
+                  recent.push(s.id);
+                  if (recent.length > 20) recent = recent.slice(-20);
+                  return Object.assign({}, cur, { activeSection: s.id, visited: visited, recentlyViewed: recent });
                 });
                 rhAnnounce(s.label + ' tab');
               },
