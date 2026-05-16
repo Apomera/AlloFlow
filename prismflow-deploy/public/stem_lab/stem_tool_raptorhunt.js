@@ -1310,6 +1310,82 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               })
             )
           ),
+          // ── NEW v0.11: Progress Tracker ──
+          (function() {
+            var visited = rh.visited || {};
+            var visitedCount = Object.keys(visited).filter(function(k) { return visited[k] > 0; }).length;
+            var totalSections = SECTIONS.length;
+            var pct = Math.round((visitedCount / totalSections) * 100);
+            // Section state by category for compactness
+            var groups = [
+              { label: '🎮 Interactive Labs', sectionIds: ['hunt', 'hearing', 'pellet', 'spiral', 'acuity', 'predictor'] },
+              { label: '🔬 Deep Science', sectionIds: ['talons', 'vision', 'flight', 'stoop', 'silent', 'senses', 'anatomy', 'lifecycle'] },
+              { label: '🌍 Ecology + Conservation', sectionIds: ['conservation', 'migration', 'recoveries', 'fieldid'] },
+              { label: '📚 Reference + History', sectionIds: ['roster', 'falconry', 'famous', 'glossary', 'quiz', 'resources'] }
+            ];
+            return h('div', { className: 'bg-gradient-to-br from-indigo-900/30 to-violet-900/30 border border-indigo-700/40 rounded-xl p-4' },
+              h('div', { className: 'flex items-center justify-between mb-3' },
+                h('div', { className: 'text-sm font-bold text-indigo-300' }, '🗺 Your Tour Progress'),
+                h('div', { className: 'text-xs font-mono text-amber-300' }, visitedCount + ' / ' + totalSections + ' sections (' + pct + '%)')
+              ),
+              // Progress bar
+              h('div', { className: 'bg-slate-800 rounded-full h-2.5 overflow-hidden mb-3' },
+                h('div', {
+                  className: 'bg-gradient-to-r from-indigo-500 via-violet-500 to-amber-500 h-full',
+                  style: { width: pct + '%' },
+                  role: 'progressbar',
+                  'aria-valuenow': visitedCount, 'aria-valuemin': 0, 'aria-valuemax': totalSections,
+                  'aria-label': pct + ' percent complete'
+                })
+              ),
+              // Section grid by category
+              h('div', { className: 'space-y-2' },
+                groups.map(function(g, gi) {
+                  var groupVisited = g.sectionIds.filter(function(id) { return (visited[id] || 0) > 0; }).length;
+                  return h('div', { key: gi },
+                    h('div', { className: 'flex items-center justify-between text-[10px] mb-1' },
+                      h('span', { className: 'text-indigo-300 font-bold' }, g.label),
+                      h('span', { className: 'text-slate-400 font-mono' }, groupVisited + '/' + g.sectionIds.length)
+                    ),
+                    h('div', { className: 'flex gap-1 flex-wrap' },
+                      g.sectionIds.map(function(sid) {
+                        var sec = SECTIONS.filter(function(x) { return x.id === sid; })[0];
+                        if (!sec) return null;
+                        var seen = (visited[sid] || 0) > 0;
+                        return h('button', {
+                          key: sid,
+                          onClick: function() {
+                            setRH(function(cur) {
+                              var v = Object.assign({}, cur.visited || {});
+                              v[sid] = (v[sid] || 0) + 1;
+                              return Object.assign({}, cur, { activeSection: sid, visited: v });
+                            });
+                          },
+                          'aria-label': 'Go to ' + sec.label + (seen ? ' (visited)' : ' (not yet visited)'),
+                          className: 'flex items-center gap-1 px-2 py-1 rounded text-[10px] transition-all ' + (seen
+                            ? 'bg-emerald-900/40 text-emerald-200 border border-emerald-700/50 hover:bg-emerald-800/50'
+                            : 'bg-slate-800/60 text-slate-400 border border-slate-700 hover:bg-slate-700/60 hover:text-slate-200')
+                        },
+                          h('span', null, seen ? '✓' : '○'),
+                          h('span', null, sec.icon),
+                          h('span', null, sec.label)
+                        );
+                      })
+                    )
+                  );
+                })
+              ),
+              // Reset link
+              visitedCount > 0 && h('div', { className: 'text-right mt-2' },
+                h('button', {
+                  onClick: function() { if (typeof window !== 'undefined' && window.confirm && window.confirm('Reset visit history?')) setRH({ visited: {} }); },
+                  className: 'text-[10px] text-slate-500 hover:text-amber-300 italic underline',
+                  'aria-label': 'Reset visit history'
+                }, 'Reset progress')
+              )
+            );
+          })(),
+
           // Pedagogy framing
           h('div', { className: 'bg-emerald-900/20 border border-emerald-700/30 rounded-xl p-4' },
             h('div', { className: 'text-xs font-bold text-emerald-300 mb-2' }, '📖 What students learn'),
@@ -3538,17 +3614,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // RENDER: FIELD ID QUIZ
       // ────────────────────────────────────────────────────────
       function renderQuiz() {
-        var quizState = rh.quiz || { ix: 0, score: 0, selected: -1, answered: false, started: false, difficulty: 'all', bestScore: 0, completedRuns: 0 };
+        var defaultStats = { easy: { correct: 0, total: 0 }, medium: { correct: 0, total: 0 }, hard: { correct: 0, total: 0 } };
+        var quizState = rh.quiz || { ix: 0, score: 0, selected: -1, answered: false, started: false, difficulty: 'all', bestScore: 0, completedRuns: 0, missedIds: [], missedReviewMode: false, statsByDifficulty: defaultStats };
+        if (!quizState.statsByDifficulty) quizState.statsByDifficulty = defaultStats;
+        if (!quizState.missedIds) quizState.missedIds = [];
         function setQuiz(patch) {
           setRH(function(prev) {
-            var cur = prev.quiz || { ix: 0, score: 0, selected: -1, answered: false, started: false, difficulty: 'all', bestScore: 0, completedRuns: 0 };
-            return Object.assign({}, prev, { quiz: Object.assign({}, cur, patch) });
+            var cur = prev.quiz || quizState;
+            return Object.assign({}, prev, { quiz: Object.assign({}, cur, typeof patch === 'function' ? patch(cur) : patch) });
           });
         }
-        // Build active question list per difficulty
-        var pool = QUIZ_QUESTIONS.filter(function(q) {
-          return quizState.difficulty === 'all' || q.difficulty === quizState.difficulty;
-        });
+        // Build active question list — review mode pulls only missed; otherwise difficulty filter
+        var pool;
+        if (quizState.missedReviewMode && quizState.missedIds && quizState.missedIds.length > 0) {
+          pool = QUIZ_QUESTIONS.filter(function(q) { return quizState.missedIds.indexOf(q.id) !== -1; });
+        } else {
+          pool = QUIZ_QUESTIONS.filter(function(q) {
+            return quizState.difficulty === 'all' || q.difficulty === quizState.difficulty;
+          });
+        }
         var total = pool.length;
         var question = pool[quizState.ix] || pool[0];
 
@@ -3595,9 +3679,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               '🏆 Best score: ', h('span', { className: 'font-bold text-emerald-300' }, quizState.bestScore + '/' + total),
               ' · ', quizState.completedRuns + ' completed runs'
             ),
+            // ── NEW v0.11: Per-difficulty stats panel ──
+            (function() {
+              var stats = quizState.statsByDifficulty || defaultStats;
+              var anyData = ['easy', 'medium', 'hard'].some(function(d) { return stats[d] && stats[d].total > 0; });
+              if (!anyData) return null;
+              return h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4' },
+                h('div', { className: 'text-xs font-bold text-amber-300 mb-2' }, '📊 Your accuracy by difficulty (cumulative across all runs)'),
+                h('div', { className: 'grid grid-cols-3 gap-2' },
+                  ['easy', 'medium', 'hard'].map(function(d) {
+                    var s = stats[d] || { correct: 0, total: 0 };
+                    var pct = s.total > 0 ? Math.round((s.correct / s.total) * 100) : 0;
+                    var color = d === 'easy' ? 'emerald' : d === 'medium' ? 'amber' : 'red';
+                    return h('div', { key: d, className: 'bg-slate-800/40 rounded p-2.5 text-center border border-' + color + '-700/40' },
+                      h('div', { className: 'text-[10px] uppercase tracking-wider text-' + color + '-300 font-bold' }, d),
+                      h('div', { className: 'text-xl font-bold text-amber-300 my-1' }, pct + '%'),
+                      h('div', { className: 'text-[10px] text-slate-400' }, s.correct + ' / ' + s.total + ' correct')
+                    );
+                  })
+                )
+              );
+            })(),
+            // Review-missed jump-in (if any missed from prior runs)
+            (quizState.missedIds && quizState.missedIds.length > 0) && h('div', { className: 'bg-indigo-900/20 border border-indigo-700/40 rounded-xl p-3' },
+              h('div', { className: 'flex items-center justify-between gap-2' },
+                h('div', { className: 'text-sm text-indigo-200' },
+                  '📌 ', h('span', { className: 'font-bold text-indigo-300' }, quizState.missedIds.length), ' question(s) flagged as missed from your last run.'
+                ),
+                h('button', {
+                  onClick: function() {
+                    setQuiz({ started: true, missedReviewMode: true, ix: 0, score: 0, selected: -1, answered: false });
+                    rhAnnounce('Reviewing ' + quizState.missedIds.length + ' missed questions');
+                  },
+                  className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:from-indigo-700 hover:to-violet-700',
+                  'aria-label': 'Review missed questions only'
+                }, '🔁 Review only missed')
+              )
+            ),
             // Start button
             h('button', {
-              onClick: function() { setQuiz({ started: true, ix: 0, score: 0, selected: -1, answered: false }); rhAnnounce('Quiz started · ' + total + ' questions'); },
+              onClick: function() { setQuiz({ started: true, missedReviewMode: false, ix: 0, score: 0, selected: -1, answered: false }); rhAnnounce('Quiz started · ' + total + ' questions'); },
               className: 'w-full px-5 py-4 rounded-xl text-base font-bold bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-lg hover:from-amber-700 hover:to-orange-700 transition-all',
               'aria-label': 'Start quiz with ' + total + ' questions'
             }, '▶ Start ' + total + '-question quiz')
@@ -3618,21 +3739,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('div', { className: 'text-3xl font-bold text-' + verdict.color + '-300 mb-2' }, pct + '%'),
               h('div', { className: 'text-base text-' + verdict.color + '-100/90 italic' }, verdict.txt)
             ),
-            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
+            h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
               h('button', {
                 onClick: function() {
                   var newBest = Math.max(quizState.bestScore, quizState.score);
                   var newRuns = quizState.completedRuns + 1;
-                  setQuiz({ started: false, ix: 0, score: 0, selected: -1, answered: false, bestScore: newBest, completedRuns: newRuns });
+                  setQuiz({ started: false, missedReviewMode: false, ix: 0, score: 0, selected: -1, answered: false, bestScore: newBest, completedRuns: newRuns });
                 },
                 className: 'px-4 py-3 rounded-lg text-sm font-bold bg-slate-700 text-amber-300 hover:bg-slate-600 transition-all',
                 'aria-label': 'Back to quiz menu'
-              }, '↶ Back to Quiz Menu'),
+              }, '↶ Quiz Menu'),
+              // ── NEW v0.11: Review missed questions button ──
+              (quizState.missedIds && quizState.missedIds.length > 0) ? h('button', {
+                onClick: function() {
+                  var newBest = Math.max(quizState.bestScore, quizState.score);
+                  var newRuns = quizState.completedRuns + 1;
+                  setQuiz({ started: true, missedReviewMode: true, ix: 0, score: 0, selected: -1, answered: false, bestScore: newBest, completedRuns: newRuns });
+                },
+                className: 'px-4 py-3 rounded-lg text-sm font-bold bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:from-indigo-700 hover:to-violet-700 transition-all',
+                'aria-label': 'Review ' + quizState.missedIds.length + ' missed questions only'
+              }, '🎯 Review ' + quizState.missedIds.length + ' Missed') : null,
               h('button', {
                 onClick: function() {
                   var newBest = Math.max(quizState.bestScore, quizState.score);
                   var newRuns = quizState.completedRuns + 1;
-                  setQuiz({ started: true, ix: 0, score: 0, selected: -1, answered: false, bestScore: newBest, completedRuns: newRuns });
+                  setQuiz({ started: true, missedReviewMode: false, ix: 0, score: 0, selected: -1, answered: false, bestScore: newBest, completedRuns: newRuns });
                 },
                 className: 'px-4 py-3 rounded-lg text-sm font-bold bg-gradient-to-r from-amber-600 to-orange-600 text-white hover:from-amber-700 hover:to-orange-700 transition-all',
                 'aria-label': 'Try again'
@@ -3699,7 +3830,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             onClick: function() {
               if (quizState.selected < 0) return;
               var nowCorrect = quizState.selected === question.correctIdx;
-              setQuiz({ answered: true, score: quizState.score + (nowCorrect ? 1 : 0) });
+              // Track missed + per-difficulty stats
+              setQuiz(function(cur) {
+                var newMissed = (cur.missedIds || []).slice();
+                if (!nowCorrect && newMissed.indexOf(question.id) === -1) newMissed.push(question.id);
+                // If reviewing missed and got it right, drop from missed list
+                if (cur.missedReviewMode && nowCorrect) {
+                  newMissed = newMissed.filter(function(id) { return id !== question.id; });
+                }
+                var stats = Object.assign({}, cur.statsByDifficulty || defaultStats);
+                var dKey = question.difficulty;
+                stats[dKey] = { correct: (stats[dKey].correct || 0) + (nowCorrect ? 1 : 0), total: (stats[dKey].total || 0) + 1 };
+                return {
+                  answered: true,
+                  score: cur.score + (nowCorrect ? 1 : 0),
+                  missedIds: newMissed,
+                  statsByDifficulty: stats
+                };
+              });
               rhAnnounce(nowCorrect ? 'Correct' : 'Incorrect. See explanation.');
               if (nowCorrect && ctx.awardXP) ctx.awardXP(question.difficulty === 'hard' ? 5 : question.difficulty === 'medium' ? 3 : 2, 'Raptor Hunt quiz: ' + question.difficulty);
             },
@@ -4601,6 +4749,117 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               )
             )
           ),
+
+          // ── NEW v0.11: Survivorship Curve plot ──
+          (function() {
+            // Survivorship curves: % of cohort still alive at each age
+            // Three reference types (textbook ecology):
+            //  Type I — high adult survival, low juvenile mortality (humans, large mammals)
+            //  Type II — constant mortality across life (many birds, reptiles)
+            //  Type III — heavy juvenile mortality, few survive to adulthood (most fish, insects, plants)
+            // Raptor curves typically Type I — once past the juvenile bottleneck, adult survival is very high
+            // Compute survivorship from juv mortality + annual adult survival
+            // Plot for 4 reference species at log-Y scale
+            var speciesPlot = [
+              { id: 'baldEagle', name: 'Bald Eagle', juvMort: 0.60, adultSurv: 0.90, color: '#fbbf24', maxAge: 35 },
+              { id: 'peregrine', name: 'Peregrine', juvMort: 0.70, adultSurv: 0.85, color: '#dc2626', maxAge: 25 },
+              { id: 'redTail', name: 'Red-tailed Hawk', juvMort: 0.70, adultSurv: 0.78, color: '#10b981', maxAge: 25 },
+              { id: 'kestrel', name: 'American Kestrel', juvMort: 0.65, adultSurv: 0.60, color: '#a78bfa', maxAge: 14 }
+            ];
+            function survivorshipPath(s, xFn, yFn, ages) {
+              return ages.map(function(a, i) {
+                var pct;
+                if (a === 0) pct = 1.0;
+                else if (a === 1) pct = 1 - s.juvMort; // after year 1
+                else pct = (1 - s.juvMort) * Math.pow(s.adultSurv, a - 1);
+                pct = Math.max(0.001, pct); // floor for log scale
+                return (i === 0 ? 'M ' : 'L ') + xFn(a).toFixed(1) + ' ' + yFn(pct).toFixed(1);
+              }).join(' ');
+            }
+            // Reference TypeI/II/III idealized curves
+            // Type I: stays high then drops late
+            // Type II: linear (constant mortality)
+            // Type III: drops fast early, plateaus
+            var pw = 600, ph = 240, pad = 40;
+            var maxAge = 30;
+            function xAt(a) { return pad + (a / maxAge) * (pw - 2 * pad); }
+            function yAt(pct) {
+              var lp = Math.log10(Math.max(0.001, pct));
+              return ph - pad - (lp + 3) / 3 * (ph - 2 * pad); // log scale 0.001 → 1
+            }
+            var ages = [];
+            for (var ai = 0; ai <= maxAge; ai++) ages.push(ai);
+            // Type I: stays near 1.0 till 0.7*maxAge then drops
+            var typeIPath = ages.map(function(a, i) {
+              var pct = a < maxAge * 0.7 ? 0.95 - (a / maxAge) * 0.15 : 0.8 * Math.pow(0.4, (a - maxAge * 0.7) / 2);
+              pct = Math.max(0.001, pct);
+              return (i === 0 ? 'M ' : 'L ') + xAt(a).toFixed(1) + ' ' + yAt(pct).toFixed(1);
+            }).join(' ');
+            // Type II: constant log slope
+            var typeIIPath = ages.map(function(a, i) {
+              var pct = Math.pow(10, -a / 10); // 10× per decade
+              return (i === 0 ? 'M ' : 'L ') + xAt(a).toFixed(1) + ' ' + yAt(pct).toFixed(1);
+            }).join(' ');
+            // Type III: drops fast then levels off
+            var typeIIIPath = ages.map(function(a, i) {
+              var pct = a === 0 ? 1 : 0.05 * Math.pow(0.92, a);
+              return (i === 0 ? 'M ' : 'L ') + xAt(a).toFixed(1) + ' ' + yAt(pct).toFixed(1);
+            }).join(' ');
+            return h('div', { className: 'bg-slate-900/40 border border-emerald-700/40 rounded-xl p-4' },
+              h('div', { className: 'text-sm font-bold text-emerald-300 mb-2' }, '📉 Survivorship Curves — Raptors are Type I'),
+              h('div', { className: 'text-xs text-slate-400 italic mb-3' }, 'Standard ecology visualization: % of birth cohort still alive at each age (log Y-scale). Type I (mammals, raptors) = high survival until late life. Type II (many songbirds) = constant mortality. Type III (fish, insects, plants) = heavy juvenile loss, few survive to adulthood.'),
+              h('svg', { viewBox: '0 0 ' + pw + ' ' + ph, style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': 'Survivorship curves comparison' },
+                h('rect', { x: 0, y: 0, width: pw, height: ph, fill: '#0f172a' }),
+                // Axes
+                h('line', { x1: pad, y1: ph - pad, x2: pw - pad, y2: ph - pad, stroke: '#475569', strokeWidth: 1 }),
+                h('line', { x1: pad, y1: pad, x2: pad, y2: ph - pad, stroke: '#475569', strokeWidth: 1 }),
+                // Y-axis log ticks
+                [1.0, 0.5, 0.1, 0.01, 0.001].map(function(yk, i) {
+                  return h('g', { key: 'yt' + i },
+                    h('line', { x1: pad - 3, y1: yAt(yk), x2: pad + 3, y2: yAt(yk), stroke: '#94a3b8', strokeWidth: 1 }),
+                    h('line', { x1: pad, y1: yAt(yk), x2: pw - pad, y2: yAt(yk), stroke: '#1e293b', strokeWidth: 1 }),
+                    h('text', { x: pad - 6, y: yAt(yk) + 3, fontSize: 9, fill: '#94a3b8', textAnchor: 'end' }, yk === 1 ? '100%' : (yk * 100) + '%')
+                  );
+                }),
+                // X-axis age ticks
+                [0, 5, 10, 15, 20, 25, 30].map(function(xk, i) {
+                  return h('g', { key: 'xt' + i },
+                    h('line', { x1: xAt(xk), y1: ph - pad, x2: xAt(xk), y2: ph - pad + 4, stroke: '#94a3b8', strokeWidth: 1 }),
+                    h('text', { x: xAt(xk), y: ph - pad + 16, fontSize: 9, fill: '#94a3b8', textAnchor: 'middle' }, xk + ' yr')
+                  );
+                }),
+                // Reference type curves (background, gray-ish)
+                h('path', { d: typeIPath, fill: 'none', stroke: '#64748b', strokeWidth: 1.5, strokeDasharray: '3,3' }),
+                h('path', { d: typeIIPath, fill: 'none', stroke: '#64748b', strokeWidth: 1.5, strokeDasharray: '3,3' }),
+                h('path', { d: typeIIIPath, fill: 'none', stroke: '#64748b', strokeWidth: 1.5, strokeDasharray: '3,3' }),
+                // Type labels
+                h('text', { x: xAt(28), y: yAt(0.4), fontSize: 10, fill: '#94a3b8', textAnchor: 'end' }, 'Type I (mammals, eagles)'),
+                h('text', { x: xAt(28), y: yAt(0.04), fontSize: 10, fill: '#94a3b8', textAnchor: 'end' }, 'Type II (songbirds)'),
+                h('text', { x: xAt(20), y: yAt(0.005), fontSize: 10, fill: '#94a3b8' }, 'Type III (fish, insects)'),
+                // Species curves
+                speciesPlot.map(function(s, si) {
+                  var ag = [];
+                  for (var ai = 0; ai <= s.maxAge; ai++) ag.push(ai);
+                  return h('path', { key: s.id, d: survivorshipPath(s, xAt, yAt, ag), fill: 'none', stroke: s.color, strokeWidth: 2.5 });
+                }),
+                // Legend
+                h('rect', { x: pad + 10, y: pad + 10, width: 165, height: 80, fill: 'rgba(15,23,42,0.85)', stroke: '#475569', strokeWidth: 1, rx: 4 }),
+                h('text', { x: pad + 18, y: pad + 24, fontSize: 9, fill: '#fde047', fontWeight: 'bold' }, 'Species:'),
+                speciesPlot.map(function(s, si) {
+                  return h('g', { key: 'lg' + si },
+                    h('line', { x1: pad + 18, y1: pad + 36 + si * 14, x2: pad + 35, y2: pad + 36 + si * 14, stroke: s.color, strokeWidth: 3 }),
+                    h('text', { x: pad + 40, y: pad + 39 + si * 14, fontSize: 9, fill: s.color }, s.name)
+                  );
+                }),
+                // Title
+                h('text', { x: pw / 2, y: 20, fontSize: 11, fill: '#fde047', textAnchor: 'middle', fontWeight: 'bold' }, '% surviving vs age (log scale)')
+              ),
+              h('div', { className: 'text-xs text-emerald-100/90 leading-relaxed mt-2' },
+                h('span', { className: 'font-bold text-emerald-300' }, '💡 Pedagogy: '),
+                'Raptors fit the Type I pattern — a steep cliff in year 1 (70% of juveniles die during their first winter), then a long plateau where most adults survive 5-10+ years. This is why protecting adult breeders is the highest-leverage conservation action. A red-tailed hawk that survives year 1 typically lives to age 6-10; a kestrel that survives year 1 lives to age 5-7. Eagle adults can live 25+ years.'
+              )
+            );
+          })(),
 
           // Interactive population simulator
           h('div', { className: 'bg-slate-900/40 border border-amber-700/40 rounded-xl p-4 space-y-3' },
@@ -5637,7 +5896,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               role: 'tab',
               'aria-selected': active,
               'aria-controls': 'rh-panel-' + s.id,
-              onClick: function() { setRH({ activeSection: s.id }); rhAnnounce(s.label + ' tab'); },
+              onClick: function() {
+                // Track section visit for progress tracker
+                setRH(function(cur) {
+                  var visited = Object.assign({}, cur.visited || {});
+                  visited[s.id] = (visited[s.id] || 0) + 1;
+                  return Object.assign({}, cur, { activeSection: s.id, visited: visited });
+                });
+                rhAnnounce(s.label + ' tab');
+              },
               className: 'px-3 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition-all ' +
                 (active
                   ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-md'
