@@ -270,10 +270,16 @@ class PictionaryHost {
       this._timeoutHandle = setTimeout(() => {
         this._timeoutHandle = null;
         if (!this.activeRound) return;
-        const reveal = this.activeRound.concept;
+        const snapshot = {
+          concept: this.activeRound.concept,
+          drawerUids: Array.from(this.activeRound.drawerUids),
+          durationMs: this.activeRound.durationMs,
+          startedAt: this.activeRound.startedAt,
+          reason: "timeout"
+        };
         this.resolveRound({ winnerUid: null, reason: "timeout" });
         try {
-          this.onRoundAutoResolved({ concept: reveal, reason: "timeout" });
+          this.onRoundAutoResolved(snapshot);
         } catch (_) {
         }
       }, durationMs);
@@ -763,6 +769,8 @@ const PictionaryHostView = React.memo((props) => {
   const [roundActive, setRoundActive] = React.useState(false);
   const [roundResolved, setRoundResolved] = React.useState(null);
   const [isLoadingIdeas, setIsLoadingIdeas] = React.useState(false);
+  const [roundLog, setRoundLog] = React.useState([]);
+  const [showRoundLogDetail, setShowRoundLogDetail] = React.useState(false);
   const drawerActivityRef = React.useRef(/* @__PURE__ */ new Map());
   const [activityTick, setActivityTick] = React.useState(0);
   React.useEffect(() => {
@@ -805,9 +813,11 @@ const PictionaryHostView = React.memo((props) => {
         marked: null
       }])),
       onRoundAutoResolved: (info) => {
-        setRoundResolved({ concept: info && info.concept || "", winnerUid: null, reason: "timeout" });
+        const resolvedConcept = info && info.concept || "";
+        setRoundResolved({ concept: resolvedConcept, winnerUid: null, reason: "timeout" });
         setRoundActive(false);
         setActiveRoundMeta(null);
+        _appendRoundToLog({ concept: resolvedConcept, winnerUid: null, winnerCodename: null, resolution: "timeout" });
         _clearRolesAndRound();
       }
     });
@@ -880,13 +890,31 @@ const PictionaryHostView = React.memo((props) => {
     } catch (_) {
     }
   };
+  const _appendRoundToLog = (entry) => {
+    const effectiveDrawerUids = entry && Array.isArray(entry.drawerUids) ? entry.drawerUids : drawerUids;
+    const effectiveDuration = entry && entry.durationMs != null ? entry.durationMs : activeRoundMeta && activeRoundMeta.durationMs || null;
+    setRoundLog((prev) => prev.concat([{
+      id: _pic_genId("rlog"),
+      concept: entry && entry.concept || "",
+      winnerUid: entry && entry.winnerUid || null,
+      winnerCodename: entry && entry.winnerCodename || null,
+      resolution: entry && entry.resolution || "manual",
+      drawerUids: effectiveDrawerUids.slice(),
+      drawerNames: effectiveDrawerUids.map((uid) => roster[uid] && roster[uid].name || "Student"),
+      durationMs: effectiveDuration,
+      ts: Date.now()
+    }]));
+  };
   const handleMarkCorrect = async (guessId) => {
     setGuessFeed((prev) => prev.map((g) => g.id === guessId ? { ...g, marked: "correct" } : g));
     const correctGuess = guessFeed.find((g) => g.id === guessId);
-    if (hostRef.current) hostRef.current.resolveRound({ winnerUid: correctGuess && correctGuess.uid, reason: "manual" });
-    setRoundResolved({ concept, winnerUid: correctGuess && correctGuess.uid, reason: "manual" });
+    const winnerUid = correctGuess && correctGuess.uid;
+    const winnerCodename = correctGuess && correctGuess.codename;
+    if (hostRef.current) hostRef.current.resolveRound({ winnerUid, reason: "manual" });
+    setRoundResolved({ concept, winnerUid, reason: "manual" });
     setRoundActive(false);
     setActiveRoundMeta(null);
+    _appendRoundToLog({ concept, winnerUid, winnerCodename, resolution: "correct" });
     await _clearRolesAndRound();
   };
   const handleEndRound = async () => {
@@ -894,6 +922,7 @@ const PictionaryHostView = React.memo((props) => {
     setRoundResolved({ concept, winnerUid: null, reason: "manual" });
     setRoundActive(false);
     setActiveRoundMeta(null);
+    _appendRoundToLog({ concept, winnerUid: null, winnerCodename: null, resolution: "manual" });
     await _clearRolesAndRound();
   };
   const handleResetForNextRound = () => {
@@ -963,7 +992,27 @@ const PictionaryHostView = React.memo((props) => {
         title: active ? `${name} is drawing` : name
       }
     ), /* @__PURE__ */ React.createElement("span", null, name));
-  })), /* @__PURE__ */ React.createElement("p", { className: "text-slate-500 italic mt-2 leading-snug" }, "Mark a guess correct on the left when someone gets it. Activity dots glow while a drawer is actively streaming strokes.")), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border border-slate-200 rounded-xl p-2 text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-slate-700 mb-1" }, "Connected: ", Object.keys(connectedGuests).length), Object.keys(connectedGuests).length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, Object.entries(connectedGuests).map(([uid, codename]) => /* @__PURE__ */ React.createElement("span", { key: uid, className: "px-1.5 py-0.5 bg-white border border-slate-200 rounded text-[10px]" }, codename))) : null)))));
+  })), /* @__PURE__ */ React.createElement("p", { className: "text-slate-500 italic mt-2 leading-snug" }, "Mark a guess correct on the left when someone gets it. Activity dots glow while a drawer is actively streaming strokes.")), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border border-slate-200 rounded-xl p-2 text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-slate-700 mb-1" }, "Connected: ", Object.keys(connectedGuests).length), Object.keys(connectedGuests).length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, Object.entries(connectedGuests).map(([uid, codename]) => /* @__PURE__ */ React.createElement("span", { key: uid, className: "px-1.5 py-0.5 bg-white border border-slate-200 rounded text-[10px]" }, codename))) : null), roundLog.length > 0 ? (() => {
+    const total = roundLog.length;
+    const correct = roundLog.filter((r) => r.resolution === "correct").length;
+    const timedOut = roundLog.filter((r) => r.resolution === "timeout").length;
+    const guesserTally = /* @__PURE__ */ new Map();
+    roundLog.forEach((r) => {
+      if (r.resolution === "correct" && r.winnerCodename) {
+        guesserTally.set(r.winnerCodename, (guesserTally.get(r.winnerCodename) || 0) + 1);
+      }
+    });
+    const topGuessers = Array.from(guesserTally.entries()).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    return /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-amber-900 mb-1 flex items-center justify-between" }, /* @__PURE__ */ React.createElement("span", null, "\u{1F3C6} Session log"), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => setShowRoundLogDetail((v) => !v),
+        className: "text-[10px] font-bold text-amber-700 hover:text-amber-900 underline",
+        "aria-expanded": showRoundLogDetail
+      },
+      showRoundLogDetail ? "Hide rounds" : "Show rounds"
+    )), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 gap-2 mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-amber-200 rounded p-1.5 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-base font-black text-amber-900 leading-none" }, total), /* @__PURE__ */ React.createElement("div", { className: "text-[9px] uppercase tracking-wider text-amber-700 mt-0.5" }, "rounds")), /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-emerald-200 rounded p-1.5 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-base font-black text-emerald-800 leading-none" }, correct), /* @__PURE__ */ React.createElement("div", { className: "text-[9px] uppercase tracking-wider text-emerald-700 mt-0.5" }, "identified")), /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-200 rounded p-1.5 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-base font-black text-slate-700 leading-none" }, timedOut), /* @__PURE__ */ React.createElement("div", { className: "text-[9px] uppercase tracking-wider text-slate-600 mt-0.5" }, "timeouts"))), topGuessers.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-amber-800 mb-1" }, "Top guessers"), /* @__PURE__ */ React.createElement("ul", { className: "space-y-0.5" }, topGuessers.map(([codename, count], i) => /* @__PURE__ */ React.createElement("li", { key: codename, className: "flex items-center justify-between text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "text-amber-900" }, i === 0 ? "\u{1F947} " : i === 1 ? "\u{1F948} " : i === 2 ? "\u{1F949} " : "   ", codename), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-amber-900" }, count, "\xD7"))))) : null, showRoundLogDetail ? /* @__PURE__ */ React.createElement("ul", { className: "space-y-1 max-h-40 overflow-y-auto mt-2 pt-2 border-t border-amber-200" }, roundLog.slice().reverse().map((r) => /* @__PURE__ */ React.createElement("li", { key: r.id, className: "text-[11px] flex items-start gap-1.5" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, r.resolution === "correct" ? "\u2713" : r.resolution === "timeout" ? "\u23F1" : "\u23F8"), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-slate-800 truncate" }, r.concept || "(no concept)"), /* @__PURE__ */ React.createElement("div", { className: "text-slate-500 text-[10px]" }, r.resolution === "correct" && r.winnerCodename ? `\u2192 ${r.winnerCodename}` : r.resolution === "timeout" ? "time\u2019s up" : "ended manually", r.drawerNames && r.drawerNames.length ? /* @__PURE__ */ React.createElement("span", { className: "opacity-70" }, " \xB7 drawn by ", r.drawerNames.join(", ")) : null))))) : null, /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-amber-700 italic mt-2 leading-snug" }, "Session-only. Closes with this dialog; nothing persists."));
+  })() : null))));
 });
 const PictionaryGuestOverlay = React.memo((props) => {
   const sessionCode = props.sessionCode;

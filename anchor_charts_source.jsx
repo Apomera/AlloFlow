@@ -14,6 +14,33 @@
 // ── Helpers ─────────────────────────────────────────────────────────────
 const _ac_genId = (prefix) => `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
 
+// Lazy-load html2canvas from jsdelivr the first time the user requests a PNG
+// export. Resolves to window.html2canvas; rejects if the network is unavailable
+// (no graceful raw-fallback because PNG export is non-critical — print still works).
+const _loadHtml2Canvas = (() => {
+  let pending = null;
+  return () => {
+    if (typeof window === 'undefined') return Promise.reject(new Error('no window'));
+    if (window.html2canvas) return Promise.resolve(window.html2canvas);
+    if (pending) return pending;
+    pending = new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+      s.async = true;
+      s.crossOrigin = 'anonymous';
+      s.onload = () => {
+        if (window.html2canvas) resolve(window.html2canvas);
+        else reject(new Error('html2canvas not on window after load'));
+      };
+      s.onerror = () => { pending = null; reject(new Error('html2canvas script load failed')); };
+      document.head.appendChild(s);
+    });
+    return pending;
+  };
+})();
+
+const _slugify = (s) => String(s || 'anchor-chart').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 50) || 'anchor-chart';
+
 // Marker palette — warm classroom colors. Index by section position.
 const MARKER_PALETTE = [
   { name: 'red',    hex: '#c53030', soft: 'rgba(197,48,48,0.08)',  ink: '#7b1d1d' },
@@ -271,6 +298,8 @@ const AnchorChartView = React.memo((props) => {
   const [isEditing, setIsEditing] = React.useState(false);
   const [showCritique, setShowCritique] = React.useState(false);
   const [regenIdx, setRegenIdx] = React.useState(-1);
+  const [exportState, setExportState] = React.useState('idle');  // 'idle' | 'rendering' | 'error'
+  const paperRef = React.useRef(null);
   // Drag-and-drop reorder state. dragSrcIdx = the section being dragged;
   // dragOverIdx = the section currently hovered as the drop target. Used to
   // render visual feedback (opacity + drop-line). Touch devices work via the
@@ -324,6 +353,43 @@ const AnchorChartView = React.memo((props) => {
   };
   const handleAnnotationsChange = (nextAnnotations) => {
     handleNoteUpdate('annotations', Array.isArray(nextAnnotations) ? nextAnnotations : []);
+  };
+  // PNG export: lazy-loads html2canvas, waits for fonts to be ready (so the
+  // Patrick Hand / Permanent Marker display fonts render correctly instead of
+  // falling back to cursive), renders the paper element, triggers a download.
+  // No-op while a render is already in progress.
+  const handleDownloadPNG = async () => {
+    if (exportState === 'rendering') return;
+    const el = paperRef.current;
+    if (!el) return;
+    setExportState('rendering');
+    try {
+      // Make sure the display fonts have finished loading before render — otherwise
+      // html2canvas captures the cursive fallback while the chart still shows the
+      // marker font on screen, producing a visually wrong PNG.
+      if (typeof document !== 'undefined' && document.fonts && document.fonts.ready) {
+        try { await document.fonts.ready; } catch (_) {}
+      }
+      const html2canvas = await _loadHtml2Canvas();
+      const canvas = await html2canvas(el, {
+        backgroundColor: '#fdfaf2',
+        useCORS: true,
+        scale: 2,                 // 2× DPR for poster-quality output
+        logging: false,
+      });
+      const dataUrl = canvas.toDataURL('image/png');
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = `anchor-chart-${_slugify(title)}-${new Date().toISOString().slice(0, 10)}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setExportState('idle');
+    } catch (err) {
+      console.warn('[AnchorChart] PNG export failed:', err && err.message);
+      setExportState('error');
+      setTimeout(() => setExportState('idle'), 2500);
+    }
   };
   // Reorder: move section at fromIdx to position toIdx (insert-before semantics).
   // No-op if either index is out of range or moving to the same effective slot.
@@ -389,13 +455,23 @@ const AnchorChartView = React.memo((props) => {
             >🎨 Play Pictionary</button>
           ) : null}
           <button
+            onClick={handleDownloadPNG}
+            disabled={exportState === 'rendering'}
+            className={`px-3 py-1.5 text-xs font-bold rounded-full border ${exportState === 'error' ? 'bg-red-50 text-red-800 border-red-300' : 'bg-white text-emerald-800 border-emerald-300 hover:bg-emerald-50'} disabled:opacity-60`}
+            aria-label="Download chart as PNG image"
+            aria-busy={exportState === 'rendering'}
+            title="Download as PNG (poster-quality)"
+          >
+            {exportState === 'rendering' ? '⏳ Rendering…' : exportState === 'error' ? '⚠ Try again' : '💾 Download PNG'}
+          </button>
+          <button
             onClick={() => { try { window.print(); } catch (_) {} }}
             className="px-3 py-1.5 text-xs font-bold rounded-full border bg-white text-slate-700 border-slate-300 hover:bg-slate-100"
             aria-label="Print or save as PDF"
           >🖨️ Print</button>
         </div>
       </div>
-      <div className="ac-paper p-6 sm:p-8">
+      <div ref={paperRef} className="ac-paper p-6 sm:p-8">
         <div className="text-center mb-4">
           {isEditing ? (
             <input

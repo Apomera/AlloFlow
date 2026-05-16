@@ -60,6 +60,31 @@
   // ═══════════════════════════════════════════════════════════════
 
 const _ac_genId = (prefix) => `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+const _loadHtml2Canvas = /* @__PURE__ */ (() => {
+  let pending = null;
+  return () => {
+    if (typeof window === "undefined") return Promise.reject(new Error("no window"));
+    if (window.html2canvas) return Promise.resolve(window.html2canvas);
+    if (pending) return pending;
+    pending = new Promise((resolve, reject) => {
+      const s = document.createElement("script");
+      s.src = "https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js";
+      s.async = true;
+      s.crossOrigin = "anonymous";
+      s.onload = () => {
+        if (window.html2canvas) resolve(window.html2canvas);
+        else reject(new Error("html2canvas not on window after load"));
+      };
+      s.onerror = () => {
+        pending = null;
+        reject(new Error("html2canvas script load failed"));
+      };
+      document.head.appendChild(s);
+    });
+    return pending;
+  };
+})();
+const _slugify = (s) => String(s || "anchor-chart").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 50) || "anchor-chart";
 const MARKER_PALETTE = [
   { name: "red", hex: "#c53030", soft: "rgba(197,48,48,0.08)", ink: "#7b1d1d" },
   { name: "blue", hex: "#2b6cb0", soft: "rgba(43,108,176,0.08)", ink: "#1a3f6b" },
@@ -254,6 +279,8 @@ const AnchorChartView = React.memo((props) => {
   const [isEditing, setIsEditing] = React.useState(false);
   const [showCritique, setShowCritique] = React.useState(false);
   const [regenIdx, setRegenIdx] = React.useState(-1);
+  const [exportState, setExportState] = React.useState("idle");
+  const paperRef = React.useRef(null);
   const [dragSrcIdx, setDragSrcIdx] = React.useState(-1);
   const [dragOverIdx, setDragOverIdx] = React.useState(-1);
   const triedRef = React.useRef({});
@@ -302,6 +329,40 @@ const AnchorChartView = React.memo((props) => {
   };
   const handleAnnotationsChange = (nextAnnotations) => {
     handleNoteUpdate("annotations", Array.isArray(nextAnnotations) ? nextAnnotations : []);
+  };
+  const handleDownloadPNG = async () => {
+    if (exportState === "rendering") return;
+    const el = paperRef.current;
+    if (!el) return;
+    setExportState("rendering");
+    try {
+      if (typeof document !== "undefined" && document.fonts && document.fonts.ready) {
+        try {
+          await document.fonts.ready;
+        } catch (_) {
+        }
+      }
+      const html2canvas = await _loadHtml2Canvas();
+      const canvas = await html2canvas(el, {
+        backgroundColor: "#fdfaf2",
+        useCORS: true,
+        scale: 2,
+        // 2× DPR for poster-quality output
+        logging: false
+      });
+      const dataUrl = canvas.toDataURL("image/png");
+      const a = document.createElement("a");
+      a.href = dataUrl;
+      a.download = `anchor-chart-${_slugify(title)}-${(/* @__PURE__ */ new Date()).toISOString().slice(0, 10)}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setExportState("idle");
+    } catch (err) {
+      console.warn("[AnchorChart] PNG export failed:", err && err.message);
+      setExportState("error");
+      setTimeout(() => setExportState("idle"), 2500);
+    }
   };
   const handleReorderSection = (fromIdx, toIdx) => {
     if (fromIdx === toIdx) return;
@@ -361,6 +422,17 @@ const AnchorChartView = React.memo((props) => {
   ) : null, /* @__PURE__ */ React.createElement(
     "button",
     {
+      onClick: handleDownloadPNG,
+      disabled: exportState === "rendering",
+      className: `px-3 py-1.5 text-xs font-bold rounded-full border ${exportState === "error" ? "bg-red-50 text-red-800 border-red-300" : "bg-white text-emerald-800 border-emerald-300 hover:bg-emerald-50"} disabled:opacity-60`,
+      "aria-label": "Download chart as PNG image",
+      "aria-busy": exportState === "rendering",
+      title: "Download as PNG (poster-quality)"
+    },
+    exportState === "rendering" ? "\u23F3 Rendering\u2026" : exportState === "error" ? "\u26A0 Try again" : "\u{1F4BE} Download PNG"
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
       onClick: () => {
         try {
           window.print();
@@ -371,7 +443,7 @@ const AnchorChartView = React.memo((props) => {
       "aria-label": "Print or save as PDF"
     },
     "\u{1F5A8}\uFE0F Print"
-  ))), /* @__PURE__ */ React.createElement("div", { className: "ac-paper p-6 sm:p-8" }, /* @__PURE__ */ React.createElement("div", { className: "text-center mb-4" }, isEditing ? /* @__PURE__ */ React.createElement(
+  ))), /* @__PURE__ */ React.createElement("div", { ref: paperRef, className: "ac-paper p-6 sm:p-8" }, /* @__PURE__ */ React.createElement("div", { className: "text-center mb-4" }, isEditing ? /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "text",

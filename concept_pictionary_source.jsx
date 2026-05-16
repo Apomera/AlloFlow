@@ -246,11 +246,18 @@ class PictionaryHost {
       this._timeoutHandle = setTimeout(() => {
         this._timeoutHandle = null;
         if (!this.activeRound) return;
-        // Auto-resolve: no winner, reveal concept; notify the view via callback
-        // so it can update local roundActive/roundResolved state.
-        const reveal = this.activeRound.concept;
+        // Capture round snapshot BEFORE resolveRound nulls activeRound — the
+        // host-side snapshot is the source of truth for the view's round log
+        // (avoids stale React closure over drawerUids/durationMs).
+        const snapshot = {
+          concept: this.activeRound.concept,
+          drawerUids: Array.from(this.activeRound.drawerUids),
+          durationMs: this.activeRound.durationMs,
+          startedAt: this.activeRound.startedAt,
+          reason: 'timeout',
+        };
         this.resolveRound({ winnerUid: null, reason: 'timeout' });
-        try { this.onRoundAutoResolved({ concept: reveal, reason: 'timeout' }); } catch (_) {}
+        try { this.onRoundAutoResolved(snapshot); } catch (_) {}
       }, durationMs);
     }
     // Send roundStart to each peer; only drawers receive the concept
@@ -707,6 +714,11 @@ const PictionaryHostView = React.memo((props) => {
   const [roundActive, setRoundActive] = React.useState(false);
   const [roundResolved, setRoundResolved] = React.useState(null);    // { concept, winnerUid, reason }
   const [isLoadingIdeas, setIsLoadingIdeas] = React.useState(false);
+  // Session-scoped round log. Each entry: { id, concept, winnerUid, winnerCodename,
+  // drawerUids, drawerNames, resolution: 'correct'|'timeout'|'manual', durationMs, ts }
+  // Lives in host memory only; cleared when the modal closes. No Firestore writes.
+  const [roundLog, setRoundLog] = React.useState([]);
+  const [showRoundLogDetail, setShowRoundLogDetail] = React.useState(false);
   // Per-drawer last-stroke timestamp for the "X is drawing right now" indicator.
   // Ref so updates don't re-render; a separate tick state forces re-render
   // every 250ms while a round is active.
@@ -748,9 +760,11 @@ const PictionaryHostView = React.memo((props) => {
       onRoundAutoResolved: (info) => {
         // Timer expired; round resolved with no winner. The host already
         // broadcast roundResolved to peers; just sync local view state.
-        setRoundResolved({ concept: (info && info.concept) || '', winnerUid: null, reason: 'timeout' });
+        const resolvedConcept = (info && info.concept) || '';
+        setRoundResolved({ concept: resolvedConcept, winnerUid: null, reason: 'timeout' });
         setRoundActive(false);
         setActiveRoundMeta(null);
+        _appendRoundToLog({ concept: resolvedConcept, winnerUid: null, winnerCodename: null, resolution: 'timeout' });
         _clearRolesAndRound();
       },
     });
@@ -816,13 +830,36 @@ const PictionaryHostView = React.memo((props) => {
     Object.keys(roster).forEach((uid) => { updates[`roster.${uid}.role`] = null; });
     try { await writeToSession(sessionRef, updates); } catch (_) {}
   };
+  // Append a resolved-round entry to the session log. Caller passes overrides
+  // for drawerUids/durationMs when the closure may be stale (e.g. the auto-
+  // resolved timeout callback that fires from inside the WebRTC host).
+  const _appendRoundToLog = (entry) => {
+    const effectiveDrawerUids = (entry && Array.isArray(entry.drawerUids)) ? entry.drawerUids : drawerUids;
+    const effectiveDuration = (entry && entry.durationMs != null)
+      ? entry.durationMs
+      : (activeRoundMeta && activeRoundMeta.durationMs) || null;
+    setRoundLog((prev) => prev.concat([{
+      id: _pic_genId('rlog'),
+      concept: (entry && entry.concept) || '',
+      winnerUid: (entry && entry.winnerUid) || null,
+      winnerCodename: (entry && entry.winnerCodename) || null,
+      resolution: (entry && entry.resolution) || 'manual',
+      drawerUids: effectiveDrawerUids.slice(),
+      drawerNames: effectiveDrawerUids.map((uid) => (roster[uid] && roster[uid].name) || 'Student'),
+      durationMs: effectiveDuration,
+      ts: Date.now(),
+    }]));
+  };
   const handleMarkCorrect = async (guessId) => {
     setGuessFeed((prev) => prev.map((g) => g.id === guessId ? { ...g, marked: 'correct' } : g));
     const correctGuess = guessFeed.find((g) => g.id === guessId);
-    if (hostRef.current) hostRef.current.resolveRound({ winnerUid: correctGuess && correctGuess.uid, reason: 'manual' });
-    setRoundResolved({ concept, winnerUid: correctGuess && correctGuess.uid, reason: 'manual' });
+    const winnerUid = correctGuess && correctGuess.uid;
+    const winnerCodename = correctGuess && correctGuess.codename;
+    if (hostRef.current) hostRef.current.resolveRound({ winnerUid, reason: 'manual' });
+    setRoundResolved({ concept, winnerUid, reason: 'manual' });
     setRoundActive(false);
     setActiveRoundMeta(null);
+    _appendRoundToLog({ concept, winnerUid, winnerCodename, resolution: 'correct' });
     await _clearRolesAndRound();
   };
   const handleEndRound = async () => {
@@ -830,6 +867,7 @@ const PictionaryHostView = React.memo((props) => {
     setRoundResolved({ concept, winnerUid: null, reason: 'manual' });
     setRoundActive(false);
     setActiveRoundMeta(null);
+    _appendRoundToLog({ concept, winnerUid: null, winnerCodename: null, resolution: 'manual' });
     await _clearRolesAndRound();
   };
   const handleResetForNextRound = () => {
@@ -1025,6 +1063,81 @@ const PictionaryHostView = React.memo((props) => {
                 </div>
               ) : null}
             </div>
+            {roundLog.length > 0 ? (() => {
+              // Aggregate stats from the session log.
+              const total = roundLog.length;
+              const correct = roundLog.filter(r => r.resolution === 'correct').length;
+              const timedOut = roundLog.filter(r => r.resolution === 'timeout').length;
+              const guesserTally = new Map();   // codename -> correct count
+              roundLog.forEach(r => {
+                if (r.resolution === 'correct' && r.winnerCodename) {
+                  guesserTally.set(r.winnerCodename, (guesserTally.get(r.winnerCodename) || 0) + 1);
+                }
+              });
+              const topGuessers = Array.from(guesserTally.entries()).sort((a, b) => b[1] - a[1]).slice(0, 5);
+              return (
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs">
+                  <div className="font-bold text-amber-900 mb-1 flex items-center justify-between">
+                    <span>🏆 Session log</span>
+                    <button
+                      onClick={() => setShowRoundLogDetail((v) => !v)}
+                      className="text-[10px] font-bold text-amber-700 hover:text-amber-900 underline"
+                      aria-expanded={showRoundLogDetail}
+                    >{showRoundLogDetail ? 'Hide rounds' : 'Show rounds'}</button>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 mb-2">
+                    <div className="bg-white border border-amber-200 rounded p-1.5 text-center">
+                      <div className="text-base font-black text-amber-900 leading-none">{total}</div>
+                      <div className="text-[9px] uppercase tracking-wider text-amber-700 mt-0.5">rounds</div>
+                    </div>
+                    <div className="bg-white border border-emerald-200 rounded p-1.5 text-center">
+                      <div className="text-base font-black text-emerald-800 leading-none">{correct}</div>
+                      <div className="text-[9px] uppercase tracking-wider text-emerald-700 mt-0.5">identified</div>
+                    </div>
+                    <div className="bg-white border border-slate-200 rounded p-1.5 text-center">
+                      <div className="text-base font-black text-slate-700 leading-none">{timedOut}</div>
+                      <div className="text-[9px] uppercase tracking-wider text-slate-600 mt-0.5">timeouts</div>
+                    </div>
+                  </div>
+                  {topGuessers.length > 0 ? (
+                    <div className="mb-2">
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-amber-800 mb-1">Top guessers</div>
+                      <ul className="space-y-0.5">
+                        {topGuessers.map(([codename, count], i) => (
+                          <li key={codename} className="flex items-center justify-between text-[11px]">
+                            <span className="text-amber-900">{i === 0 ? '🥇 ' : i === 1 ? '🥈 ' : i === 2 ? '🥉 ' : '   '}{codename}</span>
+                            <span className="font-bold text-amber-900">{count}×</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
+                  {showRoundLogDetail ? (
+                    <ul className="space-y-1 max-h-40 overflow-y-auto mt-2 pt-2 border-t border-amber-200">
+                      {roundLog.slice().reverse().map((r) => (
+                        <li key={r.id} className="text-[11px] flex items-start gap-1.5">
+                          <span aria-hidden="true">
+                            {r.resolution === 'correct' ? '✓' : r.resolution === 'timeout' ? '⏱' : '⏸'}
+                          </span>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-bold text-slate-800 truncate">{r.concept || '(no concept)'}</div>
+                            <div className="text-slate-500 text-[10px]">
+                              {r.resolution === 'correct' && r.winnerCodename
+                                ? `→ ${r.winnerCodename}`
+                                : r.resolution === 'timeout'
+                                ? 'time’s up'
+                                : 'ended manually'}
+                              {r.drawerNames && r.drawerNames.length ? <span className="opacity-70"> · drawn by {r.drawerNames.join(', ')}</span> : null}
+                            </div>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                  <p className="text-[10px] text-amber-700 italic mt-2 leading-snug">Session-only. Closes with this dialog; nothing persists.</p>
+                </div>
+              );
+            })() : null}
           </div>
         </div>
       </div>
