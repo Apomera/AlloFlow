@@ -2544,7 +2544,107 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, kp.text)
               );
             })
-          )
+          ),
+
+          // ── NEW v0.9: Fall-curve time-domain plot ──
+          (function() {
+            // Numerical integration of fall with drag — produces altitude(t) + velocity(t)
+            var rho = 1.225;
+            var g = 9.81;
+            // Solve: dv/dt = g - (rho * Cd * A * v²) / (2 * m)
+            var m = v.mass, cd = v.cd, A = v.area;
+            var dt = 0.05;
+            var pts = [];
+            var alt = v.altitudeM || 600;
+            var vel = 0;
+            var t = 0;
+            var maxT = 12;
+            while (t < maxT && alt > 0) {
+              pts.push({ t: t, alt: alt, vel: vel, velMph: vel * 2.237 });
+              var drag = (rho * cd * A * vel * vel) / (2 * m);
+              var accel = g - drag;
+              vel = vel + accel * dt;
+              alt = alt - vel * dt;
+              if (alt < 0) alt = 0;
+              t += dt;
+            }
+            // SVG plot
+            var pw = 600, ph = 200, pad = 35;
+            var tMax = pts.length > 0 ? pts[pts.length - 1].t : 1;
+            var altMax = v.altitudeM || 600;
+            var velMax = Math.max.apply(null, pts.map(function(p) { return p.velMph; }));
+            function xAt(t) { return pad + (t / tMax) * (pw - 2 * pad); }
+            function yAltAt(a) { return ph - pad - (a / altMax) * (ph - 2 * pad); }
+            function yVelAt(vp) { return ph - pad - (vp / velMax) * (ph - 2 * pad); }
+            var altPath = pts.map(function(p, i) { return (i === 0 ? 'M ' : 'L ') + xAt(p.t).toFixed(1) + ' ' + yAltAt(p.alt).toFixed(1); }).join(' ');
+            var velPath = pts.map(function(p, i) { return (i === 0 ? 'M ' : 'L ') + xAt(p.t).toFixed(1) + ' ' + yVelAt(p.velMph).toFixed(1); }).join(' ');
+            // Find time to terminal (90% of max v)
+            var v90 = 0.9 * velMax;
+            var t90 = pts.find(function(p) { return p.velMph >= v90; });
+            return h('div', { className: 'bg-slate-900/40 border border-amber-700/40 rounded-xl p-4 space-y-2' },
+              h('div', { className: 'text-sm font-bold text-amber-300' }, '📉 Fall Curve (time-domain physics)'),
+              h('div', { className: 'text-xs text-slate-400 italic' }, 'Numerical integration of the drag equation with your current slider values. Altitude (orange) plummets while velocity (red) builds toward terminal — and then plateaus when drag = weight.'),
+              h('div', { className: 'bg-slate-950/60 rounded-lg p-2' },
+                h('div', { className: 'mb-2' },
+                  h('label', { className: 'text-xs text-amber-300 flex items-center justify-between' },
+                    h('span', null, 'Stoop start altitude (m)'),
+                    h('span', { className: 'font-mono text-amber-300' }, (v.altitudeM || 600).toFixed(0))
+                  ),
+                  h('input', { type: 'range', min: 100, max: 2000, step: 50, value: (v.altitudeM || 600),
+                    onInput: function(e) { setRH({ stoopSimVars: Object.assign({}, v, { altitudeM: parseInt(e.target.value) }) }); },
+                    className: 'w-full', 'aria-label': 'Altitude m' })
+                ),
+                h('svg', { viewBox: '0 0 ' + pw + ' ' + ph, style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': 'Fall curve plot' },
+                  h('rect', { x: 0, y: 0, width: pw, height: ph, fill: '#0f172a' }),
+                  // Axes
+                  h('line', { x1: pad, y1: ph - pad, x2: pw - pad, y2: ph - pad, stroke: '#475569', strokeWidth: 1 }),
+                  h('line', { x1: pad, y1: pad, x2: pad, y2: ph - pad, stroke: '#475569', strokeWidth: 1 }),
+                  // Time grid
+                  [0, 2, 4, 6, 8, 10].filter(function(tk) { return tk <= tMax + 0.5; }).map(function(tk, i) {
+                    var x = xAt(tk);
+                    return h('g', { key: 'tg' + i },
+                      h('line', { x1: x, y1: pad, x2: x, y2: ph - pad, stroke: '#1e293b', strokeWidth: 1 }),
+                      h('text', { x: x, y: ph - pad + 12, fontSize: 9, fill: '#64748b', textAnchor: 'middle' }, tk + 's')
+                    );
+                  }),
+                  // Curves
+                  h('path', { d: altPath, fill: 'none', stroke: '#f97316', strokeWidth: 2.5 }),
+                  h('path', { d: velPath, fill: 'none', stroke: '#dc2626', strokeWidth: 2.5 }),
+                  // Terminal-velocity asymptote line
+                  h('line', { x1: pad, y1: yVelAt(velMax), x2: pw - pad, y2: yVelAt(velMax), stroke: '#dc2626', strokeWidth: 1, strokeDasharray: '4,4', opacity: 0.55 }),
+                  // Marker at 95% terminal
+                  t90 && h('g', null,
+                    h('circle', { cx: xAt(t90.t), cy: yVelAt(t90.velMph), r: 5, fill: '#fde047', stroke: '#92400e', strokeWidth: 1.5 }),
+                    h('text', { x: xAt(t90.t), y: yVelAt(t90.velMph) - 10, fontSize: 10, fill: '#fde047', textAnchor: 'middle', fontWeight: 'bold' }, '90% terminal @ ' + t90.t.toFixed(1) + 's')
+                  ),
+                  // Legend
+                  h('rect', { x: pw - 165, y: 8, width: 155, height: 50, fill: 'rgba(15,23,42,0.85)', stroke: '#475569', strokeWidth: 1, rx: 4 }),
+                  h('line', { x1: pw - 155, y1: 22, x2: pw - 140, y2: 22, stroke: '#f97316', strokeWidth: 3 }),
+                  h('text', { x: pw - 135, y: 25, fontSize: 10, fill: '#fdba74' }, 'Altitude (m)'),
+                  h('line', { x1: pw - 155, y1: 40, x2: pw - 140, y2: 40, stroke: '#dc2626', strokeWidth: 3 }),
+                  h('text', { x: pw - 135, y: 43, fontSize: 10, fill: '#fca5a5' }, 'Velocity (mph)')
+                ),
+                // Time/alt/vel summary
+                h('div', { className: 'grid grid-cols-3 gap-2 mt-2 text-center' },
+                  h('div', { className: 'bg-slate-800/40 rounded p-2' },
+                    h('div', { className: 'text-xs text-slate-400' }, 'Time to 90% terminal'),
+                    h('div', { className: 'text-lg font-bold text-amber-300' }, t90 ? t90.t.toFixed(1) + 's' : '—')
+                  ),
+                  h('div', { className: 'bg-slate-800/40 rounded p-2' },
+                    h('div', { className: 'text-xs text-slate-400' }, 'Altitude lost @ 90%'),
+                    h('div', { className: 'text-lg font-bold text-amber-300' }, t90 ? Math.round(altMax - t90.alt) + ' m' : '—')
+                  ),
+                  h('div', { className: 'bg-slate-800/40 rounded p-2' },
+                    h('div', { className: 'text-xs text-slate-400' }, 'Peak velocity'),
+                    h('div', { className: 'text-lg font-bold text-amber-300' }, velMax.toFixed(0) + ' mph')
+                  )
+                )
+              ),
+              h('div', { className: 'text-[10px] text-slate-500 italic' },
+                'The exponential approach to terminal velocity is the signature of drag-limited fall. Without drag, the bird would just accelerate at g forever. With drag, terminal is reached + held.'
+              )
+            );
+          })()
         );
       }
 
@@ -2683,6 +2783,90 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'text-lg font-bold text-indigo-200 mb-2' }, SENSES_FACTS.header),
             h('div', { className: 'text-sm text-indigo-100/90 leading-relaxed' }, SENSES_FACTS.overview)
           ),
+          // ── NEW v0.9: Eye cross-section SVG comparison ──
+          h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-sm font-bold text-amber-300 mb-2' }, '🔬 Eye Anatomy Cross-Section — Spherical vs Tubular'),
+            h('div', { className: 'text-xs text-slate-400 italic mb-3' }, 'Both eyes shown in horizontal cross-section, looking down through the top of the skull. Note the dramatic shape difference + the cone-vs-rod density distribution on the retina.'),
+            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
+              // Diurnal (spherical) eye
+              h('div', { className: 'bg-amber-900/15 border border-amber-700/40 rounded-lg p-3' },
+                h('div', { className: 'text-xs font-bold text-amber-300 mb-1 text-center' }, '☀️ Diurnal — Spherical Eye'),
+                h('svg', { viewBox: '0 0 300 220', style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': 'Spherical raptor eye cross-section' },
+                  h('rect', { x: 0, y: 0, width: 300, height: 220, fill: '#1c1917' }),
+                  // Eye sphere outline
+                  h('circle', { cx: 150, cy: 110, r: 85, fill: 'none', stroke: '#fcd34d', strokeWidth: 2 }),
+                  // Sclera (white outer)
+                  h('circle', { cx: 150, cy: 110, r: 85, fill: '#fefce8', opacity: 0.92 }),
+                  // Cornea bulge (front)
+                  h('path', { d: 'M 95 95 Q 60 110 95 125', fill: '#fef3c7', stroke: '#fbbf24', strokeWidth: 1.5 }),
+                  // Iris + pupil
+                  h('ellipse', { cx: 92, cy: 110, rx: 6, ry: 22, fill: '#92400e' }),
+                  h('ellipse', { cx: 90, cy: 110, rx: 3, ry: 17, fill: '#1c1917' }),
+                  // Lens (oval just behind cornea)
+                  h('ellipse', { cx: 110, cy: 110, rx: 10, ry: 26, fill: '#fef9c3', opacity: 0.7, stroke: '#fbbf24', strokeWidth: 1 }),
+                  // Retina (heavy cone density at fovea = back center; dual foveas: central + temporal)
+                  h('path', { d: 'M 230 75 Q 250 110 230 145', fill: 'none', stroke: '#dc2626', strokeWidth: 4 }),
+                  // Central fovea (deep pit)
+                  h('circle', { cx: 235, cy: 110, r: 6, fill: '#dc2626' }),
+                  h('text', { x: 248, y: 113, fontSize: 9, fill: '#fca5a5', fontWeight: 'bold' }, 'Fovea 1'),
+                  // Temporal fovea (shallower, lateral)
+                  h('circle', { cx: 215, cy: 85, r: 4, fill: '#dc2626', opacity: 0.7 }),
+                  h('text', { x: 224, y: 78, fontSize: 9, fill: '#fca5a5', fontWeight: 'bold' }, 'Fovea 2'),
+                  // Optic nerve
+                  h('rect', { x: 235, y: 105, width: 30, height: 10, fill: '#a3a3a3' }),
+                  h('text', { x: 270, y: 113, fontSize: 9, fill: '#94a3b8' }, 'Optic n.'),
+                  // Pecten oculi (unique to birds)
+                  h('path', { d: 'M 220 115 L 232 130 L 215 140 L 230 145', fill: 'none', stroke: '#16a34a', strokeWidth: 2 }),
+                  h('text', { x: 200, y: 165, fontSize: 9, fill: '#86efac' }, 'Pecten oculi'),
+                  // Labels
+                  h('text', { x: 50, y: 110, fontSize: 9, fill: '#fbbf24', textAnchor: 'middle' }, 'Cornea'),
+                  h('text', { x: 92, y: 90, fontSize: 9, fill: '#fbbf24', textAnchor: 'middle' }, 'Pupil'),
+                  h('text', { x: 110, y: 145, fontSize: 9, fill: '#fbbf24', textAnchor: 'middle' }, 'Lens'),
+                  h('text', { x: 150, y: 30, fontSize: 11, fill: '#fde047', textAnchor: 'middle', fontWeight: 'bold' }, '~80% cones / 20% rods')
+                ),
+                h('div', { className: 'text-[10px] text-amber-100/70 italic text-center mt-1' }, 'Spherical shape, 2 foveas, cone-dominated retina')
+              ),
+              // Nocturnal (tubular) eye
+              h('div', { className: 'bg-indigo-900/20 border border-indigo-700/40 rounded-lg p-3' },
+                h('div', { className: 'text-xs font-bold text-indigo-300 mb-1 text-center' }, '🌙 Nocturnal — Tubular Eye (owl)'),
+                h('svg', { viewBox: '0 0 300 220', style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': 'Tubular owl eye cross-section' },
+                  h('rect', { x: 0, y: 0, width: 300, height: 220, fill: '#1c1917' }),
+                  // Tubular eye — long + narrow, NOT spherical
+                  h('path', { d: 'M 90 65 L 240 65 L 240 95 Q 250 110 240 125 L 240 155 L 90 155 Q 70 145 60 110 Q 70 75 90 65 Z',
+                    fill: '#fefce8', opacity: 0.92, stroke: '#a78bfa', strokeWidth: 2 }),
+                  // Cornea bulge (much LARGER relative to eye than diurnal)
+                  h('path', { d: 'M 60 75 Q 30 110 60 145', fill: '#e0e7ff', stroke: '#a78bfa', strokeWidth: 1.5 }),
+                  // Huge dilated pupil
+                  h('ellipse', { cx: 85, cy: 110, rx: 14, ry: 30, fill: '#1c1917' }),
+                  // Iris ring (thin, since pupil is huge)
+                  h('ellipse', { cx: 85, cy: 110, rx: 18, ry: 34, fill: 'none', stroke: '#6b21a8', strokeWidth: 2 }),
+                  // LARGE lens (collects more light)
+                  h('ellipse', { cx: 115, cy: 110, rx: 18, ry: 38, fill: '#ede9fe', opacity: 0.7, stroke: '#a78bfa', strokeWidth: 1 }),
+                  // Single deep central fovea
+                  h('circle', { cx: 235, cy: 110, r: 5, fill: '#dc2626' }),
+                  h('text', { x: 248, y: 113, fontSize: 9, fill: '#fca5a5', fontWeight: 'bold' }, 'Fovea'),
+                  // Retina (rod-dominated, drawn as denser stippling on back wall)
+                  h('path', { d: 'M 225 70 L 230 95 L 232 110 L 230 125 L 225 150', fill: 'none', stroke: '#a78bfa', strokeWidth: 5, opacity: 0.6 }),
+                  // Optic nerve
+                  h('rect', { x: 235, y: 105, width: 30, height: 10, fill: '#a3a3a3' }),
+                  h('text', { x: 270, y: 113, fontSize: 9, fill: '#94a3b8' }, 'Optic n.'),
+                  // Labels
+                  h('text', { x: 30, y: 110, fontSize: 9, fill: '#a78bfa', textAnchor: 'middle' }, 'Cornea'),
+                  h('text', { x: 85, y: 75, fontSize: 9, fill: '#a78bfa', textAnchor: 'middle' }, 'Pupil'),
+                  h('text', { x: 115, y: 165, fontSize: 9, fill: '#a78bfa', textAnchor: 'middle' }, 'Large lens'),
+                  h('text', { x: 150, y: 30, fontSize: 11, fill: '#c4b5fd', textAnchor: 'middle', fontWeight: 'bold' }, '~5% cones / 95% rods'),
+                  // Eye-fixed note
+                  h('text', { x: 150, y: 200, fontSize: 9, fill: '#c4b5fd', textAnchor: 'middle', fontStyle: 'italic' }, 'Cannot rotate — head turns instead')
+                ),
+                h('div', { className: 'text-[10px] text-indigo-100/70 italic text-center mt-1' }, 'Tubular shape, 1 fovea, rod-dominated retina, larger cornea + lens')
+              )
+            ),
+            h('div', { className: 'mt-3 p-3 bg-slate-800/40 rounded text-xs text-slate-300 leading-relaxed' },
+              h('span', { className: 'font-bold text-amber-300' }, 'Engineering implication: '),
+              'Diurnal raptors have spherical eyes that capture maximum cone density across the entire retina (= peripheral acuity + 2 foveas). Owls trade peripheral acuity for raw light-gathering — the tubular shape lets them pack a huge cornea + lens + rod-rich retina in a fixed skull volume. The cost: they can\'t rotate the eye (head must turn). The benefit: ~100× more sensitive at low light than humans.'
+            )
+          ),
+
           // Side-by-side comparison
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
             h('div', { className: 'bg-gradient-to-br from-amber-900/30 to-orange-900/30 border border-amber-700/40 rounded-xl p-4' },
@@ -2771,6 +2955,118 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               })
             )
           ),
+          // ── NEW v0.9: Threat Impact Compound Population Calculator ──
+          (function() {
+            var ti = rh.threatImpact || { species: 'baldEagle', lead: 0, wind: 0, rodenticide: 0, habitat: 0 };
+            function setTI(patch) { setRH({ threatImpact: Object.assign({}, ti, patch) }); }
+            // Baseline λ per species (rough demographic defaults)
+            var SPECIES_DEMO = {
+              peregrine:   { adultSurv: 0.85, juvSurv: 0.30, fecundity: 1.5, baseLambda: 1.07 },
+              baldEagle:   { adultSurv: 0.90, juvSurv: 0.50, fecundity: 0.8, baseLambda: 1.06 },
+              redTail:     { adultSurv: 0.78, juvSurv: 0.30, fecundity: 1.5, baseLambda: 1.01 },
+              goldenEagle: { adultSurv: 0.94, juvSurv: 0.30, fecundity: 0.5, baseLambda: 1.02 },
+              osprey:      { adultSurv: 0.85, juvSurv: 0.40, fecundity: 2.0, baseLambda: 1.06 },
+              greatHorned: { adultSurv: 0.85, juvSurv: 0.40, fecundity: 2.0, baseLambda: 1.07 }
+            };
+            var sd = SPECIES_DEMO[ti.species] || SPECIES_DEMO.baldEagle;
+            // Each threat reduces adult survival by up to ~10% at 100% intensity
+            var leadHit = ti.lead * 0.0010;          // 0-10% loss
+            var windHit = ti.wind * 0.0005;          // 0-5% loss
+            var rodHit = ti.rodenticide * 0.0008;    // 0-8% loss
+            var habHit = ti.habitat * 0.0008;        // 0-8% loss + reduces fecundity
+            var effAdultSurv = sd.adultSurv - leadHit - windHit - rodHit;
+            var effFecundity = sd.fecundity * (1 - habHit * 2); // habitat hits fecundity harder
+            var effLambda = effAdultSurv + (sd.juvSurv * Math.max(0, effFecundity)) / 2;
+            var deltaPct = ((effLambda - sd.baseLambda) / sd.baseLambda) * 100;
+            var verdict, vc;
+            if (effLambda >= 1.03) { verdict = 'GROWING'; vc = 'emerald'; }
+            else if (effLambda >= 0.995) { verdict = 'STABLE'; vc = 'amber'; }
+            else if (effLambda >= 0.95) { verdict = 'SLOW DECLINE'; vc = 'orange'; }
+            else { verdict = 'CRITICAL DECLINE'; vc = 'red'; }
+            // Project 30 years
+            var pop = 100, projY = 30;
+            var trajectory = [];
+            for (var yi = 0; yi <= projY; yi++) { trajectory.push({ y: yi, p: pop }); pop *= effLambda; }
+            var finalPop = trajectory[trajectory.length - 1].p;
+            // Mini sparkline
+            var maxP = Math.max.apply(null, trajectory.map(function(p) { return p.p; }));
+            var minP = Math.min.apply(null, trajectory.map(function(p) { return p.p; }));
+            var spPath = trajectory.map(function(p, i) {
+              var x = (i / projY) * 280;
+              var ny = 60 - ((p.p - minP) / Math.max(1, maxP - minP)) * 50 - 5;
+              return (i === 0 ? 'M ' : 'L ') + x.toFixed(1) + ' ' + ny.toFixed(1);
+            }).join(' ');
+            return h('div', { className: 'bg-slate-900/40 border border-emerald-700/40 rounded-xl p-5 space-y-3' },
+              h('div', { className: 'text-base font-bold text-emerald-300' }, '🎛 Threat Impact Calculator — Compound Population Effect'),
+              h('div', { className: 'text-xs text-emerald-100/90 leading-relaxed' },
+                'Real raptor populations face multiple threats simultaneously. Each one is small but they compound. Try adjusting the threat sliders for a species — watch the 30-year population trajectory tip from growing to declining.'
+              ),
+              // Species selector
+              h('div', null,
+                h('label', { className: 'text-xs text-amber-300 font-bold block mb-1' }, '🦅 Species'),
+                h('select', {
+                  value: ti.species,
+                  onChange: function(e) { setTI({ species: e.target.value }); },
+                  className: 'w-full px-3 py-2 rounded-lg bg-slate-800 text-amber-100 border border-slate-700 text-sm',
+                  'aria-label': 'Species'
+                },
+                  Object.keys(SPECIES_DEMO).map(function(k) {
+                    var s = findSpecies(k);
+                    return h('option', { key: k, value: k }, s.emoji + ' ' + s.name + ' (baseline λ = ' + SPECIES_DEMO[k].baseLambda + ')');
+                  })
+                )
+              ),
+              // Threat sliders
+              h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
+                [
+                  { id: 'lead', label: '🎯 Lead-shot poisoning intensity', maxImpact: '-10% adult survival', color: 'red' },
+                  { id: 'wind', label: '💨 Wind turbine collision rate', maxImpact: '-5% adult survival', color: 'orange' },
+                  { id: 'rodenticide', label: '🐀 Rodenticide secondary poisoning', maxImpact: '-8% adult survival', color: 'yellow' },
+                  { id: 'habitat', label: '🌳 Habitat loss', maxImpact: '-8% survival + fecundity', color: 'amber' }
+                ].map(function(thr) {
+                  return h('div', { key: thr.id },
+                    h('label', { className: 'text-xs text-' + thr.color + '-300 flex justify-between items-center' },
+                      h('span', null, thr.label),
+                      h('span', { className: 'font-mono text-amber-300' }, ti[thr.id] + '%')
+                    ),
+                    h('input', { type: 'range', min: 0, max: 100, step: 1, value: ti[thr.id],
+                      onInput: function(e) { var p = {}; p[thr.id] = parseInt(e.target.value); setTI(p); },
+                      className: 'w-full', 'aria-label': thr.label }),
+                    h('div', { className: 'text-[10px] text-slate-500' }, 'Max: ' + thr.maxImpact)
+                  );
+                })
+              ),
+              // Results card
+              h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-2' },
+                h('div', { className: 'bg-' + vc + '-900/40 border border-' + vc + '-700/50 rounded p-3 text-center' },
+                  h('div', { className: 'text-2xl font-bold text-' + vc + '-300' }, effLambda.toFixed(3)),
+                  h('div', { className: 'text-[10px] text-' + vc + '-200 uppercase tracking-wider' }, 'Effective λ')
+                ),
+                h('div', { className: 'bg-' + vc + '-900/40 border border-' + vc + '-700/50 rounded p-3 text-center' },
+                  h('div', { className: 'text-base font-bold text-' + vc + '-300' }, verdict),
+                  h('div', { className: 'text-[10px] text-' + vc + '-200 uppercase tracking-wider' }, 'Trajectory')
+                ),
+                h('div', { className: 'bg-slate-800/60 border border-slate-700/50 rounded p-3 text-center' },
+                  h('div', { className: 'text-base font-bold text-amber-300' }, Math.round(finalPop) + '% of base'),
+                  h('div', { className: 'text-[10px] text-slate-300 uppercase tracking-wider' }, 'Pop @ year 30')
+                )
+              ),
+              // Sparkline
+              h('div', { className: 'bg-slate-950/60 rounded-lg p-2' },
+                h('svg', { viewBox: '0 0 280 70', style: { width: '100%', height: '60px' }, role: 'img', 'aria-label': '30-year population sparkline' },
+                  h('rect', { x: 0, y: 0, width: 280, height: 70, fill: '#0f172a' }),
+                  h('line', { x1: 0, y1: 60 - ((100 - minP) / Math.max(1, maxP - minP)) * 50 - 5, x2: 280, y2: 60 - ((100 - minP) / Math.max(1, maxP - minP)) * 50 - 5, stroke: '#64748b', strokeWidth: 1, strokeDasharray: '3,3' }),
+                  h('path', { d: spPath, fill: 'none', stroke: '#10b981', strokeWidth: 2 }),
+                  h('text', { x: 4, y: 12, fontSize: 9, fill: '#94a3b8' }, 'Year 0 → 30'),
+                  h('text', { x: 248, y: 65, fontSize: 9, fill: '#94a3b8' }, 'final')
+                )
+              ),
+              h('div', { className: 'text-[10px] text-slate-500 italic' },
+                'Pedagogy: even small per-threat effects compound multiplicatively across 30 years. A 5% adult-survival drop from lead PLUS 3% from wind PLUS 2% from rodenticide turns a +6%/year growth into a near-zero trajectory. This is the demographic reality of multi-stressor environments.'
+              )
+            );
+          })(),
+
           // Crises
           h('div', { className: 'space-y-3' },
             h('div', { className: 'text-sm font-bold text-amber-300' }, '⚠ Active Threats + Crises'),
@@ -3351,8 +3647,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var ny = 0.15 + Math.random() * 0.7;
           setHL({ mouseX: nx, mouseY: ny, lastErr: null, started: true });
         }
-        // Compute "error radius" as fraction of canvas — inverse of asymmetry (1.0 = 5%, 0 = 40%)
-        var errRadius = 0.05 + (1 - hl.asymmetry) * 0.35; // fraction of canvas
+        // Compute "error radius" — inverse of asymmetry, then degraded by background noise.
+        var noise = (hl.noise || 0) / 100; // 0..1
+        var baseRadius = 0.05 + (1 - hl.asymmetry) * 0.35;
+        // Noise widens the detection radius proportional to noise level (max +0.25 of canvas)
+        var errRadius = Math.min(0.6, baseRadius + noise * 0.25);
         var avgErr = hl.attempts > 0 ? (hl.totalErr / hl.attempts) : null;
 
         return h('div', { className: 'space-y-4' },
@@ -3381,12 +3680,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('div', { className: 'flex justify-between text-[10px] text-slate-500' },
                 h('span', null, '0% (symmetric — like a hawk)'),
                 h('span', null, '100% (barn-owl-grade)')
-              ),
-              h('div', { className: 'text-[10px] text-indigo-200/70 mt-1 italic' },
-                'Detection radius: ',
-                h('span', { className: 'font-mono text-amber-300' }, (errRadius * 100).toFixed(0) + '%'),
-                ' of canvas. Real barn owls operate at ~1° error in pitch black — equivalent to the leftmost slider position here.'
               )
+            ),
+            // ── NEW v0.9: Background noise slider ──
+            h('div', null,
+              h('label', { className: 'text-xs text-cyan-300 flex items-center justify-between mb-1' },
+                h('span', { className: 'font-bold' }, '🌬 Background noise (wind, traffic, rustling)'),
+                h('span', { className: 'font-mono text-amber-300' }, (hl.noise || 0) + '%')
+              ),
+              h('input', {
+                type: 'range', min: 0, max: 100, step: 5, value: (hl.noise || 0),
+                onInput: function(e) { setHL({ noise: parseInt(e.target.value) }); },
+                className: 'w-full',
+                'aria-label': 'Background noise level'
+              }),
+              h('div', { className: 'flex justify-between text-[10px] text-slate-500' },
+                h('span', null, '0% (silent forest)'),
+                h('span', null, '50% (windy night)'),
+                h('span', null, '100% (highway noise)')
+              )
+            ),
+            h('div', { className: 'text-[10px] text-indigo-200/70 italic' },
+              'Effective detection radius: ',
+              h('span', { className: 'font-mono text-amber-300' }, (errRadius * 100).toFixed(0) + '%'),
+              ' of canvas (base ',
+              h('span', { className: 'font-mono text-slate-300' }, (baseRadius * 100).toFixed(0) + '%'),
+              ' from asymmetry + ',
+              h('span', { className: 'font-mono text-cyan-300' }, (noise * 25).toFixed(0) + '%'),
+              ' noise widening). Real barn owls operate at ~1° error in pitch black silence; even moderate wind degrades that. Hawkesford 2019 measured ~3× detection-radius widening at 60 dB ambient.'
             )
           ),
 
