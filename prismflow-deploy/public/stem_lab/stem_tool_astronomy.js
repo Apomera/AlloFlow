@@ -706,8 +706,195 @@
                 style: { padding: '6px 14px', borderRadius: 6, border: '1px solid ' + INDIGO, background: 'rgba(99,102,241,0.15)', color: '#c7d2fe', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
               }, '+ Add to observing list')
             )
-          ) : h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', border: '1px dashed #334155', color: '#94a3b8', fontStyle: 'italic', fontSize: 13 } }, 'Select a constellation to see its story across traditions, how to find it, and the science behind it.')
+          ) : h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', border: '1px dashed #334155', color: '#94a3b8', fontStyle: 'italic', fontSize: 13 } }, 'Select a constellation to see its story across traditions, how to find it, and the science behind it.'),
+          allConstellations88Section()
         );
+
+        // ──────────────────────────────────────────────────────────────
+        // All 88 IAU Constellations — full reference database
+        // ──────────────────────────────────────────────────────────────
+        function allConstellations88Section() {
+          var ALL_88 = [
+            // ─── NORTHERN CIRCUMPOLAR ───
+            { abbr: 'UMa', name: 'Ursa Major', english: 'Great Bear', area: 1280, brightStar: 'Alioth (1.76)', month: 'Apr', hemisphere: 'N', mythology: 'Greek: Callisto, transformed into a bear by Hera. Roman: Septem Triones (seven oxen). Many indigenous traditions: a bear hunted by three hunters across the sky. Contains the Big Dipper, the most-recognized asterism in Western astronomy.', notable: 'Big Dipper asterism, Mizar/Alcor double star, M81 + M82 galaxies, Owl Nebula (M97)' },
+            { abbr: 'UMi', name: 'Ursa Minor', english: 'Little Bear', area: 256, brightStar: 'Polaris (1.97)', month: 'Jun', hemisphere: 'N', mythology: 'Greek: Arcas, Callisto\'s son, also transformed. Contains POLARIS, the current north pole star (within ~ 1° of true celestial pole). Earth\'s axial precession means different stars take turns being pole star over a 26,000-year cycle.', notable: 'Polaris (current North Star), Little Dipper asterism' },
+            { abbr: 'Dra', name: 'Draco', english: 'Dragon', area: 1083, brightStar: 'Eltanin (2.23)', month: 'Jul', hemisphere: 'N', mythology: 'Greek: Ladon, the dragon guarding the golden apples of the Hesperides. Other traditions: Norse Níðhöggr, Chinese Azure Dragon. Wraps between the Bears, never sets from northern latitudes.', notable: 'Cat\'s Eye Nebula (NGC 6543), Thuban (was pole star ~ 3000 BCE, the Egyptian pyramid alignment star)' },
+            { abbr: 'Cep', name: 'Cepheus', english: 'King Cepheus', area: 588, brightStar: 'Alderamin (2.45)', month: 'Sep', hemisphere: 'N', mythology: 'Greek: King of Ethiopia, husband of Cassiopeia, father of Andromeda. Shaped like a stick-figure house. Contains the prototype Cepheid variable star Delta Cephei (Henrietta Leavitt\'s period-luminosity calibrator).', notable: 'Delta Cephei (prototype Cepheid variable), Garnet Star (Mu Cephei), VV Cephei (one of largest known stars)' },
+            { abbr: 'Cas', name: 'Cassiopeia', english: 'Queen Cassiopeia', area: 598, brightStar: 'Schedar (2.24)', month: 'Nov', hemisphere: 'N', mythology: 'Greek: vain queen, mother of Andromeda. Shape: a distinctive "W" (or "M" when below the pole). Punished for vanity — placed in the sky head-down for half the year. Contains Tycho\'s Supernova remnant (1572 supernova, key to overturning the unchangeable-heavens belief).', notable: 'Tycho\'s Supernova remnant (Cas A), HEART + SOUL nebulae, M52 cluster' },
+
+            // ─── ZODIAC (12 constellations along the ecliptic) ───
+            { abbr: 'Ari', name: 'Aries', english: 'Ram', area: 441, brightStar: 'Hamal (2.0)', month: 'Dec', hemisphere: 'N', mythology: 'Greek: Golden ram that rescued Phrixus + Helle. The ram\'s fleece became the Golden Fleece sought by Jason + the Argonauts. In zodiacal tradition, Aries marks the spring equinox (was true 2000 years ago; precession has moved the equinox into Pisces).', notable: 'Faint constellation; relevant for zodiacal + astrological tradition more than visual observing' },
+            { abbr: 'Tau', name: 'Taurus', english: 'Bull', area: 797, brightStar: 'Aldebaran (0.87)', month: 'Jan', hemisphere: 'N', mythology: 'Greek: Zeus transformed into a white bull to abduct Europa. Aldebaran is the "eye of the bull" (a red-giant K-type star, 65 light-years away). Contains TWO famous star clusters: the Pleiades (M45) + the Hyades (the bull\'s V-shaped face).', notable: 'Pleiades (M45), Hyades (closest open cluster), Crab Nebula (M1) — remnant of 1054 supernova' },
+            { abbr: 'Gem', name: 'Gemini', english: 'Twins', area: 514, brightStar: 'Pollux (1.14)', month: 'Feb', hemisphere: 'N', mythology: 'Greek: Castor + Pollux, the Dioscuri (sons of Leda), one mortal + one immortal. Sailors regarded them as patrons (St. Elmo\'s fire = the twins\' light on rigging). Pollux is the BRIGHTER star but Castor has the Bayer designation alpha.', notable: 'Castor (multiple star, actually 6 stars), Eskimo Nebula (NGC 2392), Geminid meteor shower radiant' },
+            { abbr: 'Cnc', name: 'Cancer', english: 'Crab', area: 506, brightStar: 'Tarf (3.5)', month: 'Mar', hemisphere: 'N', mythology: 'Greek: A crab sent by Hera to distract Heracles during his battle with the Hydra. He crushed it, but Hera honored its sacrifice by placing it in the sky. Faint constellation but contains the Beehive Cluster (M44), naked-eye visible from dark sites.', notable: 'Beehive Cluster (M44 / Praesepe), M67 (one of oldest known open clusters)' },
+            { abbr: 'Leo', name: 'Leo', english: 'Lion', area: 947, brightStar: 'Regulus (1.4)', month: 'Apr', hemisphere: 'N', mythology: 'Greek: Nemean Lion, slain by Heracles in his first labor. Distinctive shape: "Sickle" forms the lion\'s head + mane (looks like a backwards question mark), with Regulus at the base. Regulus = "little king."', notable: 'Regulus, Leo Triplet galaxies (M65, M66, NGC 3628), Leonid meteor shower radiant' },
+            { abbr: 'Vir', name: 'Virgo', english: 'Maiden', area: 1294, brightStar: 'Spica (1.04)', month: 'May', hemisphere: 'N/S', mythology: 'Greek: associated with multiple goddesses — Demeter, Persephone, Astraea (goddess of justice). Spica = "ear of wheat," her sheaf. Contains the densely-galaxy-populated Virgo Cluster (~ 1300 galaxies, 54 million light-years).', notable: 'Spica (binary star), M87 (giant elliptical, first imaged black hole 2019), Sombrero Galaxy (M104)' },
+            { abbr: 'Lib', name: 'Libra', english: 'Scales', area: 538, brightStar: 'Zubeneschamali (2.61)', month: 'Jun', hemisphere: 'N/S', mythology: 'Roman: the scales of Justice held by Astraea (Virgo). In Greek tradition the area was claimed by Scorpius — Libra\'s stars were the scorpion\'s claws (the Arabic names mean "northern claw" + "southern claw"). Modern Libra recognized by Romans + later astronomy.', notable: 'Zubenelgenubi (close double star), faint constellation but historically/symbolically important' },
+            { abbr: 'Sco', name: 'Scorpius', english: 'Scorpion', area: 497, brightStar: 'Antares (1.06)', month: 'Jul', hemisphere: 'N/S', mythology: 'Greek: the scorpion that killed Orion. Zeus placed both in the sky — they remain on OPPOSITE sides of the celestial sphere, so when one rises, the other sets. Antares = "rival of Mars" (Ares), a red supergiant 550 light-years away.', notable: 'Antares (red supergiant), M4 (closest globular cluster), the Cat\'s Paw + Lobster nebulae' },
+            { abbr: 'Sgr', name: 'Sagittarius', english: 'Archer', area: 867, brightStar: 'Kaus Australis (1.85)', month: 'Aug', hemisphere: 'N/S', mythology: 'Greek: Centaur archer (often associated with Chiron the wise centaur). The bow + arrow points at Scorpius. Sagittarius contains the GALACTIC CENTER — the densest region of the Milky Way, full of star clouds + dust + (at the very center) the supermassive black hole Sagittarius A*.', notable: 'Teapot asterism (in modern view), M8 Lagoon Nebula, M17 Omega Nebula, M22 globular, Galactic Center' },
+            { abbr: 'Cap', name: 'Capricornus', english: 'Sea Goat', area: 414, brightStar: 'Deneb Algedi (2.85)', month: 'Sep', hemisphere: 'S', mythology: 'Greek: Pan, the god of shepherds, who transformed his hindquarters into a fish to escape from the monster Typhon. Faint constellation; small + low for Northern Hemisphere observers.', notable: 'Algedi (Alpha Capricorni) — naked-eye double, but most stars are dim' },
+            { abbr: 'Aqr', name: 'Aquarius', english: 'Water Bearer', area: 980, brightStar: 'Sadalsuud (2.91)', month: 'Oct', hemisphere: 'N/S', mythology: 'Greek: Ganymede, the cupbearer of the gods, abducted by Zeus to serve drinks on Mount Olympus. Faint constellation but large + historically + astrologically significant. Contains the Eta Aquariid + Delta Aquariid meteor shower radiants.', notable: 'Helix Nebula (closest planetary nebula), Saturn Nebula, M2 globular' },
+            { abbr: 'Psc', name: 'Pisces', english: 'Fishes', area: 889, brightStar: 'Alpherg (3.61)', month: 'Nov', hemisphere: 'N/S', mythology: 'Greek: Aphrodite + her son Eros, transformed into fish to escape Typhon, tied together so they would not be separated. The two fish are joined by a cord (the "ribbon"). Pisces now contains the vernal equinox point (it moved here from Aries due to precession).', notable: 'Faint constellation; currently the location of the vernal equinox' },
+
+            // ─── PROMINENT NORTHERN ───
+            { abbr: 'Lyr', name: 'Lyra', english: 'Lyre', area: 286, brightStar: 'Vega (0.03)', month: 'Aug', hemisphere: 'N', mythology: 'Greek: the lyre of Orpheus, placed in the sky after his death. Vega is the 5th brightest star in the night sky + part of the Summer Triangle. Will be the pole star in ~ 12,000 years due to Earth\'s precession.', notable: 'Vega, Ring Nebula (M57), Epsilon Lyrae "Double Double" star system, Lyrid meteor shower' },
+            { abbr: 'Cyg', name: 'Cygnus', english: 'Swan', area: 804, brightStar: 'Deneb (1.25)', month: 'Sep', hemisphere: 'N', mythology: 'Greek: Zeus disguised as a swan, or Orpheus transformed at death. The shape is unmistakable — a clear cross (the "Northern Cross") with Deneb at the tail + Albireo at the head. Deneb forms one corner of the Summer Triangle.', notable: 'Deneb, Albireo (gold-blue double), North America Nebula (NGC 7000), Cygnus X-1 (first black hole identified)' },
+            { abbr: 'Aql', name: 'Aquila', english: 'Eagle', area: 652, brightStar: 'Altair (0.77)', month: 'Aug', hemisphere: 'N/S', mythology: 'Greek: Zeus\'s eagle, carrier of his thunderbolts + abductor of Ganymede. Altair forms the third corner of the Summer Triangle with Vega + Deneb. Altair is one of the closest naked-eye stars (17 light-years).', notable: 'Altair, Hercules-Aquila Cloud (large gamma-ray emission region)' },
+            { abbr: 'Boo', name: 'Boötes', english: 'Herdsman', area: 907, brightStar: 'Arcturus (-0.04)', month: 'Jun', hemisphere: 'N', mythology: 'Greek: a herdsman driving the Bears (Ursa Major + Minor) around the pole. Arcturus = "guardian of the bear." Arcturus is the 4th brightest star in the night sky + the brightest in the northern celestial hemisphere.', notable: 'Arcturus (orange giant K-type, 37 ly), Quadrantid meteor radiant, easy to find by following the Big Dipper handle\'s curve' },
+            { abbr: 'CrB', name: 'Corona Borealis', english: 'Northern Crown', area: 179, brightStar: 'Gemma/Alphecca (2.21)', month: 'Jun', hemisphere: 'N', mythology: 'Greek: the crown given to Ariadne by Dionysus when he made her his wife after Theseus abandoned her. A distinctive small semicircular arc of 7 stars. Hosts T Coronae Borealis, the famous recurrent nova due for eruption any year now.', notable: 'T CrB (recurrent nova, predicted ~ 2024-2026 outburst), R CrB (prototype R Coronae Borealis variable)' },
+            { abbr: 'Her', name: 'Hercules', english: 'Hercules', area: 1225, brightStar: 'Kornephoros (2.78)', month: 'Jul', hemisphere: 'N', mythology: 'Greek: the great hero, son of Zeus, completer of the Twelve Labors. The shape: a "Keystone" asterism (4 stars in a trapezoid) forms his torso. Hercules contains M13, the brightest globular cluster in the Northern Hemisphere.', notable: 'M13 (Hercules Cluster — brightest northern globular), M92 globular, Hercules Cluster of galaxies' },
+            { abbr: 'Per', name: 'Perseus', english: 'Perseus', area: 615, brightStar: 'Mirfak (1.79)', month: 'Dec', hemisphere: 'N', mythology: 'Greek: rescuer of Andromeda from the sea monster Cetus, slayer of Medusa. Algol = "the demon\'s head" (head of Medusa), an eclipsing binary variable. Perseid meteor shower radiates from here every August.', notable: 'Algol (eclipsing binary), Double Cluster (NGC 869/884), California Nebula, Perseid meteor radiant' },
+            { abbr: 'And', name: 'Andromeda', english: 'Chained Maiden', area: 722, brightStar: 'Alpheratz (2.07)', month: 'Nov', hemisphere: 'N', mythology: 'Greek: princess of Ethiopia, daughter of Cassiopeia + Cepheus, chained to a rock + saved by Perseus. Contains the Andromeda Galaxy (M31), the largest galaxy in our Local Group + the most distant object visible to the naked eye.', notable: 'Andromeda Galaxy (M31), Mu Andromedae (multiple star system with confirmed planets)' },
+            { abbr: 'Tri', name: 'Triangulum', english: 'Triangle', area: 132, brightStar: 'Beta Trianguli (3.0)', month: 'Dec', hemisphere: 'N', mythology: 'Small constellation between Andromeda + Aries. Greek "Deltoton" (delta-shape) due to its triangular form. Contains the Triangulum Galaxy (M33), the 3rd-largest member of the Local Group of galaxies.', notable: 'Triangulum Galaxy (M33)' },
+            { abbr: 'Peg', name: 'Pegasus', english: 'Flying Horse', area: 1121, brightStar: 'Enif (2.39)', month: 'Oct', hemisphere: 'N', mythology: 'Greek: the winged horse born from Medusa\'s blood, ridden by Bellerophon. The "Great Square of Pegasus" is the body, formed by 4 bright stars (technically one is shared with Andromeda). Contains the first confirmed exoplanet around a sun-like star (51 Peg b, 1995).', notable: 'Great Square of Pegasus asterism, 51 Pegasi (first sunlike-star exoplanet host)' },
+            { abbr: 'Ori', name: 'Orion', english: 'Hunter', area: 594, brightStar: 'Rigel (0.18)', month: 'Jan', hemisphere: 'N/S', mythology: 'The most recognizable constellation worldwide. Greek: a giant hunter, killed by the scorpion (placed on opposite side of sky). Orion\'s Belt (Alnitak, Alnilam, Mintaka) is iconic. Betelgeuse = "house of the twin" (Arabic), expected to go supernova in the next 100,000 years (likely).', notable: 'Betelgeuse, Rigel, Orion Nebula (M42), Horsehead Nebula, Trapezium, Orion\'s Belt + Sword' },
+            { abbr: 'Aur', name: 'Auriga', english: 'Charioteer', area: 657, brightStar: 'Capella (0.08)', month: 'Jan', hemisphere: 'N', mythology: 'Greek: Erichthonius, son of Hephaestus, inventor of the four-horse chariot. Capella = "she-goat," one of the brightest stars in the Northern Hemisphere. Distinctive pentagon shape.', notable: 'Capella (quadruple star system), M36 + M37 + M38 (rich open clusters)' },
+            { abbr: 'CMa', name: 'Canis Major', english: 'Great Dog', area: 380, brightStar: 'Sirius (-1.46)', month: 'Feb', hemisphere: 'N/S', mythology: 'Greek: Orion\'s hunting dog. Sirius = "scorching" (Greek), the brightest star in the night sky after the Sun. Sirius B is a white dwarf companion, predicted by Bessel in 1844 from astrometric wobble + first observed 1862. Sirius rises with the Sun around late August in the Northern Hemisphere — the original "dog days" of summer.', notable: 'Sirius (brightest night star), Sirius B (first known white dwarf), M41 open cluster' },
+            { abbr: 'CMi', name: 'Canis Minor', english: 'Small Dog', area: 183, brightStar: 'Procyon (0.34)', month: 'Feb', hemisphere: 'N/S', mythology: 'The smaller of Orion\'s two hunting dogs. Procyon = "before the dog" (it rises before Sirius from northern latitudes). One of the closest naked-eye stars at 11.5 light-years. Procyon B is another nearby white dwarf.', notable: 'Procyon (one of nearest naked-eye stars)' },
+            { abbr: 'Lep', name: 'Lepus', english: 'Hare', area: 290, brightStar: 'Arneb (2.58)', month: 'Jan', hemisphere: 'N/S', mythology: 'Greek: a hare hunted by Orion. Direct below Orion in the sky. Small but contains some interesting deep-sky objects + binary stars.', notable: 'M79 (one of few southern-celestial-hemisphere globulars visible at this latitude), R Leporis "Crimson Star"' },
+            { abbr: 'Mon', name: 'Monoceros', english: 'Unicorn', area: 482, brightStar: 'Beta Monocerotis (3.74)', month: 'Feb', hemisphere: 'N/S', mythology: 'Modern constellation (introduced 1612). Contains the Rosette Nebula + Hubble\'s Variable Nebula + the Cone Nebula. Faint to the naked eye but rich in deep-sky targets.', notable: 'Rosette Nebula (NGC 2237), Hubble\'s Variable Nebula, NGC 2244 open cluster' },
+            { abbr: 'Cnc', name: 'Cancer (revisited)', english: '—', area: 506, brightStar: 'Tarf (3.5)', month: 'Mar', hemisphere: 'N', mythology: 'Already listed in zodiac.', notable: 'See zodiac section above' },
+
+            // ─── SOUTHERN HEMISPHERE ───
+            { abbr: 'Cru', name: 'Crux', english: 'Southern Cross', area: 68, brightStar: 'Acrux (0.77)', month: 'May', hemisphere: 'S', mythology: 'Most iconic Southern Hemisphere constellation. Not visible from northern latitudes above ~ 25°N. Four bright stars + the Coalsack Nebula (a dark molecular cloud) form one of the most recognizable patterns in the southern sky. Featured on flags of Australia, New Zealand, Brazil, Papua New Guinea, Samoa.', notable: 'Smallest of all 88 constellations by area. Coalsack Nebula, Jewel Box Cluster (NGC 4755)' },
+            { abbr: 'Cen', name: 'Centaurus', english: 'Centaur', area: 1060, brightStar: 'Alpha Centauri (-0.27)', month: 'May', hemisphere: 'S', mythology: 'Greek: Chiron the wise centaur, mentor of heroes including Achilles. Alpha Centauri is the closest stellar system to the Sun (4.37 light-years for the binary A+B; Proxima Centauri at 4.24 ly is closer + has confirmed planets). Visible from southern Florida + Hawaii but never high.', notable: 'Alpha Centauri AB (closest naked-eye stars), Proxima Centauri (nearest star), Omega Centauri (largest globular)' },
+            { abbr: 'Car', name: 'Carina', english: 'Keel', area: 494, brightStar: 'Canopus (-0.74)', month: 'Mar', hemisphere: 'S', mythology: 'Originally part of the giant constellation Argo Navis (the Argonauts\' ship). Lacaille split it into Carina (keel), Vela (sails), + Puppis (poop deck) in 1763. Canopus is the 2nd brightest star in the night sky (after Sirius). Contains the Carina Nebula, one of the largest emission nebulae in our galaxy.', notable: 'Canopus, Carina Nebula (NGC 3372, JWST early-release image), Eta Carinae (variable supergiant)' },
+            { abbr: 'Vel', name: 'Vela', english: 'Sails', area: 500, brightStar: 'Suhail (1.83)', month: 'Mar', hemisphere: 'S', mythology: 'Another part of the split Argo Navis. Contains the Vela Supernova Remnant + the Vela Pulsar, one of the brightest pulsars in radio + visual.', notable: 'Vela Supernova Remnant, Vela Pulsar' },
+            { abbr: 'Pup', name: 'Puppis', english: 'Stern', area: 673, brightStar: 'Naos (2.21)', month: 'Mar', hemisphere: 'S', mythology: 'The third Argo Navis division (poop deck = the stern). Naos is one of the hottest naked-eye stars (~ 40,000 K).', notable: 'Naos (O-class star), M46 + M47 (open clusters)' },
+            { abbr: 'Sco', name: 'Scorpius (revisited)', english: '—', area: 497, brightStar: 'Antares (1.06)', month: 'Jul', hemisphere: 'N/S', mythology: 'Already listed in zodiac.', notable: 'See zodiac section above' },
+            { abbr: 'TrA', name: 'Triangulum Australe', english: 'Southern Triangle', area: 110, brightStar: 'Atria (1.91)', month: 'Jul', hemisphere: 'S', mythology: 'Modern constellation introduced ~ 1603. Brighter + more distinct than its Northern counterpart Triangulum.', notable: 'NGC 6025 open cluster' },
+            { abbr: 'Hyi', name: 'Hydrus', english: 'Lesser Water Snake', area: 243, brightStar: 'Beta Hydri (2.8)', month: 'Dec', hemisphere: 'S', mythology: 'Introduced by Bayer 1603. Between the two Magellanic Clouds.', notable: 'Near the Small Magellanic Cloud' },
+            { abbr: 'Tuc', name: 'Tucana', english: 'Toucan', area: 295, brightStar: 'Alpha Tucanae (2.86)', month: 'Nov', hemisphere: 'S', mythology: 'Introduced by Keyser + de Houtman 1603. Contains the Small Magellanic Cloud + 47 Tucanae (one of the finest globular clusters in the sky, magnitude 4.0).', notable: '47 Tucanae globular cluster, Small Magellanic Cloud (SMC)' },
+            { abbr: 'Mus', name: 'Musca', english: 'Fly', area: 138, brightStar: 'Alpha Muscae (2.7)', month: 'May', hemisphere: 'S', mythology: 'Originally Apis (Bee), renamed by Lacaille. South of Crux.', notable: 'Small constellation' },
+            { abbr: 'Cha', name: 'Chamaeleon', english: 'Chameleon', area: 132, brightStar: 'Alpha Chamaeleontis (4.07)', month: 'Apr', hemisphere: 'S', mythology: 'Introduced 1603. Near the south celestial pole. Faint but contains the Chamaeleon star-forming complex.', notable: 'Chamaeleon dark cloud (active star formation)' },
+            { abbr: 'Aps', name: 'Apus', english: 'Bird of Paradise', area: 206, brightStar: 'Alpha Apodis (3.83)', month: 'Jul', hemisphere: 'S', mythology: 'Introduced 1603, near south pole. Faint.', notable: '' },
+            { abbr: 'Cir', name: 'Circinus', english: 'Compass', area: 93, brightStar: 'Alpha Circini (3.19)', month: 'Jun', hemisphere: 'S', mythology: 'Lacaille\'s drafting-tools constellation, 1763. Adjacent to Centaurus.', notable: 'Circinus Galaxy (Sy 2 AGN)' },
+            { abbr: 'Lup', name: 'Lupus', english: 'Wolf', area: 334, brightStar: 'Men (2.30)', month: 'Jun', hemisphere: 'S', mythology: 'Greek: the wolf, sometimes shown impaled on a Centaur\'s spear. Contains rich Milky Way star fields. SN 1006 (the brightest supernova in recorded history, observed worldwide) occurred here.', notable: 'SN 1006 supernova remnant' },
+            { abbr: 'Nor', name: 'Norma', english: 'Carpenter\'s Square', area: 165, brightStar: 'Gamma Normae (4.0)', month: 'Jul', hemisphere: 'S', mythology: 'Lacaille\'s drafting constellation. Contains the Norma Cluster of galaxies + the Great Attractor (a massive concentration drawing the Local Group toward it).', notable: 'Great Attractor (gravitational anomaly behind the galactic plane)' },
+            { abbr: 'Ara', name: 'Ara', english: 'Altar', area: 237, brightStar: 'Beta Arae (2.85)', month: 'Jul', hemisphere: 'S', mythology: 'Greek: the altar on which the gods swore allegiance before battling the Titans. Faint but ancient constellation.', notable: 'NGC 6193 open cluster' },
+            { abbr: 'CrA', name: 'Corona Australis', english: 'Southern Crown', area: 128, brightStar: 'Alphekka Meridiana (4.1)', month: 'Aug', hemisphere: 'S', mythology: 'Greek: a wreath. South of Sagittarius. Smaller + fainter than Corona Borealis.', notable: 'R Coronae Australis (variable young stellar object)' },
+            { abbr: 'Mic', name: 'Microscopium', english: 'Microscope', area: 210, brightStar: 'Gamma Microscopii (4.67)', month: 'Sep', hemisphere: 'S', mythology: 'Lacaille\'s scientific-instrument constellation. Faint.', notable: '' },
+            { abbr: 'PsA', name: 'Piscis Austrinus', english: 'Southern Fish', area: 245, brightStar: 'Fomalhaut (1.16)', month: 'Oct', hemisphere: 'S', mythology: 'Greek: a giant fish, parent of the Zodiac Pisces. Fomalhaut = "mouth of the fish" (Arabic). One of the closest A-type main-sequence stars + the host of a famous resolved DEBRIS DISK imaged by Hubble + JWST.', notable: 'Fomalhaut (debris disk visible to Hubble + JWST)' },
+            { abbr: 'Gru', name: 'Grus', english: 'Crane', area: 366, brightStar: 'Alnair (1.74)', month: 'Oct', hemisphere: 'S', mythology: 'Introduced 1603. Originally part of Piscis Austrinus. The crane is a wading bird, depicted with neck extended.', notable: '' },
+            { abbr: 'Pav', name: 'Pavo', english: 'Peacock', area: 378, brightStar: 'Peacock (1.94)', month: 'Aug', hemisphere: 'S', mythology: 'Introduced 1603. Hera\'s sacred bird, often associated with Argus the watcher.', notable: 'NGC 6752 (one of the closer + brighter globular clusters)' },
+            { abbr: 'Phe', name: 'Phoenix', english: 'Phoenix', area: 469, brightStar: 'Ankaa (2.4)', month: 'Nov', hemisphere: 'S', mythology: 'The mythological firebird that rises from its ashes. Introduced 1603.', notable: '' },
+            { abbr: 'Eri', name: 'Eridanus', english: 'River', area: 1138, brightStar: 'Achernar (0.46)', month: 'Dec', hemisphere: 'N/S', mythology: 'Greek: a river — sometimes identified with the Po, sometimes the Nile, sometimes the Euphrates. Achernar = "river\'s end" (Arabic). Very long constellation winding from Orion to the deep south.', notable: 'Achernar (one of the most oblate stars known, spinning rapidly), Eridanus Supervoid' },
+            { abbr: 'Hor', name: 'Horologium', english: 'Pendulum Clock', area: 249, brightStar: 'Alpha Horologii (3.85)', month: 'Dec', hemisphere: 'S', mythology: 'Lacaille\'s scientific-instrument constellation. Honoring the pendulum clock invention.', notable: 'Horologium Supercluster' },
+            { abbr: 'Ret', name: 'Reticulum', english: 'Reticle', area: 114, brightStar: 'Alpha Reticuli (3.35)', month: 'Dec', hemisphere: 'S', mythology: 'Lacaille\'s constellation honoring the reticle (crosshairs) used in his measurements of southern star positions.', notable: '' },
+            { abbr: 'Dor', name: 'Dorado', english: 'Goldfish / Swordfish', area: 179, brightStar: 'Alpha Doradus (3.30)', month: 'Jan', hemisphere: 'S', mythology: 'Introduced 1603. Sometimes depicted as a swordfish, sometimes the South American mahi-mahi. Contains the LARGE MAGELLANIC CLOUD (LMC) + the Tarantula Nebula.', notable: 'Large Magellanic Cloud (LMC), Tarantula Nebula (30 Doradus)' },
+            { abbr: 'Pic', name: 'Pictor', english: 'Painter\'s Easel', area: 247, brightStar: 'Alpha Pictoris (3.27)', month: 'Jan', hemisphere: 'S', mythology: 'Lacaille\'s constellation. Faint. Contains Beta Pictoris, host of an early-resolved debris disk + multiple confirmed exoplanets.', notable: 'Beta Pictoris (resolved debris disk + planets)' },
+            { abbr: 'Vol', name: 'Volans', english: 'Flying Fish', area: 141, brightStar: 'Beta Volantis (3.77)', month: 'Mar', hemisphere: 'S', mythology: 'Introduced 1603. Faint.', notable: '' },
+            { abbr: 'Ant', name: 'Antlia', english: 'Air Pump', area: 239, brightStar: 'Alpha Antliae (4.25)', month: 'Apr', hemisphere: 'S', mythology: 'Lacaille\'s constellation honoring the air pump invented by Boyle. Faint.', notable: 'Antlia Dwarf Galaxy' },
+            { abbr: 'Hya', name: 'Hydra', english: 'Water Snake', area: 1303, brightStar: 'Alphard (1.98)', month: 'Apr', hemisphere: 'N/S', mythology: 'Greek: the Lernaean Hydra, the many-headed water serpent slain by Heracles. The LARGEST constellation by area, stretching across ~ 90° of the celestial sphere.', notable: 'M83 (Southern Pinwheel Galaxy), NGC 3242 (Ghost of Jupiter planetary nebula), Alphard ("the solitary")' },
+            { abbr: 'Sex', name: 'Sextans', english: 'Sextant', area: 314, brightStar: 'Alpha Sextantis (4.49)', month: 'Apr', hemisphere: 'N/S', mythology: 'Hevelius\' constellation honoring his measuring sextant. Faint.', notable: 'Sextans Dwarf Spheroidal Galaxy' },
+            { abbr: 'Crv', name: 'Corvus', english: 'Crow', area: 184, brightStar: 'Gienah (2.59)', month: 'May', hemisphere: 'S', mythology: 'Greek: the crow sent by Apollo to fetch water, but the crow was lazy + brought back a snake (the constellation Hydra) as an excuse. Apollo placed both in the sky as a punishment.', notable: 'Antennae Galaxies (NGC 4038/4039 colliding pair)' },
+            { abbr: 'Crt', name: 'Crater', english: 'Cup', area: 282, brightStar: 'Delta Crateris (3.56)', month: 'May', hemisphere: 'S', mythology: 'Greek: the cup of Apollo, related to the Corvus story. Faint.', notable: '' },
+
+            // ─── Lacaille\'s scientific-instrument constellations (1763) ───
+            { abbr: 'Cae', name: 'Caelum', english: 'Chisel', area: 125, brightStar: 'Alpha Caeli (4.45)', month: 'Jan', hemisphere: 'S', mythology: 'Lacaille\'s sculptor\'s chisel constellation.', notable: '' },
+            { abbr: 'Col', name: 'Columba', english: 'Dove', area: 270, brightStar: 'Phact (2.65)', month: 'Feb', hemisphere: 'S', mythology: 'Introduced ~ 1592. Sometimes interpreted as Noah\'s dove from the biblical flood. Below Orion + Lepus.', notable: '' },
+            { abbr: 'Pyx', name: 'Pyxis', english: 'Mariner\'s Compass', area: 221, brightStar: 'Alpha Pyxidis (3.68)', month: 'Mar', hemisphere: 'S', mythology: 'Lacaille\'s constellation honoring the ship\'s compass. Originally part of the giant Argo Navis.', notable: 'T Pyxidis (recurrent nova)' },
+            { abbr: 'Sct', name: 'Scutum', english: 'Shield', area: 109, brightStar: 'Alpha Scuti (3.85)', month: 'Aug', hemisphere: 'N/S', mythology: 'Introduced by Hevelius 1684, honoring King John III Sobieski\'s shield. Small but contains the Wild Duck Cluster (M11), one of the richest open clusters.', notable: 'Wild Duck Cluster (M11), UY Scuti (one of largest known stars)' },
+            { abbr: 'Sge', name: 'Sagitta', english: 'Arrow', area: 80, brightStar: 'Gamma Sagittae (3.51)', month: 'Aug', hemisphere: 'N', mythology: 'Ancient constellation. Greek: the arrow of various heroes (Heracles, Apollo, Eros). Tiny but recognizable.', notable: 'M71 globular cluster (small but bright)' },
+            { abbr: 'Vul', name: 'Vulpecula', english: 'Fox', area: 268, brightStar: 'Anser (4.44)', month: 'Sep', hemisphere: 'N', mythology: 'Hevelius\' "Little Fox with Goose." Faint. Contains the Dumbbell Nebula (M27), the first planetary nebula ever discovered.', notable: 'Dumbbell Nebula (M27), first known pulsar (PSR B1919+21, 1967)' },
+            { abbr: 'Del', name: 'Delphinus', english: 'Dolphin', area: 189, brightStar: 'Rotanev (3.63)', month: 'Sep', hemisphere: 'N', mythology: 'Greek: a dolphin honored by Poseidon for finding Amphitrite + persuading her to marry him. Distinctive small diamond shape. "Job\'s Coffin" is its asterism.', notable: 'Distinctive small constellation, easy to find' },
+            { abbr: 'Equ', name: 'Equuleus', english: 'Little Horse', area: 72, brightStar: 'Kitalpha (3.92)', month: 'Sep', hemisphere: 'N', mythology: 'One of the smallest constellations. Greek: a small horse, sometimes Celeris, brother of Pegasus.', notable: 'Faint, second-smallest constellation after Crux' },
+            { abbr: 'LMi', name: 'Leo Minor', english: 'Little Lion', area: 232, brightStar: 'Praecipua (3.79)', month: 'Apr', hemisphere: 'N', mythology: 'Hevelius\' modern constellation between Leo + Ursa Major.', notable: '' },
+            { abbr: 'Lac', name: 'Lacerta', english: 'Lizard', area: 200, brightStar: 'Alpha Lacertae (3.76)', month: 'Oct', hemisphere: 'N', mythology: 'Hevelius\' modern constellation between Cassiopeia + Pegasus. Faint zigzag of stars.', notable: 'BL Lacertae (prototype of BL Lac AGN objects)' },
+            { abbr: 'CVn', name: 'Canes Venatici', english: 'Hunting Dogs', area: 465, brightStar: 'Cor Caroli (2.81)', month: 'May', hemisphere: 'N', mythology: 'Hevelius\' modern constellation. The hunting dogs of Boötes the herdsman. Contains the Whirlpool Galaxy (M51).', notable: 'Whirlpool Galaxy (M51), M3 globular cluster' },
+            { abbr: 'Com', name: 'Coma Berenices', english: 'Berenice\'s Hair', area: 386, brightStar: 'Beta Comae Berenices (4.26)', month: 'May', hemisphere: 'N', mythology: 'Faint but recognized since antiquity. Egyptian queen Berenice II offered her hair to the gods for her husband\'s safe return; her hair vanished + was placed in the sky. Contains the COMA CLUSTER of galaxies + many Messier galaxies.', notable: 'Coma Cluster of galaxies, M64 (Black Eye Galaxy), Coma Star Cluster (Mel 111)' },
+            { abbr: 'Oph', name: 'Ophiuchus', english: 'Serpent Bearer', area: 948, brightStar: 'Rasalhague (2.08)', month: 'Jul', hemisphere: 'N/S', mythology: 'Greek: Asclepius, the god of medicine, holding the serpent Serpens. The "13th zodiac sign" — the Sun does pass through it (Nov 30 - Dec 17) even though traditional astrology assigns 12. Contains Barnard\'s Star, the second-closest star system at 6 ly + with the largest known proper motion of any star.', notable: 'Barnard\'s Star, M9 + M10 + M12 globular clusters, Kepler\'s Supernova remnant (1604)' },
+            { abbr: 'Ser', name: 'Serpens', english: 'Serpent', area: 637, brightStar: 'Unukalhai (2.63)', month: 'Jun', hemisphere: 'N/S', mythology: 'Greek: the serpent held by Ophiuchus. Unique among constellations in being SPLIT INTO TWO PARTS by Ophiuchus passing through: Serpens Caput (head) on the west + Serpens Cauda (tail) on the east.', notable: 'Eagle Nebula (M16, "Pillars of Creation"), Hoag\'s Object (ring galaxy)' },
+            { abbr: 'CMa', name: 'Canis Major (revisited)', english: '—', area: 380, brightStar: 'Sirius (-1.46)', month: 'Feb', hemisphere: 'N/S', mythology: 'Already listed.', notable: 'See northern section above' },
+
+            // ─── Southern hemisphere (continued) ───
+            { abbr: 'Oct', name: 'Octans', english: 'Octant', area: 291, brightStar: 'Nu Octantis (3.76)', month: 'Oct', hemisphere: 'S', mythology: 'Lacaille\'s scientific-instrument constellation. Contains the SOUTH CELESTIAL POLE, which has no bright star comparable to Polaris. Sigma Octantis is the dim "south star" at magnitude 5.5.', notable: 'South Celestial Pole (Sigma Octantis is closest visible star)' },
+            { abbr: 'Tel', name: 'Telescopium', english: 'Telescope', area: 252, brightStar: 'Alpha Telescopii (3.51)', month: 'Aug', hemisphere: 'S', mythology: 'Lacaille\'s scientific-instrument constellation honoring the telescope.', notable: '' },
+            { abbr: 'Ind', name: 'Indus', english: 'Indian', area: 294, brightStar: 'The Persian (3.11)', month: 'Sep', hemisphere: 'S', mythology: 'Introduced 1603. Originally meant to represent a "Native American" — the European voyagers\' imagination of newly-encountered peoples. Honestly: the constellation\'s naming reflects colonial-era European perspectives + has been critiqued.', notable: 'Epsilon Indi (one of nearest stars at 12 ly, ~ similar to Sun)' },
+            { abbr: 'Men', name: 'Mensa', english: 'Table Mountain', area: 153, brightStar: 'Alpha Mensae (5.09)', month: 'Jan', hemisphere: 'S', mythology: 'Lacaille\'s constellation honoring Table Mountain near Cape Town, where he made his southern observations. The DIMMEST constellation by brightest-star magnitude. Contains part of the Large Magellanic Cloud.', notable: 'Part of LMC, Mensa Supercluster' },
+            { abbr: 'Cae', name: 'Caelum (revisited)', english: '—', area: 125, brightStar: 'Alpha Caeli (4.45)', month: 'Jan', hemisphere: 'S', mythology: 'Already listed in Lacaille section.', notable: '' },
+            { abbr: 'For', name: 'Fornax', english: 'Furnace', area: 398, brightStar: 'Alpha Fornacis (3.85)', month: 'Dec', hemisphere: 'S', mythology: 'Lacaille\'s constellation honoring the chemist\'s furnace. Contains the Fornax Dwarf Galaxy + the Fornax Cluster.', notable: 'Fornax Cluster, NGC 1316 (radio galaxy)' },
+            { abbr: 'Scl', name: 'Sculptor', english: 'Sculptor\'s Studio', area: 475, brightStar: 'Alpha Sculptoris (4.30)', month: 'Nov', hemisphere: 'S', mythology: 'Lacaille\'s constellation honoring the sculptor\'s studio.', notable: 'Sculptor Group (one of closest galaxy groups, ~ 12 million ly)' }
+          ];
+
+          // Filter + paginate
+          var filter = d.constellationFilter || 'all'; // all / N / S / zodiac
+          var search = d.constellationSearch || '';
+
+          var filtered = ALL_88.filter(function(c) {
+            if (filter === 'N' && c.hemisphere !== 'N' && c.hemisphere !== 'N/S') return false;
+            if (filter === 'S' && c.hemisphere !== 'S' && c.hemisphere !== 'N/S') return false;
+            if (filter === 'zodiac') {
+              var zodiac = ['Ari', 'Tau', 'Gem', 'Cnc', 'Leo', 'Vir', 'Lib', 'Sco', 'Sgr', 'Cap', 'Aqr', 'Psc'];
+              if (zodiac.indexOf(c.abbr) === -1) return false;
+            }
+            if (search && c.name.toLowerCase().indexOf(search.toLowerCase()) === -1 && c.english.toLowerCase().indexOf(search.toLowerCase()) === -1) return false;
+            return true;
+          });
+
+          return sectionCard('🗺️ Complete 88-constellation reference',
+            h('div', null,
+              h('p', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.55, marginBottom: 10 } }, 'All 88 official IAU-recognized constellations. Each gives the Greek/cultural mythology, brightest star + magnitude, the month it culminates (highest in the sky) at 9 PM local time, hemisphere visibility, sky area in square degrees, + notable deep-sky objects within.'),
+
+              // Filter controls
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 10 } },
+                ['all', 'N', 'S', 'zodiac'].map(function(f) {
+                  var on = filter === f;
+                  return a11yButton({
+                    key: f,
+                    onClick: function() { upd({ constellationFilter: f }); },
+                    'aria-pressed': on,
+                    style: { padding: '5px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer', background: on ? '#6366f1' : '#1e293b', color: on ? '#0f172a' : '#cbd5e1', border: on ? '2px solid #6366f1' : '1px solid #334155' }
+                  }, f === 'all' ? 'All 88' : (f === 'N' ? 'Northern' : (f === 'S' ? 'Southern' : 'Zodiac (12)')));
+                }),
+                h('input', {
+                  type: 'text',
+                  placeholder: 'Search constellations…',
+                  value: search,
+                  onChange: function(e) { upd({ constellationSearch: e.target.value }); },
+                  'aria-label': 'Search constellations',
+                  className: 'astr-focus',
+                  style: { flex: 1, minWidth: 120, padding: '5px 10px', borderRadius: 6, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 12 }
+                })
+              ),
+
+              h('div', { 'aria-live': 'polite', style: { fontSize: 11, color: '#64748b', marginBottom: 8 } }, 'Showing ' + filtered.length + ' constellations'),
+
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10, maxHeight: 700, overflowY: 'auto', padding: 4 } },
+                filtered.map(function(c) {
+                  return h('div', {
+                    key: c.abbr + '-' + c.name,
+                    role: 'article',
+                    'aria-label': c.name + ', ' + c.english,
+                    style: { padding: 10, borderRadius: 8, background: '#0f172a', border: '1px solid #334155' }
+                  },
+                    h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 } },
+                      h('h4', { style: { margin: 0, color: '#c7d2fe', fontSize: 14 } }, c.name),
+                      h('span', { style: { fontSize: 10, color: '#fbbf24', fontFamily: 'monospace' } }, c.abbr)
+                    ),
+                    h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 6, fontStyle: 'italic' } }, c.english),
+                    h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, fontSize: 10, color: '#cbd5e1', marginBottom: 6 } },
+                      h('div', null, h('strong', null, 'Star: '), c.brightStar),
+                      h('div', null, h('strong', null, 'Best: '), c.month),
+                      h('div', null, h('strong', null, 'Hem: '), c.hemisphere),
+                      h('div', null, h('strong', null, 'Area: '), c.area + '°²')
+                    ),
+                    h('p', { style: { margin: '4px 0', fontSize: 11, color: '#e2e8f0', lineHeight: 1.5 } }, c.mythology),
+                    c.notable ? h('div', { style: { fontSize: 10, color: '#a5b4fc', marginTop: 4, paddingTop: 4, borderTop: '1px solid #1e293b' } },
+                      h('strong', null, 'Notable: '), c.notable
+                    ) : null
+                  );
+                })
+              ),
+
+              h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 11.5, color: '#c7d2fe', lineHeight: 1.65 } },
+                h('strong', null, 'About the 88 IAU constellations: '),
+                'In 1922 the International Astronomical Union (IAU) standardized constellation boundaries to clean up centuries of overlapping + ambiguous regional traditions. Boundaries are drawn along right-ascension + declination lines so EVERY point in the sky belongs to ONE + only one constellation — even areas with no bright stars. This is a CARTOGRAPHY decision, not an astronomy one; the constellations are conventions, not natural groupings. Stars within a constellation are usually NOT physically associated (most stars in any constellation are vastly different distances from us). The 88 currently recognized are: 48 from Ptolemy\'s 2nd-century Almagest (Greek + Roman) + 40 introduced 1599-1763 (mostly by Petrus Plancius, Johann Bayer, Johannes Hevelius, + Nicolas-Louis de Lacaille) to fill southern + faint regions.'
+              )
+            ),
+            '#6366f1'
+          );
+        }
       }
 
       // ──────────────────────────────────────────────────────────────
@@ -3495,8 +3682,230 @@
               );
             })(),
             '#fb923c'
-          )
+          ),
+          messierCatalogSection()
         );
+
+        // ──────────────────────────────────────────────────────────────
+        // The Messier Catalog — all 110 deep-sky objects
+        // ──────────────────────────────────────────────────────────────
+        function messierCatalogSection() {
+          // Compact array, [num, name, type, const, mag, ra-hr, dec-deg, season, notes]
+          var MESSIER = [
+            { m: 1, name: 'Crab Nebula', type: 'SNR', con: 'Tau', mag: 8.4, season: 'Winter', notes: 'Supernova remnant from 1054 CE — Chinese records describe the "guest star." Contains the Crab Pulsar (PSR B0531+21, 33-millisecond rotation). The original "Messier object" — Charles Messier mistook it for a comet in 1758.' },
+            { m: 2, name: 'M2 Globular', type: 'GC', con: 'Aqr', mag: 6.5, season: 'Autumn', notes: 'Large globular cluster, ~ 175 light-years across, 37,500 ly distant. ~ 150,000 stars. Discovered by Maraldi in 1746.' },
+            { m: 3, name: 'M3 Globular', type: 'GC', con: 'CVn', mag: 6.2, season: 'Spring', notes: 'One of the brightest + most-studied globular clusters. 33,900 ly distant. ~ 500,000 stars. Contains many RR Lyrae variables used to calibrate the cosmic distance ladder.' },
+            { m: 4, name: 'M4 Globular', type: 'GC', con: 'Sco', mag: 5.6, season: 'Summer', notes: 'Closest globular cluster to Earth at 7,200 ly. Discovered by de Chéseaux 1746. Naked-eye from dark sites. Easy to find — 1.3° west of Antares.' },
+            { m: 5, name: 'M5 Globular', type: 'GC', con: 'Ser', mag: 5.7, season: 'Summer', notes: 'One of the oldest known globulars at ~ 13 billion years. 24,500 ly distant. Long-period variables in M5 helped calibrate stellar evolution.' },
+            { m: 6, name: 'Butterfly Cluster', type: 'OC', con: 'Sco', mag: 4.2, season: 'Summer', notes: 'Bright open cluster shaped like a butterfly. ~ 1,600 ly distant, ~ 95 million years old.' },
+            { m: 7, name: 'Ptolemy Cluster', type: 'OC', con: 'Sco', mag: 3.3, season: 'Summer', notes: 'Largest + brightest open cluster known to Ptolemy in 130 CE. ~ 980 ly distant. Best southern Scorpius target.' },
+            { m: 8, name: 'Lagoon Nebula', type: 'EN', con: 'Sgr', mag: 6.0, season: 'Summer', notes: 'Bright emission nebula + star cluster. ~ 4,100 ly distant. Naked-eye visible from dark sites. Contains the Hourglass Region, an active star-forming nursery.' },
+            { m: 9, name: 'M9 Globular', type: 'GC', con: 'Oph', mag: 7.7, season: 'Summer', notes: 'Small but distant globular near the galactic center. ~ 25,000 ly distant.' },
+            { m: 10, name: 'M10 Globular', type: 'GC', con: 'Oph', mag: 6.6, season: 'Summer', notes: 'Bright globular cluster. ~ 14,300 ly distant. ~ 200,000 stars.' },
+            { m: 11, name: 'Wild Duck Cluster', type: 'OC', con: 'Sct', mag: 5.8, season: 'Summer', notes: 'One of the most beautiful + richest open clusters — looks like a flock of ducks in flight. ~ 6,200 ly distant.' },
+            { m: 12, name: 'M12 Globular', type: 'GC', con: 'Oph', mag: 6.7, season: 'Summer', notes: 'Loose, sparse globular near M10. ~ 16,000 ly distant.' },
+            { m: 13, name: 'Hercules Cluster', type: 'GC', con: 'Her', mag: 5.8, season: 'Summer', notes: 'Best northern-hemisphere globular cluster. ~ 22,200 ly distant. ~ 300,000 stars. Target of the 1974 Arecibo Message (transmission aimed at it).' },
+            { m: 14, name: 'M14 Globular', type: 'GC', con: 'Oph', mag: 7.6, season: 'Summer', notes: 'Distant globular near the galactic center, ~ 30,300 ly. ~ 150,000 stars.' },
+            { m: 15, name: 'M15 Globular', type: 'GC', con: 'Peg', mag: 6.2, season: 'Autumn', notes: 'One of the oldest + densest globulars at ~ 12 Gyr. ~ 33,600 ly. Contains a possible intermediate-mass black hole at its core.' },
+            { m: 16, name: 'Eagle Nebula', type: 'EN', con: 'Ser', mag: 6.0, season: 'Summer', notes: 'Active star-forming region. Hubble\'s 1995 "Pillars of Creation" image of M16\'s central dust columns is one of the most iconic astronomy photographs. ~ 7,000 ly distant.' },
+            { m: 17, name: 'Omega Nebula', type: 'EN', con: 'Sgr', mag: 6.0, season: 'Summer', notes: 'Bright emission nebula + active star formation region. Sometimes called the Swan Nebula or Horseshoe Nebula. ~ 5,500 ly distant.' },
+            { m: 18, name: 'M18 Cluster', type: 'OC', con: 'Sgr', mag: 6.9, season: 'Summer', notes: 'Small open cluster, ~ 4,900 ly distant.' },
+            { m: 19, name: 'M19 Globular', type: 'GC', con: 'Oph', mag: 6.8, season: 'Summer', notes: 'One of the most-flattened globulars (due to galactic tidal forces). ~ 28,700 ly distant.' },
+            { m: 20, name: 'Trifid Nebula', type: 'EN+RN', con: 'Sgr', mag: 6.3, season: 'Summer', notes: 'Combination emission + reflection nebula divided into three lobes by dark dust lanes. ~ 5,200 ly distant. Photographically stunning.' },
+            { m: 21, name: 'M21 Cluster', type: 'OC', con: 'Sgr', mag: 5.9, season: 'Summer', notes: 'Open cluster near M20. ~ 4,250 ly distant, ~ 4.6 million years old.' },
+            { m: 22, name: 'Sagittarius Cluster', type: 'GC', con: 'Sgr', mag: 5.1, season: 'Summer', notes: 'One of the brightest globular clusters in the sky. ~ 10,400 ly distant — relatively close, hence bright. Naked-eye visible.' },
+            { m: 23, name: 'M23 Cluster', type: 'OC', con: 'Sgr', mag: 5.5, season: 'Summer', notes: 'Bright + rich open cluster, ~ 2,150 ly distant.' },
+            { m: 24, name: 'Sagittarius Star Cloud', type: 'SC', con: 'Sgr', mag: 4.6, season: 'Summer', notes: 'Not actually a cluster but a STAR CLOUD — a window through dust to a bright region of the galactic disk. ~ 10,000 ly through it. Among the densest naked-eye star regions.' },
+            { m: 25, name: 'M25 Cluster', type: 'OC', con: 'Sgr', mag: 4.6, season: 'Summer', notes: 'Bright open cluster, ~ 2,000 ly distant. Easily naked-eye.' },
+            { m: 26, name: 'M26 Cluster', type: 'OC', con: 'Sct', mag: 8.0, season: 'Summer', notes: 'Faint open cluster, ~ 5,000 ly distant.' },
+            { m: 27, name: 'Dumbbell Nebula', type: 'PN', con: 'Vul', mag: 7.5, season: 'Summer', notes: 'The first planetary nebula discovered (Messier 1764). Bright + easy through any telescope. ~ 1,360 ly distant. Distinctive double-lobed shape.' },
+            { m: 28, name: 'M28 Globular', type: 'GC', con: 'Sgr', mag: 6.8, season: 'Summer', notes: 'Bright globular cluster near the galactic center. ~ 17,900 ly distant.' },
+            { m: 29, name: 'M29 Cluster', type: 'OC', con: 'Cyg', mag: 7.1, season: 'Summer', notes: 'Small open cluster in the Cygnus star fields. ~ 5,500 ly distant.' },
+            { m: 30, name: 'M30 Globular', type: 'GC', con: 'Cap', mag: 7.2, season: 'Autumn', notes: 'Compact globular cluster, ~ 26,100 ly distant. Dense core has undergone "core collapse."' },
+            { m: 31, name: 'Andromeda Galaxy', type: 'G', con: 'And', mag: 3.4, season: 'Autumn', notes: 'Largest galaxy in the Local Group. ~ 2.5 million ly distant — the FARTHEST object visible to the naked eye. Will collide with the Milky Way in ~ 4 billion years.' },
+            { m: 32, name: 'M32 Dwarf Galaxy', type: 'G', con: 'And', mag: 8.1, season: 'Autumn', notes: 'Compact elliptical satellite galaxy of M31. ~ 2.5 million ly distant.' },
+            { m: 33, name: 'Triangulum Galaxy', type: 'G', con: 'Tri', mag: 5.7, season: 'Autumn', notes: '3rd-largest member of the Local Group. ~ 2.7 million ly distant. Difficult to see — very LOW SURFACE BRIGHTNESS. Dark skies are essential.' },
+            { m: 34, name: 'M34 Cluster', type: 'OC', con: 'Per', mag: 5.2, season: 'Autumn', notes: 'Bright open cluster, ~ 1,500 ly distant, ~ 200 million years old.' },
+            { m: 35, name: 'M35 Cluster', type: 'OC', con: 'Gem', mag: 5.1, season: 'Winter', notes: 'Beautiful open cluster, ~ 2,800 ly distant. ~ 200 stars. Often paired with the smaller NGC 2158 just nearby.' },
+            { m: 36, name: 'Pinwheel Cluster (Auriga)', type: 'OC', con: 'Aur', mag: 6.3, season: 'Winter', notes: 'Bright open cluster, ~ 4,100 ly distant. Part of the trio M36/37/38 in Auriga.' },
+            { m: 37, name: 'M37 Cluster', type: 'OC', con: 'Aur', mag: 5.6, season: 'Winter', notes: 'The richest open cluster in Auriga. ~ 4,400 ly distant. Hundreds of resolved stars.' },
+            { m: 38, name: 'Starfish Cluster', type: 'OC', con: 'Aur', mag: 6.4, season: 'Winter', notes: 'Bright open cluster. ~ 3,400 ly distant. Pairs nicely with adjacent M37 + M36.' },
+            { m: 39, name: 'M39 Cluster', type: 'OC', con: 'Cyg', mag: 4.6, season: 'Summer', notes: 'Loose, bright open cluster in northern Cygnus. ~ 800 ly distant.' },
+            { m: 40, name: 'Winnecke 4', type: 'D*', con: 'UMa', mag: 8.4, season: 'Spring', notes: 'A simple DOUBLE STAR — Messier catalogued it as a deep-sky object in error. Often noted as a "stupid Messier mistake" + retained for completeness.' },
+            { m: 41, name: 'M41 Cluster', type: 'OC', con: 'CMa', mag: 4.5, season: 'Winter', notes: 'Naked-eye open cluster just south of Sirius. ~ 2,300 ly distant. Aristotle\'s "cloudy spot."' },
+            { m: 42, name: 'Orion Nebula', type: 'EN', con: 'Ori', mag: 4.0, season: 'Winter', notes: 'The most famous emission nebula. ~ 1,344 ly distant. Active stellar nursery containing the Trapezium young open cluster.' },
+            { m: 43, name: 'De Mairan\'s Nebula', type: 'EN', con: 'Ori', mag: 9.0, season: 'Winter', notes: 'Companion nebula to M42, separated by a dark dust lane. Often considered part of the same emission complex.' },
+            { m: 44, name: 'Beehive Cluster', type: 'OC', con: 'Cnc', mag: 3.7, season: 'Spring', notes: 'Bright + nearby open cluster. ~ 600 ly distant. Naked-eye from dark sites. Roman name "Praesepe" (manger). One of the closest open clusters to the Sun.' },
+            { m: 45, name: 'Pleiades', type: 'OC', con: 'Tau', mag: 1.6, season: 'Winter', notes: 'The "Seven Sisters." Brightest + closest open cluster. ~ 444 ly distant. Naked-eye prominent. Surrounded by reflection nebulosity from dust the cluster is passing through.' },
+            { m: 46, name: 'M46 Cluster', type: 'OC', con: 'Pup', mag: 6.1, season: 'Winter', notes: 'Rich open cluster with a planetary nebula (NGC 2438) embedded — though the PN is a foreground object, not actually in the cluster. ~ 5,400 ly distant.' },
+            { m: 47, name: 'M47 Cluster', type: 'OC', con: 'Pup', mag: 4.4, season: 'Winter', notes: 'Bright young open cluster, ~ 1,600 ly distant.' },
+            { m: 48, name: 'M48 Cluster', type: 'OC', con: 'Hya', mag: 5.5, season: 'Spring', notes: 'Bright, scattered open cluster — Messier got the position wrong originally + the modern recovery was done by Oswald Thomas in 1934. ~ 1,500 ly distant.' },
+            { m: 49, name: 'M49 Galaxy', type: 'G', con: 'Vir', mag: 8.4, season: 'Spring', notes: 'Brightest member of the Virgo Cluster of galaxies. Giant elliptical. ~ 56 million ly distant.' },
+            { m: 50, name: 'M50 Cluster', type: 'OC', con: 'Mon', mag: 5.9, season: 'Winter', notes: 'Heart-shaped open cluster, ~ 3,200 ly distant.' },
+            { m: 51, name: 'Whirlpool Galaxy', type: 'G', con: 'CVn', mag: 8.4, season: 'Spring', notes: 'Beautiful face-on interacting spiral galaxy with a small companion (NGC 5195) connected by a tidal arm. ~ 31 million ly distant. Lord Rosse identified its spiral structure in 1845.' },
+            { m: 52, name: 'M52 Cluster', type: 'OC', con: 'Cas', mag: 6.9, season: 'Autumn', notes: 'Bright open cluster, ~ 5,000 ly distant.' },
+            { m: 53, name: 'M53 Globular', type: 'GC', con: 'Com', mag: 7.6, season: 'Spring', notes: 'Faint globular cluster, ~ 58,000 ly distant — one of the most-distant Messier globulars.' },
+            { m: 54, name: 'M54 Globular', type: 'GC', con: 'Sgr', mag: 7.6, season: 'Summer', notes: 'Actually a globular cluster of the SAGITTARIUS DWARF GALAXY (a satellite of the Milky Way currently being absorbed). The first known extragalactic globular cluster (recognized as such in 1994).' },
+            { m: 55, name: 'M55 Globular', type: 'GC', con: 'Sgr', mag: 6.3, season: 'Summer', notes: 'Bright but low globular for northern observers, ~ 17,300 ly distant.' },
+            { m: 56, name: 'M56 Globular', type: 'GC', con: 'Lyr', mag: 8.3, season: 'Summer', notes: 'Faint globular near M27, ~ 32,900 ly distant.' },
+            { m: 57, name: 'Ring Nebula', type: 'PN', con: 'Lyr', mag: 8.8, season: 'Summer', notes: 'The textbook planetary nebula. Visible smoke ring at any magnification. ~ 2,300 ly distant.' },
+            { m: 58, name: 'M58 Galaxy', type: 'G', con: 'Vir', mag: 9.7, season: 'Spring', notes: 'Barred spiral in the Virgo Cluster. ~ 62 million ly distant.' },
+            { m: 59, name: 'M59 Galaxy', type: 'G', con: 'Vir', mag: 9.6, season: 'Spring', notes: 'Elliptical galaxy in the Virgo Cluster, ~ 60 million ly distant.' },
+            { m: 60, name: 'M60 Galaxy', type: 'G', con: 'Vir', mag: 8.8, season: 'Spring', notes: 'Bright elliptical in the Virgo Cluster, often paired with the smaller M59. ~ 55 million ly distant.' },
+            { m: 61, name: 'M61 Galaxy', type: 'G', con: 'Vir', mag: 9.7, season: 'Spring', notes: 'Face-on spiral in the Virgo Cluster, ~ 52 million ly distant.' },
+            { m: 62, name: 'M62 Globular', type: 'GC', con: 'Oph', mag: 6.5, season: 'Summer', notes: 'One of the most-distorted globulars (close to galactic center). ~ 22,500 ly distant.' },
+            { m: 63, name: 'Sunflower Galaxy', type: 'G', con: 'CVn', mag: 8.6, season: 'Spring', notes: 'Flocculent spiral galaxy. ~ 27 million ly distant. Many tightly-wound spiral arms.' },
+            { m: 64, name: 'Black Eye Galaxy', type: 'G', con: 'Com', mag: 8.5, season: 'Spring', notes: 'Spiral galaxy with a striking dark dust lane on one side, like a "black eye." ~ 17 million ly distant.' },
+            { m: 65, name: 'M65 (Leo Triplet)', type: 'G', con: 'Leo', mag: 9.3, season: 'Spring', notes: 'Member of the LEO TRIPLET of galaxies along with M66 + NGC 3628. ~ 35 million ly distant.' },
+            { m: 66, name: 'M66 (Leo Triplet)', type: 'G', con: 'Leo', mag: 8.9, season: 'Spring', notes: 'Brightest member of the Leo Triplet. ~ 35 million ly distant. Significant tidal distortion.' },
+            { m: 67, name: 'M67 Cluster', type: 'OC', con: 'Cnc', mag: 6.1, season: 'Spring', notes: 'One of the OLDEST known open clusters at ~ 4 billion years old. ~ 2,700 ly distant. Used to study stellar evolution in solar-mass stars.' },
+            { m: 68, name: 'M68 Globular', type: 'GC', con: 'Hya', mag: 7.7, season: 'Spring', notes: 'Distant southern globular, ~ 33,300 ly distant.' },
+            { m: 69, name: 'M69 Globular', type: 'GC', con: 'Sgr', mag: 7.7, season: 'Summer', notes: 'Faint globular near the galactic center. ~ 29,700 ly distant.' },
+            { m: 70, name: 'M70 Globular', type: 'GC', con: 'Sgr', mag: 7.9, season: 'Summer', notes: 'Faint globular near the galactic center. ~ 29,400 ly distant. Hale-Bopp comet was discovered while observing M70 in 1995.' },
+            { m: 71, name: 'M71 Globular', type: 'GC', con: 'Sge', mag: 8.2, season: 'Summer', notes: 'Loose globular cluster — was long considered an intermediate or "transition" between open + globular. ~ 13,000 ly distant.' },
+            { m: 72, name: 'M72 Globular', type: 'GC', con: 'Aqr', mag: 9.4, season: 'Autumn', notes: 'Distant globular cluster, ~ 54,800 ly distant.' },
+            { m: 73, name: 'M73 Asterism', type: 'AS', con: 'Aqr', mag: 8.9, season: 'Autumn', notes: 'NOT a true cluster — just 4 random stars that happen to align from our viewpoint. Catalogued by Messier in error. Some recent disputes about whether to retain it; the IAU keeps it for completeness.' },
+            { m: 74, name: 'Phantom Galaxy', type: 'G', con: 'Psc', mag: 9.4, season: 'Autumn', notes: 'Beautiful face-on spiral but very LOW SURFACE BRIGHTNESS — challenging visual target. Dramatic in long-exposure photography. ~ 32 million ly distant.' },
+            { m: 75, name: 'M75 Globular', type: 'GC', con: 'Sgr', mag: 8.5, season: 'Summer', notes: 'Compact, distant globular at ~ 67,500 ly — one of the most-distant Messier globulars.' },
+            { m: 76, name: 'Little Dumbbell Nebula', type: 'PN', con: 'Per', mag: 10.1, season: 'Autumn', notes: 'A small bipolar planetary nebula similar in shape to M27 but much fainter + more distant. ~ 2,500 ly distant. One of the faintest Messier objects.' },
+            { m: 77, name: 'M77 Galaxy', type: 'G', con: 'Cet', mag: 8.9, season: 'Autumn', notes: 'A Seyfert-2 type AGN (active galactic nucleus) — one of the brightest + closest active galaxies. ~ 47 million ly distant.' },
+            { m: 78, name: 'M78 Nebula', type: 'RN', con: 'Ori', mag: 8.3, season: 'Winter', notes: 'Reflection nebula in Orion. ~ 1,600 ly distant. Active region with embedded young stars.' },
+            { m: 79, name: 'M79 Globular', type: 'GC', con: 'Lep', mag: 7.7, season: 'Winter', notes: 'Unusual: a southern globular cluster that may have been captured from the Canis Major Dwarf Galaxy. ~ 41,000 ly distant.' },
+            { m: 80, name: 'M80 Globular', type: 'GC', con: 'Sco', mag: 7.3, season: 'Summer', notes: 'Compact globular cluster, ~ 33,000 ly distant. ~ 200,000 stars in a dense core.' },
+            { m: 81, name: 'Bode\'s Galaxy', type: 'G', con: 'UMa', mag: 6.9, season: 'Spring', notes: 'A grand-design spiral, one of the brightest galaxies in the sky. ~ 12 million ly distant. Often paired with M82.' },
+            { m: 82, name: 'Cigar Galaxy', type: 'G', con: 'UMa', mag: 8.4, season: 'Spring', notes: 'A starburst galaxy + irregular interaction partner of M81. The CLOSEST starburst galaxy to Earth. ~ 12 million ly distant. SN 2014J occurred here — closest naked-eye supernova in decades.' },
+            { m: 83, name: 'Southern Pinwheel', type: 'G', con: 'Hya', mag: 7.5, season: 'Spring', notes: 'A beautiful barred spiral, well-imaged but LOW from Northern Hemisphere latitudes. ~ 15 million ly distant.' },
+            { m: 84, name: 'M84 Galaxy', type: 'G', con: 'Vir', mag: 9.1, season: 'Spring', notes: 'Lenticular galaxy in the Virgo Cluster. Part of Markarian\'s Chain — a string of galaxies including M84 + M86. ~ 60 million ly distant.' },
+            { m: 85, name: 'M85 Galaxy', type: 'G', con: 'Com', mag: 9.1, season: 'Spring', notes: 'Lenticular galaxy at the northern edge of the Virgo Cluster, ~ 60 million ly distant.' },
+            { m: 86, name: 'M86 Galaxy', type: 'G', con: 'Vir', mag: 8.9, season: 'Spring', notes: 'Lenticular giant in the Virgo Cluster, ~ 52 million ly distant. Part of Markarian\'s Chain.' },
+            { m: 87, name: 'Virgo A', type: 'G', con: 'Vir', mag: 8.6, season: 'Spring', notes: 'Giant elliptical galaxy + the dominant member of the Virgo Cluster. Hosts a SUPERMASSIVE BLACK HOLE (6.5 billion solar masses) — the first directly imaged by the Event Horizon Telescope (2019). ~ 53 million ly distant.' },
+            { m: 88, name: 'M88 Galaxy', type: 'G', con: 'Com', mag: 9.6, season: 'Spring', notes: 'Spiral galaxy in the Virgo Cluster, ~ 47 million ly distant.' },
+            { m: 89, name: 'M89 Galaxy', type: 'G', con: 'Vir', mag: 9.8, season: 'Spring', notes: 'Elliptical galaxy in the Virgo Cluster, ~ 50 million ly distant.' },
+            { m: 90, name: 'M90 Galaxy', type: 'G', con: 'Vir', mag: 9.5, season: 'Spring', notes: 'Spiral galaxy in the Virgo Cluster, ~ 60 million ly distant. Unusual blueshift — approaching us rather than receding.' },
+            { m: 91, name: 'M91 Galaxy', type: 'G', con: 'Com', mag: 10.2, season: 'Spring', notes: 'Barred spiral in the Virgo Cluster. ~ 63 million ly distant. Faint visual target.' },
+            { m: 92, name: 'M92 Globular', type: 'GC', con: 'Her', mag: 6.4, season: 'Summer', notes: 'Often-overlooked partner to M13. ~ 26,700 ly distant. Comparable in size + age but less dramatic than M13.' },
+            { m: 93, name: 'M93 Cluster', type: 'OC', con: 'Pup', mag: 6.2, season: 'Winter', notes: 'Bright open cluster, ~ 3,400 ly distant.' },
+            { m: 94, name: 'M94 Galaxy', type: 'G', con: 'CVn', mag: 8.2, season: 'Spring', notes: 'A "ringed" galaxy with a starburst central region. ~ 16 million ly distant.' },
+            { m: 95, name: 'M95 Galaxy', type: 'G', con: 'Leo', mag: 9.7, season: 'Spring', notes: 'Barred spiral, ~ 33 million ly distant. Part of the Leo I Group.' },
+            { m: 96, name: 'M96 Galaxy', type: 'G', con: 'Leo', mag: 9.2, season: 'Spring', notes: 'Spiral galaxy, ~ 31 million ly distant. Part of the Leo I Group.' },
+            { m: 97, name: 'Owl Nebula', type: 'PN', con: 'UMa', mag: 9.9, season: 'Spring', notes: 'Planetary nebula with two "eye-like" dark patches. ~ 2,000 ly distant. Best with an OIII filter.' },
+            { m: 98, name: 'M98 Galaxy', type: 'G', con: 'Com', mag: 10.1, season: 'Spring', notes: 'Edge-on spiral in the Virgo Cluster, ~ 60 million ly distant.' },
+            { m: 99, name: 'Coma Pinwheel', type: 'G', con: 'Com', mag: 9.9, season: 'Spring', notes: 'Face-on spiral in the Virgo Cluster, ~ 50 million ly distant. Asymmetric arms suggest gravitational interaction.' },
+            { m: 100, name: 'M100 Galaxy', type: 'G', con: 'Com', mag: 9.3, season: 'Spring', notes: 'Bright face-on spiral in the Virgo Cluster. ~ 55 million ly distant. Photogenic.' },
+            { m: 101, name: 'Pinwheel Galaxy', type: 'G', con: 'UMa', mag: 7.9, season: 'Spring', notes: 'Beautiful face-on spiral, one of the largest galaxies in the Local Universe. ~ 21 million ly distant. LARGE — easily fills a long-focal-length field of view.' },
+            { m: 102, name: 'NGC 5866 / Spindle', type: 'G', con: 'Dra', mag: 9.9, season: 'Spring', notes: 'Edge-on lenticular galaxy, ~ 50 million ly distant. (M102 is contested — some scholars argue it was a duplicate of M101.)' },
+            { m: 103, name: 'M103 Cluster', type: 'OC', con: 'Cas', mag: 7.4, season: 'Autumn', notes: 'Faint open cluster, ~ 8,500 ly distant.' },
+            { m: 104, name: 'Sombrero Galaxy', type: 'G', con: 'Vir', mag: 8.0, season: 'Spring', notes: 'Iconic edge-on spiral with a prominent dust lane. ~ 29 million ly distant. The "sombrero" hat shape from the bright central bulge + the dark equatorial dust ring.' },
+            { m: 105, name: 'M105 Galaxy', type: 'G', con: 'Leo', mag: 9.8, season: 'Spring', notes: 'Elliptical galaxy, ~ 32 million ly distant. Part of the Leo I Group with M95 + M96.' },
+            { m: 106, name: 'M106 Galaxy', type: 'G', con: 'CVn', mag: 8.4, season: 'Spring', notes: 'Spiral galaxy with an active galactic nucleus + a SUPERMASSIVE BLACK HOLE (40 million solar masses). The water-maser distance to M106 was used to calibrate the cosmic distance ladder. ~ 25 million ly distant.' },
+            { m: 107, name: 'M107 Globular', type: 'GC', con: 'Oph', mag: 7.9, season: 'Summer', notes: 'Loose globular cluster, ~ 20,900 ly distant.' },
+            { m: 108, name: 'M108 Galaxy', type: 'G', con: 'UMa', mag: 10.0, season: 'Spring', notes: 'Edge-on spiral, ~ 46 million ly distant. Near M97 in the same field of view.' },
+            { m: 109, name: 'M109 Galaxy', type: 'G', con: 'UMa', mag: 9.8, season: 'Spring', notes: 'Barred spiral, ~ 84 million ly distant.' },
+            { m: 110, name: 'M110 Dwarf', type: 'G', con: 'And', mag: 8.5, season: 'Autumn', notes: 'Elliptical satellite galaxy of Andromeda (M31). The LAST Messier object — added 1967 (Messier observed it but did not catalog it). ~ 2.7 million ly distant.' }
+          ];
+
+          // Filter controls
+          var typeFilter = d.messierType || 'all';
+          var seasonFilter = d.messierSeason || 'all';
+          var search = d.messierSearch || '';
+
+          var filtered = MESSIER.filter(function(o) {
+            if (typeFilter !== 'all' && o.type !== typeFilter) return false;
+            if (seasonFilter !== 'all' && o.season !== seasonFilter) return false;
+            if (search) {
+              var q = search.toLowerCase();
+              if (o.name.toLowerCase().indexOf(q) === -1 &&
+                  ('m' + o.m).indexOf(q) === -1 &&
+                  o.con.toLowerCase().indexOf(q) === -1) return false;
+            }
+            return true;
+          });
+
+          var typeLabel = function(t) {
+            return { G: 'Galaxy', GC: 'Globular Cluster', OC: 'Open Cluster', EN: 'Emission Nebula', RN: 'Reflection Nebula', PN: 'Planetary Nebula', SNR: 'Supernova Remnant', AS: 'Asterism', 'D*': 'Double Star', SC: 'Star Cloud', 'EN+RN': 'Emission + Reflection Nebula' }[t] || t;
+          };
+
+          var typeColor = function(t) {
+            return { G: '#fbbf24', GC: '#e2e8f0', OC: '#bfdbfe', EN: '#86efac', RN: '#a5b4fc', PN: '#fbcfe8', SNR: '#fca5a5', AS: '#94a3b8', 'D*': '#94a3b8', SC: '#fde68a', 'EN+RN': '#86efac' }[t] || '#94a3b8';
+          };
+
+          return sectionCard('🗂️ Messier Catalog — all 110 deep-sky objects',
+            h('div', null,
+              h('p', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.55, marginBottom: 10 } }, 'Charles Messier\'s 1764-1782 catalog of "fuzzy non-comet" objects has become the most-observed list in amateur astronomy. Completing all 110 in a single calendar year (the "Messier Marathon") is a classic challenge — best in late March from latitudes 25-35° North. Each entry: object type, constellation, magnitude, observing season, history + science.'),
+
+              // Filter UI
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 8 } },
+                h('select', {
+                  value: typeFilter,
+                  onChange: function(e) { upd({ messierType: e.target.value }); },
+                  'aria-label': 'Filter by object type',
+                  className: 'astr-focus',
+                  style: { padding: '4px 8px', borderRadius: 6, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 11 }
+                },
+                  h('option', { value: 'all' }, 'All types'),
+                  h('option', { value: 'G' }, 'Galaxies'),
+                  h('option', { value: 'GC' }, 'Globular clusters'),
+                  h('option', { value: 'OC' }, 'Open clusters'),
+                  h('option', { value: 'EN' }, 'Emission nebulae'),
+                  h('option', { value: 'PN' }, 'Planetary nebulae'),
+                  h('option', { value: 'SNR' }, 'Supernova remnants'),
+                  h('option', { value: 'RN' }, 'Reflection nebulae')
+                ),
+                h('select', {
+                  value: seasonFilter,
+                  onChange: function(e) { upd({ messierSeason: e.target.value }); },
+                  'aria-label': 'Filter by season',
+                  className: 'astr-focus',
+                  style: { padding: '4px 8px', borderRadius: 6, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 11 }
+                },
+                  h('option', { value: 'all' }, 'All seasons'),
+                  h('option', { value: 'Winter' }, 'Winter (Dec-Feb)'),
+                  h('option', { value: 'Spring' }, 'Spring (Mar-May)'),
+                  h('option', { value: 'Summer' }, 'Summer (Jun-Aug)'),
+                  h('option', { value: 'Autumn' }, 'Autumn (Sep-Nov)')
+                ),
+                h('input', {
+                  type: 'text',
+                  placeholder: 'Search Messier (M13, NGC, Orion…)',
+                  value: search,
+                  onChange: function(e) { upd({ messierSearch: e.target.value }); },
+                  'aria-label': 'Search Messier catalog',
+                  className: 'astr-focus',
+                  style: { flex: 1, minWidth: 140, padding: '5px 10px', borderRadius: 6, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 11 }
+                })
+              ),
+
+              h('div', { 'aria-live': 'polite', style: { fontSize: 11, color: '#64748b', marginBottom: 8 } }, 'Showing ' + filtered.length + ' of 110 Messier objects'),
+
+              h('div', { style: { maxHeight: 600, overflowY: 'auto', padding: 4 } },
+                filtered.map(function(o) {
+                  return h('div', {
+                    key: 'M' + o.m,
+                    style: { display: 'grid', gridTemplateColumns: '50px 1fr', gap: 8, padding: 8, marginBottom: 6, background: '#0f172a', borderRadius: 6, borderLeft: '3px solid ' + typeColor(o.type) }
+                  },
+                    h('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } },
+                      h('div', { style: { fontSize: 16, fontWeight: 900, color: typeColor(o.type) } }, 'M' + o.m),
+                      h('div', { style: { fontSize: 9, color: '#64748b', fontFamily: 'monospace' } }, o.type)
+                    ),
+                    h('div', null,
+                      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: 4, marginBottom: 2 } },
+                        h('h4', { style: { margin: 0, color: '#c7d2fe', fontSize: 12.5 } }, o.name),
+                        h('span', { style: { fontSize: 10, color: '#94a3b8' } }, typeLabel(o.type) + ' · ' + o.con + ' · mag ' + o.mag + ' · ' + o.season)
+                      ),
+                      h('p', { style: { margin: 0, fontSize: 11, color: '#e2e8f0', lineHeight: 1.5 } }, o.notes)
+                    )
+                  );
+                })
+              ),
+
+              h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 11.5, color: '#c7d2fe', lineHeight: 1.65 } },
+                h('strong', null, '🏆 The Messier Marathon: '),
+                'Observers in northern temperate latitudes (25-35° North) can try to observe ALL 110 Messier objects in a SINGLE NIGHT — the "Messier Marathon." Best around the spring equinox (mid to late March), when an all-night observation pass can catch every object as it transits the meridian. A typical successful marathon requires: clear skies all night, dark sky (Bortle 3 or better), a low southern horizon, a planned target sequence + a watchful eye on the western (setting) objects in the early evening. Most beginners complete 70-90 in their first marathon attempt. The Messier Marathon is a rite of passage for serious amateur observers.'
+              )
+            ),
+            '#fbbf24'
+          );
+        }
       }
 
       // ──────────────────────────────────────────────────────────────
