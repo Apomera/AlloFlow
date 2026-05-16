@@ -8571,6 +8571,693 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     );
   }
 
+  // ── Z. PERSONAL LEARNING JOURNAL (Wave 6) ──
+  // Long-form journal with subject tags + mood tracking + search.
+  // For "I learned X about Y today" entries that build a personal
+  // knowledge log over time. Distinct from Weekly Reflection (structured)
+  // and Reflection Prompts (one-prompt-at-a-time).
+  function PersonalLearningJournal(props) {
+    if (!R) return null;
+    var data = props.data || { entries: [] };
+    var setData = props.setData;
+    var vs = R.useState('list');                       var view = vs[0];      var setView = vs[1];
+    var es = R.useState(null);                         var editing = es[0];   var setEditing = es[1];
+    var qs = R.useState('');                           var search = qs[0];    var setSearch = qs[1];
+    var fs = R.useState({ title: '', body: '', subject: '', mood: 'neutral', tags: '' });
+    var form = fs[0];                                  var setForm = fs[1];
+    var sf = R.useState('all');                        var subFilter = sf[0]; var setSubFilter = sf[1];
+
+    var MOODS = [
+      { id: 'curious',     icon: '🤔', color: '#3b82f6' },
+      { id: 'excited',     icon: '😄', color: '#fbbf24' },
+      { id: 'frustrated',  icon: '😤', color: '#ef4444' },
+      { id: 'proud',       icon: '😌', color: '#a855f7' },
+      { id: 'confused',    icon: '😵', color: '#94a3b8' },
+      { id: 'grateful',    icon: '🙏', color: '#10b981' },
+      { id: 'overwhelmed', icon: '😰', color: '#f97316' },
+      { id: 'neutral',     icon: '😐', color: '#64748b' }
+    ];
+
+    function save() {
+      if (!form.body.trim()) { alert('Need some content.'); return; }
+      var id = editing || tkId();
+      var entry = Object.assign({ id: id, date: todayISO(), time: Date.now() }, form);
+      var entries = (data.entries || []).slice();
+      var i = entries.findIndex(function(e) { return e.id === id; });
+      if (i >= 0) entries[i] = Object.assign({}, entries[i], entry);
+      else entries.unshift(entry);
+      setData({ entries: entries });
+      setForm({ title: '', body: '', subject: '', mood: 'neutral', tags: '' });
+      setEditing(null);
+      setView('list');
+    }
+    function remove(id) {
+      if (!confirm('Delete this journal entry?')) return;
+      setData({ entries: (data.entries || []).filter(function(e) { return e.id !== id; }) });
+    }
+    function startEdit(e) {
+      setEditing(e.id);
+      setForm({ title: e.title || '', body: e.body || '', subject: e.subject || '', mood: e.mood || 'neutral', tags: e.tags || '' });
+      setView('new');
+    }
+
+    var entries = data.entries || [];
+    var subjects = entries.map(function(e) { return e.subject; }).filter(function(s, i, arr) { return s && arr.indexOf(s) === i; }).sort();
+    var filtered = entries.filter(function(e) {
+      if (subFilter !== 'all' && e.subject !== subFilter) return false;
+      if (search) {
+        var q = search.toLowerCase();
+        return (e.title || '').toLowerCase().indexOf(q) >= 0 ||
+               (e.body || '').toLowerCase().indexOf(q) >= 0 ||
+               (e.tags || '').toLowerCase().indexOf(q) >= 0;
+      }
+      return true;
+    });
+
+    if (view === 'new') {
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader('📓', editing ? 'Edit journal entry' : 'New journal entry', 'A space for "I learned X about Y today" — builds personal knowledge over time.', '#ec4899'),
+        tkCard('#ec4899',
+          hh('div', null,
+            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#f472b6', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Title (optional)'),
+            tkInput(form.title, function(v) { setForm(Object.assign({}, form, { title: v })); }, 'e.g., "Today\'s biology insight"', { marginBottom: 12 }),
+
+            hh('div', { style: { display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 10, marginBottom: 12 } },
+              hh('div', null,
+                hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#f472b6', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Subject'),
+                tkInput(form.subject, function(v) { setForm(Object.assign({}, form, { subject: v })); }, 'e.g., "Biology"')
+              ),
+              hh('div', null,
+                hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#f472b6', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Mood'),
+                hh('div', { style: { display: 'flex', gap: 2, flexWrap: 'wrap' } },
+                  MOODS.slice(0, 4).map(function(m) {
+                    var on = form.mood === m.id;
+                    return hh('button', { key: 'mo-' + m.id,
+                      onClick: function() { setForm(Object.assign({}, form, { mood: m.id })); },
+                      style: { padding: 6, borderRadius: 4, background: on ? m.color + '30' : 'rgba(15,23,42,0.5)', border: '1px solid ' + (on ? m.color : 'rgba(100,116,139,0.30)'), fontSize: 14, cursor: 'pointer' },
+                      title: m.id
+                    }, m.icon);
+                  })
+                ),
+                hh('div', { style: { display: 'flex', gap: 2, flexWrap: 'wrap', marginTop: 2 } },
+                  MOODS.slice(4).map(function(m) {
+                    var on = form.mood === m.id;
+                    return hh('button', { key: 'mo-' + m.id,
+                      onClick: function() { setForm(Object.assign({}, form, { mood: m.id })); },
+                      style: { padding: 6, borderRadius: 4, background: on ? m.color + '30' : 'rgba(15,23,42,0.5)', border: '1px solid ' + (on ? m.color : 'rgba(100,116,139,0.30)'), fontSize: 14, cursor: 'pointer' },
+                      title: m.id
+                    }, m.icon);
+                  })
+                )
+              )
+            ),
+
+            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#f472b6', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Entry'),
+            tkTextarea(form.body, function(v) { setForm(Object.assign({}, form, { body: v })); }, 'What did you learn today? What surprised you? What\'s still unclear?', 8, { marginBottom: 12 }),
+
+            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#f472b6', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Tags (comma-separated, optional)'),
+            tkInput(form.tags, function(v) { setForm(Object.assign({}, form, { tags: v })); }, 'e.g., "cells, mitochondria, energy"')
+          )
+        ),
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+          tkBtn('← Cancel', function() { setView('list'); setEditing(null); }, 'ghost'),
+          tkBtn('💾 Save entry', save, 'primary')
+        )
+      );
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('📓', 'Learning Journal', 'Free-form journal of what you\'re learning. Tag by subject + mood. Search across all entries.', '#ec4899'),
+
+      // Stats
+      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: 8, marginBottom: 12 } },
+        [
+          { label: 'Total entries', value: entries.length, color: '#ec4899', icon: '📓' },
+          { label: 'Subjects', value: subjects.length, color: '#3b82f6', icon: '📚' },
+          { label: 'Words written', value: entries.reduce(function(s, e) { return s + (e.body || '').split(/\s+/).filter(Boolean).length; }, 0).toLocaleString(), color: '#a855f7', icon: '✍' }
+        ].map(function(s, i) {
+          return hh('div', { key: 'ljs-' + i, style: { padding: 10, borderRadius: 8, background: s.color + '12', border: '1px solid ' + s.color + '30', textAlign: 'center' } },
+            hh('div', { style: { fontSize: 14, marginBottom: 2 } }, s.icon),
+            hh('div', { style: { fontSize: 16, fontWeight: 900, color: s.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, s.value),
+            hh('div', { style: { fontSize: 9, color: '#94a3b8', textTransform: 'uppercase' } }, s.label)
+          );
+        })
+      ),
+
+      hh('div', { style: { display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' } },
+        tkInput(search, setSearch, '🔎 Search entries', { flex: 1, minWidth: 180 }),
+        subjects.length > 0 ? hh('select', { value: subFilter,
+          onChange: function(e) { setSubFilter(e.target.value); },
+          style: { padding: '10px 12px', fontSize: 12, color: '#f472b6', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(236,72,153,0.40)', borderRadius: 6 }
+        },
+          hh('option', { value: 'all' }, 'All subjects'),
+          subjects.map(function(s) { return hh('option', { key: 'so-' + s, value: s }, s); })
+        ) : null,
+        tkBtn('+ New entry', function() { setForm({ title: '', body: '', subject: '', mood: 'neutral', tags: '' }); setEditing(null); setView('new'); }, 'primary')
+      ),
+
+      filtered.length === 0 ? tkEmptyState('📓', entries.length === 0 ? 'No journal entries yet. Start writing about what you\'re learning.' : 'No entries match your filter.', null, null)
+      : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+          filtered.map(function(e) {
+            var m = MOODS.filter(function(x) { return x.id === e.mood; })[0] || MOODS[7];
+            return hh('div', { key: 'je-' + e.id, style: {
+              padding: 12, borderRadius: 10,
+              background: 'rgba(15,23,42,0.6)',
+              border: '1px solid rgba(236,72,153,0.30)',
+              borderLeft: '4px solid ' + m.color
+            } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 6 } },
+                hh('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
+                  hh('span', { style: { fontSize: 20 } }, m.icon),
+                  hh('div', null,
+                    e.title ? hh('strong', { style: { fontSize: 13, color: m.color } }, e.title) : null,
+                    hh('div', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } },
+                      e.subject ? hh('span', { style: { color: '#3b82f6' } }, '📚 ' + e.subject + ' · ') : null,
+                      relDate(e.date)
+                    )
+                  )
+                ),
+                hh('div', { style: { display: 'flex', gap: 4 } },
+                  hh('button', { onClick: function() { startEdit(e); }, style: { background: 'transparent', border: 'none', color: m.color, fontSize: 11, cursor: 'pointer' } }, '✏'),
+                  hh('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                )
+              ),
+              hh('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.65, whiteSpace: 'pre-wrap' } }, e.body),
+              e.tags ? hh('div', { style: { marginTop: 6, display: 'flex', gap: 4, flexWrap: 'wrap' } },
+                e.tags.split(',').map(function(t, i) {
+                  return hh('span', { key: 'tg-' + i, style: { padding: '2px 8px', borderRadius: 999, background: 'rgba(236,72,153,0.15)', color: '#f472b6', fontSize: 9, fontWeight: 700 } }, '#' + t.trim());
+                })
+              ) : null
+            );
+          })
+        )
+    );
+  }
+
+  // ── AA. PERSONAL GRATITUDE LOG (Wave 6) ──
+  // 3 daily gratitudes. Emmons + McCullough 2003 — gratitude practice
+  // strongest single positive-psychology intervention.
+  function PersonalGratitudeLog(props) {
+    if (!R) return null;
+    var data = props.data || { entries: [] };
+    var setData = props.setData;
+    var fs = R.useState({ g1: '', g2: '', g3: '' });
+    var form = fs[0]; var setForm = fs[1];
+
+    function save() {
+      if (!form.g1.trim() && !form.g2.trim() && !form.g3.trim()) { alert('Add at least one.'); return; }
+      var entry = Object.assign({ id: tkId(), date: todayISO() }, form);
+      setData({ entries: [entry].concat(data.entries || []) });
+      setForm({ g1: '', g2: '', g3: '' });
+    }
+    function remove(id) { setData({ entries: (data.entries || []).filter(function(e) { return e.id !== id; }) }); }
+
+    var entries = data.entries || [];
+    var today = todayISO();
+    var todayEntry = entries.filter(function(e) { return e.date === today; })[0];
+
+    function streak() {
+      var dates = entries.map(function(e) { return e.date; }).filter(function(d, i, arr) { return arr.indexOf(d) === i; });
+      var s = 0;
+      for (var i = 0; i < 365; i++) {
+        var dt = new Date(); dt.setDate(dt.getDate() - i);
+        var iso = dt.toISOString().slice(0, 10);
+        if (dates.indexOf(iso) >= 0) s++;
+        else if (i > 0) break;
+      }
+      return s;
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🙏', 'Gratitude Log', '3 things you\'re grateful for, daily. Strongest single positive-psychology intervention (Emmons + McCullough 2003).', '#10b981'),
+
+      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: 8, marginBottom: 12 } },
+        [
+          { label: 'Total entries', value: entries.length, color: '#10b981', icon: '🙏' },
+          { label: 'Day streak', value: streak() + 'd', color: '#fbbf24', icon: '🔥' },
+          { label: 'Gratitudes', value: entries.reduce(function(s, e) { return s + (e.g1 ? 1 : 0) + (e.g2 ? 1 : 0) + (e.g3 ? 1 : 0); }, 0), color: '#a855f7', icon: '✨' }
+        ].map(function(s, i) {
+          return hh('div', { key: 'gs-' + i, style: { padding: 10, borderRadius: 8, background: s.color + '12', border: '1px solid ' + s.color + '30', textAlign: 'center' } },
+            hh('div', { style: { fontSize: 14, marginBottom: 2 } }, s.icon),
+            hh('div', { style: { fontSize: 16, fontWeight: 900, color: s.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, s.value),
+            hh('div', { style: { fontSize: 9, color: '#94a3b8', textTransform: 'uppercase' } }, s.label)
+          );
+        })
+      ),
+
+      todayEntry ? hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.30)', marginBottom: 12 } },
+        hh('div', { style: { fontSize: 11, color: '#10b981', fontWeight: 700, marginBottom: 6 } }, '✓ Today\'s gratitudes:'),
+        hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.7 } },
+          todayEntry.g1 ? hh('div', null, '1. ', todayEntry.g1) : null,
+          todayEntry.g2 ? hh('div', null, '2. ', todayEntry.g2) : null,
+          todayEntry.g3 ? hh('div', null, '3. ', todayEntry.g3) : null
+        )
+      ) : tkCard('#10b981',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#10b981', marginBottom: 10 } }, '🙏 3 things I\'m grateful for today'),
+          [1, 2, 3].map(function(n) {
+            var key = 'g' + n;
+            return hh('div', { key: 'gf-' + n, style: { display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 } },
+              hh('span', { style: { fontSize: 16, color: '#10b981', fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 800, minWidth: 20 } }, n + '.'),
+              tkInput(form[key], function(v) { setForm(Object.assign({}, form, (function() { var o = {}; o[key] = v; return o; })())); }, 'Anything — big or small', { flex: 1 })
+            );
+          }),
+          hh('div', { style: { textAlign: 'right' } },
+            tkBtn('💾 Save', save, 'primary')
+          )
+        )
+      ),
+
+      entries.length > 0 ? hh('div', null,
+        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, '📚 History'),
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+          entries.slice(0, 30).map(function(e) {
+            return hh('div', { key: 'ge-' + e.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #10b981' } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#94a3b8', marginBottom: 6, fontFamily: 'ui-monospace, Menlo, monospace' } },
+                hh('span', null, e.date + ' · ' + relDate(e.date)),
+                hh('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+              ),
+              hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.7 } },
+                e.g1 ? hh('div', null, '1. ', e.g1) : null,
+                e.g2 ? hh('div', null, '2. ', e.g2) : null,
+                e.g3 ? hh('div', null, '3. ', e.g3) : null
+              )
+            );
+          })
+        )
+      ) : null,
+
+      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+        hh('strong', { style: { color: '#10b981' } }, '🎓 Why this works: '),
+        'Emmons + McCullough (2003). Daily gratitude practice for 10 weeks → significant gains in well-being, sleep quality, optimism, and physical health vs. neutral-event journaling control. Effect size larger than most positive-psychology interventions. The skeptic\'s version: even 1 line counts. Even on a hard day.'
+      )
+    );
+  }
+
+  // ── BB. PERSONAL READING TRACKER (Wave 6) ──
+  // Books read + reflections + reading-list management. Read more often
+  // = literacy growth, regardless of what you read (Krashen 2004).
+  function PersonalReadingTracker(props) {
+    if (!R) return null;
+    var data = props.data || { books: [] };
+    var setData = props.setData;
+    var vs = R.useState('list');                       var view = vs[0]; var setView = vs[1];
+    var fs = R.useState({ title: '', author: '', status: 'reading', pages: 0, rating: 0, notes: '' });
+    var form = fs[0]; var setForm = fs[1];
+    var es = R.useState(null); var editing = es[0]; var setEditing = es[1];
+    var ft = R.useState('all'); var filter = ft[0]; var setFilter = ft[1];
+
+    var STATUSES = [
+      { id: 'want',    label: 'Want to read', icon: '📚', color: '#94a3b8' },
+      { id: 'reading', label: 'Reading',      icon: '📖', color: '#fbbf24' },
+      { id: 'done',    label: 'Done',         icon: '✓',  color: '#10b981' },
+      { id: 'dnf',     label: 'Didn\'t finish', icon: '✕', color: '#94a3b8' }
+    ];
+
+    function save() {
+      if (!form.title.trim()) { alert('Need a title.'); return; }
+      var id = editing || tkId();
+      var book = Object.assign({ id: id, createdAt: todayISO() }, form);
+      var books = (data.books || []).slice();
+      var i = books.findIndex(function(b) { return b.id === id; });
+      if (i >= 0) books[i] = book;
+      else books.unshift(book);
+      setData({ books: books });
+      setForm({ title: '', author: '', status: 'reading', pages: 0, rating: 0, notes: '' });
+      setEditing(null);
+      setView('list');
+    }
+    function remove(id) {
+      if (!confirm('Delete this book?')) return;
+      setData({ books: (data.books || []).filter(function(b) { return b.id !== id; }) });
+    }
+    function startEdit(b) {
+      setEditing(b.id);
+      setForm({ title: b.title, author: b.author || '', status: b.status, pages: b.pages || 0, rating: b.rating || 0, notes: b.notes || '' });
+      setView('new');
+    }
+
+    var books = data.books || [];
+    var filtered = filter === 'all' ? books : books.filter(function(b) { return b.status === filter; });
+    var doneCount = books.filter(function(b) { return b.status === 'done'; }).length;
+    var totalPages = books.filter(function(b) { return b.status === 'done'; }).reduce(function(s, b) { return s + (b.pages || 0); }, 0);
+
+    if (view === 'new') {
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader('📚', editing ? 'Edit book' : 'Add a book', 'Track what you\'re reading + what you thought of it.', '#fbbf24'),
+        tkCard('#fbbf24',
+          hh('div', null,
+            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Title'),
+            tkInput(form.title, function(v) { setForm(Object.assign({}, form, { title: v })); }, 'e.g., "Charlotte\'s Web"', { marginBottom: 10 }),
+            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Author'),
+            tkInput(form.author, function(v) { setForm(Object.assign({}, form, { author: v })); }, 'e.g., "E. B. White"', { marginBottom: 10 }),
+
+            hh('div', { style: { display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 10, marginBottom: 10 } },
+              hh('div', null,
+                hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Status'),
+                hh('div', { style: { display: 'flex', gap: 4 } },
+                  STATUSES.map(function(s) {
+                    return hh('button', { key: 'st-' + s.id,
+                      onClick: function() { setForm(Object.assign({}, form, { status: s.id })); },
+                      style: { flex: 1, padding: '6px 4px', borderRadius: 6, background: form.status === s.id ? s.color + '30' : 'rgba(15,23,42,0.5)', color: form.status === s.id ? s.color : '#94a3b8', border: '1px solid ' + (form.status === s.id ? s.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
+                    }, s.icon, hh('br'), s.label);
+                  })
+                )
+              ),
+              hh('div', null,
+                hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Pages'),
+                hh('input', { type: 'number', min: 0, value: form.pages,
+                  onChange: function(e) { setForm(Object.assign({}, form, { pages: parseInt(e.target.value, 10) || 0 })); },
+                  style: { width: '100%', padding: '10px 12px', fontSize: 14, color: '#fbbf24', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(251,191,36,0.40)', borderRadius: 6, boxSizing: 'border-box', fontWeight: 800 }
+                })
+              )
+            ),
+
+            form.status === 'done' ? hh('div', { style: { marginBottom: 10 } },
+              hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Rating'),
+              hh('div', { style: { display: 'flex', gap: 4 } },
+                [1, 2, 3, 4, 5].map(function(n) {
+                  return hh('button', { key: 'r-' + n,
+                    onClick: function() { setForm(Object.assign({}, form, { rating: n })); },
+                    style: { padding: '8px 16px', borderRadius: 6, background: form.rating >= n ? 'rgba(251,191,36,0.30)' : 'rgba(15,23,42,0.5)', color: form.rating >= n ? '#fbbf24' : '#94a3b8', border: '1px solid rgba(251,191,36,0.40)', fontSize: 16, cursor: 'pointer' }
+                  }, '⭐');
+                })
+              )
+            ) : null,
+
+            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Notes / reflection'),
+            tkTextarea(form.notes, function(v) { setForm(Object.assign({}, form, { notes: v })); }, 'What did you think? What\'s memorable? Quotes? Questions?', 4)
+          )
+        ),
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+          tkBtn('← Cancel', function() { setView('list'); setEditing(null); }, 'ghost'),
+          tkBtn('💾 Save', save, 'primary')
+        )
+      );
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('📚', 'My Reading Tracker', 'Books read + want-to-read + reflections. Reading volume drives literacy growth (Krashen 2004).', '#fbbf24'),
+
+      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: 8, marginBottom: 12 } },
+        [
+          { label: 'Books read', value: doneCount, color: '#10b981', icon: '✓' },
+          { label: 'Pages read', value: totalPages.toLocaleString(), color: '#fbbf24', icon: '📖' },
+          { label: 'Total tracked', value: books.length, color: '#a855f7', icon: '📚' }
+        ].map(function(s, i) {
+          return hh('div', { key: 'rs-' + i, style: { padding: 10, borderRadius: 8, background: s.color + '12', border: '1px solid ' + s.color + '30', textAlign: 'center' } },
+            hh('div', { style: { fontSize: 14, marginBottom: 2 } }, s.icon),
+            hh('div', { style: { fontSize: 16, fontWeight: 900, color: s.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, s.value),
+            hh('div', { style: { fontSize: 9, color: '#94a3b8', textTransform: 'uppercase' } }, s.label)
+          );
+        })
+      ),
+
+      hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 8 } },
+        hh('div', { style: { display: 'flex', gap: 4 } },
+          [{ id: 'all', label: 'All' }].concat(STATUSES).map(function(f) {
+            var active = filter === f.id;
+            var col = (STATUSES.filter(function(s) { return s.id === f.id; })[0] || { color: '#fbbf24' }).color;
+            return hh('button', { key: 'fi-' + f.id,
+              onClick: function() { setFilter(f.id); },
+              style: { padding: '6px 10px', borderRadius: 6, background: active ? col + '20' : 'transparent', color: active ? col : '#94a3b8', border: '1px solid ' + (active ? col : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
+            }, f.label);
+          })
+        ),
+        tkBtn('+ Add book', function() { setForm({ title: '', author: '', status: 'reading', pages: 0, rating: 0, notes: '' }); setEditing(null); setView('new'); }, 'primary')
+      ),
+
+      filtered.length === 0 ? tkEmptyState('📚', books.length === 0 ? 'No books tracked yet. Add your first book — current read or want-to-read.' : 'No books in this filter.', null, null)
+      : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+          filtered.map(function(b) {
+            var s = STATUSES.filter(function(x) { return x.id === b.status; })[0] || STATUSES[0];
+            return hh('div', { key: 'bk-' + b.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid ' + s.color } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 4 } },
+                hh('div', { style: { flex: 1, minWidth: 0 } },
+                  hh('strong', { style: { fontSize: 13, color: s.color } }, s.icon + ' ' + b.title),
+                  b.author ? hh('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, 'by ' + b.author) : null
+                ),
+                hh('div', { style: { display: 'flex', gap: 4 } },
+                  hh('button', { onClick: function() { startEdit(b); }, style: { background: 'transparent', border: 'none', color: s.color, fontSize: 11, cursor: 'pointer' } }, '✏'),
+                  hh('button', { onClick: function() { remove(b.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                )
+              ),
+              hh('div', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: b.notes ? 6 : 0 } },
+                b.pages > 0 ? b.pages + 'p · ' : '',
+                b.status === 'done' && b.rating > 0 ? (function() {
+                  var stars = '';
+                  for (var i = 0; i < b.rating; i++) stars += '⭐';
+                  return stars + ' · ';
+                })() : '',
+                relDate(b.createdAt)
+              ),
+              b.notes ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, fontStyle: 'italic', padding: 8, background: 'rgba(2,6,23,0.4)', borderRadius: 6 } }, b.notes) : null
+            );
+          })
+        )
+    );
+  }
+
+  // ── CC. PERSONAL SELF-COMPASSION PRACTICE (Wave 6) ──
+  // Guided self-compassion exercises. Neff 2003 — alternative to
+  // self-esteem-based motivation. Especially valuable for students with
+  // perfectionism or harsh inner critics.
+  function PersonalSelfCompassion(props) {
+    if (!R) return null;
+    var data = props.data || { sessions: [] };
+    var setData = props.setData;
+    var vs = R.useState('home');                  var view = vs[0]; var setView = vs[1];
+    var ss = R.useState(null);                    var activeStep = ss[0]; var setActiveStep = ss[1];
+
+    var EXERCISES = [
+      { id: 'rain', label: 'RAIN: Recognize / Allow / Investigate / Nurture', icon: '🌧',
+        steps: [
+          { name: 'Recognize', prompt: 'What are you feeling right now? Just name it as accurately as you can. ("I notice frustration." "Sadness is here.")' },
+          { name: 'Allow', prompt: 'Can you let this feeling be here without trying to push it away? You don\'t have to like it — just allow it.' },
+          { name: 'Investigate', prompt: 'Where do you feel it in your body? What does it want you to know? What does this part of you need right now?' },
+          { name: 'Nurture', prompt: 'Place a hand over your heart or somewhere comforting. What would you say to a friend in this exact moment? Say it to yourself.' }
+        ]
+      },
+      { id: 'critic', label: 'Inner Critic to Inner Coach', icon: '🗣',
+        steps: [
+          { name: 'Hear the critic', prompt: 'What is your inner critic saying to you right now? Write it down word-for-word.' },
+          { name: 'Get curious', prompt: 'Where does this voice come from? Whose voice does it sound like? When did you first hear it?' },
+          { name: 'Reframe as a coach', prompt: 'How would a skilled coach (someone who actually wanted you to grow) say the same thing? Write that version.' },
+          { name: 'Receive it', prompt: 'Read the coach version aloud. Notice how it lands differently in your body than the critic version.' }
+        ]
+      },
+      { id: 'break', label: 'Self-Compassion Break (3 phrases)', icon: '💖',
+        steps: [
+          { name: 'This is a moment of suffering', prompt: 'Acknowledge: "This is hard right now." That alone is mindfulness — naming what is.' },
+          { name: 'Suffering is part of life', prompt: 'Remember: humans are not designed to feel okay all the time. This experience connects you with everyone else who has ever felt this way.' },
+          { name: 'May I be kind to myself', prompt: 'What kind of kindness do you need? Patience? Forgiveness? Permission to rest? Say what you need: "May I have ___."' }
+        ]
+      }
+    ];
+
+    function logSession(ex, notes) {
+      var session = { id: tkId(), date: todayISO(), time: Date.now(), exerciseId: ex.id, notes: notes || '' };
+      setData({ sessions: [session].concat(data.sessions || []) });
+    }
+
+    var sessions = data.sessions || [];
+
+    if (view === 'exercise' && activeStep !== null) {
+      var ex = EXERCISES.filter(function(e) { return e.id === activeStep.id; })[0];
+      if (!ex) { setView('home'); return null; }
+      var step = ex.steps[activeStep.step] || ex.steps[0];
+
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader(ex.icon, ex.label, 'Step ' + (activeStep.step + 1) + ' of ' + ex.steps.length + ': ' + step.name, '#f472b6'),
+
+        hh('div', { style: { padding: 24, borderRadius: 14, background: 'linear-gradient(135deg, rgba(244,114,182,0.20), rgba(15,23,42,0.7))', border: '2px solid #f472b6', marginBottom: 14, minHeight: 200, display: 'flex', flexDirection: 'column', justifyContent: 'center' } },
+          hh('div', { style: { fontSize: 10, color: '#f9a8d4', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', textAlign: 'center', marginBottom: 12 } }, step.name),
+          hh('div', { style: { fontSize: 16, color: '#e2e8f0', textAlign: 'center', lineHeight: 1.6, fontStyle: 'italic' } }, '"' + step.prompt + '"')
+        ),
+
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 12, flexWrap: 'wrap' } },
+          tkBtn('← Cancel', function() { setActiveStep(null); setView('home'); }, 'ghost'),
+          hh('div', { style: { display: 'flex', gap: 6 } },
+            activeStep.step > 0 ? tkBtn('← Previous', function() { setActiveStep({ id: ex.id, step: activeStep.step - 1 }); }, 'secondary') : null,
+            activeStep.step + 1 < ex.steps.length
+              ? tkBtn('Next →', function() { setActiveStep({ id: ex.id, step: activeStep.step + 1 }); }, 'primary')
+              : tkBtn('✓ Finished', function() { logSession(ex); setActiveStep(null); setView('home'); }, 'good')
+          )
+        ),
+
+        // Progress dots
+        hh('div', { style: { display: 'flex', justifyContent: 'center', gap: 6 } },
+          ex.steps.map(function(_, i) {
+            return hh('div', { key: 'pd-' + i, style: { width: 10, height: 10, borderRadius: '50%', background: i <= activeStep.step ? '#f472b6' : 'rgba(244,114,182,0.20)', border: '1px solid #f472b6' } });
+          })
+        )
+      );
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('💖', 'Self-Compassion Practice', 'Three guided exercises (Neff 2003). Builds the muscle of treating yourself like a friend.', '#f472b6'),
+
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(244,114,182,0.10)', border: '1px solid rgba(244,114,182,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+        hh('strong', { style: { color: '#f472b6' } }, '🎓 Self-compassion vs self-esteem: '),
+        'Neff 2003: self-compassion correlates more strongly with well-being + motivation than self-esteem does — without the downsides (vulnerability to setbacks, comparison-trap). The skill is treating yourself the way you\'d treat a friend in the same situation.'
+      ),
+
+      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, marginBottom: 14 } },
+        EXERCISES.map(function(ex) {
+          var count = sessions.filter(function(s) { return s.exerciseId === ex.id; }).length;
+          return hh('button', { key: 'ex-' + ex.id,
+            onClick: function() { setActiveStep({ id: ex.id, step: 0 }); setView('exercise'); },
+            style: { display: 'block', textAlign: 'left', padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(244,114,182,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(244,114,182,0.40)', borderLeft: '4px solid #f472b6', cursor: 'pointer' }
+          },
+            hh('div', { style: { fontSize: 22, marginBottom: 4 } }, ex.icon),
+            hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#f472b6' } }, ex.label),
+            hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4 } }, ex.steps.length + ' steps · ' + (count > 0 ? 'practiced ' + count + 'x' : 'new'))
+          );
+        })
+      ),
+
+      sessions.length > 0 ? hh('div', null,
+        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#f472b6', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, '📚 Practice log'),
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+          sessions.slice(0, 15).map(function(s) {
+            var ex = EXERCISES.filter(function(e) { return e.id === s.exerciseId; })[0] || EXERCISES[0];
+            return hh('div', { key: 'se-' + s.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #f472b6', display: 'flex', justifyContent: 'space-between' } },
+              hh('span', { style: { fontSize: 11, color: '#cbd5e1' } }, ex.icon + ' ' + ex.label),
+              hh('span', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } }, relDate(s.date))
+            );
+          })
+        )
+      ) : null
+    );
+  }
+
+  // ── DD. PERSONAL PROGRESS DASHBOARD (Wave 6) ──
+  // Aggregate view of everything: goals progress + focus minutes + habit
+  // streaks + reflection count + sleep avg + recent activity. Single
+  // overview screen for the "how am I doing?" question.
+  function PersonalProgressDashboard(props) {
+    if (!R) return null;
+    var allData = props.allData || {};
+
+    var goals = ((allData.mytkGoals || {}).goals || []);
+    var activeGoals = goals.filter(function(g) { return g.status === 'active'; });
+    var doneGoals = goals.filter(function(g) { return g.status === 'done'; });
+    var avgGoalProgress = activeGoals.length > 0 ? Math.round(activeGoals.reduce(function(s, g) { return s + (g.progress || 0); }, 0) / activeGoals.length) : 0;
+
+    var focusSessions = ((allData.mytkFocus || {}).sessions || []);
+    var today = todayISO();
+    var todayFocus = focusSessions.filter(function(s) { return s.date === today; }).reduce(function(s, x) { return s + (x.workMin || 0); }, 0);
+    var weekFocus = 0;
+    for (var i = 0; i < 7; i++) {
+      var dt = new Date(); dt.setDate(dt.getDate() - i);
+      var iso = dt.toISOString().slice(0, 10);
+      weekFocus += focusSessions.filter(function(s) { return s.date === iso; }).reduce(function(s, x) { return s + (x.workMin || 0); }, 0);
+    }
+
+    var brain = ((allData.mytkBrain || {}).items || []);
+    var brainOpen = brain.filter(function(it) { return !it.done; }).length;
+
+    var habits = ((allData.mytkHabits || {}).habits || []);
+    var habitLogs = ((allData.mytkHabits || {}).logs || {});
+    var habitsToday = habits.filter(function(h) { return (habitLogs[h.id] || []).indexOf(today) >= 0; }).length;
+
+    var reflections = ((allData.mytkReflect || {}).entries || []);
+    var prompts = ((allData.mytkPrompts || {}).responses || []);
+    var journal = ((allData.mytkJournal || {}).entries || []);
+    var gratitudes = ((allData.mytkGrat || {}).entries || []);
+
+    var flashCards = ((allData.mytkFlash || {}).cards || []);
+    var flashDue = flashCards.filter(function(c) { return !c.nextDue || c.nextDue <= today; }).length;
+
+    var sleep = ((allData.mytkSleep || {}).entries || []);
+    var avgSleep = sleep.slice(0, 7).length > 0 ? (sleep.slice(0, 7).reduce(function(s, e) { return s + (e.hours || 0); }, 0) / sleep.slice(0, 7).length).toFixed(1) : '—';
+
+    var tasks = ((allData.mytkTasks || {}).tasks || []);
+    var openTaskCount = tasks.filter(function(t) {
+      var done = (t.steps || []).filter(function(s) { return s.done; }).length;
+      return done < (t.steps || []).length;
+    }).length;
+
+    var ef = ((allData.mytkEF || {}).ratings || []);
+    var latestEF = ef[0];
+    var efAvg = latestEF ? ['initiation', 'planning', 'attention', 'workingmemory', 'flexibility', 'emotion', 'selfmonitor', 'organization'].reduce(function(s, k) { return s + (latestEF[k] || 0); }, 0) / 8 : 0;
+
+    var emo = ((allData.mytkEmotion || {}).checks || []);
+
+    function bigStat(label, value, color, icon) {
+      return hh('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, ' + color + '20, rgba(15,23,42,0.7))', border: '1px solid ' + color + '40' } },
+        hh('div', { style: { fontSize: 22, marginBottom: 4 } }, icon),
+        hh('div', { style: { fontSize: 26, fontWeight: 900, color: color, fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1 } }, value),
+        hh('div', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 6 } }, label)
+      );
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('📊', 'My Progress Dashboard', 'Single screen of how everything\'s tracking. Use weekly to spot trends.', '#10b981'),
+
+      // Hero stats
+      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10, marginBottom: 16 } },
+        bigStat('Active goals', activeGoals.length, '#9333ea', '🎯'),
+        bigStat('Avg goal progress', avgGoalProgress + '%', '#a855f7', '📈'),
+        bigStat('Focus this week', Math.round(weekFocus / 60 * 10) / 10 + 'h', '#ef4444', '⏱'),
+        bigStat('Habits today', habitsToday + '/' + habits.length, '#10b981', '✅'),
+        bigStat('Sleep avg (7d)', avgSleep + 'h', '#3b82f6', '😴'),
+        bigStat('Cards due', flashDue, '#06b6d4', '🃏'),
+        bigStat('Open tasks', openTaskCount, '#f97316', '✂'),
+        bigStat('Brain dumps', brainOpen, '#60a5fa', '🧠'),
+        bigStat('EF avg', latestEF ? efAvg.toFixed(1) + '/10' : '—', '#a855f7', '🧩'),
+        bigStat('Reflections', reflections.length, '#f472b6', '📔'),
+        bigStat('Journal entries', journal.length, '#ec4899', '📓'),
+        bigStat('Gratitudes', gratitudes.length, '#10b981', '🙏')
+      ),
+
+      // Done celebration
+      doneGoals.length > 0 ? hh('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(34,197,94,0.18), rgba(15,23,42,0.7))', border: '2px solid #22c55e', marginBottom: 14, textAlign: 'center' } },
+        hh('div', { style: { fontSize: 32, marginBottom: 6 } }, '🏆'),
+        hh('div', { style: { fontSize: 24, fontWeight: 900, color: '#22c55e', fontFamily: 'ui-monospace, Menlo, monospace' } }, doneGoals.length),
+        hh('div', { style: { fontSize: 12, color: '#cbd5e1', marginTop: 4 } }, 'goals completed total. ', hh('strong', { style: { color: '#22c55e' } }, 'You\'ve done this before. You\'ll do it again.'))
+      ) : null,
+
+      // Activity grid (last 14 days strip)
+      hh('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(2,6,23,0.5)', marginBottom: 14 } },
+        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 } }, '📅 Last 14 days activity'),
+        hh('div', { style: { display: 'flex', gap: 3 } },
+          (function() {
+            var arr = [];
+            for (var i = 13; i >= 0; i--) {
+              var dt = new Date(); dt.setDate(dt.getDate() - i);
+              var iso = dt.toISOString().slice(0, 10);
+              var hasFocus = focusSessions.some(function(s) { return s.date === iso; });
+              var hasHabit = habits.some(function(h) { return (habitLogs[h.id] || []).indexOf(iso) >= 0; });
+              var hasReflect = reflections.some(function(r) { return r.date === iso; });
+              var hasGrat = gratitudes.some(function(g) { return g.date === iso; });
+              var hasJournal = journal.some(function(j) { return j.date === iso; });
+              var anyActivity = hasFocus || hasHabit || hasReflect || hasGrat || hasJournal;
+              var bg = anyActivity ? 'rgba(16,185,129,0.40)' : 'rgba(100,116,139,0.15)';
+              arr.push(hh('div', { key: 'da-' + iso, title: iso,
+                style: { flex: 1, height: 32, background: bg, borderRadius: 3, border: iso === today ? '1px solid #10b981' : 'none' }
+              }));
+            }
+            return arr;
+          })()
+        )
+      ),
+
+      // Next actions suggestions
+      hh('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(147,51,234,0.10)', border: '1px solid rgba(147,51,234,0.30)' } },
+        hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 8 } }, '✨ What might be useful right now'),
+        hh('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 11, color: '#cbd5e1', lineHeight: 1.7 } },
+          flashDue > 0 ? hh('li', null, flashDue + ' flashcard' + (flashDue !== 1 ? 's' : '') + ' due today. Quick review session?') : null,
+          habitsToday < habits.length ? hh('li', null, 'Habits left to check today: ' + (habits.length - habitsToday)) : null,
+          openTaskCount > 3 ? hh('li', null, openTaskCount + ' open tasks — consider closing 1-2 today to maintain momentum.') : null,
+          avgSleep !== '—' && parseFloat(avgSleep) < 7 ? hh('li', null, 'Avg sleep ' + avgSleep + 'h is below 7. Anything you can shift earlier tonight?') : null,
+          reflections.length === 0 ? hh('li', null, 'No weekly reflections yet. 5 minutes. Highest-leverage metacog tool.') : null,
+          gratitudes.length === 0 ? hh('li', null, 'No gratitude log yet. 3 things, 1 minute. Strongest single positive-psychology intervention.') : null
+        )
+      )
+    );
+  }
+
   // ── F. MY TOOLKIT HUB (landing page) ──
   // Single entry point that shows status of all toolkit tools + quick
   // actions. Today's date, current streak, # active goals, etc.
@@ -8664,7 +9351,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'mytkMastery',  icon: '📚', label: 'Subject Mastery',      color: '#3b82f6', desc: 'Track mastery per topic per subject',
         stat: ((data.mytkMastery || {}).subjects || []).length + ' subjects', cta: 'Map mastery' },
       { id: 'mytkSleep',    icon: '😴', label: 'Sleep Log',            color: '#3b82f6', desc: 'Daily sleep log with quality + factors',
-        stat: ((data.mytkSleep || {}).entries || []).length + ' nights', cta: 'Log last night' }
+        stat: ((data.mytkSleep || {}).entries || []).length + ' nights', cta: 'Log last night' },
+      { id: 'mytkJournal',  icon: '📓', label: 'Learning Journal',     color: '#ec4899', desc: 'Free-form journal with subject + mood tags',
+        stat: ((data.mytkJournal || {}).entries || []).length + ' entries', cta: 'Write an entry' },
+      { id: 'mytkGrat',     icon: '🙏', label: 'Gratitude Log',        color: '#10b981', desc: '3 daily gratitudes (Emmons + McCullough 2003)',
+        stat: ((data.mytkGrat || {}).entries || []).length + ' days logged', cta: 'Log today\'s 3' },
+      { id: 'mytkRead',     icon: '📚', label: 'Reading Tracker',      color: '#fbbf24', desc: 'Books read + want-to-read + reflections',
+        stat: ((data.mytkRead || {}).books || []).filter(function(b) { return b.status === 'done'; }).length + ' read', cta: 'Track a book' },
+      { id: 'mytkCompass',  icon: '💖', label: 'Self-Compassion',      color: '#f472b6', desc: 'RAIN + Inner Coach + Self-Compassion Break',
+        stat: ((data.mytkCompass || {}).sessions || []).length + ' practices', cta: 'Practice now' },
+      { id: 'mytkDash',     icon: '📊', label: 'Progress Dashboard',   color: '#10b981', desc: 'All toolkit stats + trends in one view',
+        stat: 'live', cta: 'See progress' }
     ];
 
     var dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][new Date().getDay()];
@@ -8876,7 +9573,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'mytkEF',     icon: '🧩', label: 'EF Dashboard',         desc: '8 executive-function dimensions tracked weekly + strategy library (Barkley + Brown).' },
               { id: 'mytkIEP',    icon: '🎓', label: 'My IEP Tracker',       desc: 'Your own copy of your IEP goals + sub-goal tracking + meeting log. Self-advocacy tool.' },
               { id: 'mytkMastery',icon: '📚', label: 'Subject Mastery',      desc: 'Track mastery per topic per subject across 5 levels (new → mastered).' },
-              { id: 'mytkSleep',  icon: '😴', label: 'Sleep Log',            desc: 'Daily bedtime/waketime/quality log + 8 sleep-factor check-ins + trend chart.' }
+              { id: 'mytkSleep',  icon: '😴', label: 'Sleep Log',            desc: 'Daily bedtime/waketime/quality log + 8 sleep-factor check-ins + trend chart.' },
+              { id: 'mytkJournal',icon: '📓', label: 'Learning Journal',     desc: 'Free-form journal with subject + mood tags. Search across all entries.' },
+              { id: 'mytkGrat',   icon: '🙏', label: 'Gratitude Log',        desc: '3 daily gratitudes (Emmons + McCullough 2003) — strongest single positive-psychology intervention.' },
+              { id: 'mytkRead',   icon: '📚', label: 'Reading Tracker',      desc: 'Books read + want-to-read + reflections + page counter (Krashen 2004).' },
+              { id: 'mytkCompass',icon: '💖', label: 'Self-Compassion',      desc: 'Guided RAIN + Inner Coach + Self-Compassion Break (Neff 2003).' },
+              { id: 'mytkDash',   icon: '📊', label: 'Progress Dashboard',   desc: 'Single overview of every toolkit tool with 14-day activity strip + suggestions.' }
             ]
           },
           { id: 'foundation', icon: '🧠', name: 'How learning works (foundation)',
@@ -12108,6 +12810,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           h(PersonalSleepLog, { data: dsl, setData: setDsl })
         );
       }
+      function renderMytkJournal() {
+        var dj = d.mytkJournal || { entries: [] };
+        var setDj = function(newData) { upd('mytkJournal', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalLearningJournal, { data: dj, setData: setDj })
+        );
+      }
+      function renderMytkGrat() {
+        var dg = d.mytkGrat || { entries: [] };
+        var setDg = function(newData) { upd('mytkGrat', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalGratitudeLog, { data: dg, setData: setDg })
+        );
+      }
+      function renderMytkRead() {
+        var dr = d.mytkRead || { books: [] };
+        var setDr = function(newData) { upd('mytkRead', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalReadingTracker, { data: dr, setData: setDr })
+        );
+      }
+      function renderMytkCompass() {
+        var dc = d.mytkCompass || { sessions: [] };
+        var setDc = function(newData) { upd('mytkCompass', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalSelfCompassion, { data: dc, setData: setDc })
+        );
+      }
+      function renderMytkDash() {
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalProgressDashboard, { allData: d })
+        );
+      }
 
       // ─────────────────────────────────────────
       // VIEW ROUTER
@@ -12139,6 +12879,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         case 'mytkIEP':       return renderMytkIEP();
         case 'mytkMastery':   return renderMytkMastery();
         case 'mytkSleep':     return renderMytkSleep();
+        case 'mytkJournal':   return renderMytkJournal();
+        case 'mytkGrat':      return renderMytkGrat();
+        case 'mytkRead':      return renderMytkRead();
+        case 'mytkCompass':   return renderMytkCompass();
+        case 'mytkDash':      return renderMytkDash();
         case 'bloom':         return renderBloom();
         case 'cogload':       return renderCogLoad();
         case 'metacog':       return renderMetacog();
