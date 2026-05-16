@@ -14449,6 +14449,260 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     );
   }
 
+  // ── GGGG. PERSONAL SCRIPT LIBRARY (Wave 18) ──
+  // Curated phrases for hard moments. Browse + customize + save.
+  // Practiced + scripted phrases reduce cognitive load in social
+  // situations — especially valuable for ND students + anyone with
+  // social anxiety.
+  function PersonalScriptLibrary(props) {
+    if (!R) return null;
+    var data = props.data || { custom: [] };
+    var setData = props.setData;
+    var cs = R.useState('boundaries'); var cat = cs[0]; var setCat = cs[1];
+    var ns = R.useState({ situation: '', script: '' }); var newForm = ns[0]; var setNewForm = ns[1];
+
+    var BUILTIN = {
+      boundaries: [
+        { s: 'Someone wants to talk and I\'m overstimulated', script: 'I want to hear this — can we talk later when I can focus on it?' },
+        { s: 'A friend pressures me to share something private', script: 'I\'m not ready to talk about that.' },
+        { s: 'Someone touches me without permission', script: 'Please don\'t touch me.' },
+        { s: 'A friend keeps interrupting me', script: 'Hold on — I want to finish my thought.' },
+        { s: 'I need to leave a social situation', script: 'I\'m going to head out. Thanks for tonight.' },
+        { s: 'Someone is venting and I have no capacity', script: 'I want to be there for this, but I don\'t have the bandwidth right now. Can we talk tomorrow?' }
+      ],
+      asking: [
+        { s: 'I don\'t understand what a teacher just said', script: 'Could you say that one more way? I want to make sure I follow.' },
+        { s: 'I need to use my accommodation', script: 'I\'m going to use my [accommodation] for this — just letting you know.' },
+        { s: 'I missed something + need to catch up', script: 'I missed the part about ___. Could you walk me through it?' },
+        { s: 'I want extended time on something', script: 'I\'d benefit from extra time on this. Can we arrange that?' },
+        { s: 'I want to ask the teacher a question privately', script: 'Could I talk with you for a minute after class?' },
+        { s: 'I want help from a peer', script: 'Hey, do you have a minute? I\'m stuck on ___.' }
+      ],
+      saying_no: [
+        { s: 'Someone wants me at a party I don\'t want to go to', script: 'I can\'t make it, but thanks for thinking of me.' },
+        { s: 'A teacher offers an extra-credit project I\'m too stretched to do', script: 'I appreciate the offer, but I\'m at capacity right now.' },
+        { s: 'A friend wants to borrow something I don\'t want to lend', script: 'Not this one — I want to keep this one to myself.' },
+        { s: 'Someone wants to copy my work', script: 'I\'m not comfortable with that — let me help you work through it instead.' },
+        { s: 'Family wants me to do something I don\'t have energy for', script: 'I want to, but I genuinely don\'t have the energy today. Can we [alternative]?' }
+      ],
+      conflict: [
+        { s: 'Someone hurt my feelings and I want to address it', script: 'When [specific thing happened], I felt [feeling]. I wanted to tell you because [reason].' },
+        { s: 'I need to apologize', script: 'I\'m sorry for [specific thing]. I see how it affected you. [How I want to make it right].' },
+        { s: 'I disagree with someone in a calm way', script: 'I see it differently. Here\'s where I\'m at: ___. What am I missing?' },
+        { s: 'Someone is escalating + I want to de-escalate', script: 'I can tell this is intense for both of us. Can we take 10 minutes + come back to it?' },
+        { s: 'I want to repair a friendship after a fight', script: 'I\'ve been thinking about what happened. Can we talk when you\'re ready?' }
+      ],
+      starting: [
+        { s: 'Making small talk with someone new', script: 'Hi — I don\'t think we\'ve met. I\'m [name]. What brought you here?' },
+        { s: 'Joining a group conversation', script: '[just walking up + listening for a beat] Mind if I join? What are we talking about?' },
+        { s: 'Asking someone to hang out', script: 'I\'ve been wanting to hang out more. Would you want to [specific activity] [specific time]?' },
+        { s: 'Starting a study group', script: 'I\'m organizing a study group for [class]. Would you be in?' },
+        { s: 'Introducing yourself to a teacher early in the year', script: 'Hi — I\'m [name]. I\'m in your [period] class. I just wanted to introduce myself.' }
+      ]
+    };
+
+    var CATS = [
+      { id: 'boundaries', label: '🛡 Boundaries', color: '#ef4444' },
+      { id: 'asking',     label: '🙋 Asking',     color: '#10b981' },
+      { id: 'saying_no',  label: '🚫 Saying no',  color: '#fbbf24' },
+      { id: 'conflict',   label: '⚖ Conflict',    color: '#a855f7' },
+      { id: 'starting',   label: '👋 Starting',   color: '#3b82f6' }
+    ];
+
+    function addCustom() {
+      if (!newForm.situation.trim() || !newForm.script.trim()) return;
+      var c = Object.assign({ id: tkId(), category: cat, addedAt: todayISO() }, newForm);
+      setData({ custom: [c].concat(data.custom || []) });
+      setNewForm({ situation: '', script: '' });
+    }
+    function removeCustom(id) { setData({ custom: (data.custom || []).filter(function(c) { return c.id !== id; }) }); }
+
+    var currentCat = CATS.filter(function(c) { return c.id === cat; })[0];
+    var allInCat = (BUILTIN[cat] || []).map(function(b, i) { return Object.assign({ id: 'b-' + cat + '-' + i, builtin: true }, b); })
+      .concat((data.custom || []).filter(function(c) { return c.category === cat; }).map(function(c) { return { id: c.id, s: c.situation, script: c.script, builtin: false }; }));
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('💬', 'Script Library', 'Curated phrases for hard moments. Plus your own. Especially valuable for ND students.', '#a855f7'),
+
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+        hh('strong', { style: { color: '#a855f7' } }, '💬 Why scripts: '),
+        'In the moment of an interaction, working memory is loaded. Pre-practiced scripts make the words available — you don\'t have to invent them. Modify mine, use as-is, or write your own.'
+      ),
+
+      hh('div', { role: 'tablist', style: { display: 'flex', gap: 4, marginBottom: 12, flexWrap: 'wrap' } },
+        CATS.map(function(c) {
+          var active = cat === c.id;
+          return hh('button', { key: 'sc-' + c.id,
+            onClick: function() { setCat(c.id); },
+            style: { padding: '8px 12px', borderRadius: 6, background: active ? c.color + '30' : 'rgba(15,23,42,0.5)', color: active ? c.color : '#94a3b8', border: '1px solid ' + (active ? c.color : 'rgba(100,116,139,0.30)'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+          }, c.label);
+        })
+      ),
+
+      hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 } },
+        allInCat.map(function(item) {
+          return hh('div', { key: 'sl-' + item.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid ' + currentCat.color } },
+            hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
+              hh('div', { style: { fontSize: 11, color: currentCat.color, fontWeight: 700 } }, '⚡ ' + item.s),
+              !item.builtin ? hh('button', { onClick: function() { removeCustom(item.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕') : null
+            ),
+            hh('div', { style: { padding: 10, borderRadius: 6, background: 'rgba(2,6,23,0.5)', fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, fontStyle: 'italic', fontFamily: 'Georgia, serif' } }, '"' + item.script + '"'),
+            hh('div', { style: { marginTop: 6, textAlign: 'right' } },
+              tkBtn('📋 Copy', function() { try { navigator.clipboard.writeText(item.script); } catch(e) {} }, 'secondary', { padding: '3px 10px', fontSize: 10 })
+            )
+          );
+        })
+      ),
+
+      tkCard(currentCat.color,
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: currentCat.color, marginBottom: 8 } }, '+ Add your own script for ' + currentCat.label),
+          tkInput(newForm.situation, function(v) { setNewForm(Object.assign({}, newForm, { situation: v })); }, 'When this situation happens...', { marginBottom: 6 }),
+          tkInput(newForm.script, function(v) { setNewForm(Object.assign({}, newForm, { script: v })); }, '...I\'ll say this:', { marginBottom: 8 }),
+          tkBtn('+ Add', addCustom, 'primary')
+        )
+      )
+    );
+  }
+
+  // ── HHHH. PERSONAL KNOWLEDGE MAP (Wave 18) ──
+  // Track subjects you're learning across time. What you know vs.
+  // what you're working on vs. what's next.
+  function PersonalKnowledgeMap(props) {
+    if (!R) return null;
+    var data = props.data || { areas: [] };
+    var setData = props.setData;
+    var fs = R.useState({ name: '', icon: '📚' });
+    var form = fs[0]; var setForm = fs[1];
+    var vs = R.useState('list');                       var view = vs[0]; var setView = vs[1];
+    var as = R.useState(null);                         var activeId = as[0]; var setActiveId = as[1];
+    var ts = R.useState({ text: '', status: 'learning' }); var topicForm = ts[0]; var setTopicForm = ts[1];
+
+    var STATUSES = [
+      { id: 'mastered',  label: 'Mastered', icon: '🏆', color: '#10b981' },
+      { id: 'know',      label: 'I know it', icon: '✓', color: '#3b82f6' },
+      { id: 'learning',  label: 'Learning', icon: '📖', color: '#fbbf24' },
+      { id: 'next',      label: 'Next up', icon: '⏭', color: '#a855f7' },
+      { id: 'curious',   label: 'Curious about', icon: '🤔', color: '#06b6d4' }
+    ];
+
+    function addArea() {
+      if (!form.name.trim()) return;
+      var a = Object.assign({ id: tkId(), topics: [], createdAt: todayISO() }, form);
+      setData({ areas: [a].concat(data.areas || []) });
+      setForm({ name: '', icon: '📚' });
+    }
+    function getArea() { return (data.areas || []).filter(function(a) { return a.id === activeId; })[0]; }
+    function updateArea(patch) {
+      setData({ areas: (data.areas || []).map(function(a) { return a.id === activeId ? Object.assign({}, a, patch) : a; }) });
+    }
+    function removeArea(id) {
+      if (!confirm('Delete this knowledge area + all its topics?')) return;
+      setData({ areas: (data.areas || []).filter(function(a) { return a.id !== id; }) });
+    }
+    function addTopic() {
+      if (!topicForm.text.trim()) return;
+      var a = getArea();
+      updateArea({ topics: (a.topics || []).concat([Object.assign({ id: tkId(), addedAt: todayISO() }, topicForm)]) });
+      setTopicForm({ text: '', status: 'learning' });
+    }
+    function setTopicStatus(topicId, status) {
+      var a = getArea();
+      updateArea({ topics: a.topics.map(function(t) { return t.id === topicId ? Object.assign({}, t, { status: status, updatedAt: todayISO() }) : t; }) });
+    }
+    function removeTopic(topicId) {
+      var a = getArea();
+      updateArea({ topics: a.topics.filter(function(t) { return t.id !== topicId; }) });
+    }
+
+    if (view === 'area' && activeId) {
+      var a = getArea();
+      if (!a) { setView('list'); return null; }
+      var byStatus = {};
+      (a.topics || []).forEach(function(t) {
+        byStatus[t.status] = byStatus[t.status] || [];
+        byStatus[t.status].push(t);
+      });
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader(a.icon, a.name, (a.topics || []).length + ' topics tracked', '#06b6d4'),
+
+        tkCard('#06b6d4',
+          hh('div', null,
+            hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#67e8f9', marginBottom: 8 } }, '+ Add topic'),
+            hh('div', { style: { display: 'flex', gap: 6 } },
+              tkInput(topicForm.text, function(v) { setTopicForm(Object.assign({}, topicForm, { text: v })); }, 'Topic name', { flex: 1 }),
+              hh('select', { value: topicForm.status,
+                onChange: function(e) { setTopicForm(Object.assign({}, topicForm, { status: e.target.value })); },
+                style: { padding: '8px 10px', fontSize: 11, color: '#67e8f9', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(6,182,212,0.40)', borderRadius: 6 }
+              }, STATUSES.map(function(s) { return hh('option', { key: 'so-' + s.id, value: s.id }, s.icon + ' ' + s.label); })),
+              tkBtn('+', addTopic, 'primary', { padding: '8px 14px' })
+            )
+          )
+        ),
+
+        STATUSES.map(function(s) {
+          var inStatus = byStatus[s.id] || [];
+          if (inStatus.length === 0) return null;
+          return hh('div', { key: 'st-' + s.id, style: { marginBottom: 14 } },
+            hh('div', { style: { fontSize: 12, fontWeight: 800, color: s.color, marginBottom: 8, padding: '4px 10px', background: s.color + '15', borderRadius: 6, display: 'inline-block' } }, s.icon + ' ' + s.label + ' (' + inStatus.length + ')'),
+            hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+              inStatus.map(function(t) {
+                return hh('div', { key: 'tp-' + t.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + s.color, display: 'flex', justifyContent: 'space-between', gap: 6 } },
+                  hh('span', { style: { flex: 1, fontSize: 11, color: '#cbd5e1' } }, t.text),
+                  hh('select', { value: t.status,
+                    onChange: function(e) { setTopicStatus(t.id, e.target.value); },
+                    style: { padding: '4px 6px', fontSize: 10, color: '#67e8f9', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(6,182,212,0.40)', borderRadius: 4 }
+                  }, STATUSES.map(function(opt) { return hh('option', { key: 'os-' + opt.id, value: opt.id }, opt.icon); })),
+                  hh('button', { onClick: function() { removeTopic(t.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                );
+              })
+            )
+          );
+        }).filter(Boolean),
+
+        hh('div', { style: { textAlign: 'center', marginTop: 14 } },
+          tkBtn('← All areas', function() { setView('list'); setActiveId(null); }, 'ghost')
+        )
+      );
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🗺', 'Knowledge Map', 'Map what you know vs. what you\'re learning vs. what you\'re curious about. Personal knowledge inventory.', '#06b6d4'),
+
+      tkCard('#06b6d4',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#67e8f9', marginBottom: 8 } }, '+ New knowledge area'),
+          hh('div', { style: { display: 'grid', gridTemplateColumns: '60px 1fr 80px', gap: 6 } },
+            tkInput(form.icon, function(v) { setForm(Object.assign({}, form, { icon: v })); }, '📚', { textAlign: 'center', fontSize: 18 }),
+            tkInput(form.name, function(v) { setForm(Object.assign({}, form, { name: v })); }, 'Area (e.g., "AP Chemistry", "Cooking", "Spanish")'),
+            tkBtn('+ Add', addArea, 'primary')
+          )
+        )
+      ),
+
+      (data.areas || []).length === 0 ? tkEmptyState('🗺', 'No knowledge areas yet.', null, null)
+      : hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
+          (data.areas || []).map(function(a) {
+            var topicCount = (a.topics || []).length;
+            var mastered = (a.topics || []).filter(function(t) { return t.status === 'mastered'; }).length;
+            return hh('button', { key: 'ka-' + a.id,
+              onClick: function() { setActiveId(a.id); setView('area'); },
+              style: { display: 'block', textAlign: 'left', padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(6,182,212,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(6,182,212,0.40)', borderLeft: '4px solid #06b6d4', cursor: 'pointer' }
+            },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+                hh('div', null,
+                  hh('div', { style: { fontSize: 24, marginBottom: 4 } }, a.icon),
+                  hh('strong', { style: { fontSize: 13, color: '#67e8f9' } }, a.name)
+                ),
+                hh('span', { onClick: function(e) { e.stopPropagation(); removeArea(a.id); }, style: { color: '#64748b', cursor: 'pointer', fontSize: 12 } }, '✕')
+              ),
+              hh('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 4, fontFamily: 'ui-monospace, Menlo, monospace' } }, topicCount + ' topics · ' + mastered + ' mastered')
+            );
+          })
+        )
+    );
+  }
+
   // ── F. MY TOOLKIT HUB (landing page) ──
   // Single entry point that shows status of all toolkit tools + quick
   // actions. Today's date, current streak, # active goals, etc.
@@ -14660,7 +14914,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'mytkConf',     icon: '💪', label: 'Confidence Builder',   color: '#10b981', desc: 'Track moments. Pattern reveals what builds it for YOU',
         stat: ((data.mytkConf || {}).moments || []).length + ' moments', cta: 'Log a moment' },
       { id: 'mytkHope',     icon: '🌅', label: 'Hope Library',         color: '#fb923c', desc: 'Places, experiences, skills, people, things you hope for',
-        stat: ((data.mytkHope || {}).hopes || []).length + ' hopes', cta: 'Add a hope' }
+        stat: ((data.mytkHope || {}).hopes || []).length + ' hopes', cta: 'Add a hope' },
+      { id: 'mytkScript',   icon: '💬', label: 'Script Library',       color: '#a855f7', desc: 'Curated phrases for hard moments + your own',
+        stat: ((data.mytkScript || {}).custom || []).length + ' custom', cta: 'Browse scripts' },
+      { id: 'mytkKnowl',    icon: '🗺', label: 'Knowledge Map',        color: '#06b6d4', desc: 'Map what you know vs learning vs curious about',
+        stat: ((data.mytkKnowl || {}).areas || []).length + ' areas', cta: 'Map knowledge' }
     ];
 
     var dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][new Date().getDay()];
@@ -14931,7 +15189,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'mytkScreen',icon: '📱',label: 'Screen Time Tracker',   desc: 'Self-report total + scrolling + productive screen time + how you felt about it.' },
               { id: 'mytkD3',   icon: '🎯',label: 'Daily 3',                desc: 'THE 3 most important things to do today. Resist adding more.' },
               { id: 'mytkConf', icon: '💪',label: 'Confidence Builder',     desc: 'Log moments when you noticed confidence. Pattern reveals what builds it (Bandura 1977).' },
-              { id: 'mytkHope', icon: '🌅',label: 'Hope Library',           desc: 'Places, experiences, skills, people, ways of being you hope for. Random pick for hard days.' }
+              { id: 'mytkHope', icon: '🌅',label: 'Hope Library',           desc: 'Places, experiences, skills, people, ways of being you hope for. Random pick for hard days.' },
+              { id: 'mytkScript',icon: '💬',label: 'Script Library',         desc: 'Curated phrases for hard moments across 5 categories. Especially valuable for ND students.' },
+              { id: 'mytkKnowl',icon: '🗺',label: 'Knowledge Map',           desc: 'Track topics per area across 5 statuses (mastered/know/learning/next/curious).' }
             ]
           },
           { id: 'foundation', icon: '🧠', name: 'How learning works (foundation)',
@@ -18631,6 +18891,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           h(PersonalHope, { data: dhp, setData: setDhp })
         );
       }
+      function renderMytkScript() {
+        var dsl = d.mytkScript || { custom: [] };
+        var setDsl = function(newData) { upd('mytkScript', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalScriptLibrary, { data: dsl, setData: setDsl })
+        );
+      }
+      function renderMytkKnowl() {
+        var dkn = d.mytkKnowl || { areas: [] };
+        var setDkn = function(newData) { upd('mytkKnowl', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalKnowledgeMap, { data: dkn, setData: setDkn })
+        );
+      }
 
       // ─────────────────────────────────────────
       // VIEW ROUTER
@@ -18721,6 +18997,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         case 'mytkD3':        return renderMytkD3();
         case 'mytkConf':      return renderMytkConf();
         case 'mytkHope':      return renderMytkHope();
+        case 'mytkScript':    return renderMytkScript();
+        case 'mytkKnowl':     return renderMytkKnowl();
         case 'bloom':         return renderBloom();
         case 'cogload':       return renderCogLoad();
         case 'metacog':       return renderMetacog();
