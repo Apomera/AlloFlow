@@ -4048,7 +4048,100 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('ul', { className: 'space-y-1 text-xs text-emerald-100/90 list-disc list-inside' },
               MIGRATION.climateImpact.points.map(function(p, i) { return h('li', { key: i }, p); })
             )
-          )
+          ),
+
+          // ── NEW v0.17: Migration Calendar (Gantt-style) ──
+          (function() {
+            // Per-species fall+spring migration windows (months 0-11, J-D)
+            // Species → { fallStart, fallPeak, fallEnd, springStart, springPeak, springEnd }
+            // (peak month + window around it)
+            var calendar = [
+              { sp: 'Broad-winged Hawk',     emoji: '🦅', fall: [7, 8, 9], peak: 8, spring: [3, 4], color: '#fbbf24' },
+              { sp: 'Sharp-shinned Hawk',    emoji: '🪶', fall: [8, 9, 10], peak: 9, spring: [3, 4], color: '#f97316' },
+              { sp: "Cooper's Hawk",         emoji: '🦅', fall: [8, 9, 10], peak: 9, spring: [3, 4], color: '#f97316' },
+              { sp: 'American Kestrel',      emoji: '🦅', fall: [8, 9, 10], peak: 9, spring: [3, 4], color: '#fde047' },
+              { sp: 'Peregrine Falcon',      emoji: '🦅', fall: [8, 9, 10], peak: 10, spring: [3, 4], color: '#dc2626' },
+              { sp: 'Merlin',                emoji: '🦅', fall: [8, 9, 10], peak: 9, spring: [3, 4], color: '#dc2626' },
+              { sp: 'Osprey',                emoji: '🦅', fall: [7, 8, 9], peak: 8, spring: [2, 3, 4], color: '#06b6d4' },
+              { sp: 'Bald Eagle',            emoji: '🦅', fall: [9, 10, 11], peak: 10, spring: [1, 2, 3], color: '#92400e' },
+              { sp: 'Golden Eagle',          emoji: '🦅', fall: [9, 10, 11], peak: 10, spring: [2, 3], color: '#a16207' },
+              { sp: 'Red-tailed Hawk',       emoji: '🦅', fall: [9, 10], peak: 10, spring: [2, 3], color: '#f97316' },
+              { sp: 'Rough-legged Hawk',     emoji: '🦅', fall: [9, 10, 11], peak: 10, spring: [2, 3], color: '#0ea5e9' },
+              { sp: "Swainson's Hawk",       emoji: '🦅', fall: [8, 9], peak: 9, spring: [2, 3, 4], color: '#10b981' },
+              { sp: 'Northern Harrier',      emoji: '🦅', fall: [8, 9, 10], peak: 9, spring: [2, 3], color: '#8b5cf6' },
+              { sp: 'Snowy Owl (irruption)', emoji: '🦉', fall: [10, 11, 0], peak: 11, spring: [2, 3], color: '#e2e8f0' }
+            ];
+            var months = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
+            var monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            var pw = 700, ph = 30 + calendar.length * 22 + 30;
+            var nameW = 160;
+            var cellW = (pw - nameW - 40) / 12;
+            var currentMonth = new Date().getMonth();
+            return h('div', { className: 'bg-slate-900/40 border border-cyan-700/40 rounded-xl p-4' },
+              h('div', { className: 'text-sm font-bold text-cyan-300 mb-2' }, '📅 Migration Calendar — When Each Species is Flying'),
+              h('div', { className: 'text-xs text-slate-400 italic mb-3' }, 'Bars show migration windows. Solid = peak passage. Light = shoulder weeks. Use this to plan a hawkwatch trip — broadwings = mid-Sept; peregrines = Oct; rough-legs = Nov. Green column = current month.'),
+              h('svg', { viewBox: '0 0 ' + pw + ' ' + ph, style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': 'Migration calendar' },
+                h('rect', { x: 0, y: 0, width: pw, height: ph, fill: '#0f172a' }),
+                // Month headers
+                months.map(function(m, mi) {
+                  return h('text', { key: 'mh' + mi, x: nameW + 20 + mi * cellW + cellW / 2, y: 15, fontSize: 10, fill: '#94a3b8', textAnchor: 'middle', fontWeight: mi === currentMonth ? 'bold' : 'normal' }, m);
+                }),
+                // Current month highlight column
+                h('rect', { x: nameW + 20 + currentMonth * cellW, y: 22, width: cellW, height: ph - 50, fill: '#10b981', opacity: 0.12 }),
+                h('text', { x: nameW + 20 + currentMonth * cellW + cellW / 2, y: 30, fontSize: 8, fill: '#6ee7b7', textAnchor: 'middle', fontWeight: 'bold' }, 'NOW'),
+                // Species rows
+                calendar.map(function(row, ri) {
+                  var y = 35 + ri * 22;
+                  return h('g', { key: 'sp' + ri },
+                    // Background row stripe
+                    h('rect', { x: 0, y: y, width: pw, height: 20, fill: ri % 2 === 0 ? '#1e293b' : 'transparent', opacity: 0.5 }),
+                    // Species name
+                    h('text', { x: 8, y: y + 14, fontSize: 10, fill: '#fde047' }, row.emoji + ' ' + row.sp),
+                    // Fall migration cells
+                    row.fall.map(function(m, mi) {
+                      var isPeak = m === row.peak;
+                      return h('rect', {
+                        key: 'fall' + mi,
+                        x: nameW + 20 + m * cellW + 2, y: y + 3,
+                        width: cellW - 4, height: 14,
+                        fill: row.color,
+                        opacity: isPeak ? 0.95 : 0.4,
+                        rx: 2
+                      });
+                    }),
+                    // Spring migration cells (lighter, dashed)
+                    row.spring.map(function(m, mi) {
+                      return h('rect', {
+                        key: 'spr' + mi,
+                        x: nameW + 20 + m * cellW + 2, y: y + 3,
+                        width: cellW - 4, height: 14,
+                        fill: row.color, opacity: 0.25,
+                        stroke: row.color, strokeWidth: 1, strokeDasharray: '2,2',
+                        rx: 2
+                      });
+                    })
+                  );
+                }),
+                // Legend
+                h('rect', { x: 8, y: ph - 25, width: 280, height: 20, fill: 'rgba(15,23,42,0.8)', stroke: '#475569', strokeWidth: 1, rx: 3 }),
+                h('rect', { x: 14, y: ph - 21, width: 14, height: 12, fill: '#fbbf24', opacity: 0.95, rx: 1 }),
+                h('text', { x: 32, y: ph - 12, fontSize: 9, fill: '#cbd5e1' }, 'fall peak'),
+                h('rect', { x: 90, y: ph - 21, width: 14, height: 12, fill: '#fbbf24', opacity: 0.4, rx: 1 }),
+                h('text', { x: 108, y: ph - 12, fontSize: 9, fill: '#cbd5e1' }, 'fall shoulder'),
+                h('rect', { x: 180, y: ph - 21, width: 14, height: 12, fill: '#fbbf24', opacity: 0.25, stroke: '#fbbf24', strokeDasharray: '2,2', rx: 1 }),
+                h('text', { x: 198, y: ph - 12, fontSize: 9, fill: '#cbd5e1' }, 'spring')
+              ),
+              // What's flying this month
+              (function() {
+                var flyingNow = calendar.filter(function(r) { return r.fall.indexOf(currentMonth) !== -1 || r.spring.indexOf(currentMonth) !== -1; });
+                if (flyingNow.length === 0) return h('div', { className: 'text-xs text-slate-400 mt-2 italic' }, '🟢 No major migrations this month — most species are on territory.');
+                return h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded-lg p-3 mt-2' },
+                  h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, '🟢 Flying RIGHT NOW (' + monthNames[currentMonth] + ')'),
+                  h('div', { className: 'text-xs text-emerald-100/90' }, flyingNow.map(function(r) { return r.emoji + ' ' + r.sp; }).join(' · '))
+                );
+              })()
+            );
+          })()
         );
       }
 
@@ -6814,14 +6907,134 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           return catMatch && searchMatch;
         });
 
+        var glossMode = rh.glossMode || 'list';
+        function setGlossMode(m) { setRH({ glossMode: m }); }
         return h('div', { className: 'space-y-3' },
           h('div', { className: 'bg-gradient-to-br from-slate-800/40 to-slate-900/40 border border-slate-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-lg font-bold text-amber-200 mb-2' }, '📖 Raptor Glossary'),
-            h('div', { className: 'text-sm text-slate-300 leading-relaxed' }, GLOSSARY.length + ' terms — A-Z reference covering anatomy, behavior, conservation, falconry, taxonomy, and physics. Searchable + filterable.')
+            h('div', { className: 'flex items-start justify-between gap-3 flex-wrap mb-2' },
+              h('div', null,
+                h('div', { className: 'text-lg font-bold text-amber-200 mb-1' }, '📖 Raptor Glossary'),
+                h('div', { className: 'text-sm text-slate-300 leading-relaxed' }, GLOSSARY.length + ' terms — A-Z reference covering anatomy, behavior, conservation, falconry, taxonomy, and physics.')
+              ),
+              // ── NEW v0.17: Mode toggle ──
+              h('div', { className: 'flex gap-1 bg-slate-900/60 rounded-lg p-1' },
+                [{ id: 'list', label: '📋 List' }, { id: 'flashcards', label: '🎴 Flashcards' }].map(function(m) {
+                  var active = glossMode === m.id;
+                  return h('button', {
+                    key: m.id,
+                    onClick: function() { setGlossMode(m.id); },
+                    className: 'px-3 py-1 rounded text-xs font-bold transition-all ' + (active
+                      ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white'
+                      : 'text-amber-200 hover:text-amber-100'),
+                    'aria-label': m.id === 'list' ? 'List view' : 'Flashcards view',
+                    'aria-pressed': active
+                  }, m.label);
+                })
+              )
+            )
           ),
 
-          // Search
-          h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-lg p-3' },
+          // ── NEW v0.17: Flashcards mode ──
+          glossMode === 'flashcards' && (function() {
+            var fc = rh.flashcard || { deckIdx: 0, flipped: false, knownIds: {}, reviewedIds: {}, sessionStart: Date.now() };
+            function setFC(patch) { setRH({ flashcard: Object.assign({}, fc, patch) }); }
+            // Build deck — prefer terms not yet marked "known"
+            var deck = GLOSSARY.filter(function(g) { return !fc.knownIds[g.term]; });
+            if (deck.length === 0) deck = GLOSSARY; // reset cycle
+            var card = deck[fc.deckIdx % deck.length];
+            var reviewedCount = Object.keys(fc.reviewedIds || {}).length;
+            var knownCount = Object.keys(fc.knownIds || {}).length;
+            return h('div', { className: 'bg-slate-900/40 border border-amber-700/40 rounded-xl p-4 space-y-3' },
+              // Stats bar
+              h('div', { className: 'flex items-center justify-between text-xs' },
+                h('div', { className: 'text-slate-300' },
+                  'Card ', h('span', { className: 'font-mono text-amber-300' }, (fc.deckIdx % deck.length + 1) + '/' + deck.length),
+                  ' in active deck · ',
+                  h('span', { className: 'text-emerald-300' }, knownCount + ' known'),
+                  ' · ',
+                  h('span', { className: 'text-cyan-300' }, reviewedCount + ' reviewed this session')
+                ),
+                h('button', {
+                  onClick: function() { setFC({ knownIds: {}, reviewedIds: {} }); rhAnnounce('Flashcard progress reset'); },
+                  className: 'text-[10px] text-slate-500 hover:text-amber-300 italic',
+                  'aria-label': 'Reset flashcard progress'
+                }, '↺ Reset')
+              ),
+              // Flashcard
+              h('div', { className: 'relative', style: { minHeight: '240px', perspective: '1000px' } },
+                h('button', {
+                  onClick: function() { setFC({ flipped: !fc.flipped }); },
+                  className: 'w-full text-left p-6 rounded-2xl shadow-xl cursor-pointer transition-all transform hover:scale-[1.01] ' + (fc.flipped
+                    ? 'bg-gradient-to-br from-emerald-900/60 to-teal-900/60 border-2 border-emerald-500'
+                    : 'bg-gradient-to-br from-amber-900/60 to-orange-900/60 border-2 border-amber-500'),
+                  style: { minHeight: '240px' },
+                  'aria-label': fc.flipped ? 'Definition (click to flip back)' : 'Term (click to flip)'
+                },
+                  fc.flipped ? h('div', { className: 'space-y-3' },
+                    h('div', { className: 'text-[10px] uppercase tracking-wider text-emerald-300 font-bold' }, 'Definition'),
+                    h('div', { className: 'text-xl font-bold text-emerald-200' }, card.term),
+                    h('div', { className: 'text-sm text-emerald-100/90 leading-relaxed' }, card.def),
+                    h('div', { className: 'text-[10px] text-emerald-300 italic mt-3' }, '↻ Click card to flip back')
+                  ) : h('div', { className: 'space-y-3 text-center py-8' },
+                    h('div', { className: 'text-[10px] uppercase tracking-wider text-amber-300 font-bold' }, 'Term'),
+                    h('div', { className: 'text-3xl font-bold text-amber-200' }, card.term),
+                    h('div', { className: 'text-xs text-amber-300/70 italic' }, 'Try to define this term, then click to flip')
+                  )
+                )
+              ),
+              // Action buttons (only show after flipping)
+              fc.flipped && h('div', { className: 'grid grid-cols-3 gap-2' },
+                h('button', {
+                  onClick: function() {
+                    var newKnown = Object.assign({}, fc.knownIds);
+                    var newReviewed = Object.assign({}, fc.reviewedIds);
+                    delete newKnown[card.term]; // unmark known if I didn't know
+                    newReviewed[card.term] = (newReviewed[card.term] || 0) + 1;
+                    setFC({ knownIds: newKnown, reviewedIds: newReviewed, deckIdx: fc.deckIdx + 1, flipped: false });
+                    rhAnnounce("Marked: didn't know. Next card.");
+                  },
+                  className: 'px-3 py-2 rounded-lg text-xs font-bold bg-red-900/40 text-red-200 hover:bg-red-800/50 border border-red-700/40',
+                  'aria-label': "Didn't know"
+                }, "✗ Didn't Know"),
+                h('button', {
+                  onClick: function() {
+                    var newReviewed = Object.assign({}, fc.reviewedIds);
+                    newReviewed[card.term] = (newReviewed[card.term] || 0) + 1;
+                    setFC({ reviewedIds: newReviewed, deckIdx: fc.deckIdx + 1, flipped: false });
+                    rhAnnounce('Marked: still learning. Next card.');
+                  },
+                  className: 'px-3 py-2 rounded-lg text-xs font-bold bg-amber-900/40 text-amber-200 hover:bg-amber-800/50 border border-amber-700/40',
+                  'aria-label': 'Still learning'
+                }, '? Still Learning'),
+                h('button', {
+                  onClick: function() {
+                    var newKnown = Object.assign({}, fc.knownIds);
+                    var newReviewed = Object.assign({}, fc.reviewedIds);
+                    newKnown[card.term] = true;
+                    newReviewed[card.term] = (newReviewed[card.term] || 0) + 1;
+                    setFC({ knownIds: newKnown, reviewedIds: newReviewed, deckIdx: fc.deckIdx + 1, flipped: false });
+                    rhAnnounce('Marked as known. Next card.');
+                    if (ctx.awardXP) ctx.awardXP(1, 'Glossary flashcard: known');
+                  },
+                  className: 'px-3 py-2 rounded-lg text-xs font-bold bg-emerald-900/40 text-emerald-200 hover:bg-emerald-800/50 border border-emerald-700/40',
+                  'aria-label': 'Mark as known'
+                }, '✓ Knew It')
+              ),
+              // Skip button (always)
+              !fc.flipped && h('button', {
+                onClick: function() { setFC({ deckIdx: fc.deckIdx + 1, flipped: false }); rhAnnounce('Skipped to next card'); },
+                className: 'w-full px-3 py-2 rounded-lg text-xs font-bold bg-slate-700 text-slate-200 hover:bg-slate-600',
+                'aria-label': 'Skip card'
+              }, '➡ Skip — next card'),
+              // Help
+              h('div', { className: 'text-[10px] text-slate-500 italic text-center' },
+                'Self-test: try to define the term in your head, click to reveal the definition, then mark whether you knew it. "Knew it" terms drop out of the active deck. Spaced-repetition active recall.'
+              )
+            );
+          })(),
+
+          // Search + category filter (list mode only)
+          glossMode === 'list' && h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-lg p-3' },
             h('input', {
               type: 'text',
               placeholder: '🔍 Search terms or definitions...',
@@ -6833,7 +7046,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           ),
 
           // ── NEW v0.12: Category filter chips ──
-          h('div', { className: 'flex flex-wrap gap-1.5' },
+          glossMode === 'list' && h('div', { className: 'flex flex-wrap gap-1.5' },
             categories.map(function(c) {
               var active = glossCategory === c.id;
               var count = c.id === 'all' ? GLOSSARY.length : (catCounts[c.id] || 0);
@@ -6849,11 +7062,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             })
           ),
 
-          // Results count
-          h('div', { className: 'text-[10px] text-slate-400' }, filtered.length + ' of ' + GLOSSARY.length + ' terms shown' + (glossSearch ? ' (search: ' + glossSearch + ')' : '') + (glossCategory !== 'all' ? ' (category: ' + glossCategory + ')' : '')),
+          // Results count (list mode only)
+          glossMode === 'list' && h('div', { className: 'text-[10px] text-slate-400' }, filtered.length + ' of ' + GLOSSARY.length + ' terms shown' + (glossSearch ? ' (search: ' + glossSearch + ')' : '') + (glossCategory !== 'all' ? ' (category: ' + glossCategory + ')' : '')),
 
-          // Glossary entries
-          filtered.length === 0 ? h('div', { className: 'text-center text-slate-500 italic py-8' }, 'No matches.') :
+          // Glossary entries (list mode only)
+          glossMode === 'list' && (filtered.length === 0 ? h('div', { className: 'text-center text-slate-500 italic py-8' }, 'No matches.') :
             h('div', { className: 'space-y-2' },
               filtered.map(function(g, i) {
                 var catColors = { anatomy: 'amber', physics: 'cyan', behavior: 'indigo', falconry: 'orange', taxonomy: 'emerald', conservation: 'green', other: 'slate' };
@@ -6866,7 +7079,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   )
                 );
               })
-            )
+            ))
         );
       }
 
@@ -7101,6 +7314,105 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               )
             );
           })(),
+
+          // ── NEW v0.17: 5-Day Lesson Plan Template ──
+          h('details', { className: 'bg-purple-900/20 border border-purple-700/40 rounded-xl p-3' },
+            h('summary', { className: 'text-sm font-bold text-purple-300 cursor-pointer' }, '🗓 5-Day Lesson Plan Template — teacher unit outline'),
+            h('div', { className: 'mt-3 bg-white text-slate-900 rounded-lg p-4' },
+              h('div', { className: 'border-b-2 border-slate-800 pb-2 mb-3' },
+                h('div', { className: 'text-base font-bold' }, '🦅 RAPTOR HUNT — 5-Day Classroom Unit Plan'),
+                h('div', { className: 'text-xs italic mt-1' }, 'Designed for middle school or HS biology / environmental science. Adapt to your block schedule.')
+              ),
+              // Header table
+              h('div', { className: 'grid grid-cols-3 gap-3 text-xs mb-3' },
+                h('div', null, h('div', { className: 'font-bold' }, 'Teacher:'), h('div', { className: 'border-b border-slate-400 h-5' })),
+                h('div', null, h('div', { className: 'font-bold' }, 'Grade level:'), h('div', { className: 'border-b border-slate-400 h-5' })),
+                h('div', null, h('div', { className: 'font-bold' }, 'Unit start date:'), h('div', { className: 'border-b border-slate-400 h-5' }))
+              ),
+              // NGSS alignment box
+              h('div', { className: 'border-2 border-slate-300 rounded p-2 mb-3 text-xs bg-slate-50' },
+                h('div', { className: 'font-bold mb-1' }, '📋 NGSS Standards covered (check applicable):'),
+                h('div', { className: 'grid grid-cols-2 gap-1' },
+                  [
+                    'HS-LS2-2: Mathematical representations of ecosystem dynamics',
+                    'HS-LS2-6: Group behavior + ecosystem-level evolution',
+                    'HS-LS4-2: Evidence of evolution: comparative anatomy',
+                    'HS-LS4-5: Variation in populations',
+                    'MS-LS2-1: Resource availability + population dynamics',
+                    'MS-LS2-4: Effects of environment + population changes',
+                    'MS-PS2-2: Force + motion (stoop physics)',
+                    'MS-PS3-1: Energy + force (KE calculations)'
+                  ].map(function(std, i) { return h('div', { key: i, className: 'text-[10px]' }, '☐ ' + std); })
+                )
+              ),
+              // Day-by-day grid
+              h('div', { className: 'space-y-2 text-xs' },
+                [
+                  {
+                    day: 'DAY 1 — Introduction + Species Roster',
+                    objective: 'Students identify 8 raptor species + their key biological adaptations.',
+                    activities: 'Hub tour (10 min) → Roster cards view (15 min) → 🆚 Duel two species (15 min) → Field ID silhouettes (10 min)',
+                    homework: 'Read 1 species in detail from Roster, write 3-sentence summary of its hunt style + niche.'
+                  },
+                  {
+                    day: 'DAY 2 — Physics of Flight + Stoop',
+                    objective: 'Students apply force, motion, energy concepts to raptor stoop.',
+                    activities: 'Flight Physics scatter plot (10 min) → Stoop Calculator + fall curve (15 min) → Stoop Trajectory multi-species (10 min) → Math Practice Problems 1-4 (15 min)',
+                    homework: 'Math practice problems 5-8 from Resources section.'
+                  },
+                  {
+                    day: 'DAY 3 — Sensory Biology + Anatomy',
+                    objective: 'Students compare sensory systems across diurnal vs nocturnal raptors.',
+                    activities: 'Vision Lab + visual field SVG (10 min) → Day vs Night Eye cross-section (10 min) → 🦻 Owl Hearing Lab interactive (15 min) → Anatomy Quiz Mode (15 min)',
+                    homework: 'Reflection: How does asymmetric ear placement give owls 3D acoustic localization? Cite Payne 1962.'
+                  },
+                  {
+                    day: 'DAY 4 — Hands-on: Pellet Dissection + Hunt Sim',
+                    objective: 'Students dissect a real or virtual owl pellet + experience predator perspective.',
+                    activities: 'Virtual pellet dissection (15 min) → Print pellet lab sheet (5 min) → Optional real pellet from supplier (30 min) → 3D Hunt Sim with chosen species (15 min)',
+                    homework: 'Complete Pellet Lab worksheet from Resources. Estimate prey biomass for the local owl roost.'
+                  },
+                  {
+                    day: 'DAY 5 — Conservation + Synthesis',
+                    objective: 'Students evaluate conservation strategies + apply demographics to recovery science.',
+                    activities: 'Conservation overview + threat impact panel (15 min) → Recovery Case Studies trajectory plots (15 min) → Lifecycle population simulator (10 min) → Field ID Quiz (10 min) → Class discussion: which recovery is most impressive + why?',
+                    homework: 'Final paper: choose one recovery case (peregrine / bald eagle / condor / Mauritius / Philippine) + write 1-page analysis using the 8 meta-lesson points.'
+                  }
+                ].map(function(d, di) {
+                  return h('div', { key: di, className: 'border border-slate-300 rounded p-2 text-xs' },
+                    h('div', { className: 'font-bold text-slate-800 mb-1' }, d.day),
+                    h('div', { className: 'mb-1' }, h('span', { className: 'font-bold' }, 'Objective: '), d.objective),
+                    h('div', { className: 'mb-1' }, h('span', { className: 'font-bold' }, 'Activities (60-75 min): '), d.activities),
+                    h('div', null, h('span', { className: 'font-bold' }, 'Homework: '), d.homework)
+                  );
+                })
+              ),
+              // Assessment + extension
+              h('div', { className: 'grid grid-cols-2 gap-3 mt-3 text-xs' },
+                h('div', { className: 'border border-slate-300 rounded p-2' },
+                  h('div', { className: 'font-bold mb-1' }, '✅ Assessment options'),
+                  h('div', { className: 'space-y-1 text-[11px]' },
+                    h('div', null, '☐ Field ID Quiz score (10 pts)'),
+                    h('div', null, '☐ Pellet dissection lab sheet (15 pts)'),
+                    h('div', null, '☐ Math practice problems (20 pts)'),
+                    h('div', null, '☐ Final 1-page recovery analysis (40 pts)'),
+                    h('div', null, '☐ Anatomy Quiz Mode score (15 pts)')
+                  )
+                ),
+                h('div', { className: 'border border-slate-300 rounded p-2' },
+                  h('div', { className: 'font-bold mb-1' }, '🎯 Extensions'),
+                  h('div', { className: 'space-y-1 text-[11px]' },
+                    h('div', null, '☐ Field trip to local hawkwatch (see Resources by region)'),
+                    h('div', null, '☐ Real pellet dissection lab from sterilized supplier'),
+                    h('div', null, '☐ eBird/iNaturalist citizen-science submission'),
+                    h('div', null, '☐ Compare-and-contrast essay using the Duel mode'),
+                    h('div', null, '☐ Frankenraptor design + justify (CCSS write argument)')
+                  )
+                )
+              ),
+              h('div', { className: 'text-[10px] text-slate-500 italic text-center mt-3' }, 'Generated for Raptor Hunt — alloflow.app · Modify freely.')
+            )
+          ),
 
           // ── NEW v0.15: Printable Classroom Worksheets ──
           h('details', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded-xl p-3' },
