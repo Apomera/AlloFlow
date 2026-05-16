@@ -7812,6 +7812,765 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     );
   }
 
+  // ── V. PERSONAL EXECUTIVE FUNCTION DASHBOARD (Wave 5) ──
+  // 8 EF dimensions tracked over time with weekly self-rating + library
+  // of strategies per dimension. Based on Barkley + Brown frameworks.
+  // Particularly valuable for ADHD + autistic students whose EF profiles
+  // vary widely from peers.
+  function PersonalEFDashboard(props) {
+    if (!R) return null;
+    var data = props.data || { ratings: [] };
+    var setData = props.setData;
+    var ds = R.useState(null);                  var detail = ds[0];     var setDetail = ds[1];
+    var fs = R.useState({});                    var newRating = fs[0];  var setNewRating = fs[1];
+
+    var DIMENSIONS = [
+      { id: 'initiation', label: 'Task initiation', icon: '🚀', color: '#ef4444',
+        what: 'Getting started on something — especially something you don\'t feel like doing.',
+        strategies: [
+          { title: 'Smallest-next-step rule', detail: 'Don\'t plan the whole project. Identify the SMALLEST next physical step (open the document, write the title) and do just that.' },
+          { title: '2-minute rule', detail: 'Commit to working for just 2 minutes. Often momentum carries you forward; if not, you tried.' },
+          { title: 'Body doubling', detail: 'Work in the presence of someone else (in person or video call). Their presence raises your behavioral threshold.' },
+          { title: 'Implementation intentions', detail: '"When I sit down at my desk after dinner, then I will open my biology homework before doing anything else."' }
+        ]
+      },
+      { id: 'planning', label: 'Planning', icon: '🗺', color: '#3b82f6',
+        what: 'Mapping out what needs to happen + when. Backward-planning from a deadline.',
+        strategies: [
+          { title: 'Reverse-engineer from due date', detail: 'Write the due date. Work backward in days. Assign concrete tasks to specific days.' },
+          { title: 'Externalize the plan', detail: 'Put it on paper, calendar, or app. Internal mental plans get lost. External plans persist.' },
+          { title: 'Time estimates × 1.5', detail: 'Most students underestimate by 30-50%. Multiply your initial estimate by 1.5.' },
+          { title: 'Visual schedule', detail: 'See it. Color-code it. The visibility itself reduces working-memory cost.' }
+        ]
+      },
+      { id: 'attention', label: 'Sustained attention', icon: '🎯', color: '#fbbf24',
+        what: 'Maintaining focus on one task across time, especially when it\'s not intrinsically interesting.',
+        strategies: [
+          { title: 'Pomodoro', detail: '25-min focused blocks + 5-min breaks. Hard limit makes attention manageable.' },
+          { title: 'Remove distractions FIRST', detail: 'Phone in another room, browser tabs closed, music if it helps. Build the environment before starting.' },
+          { title: 'Track when attention drifts', detail: 'Notice without judgment. Just bringing it back IS the practice. Like meditation.' },
+          { title: 'Match task difficulty to energy', detail: 'Hard cognitive work when energy is highest. Routine tasks when energy is lower.' }
+        ]
+      },
+      { id: 'workingmemory', label: 'Working memory', icon: '🧠', color: '#a855f7',
+        what: 'Holding info in mind while working with it. Multi-step directions, mental math, "what was I about to do?"',
+        strategies: [
+          { title: 'Externalize relentlessly', detail: 'Write it down. Anything you need to "remember to do" goes to a list, not your head.' },
+          { title: 'Use the brain-dump tool', detail: 'When your head feels full, dump it ALL out. Clears working memory for the current task.' },
+          { title: 'Visual aids', detail: 'Sticky notes, whiteboards, calendars. Make your working memory visible in the environment.' },
+          { title: 'One thing at a time', detail: 'Multitasking taxes working memory. Single-task, finish, then switch.' }
+        ]
+      },
+      { id: 'flexibility', label: 'Cognitive flexibility', icon: '🔄', color: '#10b981',
+        what: 'Shifting between tasks or perspectives. Adapting when plans change.',
+        strategies: [
+          { title: 'Transition rituals', detail: 'A consistent micro-routine between activities (stand up, breath, declare next task) eases the shift.' },
+          { title: 'Warning before changes', detail: 'For yourself: a 5-min warning before switching tasks. For others: ask for it.' },
+          { title: 'Multiple options upfront', detail: 'Generate 2-3 ways to approach a task. Builds flexibility into the plan.' },
+          { title: 'Reframe failure as data', detail: 'When plans break, ask what they revealed rather than catastrophizing.' }
+        ]
+      },
+      { id: 'emotion', label: 'Emotional regulation', icon: '💖', color: '#ec4899',
+        what: 'Noticing + managing emotional intensity so it doesn\'t derail focus or relationships.',
+        strategies: [
+          { title: 'Name it', detail: 'Just labeling the emotion ("I\'m frustrated") activates regulation circuits (Lieberman 2007).' },
+          { title: 'Body first', detail: 'Box breathing, walk, water. Calm the body, then the mind. Don\'t reason your way out.' },
+          { title: 'Pause before responding', detail: 'For social situations: 10 seconds. For texts: 5 minutes. Distance helps.' },
+          { title: 'Pre-decide for triggers', detail: '"When I feel my voice rising in a discussion, then I will pause and breathe before continuing."' }
+        ]
+      },
+      { id: 'selfmonitor', label: 'Self-monitoring', icon: '🔍', color: '#06b6d4',
+        what: 'Noticing how things are going + adjusting in real time. Knowing when you\'re off-task.',
+        strategies: [
+          { title: 'Periodic check-ins', detail: 'Set a timer for every 25-30 min. When it rings: "Am I doing what I planned?"' },
+          { title: 'Daily 1-line review', detail: 'End of day: 1 sentence on what worked + 1 on what didn\'t.' },
+          { title: 'Visible progress', detail: 'See your own progress (checkboxes, charts, streaks). Builds self-monitoring habit naturally.' },
+          { title: 'Trusted feedback', detail: 'One person who can honestly tell you when you\'re off-track. Solicit it explicitly.' }
+        ]
+      },
+      { id: 'organization', label: 'Organization', icon: '📦', color: '#f97316',
+        what: 'Keeping materials, ideas, and time arranged so things don\'t get lost.',
+        strategies: [
+          { title: 'A place for everything', detail: 'Designate ONE spot for each type of thing (homework, headphones, library books).' },
+          { title: 'Weekly reset', detail: '15 min on Sunday: clear backpack, sort papers, check calendar. Compound effect.' },
+          { title: 'Digital + physical hybrids', detail: 'Calendar on phone + visible paper version on desk. Redundancy reduces lost items.' },
+          { title: 'Label everything', detail: 'Folders, binders, drawers, files. Visible labels reduce decision cost.' }
+        ]
+      }
+    ];
+
+    function rateAll() {
+      var entry = Object.assign({ id: tkId(), date: todayISO() }, newRating);
+      setData({ ratings: [entry].concat(data.ratings || []) });
+      setNewRating({});
+    }
+    function removeRating(id) {
+      setData({ ratings: (data.ratings || []).filter(function(r) { return r.id !== id; }) });
+    }
+
+    var ratings = data.ratings || [];
+    var latest = ratings[0];
+
+    // Trend per dimension (last 8 ratings)
+    function trend(dimId) {
+      return ratings.slice(0, 8).reverse().map(function(r) { return r[dimId] || 0; });
+    }
+
+    if (detail) {
+      var dim = DIMENSIONS.filter(function(d) { return d.id === detail; })[0];
+      if (!dim) { setDetail(null); return null; }
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader(dim.icon, dim.label, dim.what, dim.color),
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14 } },
+          dim.strategies.map(function(s, i) {
+            return hh('div', { key: 'str-' + i, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', border: '1px solid ' + dim.color + '30', borderLeft: '3px solid ' + dim.color } },
+              hh('div', { style: { fontSize: 12, fontWeight: 800, color: dim.color, marginBottom: 4 } }, '→ ' + s.title),
+              hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.65 } }, s.detail)
+            );
+          })
+        ),
+        hh('div', { style: { textAlign: 'center' } },
+          tkBtn('← Back to dashboard', function() { setDetail(null); }, 'ghost')
+        )
+      );
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🧩', 'Executive Function Dashboard', 'Rate 8 EF dimensions weekly. Track trends. Click any dimension for strategies. Barkley + Brown frameworks.', '#a855f7'),
+
+      // Weekly rating form
+      tkCard('#a855f7',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 8 } }, '📊 Rate your week (1 = struggling, 10 = strong)'),
+          DIMENSIONS.map(function(dim) {
+            return hh('div', { key: 'rd-' + dim.id, style: { display: 'flex', alignItems: 'center', gap: 10, padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.4)', borderLeft: '3px solid ' + dim.color, marginBottom: 6 } },
+              hh('div', { style: { fontSize: 16, flexShrink: 0 } }, dim.icon),
+              hh('div', { style: { flex: 1, minWidth: 0 } },
+                hh('strong', { style: { fontSize: 11, color: dim.color } }, dim.label)
+              ),
+              hh('input', { type: 'range', min: 1, max: 10, step: 1, value: newRating[dim.id] || 5,
+                onChange: function(e) { setNewRating(Object.assign({}, newRating, (function() { var o = {}; o[dim.id] = parseInt(e.target.value, 10); return o; })())); },
+                style: { width: 140, accentColor: dim.color }
+              }),
+              hh('strong', { style: { width: 30, textAlign: 'right', fontSize: 14, color: dim.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, newRating[dim.id] || 5)
+            );
+          }),
+          hh('div', { style: { textAlign: 'right', marginTop: 8 } },
+            tkBtn('💾 Save this week\'s ratings', rateAll, 'primary')
+          )
+        )
+      ),
+
+      // Latest snapshot — radar-like
+      latest ? tkCard('#9333ea',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 8 } }, '🎯 Latest snapshot · ' + relDate(latest.date) + ' · Click for strategies'),
+          hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 6 } },
+            DIMENSIONS.map(function(dim) {
+              var val = latest[dim.id] || 0;
+              var hist = trend(dim.id);
+              return hh('button', { key: 'sn-' + dim.id,
+                onClick: function() { setDetail(dim.id); },
+                style: { display: 'block', textAlign: 'left', padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid ' + dim.color + '30', borderLeft: '3px solid ' + dim.color, cursor: 'pointer' }
+              },
+                hh('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 } },
+                  hh('span', { style: { fontSize: 14 } }, dim.icon),
+                  hh('span', { style: { fontSize: 11, fontWeight: 700, color: dim.color, flex: 1 } }, dim.label),
+                  hh('strong', { style: { fontSize: 16, color: dim.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, val)
+                ),
+                // Mini trend line
+                hh('div', { style: { display: 'flex', gap: 1, alignItems: 'flex-end', height: 20 } },
+                  hist.map(function(v, i) {
+                    return hh('div', { key: 'h-' + i, style: { flex: 1, height: (v / 10 * 100) + '%', background: dim.color + '70', minHeight: 1, borderRadius: 1 } });
+                  })
+                )
+              );
+            })
+          )
+        )
+      ) : null,
+
+      // Past ratings
+      ratings.length > 1 ? hh('div', { style: { marginTop: 12 } },
+        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, '📚 Rating history'),
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+          ratings.slice(0, 10).map(function(r) {
+            var avg = (DIMENSIONS.reduce(function(s, d) { return s + (r[d.id] || 0); }, 0) / DIMENSIONS.length).toFixed(1);
+            return hh('div', { key: 'rt-' + r.id, style: { display: 'flex', justifyContent: 'space-between', padding: '6px 10px', borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #a855f7' } },
+              hh('span', { style: { fontSize: 11, color: '#cbd5e1', fontFamily: 'ui-monospace, Menlo, monospace' } }, r.date + ' · ' + relDate(r.date)),
+              hh('div', null,
+                hh('span', { style: { fontSize: 11, color: '#c084fc', fontWeight: 700, marginRight: 8 } }, 'avg ' + avg + '/10'),
+                hh('button', { onClick: function() { removeRating(r.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+              )
+            );
+          })
+        )
+      ) : null
+    );
+  }
+
+  // ── W. PERSONAL IEP GOAL TRACKER (Wave 5) ──
+  // Student-controlled IEP goal tracking. Annual goals + quarterly
+  // sub-goals + accommodation review. Designed for the student to
+  // own and bring to IEP meetings.
+  function PersonalIEPTracker(props) {
+    if (!R) return null;
+    var data = props.data || { goals: [], meetings: [] };
+    var setData = props.setData;
+    var vs = R.useState('list');                  var view = vs[0];   var setView = vs[1];
+    var fg = R.useState({ area: 'academic', annual: '', subgoals: [], measurable: '', services: '' });
+    var goalForm = fg[0];                          var setGoalForm = fg[1];
+    var ms = R.useState({ date: '', whatChanged: '', myInput: '', whatWorked: '', whatToTry: '' });
+    var meetForm = ms[0];                          var setMeetForm = ms[1];
+    var es = R.useState(null);                     var editingGoal = es[0]; var setEditingGoal = es[1];
+
+    var AREAS = [
+      { id: 'academic', label: 'Academic', icon: '📚', color: '#3b82f6' },
+      { id: 'behavior', label: 'Behavior', icon: '🧩', color: '#ef4444' },
+      { id: 'social',   label: 'Social',   icon: '🤝', color: '#10b981' },
+      { id: 'communication', label: 'Communication', icon: '💬', color: '#fbbf24' },
+      { id: 'ef',       label: 'Executive function', icon: '🧠', color: '#a855f7' },
+      { id: 'sensory',  label: 'Sensory regulation', icon: '🎧', color: '#ec4899' },
+      { id: 'lifeskills', label: 'Life skills',  icon: '🏠', color: '#06b6d4' }
+    ];
+
+    function saveGoal() {
+      if (!goalForm.annual.trim()) { alert('Need an annual goal statement.'); return; }
+      var id = editingGoal || tkId();
+      var goal = Object.assign({ id: id, createdAt: todayISO(), progress: [] }, goalForm);
+      var goals = (data.goals || []).slice();
+      var i = goals.findIndex(function(g) { return g.id === id; });
+      if (i >= 0) goals[i] = Object.assign({}, goals[i], goal);
+      else goals.unshift(goal);
+      setData(Object.assign({}, data, { goals: goals }));
+      setGoalForm({ area: 'academic', annual: '', subgoals: [], measurable: '', services: '' });
+      setEditingGoal(null);
+      setView('list');
+    }
+    function removeGoal(id) {
+      if (!confirm('Delete this IEP goal from YOUR copy (does not affect the official IEP)?')) return;
+      setData(Object.assign({}, data, { goals: (data.goals || []).filter(function(g) { return g.id !== id; }) }));
+    }
+    function recordProgress(goalId, status, note) {
+      var goals = (data.goals || []).map(function(g) {
+        if (g.id !== goalId) return g;
+        return Object.assign({}, g, { progress: (g.progress || []).concat([{ date: todayISO(), status: status, note: note }]) });
+      });
+      setData(Object.assign({}, data, { goals: goals }));
+    }
+    function saveMeeting() {
+      if (!meetForm.date) { alert('Need a meeting date.'); return; }
+      var meeting = Object.assign({ id: tkId() }, meetForm);
+      setData(Object.assign({}, data, { meetings: [meeting].concat(data.meetings || []) }));
+      setMeetForm({ date: '', whatChanged: '', myInput: '', whatWorked: '', whatToTry: '' });
+      setView('list');
+    }
+
+    function addSubgoal() {
+      setGoalForm(Object.assign({}, goalForm, { subgoals: (goalForm.subgoals || []).concat([{ id: tkId(), text: '', done: false }]) }));
+    }
+    function updateSubgoal(i, patch) {
+      var sg = (goalForm.subgoals || []).slice();
+      sg[i] = Object.assign({}, sg[i], patch);
+      setGoalForm(Object.assign({}, goalForm, { subgoals: sg }));
+    }
+    function removeSubgoal(i) {
+      setGoalForm(Object.assign({}, goalForm, { subgoals: (goalForm.subgoals || []).filter(function(_, j) { return j !== i; }) }));
+    }
+
+    var goals = data.goals || [];
+    var meetings = data.meetings || [];
+
+    if (view === 'newGoal') {
+      var area = AREAS.filter(function(a) { return a.id === goalForm.area; })[0];
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader('🎓', editingGoal ? 'Edit IEP goal' : 'New IEP goal', 'Track your IEP goals YOUR way. This is your copy.', '#06b6d4'),
+        tkCard('#06b6d4',
+          hh('div', null,
+            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#67e8f9', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Goal area'),
+            hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 14 } },
+              AREAS.map(function(a) {
+                return hh('button', { key: 'ar-' + a.id,
+                  onClick: function() { setGoalForm(Object.assign({}, goalForm, { area: a.id })); },
+                  style: { padding: '6px 10px', borderRadius: 6, background: goalForm.area === a.id ? a.color + '30' : 'rgba(15,23,42,0.5)', color: goalForm.area === a.id ? a.color : '#94a3b8', border: '1px solid ' + (goalForm.area === a.id ? a.color : 'rgba(100,116,139,0.30)'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                }, a.icon + ' ' + a.label);
+              })
+            ),
+            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#67e8f9', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, '🎯 Annual goal (as written on the IEP)'),
+            tkTextarea(goalForm.annual, function(v) { setGoalForm(Object.assign({}, goalForm, { annual: v })); }, 'e.g., "By end of school year, will complete written assignments with appropriate organization, demonstrating 4 of 5 elements (intro, supporting paragraphs, conclusion, transitions, mechanics) in 4/5 trials with 1 verbal prompt."', 4, { marginBottom: 12 }),
+
+            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#67e8f9', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, '📊 How will progress be measured?'),
+            tkTextarea(goalForm.measurable, function(v) { setGoalForm(Object.assign({}, goalForm, { measurable: v })); }, 'e.g., "Quarterly writing samples scored on rubric. Reported on progress report each marking period."', 2, { marginBottom: 12 }),
+
+            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#67e8f9', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, '🛠 Services + supports involved'),
+            tkTextarea(goalForm.services, function(v) { setGoalForm(Object.assign({}, goalForm, { services: v })); }, 'e.g., "Resource room 30 min/week. Speech-language consult 1x/month. Accommodations: extended time, graphic organizer."', 2, { marginBottom: 12 }),
+
+            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#67e8f9', textTransform: 'uppercase', display: 'block', marginBottom: 6 } }, '✂ My sub-goals (what I\'ll do in chunks)'),
+            hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 8 } },
+              (goalForm.subgoals || []).map(function(sg, i) {
+                return hh('div', { key: 'sg-' + sg.id, style: { display: 'flex', gap: 6, alignItems: 'center', padding: 6, borderRadius: 6, background: 'rgba(2,6,23,0.4)', borderLeft: '2px solid #06b6d4' } },
+                  hh('span', { style: { fontSize: 11, color: '#67e8f9', fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', minWidth: 20 } }, (i + 1) + '.'),
+                  tkInput(sg.text, function(v) { updateSubgoal(i, { text: v }); }, 'sub-goal step', { flex: 1, fontSize: 11 }),
+                  hh('button', { onClick: function() { removeSubgoal(i); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer', padding: 4 } }, '✕')
+                );
+              })
+            ),
+            tkBtn('+ Add sub-goal', addSubgoal, 'secondary', { fontSize: 10, padding: '6px 12px' })
+          )
+        ),
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+          tkBtn('← Cancel', function() { setView('list'); setEditingGoal(null); }, 'ghost'),
+          tkBtn('💾 Save IEP goal', saveGoal, 'primary')
+        )
+      );
+    }
+
+    if (view === 'newMeeting') {
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader('📅', 'IEP meeting log', 'Capture what happened, what I said, what changed.', '#06b6d4'),
+        tkCard('#06b6d4',
+          hh('div', null,
+            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#67e8f9', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Meeting date'),
+            hh('input', { type: 'date', value: meetForm.date,
+              onChange: function(e) { setMeetForm(Object.assign({}, meetForm, { date: e.target.value })); },
+              style: { width: '100%', padding: '10px 12px', fontSize: 12, color: '#e2e8f0', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box', marginBottom: 14 }
+            }),
+            [
+              { id: 'whatChanged', label: '📝 What changed in my IEP at this meeting?' },
+              { id: 'myInput', label: '🗣 What did I say or ask for?' },
+              { id: 'whatWorked', label: '✅ What\'s been working since last meeting?' },
+              { id: 'whatToTry', label: '🎯 What we agreed to try next' }
+            ].map(function(f) {
+              return hh('div', { key: 'mf-' + f.id, style: { marginBottom: 10 } },
+                hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#67e8f9', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, f.label),
+                tkTextarea(meetForm[f.id], function(v) { setMeetForm(Object.assign({}, meetForm, (function() { var o = {}; o[f.id] = v; return o; })())); }, '', 3)
+              );
+            })
+          )
+        ),
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+          tkBtn('← Cancel', function() { setView('list'); }, 'ghost'),
+          tkBtn('💾 Save meeting log', saveMeeting, 'primary')
+        )
+      );
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🎓', 'My IEP Tracker', 'YOUR copy of your IEP goals + meeting log. Build self-advocacy by knowing your own plan.', '#06b6d4'),
+
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(6,182,212,0.10)', border: '1px solid rgba(6,182,212,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+        hh('strong', { style: { color: '#06b6d4' } }, '🛡 Your IEP. Your control. '),
+        'This is YOUR copy of your IEP goals — not the official document. Use it to track YOUR progress, what worked, what didn\'t, and prep for meetings. By high school you should be able to lead parts of your own IEP meeting. This tool helps you build that skill.'
+      ),
+
+      hh('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 14, flexWrap: 'wrap' } },
+        tkBtn('+ New IEP goal', function() { setGoalForm({ area: 'academic', annual: '', subgoals: [], measurable: '', services: '' }); setEditingGoal(null); setView('newGoal'); }, 'primary'),
+        tkBtn('+ Log a meeting', function() { setMeetForm({ date: todayISO(), whatChanged: '', myInput: '', whatWorked: '', whatToTry: '' }); setView('newMeeting'); }, 'secondary')
+      ),
+
+      // Goals
+      goals.length === 0 ? tkEmptyState('🎓', 'No IEP goals tracked yet. Add your goals from your IEP — this becomes your reference + self-advocacy tool.', null, null)
+      : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14 } },
+          goals.map(function(g) {
+            var area = AREAS.filter(function(a) { return a.id === g.area; })[0] || AREAS[0];
+            var doneSubgoals = (g.subgoals || []).filter(function(s) { return s.done; }).length;
+            var totalSubgoals = (g.subgoals || []).length;
+            var lastProgress = (g.progress || []).slice(-1)[0];
+            return hh('div', { key: 'g-' + g.id, style: { padding: 12, borderRadius: 12, background: 'linear-gradient(135deg, ' + area.color + '15, rgba(15,23,42,0.7))', border: '1px solid ' + area.color + '40', borderLeft: '4px solid ' + area.color } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 6 } },
+                hh('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                  hh('span', { style: { fontSize: 18 } }, area.icon),
+                  hh('strong', { style: { fontSize: 12, color: area.color, textTransform: 'uppercase', letterSpacing: '0.06em' } }, area.label)
+                ),
+                hh('div', { style: { display: 'flex', gap: 4 } },
+                  hh('button', { onClick: function() { setEditingGoal(g.id); setGoalForm({ area: g.area, annual: g.annual, subgoals: g.subgoals || [], measurable: g.measurable || '', services: g.services || '' }); setView('newGoal'); },
+                    style: { background: 'transparent', border: 'none', color: area.color, fontSize: 11, cursor: 'pointer', padding: 4 } }, '✏'),
+                  hh('button', { onClick: function() { removeGoal(g.id); },
+                    style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer', padding: 4 } }, '✕')
+                )
+              ),
+              hh('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.55, marginBottom: 8 } }, g.annual),
+              g.subgoals && g.subgoals.length > 0 ? hh('div', { style: { marginBottom: 8 } },
+                hh('div', { style: { fontSize: 10, fontWeight: 700, color: area.color, marginBottom: 4 } }, '✂ Sub-goals (' + doneSubgoals + '/' + totalSubgoals + ')'),
+                hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 3 } },
+                  g.subgoals.map(function(sg) {
+                    return hh('div', { key: 'gs-' + sg.id, style: { display: 'flex', gap: 6, alignItems: 'center', padding: '4px 8px', borderRadius: 4, background: 'rgba(2,6,23,0.4)' } },
+                      hh('button', { onClick: function() {
+                          setData(Object.assign({}, data, { goals: goals.map(function(gg) {
+                            if (gg.id !== g.id) return gg;
+                            return Object.assign({}, gg, { subgoals: gg.subgoals.map(function(s) { return s.id === sg.id ? Object.assign({}, s, { done: !s.done }) : s; }) });
+                          }) }));
+                        },
+                        style: { width: 16, height: 16, borderRadius: 3, border: '1.5px solid ' + area.color, background: sg.done ? area.color : 'transparent', color: '#0f172a', fontSize: 10, fontWeight: 900, cursor: 'pointer', flexShrink: 0 }
+                      }, sg.done ? '✓' : ''),
+                      hh('span', { style: { fontSize: 11, color: '#cbd5e1', textDecoration: sg.done ? 'line-through' : 'none', opacity: sg.done ? 0.6 : 1 } }, sg.text)
+                    );
+                  })
+                )
+              ) : null,
+              g.measurable ? hh('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic', marginBottom: 4 } }, '📊 ' + g.measurable) : null,
+              g.services ? hh('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, '🛠 ' + g.services) : null,
+              hh('div', { style: { display: 'flex', justifyContent: 'flex-end', gap: 4, marginTop: 8 } },
+                tkBtn('🟢 On track', function() { recordProgress(g.id, 'on-track', ''); }, 'good', { padding: '4px 10px', fontSize: 10 }),
+                tkBtn('🟡 Some progress', function() { recordProgress(g.id, 'some-progress', ''); }, 'warn', { padding: '4px 10px', fontSize: 10 }),
+                tkBtn('🔴 Need help', function() { recordProgress(g.id, 'need-help', ''); }, 'bad', { padding: '4px 10px', fontSize: 10 })
+              ),
+              lastProgress ? hh('div', { style: { fontSize: 9, color: '#94a3b8', textAlign: 'right', marginTop: 4, fontFamily: 'ui-monospace, Menlo, monospace' } }, 'Last update: ' + lastProgress.status + ' on ' + lastProgress.date) : null
+            );
+          })
+        ),
+
+      // Meetings
+      meetings.length > 0 ? hh('div', null,
+        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#67e8f9', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, '📅 IEP meeting log'),
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+          meetings.map(function(m) {
+            return hh('div', { key: 'mt-' + m.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #06b6d4' } },
+              hh('div', { style: { fontSize: 11, color: '#06b6d4', fontWeight: 700, marginBottom: 4 } }, '📅 ' + m.date + ' · ' + relDate(m.date)),
+              m.whatChanged ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginTop: 4 } }, hh('strong', { style: { color: '#67e8f9' } }, 'Changed: '), m.whatChanged) : null,
+              m.myInput ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginTop: 4 } }, hh('strong', { style: { color: '#67e8f9' } }, 'I said: '), m.myInput) : null,
+              m.whatToTry ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginTop: 4 } }, hh('strong', { style: { color: '#67e8f9' } }, 'Trying next: '), m.whatToTry) : null
+            );
+          })
+        )
+      ) : null
+    );
+  }
+
+  // ── X. PERSONAL SUBJECT MASTERY TRACKER (Wave 5) ──
+  // Track mastery per topic per subject. Each topic: status (new / learning /
+  // shaky / solid / mastered). Builds an evidence-aligned progression view.
+  function PersonalSubjectMastery(props) {
+    if (!R) return null;
+    var data = props.data || { subjects: [] };
+    var setData = props.setData;
+    var vs = R.useState('list');                  var view = vs[0];   var setView = vs[1];
+    var ss = R.useState(null);                    var activeSub = ss[0]; var setActiveSub = ss[1];
+    var fs = R.useState({ name: '' });             var subForm = fs[0]; var setSubForm = fs[1];
+    var ts = R.useState({ name: '' });             var topicForm = ts[0]; var setTopicForm = ts[1];
+
+    var MASTERY = [
+      { id: 'new',       label: 'New',       icon: '✨', color: '#94a3b8', val: 0 },
+      { id: 'learning',  label: 'Learning',  icon: '📖', color: '#fbbf24', val: 1 },
+      { id: 'shaky',     label: 'Shaky',     icon: '🪨', color: '#f97316', val: 2 },
+      { id: 'solid',     label: 'Solid',     icon: '✅', color: '#10b981', val: 3 },
+      { id: 'mastered',  label: 'Mastered',  icon: '🏆', color: '#a855f7', val: 4 }
+    ];
+
+    function addSubject() {
+      if (!subForm.name.trim()) return;
+      var sub = { id: tkId(), name: subForm.name.trim(), topics: [], createdAt: todayISO() };
+      setData({ subjects: [sub].concat(data.subjects || []) });
+      setSubForm({ name: '' });
+    }
+    function removeSubject(id) {
+      if (!confirm('Delete this subject and all its topics?')) return;
+      setData({ subjects: (data.subjects || []).filter(function(s) { return s.id !== id; }) });
+    }
+    function addTopic() {
+      if (!topicForm.name.trim() || !activeSub) return;
+      var topic = { id: tkId(), name: topicForm.name.trim(), mastery: 'new', updatedAt: todayISO() };
+      setData({
+        subjects: (data.subjects || []).map(function(s) {
+          if (s.id !== activeSub) return s;
+          return Object.assign({}, s, { topics: (s.topics || []).concat([topic]) });
+        })
+      });
+      setTopicForm({ name: '' });
+    }
+    function setMastery(topicId, mastery) {
+      setData({
+        subjects: (data.subjects || []).map(function(s) {
+          if (s.id !== activeSub) return s;
+          return Object.assign({}, s, { topics: s.topics.map(function(t) {
+            if (t.id !== topicId) return t;
+            return Object.assign({}, t, { mastery: mastery, updatedAt: todayISO() });
+          }) });
+        })
+      });
+    }
+    function removeTopic(topicId) {
+      setData({
+        subjects: (data.subjects || []).map(function(s) {
+          if (s.id !== activeSub) return s;
+          return Object.assign({}, s, { topics: s.topics.filter(function(t) { return t.id !== topicId; }) });
+        })
+      });
+    }
+
+    var subjects = data.subjects || [];
+
+    if (view === 'subject' && activeSub) {
+      var sub = subjects.filter(function(s) { return s.id === activeSub; })[0];
+      if (!sub) { setView('list'); return null; }
+      var topics = sub.topics || [];
+      var counts = MASTERY.map(function(m) {
+        return { mastery: m, count: topics.filter(function(t) { return t.mastery === m.id; }).length };
+      });
+      var avg = topics.length > 0 ? (topics.reduce(function(s, t) {
+        var m = MASTERY.filter(function(x) { return x.id === t.mastery; })[0];
+        return s + (m ? m.val : 0);
+      }, 0) / topics.length) : 0;
+
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader('📚', sub.name, topics.length + ' topics tracked · avg mastery: ' + avg.toFixed(1) + '/4', '#3b82f6'),
+
+        // Mastery distribution
+        hh('div', { style: { background: 'rgba(2,6,23,0.5)', borderRadius: 10, padding: 10, marginBottom: 14 } },
+          hh('div', { style: { fontSize: 11, fontWeight: 700, color: '#60a5fa', textTransform: 'uppercase', marginBottom: 8 } }, '📊 Mastery distribution'),
+          hh('div', { style: { display: 'flex', gap: 4 } },
+            counts.map(function(c) {
+              var pct = topics.length > 0 ? (c.count / topics.length) * 100 : 0;
+              return hh('div', { key: 'cnt-' + c.mastery.id, style: { flex: 1, textAlign: 'center' } },
+                hh('div', { style: { height: 50, background: 'rgba(15,23,42,0.5)', borderRadius: 4, position: 'relative', overflow: 'hidden', marginBottom: 4 } },
+                  hh('div', { style: { position: 'absolute', bottom: 0, left: 0, right: 0, height: pct + '%', background: c.mastery.color, transition: 'height 300ms ease' } }),
+                  hh('div', { style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: 16, fontWeight: 900, color: '#fff', fontFamily: 'ui-monospace, Menlo, monospace' } }, c.count)
+                ),
+                hh('div', { style: { fontSize: 9, color: c.mastery.color, fontWeight: 700 } }, c.mastery.icon),
+                hh('div', { style: { fontSize: 8, color: '#94a3b8' } }, c.mastery.label)
+              );
+            })
+          )
+        ),
+
+        // Add topic
+        hh('div', { style: { display: 'flex', gap: 6, marginBottom: 12 } },
+          tkInput(topicForm.name, function(v) { setTopicForm({ name: v }); }, 'New topic (e.g., "Photosynthesis basics")', { flex: 1 }),
+          tkBtn('+', addTopic, 'primary', { padding: '8px 16px' })
+        ),
+
+        // Topics list
+        topics.length === 0 ? tkEmptyState('📖', 'No topics yet. Add the topics or chapters in this subject.', null, null)
+        : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+            topics.map(function(t) {
+              var m = MASTERY.filter(function(x) { return x.id === t.mastery; })[0] || MASTERY[0];
+              return hh('div', { key: 't-' + t.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', border: '1px solid ' + m.color + '30', borderLeft: '3px solid ' + m.color } },
+                hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 } },
+                  hh('div', { style: { flex: 1, minWidth: 0 } },
+                    hh('div', { style: { fontSize: 12, color: '#e2e8f0', fontWeight: 700 } }, m.icon + ' ' + t.name),
+                    hh('div', { style: { fontSize: 9, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 2 } }, 'Updated ' + relDate(t.updatedAt))
+                  ),
+                  hh('button', { onClick: function() { removeTopic(t.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 12, cursor: 'pointer' } }, '✕')
+                ),
+                hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 4 } },
+                  MASTERY.map(function(level) {
+                    var active = t.mastery === level.id;
+                    return hh('button', { key: 'lv-' + level.id,
+                      onClick: function() { setMastery(t.id, level.id); },
+                      style: { padding: '6px 4px', borderRadius: 4, background: active ? level.color + '30' : 'rgba(15,23,42,0.5)', color: active ? level.color : '#94a3b8', border: '1px solid ' + (active ? level.color : 'rgba(100,116,139,0.30)'), fontSize: 9, fontWeight: 700, cursor: 'pointer' }
+                    }, level.icon, hh('br'), level.label);
+                  })
+                )
+              );
+            })
+          ),
+
+        hh('div', { style: { textAlign: 'center', marginTop: 14 } },
+          tkBtn('← All subjects', function() { setView('list'); setActiveSub(null); }, 'ghost')
+        )
+      );
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('📚', 'Subject Mastery Tracker', 'Track YOUR mastery per topic per subject. Visualize progress over time. Identify what needs more work.', '#3b82f6'),
+
+      hh('div', { style: { display: 'flex', gap: 6, marginBottom: 14 } },
+        tkInput(subForm.name, function(v) { setSubForm({ name: v }); }, 'New subject (e.g., "AP Biology")', { flex: 1 }),
+        tkBtn('+ Add subject', addSubject, 'primary')
+      ),
+
+      subjects.length === 0 ? tkEmptyState('📚', 'No subjects tracked yet. Add a subject to start mapping your mastery.', null, null)
+      : hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
+          subjects.map(function(s) {
+            var topics = s.topics || [];
+            var avg = topics.length > 0 ? (topics.reduce(function(sum, t) {
+              var m = MASTERY.filter(function(x) { return x.id === t.mastery; })[0];
+              return sum + (m ? m.val : 0);
+            }, 0) / topics.length) : 0;
+            var avgColor = avg >= 3 ? '#10b981' : avg >= 2 ? '#fbbf24' : avg >= 1 ? '#f97316' : '#94a3b8';
+            return hh('button', { key: 's-' + s.id,
+              onClick: function() { setActiveSub(s.id); setView('subject'); },
+              style: { display: 'block', textAlign: 'left', padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(59,130,246,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(59,130,246,0.40)', borderLeft: '4px solid #3b82f6', cursor: 'pointer' }
+            },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+                hh('strong', { style: { fontSize: 14, color: '#60a5fa' } }, '📚 ' + s.name),
+                hh('span', { onClick: function(e) { e.stopPropagation(); removeSubject(s.id); }, style: { color: '#64748b', cursor: 'pointer', fontSize: 12 } }, '✕')
+              ),
+              hh('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 4 } }, topics.length + ' topic' + (topics.length !== 1 ? 's' : '')),
+              hh('div', { style: { marginTop: 8, padding: 8, borderRadius: 6, background: avgColor + '12', border: '1px solid ' + avgColor + '40', textAlign: 'center' } },
+                hh('div', { style: { fontSize: 9, color: avgColor, textTransform: 'uppercase', fontWeight: 700 } }, 'Avg mastery'),
+                hh('strong', { style: { fontSize: 20, color: avgColor, fontFamily: 'ui-monospace, Menlo, monospace' } }, avg.toFixed(1) + '/4')
+              )
+            );
+          })
+        )
+    );
+  }
+
+  // ── Y. PERSONAL SLEEP LOGGER (Wave 5) ──
+  // Daily sleep log: bedtime, waketime, quality 1-5, factors. Trend
+  // over time. Personal recommendations based on patterns.
+  function PersonalSleepLog(props) {
+    if (!R) return null;
+    var data = props.data || { entries: [] };
+    var setData = props.setData;
+    var fs = R.useState({ bedtime: '22:30', waketime: '06:30', quality: 4, factors: [] });
+    var form = fs[0]; var setForm = fs[1];
+
+    var FACTORS = [
+      { id: 'phone', label: 'Phone in bed', icon: '📱', good: false },
+      { id: 'caffeine', label: 'Caffeine after 2pm', icon: '☕', good: false },
+      { id: 'exercise', label: 'Exercised today', icon: '🏃', good: true },
+      { id: 'screens', label: 'Screens 1h+ before bed', icon: '💻', good: false },
+      { id: 'stress', label: 'Stressed / racing mind', icon: '😰', good: false },
+      { id: 'darkroom', label: 'Dark room', icon: '🌑', good: true },
+      { id: 'coolroom', label: 'Cool room temp', icon: '❄️', good: true },
+      { id: 'routine', label: 'Consistent routine', icon: '⏰', good: true }
+    ];
+
+    function toggleFactor(id) {
+      var f = form.factors.slice();
+      var i = f.indexOf(id);
+      if (i >= 0) f.splice(i, 1);
+      else f.push(id);
+      setForm(Object.assign({}, form, { factors: f }));
+    }
+
+    function totalHours() {
+      function toMin(t) { var p = t.split(':'); return parseInt(p[0], 10) * 60 + parseInt(p[1], 10); }
+      var bed = toMin(form.bedtime); var wake = toMin(form.waketime);
+      var diff = wake - bed;
+      if (diff < 0) diff += 24 * 60;
+      return (diff / 60).toFixed(1);
+    }
+
+    function save() {
+      var entry = Object.assign({ id: tkId(), date: todayISO(), hours: parseFloat(totalHours()) }, form);
+      setData({ entries: [entry].concat(data.entries || []) });
+    }
+    function remove(id) { setData({ entries: (data.entries || []).filter(function(e) { return e.id !== id; }) }); }
+
+    var entries = data.entries || [];
+    var today = todayISO();
+    var todayEntry = entries.filter(function(e) { return e.date === today; })[0];
+
+    var last7 = entries.slice(0, 7);
+    var avgHours = last7.length > 0 ? (last7.reduce(function(s, e) { return s + (e.hours || 0); }, 0) / last7.length).toFixed(1) : '—';
+    var avgQuality = last7.length > 0 ? (last7.reduce(function(s, e) { return s + (e.quality || 0); }, 0) / last7.length).toFixed(1) : '—';
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('😴', 'Sleep Log', 'Daily log of bedtime, waketime, quality, factors. Pattern over time = personal insight.', '#3b82f6'),
+
+      // Stats
+      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: 8, marginBottom: 12 } },
+        [
+          { label: 'Last 7d avg', value: avgHours + 'h', color: '#3b82f6', icon: '⏰' },
+          { label: 'Avg quality', value: avgQuality + '/5', color: '#a855f7', icon: '⭐' },
+          { label: 'Total logs', value: entries.length, color: '#10b981', icon: '📔' }
+        ].map(function(s, i) {
+          return hh('div', { key: 'ss-' + i, style: { padding: 10, borderRadius: 8, background: s.color + '12', border: '1px solid ' + s.color + '30', textAlign: 'center' } },
+            hh('div', { style: { fontSize: 14, marginBottom: 2 } }, s.icon),
+            hh('div', { style: { fontSize: 16, fontWeight: 900, color: s.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, s.value),
+            hh('div', { style: { fontSize: 9, color: '#94a3b8', textTransform: 'uppercase' } }, s.label)
+          );
+        })
+      ),
+
+      todayEntry ? hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.30)', marginBottom: 12 } },
+        hh('div', { style: { fontSize: 11, color: '#22c55e', fontWeight: 700 } }, '✓ Today logged: ' + todayEntry.hours + 'h sleep · quality ' + todayEntry.quality + '/5')
+      ) : tkCard('#3b82f6',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#60a5fa', marginBottom: 10 } }, '😴 Log last night\'s sleep'),
+          hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 } },
+            hh('div', null,
+              hh('label', { style: { fontSize: 10, fontWeight: 700, color: '#60a5fa', display: 'block', marginBottom: 4 } }, 'Bedtime'),
+              hh('input', { type: 'time', value: form.bedtime,
+                onChange: function(e) { setForm(Object.assign({}, form, { bedtime: e.target.value })); },
+                style: { width: '100%', padding: '10px 12px', fontSize: 14, color: '#60a5fa', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(59,130,246,0.40)', borderRadius: 6, boxSizing: 'border-box', fontWeight: 800 }
+              })
+            ),
+            hh('div', null,
+              hh('label', { style: { fontSize: 10, fontWeight: 700, color: '#60a5fa', display: 'block', marginBottom: 4 } }, 'Waketime'),
+              hh('input', { type: 'time', value: form.waketime,
+                onChange: function(e) { setForm(Object.assign({}, form, { waketime: e.target.value })); },
+                style: { width: '100%', padding: '10px 12px', fontSize: 14, color: '#60a5fa', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(59,130,246,0.40)', borderRadius: 6, boxSizing: 'border-box', fontWeight: 800 }
+              })
+            )
+          ),
+          hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.40)', textAlign: 'center', marginBottom: 14 } },
+            hh('span', { style: { fontSize: 11, color: '#cbd5e1', marginRight: 6 } }, 'Total:'),
+            hh('strong', { style: { fontSize: 20, color: '#60a5fa', fontFamily: 'ui-monospace, Menlo, monospace' } }, totalHours() + 'h')
+          ),
+          hh('div', { style: { marginBottom: 12 } },
+            hh('div', { style: { fontSize: 11, fontWeight: 700, color: '#60a5fa', marginBottom: 4 } }, 'Quality: ', hh('strong', { style: { fontSize: 14, fontFamily: 'ui-monospace, Menlo, monospace' } }, form.quality + '/5')),
+            hh('input', { type: 'range', min: 1, max: 5, step: 1, value: form.quality,
+              onChange: function(e) { setForm(Object.assign({}, form, { quality: parseInt(e.target.value, 10) })); },
+              style: { width: '100%', accentColor: '#3b82f6' }
+            })
+          ),
+          hh('div', { style: { marginBottom: 12 } },
+            hh('div', { style: { fontSize: 11, fontWeight: 700, color: '#60a5fa', marginBottom: 6 } }, 'Sleep factors (tap all that apply)'),
+            hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
+              FACTORS.map(function(f) {
+                var on = form.factors.indexOf(f.id) >= 0;
+                var col = f.good ? '#10b981' : '#ef4444';
+                return hh('button', { key: 'fa-' + f.id,
+                  onClick: function() { toggleFactor(f.id); },
+                  style: { padding: '6px 10px', borderRadius: 6, background: on ? col + '20' : 'rgba(15,23,42,0.5)', color: on ? col : '#94a3b8', border: '1px solid ' + (on ? col : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
+                }, f.icon + ' ' + f.label);
+              })
+            )
+          ),
+          tkBtn('💾 Save sleep log', save, 'primary')
+        )
+      ),
+
+      // 7-day strip
+      entries.length > 0 ? hh('div', { style: { background: 'rgba(2,6,23,0.5)', borderRadius: 10, padding: 10, marginBottom: 12 } },
+        hh('div', { style: { fontSize: 11, fontWeight: 700, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, '📊 Last 7 nights'),
+        hh('div', { style: { display: 'flex', gap: 4, alignItems: 'flex-end', height: 80 } },
+          (function() {
+            var arr = [];
+            for (var i = 6; i >= 0; i--) {
+              var dt = new Date(); dt.setDate(dt.getDate() - i);
+              var iso = dt.toISOString().slice(0, 10);
+              var e = entries.filter(function(x) { return x.date === iso; })[0];
+              var hrs = e ? (e.hours || 0) : 0;
+              var pct = hrs > 0 ? Math.min(100, (hrs / 10) * 100) : 0;
+              var col = hrs >= 8 ? '#10b981' : hrs >= 7 ? '#fbbf24' : hrs > 0 ? '#ef4444' : 'rgba(100,116,139,0.20)';
+              arr.push(hh('div', { key: 'd-' + iso, style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 } },
+                hh('div', { style: { width: '100%', height: 50, background: 'rgba(15,23,42,0.5)', borderRadius: 4, position: 'relative', overflow: 'hidden' } },
+                  hh('div', { style: { position: 'absolute', bottom: 0, left: 0, right: 0, height: pct + '%', background: col, transition: 'height 300ms ease' } })
+                ),
+                hh('div', { style: { fontSize: 8, color: col, fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 2 } }, hrs > 0 ? hrs + 'h' : '—'),
+                hh('div', { style: { fontSize: 8, color: '#94a3b8' } }, ['S', 'M', 'T', 'W', 'T', 'F', 'S'][dt.getDay()])
+              ));
+            }
+            return arr;
+          })()
+        )
+      ) : null,
+
+      // History
+      entries.length > 0 ? hh('div', null,
+        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, '📔 Recent logs'),
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+          entries.slice(0, 14).map(function(e) {
+            var hrs = e.hours || 0;
+            var col = hrs >= 8 ? '#10b981' : hrs >= 7 ? '#fbbf24' : '#ef4444';
+            return hh('div', { key: 'le-' + e.id, style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 10px', borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + col } },
+              hh('span', { style: { fontSize: 10, color: '#cbd5e1', fontFamily: 'ui-monospace, Menlo, monospace' } }, e.date + ' · ' + e.bedtime + ' → ' + e.waketime),
+              hh('div', { style: { display: 'flex', gap: 6, alignItems: 'center' } },
+                hh('span', { style: { fontSize: 11, color: col, fontWeight: 700 } }, hrs + 'h · ' + e.quality + '/5'),
+                hh('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+              )
+            );
+          })
+        )
+      ) : null
+    );
+  }
+
   // ── F. MY TOOLKIT HUB (landing page) ──
   // Single entry point that shows status of all toolkit tools + quick
   // actions. Today's date, current streak, # active goals, etc.
@@ -7897,7 +8656,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'mytkAgenda',   icon: '📋', label: 'Today',                color: '#10b981', desc: 'Today\'s pulled-together agenda',
         stat: 'today', cta: 'View today' },
       { id: 'mytkEmotion',  icon: '💖', label: 'Emotion + Grounding',  color: '#ec4899', desc: 'Quick check + box breathing + 5-4-3-2-1',
-        stat: ((data.mytkEmotion || {}).checks || []).length + ' check-ins', cta: 'Check in' }
+        stat: ((data.mytkEmotion || {}).checks || []).length + ' check-ins', cta: 'Check in' },
+      { id: 'mytkEF',       icon: '🧩', label: 'EF Dashboard',         color: '#a855f7', desc: '8 executive-function dimensions tracked weekly',
+        stat: ((data.mytkEF || {}).ratings || []).length + ' ratings', cta: 'Rate this week' },
+      { id: 'mytkIEP',      icon: '🎓', label: 'My IEP Tracker',       color: '#06b6d4', desc: 'YOUR copy of your IEP goals + meeting log',
+        stat: ((data.mytkIEP || {}).goals || []).length + ' goals', cta: 'Track IEP goals' },
+      { id: 'mytkMastery',  icon: '📚', label: 'Subject Mastery',      color: '#3b82f6', desc: 'Track mastery per topic per subject',
+        stat: ((data.mytkMastery || {}).subjects || []).length + ' subjects', cta: 'Map mastery' },
+      { id: 'mytkSleep',    icon: '😴', label: 'Sleep Log',            color: '#3b82f6', desc: 'Daily sleep log with quality + factors',
+        stat: ((data.mytkSleep || {}).entries || []).length + ' nights', cta: 'Log last night' }
     ];
 
     var dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][new Date().getDay()];
@@ -8105,7 +8872,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'mytkMap',    icon: '🕸', label: 'Concept Maps',         desc: 'Interactive node + edge canvas for visual synthesis. Novak + Gowin 1984.' },
               { id: 'mytkNotes',  icon: '📝', label: 'Cornell Notes',        desc: 'In-tool Cornell-style note-taking with cue column + summary + search.' },
               { id: 'mytkAgenda', icon: '📋', label: 'Today',                desc: 'Today\'s pulled-together agenda — habits + tasks + scheduled blocks + extras.' },
-              { id: 'mytkEmotion',icon: '💖', label: 'Emotion + Grounding',  desc: 'Quick emotion check + box breathing + 5-4-3-2-1 grounding for tough moments.' }
+              { id: 'mytkEmotion',icon: '💖', label: 'Emotion + Grounding',  desc: 'Quick emotion check + box breathing + 5-4-3-2-1 grounding for tough moments.' },
+              { id: 'mytkEF',     icon: '🧩', label: 'EF Dashboard',         desc: '8 executive-function dimensions tracked weekly + strategy library (Barkley + Brown).' },
+              { id: 'mytkIEP',    icon: '🎓', label: 'My IEP Tracker',       desc: 'Your own copy of your IEP goals + sub-goal tracking + meeting log. Self-advocacy tool.' },
+              { id: 'mytkMastery',icon: '📚', label: 'Subject Mastery',      desc: 'Track mastery per topic per subject across 5 levels (new → mastered).' },
+              { id: 'mytkSleep',  icon: '😴', label: 'Sleep Log',            desc: 'Daily bedtime/waketime/quality log + 8 sleep-factor check-ins + trend chart.' }
             ]
           },
           { id: 'foundation', icon: '🧠', name: 'How learning works (foundation)',
@@ -11305,6 +12076,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           h(PersonalEmotionRegulator, { data: de, setData: setDe })
         );
       }
+      function renderMytkEF() {
+        var def = d.mytkEF || { ratings: [] };
+        var setDef = function(newData) { upd('mytkEF', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalEFDashboard, { data: def, setData: setDef })
+        );
+      }
+      function renderMytkIEP() {
+        var diep = d.mytkIEP || { goals: [], meetings: [] };
+        var setDiep = function(newData) { upd('mytkIEP', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalIEPTracker, { data: diep, setData: setDiep })
+        );
+      }
+      function renderMytkMastery() {
+        var dms = d.mytkMastery || { subjects: [] };
+        var setDms = function(newData) { upd('mytkMastery', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalSubjectMastery, { data: dms, setData: setDms })
+        );
+      }
+      function renderMytkSleep() {
+        var dsl = d.mytkSleep || { entries: [] };
+        var setDsl = function(newData) { upd('mytkSleep', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalSleepLog, { data: dsl, setData: setDsl })
+        );
+      }
 
       // ─────────────────────────────────────────
       // VIEW ROUTER
@@ -11332,6 +12135,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         case 'mytkNotes':     return renderMytkNotes();
         case 'mytkAgenda':    return renderMytkAgenda();
         case 'mytkEmotion':   return renderMytkEmotion();
+        case 'mytkEF':        return renderMytkEF();
+        case 'mytkIEP':       return renderMytkIEP();
+        case 'mytkMastery':   return renderMytkMastery();
+        case 'mytkSleep':     return renderMytkSleep();
         case 'bloom':         return renderBloom();
         case 'cogload':       return renderCogLoad();
         case 'metacog':       return renderMetacog();
