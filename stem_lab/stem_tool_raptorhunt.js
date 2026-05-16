@@ -6929,6 +6929,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         { id: 'resources', label: 'Resources', icon: '📚' }
       ];
 
+      var CATEGORIES = [
+        { id: 'species', label: 'Species & ID', icon: '🦅', desc: 'Identify, compare, profile + quiz', color: 'amber',
+          sections: ['roster', 'species20', 'comparative', 'fieldid', 'mystery', 'quiz', 'agecoloration', 'molt', 'wingformula', 'banding_codes'] },
+        { id: 'labs', label: 'Labs & Physics', icon: '🔬', desc: 'Hands-on simulations + calculations', color: 'cyan',
+          sections: ['hunt', 'talons', 'vision', 'flight', 'stoop', 'silent', 'hearing', 'spiral', 'acuity', 'predictor', 'mathlab', 'flight_dynamics', 'anatomy'] },
+        { id: 'biology', label: 'Behavior & Biology', icon: '🐭', desc: 'How raptors live, hunt, and grow', color: 'emerald',
+          sections: ['senses', 'lifecycle', 'behavior', 'hunting', 'anatomyatlas', 'physiology', 'preyatlas', 'calls', 'audioguide', 'ecology', 'evolution'] },
+        { id: 'conservation', label: 'Conservation', icon: '🌍', desc: 'Threats, recovery, and what to do', color: 'teal',
+          sections: ['conservation', 'threats', 'climate', 'recoveries', 'demographics', 'iucn_status', 'urban', 'fossils', 'rehab', 'organizations', 'engagement', 'achievements'] },
+        { id: 'habitats', label: 'Habitats & Travel', icon: '🏞', desc: 'Where to find them globally + locally', color: 'lime',
+          sections: ['habitats', 'regional', 'worldtour', 'localguide', 'migration', 'tracking', 'nestcams'] },
+        { id: 'history', label: 'History & Culture', icon: '🏛', desc: '5,000 years of human-raptor relationship', color: 'purple',
+          sections: ['history', 'culture', 'falconry', 'falconrycurriculum', 'museums', 'biographies', 'experts', 'big_quotes', 'pioneers', 'famous'] },
+        { id: 'teaching', label: 'Teaching & Practice', icon: '🎒', desc: 'Lessons, activities, careers', color: 'indigo',
+          sections: ['lessons', 'kidsactivities', 'reading_levels', 'questionbank', 'scenarios', 'rescue', 'cookbook', 'cookbook2', 'careers', 'photography', 'gear'] },
+        { id: 'reference', label: 'Reference & Resources', icon: '📚', desc: 'Glossaries, books, films, data', color: 'blue',
+          sections: ['glossary', 'glossary2', 'glossary3', 'books', 'films', 'datatables', 'datasets', 'curated_links', 'qa', 'resources', 'social_media', 'songscripts', 'illustrations', 'records', 'mythbusters'] },
+        { id: 'specialty', label: 'Specialty & Reflection', icon: '✨', desc: 'Pellets, feeders, meditations, finale', color: 'rose',
+          sections: ['meditations', 'farewell', 'finale', 'finale_master', 'twenty_k_finale', 'pellet', 'pelletkey', 'feeder', 'fieldnat'] }
+      ];
+
+      // Map every section id → category id for back-navigation when entering directly
+      var SECTION_TO_CATEGORY = (function() {
+        var m = {};
+        CATEGORIES.forEach(function(c) { c.sections.forEach(function(sid) { m[sid] = c.id; }); });
+        return m;
+      })();
+
+      // Resolve a single section by id
+      function findSection(sid) {
+        for (var i = 0; i < SECTIONS.length; i++) if (SECTIONS[i].id === sid) return SECTIONS[i];
+        return null;
+      }
+
+
+
       // ────────────────────────────────────────────────────────
       // RENDER: HUB
       // ────────────────────────────────────────────────────────
@@ -19893,36 +19929,118 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // MAIN RENDER — Tab nav + active section
       // ────────────────────────────────────────────────────────
       return h('div', { className: 'space-y-4', role: 'region', 'aria-label': 'Raptor Hunt tool' },
-        // Section count chip
-        h('div', { className: 'text-[11px] text-slate-500 uppercase tracking-wider' }, '25 sections · 20 species · 6 interactive labs · acuity demo · 5 recoveries · famous birds · 42-term glossary · 70-question quiz'),
-        // Tab nav (scrollable horizontal)
-        h('div', { className: 'flex gap-1.5 overflow-x-auto pb-1', role: 'tablist', 'aria-label': 'Raptor Hunt sections' },
-          SECTIONS.map(function(s) {
-            var active = activeSection === s.id;
-            return h('button', {
-              key: s.id,
-              role: 'tab',
-              'aria-selected': active,
-              'aria-controls': 'rh-panel-' + s.id,
-              onClick: function() {
-                // Track section visit for progress tracker + recently-viewed
-                setRH(function(cur) {
-                  var visited = Object.assign({}, cur.visited || {});
-                  visited[s.id] = (visited[s.id] || 0) + 1;
-                  var recent = (cur.recentlyViewed || []).slice();
-                  recent.push(s.id);
-                  if (recent.length > 20) recent = recent.slice(-20);
-                  return Object.assign({}, cur, { activeSection: s.id, visited: visited, recentlyViewed: recent });
-                });
-                rhAnnounce(s.label + ' tab');
-              },
-              className: 'px-3 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition-all ' +
-                (active
-                  ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-md'
-                  : 'bg-slate-800/50 text-amber-200/70 hover:bg-slate-700/50 hover:text-amber-200')
-            }, s.icon + ' ' + s.label);
-          })
-        ),
+        // Tool subtitle (updated for 9-category hub)
+        h('div', { className: 'text-[11px] text-slate-500 uppercase tracking-wider' }, '9 categories · 100+ sections · 25 species · 6 labs · 70-Q quiz'),
+        // Category-aware navigation
+        (function() {
+          var activeCategoryId = rh.activeCategory || null;
+          var searchTerm = (rh.sectionSearch || '').toLowerCase();
+          var atHub = !activeCategoryId && !searchTerm;
+          // If user is in a section, infer its category so breadcrumb is correct
+          var inferredCat = activeCategoryId || SECTION_TO_CATEGORY[activeSection] || null;
+          var activeCategory = CATEGORIES.find(function(c) { return c.id === inferredCat; });
+
+          // Search filter (across all sections by label)
+          var searchResults = searchTerm
+            ? SECTIONS.filter(function(s) { return s.label.toLowerCase().indexOf(searchTerm) !== -1 && s.id !== 'hub'; })
+            : null;
+
+          function setCategory(catId) {
+            setRH(function(cur) { return Object.assign({}, cur, { activeCategory: catId, sectionSearch: '' }); });
+            rhAnnounce(catId ? 'Category opened' : 'Hub');
+          }
+          function goSection(sid) {
+            setRH(function(cur) {
+              var visited = Object.assign({}, cur.visited || {});
+              visited[sid] = (visited[sid] || 0) + 1;
+              var recent = (cur.recentlyViewed || []).slice();
+              recent.push(sid);
+              if (recent.length > 20) recent = recent.slice(-20);
+              return Object.assign({}, cur, { activeSection: sid, visited: visited, recentlyViewed: recent, activeCategory: SECTION_TO_CATEGORY[sid] || cur.activeCategory });
+            });
+            var sec = findSection(sid);
+            rhAnnounce((sec ? sec.label : sid) + ' opened');
+          }
+
+          var elements = [];
+
+          // Top bar: hub button + search + breadcrumb
+          elements.push(h('div', { key: 'topbar', className: 'flex flex-wrap items-center gap-2 mb-2' },
+            h('button', {
+              onClick: function() { setCategory(null); goSection('hub'); },
+              'aria-label': 'Go to Hub',
+              className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (atHub ? 'bg-amber-600 text-white' : 'bg-slate-800 text-amber-200 hover:bg-slate-700')
+            }, '🏠 Hub'),
+            activeCategory && h('span', { className: 'text-xs text-slate-400' }, '/'),
+            activeCategory && h('span', { className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800/60 text-amber-200' }, activeCategory.icon + ' ' + activeCategory.label),
+            h('div', { className: 'ml-auto flex items-center gap-2' },
+              h('input', {
+                type: 'text',
+                placeholder: 'Search all 90+ sections...',
+                value: rh.sectionSearch || '',
+                onChange: function(e) { setRH(function(cur) { return Object.assign({}, cur, { sectionSearch: e.target.value, activeCategory: null }); }); },
+                'aria-label': 'Search sections',
+                className: 'px-2 py-1.5 text-xs bg-slate-800 border border-slate-700 rounded text-slate-100 placeholder-slate-500 w-48'
+              }),
+              searchTerm && h('span', { className: 'text-xs text-slate-400 font-mono' }, searchResults.length + ' match')
+            )
+          ));
+
+          // Search results (if searching)
+          if (searchResults) {
+            elements.push(h('div', { key: 'search', className: 'flex flex-wrap gap-1.5 mb-3 p-2 bg-slate-900/40 rounded' },
+              searchResults.length === 0
+                ? h('span', { className: 'text-xs text-slate-500 italic' }, 'No sections match. Try a different keyword.')
+                : searchResults.map(function(s) {
+                    return h('button', {
+                      key: s.id,
+                      onClick: function() { goSection(s.id); setRH(function(cur) { return Object.assign({}, cur, { sectionSearch: '' }); }); },
+                      className: 'px-2 py-1 rounded text-[11px] font-bold bg-slate-800 text-amber-200 hover:bg-amber-700/40'
+                    }, s.icon + ' ' + s.label);
+                  })
+            ));
+          }
+
+          // Hub view: show category cards
+          if (atHub) {
+            elements.push(h('div', { key: 'hub-cards', className: 'grid grid-cols-2 md:grid-cols-3 gap-3 mb-4' },
+              CATEGORIES.map(function(c) {
+                return h('button', {
+                  key: c.id,
+                  onClick: function() { setCategory(c.id); goSection(c.sections[0]); },
+                  className: 'text-left p-3 rounded-xl bg-slate-800/40 hover:bg-slate-700/60 border border-' + c.color + '-700/40 hover:border-' + c.color + '-500 transition-all'
+                },
+                  h('div', { className: 'text-2xl mb-1' }, c.icon),
+                  h('div', { className: 'text-sm font-bold text-' + c.color + '-200 mb-1' }, c.label),
+                  h('div', { className: 'text-[10px] text-slate-400 italic mb-1' }, c.desc),
+                  h('div', { className: 'text-[10px] text-' + c.color + '-300 font-mono' }, c.sections.length + ' sections')
+                );
+              })
+            ));
+          }
+
+          // Category open: show that category's sections only
+          if (!atHub && activeCategory) {
+            var catSecs = activeCategory.sections.map(findSection).filter(Boolean);
+            elements.push(h('div', { key: 'cat-secs', className: 'flex flex-wrap gap-1.5 mb-3 p-2 bg-slate-900/30 rounded' },
+              catSecs.map(function(s) {
+                var active = activeSection === s.id;
+                return h('button', {
+                  key: s.id,
+                  role: 'tab',
+                  'aria-selected': active,
+                  onClick: function() { goSection(s.id); },
+                  className: 'px-2.5 py-1.5 rounded text-[11px] font-bold transition-all ' +
+                    (active
+                      ? 'bg-gradient-to-r from-' + activeCategory.color + '-600 to-' + activeCategory.color + '-700 text-white shadow'
+                      : 'bg-slate-800/60 text-' + activeCategory.color + '-200/80 hover:bg-slate-700/60')
+                }, s.icon + ' ' + s.label);
+              })
+            ));
+          }
+
+          return h('div', { key: 'nav-wrapper' }, elements);
+        })(),
         // Panel
         h('div', { id: 'rh-panel-' + activeSection, role: 'tabpanel', 'aria-labelledby': activeSection },
           activeSection === 'hub' && renderHub(),

@@ -96,6 +96,30 @@
     { id: 'finale', icon: '\uD83C\uDF86', label: '20K Finale', desc: 'You did it!' }
   ];
 
+  var CHEM_CATEGORIES = [
+    { id: 'core', label: 'Core Labs', icon: '⚖️', desc: 'Balance, react, calculate, measure', color: 'lime',
+      sections: ['balance', 'reactions', 'stoich', 'molecular', 'safety', 'challenge', 'battle', 'learn'] },
+    { id: 'reference', label: 'Reference', icon: '📚', desc: 'Elements, glossary, tables, history', color: 'cyan',
+      sections: ['elementdb', 'periodic', 'famous_reactions', 'glossary', 'datatables', 'records', 'mythbusters', 'history'] },
+    { id: 'domains', label: 'Chemistry Domains', icon: '⚛️', desc: 'Deep dives into chem subjects', color: 'indigo',
+      sections: ['acids_bases', 'redox', 'organic', 'biochem', 'thermo', 'kinetics', 'equilibrium', 'gas_laws', 'solutions', 'nuclear'] },
+    { id: 'applied', label: 'Applied Chemistry', icon: '🏭', desc: 'Real-world chem in industry + life', color: 'orange',
+      sections: ['industrial', 'environmental', 'pharma', 'materials', 'food_chem', 'forensic'] },
+    { id: 'education', label: 'Education & AP', icon: '🎓', desc: 'AP Chem, lab techniques, careers', color: 'amber',
+      sections: ['apchem', 'lab_techniques', 'careers', 'lab_kits'] },
+    { id: 'people', label: 'People & Reflection', icon: '🧑‍🔬', desc: 'Famous chemists + finale', color: 'purple',
+      sections: ['chemists', 'finale'] }
+  ];
+
+  // Map every subtool id → category id
+  var CHEM_SECTION_TO_CATEGORY = (function() {
+    var m = {};
+    CHEM_CATEGORIES.forEach(function(c) { c.sections.forEach(function(sid) { m[sid] = c.id; }); });
+    return m;
+  })();
+
+
+
   // ── Equation presets ──
   var ALL_PRESETS = [
     { name: 'Water Formation', tier: 'beginner', eq: 'H\u2082 + O\u2082 \u2192 H\u2082O', target: [2, 1, 2], atoms: { H: [2, 0, 2], O: [0, 2, 1] }, hint: 'Hydrogen needs 4 atoms total on each side' },
@@ -18562,18 +18586,103 @@
             }, '\uD83E\uDD16 AI')
           ),
 
-          // ── Sub-tool Navigation ──
-          h('div', { className: 'flex flex-wrap gap-1 mb-3' },
-            SUBTOOLS.map(function(st) {
-              var isActive = subtool === st.id;
-              return h('button', { key: st.id,
-                onClick: function() { upd('subtool', st.id); announceToSR('Switched to ' + st.label); },
-                className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all border ' +
-                  (isActive ? 'bg-lime-600 text-white border-lime-600 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-lime-600 hover:bg-lime-50'),
-                title: st.desc
-              }, st.icon + ' ' + st.label);
-            })
-          ),
+          // ── Category-aware Navigation ──
+          (function() {
+            var activeCategoryId = d._activeCategory || CHEM_SECTION_TO_CATEGORY[subtool] || null;
+            var searchTerm = (d._chemSearch || '').toLowerCase();
+            var atHub = !d._activeCategory && !searchTerm && !d._everPicked;
+            var activeCat = CHEM_CATEGORIES.find(function(c) { return c.id === activeCategoryId; });
+
+            var searchResults = searchTerm
+              ? SUBTOOLS.filter(function(s) { return s.label.toLowerCase().indexOf(searchTerm) !== -1; })
+              : null;
+
+            function setCategory(cid) { upd('_activeCategory', cid); upd('_chemSearch', ''); }
+            function goSection(sid) {
+              upd('subtool', sid);
+              upd('_everPicked', true);
+              if (CHEM_SECTION_TO_CATEGORY[sid] && CHEM_SECTION_TO_CATEGORY[sid] !== d._activeCategory) {
+                upd('_activeCategory', CHEM_SECTION_TO_CATEGORY[sid]);
+              }
+              announceToSR('Switched to ' + sid);
+            }
+
+            var elements = [];
+
+            // Top bar
+            elements.push(h('div', { key: 'topbar', className: 'flex flex-wrap items-center gap-2 mb-2' },
+              h('button', {
+                onClick: function() { setCategory(null); upd('_everPicked', false); },
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (atHub ? 'bg-lime-600 text-white' : 'bg-slate-100 text-lime-700 hover:bg-lime-50 border border-lime-300')
+              }, '🏠 Hub'),
+              activeCat && !atHub && h('span', { className: 'text-xs text-slate-400' }, '/'),
+              activeCat && !atHub && h('span', { className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-50 text-lime-700 border border-lime-200' }, activeCat.icon + ' ' + activeCat.label),
+              h('div', { className: 'ml-auto flex items-center gap-2' },
+                h('input', {
+                  type: 'text',
+                  placeholder: 'Search 38 sub-tools...',
+                  value: d._chemSearch || '',
+                  onChange: function(e) { upd('_chemSearch', e.target.value); upd('_activeCategory', null); },
+                  className: 'px-2 py-1.5 text-xs bg-white border border-slate-300 rounded text-slate-700 placeholder-slate-400 w-44'
+                }),
+                searchTerm && h('span', { className: 'text-xs text-slate-500 font-mono' }, searchResults.length + ' match')
+              )
+            ));
+
+            // Search results
+            if (searchResults) {
+              elements.push(h('div', { key: 'search-results', className: 'flex flex-wrap gap-1 mb-3 p-2 bg-slate-50 rounded' },
+                searchResults.length === 0
+                  ? h('span', { className: 'text-xs text-slate-500 italic' }, 'No matches. Try a different keyword.')
+                  : searchResults.map(function(s) {
+                      return h('button', {
+                        key: s.id,
+                        onClick: function() { goSection(s.id); upd('_chemSearch', ''); },
+                        className: 'px-2 py-1 rounded text-[11px] font-bold bg-white border border-slate-300 text-slate-700 hover:bg-lime-50 hover:border-lime-500'
+                      }, s.icon + ' ' + s.label);
+                    })
+              ));
+            }
+
+            // Hub view
+            if (atHub) {
+              elements.push(h('div', { key: 'hub-cards', className: 'grid grid-cols-2 md:grid-cols-3 gap-3 mb-3' },
+                CHEM_CATEGORIES.map(function(c) {
+                  return h('button', {
+                    key: c.id,
+                    onClick: function() { setCategory(c.id); goSection(c.sections[0]); },
+                    className: 'text-left p-3 rounded-xl bg-white border-2 border-' + c.color + '-200 hover:border-' + c.color + '-500 hover:bg-' + c.color + '-50 transition-all'
+                  },
+                    h('div', { className: 'text-2xl mb-1' }, c.icon),
+                    h('div', { className: 'text-sm font-bold text-' + c.color + '-700 mb-1' }, c.label),
+                    h('div', { className: 'text-[10px] text-slate-500 italic mb-1' }, c.desc),
+                    h('div', { className: 'text-[10px] text-' + c.color + '-600 font-mono' }, c.sections.length + ' sub-tools')
+                  );
+                })
+              ));
+            }
+
+            // Category sub-tools
+            if (!atHub && activeCat && !searchTerm) {
+              var catSubs = activeCat.sections.map(function(sid) {
+                return SUBTOOLS.find(function(st) { return st.id === sid; });
+              }).filter(Boolean);
+              elements.push(h('div', { key: 'cat-subs', className: 'flex flex-wrap gap-1 mb-3 p-2 bg-slate-50 rounded' },
+                catSubs.map(function(st) {
+                  var isActive = subtool === st.id;
+                  return h('button', { key: st.id,
+                    onClick: function() { goSection(st.id); },
+                    title: st.desc,
+                    className: 'px-2 py-1 rounded text-[11px] font-bold transition-all border ' +
+                      (isActive ? 'bg-' + activeCat.color + '-600 text-white border-' + activeCat.color + '-600 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-' + activeCat.color + '-500 hover:bg-' + activeCat.color + '-50')
+                  }, st.icon + ' ' + st.label);
+                })
+              ));
+            }
+
+            return h('div', { key: 'chem-nav' }, elements);
+          })(),
+
 
           // ── Topic-accent hero band per sub-tool ──
           (function() {

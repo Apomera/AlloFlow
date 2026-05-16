@@ -19245,15 +19245,121 @@ var d = labToolData.cell;
 
               React.createElement("span", { className: "text-xs text-slate-600 ml-1" }, d.mode === 'play' ? "\uD83C\uDFAE Playing as " + (ORGANISMS.find(function (o) { return o.id === d.playAsOrganism; }) || {}).label : d.quizMode ? "\uD83E\uDDE0 Quiz Mode" : "\uD83D\uDC41 Observe"),
 
-              React.createElement("div", { className: "flex gap-1 ml-auto" },
 
-                ["observe", "play", "quiz", "encyclopedia", "filter", "compare", "lifecycle", "history", "biologists", "lab", "disease", "ecology", "evolution", "anatomy", "career", "lesson", "media", "myths", "records", "data", "glossary", "trivia", "finale"].map(function (m) {
+              (function() {
+                var CELL_CATEGORIES = [
+                  { id: 'interactive', label: 'Interactive Sim', icon: '🔬', desc: 'Watch, play, or quiz', color: 'green',
+                    modes: ['observe', 'play', 'quiz'] },
+                  { id: 'browse', label: 'Browse Organisms', icon: '🦠', desc: 'Encyclopedia + filter + compare', color: 'cyan',
+                    modes: ['encyclopedia', 'filter', 'compare'] },
+                  { id: 'knowledge', label: 'Knowledge & History', icon: '📚', desc: 'History, biologists, labs, diseases, ecology', color: 'amber',
+                    modes: ['history', 'biologists', 'lab', 'disease', 'ecology'] },
+                  { id: 'reference', label: 'Reference & Reflection', icon: '✨', desc: 'Glossary + finale', color: 'indigo',
+                    modes: ['glossary', 'finale'] }
+                ];
+                var CELL_MODE_LABELS = {
+                  observe: '👁 Observe', play: '🎮 Play', quiz: '🧠 Quiz',
+                  encyclopedia: '📚 Encyclopedia', filter: '🔍 Filter', compare: '⚖ Compare',
+                  history: '📜 History', biologists: '🧑‍🔬 Biologists', lab: '🔬 Lab Techniques',
+                  disease: '🦠 Diseases', ecology: '🌍 Ecology',
+                  glossary: '📖 Glossary', finale: '🎆 Finale'
+                };
+                var CELL_MODE_TO_CATEGORY = {};
+                CELL_CATEGORIES.forEach(function(c) { c.modes.forEach(function(mid) { CELL_MODE_TO_CATEGORY[mid] = c.id; }); });
 
-                  return React.createElement("button", { key: m, onClick: function () { upd("mode", m); if (m === 'quiz') { upd("quizMode", true); upd("quizIdx", 0); upd("quizScore", 0); upd("quizStreak", 0); upd("quizFeedback", null); } else { upd("quizMode", false); } if (m !== 'play') { upd("playAsOrganism", null); var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv && cv._cellSimSetPlayAs) cv._cellSimSetPlayAs(null); } }, className: "px-3 py-1 rounded-lg text-xs font-bold capitalize " + (d.mode === m ? 'bg-green-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, m);
+                var activeCategoryId = d._cellCategory || CELL_MODE_TO_CATEGORY[d.mode] || null;
+                var atHub = !d._cellCategory && !d._cellSearch && !d._cellPicked;
+                var activeCat = CELL_CATEGORIES.find(function(c) { return c.id === activeCategoryId; });
+                var searchTerm = (d._cellSearch || '').toLowerCase();
+                var allModes = ['observe','play','quiz','encyclopedia','filter','compare','history','biologists','lab','disease','ecology','glossary','finale'];
+                var searchResults = searchTerm ? allModes.filter(function(m) { return (CELL_MODE_LABELS[m] || m).toLowerCase().indexOf(searchTerm) !== -1; }) : null;
 
-                })
+                function setMode(m) {
+                  upd('mode', m);
+                  upd('_cellPicked', true);
+                  if (CELL_MODE_TO_CATEGORY[m] && CELL_MODE_TO_CATEGORY[m] !== d._cellCategory) {
+                    upd('_cellCategory', CELL_MODE_TO_CATEGORY[m]);
+                  }
+                  if (m === 'quiz') { upd('quizMode', true); upd('quizIdx', 0); upd('quizScore', 0); upd('quizStreak', 0); upd('quizFeedback', null); }
+                  else { upd('quizMode', false); }
+                  if (m !== 'play') {
+                    upd('playAsOrganism', null);
+                    var cv = document.querySelector('[data-cell-sim-canvas]');
+                    if (cv && cv._cellSimSetPlayAs) cv._cellSimSetPlayAs(null);
+                  }
+                }
+                function setCat(cid) { upd('_cellCategory', cid); upd('_cellSearch', ''); }
 
-              )
+                var els = [];
+                // Top bar: hub + breadcrumb + search
+                els.push(React.createElement('div', { key: 'top', className: 'flex flex-wrap items-center gap-2 w-full mb-2' },
+                  React.createElement('button', {
+                    onClick: function() { setCat(null); upd('_cellPicked', false); },
+                    className: 'px-3 py-1 rounded-lg text-xs font-bold ' + (atHub ? 'bg-green-700 text-white' : 'bg-slate-100 text-green-700 hover:bg-green-50 border border-green-300')
+                  }, '🏠 Hub'),
+                  activeCat && !atHub && React.createElement('span', { className: 'text-xs text-slate-400' }, '/'),
+                  activeCat && !atHub && React.createElement('span', { className: 'px-2 py-1 rounded-lg text-xs font-bold bg-slate-50 text-green-700 border border-green-200' }, activeCat.icon + ' ' + activeCat.label),
+                  React.createElement('input', {
+                    type: 'text',
+                    placeholder: 'Search modes...',
+                    value: d._cellSearch || '',
+                    onChange: function(e) { upd('_cellSearch', e.target.value); upd('_cellCategory', null); },
+                    className: 'ml-auto px-2 py-1 text-xs border border-slate-300 rounded'
+                  })
+                ));
+
+                // Search results
+                if (searchResults) {
+                  els.push(React.createElement('div', { key: 'search', className: 'flex flex-wrap gap-1 mb-2 w-full' },
+                    searchResults.length === 0
+                      ? React.createElement('span', { className: 'text-xs text-slate-500 italic' }, 'No matches.')
+                      : searchResults.map(function(m) {
+                          return React.createElement('button', {
+                            key: m,
+                            onClick: function() { setMode(m); upd('_cellSearch', ''); },
+                            className: 'px-2 py-1 rounded text-xs font-bold bg-white border border-slate-300 text-slate-700 hover:bg-green-50 hover:border-green-500'
+                          }, CELL_MODE_LABELS[m] || m);
+                        })
+                  ));
+                }
+
+                // Hub: category cards
+                if (atHub) {
+                  els.push(React.createElement('div', { key: 'hub', className: 'grid grid-cols-2 gap-3 w-full' },
+                    CELL_CATEGORIES.map(function(c) {
+                      return React.createElement('button', {
+                        key: c.id,
+                        onClick: function() { setCat(c.id); setMode(c.modes[0]); },
+                        className: 'text-left p-3 rounded-xl bg-white border-2 border-' + c.color + '-200 hover:border-' + c.color + '-500 hover:bg-' + c.color + '-50 transition-all'
+                      },
+                        React.createElement('div', { className: 'text-2xl mb-1' }, c.icon),
+                        React.createElement('div', { className: 'text-sm font-bold text-' + c.color + '-700 mb-1' }, c.label),
+                        React.createElement('div', { className: 'text-[10px] text-slate-500 italic mb-1' }, c.desc),
+                        React.createElement('div', { className: 'text-[10px] text-' + c.color + '-600 font-mono' }, c.modes.length + ' modes')
+                      );
+                    })
+                  ));
+                }
+
+                // Category open: show that category's modes
+                if (!atHub && activeCat && !searchTerm) {
+                  els.push(React.createElement('div', { key: 'cat-modes', className: 'flex flex-wrap gap-1 w-full' },
+                    activeCat.modes.map(function(m) {
+                      var isActive = d.mode === m;
+                      return React.createElement('button', {
+                        key: m,
+                        onClick: function() { setMode(m); },
+                        className: 'px-3 py-1 rounded-lg text-xs font-bold ' +
+                          (isActive
+                            ? 'bg-' + activeCat.color + '-700 text-white'
+                            : 'bg-slate-100 text-slate-600 hover:bg-' + activeCat.color + '-50')
+                      }, CELL_MODE_LABELS[m] || m);
+                    })
+                  ));
+                }
+
+                return React.createElement('div', { className: 'flex flex-wrap items-start gap-2 ml-auto', style: { flexBasis: '100%' } }, els);
+              })()
 
             ),
 
