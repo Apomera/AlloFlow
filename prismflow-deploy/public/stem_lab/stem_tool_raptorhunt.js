@@ -4378,6 +4378,447 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
   };
 
   // ───────────────────────────────────────────────────────────
+  // NEW v0.42: WORLD TOUR — 15 international raptor destinations
+  // ───────────────────────────────────────────────────────────
+  var WORLD_TOUR = {
+    intro: 'Beyond N. America, the world is rich with raptor diversity. This tour covers 15 international destinations where serious birders go to see species unavailable anywhere in N. America.',
+    destinations: [
+      {
+        name: 'Veracruz, Mexico',
+        flag: '🇲🇽',
+        season: 'September-November',
+        species: 'Broad-winged hawk, Swainson\'s hawk, Mississippi kite, turkey vulture',
+        attraction: 'River of Raptors — world\'s largest single-site count. 5+ million migrating raptors annually pass through.',
+        whyVisit: 'See the largest concentration of migrating raptors anywhere on Earth. Up to 1 million birds in a single day at peak.',
+        cost: 'Moderate. $50-100/night. Local guides available.',
+        nearestAirport: 'Veracruz International'
+      },
+      {
+        name: 'Eilat, Israel',
+        flag: '🇮🇱',
+        season: 'March-May, September-November',
+        species: 'Honey buzzards, steppe eagles, lesser spotted eagles, black kites',
+        attraction: 'Bottleneck for raptors migrating between Europe + Africa via the Red Sea coast.',
+        whyVisit: 'Best place to see Old World raptors in concentrated migration. Eilat Birds Festival annual.',
+        cost: 'Moderate. $80-150/night. Many tours.',
+        nearestAirport: 'Eilat-Ramon Airport'
+      },
+      {
+        name: 'Bayan-Ölgii, Mongolia',
+        flag: '🇲🇳',
+        season: 'October (Golden Eagle Festival)',
+        species: 'Golden eagle (Berkutchi tradition), saker falcon',
+        attraction: 'Annual Golden Eagle Festival — Kazakh eagle-hunting tradition. UNESCO Intangible Cultural Heritage.',
+        whyVisit: 'Witness 2000-year-old eagle-hunting tradition + see golden eagles in their highest cultural setting.',
+        cost: 'High. $200-500/day with guide.',
+        nearestAirport: 'Ulgii Airport'
+      },
+      {
+        name: 'Hawk Mountain Sanctuary, USA',
+        flag: '🇺🇸',
+        season: 'August-December',
+        species: '15+ migrating raptor species',
+        attraction: 'World\'s first refuge for migrating raptors (founded 1934). 80-year data archive.',
+        whyVisit: 'Founding site of modern raptor conservation. Continuous count + research site.',
+        cost: 'Low. $10-20 entry. Self-guided.',
+        nearestAirport: 'Allentown-Bethlehem'
+      },
+      {
+        name: 'Tarifa, Spain',
+        flag: '🇪🇸',
+        season: 'August-October',
+        species: 'Honey buzzard, short-toed snake-eagle, booted eagle, Egyptian vulture, black kite',
+        attraction: 'Strait of Gibraltar — Europe-Africa migration crossing point.',
+        whyVisit: 'Watch raptors cross the Mediterranean. Beautiful coastal setting.',
+        cost: 'Moderate. $80-150/night.',
+        nearestAirport: 'Gibraltar (UK) or Malaga'
+      },
+      {
+        name: 'Tikal, Guatemala',
+        flag: '🇬🇹',
+        season: 'Year-round; best Nov-April',
+        species: 'Ornate hawk-eagle, black-and-white hawk-eagle, white hawk, crane hawk',
+        attraction: 'Mayan ruins + neotropical forest with diverse hawk-eagles.',
+        whyVisit: 'See ornate + black-and-white hawk-eagles in their primary range. Cultural + biological richness.',
+        cost: 'Moderate. $50-100/night + tour fees.',
+        nearestAirport: 'Flores Airport'
+      },
+      {
+        name: 'Manu National Park, Peru',
+        flag: '🇵🇪',
+        season: 'May-October (dry season)',
+        species: 'Harpy eagle, ornate hawk-eagle, king vulture, black-faced hawk',
+        attraction: 'Pristine Amazon rainforest. Tower hides reveal canopy raptors.',
+        whyVisit: 'Best place to potentially see harpy eagle in wild. UNESCO World Heritage.',
+        cost: 'High. $200-500/day with mandatory guide.',
+        nearestAirport: 'Cusco'
+      },
+      {
+        name: 'Cape May, USA',
+        flag: '🇺🇸',
+        season: 'September-November',
+        species: 'Sharp-shinned hawk, kestrel, merlin, peregrine, broad-winged + Cooper\'s',
+        attraction: 'Major US east coast migration concentration. Banding station + research.',
+        whyVisit: 'See raptors banded + measured. Bird festivals + extensive birder community.',
+        cost: 'Moderate. $80-150/night.',
+        nearestAirport: 'Atlantic City'
+      },
+      {
+        name: 'Bharatpur, India',
+        flag: '🇮🇳',
+        season: 'November-February',
+        species: 'White-rumped vulture (critically endangered), Egyptian vulture, Eurasian sparrowhawk, marsh harrier',
+        attraction: 'Keoladeo NP — wetland with raptor + waterfowl concentrations.',
+        whyVisit: 'See Asian vultures + Old World hawks. Vulture conservation crisis flagship.',
+        cost: 'Low. $30-80/night.',
+        nearestAirport: 'Delhi (3-hour drive)'
+      },
+      {
+        name: 'Iceland (year-round)',
+        flag: '🇮🇸',
+        season: 'May-September',
+        species: 'White-tailed eagle, gyrfalcon, merlin, rough-legged hawk',
+        attraction: 'Remote North Atlantic. Pristine raptor habitat.',
+        whyVisit: 'See white-tailed eagle + gyrfalcon in stunning landscape.',
+        cost: 'High. $150-300/night.',
+        nearestAirport: 'Keflavik'
+      },
+      {
+        name: 'Hokkaido, Japan',
+        flag: '🇯🇵',
+        season: 'February-March',
+        species: 'Steller\'s sea eagle, white-tailed eagle',
+        attraction: 'Drift ice winter feeding on Sea of Okhotsk.',
+        whyVisit: 'See Steller\'s sea eagle (largest eagle by mass — 9 kg) in unique winter setting.',
+        cost: 'Moderate-high. $150-300/night.',
+        nearestAirport: 'New Chitose'
+      },
+      {
+        name: 'Maasai Mara, Kenya',
+        flag: '🇰🇪',
+        season: 'July-October',
+        species: 'Martial eagle, Bateleur, secretary bird, tawny eagle, white-backed vulture',
+        attraction: 'African savanna + migratory wildlife.',
+        whyVisit: 'See Africa\'s most spectacular raptors during the Great Migration.',
+        cost: 'High. $300-1000/night safari.',
+        nearestAirport: 'Nairobi (charter to Mara)'
+      },
+      {
+        name: 'New Zealand (S. Island)',
+        flag: '🇳🇿',
+        season: 'November-April',
+        species: 'New Zealand falcon (Karearea), swamp harrier, weka',
+        attraction: 'Endemic NZ falcon. Recovery from near-extinction.',
+        whyVisit: 'See uniquely New Zealand raptor + visit Maori cultural sites associated with Haast\'s eagle.',
+        cost: 'High. $150-400/night.',
+        nearestAirport: 'Queenstown or Christchurch'
+      },
+      {
+        name: 'Skagit River, USA',
+        flag: '🇺🇸',
+        season: 'December-February',
+        species: 'Bald eagle (1000s)',
+        attraction: 'Salmon-run bald eagle concentration.',
+        whyVisit: 'Largest US bald eagle concentration (outside Alaska).',
+        cost: 'Low. $50-100/night.',
+        nearestAirport: 'Seattle'
+      },
+      {
+        name: 'Falsterbo, Sweden',
+        flag: '🇸🇪',
+        season: 'August-October',
+        species: 'Honey buzzard, black kite, white-tailed eagle, Eurasian sparrowhawk',
+        attraction: 'Northwestern European migration concentration point.',
+        whyVisit: 'Watch raptors leaving Scandinavia for southern Europe + Africa.',
+        cost: 'High. $150-300/night.',
+        nearestAirport: 'Copenhagen (drive) or Malmö'
+      }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.42: RECORDS & SUPERLATIVES
+  // ───────────────────────────────────────────────────────────
+  var RAPTOR_RECORDS = {
+    intro: 'Raptor superlatives — the fastest, biggest, smallest, longest-lived, most-traveled. Some of these records are well-known; others are surprising.',
+    records: [
+      { category: '🏎 Fastest flying creature', record: 'Peregrine falcon', value: '~242 mph (390 km/h) measured stoop', notes: 'The absolute fastest animal on Earth. Cornell radar confirmed 2005.', source: 'Cornell Lab/National Geographic 2005' },
+      { category: '🏎 Fastest level flight', record: 'Saker falcon', value: '~130 mph (210 km/h)', notes: 'Fastest powered flight without diving.', source: 'Various' },
+      { category: '🏋 Heaviest flying eagle', record: 'Steller\'s sea eagle', value: '6-9 kg (13-20 lb)', notes: 'Largest eagle by mass. Coastal Asia.', source: 'BirdLife International' },
+      { category: '🏋 Heaviest in flight', record: 'Andean condor', value: '11-15 kg (24-33 lb)', notes: 'Largest flying bird by mass + wingspan (3 m).', source: 'BirdLife International' },
+      { category: '📏 Longest wingspan', record: 'Wandering albatross (not raptor) or Andean condor', value: '3.5 m / 11.5 ft', notes: 'Of raptors, Andean condor is longest at ~3 m.', source: 'Smithsonian' },
+      { category: '🔍 Best vision', record: 'Wedge-tailed eagle (or some falcons)', value: '8 cycles/degree (vs human 1-2)', notes: 'Highest documented visual acuity in nature. Likely peregrine ranks similar.', source: 'Various' },
+      { category: '👶 Largest egg (raptor)', record: 'White-tailed sea eagle / Steller\'s sea eagle', value: '~75 mm × 60 mm', notes: 'Compare to chicken egg ~60 × 45 mm.', source: 'Various' },
+      { category: '🛏 Most chicks per clutch', record: 'Snowy owl', value: 'Up to 11 in good lemming year', notes: 'Variable with prey abundance.', source: 'Various' },
+      { category: '🌍 Longest migration', record: 'Steppe eagle', value: '~6,000 km one-way Mongolia → East Africa', notes: 'Annual one-way migration. Tracked via Argos.', source: 'Various' },
+      { category: '📅 Longest-lived', record: 'California condor', value: '60+ years in wild, 80+ in captivity', notes: 'Slowest-reproducing + longest-lived raptor.', source: 'USFWS' },
+      { category: '🔬 Smallest raptor', record: 'Black-thighed falconet (Southeast Asia)', value: '40-50 g (1.5-2 oz)', notes: 'Smaller than a sparrow.', source: 'BirdLife' },
+      { category: '🔬 Smallest US raptor', record: 'American kestrel + elf owl', value: '~100-150 g', notes: 'Tied for smallest in N. America.', source: 'Cornell Lab' },
+      { category: '⚡ Strongest grip', record: 'Harpy eagle', value: '530+ psi at talon tips', notes: 'Twice the bite force of grizzly bear claw equivalents.', source: 'Various' },
+      { category: '👁 Best night vision (raptor)', record: 'Tawny owl / great horned owl', value: '100x more sensitive than human eye', notes: 'Tapetum lucidum + huge eye + dense rods.', source: 'Various' },
+      { category: '👂 Best hearing (raptor)', record: 'Barn owl', value: '~1° localization in 3D', notes: 'Asymmetric ears enable 3D acoustic mapping in pitch dark.', source: 'Payne 1962' },
+      { category: '🎯 Highest stoop ever measured', record: 'Peregrine falcon', value: '~390 km/h theoretical, 242 mph confirmed', notes: 'Wing tucking changes drag coefficient ~95%.', source: 'Cornell + BBC' },
+      { category: '🪶 Most feathers', record: 'Tundra swan (not raptor)', value: '25,000+ feathers', notes: 'Of raptors, mature bald eagles have ~7,000 feathers.', source: 'Various' },
+      { category: '🌍 Widest range', record: 'Peregrine falcon', value: 'All continents except Antarctica', notes: 'Most widespread land vertebrate.', source: 'IUCN' },
+      { category: '🥇 Rarest raptor', record: 'Forest owlet (India) or Madagascar serpent-eagle', value: '<500 individuals each', notes: 'Critically endangered.', source: 'IUCN' },
+      { category: '🥁 Loudest call (raptor)', record: 'Howler raptors are not loud, but barn owl scream is ~80 dB', value: '80 dB', notes: 'Eerie + carrying.', source: 'Various' },
+      { category: '🏗 Largest nest', record: 'Bald eagle', value: 'Up to 4 m diameter, 6 m deep, 2 tons (record nest in St Petersburg FL 1963)', notes: 'Pairs add material annually.', source: 'USFWS' },
+      { category: '⏱ Fastest hunting raptor (sustained)', record: 'Sparrowhawks + Cooper\'s hawk', value: '~80 km/h in dense forest', notes: 'Speed plus maneuverability through obstacles.', source: 'Various' },
+      { category: '🧠 Most intelligent (raptor)', record: 'Falcons + Harris\'s hawks', value: 'Tool use documented', notes: 'Some Harris\'s hawks hunt cooperatively + show problem-solving.', source: 'Various' }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.42: THREATS DATABASE — 15+ specific threats
+  // ───────────────────────────────────────────────────────────
+  var THREATS_DB = {
+    intro: 'A comprehensive database of threats facing modern raptors. Each entry explains the threat, who is affected, mitigation efforts, + how individuals can help.',
+    threats: [
+      {
+        threat: 'Lead poisoning (ammunition + fishing tackle)',
+        affects: 'Bald eagle, golden eagle, California condor, vultures, many large raptors',
+        scale: 'Major. ~50% of bald eagles tested have lead exposure. ~95% of CA condors.',
+        mechanism: 'Eat carcasses or gut piles containing lead bullet fragments. Lead is highly toxic to raptors.',
+        mitigation: 'Switch to non-lead ammunition. California banned lead 2019. Federal lead-ammo restrictions on federal lands.',
+        howHelp: 'Hunt with copper or steel ammunition. Encourage your state to follow CA model.'
+      },
+      {
+        threat: 'Anticoagulant rodenticides',
+        affects: 'Cooper\'s hawk, red-tailed hawk, great horned owl, others',
+        scale: 'Major. ~80% of urban red-tails tested have rodenticide.',
+        mechanism: 'Eat poisoned rodents. Anticoagulants cause internal hemorrhage 2-7 days after eating.',
+        mitigation: 'CA banned residential anticoagulants 2020. Use integrated pest management.',
+        howHelp: 'Don\'t use anticoagulant rodenticides. Use snap traps or seal entry points.'
+      },
+      {
+        threat: 'Window strikes',
+        affects: 'All flying raptors, songbird prey',
+        scale: 'Estimated 1 billion bird deaths/year in N. America.',
+        mechanism: 'Birds collide with glass — see reflection of sky/trees + don\'t see glass.',
+        mitigation: 'UV-patterned glass, decals (every 4 inches), screens, exterior light dimming during migration.',
+        howHelp: 'Add bird-safe decals to your windows. Dim outdoor lighting during migration (NYC Lights Out program).'
+      },
+      {
+        threat: 'Vehicle strikes',
+        affects: 'All raptors hunting near roads',
+        scale: 'Significant. 10-15% of raptor rehab admissions are vehicle strikes.',
+        mechanism: 'Raptors hunt along highways for roadkill + small mammals. Strike risk during low approaches.',
+        mitigation: 'Speed reduction in raptor corridors. Wildlife crossings. Improved roadside habitat.',
+        howHelp: 'Drive carefully + watch for raptors near roads. Slow down when you see one perched on roadside.'
+      },
+      {
+        threat: 'Pesticides',
+        affects: 'All raptors',
+        scale: 'Major historically; varies by chemical now.',
+        mechanism: 'DDT (banned) caused eggshell thinning. Modern neonicotinoids reduce prey base. Glyphosate kills insect prey.',
+        mitigation: 'DDT banned 1972. EPA reviewing neonicotinoids. Integrated pest management.',
+        howHelp: 'Support pesticide regulation. Choose organic produce when possible.'
+      },
+      {
+        threat: 'Habitat fragmentation',
+        affects: 'Most raptors',
+        scale: 'Major + ongoing.',
+        mechanism: 'Roads + development break up habitat. Forest specialists lose nesting habitat.',
+        mitigation: 'Land protection, wildlife corridors, conservation easements.',
+        howHelp: 'Support land trusts + park acquisitions. Donate to Hawk Mountain, Audubon, etc.'
+      },
+      {
+        threat: 'Habitat conversion',
+        affects: 'Grassland + wetland raptors',
+        scale: 'Major. 90% of US prairies converted to cropland.',
+        mechanism: 'Native habitat replaced with monoculture or development.',
+        mitigation: 'CRP land set-asides. Wetland Reserve Program. NRCS support.',
+        howHelp: 'Support sustainable agriculture. Vote for habitat protection.'
+      },
+      {
+        threat: 'Wind energy',
+        affects: 'Golden eagle, raptors in migration corridors',
+        scale: 'Growing. ~600,000 raptor deaths/year estimated from wind turbines.',
+        mechanism: 'Birds hit moving blades. Some species avoid; others (eagles, vultures) don\'t.',
+        mitigation: 'Improved siting (avoid migration corridors). Curtailment of blade speed during peak migration. Compensation programs.',
+        howHelp: 'Support strategic energy planning. Push for renewable energy siting that avoids critical habitats.'
+      },
+      {
+        threat: 'Power line electrocution',
+        affects: 'Eagles, large raptors',
+        scale: 'Significant. APLIC estimates ~100K-1M raptor mortalities/year.',
+        mechanism: 'Raptor lands on pole + contacts two energized wires simultaneously, completing circuit.',
+        mitigation: 'APLIC (Avian Power Line Interaction Committee) standards. Bird-safe pole designs.',
+        howHelp: 'Encourage your utility to retrofit poles. Report electrocuted birds.'
+      },
+      {
+        threat: 'Climate change',
+        affects: 'All raptors but especially Arctic + boreal',
+        scale: 'Major + accelerating.',
+        mechanism: 'Range shifts, timing mismatch with prey, extreme weather events, prey base changes.',
+        mitigation: 'Carbon mitigation. Climate-resilient habitat. Citizen science monitoring.',
+        howHelp: 'Reduce personal carbon footprint. Support climate policy. Participate in eBird.'
+      },
+      {
+        threat: 'Illegal shooting + persecution',
+        affects: 'Raptors near agricultural areas',
+        scale: 'Significant + underreported.',
+        mechanism: 'Some farmers + game managers shoot raptors believing they hurt poultry or game.',
+        mitigation: 'Migratory Bird Treaty Act. Bald + Golden Eagle Protection Act. Education programs.',
+        howHelp: 'Report suspicious activity. Educate hunters + farmers on raptor ecology.'
+      },
+      {
+        threat: 'Illegal egg + chick collection',
+        affects: 'Falcons (peregrine + gyrfalcon mostly)',
+        scale: 'Localized but persistent.',
+        mechanism: 'Falcons stolen for falconry markets (especially Middle East).',
+        mitigation: 'Federal + international laws. Microchipping of captive birds.',
+        howHelp: 'Don\'t buy falconry birds without proper paperwork. Report illegal markets.'
+      },
+      {
+        threat: 'Disease (West Nile, Avian Flu, etc.)',
+        affects: 'All raptors',
+        scale: 'Significant. Avian flu H5N1 highly fatal to raptors 2022-present.',
+        mechanism: 'Mosquito-borne (WN) or fecal-contact (AF). Often presents as neurological symptoms.',
+        mitigation: 'Vaccination of captive birds. Wild-bird surveillance.',
+        howHelp: 'Report sick birds to wildlife agency. Don\'t handle.'
+      },
+      {
+        threat: 'Plastic pollution + nest material',
+        affects: 'Coastal raptors (especially osprey, eagles)',
+        scale: 'Growing.',
+        mechanism: 'Plastic + fishing line incorporated into nests; entangles chicks.',
+        mitigation: 'Coastal cleanup campaigns. Disposal of fishing line at dedicated bins.',
+        howHelp: 'Clean up coastal areas. Use proper fishing line disposal.'
+      },
+      {
+        threat: 'Mercury bioaccumulation',
+        affects: 'Aquatic raptors (osprey, eagle, kite)',
+        scale: 'Significant in some watersheds.',
+        mechanism: 'Coal-fired power plants release mercury, deposits in waterways, bioaccumulates in fish.',
+        mitigation: 'Mercury reduction at power plants. Federal Clean Air Act standards.',
+        howHelp: 'Support pollution controls. Vote for environmental protection.'
+      },
+      {
+        threat: 'Light pollution',
+        affects: 'Migrating raptors at night',
+        scale: 'Growing.',
+        mechanism: 'Disorientation during night-migration. Birds attracted to illuminated buildings.',
+        mitigation: 'Dark-sky friendly lighting. Light reduction during migration.',
+        howHelp: 'Use shielded outdoor lights. Turn off unnecessary lights at night.'
+      },
+      {
+        threat: 'Invasive species (avian)',
+        affects: 'Native raptors competing with invasive species',
+        scale: 'Localized.',
+        mechanism: 'Some invasive birds compete for nest sites or prey.',
+        mitigation: 'Active management of invasives (e.g., barred owl culling for spotted owl recovery).',
+        howHelp: 'Support conservation efforts in your area.'
+      }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.42: EXPERT SPOTLIGHTS — legendary raptor scientists
+  // ───────────────────────────────────────────────────────────
+  var EXPERT_SPOTLIGHTS = {
+    intro: 'Modern raptor science exists because of the dedication of these individuals + institutions. Below are 12 legendary scientists, naturalists, + conservationists who shaped our understanding + protection of raptors.',
+    experts: [
+      {
+        name: 'Roger Tory Peterson',
+        years: '1908-1996',
+        country: 'USA',
+        contribution: 'Wrote A Field Guide to the Birds (1934) — first practical popular field guide. Made bird-watching accessible to millions. His "field marks" approach to ID became standard. Authored ~50 books.',
+        legacy: 'Father of modern field birding. Peterson Field Guides series still standard.',
+        howRemember: 'Read Peterson Field Guide to Hawks. Visit Peterson Institute in Jamestown NY.'
+      },
+      {
+        name: 'Rachel Carson',
+        years: '1907-1964',
+        country: 'USA',
+        contribution: 'Wrote Silent Spring (1962). Documented DDT damage to ecosystem + raptor populations. Triggered environmental movement + DDT ban.',
+        legacy: 'Single most influential conservation book of 20th century. Saved bald eagle + peregrine + others.',
+        howRemember: 'Read Silent Spring. Recognize ESA + EPA as her legacy.'
+      },
+      {
+        name: 'Rosalie Edge',
+        years: '1877-1962',
+        country: 'USA',
+        contribution: 'Purchased land that became Hawk Mountain Sanctuary 1934. First wildlife refuge specifically for migrating raptors. Stopped shooters at Hawk Mountain.',
+        legacy: 'Birth of modern raptor conservation. Hawk Mountain remains world\'s longest-monitored migration site.',
+        howRemember: 'Visit Hawk Mountain Sanctuary. Donate to their research mission.'
+      },
+      {
+        name: 'Tom Cade',
+        years: '1928-2019',
+        country: 'USA',
+        contribution: 'Founded Peregrine Fund (1970). Designed + implemented peregrine captive breeding + hacking. Saved species from extinction east of Rockies.',
+        legacy: 'Recovery of peregrine falcon — one of greatest conservation successes ever.',
+        howRemember: 'Visit World Center for Birds of Prey, Boise ID. Support Peregrine Fund.'
+      },
+      {
+        name: 'Carl Jones',
+        years: '1954-present',
+        country: 'UK/Mauritius',
+        contribution: 'Recovered Mauritius kestrel from 4 individuals (1974) to 800 (2005). 40-year personal project. Indianapolis Prize 2016 (conservation\'s Nobel).',
+        legacy: 'Demonstrated that even smallest population can recover with intensive intervention.',
+        howRemember: 'Read Behind Closed Doors (his memoir).'
+      },
+      {
+        name: 'Roger Payne',
+        years: '1935-2023',
+        country: 'USA',
+        contribution: 'Discovered owl 3D acoustic localization (1962). Proved barn owls can capture prey in pitch dark using only sound. Foundational work for understanding owl ear asymmetry.',
+        legacy: 'One of greatest single experiments in raptor science.',
+        howRemember: 'Read his papers. Visit Cornell Lab\'s Macaulay Library.'
+      },
+      {
+        name: 'Stephen Bodio',
+        years: '1949-present',
+        country: 'USA',
+        contribution: 'Falconer + writer. Documented Mongolian Berkutchi tradition. Linked anthropology + raptor science.',
+        legacy: 'Brought Berkutchi tradition to Western awareness.',
+        howRemember: 'Read Eagle Dreams.'
+      },
+      {
+        name: 'Vaclav Tucker',
+        years: '1934-present',
+        country: 'USA',
+        contribution: 'Studied peregrine stoop trajectory + sideways vision (1998). Explained why peregrines stoop in log spirals.',
+        legacy: 'Foundational paper for understanding peregrine hunting physics.',
+        howRemember: 'His paper "Curved flight paths and sideways vision in peregrine falcons."'
+      },
+      {
+        name: 'Bill Burnham',
+        years: '1934-2006',
+        country: 'USA',
+        contribution: 'Led Peregrine Fund\'s release programs across western US. Hands-on practitioner of falconry-based conservation.',
+        legacy: 'Operational backbone of peregrine recovery in West.',
+        howRemember: 'World Center for Birds of Prey documentation.'
+      },
+      {
+        name: 'Mike Kochert',
+        years: '1947-present',
+        country: 'USA',
+        contribution: 'BLM raptor biologist. Founded Snake River Birds of Prey NCA. World\'s largest golden eagle research program.',
+        legacy: 'Long-term golden eagle dataset (40+ years).',
+        howRemember: 'Visit Snake River Birds of Prey NCA, ID.'
+      },
+      {
+        name: 'Ernesto Enkerlin',
+        years: '1960-present',
+        country: 'Mexico',
+        contribution: 'Director of Veracruz River of Raptors count for 30 years. Made it world\'s largest migration count.',
+        legacy: 'Built scientific infrastructure for largest raptor concentration anywhere.',
+        howRemember: 'Visit Veracruz during fall migration.'
+      },
+      {
+        name: 'David Allen Sibley',
+        years: '1962-present',
+        country: 'USA',
+        contribution: 'Wrote Sibley Birds (2000) — current standard US field guide. Illustrated thousands of species.',
+        legacy: 'Modern American field-guide standard.',
+        howRemember: 'Buy Sibley Birds. Compare with Peterson + Crossley styles.'
+      }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
   // GLOSSARY DATA — A-Z reference of raptor terminology
   // ───────────────────────────────────────────────────────────
   var GLOSSARY = [
@@ -4575,6 +5016,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         { id: 'lessons', label: 'Lesson Plan Library', icon: '🎒' },
         { id: 'mystery', label: 'ID Mystery Cases', icon: '🕵' },
         { id: 'regional', label: 'Regional Field Guides', icon: '🗺' },
+        { id: 'worldtour', label: 'World Tour', icon: '🌍' },
+        { id: 'records', label: 'Records & Superlatives', icon: '🏅' },
+        { id: 'threats', label: 'Threats Database', icon: '⚠️' },
+        { id: 'experts', label: 'Expert Spotlights', icon: '🧑‍🔬' },
         { id: 'glossary', label: 'Glossary', icon: '📖' },
         { id: 'quiz', label: 'Field ID Quiz', icon: '🎓' },
         { id: 'resources', label: 'Resources', icon: '📚' }
@@ -14235,6 +14680,197 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       }
 
       // ────────────────────────────────────────────────────────
+      // RENDER: WORLD TOUR (v0.42)
+      // ────────────────────────────────────────────────────────
+      function renderWorldTour() {
+        var wtIdx = rh.worldTourIdx == null ? 0 : rh.worldTourIdx;
+        function setWtIdx(i) { setRH({ worldTourIdx: i }); }
+        var d = WORLD_TOUR.destinations[wtIdx];
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-blue-900/40 to-cyan-900/40 border border-blue-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '🌍'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-blue-200' }, 'World Tour'),
+                h('div', { className: 'text-sm text-blue-100/85 mt-1' }, WORLD_TOUR.intro)
+              )
+            )
+          ),
+          h('div', { className: 'flex flex-wrap gap-1' },
+            WORLD_TOUR.destinations.map(function(dest, i) {
+              var sel = wtIdx === i;
+              return h('button', {
+                key: i,
+                onClick: function() { setWtIdx(i); },
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-blue-600 text-white font-bold' : 'bg-slate-800/60 text-blue-200 hover:bg-slate-700/60'),
+                'aria-pressed': sel
+              }, dest.flag + ' ' + dest.name.split(',')[0]);
+            })
+          ),
+          h('div', { className: 'bg-slate-800/40 border border-blue-700/40 rounded-xl p-4 space-y-2' },
+            h('div', { className: 'flex items-baseline gap-2' },
+              h('div', { className: 'text-2xl' }, d.flag),
+              h('div', { className: 'text-lg font-bold text-blue-300' }, d.name)
+            ),
+            h('div', { className: 'text-xs italic text-amber-200/80' }, '📅 ' + d.season),
+            h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-2 text-xs' },
+              h('div', { className: 'font-bold text-amber-300 mb-1' }, '🦅 Species'),
+              h('div', { className: 'text-amber-100/90' }, d.species)
+            ),
+            h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-2 text-xs' },
+              h('div', { className: 'font-bold text-emerald-300 mb-1' }, '⭐ Attraction'),
+              h('div', { className: 'text-emerald-100/90' }, d.attraction)
+            ),
+            h('div', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded p-2 text-xs' },
+              h('div', { className: 'font-bold text-cyan-300 mb-1' }, '🎯 Why Visit'),
+              h('div', { className: 'text-cyan-100/90' }, d.whyVisit)
+            ),
+            h('div', { className: 'grid md:grid-cols-2 gap-2' },
+              h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
+                h('div', { className: 'font-bold text-yellow-300 mb-1' }, '💰 Cost'),
+                h('div', { className: 'text-yellow-100/90' }, d.cost)
+              ),
+              h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
+                h('div', { className: 'font-bold text-purple-300 mb-1' }, '✈ Airport'),
+                h('div', { className: 'text-purple-100/90' }, d.nearestAirport)
+              )
+            )
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: RECORDS (v0.42)
+      // ────────────────────────────────────────────────────────
+      function renderRecords() {
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-yellow-900/40 to-amber-900/40 border border-yellow-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '🏅'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-yellow-200' }, 'Raptor Records & Superlatives'),
+                h('div', { className: 'text-sm text-yellow-100/85 mt-1' }, RAPTOR_RECORDS.intro)
+              )
+            )
+          ),
+          h('div', { className: 'grid md:grid-cols-2 gap-3' },
+            RAPTOR_RECORDS.records.map(function(r, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-yellow-700/30 rounded-lg p-3' },
+                h('div', { className: 'text-sm font-bold text-yellow-300 mb-1' }, r.category),
+                h('div', { className: 'text-sm text-amber-200 font-bold mb-1' }, '👑 ' + r.record),
+                h('div', { className: 'text-xs text-cyan-300 font-mono mb-1' }, '📐 ' + r.value),
+                h('div', { className: 'text-xs text-slate-200 leading-relaxed mb-1' }, r.notes),
+                h('div', { className: 'text-[10px] italic text-slate-500' }, '📚 ' + r.source)
+              );
+            })
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: THREATS DATABASE (v0.42)
+      // ────────────────────────────────────────────────────────
+      function renderThreats() {
+        var threatIdx = rh.threatIdx == null ? 0 : rh.threatIdx;
+        function setThreatIdx(i) { setRH({ threatIdx: i }); }
+        var t = THREATS_DB.threats[threatIdx];
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-rose-900/40 to-red-900/40 border border-rose-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '⚠️'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-rose-200' }, 'Threats Database'),
+                h('div', { className: 'text-sm text-rose-100/85 mt-1' }, THREATS_DB.intro)
+              )
+            )
+          ),
+          h('div', { className: 'flex flex-wrap gap-1' },
+            THREATS_DB.threats.map(function(th, i) {
+              var sel = threatIdx === i;
+              return h('button', {
+                key: i,
+                onClick: function() { setThreatIdx(i); },
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-rose-600 text-white font-bold' : 'bg-slate-800/60 text-rose-200 hover:bg-slate-700/60'),
+                'aria-pressed': sel
+              }, th.threat.split(' ')[0] + ' ' + (th.threat.split(' ')[1] || ''));
+            })
+          ),
+          h('div', { className: 'bg-slate-800/40 border border-rose-700/40 rounded-xl p-4 space-y-2' },
+            h('div', { className: 'text-lg font-bold text-rose-300' }, '⚠ ' + t.threat),
+            h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-2 text-xs' },
+              h('div', { className: 'font-bold text-amber-300 mb-1' }, '🎯 Affects'),
+              h('div', { className: 'text-amber-100/90' }, t.affects)
+            ),
+            h('div', { className: 'bg-rose-900/20 border border-rose-700/40 rounded p-2 text-xs' },
+              h('div', { className: 'font-bold text-rose-300 mb-1' }, '📊 Scale'),
+              h('div', { className: 'text-rose-100/90' }, t.scale)
+            ),
+            h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
+              h('div', { className: 'font-bold text-purple-300 mb-1' }, '🔬 Mechanism'),
+              h('div', { className: 'text-purple-100/90' }, t.mechanism)
+            ),
+            h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-2 text-xs' },
+              h('div', { className: 'font-bold text-emerald-300 mb-1' }, '💡 Mitigation'),
+              h('div', { className: 'text-emerald-100/90' }, t.mitigation)
+            ),
+            h('div', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded p-2 text-xs' },
+              h('div', { className: 'font-bold text-cyan-300 mb-1' }, '🤝 How You Can Help'),
+              h('div', { className: 'text-cyan-100/90' }, t.howHelp)
+            )
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: EXPERT SPOTLIGHTS (v0.42)
+      // ────────────────────────────────────────────────────────
+      function renderExperts() {
+        var expertIdx = rh.expertIdx == null ? 0 : rh.expertIdx;
+        function setExpertIdx(i) { setRH({ expertIdx: i }); }
+        var e = EXPERT_SPOTLIGHTS.experts[expertIdx];
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-violet-900/40 to-purple-900/40 border border-violet-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '🧑‍🔬'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-violet-200' }, 'Expert Spotlights'),
+                h('div', { className: 'text-sm text-violet-100/85 mt-1' }, EXPERT_SPOTLIGHTS.intro)
+              )
+            )
+          ),
+          h('div', { className: 'flex flex-wrap gap-1' },
+            EXPERT_SPOTLIGHTS.experts.map(function(ex, i) {
+              var sel = expertIdx === i;
+              return h('button', {
+                key: i,
+                onClick: function() { setExpertIdx(i); },
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-violet-600 text-white font-bold' : 'bg-slate-800/60 text-violet-200 hover:bg-slate-700/60'),
+                'aria-pressed': sel
+              }, ex.name.split(' ').pop());
+            })
+          ),
+          h('div', { className: 'bg-slate-800/40 border border-violet-700/40 rounded-xl p-4 space-y-2' },
+            h('div', { className: 'flex items-baseline justify-between gap-2' },
+              h('div', { className: 'text-lg font-bold text-violet-300' }, e.name),
+              h('div', { className: 'text-xs text-amber-200 font-mono' }, e.country + ' · ' + e.years)
+            ),
+            h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
+              h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, '🔬 Contribution'),
+              h('div', { className: 'text-sm text-cyan-100/90 leading-relaxed' }, e.contribution)
+            ),
+            h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-3' },
+              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, '🌟 Legacy'),
+              h('div', { className: 'text-sm text-emerald-100/90 leading-relaxed' }, e.legacy)
+            ),
+            h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-3' },
+              h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, '📚 How to Learn More'),
+              h('div', { className: 'text-sm text-amber-100/90 leading-relaxed' }, e.howRemember)
+            )
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
       // RENDER: GLOSSARY (A-Z reference)
       // ────────────────────────────────────────────────────────
       function renderGlossary() {
@@ -15415,6 +16051,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           activeSection === 'lessons' && renderLessons(),
           activeSection === 'mystery' && renderMystery(),
           activeSection === 'regional' && renderRegional(),
+          activeSection === 'worldtour' && renderWorldTour(),
+          activeSection === 'records' && renderRecords(),
+          activeSection === 'threats' && renderThreats(),
+          activeSection === 'experts' && renderExperts(),
           activeSection === 'glossary' && renderGlossary(),
           activeSection === 'quiz' && renderQuiz(),
           activeSection === 'resources' && renderResources()
