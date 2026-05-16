@@ -941,6 +941,446 @@ window.SelHub = window.SelHub || {
   // ── TOOL REGISTRATION ──
   // ══════════════════════════════════════════════════════════════
 
+  // ══════════════════════════════════════════════════════════════
+  // ── MY SAFETY KIT — Personalized crisis-support tools
+  // 6 tools centered on Stanley + Brown 2012 Safety Planning
+  // Intervention. ALL data is browser-local. NEVER syncs.
+  // 988 / Crisis Text Line / Maine Mobile Crisis always visible.
+  // ══════════════════════════════════════════════════════════════
+  var R_CC = (typeof window !== 'undefined' && window.React) ? window.React : null;
+  var ccH = R_CC ? R_CC.createElement : null;
+
+  function cc_today() {
+    var d = new Date(); var m = String(d.getMonth() + 1).padStart(2, '0'); var dd = String(d.getDate()).padStart(2, '0');
+    return d.getFullYear() + '-' + m + '-' + dd;
+  }
+  function cc_id() { return 'cc-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7); }
+  function cc_relDate(iso) {
+    if (!iso) return '';
+    var t = new Date(iso + 'T12:00:00').getTime();
+    var d = Math.floor((Date.now() - t) / 86400000);
+    if (d === 0) return 'today'; if (d === 1) return 'yesterday'; if (d < 7) return d + ' days ago';
+    if (d < 30) return Math.floor(d / 7) + ' weeks ago';
+    return Math.floor(d / 30) + ' months ago';
+  }
+  function ccCard(border, children) {
+    return ccH('div', { style: {
+      background: 'rgba(15,23,42,0.7)', borderRadius: 12, padding: 14, marginBottom: 12,
+      borderTop: '1px solid ' + border + '40', borderRight: '1px solid ' + border + '40',
+      borderBottom: '1px solid ' + border + '40', borderLeft: '4px solid ' + border
+    } }, children);
+  }
+  function ccBtn(label, onClick, kind, extra) {
+    var styles = {
+      primary:   { bg: '#14b8a6', color: '#fff', border: '#14b8a6' },
+      secondary: { bg: 'rgba(20,184,166,0.15)', color: '#5eead4', border: 'rgba(20,184,166,0.50)' },
+      good:      { bg: 'rgba(16,185,129,0.15)', color: '#10b981', border: 'rgba(16,185,129,0.50)' },
+      bad:       { bg: 'rgba(239,68,68,0.10)',  color: '#fca5a5', border: 'rgba(239,68,68,0.40)' },
+      ghost:     { bg: 'rgba(148,163,184,0.08)', color: '#94a3b8', border: 'rgba(148,163,184,0.30)' }
+    };
+    var s = styles[kind || 'secondary'] || styles.secondary;
+    return ccH('button', Object.assign({
+      onClick: onClick,
+      style: Object.assign({
+        padding: '8px 16px', borderRadius: 8, background: s.bg, color: s.color,
+        border: '1.5px solid ' + s.border, fontSize: 11, fontWeight: 800, cursor: 'pointer'
+      }, extra || {})
+    }), label);
+  }
+  function ccInput(value, onChange, placeholder, extra) {
+    return ccH('input', Object.assign({
+      type: 'text', value: value || '', placeholder: placeholder || '',
+      onChange: function(e) { onChange(e.target.value); },
+      style: Object.assign({
+        width: '100%', padding: '10px 12px', fontSize: 12, color: '#e2e8f0',
+        background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)',
+        borderRadius: 6, outline: 'none', boxSizing: 'border-box'
+      }, extra || {})
+    }));
+  }
+  function ccTextarea(value, onChange, placeholder, rows) {
+    return ccH('textarea', {
+      value: value || '', placeholder: placeholder || '', rows: rows || 3,
+      onChange: function(e) { onChange(e.target.value); },
+      style: { width: '100%', padding: '10px 12px', fontSize: 12, color: '#e2e8f0',
+        background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)',
+        borderRadius: 6, outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit', resize: 'vertical' }
+    });
+  }
+  function ccSection(icon, title, subtitle, accent) {
+    accent = accent || '#14b8a6';
+    return ccH('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, paddingBottom: 10, borderBottom: '1px solid ' + accent + '30' } },
+      ccH('div', { 'aria-hidden': 'true', style: {
+        width: 42, height: 42, borderRadius: '50%',
+        background: 'linear-gradient(135deg, ' + accent + '30, ' + accent + '10)',
+        border: '1.5px solid ' + accent,
+        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22
+      } }, icon),
+      ccH('div', { style: { flex: 1 } },
+        ccH('div', { style: { fontSize: 15, fontWeight: 900, color: accent + 'ee' } }, title),
+        ccH('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } }, subtitle)
+      )
+    );
+  }
+  function ccCrisisBanner() {
+    return ccH('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.15)', border: '2px solid #ef4444', marginBottom: 14 } },
+      ccH('div', { style: { fontSize: 12, color: '#fca5a5', fontWeight: 800, marginBottom: 6 } }, '🚨 IF YOU ARE IN CRISIS RIGHT NOW:'),
+      ccH('div', { style: { fontSize: 12, color: '#fecaca', lineHeight: 1.6 } },
+        'Call or text ', ccH('strong', null, '988'), ' (US Suicide + Crisis Lifeline). ',
+        'Maine Mobile Crisis: ', ccH('strong', null, '1-888-568-1112'), '. ',
+        'Text ', ccH('strong', null, 'HOME'), ' to ', ccH('strong', null, '741741'), ' (Crisis Text Line). ',
+        'Reach a real person 24/7.'
+      )
+    );
+  }
+
+  // ── 1. MY SAFETY PLAN (Stanley + Brown 2012) ──
+  function CCSafetyPlan(props) {
+    if (!R_CC) return null;
+    var data = props.data || { plan: {} };
+    var setData = props.setData;
+    var p = data.plan || {};
+    function update(k, v) { setData({ plan: Object.assign({}, p, (function() { var o = {}; o[k] = v; return o; })()) }); }
+    var STEPS = [
+      { id: 'warning',  label: '1. Warning signs (thoughts, feelings, situations)', color: '#fbbf24' },
+      { id: 'coping',   label: '2. Internal coping I can do alone',                color: '#3b82f6' },
+      { id: 'distract', label: '3. People + places that help me distract',          color: '#10b981' },
+      { id: 'helpers',  label: '4. People I can ask for help',                      color: '#a855f7' },
+      { id: 'pros',     label: '5. Professionals + crisis lines',                   color: '#ec4899' },
+      { id: 'safer',    label: '6. Making my environment safer',                    color: '#ef4444' }
+    ];
+    return ccH('div', { style: { padding: 14 } },
+      ccSection('🛡', 'My Safety Plan', 'Stanley + Brown 2012 — strongest-evidence intervention for reducing repeat-attempts. Build YOUR plan when calm.', '#14b8a6'),
+      ccCrisisBanner(),
+      ccH('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+        STEPS.map(function(s) {
+          return ccH('div', { key: 'sp-' + s.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid ' + s.color } },
+            ccH('label', { style: { display: 'block', fontSize: 12, fontWeight: 800, color: s.color, marginBottom: 6 } }, s.label),
+            ccTextarea(p[s.id], function(v) { update(s.id, v); }, '', 3)
+          );
+        })
+      ),
+      ccH('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(20,184,166,0.08)', border: '1px solid rgba(20,184,166,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+        ccH('strong', { style: { color: '#14b8a6' } }, '🎓 Why this works: '),
+        'Stanley + Brown 2012, JAMA Psychiatry. The act of writing this plan when calm makes it accessible during crisis. Share with someone you trust — counselor, parent, friend.'
+      )
+    );
+  }
+
+  // ── 2. MY WARNING SIGNS LOG ──
+  function CCWarningLog(props) {
+    if (!R_CC) return null;
+    var data = props.data || { logs: [] };
+    var setData = props.setData;
+    var fs = R_CC.useState({ sign: '', context: '', intensity: 5, whatHelped: '' });
+    var form = fs[0]; var setForm = fs[1];
+    function save() {
+      if (!form.sign.trim()) { alert('Need a sign.'); return; }
+      var e = Object.assign({ id: cc_id(), date: cc_today(), time: Date.now() }, form);
+      setData({ logs: [e].concat(data.logs || []) });
+      setForm({ sign: '', context: '', intensity: 5, whatHelped: '' });
+    }
+    function remove(id) { setData({ logs: (data.logs || []).filter(function(l) { return l.id !== id; }) }); }
+    var logs = data.logs || [];
+    return ccH('div', { style: { padding: 14 } },
+      ccSection('🌡', 'My Warning Signs Log', 'Track when warning signs appear so the pattern becomes visible. Knowing your pattern = catching it earlier.', '#fbbf24'),
+      ccCrisisBanner(),
+      ccCard('#fbbf24',
+        ccH('div', null,
+          ccInput(form.sign, function(v) { setForm(Object.assign({}, form, { sign: v })); }, 'What sign showed up? (e.g., "felt numb all afternoon", "wanted to disappear")', { marginBottom: 6 }),
+          ccInput(form.context, function(v) { setForm(Object.assign({}, form, { context: v })); }, 'Context (where, what was happening)', { marginBottom: 6 }),
+          ccH('div', { style: { marginBottom: 6 } },
+            ccH('span', { style: { fontSize: 11, color: '#fbbf24' } }, 'Intensity: '), ccH('strong', { style: { color: '#fbbf24', fontFamily: 'ui-monospace, Menlo, monospace' } }, form.intensity + '/10'),
+            ccH('input', { type: 'range', min: 1, max: 10, step: 1, value: form.intensity,
+              onChange: function(e) { setForm(Object.assign({}, form, { intensity: parseInt(e.target.value, 10) })); },
+              style: { width: '100%', accentColor: '#fbbf24', marginTop: 4 }
+            })
+          ),
+          ccInput(form.whatHelped, function(v) { setForm(Object.assign({}, form, { whatHelped: v })); }, 'What helped (if anything)', { marginBottom: 8 }),
+          ccBtn('💾 Log it', save, 'primary')
+        )
+      ),
+      logs.length > 0 ? ccH('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+        logs.slice(0, 20).map(function(l) {
+          var col = l.intensity >= 7 ? '#ef4444' : l.intensity >= 4 ? '#fbbf24' : '#10b981';
+          return ccH('div', { key: 'wl-' + l.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + col } },
+            ccH('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
+              ccH('strong', { style: { fontSize: 12, color: col } }, '🌡 ' + l.sign + ' (' + l.intensity + '/10)'),
+              ccH('div', null,
+                ccH('span', { style: { fontSize: 10, color: '#94a3b8', marginRight: 6 } }, cc_relDate(l.date)),
+                ccH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+              )
+            ),
+            l.context ? ccH('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, '📍 ' + l.context) : null,
+            l.whatHelped ? ccH('div', { style: { fontSize: 11, color: '#10b981', marginTop: 4 } }, '✓ Helped: ' + l.whatHelped) : null
+          );
+        })
+      ) : null
+    );
+  }
+
+  // ── 3. MY COPING ARSENAL ──
+  function CCCopingArsenal(props) {
+    if (!R_CC) return null;
+    var data = props.data || { strategies: [] };
+    var setData = props.setData;
+    var fs = R_CC.useState({ text: '', category: 'body', effective: 5 });
+    var form = fs[0]; var setForm = fs[1];
+    var CATS = [
+      { id: 'body',     label: '🫀 Body',      color: '#ef4444' },
+      { id: 'mind',     label: '🧠 Mind',      color: '#a855f7' },
+      { id: 'distract', label: '🎮 Distract',  color: '#3b82f6' },
+      { id: 'connect',  label: '🤝 Connect',   color: '#10b981' },
+      { id: 'creative', label: '🎨 Creative',  color: '#fbbf24' },
+      { id: 'spirit',   label: '🌅 Spiritual', color: '#06b6d4' }
+    ];
+    function save() {
+      if (!form.text.trim()) return;
+      var s = Object.assign({ id: cc_id(), addedAt: cc_today(), useCount: 0 }, form);
+      setData({ strategies: [s].concat(data.strategies || []) });
+      setForm({ text: '', category: 'body', effective: 5 });
+    }
+    function remove(id) { setData({ strategies: (data.strategies || []).filter(function(s) { return s.id !== id; }) }); }
+    function used(id) { setData({ strategies: (data.strategies || []).map(function(s) { return s.id === id ? Object.assign({}, s, { useCount: (s.useCount || 0) + 1, lastUsed: cc_today() }) : s; }) }); }
+    var strategies = data.strategies || [];
+    return ccH('div', { style: { padding: 14 } },
+      ccSection('🧰', 'My Coping Arsenal', 'Strategies that have actually worked for ME. Tap "+1 used" when one helps — track what works.', '#10b981'),
+      ccCrisisBanner(),
+      ccCard('#10b981',
+        ccH('div', null,
+          ccInput(form.text, function(v) { setForm(Object.assign({}, form, { text: v })); }, 'A strategy that worked for me (e.g., "cold water on face", "call Mom")', { marginBottom: 8 }),
+          ccH('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 } },
+            CATS.map(function(c) {
+              var on = form.category === c.id;
+              return ccH('button', { key: 'cp-' + c.id,
+                onClick: function() { setForm(Object.assign({}, form, { category: c.id })); },
+                style: { padding: '6px 10px', borderRadius: 6, background: on ? c.color + '30' : 'rgba(15,23,42,0.5)', color: on ? c.color : '#94a3b8', border: '1px solid ' + (on ? c.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
+              }, c.label);
+            })
+          ),
+          ccBtn('+ Add to arsenal', save, 'primary')
+        )
+      ),
+      strategies.length > 0 ? CATS.map(function(cat) {
+        var inCat = strategies.filter(function(s) { return s.category === cat.id; });
+        if (inCat.length === 0) return null;
+        return ccH('div', { key: 'sc-' + cat.id, style: { marginBottom: 14 } },
+          ccH('div', { style: { fontSize: 11, fontWeight: 800, color: cat.color, marginBottom: 8, padding: '4px 10px', background: cat.color + '15', borderRadius: 6, display: 'inline-block' } }, cat.label),
+          ccH('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+            inCat.map(function(s) {
+              return ccH('div', { key: 'st-' + s.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + cat.color, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 6 } },
+                ccH('div', { style: { flex: 1, fontSize: 11, color: '#cbd5e1' } }, s.text),
+                ccH('div', { style: { display: 'flex', gap: 4 } },
+                  ccH('span', { style: { fontSize: 10, color: cat.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, 'used ' + (s.useCount || 0)),
+                  ccBtn('+1', function() { used(s.id); }, 'good', { padding: '3px 8px', fontSize: 10 }),
+                  ccH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                )
+              );
+            })
+          )
+        );
+      }).filter(Boolean) : null
+    );
+  }
+
+  // ── 4. MY SUPPORT CONTACTS ──
+  function CCSupportContacts(props) {
+    if (!R_CC) return null;
+    var data = props.data || { contacts: [] };
+    var setData = props.setData;
+    var fs = R_CC.useState({ name: '', role: '', contact: '', when: '' });
+    var form = fs[0]; var setForm = fs[1];
+    function add() {
+      if (!form.name.trim()) return;
+      var c = Object.assign({ id: cc_id() }, form);
+      setData({ contacts: [c].concat(data.contacts || []) });
+      setForm({ name: '', role: '', contact: '', when: '' });
+    }
+    function remove(id) { setData({ contacts: (data.contacts || []).filter(function(c) { return c.id !== id; }) }); }
+    return ccH('div', { style: { padding: 14 } },
+      ccSection('☎', 'My Support Contacts', 'Quick-access list of people + crisis lines + when to use each. Wallet card.', '#06b6d4'),
+      ccCrisisBanner(),
+      ccCard('#06b6d4',
+        ccH('div', null,
+          ccH('div', { style: { display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 6, marginBottom: 6 } },
+            ccInput(form.name, function(v) { setForm(Object.assign({}, form, { name: v })); }, 'Name'),
+            ccInput(form.role, function(v) { setForm(Object.assign({}, form, { role: v })); }, 'Role (mom, therapist, friend)')
+          ),
+          ccInput(form.contact, function(v) { setForm(Object.assign({}, form, { contact: v })); }, 'Contact (phone / text)', { marginBottom: 6 }),
+          ccInput(form.when, function(v) { setForm(Object.assign({}, form, { when: v })); }, 'When to reach out to THIS person', { marginBottom: 8 }),
+          ccBtn('+ Add', add, 'primary')
+        )
+      ),
+      (data.contacts || []).length > 0 ? ccH('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+        (data.contacts || []).map(function(c) {
+          return ccH('div', { key: 'cn-' + c.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid #06b6d4' } },
+            ccH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+              ccH('strong', { style: { fontSize: 12, color: '#06b6d4' } }, '☎ ' + c.name + (c.role ? ' (' + c.role + ')' : '')),
+              ccH('button', { onClick: function() { remove(c.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+            ),
+            c.contact ? ccH('div', { style: { fontSize: 12, color: '#e2e8f0', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 4 } }, c.contact) : null,
+            c.when ? ccH('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 4, fontStyle: 'italic' } }, '⏰ ' + c.when) : null
+          );
+        })
+      ) : null
+    );
+  }
+
+  // ── 5. MY RECOVERY NOTES ──
+  function CCRecoveryNotes(props) {
+    if (!R_CC) return null;
+    var data = props.data || { notes: [] };
+    var setData = props.setData;
+    var fs = R_CC.useState({ what: '', helped: '', didntHelp: '', tellSelf: '' });
+    var form = fs[0]; var setForm = fs[1];
+    function save() {
+      if (!form.what.trim()) { alert('Need a brief description.'); return; }
+      var n = Object.assign({ id: cc_id(), date: cc_today() }, form);
+      setData({ notes: [n].concat(data.notes || []) });
+      setForm({ what: '', helped: '', didntHelp: '', tellSelf: '' });
+    }
+    function remove(id) { setData({ notes: (data.notes || []).filter(function(n) { return n.id !== id; }) }); }
+    return ccH('div', { style: { padding: 14 } },
+      ccSection('🌅', 'My Recovery Notes', 'After a hard moment, log what helped + what didn\'t. Build self-knowledge over time.', '#10b981'),
+      ccCrisisBanner(),
+      ccCard('#10b981',
+        ccH('div', null,
+          ccInput(form.what, function(v) { setForm(Object.assign({}, form, { what: v })); }, 'What happened? (brief)', { marginBottom: 6 }),
+          ccTextarea(form.helped, function(v) { setForm(Object.assign({}, form, { helped: v })); }, '✓ What helped', 2),
+          ccH('div', { style: { height: 6 } }),
+          ccTextarea(form.didntHelp, function(v) { setForm(Object.assign({}, form, { didntHelp: v })); }, '✗ What didn\'t help (or made it worse)', 2),
+          ccH('div', { style: { height: 6 } }),
+          ccTextarea(form.tellSelf, function(v) { setForm(Object.assign({}, form, { tellSelf: v })); }, '💌 What I want future-me to remember from this', 3),
+          ccH('div', { style: { height: 8 } }),
+          ccBtn('💾 Save', save, 'primary')
+        )
+      ),
+      (data.notes || []).length > 0 ? ccH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+        (data.notes || []).map(function(n) {
+          return ccH('div', { key: 'rn-' + n.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid #10b981' } },
+            ccH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+              ccH('strong', { style: { fontSize: 12, color: '#10b981' } }, '🌅 ' + n.what),
+              ccH('div', null,
+                ccH('span', { style: { fontSize: 10, color: '#94a3b8', marginRight: 6 } }, cc_relDate(n.date)),
+                ccH('button', { onClick: function() { remove(n.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+              )
+            ),
+            n.helped ? ccH('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 6 } }, ccH('strong', { style: { color: '#10b981' } }, '✓ Helped: '), n.helped) : null,
+            n.didntHelp ? ccH('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 4 } }, ccH('strong', { style: { color: '#ef4444' } }, '✗ Didn\'t: '), n.didntHelp) : null,
+            n.tellSelf ? ccH('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 6, padding: 8, background: 'rgba(2,6,23,0.4)', borderRadius: 6, fontStyle: 'italic' } }, ccH('strong', { style: { color: '#a855f7' } }, '💌 '), n.tellSelf) : null
+          );
+        })
+      ) : null
+    );
+  }
+
+  // ── 6. MY HOPE LIST (reasons to keep going) ──
+  function CCHopeList(props) {
+    if (!R_CC) return null;
+    var data = props.data || { items: [] };
+    var setData = props.setData;
+    var ns = R_CC.useState(''); var newItem = ns[0]; var setNewItem = ns[1];
+    function add() { if (!newItem.trim()) return; setData({ items: [{ id: cc_id(), text: newItem.trim() }].concat(data.items || []) }); setNewItem(''); }
+    function remove(id) { setData({ items: (data.items || []).filter(function(i) { return i.id !== id; }) }); }
+    var items = data.items || [];
+    var random = items.length > 0 ? items[Math.floor(Math.random() * items.length)] : null;
+    return ccH('div', { style: { padding: 14 } },
+      ccSection('💛', 'My Hope List', 'Reasons to keep going. People, plans, places, anything. Read this when hard.', '#fbbf24'),
+      ccCrisisBanner(),
+      random ? ccH('div', { style: { padding: 20, borderRadius: 12, background: 'linear-gradient(135deg, rgba(251,191,36,0.20), rgba(15,23,42,0.7))', border: '2px solid #fbbf24', marginBottom: 14, textAlign: 'center' } },
+        ccH('div', { style: { fontSize: 10, color: '#fbbf24', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 } }, '💛 One of your reasons'),
+        ccH('div', { style: { fontSize: 16, color: '#e2e8f0', lineHeight: 1.65, fontStyle: 'italic', fontFamily: 'Georgia, serif' } }, '"' + random.text + '"')
+      ) : null,
+      ccCard('#fbbf24',
+        ccH('div', null,
+          ccH('div', { style: { display: 'flex', gap: 6 } },
+            ccInput(newItem, setNewItem, 'A reason to keep going (small or big, anything)', { flex: 1 }),
+            ccBtn('+ Add', add, 'primary', { padding: '8px 14px' })
+          )
+        )
+      ),
+      items.length > 0 ? ccH('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+        items.map(function(i) {
+          return ccH('div', { key: 'hi-' + i.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid #fbbf24', display: 'flex', justifyContent: 'space-between' } },
+            ccH('span', { style: { fontSize: 12, color: '#cbd5e1' } }, '💛 ' + i.text),
+            ccH('button', { onClick: function() { remove(i.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+          );
+        })
+      ) : null
+    );
+  }
+
+  // ── HUB ──
+  function CCKitHub(props) {
+    if (!R_CC) return null;
+    var d = props.d || {};
+    var navigate = props.navigate;
+    var tools = [
+      { id: 'plan',    icon: '🛡', label: 'My Safety Plan',     color: '#14b8a6', desc: 'Stanley + Brown 6-step plan',
+        stat: Object.keys(((d.kit_plan || {}).plan) || {}).length + ' steps filled' },
+      { id: 'warning', icon: '🌡', label: 'My Warning Signs Log', color: '#fbbf24', desc: 'Track signs over time = pattern',
+        stat: (((d.kit_warning || {}).logs) || []).length + ' logged' },
+      { id: 'arsenal', icon: '🧰', label: 'My Coping Arsenal',   color: '#10b981', desc: 'Strategies that work for ME',
+        stat: (((d.kit_arsenal || {}).strategies) || []).length + ' saved' },
+      { id: 'contacts',icon: '☎', label: 'My Support Contacts', color: '#06b6d4', desc: 'Quick-access who to call when',
+        stat: (((d.kit_contacts || {}).contacts) || []).length + ' people' },
+      { id: 'recovery',icon: '🌅', label: 'My Recovery Notes',   color: '#10b981', desc: 'After hard moments — what worked',
+        stat: (((d.kit_recovery || {}).notes) || []).length + ' notes' },
+      { id: 'hope',    icon: '💛', label: 'My Hope List',        color: '#fbbf24', desc: 'Reasons to keep going. Random pick.',
+        stat: (((d.kit_hope || {}).items) || []).length + ' reasons' }
+    ];
+    return ccH('div', { style: { padding: 14 } },
+      ccH('div', { style: { padding: '22px 20px', borderRadius: 14, marginBottom: 16, background: 'linear-gradient(135deg, rgba(20,184,166,0.25), rgba(16,185,129,0.10))', border: '1px solid rgba(20,184,166,0.40)' } },
+        ccH('div', { style: { fontSize: 11, color: '#5eead4', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.10em', marginBottom: 4 } }, '🛡 My Safety Kit'),
+        ccH('div', { style: { fontSize: 20, fontWeight: 900, color: '#e2e8f0', marginBottom: 6 } }, 'Personal crisis-support tools'),
+        ccH('div', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.55 } },
+          '6 tools to build YOUR safety plan + coping arsenal. Crisis-line numbers always visible. All data stays in your browser.'
+        )
+      ),
+      ccCrisisBanner(),
+      ccH('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 } },
+        tools.map(function(t) {
+          return ccH('button', { key: 'tk-' + t.id,
+            onClick: function() { navigate(t.id); },
+            style: { display: 'block', textAlign: 'left', padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, ' + t.color + '15, rgba(15,23,42,0.7))', border: '1px solid ' + t.color + '40', borderLeft: '4px solid ' + t.color, cursor: 'pointer' }
+          },
+            ccH('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 8 } },
+              ccH('div', { style: { fontSize: 26 } }, t.icon),
+              ccH('div', { style: { flex: 1 } },
+                ccH('div', { style: { fontSize: 13, fontWeight: 800, color: t.color, marginBottom: 2 } }, t.label),
+                ccH('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, t.desc)
+              )
+            ),
+            ccH('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, paddingTop: 8, borderTop: '1px solid ' + t.color + '30' } },
+              ccH('span', { style: { fontSize: 10, color: t.color, fontWeight: 700, fontFamily: 'ui-monospace, Menlo, monospace' } }, t.stat),
+              ccH('span', { style: { fontSize: 11, color: t.color, fontWeight: 700 } }, 'Open →')
+            )
+          );
+        })
+      )
+    );
+  }
+
+  function CrisisSafetyKit(props) {
+    if (!R_CC) return null;
+    var d = props.d || {}; var upd = props.upd;
+    var vs = R_CC.useState('hub'); var view = vs[0]; var setView = vs[1];
+    function bind(key, defaultVal) { return { data: d[key] || defaultVal, setData: function(nd) { upd(key, nd); } }; }
+    if (view === 'hub') return ccH(CCKitHub, { d: d, navigate: function(v) { setView(v); } });
+    var backBar = ccH('button', { onClick: function() { setView('hub'); },
+      style: { padding: '6px 12px', borderRadius: 8, background: 'rgba(148,163,184,0.08)', color: '#94a3b8', border: '1px solid rgba(148,163,184,0.30)', fontSize: 11, fontWeight: 700, cursor: 'pointer', marginBottom: 8, marginLeft: 14 }
+    }, '← My Safety Kit');
+    var Comp, p;
+    if (view === 'plan')     { Comp = CCSafetyPlan;      p = bind('kit_plan',     { plan: {} }); }
+    else if (view === 'warning'){ Comp = CCWarningLog;   p = bind('kit_warning',  { logs: [] }); }
+    else if (view === 'arsenal'){ Comp = CCCopingArsenal; p = bind('kit_arsenal',  { strategies: [] }); }
+    else if (view === 'contacts'){ Comp = CCSupportContacts; p = bind('kit_contacts', { contacts: [] }); }
+    else if (view === 'recovery'){ Comp = CCRecoveryNotes; p = bind('kit_recovery', { notes: [] }); }
+    else if (view === 'hope')   { Comp = CCHopeList;     p = bind('kit_hope',     { items: [] }); }
+    else return ccH(CCKitHub, { d: d, navigate: function(v) { setView(v); } });
+    return ccH('div', null, backBar, ccH(Comp, p));
+  }
+
   window.SelHub.registerTool('crisiscompanion', {
     icon: '🫂',
     label: 'Crisis Companion',
@@ -967,9 +1407,10 @@ window.SelHub = window.SelHub || {
       }
 
       var consented = !!d.consented;
-      var section   = d.section || 'whyMatters';
+      var section   = d.section || 'mykit';
 
       var SECTIONS = [
+        { id: 'mykit',               icon: '🛡', label: 'My Safety Kit' },
         { id: 'whyMatters',          icon: '🫂', label: 'Why this matters' },
         { id: 'recognizeDepression', icon: '🌧️', label: 'Recognizing depression' },
         { id: 'crisisSigns',         icon: '🚨', label: 'Crisis warning signs' },
@@ -1142,8 +1583,15 @@ window.SelHub = window.SelHub || {
 
       var content = null;
 
+      // ─── Section 0: My Safety Kit (personal + saved) ───
+      if (section === 'mykit') {
+        content = h('div', null,
+          h(CrisisSafetyKit, { d: d, upd: upd })
+        );
+      }
+
       // ─── Section 1: Why this matters ───
-      if (section === 'whyMatters') {
+      else if (section === 'whyMatters') {
         content = h('div', null,
           sectionHero({ icon: '🫂', label: 'Why this matters' }),
           h('div', { style: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '18px', marginBottom: '12px' } },
