@@ -2558,6 +2558,75 @@
               );
             })(),
             '#ec4899'
+          ),
+
+          // ─── Star clusters (open + globular) ────────────────────
+          sectionCard('🌠 Star clusters — open + globular',
+            (function() {
+              var CL_TOPICS = [
+                { id: 'overview', name: 'Clusters as galactic-history records', emoji: '🔭',
+                  body: 'Stars almost never form alone. Almost every star in the Milky Way formed inside a CLUSTER — a group of dozens to millions of stars from the same molecular cloud, born within a few million years of each other. Because the stars share AGE + INITIAL CHEMISTRY, clusters are the cleanest natural laboratories for stellar evolution. They are also fossils of galactic history: their orbits, compositions, + ages tell us about the formation + assembly of the Milky Way itself. The Sun was born in a cluster ~ 4.6 billion years ago; that cluster has long since dispersed + we still cannot identify the Sun\'s siblings with certainty.',
+                  caveat: 'Two main cluster types are recognized today: OPEN clusters (younger, less dense, dispersing) + GLOBULAR clusters (ancient, very dense, gravitationally bound for the age of the universe). The distinction was historically based on appearance + density; modern definitions add age, mass, metallicity, + dynamical state. There are also "intermediate" clusters that don\'t fit cleanly into either category.'
+                },
+                { id: 'open', name: 'Open clusters — young + dispersing', emoji: '✨',
+                  body: 'Open clusters contain ~ 50-1,000 stars (a few up to ~ 10,000), spread over 5-20 light-years, mostly in or near the galactic disk. They are YOUNG (typically < 100 million years; some up to ~ 10 billion but rare), with stars all roughly the same age + chemistry. Their loose gravitational binding means they DISPERSE over a few hundred million years as stars drift apart through galactic tides + close encounters. Famous examples: the Pleiades (M45, ~ 100 million years old, 444 light-years away, easily naked-eye visible — the "Seven Sisters"), the Hyades (~ 625 million years old, 153 light-years, the V-shaped face of Taurus), the Beehive (M44, ~ 600 million years), Praesepe + the Double Cluster in Perseus.',
+                  caveat: 'Open clusters trace recent star formation in the Milky Way disk. Their ages + abundances calibrate stellar-evolution models. They are excellent amateur targets — even modest binoculars resolve the Pleiades + the Hyades into dozens of stars. They are also where modern astronomy DEBUGS theories of stellar formation: the Trapezium in Orion is a very young cluster (1-2 million years) we can watch evolving.'
+                },
+                { id: 'globular', name: 'Globular clusters — ancient + dense', emoji: '🪩',
+                  body: 'Globular clusters contain ~ 100,000 to 10 million stars in a tight spherical ball ~ 50-200 light-years across. They are OLD (10-13 billion years, almost as old as the universe), made of stars from the early Milky Way that have METAL-POOR compositions (only a fraction of the Sun\'s heavy-element content). They are very gravitationally bound + survive for the age of the universe. The Milky Way has ~ 200 known globular clusters, mostly orbiting in a SPHERICAL HALO around the galactic center. Famous examples: Omega Centauri (largest + brightest, naked-eye visible from southern hemisphere — but recent research suggests it may be the remnant of a galaxy that merged with the Milky Way long ago), M13 in Hercules (best northern-hemisphere globular), 47 Tucanae (second-largest), M5, M22, M3, M92.',
+                  caveat: 'Globular clusters were one of the original probes of galactic structure — Harlow Shapley in 1918 used their spatial distribution to determine that the Sun is NOT at the center of the Milky Way (a major shift in cosmic perspective). Today they serve multiple roles: stellar-evolution test beds, gravitational laboratories (the densest stellar environments + sometimes contain intermediate-mass black holes), galactic-archaeology indicators.'
+                },
+                { id: 'cmd', name: 'Color-magnitude diagrams + ages', emoji: '📈',
+                  body: 'The cleanest stellar-evolution test is to plot a cluster\'s stars on a Hertzsprung-Russell diagram (or its observational equivalent, the COLOR-MAGNITUDE DIAGRAM — color vs brightness). Because all the stars share age + initial chemistry, only INITIAL MASS distinguishes them. High-mass stars evolve fastest; they leave the main sequence first. The MAIN-SEQUENCE TURNOFF — the point where the cluster\'s remaining main-sequence stars end + the red giants begin — is a precise age indicator. Older cluster = lower-mass turnoff = redder turnoff point. Globular clusters show turnoff stars at ~ 0.8 solar masses (the Sun would have turned off long ago); open clusters show much-higher-mass turnoffs.',
+                  caveat: 'Color-magnitude diagrams of clusters were the empirical foundation of 20th-century stellar evolution theory. Now augmented by computer models, asteroseismology (using stellar oscillations to probe internal structure), + Gaia astrometry. Cluster ages have uncertainties of ~ 1-2 billion years for the oldest globulars; precise distances + reddenings + photometric calibrations are all error sources.'
+                },
+                { id: 'gaia', name: 'Gaia + cluster discovery', emoji: '🛰️',
+                  body: 'The ESA GAIA mission (launched 2013, ongoing) is precisely measuring positions + motions of ~ 2 BILLION stars. By identifying stars with similar positions + velocities, Gaia has discovered hundreds of previously-unrecognized OPEN CLUSTERS + cluster-like moving groups. It has also dramatically refined our knowledge of known clusters\' ages, distances, kinematics, + membership. The result: a re-drawn map of the Milky Way disk\'s recent star-formation history. Some of the new finds: relatively young clusters in unexpected galactic locations, dispersing-cluster relics (moving groups) extending across hundreds of light-years, evidence of past galaxy collisions imprinted on cluster orbits.',
+                  caveat: 'Gaia is one of the most-cited active astronomy missions, with over 10,000 published papers using its data. The full Gaia Data Release 4 (full astrometric + photometric for 5+ years of mission, expected 2026) will further refine cluster populations. Some "new clusters" found in Gaia data turn out to be statistical fluctuations or stellar streams (former cluster dispersal trails); confirming a NEW cluster requires careful follow-up.'
+                },
+                { id: 'streams', name: 'Tidal streams + galactic archaeology', emoji: '🌊',
+                  body: 'When a cluster (or a small satellite galaxy) is gravitationally pulled apart by the Milky Way\'s tides, the stars don\'t scatter randomly — they stretch out along the cluster\'s orbit, forming a TIDAL STREAM. These streams are RECORDS of past mergers + tidal events. The Sagittarius Stream (discovered 1994) is from the ongoing destruction of the Sagittarius Dwarf Galaxy + wraps multiple times around the Milky Way. The GD-1 stream + several other Gaia-discovered streams trace globular clusters that are still being dispersed. Streams are also DARK MATTER probes: their orbits respond to the Milky Way\'s gravitational potential, including dark matter, providing constraints on dark-matter clumps along their paths.',
+                  caveat: 'Galactic archaeology — reconstructing the Milky Way\'s assembly from chemical + kinematic signatures of cluster + stream populations — is a major active field. Recent results: the Milky Way underwent a major merger ~ 8-11 billion years ago (the Gaia-Enceladus / Gaia-Sausage event); the inner halo is dominated by debris from this event; Omega Centauri is likely the nucleus of a former dwarf galaxy.'
+                },
+                { id: 'amateur', name: 'Clusters for amateur observation', emoji: '🔭',
+                  body: 'Star clusters are among the BEST amateur-astronomy targets: bright, visually striking, easy to find, rewarding in any size telescope (even binoculars). MUST-SEE OPEN CLUSTERS (Northern Hemisphere): Pleiades (M45, magnitude 1.6), Hyades (in Taurus, naked eye), Beehive (M44, magnitude 3.7), Double Cluster in Perseus (NGC 869 + NGC 884), M11 the Wild Duck (in Scutum), M35 + M37 in Gemini + Auriga, the Coma Berenices star cluster (Mel 111). MUST-SEE GLOBULAR CLUSTERS: M13 in Hercules (magnitude 5.8, best northern globular), M5 in Serpens (magnitude 5.7), M3 in Canes Venatici, M92 in Hercules, M22 in Sagittarius (low in northern sky). With a 6-inch telescope, the Hercules Cluster M13 resolves into individual stars; it looks like a "bee swarm" frozen in time.',
+                  caveat: 'For Maine observers, the best globular-cluster season is summer (M13 + M5 high in the sky June-September). For open clusters, fall + winter are exceptional (Pleiades, Hyades, Double Cluster, M35 all well-placed). The Sagittarius globulars are LOW (max altitude ~ 25° from Maine) + best viewed from May-July. Acadia + Katahdin Woods + Cobscook Bay all give Bortle 2-3 skies for cluster observation.'
+                },
+                { id: 'future', name: 'What clusters can still teach us', emoji: '❓',
+                  body: 'Open research questions about star clusters: (1) The MULTI-POPULATION puzzle — globular clusters appear to contain multiple stellar populations with different chemistry, despite all forming together; we do not fully understand the mechanism. (2) INTERMEDIATE-MASS BLACK HOLES — globulars are predicted to host black holes of 100-10,000 solar masses, but detection is hard + observational evidence is contested (M13, NGC 6397, Omega Cen all candidates). (3) BLUE STRAGGLERS — stars in clusters that appear too HOT + too BRIGHT for the cluster\'s age, likely formed from collisions or mergers of two lower-mass stars. (4) Cluster DISRUPTION rates — how + when do open clusters disperse? Gaia data is rewriting our understanding. (5) The ORIGIN of globular clusters — were they formed in dwarf-galaxy nuclei that merged with the Milky Way? Some are; some are not. The split between in-situ + accreted globulars is being mapped right now.',
+                  caveat: 'Star clusters were "solved" in the 20th century at a sweeping level — we know they are coeval stellar populations, we use their HR diagrams, we map them across the galaxy. The 21st century has reopened many specific questions at higher precision. They remain one of the more productive areas of stellar + galactic research.'
+                }
+              ];
+              var sel = d.selectedCluster || 'overview';
+              var topic = CL_TOPICS.find(function(t) { return t.id === sel; }) || CL_TOPICS[0];
+              return h('div', null,
+                h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
+                  'Stars almost never form alone. The clusters they form in — open clusters that disperse over millions of years, globular clusters that persist for the age of the universe — are the cleanest natural laboratories for stellar evolution. They are also some of the most rewarding amateur observation targets: the Pleiades, the Hyades, the Hercules Cluster M13, all easily visible from Maine with modest equipment.'
+                ),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+                  CL_TOPICS.map(function(t) {
+                    var on = t.id === sel;
+                    return h('button', {
+                      key: t.id,
+                      onClick: function() { upd({ selectedCluster: t.id }); },
+                      style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#a78bfa' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #a78bfa' : '1px solid #334155' }
+                    }, t.emoji + ' ' + t.name);
+                  })
+                ),
+                h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.35)' } },
+                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#c4b5fd', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+                  h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+                  h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
+                    h('strong', null, 'Honest framing: '), topic.caveat
+                  )
+                ),
+                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 11.5, color: '#dcfce7', lineHeight: 1.65 } },
+                  h('strong', null, 'Try tonight, with your eyes: '),
+                  'In fall + winter, look for the Pleiades — a tight blue cluster of 6-7 visible stars in Taurus, easily seen even from suburban skies. Use binoculars + you will see dozens more. In summer, find Hercules (between Vega + Arcturus) + look for M13 — a faint smudge to the naked eye, a glittering ball through any telescope. These observations connect you directly to what Harlow Shapley + Edwin Hubble were studying when they were redefining humanity\'s view of the cosmos.'
+                )
+              );
+            })(),
+            '#a78bfa'
           )
         );
       }
