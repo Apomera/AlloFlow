@@ -4679,6 +4679,24 @@
       "signal_conn_variety_hint": "% of students using ≥2 of 3 connection types (text-to-self/text/world)",
       "signal_self_assess": "Self-assessment use",
       "signal_self_assess_hint": "% of students who have requested AI feedback ≥1× (metacognitive engagement proxy)"
+    },
+    "bulk": {
+      "no_students_in_filter": "No students in the current filter.",
+      "no_notebook_students": "No students in the current filter have notebook entries.",
+      "pdf_unavailable": "PDF library not loaded.",
+      "notebooks_pdf_saved": "Class notebooks PDF saved.",
+      "no_ai": "AI is not available.",
+      "feedback_pdf_saved": "Feedback PDF saved.",
+      "label": "Bulk actions",
+      "mark_graded_tooltip": "Mark all currently-filtered students as graded",
+      "unmark_graded_tooltip": "Clear graded flag on all currently-filtered students",
+      "no_notebook_in_filter": "No filtered students have notebook entries",
+      "export_notebooks_tooltip": "Export all filtered students' notebooks as one PDF (cut-apart classroom set)",
+      "feedback_tooltip": "AI generates one short feedback note per student, ready to print + hand back",
+      "marked_graded": "Marked {count} student(s) graded.",
+      "unmarked_graded": "Cleared graded flag on {count} student(s).",
+      "generating_notebooks_pdf": "Generating notebook PDF for {count} student(s)...",
+      "generating_feedback": "Generating feedback messages for {count} student(s)..."
     }
   },
   "tools": {

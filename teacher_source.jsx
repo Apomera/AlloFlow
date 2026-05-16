@@ -3361,6 +3361,178 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
           return next;
       });
   };
+  // ── Bulk teacher actions ────────────────────────────────────────────────
+  // Apply an action to whichever student set is currently visible (after the
+  // student-filter chip — "All / Has Probes / Has Notebook / Graded / etc").
+  // Lets a teacher mark a whole group reviewed in one click, export their
+  // notebooks to a single PDF, or generate AI feedback messages for all of
+  // them in batch.
+  const getCurrentFilteredStudents = React.useCallback(() => {
+      return (dashboardData || []).filter(s => {
+          if (studentFilter === 'probes') return s.probeHistory && Object.keys(s.probeHistory).length > 0;
+          if (studentFilter === 'surveys') return s.surveyResponses && s.surveyResponses.length > 0;
+          if (studentFilter === 'notebook') return (s.history || []).some(h => h && (h.type === 'note-taking' || h.type === 'anchor-chart'));
+          if (studentFilter === 'graded') return gradedIds.has(s.id);
+          if (studentFilter === 'ungraded') return !gradedIds.has(s.id);
+          return true;
+      });
+  }, [dashboardData, studentFilter, gradedIds]);
+  const handleBulkMarkGraded = () => {
+      const students = getCurrentFilteredStudents();
+      if (students.length === 0) {
+          if (addToast) addToast(t('dashboard.bulk.no_students_in_filter') || 'No students in the current filter.', 'info');
+          return;
+      }
+      const ids = students.map(s => s.id);
+      setGradedIds(prev => {
+          const next = new Set(prev);
+          let added = 0;
+          ids.forEach(id => { if (!next.has(id)) { next.add(id); added++; } });
+          if (addToast) addToast((t('dashboard.bulk.marked_graded', { count: added }) || `Marked ${added} student${added === 1 ? '' : 's'} graded.`), 'success');
+          return next;
+      });
+  };
+  const handleBulkUnmarkGraded = () => {
+      const students = getCurrentFilteredStudents();
+      if (students.length === 0) {
+          if (addToast) addToast(t('dashboard.bulk.no_students_in_filter') || 'No students in the current filter.', 'info');
+          return;
+      }
+      const ids = new Set(students.map(s => s.id));
+      setGradedIds(prev => {
+          const next = new Set(prev);
+          let removed = 0;
+          ids.forEach(id => { if (next.has(id)) { next.delete(id); removed++; } });
+          if (addToast) addToast((t('dashboard.bulk.unmarked_graded', { count: removed }) || `Cleared graded flag on ${removed} student${removed === 1 ? '' : 's'}.`), 'info');
+          return next;
+      });
+  };
+  const handleBulkExportNotebooksPDF = async () => {
+      const students = getCurrentFilteredStudents().filter(s => (s.history || []).some(h => h && (h.type === 'note-taking' || h.type === 'anchor-chart')));
+      if (students.length === 0) {
+          if (addToast) addToast(t('dashboard.bulk.no_notebook_students') || 'No students in the current filter have notebook entries.', 'info');
+          return;
+      }
+      if (!window.jspdf) {
+          if (addToast) addToast(t('dashboard.bulk.pdf_unavailable') || 'PDF library not loaded.', 'error');
+          return;
+      }
+      if (addToast) addToast((t('dashboard.bulk.generating_notebooks_pdf', { count: students.length }) || `Generating notebook PDF for ${students.length} student${students.length === 1 ? '' : 's'}...`), 'info');
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const studentSections = students.map((student, sidx) => {
+          const notebookEntries = (student.history || []).filter(h => h && (h.type === 'note-taking' || h.type === 'anchor-chart'));
+          const entriesHtml = notebookEntries.map((item) => {
+              try {
+                  return generateResourceHTML ? generateResourceHTML(item, true, student.responses || {}) : '';
+              } catch (_) { return ''; }
+          }).filter(Boolean).join('<hr style="margin:30px 0; border:0; border-top:1px dashed #cbd5e1;" />');
+          return `
+              <div style="margin-bottom:40px; ${sidx > 0 ? 'page-break-before:always;' : ''}">
+                  <h2 style="font-size:18px; font-weight:bold; color:#4f46e5; border-bottom:2px solid #c7d2fe; padding-bottom:6px; margin-bottom:16px;">
+                      ${(student.studentNickname || 'Anonymous')} — Notebook (${notebookEntries.length} ${notebookEntries.length === 1 ? 'entry' : 'entries'})
+                  </h2>
+                  ${entriesHtml || '<p style="color:#64748b; font-style:italic;">No notebook entries.</p>'}
+              </div>
+          `;
+      }).join('');
+      const reportHtml = `
+          <div style="font-family:Helvetica,sans-serif; padding:30px; color:#1e293b; font-size:11px; line-height:1.5;">
+              <h1 style="font-size:20px; color:#4f46e5; border-bottom:2px solid #4f46e5; padding-bottom:8px; margin-bottom:4px;">Class Notebook Export</h1>
+              <p style="font-size:11px; color:#64748b; margin-top:0;">${students.length} students · ${new Date().toLocaleDateString()} · Generated by AlloFlow</p>
+              ${studentSections}
+          </div>
+      `;
+      const container = document.createElement('div');
+      container.style.position = 'absolute';
+      container.style.left = '-9999px';
+      container.style.top = '0';
+      container.innerHTML = reportHtml;
+      document.body.appendChild(container);
+      try {
+          await doc.html(container, {
+              callback: (d) => { d.save(`class_notebooks_${new Date().toISOString().split('T')[0]}.pdf`); if (addToast) addToast(t('dashboard.bulk.notebooks_pdf_saved') || 'Class notebooks PDF saved.', 'success'); },
+              x: 8, y: 8, width: 195,
+              windowWidth: 800,
+          });
+      } catch (err) {
+          if (addToast) addToast('PDF error: ' + err.message, 'error');
+      }
+      document.body.removeChild(container);
+  };
+  const handleBulkGenerateFeedback = async () => {
+      const students = getCurrentFilteredStudents().filter(s => (s.history || []).some(h => h && h.type === 'note-taking'));
+      if (students.length === 0) {
+          if (addToast) addToast(t('dashboard.bulk.no_notebook_students') || 'No students with note-taking entries in the current filter.', 'info');
+          return;
+      }
+      if (typeof callGemini !== 'function') {
+          if (addToast) addToast(t('dashboard.bulk.no_ai') || 'AI is not available.', 'warning');
+          return;
+      }
+      if (addToast) addToast((t('dashboard.bulk.generating_feedback', { count: students.length }) || `Generating feedback messages for ${students.length} student${students.length === 1 ? '' : 's'}...`), 'info');
+      // Generate one teacher-facing summary feedback per student. Strengths-first
+      // framing per the existing per-instance pattern. Output goes into a PDF
+      // bundle so the teacher can print + hand back individual sheets.
+      const results = [];
+      for (const student of students) {
+          const notes = (student.history || []).filter(h => h && h.type === 'note-taking').slice(0, 3);
+          const sample = notes.map(n => {
+              const d = n.data || {};
+              const tt = d.templateType || 'cornell-notes';
+              return `${tt}: ${JSON.stringify(d).slice(0, 600)}`;
+          }).join('\n---\n');
+          const prompt = `
+You are a teacher writing a short hand-back feedback note to ONE student about their note-taking work this week. Lead with one specific strength (quote their work). Then ONE concrete growth nudge. Keep it under 80 words total. Warm, direct, growth-focused. No grades or numbers.
+
+STUDENT WORK SAMPLE:
+${sample}
+
+Return ONLY the feedback text (no JSON, no headers, just the paragraph).
+`.trim();
+          try {
+              const txt = await callGemini(prompt, false);
+              results.push({ name: student.studentNickname || 'Anonymous', feedback: (txt || '').trim() });
+          } catch (e) {
+              results.push({ name: student.studentNickname || 'Anonymous', feedback: '(could not generate)' });
+          }
+      }
+      if (!window.jspdf) {
+          if (addToast) addToast('PDF library not loaded.', 'error');
+          return;
+      }
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const sections = results.map((r, i) => `
+          <div style="margin-bottom:30px; padding:15px; background:#fffbeb; border-left:4px solid #f59e0b; ${i > 0 && i % 3 === 0 ? 'page-break-before:always;' : ''}">
+              <div style="font-size:13px; font-weight:bold; color:#92400e; margin-bottom:6px;">📨 ${r.name}</div>
+              <div style="font-size:11px; color:#1e293b; line-height:1.5;">${(r.feedback || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br/>')}</div>
+          </div>
+      `).join('');
+      const reportHtml = `
+          <div style="font-family:Helvetica,sans-serif; padding:30px; color:#1e293b; font-size:11px;">
+              <h1 style="font-size:18px; color:#4f46e5; margin-bottom:4px;">Class Feedback Sheets</h1>
+              <p style="font-size:10px; color:#64748b;">Cut along the dashed lines and hand back to each student. ${new Date().toLocaleDateString()}</p>
+              ${sections}
+          </div>
+      `;
+      const container = document.createElement('div');
+      container.style.position = 'absolute';
+      container.style.left = '-9999px';
+      container.style.top = '0';
+      container.innerHTML = reportHtml;
+      document.body.appendChild(container);
+      try {
+          await doc.html(container, {
+              callback: (d) => { d.save(`class_feedback_${new Date().toISOString().split('T')[0]}.pdf`); if (addToast) addToast((t('dashboard.bulk.feedback_pdf_saved') || 'Feedback PDF saved.'), 'success'); },
+              x: 8, y: 8, width: 195,
+              windowWidth: 800,
+          });
+      } catch (err) {
+          if (addToast) addToast('PDF error: ' + err.message, 'error');
+      }
+      document.body.removeChild(container);
+  };
   const calculateScore = (history) => {
       if (!history || !Array.isArray(history)) return t('dashboard.status.zero_activities');
       let quizCount = 0;
@@ -4224,6 +4396,41 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                                  </div>
                              </div>
                          </div>
+                         {/* Bulk actions toolbar — operates on whichever students are currently visible (after the filter chip). */}
+                         {(() => {
+                             const filteredCount = getCurrentFilteredStudents().length;
+                             const filteredNotebookCount = getCurrentFilteredStudents().filter(s => (s.history || []).some(h => h && h.type === 'note-taking')).length;
+                             if (filteredCount === 0) return null;
+                             return (
+                                 <div className="flex items-center gap-2 flex-wrap bg-slate-50 border border-slate-200 rounded-xl p-2" data-help-key="dashboard_bulk_actions_toolbar">
+                                     <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider pl-2 pr-1">
+                                         {t('dashboard.bulk.label') || 'Bulk actions'} ({filteredCount}):
+                                     </span>
+                                     <button
+                                         onClick={handleBulkMarkGraded}
+                                         className="text-xs font-bold text-green-700 bg-green-50 hover:bg-green-100 border border-green-300 px-2.5 py-1 rounded-full transition-colors"
+                                         title={t('dashboard.bulk.mark_graded_tooltip') || 'Mark all currently-filtered students as graded'}
+                                     >✅ Mark all graded</button>
+                                     <button
+                                         onClick={handleBulkUnmarkGraded}
+                                         className="text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 px-2.5 py-1 rounded-full transition-colors"
+                                         title={t('dashboard.bulk.unmark_graded_tooltip') || 'Clear graded flag on all currently-filtered students'}
+                                     >⬜ Clear graded</button>
+                                     <button
+                                         onClick={handleBulkExportNotebooksPDF}
+                                         disabled={filteredNotebookCount === 0}
+                                         className="text-xs font-bold text-violet-800 bg-violet-50 hover:bg-violet-100 border border-violet-300 px-2.5 py-1 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                         title={filteredNotebookCount === 0 ? (t('dashboard.bulk.no_notebook_in_filter') || 'No filtered students have notebook entries') : (t('dashboard.bulk.export_notebooks_tooltip') || 'Export all filtered students\' notebooks as one PDF (cut-apart classroom set)')}
+                                     >📓 Export notebooks ({filteredNotebookCount})</button>
+                                     <button
+                                         onClick={handleBulkGenerateFeedback}
+                                         disabled={filteredNotebookCount === 0}
+                                         className="text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-300 px-2.5 py-1 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                         title={filteredNotebookCount === 0 ? (t('dashboard.bulk.no_notebook_in_filter') || 'No filtered students have notebook entries') : (t('dashboard.bulk.feedback_tooltip') || 'AI generates one short feedback note per student, ready to print + hand back')}
+                                     >💬 AI feedback sheets ({filteredNotebookCount})</button>
+                                 </div>
+                             );
+                         })()}
                          <div className="flex items-center gap-2 flex-wrap">
                              {[
                                  ["all", "👥 All", dashboardData.length],
