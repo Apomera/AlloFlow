@@ -595,6 +595,11 @@ const PictionaryHostView = React.memo((props) => {
   const sessionRef = props.sessionRef || null;
   const callGemini = props.callGemini || null;
   const sourceText = props.sourceText || '';
+  // Pre-populated concept candidates passed in from a bridge tool (e.g., the
+  // Anchor Chart "Play Pictionary with these terms" button). Each time isOpen
+  // flips to true with a non-empty list, we seed `conceptIdeas` so the teacher
+  // sees the chart's section labels as one-click options.
+  const initialConceptIdeas = Array.isArray(props.initialConceptIdeas) ? props.initialConceptIdeas : null;
 
   // WebRTC host instance
   const hostRef = React.useRef(null);
@@ -608,6 +613,14 @@ const PictionaryHostView = React.memo((props) => {
   const [roundActive, setRoundActive] = React.useState(false);
   const [roundResolved, setRoundResolved] = React.useState(null);    // { concept, winnerUid }
   const [isLoadingIdeas, setIsLoadingIdeas] = React.useState(false);
+
+  // Seed concept ideas from a bridge tool when the overlay opens.
+  React.useEffect(() => {
+    if (!isOpen) return;
+    if (initialConceptIdeas && initialConceptIdeas.length > 0) {
+      setConceptIdeas(initialConceptIdeas.slice(0, 12).map(String));
+    }
+  }, [isOpen, initialConceptIdeas]);
 
   React.useEffect(() => {
     if (!isOpen || !sessionCode) return;

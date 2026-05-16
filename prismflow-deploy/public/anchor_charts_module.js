@@ -242,6 +242,8 @@ const AnchorChartView = React.memo((props) => {
   const isTeacherMode = !!props.isTeacherMode;
   const callImagen = props.callImagen || null;
   const t = props.t || ((k, d) => d || k);
+  const activeSessionCode = props.activeSessionCode || null;
+  const onPlayPictionary = typeof props.onPlayPictionary === "function" ? props.onPlayPictionary : null;
   if (!generatedContent || generatedContent.type !== "anchor-chart") return null;
   const data = generatedContent.data || {};
   const title = data.title || "";
@@ -335,7 +337,16 @@ const AnchorChartView = React.memo((props) => {
       "aria-label": "Open critique mode"
     },
     "\u{1F4CC} Critique mode"
-  ), /* @__PURE__ */ React.createElement(
+  ), isTeacherMode && activeSessionCode && onPlayPictionary && sections.length > 0 ? /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => onPlayPictionary({ concepts: sections.map((s) => s && s.label || "").filter(Boolean) }),
+      className: "px-3 py-1.5 text-xs font-bold rounded-full border bg-white text-rose-800 border-rose-300 hover:bg-rose-50",
+      "aria-label": "Play Pictionary using this chart's section labels",
+      title: "Open Concept Pictionary pre-loaded with this chart's terms"
+    },
+    "\u{1F3A8} Play Pictionary"
+  ) : null, /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => {

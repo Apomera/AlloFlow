@@ -660,6 +660,7 @@ const PictionaryHostView = React.memo((props) => {
   const sessionRef = props.sessionRef || null;
   const callGemini = props.callGemini || null;
   const sourceText = props.sourceText || "";
+  const initialConceptIdeas = Array.isArray(props.initialConceptIdeas) ? props.initialConceptIdeas : null;
   const hostRef = React.useRef(null);
   const [connectedGuests, setConnectedGuests] = React.useState({});
   const [strokes, setStrokes] = React.useState([]);
@@ -670,6 +671,12 @@ const PictionaryHostView = React.memo((props) => {
   const [roundActive, setRoundActive] = React.useState(false);
   const [roundResolved, setRoundResolved] = React.useState(null);
   const [isLoadingIdeas, setIsLoadingIdeas] = React.useState(false);
+  React.useEffect(() => {
+    if (!isOpen) return;
+    if (initialConceptIdeas && initialConceptIdeas.length > 0) {
+      setConceptIdeas(initialConceptIdeas.slice(0, 12).map(String));
+    }
+  }, [isOpen, initialConceptIdeas]);
   React.useEffect(() => {
     if (!isOpen || !sessionCode) return;
     if (hostRef.current) return;

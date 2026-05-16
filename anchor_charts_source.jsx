@@ -254,6 +254,11 @@ const AnchorChartView = React.memo((props) => {
   const isTeacherMode = !!props.isTeacherMode;
   const callImagen = props.callImagen || null;
   const t = props.t || ((k, d) => d || k);
+  // Bridge to Concept Pictionary — when present + session active, surfaces a
+  // "Play Pictionary with these terms" button that hands the chart's section
+  // labels to the Pictionary host as the round's concept candidates.
+  const activeSessionCode = props.activeSessionCode || null;
+  const onPlayPictionary = typeof props.onPlayPictionary === 'function' ? props.onPlayPictionary : null;
 
   if (!generatedContent || generatedContent.type !== 'anchor-chart') return null;
   const data = generatedContent.data || {};
@@ -356,6 +361,14 @@ const AnchorChartView = React.memo((props) => {
             className="px-3 py-1.5 text-xs font-bold rounded-full border bg-white text-sky-800 border-sky-300 hover:bg-sky-50"
             aria-label="Open critique mode"
           >📌 Critique mode</button>
+          {isTeacherMode && activeSessionCode && onPlayPictionary && sections.length > 0 ? (
+            <button
+              onClick={() => onPlayPictionary({ concepts: sections.map(s => (s && s.label) || '').filter(Boolean) })}
+              className="px-3 py-1.5 text-xs font-bold rounded-full border bg-white text-rose-800 border-rose-300 hover:bg-rose-50"
+              aria-label="Play Pictionary using this chart's section labels"
+              title="Open Concept Pictionary pre-loaded with this chart's terms"
+            >🎨 Play Pictionary</button>
+          ) : null}
           <button
             onClick={() => { try { window.print(); } catch (_) {} }}
             className="px-3 py-1.5 text-xs font-bold rounded-full border bg-white text-slate-700 border-slate-300 hover:bg-slate-100"
