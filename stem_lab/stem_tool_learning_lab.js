@@ -14901,6 +14901,726 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     );
   }
 
+  // ── JJJJ. PERSONAL TRANSITION PLANNER (Wave 20) ──
+  // Plan for major life transitions: new school year, college, job,
+  // moving, big medical event. Comprehensive transition workflow with
+  // checklists, prep questions, support team, post-transition reflection.
+  // Especially valuable for autistic + ADHD students who struggle with
+  // change. Schlossberg 1981 transition theory.
+  function PersonalTransitionPlanner(props) {
+    if (!R) return null;
+    var data = props.data || { transitions: [] };
+    var setData = props.setData;
+    var vs = R.useState('list');                       var view = vs[0]; var setView = vs[1];
+    var as = R.useState(null);                         var activeId = as[0]; var setActiveId = as[1];
+    var fs = R.useState({ title: '', kind: 'school', startDate: '', preWork: '', concerns: '', supports: '' });
+    var newT = fs[0]; var setNewT = fs[1];
+
+    var KINDS = [
+      { id: 'school',     label: 'New school year', icon: '🎒', color: '#3b82f6' },
+      { id: 'college',    label: 'Going to college', icon: '🎓', color: '#a855f7' },
+      { id: 'job',        label: 'New job',          icon: '💼', color: '#10b981' },
+      { id: 'move',       label: 'Moving',           icon: '📦', color: '#fbbf24' },
+      { id: 'graduation', label: 'Graduation',       icon: '🎉', color: '#ec4899' },
+      { id: 'family',     label: 'Family change',    icon: '🏠', color: '#ef4444' },
+      { id: 'medical',    label: 'Medical event',    icon: '⚕', color: '#06b6d4' },
+      { id: 'relationship',label: 'Relationship change', icon: '💔', color: '#f97316' },
+      { id: 'other',      label: 'Other transition', icon: '🔄', color: '#94a3b8' }
+    ];
+
+    var SCHLOSSBERG_PHASES = [
+      { id: 'pre',     label: '1. Anticipating', icon: '🔮', desc: 'Before it happens. Mental preparation. Identifying needs + supports.' },
+      { id: 'moving_in',label: '2. Moving in', icon: '🚪', desc: 'The transition starts. Identity shift begins. Newness + uncertainty.' },
+      { id: 'through', label: '3. Moving through', icon: '🌊', desc: 'In the middle. Learning the new context. Finding rhythm.' },
+      { id: 'out',     label: '4. Moving out', icon: '🌅', desc: 'Becoming who you are AFTER the transition. Integration + new normal.' }
+    ];
+
+    function createTransition() {
+      if (!newT.title.trim()) return;
+      var t = Object.assign({ id: tkId(), createdAt: todayISO(), checklist: [], phase: 'pre', reflections: {} }, newT);
+      setData({ transitions: [t].concat(data.transitions || []) });
+      setActiveId(t.id);
+      setNewT({ title: '', kind: 'school', startDate: '', preWork: '', concerns: '', supports: '' });
+      setView('edit');
+    }
+    function getTrans() { return (data.transitions || []).filter(function(t) { return t.id === activeId; })[0]; }
+    function updateTrans(patch) {
+      setData({ transitions: (data.transitions || []).map(function(t) { return t.id === activeId ? Object.assign({}, t, patch) : t; }) });
+    }
+    function removeTrans(id) {
+      if (!confirm('Delete this transition plan?')) return;
+      setData({ transitions: (data.transitions || []).filter(function(t) { return t.id !== id; }) });
+    }
+    function addChecklistItem(text) {
+      if (!text.trim()) return;
+      var t = getTrans();
+      updateTrans({ checklist: (t.checklist || []).concat([{ id: tkId(), text: text.trim(), done: false }]) });
+    }
+    function toggleChecklist(id) {
+      var t = getTrans();
+      updateTrans({ checklist: t.checklist.map(function(c) { return c.id === id ? Object.assign({}, c, { done: !c.done }) : c; }) });
+    }
+    function removeChecklist(id) {
+      var t = getTrans();
+      updateTrans({ checklist: t.checklist.filter(function(c) { return c.id !== id; }) });
+    }
+    function updateReflection(phaseId, text) {
+      var t = getTrans();
+      updateTrans({ reflections: Object.assign({}, t.reflections || {}, (function() { var o = {}; o[phaseId] = text; return o; })()) });
+    }
+
+    if (view === 'edit') {
+      var t = getTrans();
+      if (!t) { setView('list'); return null; }
+      var kind = KINDS.filter(function(k) { return k.id === t.kind; })[0] || KINDS[0];
+      var checklist = t.checklist || [];
+      var done = checklist.filter(function(c) { return c.done; }).length;
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader(kind.icon, t.title, kind.label + (t.startDate ? ' · ' + t.startDate : ''), kind.color),
+
+        // Phase tracker
+        hh('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(2,6,23,0.5)', marginBottom: 14 } },
+          hh('div', { style: { fontSize: 11, fontWeight: 800, color: kind.color, marginBottom: 10, textTransform: 'uppercase' } }, '📍 Where am I in this transition?'),
+          hh('div', { style: { display: 'flex', gap: 4 } },
+            SCHLOSSBERG_PHASES.map(function(p) {
+              var on = t.phase === p.id;
+              return hh('button', { key: 'sp-' + p.id,
+                onClick: function() { updateTrans({ phase: p.id }); },
+                style: { flex: 1, padding: '10px 4px', borderRadius: 6, background: on ? kind.color + '30' : 'rgba(15,23,42,0.5)', color: on ? kind.color : '#94a3b8', border: '1.5px solid ' + (on ? kind.color : 'rgba(100,116,139,0.30)'), fontSize: 11, fontWeight: 700, cursor: 'pointer', textAlign: 'center' }
+              },
+                hh('div', { style: { fontSize: 16, marginBottom: 2 } }, p.icon),
+                hh('div', null, p.label),
+                on ? hh('div', { style: { fontSize: 9, color: '#cbd5e1', marginTop: 4, fontStyle: 'italic', fontWeight: 400 } }, p.desc) : null
+              );
+            })
+          )
+        ),
+
+        // The 3 prep fields
+        tkCard(kind.color,
+          hh('div', null,
+            hh('div', { style: { fontSize: 12, fontWeight: 800, color: kind.color, marginBottom: 8 } }, '📋 Pre-transition prep'),
+            hh('label', { style: { fontSize: 10, fontWeight: 700, color: kind.color, display: 'block', marginBottom: 4 } }, '🎯 What do I need to DO before this happens?'),
+            tkTextarea(t.preWork, function(v) { updateTrans({ preWork: v }); }, 'Concrete actions: paperwork, conversations, learning new things, gathering supplies', 3, { marginBottom: 10 }),
+            hh('label', { style: { fontSize: 10, fontWeight: 700, color: kind.color, display: 'block', marginBottom: 4 } }, '😰 What worries me about this transition?'),
+            tkTextarea(t.concerns, function(v) { updateTrans({ concerns: v }); }, 'Be honest. Naming the worry shrinks it.', 3, { marginBottom: 10 }),
+            hh('label', { style: { fontSize: 10, fontWeight: 700, color: kind.color, display: 'block', marginBottom: 4 } }, '🤝 Who/what supports me through this?'),
+            tkTextarea(t.supports, function(v) { updateTrans({ supports: v }); }, 'People, services, resources, places, things, rituals', 3)
+          )
+        ),
+
+        // Checklist
+        tkCard(kind.color,
+          hh('div', null,
+            hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 8 } },
+              hh('div', { style: { fontSize: 12, fontWeight: 800, color: kind.color } }, '✓ My checklist'),
+              hh('span', { style: { padding: '2px 8px', borderRadius: 999, background: kind.color + '20', color: kind.color, fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace' } }, done + '/' + checklist.length)
+            ),
+            hh('div', { style: { display: 'flex', gap: 6, marginBottom: 8 } },
+              (function() {
+                var inp = R.useState(''); var v = inp[0]; var setV = inp[1];
+                return hh(R.Fragment || 'div', null,
+                  tkInput(v, setV, 'Add a checklist item', { flex: 1 }),
+                  tkBtn('+', function() { addChecklistItem(v); setV(''); }, 'primary', { padding: '8px 14px' })
+                );
+              })()
+            ),
+            checklist.length === 0 ? hh('div', { style: { fontSize: 11, color: '#64748b', textAlign: 'center', fontStyle: 'italic', padding: 12 } }, 'No items yet.')
+            : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+                checklist.map(function(c) {
+                  return hh('div', { key: 'cl-' + c.id, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 6, background: 'rgba(2,6,23,0.4)' } },
+                    hh('button', { onClick: function() { toggleChecklist(c.id); },
+                      style: { width: 20, height: 20, borderRadius: 4, background: c.done ? kind.color : 'transparent', border: '1.5px solid ' + kind.color, color: '#0f172a', fontSize: 12, fontWeight: 900, cursor: 'pointer', flexShrink: 0 }
+                    }, c.done ? '✓' : ''),
+                    hh('span', { style: { flex: 1, fontSize: 11, color: '#cbd5e1', textDecoration: c.done ? 'line-through' : 'none', opacity: c.done ? 0.6 : 1 } }, c.text),
+                    hh('button', { onClick: function() { removeChecklist(c.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  );
+                })
+              )
+          )
+        ),
+
+        // Per-phase reflections
+        hh('div', { style: { marginTop: 14 } },
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: kind.color, marginBottom: 10, textTransform: 'uppercase' } }, '📔 Reflections by phase'),
+          SCHLOSSBERG_PHASES.map(function(p) {
+            var current = t.phase === p.id;
+            return hh('div', { key: 'pr-' + p.id, style: { marginBottom: 10, padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + (current ? kind.color : 'rgba(100,116,139,0.30)') } },
+              hh('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, color: current ? kind.color : '#94a3b8', marginBottom: 4 } }, p.icon + ' ' + p.label + (current ? ' (current)' : '')),
+              tkTextarea((t.reflections || {})[p.id], function(v) { updateReflection(p.id, v); }, 'What\'s coming up for you in this phase?', 2)
+            );
+          })
+        ),
+
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginTop: 14 } },
+          tkBtn('← All transitions', function() { setView('list'); setActiveId(null); }, 'ghost'),
+          tkBtn('🗑 Delete', function() { removeTrans(t.id); setView('list'); }, 'bad')
+        )
+      );
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🌉', 'Transition Planner', 'Plan major life transitions using Schlossberg\'s 4-phase model. Especially for ND students who struggle with change.', '#fbbf24'),
+
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+        hh('strong', { style: { color: '#fbbf24' } }, '🌉 Schlossberg 1981 transition theory: '),
+        'Major transitions move through 4 phases — Anticipating, Moving In, Moving Through, Moving Out. Each phase has its own work + its own emotional terrain. Knowing where you are helps you know what to do next.'
+      ),
+
+      tkCard('#fbbf24',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, '+ New transition'),
+          tkInput(newT.title, function(v) { setNewT(Object.assign({}, newT, { title: v })); }, 'e.g., "Starting 10th grade", "Mom\'s surgery", "Moving to Boston"', { marginBottom: 8 }),
+          hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 } },
+            KINDS.map(function(k) {
+              var on = newT.kind === k.id;
+              return hh('button', { key: 'tk-' + k.id,
+                onClick: function() { setNewT(Object.assign({}, newT, { kind: k.id })); },
+                style: { padding: '6px 10px', borderRadius: 6, background: on ? k.color + '30' : 'rgba(15,23,42,0.5)', color: on ? k.color : '#94a3b8', border: '1px solid ' + (on ? k.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
+              }, k.icon + ' ' + k.label);
+            })
+          ),
+          hh('input', { type: 'date', value: newT.startDate,
+            onChange: function(e) { setNewT(Object.assign({}, newT, { startDate: e.target.value })); },
+            style: { width: '100%', padding: '10px 12px', fontSize: 12, color: '#fbbf24', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(251,191,36,0.40)', borderRadius: 6, boxSizing: 'border-box', marginBottom: 8 }
+          }),
+          tkBtn('🌉 Create plan', createTransition, 'primary')
+        )
+      ),
+
+      (data.transitions || []).length === 0 ? tkEmptyState('🌉', 'No transitions planned. Useful for any upcoming change.', null, null)
+      : hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10 } },
+          (data.transitions || []).map(function(t) {
+            var k = KINDS.filter(function(x) { return x.id === t.kind; })[0] || KINDS[0];
+            var done = (t.checklist || []).filter(function(c) { return c.done; }).length;
+            var total = (t.checklist || []).length;
+            return hh('button', { key: 'tr-' + t.id,
+              onClick: function() { setActiveId(t.id); setView('edit'); },
+              style: { display: 'block', textAlign: 'left', padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, ' + k.color + '15, rgba(15,23,42,0.7))', border: '1px solid ' + k.color + '40', borderLeft: '4px solid ' + k.color, cursor: 'pointer' }
+            },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+                hh('strong', { style: { fontSize: 13, color: k.color } }, k.icon + ' ' + t.title),
+                hh('span', { onClick: function(e) { e.stopPropagation(); removeTrans(t.id); }, style: { color: '#64748b', cursor: 'pointer', fontSize: 12 } }, '✕')
+              ),
+              hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4 } }, k.label + ' · ' + (t.startDate || 'no date set')),
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginTop: 8, padding: '4px 8px', background: 'rgba(2,6,23,0.4)', borderRadius: 6 } },
+                hh('span', { style: { fontSize: 10, color: k.color } }, '📍 ' + (SCHLOSSBERG_PHASES.filter(function(p) { return p.id === t.phase; })[0] || SCHLOSSBERG_PHASES[0]).label),
+                total > 0 ? hh('span', { style: { fontSize: 10, color: k.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, done + '/' + total + ' ✓') : null
+              )
+            );
+          })
+        )
+    );
+  }
+
+  // ── KKKK. PERSONAL ACCOMMODATION REQUEST BUILDER (Wave 21) ──
+  // Formal-letter-style request generator for IEP / 504 / college
+  // accommodations. Walks through situation → need → fix → why.
+  // Especially valuable as students transition to self-advocacy.
+  function PersonalAccomRequest(props) {
+    if (!R) return null;
+    var data = props.data || { drafts: [] };
+    var setData = props.setData;
+    var fs = R.useState({
+      to: '', myName: '', context: '', situation: '', impact: '', request: '', why: '', alternatives: ''
+    });
+    var form = fs[0]; var setForm = fs[1];
+    var ts = R.useState(null);                       var activeType = ts[0]; var setActiveType = ts[1];
+
+    var TEMPLATES = [
+      { id: 'iep',     label: 'IEP team request', icon: '🎓', color: '#06b6d4',
+        prompt: 'Asking for a new accommodation to be added to your IEP, or for an existing one to be changed.' },
+      { id: '504',     label: '504 plan request', icon: '📋', color: '#3b82f6',
+        prompt: '504 plans are for students who don\'t qualify for an IEP but have a disability that affects learning.' },
+      { id: 'teacher', label: 'Specific teacher request', icon: '👤', color: '#a855f7',
+        prompt: 'Asking a single teacher to use an accommodation that\'s already in your plan, OR an informal request.' },
+      { id: 'college', label: 'College DSS request', icon: '🎓', color: '#10b981',
+        prompt: 'Disability Support Services at your college. Different process — they need documentation.' },
+      { id: 'work',    label: 'Workplace accommodation', icon: '💼', color: '#fbbf24',
+        prompt: 'ADA-protected workplace accommodation. Different framing than school.' }
+    ];
+
+    function generate(t) {
+      var template = '';
+      if (t.id === 'iep' || t.id === '504') {
+        template = 'Dear ' + (form.to || '[IEP team]') + ',\n\n' +
+          'I\'m writing to request a change to my ' + (t.id === 'iep' ? 'IEP' : '504 plan') + '.\n\n' +
+          '**Context:** ' + (form.context || '[describe your context — class, grade, recent changes]') + '\n\n' +
+          '**The situation:** ' + (form.situation || '[describe what\'s happening that needs accommodation]') + '\n\n' +
+          '**Impact:** ' + (form.impact || '[how this is affecting your learning, behavior, or wellbeing]') + '\n\n' +
+          '**What I\'m requesting:** ' + (form.request || '[specific accommodation]') + '\n\n' +
+          '**Why this would help:** ' + (form.why || '[connect to your disability or diagnosis]') + '\n\n' +
+          (form.alternatives ? '**Alternatives I\'ve already tried:** ' + form.alternatives + '\n\n' : '') +
+          'I\'m available to discuss this at the next IEP meeting or sooner if helpful.\n\n' +
+          'Thank you,\n' + (form.myName || '[Your name]');
+      } else if (t.id === 'teacher') {
+        template = 'Hi ' + (form.to || '[Teacher name]') + ',\n\n' +
+          'I want to talk with you about ' + (form.context || '[class / specific situation]') + '.\n\n' +
+          'What\'s happening: ' + (form.situation || '[brief]') + '\n\n' +
+          'What I\'m asking for: ' + (form.request || '[specific accommodation]') + '\n\n' +
+          'Why: ' + (form.why || '[brief — connect to need]') + '\n\n' +
+          'Could we talk for 5 minutes this week?\n\n' +
+          'Thank you,\n' + (form.myName || '[Your name]');
+      } else if (t.id === 'college') {
+        template = 'Dear ' + (form.to || '[DSS office]') + ',\n\n' +
+          'My name is ' + (form.myName || '[Your name]') + ', and I\'m requesting accommodation through Disability Support Services.\n\n' +
+          '**Documentation:** [Attach documentation of your disability — IEP, evaluation report, medical letter, etc.]\n\n' +
+          '**Diagnosis/condition:** ' + (form.context || '[your condition]') + '\n\n' +
+          '**How it impacts learning:** ' + (form.impact || '[functional impact]') + '\n\n' +
+          '**Accommodations I\'m requesting:** ' + (form.request || '[specific accommodations]') + '\n\n' +
+          '**Prior accommodations that worked:** ' + (form.alternatives || '[what worked in high school]') + '\n\n' +
+          'I\'d like to schedule an intake meeting to discuss this.\n\n' +
+          'Thank you,\n' + (form.myName || '[Your name]');
+      } else if (t.id === 'work') {
+        template = 'Dear ' + (form.to || '[Supervisor or HR]') + ',\n\n' +
+          'I\'m writing to request a workplace accommodation under the ADA.\n\n' +
+          '**Position:** ' + (form.context || '[your job title]') + '\n\n' +
+          '**My situation:** ' + (form.situation || '[disability-related need]') + '\n\n' +
+          '**What I\'m requesting:** ' + (form.request || '[specific accommodation]') + '\n\n' +
+          '**How this would help me do my job:** ' + (form.why || '[link to job functions]') + '\n\n' +
+          '**Alternatives I\'m open to:** ' + (form.alternatives || '[flexibility]') + '\n\n' +
+          'I\'m happy to provide documentation. Could we discuss this in person?\n\n' +
+          'Thank you,\n' + (form.myName || '[Your name]');
+      }
+      return template;
+    }
+
+    function save(t) {
+      var d = { id: tkId(), date: todayISO(), type: t.id, body: generate(t) };
+      setData({ drafts: [d].concat(data.drafts || []) });
+      setForm({ to: '', myName: '', context: '', situation: '', impact: '', request: '', why: '', alternatives: '' });
+      setActiveType(null);
+    }
+    function remove(id) { setData({ drafts: (data.drafts || []).filter(function(d) { return d.id !== id; }) }); }
+
+    if (activeType) {
+      var t = TEMPLATES.filter(function(x) { return x.id === activeType; })[0];
+      if (!t) { setActiveType(null); return null; }
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader(t.icon, t.label, t.prompt, t.color),
+        tkCard(t.color,
+          hh('div', null,
+            hh('div', { style: { fontSize: 12, fontWeight: 800, color: t.color, marginBottom: 8 } }, '📋 Fill in the fields'),
+            hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 8 } },
+              tkInput(form.to, function(v) { setForm(Object.assign({}, form, { to: v })); }, 'To (recipient name)'),
+              tkInput(form.myName, function(v) { setForm(Object.assign({}, form, { myName: v })); }, 'Your name')
+            ),
+            [
+              { id: 'context',    label: 'Context (your class, situation, diagnosis)' },
+              { id: 'situation',  label: 'The situation (what\'s happening)' },
+              { id: 'impact',     label: 'Impact (how it affects you)' },
+              { id: 'request',    label: 'What I\'m requesting (be specific)' },
+              { id: 'why',        label: 'Why this helps (connect to need)' },
+              { id: 'alternatives',label: 'Alternatives I\'ve tried or am open to' }
+            ].map(function(f) {
+              return hh('div', { key: 'ar-' + f.id, style: { marginBottom: 8 } },
+                hh('label', { style: { fontSize: 10, fontWeight: 700, color: t.color, display: 'block', marginBottom: 4 } }, f.label),
+                tkTextarea(form[f.id], function(v) { setForm(Object.assign({}, form, (function() { var o = {}; o[f.id] = v; return o; })())); }, '', 2)
+              );
+            })
+          )
+        ),
+
+        // Generated preview
+        hh('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(2,6,23,0.7)', border: '1px solid ' + t.color + '60', marginBottom: 12, fontFamily: 'Georgia, serif', whiteSpace: 'pre-wrap', fontSize: 12, color: '#e2e8f0', lineHeight: 1.7 } },
+          hh('div', { style: { fontSize: 9, color: t.color, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, fontFamily: 'inherit' } }, '📄 Generated draft (edit before sending)'),
+          generate(t)
+        ),
+
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 } },
+          tkBtn('← Cancel', function() { setActiveType(null); setForm({ to: '', myName: '', context: '', situation: '', impact: '', request: '', why: '', alternatives: '' }); }, 'ghost'),
+          hh('div', { style: { display: 'flex', gap: 6 } },
+            tkBtn('📋 Copy', function() { try { navigator.clipboard.writeText(generate(t)); alert('Copied. Paste + edit before sending.'); } catch (e) {} }, 'secondary'),
+            tkBtn('💾 Save draft', function() { save(t); }, 'primary')
+          )
+        )
+      );
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🪪', 'Accommodation Request Builder', '5 formal-letter templates for IEP / 504 / college DSS / teacher / workplace requests.', '#06b6d4'),
+
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(6,182,212,0.10)', border: '1px solid rgba(6,182,212,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+        hh('strong', { style: { color: '#06b6d4' } }, '🪪 Why this matters: '),
+        'Self-advocacy is the most important transition skill. In high school, your parents + IEP team advocate FOR you. In college + work, YOU do. This tool lets you practice the formal writing while you have a low-stakes context.'
+      ),
+
+      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, marginBottom: 14 } },
+        TEMPLATES.map(function(t) {
+          return hh('button', { key: 'tp-' + t.id,
+            onClick: function() { setActiveType(t.id); },
+            style: { display: 'block', textAlign: 'left', padding: 12, borderRadius: 10, background: 'linear-gradient(135deg, ' + t.color + '15, rgba(15,23,42,0.7))', border: '1px solid ' + t.color + '40', borderLeft: '4px solid ' + t.color, cursor: 'pointer' }
+          },
+            hh('div', { style: { fontSize: 22, marginBottom: 4 } }, t.icon),
+            hh('strong', { style: { fontSize: 13, color: t.color } }, t.label),
+            hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4, fontStyle: 'italic', lineHeight: 1.55 } }, t.prompt)
+          );
+        })
+      ),
+
+      (data.drafts || []).length > 0 ? hh('div', null,
+        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#67e8f9', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, '📚 Saved drafts'),
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+          (data.drafts || []).slice(0, 10).map(function(d) {
+            var tt = TEMPLATES.filter(function(x) { return x.id === d.type; })[0] || TEMPLATES[0];
+            return hh('div', { key: 'dr-' + d.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + tt.color } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+                hh('span', { style: { fontSize: 11, color: tt.color, fontWeight: 700 } }, tt.icon + ' ' + tt.label),
+                hh('div', null,
+                  hh('span', { style: { fontSize: 10, color: '#94a3b8', marginRight: 6, fontFamily: 'ui-monospace, Menlo, monospace' } }, d.date),
+                  hh('button', { onClick: function() { remove(d.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                )
+              ),
+              hh('div', { style: { fontSize: 10, color: '#cbd5e1', marginTop: 4, fontFamily: 'ui-monospace, Menlo, monospace', whiteSpace: 'pre-wrap', maxHeight: 60, overflow: 'hidden' } }, d.body.substring(0, 200) + '...')
+            );
+          })
+        )
+      ) : null
+    );
+  }
+
+  // ── LLLL. PERSONAL LIFE DECK (Wave 21) ──
+  // Card-deck-style daily question prompt. 50+ life-direction questions
+  // that surface what matters. Pulls a random one each day.
+  function PersonalLifeDeck(props) {
+    if (!R) return null;
+    var data = props.data || { answers: [] };
+    var setData = props.setData;
+    var as = R.useState(null);                         var pickedQ = as[0]; var setPickedQ = as[1];
+    var ts = R.useState('');                           var text = ts[0]; var setText = ts[1];
+
+    var DECK = [
+      'If today were the start of the rest of my life, what would I do today?',
+      'What is one thing I want to be true about me in 5 years that isn\'t yet?',
+      'Who am I most myself with?',
+      'What did I do this week that I\'m glad I did?',
+      'What does my body need right now?',
+      'What is one thing I\'ve been avoiding, and what would happen if I just did the first 5 minutes?',
+      'Who in my life have I been undervaluing?',
+      'What do I think is true about me that maybe isn\'t?',
+      'What\'s a hard thing I\'ve survived that I rarely give myself credit for?',
+      'What do I want more of in my life?',
+      'What do I want less of?',
+      'What is one thing I could change about my space that would make daily life easier?',
+      'What does success look like for me, separate from what others expect?',
+      'What\'s a fear that\'s been making my life smaller?',
+      'What would I tell a friend going through what I\'m going through?',
+      'When did I last feel free?',
+      'What is one boundary I need to set but haven\'t?',
+      'What am I tolerating in my life that I don\'t need to?',
+      'What do I want to be remembered for?',
+      'What is something I am proud of that I rarely say out loud?',
+      'Who am I most grateful for right now and why?',
+      'What is one belief I\'ve outgrown?',
+      'What does enough look like in my life?',
+      'When did I last laugh until my face hurt?',
+      'What kind of love do I most want?',
+      'What is one thing about me I would never trade?',
+      'What did 10-year-old me love that I should bring back?',
+      'What\'s a habit that\'s shaped me more than I admit?',
+      'What is one truth that took me too long to learn?',
+      'What am I currently hiding from myself?',
+      'What does rest look like for me?',
+      'What is something I can do today that future-me would thank me for?',
+      'What is something I\'ve been telling myself I "should" do that I don\'t actually want to?',
+      'What is the smallest version of a brave thing I could do this week?',
+      'What is something I do that\'s deeply ME?',
+      'Who in my life makes me feel braver?',
+      'What does my anger have to teach me?',
+      'What does my grief have to teach me?',
+      'What is one thing I want for myself that I have permission to ask for?',
+      'What is the difference between my goals and my values?',
+      'What am I overcomplicating?',
+      'What is one thing my younger self would be amazed I survived?',
+      'What\'s a kindness I could do today without telling anyone?',
+      'What feels too big to do, but if I broke it into 1-hour chunks, would feel possible?',
+      'What\'s a part of my body I\'ve been at war with that\'s actually been on my side?',
+      'What does belonging feel like in my body when I have it?',
+      'What\'s a season of my life I miss?',
+      'What is something I love that has no point or purpose?',
+      'What is one way my life is already deeply OK?',
+      'If I knew I couldn\'t fail, what would I try?',
+      'What is one thing I know to be true now that I didn\'t a year ago?',
+      'What part of my life do I want to over-invest in for the next month?'
+    ];
+
+    function pickRandom() {
+      var seed = Date.now();
+      var q = DECK[seed % DECK.length];
+      setPickedQ(q);
+      setText('');
+    }
+    function answer() {
+      if (!pickedQ || !text.trim()) { alert('Pick a card + answer first.'); return; }
+      var a = { id: tkId(), date: todayISO(), question: pickedQ, answer: text.trim() };
+      setData({ answers: [a].concat(data.answers || []) });
+      setText('');
+      setPickedQ(null);
+    }
+    function remove(id) { setData({ answers: (data.answers || []).filter(function(a) { return a.id !== id; }) }); }
+
+    var answers = data.answers || [];
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🃏', 'Life Deck', '52 reflection cards. Draw one. Answer briefly. Build a journal over time.', '#ec4899'),
+
+      pickedQ ? hh('div', { style: { padding: 24, borderRadius: 14, background: 'linear-gradient(135deg, rgba(236,72,153,0.20), rgba(15,23,42,0.7))', border: '2px solid #ec4899', marginBottom: 14, textAlign: 'center', minHeight: 180, display: 'flex', flexDirection: 'column', justifyContent: 'center' } },
+        hh('div', { style: { fontSize: 10, color: '#f472b6', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 } }, '🃏 Your card'),
+        hh('div', { style: { fontSize: 16, color: '#e2e8f0', lineHeight: 1.65, fontStyle: 'italic', fontFamily: 'Georgia, serif' } }, '"' + pickedQ + '"')
+      ) : hh('div', { style: { padding: 30, borderRadius: 14, background: 'rgba(236,72,153,0.10)', border: '2px dashed rgba(236,72,153,0.40)', textAlign: 'center', marginBottom: 14 } },
+        hh('div', { style: { fontSize: 48, marginBottom: 12 } }, '🃏'),
+        tkBtn('Draw a card', pickRandom, 'primary', { padding: '12px 28px', fontSize: 14 })
+      ),
+
+      pickedQ ? hh('div', null,
+        tkTextarea(text, setText, 'Take your time. No right answer.', 6, { marginBottom: 10, fontFamily: 'Georgia, serif' }),
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 } },
+          tkBtn('🃏 Draw different card', pickRandom, 'ghost'),
+          hh('div', { style: { display: 'flex', gap: 6 } },
+            tkBtn('Cancel', function() { setPickedQ(null); setText(''); }, 'ghost'),
+            tkBtn('💾 Save answer', answer, 'primary')
+          )
+        )
+      ) : null,
+
+      answers.length > 0 ? hh('div', { style: { marginTop: 14 } },
+        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#f472b6', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, '📚 ' + answers.length + ' cards answered'),
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+          answers.slice(0, 20).map(function(a) {
+            return hh('div', { key: 'ld-' + a.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid #ec4899' } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
+                hh('span', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } }, a.date),
+                hh('button', { onClick: function() { remove(a.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+              ),
+              hh('div', { style: { fontSize: 12, color: '#f472b6', fontStyle: 'italic', marginBottom: 6, fontFamily: 'Georgia, serif' } }, '"' + a.question + '"'),
+              hh('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6, whiteSpace: 'pre-wrap', fontFamily: 'Georgia, serif' } }, a.answer)
+            );
+          })
+        )
+      ) : null
+    );
+  }
+
+  // ── MMMM. PERSONAL COMMUNICATION STYLE (Wave 22) ──
+  // Self-discovery: how do I prefer to give + receive information?
+  // 4 dimensions × situational responses → personalized profile.
+  function PersonalCommStyle(props) {
+    if (!R) return null;
+    var data = props.data || { profile: {}, history: [] };
+    var setData = props.setData;
+    var ps = R.useState(data.profile || {});       var prof = ps[0]; var setProf = ps[1];
+
+    var DIMENSIONS = [
+      { id: 'direct',  label: 'Direct ↔ Diplomatic',
+        left: 'Direct', right: 'Diplomatic',
+        leftDesc: 'Say what you mean, plainly. Brevity > softening.',
+        rightDesc: 'Soften delivery, weigh emotional impact, contextualize.' },
+      { id: 'verbal',  label: 'Verbal ↔ Written',
+        left: 'Verbal', right: 'Written',
+        leftDesc: 'Talk it out. Real-time conversation. Tone is data.',
+        rightDesc: 'Write it down. Time to think. Re-read before responding.' },
+      { id: 'logic',   label: 'Logic ↔ Feeling',
+        left: 'Logic', right: 'Feeling',
+        leftDesc: 'Frame discussions around facts, data, reasoning.',
+        rightDesc: 'Frame discussions around feelings, impact, relationships.' },
+      { id: 'now',     label: 'Now ↔ Later',
+        left: 'Now', right: 'Later',
+        leftDesc: 'Address things as they happen. Don\'t let them linger.',
+        rightDesc: 'Let things settle. Process. Bring it up when calm.' }
+    ];
+
+    var ASK_FOR = [
+      'Be specific. Avoid hints.',
+      'Tell me in writing first, then we can talk if needed.',
+      'Tell me how you\'re feeling, not just what\'s happening.',
+      'Give me a heads-up before hard conversations.',
+      'Tell me directly what you need from me.',
+      'Don\'t ask me to read between the lines.',
+      'Send the meeting notes in advance so I can prepare.',
+      'Don\'t address things in front of others — pull me aside.',
+      'When you\'re angry with me, name it explicitly.',
+      'Tell me what you appreciate, not just what to improve.'
+    ];
+
+    function setDim(id, val) {
+      var p = Object.assign({}, prof, (function() { var o = {}; o[id] = val; return o; })());
+      setProf(p);
+      setData(Object.assign({}, data, { profile: p }));
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🗣', 'My Communication Style', '4-dimension self-snapshot. Know yourself + tell people how you communicate best.', '#06b6d4'),
+
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(6,182,212,0.10)', border: '1px solid rgba(6,182,212,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+        hh('strong', { style: { color: '#06b6d4' } }, '🗣 Why this matters: '),
+        'Most conflicts aren\'t about content — they\'re about communication-style mismatch. Knowing your own style + being able to ARTICULATE it lets you ask for what works. Especially valuable for autistic + ADHD students whose natural style may not match neurotypical defaults.'
+      ),
+
+      tkCard('#06b6d4',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#67e8f9', marginBottom: 12 } }, '🎯 Where am I on each dimension?'),
+          DIMENSIONS.map(function(d) {
+            var val = prof[d.id] || 5;
+            return hh('div', { key: 'cd-' + d.id, style: { padding: 10, borderRadius: 8, background: 'rgba(2,6,23,0.4)', borderLeft: '3px solid #06b6d4', marginBottom: 10 } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
+                hh('strong', { style: { fontSize: 11, color: '#67e8f9' } }, d.label),
+                hh('strong', { style: { color: '#06b6d4', fontFamily: 'ui-monospace, Menlo, monospace' } }, val + '/10')
+              ),
+              hh('input', { type: 'range', min: 1, max: 10, step: 1, value: val,
+                onChange: function(e) { setDim(d.id, parseInt(e.target.value, 10)); },
+                style: { width: '100%', accentColor: '#06b6d4' }
+              }),
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#94a3b8', marginTop: 2 } },
+                hh('span', null, '←  ', d.left),
+                hh('span', null, d.right, '  →')
+              ),
+              hh('div', { style: { fontSize: 10, color: '#cbd5e1', marginTop: 6, lineHeight: 1.5 } },
+                val <= 4 ? d.leftDesc : val >= 7 ? d.rightDesc : 'Mix — adapts based on context.'
+              )
+            );
+          })
+        )
+      ),
+
+      // What I want people to know
+      tkCard('#06b6d4',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#67e8f9', marginBottom: 8 } }, '📣 What I\'d ask people to know (pick what fits)'),
+          hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+            ASK_FOR.map(function(a, i) {
+              var picked = (prof.asks || []).indexOf(i) >= 0;
+              return hh('button', { key: 'ak-' + i,
+                onClick: function() {
+                  var asks = (prof.asks || []).slice();
+                  var idx = asks.indexOf(i);
+                  if (idx >= 0) asks.splice(idx, 1); else asks.push(i);
+                  setDim('asks', asks);
+                },
+                style: { display: 'block', textAlign: 'left', padding: '8px 10px', borderRadius: 6, background: picked ? 'rgba(6,182,212,0.20)' : 'rgba(15,23,42,0.5)', color: picked ? '#67e8f9' : '#cbd5e1', border: '1px solid ' + (picked ? '#06b6d4' : 'rgba(100,116,139,0.30)'), borderLeft: '3px solid #06b6d4', fontSize: 11, cursor: 'pointer' }
+              }, (picked ? '✓ ' : '') + a);
+            })
+          )
+        )
+      ),
+
+      // Summary card (printable)
+      (prof.asks || []).length > 0 ? hh('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(6,182,212,0.20), rgba(15,23,42,0.7))', border: '2px solid #06b6d4', marginBottom: 14 } },
+        hh('div', { style: { fontSize: 11, color: '#67e8f9', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 } }, '📄 My communication card (share/print)'),
+        DIMENSIONS.map(function(d) {
+          var val = prof[d.id] || 5;
+          return hh('div', { key: 'sm-' + d.id, style: { fontSize: 11, color: '#cbd5e1', marginBottom: 4 } },
+            hh('strong', { style: { color: '#06b6d4' } }, d.label + ': '),
+            val <= 4 ? d.leftDesc : val >= 7 ? d.rightDesc : 'mix'
+          );
+        }),
+        hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 8, lineHeight: 1.6 } },
+          hh('strong', { style: { color: '#06b6d4' } }, 'What helps me: '),
+          (prof.asks || []).map(function(i) { return ASK_FOR[i]; }).join(' · ')
+        )
+      ) : null
+    );
+  }
+
+  // ── NNNN. PERSONAL TOOLKIT EXPORT/IMPORT (Wave 22) ──
+  // Privacy-conscious: your data lives in your browser. This tool lets you
+  // back it up, transfer to another device, or wipe it cleanly.
+  function PersonalToolkitExport(props) {
+    if (!R) return null;
+    var allData = props.allData || {};
+    var setData = props.setData; // resets entire toolkit data
+
+    var ms = R.useState(''); var msg = ms[0]; var setMsg = ms[1];
+
+    function exportAll() {
+      var keys = Object.keys(allData).filter(function(k) { return k.indexOf('mytk') === 0; });
+      var out = {};
+      keys.forEach(function(k) { out[k] = allData[k]; });
+      var json = JSON.stringify(out, null, 2);
+      try {
+        var blob = new Blob([json], { type: 'application/json' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'my-toolkit-' + todayISO() + '.json';
+        a.click();
+        URL.revokeObjectURL(url);
+        setMsg('✓ Downloaded. Save it somewhere safe.');
+      } catch (e) {
+        setMsg('Export failed. Try copying the JSON below manually.');
+      }
+    }
+
+    function importJson() {
+      var txt = prompt('Paste exported JSON here:');
+      if (!txt) return;
+      try {
+        var parsed = JSON.parse(txt);
+        if (typeof parsed !== 'object') throw new Error('Invalid JSON.');
+        if (!confirm('This will OVERWRITE all your current toolkit data with the imported version. Continue?')) return;
+        Object.keys(parsed).forEach(function(k) {
+          if (setData) setData(k, parsed[k]);
+        });
+        setMsg('✓ Imported. Refresh to see the data.');
+      } catch (e) {
+        setMsg('Import failed: ' + e.message);
+      }
+    }
+
+    function wipeAll() {
+      if (!confirm('This will DELETE ALL your personal toolkit data forever. There is no undo. Continue?')) return;
+      if (!confirm('Really sure? This includes goals, journals, all check-ins, every saved entry.')) return;
+      var keys = Object.keys(allData).filter(function(k) { return k.indexOf('mytk') === 0; });
+      keys.forEach(function(k) { if (setData) setData(k, null); });
+      setMsg('✓ All toolkit data wiped.');
+    }
+
+    var dataSize = 0;
+    Object.keys(allData).filter(function(k) { return k.indexOf('mytk') === 0; }).forEach(function(k) {
+      try { dataSize += JSON.stringify(allData[k]).length; } catch (e) {}
+    });
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('💾', 'Backup + Import', 'Your data lives in YOUR browser. Back it up, transfer to another device, or wipe it cleanly.', '#3b82f6'),
+
+      hh('div', { style: { padding: 14, borderRadius: 12, background: 'rgba(59,130,246,0.10)', border: '1px solid rgba(59,130,246,0.40)', marginBottom: 14, textAlign: 'center' } },
+        hh('div', { style: { fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', marginBottom: 4 } }, 'Your toolkit holds'),
+        hh('div', { style: { fontSize: 28, fontWeight: 900, color: '#60a5fa', fontFamily: 'ui-monospace, Menlo, monospace' } }, Math.round(dataSize / 1024) + ' KB'),
+        hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 4 } }, 'of data, stored only in this browser')
+      ),
+
+      tkCard('#3b82f6',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#60a5fa', marginBottom: 10 } }, '💾 Backup'),
+          hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 10, lineHeight: 1.6 } }, 'Download a .json file with EVERYTHING from your toolkit. Save it somewhere safe (cloud drive, email to yourself, USB).'),
+          tkBtn('📥 Download my toolkit data', exportAll, 'primary')
+        )
+      ),
+
+      tkCard('#10b981',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#10b981', marginBottom: 10 } }, '📤 Import (transfer or restore)'),
+          hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 10, lineHeight: 1.6 } }, 'Paste a previously-exported JSON. ', hh('strong', { style: { color: '#ef4444' } }, 'This will OVERWRITE your current data.'), ' Useful for moving to a new browser or restoring after a wipe.'),
+          tkBtn('📤 Paste JSON to import', importJson, 'good')
+        )
+      ),
+
+      tkCard('#ef4444',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#ef4444', marginBottom: 10 } }, '🗑 Wipe (start fresh)'),
+          hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 10, lineHeight: 1.6 } }, 'Delete ALL your toolkit data from this browser. ', hh('strong', { style: { color: '#ef4444' } }, 'Cannot be undone.'), ' Make sure you\'ve exported first if you want to keep anything.'),
+          tkBtn('🗑 Wipe my toolkit', wipeAll, 'bad')
+        )
+      ),
+
+      msg ? hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.10)', border: '1px solid rgba(59,130,246,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } }, msg) : null,
+
+      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+        hh('strong', { style: { color: '#3b82f6' } }, '🔒 Privacy: '),
+        'Nothing in My Toolkit syncs to a server. Your data is stored only in your browser\'s local storage. If you clear browser data, switch browsers, or use a different device — the data does not follow you unless YOU export it. This is intentional. Your data, your control.'
+      )
+    );
+  }
+
   // ── F. MY TOOLKIT HUB (landing page) ──
   // Single entry point that shows status of all toolkit tools + quick
   // actions. Today's date, current streak, # active goals, etc.
@@ -15118,7 +15838,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'mytkKnowl',    icon: '🗺', label: 'Knowledge Map',        color: '#06b6d4', desc: 'Map what you know vs learning vs curious about',
         stat: ((data.mytkKnowl || {}).areas || []).length + ' areas', cta: 'Map knowledge' },
       { id: 'mytkCurr',     icon: '🎓', label: 'Curriculum Builder',   color: '#a855f7', desc: 'Design YOUR own learning curriculum — capstone tool',
-        stat: ((data.mytkCurr || {}).curricula || []).length + ' built', cta: 'Design curriculum' }
+        stat: ((data.mytkCurr || {}).curricula || []).length + ' built', cta: 'Design curriculum' },
+      { id: 'mytkTransition',icon: '🌉',label: 'Transition Planner',    color: '#fbbf24', desc: 'Plan major transitions (Schlossberg 4-phase)',
+        stat: ((data.mytkTransition || {}).transitions || []).length + ' planned', cta: 'Plan a transition' },
+      { id: 'mytkAccomReq', icon: '🪪', label: 'Accommodation Request', color: '#06b6d4', desc: '5 formal-letter templates for IEP/504/college/teacher/work',
+        stat: ((data.mytkAccomReq || {}).drafts || []).length + ' drafts', cta: 'Build a request' },
+      { id: 'mytkDeck',     icon: '🃏', label: 'Life Deck',             color: '#ec4899', desc: '52 reflection cards. Draw + answer one at a time',
+        stat: ((data.mytkDeck || {}).answers || []).length + ' answered', cta: 'Draw a card' },
+      { id: 'mytkComm',     icon: '🗣', label: 'Communication Style',   color: '#06b6d4', desc: '4-dim self-profile + printable comm card',
+        stat: 'mapped', cta: 'Map style' },
+      { id: 'mytkBackup',   icon: '💾', label: 'Backup + Import',       color: '#3b82f6', desc: 'Export your toolkit data. Your data, your control.',
+        stat: 'private', cta: 'Manage data' }
     ];
 
     var dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][new Date().getDay()];
@@ -15392,7 +16122,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'mytkHope', icon: '🌅',label: 'Hope Library',           desc: 'Places, experiences, skills, people, ways of being you hope for. Random pick for hard days.' },
               { id: 'mytkScript',icon: '💬',label: 'Script Library',         desc: 'Curated phrases for hard moments across 5 categories. Especially valuable for ND students.' },
               { id: 'mytkKnowl',icon: '🗺',label: 'Knowledge Map',           desc: 'Track topics per area across 5 statuses (mastered/know/learning/next/curious).' },
-              { id: 'mytkCurr',icon: '🎓',label: 'Curriculum Builder',       desc: 'Design YOUR own learning curriculum across any topic. 8 step-types. THE capstone tool.' }
+              { id: 'mytkCurr',icon: '🎓',label: 'Curriculum Builder',       desc: 'Design YOUR own learning curriculum across any topic. 8 step-types. THE capstone tool.' },
+              { id: 'mytkTransition',icon: '🌉',label: 'Transition Planner', desc: 'Plan major life transitions using Schlossberg\'s 4-phase model (Anticipating/Moving in/Through/Out).' },
+              { id: 'mytkAccomReq',icon: '🪪',label: 'Accommodation Request Builder', desc: '5 formal-letter templates for IEP/504/college DSS/teacher/workplace ADA requests.' },
+              { id: 'mytkDeck',icon: '🃏',label: 'Life Deck',                 desc: '52 reflection cards. Random pick. Build a journal of answers over time.' },
+              { id: 'mytkComm',icon: '🗣',label: 'Communication Style',        desc: '4-dim self-profile (direct/written/logic/now) + printable comm card.' },
+              { id: 'mytkBackup',icon: '💾',label: 'Backup + Import',           desc: 'Export/import your toolkit data as JSON. Browser-local only. Your data, your control.' }
             ]
           },
           { id: 'foundation', icon: '🧠', name: 'How learning works (foundation)',
@@ -19116,6 +19851,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           h(PersonalCurriculum, { data: dcu, setData: setDcu })
         );
       }
+      function renderMytkTransition() {
+        var dtr = d.mytkTransition || { transitions: [] };
+        var setDtr = function(newData) { upd('mytkTransition', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalTransitionPlanner, { data: dtr, setData: setDtr })
+        );
+      }
+      function renderMytkAccomReq() {
+        var dar = d.mytkAccomReq || { drafts: [] };
+        var setDar = function(newData) { upd('mytkAccomReq', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalAccomRequest, { data: dar, setData: setDar })
+        );
+      }
+      function renderMytkDeck() {
+        var ddk = d.mytkDeck || { answers: [] };
+        var setDdk = function(newData) { upd('mytkDeck', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalLifeDeck, { data: ddk, setData: setDdk })
+        );
+      }
+      function renderMytkComm() {
+        var dco = d.mytkComm || { profile: {}, history: [] };
+        var setDco = function(newData) { upd('mytkComm', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalCommStyle, { data: dco, setData: setDco })
+        );
+      }
+      function renderMytkBackup() {
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalToolkitExport, { allData: d, setData: upd })
+        );
+      }
 
       // ─────────────────────────────────────────
       // VIEW ROUTER
@@ -19209,6 +19982,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         case 'mytkScript':    return renderMytkScript();
         case 'mytkKnowl':     return renderMytkKnowl();
         case 'mytkCurr':      return renderMytkCurr();
+        case 'mytkTransition':return renderMytkTransition();
+        case 'mytkAccomReq':  return renderMytkAccomReq();
+        case 'mytkDeck':      return renderMytkDeck();
+        case 'mytkComm':      return renderMytkComm();
+        case 'mytkBackup':    return renderMytkBackup();
         case 'bloom':         return renderBloom();
         case 'cogload':       return renderCogLoad();
         case 'metacog':       return renderMetacog();
