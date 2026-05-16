@@ -2351,6 +2351,149 @@ const LongitudinalProgressChart = React.memo(({ logs }) => {
         </div>
     );
 });
+// ── Notebook Quality Signals (deterministic) ─────────────────────────────
+// Surface class-wide notebook quality WITHOUT calling AI. Each signal has
+// a threshold from research that we color-code as healthy / partial / weak.
+// Complements the AI Class Insights button: AI gives qualitative patterns,
+// these give quantitative at-a-glance signals teachers can scan in 2 seconds.
+//
+// Thresholds (citations in code below):
+//   - Cornell summary fill rate: % of Cornell entries with summary >= 20 words
+//   - Cornell cue density: avg cues per entry (>= 5 = healthy)
+//   - Lab Report CER length: avg analysis word count (>= 30 = healthy)
+//   - Reading Response evidence rate: % of entries with favoriteLine filled
+//   - Connection type variety: % of students who have used >= 2 of the 3
+//     connection types (text-to-self / text-to-text / text-to-world)
+//   - Self-assessment engagement: % of students with >= 1 AI feedback request
+function _wordCount(str) {
+  if (!str) return 0;
+  const trimmed = String(str).trim();
+  if (!trimmed) return 0;
+  return trimmed.split(/\s+/).length;
+}
+function _computeNotebookQualitySignals(dashboardData) {
+  const out = {
+    summaryFillRate: { value: null, count: 0, total: 0 },
+    avgCues: { value: null, total: 0, n: 0 },
+    avgCerWords: { value: null, total: 0, n: 0 },
+    rrEvidenceRate: { value: null, count: 0, total: 0 },
+    connectionVariety: { value: null, count: 0, total: 0 },
+    selfAssessment: { value: null, count: 0, total: 0 },
+  };
+  let cornellCount = 0, cornellWithSummary = 0;
+  let cornellCuesTotal = 0, cornellEntriesForCues = 0;
+  let cerWordsTotal = 0, cerEntriesCounted = 0;
+  let rrCount = 0, rrWithEvidence = 0;
+  let studentsWithRR = 0, studentsWith2PlusConnTypes = 0;
+  let studentsWithNotebook = 0, studentsWithFeedback = 0;
+
+  (dashboardData || []).forEach(s => {
+    const hist = s.history || [];
+    const notes = hist.filter(h => h && h.type === 'note-taking');
+    if (notes.length === 0) return;
+    studentsWithNotebook++;
+    let studentFeedbackCount = 0;
+    const connTypesSeen = new Set();
+    let studentHasRR = false;
+    notes.forEach(e => {
+      const d = e.data || {};
+      const tt = d.templateType;
+      studentFeedbackCount += d.feedbackCount || 0;
+      if (tt === 'cornell-notes') {
+        cornellCount++;
+        // Summary >= 20 words is the Cornell research threshold for "meaningful summary"
+        // (Pauk / Kiewra: 1-2 word fragment doesn't drive retention; ~20+ word
+        // summary in own words is where consolidation happens).
+        if (_wordCount(d.summary) >= 20) cornellWithSummary++;
+        const cueCount = (Array.isArray(d.cues) ? d.cues : []).filter(c => c && (c.text || '').trim()).length;
+        if (cueCount > 0) { cornellCuesTotal += cueCount; cornellEntriesForCues++; }
+      } else if (tt === 'lab-report') {
+        const cerWords = _wordCount(d.analysis);
+        if (cerWords > 0) { cerWordsTotal += cerWords; cerEntriesCounted++; }
+      } else if (tt === 'reading-response') {
+        rrCount++;
+        studentHasRR = true;
+        if ((d.favoriteLine || '').trim()) rrWithEvidence++;
+        const connType = d.connection && d.connection.type;
+        if (connType) connTypesSeen.add(connType);
+      }
+    });
+    if (studentHasRR) {
+      studentsWithRR++;
+      if (connTypesSeen.size >= 2) studentsWith2PlusConnTypes++;
+    }
+    if (studentFeedbackCount > 0) studentsWithFeedback++;
+  });
+
+  if (cornellCount > 0) {
+    out.summaryFillRate.count = cornellWithSummary;
+    out.summaryFillRate.total = cornellCount;
+    out.summaryFillRate.value = Math.round((cornellWithSummary / cornellCount) * 100);
+  }
+  if (cornellEntriesForCues > 0) {
+    out.avgCues.total = cornellCuesTotal;
+    out.avgCues.n = cornellEntriesForCues;
+    out.avgCues.value = (cornellCuesTotal / cornellEntriesForCues).toFixed(1);
+  }
+  if (cerEntriesCounted > 0) {
+    out.avgCerWords.total = cerWordsTotal;
+    out.avgCerWords.n = cerEntriesCounted;
+    out.avgCerWords.value = Math.round(cerWordsTotal / cerEntriesCounted);
+  }
+  if (rrCount > 0) {
+    out.rrEvidenceRate.count = rrWithEvidence;
+    out.rrEvidenceRate.total = rrCount;
+    out.rrEvidenceRate.value = Math.round((rrWithEvidence / rrCount) * 100);
+  }
+  if (studentsWithRR > 0) {
+    out.connectionVariety.count = studentsWith2PlusConnTypes;
+    out.connectionVariety.total = studentsWithRR;
+    out.connectionVariety.value = Math.round((studentsWith2PlusConnTypes / studentsWithRR) * 100);
+  }
+  if (studentsWithNotebook > 0) {
+    out.selfAssessment.count = studentsWithFeedback;
+    out.selfAssessment.total = studentsWithNotebook;
+    out.selfAssessment.value = Math.round((studentsWithFeedback / studentsWithNotebook) * 100);
+  }
+  return out;
+}
+// Color-code each signal: green (healthy), amber (partial), red (weak), gray (no data).
+function _signalTone(signalKey, value) {
+  if (value === null || value === undefined) return 'gray';
+  const thresholds = {
+    summaryFillRate:    { healthy: 70, partial: 40 }, // %
+    avgCues:            { healthy: 5,  partial: 3 },  // count
+    avgCerWords:        { healthy: 30, partial: 15 }, // words
+    rrEvidenceRate:     { healthy: 70, partial: 40 }, // %
+    connectionVariety:  { healthy: 50, partial: 25 }, // %
+    selfAssessment:     { healthy: 50, partial: 25 }, // %
+  };
+  const t = thresholds[signalKey];
+  if (!t) return 'gray';
+  const v = parseFloat(value);
+  if (v >= t.healthy) return 'green';
+  if (v >= t.partial) return 'amber';
+  return 'red';
+}
+const _NotebookQualityCard = ({ tone, label, value, suffix, denom, hint }) => {
+  const palette = ({
+    green:  { bg: 'bg-emerald-50',  border: 'border-emerald-300',  text: 'text-emerald-800',  num: 'text-emerald-700'  },
+    amber:  { bg: 'bg-amber-50',    border: 'border-amber-300',    text: 'text-amber-800',    num: 'text-amber-700'    },
+    red:    { bg: 'bg-rose-50',     border: 'border-rose-300',     text: 'text-rose-800',     num: 'text-rose-700'     },
+    gray:   { bg: 'bg-slate-50',    border: 'border-slate-300',    text: 'text-slate-600',    num: 'text-slate-500'    },
+  })[tone];
+  return (
+    <div className={`${palette.bg} ${palette.border} border rounded-lg p-3`} title={hint}>
+      <div className="flex items-baseline justify-between mb-1">
+        <span className={`text-[10px] font-bold uppercase tracking-wider ${palette.text}`}>{label}</span>
+        {denom ? <span className="text-[10px] text-slate-500 font-mono">{denom}</span> : null}
+      </div>
+      <div className={`text-2xl font-black ${palette.num}`}>{value === null || value === undefined ? '—' : value}{suffix || ''}</div>
+      {hint ? <div className="text-[10px] text-slate-600 mt-1 leading-snug">{hint}</div> : null}
+    </div>
+  );
+};
+
 // ── ClassNotebookSection ─────────────────────────────────────────────────
 // Class-wide aggregate of note-taking + anchor-chart activity, with an AI
 // button that surfaces patterns across the roster (parallel to the per-
@@ -2363,6 +2506,10 @@ const LongitudinalProgressChart = React.memo(({ logs }) => {
 const ClassNotebookSection = React.memo(({ dashboardData, callGemini, addToast, t }) => {
   const [insights, setInsights] = React.useState(null);
   const [insightsLoading, setInsightsLoading] = React.useState(false);
+
+  // Deterministic notebook quality signals — computed from data alone (no AI).
+  // Surfaced as a color-coded card grid for at-a-glance class diagnostics.
+  const qualitySignals = React.useMemo(() => _computeNotebookQualitySignals(dashboardData), [dashboardData]);
 
   // Aggregate notebook activity across the whole roster.
   const agg = React.useMemo(() => {
@@ -2518,6 +2665,79 @@ Return ONLY JSON:
         <div className="bg-emerald-50 border-l-4 border-emerald-400 rounded-r-md p-3 mb-4 text-sm">
           <span className="font-bold text-emerald-800">💬 {agg.feedbackRequests} AI-feedback request{agg.feedbackRequests === 1 ? '' : 's'}</span>
           <span className="text-emerald-700"> across the class. A useful proxy for metacognitive engagement (students who request feedback are practicing self-assessment).</span>
+        </div>
+      )}
+      {/* Deterministic quality signals — no AI required, color-coded against research thresholds */}
+      {(qualitySignals.summaryFillRate.value !== null
+        || qualitySignals.avgCerWords.value !== null
+        || qualitySignals.rrEvidenceRate.value !== null
+        || qualitySignals.selfAssessment.value !== null) && (
+        <div className="mb-4" data-help-key="dashboard_class_notebook_quality_signals">
+          <div className="flex items-center justify-between mb-2">
+            <h5 className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">{t('dashboard.class_notebook.quality_signals_label') || 'Quality Signals (research thresholds)'}</h5>
+            <span className="text-[10px] text-slate-500 italic">{t('dashboard.class_notebook.quality_signals_legend') || 'green = healthy · amber = partial · red = needs attention'}</span>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            {qualitySignals.summaryFillRate.value !== null && (
+              <_NotebookQualityCard
+                tone={_signalTone('summaryFillRate', qualitySignals.summaryFillRate.value)}
+                label={t('dashboard.class_notebook.signal_summary_fill') || 'Cornell summary rate'}
+                value={qualitySignals.summaryFillRate.value}
+                suffix="%"
+                denom={`${qualitySignals.summaryFillRate.count}/${qualitySignals.summaryFillRate.total}`}
+                hint={t('dashboard.class_notebook.signal_summary_fill_hint') || '% of Cornell entries with ≥20-word summary (research threshold; Pauk/Kiewra)'}
+              />
+            )}
+            {qualitySignals.avgCues.value !== null && (
+              <_NotebookQualityCard
+                tone={_signalTone('avgCues', qualitySignals.avgCues.value)}
+                label={t('dashboard.class_notebook.signal_avg_cues') || 'Cornell cue density'}
+                value={qualitySignals.avgCues.value}
+                denom={`avg / ${qualitySignals.avgCues.n} entries`}
+                hint={t('dashboard.class_notebook.signal_avg_cues_hint') || 'Avg cues per Cornell entry. ≥5 is healthy retrieval-practice density'}
+              />
+            )}
+            {qualitySignals.avgCerWords.value !== null && (
+              <_NotebookQualityCard
+                tone={_signalTone('avgCerWords', qualitySignals.avgCerWords.value)}
+                label={t('dashboard.class_notebook.signal_cer_length') || 'Lab CER length'}
+                value={qualitySignals.avgCerWords.value}
+                suffix=" wd"
+                denom={`avg / ${qualitySignals.avgCerWords.n} reports`}
+                hint={t('dashboard.class_notebook.signal_cer_length_hint') || 'Avg word count of CER analysis. ≥30 words is where reasoning lives (McNeill & Krajcik)'}
+              />
+            )}
+            {qualitySignals.rrEvidenceRate.value !== null && (
+              <_NotebookQualityCard
+                tone={_signalTone('rrEvidenceRate', qualitySignals.rrEvidenceRate.value)}
+                label={t('dashboard.class_notebook.signal_rr_evidence') || 'Reading evidence rate'}
+                value={qualitySignals.rrEvidenceRate.value}
+                suffix="%"
+                denom={`${qualitySignals.rrEvidenceRate.count}/${qualitySignals.rrEvidenceRate.total}`}
+                hint={t('dashboard.class_notebook.signal_rr_evidence_hint') || '% of Reading Responses with a favorite line filled (close-reading anchor)'}
+              />
+            )}
+            {qualitySignals.connectionVariety.value !== null && (
+              <_NotebookQualityCard
+                tone={_signalTone('connectionVariety', qualitySignals.connectionVariety.value)}
+                label={t('dashboard.class_notebook.signal_conn_variety') || 'Connection variety'}
+                value={qualitySignals.connectionVariety.value}
+                suffix="%"
+                denom={`${qualitySignals.connectionVariety.count}/${qualitySignals.connectionVariety.total} students`}
+                hint={t('dashboard.class_notebook.signal_conn_variety_hint') || '% of students using ≥2 of 3 connection types (text-to-self/text/world)'}
+              />
+            )}
+            {qualitySignals.selfAssessment.value !== null && (
+              <_NotebookQualityCard
+                tone={_signalTone('selfAssessment', qualitySignals.selfAssessment.value)}
+                label={t('dashboard.class_notebook.signal_self_assess') || 'Self-assessment use'}
+                value={qualitySignals.selfAssessment.value}
+                suffix="%"
+                denom={`${qualitySignals.selfAssessment.count}/${qualitySignals.selfAssessment.total} students`}
+                hint={t('dashboard.class_notebook.signal_self_assess_hint') || '% of students who have requested AI feedback ≥1× (metacognitive engagement proxy)'}
+              />
+            )}
+          </div>
         </div>
       )}
       {insightsLoading ? (

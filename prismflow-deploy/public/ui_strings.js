@@ -4664,7 +4664,21 @@
       "loading": "AI is reading across the class...",
       "overview_label": "Class overview",
       "mini_lesson_label": "Try a mini-lesson:",
-      "celebration_label": "Class strength"
+      "celebration_label": "Class strength",
+      "quality_signals_label": "Quality Signals (research thresholds)",
+      "quality_signals_legend": "green = healthy · amber = partial · red = needs attention",
+      "signal_summary_fill": "Cornell summary rate",
+      "signal_summary_fill_hint": "% of Cornell entries with ≥20-word summary (research threshold; Pauk/Kiewra)",
+      "signal_avg_cues": "Cornell cue density",
+      "signal_avg_cues_hint": "Avg cues per Cornell entry. ≥5 is healthy retrieval-practice density",
+      "signal_cer_length": "Lab CER length",
+      "signal_cer_length_hint": "Avg word count of CER analysis. ≥30 words is where reasoning lives (McNeill & Krajcik)",
+      "signal_rr_evidence": "Reading evidence rate",
+      "signal_rr_evidence_hint": "% of Reading Responses with a favorite line filled (close-reading anchor)",
+      "signal_conn_variety": "Connection variety",
+      "signal_conn_variety_hint": "% of students using ≥2 of 3 connection types (text-to-self/text/world)",
+      "signal_self_assess": "Self-assessment use",
+      "signal_self_assess_hint": "% of students who have requested AI feedback ≥1× (metacognitive engagement proxy)"
     }
   },
   "tools": {
