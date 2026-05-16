@@ -4649,7 +4649,8 @@
       "empty_msg": "Not enough history to show trends yet. Save more progress!",
       "label_start": "Start",
       "label_current": "Current"
-    }
+    },
+    "notebook_activity": "Notebook Activity"
   },
   "tools": {
     "source": "Source Material",

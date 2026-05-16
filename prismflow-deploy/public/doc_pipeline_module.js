@@ -14758,6 +14758,100 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   ${comprehensiveHTML}
               </div>
           `;
+      } else if (item.type === 'note-taking') {
+          // Student-authored note-taking template (Cornell / Lab Report / Reading Response).
+          // Renders the FILLED-IN student work for teacher review, plus the AI-feedback
+          // summary if the student has requested feedback on this entry.
+          const tt = (item.data && item.data.templateType) || 'cornell-notes';
+          const d = item.data || {};
+          const ttLabel = ({ 'cornell-notes': 'Cornell Notes', 'lab-report': 'Lab Report', 'reading-response': 'Reading Response' })[tt] || 'Note';
+          const ttIcon = ({ 'cornell-notes': '📓', 'lab-report': '🧪', 'reading-response': '📖' })[tt] || '📝';
+          const ttColor = ({ 'cornell-notes': '#4f46e5', 'lab-report': '#0284c7', 'reading-response': '#7c3aed' })[tt] || '#475569';
+          const feedbackCount = d.feedbackCount || 0;
+          const feedbackScore = d.prevFeedbackScore || 0;
+          const escapeHtml = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          const renderRows = () => {
+              if (tt === 'cornell-notes') {
+                  const cues = Array.isArray(d.cues) ? d.cues : [];
+                  const notes = Array.isArray(d.notes) ? d.notes : [];
+                  const rowCount = Math.max(cues.length, notes.length, 1);
+                  const rowsHtml = Array.from({ length: rowCount }).map((_, i) => {
+                      const cue = (cues[i] && cues[i].text) || '';
+                      const note = (notes[i] && notes[i].text) || '';
+                      if (!cue.trim() && !note.trim()) return '';
+                      return `<tr><td style="border:1px solid #cbd5e1; padding:8px; vertical-align:top; width:35%; background:#f8fafc;"><strong style="font-size:0.85em;">${escapeHtml(cue)}</strong></td><td style="border:1px solid #cbd5e1; padding:8px; vertical-align:top;">${escapeHtml(note)}</td></tr>`;
+                  }).filter(Boolean).join('');
+                  const summary = d.summary || '';
+                  return `<table style="width:100%; border-collapse:collapse; margin-bottom:12px;"><thead><tr><th style="border:1px solid #cbd5e1; background:#e0e7ff; padding:8px; text-align:left; font-size:0.85em; text-transform:uppercase;">Cues / Questions</th><th style="border:1px solid #cbd5e1; background:#e0e7ff; padding:8px; text-align:left; font-size:0.85em; text-transform:uppercase;">Notes</th></tr></thead><tbody>${rowsHtml || '<tr><td colspan="2" style="border:1px solid #cbd5e1; padding:12px; text-align:center; color:#64748b; font-style:italic;">No rows filled in yet.</td></tr>'}</tbody></table>${summary ? `<div style="background:#ecfdf5; border-left:4px solid #10b981; padding:12px; border-radius:6px;"><div style="font-size:0.75em; font-weight:bold; text-transform:uppercase; color:#065f46; margin-bottom:4px;">Summary</div><div style="font-size:0.95em; color:#1e293b; line-height:1.5;">${escapeHtml(summary)}</div></div>` : '<div style="font-size:0.85em; color:#64748b; font-style:italic;">No summary written yet.</div>'}`;
+              }
+              if (tt === 'lab-report') {
+                  const materials = (Array.isArray(d.materials) ? d.materials : []).map(m => (m && m.text || '').trim()).filter(Boolean);
+                  const procedure = (Array.isArray(d.procedure) ? d.procedure : []).map(p => (p && p.text || '').trim()).filter(Boolean);
+                  const section = (label, body, color) => body && body.trim() ? `<div style="background:${color}; border-radius:6px; padding:10px; margin-bottom:8px;"><div style="font-size:0.75em; font-weight:bold; text-transform:uppercase; color:#334155; margin-bottom:4px;">${label}</div><div style="font-size:0.95em; color:#1e293b; line-height:1.5; white-space:pre-wrap;">${escapeHtml(body)}</div></div>` : '';
+                  return [
+                      section('Research Question', d.question, '#eff6ff'),
+                      section('Hypothesis', d.hypothesis, '#faf5ff'),
+                      materials.length ? `<div style="background:#fffbeb; border-radius:6px; padding:10px; margin-bottom:8px;"><div style="font-size:0.75em; font-weight:bold; text-transform:uppercase; color:#92400e; margin-bottom:4px;">Materials</div><ul style="margin:0; padding-left:20px;">${materials.map(m => `<li style="font-size:0.95em; color:#1e293b;">${escapeHtml(m)}</li>`).join('')}</ul></div>` : '',
+                      procedure.length ? `<div style="background:#ecfdf5; border-radius:6px; padding:10px; margin-bottom:8px;"><div style="font-size:0.75em; font-weight:bold; text-transform:uppercase; color:#065f46; margin-bottom:4px;">Procedure</div><ol style="margin:0; padding-left:20px;">${procedure.map(s => `<li style="font-size:0.95em; color:#1e293b; margin-bottom:2px;">${escapeHtml(s)}</li>`).join('')}</ol></div>` : '',
+                      section('Data / Observations', d.data, '#eef2ff'),
+                      section('Analysis (CER)', d.analysis, '#fef2f2'),
+                      section('Conclusion', d.conclusion, '#f8fafc'),
+                  ].filter(Boolean).join('');
+              }
+              if (tt === 'reading-response') {
+                  const author = d.author || '';
+                  const pageRange = d.pageRange || '';
+                  const conn = d.connection || {};
+                  const meta = (author || pageRange) ? `<div style="font-size:0.85em; color:#64748b; margin-bottom:8px;">${escapeHtml(author)}${author && pageRange ? ' · ' : ''}${escapeHtml(pageRange)}</div>` : '';
+                  const sec = (label, body, color) => body && body.trim() ? `<div style="background:${color}; border-radius:6px; padding:10px; margin-bottom:8px;"><div style="font-size:0.75em; font-weight:bold; text-transform:uppercase; color:#334155; margin-bottom:4px;">${label}</div><div style="font-size:0.95em; color:#1e293b; line-height:1.5; white-space:pre-wrap;">${escapeHtml(body)}</div></div>` : '';
+                  return [
+                      meta,
+                      sec('Favorite Line or Passage', d.favoriteLine, '#fffbeb'),
+                      sec('What This Made Me Think About', d.thinkings, '#faf5ff'),
+                      sec(`Connection (${conn.type || 'text-to-self'})`, conn.text, '#eff6ff'),
+                      sec('One Question I Have', d.question, '#ecfdf5'),
+                  ].filter(Boolean).join('');
+              }
+              return '<div style="font-size:0.85em; color:#64748b; font-style:italic;">Unknown note-taking template.</div>';
+          };
+          const feedbackBadge = feedbackCount > 0
+              ? `<div style="margin-top:12px; padding:8px 12px; background:#f5f3ff; border-left:4px solid #8b5cf6; border-radius:4px; font-size:0.85em; color:#5b21b6;"><strong>AI Feedback:</strong> Student requested feedback ${feedbackCount}× on this entry${feedbackScore > 0 ? ` (best score: ${feedbackScore}/28 internal rubric)` : ''}. Their last attempt earned XP.</div>`
+              : `<div style="margin-top:12px; padding:8px 12px; background:#f1f5f9; border-left:4px solid #94a3b8; border-radius:4px; font-size:0.85em; color:#475569; font-style:italic;">Student has not requested AI feedback on this entry.</div>`;
+          return `
+              <div class="section" id="${item.id}">
+                  <div class="resource-header" style="border-left:4px solid ${ttColor};">${ttIcon} ${title} <span style="font-size:0.75em; font-weight:normal; color:#64748b; margin-left:8px;">(${ttLabel})</span></div>
+                  ${renderRows()}
+                  ${feedbackBadge}
+              </div>
+          `;
+      } else if (item.type === 'anchor-chart') {
+          // EL-style class anchor chart. Render the chart's sections + items so the
+          // teacher can see what students built. Critique-mode annotations (if any)
+          // appear as appended notes.
+          const d = item.data || {};
+          const sections = Array.isArray(d.sections) ? d.sections : [];
+          const chartType = d.chartType || d.type || 'reference';
+          const escapeHtml = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          const typeLabel = ({ reference: 'Reference', process: 'Process', 'concept-map': 'Concept Map', comparison: 'Comparison' })[chartType] || chartType;
+          const sectionsHtml = sections.length === 0
+              ? '<div style="font-size:0.85em; color:#64748b; font-style:italic; padding:12px;">No sections yet.</div>'
+              : sections.map((s, i) => {
+                  const bullets = Array.isArray(s && s.bullets) ? s.bullets : [];
+                  const label = (s && s.label) || `Section ${i + 1}`;
+                  const icon = (s && s.icon) || '';
+                  return `<div style="margin-bottom:12px; padding:12px; background:#fff7ed; border:1px solid #fdba74; border-radius:8px;"><div style="font-weight:bold; font-size:1.05em; color:#9a3412; margin-bottom:6px;">${icon ? icon + ' ' : ''}${escapeHtml(label)}</div>${bullets.length ? `<ul style="margin:0; padding-left:20px;">${bullets.map(b => `<li style="font-size:0.92em; color:#1e293b; margin-bottom:2px;">${escapeHtml(b)}</li>`).join('')}</ul>` : '<div style="font-size:0.85em; color:#9ca3af; font-style:italic;">(empty)</div>'}</div>`;
+              }).join('');
+          const annotations = Array.isArray(d.annotations) ? d.annotations : [];
+          const annotationsHtml = annotations.length > 0
+              ? `<div style="margin-top:12px; padding:10px; background:#fef3c7; border-left:4px solid #f59e0b; border-radius:4px;"><div style="font-size:0.75em; font-weight:bold; text-transform:uppercase; color:#92400e; margin-bottom:6px;">Critique Mode — Student Annotations (${annotations.length})</div><ul style="margin:0; padding-left:18px;">${annotations.slice(0, 12).map(a => `<li style="font-size:0.88em; color:#1e293b; margin-bottom:3px;"><strong>${escapeHtml(a.kind || 'note')}:</strong> ${escapeHtml(a.text || '')}</li>`).join('')}</ul>${annotations.length > 12 ? `<div style="font-size:0.75em; color:#92400e; margin-top:4px; font-style:italic;">… and ${annotations.length - 12} more.</div>` : ''}</div>`
+              : '';
+          return `
+              <div class="section" id="${item.id}">
+                  <div class="resource-header" style="border-left:4px solid #f59e0b;">📋 ${title} <span style="font-size:0.75em; font-weight:normal; color:#64748b; margin-left:8px;">(Anchor Chart — ${typeLabel})</span></div>
+                  ${sectionsHtml}
+                  ${annotationsHtml}
+              </div>
+          `;
       }
       return '';
   };

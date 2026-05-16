@@ -3149,6 +3149,10 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                 const sSessions = student.sessionCounter || 0;
                 const sProbeWcpm = sProbes.filter(p => p.wcpm !== undefined);
                 const avgWcpm = sProbeWcpm.length > 0 ? (sProbeWcpm.reduce((s,p) => s + p.wcpm, 0) / sProbeWcpm.length).toFixed(1) : "N/A";
+                // Notebook activity (note-taking templates + anchor charts)
+                const sNotes = (student.history || []).filter(h => h.type === "note-taking");
+                const sAnchorCharts = (student.history || []).filter(h => h.type === "anchor-chart");
+                const sNotebookFeedback = sNotes.reduce((sum, e) => sum + ((e.data && e.data.feedbackCount) || 0), 0);
                 return `
                 <div style="margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 4px; ${idx > 0 ? "page-break-before: auto;" : ""}">
                     <h3 style="font-size: 13px; font-weight: bold; margin-bottom: 8px; color: #333;">Student ${idx + 1}: ${student.studentNickname}</h3>
@@ -3173,6 +3177,18 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                             <td style="padding: 4px 6px; color: #666;">${t('research.explore_challenges')}</td>
                             <td style="padding: 4px 6px; font-weight: bold;">${sExplore.length}</td>
                         </tr>
+                        ${(sNotes.length + sAnchorCharts.length) > 0 ? `
+                        <tr style="border-bottom: 1px solid #eee;">
+                            <td style="padding: 4px 6px; color: #666;">Notebook Activity (notes + charts)</td>
+                            <td style="padding: 4px 6px; font-weight: bold;">${sNotes.length + sAnchorCharts.length}</td>
+                        </tr>
+                        ${sNotebookFeedback > 0 ? `
+                        <tr style="border-bottom: 1px solid #eee;">
+                            <td style="padding: 4px 6px; color: #666;">AI feedback requests on notes</td>
+                            <td style="padding: 4px 6px; font-weight: bold;">${sNotebookFeedback}</td>
+                        </tr>
+                        ` : ''}
+                        ` : ''}
                     </table>
                     ${sProbeWcpm.length > 0 ? `
                     <p style="font-size: 10px; font-weight: bold; color: #555; margin-bottom: 4px;">${t('teacher.research.probe_history_wcpm_label') || 'Probe History (WCPM):'}</p>
@@ -3349,7 +3365,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
         t('dashboard.csv.header_level'),
         t('dashboard.csv.header_quiz_avg'),
         t('dashboard.csv.header_total_xp')
-    , 'Probes', 'Avg WCPM', 'Surveys', 'Sessions'];
+    , 'Probes', 'Avg WCPM', 'Surveys', 'Sessions', 'Cornell Notes', 'Lab Reports', 'Reading Responses', 'Anchor Charts', 'Notebook Feedback Requests'];
     const rows = dashboardData.map(student => {
         const name = (student.studentNickname || "Anonymous").replace(/"/g, '""');
         const date = new Date(student.timestamp).toLocaleDateString();
@@ -3382,7 +3398,15 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
         const avgWcpm = wcpmProbes.length > 0 ? (wcpmProbes.reduce((sum,x) => sum + x.wcpm, 0) / wcpmProbes.length).toFixed(0) : 'N/A';
         const surveyCount = s.surveyResponses ? s.surveyResponses.length : 0;
         const sessionCount = s.sessionCounter || 0;
-        return `"${name}","${date}","${level}","${quizAvg}","${xp}","${probeCount}","${avgWcpm}","${surveyCount}","${sessionCount}"`;
+        // Notebook activity columns
+        const hist = student.history || [];
+        const noteEntries = hist.filter(h => h && h.type === 'note-taking');
+        const cornellCount = noteEntries.filter(e => (e.data && e.data.templateType) === 'cornell-notes').length;
+        const labCount = noteEntries.filter(e => (e.data && e.data.templateType) === 'lab-report').length;
+        const readingCount = noteEntries.filter(e => (e.data && e.data.templateType) === 'reading-response').length;
+        const anchorCount = hist.filter(h => h && h.type === 'anchor-chart').length;
+        const feedbackCount = noteEntries.reduce((sum, e) => sum + ((e.data && e.data.feedbackCount) || 0), 0);
+        return `"${name}","${date}","${level}","${quizAvg}","${xp}","${probeCount}","${avgWcpm}","${surveyCount}","${sessionCount}","${cornellCount}","${labCount}","${readingCount}","${anchorCount}","${feedbackCount}"`;
     });
     const csvContent = [headers.join(","), ...rows].join("\n");
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -3622,6 +3646,35 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                                      )}
                                  </div>
                              )}
+                             {(() => {
+                                 // Notebook activity tile: counts of Cornell / Lab / Reading / Anchor Chart
+                                 // entries, plus AI-feedback request count rolled up across all entries.
+                                 const hist = selectedStudent.history || [];
+                                 const noteEntries = hist.filter(h => h && h.type === 'note-taking');
+                                 const anchorEntries = hist.filter(h => h && h.type === 'anchor-chart');
+                                 const totalNotebook = noteEntries.length + anchorEntries.length;
+                                 if (totalNotebook === 0) return null;
+                                 const byType = {
+                                     'cornell-notes': noteEntries.filter(e => (e.data && e.data.templateType) === 'cornell-notes').length,
+                                     'lab-report': noteEntries.filter(e => (e.data && e.data.templateType) === 'lab-report').length,
+                                     'reading-response': noteEntries.filter(e => (e.data && e.data.templateType) === 'reading-response').length,
+                                     'anchor-chart': anchorEntries.length,
+                                 };
+                                 const feedbackEvents = noteEntries.reduce((sum, e) => sum + ((e.data && e.data.feedbackCount) || 0), 0);
+                                 return (
+                                     <div className="bg-violet-50 rounded-xl p-4 border border-violet-200" data-help-key="dashboard_notebook_activity_tile">
+                                         <div className="text-2xl font-black text-violet-700">{totalNotebook}</div>
+                                         <div className="text-[11px] font-bold text-violet-600 uppercase mt-1">{t('dashboard.notebook_activity') || 'Notebook Activity'}</div>
+                                         <div className="text-[11px] text-slate-600 mt-2 space-y-0.5">
+                                             {byType['cornell-notes'] > 0 && <div className="flex justify-between"><span>📓 Cornell</span><span className="font-bold">{byType['cornell-notes']}</span></div>}
+                                             {byType['lab-report'] > 0 && <div className="flex justify-between"><span>🧪 Lab Report</span><span className="font-bold">{byType['lab-report']}</span></div>}
+                                             {byType['reading-response'] > 0 && <div className="flex justify-between"><span>📖 Reading</span><span className="font-bold">{byType['reading-response']}</span></div>}
+                                             {byType['anchor-chart'] > 0 && <div className="flex justify-between"><span>📋 Anchor Chart</span><span className="font-bold">{byType['anchor-chart']}</span></div>}
+                                             {feedbackEvents > 0 && <div className="flex justify-between text-violet-700 font-semibold pt-1 mt-1 border-t border-violet-200"><span>💬 AI feedback</span><span>{feedbackEvents}×</span></div>}
+                                         </div>
+                                     </div>
+                                 );
+                             })()}
                          </div>
                          {selectedStudent.probeHistory && Object.keys(selectedStudent.probeHistory).length > 0 && (
                              <div className="mt-4 space-y-2">
@@ -3795,6 +3848,10 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                                                       {student.probeHistory && Object.keys(student.probeHistory).length > 0 && <span className="text-[11px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded ml-1 border border-amber-200" title={Object.values(student.probeHistory).flat().length + ' probes'}>📊</span>}
                                                       {student.surveyResponses && student.surveyResponses.length > 0 && <span className="text-[11px] font-bold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded ml-1 border border-purple-200" title={student.surveyResponses.length + ' surveys'}>📝</span>}
                                                       {student.sessionCounter > 0 && <span className="text-[11px] font-bold text-cyan-700 bg-cyan-50 px-1.5 py-0.5 rounded ml-1 border border-cyan-200" title={student.sessionCounter + ' sessions'}>🔄</span>}
+                                                      {(() => {
+                                                          const noteCount = (student.history || []).filter(h => h && (h.type === 'note-taking' || h.type === 'anchor-chart')).length;
+                                                          return noteCount > 0 ? <span className="text-[11px] font-bold text-violet-700 bg-violet-50 px-1.5 py-0.5 rounded ml-1 border border-violet-200" title={noteCount + ' notebook entries (notes + anchor charts)'}>📓</span> : null;
+                                                      })()}
                                                   </td>
                                                  <td className="p-4 text-slate-600 font-mono text-xs">
                                                      {new Date(student.timestamp).toLocaleDateString()} <span className="hidden sm:inline">{new Date(student.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
