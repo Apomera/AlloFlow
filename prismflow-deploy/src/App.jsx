@@ -21419,6 +21419,8 @@ ${_toolList}
             history,
             onSelectEntry: handleSelectNotebookEntry,
             t,
+            callGemini,
+            addToast,
           })
         : null}
       {!isTeacherMode && activeSessionCode && sessionData && (
@@ -23024,7 +23026,8 @@ ${_toolList}
                 })}
                 {activeView === 'note-taking' && window.AlloModules && window.AlloModules.NoteTakingView && React.createElement(window.AlloModules.NoteTakingView, {
                     t, generatedContent, isTeacherMode, isProcessing,
-                    handleNoteUpdate, handleGenerate
+                    handleNoteUpdate, handleGenerate,
+                    callGemini, addToast, handleScoreUpdate, inputText, history,
                 })}
                 {activeView === 'anchor-chart' && window.AlloModules && window.AlloModules.AnchorChartView && React.createElement(window.AlloModules.AnchorChartView, {
                     t, generatedContent, isTeacherMode, isProcessing,
