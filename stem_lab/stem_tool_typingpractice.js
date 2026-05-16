@@ -558,15 +558,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       // Cheeks
       h('circle', { cx: 32, cy: 64, r: 5, fill: cheekColor, opacity: 0.7 }),
       h('circle', { cx: 68, cy: 64, r: 5, fill: cheekColor, opacity: 0.7 }),
-      // Eyes — big sparkly
+      // Eyes — big sparkly. Each eye wrapped in its own class so a CSS
+      // scaleY blink animation can squish them shut occasionally
+      // (parity with Pip + Vex). Highlights stay outside the blinking
+      // group so the white spec doesn't disappear during the blink.
       h('g', { className: 'tp-mochi-eyes' },
-        h('ellipse', { cx: 40, cy: 54, rx: 4.5, ry: 6, fill: eyeColor }),
-        h('ellipse', { cx: 60, cy: 54, rx: 4.5, ry: 6, fill: eyeColor }),
+        h('ellipse', { cx: 40, cy: 54, rx: 4.5, ry: 6, fill: eyeColor, className: 'tp-mochi-eye-l', style: { transformOrigin: '40px 54px', transformBox: 'fill-box' } }),
+        h('ellipse', { cx: 60, cy: 54, rx: 4.5, ry: 6, fill: eyeColor, className: 'tp-mochi-eye-r', style: { transformOrigin: '60px 54px', transformBox: 'fill-box' } }),
         // Eye highlights
         h('circle', { cx: 41.5, cy: 51, r: 1.5, fill: '#fff' }),
         h('circle', { cx: 61.5, cy: 51, r: 1.5, fill: '#fff' }),
         h('circle', { cx: 39, cy: 56, r: 0.8, fill: '#fff' }),
         h('circle', { cx: 59, cy: 56, r: 0.8, fill: '#fff' })
+      ),
+      // Whiskers — three thin lines per side, fanning slightly. Adds
+      // unmistakable kitten silhouette without clutter. Behind cheeks.
+      h('g', { className: 'tp-mochi-whiskers', stroke: '#475569', strokeWidth: 0.6, strokeLinecap: 'round', opacity: 0.7 },
+        h('line', { x1: 22, y1: 60, x2: 32, y2: 62 }),
+        h('line', { x1: 22, y1: 64, x2: 32, y2: 64 }),
+        h('line', { x1: 22, y1: 68, x2: 32, y2: 66 }),
+        h('line', { x1: 78, y1: 60, x2: 68, y2: 62 }),
+        h('line', { x1: 78, y1: 64, x2: 68, y2: 64 }),
+        h('line', { x1: 78, y1: 68, x2: 68, y2: 66 })
       ),
       // Tiny mouth — happy curve
       h('path', { d: 'M 47 66 Q 50 70 53 66', stroke: eyeColor, strokeWidth: 1.5, fill: 'none', strokeLinecap: 'round', className: 'tp-mochi-mouth' }),
@@ -676,6 +689,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         d: 'M 32 60 Q 50 66 68 60 L 68 68 L 32 68 Z',
         fill: bodyDeep, opacity: 0.25
       }),
+      // Zebra display — vertical stripes that real cuttlefish flash for
+      // territorial display + courtship. Mostly hidden (opacity 0); CSS
+      // briefly fades them in during the signature window. Clipped to the
+      // mantle path via parent group structure so they stay inside the body.
+      h('g', { className: 'tp-inko-zebra', opacity: 0 },
+        h('path', { d: 'M 36 22 L 36 60', stroke: bodyDeep, strokeWidth: 1.4, opacity: 0.5 }),
+        h('path', { d: 'M 44 18 L 44 62', stroke: bodyDeep, strokeWidth: 1.6, opacity: 0.55 }),
+        h('path', { d: 'M 50 16 L 50 64', stroke: bodyDeep, strokeWidth: 1.8, opacity: 0.6 }),
+        h('path', { d: 'M 56 18 L 56 62', stroke: bodyDeep, strokeWidth: 1.6, opacity: 0.55 }),
+        h('path', { d: 'M 64 22 L 64 60', stroke: bodyDeep, strokeWidth: 1.4, opacity: 0.5 })
+      ),
       // Bioluminescent rim glow — concentric outline of the mantle that
       // brightens during win/wow states (and stays soft otherwise). Fills
       // 'none' so it reads purely as a halo around the silhouette.
@@ -734,9 +758,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       // a frozen fan. Origin pinned at the mantle base so the arm-tip
       // travels while the connection point stays put.
       h('g', { className: 'tp-inko-arms' },
-        // Long feeding tentacles (center pair) — slowest, deepest sway
+        // Long feeding tentacles (center pair) — slowest, deepest sway.
+        // Three small sucker dots on each tentacle for cuttlefish
+        // anatomical authenticity (real feeding tentacles have suction
+        // pads along their inner edge).
         h('path', { d: 'M 46 68 Q 44 80 42 92', fill: 'none', stroke: bodyColor, strokeWidth: 3.2, strokeLinecap: 'round', className: armClass(0), style: { transformOrigin: '46px 68px', transformBox: 'fill-box' } }),
         h('path', { d: 'M 54 68 Q 56 80 58 92', fill: 'none', stroke: bodyColor, strokeWidth: 3.2, strokeLinecap: 'round', className: armClass(1), style: { transformOrigin: '54px 68px', transformBox: 'fill-box' } }),
+        // Sucker dots — anchored to the body so they stay put while the
+        // arm-paths sway around them. Subtle, easy to miss at small sizes,
+        // visible at 64px+.
+        h('circle', { cx: 45, cy: 76, r: 0.8, fill: bodyDeep, opacity: 0.7 }),
+        h('circle', { cx: 44, cy: 82, r: 0.8, fill: bodyDeep, opacity: 0.7 }),
+        h('circle', { cx: 43, cy: 88, r: 0.8, fill: bodyDeep, opacity: 0.7 }),
+        h('circle', { cx: 55, cy: 76, r: 0.8, fill: bodyDeep, opacity: 0.7 }),
+        h('circle', { cx: 56, cy: 82, r: 0.8, fill: bodyDeep, opacity: 0.7 }),
+        h('circle', { cx: 57, cy: 88, r: 0.8, fill: bodyDeep, opacity: 0.7 }),
         // Short arms — 4 per side, fanning outward
         h('path', { d: 'M 38 68 Q 34 76 30 84', fill: 'none', stroke: bodyColor, strokeWidth: 2.6, strokeLinecap: 'round', className: armClass(2), style: { transformOrigin: '38px 68px', transformBox: 'fill-box' } }),
         h('path', { d: 'M 34 68 Q 28 74 22 80', fill: 'none', stroke: bodyColor, strokeWidth: 2.4, strokeLinecap: 'round', className: armClass(3), style: { transformOrigin: '34px 68px', transformBox: 'fill-box' } }),
@@ -2266,6 +2302,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '.tp-root.tp-theme-oceanic [role="textbox"] {',
       '  box-shadow: inset 0 4px 14px rgba(0, 0, 0, 0.45), inset 0 -1px 0 rgba(34, 211, 238, 0.18);',
       '}',
+      // ─── Default + steampunk current-char (closing the per-theme set) ──
+      // Default: soft accent breathe so the eye anchors on the cursor
+      // without competing with the surrounding text. Quiet, not jumpy.
+      // Scoped to .tp-theme-default so it doesn\'t override the
+      // theme-specific cyberpunk/kawaii/oceanic rules above.
+      '@keyframes tp-default-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(96,165,250,0.30); } 50% { box-shadow: 0 0 6px 1px rgba(96,165,250,0.45); } }',
+      '.tp-root.tp-theme-default .tp-current-char { animation: tp-default-pulse 1.8s ease-in-out infinite; }',
+      // Steampunk: warm brass-bracket. The cursor reads as a hot iron
+      // resting on the page — anchored, deliberate, slightly molten.
+      '@keyframes tp-steam-glow { 0%, 100% { box-shadow: 0 0 0 0 rgba(212,136,76,0.30); } 50% { box-shadow: 0 0 8px 1px rgba(212,136,76,0.55); } }',
+      '.tp-root.tp-theme-steampunk .tp-current-char {',
+      '  animation: tp-steam-glow 2.0s ease-in-out infinite;',
+      '}',
+      // Neutral overrides — neutral theme is intentionally still: no
+      // current-char animation, no pulse. Consistent with the "quiet" theme.
+      '.tp-root.tp-theme-neutral .tp-current-char { animation: none; }',
 
       /* ── Loading spinner keyframes per theme ──────────────────── */
       '@keyframes tp-spin-gear { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }',
@@ -2438,6 +2490,62 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       // mascot when it\'s rendered as the opponent. Reads as "AI-driven"
       // without changing the character itself.
       '@keyframes tp-bot-scanline { 0% { background-position: 0 -100%; } 100% { background-position: 0 200%; } }',
+      // Mochi blink — long-cycle (94% open, 6% closed) so it reads as
+      // a natural occasional blink rather than a tic.
+      '@keyframes tp-mochi-blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }',
+      '.tp-mascot-mochi .tp-mochi-eye-l, .tp-mascot-mochi .tp-mochi-eye-r { animation: tp-mochi-blink 5.5s ease-in-out infinite; }',
+      // Whiskers twitch on combo
+      '@keyframes tp-mochi-whiskers-twitch { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-2deg); } 75% { transform: rotate(2deg); } }',
+      '.tp-mascot-mochi.tp-mascot-combo .tp-mochi-whiskers { animation: tp-mochi-whiskers-twitch 0.4s ease-in-out infinite; transform-origin: 50px 64px; }',
+      // ─── Per-mascot signature moves ────────────────────────────────────
+      // Each mascot has one unique gesture that fires every ~14-18s in idle.
+      // Identifiable by silhouette alone — adds character depth without
+      // making the avatar busy. Suppressed under reduced-motion.
+      // Pip — quick double-bounce (chick hop + chirp)
+      '@keyframes tp-pip-signature { 0%, 88%, 100% { transform: translateY(0) scale(1,1); } 90% { transform: translateY(-5px) scale(0.95,1.05); } 92% { transform: translateY(0) scale(1.05,0.95); } 94% { transform: translateY(-3px) scale(1,1); } 96% { transform: translateY(0) scale(1,1); } }',
+      '.tp-mascot-pip.tp-mascot-idle { animation: tp-mascot-bob 3.2s ease-in-out infinite, tp-pip-twitch 9s ease-in-out infinite, tp-pip-signature 14s ease-in-out infinite; }',
+      // Cogsworth — full pendulum + steam puff release (workshop chime)
+      '@keyframes tp-cog-signature-steam { 0%, 84%, 100% { opacity: 0; transform: translateY(0); } 86%, 92% { opacity: 0.85; } 96% { opacity: 0; transform: translateY(-8px); } }',
+      '.tp-mascot-cogsworth.tp-mascot-idle .tp-cog-steam circle:nth-child(1) { animation: tp-cog-signature-steam 16s ease-in-out infinite; }',
+      '.tp-mascot-cogsworth.tp-mascot-idle .tp-cog-steam circle:nth-child(3) { animation: tp-cog-signature-steam 16s ease-in-out infinite 0.15s; }',
+      // Vex — boot dot ripple sweeps the bottom edge
+      '.tp-mascot-vex.tp-mascot-idle .tp-vex-boot-1 { animation: tp-vex-boot-on 3s ease-in-out infinite alternate, tp-vex-boot-off 18s linear infinite; }',
+      '.tp-mascot-vex.tp-mascot-idle .tp-vex-boot-2 { animation: tp-vex-boot-on 3s ease-in-out infinite alternate 1s, tp-vex-boot-off 18s linear infinite 0.2s; }',
+      '.tp-mascot-vex.tp-mascot-idle .tp-vex-boot-3 { animation: tp-vex-boot-on 3s ease-in-out infinite alternate 2s, tp-vex-boot-off 18s linear infinite 0.4s; }',
+      // Mochi — sneeze (whiskers twitch + tiny full-body flinch)
+      '@keyframes tp-mochi-signature { 0%, 92%, 100% { transform: rotate(0deg) translateY(0); } 94% { transform: rotate(-3deg) translateY(-2px); } 96% { transform: rotate(2deg) translateY(0); } }',
+      '.tp-mascot-mochi.tp-mascot-idle { animation: tp-mascot-bob 3.2s ease-in-out infinite, tp-mochi-signature 17s ease-in-out infinite; }',
+      // Inko — full-body chromatophore rainbow ripple (cuttlefish display)
+      '@keyframes tp-inko-signature-rainbow { 0%, 86%, 100% { fill: #22d3ee; } 88% { fill: #fb7185; } 90% { fill: #fbbf24; } 92% { fill: #5eead4; } 94% { fill: #a78bfa; } 96% { fill: #fb7185; } }',
+      '.tp-mascot-inko.tp-mascot-idle .tp-inko-chrom { animation: tp-inko-chrom-idle 2.4s ease-in-out infinite, tp-inko-signature-rainbow 18s linear infinite; }',
+      // Inko zebra display — vertical stripes flash briefly during the
+      // signature window. Real cuttlefish behavior; one of the most
+      // recognizable cephalopod patterns. ~6% of the cycle visible.
+      '@keyframes tp-inko-zebra-flash { 0%, 90%, 100% { opacity: 0; } 92%, 96% { opacity: 0.6; } }',
+      '.tp-mascot-inko.tp-mascot-idle .tp-inko-zebra { animation: tp-inko-zebra-flash 22s ease-in-out infinite; }',
+      // ─── Companion entry wave ──────────────────────────────────────────
+      // Plays once when the companion mounts (drill view enter, summary
+      // view enter, or first toggle-on). Soft fade-in + scale-up + small
+      // tilt wave so the mascot reads as a friendly arrival rather than a
+      // sudden appearance.
+      '@keyframes tp-companion-enter { 0% { opacity: 0; transform: translateY(-6px) scale(0.6) rotate(0deg); } 40% { opacity: 1; transform: translateY(0) scale(1.1) rotate(-8deg); } 60% { transform: translateY(0) scale(1) rotate(8deg); } 80% { transform: translateY(0) scale(1) rotate(-4deg); } 100% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); } }',
+      '.tp-companion-wrap { animation: tp-companion-enter 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) 1; transform-origin: bottom center; }',
+      '@media (prefers-reduced-motion: reduce) { .tp-companion-wrap { animation: none !important; } }',
+      // ─── Final anatomy polish for the other mascots ───────────────────
+      // Vex mouth-grid ripple — the 9 dots in the 3x3 mouth grid pulse in
+      // a left-to-right wave during idle. Reads as "background processing."
+      '@keyframes tp-vex-mouth-ripple { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }',
+      '.tp-mascot-vex .tp-vex-mouth circle:nth-child(1n+1) { animation: tp-vex-mouth-ripple 3s ease-in-out infinite; }',
+      '.tp-mascot-vex .tp-vex-mouth circle:nth-child(2n+1) { animation-delay: 0.4s; }',
+      '.tp-mascot-vex .tp-vex-mouth circle:nth-child(3n+1) { animation-delay: 0.8s; }',
+      // Pip beak breath — the orange triangle scales subtly (1 → 1.04 → 1)
+      // with the body bob, suggesting breathing. Faint but lifelike.
+      '@keyframes tp-pip-beak-breath { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }',
+      '.tp-mascot-pip .tp-pip-beak { animation: tp-pip-beak-breath 3.2s ease-in-out infinite; }',
+      // Cogsworth gear glint — a tiny brass highlight pulses on each gear
+      // hub every full rotation. Catches the light, suggests polished metal.
+      '@keyframes tp-cog-gear-glint { 0%, 88%, 100% { opacity: 0.7; } 92% { opacity: 1; filter: brightness(1.3); } }',
+      '.tp-mascot-cogsworth .tp-cog-gear-l circle:nth-child(2), .tp-mascot-cogsworth .tp-cog-gear-r circle:nth-child(2) { animation: tp-cog-gear-glint 6s ease-in-out infinite; }',
       // Stack column danger pulse — red border ring scales out when stack
       // is high (≥7 of 9 rows). Reads peripherally as "you are losing
       // headroom." Box-shadow approach so it doesn\'t fight the column
@@ -2459,6 +2567,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       // with the combo number itself (set via inline fontSize).
       '@keyframes tp-combo-bump { 0% { transform: scale(0.7); opacity: 0.5; } 60% { transform: scale(1.25); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }',
       '.tp-combo-bump { animation: tp-combo-bump 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 1; transform-origin: center; }',
+      // ─── Fresh-earned achievement row pulse ────────────────────────────
+      // Highlights milestone rows earned within the last 24 hours so a
+      // returning student can see "this is the one I just got." Soft
+      // success-colored glow that fades out after ~3 cycles, then
+      // settles to the normal row state — so the highlight is noticed
+      // but not perpetually distracting on subsequent visits within the
+      // same 24-hour window.
+      '@keyframes tp-ach-fresh-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(74,154,106,0); } 50% { box-shadow: 0 0 0 5px rgba(74,154,106,0.30); } }',
+      '.tp-ach-fresh { animation: tp-ach-fresh-pulse 1.8s ease-in-out 3; }',
+      '@media (prefers-reduced-motion: reduce) { .tp-ach-fresh { animation: none !important; } }',
       // ─── Personal-best cell celebration (Battle summary) ───────────────
       // Three layered effects when a stat is a new PB:
       //   (1) tp-pb-cell-glow — soft success-color outer glow on the cell
@@ -2525,6 +2643,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '.tp-battle-stage-default .tp-amb-5 { left: 92%; animation-duration: 19s; animation-delay: 14s; }',
       // Neutral theme — no ambient particles by design (theme is "quiet")
       '.tp-battle-stage-neutral .tp-amb { display: none; }',
+      // Drill stage uses the same ambience but at half-strength + slower
+      // so the typing focus stays paramount. The particles read as quiet
+      // atmosphere, not gameplay action.
+      '.tp-drill-stage .tp-amb { opacity: 0; }',
+      '.tp-drill-stage.tp-battle-stage-oceanic .tp-amb { animation-duration: 22s; }',
+      '.tp-drill-stage.tp-battle-stage-oceanic .tp-amb { opacity: 0; }',
+      '.tp-drill-stage .tp-amb { animation-iteration-count: infinite; }',
+      // Override per-particle keyframes to peak at lower opacity (~50% of battle)
+      '@keyframes tp-amb-bubble-soft { 0% { opacity: 0; transform: translateY(0) translateX(0) scale(0.8); } 10% { opacity: 0.18; } 90% { opacity: 0.18; } 100% { opacity: 0; transform: translateY(-110vh) translateX(8px) scale(1); } }',
+      '@keyframes tp-amb-ember-soft  { 0% { opacity: 0; transform: translateY(0) translateX(0); } 10% { opacity: 0.25; } 90% { opacity: 0.18; } 100% { opacity: 0; transform: translateY(-100vh) translateX(20px); } }',
+      '@keyframes tp-amb-pixel-soft  { 0% { opacity: 0; transform: translateY(-10vh); } 5% { opacity: 0.22; } 95% { opacity: 0.22; } 100% { opacity: 0; transform: translateY(110vh); } }',
+      '@keyframes tp-amb-petal-soft  { 0% { opacity: 0; transform: translateY(-10vh) translateX(0) rotate(0deg); } 10% { opacity: 0.28; } 90% { opacity: 0.22; } 100% { opacity: 0; transform: translateY(110vh) translateX(40px) rotate(360deg); } }',
+      '@keyframes tp-amb-feather-soft{ 0% { opacity: 0; transform: translateY(-10vh) rotate(-15deg); } 10% { opacity: 0.18; } 90% { opacity: 0.14; } 100% { opacity: 0; transform: translateY(110vh) translateX(30px) rotate(15deg); } }',
+      '.tp-drill-stage.tp-battle-stage-oceanic .tp-amb { animation-name: tp-amb-bubble-soft; animation-duration: 22s; }',
+      '.tp-drill-stage.tp-battle-stage-steampunk .tp-amb { animation-name: tp-amb-ember-soft; animation-duration: 22s; }',
+      '.tp-drill-stage.tp-battle-stage-cyberpunk .tp-amb { animation-name: tp-amb-pixel-soft; animation-duration: 18s; }',
+      '.tp-drill-stage.tp-battle-stage-kawaii    .tp-amb { animation-name: tp-amb-petal-soft; animation-duration: 22s; }',
+      '.tp-drill-stage.tp-battle-stage-default   .tp-amb { animation-name: tp-amb-feather-soft; animation-duration: 24s; }',
       // Reduced motion — kill all ambient particles
       '@media (prefers-reduced-motion: reduce) { .tp-battle-ambience, .tp-amb { display: none !important; } }',
       // ─── Cleared-word burst (theme-flavored expanding ring) ────────────
@@ -2552,6 +2688,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       // Bot badge has its own subtle pulse so the eye finds it
       '@keyframes tp-bot-badge-pulse { 0%, 100% { opacity: 0.85; transform: scale(1); } 50% { opacity: 1; transform: scale(1.06); } }',
       '.tp-mascot-bot-badge { animation: tp-bot-badge-pulse 2.4s ease-in-out infinite; }',
+      // ─── Per-mascot bot quirks ────────────────────────────────────────
+      // Each rival gets a unique anatomical tell so the bot version reads
+      // as "the other one" not just "the same one tinted purple." Each
+      // quirk is recognizable in its own silhouette without any text label.
+      // Pip-bot — RED PUPILS. The friendly chick is suddenly menacing.
+      // Override the global hue-shift since the red needs to stay pure red.
+      '.tp-mascot-as-bot .tp-mascot-pip { filter: saturate(0.9) drop-shadow(0 0 6px rgba(239,68,68,0.4)); }',
+      '.tp-mascot-as-bot .tp-pip-pupil-l, .tp-mascot-as-bot .tp-pip-pupil-r { fill: #ef4444; }',
+      // Cogsworth-bot — REVERSE GEARS. The clockwork is running backwards
+      // (a saboteur), each gear opposite the player\'s direction.
+      '.tp-mascot-as-bot .tp-cog-gear-l { animation: tp-cog-rotate-rev 6s linear infinite; }',
+      '.tp-mascot-as-bot .tp-cog-gear-r { animation: tp-cog-rotate 7s linear infinite; }',
+      // The pendulum also swings the opposite phase
+      '.tp-mascot-as-bot .tp-cog-pendulum { animation-direction: reverse; }',
+      // Vex-bot — GLITCHIER SCANLINE + persistent red alert at low opacity.
+      // The rival system is unstable, broadcasting interference.
+      '.tp-mascot-as-bot .tp-vex-scanline { animation-duration: 1.1s; opacity: 0.8; }',
+      '.tp-mascot-as-bot .tp-vex-alert { opacity: 0.18; }',
+      // Mochi-bot — DESATURATED. The kitten is colorless, drained — uncanny.
+      // Override the global hue-rotate (which would tint pink to violet)
+      // with a true grayscale + slight darkening.
+      '.tp-mascot-as-bot .tp-mascot-mochi { filter: grayscale(0.85) brightness(0.85) drop-shadow(0 2px 6px rgba(100,100,100,0.30)); }',
+      // Inko-bot — STUCK-RED CHROMATOPHORES. Real cuttlefish flash red as
+      // a threat display. The rival Inko is permanently in alert mode.
+      '.tp-mascot-as-bot .tp-mascot-inko { filter: hue-rotate(280deg) saturate(0.95) drop-shadow(0 0 10px rgba(220,80,80,0.35)); }',
+      '.tp-mascot-as-bot .tp-inko-chrom { animation: tp-inko-chrom-danger 0.8s ease-in-out infinite !important; }',
+      '.tp-mascot-as-bot .tp-inko-chrom-sat { animation: tp-inko-chrom-danger 0.8s ease-in-out infinite 0.4s !important; }',
+      // Inko-bot W-pupils stay constricted (alert)
+      '.tp-mascot-as-bot .tp-inko-pupil { animation: tp-inko-pupil-dart 0.6s ease-in-out infinite; }',
       // Atmospheric idle pulses — long-cycle background life. The mascot
       // emits a tiny flourish (a bubble, a steam puff, a sparkle) every
       // ~6 seconds in idle so it never feels frozen. Each is mostly empty
@@ -2623,6 +2788,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '.tp-root [aria-pressed]:hover .tp-mascot-vex { filter: drop-shadow(0 0 14px rgba(6,182,212,0.55)); }',
       '.tp-root [aria-pressed]:hover .tp-mascot-mochi { filter: drop-shadow(0 5px 12px rgba(232,90,138,0.40)); }',
       '.tp-root [aria-pressed]:hover .tp-mascot-inko { filter: drop-shadow(0 0 18px rgba(34,211,238,0.55)); }',
+      // Hover excitement — on hover, each mascot\'s characteristic
+      // motion speeds up (the cast card wakes them up). Per-mascot rules
+      // because each character has its own animated sub-elements.
+      // Pip — wings flap faster + body pulses
+      '.tp-root [aria-pressed]:hover .tp-mascot-pip .tp-pip-wing-l { animation: tp-pip-wing-flap 0.5s ease-in-out infinite; }',
+      '.tp-root [aria-pressed]:hover .tp-mascot-pip .tp-pip-wing-r { animation: tp-pip-wing-flap-r 0.5s ease-in-out infinite; }',
+      // Cogsworth — gears spin double-time + pendulum swings faster
+      '.tp-root [aria-pressed]:hover .tp-mascot-cogsworth .tp-cog-gear-l { animation-duration: 2.4s; }',
+      '.tp-root [aria-pressed]:hover .tp-mascot-cogsworth .tp-cog-gear-r { animation-duration: 2.8s; }',
+      '.tp-root [aria-pressed]:hover .tp-mascot-cogsworth .tp-cog-pendulum { animation-duration: 1.2s; }',
+      // Vex — scanline accelerates (system goes online)
+      '.tp-root [aria-pressed]:hover .tp-mascot-vex .tp-vex-scanline { animation-duration: 1.2s; }',
+      // Mochi — tail wags + bow wiggles (delighted to be picked)
+      '.tp-root [aria-pressed]:hover .tp-mascot-mochi .tp-mochi-tail { animation: tp-mochi-tail-wag 0.45s ease-in-out infinite; }',
+      '.tp-root [aria-pressed]:hover .tp-mascot-mochi .tp-mochi-bow { animation: tp-mochi-bow-wiggle 0.5s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }',
+      // Inko — chromatophores cycle warm yellow + bubbles stream up
+      // (curiosity / greeting display)
+      '.tp-root [aria-pressed]:hover .tp-mascot-inko .tp-inko-chrom { animation: tp-inko-chrom-combo 0.7s ease-in-out infinite; }',
+      '.tp-root [aria-pressed]:hover .tp-mascot-inko .tp-inko-bubbles circle { animation: tp-inko-bubble-rise 1.3s ease-out infinite; }',
+      '.tp-root [aria-pressed]:hover .tp-mascot-inko .tp-inko-bubbles circle:nth-child(2) { animation-delay: 0.3s; }',
+      '.tp-root [aria-pressed]:hover .tp-mascot-inko .tp-inko-bubbles circle:nth-child(3) { animation-delay: 0.6s; }',
       '.tp-mascot-pip .tp-pip-pupil-l, .tp-mascot-pip .tp-pip-pupil-r { transform-origin: center; transform-box: fill-box; animation: tp-pip-blink 5s ease-in-out infinite; }',
       // Pip idle wings — slow, sleepy sway. Becomes a real flap on combo.
       '.tp-mascot-pip .tp-pip-wing-l { animation: tp-pip-wing-sway 3.6s ease-in-out infinite; }',
@@ -3779,13 +3965,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   maxWidth: '640px'
                 }
               }, (function() {
+                // UDL framing: describe how the tool behaves, not who it
+                // was "built for." Naming conditions others students who
+                // do have those labels and excludes students who don't —
+                // opposite of inclusion. The accessibility is in the
+                // design (toggles, no timers, no leaderboards). The blurb
+                // just confirms that.
                 var tm = state.theme || 'default';
-                if (tm === 'steampunk') return 'A workshop for learners with dysgraphia, dyslexia, ADHD, motor-planning differences, and low vision. Set your own cadence — no hourglass, no ranks, no punishment for missed days.';
-                if (tm === 'cyberpunk') return '[BUILT FOR] dysgraphia :: dyslexia :: ADHD :: motor-planning :: low-vision. [OFF] timers :: leaderboards :: streak-punish :: ads. user-pace :: always.';
-                if (tm === 'kawaii')    return 'Made with love for learners with dysgraphia, dyslexia, ADHD, motor-planning differences, and low vision. 💕 Go at YOUR pace — no timers, no rankings, no streak guilt. Just you, being you. ✨';
-                if (tm === 'oceanic')   return 'A quiet shelf for learners with dysgraphia, dyslexia, ADHD, motor-planning differences, and low vision. Move at your own depth — no clocks, no rankings, no penalty for surfacing when you need to.';
-                if (tm === 'neutral')   return 'For learners with dysgraphia, dyslexia, ADHD, motor-planning differences, low vision. Self-paced. No timers, rankings, or streak penalties.';
-                return 'Built for learners with dysgraphia, dyslexia, ADHD, motor-planning differences, and low vision. Go at your own pace — there are no timers, leaderboards, or streak punishments here.';
+                if (tm === 'steampunk') return 'Self-paced practice at the workshop bench. The hourglass stays still; rankings do not exist; the ledger never punishes a missed day.';
+                if (tm === 'cyberpunk') return '[SELF-PACED] :: no timers :: no leaderboards :: no streak-penalty :: user-pace always';
+                if (tm === 'kawaii')    return 'Practice at YOUR pace 💕 No timers, no rankings, no streak guilt — just you, being you ✨';
+                if (tm === 'oceanic')   return 'Move at your own depth. No clocks, no rankings, no penalty for surfacing when you need to.';
+                if (tm === 'neutral')   return 'Self-paced. No timers, rankings, or streak penalties.';
+                return 'Self-paced typing practice. No timers, leaderboards, or streak penalties.';
               })())
             ),
 
@@ -5216,6 +5408,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             updMulti({ view: 'drill' });
           };
 
+          // Companion mascot at idle — shows on the intro so the cast
+          // member greets the student before practice starts. Same
+          // continuity as drill + summary; doesn't fire on neutral theme.
+          var introCompanion = null;
+          if (state.accommodations.showCompanion) {
+            introCompanion = renderBattleMascot(state.theme || 'default', 'idle', {
+              size: 48,
+              label: 'Companion mascot — ready'
+            });
+          }
           return h('div', {
             style: {
               padding: '20px',
@@ -5224,9 +5426,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               color: palette.text,
               fontFamily: fontFamily,
               background: palette.bg,
-              minHeight: '60vh'
+              minHeight: '60vh',
+              position: 'relative'
             }
           },
+            // Companion top-right — same placement as drill + summary so
+            // the mascot stays visually anchored across the practice flow.
+            introCompanion ? h('div', {
+              className: 'tp-companion-wrap',
+              'aria-hidden': 'true',
+              style: {
+                position: 'absolute',
+                top: 12,
+                right: 16,
+                width: 48,
+                height: 48,
+                pointerEvents: 'none',
+                zIndex: 1
+              }
+            }, introCompanion) : null,
             renderBackButton(function() { go('menu'); }, palette),
 
             h('div', {
@@ -5699,7 +5917,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             '- Lowercase is fine. Capital letters only at the start of sentences or for proper nouns.',
             '- No numbers unless essential (typing digits requires reaching up to the number row, which is advanced).',
             '- No lists, no headers, no markdown, no HTML. Plain sentences only.',
-            '- This is for a student with possible disabilities (dyslexia, dysgraphia, motor planning). Keep it encouraging and calm. No pressure, no competition framing.',
+            '- Keep it encouraging and calm. No pressure, no competition framing, no urgency.',
             '',
             'Output ONLY the passage text, nothing else. No preamble, no title, no explanation. Just the sentences.'
           ].join('\n');
@@ -5757,6 +5975,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           var cached = state.aiPassage;
           var gradeOptions = ['K', '1', '2-3', '4-5', '6-8', '9-12'];
 
+          // Passage-setup hero — 56px mascot at idle. Calm, ready-to-help
+          // posture for a creative work surface (different from celebration
+          // surfaces which use 'win'). Always-on, not gated on
+          // showCompanion — this is page identity, not reactive companion.
+          var passageHeroMascot = renderBattleMascot(state.theme || 'default', 'idle', {
+            size: 56,
+            label: 'Passage generator hero'
+          });
           return h('div', {
             style: {
               padding: '20px',
@@ -5769,7 +5995,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             }
           },
             renderBackButton(function() { go('menu'); }, palette),
-            h('h3', { style: { margin: '16px 0 4px 0', color: palette.text } }, (function() {
+            h('div', {
+              style: {
+                marginTop: '14px',
+                marginBottom: '4px',
+                display: 'flex',
+                justifyContent: 'center',
+                padding: '14px 0',
+                background: 'radial-gradient(ellipse 50% 100% at 50% 50%, ' + palette.accent + '0e, transparent 70%)',
+                borderRadius: 16
+              }
+            },
+              h('div', { style: { width: 56, height: 56 } },
+                passageHeroMascot || h('div', {
+                  'aria-hidden': 'true',
+                  style: { width: 56, height: 56, borderRadius: '50%', background: palette.accent + '1a', border: '2px solid ' + palette.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28 }
+                }, '✨')
+              )
+            ),
+            h('h3', { style: { margin: '8px 0 4px 0', color: palette.text, textAlign: 'center' } }, (function() {
               var tm = state.theme || 'default';
               if (tm === 'steampunk') return '⚙  Bespoke Passage';
               if (tm === 'cyberpunk') return '[AI PASSAGE :: PERSONALIZED]';
@@ -5779,15 +6023,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               return '✨  Personalized Passage';
             })()),
             h('p', {
-              style: { margin: '0 0 20px 0', fontSize: '12px', color: palette.textMute, lineHeight: '1.5' }
+              style: { margin: '0 0 20px 0', fontSize: '12px', color: palette.textMute, lineHeight: '1.5', textAlign: 'center' }
             }, (function() {
+              // UDL framing: "thoughtfully written" / "age-appropriate"
+              // describe HOW the AI writes, not WHO the writing is for.
+              // No condition-naming.
               var tm = state.theme || 'default';
-              if (tm === 'steampunk') return 'Have the workshop compose a passage in your grade and to your interests. Every draft is age-fitting and disability-aware.';
-              if (tm === 'cyberpunk') return '[GEN] grade-pinned :: interest-weighted :: age-safe :: disability-aware by default';
+              if (tm === 'steampunk') return 'Have the workshop compose a passage in your grade and to your interests. Every draft is age-fitting and thoughtfully written.';
+              if (tm === 'cyberpunk') return '[GEN] grade-pinned :: interest-weighted :: age-safe :: calm-by-default';
               if (tm === 'kawaii')    return 'Let\'s make a passage just for you! 💕 At your grade level, about something you love. Always age-friendly and thoughtfully written. ✨';
               if (tm === 'oceanic')   return 'A passage shaped to your grade, your interests, and your reading depth — calmly written, always age-appropriate.';
-              if (tm === 'neutral')   return 'Grade-pinned, interest-driven, age-appropriate, disability-aware.';
-              return 'Generate a passage at your grade level about something you care about. Passages are always age-appropriate and disability-aware.';
+              if (tm === 'neutral')   return 'Grade-pinned, interest-driven, age-appropriate.';
+              return 'Generate a passage at your grade level about something you care about. Passages are always age-appropriate and calmly written.';
             })()),
 
             // Grade selector
@@ -6433,7 +6680,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             beatOpacity = 0.35 + 0.65 * (0.5 + 0.5 * Math.sin(phase * 2 * Math.PI));
           }
 
+          // Companion mascot — opt-in via accommodations.showCompanion.
+          // Reads existing drill state and maps to mascot states. No new
+          // tracking; uses streak (clean keystroke count), errorCount,
+          // paused, drillComplete, and lastWasWrong already managed by the
+          // drill loop. State priorities (high → low):
+          //   sleep   — drill is paused
+          //   win     — drill complete and current liveWpm beats personal best
+          //   wow     — drill complete (no PB)
+          //   incoming — most recent keystroke was wrong (transient)
+          //   danger   — accuracy under 80% with ≥10 chars typed
+          //   combo   — clean streak ≥ 5
+          //   idle    — default
+          var companionMascot = null;
+          if (state.accommodations.showCompanion) {
+            var companionState = 'idle';
+            var pbRow = ((state.personalBest || {})[activeDrill && activeDrill.id]) || {};
+            var pbWpm = pbRow.wpm || 0;
+            if (paused) companionState = 'sleep';
+            else if (drillComplete && liveWpm > pbWpm && liveWpm > 0) companionState = 'win';
+            else if (drillComplete) companionState = 'wow';
+            else if (lastWasWrong) companionState = 'incoming';
+            else if (typed.length >= 10 && liveAcc < 80) companionState = 'danger';
+            else if (streak >= 5) companionState = 'combo';
+            companionMascot = renderBattleMascot(state.theme || 'default', companionState, {
+              size: 48,
+              label: 'Companion mascot — ' + companionState
+            });
+          }
           return h('div', {
+            className: 'tp-battle-stage tp-battle-stage-' + (state.theme || 'default') + ' tp-drill-stage',
             style: {
               padding: '20px',
               maxWidth: '960px',
@@ -6441,9 +6717,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               color: palette.text,
               fontFamily: fontFamily,
               background: palette.bg,
-              minHeight: '60vh'
+              minHeight: '60vh',
+              position: 'relative',
+              overflow: 'hidden'
             }
           },
+            // Theme-flavored ambient particles — same system as Battle
+            // playfield but at half-opacity (`.tp-drill-stage` rules below)
+            // so they read as quiet atmosphere without competing with the
+            // typing focus. Off entirely under prefers-reduced-motion + on
+            // neutral theme (consistent with Battle stage). Pointer-events
+            // none so they never block keystroke focus.
+            h('div', {
+              className: 'tp-battle-ambience',
+              'aria-hidden': 'true',
+              style: { position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }
+            },
+              [0, 1, 2, 3].map(function(i) {
+                return h('span', { key: 'amb-' + i, className: 'tp-amb tp-amb-' + i });
+              })
+            ),
+            // Companion in top-right corner — absolute so it doesn't
+            // disturb the existing drill layout. Hidden when neutral
+            // theme (renderBattleMascot returns null) or toggle is off.
+            // Mount-time enter animation (tp-companion-enter) plays a
+            // soft fade-in + scale-up + small tilt wave so the mascot
+            // arrives like a friendly greeting rather than just popping
+            // into view.
+            companionMascot ? h('div', {
+              className: 'tp-companion-wrap',
+              'aria-hidden': 'true',
+              style: {
+                position: 'absolute',
+                top: 12,
+                right: 16,
+                width: 48,
+                height: 48,
+                pointerEvents: 'none',
+                zIndex: 1
+              }
+            }, companionMascot) : null,
             // Top bar: back + drill title + pause + live chip
             h('div', {
               style: { display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px', flexWrap: 'wrap' }
@@ -7146,6 +7459,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             }
           }
 
+          // Companion mascot in summary — same opt-in as drill view. Maps
+          // session outcome to mascot state so the celebration carries
+          // through from drill → summary instead of the mascot vanishing
+          // at the end of the practice.
+          var summaryCompanion = null;
+          if (state.accommodations.showCompanion) {
+            var summaryCompanionState = (s.isNewBest || s.firstGoalMet || s.masteryAdvanced) ? 'win'
+                                       : s.isBaseline ? 'wow'
+                                       : 'idle';
+            summaryCompanion = renderBattleMascot(state.theme || 'default', summaryCompanionState, {
+              size: 56,
+              label: 'Companion mascot — ' + summaryCompanionState
+            });
+          }
           return h('div', {
             style: {
               padding: '20px',
@@ -7154,9 +7481,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               color: palette.text,
               fontFamily: fontFamily,
               background: palette.bg,
-              minHeight: '60vh'
+              minHeight: '60vh',
+              position: 'relative'
             }
           },
+            // Companion absolute top-right — matches drill view placement.
+            // Hidden when toggle off or on neutral theme. Same enter
+            // animation as the drill view companion so the mascot reads
+            // as "joining the celebration."
+            summaryCompanion ? h('div', {
+              className: 'tp-companion-wrap',
+              'aria-hidden': 'true',
+              style: {
+                position: 'absolute',
+                top: 12,
+                right: 16,
+                width: 56,
+                height: 56,
+                pointerEvents: 'none',
+                zIndex: 1
+              }
+            }, summaryCompanion) : null,
             h('div', {
               style: {
                 background: palette.surface,
@@ -8248,9 +8593,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             // Focus-mode is a child toggle of largeKeys — only meaningful when
             // the keyboard is shown. Hide it otherwise to reduce clutter.
             acc.largeKeys ? renderToggleRow('Focus mode on keyboard', 'When the on-screen keyboard is on, heavily dims all keys except the next target. Same-finger keys stay slightly visible as a motor-planning hint.', acc.focusKeyboard, function() { toggle('focusKeyboard'); }, palette) : null,
-            renderToggleRow('High-contrast mode', 'Black / yellow / white palette that works for low vision.', acc.highContrast, function() { toggle('highContrast'); }, palette),
+            renderToggleRow('High-contrast mode', 'Black / yellow / white palette with maximum contrast.', acc.highContrast, function() { toggle('highContrast'); }, palette),
             renderToggleRow('Audio cues', 'Soft chime on correct keypress, low tone on errors. Non-alarming.', acc.audioCues, function() { toggle('audioCues'); }, palette),
-            renderToggleRow('Speak words as you type', 'After each space, the tool reads the just-completed word aloud. Supports auditory learners and low-vision typists. Requires the hub\'s text-to-speech to be available.', acc.speakWordsOnSpace, function() { toggle('speakWordsOnSpace'); }, palette),
+            renderToggleRow('Speak words as you type', 'After each space, the tool reads the just-completed word aloud. Supports listening + reading practice and screen-free typing. Requires the hub\'s text-to-speech to be available.', acc.speakWordsOnSpace, function() { toggle('speakWordsOnSpace'); }, palette),
+            renderToggleRow('Companion mascot in drills', 'Shows the active theme\'s mascot (Pip, Cogsworth, Vex, Mochi, or Inko) in the corner of the drill view. Reacts to clean keystreaks (excited), errors (worried), and completion (celebration). Off by default — some students find peripheral motion distracting; others want a quiet companion through practice.', acc.showCompanion, function() { toggle('showCompanion'); }, palette),
 
             // Audio theme picker — only visible when audio cues are on.
             acc.audioCues ? h('div', {
@@ -8286,7 +8632,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 }, themeLabel);
               })
             ) : null,
-            renderToggleRow('Error-tolerant mode', 'Errors don\'t block progress — great for dysgraphia. The target advances with the correct character so the student can keep going.', acc.errorTolerant, function() { toggle('errorTolerant'); }, palette),
+            renderToggleRow('Error-tolerant mode', 'Errors don\'t block progress — the target advances with the correct character so you keep going.', acc.errorTolerant, function() { toggle('errorTolerant'); }, palette),
             renderToggleRow('Predictive assist', 'Shows the next 1–3 characters with a soft highlight so emerging typists can plan the next move. Auto-fades as your accuracy on this drill improves.', acc.predictiveAssist, function() { toggle('predictiveAssist'); }, palette),
             renderToggleRow('🎨 Story mode (illustrate passages)', 'After you finish a personalized-passage drill, offer a button to illustrate the passage with an AI-generated image. Educational-illustration style, student-friendly. Off by default.', acc.storyModeImage, function() { toggle('storyModeImage'); }, palette),
             renderToggleRow('🎨 Prompt mode (art from custom drills)', 'After you finish a custom-drill session, your drill text becomes an AI image prompt. Drill again and the image refines via image-to-image — typing becomes the brushstroke. Off by default.', acc.promptModeImage, function() { toggle('promptModeImage'); }, palette),
@@ -9059,6 +9405,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           var trend = sessions.slice(-12); // last 12 matching sessions
           var trendMax = trend.reduce(function(m, s) { return Math.max(m, s.wpm || 0); }, 10);
 
+          // Progress hero mascot — quieter than the Achievements hero
+          // (64px vs 80px) since this is a data-review surface, not a
+          // celebration. State is 'wow' if the student has any session
+          // history (the mascot is impressed by the effort being reviewed)
+          // or 'idle' if the page is empty (calm welcome).
+          var progressHeroMascot = renderBattleMascot(state.theme || 'default', allSessions.length > 0 ? 'wow' : 'idle', {
+            size: 64,
+            label: 'Progress hero — ' + (allSessions.length > 0 ? 'reviewing growth' : 'no sessions yet')
+          });
           return h('div', {
             style: {
               padding: '20px',
@@ -9071,9 +9426,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             }
           },
             renderBackButton(function() { go('menu'); }, palette),
-            h('h3', { style: { margin: '16px 0 4px 0', color: palette.text } }, '📊  Progress & Goals'),
+            // Mascot hero — centered, theme-tinted radial backdrop. Falls
+            // back to a chart emoji on neutral theme.
+            h('div', {
+              style: {
+                marginTop: '14px',
+                marginBottom: '4px',
+                display: 'flex',
+                justifyContent: 'center',
+                padding: '14px 0',
+                background: 'radial-gradient(ellipse 50% 100% at 50% 50%, ' + palette.accent + '0e, transparent 70%)',
+                borderRadius: 16
+              }
+            },
+              h('div', { style: { width: 64, height: 64 } },
+                progressHeroMascot || h('div', {
+                  'aria-hidden': 'true',
+                  style: { width: 64, height: 64, borderRadius: '50%', background: palette.accent + '1a', border: '2px solid ' + palette.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 30 }
+                }, '📊')
+              )
+            ),
+            h('h3', { style: { margin: '8px 0 4px 0', color: palette.text, textAlign: 'center' } }, '📊  Progress & Goals'),
             h('p', {
-              style: { margin: '0 0 20px 0', fontSize: '12px', color: palette.textMute, lineHeight: '1.5' }
+              style: { margin: '0 0 20px 0', fontSize: '12px', color: palette.textMute, lineHeight: '1.5', textAlign: 'center' }
             }, 'Your personal growth path. No peer comparison — this is just you, over time.'),
 
             // Skill tree: tier progression visual
@@ -10557,6 +10932,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             if (b.date) return 1;
             return 0;
           });
+          // Achievements hero — always-on mascot at the top of this view
+          // (not gated on showCompanion). This is a celebration surface; the
+          // mascot earns its place as part of the recognition. State maps
+          // to whether the student has earned anything yet.
+          var achHeroMascot = renderBattleMascot(state.theme || 'default', earned.length > 0 ? 'win' : 'idle', {
+            size: 80,
+            label: 'Achievements ' + (earned.length > 0 ? 'celebration' : 'welcome')
+          });
           return h('div', {
             style: {
               padding: '20px',
@@ -10569,7 +10952,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             }
           },
             renderBackButton(function() { go('menu'); }, palette),
-            h('h3', { style: { margin: '16px 0 4px 0', color: palette.text } }, (function() {
+            // Mascot hero — centered, theme-tinted radial backdrop. Falls
+            // back to the trophy emoji on neutral theme (no mascot).
+            h('div', {
+              style: {
+                marginTop: '14px',
+                marginBottom: '4px',
+                display: 'flex',
+                justifyContent: 'center',
+                padding: '20px 0',
+                background: 'radial-gradient(ellipse 60% 100% at 50% 50%, ' + palette.accent + '12, transparent 70%)',
+                borderRadius: 16
+              }
+            },
+              h('div', { style: { width: 80, height: 80 } },
+                achHeroMascot || h('div', {
+                  'aria-hidden': 'true',
+                  style: { width: 80, height: 80, borderRadius: '50%', background: palette.accent + '1a', border: '2px solid ' + palette.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40 }
+                }, earned.length > 0 ? '🏆' : '🏅')
+              )
+            ),
+            h('h3', { style: { margin: '8px 0 4px 0', color: palette.text, textAlign: 'center' } }, (function() {
               var tm = state.theme || 'default';
               if (tm === 'steampunk') return '⚙  Workshop Honours';
               if (tm === 'cyberpunk') return '[ACHIEVEMENTS]';
@@ -10606,6 +11009,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 var ms = MILESTONES.filter(function(x) { return x.id === entry.id; })[0];
                 if (!ms) return null;
                 var tm = state.theme || 'default';
+                // Fresh-earned detection — milestones earned in the last
+                // 24 hours get a brief celebratory pulse so a returning
+                // student can see "this is the one I just got." Compares
+                // entry.date (ISO string) to now; legacy entries with
+                // null dates never pulse (they\'re by definition old).
+                var isFresh = false;
+                if (entry.date) {
+                  var ageMs = Date.now() - new Date(entry.date).getTime();
+                  if (ageMs < 24 * 60 * 60 * 1000) isFresh = true;
+                }
                 var rowStyle = {
                   padding: '12px 14px',
                   background: palette.surface,
@@ -10647,6 +11060,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 return h('div', {
                   key: 'ach-' + entry.id,
                   role: 'listitem',
+                  className: isFresh ? 'tp-ach-fresh' : undefined,
                   style: rowStyle
                 },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 } },
@@ -10661,7 +11075,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                         fontSize: '18px', flexShrink: 0, lineHeight: 1
                       }
                     }, leadingIcon) : null,
-                    h('div', { style: { fontSize: '14px', color: palette.text, fontWeight: 600 } }, titleText)
+                    h('div', { style: { fontSize: '14px', color: palette.text, fontWeight: 600 } }, titleText),
+                    isFresh ? h('span', {
+                      style: {
+                        fontSize: 9, fontWeight: 800, letterSpacing: '0.06em',
+                        textTransform: 'uppercase', padding: '2px 6px', borderRadius: 999,
+                        background: palette.success, color: palette.bg, lineHeight: 1.2
+                      }
+                    }, 'NEW') : null
                   ),
                   h('div', { style: { fontSize: '11px', color: palette.textMute, fontVariantNumeric: 'tabular-nums', flexShrink: 0 } },
                     entry.date ? new Date(entry.date).toLocaleDateString() : 'earned'
