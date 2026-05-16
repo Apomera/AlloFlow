@@ -848,6 +848,64 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         }
       ];
 
+      // ─── Depth zones (pelagic / reef / midwater / abyssal) ───────────
+      // The octopus's y-position (vertical altitude in the water column)
+      // determines which depth zone they're in. Each zone has its own fog
+      // color, ambient lighting, predator spawn pool, and visual character.
+      // Move up = press Q, move down = press Z. Pressure damage at extremes.
+      var DEPTH_ZONES = {
+        surface: {
+          minY: 8.0, maxY: 20.0,
+          name: 'Surface', icon: '☀️',
+          fogColor: 0x4a90c0, fogFar: 80,
+          ambientHex: 0x6b95b8, sunHex: 0xfff8e0,
+          pressureDanger: false,
+          description: 'Photic zone, 0-20m. Surface light penetrates fully.',
+        },
+        reef: {
+          minY: 1.0, maxY: 8.0,
+          name: 'Reef', icon: '🪸',
+          fogColor: 0x0e3d5c, fogFar: 70,
+          ambientHex: 0x3a5876, sunHex: 0xb8e6f0,
+          pressureDanger: false,
+          description: 'Coral reef habitat, 5-30m. Most octopuses live here.',
+        },
+        midwater: {
+          minY: -8.0, maxY: 1.0,
+          name: 'Midwater', icon: '🌊',
+          fogColor: 0x062840, fogFar: 50,
+          ambientHex: 0x244668, sunHex: 0x6890b0,
+          pressureDanger: false,
+          description: 'Twilight zone, 200-1000m. Cuttlefish and squid common.',
+        },
+        deep: {
+          minY: -20.0, maxY: -8.0,
+          name: 'Deep', icon: '🌑',
+          fogColor: 0x021428, fogFar: 35,
+          ambientHex: 0x1a2840, sunHex: 0x405888,
+          pressureDanger: true,    // Slight pressure if non-deep species
+          description: 'Bathypelagic, 1000-4000m. Dumbo octopus and vampire squid territory.',
+        },
+        abyssal: {
+          minY: -50.0, maxY: -20.0,
+          name: 'Abyssal', icon: '⚫',
+          fogColor: 0x000810, fogFar: 25,
+          ambientHex: 0x101830, sunHex: 0x203850,
+          pressureDanger: true,
+          description: 'Hadal zone, 4000m+. Extreme pressure. Only deep-adapted species survive.',
+        },
+      };
+      function depthZoneFor(y) {
+        if (y >= DEPTH_ZONES.surface.minY) return 'surface';
+        if (y >= DEPTH_ZONES.reef.minY) return 'reef';
+        if (y >= DEPTH_ZONES.midwater.minY) return 'midwater';
+        if (y >= DEPTH_ZONES.deep.minY) return 'deep';
+        return 'abyssal';
+      }
+      function isDeepSpecies(speciesId) {
+        return speciesId === 'dumboOcto' || speciesId === 'vampireSquid';
+      }
+
       // ─── Achievement system + biology fact popups ───────────────────
       // Achievements fire on first-time triggers during a dive. Each one
       // unlocks a real-biology fact popup ("Did You Know?") that overlays
@@ -1075,7 +1133,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 { k: 'HOLD E', d: 'Drill open a clam (1.8s, big calorie payoff)', color: '#fb923c' },
                 { k: 'I', d: 'Ink defense — 3 charges, 8s cooldown between', color: '#a78bfa' },
                 { k: 'G', d: 'Grab / drop shelter (coconut, bottle, conch)', color: '#a07840' },
-                { k: 'M / H', d: 'Species ability — mimicry (M) / hypnotic display (H)', color: '#fbbf24' },
+                { k: 'M / H / B', d: 'Species ability — mimic (M) / hypnotic (H) / burglar alarm (B)', color: '#fbbf24' },
+                { k: 'Q / Z', d: 'Ascend / descend through depth zones', color: '#60a5fa' },
                 { k: 'ESC', d: 'Pause / resume the dive', color: '#cbd5e1' },
                 { k: '(passive)', d: 'Camouflage — settle on a substrate to blend', color: '#22d3ee' }
               ].map(function(c, i) {
@@ -2196,6 +2255,306 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         // Species-specific abilities also fire their achievement on use.
         // Survival-time milestones tracked below in the loop.
 
+        // ─── Additional zonal predators ─────────────────────────────
+        // These 5 spawn periodically by depth zone, like the reef shark.
+        // Each models a real ocean predator with depth-appropriate ecology.
+        var zonalPredators = [];
+
+        // 1. Sea Otter (surface-only) — adorable but a major octopus predator
+        //    on Pacific coast reefs. Real biology: sea otters dive 5-25m and
+        //    crack open octopuses + crabs with rocks.
+        function spawnSeaOtter() {
+          var g = new THREE.Group();
+          var bMat = new THREE.MeshStandardMaterial({ color: 0x6b4423, roughness: 0.85 });
+          var body = new THREE.Mesh(new THREE.SphereGeometry(0.5, 10, 8), bMat);
+          body.scale.set(1.5, 0.7, 0.85);
+          g.add(body);
+          var head = new THREE.Mesh(new THREE.SphereGeometry(0.32, 8, 6),
+            new THREE.MeshStandardMaterial({ color: 0x8a5a32, roughness: 0.85 }));
+          head.position.set(0.85, 0.15, 0);
+          g.add(head);
+          // Whiskers / eyes
+          for (var sei2 = 0; sei2 < 2; sei2++) {
+            var seye2 = new THREE.Mesh(new THREE.SphereGeometry(0.05, 6, 5),
+              new THREE.MeshBasicMaterial({ color: 0x080808 }));
+            seye2.position.set(1.05, 0.2, sei2 === 0 ? -0.1 : 0.1);
+            g.add(seye2);
+          }
+          // Tail
+          var tail = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.6, 5),
+            new THREE.MeshStandardMaterial({ color: 0x6b4423, roughness: 0.85 }));
+          tail.position.set(-1.0, 0, 0);
+          tail.rotation.z = -Math.PI / 2;
+          g.add(tail);
+          g.position.set(
+            octopus.position.x + (Math.random() - 0.5) * 40,
+            12 + Math.random() * 3,
+            octopus.position.z + (Math.random() - 0.5) * 40
+          );
+          g.userData = {
+            kind: 'seaOtter', zone: 'surface',
+            state: 'patrol', stateTimer: 0,
+            aggroRange: 9, speed: 4.0, damage: 28,
+            cooldownUntil: 0, attacksRemaining: 2,
+            patrolAngle: Math.random() * Math.PI * 2,
+          };
+          scene.add(g);
+          zonalPredators.push(g);
+          clAnnounce('Sea otter spotted on surface');
+        }
+
+        // 2. Sperm Whale (deep + abyssal) — top cephalopod predator. Eats
+        //    millions of squid annually. Massive (12-18m long).
+        function spawnSpermWhale() {
+          var g = new THREE.Group();
+          var wMat = new THREE.MeshStandardMaterial({ color: 0x3a4250, roughness: 0.7 });
+          var body = new THREE.Mesh(new THREE.SphereGeometry(1.2, 12, 8), wMat);
+          body.scale.set(3.2, 1.0, 1.1);
+          g.add(body);
+          // Distinctive blocky head (sperm whales have square heads)
+          var head = new THREE.Mesh(new THREE.BoxGeometry(1.8, 1.4, 1.6),
+            new THREE.MeshStandardMaterial({ color: 0x424d5c, roughness: 0.7 }));
+          head.position.set(2.5, 0, 0);
+          g.add(head);
+          // Fluke
+          var fluke = new THREE.Mesh(new THREE.ConeGeometry(1.2, 1.5, 5),
+            new THREE.MeshStandardMaterial({ color: 0x3a4250, roughness: 0.7 }));
+          fluke.position.set(-3.8, 0, 0);
+          fluke.rotation.z = -Math.PI / 2;
+          fluke.scale.set(0.5, 1, 2);
+          g.add(fluke);
+          // Eye
+          var weye = new THREE.Mesh(new THREE.SphereGeometry(0.12, 6, 5),
+            new THREE.MeshBasicMaterial({ color: 0x080808 }));
+          weye.position.set(2.5, 0.3, 0.7);
+          g.add(weye);
+          g.position.set(
+            octopus.position.x + 30 + Math.random() * 20,
+            -15 + Math.random() * 3,
+            octopus.position.z + 30 + Math.random() * 20
+          );
+          g.userData = {
+            kind: 'spermWhale', zone: 'deep',
+            state: 'patrol', stateTimer: 0,
+            aggroRange: 18, speed: 5.8, damage: 80,
+            cooldownUntil: 0, attacksRemaining: 1,
+            patrolAngle: Math.random() * Math.PI * 2,
+          };
+          scene.add(g);
+          zonalPredators.push(g);
+          clAnnounce('Sperm whale approaching from depth');
+        }
+
+        // 3. Anglerfish (deep + abyssal) — bioluminescent lure dangling
+        //    from a modified dorsal spine. Real biology: female anglerfish
+        //    are 10x larger than males which become parasitic appendages.
+        function spawnAnglerfish() {
+          var g = new THREE.Group();
+          var bMat = new THREE.MeshStandardMaterial({ color: 0x202830, roughness: 0.85 });
+          var body = new THREE.Mesh(new THREE.SphereGeometry(0.55, 10, 7), bMat);
+          body.scale.set(1.4, 0.9, 0.95);
+          g.add(body);
+          // Huge mouth (open)
+          var mouth = new THREE.Mesh(new THREE.ConeGeometry(0.4, 0.5, 5),
+            new THREE.MeshBasicMaterial({ color: 0x080608 }));
+          mouth.position.set(0.7, 0, 0);
+          mouth.rotation.z = -Math.PI / 2;
+          g.add(mouth);
+          // Long teeth
+          for (var ati = 0; ati < 6; ati++) {
+            var tooth = new THREE.Mesh(new THREE.ConeGeometry(0.025, 0.18, 4),
+              new THREE.MeshBasicMaterial({ color: 0xfae8b8 }));
+            tooth.position.set(0.7, -0.18 + (ati % 2) * 0.36, (ati - 2.5) * 0.08);
+            tooth.rotation.x = (ati % 2 === 0) ? 0 : Math.PI;
+            g.add(tooth);
+          }
+          // Lure (the famous bioluminescent dangler)
+          var luseStalk = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.02, 0.02, 0.8, 4),
+            new THREE.MeshStandardMaterial({ color: 0x202830 })
+          );
+          luseStalk.position.set(0.4, 0.85, 0);
+          g.add(luseStalk);
+          var lure = new THREE.Mesh(
+            new THREE.SphereGeometry(0.08, 8, 6),
+            new THREE.MeshBasicMaterial({ color: 0xc9f8ff, transparent: true, opacity: 0.85 })
+          );
+          lure.position.set(0.4, 1.25, 0);
+          g.add(lure);
+          g.position.set(
+            octopus.position.x + (Math.random() - 0.5) * 30,
+            -22 + Math.random() * 5,
+            octopus.position.z + (Math.random() - 0.5) * 30
+          );
+          g.userData = {
+            kind: 'anglerfish', zone: 'abyssal',
+            state: 'patrol', stateTimer: 0,
+            aggroRange: 6, speed: 2.2, damage: 40,
+            cooldownUntil: 0, attacksRemaining: 3,
+            patrolAngle: Math.random() * Math.PI * 2,
+            lure: lure,   // animate the glow
+          };
+          scene.add(g);
+          zonalPredators.push(g);
+          clAnnounce('Anglerfish lure spotted');
+        }
+
+        // 4. Giant Squid (deep + abyssal) — Architeuthis dux. Cephalopod
+        //    cannibalism is real; large squid eat smaller cephalopods.
+        function spawnGiantSquid() {
+          var g = new THREE.Group();
+          var sMat = new THREE.MeshStandardMaterial({ color: 0x9a3850, roughness: 0.5 });
+          var mantle = new THREE.Mesh(new THREE.ConeGeometry(0.6, 2.2, 8), sMat);
+          mantle.rotation.z = Math.PI / 2;
+          mantle.position.set(-0.8, 0, 0);
+          g.add(mantle);
+          // Two long feeding tentacles
+          for (var gsti = 0; gsti < 2; gsti++) {
+            var gst = new THREE.Mesh(
+              new THREE.CylinderGeometry(0.08, 0.03, 2.4, 6),
+              sMat
+            );
+            gst.position.set(0.6 + Math.sin(gsti) * 0.1, gsti === 0 ? -0.12 : 0.12, 0);
+            gst.rotation.z = Math.PI / 2;
+            g.add(gst);
+          }
+          // 8 shorter arms
+          for (var gsai = 0; gsai < 8; gsai++) {
+            var angle2 = (gsai / 8) * Math.PI * 2;
+            var armSeg = new THREE.Mesh(
+              new THREE.CylinderGeometry(0.06, 0.02, 1.1, 5),
+              sMat
+            );
+            armSeg.position.set(0.3 + Math.cos(angle2) * 0.15, Math.sin(angle2) * 0.3, 0);
+            armSeg.rotation.z = Math.PI / 2;
+            g.add(armSeg);
+          }
+          // Single giant eye
+          var gse = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10, 8),
+            new THREE.MeshStandardMaterial({ color: 0xfff8e0 }));
+          gse.position.set(-0.5, 0.4, 0.45);
+          g.add(gse);
+          var gsp = new THREE.Mesh(new THREE.SphereGeometry(0.12, 8, 6),
+            new THREE.MeshBasicMaterial({ color: 0x080808 }));
+          gsp.position.set(-0.5, 0.4, 0.6);
+          g.add(gsp);
+          g.position.set(
+            octopus.position.x + (Math.random() - 0.5) * 40,
+            -25 + Math.random() * 5,
+            octopus.position.z + (Math.random() - 0.5) * 40
+          );
+          g.userData = {
+            kind: 'giantSquid', zone: 'abyssal',
+            state: 'patrol', stateTimer: 0,
+            aggroRange: 11, speed: 4.5, damage: 55,
+            cooldownUntil: 0, attacksRemaining: 2,
+            patrolAngle: Math.random() * Math.PI * 2,
+          };
+          scene.add(g);
+          zonalPredators.push(g);
+          clAnnounce('Giant squid hunting');
+        }
+
+        // 5. Barracuda (surface + reef) — speed-attack mid-water predator.
+        //    Real biology: lunges at high speed (44 mph documented in chase).
+        function spawnBarracuda() {
+          var g = new THREE.Group();
+          var bMat = new THREE.MeshStandardMaterial({ color: 0xa8b4c0, roughness: 0.4, metalness: 0.3 });
+          var body = new THREE.Mesh(new THREE.SphereGeometry(0.4, 12, 8), bMat);
+          body.scale.set(3.0, 0.65, 0.7);
+          g.add(body);
+          // Long snout
+          var snout = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.5, 6), bMat);
+          snout.position.set(1.4, 0, 0);
+          snout.rotation.z = -Math.PI / 2;
+          g.add(snout);
+          // Teeth row (visible jagged white)
+          for (var bti = 0; bti < 8; bti++) {
+            var bt = new THREE.Mesh(new THREE.ConeGeometry(0.018, 0.06, 3),
+              new THREE.MeshBasicMaterial({ color: 0xfae8b8 }));
+            bt.position.set(1.1 - bti * 0.06, -0.08, 0);
+            bt.rotation.x = Math.PI;
+            g.add(bt);
+          }
+          // Caudal fin (vertical, forked)
+          var caudal = new THREE.Mesh(new THREE.ConeGeometry(0.3, 0.5, 4),
+            new THREE.MeshStandardMaterial({ color: 0x8a96a4, roughness: 0.5 }));
+          caudal.position.set(-1.4, 0, 0);
+          caudal.rotation.z = Math.PI / 2;
+          caudal.scale.set(0.5, 1, 1);
+          g.add(caudal);
+          g.position.set(
+            octopus.position.x + (Math.random() - 0.5) * 30,
+            (Math.random() > 0.5 ? 6 : 3) + Math.random() * 2,
+            octopus.position.z + (Math.random() - 0.5) * 30
+          );
+          g.userData = {
+            kind: 'barracuda', zone: 'reef',
+            state: 'patrol', stateTimer: 0,
+            aggroRange: 10, speed: 7.5, damage: 35,
+            cooldownUntil: 0, attacksRemaining: 3,
+            patrolAngle: Math.random() * Math.PI * 2,
+          };
+          scene.add(g);
+          zonalPredators.push(g);
+          clAnnounce('Barracuda incoming');
+        }
+
+        // Zonal predator spawn timer (uses different intervals per zone)
+        var ZONAL_PREDATOR_INTERVAL_MS_MIN = 60000;
+        var ZONAL_PREDATOR_INTERVAL_MS_MAX = 110000;
+        var nextZonalSpawnAt = Date.now() + ZONAL_PREDATOR_INTERVAL_MS_MIN;
+
+        // ─── Kelp forest (vertical kelp strands clustered in patches) ───
+        // Kelp provides camouflage cover (similar to sea grass but taller).
+        var kelpStrands = [];
+        for (var kpi = 0; kpi < 25; kpi++) {
+          var kpx = (Math.random() - 0.5) * 100;
+          var kpz = (Math.random() - 0.5) * 100;
+          var kH = 5 + Math.random() * 4;
+          var kGeo = new THREE.PlaneGeometry(0.5, kH);
+          var kMat = new THREE.MeshBasicMaterial({
+            color: 0x3a6028, side: THREE.DoubleSide,
+            transparent: true, opacity: 0.85,
+          });
+          var kmesh = new THREE.Mesh(kGeo, kMat);
+          kmesh.position.set(kpx, kH / 2, kpz);
+          kmesh.rotation.y = Math.random() * Math.PI;
+          kmesh.userData.substrate = 'grass';
+          kmesh.userData.substrateRadius = 1.4;
+          scene.add(kmesh);
+          kelpStrands.push({ mesh: kmesh, phase: Math.random() * Math.PI * 2, baseHeight: kH });
+        }
+
+        // ─── Hydrothermal vent (deep zone only — visual landmark) ───
+        // Real biology: deep-sea vents support chemosynthetic ecosystems.
+        var hydrothermalVent = new THREE.Group();
+        var ventBase = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.8, 1.4, 1.6, 8),
+          new THREE.MeshStandardMaterial({ color: 0x222020, roughness: 0.95 })
+        );
+        ventBase.position.y = 0.8;
+        hydrothermalVent.add(ventBase);
+        var ventTop = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.3, 0.7, 0.6, 8),
+          new THREE.MeshStandardMaterial({ color: 0x1a1818, roughness: 0.95 })
+        );
+        ventTop.position.y = 1.9;
+        hydrothermalVent.add(ventTop);
+        // Smoke plume (slowly-rising tinted cylinder)
+        var ventPlumeMat = new THREE.MeshBasicMaterial({
+          color: 0x000000, transparent: true, opacity: 0.55,
+          blending: THREE.NormalBlending,
+        });
+        var ventPlume = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.4, 0.9, 8, 8, 4, true),
+          ventPlumeMat
+        );
+        ventPlume.position.y = 6;
+        hydrothermalVent.add(ventPlume);
+        hydrothermalVent.position.set(-70, -25, 60);   // deep zone position
+        scene.add(hydrothermalVent);
+
         // ─── Sunken landmarks (fixed worldspace, don't recycle) ─────
         // Three permanent reference points the player can navigate by in
         // the endless world. Each has small coral / barnacle growth so they
@@ -2737,7 +3096,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         var inkRequested = false;
         function onKeyDown(e) {
           keys[e.code] = true;
-          if (['Space','KeyW','KeyA','KeyS','KeyD','KeyE','KeyI','KeyM','KeyG','KeyH','KeyB','Escape'].indexOf(e.code) !== -1) e.preventDefault();
+          if (['Space','KeyW','KeyA','KeyS','KeyD','KeyE','KeyI','KeyM','KeyG','KeyH','KeyB','KeyQ','KeyZ','KeyP','Escape'].indexOf(e.code) !== -1) e.preventDefault();
           // Esc toggles pause. Cuttlefish ability key H is also captured below.
           if (e.code === 'Escape') {
             gameState.paused = !gameState.paused;
@@ -2871,6 +3230,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           if (shark) {
             plot(shark.position.x, shark.position.z, shark.userData.state === 'charging' ? '#ef4444' : '#dc2626', shark.userData.state === 'charging' ? 5 : 3.5, true);
           }
+          // Zonal predators (different shapes/colors per kind)
+          zonalPredators.forEach(function(zp) {
+            var col = zp.userData.state === 'charging' ? '#ef4444' : '#b22f2f';
+            plot(zp.position.x, zp.position.z, col, zp.userData.state === 'charging' ? 5 : 3, true);
+          });
           // Octopus (center, species color, with facing-direction tick)
           mmCtx.fillStyle = '#' + new THREE.Color(species.bodyColor).getHexString();
           mmCtx.beginPath();
@@ -3036,6 +3400,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           dayTime: 0.0,
           dayPeriodMs: 180000,
           lastInputAt: Date.now(),
+          verticalY: 0.55,             // current octopus depth altitude
+          currentDepthZone: 'reef',    // resolved from verticalY each frame
+          previousDepthZone: 'reef',   // for transition detection
           // Species-ability state
           warningRingOpacity: 0,        // blue-ringed aposematic flash
           venomBiteCooldown: 0,         // ms remaining
@@ -3096,7 +3463,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             // No hard map clamp — world is procedurally recycled around the
             // player below, so wandering forever is supported. (Tracking
             // furthest distance from origin for fun stats.)
-            octopus.position.y = 0.55 + (isJetting ? 0.15 : 0) + Math.sin(now * 0.004) * 0.05;
+            // Vertical movement (Q ascends, Z descends). Speed scales with
+            // species: deep-adapted (dumbo, vampire) ascend/descend faster.
+            var vertInput = (keys.KeyQ ? 1 : 0) - (keys.KeyZ ? 1 : 0);
+            if (vertInput !== 0) gameState.lastInputAt = now;
+            var vertSpeed = isDeepSpecies(species.id) ? 4 : 2.5;
+            gameState.verticalY = (gameState.verticalY || 0.55) + vertInput * vertSpeed * dt;
+            // Soft clamp by depth limits
+            gameState.verticalY = Math.max(-45, Math.min(18, gameState.verticalY));
+            octopus.position.y = gameState.verticalY + (isJetting ? 0.15 : 0) + Math.sin(now * 0.004) * 0.05;
             octopus.rotation.y = gameState.facingAngle;
 
             // Stamina drain (jet) / regen (idle). Dumbo octopus uses fin
@@ -3124,6 +3499,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             scene.fog.far = 35 + dayMix * 35;
             sun.intensity = 0.25 + dayMix * 0.7;
             ambient.intensity = 0.35 + dayMix * 0.35;
+
+            // ─── Depth zone resolution + fog/lighting lerp ────────
+            gameState.previousDepthZone = gameState.currentDepthZone;
+            gameState.currentDepthZone = depthZoneFor(gameState.verticalY);
+            var zone = DEPTH_ZONES[gameState.currentDepthZone];
+            // Blend background + fog toward this zone's color (lerp at 1.5/s)
+            var zoneR = ((zone.fogColor >> 16) & 0xff) / 255;
+            var zoneG = ((zone.fogColor >> 8) & 0xff) / 255;
+            var zoneB = (zone.fogColor & 0xff) / 255;
+            scene.background.r += (zoneR * dayMix - scene.background.r) * 1.5 * dt;
+            scene.background.g += (zoneG * dayMix - scene.background.g) * 1.5 * dt;
+            scene.background.b += (zoneB * dayMix - scene.background.b) * 1.5 * dt;
+            scene.fog.color.copy(scene.background);
+            scene.fog.far += (zone.fogFar - scene.fog.far) * 1.5 * dt;
+            // Pressure damage to non-deep species in deep/abyssal zones
+            if (zone.pressureDanger && !isDeepSpecies(species.id)) {
+              gameState.health = Math.max(0, gameState.health - 8 * dt);
+            }
+            // Transition popup on entering deeper zone (first time)
+            if (gameState.previousDepthZone !== gameState.currentDepthZone) {
+              if (gameState.currentDepthZone === 'deep' || gameState.currentDepthZone === 'abyssal') {
+                unlockAchievement('depthDescent');
+              }
+            }
 
             // ─── Hunger drain + starvation damage ────────────────
             // Hunger drains slowly while alive; auto-damage kicks in once
@@ -3579,6 +3978,95 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               }
               if (gameState.venomBiteCooldown > 0) gameState.venomBiteCooldown = Math.max(0, gameState.venomBiteCooldown - dt * 1000);
             }
+
+            // ─── Zonal predator spawn (varies by current depth zone) ──
+            // Spawn a depth-appropriate predator every 60-110s. Each one is
+            // a real-ocean species that hunts cephalopods at its zone.
+            if (now > nextZonalSpawnAt && !gameState.gameOver) {
+              var spawnFns;
+              if (gameState.currentDepthZone === 'surface') spawnFns = [spawnSeaOtter, spawnBarracuda];
+              else if (gameState.currentDepthZone === 'reef') spawnFns = [spawnBarracuda];
+              else if (gameState.currentDepthZone === 'midwater') spawnFns = [];
+              else if (gameState.currentDepthZone === 'deep') spawnFns = [spawnSpermWhale, spawnAnglerfish];
+              else spawnFns = [spawnAnglerfish, spawnGiantSquid];
+              if (spawnFns.length > 0) {
+                spawnFns[Math.floor(Math.random() * spawnFns.length)]();
+              }
+              nextZonalSpawnAt = now + ZONAL_PREDATOR_INTERVAL_MS_MIN + Math.random() * (ZONAL_PREDATOR_INTERVAL_MS_MAX - ZONAL_PREDATOR_INTERVAL_MS_MIN);
+            }
+            // Zonal predator AI (similar to reef shark — patrol→attack→leave)
+            for (var zpi = zonalPredators.length - 1; zpi >= 0; zpi--) {
+              var zp = zonalPredators[zpi];
+              var zpud = zp.userData;
+              var zpdx = octopus.position.x - zp.position.x;
+              var zpdz = octopus.position.z - zp.position.z;
+              var zpDist = Math.sqrt(zpdx * zpdx + zpdz * zpdz);
+              // Camo helps less for deep-sea species (electroreception)
+              var zpCamoMod = (zpud.kind === 'spermWhale' || zpud.kind === 'anglerfish') ? 0.4 : 1.0;
+              var zpInkMod = (zpud.kind === 'spermWhale' || zpud.kind === 'giantSquid') ? 0.6 : 1.0;
+              var effectiveRange = zpud.aggroRange * (1 - 0.6 * gameState.camoEff * zpCamoMod) *
+                                    (gameState.isInked ? 0.5 * zpInkMod : 1) *
+                                    (gameState.isMimicking ? 0.6 : 1);
+              if (zpud.state === 'patrol') {
+                zpud.patrolAngle += (Math.random() - 0.5) * 0.05;
+                zp.position.x += Math.sin(zpud.patrolAngle) * zpud.speed * 0.3 * dt;
+                zp.position.z += Math.cos(zpud.patrolAngle) * zpud.speed * 0.3 * dt;
+                zp.rotation.y = zpud.patrolAngle + Math.PI / 2;
+                if (zpDist < effectiveRange && !gameState.inDen && now > zpud.cooldownUntil) {
+                  zpud.state = 'charging';
+                  zpud.stateTimer = 0;
+                  sfxPredatorAlert();
+                }
+              } else if (zpud.state === 'charging') {
+                zpud.stateTimer += dt;
+                if (zpDist > 0.1) {
+                  zp.position.x += (zpdx / zpDist) * zpud.speed * dt;
+                  zp.position.z += (zpdz / zpDist) * zpud.speed * dt;
+                  zp.position.y += (octopus.position.y + 1.2 - zp.position.y) * 2 * dt;
+                  zp.lookAt(octopus.position.x, zp.position.y, octopus.position.z);
+                }
+                if (zpDist < 1.8 && now - gameState.tookHitAt > 800) {
+                  var zpDmg = zpud.damage;
+                  if (species.specialAbility === 'shellDefense') { zpDmg *= 0.3; unlockAchievement('nautilusBounce'); }
+                  gameState.health = Math.max(0, gameState.health - zpDmg);
+                  gameState.tookHitAt = now;
+                  gameState.runStats.bites++;
+                  damageFlash.style.opacity = '1';
+                  setTimeout(function() { damageFlash.style.opacity = '0'; }, 200);
+                  sfxBite();
+                  zpud.attacksRemaining--;
+                  zpud.state = zpud.attacksRemaining > 0 ? 'patrol' : 'leaving';
+                  zpud.cooldownUntil = now + 5000;
+                }
+                if (gameState.inDen || zpud.stateTimer > 4.5) {
+                  zpud.state = 'patrol';
+                  zpud.cooldownUntil = now + 4000;
+                }
+              } else if (zpud.state === 'leaving') {
+                var awayDir = Math.atan2(zp.position.x, zp.position.z);
+                zp.position.x += Math.sin(awayDir) * 4 * dt;
+                zp.position.z += Math.cos(awayDir) * 4 * dt;
+                if (Math.abs(zp.position.x) > 70 || Math.abs(zp.position.z) > 70) {
+                  scene.remove(zp);
+                  zp.traverse(function(o) {
+                    if (o.geometry) o.geometry.dispose();
+                    if (o.material) { if (Array.isArray(o.material)) o.material.forEach(function(m){m.dispose();}); else o.material.dispose(); }
+                  });
+                  zonalPredators.splice(zpi, 1);
+                }
+              }
+              // Anglerfish lure pulsing animation
+              if (zpud.kind === 'anglerfish' && zpud.lure) {
+                zpud.lure.material.opacity = 0.6 + Math.sin(now * 0.005) * 0.35;
+              }
+            }
+
+            // ─── Kelp + hydrothermal vent animation ────────────────
+            kelpStrands.forEach(function(k) {
+              k.mesh.rotation.z = Math.sin(now * 0.0008 + k.phase) * 0.12;
+            });
+            // Vent plume rises (texture offset would be ideal but cheap rotate)
+            ventPlume.rotation.y += dt * 0.3;
 
             // ─── Reef shark spawn timer + AI ────────────────────
             // Spawns periodically during a run; arrives from a map edge,
@@ -4443,7 +4931,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             return '<span style="display:inline-block;width:78px;height:8px;background:' + barBg + ';border-radius:4px;overflow:hidden;vertical-align:middle"><span style="display:block;width:' + val.toFixed(0) + '%;height:100%;background:' + color + '"></span></span>';
           }
           hud.innerHTML =
-            '<div style="font-weight:bold;border-bottom:1px solid rgba(180,140,40,0.4);padding-bottom:4px;margin-bottom:6px;display:flex;justify-content:space-between">🐙 Pacific Octopus<span style="font-weight:400;font-size:11px;color:#cbd5e1">' + phaseEmoji + ' ' + phaseLabel + '</span></div>' +
+            '<div style="font-weight:bold;border-bottom:1px solid rgba(180,140,40,0.4);padding-bottom:4px;margin-bottom:6px;display:flex;justify-content:space-between">' + species.emoji + ' ' + species.name + '<span style="font-weight:400;font-size:11px;color:#cbd5e1">' + phaseEmoji + ' ' + phaseLabel + '</span></div>' +
+            '<div style="font-size:10px;color:#94a3b8;margin-bottom:4px;display:flex;justify-content:space-between"><span>' + DEPTH_ZONES[gameState.currentDepthZone].icon + ' ' + DEPTH_ZONES[gameState.currentDepthZone].name + ' Zone</span><span>' + Math.abs(gameState.verticalY).toFixed(0) + 'm</span></div>' +
             '<div style="display:flex;align-items:center;gap:6px">HEALTH&nbsp;' + bar(hp, hpColor) + '<span style="color:' + hpColor + ';min-width:30px;text-align:right">' + gameState.health.toFixed(0) + '</span></div>' +
             '<div style="display:flex;align-items:center;gap:6px">STAMINA ' + bar(sp, '#60a5fa') + '<span style="color:#60a5fa;min-width:30px;text-align:right">' + gameState.stamina.toFixed(0) + '</span></div>' +
             '<div style="display:flex;align-items:center;gap:6px">HUNGER&nbsp; ' + bar(hg, hgColor) + '<span style="color:' + hgColor + ';min-width:30px;text-align:right">' + gameState.hunger.toFixed(0) + '</span></div>' +
