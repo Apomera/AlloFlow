@@ -496,6 +496,834 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
       counter: 'Some BCBAs and behavior specialists argue restraint is occasionally necessary in genuine safety emergencies. Both positions can be true: emergencies happen AND the system overuses restraint by orders of magnitude. The ethical floor is "every restraint is one too many that should have been prevented earlier in the cycle."' }
   ];
 
+  // ─────────────────────────────────────────────────────────
+  // Function-Matcher practice scenarios — 8 short ABC vignettes
+  // mapping to the four ABA functions (ATT/ESC/TAN/AUT).
+  // Used by the interactive practice widget above the Replacement
+  // Behaviors content. Scenarios are real-classroom-shaped, not
+  // textbook-shaped, and each correct-answer explanation cites
+  // the data signal that disambiguates the function.
+  // ─────────────────────────────────────────────────────────
+  var MATCHER_SCENARIOS = [
+    {
+      stem: 'During morning meeting, Avery starts making loud animal noises. The teacher walks over, says "Avery, please stop" and puts a hand on Avery\'s shoulder. Avery beams and says "sorry!" — then does it again 4 minutes later.',
+      answer: 'ATT',
+      why: 'Behavior produces adult attention (verbal + physical contact). It repeats on a short interval after the attention is delivered. Classic ATT signature: the consequence the adult thought was a correction is functioning as a reinforcer.'
+    },
+    {
+      stem: 'Marcus is given a 3-page math worksheet. Within 2 minutes he crumples it and throws it on the floor. The teacher takes the worksheet away and gives him a "cool down" timer instead. Marcus visibly relaxes.',
+      answer: 'ESC',
+      why: 'The disruptive behavior produced removal of the demand (worksheet taken, "cool down" replaces it). Visible relaxation = relief response = the demand was aversive. ESC every time the teacher solves the disruption by ending the task.'
+    },
+    {
+      stem: 'Riley keeps grabbing the iPad off Jordan\'s desk during free choice time. When the teacher gives Riley her own iPad to stop the grabbing, Riley calms immediately and stays calm as long as she has the iPad.',
+      answer: 'TAN',
+      why: 'Access to the specific item (iPad) ends the behavior. State change is contingent on possession of the tangible, not on attention or escape. Trade away the iPad and the behavior comes back — that is the TAN test.'
+    },
+    {
+      stem: 'Casey, an autistic 4th grader, hums quietly during independent work. The humming continues whether or not adults are present, whether peers are added or removed, during preferred AND non-preferred activities.',
+      answer: 'AUT',
+      why: 'Behavior is invariant across attention/escape/tangible conditions. That is the operational definition of automatic / sensory function — the behavior is its own reinforcer. NOTE: Casey\'s humming is regulating, not misbehaving. Most automatic-function behaviors should be accommodated, not extinguished.'
+    },
+    {
+      stem: 'Devon falls dramatically to the floor every time the librarian tells the class to "find a quiet spot." The librarian rushes over to check on Devon every time. Falls happen 3 times per library period.',
+      answer: 'ATT',
+      why: 'Behavior reliably recruits 1-on-1 adult contact (the rush-over-to-check). Frequency stable (3 per period) suggests stable reinforcement schedule. ATT signature: the behavior is "wasted" if no adult sees it.'
+    },
+    {
+      stem: 'When the speech therapist arrives at the door of Jamie\'s classroom, Jamie immediately reports "My stomach hurts, I can\'t go." Twice this month, the SLP has called it off and Jamie\'s stomach pain dissolved by lunch.',
+      answer: 'ESC',
+      why: 'Reported symptom is contingent on the SLP arrival (timing) and resolves once the SLP leaves (relief contingency). The body is doing what works — the symptom IS the escape behavior. Do not assume it is "fake"; the function pattern is what matters for the BIP.'
+    },
+    {
+      stem: 'Sam shouts "I want a SNACK!" loudly during read-aloud. The aide gets him a granola bar to quiet him. He is now shouting for a snack 6 times per day, up from 1.',
+      answer: 'TAN',
+      why: 'Frequency increased from 1 to 6 after the aide started delivering the granola bar contingent on the shout. Behavior delivers the specific tangible item; deliver the item, behavior repeats. Note: well-intentioned compliance is the most common engineered TAN trap.'
+    },
+    {
+      stem: 'Kyle, a 7th grader with ADHD, taps his pencil rhythmically during tests. The tapping continues during quiet study, after staff ask him to stop, and even during preferred activities. He says "I don\'t even notice I do it."',
+      answer: 'AUT',
+      why: 'Continues across all four conditions (attention given/withheld, demand present/absent, tangible irrelevant). The student\'s own report ("don\'t notice I do it") is consistent with non-conscious sensory regulation. AUT — which means accommodation (a fidget, gum, headphones), not extinction.'
+    }
+  ];
+
+  // Function abbreviations + colors for matcher chips. Mirrors the
+  // REPLACEMENT_BEHAVIORS color palette so the chip color the student
+  // clicks here matches the function-card color one section down.
+  var FUNCTIONS_KEY = [
+    { code: 'ATT', label: 'Attention', icon: '👀', color: '#60a5fa' },
+    { code: 'ESC', label: 'Escape',    icon: '🚪', color: '#ef4444' },
+    { code: 'TAN', label: 'Tangible',  icon: '🎮', color: '#f59e0b' },
+    { code: 'AUT', label: 'Sensory',   icon: '🪀', color: '#8b5cf6' }
+  ];
+
+  // ─────────────────────────────────────────────────────────
+  // Restraint/Seclusion Ethics Decision Tree
+  // Two branching scenarios that walk a school psych through
+  // Maine Chapter 33 logic in real-time. Each node has 2-3
+  // choices; each choice has a verdict (CORRECT / WRONG / NUANCED),
+  // plain-English reasoning, the relevant Ch. 33 / Colvin / less-
+  // restrictive-alternative principle, and a `next` pointer to
+  // continue the scenario or null to terminate.
+  // Sources: Maine Chapter 33 (school restraint/seclusion regs);
+  // Colvin Acting-Out Cycle; ASAN restraint position statement;
+  // less-restrictive-alternative doctrine in IDEA case law.
+  // ─────────────────────────────────────────────────────────
+  var DECISION_SCENARIOS = [
+    {
+      id: 'chair',
+      title: 'The thrown chair',
+      stem: 'An 8th-grade student is yelling profanity and has just thrown a classroom chair across an empty corner of the room. No one was hit. The student is breathing hard, eyes scanning the room. Three other students are present. You are the school psych called to the room.',
+      icon: '🪑', color: '#ef4444',
+      nodes: {
+        start: {
+          prompt: 'What is the FIRST decision?',
+          choices: [
+            { label: 'Authorize physical restraint immediately — property was destroyed.',
+              verdict: 'WRONG', verdictColor: '#ef4444',
+              cite: 'Maine Chapter 33 §3 — Emergency Restraint Definition.',
+              why: 'Property destruction alone is NOT sufficient justification for restraint under Maine Ch. 33. The authorizing standard is "imminent danger of serious physical injury" to the student or others. A thrown chair to an empty corner does not meet that threshold yet.',
+              next: null },
+            { label: 'Direct staff to clear the room of other students; begin verbal de-escalation from a safe distance.',
+              verdict: 'CORRECT', verdictColor: '#22c55e',
+              cite: 'Less-Restrictive-Alternative principle + Colvin Phase 4 (Acceleration).',
+              why: 'Clearing the audience reduces the escalation pressure (peers raise the stakes). Verbal de-escalation from distance is the least restrictive option that addresses the immediate safety concern. This is the textbook Phase-4 move.',
+              next: 'chair_2' },
+            { label: 'Tell the student loudly to sit down or face suspension.',
+              verdict: 'WRONG', verdictColor: '#ef4444',
+              cite: 'Colvin Acting-Out Cycle, Phase 4 — Acceleration.',
+              why: 'Threats and demands during Phase 4 pull the adult INTO the cycle. The thinking brain is already losing access; loud commands plus consequence threats predictably escalate to Phase 5 (Peak). This is the most common adult-mistake moment in the entire cycle.',
+              next: null }
+          ]
+        },
+        chair_2: {
+          prompt: 'Other students are now in the hall. The student picks up another chair and lifts it overhead, shouting toward you. You are 8 feet away. What now?',
+          choices: [
+            { label: 'Step closer to take the chair from the student.',
+              verdict: 'WRONG', verdictColor: '#ef4444',
+              cite: 'Less-Restrictive-Alternative principle + safety doctrine.',
+              why: 'Closing distance gives the student a target and increases imminent danger to YOU. Most CPI/NCI/Mandt curricula are explicit: never close distance on a person holding a potential weapon unless restraint is authorized AND staffed.',
+              next: null },
+            { label: 'Maintain distance, lower your voice, use one short sentence: "I am not going to hurt you. Put it down when you are ready."',
+              verdict: 'CORRECT', verdictColor: '#22c55e',
+              cite: 'Colvin Phase 4-5 verbal de-escalation; CPI verbal-intervention model.',
+              why: 'Distance preserved, threat-level lowered (your voice down, not up), one short sentence (the brain at Phase 4-5 cannot process complex language), no demand, no threat. Acknowledges the student\'s safety concern about YOU first — many escalations are driven by perceived adult threat.',
+              next: 'chair_3' },
+            { label: 'Authorize physical restraint now — staff member is at imminent risk.',
+              verdict: 'NUANCED', verdictColor: '#fbbf24',
+              cite: 'Maine Chapter 33 — emergency restraint may be authorized; LRA still applies.',
+              why: 'Imminent danger threshold is now arguably met (chair raised, you as target). Restraint MAY be authorized — but only if (a) certified staff are present, (b) verbal de-escalation has been attempted, (c) less-restrictive alternatives are still inadequate. Most experienced practitioners would still try one verbal sentence first. Document the decision either way.',
+              next: 'chair_3' }
+          ]
+        },
+        chair_3: {
+          prompt: 'After ~30 seconds of silence, the student lowers the chair, sits down, and starts crying. What is next?',
+          choices: [
+            { label: 'Process what happened immediately: "Why did you do that? You could have hurt someone."',
+              verdict: 'WRONG', verdictColor: '#ef4444',
+              cite: 'Colvin Cycle — Phase 6 (De-escalation) is not for processing.',
+              why: 'Phase 6 is exhaustion + emotional release. The thinking brain has not yet returned online (that is Phase 7, often 20+ minutes later). Pushing for "why" during Phase 6 produces hollow apology, dissociation, or re-escalation. Wait.',
+              next: null },
+            { label: 'Stay present, offer water, give physical space; debrief later when student is at baseline.',
+              verdict: 'CORRECT', verdictColor: '#22c55e',
+              cite: 'Colvin Cycle Phase 6 → Phase 7 transition; Maine Ch. 33 debrief timing.',
+              why: 'Right call. Phase 6 needs presence without demand. Maine Ch. 33 also requires a same-day staff debrief and a Phase-7 student debrief — but the student debrief happens AFTER recovery, not during it. Document the incident now; debrief when the student\'s thinking brain is back.',
+              next: 'chair_terminal' },
+            { label: 'Send the student to the office for a discipline write-up.',
+              verdict: 'WRONG', verdictColor: '#ef4444',
+              cite: 'IDEA Manifestation Determination + Colvin Phase 6.',
+              why: 'Reactive consequencing during de-escalation re-triggers the cycle and undermines repair. If this student has an IEP and the behavior is a manifestation of the disability, discipline-track responses also raise legal exposure. Document for the FBA/BIP team — do not punish in the moment.',
+              next: 'chair_terminal' }
+          ]
+        },
+        chair_terminal: {
+          prompt: 'Scenario complete. Within 24 hours, what MUST happen?',
+          terminal: true,
+          summary: 'Maine Chapter 33 post-incident requirements: (1) incident report documenting what was tried before restraint, who was certified, duration; (2) same-day verbal + next-business-day written parent notification; (3) staff debrief within 5 school days; (4) student debrief once recovered; (5) team meeting to consider BIP revision IF the incident reveals a pattern. The post-incident work is where most documentation gaps occur — and where state OCR investigations find them.'
+        }
+      }
+    },
+    {
+      id: 'elope',
+      title: 'Kindergarten elopement',
+      stem: 'A kindergartener has eloped from the classroom, run down the hallway, and is now standing in front of the open exit door at the end of the hall. The door leads directly to a small parking lot used for staff drop-off. You are 30 feet away.',
+      icon: '🚪', color: '#fbbf24',
+      nodes: {
+        start: {
+          prompt: 'What is the FIRST decision?',
+          choices: [
+            { label: 'Sprint at full speed to grab the child before they reach the door.',
+              verdict: 'WRONG', verdictColor: '#ef4444',
+              cite: 'Chase reflex + LRA principle.',
+              why: 'Sprinting triggers the kindergartener\'s chase-reflex. Most likely outcome: child runs OUT the door because you are coming AT them. You have just made the imminent-danger situation worse with a tactic that felt protective.',
+              next: null },
+            { label: 'Walk briskly but calmly along the wall, narrate softly: "I am coming over to you. You are safe."',
+              verdict: 'CORRECT', verdictColor: '#22c55e',
+              cite: 'De-escalation movement principles for early childhood.',
+              why: 'Wall path reduces the visual chase signal (you are not approaching head-on). Soft narration tells the child what is happening without commands. Brisk-but-calm pace acknowledges urgency without triggering flight. Textbook early-childhood approach.',
+              next: 'elope_2' },
+            { label: 'Call for the nearest adult to position between the child and the door, while you approach calmly.',
+              verdict: 'CORRECT', verdictColor: '#22c55e',
+              cite: 'Less-Restrictive-Alternative + barrier principle.',
+              why: 'A second adult creates a safety barrier without confrontation. The child is no longer one step from the parking lot. This is also CORRECT — sometimes there are two valid answers and choosing between them depends on staffing.',
+              next: 'elope_2' }
+          ]
+        },
+        elope_2: {
+          prompt: 'You walk the child back to the classroom holding their hand. They cooperate. Back in the classroom, you write the documentation. Which is correct?',
+          choices: [
+            { label: 'File this as an "elopement-with-restraint" incident — you held the child\'s hand to walk them back.',
+              verdict: 'WRONG', verdictColor: '#ef4444',
+              cite: 'Maine Chapter 33 — Restraint Definition.',
+              why: 'Routine hand-guidance is NOT restraint under Maine Ch. 33. Restraint requires "physical holding that restricts a student\'s freedom of movement." A cooperatively-held hand on the walk back does not meet that bar. Over-coding routine guidance as restraint inflates the building\'s reportable numbers and obscures actual restraint patterns in the data.',
+              next: null },
+            { label: 'File as elopement only — note the antecedent (transition from circle time to math) and the function hypothesis.',
+              verdict: 'CORRECT', verdictColor: '#22c55e',
+              cite: 'PBIS data practices + IDEA FBA-driven response.',
+              why: 'All elopement-to-exit incidents need (a) incident documentation, (b) antecedent analysis (what was happening just before?), (c) function hypothesis (was this escape from the math demand? attention from the chase response? sensory? tangible — pulled to something outside?). Without those three columns, the elopement is just a story; with them, it is FBA-pending data.',
+              next: 'elope_3' },
+            { label: 'No documentation needed — the child is safe and back in class.',
+              verdict: 'WRONG', verdictColor: '#ef4444',
+              cite: 'IDEA + district safety policy + insurance liability.',
+              why: 'All elopement-to-exit incidents require an incident report regardless of outcome. Lack of injury does not retire the documentation duty. Pattern-blind buildings are how elopement-to-traffic tragedies happen — the prior near-misses were not in the data because no one wrote them down.',
+              next: 'elope_3' }
+          ]
+        },
+        elope_3: {
+          prompt: 'Two days later, the child elopes again — same antecedent (math transition), different exit door. The IEP has no elopement plan. What is your move as the school psych?',
+          choices: [
+            { label: 'Convene an IEP team meeting; FBA targeted on the math-transition antecedent; draft an elopement-specific BIP add-on.',
+              verdict: 'CORRECT', verdictColor: '#22c55e',
+              cite: 'IDEA — IEP team duty when behavior impedes learning; FBA-driven BIP.',
+              why: 'Two incidents on the same antecedent in 48 hours is a clear pattern signal. IDEA places an affirmative duty on the IEP team to consider behavior interventions when behavior impedes learning. The FBA + targeted BIP add-on is the appropriate Tier-3 response. Same-day staff plan (door supervision during transitions) is reasonable as a stop-gap.',
+              next: 'elope_terminal' },
+            { label: 'Ask classroom staff to "watch the child more carefully" during transitions.',
+              verdict: 'WRONG', verdictColor: '#ef4444',
+              cite: 'IDEA — fidelity of supports + adult-system over individual adult vigilance.',
+              why: 'Vigilance is not a behavior plan. A repeated antecedent-specific elopement requires a system response (FBA, BIP, environmental change), not a hope that staff catch it next time. Adult vigilance fails predictably; structured plans fail less.',
+              next: null },
+            { label: 'Discipline the child for leaving without permission.',
+              verdict: 'WRONG', verdictColor: '#ef4444',
+              cite: 'IDEA Manifestation Determination + IDEA discipline procedures.',
+              why: 'Elopement on a repeated antecedent is almost certainly a behavioral manifestation of disability or unmet need. Discipline-track response is procedurally and ethically wrong here. Also: 5-year-olds do not benefit from punitive consequences for behavior they cannot yet self-regulate.',
+              next: null }
+          ]
+        },
+        elope_terminal: {
+          prompt: 'Scenario complete. The system response is in motion.',
+          terminal: true,
+          summary: 'Two patterns to internalize: (1) Routine hand-guidance is not restraint — over-coding inflates data and obscures real patterns. (2) Two incidents on the same antecedent within a short window is a system signal that should trigger FBA + BIP work, not vigilance pleas. Document the antecedent every time so the pattern surfaces in week 1, not week 8.'
+        }
+      }
+    }
+  ];
+
+  // Module-scope React handle for the interactive widgets below.
+  // Hoisted out of render(ctx) so the components have stable function
+  // identity across re-renders — defining them inside render() would
+  // reset their useState on every parent re-render. AlloFlow runtime
+  // guarantees window.React with hooks.
+  var R = (typeof window !== 'undefined' && window.React) ? window.React : null;
+  var h = R ? R.createElement : null;
+
+  // ─────────────────────────────────────────────────────────
+  // CycleScrubber — Acting-Out Cycle interactive scrubber
+  // Walks the user phase-by-phase through Colvin's 7 phases with
+  // a play/pause auto-advance, manual range slider, clickable phase
+  // chips, and an SVG escalation curve. Augments (does not replace)
+  // the static phase-card list below it.
+  // ─────────────────────────────────────────────────────────
+  function CycleScrubber(props) {
+    if (!R) return null;
+    var phases = props.phases;
+    var awardXP = props.awardXP;
+    var ps = R.useState(1);            var currentPhase = ps[0]; var setCurrentPhase = ps[1];
+    var as = R.useState(false);        var autoPlay = as[0];     var setAutoPlay = as[1];
+    var ws = R.useState(false);        var hasWalked = ws[0];    var setHasWalked = ws[1];
+
+    R.useEffect(function() {
+      if (!autoPlay) return;
+      var t = setInterval(function() {
+        setCurrentPhase(function(p) {
+          if (p >= 7) { setAutoPlay(false); return 7; }
+          return p + 1;
+        });
+      }, 2200);
+      return function() { clearInterval(t); };
+    }, [autoPlay]);
+
+    R.useEffect(function() {
+      if (currentPhase === 7 && !hasWalked) {
+        setHasWalked(true);
+        if (awardXP) awardXP(2);
+      }
+    }, [currentPhase, hasWalked]);
+
+    var ph = phases[currentPhase - 1];
+
+    // Escalation arc: 7 points across X, Y rises toward Phase 5 then
+    // drops back. Coords computed once into a polyline string.
+    var arcPoints = phases.map(function(_, i) {
+      var x = 8 + i * (84 / 6);                  // 8..92 across an SVG viewBox 0..100
+      var heights = [70, 56, 42, 22, 8, 36, 60]; // calm→trigger→agit→accel→peak→deesc→recovery (lower y = higher visually)
+      return x + ',' + heights[i];
+    }).join(' ');
+    var dotX = 8 + (currentPhase - 1) * (84 / 6);
+    var dotY = [70, 56, 42, 22, 8, 36, 60][currentPhase - 1];
+
+    return h('div', {
+      style: {
+        background: 'rgba(15,23,42,0.7)', borderRadius: 12, padding: 16, marginBottom: 14,
+        borderTop: '1px solid rgba(20,184,166,0.30)', borderRight: '1px solid rgba(20,184,166,0.30)',
+        borderBottom: '1px solid rgba(20,184,166,0.30)', borderLeft: '4px solid #14b8a6',
+        boxShadow: '0 4px 20px rgba(20,184,166,0.10)'
+      }
+    },
+      h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
+        h('div', { 'aria-hidden': 'true', style: {
+          width: 36, height: 36, borderRadius: '50%', background: 'rgba(20,184,166,0.18)',
+          border: '1.5px solid #14b8a6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18
+        } }, '▶'),
+        h('div', { style: { flex: 1, minWidth: 200 } },
+          h('div', { style: { fontSize: 13, fontWeight: 800, color: '#5eead4' } }, 'Walk the cycle — Colvin\'s 7 phases'),
+          h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, 'Click a phase, drag the slider, or press Play to auto-advance through escalation and recovery.')
+        )
+      ),
+
+      // Phase chip strip
+      h('div', { role: 'tablist', 'aria-label': 'Acting-out cycle phases', style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 12 } },
+        phases.map(function(p) {
+          var active = p.phase === currentPhase;
+          return h('button', {
+            key: 'chip-' + p.phase, role: 'tab', 'aria-selected': active ? 'true' : 'false',
+            onClick: function() { setCurrentPhase(p.phase); },
+            title: p.name,
+            style: {
+              flex: '1 1 80px', minWidth: 64,
+              padding: '8px 6px',
+              borderRadius: 8,
+              border: '1.5px solid ' + (active ? p.color : 'rgba(100,116,139,0.30)'),
+              background: active ? p.color + '22' : 'rgba(15,23,42,0.5)',
+              color: active ? p.color : '#94a3b8',
+              fontSize: 10, fontWeight: active ? 800 : 600,
+              cursor: 'pointer',
+              transition: 'all 180ms ease',
+              transform: active ? 'translateY(-2px)' : 'none',
+              boxShadow: active ? '0 4px 12px ' + p.color + '40' : 'none'
+            }
+          },
+            h('div', { 'aria-hidden': 'true', style: { fontSize: 16, lineHeight: 1, marginBottom: 2 } }, p.icon),
+            h('div', { style: { fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 9, opacity: 0.8 } }, 'P' + p.phase),
+            h('div', { style: { lineHeight: 1.2, marginTop: 2 } }, p.name)
+          );
+        })
+      ),
+
+      // SVG escalation curve
+      h('div', { style: { background: 'rgba(2,6,23,0.5)', borderRadius: 8, padding: 8, marginBottom: 12 } },
+        h('svg', {
+          viewBox: '0 0 100 80', preserveAspectRatio: 'none',
+          'aria-hidden': 'true',
+          style: { width: '100%', height: 90, display: 'block' }
+        },
+          // axis baseline
+          h('line', { x1: 4, y1: 76, x2: 96, y2: 76, stroke: 'rgba(148,163,184,0.30)', strokeWidth: 0.5 }),
+          // labels for low/high
+          h('text', { x: 2, y: 8, fontSize: 4, fill: '#94a3b8' }, 'PEAK'),
+          h('text', { x: 2, y: 78, fontSize: 4, fill: '#94a3b8' }, 'CALM'),
+          // glow under curve
+          h('polyline', {
+            points: arcPoints + ' 92,76 8,76',
+            fill: 'rgba(239,68,68,0.10)', stroke: 'none'
+          }),
+          // curve
+          h('polyline', {
+            points: arcPoints,
+            fill: 'none', stroke: '#14b8a6', strokeWidth: 1.2,
+            strokeLinejoin: 'round', strokeLinecap: 'round'
+          }),
+          // phase dots (faint)
+          phases.map(function(p, i) {
+            var x = 8 + i * (84 / 6);
+            var y = [70, 56, 42, 22, 8, 36, 60][i];
+            return h('circle', { key: 'dot-' + i, cx: x, cy: y, r: 1.4, fill: '#475569' });
+          }),
+          // active marker — glowing dot at current phase position
+          h('circle', { cx: dotX, cy: dotY, r: 4.5, fill: ph.color, opacity: 0.25 }),
+          h('circle', { cx: dotX, cy: dotY, r: 2.4, fill: ph.color, stroke: '#0f172a', strokeWidth: 0.6 })
+        )
+      ),
+
+      // Controls — slider + play button + reset
+      h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
+        h('input', {
+          type: 'range', min: 1, max: 7, step: 1, value: currentPhase,
+          'aria-label': 'Cycle phase',
+          onChange: function(e) { setCurrentPhase(parseInt(e.target.value, 10)); setAutoPlay(false); },
+          style: { flex: 1, minWidth: 160, accentColor: ph.color }
+        }),
+        h('button', {
+          onClick: function() {
+            if (currentPhase >= 7) setCurrentPhase(1);
+            setAutoPlay(function(prev) { return !prev; });
+          },
+          'aria-label': autoPlay ? 'Pause auto-advance' : 'Play auto-advance',
+          style: {
+            padding: '8px 14px', borderRadius: 8,
+            background: autoPlay ? '#14b8a6' : 'rgba(20,184,166,0.18)',
+            color: autoPlay ? '#0f172a' : '#5eead4',
+            border: '1.5px solid #14b8a6',
+            fontSize: 11, fontWeight: 800,
+            cursor: 'pointer', whiteSpace: 'nowrap'
+          }
+        }, autoPlay ? '⏸ Pause' : '▶ Play'),
+        h('button', {
+          onClick: function() { setCurrentPhase(1); setAutoPlay(false); },
+          'aria-label': 'Reset to Phase 1 Calm',
+          style: {
+            padding: '8px 12px', borderRadius: 8,
+            background: 'rgba(148,163,184,0.10)', color: '#94a3b8',
+            border: '1px solid rgba(148,163,184,0.30)',
+            fontSize: 11, fontWeight: 700, cursor: 'pointer'
+          }
+        }, '↺ Reset')
+      ),
+
+      // Active phase callout — large, styled to dominate visually
+      h('div', {
+        style: {
+          background: 'linear-gradient(135deg, ' + ph.color + '18, rgba(15,23,42,0.7))',
+          borderRadius: 10, padding: '14px 16px',
+          borderTop: '1px solid ' + ph.color + '60', borderRight: '1px solid ' + ph.color + '60',
+          borderBottom: '1px solid ' + ph.color + '60', borderLeft: '4px solid ' + ph.color
+        }
+      },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 } },
+          h('div', { 'aria-hidden': 'true', style: {
+            width: 44, height: 44, borderRadius: '50%', background: ph.color + '30',
+            border: '2px solid ' + ph.color, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 22
+          } }, ph.icon),
+          h('div', null,
+            h('div', { style: { fontSize: 10, fontFamily: 'ui-monospace, Menlo, monospace', color: ph.color, fontWeight: 800, letterSpacing: '0.08em' } }, 'PHASE ' + ph.phase),
+            h('div', { style: { fontSize: 17, fontWeight: 900, color: ph.color, lineHeight: 1.1, marginTop: 2 } }, ph.name)
+          )
+        ),
+        h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 10 } },
+          h('b', { style: { color: '#e2e8f0' } }, 'What you\'ll see: '), ph.signs),
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 } },
+          h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.30)' } },
+            h('div', { style: { fontSize: 9, fontWeight: 800, color: '#22c55e', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, '✓ Do'),
+            h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } }, ph.doThis)
+          ),
+          h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.30)' } },
+            h('div', { style: { fontSize: 9, fontWeight: 800, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, '✗ Don\'t'),
+            h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } }, ph.dontDo)
+          )
+        ),
+        currentPhase === 7 && hasWalked
+          ? h('div', { style: {
+              marginTop: 10, padding: 8, borderRadius: 6,
+              background: 'rgba(20,184,166,0.10)', border: '1px solid rgba(20,184,166,0.30)',
+              fontSize: 11, color: '#5eead4', textAlign: 'center', fontWeight: 700
+            } }, '🎓 You walked the full cycle. +2 XP. Now scroll for the deep cards on each phase.')
+          : null
+      )
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────
+  // FunctionMatcher — Replacement Behavior practice quiz
+  // 8 short ABC vignettes; student picks the function (ATT/ESC/
+  // TAN/AUT) from chip buttons; instant feedback with the data
+  // signal that disambiguates. Tracks score across the session.
+  // ─────────────────────────────────────────────────────────
+  function FunctionMatcher(props) {
+    if (!R) return null;
+    var scenarios = props.scenarios;
+    var functions = props.functions;
+    var awardXP = props.awardXP;
+
+    var is = R.useState(0);     var idx = is[0];     var setIdx = is[1];
+    var ss = R.useState(0);     var score = ss[0];   var setScore = ss[1];
+    var ts = R.useState(0);     var attempts = ts[0]; var setAttempts = ts[1];
+    var ps = R.useState(null);  var pick = ps[0];    var setPick = ps[1]; // last picked function code
+    var fs = R.useState(false); var awarded = fs[0]; var setAwarded = fs[1];
+
+    var sc = scenarios[idx % scenarios.length];
+    var correct = pick === sc.answer;
+    var picked = pick !== null;
+
+    function choose(code) {
+      if (picked) return; // don't change after locked answer
+      setPick(code);
+      setAttempts(function(n) { return n + 1; });
+      if (code === sc.answer) {
+        setScore(function(n) { return n + 1; });
+        if (awardXP) awardXP(1);
+      }
+    }
+    function next() {
+      var nextIdx = idx + 1;
+      if (nextIdx >= scenarios.length && !awarded) {
+        setAwarded(true);
+        if (awardXP) awardXP(3);
+      }
+      setIdx(nextIdx);
+      setPick(null);
+    }
+    function reset() {
+      setIdx(0); setPick(null); setScore(0); setAttempts(0); setAwarded(false);
+    }
+
+    var done = idx >= scenarios.length;
+
+    if (done) {
+      var pct = attempts > 0 ? Math.round((score / attempts) * 100) : 0;
+      var grade = pct >= 88 ? '🏆 Function-spotter' : pct >= 75 ? '🎯 Solid hypothesis-builder' : pct >= 60 ? '📖 Practice helps — re-walk the four function cards' : '🔄 Re-read the scenarios with the function definitions side-by-side';
+      return h('div', {
+        style: {
+          background: 'rgba(15,23,42,0.7)', borderRadius: 12, padding: 16, marginBottom: 14,
+          borderTop: '1px solid rgba(20,184,166,0.30)', borderRight: '1px solid rgba(20,184,166,0.30)',
+          borderBottom: '1px solid rgba(20,184,166,0.30)', borderLeft: '4px solid #14b8a6'
+        }
+      },
+        h('div', { style: { textAlign: 'center', padding: 12 } },
+          h('div', { style: { fontSize: 28, marginBottom: 6 } }, '🎯'),
+          h('div', { style: { fontSize: 14, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, 'Function-spotter complete'),
+          h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 10 } }, 'Score: ' + score + ' / ' + attempts + ' (' + pct + '%)'),
+          h('div', { style: { fontSize: 12, color: '#5eead4', fontWeight: 700, marginBottom: 12 } }, grade),
+          h('button', {
+            onClick: reset,
+            style: {
+              padding: '10px 18px', borderRadius: 8,
+              background: '#14b8a6', color: '#0f172a',
+              border: 'none', fontSize: 12, fontWeight: 800, cursor: 'pointer'
+            }
+          }, '↺ Run again')
+        )
+      );
+    }
+
+    return h('div', {
+      style: {
+        background: 'rgba(15,23,42,0.7)', borderRadius: 12, padding: 16, marginBottom: 14,
+        borderTop: '1px solid rgba(20,184,166,0.30)', borderRight: '1px solid rgba(20,184,166,0.30)',
+        borderBottom: '1px solid rgba(20,184,166,0.30)', borderLeft: '4px solid #14b8a6'
+      }
+    },
+      // Header + score chip
+      h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
+        h('div', { 'aria-hidden': 'true', style: {
+          width: 36, height: 36, borderRadius: '50%', background: 'rgba(20,184,166,0.18)',
+          border: '1.5px solid #14b8a6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18
+        } }, '🎯'),
+        h('div', { style: { flex: 1, minWidth: 200 } },
+          h('div', { style: { fontSize: 13, fontWeight: 800, color: '#5eead4' } }, 'Function-spotter practice'),
+          h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, 'Read the vignette. Pick the function. Get the data signal.')
+        ),
+        h('div', { style: {
+          padding: '6px 12px', borderRadius: 999,
+          background: 'rgba(20,184,166,0.12)', border: '1px solid rgba(20,184,166,0.40)',
+          color: '#5eead4', fontSize: 11, fontWeight: 800,
+          fontFamily: 'ui-monospace, Menlo, monospace'
+        } }, 'Score: ' + score + '/' + attempts + ' · ' + (idx + 1) + ' of ' + scenarios.length)
+      ),
+
+      // Scenario stem
+      h('div', {
+        style: {
+          background: 'rgba(2,6,23,0.5)', borderRadius: 8, padding: '12px 14px', marginBottom: 12,
+          borderLeft: '3px solid #5eead4'
+        }
+      },
+        h('div', { style: { fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 } }, 'Scenario'),
+        h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, sc.stem)
+      ),
+
+      // Function chips
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8, marginBottom: 12 } },
+        functions.map(function(f) {
+          var isPick = pick === f.code;
+          var isAns = sc.answer === f.code;
+          var showAsCorrect = picked && isAns;
+          var showAsWrong   = picked && isPick && !correct;
+          var bg, color, borderC;
+          if (showAsCorrect) { bg = 'rgba(34,197,94,0.18)'; color = '#22c55e'; borderC = '#22c55e'; }
+          else if (showAsWrong) { bg = 'rgba(239,68,68,0.18)'; color = '#ef4444'; borderC = '#ef4444'; }
+          else if (picked) { bg = 'rgba(15,23,42,0.5)'; color = '#64748b'; borderC = 'rgba(100,116,139,0.30)'; }
+          else { bg = f.color + '12'; color = f.color; borderC = f.color + '60'; }
+
+          return h('button', {
+            key: 'fn-' + f.code,
+            onClick: function() { choose(f.code); },
+            disabled: picked,
+            'aria-label': f.label + ' function',
+            style: {
+              padding: '12px 8px', borderRadius: 10,
+              background: bg, color: color,
+              border: '1.5px solid ' + borderC,
+              fontSize: 12, fontWeight: 800,
+              cursor: picked ? 'default' : 'pointer',
+              transition: 'all 200ms ease',
+              transform: showAsCorrect ? 'scale(1.04)' : 'none'
+            }
+          },
+            h('div', { 'aria-hidden': 'true', style: { fontSize: 22, marginBottom: 4, lineHeight: 1 } }, f.icon),
+            h('div', { style: { fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 10, opacity: 0.7 } }, f.code),
+            h('div', { style: { marginTop: 2 } }, f.label),
+            showAsCorrect ? h('div', { style: { fontSize: 10, marginTop: 4 } }, '✓') : null,
+            showAsWrong ? h('div', { style: { fontSize: 10, marginTop: 4 } }, '✗') : null
+          );
+        })
+      ),
+
+      // Feedback
+      picked
+        ? h('div', {
+            role: 'status',
+            style: {
+              padding: '12px 14px', borderRadius: 8,
+              background: correct ? 'rgba(34,197,94,0.10)' : 'rgba(239,68,68,0.10)',
+              border: '1px solid ' + (correct ? 'rgba(34,197,94,0.30)' : 'rgba(239,68,68,0.30)'),
+              marginBottom: 12
+            }
+          },
+            h('div', { style: {
+              fontSize: 11, fontWeight: 800,
+              color: correct ? '#22c55e' : '#ef4444',
+              marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em'
+            } }, correct ? '✓ Correct — function: ' + sc.answer : '✗ Actually ' + sc.answer + ' — here\'s the data signal'),
+            h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } }, sc.why),
+            h('div', { style: { marginTop: 10, textAlign: 'right' } },
+              h('button', {
+                onClick: next,
+                style: {
+                  padding: '8px 16px', borderRadius: 8,
+                  background: '#14b8a6', color: '#0f172a',
+                  border: 'none', fontSize: 11, fontWeight: 800, cursor: 'pointer'
+                }
+              }, idx + 1 >= scenarios.length ? 'See score →' : 'Next scenario →')
+            )
+          )
+        : h('div', { style: { fontSize: 10, color: '#64748b', textAlign: 'center', fontStyle: 'italic' } }, 'Pick a function to see the explanation.')
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────
+  // DecisionTree — Restraint/Seclusion ethics walker
+  // Branching scenarios. Each node has 2-3 choices; each choice
+  // is CORRECT / WRONG / NUANCED with a Maine Ch. 33 / Colvin
+  // citation and plain-English reasoning. Path of choices is
+  // shown as a breadcrumb so the student can see their decisions.
+  // ─────────────────────────────────────────────────────────
+  function DecisionTree(props) {
+    if (!R) return null;
+    var scenarios = props.scenarios;
+    var awardXP = props.awardXP;
+
+    var ss = R.useState(scenarios[0].id);   var scenarioId = ss[0]; var setScenarioId = ss[1];
+    var ns = R.useState('start');           var nodeId = ns[0];     var setNodeId = ns[1];
+    var hs = R.useState([]);                var history = hs[0];    var setHistory = hs[1]; // array of {nodeId, choiceIdx, verdict}
+    var cs = R.useState(new Set());         var completed = cs[0];  var setCompleted = cs[1];
+
+    var scenario = scenarios.filter(function(s) { return s.id === scenarioId; })[0];
+    var node = scenario.nodes[nodeId];
+
+    function pickScenario(id) {
+      setScenarioId(id); setNodeId('start'); setHistory([]);
+    }
+    function choose(choiceIdx) {
+      var ch = node.choices[choiceIdx];
+      var newHistory = history.concat([{ nodeId: nodeId, choiceIdx: choiceIdx, verdict: ch.verdict, label: ch.label }]);
+      setHistory(newHistory);
+      // If the choice has a `next` pointer, advance. If null (wrong/dead-end),
+      // stay on this node so the student can try a different choice. The
+      // feedback panel shows the most-recent attempt either way.
+      if (ch.next) setNodeId(ch.next);
+    }
+    function restart() {
+      setNodeId('start'); setHistory([]);
+    }
+
+    // Once the user reaches a terminal node, mark scenario complete + XP
+    R.useEffect(function() {
+      if (node && node.terminal && !completed.has(scenarioId)) {
+        var nc = new Set(completed);
+        nc.add(scenarioId);
+        setCompleted(nc);
+        if (awardXP) awardXP(3);
+      }
+    }, [nodeId, scenarioId]);
+
+    var lastChoice = history.length > 0 ? history[history.length - 1] : null;
+    var lastChoiceObj = lastChoice ? scenario.nodes[lastChoice.nodeId].choices[lastChoice.choiceIdx] : null;
+
+    return h('div', {
+      style: {
+        background: 'rgba(15,23,42,0.7)', borderRadius: 12, padding: 16, marginBottom: 14,
+        borderTop: '1px solid rgba(167,139,250,0.30)', borderRight: '1px solid rgba(167,139,250,0.30)',
+        borderBottom: '1px solid rgba(167,139,250,0.30)', borderLeft: '4px solid #a78bfa'
+      }
+    },
+      // Header
+      h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
+        h('div', { 'aria-hidden': 'true', style: {
+          width: 36, height: 36, borderRadius: '50%', background: 'rgba(167,139,250,0.18)',
+          border: '1.5px solid #a78bfa', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18
+        } }, '🌳'),
+        h('div', { style: { flex: 1, minWidth: 200 } },
+          h('div', { style: { fontSize: 13, fontWeight: 800, color: '#c4b5fd' } }, 'Walk the ethics decision'),
+          h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, 'Branching crisis scenarios. Each choice cites Maine Ch. 33 or Colvin Cycle reasoning. There is sometimes more than one correct answer.')
+        )
+      ),
+
+      // Scenario picker
+      h('div', { role: 'tablist', 'aria-label': 'Scenario picker', style: { display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' } },
+        scenarios.map(function(s) {
+          var active = s.id === scenarioId;
+          var done = completed.has(s.id);
+          return h('button', {
+            key: 's-' + s.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
+            onClick: function() { pickScenario(s.id); },
+            style: {
+              padding: '8px 12px', borderRadius: 8,
+              background: active ? s.color + '22' : 'rgba(15,23,42,0.5)',
+              color: active ? s.color : '#94a3b8',
+              border: '1.5px solid ' + (active ? s.color : 'rgba(100,116,139,0.30)'),
+              fontSize: 11, fontWeight: active ? 800 : 600,
+              cursor: 'pointer'
+            }
+          },
+            h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, s.icon),
+            s.title,
+            done ? h('span', { 'aria-label': 'completed', style: { marginLeft: 6, color: '#22c55e' } }, '✓') : null
+          );
+        })
+      ),
+
+      // Stem
+      h('div', {
+        style: {
+          background: 'rgba(2,6,23,0.5)', borderRadius: 8, padding: '12px 14px', marginBottom: 12,
+          borderLeft: '3px solid ' + scenario.color
+        }
+      },
+        h('div', { style: { fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 } }, 'Setup'),
+        h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, scenario.stem)
+      ),
+
+      // Breadcrumb of history (verdicts)
+      history.length > 0
+        ? h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 12, alignItems: 'center' } },
+            h('span', { style: { fontSize: 9, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em', marginRight: 4 } }, 'Your path:'),
+            history.map(function(step, i) {
+              var color = step.verdict === 'CORRECT' ? '#22c55e' : step.verdict === 'WRONG' ? '#ef4444' : '#fbbf24';
+              return h('span', {
+                key: 'crumb-' + i,
+                style: {
+                  padding: '2px 7px', borderRadius: 999,
+                  background: color + '18', color: color,
+                  border: '1px solid ' + color + '60',
+                  fontSize: 9, fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 800,
+                  letterSpacing: '0.04em'
+                }
+              }, 'P' + (i + 1) + ' ' + step.verdict);
+            })
+          )
+        : null,
+
+      // Last-choice feedback (if any)
+      lastChoiceObj
+        ? h('div', {
+            role: 'status',
+            style: {
+              padding: '12px 14px', borderRadius: 8, marginBottom: 12,
+              background: lastChoiceObj.verdictColor + '12',
+              border: '1px solid ' + lastChoiceObj.verdictColor + '40',
+              borderLeft: '4px solid ' + lastChoiceObj.verdictColor
+            }
+          },
+            h('div', { style: {
+              fontSize: 10, fontWeight: 800,
+              color: lastChoiceObj.verdictColor, marginBottom: 6, letterSpacing: '0.06em'
+            } }, (lastChoiceObj.verdict === 'CORRECT' ? '✓ ' : lastChoiceObj.verdict === 'WRONG' ? '✗ ' : '⚠ ') + lastChoiceObj.verdict),
+            h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 6, fontStyle: 'italic' } },
+              '"' + lastChoiceObj.label + '"'),
+            h('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 6 } }, lastChoiceObj.why),
+            h('div', { style: {
+              fontSize: 10, color: lastChoiceObj.verdictColor, fontWeight: 700,
+              paddingTop: 6, borderTop: '1px dashed ' + lastChoiceObj.verdictColor + '40'
+            } }, '📖 ' + lastChoiceObj.cite)
+          )
+        : null,
+
+      // Current node — terminal or active prompt
+      node.terminal
+        ? h('div', {
+            style: {
+              padding: '14px 16px', borderRadius: 10,
+              background: 'linear-gradient(135deg, rgba(20,184,166,0.18), rgba(15,23,42,0.7))',
+              borderTop: '1px solid #14b8a6', borderRight: '1px solid #14b8a6',
+              borderBottom: '1px solid #14b8a6', borderLeft: '4px solid #14b8a6'
+            }
+          },
+            h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 6 } }, '🎓 ' + node.prompt),
+            h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 12 } }, node.summary),
+            h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' } },
+              h('button', {
+                onClick: restart,
+                style: {
+                  padding: '8px 14px', borderRadius: 8,
+                  background: 'rgba(20,184,166,0.18)', color: '#5eead4',
+                  border: '1.5px solid #14b8a6',
+                  fontSize: 11, fontWeight: 800, cursor: 'pointer'
+                }
+              }, '↺ Restart this scenario'),
+              scenarios.length > 1
+                ? h('button', {
+                    onClick: function() {
+                      var nextS = scenarios.filter(function(s) { return s.id !== scenarioId; })[0];
+                      if (nextS) pickScenario(nextS.id);
+                    },
+                    style: {
+                      padding: '8px 14px', borderRadius: 8,
+                      background: '#14b8a6', color: '#0f172a',
+                      border: 'none', fontSize: 11, fontWeight: 800, cursor: 'pointer'
+                    }
+                  }, '→ Try other scenario')
+                : null
+            )
+          )
+        : h('div', null,
+            h('div', { style: { fontSize: 12, fontWeight: 800, color: '#e2e8f0', marginBottom: 10 } }, '❓ ' + node.prompt),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+              node.choices.map(function(ch, i) {
+                return h('button', {
+                  key: 'ch-' + nodeId + '-' + i,
+                  onClick: function() { choose(i); },
+                  style: {
+                    textAlign: 'left',
+                    padding: '12px 14px', borderRadius: 8,
+                    background: 'rgba(15,23,42,0.6)',
+                    color: '#e2e8f0',
+                    border: '1px solid rgba(167,139,250,0.30)',
+                    fontSize: 12, fontWeight: 600, lineHeight: 1.5,
+                    cursor: 'pointer',
+                    transition: 'all 160ms ease'
+                  },
+                  onMouseEnter: function(e) { e.currentTarget.style.background = 'rgba(167,139,250,0.12)'; e.currentTarget.style.borderColor = '#a78bfa'; },
+                  onMouseLeave: function(e) { e.currentTarget.style.background = 'rgba(15,23,42,0.6)'; e.currentTarget.style.borderColor = 'rgba(167,139,250,0.30)'; }
+                },
+                  h('span', { style: { color: '#a78bfa', fontWeight: 800, marginRight: 8, fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 11 } }, String.fromCharCode(65 + i) + '.'),
+                  ch.label
+                );
+              })
+            )
+          )
+    );
+  }
+
   function defaultState() {
     return {
       activeSection: 'pbis',
@@ -603,9 +1431,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                 border: '1px solid rgba(20,184,166,0.40)',
                 color: '#5eead4', fontSize: 10, fontWeight: 700,
                 fontFamily: 'ui-monospace, Menlo, monospace'
-              } }, '11 sections')
+              } }, '11 sections · 3 interactive')
             ),
-            h('p', { style: { margin: 0, fontSize: 12, color: '#94a3b8', fontWeight: 600, lineHeight: 1.5 } }, 'Applied K-12 practice. PBIS · Replacement Behaviors · Setting Events · Acting-Out Cycle · Restraint Ethics · Equity & Disparities.')
+            h('p', { style: { margin: 0, fontSize: 12, color: '#94a3b8', fontWeight: 600, lineHeight: 1.5 } }, 'Applied K-12 practice. PBIS · Replacement Behaviors (with function-spotter) · Setting Events · Acting-Out Cycle (with phase scrubber) · Restraint Ethics (with decision tree) · Equity & Disparities.')
           )
         );
       }
@@ -696,7 +1524,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
               return h('div', { key: 'pbis-' + pt.tier,
                 style: {
                   background: 'rgba(15,23,42,0.6)', borderRadius: 10, padding: '12px 14px',
-                  border: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + pt.color
+                  borderTop: '1px solid rgba(100,116,139,0.25)', borderRight: '1px solid rgba(100,116,139,0.25)', borderBottom: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + pt.color
                 } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
                   h('div', { 'aria-hidden': 'true',
@@ -737,11 +1565,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
         return h('div', null,
           panelHeader('🔄 Replacement Behaviors — function → BIP bridge',
             'Knowing the function is half the work. The other half is teaching a replacement that meets the same function while being socially acceptable, easier, and more efficient than the problem behavior.'),
+          h(FunctionMatcher, { scenarios: MATCHER_SCENARIOS, functions: FUNCTIONS_KEY, awardXP: awardXP }),
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
             REPLACEMENT_BEHAVIORS.map(function(rb, i) {
               return h('div', { key: 'rb-' + i,
                 style: { background: 'rgba(15,23,42,0.6)', borderRadius: 10, padding: '12px 14px',
-                  border: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + rb.color } },
+                  borderTop: '1px solid rgba(100,116,139,0.25)', borderRight: '1px solid rgba(100,116,139,0.25)', borderBottom: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + rb.color } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
                   circularBadge(rb.icon, rb.color, 36),
                   h('div', null,
@@ -781,7 +1610,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
             SETTING_EVENTS.map(function(se, i) {
               return h('div', { key: 'se-' + i,
                 style: { background: 'rgba(15,23,42,0.6)', borderRadius: 10, padding: '12px 14px',
-                  border: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + se.color } },
+                  borderTop: '1px solid rgba(100,116,139,0.25)', borderRight: '1px solid rgba(100,116,139,0.25)', borderBottom: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + se.color } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                   circularBadge(se.icon, se.color, 32),
                   h('div', { style: { fontSize: 12, fontWeight: 800, color: se.color } }, se.category)
@@ -800,11 +1629,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
         return h('div', null,
           panelHeader('🌀 Acting-Out Cycle — seven phases of escalation',
             'Geoff Colvin\'s seven-phase framework is the spine of every major crisis-intervention curriculum (CPI, Boys Town, NCI, Mandt). Each phase has its own intervention. Knowing which phase a student is in tells staff what will help and what will make it worse.'),
+          h(CycleScrubber, { phases: ACTING_OUT_CYCLE, awardXP: awardXP }),
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
             ACTING_OUT_CYCLE.map(function(ph) {
               return h('div', { key: 'cycle-' + ph.phase,
                 style: { background: 'rgba(15,23,42,0.6)', borderRadius: 10, padding: '12px 14px',
-                  border: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + ph.color } },
+                  borderTop: '1px solid rgba(100,116,139,0.25)', borderRight: '1px solid rgba(100,116,139,0.25)', borderBottom: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + ph.color } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
                   h('div', { 'aria-hidden': 'true',
                     style: { width: 36, height: 36, borderRadius: '50%', background: ph.color + '22', border: '1.5px solid ' + ph.color,
@@ -837,6 +1667,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
         return h('div', null,
           panelHeader('🛑 Restraint & Seclusion — emergency protocols and ethics',
             'High-stakes content most ABA tools cover briefly or not at all. School psychs sit on IEP teams that authorize, debrief, and revise BIPs in response to restraint and seclusion incidents.'),
+          h(DecisionTree, { scenarios: DECISION_SCENARIOS, awardXP: awardXP }),
           h('div', { style: { padding: '10px 12px', borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.30)', marginBottom: 12 } },
             h('div', { style: { fontSize: 11, color: '#fca5a5', fontWeight: 800, marginBottom: 4 } }, '⚠ This is education, not training.'),
             h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } },
@@ -846,7 +1677,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
             RESTRAINT_PRINCIPLES.map(function(rp, i) {
               return h('div', { key: 'r-' + i,
                 style: { background: 'rgba(15,23,42,0.6)', borderRadius: 10, padding: '12px 14px',
-                  border: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + rp.color } },
+                  borderTop: '1px solid rgba(100,116,139,0.25)', borderRight: '1px solid rgba(100,116,139,0.25)', borderBottom: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + rp.color } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
                   circularBadge(rp.icon, rp.color, 36),
                   h('div', { style: { fontSize: 13, fontWeight: 800, color: rp.color, lineHeight: 1.2 } }, rp.name)
@@ -872,7 +1703,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
               return h('div', { key: 'fba-' + s.step,
                 style: {
                   background: 'rgba(15,23,42,0.6)', borderRadius: 10, padding: '12px 14px',
-                  border: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + s.color
+                  borderTop: '1px solid rgba(100,116,139,0.25)', borderRight: '1px solid rgba(100,116,139,0.25)', borderBottom: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + s.color
                 } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
                   h('div', { 'aria-hidden': 'true',
@@ -918,7 +1749,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
               return h('div', { key: 'bip-' + c.part,
                 style: {
                   background: 'rgba(15,23,42,0.6)', borderRadius: 10, padding: '12px 14px',
-                  border: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + c.color
+                  borderTop: '1px solid rgba(100,116,139,0.25)', borderRight: '1px solid rgba(100,116,139,0.25)', borderBottom: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + c.color
                 } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
                   h('div', { 'aria-hidden': 'true',
@@ -961,7 +1792,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
               return h('div', { key: 'cico-' + c.step,
                 style: {
                   background: 'rgba(15,23,42,0.6)', borderRadius: 10, padding: '12px 14px',
-                  border: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + c.color
+                  borderTop: '1px solid rgba(100,116,139,0.25)', borderRight: '1px solid rgba(100,116,139,0.25)', borderBottom: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + c.color
                 } },
                 // Step header
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
@@ -1012,7 +1843,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
               return h('div', { key: 'eq-' + i,
                 style: {
                   background: 'rgba(15,23,42,0.6)', borderRadius: 10, padding: '12px 14px',
-                  border: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + eq.color
+                  borderTop: '1px solid rgba(100,116,139,0.25)', borderRight: '1px solid rgba(100,116,139,0.25)', borderBottom: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + eq.color
                 } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
                   circularBadge(eq.icon, eq.color, 36),
@@ -1029,8 +1860,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
           h('div', { style: {
             padding: '14px 16px', borderRadius: 10,
             background: 'rgba(20,184,166,0.08)',
-            border: '1px solid rgba(20,184,166,0.30)',
-            borderLeft: '4px solid #14b8a6'
+            borderTop: '1px solid rgba(20,184,166,0.30)', borderRight: '1px solid rgba(20,184,166,0.30)', borderBottom: '1px solid rgba(20,184,166,0.30)', borderLeft: '4px solid #14b8a6'
           } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
               circularBadge('🔍', '#14b8a6', 36),
@@ -1070,7 +1900,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
               return h('div', { key: 'maine-' + gi,
                 style: {
                   background: 'rgba(15,23,42,0.6)', borderRadius: 10, padding: '12px 14px',
-                  border: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + group.color
+                  borderTop: '1px solid rgba(100,116,139,0.25)', borderRight: '1px solid rgba(100,116,139,0.25)', borderBottom: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + group.color
                 } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
                   circularBadge(group.icon, group.color, 36),
@@ -1095,7 +1925,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
             'School Behavior Toolkit teaches what school psychs and educators DO. Two sister spaces handle the science and the voices.'),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12 } },
             // BehaviorLab — the science
-            h('div', { style: { background: 'rgba(15,23,42,0.6)', borderRadius: 12, padding: 16, border: '1px solid rgba(251,146,60,0.30)', borderLeft: '4px solid #fb923c' } },
+            h('div', { style: { background: 'rgba(15,23,42,0.6)', borderRadius: 12, padding: 16, borderTop: '1px solid rgba(251,146,60,0.30)', borderRight: '1px solid rgba(251,146,60,0.30)', borderBottom: '1px solid rgba(251,146,60,0.30)', borderLeft: '4px solid #fb923c' } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
                 circularBadge('🐭', '#fb923c', 44),
                 h('div', null,
@@ -1108,7 +1938,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
               h('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, '9 progressive levels · Schedule Sleuth · Function Sleuth · Glossary · Ethics')
             ),
             // Disability Voices — the people
-            h('div', { style: { background: 'rgba(15,23,42,0.6)', borderRadius: 12, padding: 16, border: '1px solid rgba(244,114,182,0.30)', borderLeft: '4px solid #f472b6' } },
+            h('div', { style: { background: 'rgba(15,23,42,0.6)', borderRadius: 12, padding: 16, borderTop: '1px solid rgba(244,114,182,0.30)', borderRight: '1px solid rgba(244,114,182,0.30)', borderBottom: '1px solid rgba(244,114,182,0.30)', borderLeft: '4px solid #f472b6' } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
                 circularBadge('🎤', '#f472b6', 44),
                 h('div', null,
