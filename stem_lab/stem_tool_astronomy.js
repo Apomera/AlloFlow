@@ -1076,6 +1076,79 @@
               );
             })(),
             '#3b82f6'
+          ),
+
+          // ─── Solar System spacecraft exploration ────────────────
+          sectionCard('🚀 How we actually visited the Solar System',
+            (function() {
+              var SC_TOPICS = [
+                { id: 'overview', name: 'Why we send spacecraft', emoji: '🛰️',
+                  body: 'Almost everything we know about the Solar System beyond visual observation comes from SPACECRAFT. Telescopes show us planets as dots or small disks; spacecraft fly through their atmospheres, land on their surfaces, taste their soil, image their moons, return samples. About 250+ planetary spacecraft have flown since Sputnik (1957). Some are still operating decades after launch (Voyager 1+2). Each generation builds on the previous: Mariner showed Mars as a desert; Viking landed there; Pathfinder rolled a small rover; the MERs + MSL drove much further; Perseverance is collecting samples for return.',
+                  caveat: 'Spacecraft missions are extraordinarily expensive — a flagship mission like Cassini or Mars 2020 costs $2-4 billion + takes 7-15 years from concept to launch. They are also institutional triumphs: NASA, ESA, JAXA, Roscosmos, ISRO, CNSA all maintain decades-long programs. Politically, missions are vulnerable to budget cuts; scientifically, they are the source of essentially all our deep knowledge of other worlds.'
+                },
+                { id: 'voyager', name: 'Voyager 1 + 2 — the Grand Tour', emoji: '🛸',
+                  body: 'Voyager 1 + 2 (launched 1977) were designed to use a once-in-176-years planetary alignment to visit ALL FOUR outer planets with a single trajectory + gravity assists. Voyager 2 succeeded: Jupiter (1979), Saturn (1981), Uranus (1986, ONLY spacecraft EVER to visit), Neptune (1989, ONLY spacecraft EVER to visit). Voyager 1 took a different path that went past Saturn\'s moon Titan but skipped Uranus + Neptune; it is now the FARTHEST human-made object from Earth (~ 24 billion km, ~ 162 AU, 22.5 light-hours away as of 2025). Both spacecraft crossed the HELIOPAUSE (the boundary of the Sun\'s magnetic influence) — Voyager 1 in 2012, Voyager 2 in 2018 — entering INTERSTELLAR SPACE. Their plutonium-238 power supplies still work + they transmit data; expected to operate until ~ 2030.',
+                  caveat: 'Voyager 1 + 2 carry the GOLDEN RECORDS — 12-inch gold-plated copper discs with sounds + images of Earth, intended as messages to any extraterrestrial civilization that might find them in millions of years. Carl Sagan chaired the selection committee. The records will outlast the spacecraft + may eventually be the longest-lasting human artifacts. Their value as actual communication is essentially zero (they would be unreadable without context); their value as cultural statement + monument is large.'
+                },
+                { id: 'cassini', name: 'Cassini-Huygens — Saturn 1997-2017', emoji: '🪐',
+                  body: 'CASSINI (NASA + ESA, launched 1997, arrived Saturn 2004, ended 2017) was the most successful outer-Solar-System mission ever. It spent 13 YEARS orbiting Saturn, returning 453,000+ images + huge datasets on the planet, rings, moons, magnetosphere. KEY DISCOVERIES: liquid methane lakes on Titan (Huygens probe landing in 2005, the first landing in the outer Solar System); active geysers on Enceladus (water + organics venting from a subsurface ocean — Enceladus is now a top astrobiology target); detailed ring structure + waves; new moons; an enormous hexagonal storm at Saturn\'s north pole. Cassini ended with a deliberate plunge into Saturn\'s atmosphere on September 15, 2017 — to prevent contaminating Enceladus or Titan with Earth microbes if the spacecraft eventually failed + crashed into one of the icy moons.',
+                  caveat: 'The Cassini "Grand Finale" — 22 close passes between Saturn + the inner rings — was the highest-payoff phase of the entire mission, with measurements that would have been too risky earlier. The deliberate end was an ethical choice: planetary protection (preserving the integrity of potentially-habitable worlds) overrode the impulse to keep the spacecraft running.'
+                },
+                { id: 'newhorizons', name: 'New Horizons — Pluto + beyond', emoji: '🌑',
+                  body: 'NEW HORIZONS (NASA, launched 2006, Pluto flyby July 14 2015) traveled 9 years + 5 billion km to reach Pluto. The mission CHANGED the picture of Pluto from a fuzzy blob into a complex world: smooth ice plains (Sputnik Planitia, the "heart"), 11,000-foot ice mountains, a hazy nitrogen atmosphere, evidence of recent cryovolcanism + possibly a subsurface ocean. Pluto turned out to be GEOLOGICALLY ACTIVE — surprising for a small distant body that should be a frozen dead world. After Pluto, the spacecraft visited the Kuiper Belt Object Arrokoth (2014 MU69, January 2019), a contact-binary "snowman" that gave the first close look at a primordial Kuiper Belt body. New Horizons is now headed out of the Solar System; it is still returning Kuiper Belt data + may study another KBO if one is found along its trajectory.',
+                  caveat: 'Pluto\'s reclassification from PLANET to DWARF PLANET (IAU vote, August 2006 — three months after New Horizons launched) was contentious. The IAU decision is technically correct (Pluto does not "clear its neighborhood" of other bodies), but Pluto-as-not-a-planet remains debated + many planetary scientists prefer broader definitions. The science from New Horizons confirmed Pluto is more interesting than expected, regardless of taxonomy.'
+                },
+                { id: 'juno', name: 'Juno — Jupiter\'s interior', emoji: '🌪️',
+                  body: 'JUNO (NASA, launched 2011, arrived Jupiter 2016, still operating) is on a polar orbit that brings it within 4,200 km of Jupiter\'s cloud tops once every 53 days. KEY DISCOVERIES: Jupiter\'s gravity field shows the cloudbands extend ~ 3,000 km deep (not just the visible surface); the core is "fuzzy" + diluted rather than discrete solid; the magnetic field is much more complex + chaotic than expected; cyclone clusters at the poles (8 in a circle at the north pole, 5 in a pentagon at the south) that are remarkably stable. Juno\'s JunoCam (a public-engagement camera, with images processed by citizen scientists worldwide) has produced some of the most beautiful planetary images ever taken. The mission was extended through 2025 + included close flybys of the Galilean moons (Ganymede 2021, Europa 2022, Io 2023-2024).',
+                  caveat: 'Jupiter\'s radiation environment is extreme — equivalent to ~ 100 million chest X-rays of dose per orbit at closest approach. Juno uses a titanium vault to shield its electronics + still expects mission-ending radiation damage by ~ 2025. The flyby design (rather than continuous close orbit) is itself a radiation-mitigation strategy. The radiation field shapes mission planning for everything we do at Jupiter.'
+                },
+                { id: 'mars', name: 'Mars rovers — Curiosity, Perseverance + helicopter', emoji: '🚗',
+                  body: 'Mars exploration has gone from Mariner 4 (1965, first flyby), to Viking (1976, first landers), to the Pathfinder + Sojourner rover (1997, ~ 100m travel), to the Spirit + Opportunity twin rovers (2004, traveled km), to CURIOSITY (2012-present, nuclear-powered, currently exploring Mt. Sharp at Gale Crater), to PERSEVERANCE + INGENUITY (2021-present). Perseverance is collecting + caching ROCK SAMPLES for the planned Mars Sample Return mission (delayed from 2030s to mid-2030s). Ingenuity (the small helicopter) made the FIRST powered flight on another planet (April 2021); after 72 flights over 3 years, it ended operations in January 2024 with a rotor blade damaged. The Perseverance mission continues; Sample Return remains the most ambitious uncrewed planetary mission ever planned.',
+                  caveat: 'Mars Sample Return\'s schedule + budget have slipped substantially. The original plan was 2030s return; current estimates are mid-to-late 2030s or 2040s, with cost overruns. The samples Perseverance has cached are some of the most valuable specimens of extraterrestrial material ever collected — if + when they come back, they will keep laboratories busy for decades. Until then, in-situ analysis (Perseverance\'s instruments) provides most of the science.'
+                },
+                { id: 'returns', name: 'Sample-return missions', emoji: '📦',
+                  body: 'Returning material from another world is the gold standard of Solar System science. SAMPLE RETURNS so far: APOLLO (US, 1969-1972, ~ 382 kg of Moon rocks); LUNA (USSR, 1970-1976, ~ 326 g of Moon material); CHANG\'E 5 (China, 2020, ~ 1.7 kg of Moon rocks from young volcanic terrain); CHANG\'E 6 (2024, FIRST samples from the lunar far side); HAYABUSA (Japan, 2003-2010, microscopic grains from asteroid Itokawa); HAYABUSA 2 (2014-2020, ~ 5g from asteroid Ryugu — including organic molecules + amino acids); OSIRIS-REx (NASA, 2016-2023, ~ 120g from asteroid Bennu — including water + organics); STARDUST (1999-2006, comet Wild 2 dust); GENESIS (2001-2004, solar wind particles).',
+                  caveat: 'Sample-return missions are scientifically priceless. Apollo samples are still being studied 55+ years later, with new instruments revealing new science. The Ryugu + Bennu samples (2020-2023 returns) are revealing organic chemistry of the primordial Solar System. The pace is accelerating: planned future returns include Mars samples, comet samples, Venus atmosphere, asteroid Apophis (closest-pass flyby 2029).'
+                },
+                { id: 'planetary', name: 'Planetary defense missions', emoji: '🛡️',
+                  body: 'DART (NASA, 2022, Double Asteroid Redirection Test) was the FIRST test of asteroid deflection: a ~ 600 kg spacecraft deliberately crashed into the moon Dimorphos of the asteroid Didymos at 6.1 km/s. The impact CHANGED Dimorphos\'s orbital period around Didymos by ~ 33 minutes — far more than predicted, because the impact ejected enough material to provide ADDITIONAL momentum (the "ejecta enhancement factor"). HERA (ESA, launched 2024, arriving Didymos 2026) will follow up with detailed observation of the crater + Dimorphos\'s changed properties. The lesson: kinetic impactors WORK on small asteroids if given enough warning. For a Tunguska-class threat (50-100m), several years\' warning + a DART-class mission could deflect it. For city-killer (~ 1km), decades + multiple impactors. For dinosaur-killer (10+km), we currently have no proven defense.',
+                  caveat: 'Planetary defense is one of the more clearly-positive uses of space technology. The technical capability exists. The political + funding will is increasing slowly. Near-Earth-Object cataloging is incomplete; we still find ~ 100+ km-class asteroids per year that we didn\'t previously know about. The Vera C. Rubin Observatory (2025+) is expected to multiply the discovery rate by ~ 10x.'
+                },
+                { id: 'future', name: 'What\'s coming', emoji: '🔮',
+                  body: 'PLANNED + ACTIVE missions through ~ 2035: EUROPA CLIPPER (NASA, launched October 2024, arrives Jupiter system 2030) — repeated flybys of Europa\'s subsurface-ocean moon. JUICE (ESA, launched 2023, arrives Jupiter system 2031) — focused on Ganymede + the Galilean moons. DRAGONFLY (NASA, launching 2027, arrives Titan 2034) — a NUCLEAR-POWERED HELICOPTER QUADCOPTER that will fly between sites on Titan, the first heavier-than-air aircraft on another moon. PSYCHE (launched 2023, arrives metal asteroid 16 Psyche 2029) — studying a primordial planetary core analog. MARTIAN MOONS EXPLORATION (JAXA, ~ 2026 launch) — Phobos sample return. CHANG\'E 7 + 8 (China, late 2020s) — lunar south pole prospecting. Mars Sample Return + a Uranus orbiter (NASA Decadal Survey 2023 top recommendations) are in early planning.',
+                  caveat: 'Mission timelines slip. Budget pressures change priorities. The Russia-Ukraine war ended the ExoMars rover partnership (was to launch 2022, now redesigned as ESA-only); the same political dynamic could affect other international cooperation. The 2030s should be a remarkable decade for Solar System science IF the funded missions survive their development cycles. Politics willing + budgets cooperating, the next 10 years will give us new images of Europa\'s ocean, Titan\'s methane lakes from a flying drone, and (perhaps) the first laboratory analysis of Mars samples.'
+                }
+              ];
+              var sel = d.selectedSC || 'overview';
+              var topic = SC_TOPICS.find(function(t) { return t.id === sel; }) || SC_TOPICS[0];
+              return h('div', null,
+                h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
+                  'Nearly everything we know about the Solar System beyond what telescopes show came from SPACECRAFT — robotic probes that flew through atmospheres, landed on surfaces, tasted soil, returned samples, dropped helicopters, deliberately crashed into asteroids. Each generation of missions inherits the questions the previous generation raised. The cumulative result is a Solar System much stranger + more interesting than what 20th-century telescopes alone could show.'
+                ),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+                  SC_TOPICS.map(function(t) {
+                    var on = t.id === sel;
+                    return h('button', {
+                      key: t.id,
+                      onClick: function() { upd({ selectedSC: t.id }); },
+                      style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#e11d48' : '#1e293b', color: on ? '#fff' : '#e2e8f0', border: on ? '2px solid #e11d48' : '1px solid #334155' }
+                    }, t.emoji + ' ' + t.name);
+                  })
+                ),
+                h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(225,29,72,0.08)', border: '1px solid rgba(225,29,72,0.35)' } },
+                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#fda4af', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+                  h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+                  h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
+                    h('strong', null, 'Honest framing: '), topic.caveat
+                  )
+                ),
+                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 11.5, color: '#dcfce7', lineHeight: 1.65 } },
+                  h('strong', null, 'Follow current missions: '),
+                  'NASA.gov + ESA.int run mission-specific pages with regular updates. Eyes on the Solar System (NASA, eyes.nasa.gov) is a real-time 3D viewer of every active mission\'s current position + view. Twitter / Bluesky accounts for each spacecraft post images + science. For students: pick one mission + follow it for a year. You will absorb more space science from real mission updates than from any textbook chapter.'
+                )
+              );
+            })(),
+            '#e11d48'
           )
         );
         function dataPair(label, value) {
