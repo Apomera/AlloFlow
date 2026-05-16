@@ -238,7 +238,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
       }
 
       function renderSection(title, items, color) {
-        return h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid ' + color, marginBottom: 12 } },
+        return h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + color, marginBottom: 12 } },
           h('div', { style: { fontSize: 12, color: color, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 800, marginBottom: 10 } }, title),
           (items && items.length > 0)
             ? h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#e2e8f0', fontSize: 14, lineHeight: 1.75 } },
@@ -291,7 +291,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
           }
           function useStarter(s) { addItem(sectionKey, s); if (announceToSR) announceToSR('Added: ' + s); }
 
-          return h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid ' + color, marginBottom: 14 } },
+          return h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + color, marginBottom: 14 } },
             h('div', { style: { fontSize: 13, color: color, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 800, marginBottom: 10 } }, title),
             // Existing items
             items.length > 0 ? h('div', { style: { marginBottom: 12 } },
@@ -375,7 +375,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
           sectionEditor('important', '⭐ What is important to me', '#10b981', STARTERS.important),
           sectionEditor('howToSupport', '🤝 How best to support me', '#6366f1', STARTERS.howToSupport),
 
-          h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(129,140,248,0.1)', border: '1px solid rgba(129,140,248,0.3)', borderLeft: '3px solid #818cf8', fontSize: 12.5, color: '#e0e7ff', lineHeight: 1.6, marginBottom: 12 } },
+          h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(129,140,248,0.1)', borderTop: '1px solid rgba(129,140,248,0.3)', borderRight: '1px solid rgba(129,140,248,0.3)', borderBottom: '1px solid rgba(129,140,248,0.3)', borderLeft: '3px solid #818cf8', fontSize: 12.5, color: '#e0e7ff', lineHeight: 1.6, marginBottom: 12 } },
             h('strong', null, '💡 Tip: '),
             'A One-Page Profile works best when it is updated once or twice a year. What you needed in 6th grade is not what you need in 9th. Keep this one current; print fresh copies when you change supports.'
           ),
@@ -503,7 +503,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
           ),
 
           // Honest limits
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits of this format'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'A profile is only as good as the trust around it. If a student writes "I need quiet" and a teacher reads it as defiance, the format did not fail; the relationship did.'),
@@ -514,7 +514,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
           ),
 
           // For educators
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(129,140,248,0.10)', border: '1px solid rgba(129,140,248,0.3)', borderLeft: '3px solid #818cf8', fontSize: 12.5, color: '#e0e7ff', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(129,140,248,0.10)', borderTop: '1px solid rgba(129,140,248,0.3)', borderRight: '1px solid rgba(129,140,248,0.3)', borderBottom: '1px solid rgba(129,140,248,0.3)', borderLeft: '3px solid #818cf8', fontSize: 12.5, color: '#e0e7ff', lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'One-Page Profiles work well as a beginning-of-year Crew activity, attached to the front of an IEP at-a-glance, given to a substitute teacher, or shared at family conferences. The student keeps editorial control; faculty support but do not author. For students with significant communication differences, profiles can be built collaboratively with family, using "what we see" framing rather than "what they said."'
           ),

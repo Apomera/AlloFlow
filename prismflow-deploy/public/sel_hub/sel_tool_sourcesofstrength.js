@@ -178,7 +178,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sourcesOfStrengt
 
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 } },
             SOURCES.map(function(s) {
-              return h('div', { key: s.id, style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '4px solid ' + s.color } },
+              return h('div', { key: s.id, style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + s.color } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                   h('span', { style: { fontSize: 22 } }, s.icon),
                   h('span', { style: { fontSize: 14, fontWeight: 800, color: s.color } }, s.label)
@@ -221,7 +221,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sourcesOfStrengt
         var lowSources = SOURCES.filter(function(s) { return ratings[s.id] && ratings[s.id] <= 2; });
 
         return h('div', null,
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 13, color: '#fde68a', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 13, color: '#fde68a', lineHeight: 1.7 } },
             h('strong', null, '🗺️ Rate each source on 1-5. '),
             '1 = "I don\'t really have this," 5 = "this is strong and reliable." Be honest, not aspirational. The point is to see clearly, not to look good on paper.'
           ),
@@ -229,7 +229,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sourcesOfStrengt
           SOURCES.map(function(s) {
             var v = ratings[s.id];
             var details = (d.details || {})[s.id] || {};
-            return h('div', { key: s.id, style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '4px solid ' + s.color, marginBottom: 10 } },
+            return h('div', { key: s.id, style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + s.color, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
                 h('span', { style: { fontSize: 20 } }, s.icon),
                 h('span', { style: { fontSize: 14, fontWeight: 800, color: s.color, flex: 1, minWidth: 140 } }, s.label),
@@ -270,7 +270,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sourcesOfStrengt
           }),
 
           // Summary
-          rated > 0 ? h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #fcd34d', marginTop: 14 } },
+          rated > 0 ? h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #fcd34d', marginTop: 14 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fcd34d', marginBottom: 8 } }, '📊 Your map'),
             h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 6, lineHeight: 1.65 } }, rated + ' of 8 sources rated.'),
             lowSources.length > 0 ? h('div', { style: { fontSize: 12, color: '#fde68a', lineHeight: 1.7 } },
@@ -297,14 +297,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sourcesOfStrengt
         }
 
         return h('div', null,
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', marginBottom: 14, fontSize: 13, color: '#bbf7d0', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.10)', borderTop: '1px solid rgba(34,197,94,0.3)', borderRight: '1px solid rgba(34,197,94,0.3)', borderBottom: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', marginBottom: 14, fontSize: 13, color: '#bbf7d0', lineHeight: 1.7 } },
             h('strong', null, '🌱 Pick ONE source to build. '),
             'Not all 8. ONE. Sources of Strength research is clear: small, sustained moves to strengthen one or two protective factors build the whole structure over time. Trying to build all 8 at once is not how it works.'
           ),
 
           SOURCES.map(function(s) {
             var plan = (d.buildPlan || {})[s.id] || '';
-            return h('div', { key: s.id, style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '4px solid ' + s.color, marginBottom: 10 } },
+            return h('div', { key: s.id, style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + s.color, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
                 h('span', { style: { fontSize: 22 } }, s.icon),
                 h('span', { style: { fontSize: 14, fontWeight: 800, color: s.color } }, s.label)
@@ -320,7 +320,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sourcesOfStrengt
             );
           }),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginTop: 14, fontSize: 12.5, color: '#fde68a', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginTop: 14, fontSize: 12.5, color: '#fde68a', lineHeight: 1.65 } },
             h('strong', null, '🎯 The key is follow-through. '),
             'A specific move you do beats a perfect plan you don\'t. Pick the smallest version of the move that you would actually do. If you commit to a 15-minute walk and do it, you have done MORE than committing to a "wellness routine" and doing nothing.'
           ),
@@ -421,7 +421,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sourcesOfStrengt
             sourceCard('The Trevor Project', 'thetrevorproject.org', 'LGBTQ+ youth-specific crisis support and suicide prevention. Critical resource for queer youth.', 'https://www.thetrevorproject.org/')
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'This tool is the SELF-MAPPING version of the framework. The full Sources of Strength program (with peer leaders, adult advisors, school-wide media campaigns) is far more powerful and is what has the strongest evidence base. If your school is interested, the official program (sourcesofstrength.org) offers training.'),
@@ -432,7 +432,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sourcesOfStrengt
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', fontSize: 12.5, color: '#fde68a', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', fontSize: 12.5, color: '#fde68a', lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'For schools serious about adolescent suicide prevention, the OFFICIAL Sources of Strength program is what has the evidence. It is a peer-leader model with adult advisors, school-wide media campaigns, and a multi-year structure. The investment is real but the outcomes are real. Districts can contract through sourcesofstrength.org. This SEL Hub tool is the self-mapping companion, useful between sessions or in advisory, NOT a replacement for the full program.'
           ),

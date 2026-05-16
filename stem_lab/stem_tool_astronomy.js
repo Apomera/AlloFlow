@@ -471,19 +471,19 @@
       // Helpers
       // ──────────────────────────────────────────────────────────────
       function safetyBanner(msg) {
-        return h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.35)', borderLeft: '3px solid #ef4444', marginBottom: 12, fontSize: 12, color: '#fecaca', lineHeight: 1.6 } },
+        return h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.12)', borderTop: '1px solid rgba(239,68,68,0.35)', borderRight: '1px solid rgba(239,68,68,0.35)', borderBottom: '1px solid rgba(239,68,68,0.35)', borderLeft: '3px solid #ef4444', marginBottom: 12, fontSize: 12, color: '#fecaca', lineHeight: 1.6 } },
           h('strong', null, '⚠️ '),
           msg
         );
       }
       function softNote(msg) {
-        return h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', borderLeft: '3px solid #6366f1', marginBottom: 10, fontSize: 12, color: '#c7d2fe', lineHeight: 1.6, fontStyle: 'italic' } },
+        return h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.10)', borderTop: '1px solid rgba(99,102,241,0.3)', borderRight: '1px solid rgba(99,102,241,0.3)', borderBottom: '1px solid rgba(99,102,241,0.3)', borderLeft: '3px solid #6366f1', marginBottom: 10, fontSize: 12, color: '#c7d2fe', lineHeight: 1.6, fontStyle: 'italic' } },
           msg
         );
       }
       function sectionCard(title, children, accent) {
         accent = accent || INDIGO;
-        return h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155', borderLeft: '3px solid ' + accent, marginBottom: 12 } },
+        return h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + accent, marginBottom: 12 } },
           title ? h('div', { style: { fontSize: 14, fontWeight: 800, color: '#e2e8f0', marginBottom: 8 } }, title) : null,
           children
         );
@@ -761,7 +761,7 @@
                   { name: 'Plato crater', kind: 'Dark-floored crater', desc: 'On the northern shore of Mare Imbrium. Unusually dark, smooth floor — flooded with later lava. About 100 km across. A favorite of small-telescope observers.', color: '#a78bfa' },
                   { name: 'Lunar highlands', kind: 'Ancient terrain', desc: 'The bright, heavily-cratered regions. About 4.4 billion years old — the original lunar crust, predating the maria. Made of anorthosite, an aluminum-rich rock. The "face" you see is partly highlands (white).', color: '#cbd5e1' }
                 ].map(function(f, i) {
-                  return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + f.color } },
+                  return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + f.color } },
                     h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 } },
                       h('div', { style: { fontSize: 13, fontWeight: 800, color: '#e2e8f0' } }, f.name),
                       h('div', { style: { fontSize: 10, color: f.color, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, f.kind)
@@ -874,7 +874,7 @@
                     }, t.name);
                   })
                 ),
-                h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + sel.color } }, sel.content)
+                h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + sel.color } }, sel.content)
               );
             })(),
             '#0ea5e9'
@@ -982,7 +982,7 @@
                     }, s.name);
                   })
                 ),
-                h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
+                h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
                   h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 } },
                     h('div', { style: { fontSize: 15, fontWeight: 800, color: sel.color } }, sel.name),
                     h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } }, sel.age)
@@ -1044,7 +1044,7 @@
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
               EXO_OVERVIEW.methods.map(function(m, i) {
-                return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid #38bdf8' } },
+                return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid #38bdf8' } },
                   h('div', { style: { fontSize: 13, fontWeight: 800, color: '#7dd3fc', marginBottom: 4 } }, m.name),
                   h('div', { style: { fontSize: 11.5, color: '#e2e8f0', lineHeight: 1.55, marginBottom: 6 } }, m.how),
                   h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', lineHeight: 1.5 } }, h('strong', null, 'Where: '), m.first)
@@ -1360,7 +1360,7 @@
                     }, t.name);
                   })
                 ),
-                h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + sel.color, marginBottom: 14 } },
+                h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + sel.color, marginBottom: 14 } },
                   h('div', { style: { fontSize: 14, fontWeight: 800, color: sel.color, marginBottom: 4 } }, sel.name),
                   h('div', { style: { fontSize: 11.5, color: '#94a3b8', fontStyle: 'italic', marginBottom: 8 } }, sel.what + ' · Confidence: ' + sel.confidence),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.08)', borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
@@ -1777,7 +1777,7 @@
                   { name: 'Supergiants', desc: 'The most massive stars in their final stage. Will end as supernovae. Betelgeuse, Rigel, Deneb.', color: '#f87171' },
                   { name: 'White Dwarfs', desc: 'The cooling core of a dead Sun-like star. Earth-sized but as massive as the Sun. Eventually fades to a black dwarf (none exist yet — the universe is too young).', color: '#bfdbfe' }
                 ].map(function(r, i) {
-                  return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + r.color } },
+                  return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + r.color } },
                     h('div', { style: { fontSize: 12, fontWeight: 800, color: r.color, marginBottom: 2 } }, r.name),
                     h('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.55 } }, r.desc)
                   );
@@ -2024,7 +2024,7 @@
                     }, n.name);
                   })
                 ),
-                h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
+                h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
                   h('div', { style: { fontSize: 15, fontWeight: 800, color: sel.color, marginBottom: 4 } }, sel.name),
                   h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10, fontStyle: 'italic' } }, 'Example: ' + sel.example),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.08)', borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
@@ -2157,7 +2157,7 @@
                     }, l.name);
                   })
                 ),
-                h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + selL.color } },
+                h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + selL.color } },
                   h('div', { style: { fontSize: 15, fontWeight: 800, color: selL.color, marginBottom: 4 } }, selL.name),
                   h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 } },
                     h('div', { style: { padding: 6, borderRadius: 6, background: '#1e293b' } },
@@ -2249,7 +2249,7 @@
                     }, c.name);
                   })
                 ),
-                h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
+                h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
                   h('h3', { style: { margin: '0 0 10px', color: sel.color, fontSize: 17 } }, sel.name),
                   h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, marginBottom: 10 } },
                     [
@@ -2300,11 +2300,11 @@
               ),
 
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, marginBottom: 12 } },
-                h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid #fbbf24' } },
+                h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid #fbbf24' } },
                   h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbbf24', marginBottom: 4 } }, 'Apparent magnitude (m)'),
                   h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, 'How bright the object LOOKS from Earth. Depends on both how much light the object emits AND how far away it is. A bright nearby star and a dim distant star can have the same apparent magnitude.')
                 ),
-                h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid #c7d2fe' } },
+                h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid #c7d2fe' } },
                   h('div', { style: { fontSize: 13, fontWeight: 800, color: '#c7d2fe', marginBottom: 4 } }, 'Absolute magnitude (M)'),
                   h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, 'How bright the object would APPEAR if placed at a standard distance of 10 parsecs (32.6 light-years). Lets us compare the actual luminosity of stars regardless of distance.')
                 )
@@ -2661,7 +2661,7 @@
 
                 h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
                   ERAS.map(function(e, i) {
-                    return h('div', { key: i, style: { display: 'grid', gridTemplateColumns: '120px 1fr', gap: 12, padding: 8, borderRadius: 8, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + e.color } },
+                    return h('div', { key: i, style: { display: 'grid', gridTemplateColumns: '120px 1fr', gap: 12, padding: 8, borderRadius: 8, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + e.color } },
                       h('div', { style: { fontSize: 11.5, fontWeight: 800, color: e.color, paddingTop: 2, fontFamily: 'ui-monospace, monospace' } }, e.time),
                       h('div', null,
                         h('div', { style: { fontSize: 13, fontWeight: 700, color: '#e2e8f0', marginBottom: 2 } }, e.name),
@@ -2717,7 +2717,7 @@
                     why: 'Calibrated by Type Ia supernovae. The current ~9% discrepancy between H₀ measured locally vs from the cosmic microwave background ("Hubble tension") is one of the biggest open questions in cosmology.',
                     color: '#a855f7' }
                 ].map(function(r, i) {
-                  return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: '#0f172a', border: '1px solid #334155', borderLeft: '4px solid ' + r.color } },
+                  return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '4px solid ' + r.color } },
                     h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4, flexWrap: 'wrap' } },
                       h('div', { style: { fontSize: 18, fontWeight: 900, color: r.color, minWidth: 22 } }, r.rung),
                       h('div', { style: { fontSize: 13, fontWeight: 800, color: '#e2e8f0', flex: 1 } }, r.name),
@@ -3220,7 +3220,7 @@
                     }, it.name);
                   })
                 ),
-                h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
+                h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
                   h('div', { style: { fontSize: 14, fontWeight: 800, color: sel.color, marginBottom: 4 } }, sel.name),
                   h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', marginBottom: 8 } }, sel.when),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.08)', borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
@@ -3300,7 +3300,7 @@
                     );
                   })
                 ),
-                h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
+                h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
                   h('div', { style: { fontSize: 15, fontWeight: 800, color: sel.color, marginBottom: 4 } }, sel.name),
                   h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', marginBottom: 8 } }, sel.size + ' · ' + sel.loc),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.08)', borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
@@ -3549,7 +3549,7 @@
                   }, f.name);
                 })
               ),
-              h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
+              h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8, flexWrap: 'wrap' } },
                   h('div', { style: { fontSize: 16, fontWeight: 800, color: sel.color } }, sel.name),
                   h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } }, sel.years)
@@ -4218,7 +4218,7 @@
         var bortle = BORTLE.find(function(b) { return b.class === d.bortleClass; }) || BORTLE[4];
         var obsList = (d.observingList || []).map(function(id) { return CONSTELLATIONS.find(function(c) { return c.id === id; }); }).filter(Boolean);
         return h('div', { style: { padding: 16 } },
-          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.4)', borderLeft: '3px solid ' + INDIGO, marginBottom: 12, fontSize: 12.5, color: '#c7d2fe', lineHeight: 1.65 } },
+          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(99,102,241,0.10)', borderTop: '1px solid rgba(99,102,241,0.4)', borderRight: '1px solid rgba(99,102,241,0.4)', borderBottom: '1px solid rgba(99,102,241,0.4)', borderLeft: '3px solid ' + INDIGO, marginBottom: 12, fontSize: 12.5, color: '#c7d2fe', lineHeight: 1.65 } },
             h('strong', null, '🖨 Observing kit. '),
             'A take-into-the-field reference: your observing list, this season\'s constellation map, the moon phase calendar, safety reminders, and a quick reference for binocular vs naked-eye targets.'
           ),

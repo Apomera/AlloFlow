@@ -369,7 +369,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('maps'))) {
           ),
 
           // Honest limits
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'A MAP is only useful if the people in the room actually follow through. John O\'Brien himself has written about how person-centered plans can become "planning theater" if not paired with real resource shifts.'),
@@ -379,7 +379,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('maps'))) {
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(129,140,248,0.10)', border: '1px solid rgba(129,140,248,0.3)', borderLeft: '3px solid #818cf8', fontSize: 12.5, color: '#e0e7ff', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(129,140,248,0.10)', borderTop: '1px solid rgba(129,140,248,0.3)', borderRight: '1px solid rgba(129,140,248,0.3)', borderBottom: '1px solid rgba(129,140,248,0.3)', borderLeft: '3px solid #818cf8', fontSize: 12.5, color: '#e0e7ff', lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'MAPS works well as transition planning (8th to 9th, HS to post-secondary), at the start of an IEP cycle, or for any student who needs a circle of allies to plan with. A facilitator who is NOT the student\'s primary teacher generally works best, to avoid the "the teacher wants me to say X" dynamic. Inclusion Press offers facilitator training.'
           ),

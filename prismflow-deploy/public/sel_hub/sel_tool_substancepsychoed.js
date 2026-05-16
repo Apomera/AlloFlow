@@ -173,7 +173,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
       }
 
       function safetyBanner() {
-        return h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.4)', borderLeft: '3px solid #ef4444', marginBottom: 12, fontSize: 12.5, color: '#fecaca', lineHeight: 1.65 } },
+        return h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.4)', borderRight: '1px solid rgba(239,68,68,0.4)', borderBottom: '1px solid rgba(239,68,68,0.4)', borderLeft: '3px solid #ef4444', marginBottom: 12, fontSize: 12.5, color: '#fecaca', lineHeight: 1.65 } },
           h('strong', null, '🆘 Overdose? Stop and read: '),
           'unresponsive, slow breathing, blue lips, vomiting while passed out — CALL 911. Give naloxone (Narcan) if available. Most states have Good Samaritan laws that protect callers from drug charges. ',
           h('a', { href: 'https://findtreatment.gov/', target: '_blank', rel: 'noopener noreferrer',
@@ -208,7 +208,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
           ),
 
           // The frame
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #64748b', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #64748b', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#e2e8f0', marginBottom: 10 } }, '🔍 What this tool offers (and does not)'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 } },
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.3)' } },
@@ -250,7 +250,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
 
       function stepCard(title, blurb, onClick, color) {
         return h('button', { onClick: onClick, 'aria-label': title,
-          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, border: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: '#0f172a', cursor: 'pointer', marginBottom: 8, color: '#e2e8f0' } },
+          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: '#0f172a', cursor: 'pointer', marginBottom: 8, color: '#e2e8f0' } },
           h('div', { style: { fontSize: 14, fontWeight: 800, color: color, marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.55 } }, blurb)
         );
@@ -263,12 +263,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
         return h('div', null,
           safetyBanner(),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', marginBottom: 14, fontSize: 13, color: '#e9d5ff', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.3)', borderRight: '1px solid rgba(168,85,247,0.3)', borderBottom: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', marginBottom: 14, fontSize: 13, color: '#e9d5ff', lineHeight: 1.7 } },
             h('strong', null, '🧠 The adolescent brain is still under construction until about age 25. '),
             'This is not a metaphor; it is measurable. The prefrontal cortex (decision-making, impulse control, evaluating long-term consequences) is the LAST region to develop. Adolescent substance use happens to a brain that is still forming its core architecture, and the substances can shape that architecture in lasting ways.'
           ),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#c4b5fd', marginBottom: 10 } }, 'What the adolescent-brain research has found'),
             h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: '#e2e8f0', fontSize: 13, lineHeight: 1.85 } },
               h('li', null, h('strong', null, 'Faster addiction. '), 'Adolescent brains form dependence faster than adult brains for nicotine, opioids, and other substances. Same exposure, faster transition to dependence.'),
@@ -279,12 +279,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
             )
           ),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 10, fontSize: 13, color: '#fde68a', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 10, fontSize: 13, color: '#fde68a', lineHeight: 1.7 } },
             h('strong', null, '⚖️ Honest about the research limits: '),
             'These are population-level findings. They do not predict individual outcomes perfectly. Many adolescents have used substances and are doing fine. AND: the population effects are real, the risks are real, and the brain biology matters. Both can be true.'
           ),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #a855f7' } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a855f7' } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#c4b5fd', marginBottom: 10 } }, '🎯 Why people use substances (the honest part)'),
             h('p', { style: { margin: '0 0 8px', color: '#e2e8f0', fontSize: 13, lineHeight: 1.7 } },
               'People use substances for reasons. The reasons are not stupid or bad. Recognizing them is more useful than pretending they don\'t exist:'),
@@ -312,13 +312,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
         return h('div', null,
           safetyBanner(),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 12.5, color: '#fde68a', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 12.5, color: '#fde68a', lineHeight: 1.65 } },
             h('strong', null, '📚 7 substances, honest information. '),
             'Per substance: what it is, adolescent-specific brain risk, the acute risks (the things that can kill you fast), and harm reduction (if you or someone you know is using). NOT a recommendation to use any of these.'
           ),
 
           SUBSTANCES.map(function(s) {
-            return h('div', { key: s.id, style: { padding: 16, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '4px solid ' + s.color, marginBottom: 12 } },
+            return h('div', { key: s.id, style: { padding: 16, borderRadius: 12, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + s.color, marginBottom: 12 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
                 h('span', { style: { fontSize: 26 } }, s.icon),
                 h('span', { style: { fontSize: 16, fontWeight: 800, color: s.color } }, s.label)
@@ -361,13 +361,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
         return h('div', null,
           safetyBanner(),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.4)', borderLeft: '3px solid #ef4444', marginBottom: 14, fontSize: 13, color: '#fecaca', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.4)', borderRight: '1px solid rgba(239,68,68,0.4)', borderBottom: '1px solid rgba(239,68,68,0.4)', borderLeft: '3px solid #ef4444', marginBottom: 14, fontSize: 13, color: '#fecaca', lineHeight: 1.7 } },
             h('strong', null, '⚠️ Not all use is a problem. '),
             'But some use is a real problem. Substance use disorder (SUD) is a clinical diagnosis with criteria. This section is psychoeducation, not a self-diagnosis tool. If any of this applies to you, please talk to a counselor or doctor.'
           ),
 
           // The criteria
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #ef4444', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #ef4444', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fca5a5', marginBottom: 10 } }, '🚩 Signs use has become a problem'),
             h('p', { style: { margin: '0 0 8px', color: '#cbd5e1', fontSize: 13, lineHeight: 1.7, fontStyle: 'italic' } }, 'These are simplified from the DSM-5 substance use disorder criteria:'),
             h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: '#e2e8f0', fontSize: 13, lineHeight: 1.85 } },
@@ -390,7 +390,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
           ),
 
           // CRAFFT
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#7dd3fc', marginBottom: 10 } }, '🔍 CRAFFT screening (used by doctors)'),
             h('p', { style: { margin: '0 0 8px', color: '#cbd5e1', fontSize: 13, lineHeight: 1.7 } },
               'CRAFFT is the screening tool most US adolescent doctors use. The 6 questions, simplified:'),
@@ -418,13 +418,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
         return h('div', null,
           safetyBanner(),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(14,165,233,0.10)', border: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', marginBottom: 14, fontSize: 13, color: '#bae6fd', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(14,165,233,0.10)', borderTop: '1px solid rgba(14,165,233,0.3)', borderRight: '1px solid rgba(14,165,233,0.3)', borderBottom: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', marginBottom: 14, fontSize: 13, color: '#bae6fd', lineHeight: 1.7 } },
             h('strong', null, '🪞 Private space to think. '),
             'No one sees this. The frame is Motivational Interviewing: importance / confidence / readiness rulers. If you are considering changing something about your use, this is a space to think clearly. The MI tool in this SEL Hub has the full framework.'
           ),
 
           // What relationship
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9', marginBottom: 10 } },
             h('label', { htmlFor: 'su-rel', style: { display: 'block', fontSize: 12, color: '#7dd3fc', fontWeight: 800, marginBottom: 6 } }, 'My relationship with [substance] right now'),
             h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 6, fontStyle: 'italic', lineHeight: 1.5 } }, 'Just describe what is actually going on. No judgment, no future tense. What is your current relationship with whatever you\'re thinking about?'),
             h('textarea', { id: 'su-rel', value: d.myRelationship || '',
@@ -434,7 +434,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
           ),
 
           // Three MI rulers
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
             h('div', { style: { fontSize: 12, color: '#fde68a', fontWeight: 800, marginBottom: 8 } }, '⭐ Importance (0-10): how important is it to you to change something about your use?'),
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
               h('input', { type: 'range', min: 0, max: 10, value: d.importance,
@@ -444,7 +444,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
             )
           ),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
             h('div', { style: { fontSize: 12, color: '#bbf7d0', fontWeight: 800, marginBottom: 8 } }, '💪 Confidence (0-10): if you decided to change, how confident are you that you could?'),
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
               h('input', { type: 'range', min: 0, max: 10, value: d.confidence,
@@ -454,7 +454,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
             )
           ),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
             h('div', { style: { fontSize: 12, color: '#e9d5ff', fontWeight: 800, marginBottom: 8 } }, '🚪 Readiness (0-10): how ready are you to actually try changing?'),
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
               h('input', { type: 'range', min: 0, max: 10, value: d.readiness,
@@ -465,7 +465,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
           ),
 
           // The MI move
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(14,165,233,0.10)', border: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(14,165,233,0.10)', borderTop: '1px solid rgba(14,165,233,0.3)', borderRight: '1px solid rgba(14,165,233,0.3)', borderBottom: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', marginBottom: 10 } },
             h('label', { htmlFor: 'su-why', style: { display: 'block', fontSize: 12, color: '#bae6fd', fontWeight: 800, marginBottom: 6 } }, 'Why a ' + d.importance + ' on importance and not a ' + Math.max(0, d.importance - 2) + '?'),
             h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 6, fontStyle: 'italic', lineHeight: 1.5 } }, 'The MI move: what is keeping importance at ' + d.importance + ' instead of lower? This surfaces the reasons FOR change. Those are the reasons that build motivation.'),
             h('textarea', { id: 'su-why', value: d.whyChange || '',
@@ -493,7 +493,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
           ),
 
           // Helplines and resources
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#bbf7d0', marginBottom: 10 } }, '📞 Free, 24/7, confidential'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 8 } },
               resourceCard('SAMHSA National Helpline', 'Call 1-800-662-HELP (4357). Free, confidential, 24/7, English and Spanish. Treatment referral and information.', 'https://www.samhsa.gov/find-help/national-helpline'),
@@ -506,7 +506,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
           ),
 
           // Harm reduction orgs
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fde68a', marginBottom: 10 } }, '🛟 Harm-reduction organizations'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 8 } },
               resourceCard('National Harm Reduction Coalition', 'Naloxone, syringe access, drug-checking information. Network of local programs.', 'https://harmreduction.org/'),
@@ -517,13 +517,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
           ),
 
           // Naloxone specifically
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.4)', borderLeft: '3px solid #ef4444', marginBottom: 10, fontSize: 13, color: '#fecaca', lineHeight: 1.75 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.4)', borderRight: '1px solid rgba(239,68,68,0.4)', borderBottom: '1px solid rgba(239,68,68,0.4)', borderLeft: '3px solid #ef4444', marginBottom: 10, fontSize: 13, color: '#fecaca', lineHeight: 1.75 } },
             h('strong', null, '💉 Naloxone (Narcan) saves lives. '),
             'It reverses opioid overdose in 2-5 minutes. Most US states allow over-the-counter purchase. It works on fentanyl. It cannot hurt someone who is not overdosing. Carry it if you or anyone you know uses opioids — including people taking prescription painkillers, including people who use pills they got from friends (which are often fentanyl now). Free or low-cost from: many community pharmacies, public health departments, harm-reduction orgs, NEXT Distro by mail.'
           ),
 
           // Telehealth
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9' } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9' } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#7dd3fc', marginBottom: 10 } }, '📱 Telehealth + apps'),
             h('p', { style: { margin: '0 0 8px', color: '#cbd5e1', fontSize: 13, lineHeight: 1.7 } },
               'Telehealth has dramatically expanded access to addiction treatment. Buprenorphine (for opioid use disorder) can now be prescribed via telehealth in many states. SAMHSA can help locate options.'),
@@ -572,7 +572,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
             sourceCard('Above the Influence (critique)', '', 'Federal anti-drug media campaigns have been extensively evaluated. The campaigns themselves have weak effectiveness evidence; this tool deliberately does not use that framework.', null)
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'This tool is psychoeducation. It is NOT diagnosis, not therapy, and not a substitute for professional substance use treatment when SUD has developed.'),
@@ -583,7 +583,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(100,116,139,0.10)', border: '1px solid rgba(100,116,139,0.3)', borderLeft: '3px solid #64748b', fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(100,116,139,0.10)', borderTop: '1px solid rgba(100,116,139,0.3)', borderRight: '1px solid rgba(100,116,139,0.3)', borderBottom: '1px solid rgba(100,116,139,0.3)', borderLeft: '3px solid #64748b', fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'Harm reduction is the evidence-based stance. If your district mandates abstinence-only messaging, your students still benefit from honest information — they will get it from peers and the internet, often inaccurately. For students with active substance use: do not lead with consequences (suspensions, calling parents); lead with care, then connect them with a counselor or school psych who can connect them to treatment. SBIRT (Screening, Brief Intervention, Referral to Treatment) is the evidence-based model for adolescent substance use intervention in schools.'
           ),
@@ -606,7 +606,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
       // ── Print: harm-reduction handout ──
       function renderPrintView() {
         return h('div', null,
-          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #475569', borderLeft: '3px solid #94a3b8', marginBottom: 12, fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65 } },
+          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #475569', borderRight: '1px solid #475569', borderBottom: '1px solid #475569', borderLeft: '3px solid #94a3b8', marginBottom: 12, fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65 } },
             h('strong', null, '🖨 Harm-reduction handout. '),
             'A one-page reference for staff, families, peer educators, or yourself. The framework is honest (use exists on a spectrum, not abstinence-or-failure), the safety information is real (overdose response, naloxone, Good Samaritan laws), and the help pathways are open. Not a substitute for clinical assessment.'
           ),

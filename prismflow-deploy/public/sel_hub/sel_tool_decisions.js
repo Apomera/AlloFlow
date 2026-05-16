@@ -1866,7 +1866,7 @@ window.SelHub = window.SelHub || {
       var printContent = null;
       if (activeTab === 'print') {
         printContent = h('div', { style: { padding: 20, maxWidth: 720, margin: '0 auto' } },
-          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.4)', borderLeft: '3px solid #f59e0b', marginBottom: 12, fontSize: 12.5, color: '#78350f', lineHeight: 1.65 } },
+          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.4)', borderRight: '1px solid rgba(245,158,11,0.4)', borderBottom: '1px solid rgba(245,158,11,0.4)', borderLeft: '3px solid #f59e0b', marginBottom: 12, fontSize: 12.5, color: '#78350f', lineHeight: 1.65 } },
             h('strong', null, '\uD83D\uDDA8 Decision template. '),
             'A one-page structured-decision worksheet you can carry. Apply it to anything from "what classes do I sign up for?" to "do I confront this friend?" The structure slows down the choice enough that the wise answer can show up.'
           ),

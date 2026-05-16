@@ -3479,13 +3479,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             if (m.aiReadLoading) {
               return h('div', {
                 role: 'status', 'aria-live': 'polite',
-                style: { padding: '12px 14px', borderRadius: 12, marginBottom: 12, background: 'rgba(56,189,248,0.10)', border: '1px solid rgba(56,189,248,0.4)', borderLeft: '3px solid #38bdf8', color: '#bae6fd', fontSize: 13 }
+                style: { padding: '12px 14px', borderRadius: 12, marginBottom: 12, background: 'rgba(56,189,248,0.10)', borderTop: '1px solid rgba(56,189,248,0.4)', borderRight: '1px solid rgba(56,189,248,0.4)', borderBottom: '1px solid rgba(56,189,248,0.4)', borderLeft: '3px solid #38bdf8', color: '#bae6fd', fontSize: 13 }
               }, '⏳ AI fire ecologist is reading your land...');
             }
             if (!m.aiReadResponse) return null;
             return h('div', {
               role: 'region', 'aria-label': 'AI Land Reading',
-              style: { padding: 14, borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(56,189,248,0.10) 0%, rgba(15,23,42,0.4) 100%)', border: '1px solid rgba(56,189,248,0.5)', borderLeft: '3px solid #38bdf8' }
+              style: { padding: 14, borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(56,189,248,0.10) 0%, rgba(15,23,42,0.4) 100%)', borderTop: '1px solid rgba(56,189,248,0.5)', borderRight: '1px solid rgba(56,189,248,0.5)', borderBottom: '1px solid rgba(56,189,248,0.5)', borderLeft: '3px solid #38bdf8' }
             },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
                 h('span', { style: { fontSize: 20 } }, '🔍'),
@@ -3558,8 +3558,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Wabanaki vocabulary glossary',
               style: {
                 background: 'linear-gradient(135deg, rgba(168,85,247,0.10) 0%, rgba(15,23,42,0.85) 60%)',
-                border: '1px solid rgba(168,85,247,0.5)',
-                borderLeft: '4px solid #a855f7',
+                borderTop: '1px solid rgba(168,85,247,0.5)', borderRight: '1px solid rgba(168,85,247,0.5)', borderBottom: '1px solid rgba(168,85,247,0.5)', borderLeft: '4px solid #a855f7',
                 borderRadius: 14, padding: 18, marginBottom: 16
               }
             },
@@ -3669,8 +3668,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               h('div', {
                 style: {
                   background: 'rgba(168,85,247,0.10)',
-                  border: '1px solid rgba(168,85,247,0.4)',
-                  borderLeft: '3px solid #a855f7',
+                  borderTop: '1px solid rgba(168,85,247,0.4)', borderRight: '1px solid rgba(168,85,247,0.4)', borderBottom: '1px solid rgba(168,85,247,0.4)', borderLeft: '3px solid #a855f7',
                   borderRadius: 10, padding: 14, marginTop: 12
                 }
               },
@@ -4337,7 +4335,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               style: {
                 padding: '10px 14px', borderRadius: 12, marginBottom: 12,
                 background: 'linear-gradient(135deg, rgba(168,85,247,0.16) 0%, rgba(168,85,247,0.04) 100%)',
-                border: '1px solid rgba(168,85,247,0.6)', borderLeft: '3px solid #a855f7',
+                borderTop: '1px solid rgba(168,85,247,0.6)', borderRight: '1px solid rgba(168,85,247,0.6)', borderBottom: '1px solid rgba(168,85,247,0.6)', borderLeft: '3px solid #a855f7',
                 color: '#e9d5ff', fontSize: 13, lineHeight: 1.55,
                 display: 'flex', alignItems: 'flex-start', gap: 10
               }

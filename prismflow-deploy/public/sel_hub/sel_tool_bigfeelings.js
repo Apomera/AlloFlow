@@ -195,7 +195,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
           ),
 
           // Anger vs aggression
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #f97316', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f97316', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fdba74', marginBottom: 10 } }, '🔍 Anger vs. aggression vs. assertion'),
             h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: '#e2e8f0', fontSize: 13, lineHeight: 1.85 } },
               h('li', null, h('strong', { style: { color: '#fdba74' } }, 'Anger '), 'is a FEELING. You cannot directly choose to feel it or not feel it. It just shows up when the body senses a threat or violation.'),
@@ -208,7 +208,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
           ),
 
           // What happens in the body
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#c4b5fd', marginBottom: 10 } }, '🧠 Why "just calm down" never works'),
             h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.7 } },
               'When you\'re angry, your amygdala is firing alarms, adrenaline is flooding your body, your heart rate is up, your prefrontal cortex (the part that does considered thinking) is offline. Telling yourself "just calm down" or "think clearly" does not work because the thinking brain is literally unavailable. What works: get the body to come back FIRST (cool-down skills), then the brain comes back, then you can choose. Body first, brain second. This is why all the techniques in this tool involve the body.'
@@ -228,7 +228,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
 
       function stepCard(title, blurb, onClick, color) {
         return h('button', { onClick: onClick, 'aria-label': title,
-          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, border: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: '#0f172a', cursor: 'pointer', marginBottom: 8, color: '#e2e8f0' } },
+          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: '#0f172a', cursor: 'pointer', marginBottom: 8, color: '#e2e8f0' } },
           h('div', { style: { fontSize: 14, fontWeight: 800, color: color, marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.55 } }, blurb)
         );
@@ -239,13 +239,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
       // ═══════════════════════════════════════════════════════════
       function renderChoice() {
         return h('div', null,
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', marginBottom: 14, fontSize: 13, color: '#bbf7d0', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.10)', borderTop: '1px solid rgba(34,197,94,0.3)', borderRight: '1px solid rgba(34,197,94,0.3)', borderBottom: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', marginBottom: 14, fontSize: 13, color: '#bbf7d0', lineHeight: 1.7 } },
             h('strong', null, '🚦 The choice point '),
             'is the gap between TRIGGER and ACTION. When you\'re young, the gap is often milliseconds — something happens and you\'re already mid-react. The whole work of anger management is widening this gap: making the moment between feeling and acting LONGER, so you can choose what to do instead of just doing it.'
           ),
 
           // The diagram
-          h('div', { style: { padding: 18, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '4px solid #22c55e', marginBottom: 14 } },
+          h('div', { style: { padding: 18, borderRadius: 12, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid #22c55e', marginBottom: 14 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#bbf7d0', marginBottom: 14, textAlign: 'center' } }, 'The classic flow'),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               h('div', { style: { padding: 12, borderRadius: 8, background: '#1e293b', borderLeft: '4px solid #ef4444', textAlign: 'center' } },
@@ -275,7 +275,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
           ),
 
           // What widens the gap
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#bbf7d0', marginBottom: 10 } }, '🔧 What widens the choice point window'),
             h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: '#e2e8f0', fontSize: 13, lineHeight: 1.85 } },
               h('li', null, h('strong', null, 'Knowing your body signs early. '), 'If you can catch the jaw clench or the hot face EARLY, you have more time than if you only notice the rage after you\'ve already started yelling.'),
@@ -287,7 +287,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
           ),
 
           // When anger IS the right response
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', fontSize: 13, color: '#fde68a', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', fontSize: 13, color: '#fde68a', lineHeight: 1.7 } },
             h('strong', null, '⚖️ When anger IS the right response: '),
             'sometimes the problem is not your reaction; it\'s the situation. Anger at being abused, anger at injustice, anger at being treated as less than human — these are healthy responses to harmful environments. The work in these cases is not to stop being angry; it\'s to channel the anger into action that protects you and changes the situation. The Self-Advocacy and Civic Action tools in this SEL Hub are built for this.'
           ),
@@ -321,13 +321,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
         var log = (d.hassleLog || []).slice().reverse();
 
         return h('div', null,
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(14,165,233,0.10)', border: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', marginBottom: 14, fontSize: 13, color: '#bae6fd', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(14,165,233,0.10)', borderTop: '1px solid rgba(14,165,233,0.3)', borderRight: '1px solid rgba(14,165,233,0.3)', borderBottom: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', marginBottom: 14, fontSize: 13, color: '#bae6fd', lineHeight: 1.7 } },
             h('strong', null, '📓 The hassle log '),
             'is a core CBT-for-anger tool (Lochman, Beck). After each angry incident, log what happened: trigger, body, what you did, what would have been better. The pattern emerges within 5-10 entries. You discover you don\'t actually have "an anger problem" — you have 2 specific people and 3 specific situations that set you off, and once you know that, you can prepare.'
           ),
 
           // Form
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#bae6fd', marginBottom: 10 } }, '+ Log an incident'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, marginBottom: 8 } },
               h('div', null,
@@ -358,7 +358,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
           log.length > 0 ? h('div', null,
             h('div', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, log.length + ' entries'),
             log.map(function(e, i) {
-              return h('div', { key: i, style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9', marginBottom: 8 } },
+              return h('div', { key: i, style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9', marginBottom: 8 } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' } },
                   h('span', { style: { fontSize: 11, color: '#94a3b8', fontFamily: 'ui-monospace, monospace' } }, e.date),
                   e.intensity !== undefined && !isNaN(e.intensity) ? h('span', { style: { fontSize: 11, color: e.intensity >= 7 ? '#fca5a5' : e.intensity >= 4 ? '#fde68a' : '#bbf7d0', fontWeight: 700 } }, 'Intensity: ' + e.intensity + '/10') : null,
@@ -404,7 +404,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
             el.value = '';
           }
 
-          return h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid ' + color, marginBottom: 10 } },
+          return h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + color, marginBottom: 10 } },
             h('div', { style: { fontSize: 13, color: color, fontWeight: 800, marginBottom: 6 } }, title),
             h('div', { style: { fontSize: 11.5, color: '#94a3b8', marginBottom: 10, lineHeight: 1.55, fontStyle: 'italic' } }, blurb),
             items.length > 0 ? h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
@@ -437,7 +437,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
         }
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 12.5, color: '#fde68a', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 12.5, color: '#fde68a', lineHeight: 1.65 } },
             h('strong', null, '⚡ Knowing YOUR triggers is half the work. '),
             'The more specific, the more useful. "School" is not a trigger. "When Mr. X corrects me in front of the class" is. Build the list slowly over time.'
           ),
@@ -475,13 +475,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
         }
 
         return h('div', null,
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(14,165,233,0.10)', border: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', marginBottom: 14, fontSize: 13, color: '#bae6fd', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(14,165,233,0.10)', borderTop: '1px solid rgba(14,165,233,0.3)', borderRight: '1px solid rgba(14,165,233,0.3)', borderBottom: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', marginBottom: 14, fontSize: 13, color: '#bae6fd', lineHeight: 1.7 } },
             h('strong', null, '❄️ Cool-down skills are body-first. '),
             'They work on the physiology, which has to come back down before the thinking brain comes back online. Build YOUR list — what actually works for YOU. Practice them WHEN CALM so they\'re available when you need them.'
           ),
 
           // My list
-          items.length > 0 ? h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9', marginBottom: 10 } },
+          items.length > 0 ? h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9', marginBottom: 10 } },
             h('div', { style: { fontSize: 12, color: '#bae6fd', fontWeight: 800, marginBottom: 8 } }, 'My cool-downs (' + items.length + ')'),
             items.map(function(s, i) {
               return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: '#1e293b', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 } },
@@ -492,7 +492,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
             })
           ) : null,
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9', marginBottom: 10 } },
             h('div', { style: { fontSize: 12, color: '#bae6fd', fontWeight: 800, marginBottom: 8 } }, '+ Add a cool-down'),
             h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
               h('label', { htmlFor: 'bf-cd-input', className: 'sr-only', style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 } }, 'Add cool-down'),
@@ -518,7 +518,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
           ),
 
           // Cross-link
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.3)', borderLeft: '3px solid #ef4444', marginTop: 14, fontSize: 12.5, color: '#fecaca', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.3)', borderRight: '1px solid rgba(239,68,68,0.3)', borderBottom: '1px solid rgba(239,68,68,0.3)', borderLeft: '3px solid #ef4444', marginTop: 14, fontSize: 12.5, color: '#fecaca', lineHeight: 1.6 } },
             h('strong', null, '🆘 For acute high-intensity anger: '),
             'see the TIPP tool in this SEL Hub. Cold water, intense exercise, paced breathing, paired muscle relaxation. These are the same skills used in pediatric crisis psych.'
           ),
@@ -553,7 +553,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
             sourceCard('AACAP', 'aacap.org / Disruptive Behavior Disorders Resource Center', 'When persistent aggression warrants clinical attention.', 'https://www.aacap.org/AACAP/Families_and_Youth/Resource_Centers/Disruptive_Behavior/Home.aspx')
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'This tool helps with everyday anger and regulation skill-building. For persistent aggression that leads to violence (toward yourself, others, or things), clinical care is the right path.'),
@@ -564,7 +564,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(249,115,22,0.10)', border: '1px solid rgba(249,115,22,0.3)', borderLeft: '3px solid #f97316', fontSize: 12.5, color: '#fed7aa', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(249,115,22,0.10)', borderTop: '1px solid rgba(249,115,22,0.3)', borderRight: '1px solid rgba(249,115,22,0.3)', borderBottom: '1px solid rgba(249,115,22,0.3)', borderLeft: '3px solid #f97316', fontSize: 12.5, color: '#fed7aa', lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'A hassle-log assignment for 2 weeks (logging EVERY angry incident, even small ones) is one of the highest-yield self-regulation interventions in school psych practice. Pair with cool-down skill teaching during calm times. For students with persistent disruptive behavior, the Lochman Coping Power program (10-30 sessions, group-based) is the gold-standard intervention; many districts can train counselors in it.'
           ),

@@ -871,7 +871,7 @@ window.SelHub = window.SelHub || {
               h('span', { style: { fontWeight: 700 } }, fCfg.icon + ' ' + fCfg.label),
               h('button', { onClick: fResetRp, style: { padding: '4px 10px', background: '#fff', color: AMBER_DARK, border: '1px solid #fcd34d', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer' } }, '← Different scenario')
             ),
-            sceneTxt && h('div', { style: { padding: '10px 12px', marginBottom: 10, background: '#fafafa', border: '1px solid #e5e7eb', borderLeft: '3px solid #f59e0b', borderRadius: 8, fontSize: 13, lineHeight: 1.5, color: '#475569', fontStyle: 'italic' } },
+            sceneTxt && h('div', { style: { padding: '10px 12px', marginBottom: 10, background: '#fafafa', borderTop: '1px solid #e5e7eb', borderRight: '1px solid #e5e7eb', borderBottom: '1px solid #e5e7eb', borderLeft: '3px solid #f59e0b', borderRadius: 8, fontSize: 13, lineHeight: 1.5, color: '#475569', fontStyle: 'italic' } },
               h('span', { style: { fontStyle: 'normal', fontWeight: 700, color: AMBER_DARK, fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, marginRight: 6 } }, 'Scene:'),
               sceneTxt
             ),

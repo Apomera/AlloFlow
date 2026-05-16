@@ -3753,7 +3753,7 @@ window.SelHub = window.SelHub || {
                   // "Try this as a role-play →" bridge on a generated scenario)
                   rpScene && h('div', { style: {
                     padding: '10px 12px', marginBottom: 12, background: '#fafafa',
-                    border: '1px solid #e5e7eb', borderLeft: '3px solid #a855f7', borderRadius: 8,
+                    borderTop: '1px solid #e5e7eb', borderRight: '1px solid #e5e7eb', borderBottom: '1px solid #e5e7eb', borderLeft: '3px solid #a855f7', borderRadius: 8,
                     fontSize: 13, lineHeight: 1.5, color: '#475569', fontStyle: 'italic'
                   } },
                     h('span', { style: { fontStyle: 'normal', fontWeight: 700, color: '#6b21a8', fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, marginRight: 6 } }, 'Scene loaded:'),
@@ -3806,8 +3806,7 @@ window.SelHub = window.SelHub || {
                   ),
                   // Scene-setter (italic, neutral observer voice) above the conversation
                   rpScene && h('div', { style: {
-                    padding: '10px 12px', marginBottom: 10, background: '#fafafa', border: '1px solid #e5e7eb',
-                    borderLeft: '3px solid #a855f7', borderRadius: 8,
+                    padding: '10px 12px', marginBottom: 10, background: '#fafafa', borderTop: '1px solid #e5e7eb', borderRight: '1px solid #e5e7eb', borderBottom: '1px solid #e5e7eb', borderLeft: '3px solid #a855f7', borderRadius: 8,
                     fontSize: 13, lineHeight: 1.5, color: '#475569', fontStyle: 'italic'
                   } },
                     h('span', { style: { fontStyle: 'normal', fontWeight: 700, color: '#6b21a8', fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, marginRight: 6 } }, 'Scene:'),

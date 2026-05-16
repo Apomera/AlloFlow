@@ -278,7 +278,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('howlTracker'))) 
 
         return h('div', null,
           // Quarter banner
-          h('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(167,139,250,0.18) 0%, rgba(56,189,248,0.06) 100%)', border: '1px solid rgba(167,139,250,0.4)', borderLeft: '4px solid #a78bfa', marginBottom: 14 } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(167,139,250,0.18) 0%, rgba(56,189,248,0.06) 100%)', borderTop: '1px solid rgba(167,139,250,0.4)', borderRight: '1px solid rgba(167,139,250,0.4)', borderBottom: '1px solid rgba(167,139,250,0.4)', borderLeft: '4px solid #a78bfa', marginBottom: 14 } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' } },
               h('span', { style: { fontSize: 24 } }, '📅'),
               h('div', null,
@@ -358,7 +358,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('howlTracker'))) 
           setHowl({ goalsByQuarter: byQ });
         }
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 13, color: '#fde68a', lineHeight: 1.55 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 13, color: '#fde68a', lineHeight: 1.55 } },
             h('strong', null, '🎯 Goal-setting for ' + quarterLabel(qid)),
             h('div', { style: { marginTop: 6, color: '#fde68a' } }, 'Write one concrete goal for each HOWL you want to focus on. Strong goals name a specific behavior, not a feeling. Examples below.')
           ),
@@ -404,7 +404,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('howlTracker'))) 
         }
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(167,139,250,0.10)', border: '1px solid rgba(167,139,250,0.3)', borderLeft: '3px solid #a78bfa', marginBottom: 14, fontSize: 13, color: '#e9d5ff', lineHeight: 1.55 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(167,139,250,0.10)', borderTop: '1px solid rgba(167,139,250,0.3)', borderRight: '1px solid rgba(167,139,250,0.3)', borderBottom: '1px solid rgba(167,139,250,0.3)', borderLeft: '3px solid #a78bfa', marginBottom: 14, fontSize: 13, color: '#e9d5ff', lineHeight: 1.55 } },
             h('strong', null, '✏️ ' + weekLabel(wid) + ' check-in'),
             h('div', { style: { marginTop: 6 } }, 'For each HOWL: pick the rubric level (1 to 4) that fits best this week. Add a specific example, then name one concrete intention for next week.')
           ),
@@ -576,7 +576,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('howlTracker'))) 
         }
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(22,163,74,0.10)', border: '1px solid rgba(22,163,74,0.3)', borderLeft: '3px solid #16a34a', marginBottom: 14, fontSize: 13, color: '#bbf7d0', lineHeight: 1.55 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(22,163,74,0.10)', borderTop: '1px solid rgba(22,163,74,0.3)', borderRight: '1px solid rgba(22,163,74,0.3)', borderBottom: '1px solid rgba(22,163,74,0.3)', borderLeft: '3px solid #16a34a', marginBottom: 14, fontSize: 13, color: '#bbf7d0', lineHeight: 1.55 } },
             h('strong', null, '🤝 Crew time prompts'),
             h('div', { style: { marginTop: 6 } }, 'Discussion prompts tied to each HOWL. Pick one for today\'s Crew gathering. Good Crew conversations move from generic ("what is engagement") to specific ("when were YOU engaged this week, and why").')
           ),
@@ -658,7 +658,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('howlTracker'))) 
         });
 
         return h('div', null,
-          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(167,139,250,0.10)', border: '1px solid rgba(167,139,250,0.4)', borderLeft: '3px solid #a78bfa', marginBottom: 12, fontSize: 12.5, color: '#e9d5ff', lineHeight: 1.65 } },
+          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(167,139,250,0.10)', borderTop: '1px solid rgba(167,139,250,0.4)', borderRight: '1px solid rgba(167,139,250,0.4)', borderBottom: '1px solid rgba(167,139,250,0.4)', borderLeft: '3px solid #a78bfa', marginBottom: 12, fontSize: 12.5, color: '#e9d5ff', lineHeight: 1.65 } },
             h('strong', null, '🖨 Quarter snapshot. '),
             'Print or save as PDF for your Crew binder, student-led conference, or IEP meeting. Includes your goals, your most recent rating per HOWL, and your quarter average per HOWL.'
           ),

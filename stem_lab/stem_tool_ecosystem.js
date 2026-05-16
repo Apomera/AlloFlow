@@ -2560,7 +2560,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             style: {
               padding: '10px 14px', borderRadius: 12, marginBottom: 4,
               background: 'linear-gradient(135deg, rgba(22,163,74,0.14) 0%, rgba(22,163,74,0.04) 100%)',
-              border: '1px solid rgba(22,163,74,0.5)', borderLeft: '3px solid #16a34a',
+              borderTop: '1px solid rgba(22,163,74,0.5)', borderRight: '1px solid rgba(22,163,74,0.5)', borderBottom: '1px solid rgba(22,163,74,0.5)', borderLeft: '3px solid #16a34a',
               color: '#bbf7d0', fontSize: 13, lineHeight: 1.55
             }
           },
@@ -3091,7 +3091,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             style: {
               padding: '10px 14px', borderRadius: 12, marginBottom: 4,
               background: 'linear-gradient(135deg, rgba(14,165,233,0.14) 0%, rgba(14,165,233,0.04) 100%)',
-              border: '1px solid rgba(14,165,233,0.5)', borderLeft: '3px solid #0ea5e9',
+              borderTop: '1px solid rgba(14,165,233,0.5)', borderRight: '1px solid rgba(14,165,233,0.5)', borderBottom: '1px solid rgba(14,165,233,0.5)', borderLeft: '3px solid #0ea5e9',
               color: '#bae6fd', fontSize: 13, lineHeight: 1.55
             }
           },
@@ -3475,12 +3475,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           function renderConservAIPanel() {
             if (conserve.aiReadLoading) {
               return h('div', { role: 'status', 'aria-live': 'polite',
-                style: { padding: '12px 14px', borderRadius: 12, marginBottom: 12, background: 'rgba(56,189,248,0.10)', border: '1px solid rgba(56,189,248,0.4)', borderLeft: '3px solid #38bdf8', color: '#bae6fd', fontSize: 13 } },
+                style: { padding: '12px 14px', borderRadius: 12, marginBottom: 12, background: 'rgba(56,189,248,0.10)', borderTop: '1px solid rgba(56,189,248,0.4)', borderRight: '1px solid rgba(56,189,248,0.4)', borderBottom: '1px solid rgba(56,189,248,0.4)', borderLeft: '3px solid #38bdf8', color: '#bae6fd', fontSize: 13 } },
                 '⏳ AI conservation biologist is reading your ecosystem...');
             }
             if (!conserve.aiReadResponse) return null;
             return h('div', { role: 'region', 'aria-label': 'AI Conservation Reading',
-              style: { padding: 14, borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(56,189,248,0.10) 0%, rgba(15,23,42,0.4) 100%)', border: '1px solid rgba(56,189,248,0.5)', borderLeft: '3px solid #38bdf8' } },
+              style: { padding: 14, borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(56,189,248,0.10) 0%, rgba(15,23,42,0.4) 100%)', borderTop: '1px solid rgba(56,189,248,0.5)', borderRight: '1px solid rgba(56,189,248,0.5)', borderBottom: '1px solid rgba(56,189,248,0.5)', borderLeft: '3px solid #38bdf8' } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
                 h('span', { style: { fontSize: 20 } }, '🔍'),
                 h('strong', { style: { color: '#38bdf8', fontSize: 14 } }, 'AI Conservation Reading'),
@@ -3665,7 +3665,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                   h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } }, dd.modernContext)
                 )
               ),
-              applicable.length > 0 ? h('div', { style: { marginTop: 12, padding: 12, background: 'rgba(21,128,61,0.10)', border: '1px solid rgba(21,128,61,0.4)', borderLeft: '3px solid #15803d', borderRadius: 10 } },
+              applicable.length > 0 ? h('div', { style: { marginTop: 12, padding: 12, background: 'rgba(21,128,61,0.10)', borderTop: '1px solid rgba(21,128,61,0.4)', borderRight: '1px solid rgba(21,128,61,0.4)', borderBottom: '1px solid rgba(21,128,61,0.4)', borderLeft: '3px solid #15803d', borderRadius: 10 } },
                 h('div', { style: { fontSize: 11, fontWeight: 700, color: '#86efac', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '🛠 What you can do for this species in the sim'),
                 applicable.map(function(t, i) {
                   return h('div', { key: i, style: { margin: '4px 0', fontSize: 12.5, color: '#d1fae5', lineHeight: 1.5 } },
@@ -4038,7 +4038,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           var coachingTip = (conserve.year === 1 && !conserve.firstTipDismissed && conserve.yearActions.length === 0) ? conserveCoachingTip() : null;
           return h('div', { className: 'space-y-3' },
             conservDeepDive,
-            coachingTip ? h('div', { role: 'note', style: { padding: '10px 14px', borderRadius: 12, background: 'linear-gradient(135deg, rgba(168,85,247,0.16) 0%, rgba(168,85,247,0.04) 100%)', border: '1px solid rgba(168,85,247,0.6)', borderLeft: '3px solid #a855f7', color: '#e9d5ff', fontSize: 13, lineHeight: 1.55, display: 'flex', alignItems: 'flex-start', gap: 10 } },
+            coachingTip ? h('div', { role: 'note', style: { padding: '10px 14px', borderRadius: 12, background: 'linear-gradient(135deg, rgba(168,85,247,0.16) 0%, rgba(168,85,247,0.04) 100%)', borderTop: '1px solid rgba(168,85,247,0.6)', borderRight: '1px solid rgba(168,85,247,0.6)', borderBottom: '1px solid rgba(168,85,247,0.6)', borderLeft: '3px solid #a855f7', color: '#e9d5ff', fontSize: 13, lineHeight: 1.55, display: 'flex', alignItems: 'flex-start', gap: 10 } },
               h('span', { style: { fontSize: 20, flexShrink: 0 } }, '🪶'),
               h('div', { style: { flex: 1 } },
                 h('strong', { style: { color: '#a855f7' } }, 'Year 1 priority: '),
@@ -4146,7 +4146,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             style: {
               padding: '10px 14px', borderRadius: 12,
               background: 'linear-gradient(135deg, rgba(168,85,247,0.14) 0%, rgba(168,85,247,0.04) 100%)',
-              border: '1px solid rgba(168,85,247,0.5)', borderLeft: '3px solid #a855f7',
+              borderTop: '1px solid rgba(168,85,247,0.5)', borderRight: '1px solid rgba(168,85,247,0.5)', borderBottom: '1px solid rgba(168,85,247,0.5)', borderLeft: '3px solid #a855f7',
               color: '#e9d5ff', fontSize: 13, lineHeight: 1.55
             }
           },

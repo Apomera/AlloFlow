@@ -836,7 +836,7 @@ window.SelHub = window.SelHub || {
         var topDomains = domainScores.filter(function(x) { return x.avg !== null; }).sort(function(a, b) { return b.avg - a.avg; }).slice(0, 3);
 
         printContent = h('div', { style: { padding: 16 } },
-          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: '#ecfeff', border: '1px solid #67e8f9', borderLeft: '3px solid ' + CYAN, marginBottom: 12, fontSize: 12.5, color: CYAN_DARK, lineHeight: 1.65 } },
+          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: '#ecfeff', borderTop: '1px solid #67e8f9', borderRight: '1px solid #67e8f9', borderBottom: '1px solid #67e8f9', borderLeft: '3px solid ' + CYAN, marginBottom: 12, fontSize: 12.5, color: CYAN_DARK, lineHeight: 1.65 } },
             h('strong', null, '🖨 Executive function snapshot + accommodation list. '),
             'A one-page artifact for student-led conferences, 504/IEP meetings, or teacher conversations. Includes your self-assessment of where executive function is hardest, your active plan, and a list of accommodations to consider asking for, grouped by which executive function domain they support.'
           ),

@@ -214,7 +214,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
           ),
 
           // The biology
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #6366f1', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #6366f1', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#c7d2fe', marginBottom: 10 } }, '🧠 Adolescent sleep biology is real'),
             h('p', { style: { margin: '0 0 8px', color: '#e2e8f0', fontSize: 13, lineHeight: 1.7 } },
               'At puberty, the body\'s circadian rhythm shifts later by about 2 hours. This is biology, not laziness. A 15-year-old who is wide awake at 11pm and groggy at 7am is doing what their body is built to do. Mary Carskadon\'s research at Brown established this in the 1990s and it has been replicated extensively.'
@@ -225,7 +225,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
           ),
 
           // What it affects
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #ef4444', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #ef4444', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fca5a5', marginBottom: 8 } }, '⚠ Sleep deprivation affects (this is measurable, not theoretical):'),
             h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: '#e2e8f0', fontSize: 13, lineHeight: 1.85 } },
               h('li', null, 'Mood (more irritable, more depressed, less emotional regulation)'),
@@ -250,7 +250,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
 
       function stepCard(title, blurb, onClick, color) {
         return h('button', { onClick: onClick, 'aria-label': title,
-          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, border: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: '#0f172a', cursor: 'pointer', marginBottom: 8, color: '#e2e8f0' } },
+          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: '#0f172a', cursor: 'pointer', marginBottom: 8, color: '#e2e8f0' } },
           h('div', { style: { fontSize: 14, fontWeight: 800, color: color, marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.55 } }, blurb)
         );
@@ -281,7 +281,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
         if (screens !== undefined && screens >= 1) flags.push({ severity: 'info', text: screens + ' hour(s) of screens in the last hour before bed is a high-impact change you could make. See the Screens barrier.' });
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', marginBottom: 14, fontSize: 12.5, color: '#bbf7d0', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(34,197,94,0.10)', borderTop: '1px solid rgba(34,197,94,0.3)', borderRight: '1px solid rgba(34,197,94,0.3)', borderBottom: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', marginBottom: 14, fontSize: 12.5, color: '#bbf7d0', lineHeight: 1.65 } },
             h('strong', null, '✓ Quick sleep check. '),
             'Use a typical week, not your best or worst. Honest answers help you see your real pattern.'
           ),
@@ -289,7 +289,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
           SELF_CHECK.map(function(item) {
             var v = sc[item.id];
             var hasV = v !== undefined && v !== null;
-            return h('div', { key: item.id, style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #6366f1', marginBottom: 8 } },
+            return h('div', { key: item.id, style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #6366f1', marginBottom: 8 } },
               h('div', { style: { fontSize: 13, color: '#e2e8f0', marginBottom: 8, lineHeight: 1.6 } }, item.text),
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' } },
                 h('input', { type: 'range', min: item.min, max: item.max, value: hasV ? v : item.defaultV,
@@ -303,7 +303,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
           }),
 
           // Flags / interpretation
-          flags.length > 0 ? h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10, marginTop: 14 } },
+          flags.length > 0 ? h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10, marginTop: 14 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fde68a', marginBottom: 8 } }, '🚩 What stands out'),
             flags.map(function(f, i) {
               var color = f.severity === 'alert' ? '#ef4444' : f.severity === 'warning' ? '#f59e0b' : '#0ea5e9';
@@ -320,13 +320,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
       // ═══════════════════════════════════════════════════════════
       function renderBarriers() {
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 12.5, color: '#fde68a', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 12.5, color: '#fde68a', lineHeight: 1.65 } },
             h('strong', null, '🚧 The 8 most common barriers. '),
             'Find yours. Pick ONE to work on for a week — most people improve sleep significantly with one change. Stacking changes works, but one at a time is more sustainable.'
           ),
 
           BARRIERS.map(function(b) {
-            return h('div', { key: b.id, style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '4px solid ' + b.color, marginBottom: 10 } },
+            return h('div', { key: b.id, style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + b.color, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
                 h('span', { style: { fontSize: 24 } }, b.icon),
                 h('span', { style: { fontSize: 15, fontWeight: 800, color: b.color } }, b.label)
@@ -378,29 +378,29 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
         }
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(14,165,233,0.10)', border: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', marginBottom: 14, fontSize: 12.5, color: '#bae6fd', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(14,165,233,0.10)', borderTop: '1px solid rgba(14,165,233,0.3)', borderRight: '1px solid rgba(14,165,233,0.3)', borderBottom: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', marginBottom: 14, fontSize: 12.5, color: '#bae6fd', lineHeight: 1.65 } },
             h('strong', null, '📓 The sleep diary. '),
             'Log for 1-2 weeks to see your pattern. The diary is the single most useful tool for figuring out what is going on with your sleep — and what your doctor will ask for if you see one.'
           ),
 
           // Stats
           diary.length > 0 ? h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8, marginBottom: 12 } },
-            h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #6366f1' } },
+            h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #6366f1' } },
               h('div', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Entries'),
               h('div', { style: { fontSize: 22, color: '#c7d2fe', fontWeight: 900 } }, diary.length)
             ),
-            h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #22c55e' } },
+            h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #22c55e' } },
               h('div', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Avg hours'),
               h('div', { style: { fontSize: 22, color: '#86efac', fontWeight: 900 } }, avgHours)
             ),
-            h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #f59e0b' } },
+            h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f59e0b' } },
               h('div', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Avg quality / 10'),
               h('div', { style: { fontSize: 22, color: '#fde68a', fontWeight: 900 } }, avgQuality)
             )
           ) : null,
 
           // New entry
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#bae6fd', marginBottom: 10 } }, '+ Add an entry'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10, marginBottom: 8 } },
               h('div', null,
@@ -491,7 +491,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
             sourceCard('Walker, M. (2017)', 'Why We Sleep: Unlocking the Power of Sleep and Dreams, Scribner', 'Accessible book on sleep science by a leading researcher.', null)
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'Most adolescent sleep deprivation is STRUCTURAL: schools start too early, homework is too late, and many adolescents have jobs or caregiving responsibilities that compete with sleep. Sleep hygiene cannot solve a structural problem. It is real work to change schedules within structural constraints.'),
@@ -502,7 +502,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', borderLeft: '3px solid #6366f1', fontSize: 12.5, color: '#c7d2fe', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(99,102,241,0.10)', borderTop: '1px solid rgba(99,102,241,0.3)', borderRight: '1px solid rgba(99,102,241,0.3)', borderBottom: '1px solid rgba(99,102,241,0.3)', borderLeft: '3px solid #6366f1', fontSize: 12.5, color: '#c7d2fe', lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'For Crew or advisory: a one-week sleep-diary commitment is genuinely transformative for many students. Discuss findings as a group (no judgment, just data). For school psych practice: sleep is often the first lever for adolescent anxiety and depression — treat sleep before assuming the symptoms are primarily psychological. Advocate for later school start times in your district.'
           ),

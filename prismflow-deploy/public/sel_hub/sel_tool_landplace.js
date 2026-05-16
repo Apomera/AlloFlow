@@ -177,7 +177,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
       // ─── Soft pointer at the bottom of every view ───
       function authoritativeVoicePointer() {
         return h('div', {
-          style: { marginTop: 18, padding: 12, borderRadius: 10, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', fontSize: 12.5, color: '#e9d5ff', lineHeight: 1.55 }
+          style: { marginTop: 18, padding: 12, borderRadius: 10, background: 'rgba(168,85,247,0.08)', borderTop: '1px solid rgba(168,85,247,0.3)', borderRight: '1px solid rgba(168,85,247,0.3)', borderBottom: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', fontSize: 12.5, color: '#e9d5ff', lineHeight: 1.55 }
         },
           h('strong', { style: { color: '#a855f7' } }, '🪶 This tool is a learning scaffold, not an authoritative voice. '),
           'For real understanding of Wabanaki nations, follow and learn directly from Wabanaki Public Health and Wellness, Maine Indian Basketmakers Alliance, the Penobscot Nation Cultural and Historic Preservation Department, the Passamaquoddy Cultural Heritage Museum, First Light Learning Journey, and the University of Maine Wabanaki Center.'
@@ -190,7 +190,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
       function renderOverview() {
         return h('div', null,
           // Framing
-          h('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(134,239,172,0.16) 0%, rgba(56,189,248,0.06) 100%)', border: '1px solid rgba(134,239,172,0.4)', borderLeft: '4px solid #86efac', marginBottom: 14, fontSize: 14, color: '#e2e8f0', lineHeight: 1.65 } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(134,239,172,0.16) 0%, rgba(56,189,248,0.06) 100%)', borderTop: '1px solid rgba(134,239,172,0.4)', borderRight: '1px solid rgba(134,239,172,0.4)', borderBottom: '1px solid rgba(134,239,172,0.4)', borderLeft: '4px solid #86efac', marginBottom: 14, fontSize: 14, color: '#e2e8f0', lineHeight: 1.65 } },
             h('strong', { style: { color: '#bbf7d0' } }, 'You are reading this from somewhere. '),
             'Whose land is it? Who lived here before, and who lives here now? What grew here, what was taken, what is recovering? These are not abstract questions. They have specific answers in specific places.'
           ),
@@ -228,7 +228,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
           ),
 
           // Maine LD 291 context
-          h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', fontSize: 12.5, color: '#fde68a', lineHeight: 1.55, marginBottom: 14 } },
+          h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', fontSize: 12.5, color: '#fde68a', lineHeight: 1.55, marginBottom: 14 } },
             h('strong', null, '📜 Maine LD 291 (2001): '),
             'Maine state law requires that Wabanaki history, culture, and government be taught in K-12 public schools. This tool can support that work, but it cannot replace the Wabanaki Studies curriculum and the Wabanaki educators who teach it. If your school does not have a Wabanaki Studies program, ask why.'
           ),
@@ -280,7 +280,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
         }
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(134,239,172,0.10)', border: '1px solid rgba(134,239,172,0.3)', borderLeft: '3px solid #86efac', marginBottom: 14, fontSize: 13, color: '#bbf7d0', lineHeight: 1.55 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(134,239,172,0.10)', borderTop: '1px solid rgba(134,239,172,0.3)', borderRight: '1px solid rgba(134,239,172,0.3)', borderBottom: '1px solid rgba(134,239,172,0.3)', borderLeft: '3px solid #86efac', marginBottom: 14, fontSize: 13, color: '#bbf7d0', lineHeight: 1.55 } },
             '🧵 Three threads of relationship with place. Work through them at your own pace. None of these has a quick answer; that is the point.'
           ),
           threads.map(function(t) {
@@ -326,7 +326,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
 
         return h('div', null,
           // The critique up front
-          h('div', { style: { padding: 14, borderRadius: 12, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.4)', borderLeft: '4px solid #ef4444', marginBottom: 14 } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.4)', borderRight: '1px solid rgba(239,68,68,0.4)', borderBottom: '1px solid rgba(239,68,68,0.4)', borderLeft: '4px solid #ef4444', marginBottom: 14 } },
             h('strong', { style: { color: '#fca5a5', fontSize: 14, display: 'block', marginBottom: 6 } }, '⚠ The critique to take seriously'),
             h('p', { style: { margin: 0, color: '#fecaca', fontSize: 13, lineHeight: 1.65 } },
               'Many Indigenous people and scholars have argued that land acknowledgments without action are worse than useless: they let non-Indigenous people perform care without doing the work. ',
@@ -408,7 +408,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
       // ═══════════════════════════════════════════════════════
       function renderBeyond() {
         return h('div', null,
-          h('div', { style: { padding: 14, borderRadius: 12, background: 'rgba(167,139,250,0.10)', border: '1px solid rgba(167,139,250,0.4)', borderLeft: '4px solid #a78bfa', marginBottom: 14, fontSize: 14, color: '#e9d5ff', lineHeight: 1.65 } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: 'rgba(167,139,250,0.10)', borderTop: '1px solid rgba(167,139,250,0.4)', borderRight: '1px solid rgba(167,139,250,0.4)', borderBottom: '1px solid rgba(167,139,250,0.4)', borderLeft: '4px solid #a78bfa', marginBottom: 14, fontSize: 14, color: '#e9d5ff', lineHeight: 1.65 } },
             h('strong', { style: { color: '#c4b5fd' } }, '🚶 Acknowledgment is not the work. '),
             'These are the people, organizations, and actions through which the actual work happens. Pick one or two to start.'
           ),
@@ -426,7 +426,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
           ),
 
           // Action menu
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, '✦ Concrete actions, in roughly increasing order of commitment'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 12.5, lineHeight: 1.8 } },
               h('li', null, 'Follow one of these organizations on social media. Listen for six months before forming opinions.'),
@@ -442,7 +442,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
           ),
 
           // The critical-reflection step
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.25)', borderLeft: '3px solid #ef4444', marginBottom: 14 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.06)', borderTop: '1px solid rgba(239,68,68,0.25)', borderRight: '1px solid rgba(239,68,68,0.25)', borderBottom: '1px solid rgba(239,68,68,0.25)', borderLeft: '3px solid #ef4444', marginBottom: 14 } },
             h('strong', { style: { color: '#fca5a5', fontSize: 13 } }, '🔍 Honest self-check'),
             h('p', { style: { margin: '6px 0 0', color: '#fecaca', fontSize: 12.5, lineHeight: 1.6 } },
               'Of the actions above, which one have you actually done in the past 12 months? Which one will you actually do in the next 30 days? If your answer is "none and none," your land acknowledgment is not finished.'
@@ -474,7 +474,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
         }
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(56,189,248,0.10)', border: '1px solid rgba(56,189,248,0.3)', borderLeft: '3px solid #38bdf8', marginBottom: 14, fontSize: 13, color: '#bae6fd', lineHeight: 1.55 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(56,189,248,0.10)', borderTop: '1px solid rgba(56,189,248,0.3)', borderRight: '1px solid rgba(56,189,248,0.3)', borderBottom: '1px solid rgba(56,189,248,0.3)', borderLeft: '3px solid #38bdf8', marginBottom: 14, fontSize: 13, color: '#bae6fd', lineHeight: 1.55 } },
             '📓 An ongoing journal for what you are noticing, learning, getting confused about. Date-stamped. Private to you.'
           ),
 

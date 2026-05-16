@@ -893,7 +893,7 @@ window.SelHub = window.SelHub || {
           // Closes the loop: did the strategy help? A re-check captures that.
           (lastSaveTs && (Date.now() - lastSaveTs) < 90000 && lastSaveZone && lastSaveZone !== 'green' && !reCheckAt) && h('div', {
             role: 'region', 'aria-label': 'Post check-in re-check offer',
-            style: { marginTop: 16, padding: 14, borderRadius: 14, background: 'rgba(124,58,237,0.10)', border: '1px solid #7c3aed', borderLeft: '4px solid #7c3aed' }
+            style: { marginTop: 16, padding: 14, borderRadius: 14, background: 'rgba(124,58,237,0.10)', borderTop: '1px solid #7c3aed', borderRight: '1px solid #7c3aed', borderBottom: '1px solid #7c3aed', borderLeft: '4px solid #7c3aed' }
           },
             h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 10 } },
               h('div', { style: { fontSize: 22, flexShrink: 0 }, 'aria-hidden': 'true' }, '\uD83D\uDD14'),

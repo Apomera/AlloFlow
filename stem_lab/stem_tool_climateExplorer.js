@@ -1347,7 +1347,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             var active = tab === t.id;
             return el('button', { key: t.id, onClick: function() { visitTab(t.id); },
               role: 'tab', 'aria-selected': active,
-              style: { padding: '12px 16px', border: 'none', borderBottom: active ? '2px solid #22c55e' : '2px solid transparent', background: 'none', color: active ? '#4ade80' : '#94a3b8', fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, transition: 'all 0.2s' } },
+              style: { padding: '12px 16px', borderTop: 'none', borderRight: 'none', borderLeft: 'none', borderBottom: active ? '2px solid #22c55e' : '2px solid transparent', background: 'none', color: active ? '#4ade80' : '#94a3b8', fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, transition: 'all 0.2s' } },
               el('span', null, t.icon), t.label);
           })
         ),
@@ -1757,7 +1757,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               style: {
                 marginBottom: 16, padding: '10px 14px', borderRadius: 12,
                 background: 'linear-gradient(135deg, rgba(34,197,94,0.15) 0%, rgba(245,158,11,0.10) 100%)',
-                border: '1px solid rgba(34,197,94,0.30)', borderLeft: '4px solid #22c55e',
+                borderTop: '1px solid rgba(34,197,94,0.30)', borderRight: '1px solid rgba(34,197,94,0.30)', borderBottom: '1px solid rgba(34,197,94,0.30)', borderLeft: '4px solid #22c55e',
                 color: '#ecfdf5'
               }
             },
@@ -2440,8 +2440,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                       style: {
                         marginBottom: 8, padding: 10, borderRadius: 8,
                         background: 'rgba(96,165,250,0.06)',
-                        border: '1px solid rgba(96,165,250,0.18)',
-                        borderLeft: '3px solid #60a5fa'
+                        borderTop: '1px solid rgba(96,165,250,0.18)', borderRight: '1px solid rgba(96,165,250,0.18)', borderBottom: '1px solid rgba(96,165,250,0.18)', borderLeft: '3px solid #60a5fa'
                       }
                     },
                       el('div', { style: { color: '#60a5fa', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 } }, '\uD83C\uDF99\uFE0F Voice from the front line'),
@@ -2836,8 +2835,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                       style: {
                         padding: 12, borderRadius: 10,
                         background: 'rgba(0,0,0,0.18)',
-                        border: '1px solid rgba(148,163,184,0.12)',
-                        borderLeft: '3px solid ' + a.difficultyColor
+                        borderTop: '1px solid rgba(148,163,184,0.12)', borderRight: '1px solid rgba(148,163,184,0.12)', borderBottom: '1px solid rgba(148,163,184,0.12)', borderLeft: '3px solid ' + a.difficultyColor
                       }
                     },
                       el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4, flexWrap: 'wrap' } },
@@ -3547,7 +3545,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     el('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } }, dd.modernContext)
                   )
                 ),
-                applicable.length > 0 ? el('div', { style: { marginTop: 12, padding: 12, background: 'rgba(21,128,61,0.10)', border: '1px solid rgba(21,128,61,0.4)', borderLeft: '3px solid #15803d', borderRadius: 10 } },
+                applicable.length > 0 ? el('div', { style: { marginTop: 12, padding: 12, background: 'rgba(21,128,61,0.10)', borderTop: '1px solid rgba(21,128,61,0.4)', borderRight: '1px solid rgba(21,128,61,0.4)', borderBottom: '1px solid rgba(21,128,61,0.4)', borderLeft: '3px solid #15803d', borderRadius: 10 } },
                   el('div', { style: { fontSize: 11, fontWeight: 700, color: '#86efac', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '\ud83d\udee0 What you can do for this sector'),
                   applicable.map(function(t, i) {
                     return el('div', { key: i, style: { margin: '4px 0', fontSize: 12.5, color: '#d1fae5', lineHeight: 1.5 } },
@@ -3660,12 +3658,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             function renderPathAIPanel() {
               if (path.aiReadLoading) {
                 return el('div', { role: 'status', 'aria-live': 'polite',
-                  style: { padding: '12px 14px', borderRadius: 12, marginBottom: 12, background: 'rgba(56,189,248,0.10)', border: '1px solid rgba(56,189,248,0.4)', borderLeft: '3px solid #38bdf8', color: '#bae6fd', fontSize: 13 } },
+                  style: { padding: '12px 14px', borderRadius: 12, marginBottom: 12, background: 'rgba(56,189,248,0.10)', borderTop: '1px solid rgba(56,189,248,0.4)', borderRight: '1px solid rgba(56,189,248,0.4)', borderBottom: '1px solid rgba(56,189,248,0.4)', borderLeft: '3px solid #38bdf8', color: '#bae6fd', fontSize: 13 } },
                   '\u23f3 AI climate-policy educator is reading your campaign state...');
               }
               if (!path.aiReadResponse) return null;
               return el('div', { role: 'region', 'aria-label': 'AI Climate Policy Reading',
-                style: { padding: 14, borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(56,189,248,0.10) 0%, rgba(15,23,42,0.4) 100%)', border: '1px solid rgba(56,189,248,0.5)', borderLeft: '3px solid #38bdf8' } },
+                style: { padding: 14, borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(56,189,248,0.10) 0%, rgba(15,23,42,0.4) 100%)', borderTop: '1px solid rgba(56,189,248,0.5)', borderRight: '1px solid rgba(56,189,248,0.5)', borderBottom: '1px solid rgba(56,189,248,0.5)', borderLeft: '3px solid #38bdf8' } },
                 el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
                   el('span', { style: { fontSize: 20 } }, '\ud83d\udd0d'),
                   el('strong', { style: { color: '#38bdf8', fontSize: 14 } }, 'AI Climate Policy Reading'),
@@ -3852,7 +3850,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             var coachingTip = (path.year === 1 && !path.firstTipDismissed && path.yearActions.length === 0) ? pathwayCoachingTip() : null;
             return el('div', { style: { maxWidth: 720, margin: '0 auto' } },
               pathDeepDive,
-              coachingTip ? el('div', { role: 'note', style: { padding: '10px 14px', borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(168,85,247,0.16) 0%, rgba(168,85,247,0.04) 100%)', border: '1px solid rgba(168,85,247,0.6)', borderLeft: '3px solid #a855f7', color: '#e9d5ff', fontSize: 13, lineHeight: 1.55, display: 'flex', alignItems: 'flex-start', gap: 10 } },
+              coachingTip ? el('div', { role: 'note', style: { padding: '10px 14px', borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(168,85,247,0.16) 0%, rgba(168,85,247,0.04) 100%)', borderTop: '1px solid rgba(168,85,247,0.6)', borderRight: '1px solid rgba(168,85,247,0.6)', borderBottom: '1px solid rgba(168,85,247,0.6)', borderLeft: '3px solid #a855f7', color: '#e9d5ff', fontSize: 13, lineHeight: 1.55, display: 'flex', alignItems: 'flex-start', gap: 10 } },
                 el('span', { style: { fontSize: 20, flexShrink: 0 } }, '\ud83e\udeb6'),
                 el('div', { style: { flex: 1 } },
                   el('strong', { style: { color: '#a855f7' } }, 'Period 1 priority: '),

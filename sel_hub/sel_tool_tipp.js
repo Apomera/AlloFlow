@@ -185,7 +185,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
       }
 
       function safetyBanner() {
-        return h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.4)', borderLeft: '3px solid #ef4444', marginBottom: 12, fontSize: 12.5, color: '#fecaca', lineHeight: 1.65 } },
+        return h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.4)', borderRight: '1px solid rgba(239,68,68,0.4)', borderBottom: '1px solid rgba(239,68,68,0.4)', borderLeft: '3px solid #ef4444', marginBottom: 12, fontSize: 12.5, color: '#fecaca', lineHeight: 1.65 } },
           h('strong', null, '🆘 TIPP is for ACUTE distress, not everyday stress. '),
           'If you are in crisis right now (thinking about hurting yourself, in immediate danger), please use Crisis Companion in this SEL Hub or call 988 (Suicide and Crisis Lifeline) or text HOME to 741741 (Crisis Text Line). TIPP can buy you the next 5 minutes; a human can be with you for longer.'
         );
@@ -281,7 +281,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
             ),
 
             // Caution
-            h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', fontSize: 11.5, color: '#fde68a', lineHeight: 1.6, marginBottom: 12 } },
+            h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', fontSize: 11.5, color: '#fde68a', lineHeight: 1.6, marginBottom: 12 } },
               h('strong', null, '⚖️ Caution: '), s.caution
             ),
 
@@ -346,7 +346,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
           h('div', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'Recent sessions'),
           log.slice(0, 20).map(function(e, i) {
             var s = SKILLS.find(function(x) { return x.id === e.skill; });
-            return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid ' + (s ? s.color : '#64748b'), marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 } },
+            return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + (s ? s.color : '#64748b'), marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 } },
               h('span', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, monospace', minWidth: 75 } }, e.date),
               h('span', { style: { fontSize: 18 } }, s ? s.icon : '?'),
               h('span', { style: { flex: 1, fontSize: 13, color: '#e2e8f0' } }, s ? s.label : '(unknown)'),
@@ -364,7 +364,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('tipp', h, ctx) : null),
 
           // Strong safety frame at top
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.4)', borderLeft: '4px solid #ef4444', marginBottom: 14 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.4)', borderRight: '1px solid rgba(239,68,68,0.4)', borderBottom: '1px solid rgba(239,68,68,0.4)', borderLeft: '4px solid #ef4444', marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 8px', color: '#fca5a5', fontSize: 16 } }, '🆘 Read this first'),
             h('p', { style: { margin: 0, color: '#fecaca', fontSize: 13.5, lineHeight: 1.7 } },
               'TIPP is for ACUTE distress: the moment you are about to do something you will regret, or feel like you cannot tolerate the next 5 minutes. It is NOT for everyday stress, low mood, or anxious thoughts. TIPP is fast, it is physical, and it is meant to buy you the next minutes so that talking, reflecting, or asking for help becomes possible again. If you are in crisis, please use Crisis Companion or call 988 / text HOME to 741741.'
@@ -397,7 +397,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
             sourceCard('DBT Self Help', 'dbtselfhelp.com', 'Free open educational resource; covers TIPP and other Distress Tolerance skills.', 'https://dbtselfhelp.com/')
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'TIPP is a survival skill, not a fix. It helps you get through the next 5 minutes; it does not address why you are in distress.'),
@@ -408,7 +408,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.3)', borderLeft: '3px solid #ef4444', fontSize: 12.5, color: '#fecaca', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.3)', borderRight: '1px solid rgba(239,68,68,0.3)', borderBottom: '1px solid rgba(239,68,68,0.3)', borderLeft: '3px solid #ef4444', fontSize: 12.5, color: '#fecaca', lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'TIPP is most useful when students have practiced it once or twice during Crew time, not first encountered it in a crisis. A simple Crew protocol: walk through one TIPP skill together (paced breathing is the easiest in a classroom), name the other three, then point students to this tool. Pair with Crisis Companion for any student showing acute distress patterns.'
           ),
@@ -430,7 +430,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
 
       function renderPrintView() {
         return h('div', null,
-          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.4)', borderLeft: '3px solid #ef4444', marginBottom: 12, fontSize: 12.5, color: '#fecaca', lineHeight: 1.65 } },
+          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.4)', borderRight: '1px solid rgba(239,68,68,0.4)', borderBottom: '1px solid rgba(239,68,68,0.4)', borderLeft: '3px solid #ef4444', marginBottom: 12, fontSize: 12.5, color: '#fecaca', lineHeight: 1.65 } },
             h('strong', null, '🖨 TIPP pocket card. '),
             'Print and fold; carry in a pocket, wallet, or planner. The point is to have the four skills with you BEFORE you need them. The pocket card prints onto one page; the cautions are kept because they matter.'
           ),

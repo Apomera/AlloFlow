@@ -1114,7 +1114,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                 style: { background: 'transparent', border: '1px solid #334155', color: '#cbd5e1', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13 } }, '← Back to hub'),
               h('h2', { style: { margin: 0, color: '#a855f7', fontSize: 20 } }, '🔀 Compare two campaigns')
             ),
-            h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.4)', borderLeft: '3px solid #a855f7', marginBottom: 14, fontSize: 13, color: '#e9d5ff', lineHeight: 1.55 } },
+            h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.4)', borderRight: '1px solid rgba(168,85,247,0.4)', borderBottom: '1px solid rgba(168,85,247,0.4)', borderLeft: '3px solid #a855f7', marginBottom: 14, fontSize: 13, color: '#e9d5ff', lineHeight: 1.55 } },
               cmp.a
                 ? 'Selected: ' + (CAMPAIGNS.find(function(c) { return c.id === cmp.a; }) || {}).label + '. Pick a second completed campaign to compare against.'
                 : 'Pick any two of your completed campaigns. The hub will show them side-by-side with a pair-specific reflection prompt.'
@@ -1209,7 +1209,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
               style: {
                 padding: 14, borderRadius: 12, marginBottom: 14,
                 background: 'linear-gradient(135deg, rgba(168,85,247,0.14) 0%, rgba(56,189,248,0.04) 100%)',
-                border: '1px solid rgba(168,85,247,0.4)', borderLeft: '4px solid #a855f7'
+                borderTop: '1px solid rgba(168,85,247,0.4)', borderRight: '1px solid rgba(168,85,247,0.4)', borderBottom: '1px solid rgba(168,85,247,0.4)', borderLeft: '4px solid #a855f7'
               }
             },
               h('div', { style: { fontSize: 11, color: '#a855f7', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 4 } }, 'Pair reflection'),
@@ -1330,7 +1330,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             style: {
               padding: 20, borderRadius: 14,
               background: 'linear-gradient(135deg, rgba(134,239,172,0.10) 0%, rgba(56,189,248,0.04) 100%)',
-              border: '1px solid rgba(134,239,172,0.4)', borderLeft: '4px solid #86efac',
+              borderTop: '1px solid rgba(134,239,172,0.4)', borderRight: '1px solid rgba(134,239,172,0.4)', borderBottom: '1px solid rgba(134,239,172,0.4)', borderLeft: '4px solid #86efac',
               marginBottom: 14
             }
           },
@@ -1777,7 +1777,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             ) : null,
             // Synthesis
             h('div', {
-              style: { padding: 14, borderRadius: 12, marginBottom: 16, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.4)', borderLeft: '3px solid #a855f7' }
+              style: { padding: 14, borderRadius: 12, marginBottom: 16, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.4)', borderRight: '1px solid rgba(168,85,247,0.4)', borderBottom: '1px solid rgba(168,85,247,0.4)', borderLeft: '3px solid #a855f7' }
             },
               h('div', { style: { fontSize: 11, color: '#a855f7', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 6 } }, '🧠 Cross-region synthesis'),
               h('p', { style: { margin: 0, color: '#e9d5ff', fontSize: 13.5, lineHeight: 1.65 } }, scenario.synthesis)
@@ -1902,7 +1902,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
           style: {
             padding: 14, borderRadius: 12, marginBottom: 16,
             background: 'linear-gradient(135deg, rgba(21,128,61,0.18) 0%, rgba(56,189,248,0.06) 100%)',
-            border: '1px solid rgba(134,239,172,0.4)', borderLeft: '4px solid #16a34a',
+            borderTop: '1px solid rgba(134,239,172,0.4)', borderRight: '1px solid rgba(134,239,172,0.4)', borderBottom: '1px solid rgba(134,239,172,0.4)', borderLeft: '4px solid #16a34a',
             display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 10
           }
         },
@@ -1963,7 +1963,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             style: {
               marginBottom: 16, padding: 16, borderRadius: 12,
               background: 'linear-gradient(135deg, rgba(168,85,247,0.14) 0%, rgba(56,189,248,0.04) 100%)',
-              border: '1px solid rgba(168,85,247,0.4)', borderLeft: '4px solid #a855f7'
+              borderTop: '1px solid rgba(168,85,247,0.4)', borderRight: '1px solid rgba(168,85,247,0.4)', borderBottom: '1px solid rgba(168,85,247,0.4)', borderLeft: '4px solid #a855f7'
             }
           },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, flexWrap: 'wrap' } },
@@ -2005,7 +2005,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             style: {
               marginBottom: 16, padding: 16, borderRadius: 12,
               background: 'linear-gradient(135deg, rgba(168,85,247,0.16) 0%, rgba(56,189,248,0.06) 100%)',
-              border: '1px solid rgba(168,85,247,0.5)', borderLeft: '4px solid #a855f7'
+              borderTop: '1px solid rgba(168,85,247,0.5)', borderRight: '1px solid rgba(168,85,247,0.5)', borderBottom: '1px solid rgba(168,85,247,0.5)', borderLeft: '4px solid #a855f7'
             }
           },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
@@ -2020,7 +2020,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                 var insight = FAMILY_PAIRING_INSIGHTS[famId];
                 var famMeta = FAMILY_COLORS[famId] || {};
                 return h('div', { key: famId,
-                  style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.7)', border: '1px solid rgba(168,85,247,0.25)', borderLeft: '3px solid ' + (famMeta.accent || '#a855f7') }
+                  style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.7)', borderTop: '1px solid rgba(168,85,247,0.25)', borderRight: '1px solid rgba(168,85,247,0.25)', borderBottom: '1px solid rgba(168,85,247,0.25)', borderLeft: '3px solid ' + (famMeta.accent || '#a855f7') }
                 },
                   h('div', { style: { fontSize: 11, color: famMeta.accent || '#a855f7', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 4 } }, (famMeta.label || famId) + ' · ' + (famMeta.mechanic || '')),
                   h('div', { style: { fontSize: 14, fontWeight: 800, color: '#e9d5ff', marginBottom: 6 } }, insight.title),

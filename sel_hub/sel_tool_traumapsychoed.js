@@ -156,7 +156,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('traumaPsychoed')
 
       // Critical safety banner — always visible
       function safetyBanner() {
-        return h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.4)', borderLeft: '3px solid #ef4444', marginBottom: 12, fontSize: 12.5, color: '#fecaca', lineHeight: 1.65 } },
+        return h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.4)', borderRight: '1px solid rgba(239,68,68,0.4)', borderBottom: '1px solid rgba(239,68,68,0.4)', borderLeft: '3px solid #ef4444', marginBottom: 12, fontSize: 12.5, color: '#fecaca', lineHeight: 1.65 } },
           h('strong', null, '🛡️ Read this first: '),
           'This tool is psychoeducation only. It does NOT screen for trauma, does NOT ask about your trauma history, and is NOT therapy. Reading about trauma can sometimes surface memories or feelings. If reading any of this is hard, stop and talk to a school psych, counselor, or therapist. Crisis Text Line: text HOME to 741741. Crisis Companion is in this SEL Hub.'
         );
@@ -188,7 +188,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('traumaPsychoed')
           ),
 
           // Big-picture distinctions
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #10b981', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #10b981', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#a7f3d0', marginBottom: 10 } }, '🔍 What trauma is NOT'),
             h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: '#e2e8f0', fontSize: 13, lineHeight: 1.85 } },
               h('li', null, 'Trauma is NOT the event itself; it is the response. Two people can go through the same event and one carries trauma, one does not. This is not about who is "stronger"; it is about a thousand factors at the time (support, age, prior history, nervous-system state).'),
@@ -213,7 +213,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('traumaPsychoed')
 
       function stepCard(title, blurb, onClick, color) {
         return h('button', { onClick: onClick, 'aria-label': title,
-          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, border: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: '#0f172a', cursor: 'pointer', marginBottom: 8, color: '#e2e8f0' } },
+          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: '#0f172a', cursor: 'pointer', marginBottom: 8, color: '#e2e8f0' } },
           h('div', { style: { fontSize: 14, fontWeight: 800, color: color, marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.55 } }, blurb)
         );
@@ -226,13 +226,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('traumaPsychoed')
         return h('div', null,
           safetyBanner(),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.3)', borderLeft: '3px solid #10b981', marginBottom: 14, fontSize: 12.5, color: '#a7f3d0', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(16,185,129,0.10)', borderTop: '1px solid rgba(16,185,129,0.3)', borderRight: '1px solid rgba(16,185,129,0.3)', borderBottom: '1px solid rgba(16,185,129,0.3)', borderLeft: '3px solid #10b981', marginBottom: 14, fontSize: 12.5, color: '#a7f3d0', lineHeight: 1.65 } },
             h('strong', null, '📚 Trauma is not one thing. '),
             'Clinicians have come to recognize multiple distinct types. The treatment that helps acute trauma (like PTSD from a single event) is different from the treatment that helps complex trauma from chronic childhood abuse. Knowing which is which helps people find the right kind of help.'
           ),
 
           TRAUMA_TYPES.map(function(t) {
-            return h('div', { key: t.id, style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #10b981', marginBottom: 8 } },
+            return h('div', { key: t.id, style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #10b981', marginBottom: 8 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
                 h('span', { style: { fontSize: 22 } }, t.icon),
                 h('span', { style: { fontSize: 14, fontWeight: 800, color: '#a7f3d0' } }, t.label)
@@ -252,13 +252,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('traumaPsychoed')
         return h('div', null,
           safetyBanner(),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', marginBottom: 14, fontSize: 13, color: '#e9d5ff', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.3)', borderRight: '1px solid rgba(168,85,247,0.3)', borderBottom: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', marginBottom: 14, fontSize: 13, color: '#e9d5ff', lineHeight: 1.7 } },
             h('strong', null, '🧠 The brain part is the part nobody told you. '),
             'For decades, people who experienced trauma were told to "just get over it" or "stop being so dramatic." We now have the brain science to understand WHY that advice was never going to work. Trauma is a neurobiological response, not a willpower problem.'
           ),
 
           // The three brain parts
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#c4b5fd', marginBottom: 10 } }, '🧠 The three players in a trauma response'),
             h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: '#e2e8f0', fontSize: 13, lineHeight: 1.85 } },
               h('li', null, h('strong', { style: { color: '#c4b5fd' } }, 'Amygdala'), ': the brain\'s smoke alarm. Scans for threat. Fires fast. Does NOT think; it just sounds the alarm.'),
@@ -268,7 +268,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('traumaPsychoed')
           ),
 
           // Fight flight freeze fawn
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#c4b5fd', marginBottom: 10 } }, '⚡ The four (or five) trauma responses'),
             h('p', { style: { margin: '0 0 8px', color: '#cbd5e1', fontSize: 13, lineHeight: 1.7 } },
               'When the amygdala sounds the alarm, the body goes into one of these survival modes. Which one depends on the threat, the person, and the moment. None of them are choices in the moment.'),
@@ -285,7 +285,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('traumaPsychoed')
           ),
 
           // Why memories are weird
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#c4b5fd', marginBottom: 10 } }, '🔁 Why trauma memories are weird'),
             h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.7 } },
               'When the hippocampus does not file a memory correctly (because the amygdala was too loud), the memory gets stored as fragments: a smell, a feeling in the body, a sound, an image. Those fragments are not tagged with time. So when a similar fragment shows up in the present, the body responds AS IF the trauma is happening now. This is what flashbacks, intrusive memories, and trauma triggers actually are. They are not malfunctions; they are the system trying to keep you safe based on incomplete information.'
@@ -316,13 +316,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('traumaPsychoed')
         return h('div', null,
           safetyBanner(),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 13, color: '#fde68a', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 13, color: '#fde68a', lineHeight: 1.7 } },
             h('strong', null, '⚡ Common trauma responses, reframed. '),
             'The medical model sometimes calls these "symptoms" — as if they\'re evidence of brokenness. The trauma-informed framing: they are ADAPTATIONS. Your nervous system did what it had to do. Healing is not about eliminating these responses; it is about updating them now that you\'re safer.'
           ),
 
           RESPONSES.map(function(r) {
-            return h('div', { key: r.name, style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 8 } },
+            return h('div', { key: r.name, style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 8 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
                 h('span', { style: { fontSize: 20 } }, r.icon),
                 h('span', { style: { fontSize: 14, fontWeight: 800, color: '#fde68a' } }, r.name)
@@ -343,13 +343,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('traumaPsychoed')
         return h('div', null,
           safetyBanner(),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', marginBottom: 14, fontSize: 13, color: '#bbf7d0', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.10)', borderTop: '1px solid rgba(34,197,94,0.3)', borderRight: '1px solid rgba(34,197,94,0.3)', borderBottom: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', marginBottom: 14, fontSize: 13, color: '#bbf7d0', lineHeight: 1.7 } },
             h('strong', null, '🛡️ SAMHSA\'s 6 Principles of Trauma-Informed Care '),
             'are the standard framework adopted across US mental health, healthcare, and education. "Trauma-informed" is not a personality trait or a feeling; it is six concrete commitments. A school is trauma-informed (or not) based on whether these principles actually show up in policies and daily practice.'
           ),
 
           SAMHSA_PRINCIPLES.map(function(p) {
-            return h('div', { key: p.id, style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '4px solid ' + p.color, marginBottom: 8 } },
+            return h('div', { key: p.id, style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + p.color, marginBottom: 8 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
                 h('span', { style: { fontSize: 22 } }, p.icon),
                 h('span', { style: { fontSize: 14, fontWeight: 800, color: p.color } }, p.label)
@@ -358,7 +358,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('traumaPsychoed')
             );
           }),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', marginTop: 14, fontSize: 12.5, color: '#bbf7d0', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.10)', borderTop: '1px solid rgba(34,197,94,0.3)', borderRight: '1px solid rgba(34,197,94,0.3)', borderBottom: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', marginTop: 14, fontSize: 12.5, color: '#bbf7d0', lineHeight: 1.7 } },
             h('strong', null, '💡 For educators: '),
             'these are not aspirational. They are testable. "Does the way I handle a behavioral incident respect SAFETY (does the student leave feeling safer), TRUST (is the response predictable), and EMPOWERMENT (does the student have voice and choice)?" That is the test.'
           ),
@@ -389,13 +389,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('traumaPsychoed')
         return h('div', null,
           safetyBanner(),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(236,72,153,0.10)', border: '1px solid rgba(236,72,153,0.3)', borderLeft: '3px solid #ec4899', marginBottom: 14, fontSize: 13, color: '#fbcfe8', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(236,72,153,0.10)', borderTop: '1px solid rgba(236,72,153,0.3)', borderRight: '1px solid rgba(236,72,153,0.3)', borderBottom: '1px solid rgba(236,72,153,0.3)', borderLeft: '3px solid #ec4899', marginBottom: 14, fontSize: 13, color: '#fbcfe8', lineHeight: 1.7 } },
             h('strong', null, '🌱 Healing is real. '),
             'There are evidence-based treatments that work. Most people who carry trauma can heal substantially with good treatment. The work is real; it works. This section is for orientation only; finding the RIGHT treatment for YOU is a conversation with a clinician.'
           ),
 
           // Three stages of recovery (Herman)
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #ec4899', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #ec4899', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbcfe8', marginBottom: 10 } }, '📋 Judith Herman\'s three stages of recovery'),
             h('p', { style: { margin: '0 0 8px', color: '#cbd5e1', fontSize: 12.5, lineHeight: 1.65, fontStyle: 'italic' } },
               'From "Trauma and Recovery" (1992), still the standard text in trauma treatment. The work moves through these stages, sometimes circling back.'),
@@ -409,7 +409,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('traumaPsychoed')
           // Treatments
           h('div', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, 'Evidence-based treatment approaches'),
           TREATMENTS.map(function(t, i) {
-            return h('div', { key: i, style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #ec4899', marginBottom: 8 } },
+            return h('div', { key: i, style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #ec4899', marginBottom: 8 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
                 h('span', { style: { fontSize: 20 } }, t.icon),
                 h('span', { style: { fontSize: 13.5, fontWeight: 800, color: '#fbcfe8' } }, t.name)
@@ -421,7 +421,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('traumaPsychoed')
           }),
 
           // Body-first work
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', borderLeft: '3px solid #6366f1', marginTop: 14, fontSize: 12.5, color: '#c7d2fe', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(99,102,241,0.10)', borderTop: '1px solid rgba(99,102,241,0.3)', borderRight: '1px solid rgba(99,102,241,0.3)', borderBottom: '1px solid rgba(99,102,241,0.3)', borderLeft: '3px solid #6366f1', marginTop: 14, fontSize: 12.5, color: '#c7d2fe', lineHeight: 1.7 } },
             h('strong', null, '💡 What you can do outside of formal treatment: '),
             'Sleep. Movement. Nature. Reliable relationships. Creative expression. Naming what happened with a safe person. Body-based practices (yoga, breathing, dance). Time in community with others who get it. NONE of these replace treatment for trauma, but ALL of them build the safety + stabilization foundation that makes treatment possible.'
           ),
@@ -438,7 +438,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('traumaPsychoed')
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('traumaPsychoed', h, ctx) : null),
 
           // Big safety panel up front
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.4)', borderLeft: '4px solid #ef4444', marginBottom: 14 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.4)', borderRight: '1px solid rgba(239,68,68,0.4)', borderBottom: '1px solid rgba(239,68,68,0.4)', borderLeft: '4px solid #ef4444', marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 8px', color: '#fca5a5', fontSize: 16 } }, '🛡️ Why this tool does NOT include a screener'),
             h('p', { style: { margin: '0 0 8px', color: '#fecaca', fontSize: 13.5, lineHeight: 1.7 } },
               'The ACEs questionnaire (Adverse Childhood Experiences) is widely known but it was developed as a population-health research tool, NOT a screening or therapeutic tool for individual students. Surfacing trauma in a self-administered digital tool, without an adult who can hold the response, without clinical follow-up, and without specific consent for that conversation, can be ACTIVELY HARMFUL. The trauma-informed-care literature is clear on this: education and awareness are appropriate; screening without follow-up is not.'
@@ -469,7 +469,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('traumaPsychoed')
             sourceCard('Trauma-Informed Care Implementation Resource Center', 'traumainformedcare.chcs.org', 'Practical guidance on implementing trauma-informed practices in schools and healthcare.', 'https://www.traumainformedcare.chcs.org/')
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'Trauma psychoeducation is helpful for orientation. It is NOT therapy. Reading about trauma does not heal trauma; a clinician does.'),
@@ -480,7 +480,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('traumaPsychoed')
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.3)', borderLeft: '3px solid #10b981', fontSize: 12.5, color: '#a7f3d0', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(16,185,129,0.10)', borderTop: '1px solid rgba(16,185,129,0.3)', borderRight: '1px solid rgba(16,185,129,0.3)', borderBottom: '1px solid rgba(16,185,129,0.3)', borderLeft: '3px solid #10b981', fontSize: 12.5, color: '#a7f3d0', lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'For your own learning: NCTSN\'s free educator modules are excellent (nctsn.org/audiences/school-personnel). For class introduction (NOT screening): teach the neurobiology section and SAMHSA principles as conceptual content, similar to how you would teach any chapter on how brains work. Students will tell you what they need to discuss; you don\'t have to invite it via the curriculum. Trauma in students is best addressed through trusted-adult relationships and clinical referral, not through psychoeducation alone.'
           ),
@@ -502,7 +502,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('traumaPsychoed')
 
       function renderPrintView() {
         return h('div', null,
-          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.4)', borderLeft: '3px solid #10b981', marginBottom: 12, fontSize: 12.5, color: '#a7f3d0', lineHeight: 1.65 } },
+          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(16,185,129,0.10)', borderTop: '1px solid rgba(16,185,129,0.4)', borderRight: '1px solid rgba(16,185,129,0.4)', borderBottom: '1px solid rgba(16,185,129,0.4)', borderLeft: '3px solid #10b981', marginBottom: 12, fontSize: 12.5, color: '#a7f3d0', lineHeight: 1.65 } },
             h('strong', null, '🖨 Educator + family handout. '),
             'A one-page take-home: SAMHSA\'s 6 trauma-informed principles, common trauma responses framed as adaptations, and Herman\'s three stages of recovery. Useful as a staff PD handout, a family-conference resource, or a personal reference. Not a screener.'
           ),

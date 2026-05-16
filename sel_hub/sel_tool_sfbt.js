@@ -144,7 +144,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sfbt'))) {
           ),
 
           // What are you working on
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 14 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 14 } },
             h('label', { htmlFor: 'sf-problem', style: { display: 'block', fontSize: 12, color: '#c4b5fd', fontWeight: 800, marginBottom: 6 } }, 'What is the thing you would like to be different?'),
             h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 8, lineHeight: 1.5, fontStyle: 'italic' } }, 'No need to diagnose it; name it however it feels true to you.'),
             h('textarea', { id: 'sf-problem', value: d.problem || '',
@@ -164,7 +164,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sfbt'))) {
 
       function stepCard(title, blurb, onClick, color, status) {
         return h('button', { onClick: onClick, 'aria-label': 'Go to ' + title,
-          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, border: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: '#0f172a', cursor: 'pointer', marginBottom: 10, color: '#e2e8f0' } },
+          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: '#0f172a', cursor: 'pointer', marginBottom: 10, color: '#e2e8f0' } },
           h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 } },
             h('span', { style: { fontSize: 14, fontWeight: 800, color: color, flex: 1 } }, title),
             h('span', { style: { fontSize: 11, color: color, fontWeight: 700 } }, status)
@@ -185,13 +185,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sfbt'))) {
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', fontSize: 12.5, color: '#e9d5ff', lineHeight: 1.65, marginBottom: 14 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(168,85,247,0.08)', borderTop: '1px solid rgba(168,85,247,0.3)', borderRight: '1px solid rgba(168,85,247,0.3)', borderBottom: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', fontSize: 12.5, color: '#e9d5ff', lineHeight: 1.65, marginBottom: 14 } },
             h('strong', null, '💡 The trick: '),
             'do not answer "the problem would be gone." Get specific. What time would you wake up? What would the first thing you do be? What would your face look like? What would someone watching you notice that is different?'
           ),
 
           // Response areas
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
             h('label', { htmlFor: 'sf-miracle', style: { display: 'block', fontSize: 12, color: '#c4b5fd', fontWeight: 800, marginBottom: 6 } }, 'What would the first small sign be?'),
             h('textarea', { id: 'sf-miracle', value: d.miracle || '',
               placeholder: 'Tomorrow morning, when I wake up and the miracle has happened, the first thing I would notice is...',
@@ -199,7 +199,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sfbt'))) {
               style: { width: '100%', minHeight: 110, padding: 10, borderRadius: 6, border: '1px solid #334155', background: '#1e293b', color: '#e2e8f0', fontSize: 13.5, fontFamily: 'inherit', lineHeight: 1.7, resize: 'vertical' } })
           ),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
             h('label', { htmlFor: 'sf-miracle-diff', style: { display: 'block', fontSize: 12, color: '#c4b5fd', fontWeight: 800, marginBottom: 6 } }, 'Throughout that day, what would specifically be different?'),
             h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 6, lineHeight: 1.5, fontStyle: 'italic' } }, 'In your body, your mood, what you say, what others say to you, your interactions with the specific people involved...'),
             h('textarea', { id: 'sf-miracle-diff', value: d.miracleDifferences || '',
@@ -208,7 +208,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sfbt'))) {
               style: { width: '100%', minHeight: 110, padding: 10, borderRadius: 6, border: '1px solid #334155', background: '#1e293b', color: '#e2e8f0', fontSize: 13.5, fontFamily: 'inherit', lineHeight: 1.7, resize: 'vertical' } })
           ),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.10)', borderTop: '1px solid rgba(34,197,94,0.3)', borderRight: '1px solid rgba(34,197,94,0.3)', borderBottom: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
             h('label', { htmlFor: 'sf-miracle-already', style: { display: 'block', fontSize: 12, color: '#bbf7d0', fontWeight: 800, marginBottom: 6 } }, '🌱 What pieces of the miracle are ALREADY happening sometimes?'),
             h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 6, lineHeight: 1.5, fontStyle: 'italic' } }, 'The key SFBT move: look at your miracle description and find the parts that already happen, even occasionally. Those are the seeds.'),
             h('textarea', { id: 'sf-miracle-already', value: d.miracleAlreadyHappening || '',
@@ -234,7 +234,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sfbt'))) {
           ),
 
           // Where am I now
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #3b82f6', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #3b82f6', marginBottom: 10 } },
             h('label', { htmlFor: 'sf-now', style: { display: 'block', fontSize: 12, color: '#93c5fd', fontWeight: 800, marginBottom: 8 } }, 'Right now I am at ' + (d.scaleNow !== undefined ? d.scaleNow : 5) + ' / 10'),
             h('input', { id: 'sf-now', type: 'range', min: 0, max: 10, value: d.scaleNow !== undefined ? d.scaleNow : 5,
               onChange: function(e) { setSF({ scaleNow: parseInt(e.target.value, 10) }); },
@@ -246,7 +246,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sfbt'))) {
           ),
 
           // Where would I like to be (realistic)
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #3b82f6', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #3b82f6', marginBottom: 10 } },
             h('label', { htmlFor: 'sf-goal', style: { display: 'block', fontSize: 12, color: '#93c5fd', fontWeight: 800, marginBottom: 8 } }, 'A realistic goal would be: ' + (d.scaleGoal !== undefined ? d.scaleGoal : 8) + ' / 10'),
             h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 6, lineHeight: 1.5, fontStyle: 'italic' } }, 'NOT 10. The goal is "good enough that I can live with this," not perfection. Usually around 7 or 8.'),
             h('input', { id: 'sf-goal', type: 'range', min: 0, max: 10, value: d.scaleGoal !== undefined ? d.scaleGoal : 8,
@@ -255,7 +255,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sfbt'))) {
           ),
 
           // The key SFBT move: why this number not lower
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.10)', borderTop: '1px solid rgba(34,197,94,0.3)', borderRight: '1px solid rgba(34,197,94,0.3)', borderBottom: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
             h('label', { htmlFor: 'sf-evidence', style: { display: 'block', fontSize: 12, color: '#bbf7d0', fontWeight: 800, marginBottom: 6 } }, '🌱 Why a ' + (d.scaleNow !== undefined ? d.scaleNow : 5) + ' and not a 0?'),
             h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 6, lineHeight: 1.5, fontStyle: 'italic' } }, 'This is the SFBT signature move. You are not at 0; what is keeping you at ' + (d.scaleNow !== undefined ? d.scaleNow : 5) + '? What is already working, even a little? Those are the seeds.'),
             h('textarea', { id: 'sf-evidence', value: d.scaleEvidence || '',
@@ -265,7 +265,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sfbt'))) {
           ),
 
           // The smallest next step
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.3)', borderRight: '1px solid rgba(168,85,247,0.3)', borderBottom: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
             h('label', { htmlFor: 'sf-step', style: { display: 'block', fontSize: 12, color: '#e9d5ff', fontWeight: 800, marginBottom: 6 } }, '➕ The smallest step that would move you up HALF a point'),
             h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 6, lineHeight: 1.5, fontStyle: 'italic' } }, 'Not a leap. A half-point. From ' + (d.scaleNow !== undefined ? d.scaleNow : 5) + ' to ' + ((d.scaleNow !== undefined ? d.scaleNow : 5) + 0.5) + '. What is the smallest thing you could do that would move the needle that much?'),
             h('textarea', { id: 'sf-step', value: d.scaleNextStep || '',
@@ -290,7 +290,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sfbt'))) {
             )
           ),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
             h('label', { htmlFor: 'sf-exceptions', style: { display: 'block', fontSize: 12, color: '#bbf7d0', fontWeight: 800, marginBottom: 6 } }, 'When does this NOT happen, or happen less?'),
             h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 6, lineHeight: 1.5, fontStyle: 'italic' } }, 'Think about: specific days, specific people you are with, specific times of day, places, activities. What is different about those moments?'),
             h('textarea', { id: 'sf-exceptions', value: d.exceptions || '',
@@ -299,7 +299,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sfbt'))) {
               style: { width: '100%', minHeight: 130, padding: 10, borderRadius: 6, border: '1px solid #334155', background: '#1e293b', color: '#e2e8f0', fontSize: 13.5, fontFamily: 'inherit', lineHeight: 1.7, resize: 'vertical' } })
           ),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7' } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.3)', borderRight: '1px solid rgba(168,85,247,0.3)', borderBottom: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7' } },
             h('label', { htmlFor: 'sf-compliments', style: { display: 'block', fontSize: 12, color: '#e9d5ff', fontWeight: 800, marginBottom: 6 } }, '🌟 What strengths are you already using?'),
             h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 6, lineHeight: 1.5, fontStyle: 'italic' } }, 'In SFBT this is called "compliments" — naming what is already strong in how you are handling things, even if imperfectly.'),
             h('textarea', { id: 'sf-compliments', value: d.compliments || '',
@@ -428,7 +428,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sfbt'))) {
             sourceCard('Franklin, C. et al. (2017)', '"Solution-Focused Brief Therapy in Schools: A Review of the Outcome Literature," Research on Social Work Practice', 'Meta-analytic review of SFBT in school settings.', null)
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'SFBT works best for problems where the student has some agency. For situations that are mostly being done TO the student (an abusive parent, an unsafe environment, an unjust school policy), SFBT can drift into "what can YOU do" framing that puts the burden on the wrong person.'),
@@ -439,7 +439,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sfbt'))) {
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', fontSize: 12.5, color: '#e9d5ff', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.3)', borderRight: '1px solid rgba(168,85,247,0.3)', borderBottom: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', fontSize: 12.5, color: '#e9d5ff', lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'SFBT pairs naturally with brief one-on-one counselor sessions. A simple protocol: introduce the problem in 2-3 minutes, do the Miracle Question or a Scaling sequence in 10-15 minutes, end with one concrete half-point step. For Crew, a lighter version: each student names one thing they want to be different by the end of the week, scales where they are now, and names one small step. Keeps Crew action-oriented.'
           ),

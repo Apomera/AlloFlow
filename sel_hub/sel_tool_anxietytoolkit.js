@@ -153,7 +153,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
           ),
 
           // What anxiety actually is
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #06b6d4', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #06b6d4', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#67e8f9', marginBottom: 10 } }, '🧠 The fight-flight-freeze response, in plain English'),
             h('p', { style: { margin: '0 0 8px', color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.7 } },
               'When your brain perceives a threat, it sends a signal that prepares your body to either FIGHT (face the threat), FLEE (escape the threat), or FREEZE (play dead, hope it passes). This happens before you can think.'),
@@ -164,7 +164,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
           ),
 
           // Worry vs Anxiety vs Fear
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#c4b5fd', marginBottom: 10 } }, '🔍 These three are not the same thing'),
             h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: '#e2e8f0', fontSize: 13, lineHeight: 1.85 } },
               h('li', null, h('strong', { style: { color: '#c4b5fd' } }, 'Fear'), ' is the response to something present and real. A growling dog. A car coming at you. The response is appropriate.'),
@@ -187,7 +187,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
 
       function stepCard(title, blurb, onClick, color) {
         return h('button', { onClick: onClick, 'aria-label': title,
-          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, border: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: '#0f172a', cursor: 'pointer', marginBottom: 8, color: '#e2e8f0' } },
+          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: '#0f172a', cursor: 'pointer', marginBottom: 8, color: '#e2e8f0' } },
           h('div', { style: { fontSize: 14, fontWeight: 800, color: color, marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.55 } }, blurb)
         );
@@ -198,13 +198,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
       // ═══════════════════════════════════════════════════════════
       function renderTree() {
         return h('div', null,
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', marginBottom: 14, fontSize: 13, color: '#bbf7d0', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.10)', borderTop: '1px solid rgba(34,197,94,0.3)', borderRight: '1px solid rgba(34,197,94,0.3)', borderBottom: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', marginBottom: 14, fontSize: 13, color: '#bbf7d0', lineHeight: 1.7 } },
             h('strong', null, '🌳 The Worry Tree '),
             'is one of the most useful CBT tools for adolescent anxiety. The basic question: is this worry SOLVABLE right now, or am I just spinning? If it is solvable, make a plan. If it is not solvable right now, the worry is not doing useful work — that\'s when other skills kick in.'
           ),
 
           // The worry
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
             h('label', { htmlFor: 'a-worry', style: { display: 'block', fontSize: 12, color: '#bbf7d0', fontWeight: 800, marginBottom: 6 } }, 'What is the worry?'),
             h('textarea', { id: 'a-worry', value: d.worryItem || '',
               placeholder: 'Be specific. Not "school," but "the math test on Tuesday."',
@@ -214,7 +214,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
 
           d.worryItem ? h('div', null,
             // The fork
-            h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
+            h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
               h('div', { style: { fontSize: 13, color: '#bbf7d0', fontWeight: 800, marginBottom: 10 } }, 'Is there something I can DO about this right now (today or this week)?'),
               h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
                 h('button', { onClick: function() { setA({ worryActionable: true }); }, 'aria-label': 'Yes, actionable', 'aria-pressed': d.worryActionable === true,
@@ -225,7 +225,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
             ),
 
             // Branch: actionable
-            d.worryActionable === true ? h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
+            d.worryActionable === true ? h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.10)', borderTop: '1px solid rgba(34,197,94,0.3)', borderRight: '1px solid rgba(34,197,94,0.3)', borderBottom: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
               h('div', { style: { fontSize: 13, fontWeight: 800, color: '#bbf7d0', marginBottom: 8 } }, '✓ Make a plan'),
               h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 8, fontStyle: 'italic', lineHeight: 1.55 } }, 'What is the next concrete step? Not "study more"; "spend 20 minutes on practice problems #5-10 after dinner tonight."'),
               h('textarea', { value: d.worryAction || '',
@@ -239,7 +239,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
             ) : null,
 
             // Branch: not actionable
-            d.worryActionable === false ? h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
+            d.worryActionable === false ? h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.3)', borderRight: '1px solid rgba(168,85,247,0.3)', borderBottom: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
               h('div', { style: { fontSize: 13, fontWeight: 800, color: '#e9d5ff', marginBottom: 8 } }, '⤴ Let it go (for now)'),
               h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 8, fontStyle: 'italic', lineHeight: 1.55 } }, 'If there is nothing you can do RIGHT NOW, more worrying will not make you safer or smarter; it will just make you exhausted. The move is to redirect. Park it for worry time later (if you want), or use a grounding skill.'),
               h('textarea', { value: d.worryLetGoNotes || '',
@@ -284,13 +284,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
         }
 
         return h('div', null,
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 13, color: '#fde68a', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 13, color: '#fde68a', lineHeight: 1.7 } },
             h('strong', null, '🅿️ Scheduled worry time '),
             'is a counterintuitive CBT technique. You set aside 15-20 minutes a day (often before dinner) to deliberately worry. The rest of the day, when a worry pops up, you "park" it — write it down, knowing you will get to it later. This DOES NOT make worries go away. It contains them so they stop running all day.'
           ),
 
           // Settings
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
             h('div', { style: { fontSize: 12, color: '#fde68a', fontWeight: 800, marginBottom: 8 } }, 'My worry time'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10 } },
               h('div', null,
@@ -309,7 +309,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
           ),
 
           // Park new
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
             h('div', { style: { fontSize: 12, color: '#fde68a', fontWeight: 800, marginBottom: 8 } }, '+ Park a worry'),
             h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
               h('label', { htmlFor: 'a-park-input', className: 'sr-only', style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 } }, 'Park a worry'),
@@ -335,7 +335,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
           ) : null,
 
           // How to do worry time
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 10, fontSize: 12.5, color: '#fde68a', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 10, fontSize: 12.5, color: '#fde68a', lineHeight: 1.7 } },
             h('strong', null, '🕔 How to do worry time:'),
             h('ol', { style: { margin: '6px 0 0', padding: '0 0 0 22px' } },
               h('li', null, 'Sit somewhere private with your parked list.'),
@@ -355,12 +355,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
       // ═══════════════════════════════════════════════════════════
       function renderDecat() {
         return h('div', null,
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', marginBottom: 14, fontSize: 13, color: '#e9d5ff', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.3)', borderRight: '1px solid rgba(168,85,247,0.3)', borderBottom: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', marginBottom: 14, fontSize: 13, color: '#e9d5ff', lineHeight: 1.7 } },
             h('strong', null, '🪜 Decatastrophizing '),
             'is a CBT skill for when the worry is "what if the WORST happens?" The technique walks the worst case down the ladder so it becomes manageable. NOTE: this is NOT "stop being negative." It is taking the catastrophe seriously enough to think it through.'
           ),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
             h('label', { htmlFor: 'a-catastrophe', style: { display: 'block', fontSize: 12, color: '#c4b5fd', fontWeight: 800, marginBottom: 6 } }, 'The worry'),
             h('textarea', { id: 'a-catastrophe', value: d.catastrophe || '',
               placeholder: 'What is the catastrophe you are worried about?',
@@ -368,7 +368,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
               style: { width: '100%', minHeight: 70, padding: 10, borderRadius: 6, border: '1px solid #334155', background: '#1e293b', color: '#e2e8f0', fontSize: 13.5, fontFamily: 'inherit', lineHeight: 1.65, resize: 'vertical' } })
           ),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #ef4444', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #ef4444', marginBottom: 10 } },
             h('label', { htmlFor: 'a-worst', style: { display: 'block', fontSize: 12, color: '#fca5a5', fontWeight: 800, marginBottom: 6 } }, '⬇ Worst case: if EVERYTHING went wrong'),
             h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 6, fontStyle: 'italic', lineHeight: 1.5 } }, 'Be specific. Often the "worst case" in your head is vague; spelling it out actually makes it less scary.'),
             h('textarea', { id: 'a-worst', value: d.worstCase || '',
@@ -377,7 +377,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
               style: { width: '100%', minHeight: 70, padding: 10, borderRadius: 6, border: '1px solid #334155', background: '#1e293b', color: '#e2e8f0', fontSize: 13, fontFamily: 'inherit', lineHeight: 1.65, resize: 'vertical' } })
           ),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
             h('label', { htmlFor: 'a-best', style: { display: 'block', fontSize: 12, color: '#bbf7d0', fontWeight: 800, marginBottom: 6 } }, '⬆ Best case: if it went GREAT'),
             h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 6, fontStyle: 'italic', lineHeight: 1.5 } }, 'Useful to consider for balance. The mind has been stuck on worst-case; expanding the range helps.'),
             h('textarea', { id: 'a-best', value: d.bestCase || '',
@@ -386,7 +386,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
               style: { width: '100%', minHeight: 60, padding: 10, borderRadius: 6, border: '1px solid #334155', background: '#1e293b', color: '#e2e8f0', fontSize: 13, fontFamily: 'inherit', lineHeight: 1.65, resize: 'vertical' } })
           ),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9', marginBottom: 10 } },
             h('label', { htmlFor: 'a-likely', style: { display: 'block', fontSize: 12, color: '#7dd3fc', fontWeight: 800, marginBottom: 6 } }, '➡ MOST LIKELY: realistic, honest'),
             h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 6, fontStyle: 'italic', lineHeight: 1.5 } }, 'This is the key one. Most of the time, the most-likely outcome is somewhere in the messy middle — not great, not terrible, manageable.'),
             h('textarea', { id: 'a-likely', value: d.mostLikely || '',
@@ -395,7 +395,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
               style: { width: '100%', minHeight: 70, padding: 10, borderRadius: 6, border: '1px solid #334155', background: '#1e293b', color: '#e2e8f0', fontSize: 13, fontFamily: 'inherit', lineHeight: 1.65, resize: 'vertical' } })
           ),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
             h('label', { htmlFor: 'a-cope', style: { display: 'block', fontSize: 12, color: '#fde68a', fontWeight: 800, marginBottom: 6 } }, '🛠 If the worst case did happen — what would I actually DO?'),
             h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 6, fontStyle: 'italic', lineHeight: 1.5 } }, 'The most powerful question in decatastrophizing. The brain catastrophizes by imagining the bad thing — and stopping there. The work is to keep going: if it happened, what would I do next?'),
             h('textarea', { id: 'a-cope', value: d.copingPlan || '',
@@ -413,13 +413,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
       // ═══════════════════════════════════════════════════════════
       function renderGround() {
         return h('div', null,
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(14,165,233,0.10)', border: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', marginBottom: 14, fontSize: 13, color: '#bae6fd', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(14,165,233,0.10)', borderTop: '1px solid rgba(14,165,233,0.3)', borderRight: '1px solid rgba(14,165,233,0.3)', borderBottom: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', marginBottom: 14, fontSize: 13, color: '#bae6fd', lineHeight: 1.7 } },
             h('strong', null, '🌍 Grounding skills '),
             'are body-first techniques for when anxiety has already taken over and thinking is hard. They work by pulling your attention out of the mental loop and into the physical present moment. They take 30 seconds to 5 minutes.'
           ),
 
           // 5-4-3-2-1
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9', marginBottom: 10 } },
             h('div', { style: { fontSize: 14, fontWeight: 800, color: '#7dd3fc', marginBottom: 8 } }, '👀 5-4-3-2-1 Senses'),
             h('p', { style: { margin: '0 0 8px', color: '#cbd5e1', fontSize: 13, lineHeight: 1.65 } }, 'Look around and name:'),
             h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: '#e2e8f0', fontSize: 13, lineHeight: 1.85 } },
@@ -432,7 +432,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
           ),
 
           // Paced breathing
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9', marginBottom: 10 } },
             h('div', { style: { fontSize: 14, fontWeight: 800, color: '#7dd3fc', marginBottom: 8 } }, '🫁 Paced breathing'),
             h('p', { style: { margin: '0 0 8px', color: '#cbd5e1', fontSize: 13, lineHeight: 1.65 } },
               'Breathe in for 4 counts, hold for 4, out for 6-8, repeat for 1-2 minutes. The LONGER EXHALE is the active ingredient — it activates your parasympathetic system (the "calm down" branch).'),
@@ -441,7 +441,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
           ),
 
           // Cold
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9', marginBottom: 10 } },
             h('div', { style: { fontSize: 14, fontWeight: 800, color: '#7dd3fc', marginBottom: 8 } }, '❄ Cold water'),
             h('p', { style: { margin: '0 0 8px', color: '#cbd5e1', fontSize: 13, lineHeight: 1.65 } },
               'Splash cold water on your face, hold a cold pack on your eyes for 15-30 seconds, or hold ice cubes in your hands. Cold on the face triggers the mammalian dive reflex, which physiologically slows your heart rate.'),
@@ -450,14 +450,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
           ),
 
           // Body scan
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9', marginBottom: 10 } },
             h('div', { style: { fontSize: 14, fontWeight: 800, color: '#7dd3fc', marginBottom: 8 } }, '👟 Feet on floor'),
             h('p', { style: { margin: '0 0 8px', color: '#cbd5e1', fontSize: 13, lineHeight: 1.65 } },
               'Press your feet firmly into the floor. Notice the contact. Feel the weight of your body in the chair, the temperature of the room, the texture of what you\'re wearing. The point is to come back into your body.')
           ),
 
           // The cube
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9', marginBottom: 10 } },
             h('div', { style: { fontSize: 14, fontWeight: 800, color: '#7dd3fc', marginBottom: 8 } }, '🔢 The cube (categories)'),
             h('p', { style: { margin: '0 0 8px', color: '#cbd5e1', fontSize: 13, lineHeight: 1.65 } },
               'Name 5 things in a category that occupies your thinking. 5 colors. 5 capitals. 5 favorite songs. 5 dog breeds. The point is to occupy the verbal part of your brain with something neutral.')
@@ -499,7 +499,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
             el.value = '';
           }
 
-          return h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid ' + color, marginBottom: 10 } },
+          return h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + color, marginBottom: 10 } },
             h('div', { style: { fontSize: 13, color: color, fontWeight: 800, marginBottom: 6 } }, title),
             h('div', { style: { fontSize: 11.5, color: '#94a3b8', marginBottom: 10, lineHeight: 1.55, fontStyle: 'italic' } }, blurb),
 
@@ -535,7 +535,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
         }
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(236,72,153,0.10)', border: '1px solid rgba(236,72,153,0.3)', borderLeft: '3px solid #ec4899', marginBottom: 14, fontSize: 12.5, color: '#fbcfe8', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(236,72,153,0.10)', borderTop: '1px solid rgba(236,72,153,0.3)', borderRight: '1px solid rgba(236,72,153,0.3)', borderBottom: '1px solid rgba(236,72,153,0.3)', borderLeft: '3px solid #ec4899', marginBottom: 14, fontSize: 12.5, color: '#fbcfe8', lineHeight: 1.65 } },
             h('strong', null, '🔍 Your anxiety has patterns. '),
             'The more you know YOUR specific triggers, body signs, common thoughts, and what helps YOU, the faster you can intervene next time. This inventory is private to this device.'
           ),
@@ -597,7 +597,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
             sourceCard('Tolin, D. F. (2012)', 'Face Your Fears: A Proven Plan to Beat Anxiety, Panic, Phobias, and Obsessions, Wiley', 'Accessible CBT-for-anxiety workbook including exposure-based approaches.', null)
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'These skills help with everyday anxiety and mild-to-moderate anxious symptoms. For diagnosable anxiety disorders, they work BEST as part of treatment with a clinician, not instead of one.'),
@@ -607,7 +607,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(6,182,212,0.10)', border: '1px solid rgba(6,182,212,0.3)', borderLeft: '3px solid #06b6d4', fontSize: 12.5, color: '#a5f3fc', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(6,182,212,0.10)', borderTop: '1px solid rgba(6,182,212,0.3)', borderRight: '1px solid rgba(6,182,212,0.3)', borderBottom: '1px solid rgba(6,182,212,0.3)', borderLeft: '3px solid #06b6d4', fontSize: 12.5, color: '#a5f3fc', lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'Anxiety Toolkit pairs naturally with Window of Tolerance, Stress Bucket, and the CBT Thought Record. For school psych practice: the patterns inventory is useful intake data; the worry tree is teachable in one session; worry time is a 1-2 week practice. For Crew: walk students through the worry tree on a low-stakes worry as a first lesson.'
           ),

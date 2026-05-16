@@ -506,7 +506,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
             })
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(14,165,233,0.10)', border: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', fontSize: 12.5, color: '#bae6fd', lineHeight: 1.65, marginBottom: 10 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(14,165,233,0.10)', borderTop: '1px solid rgba(14,165,233,0.3)', borderRight: '1px solid rgba(14,165,233,0.3)', borderBottom: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', fontSize: 12.5, color: '#bae6fd', lineHeight: 1.65, marginBottom: 10 } },
             h('strong', null, '💬 Plus: '),
             'the "Crew prompts" tab pulls ALL the Crew-time prompts from across the SEL Hub — each one is a 5-15 minute Crew that points to a specific evidence-based tool. ',
             gatherCrewPrompts().length + ' prompts collected so far.'
@@ -540,7 +540,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
           protocols.map(function(p) {
             var cat = CATEGORIES[p.category];
             var isPlanned = (d.planned || []).some(function(x) { return x.protocolId === p.id; });
-            return h('div', { key: p.id, style: { padding: 16, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '4px solid ' + cat.color, marginBottom: 12 } },
+            return h('div', { key: p.id, style: { padding: 16, borderRadius: 12, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + cat.color, marginBottom: 12 } },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
                 h('span', { style: { fontSize: 22 } }, cat.icon),
                 h('span', { style: { fontSize: 16, fontWeight: 800, color: '#e2e8f0', flex: 1 } }, p.title),
@@ -593,14 +593,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
         var prompts = gatherCrewPrompts();
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(14,165,233,0.10)', border: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', marginBottom: 14, fontSize: 12.5, color: '#bae6fd', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(14,165,233,0.10)', borderTop: '1px solid rgba(14,165,233,0.3)', borderRight: '1px solid rgba(14,165,233,0.3)', borderBottom: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', marginBottom: 14, fontSize: 12.5, color: '#bae6fd', lineHeight: 1.65 } },
             h('strong', null, '💬 ' + prompts.length + ' Crew prompts '),
             'collected from across the SEL Hub. Each one points to a specific evidence-based tool and gives you a 5-15 minute Crew format you can run with little prep. Tap a prompt to open the underlying tool.'
           ),
 
           prompts.length > 0
             ? prompts.map(function(p, i) {
-                return h('div', { key: i, style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #10b981', marginBottom: 8 } },
+                return h('div', { key: i, style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #10b981', marginBottom: 8 } },
                   h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 } },
                     h('span', { style: { fontSize: 11, color: '#10b981', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, p.toolId)
                   ),
@@ -650,7 +650,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
             var p = PROTOCOLS.find(function(pr) { return pr.id === entry.protocolId; });
             if (!p) return null;
             var cat = CATEGORIES[p.category];
-            return h('div', { key: i, style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid ' + cat.color, marginBottom: 10 } },
+            return h('div', { key: i, style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + cat.color, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
                 h('span', { style: { fontSize: 18 } }, cat.icon),
                 h('span', { style: { fontSize: 14, fontWeight: 700, color: '#e2e8f0', flex: 1 } }, p.title),
@@ -776,7 +776,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
             sourceCard('Zehr, H. (2015)', 'The Little Book of Restorative Justice (revised)', 'Foundational text on restorative practice; clear and short.', null)
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'Protocols are scaffolding, not magic. A protocol run by an adult who has not built trust with the group will feel performative.'),
@@ -787,7 +787,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(14,165,233,0.10)', border: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', fontSize: 12.5, color: '#bae6fd', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(14,165,233,0.10)', borderTop: '1px solid rgba(14,165,233,0.3)', borderRight: '1px solid rgba(14,165,233,0.3)', borderBottom: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', fontSize: 12.5, color: '#bae6fd', lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'For a new Crew, start with: Community Agreement (Week 1), then daily One-Word Check-in for two weeks until students have the rhythm. Add a weekly Rose/Thorn/Bud or Appreciation Circle. Only after 4-6 weeks of established Crew should you attempt deeper formats. Rushing depth before community is built is the most common failure mode.'
           ),

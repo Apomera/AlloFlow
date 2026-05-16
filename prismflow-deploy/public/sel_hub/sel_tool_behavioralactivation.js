@@ -198,7 +198,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
           ),
 
           // Quick add a few activities
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #10b981', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #10b981', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#a7f3d0', marginBottom: 8 } }, '⚡ Quick start: pick a few activities for this week'),
             h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10, lineHeight: 1.5, fontStyle: 'italic' } }, 'Aim for at least one from each category. Start tiny; "walk for 15 minutes" beats "go to the gym" if you would actually do the first one.'),
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
@@ -207,13 +207,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
             )
           ),
 
-          activities.length > 0 ? h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
+          activities.length > 0 ? h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fde68a', marginBottom: 8 } }, '⭐ Log what you have done and how it went'),
             h('button', { onClick: function() { goto('log'); }, 'aria-label': 'Rate completed activities',
               style: { padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#f59e0b', color: '#fff', fontWeight: 800, fontSize: 13 } }, '→ Log + rate')
           ) : null,
 
-          doneCount >= 3 ? h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
+          doneCount >= 3 ? h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#e9d5ff', marginBottom: 8 } }, '📈 You have enough data to see patterns'),
             h('button', { onClick: function() { goto('patterns'); }, 'aria-label': 'See patterns',
               style: { padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#a855f7', color: '#fff', fontWeight: 800, fontSize: 13 } }, '→ See patterns')
@@ -224,7 +224,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
       }
 
       function statCard(label, value, color) {
-        return h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid ' + color } },
+        return h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + color } },
           h('div', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, label),
           h('div', { style: { fontSize: 22, color: color, fontWeight: 900 } }, value)
         );
@@ -247,7 +247,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
         var planned = (d.plannedActivities || []).filter(function(a) { return !a.done; });
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.3)', borderLeft: '3px solid #10b981', marginBottom: 14, fontSize: 12.5, color: '#a7f3d0', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(16,185,129,0.08)', borderTop: '1px solid rgba(16,185,129,0.3)', borderRight: '1px solid rgba(16,185,129,0.3)', borderBottom: '1px solid rgba(16,185,129,0.3)', borderLeft: '3px solid #10b981', marginBottom: 14, fontSize: 12.5, color: '#a7f3d0', lineHeight: 1.65 } },
             h('strong', null, '➕ Add activities across the 5 categories. '),
             'A good BA plan has at least one from each. Start tiny. "Walk for 15 minutes" is better than "go to the gym" if you would actually do it.'
           ),
@@ -276,7 +276,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
               addActivity(el.value, catId);
               el.value = '';
             }
-            return h('div', { key: catId, style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid ' + cat.color, marginBottom: 10 } },
+            return h('div', { key: catId, style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + cat.color, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
                 h('span', { style: { fontSize: 22 } }, cat.icon),
                 h('span', { style: { fontSize: 14, fontWeight: 800, color: cat.color } }, cat.label)
@@ -327,14 +327,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
         }
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 12.5, color: '#fde68a', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 12.5, color: '#fde68a', lineHeight: 1.65 } },
             h('strong', null, '⭐ Rate each activity after you do it. '),
             'Mastery: 0-10, how competent did doing it make you feel? Pleasure: 0-10, how much did you enjoy it? Both matter; activities can score high on one and low on the other.'
           ),
 
           activities.map(function(a) {
             var cat = CAT_LABELS[a.category] || { label: a.category, icon: '◆', color: '#64748b' };
-            return h('div', { key: a.id, style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid ' + cat.color, marginBottom: 8 } },
+            return h('div', { key: a.id, style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + cat.color, marginBottom: 8 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
                 h('span', { style: { fontSize: 18 } }, cat.icon),
                 h('span', { style: { flex: 1, minWidth: 180, fontSize: 13, color: '#e2e8f0', fontWeight: 700 } }, a.label),
@@ -394,13 +394,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
         function avg(arr) { return arr.reduce(function(s, n) { return s + n; }, 0) / arr.length; }
 
         return h('div', null,
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', marginBottom: 14, fontSize: 13, color: '#e9d5ff', lineHeight: 1.65 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(168,85,247,0.08)', borderTop: '1px solid rgba(168,85,247,0.3)', borderRight: '1px solid rgba(168,85,247,0.3)', borderBottom: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', marginBottom: 14, fontSize: 13, color: '#e9d5ff', lineHeight: 1.65 } },
             h('strong', null, '📈 Pattern reading: '),
             'You have rated ', doneActs.length, ' activities. Below: which lifted you most (high mastery + pleasure), which were depleting, and which categories are doing the work.'
           ),
 
           // Top combined activities
-          h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
             h('div', { style: { fontSize: 12, fontWeight: 800, color: '#bbf7d0', marginBottom: 8 } }, '🌟 Most lifting (mastery + pleasure combined)'),
             sortedByBoth.slice(0, 3).map(function(a, i) {
               var cat = CAT_LABELS[a.category] || { icon: '◆' };
@@ -409,7 +409,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
           ),
 
           // Lowest (which to do less of)
-          sortedByBoth.length > 3 ? h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #ef4444', marginBottom: 10 } },
+          sortedByBoth.length > 3 ? h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #ef4444', marginBottom: 10 } },
             h('div', { style: { fontSize: 12, fontWeight: 800, color: '#fecaca', marginBottom: 8 } }, '⚠ Least lifting'),
             h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 6, fontStyle: 'italic' } }, 'Activities that scored lowest. Worth asking: are these doing depleting work that you cannot drop, or could you shift?'),
             sortedByBoth.slice(-3).reverse().map(function(a) {
@@ -419,7 +419,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
           ) : null,
 
           // By category
-          h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #3b82f6', marginBottom: 10 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #3b82f6', marginBottom: 10 } },
             h('div', { style: { fontSize: 12, fontWeight: 800, color: '#bfdbfe', marginBottom: 8 } }, '📊 By category average'),
             Object.keys(byCat).map(function(catId) {
               var cat = CAT_LABELS[catId];
@@ -434,7 +434,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
             })
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', fontSize: 12.5, color: '#bbf7d0', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(34,197,94,0.10)', borderTop: '1px solid rgba(34,197,94,0.3)', borderRight: '1px solid rgba(34,197,94,0.3)', borderBottom: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', fontSize: 12.5, color: '#bbf7d0', lineHeight: 1.65 } },
             h('strong', null, '💡 The BA insight: '),
             'Most people discover they have been doing a lot of one category and very little of another. Often the thin category is the one that would actually lift their mood. The next move: in your next planning round, weight toward the thin categories.'
           ),
@@ -538,7 +538,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
             sourceCard('Dimidjian, S. et al. (2011)', '"The Origins and Current Status of Behavioral Activation Treatments for Depression," Annual Review of Clinical Psychology, 7, 1-38', 'Open-access review of BA outcomes and current practice.', null)
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'BA is for low mood and mild-to-moderate depression. For severe depression, suicidality, or trauma, BA is part of a treatment plan, not a standalone fix. A counselor or therapist is needed.'),
@@ -549,7 +549,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.3)', borderLeft: '3px solid #10b981', fontSize: 12.5, color: '#a7f3d0', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(16,185,129,0.10)', borderTop: '1px solid rgba(16,185,129,0.3)', borderRight: '1px solid rgba(16,185,129,0.3)', borderBottom: '1px solid rgba(16,185,129,0.3)', borderLeft: '3px solid #10b981', fontSize: 12.5, color: '#a7f3d0', lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'BA works well as a 4-week individual project, often paired with a counselor or therapist. For Crew, a lighter version: each student picks one small activity from each of the 5 categories, does them across the week, reports back what was surprising. Pair with the Wheel of Life and Window of Tolerance tools for richer self-tracking.'
           ),

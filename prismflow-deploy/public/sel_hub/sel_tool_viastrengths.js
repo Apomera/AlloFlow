@@ -176,7 +176,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
       }
 
       function authoritativeBanner() {
-        return h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.4)', borderLeft: '3px solid #f59e0b', marginBottom: 12, fontSize: 12.5, color: '#fde68a', lineHeight: 1.65 } },
+        return h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.4)', borderRight: '1px solid rgba(245,158,11,0.4)', borderBottom: '1px solid rgba(245,158,11,0.4)', borderLeft: '3px solid #f59e0b', marginBottom: 12, fontSize: 12.5, color: '#fde68a', lineHeight: 1.65 } },
           h('strong', null, '📚 The authoritative VIA Survey is free at '),
           h('a', { href: 'https://www.viacharacter.org/', target: '_blank', rel: 'noopener noreferrer',
             style: { color: '#fcd34d', textDecoration: 'underline', fontWeight: 800 } }, 'viacharacter.org'),
@@ -210,7 +210,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
               d.lastUpdated ? ' · updated ' + d.lastUpdated : '')
           ),
 
-          topFive.length > 0 ? h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 14 } },
+          topFive.length > 0 ? h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 14 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fcd34d', marginBottom: 10 } }, '✨ My signature strengths'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 } },
               topFive.map(function(id) {
@@ -293,7 +293,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
 
         return h('div', null,
           authoritativeBanner(),
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 12.5, color: '#fde68a', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 12.5, color: '#fde68a', lineHeight: 1.65 } },
             h('strong', null, '✏️ How this works: '),
             'For each of the 24 strengths, rate how much it sounds like you (1 = not really me, 5 = really me). Then click the star icon on up to 5 strengths to mark them as your signature strengths.'
           ),
@@ -354,7 +354,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
         }
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 12.5, color: '#fde68a', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 12.5, color: '#fde68a', lineHeight: 1.65 } },
             h('strong', null, '💭 Reflect on each signature strength. '),
             'A signature strength is one that feels essential to you, that energizes you when you use it. For each one: when did you most recently use it well? What would it look like to use it MORE on purpose this month?'
           ),
@@ -364,7 +364,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
             if (!s) return null;
             var ref = (d.reflections || {})[id] || '';
             var refId = 'via-ref-' + id;
-            return h('div', { key: id, style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
+            return h('div', { key: id, style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
                 h('span', { style: { fontSize: 28 } }, s.icon),
                 h('div', null,
@@ -452,7 +452,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
         return h('div', null,
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('viaStrengths', h, ctx) : null),
           // Authoritative pointer
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.4)', borderLeft: '4px solid #f59e0b', marginBottom: 14 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.4)', borderRight: '1px solid rgba(245,158,11,0.4)', borderBottom: '1px solid rgba(245,158,11,0.4)', borderLeft: '4px solid #f59e0b', marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 8px', color: '#fcd34d', fontSize: 16 } }, '📚 The authoritative VIA Survey'),
             h('p', { style: { margin: 0, color: '#fde68a', fontSize: 13.5, lineHeight: 1.7 } },
               'The VIA Institute on Character offers the validated VIA Survey free at ',
@@ -490,7 +490,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
           ),
 
           // Honest limits
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'The 24-strength list is the result of cross-cultural philosophical analysis. It is not a neutral, value-free measure; it reflects choices about what counts as a strength. Other classifications would yield other lists.'),
@@ -500,7 +500,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', fontSize: 12.5, color: '#fde68a', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', fontSize: 12.5, color: '#fde68a', lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'For a class activity, point students to the free VIA Survey at viacharacter.org first; use this tool for follow-up reflection and ongoing reference. A productive Crew or advisory conversation: "Pick one of your signature strengths and tell us about one time you used it well in the last week." Strengths-spotting in other students is a powerful Crew practice if framed carefully.'
           ),

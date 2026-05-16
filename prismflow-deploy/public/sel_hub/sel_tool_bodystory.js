@@ -160,7 +160,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
       }
 
       function safetyBanner() {
-        return h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.4)', borderLeft: '3px solid #ef4444', marginBottom: 12, fontSize: 12.5, color: '#fecaca', lineHeight: 1.65 } },
+        return h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.4)', borderRight: '1px solid rgba(239,68,68,0.4)', borderBottom: '1px solid rgba(239,68,68,0.4)', borderLeft: '3px solid #ef4444', marginBottom: 12, fontSize: 12.5, color: '#fecaca', lineHeight: 1.65 } },
           h('strong', null, '🆘 If you are restricting food, purging, exercising compulsively, or thinking constantly about food and your body — please get help. '),
           'These can be life-threatening. Call the NEDA helpline: ',
           h('a', { href: 'https://www.nationaleatingdisorders.org/', target: '_blank', rel: 'noopener noreferrer',
@@ -195,7 +195,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
           ),
 
           // The three traps
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #fb7185', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #fb7185', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fda4af', marginBottom: 10 } }, '🪤 Three traps to know about'),
             h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: '#e2e8f0', fontSize: 13, lineHeight: 1.85 } },
               h('li', null, h('strong', { style: { color: '#fda4af' } }, 'Body positivity '), 'can become its own pressure: "I should love every part of my body all the time." Most people don\'t feel that way about ANYTHING. A neutral relationship with your body — "this is the body I live in; it is doing its job" — is more honest and more sustainable than forced positivity.'),
@@ -205,7 +205,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
           ),
 
           // Inclusive frame
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#c4b5fd', marginBottom: 10 } }, '🌐 Whose body? Inclusive frame'),
             h('p', { style: { margin: '0 0 10px', color: '#e2e8f0', fontSize: 13, lineHeight: 1.7 } },
               'Body distress is shaped by who you are. Different bodies face different pressures:'),
@@ -236,7 +236,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
 
       function stepCard(title, blurb, onClick, color) {
         return h('button', { onClick: onClick, 'aria-label': title,
-          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, border: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: '#0f172a', cursor: 'pointer', marginBottom: 8, color: '#e2e8f0' } },
+          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: '#0f172a', cursor: 'pointer', marginBottom: 8, color: '#e2e8f0' } },
           h('div', { style: { fontSize: 14, fontWeight: 800, color: color, marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.55 } }, blurb)
         );
@@ -256,7 +256,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
         return h('div', null,
           safetyBanner(),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(14,165,233,0.10)', border: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', marginBottom: 14, fontSize: 13, color: '#bae6fd', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(14,165,233,0.10)', borderTop: '1px solid rgba(14,165,233,0.3)', borderRight: '1px solid rgba(14,165,233,0.3)', borderBottom: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', marginBottom: 14, fontSize: 13, color: '#bae6fd', lineHeight: 1.7 } },
             h('strong', null, '🌊 Tylka\'s functional appreciation framework. '),
             'Research shows that focusing on what your body DOES (function) builds a more durable relationship with your body than trying to feel positive about how it LOOKS. Mark every function your body performs that you actually appreciate, even a little.'
           ),
@@ -276,7 +276,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
           ),
 
           // Open reflection
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9' } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9' } },
             h('label', { htmlFor: 'b-appreciation', style: { display: 'block', fontSize: 12, color: '#7dd3fc', fontWeight: 800, marginBottom: 6 } }, 'What else does my body do that I want to name?'),
             h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 6, fontStyle: 'italic', lineHeight: 1.5 } }, 'Be specific. Not vague positivity; concrete functions. "My hands held my friend\'s hand when they were scared." "My legs carried me through a really long bus ride."'),
             h('textarea', { id: 'b-appreciation', value: d.appreciation || '',
@@ -316,13 +316,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
         return h('div', null,
           safetyBanner(),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 13, color: '#fde68a', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 13, color: '#fde68a', lineHeight: 1.7 } },
             h('strong', null, '🌪️ Naming the pressure sources. '),
             'Body distress is rarely random. It comes from specific places. Naming the specific sources is the first step toward deciding which ones you can change, which ones you can\'t, and which ones you can at least see for what they are.'
           ),
 
           // Selected pressures
-          (d.pressures || []).length > 0 ? h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
+          (d.pressures || []).length > 0 ? h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
             h('div', { style: { fontSize: 12, color: '#fde68a', fontWeight: 800, marginBottom: 8 } }, 'My pressure sources (' + d.pressures.length + ')'),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
               d.pressures.map(function(p, i) {
@@ -336,7 +336,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
           ) : null,
 
           // Add custom
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
             h('div', { style: { fontSize: 12, color: '#fde68a', fontWeight: 800, marginBottom: 8 } }, '+ Add a pressure source'),
             h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
               h('label', { htmlFor: 'b-pressure-input', className: 'sr-only', style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 } }, 'Add pressure source'),
@@ -372,12 +372,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
         return h('div', null,
           safetyBanner(),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', marginBottom: 14, fontSize: 13, color: '#e9d5ff', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.3)', borderRight: '1px solid rgba(168,85,247,0.3)', borderBottom: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', marginBottom: 14, fontSize: 13, color: '#e9d5ff', lineHeight: 1.7 } },
             h('strong', null, '💭 The critical voice in your head is not yours. '),
             'It was put there. By comments, by ads, by feeds, by a family member, by a coach, by years of cumulative exposure. The voice feels like yours because it lives in your head, but you can trace where it came from. That tracing is part of how it gets quieter.'
           ),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #a855f7' } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a855f7' } },
             h('label', { htmlFor: 'b-voices', style: { display: 'block', fontSize: 12, color: '#c4b5fd', fontWeight: 800, marginBottom: 6 } }, 'The critical voice about my body'),
             h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 8, lineHeight: 1.6, fontStyle: 'italic' } }, 'Try this structure: WHO does the voice sound like? (A specific person? A composite of media?) WHAT does it say? WHEN did you start hearing it? WHERE did it come from?'),
             h('textarea', { id: 'b-voices', value: d.criticalVoices || '',
@@ -386,7 +386,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
               style: { width: '100%', minHeight: 180, padding: 10, borderRadius: 6, border: '1px solid #334155', background: '#1e293b', color: '#e2e8f0', fontSize: 13.5, fontFamily: 'inherit', lineHeight: 1.75, resize: 'vertical' } })
           ),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', marginTop: 14, fontSize: 13, color: '#bbf7d0', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.10)', borderTop: '1px solid rgba(34,197,94,0.3)', borderRight: '1px solid rgba(34,197,94,0.3)', borderBottom: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', marginTop: 14, fontSize: 13, color: '#bbf7d0', lineHeight: 1.7 } },
             h('strong', null, '💡 What helps: '),
             'naming the voice externalizes it. ("That\'s the diet-culture voice." "That\'s my mom\'s voice from when I was 10." "That\'s the voice that started after the comment in 8th grade gym class.") When the voice fires, you can name it instead of obeying it. The Compassion & Self-Talk tool in this SEL Hub helps with the next step: building a kinder inner voice.'
           ),
@@ -429,13 +429,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
         return h('div', null,
           safetyBanner(),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(236,72,153,0.10)', border: '1px solid rgba(236,72,153,0.3)', borderLeft: '3px solid #ec4899', marginBottom: 14, fontSize: 13, color: '#fbcfe8', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(236,72,153,0.10)', borderTop: '1px solid rgba(236,72,153,0.3)', borderRight: '1px solid rgba(236,72,153,0.3)', borderBottom: '1px solid rgba(236,72,153,0.3)', borderLeft: '3px solid #ec4899', marginBottom: 14, fontSize: 13, color: '#fbcfe8', lineHeight: 1.7 } },
             h('strong', null, '📺 Your eyes have a diet. '),
             'Every account you follow, every show you watch, every feed you scroll is feeding you images and ideas about bodies. Some of it is neutral. Some of it is actively harming you. An audit makes the harm visible so you can decide what to cut.'
           ),
 
           // Inflows
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #ef4444', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #ef4444', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fca5a5', marginBottom: 6 } }, '📥 What I currently let in (be honest)'),
             h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10, lineHeight: 1.55, fontStyle: 'italic' } }, 'Apps, accounts, shows, magazines, specific influencers. The stuff you actually look at.'),
             (d.mediaInflows || []).length > 0 ? h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
@@ -457,7 +457,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
           ),
 
           // Cuts
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#bbf7d0', marginBottom: 6 } }, '✂ What I will cut, mute, or unfollow'),
             h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10, lineHeight: 1.55, fontStyle: 'italic' } }, 'For each thing you let in, ask: is this helping me come home to my body, or is it telling me I am wrong? If it is telling you you are wrong: unfollow, mute, delete, leave. The relief comes within days.'),
             (d.mediaCuts || []).length > 0 ? h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
@@ -478,7 +478,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', fontSize: 12.5, color: '#e9d5ff', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.3)', borderRight: '1px solid rgba(168,85,247,0.3)', borderBottom: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', fontSize: 12.5, color: '#e9d5ff', lineHeight: 1.65 } },
             h('strong', null, '🌐 Replacement matters too: '),
             'cutting harmful content leaves an empty feed. Fill it with accounts that show varied bodies doing actual things: athletes of every size, disabled creators, transitioned folks who are at home in themselves, your own friends doing things they love. Beauty Redefined, NEDA, ASDAH, and individual creators like @nourishandeat, @bodyposipanda, @virgietovar, @sonyareneetaylor have all done this work publicly.'
           ),
@@ -494,7 +494,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
         return h('div', null,
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('bodyStory', h, ctx) : null),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.4)', borderLeft: '4px solid #ef4444', marginBottom: 14 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.4)', borderRight: '1px solid rgba(239,68,68,0.4)', borderBottom: '1px solid rgba(239,68,68,0.4)', borderLeft: '4px solid #ef4444', marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 8px', color: '#fca5a5', fontSize: 16 } }, '🆘 If you are struggling with food and your body — please read this'),
             h('p', { style: { margin: '0 0 8px', color: '#fecaca', fontSize: 13.5, lineHeight: 1.7 } },
               'Eating disorders are serious mental illnesses with the second highest mortality rate of any psychiatric disorder. They are also TREATABLE — especially when caught early. Signs to take seriously:'),
@@ -540,7 +540,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
             sourceCard('Project HEAL', 'theprojectheal.org', 'Eating disorder treatment access for those who cannot afford care.', 'https://www.theprojectheal.org/')
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'Body neutrality and appreciation work helps with everyday body distress and the cumulative effects of media. It is NOT a treatment for eating disorders or body dysmorphic disorder. Those need clinical care.'),
@@ -551,7 +551,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(251,113,133,0.10)', border: '1px solid rgba(251,113,133,0.3)', borderLeft: '3px solid #fb7185', fontSize: 12.5, color: '#fecdd3', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(251,113,133,0.10)', borderTop: '1px solid rgba(251,113,133,0.3)', borderRight: '1px solid rgba(251,113,133,0.3)', borderBottom: '1px solid rgba(251,113,133,0.3)', borderLeft: '3px solid #fb7185', fontSize: 12.5, color: '#fecdd3', lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'Do NOT use this tool as a class activity that requires sharing. Body distress is intimate. Make the tool available; let students use it privately. For class content on body image, the media literacy angle (Beauty Redefined material) is the safest entry point. Be alert to signs of eating disorders in students; they are common, often hidden, and often missed in marginalized students (boys, athletes, fat students, students of color, trans students). Pair this tool with Compassion & Self-Talk and Sensory Regulation.'
           ),

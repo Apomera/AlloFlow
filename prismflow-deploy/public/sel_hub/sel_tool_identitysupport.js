@@ -154,7 +154,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('identitySupport'
       }
 
       function safetyBanner() {
-        return h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(236,72,153,0.10)', border: '1px solid rgba(236,72,153,0.4)', borderLeft: '3px solid #ec4899', marginBottom: 12, fontSize: 12.5, color: '#fbcfe8', lineHeight: 1.65 } },
+        return h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(236,72,153,0.10)', borderTop: '1px solid rgba(236,72,153,0.4)', borderRight: '1px solid rgba(236,72,153,0.4)', borderBottom: '1px solid rgba(236,72,153,0.4)', borderLeft: '3px solid #ec4899', marginBottom: 12, fontSize: 12.5, color: '#fbcfe8', lineHeight: 1.65 } },
           h('strong', null, '💜 Crisis or just need someone? '),
           h('a', { href: 'https://www.thetrevorproject.org/', target: '_blank', rel: 'noopener noreferrer',
             style: { color: '#f9a8d4', textDecoration: 'underline', fontWeight: 800 } }, 'The Trevor Project ↗'),
@@ -188,7 +188,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('identitySupport'
           ),
 
           // Core truths
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #ec4899', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #ec4899', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbcfe8', marginBottom: 10 } }, '✨ Things that are true'),
             h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: '#e2e8f0', fontSize: 13, lineHeight: 1.85 } },
               h('li', null, 'You are not broken. You are not a phase. You are not too much.'),
@@ -214,7 +214,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('identitySupport'
 
       function stepCard(title, blurb, onClick, color) {
         return h('button', { onClick: onClick, 'aria-label': title,
-          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, border: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: '#0f172a', cursor: 'pointer', marginBottom: 8, color: '#e2e8f0' } },
+          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: '#0f172a', cursor: 'pointer', marginBottom: 8, color: '#e2e8f0' } },
           h('div', { style: { fontSize: 14, fontWeight: 800, color: color, marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.55 } }, blurb)
         );
@@ -227,13 +227,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('identitySupport'
         return h('div', null,
           safetyBanner(),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', marginBottom: 14, fontSize: 13, color: '#e9d5ff', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.3)', borderRight: '1px solid rgba(168,85,247,0.3)', borderBottom: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', marginBottom: 14, fontSize: 13, color: '#e9d5ff', lineHeight: 1.7 } },
             h('strong', null, '📖 Vocabulary is a tool, not a test. '),
             'Knowing the words is useful for naming what you experience. Not knowing them is fine too. Many people figure out who they are without ever picking a label, and that\'s legitimate. The vocabulary below is a working starting point; it\'s not the whole map.'
           ),
 
           // Gender terms
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
             h('div', { style: { fontSize: 14, fontWeight: 800, color: '#c4b5fd', marginBottom: 10 } }, 'Gender vocabulary'),
             GENDER_TERMS.map(function(t, i) {
               return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: '#1e293b', marginBottom: 6 } },
@@ -244,7 +244,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('identitySupport'
           ),
 
           // Orientation terms
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #ec4899', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #ec4899', marginBottom: 10 } },
             h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbcfe8', marginBottom: 10 } }, 'Sexual and romantic orientation vocabulary'),
             ORIENTATION_TERMS.map(function(t, i) {
               return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: '#1e293b', marginBottom: 6 } },
@@ -255,7 +255,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('identitySupport'
           ),
 
           // Important framing
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', fontSize: 13, color: '#e9d5ff', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.3)', borderRight: '1px solid rgba(168,85,247,0.3)', borderBottom: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', fontSize: 13, color: '#e9d5ff', lineHeight: 1.7 } },
             h('strong', null, '🌐 Important framing: '),
             'gender, sexual orientation, romantic orientation, and gender expression are FOUR DIFFERENT things. You can be a trans woman who is bisexual, romantically asexual, and presents in masculine clothes. You can be a cis man who is straight and presents in pink eyeliner. You can be non-binary and lesbian and aromantic. The combinations are real. The labels are tools for being seen, not boxes to fit inside.'
           ),
@@ -279,7 +279,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('identitySupport'
           ),
 
           // What "knowing" actually looks like
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#7dd3fc', marginBottom: 10 } }, '🪞 Signs you\'re working through something'),
             h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: '#e2e8f0', fontSize: 13, lineHeight: 1.85 } },
               h('li', null, 'You feel a relief when you imagine being a different gender. (Especially: trying out different pronouns and one set feels like home.)'),
@@ -293,7 +293,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('identitySupport'
           ),
 
           // Cass model with critique
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#7dd3fc', marginBottom: 10 } }, '📈 Identity development (Cass model, with caveats)'),
             h('p', { style: { margin: '0 0 8px', color: '#cbd5e1', fontSize: 13, lineHeight: 1.7 } },
               'Vivienne Cass\'s 1979 model of gay/lesbian identity development is widely taught. It has 6 stages but should not be taken as a strict order — many people move back and forth, skip stages, or never feel them at all:'),
@@ -311,7 +311,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('identitySupport'
           ),
 
           // Private notes
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #ec4899', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #ec4899', marginBottom: 10 } },
             h('label', { htmlFor: 'i-notes', style: { display: 'block', fontSize: 12, color: '#fbcfe8', fontWeight: 800, marginBottom: 6 } }, '🌱 Private reflection space'),
             h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 6, fontStyle: 'italic', lineHeight: 1.5 } }, 'Just for you. Stays on your device. What\'s on your mind?'),
             h('textarea', { id: 'i-notes', value: d.privateNotes || '',
@@ -321,7 +321,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('identitySupport'
           ),
 
           // What I need
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #22c55e' } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #22c55e' } },
             h('label', { htmlFor: 'i-need', style: { display: 'block', fontSize: 12, color: '#bbf7d0', fontWeight: 800, marginBottom: 6 } }, '🌱 What I need right now'),
             h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 6, fontStyle: 'italic', lineHeight: 1.5 } }, 'Could be: information, community, an adult ally, time alone, time off from this question, gender-affirming care info, a binder, anything.'),
             h('textarea', { id: 'i-need', value: d.whatINeed || '',
@@ -341,13 +341,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('identitySupport'
         return h('div', null,
           safetyBanner(),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', marginBottom: 14, fontSize: 13, color: '#bbf7d0', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.10)', borderTop: '1px solid rgba(34,197,94,0.3)', borderRight: '1px solid rgba(34,197,94,0.3)', borderBottom: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', marginBottom: 14, fontSize: 13, color: '#bbf7d0', lineHeight: 1.7 } },
             h('strong', null, '🤝 Community changes everything. '),
             'The single most reliable finding in LGBTQ+ youth mental health research: having even ONE accepting adult in their life dramatically reduces suicide attempts in queer youth (Trevor Project research). Community matters. You are not meant to do this alone.'
           ),
 
           // Where to find community
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#bbf7d0', marginBottom: 10 } }, '🌐 Online community (often the first step)'),
             h('p', { style: { margin: '0 0 8px', color: '#cbd5e1', fontSize: 13, lineHeight: 1.7 } },
               'For many adolescents, especially those in unsupportive homes or small towns, online community is where you find people first. It works.'),
@@ -359,7 +359,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('identitySupport'
             )
           ),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#bbf7d0', marginBottom: 10 } }, '🏫 In-person community'),
             h('p', { style: { margin: '0 0 8px', color: '#cbd5e1', fontSize: 13, lineHeight: 1.7 } },
               'In-person community varies hugely by where you live. Some places have rich LGBTQ+ youth scenes; some have very little. What might exist:'),
@@ -373,7 +373,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('identitySupport'
           ),
 
           // Notes
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #22c55e' } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #22c55e' } },
             h('label', { htmlFor: 'i-comm', style: { display: 'block', fontSize: 12, color: '#bbf7d0', fontWeight: 800, marginBottom: 6 } }, 'My community plan'),
             h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 6, fontStyle: 'italic', lineHeight: 1.5 } }, 'What\'s ONE community thing you could try this month? An online group, a club, a local center, reaching out to one specific person?'),
             h('textarea', { id: 'i-comm', value: d.myCommunity || '',
@@ -412,7 +412,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('identitySupport'
           ),
 
           // Crisis resources
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #ef4444', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #ef4444', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fca5a5', marginBottom: 10 } }, '🆘 Crisis resources (free, 24/7, confidential)'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 8 } },
               communityCard('The Trevor Project', 'For LGBTQ+ youth. Call 1-866-488-7386, text START to 678-678, chat at thetrevorproject.org. 24/7.', 'https://www.thetrevorproject.org/'),
@@ -424,7 +424,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('identitySupport'
           ),
 
           // If your home is unsupportive
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fde68a', marginBottom: 10 } }, '🏠 If your home is unsupportive'),
             h('p', { style: { margin: '0 0 8px', color: '#cbd5e1', fontSize: 13, lineHeight: 1.7 } },
               'About 40% of homeless youth in the US are LGBTQ+, often because of family rejection. If you are NOT safe at home — physical or emotional abuse, threats of conversion therapy, kicking out — please:'),
@@ -442,7 +442,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('identitySupport'
           ),
 
           // Specifically for trans youth
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#c4b5fd', marginBottom: 10 } }, '🏳️‍⚧️ Specifically for trans and gender-diverse youth'),
             h('p', { style: { margin: '0 0 8px', color: '#cbd5e1', fontSize: 13, lineHeight: 1.7 } },
               'Trans youth face additional layers of risk in current US political climate. Affirming care, social support, and informed self-advocacy all matter.'),
@@ -479,7 +479,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('identitySupport'
           ),
 
           // The basics
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #8b5cf6', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #8b5cf6', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#c4b5fd', marginBottom: 10 } }, '✅ The basic moves'),
             h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: '#e2e8f0', fontSize: 13, lineHeight: 1.85 } },
               h('li', null, h('strong', null, 'Use the name and pronouns people give you. '), 'No questions. If you mess up: correct yourself briefly and move on. Don\'t make a thing of it.'),
@@ -493,7 +493,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('identitySupport'
           ),
 
           // When someone comes out to you
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #8b5cf6', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #8b5cf6', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#c4b5fd', marginBottom: 10 } }, '💬 When someone comes out to you'),
             h('p', { style: { margin: '0 0 8px', color: '#cbd5e1', fontSize: 13, lineHeight: 1.7 } },
               'They have trusted you. The most important thing is your immediate response. Suggested moves:'),
@@ -509,7 +509,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('identitySupport'
           ),
 
           // When you mess up
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fde68a', marginBottom: 10 } }, '🙏 When you mess up (you will, everyone does)'),
             h('ol', { style: { margin: 0, padding: '0 0 0 22px', color: '#e2e8f0', fontSize: 13, lineHeight: 1.85 } },
               h('li', null, 'Correct yourself briefly. ("She — sorry, he — was saying...")'),
@@ -520,7 +520,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('identitySupport'
           ),
 
           // Allies in unsupportive contexts
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #22c55e' } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #22c55e' } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#bbf7d0', marginBottom: 10 } }, '🛡 Showing up when it counts'),
             h('p', { style: { margin: '0 0 8px', color: '#cbd5e1', fontSize: 13, lineHeight: 1.7 } },
               'In hostile environments, ally behavior is a real shield. Specific moves:'),
@@ -568,7 +568,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('identitySupport'
             sourceCard('Trevor Project Research', 'thetrevorproject.org/research-briefs', 'Free research briefs on LGBTQ+ youth mental health, supportive practices.', 'https://www.thetrevorproject.org/research-briefs/')
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'This tool is a starting point. The Trevor Project, GLSEN, and PFLAG have far deeper resources for specific situations.'),
@@ -580,12 +580,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('identitySupport'
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(236,72,153,0.10)', border: '1px solid rgba(236,72,153,0.3)', borderLeft: '3px solid #ec4899', fontSize: 12.5, color: '#fbcfe8', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(236,72,153,0.10)', borderTop: '1px solid rgba(236,72,153,0.3)', borderRight: '1px solid rgba(236,72,153,0.3)', borderBottom: '1px solid rgba(236,72,153,0.3)', borderLeft: '3px solid #ec4899', fontSize: 12.5, color: '#fbcfe8', lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'For educators in supportive states: GLSEN\'s Safe Space Kit (free) is the standard educator training. Visibly use pronouns in your name (in email signatures, Zoom, on the board); this signals safety to students without putting any individual on the spot. The Trevor Project research is clear: even ONE accepting adult dramatically reduces LGBTQ+ youth suicide risk. You can be that adult.'
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.3)', borderLeft: '3px solid #ef4444', fontSize: 12.5, color: '#fecaca', lineHeight: 1.6, marginTop: 10 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.3)', borderRight: '1px solid rgba(239,68,68,0.3)', borderBottom: '1px solid rgba(239,68,68,0.3)', borderLeft: '3px solid #ef4444', fontSize: 12.5, color: '#fecaca', lineHeight: 1.6, marginTop: 10 } },
             h('strong', null, '⚠️ For educators in states with restrictions: '),
             'Anti-LGBTQ+ legislation in some US states has restricted educator speech and curriculum. Know your state\'s specific laws. The ACLU and Lambda Legal track this. Even where curriculum is restricted, individual student support — listening, referring to resources, respecting pronouns when shared — typically remains within professional discretion.'
           ),
@@ -612,7 +612,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('identitySupport'
         var notes = d.notes || '';
 
         return h('div', null,
-          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(236,72,153,0.10)', border: '1px solid rgba(236,72,153,0.4)', borderLeft: '3px solid #ec4899', marginBottom: 12, fontSize: 12.5, color: '#fbcfe8', lineHeight: 1.65 } },
+          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(236,72,153,0.10)', borderTop: '1px solid rgba(236,72,153,0.4)', borderRight: '1px solid rgba(236,72,153,0.4)', borderBottom: '1px solid rgba(236,72,153,0.4)', borderLeft: '3px solid #ec4899', marginBottom: 12, fontSize: 12.5, color: '#fbcfe8', lineHeight: 1.65 } },
             h('strong', null, '🖨 Print my affirming-circle reference. '),
             'A private one-page reference: people in your life who affirm you, places where you feel like yourself, crisis lines you can call, and rights you have. Print only for yourself or a clinician/trusted adult you choose. Nothing is shared anywhere.'
           ),

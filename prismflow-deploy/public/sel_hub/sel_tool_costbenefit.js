@@ -153,7 +153,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('costBenefit'))) 
 
         return h('div', null,
           // Decision header
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #a78bfa', marginBottom: 12 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a78bfa', marginBottom: 12 } },
             h('div', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'The decision'),
             h('div', { style: { fontSize: 18, color: '#e9d5ff', fontWeight: 800, lineHeight: 1.4 } }, d.decision || '(not named yet)')
           ),
@@ -162,7 +162,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('costBenefit'))) 
           h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 } },
             CELLS.map(function(cell) {
               var items = cells[cell.id] || [];
-              return h('div', { key: cell.id, style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid ' + cell.color, minHeight: 140 } },
+              return h('div', { key: cell.id, style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + cell.color, minHeight: 140 } },
                 h('div', { style: { fontSize: 11, color: cell.color, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, cell.icon + ' ' + cell.label),
                 items.length > 0
                   ? h('ul', { style: { margin: 0, padding: '0 0 0 18px', color: '#e2e8f0', fontSize: 12.5, lineHeight: 1.55 } },
@@ -172,7 +172,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('costBenefit'))) 
             })
           ),
 
-          d.finalChoice ? h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(167,139,250,0.10)', border: '1px solid rgba(167,139,250,0.3)', borderLeft: '3px solid #a78bfa', marginBottom: 12 } },
+          d.finalChoice ? h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(167,139,250,0.10)', borderTop: '1px solid rgba(167,139,250,0.3)', borderRight: '1px solid rgba(167,139,250,0.3)', borderBottom: '1px solid rgba(167,139,250,0.3)', borderLeft: '3px solid #a78bfa', marginBottom: 12 } },
             h('div', { style: { fontSize: 11, color: '#a78bfa', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'My decision'),
             h('div', { style: { fontSize: 14, color: '#e9d5ff', lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, d.finalChoice)
           ) : null,
@@ -232,7 +232,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('costBenefit'))) 
                 addItem(cell.id, el.value);
                 el.value = '';
               }
-              return h('div', { key: cell.id, style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid ' + cell.color } },
+              return h('div', { key: cell.id, style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + cell.color } },
                 h('div', { style: { fontSize: 13, color: cell.color, fontWeight: 800, marginBottom: 6 } }, cell.icon + ' ' + cell.label),
                 h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10, fontStyle: 'italic', lineHeight: 1.5 } }, cell.blurb),
 
@@ -282,7 +282,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('costBenefit'))) 
         }
 
         return h('div', null,
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.3)', borderLeft: '3px solid #a78bfa', marginBottom: 14, fontSize: 13, color: '#e9d5ff', lineHeight: 1.65 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(167,139,250,0.08)', borderTop: '1px solid rgba(167,139,250,0.3)', borderRight: '1px solid rgba(167,139,250,0.3)', borderBottom: '1px solid rgba(167,139,250,0.3)', borderLeft: '3px solid #a78bfa', marginBottom: 14, fontSize: 13, color: '#e9d5ff', lineHeight: 1.65 } },
             h('strong', null, '💭 The point of the 2x2: '),
             'Most bad decisions come from looking only at the short-term row. Most over-cautious decisions come from looking only at the long-term row. The whole grid asks you to hold all four cells at once.'
           ),
@@ -295,13 +295,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('costBenefit'))) 
             countCard('Long-term CONS', ltCons, '#dc2626')
           ),
 
-          imbalance ? h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
+          imbalance ? h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
             h('div', { style: { fontSize: 13, color: '#fcd34d', fontWeight: 800, marginBottom: 6 } }, '⚖️ Pattern in your grid'),
             h('p', { style: { margin: 0, color: '#fde68a', fontSize: 13, lineHeight: 1.65 } }, imbalance)
           ) : null,
 
           // Final decision
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #a78bfa', marginBottom: 12 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a78bfa', marginBottom: 12 } },
             h('label', { htmlFor: 'cb-final', style: { display: 'block', fontSize: 12, color: '#a78bfa', fontWeight: 800, marginBottom: 6 } }, 'What I am going to do (and why)'),
             h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 8, fontStyle: 'italic', lineHeight: 1.5 } }, 'Write the decision in one sentence, with one sentence of reason. Both. The grid is the input; this is the output.'),
             h('textarea', { id: 'cb-final', value: d.finalChoice || '',
@@ -315,7 +315,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('costBenefit'))) 
       }
 
       function countCard(label, count, color) {
-        return h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid ' + color } },
+        return h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + color } },
           h('div', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, label),
           h('div', { style: { fontSize: 22, color: color, fontWeight: 900 } }, count)
         );
@@ -437,7 +437,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('costBenefit'))) 
           ),
 
           // Honest limits
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'The grid is a deliberation aid, not an answer machine. Counting cells does not give you the decision; the decision is yours.'),
@@ -447,7 +447,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('costBenefit'))) 
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(167,139,250,0.10)', border: '1px solid rgba(167,139,250,0.3)', borderLeft: '3px solid #a78bfa', fontSize: 12.5, color: '#e9d5ff', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(167,139,250,0.10)', borderTop: '1px solid rgba(167,139,250,0.3)', borderRight: '1px solid rgba(167,139,250,0.3)', borderBottom: '1px solid rgba(167,139,250,0.3)', borderLeft: '3px solid #a78bfa', fontSize: 12.5, color: '#e9d5ff', lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'The cost-benefit grid is a useful Crew skill for ages 11+. A version of the grid for resisting a destructive urge (drinking, fighting, harming self) is a recognized DBT crisis skill; that use should be paired with a counselor, not done as homework. For everyday decision-making, the grid is a portable life skill.'
           ),

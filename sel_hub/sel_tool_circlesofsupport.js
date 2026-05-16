@@ -246,7 +246,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 8, marginBottom: 12 } },
             RINGS.map(function(ring) {
               var ct = r[ring.id].length;
-              return h('div', { key: ring.id, style: { padding: 10, borderRadius: 8, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid ' + ring.color } },
+              return h('div', { key: ring.id, style: { padding: 10, borderRadius: 8, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + ring.color } },
                 h('div', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, ring.label),
                 h('div', { style: { fontSize: 22, color: ring.color, fontWeight: 900 } }, ct),
                 h('div', { style: { fontSize: 11, color: '#cbd5e1' } }, ct === 1 ? '1 person' : ct + ' people')
@@ -306,7 +306,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
               addTo(ring.id, el.value);
               el.value = '';
             }
-            return h('div', { key: ring.id, style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid ' + ring.color, marginBottom: 12 } },
+            return h('div', { key: ring.id, style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + ring.color, marginBottom: 12 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                 h('div', { style: { fontSize: 14, fontWeight: 800, color: ring.color, flex: 1 } }, ring.label + '  (' + items.length + ')')
               ),
@@ -360,13 +360,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
         var heaviestPaid = r.paid.length >= r.intimate.length + r.friends.length;
 
         return h('div', null,
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(251,113,133,0.08)', border: '1px solid rgba(251,113,133,0.3)', borderLeft: '3px solid #fb7185', marginBottom: 14, fontSize: 13, color: '#fecdd3', lineHeight: 1.65 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(251,113,133,0.08)', borderTop: '1px solid rgba(251,113,133,0.3)', borderRight: '1px solid rgba(251,113,133,0.3)', borderBottom: '1px solid rgba(251,113,133,0.3)', borderLeft: '3px solid #fb7185', marginBottom: 14, fontSize: 13, color: '#fecdd3', lineHeight: 1.65 } },
             h('strong', null, '💭 What to do with this picture: '),
             'Circles of Support is not a scoreboard. A sparse picture is not a failure of yours; it often is information about your season, your life circumstances, or the systems you have moved through. Take it gently.'
           ),
 
           // Heaviest-paid alert (Forest and Snow\'s key observation)
-          heaviestPaid && r.paid.length > 0 ? h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(14,165,233,0.10)', border: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', marginBottom: 12 } },
+          heaviestPaid && r.paid.length > 0 ? h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(14,165,233,0.10)', borderTop: '1px solid rgba(14,165,233,0.3)', borderRight: '1px solid rgba(14,165,233,0.3)', borderBottom: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', marginBottom: 12 } },
             h('div', { style: { fontSize: 12, color: '#7dd3fc', fontWeight: 800, marginBottom: 6 } }, '🛟 Heaviest ring is Exchange (paid)'),
             h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.7 } },
               'You have ' + r.paid.length + ' people in the Exchange ring and ' + (r.intimate.length + r.friends.length) + ' across Intimacy + Friendship. Marsha Forest and Judith Snow specifically named this pattern: when paid people outweigh chosen people, the system is doing relationship work that should be done by community. The work then is twofold: appreciate the paid people who are good to you, AND build pathways into the inner two rings. That is not your job alone; it is a structural problem about how community is built around people.'
@@ -393,7 +393,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
       }
 
       function patternCard(title, list, color, blurb) {
-        return h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid ' + color, marginBottom: 10 } },
+        return h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + color, marginBottom: 10 } },
           h('div', { style: { fontSize: 12, color: color, fontWeight: 700, marginBottom: 6 } }, title + '  (' + list.length + ')'),
           list.length > 0
             ? h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 6 } }, list.join('  ·  '))
@@ -493,7 +493,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
           ),
 
           // Honest limits
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'A sparse circle is not a moral failure. Some seasons of life are sparse on purpose (recovery, moving, transition); some are sparse because of structural isolation that you did not choose. Reading the picture as "I should have more friends by now" is not how to use this tool.'),
@@ -503,7 +503,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(251,113,133,0.10)', border: '1px solid rgba(251,113,133,0.3)', borderLeft: '3px solid #fb7185', fontSize: 12.5, color: '#fecdd3', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(251,113,133,0.10)', borderTop: '1px solid rgba(251,113,133,0.3)', borderRight: '1px solid rgba(251,113,133,0.3)', borderBottom: '1px solid rgba(251,113,133,0.3)', borderLeft: '3px solid #fb7185', fontSize: 12.5, color: '#fecdd3', lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'Used well, Circles of Support is a tool for community-building: a teacher or counselor sees a student\'s thin inner rings and works with the student and their family to invite specific people into the participation ring (a club, a coach, a peer mentor). Used poorly, it is a private grief that no one acts on. Make sure the drawing leads somewhere.'
           ),

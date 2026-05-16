@@ -696,7 +696,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
               return h('div', { key: 'pbis-' + pt.tier,
                 style: {
                   background: 'rgba(15,23,42,0.6)', borderRadius: 10, padding: '12px 14px',
-                  border: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + pt.color
+                  borderTop: '1px solid rgba(100,116,139,0.25)', borderRight: '1px solid rgba(100,116,139,0.25)', borderBottom: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + pt.color
                 } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
                   h('div', { 'aria-hidden': 'true',
@@ -741,7 +741,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
             REPLACEMENT_BEHAVIORS.map(function(rb, i) {
               return h('div', { key: 'rb-' + i,
                 style: { background: 'rgba(15,23,42,0.6)', borderRadius: 10, padding: '12px 14px',
-                  border: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + rb.color } },
+                  borderTop: '1px solid rgba(100,116,139,0.25)', borderRight: '1px solid rgba(100,116,139,0.25)', borderBottom: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + rb.color } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
                   circularBadge(rb.icon, rb.color, 36),
                   h('div', null,
@@ -781,7 +781,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
             SETTING_EVENTS.map(function(se, i) {
               return h('div', { key: 'se-' + i,
                 style: { background: 'rgba(15,23,42,0.6)', borderRadius: 10, padding: '12px 14px',
-                  border: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + se.color } },
+                  borderTop: '1px solid rgba(100,116,139,0.25)', borderRight: '1px solid rgba(100,116,139,0.25)', borderBottom: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + se.color } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                   circularBadge(se.icon, se.color, 32),
                   h('div', { style: { fontSize: 12, fontWeight: 800, color: se.color } }, se.category)
@@ -804,7 +804,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
             ACTING_OUT_CYCLE.map(function(ph) {
               return h('div', { key: 'cycle-' + ph.phase,
                 style: { background: 'rgba(15,23,42,0.6)', borderRadius: 10, padding: '12px 14px',
-                  border: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + ph.color } },
+                  borderTop: '1px solid rgba(100,116,139,0.25)', borderRight: '1px solid rgba(100,116,139,0.25)', borderBottom: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + ph.color } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
                   h('div', { 'aria-hidden': 'true',
                     style: { width: 36, height: 36, borderRadius: '50%', background: ph.color + '22', border: '1.5px solid ' + ph.color,
@@ -846,7 +846,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
             RESTRAINT_PRINCIPLES.map(function(rp, i) {
               return h('div', { key: 'r-' + i,
                 style: { background: 'rgba(15,23,42,0.6)', borderRadius: 10, padding: '12px 14px',
-                  border: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + rp.color } },
+                  borderTop: '1px solid rgba(100,116,139,0.25)', borderRight: '1px solid rgba(100,116,139,0.25)', borderBottom: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + rp.color } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
                   circularBadge(rp.icon, rp.color, 36),
                   h('div', { style: { fontSize: 13, fontWeight: 800, color: rp.color, lineHeight: 1.2 } }, rp.name)
@@ -872,7 +872,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
               return h('div', { key: 'fba-' + s.step,
                 style: {
                   background: 'rgba(15,23,42,0.6)', borderRadius: 10, padding: '12px 14px',
-                  border: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + s.color
+                  borderTop: '1px solid rgba(100,116,139,0.25)', borderRight: '1px solid rgba(100,116,139,0.25)', borderBottom: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + s.color
                 } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
                   h('div', { 'aria-hidden': 'true',
@@ -918,7 +918,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
               return h('div', { key: 'bip-' + c.part,
                 style: {
                   background: 'rgba(15,23,42,0.6)', borderRadius: 10, padding: '12px 14px',
-                  border: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + c.color
+                  borderTop: '1px solid rgba(100,116,139,0.25)', borderRight: '1px solid rgba(100,116,139,0.25)', borderBottom: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + c.color
                 } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
                   h('div', { 'aria-hidden': 'true',
@@ -961,7 +961,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
               return h('div', { key: 'cico-' + c.step,
                 style: {
                   background: 'rgba(15,23,42,0.6)', borderRadius: 10, padding: '12px 14px',
-                  border: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + c.color
+                  borderTop: '1px solid rgba(100,116,139,0.25)', borderRight: '1px solid rgba(100,116,139,0.25)', borderBottom: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + c.color
                 } },
                 // Step header
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
@@ -1012,7 +1012,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
               return h('div', { key: 'eq-' + i,
                 style: {
                   background: 'rgba(15,23,42,0.6)', borderRadius: 10, padding: '12px 14px',
-                  border: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + eq.color
+                  borderTop: '1px solid rgba(100,116,139,0.25)', borderRight: '1px solid rgba(100,116,139,0.25)', borderBottom: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + eq.color
                 } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
                   circularBadge(eq.icon, eq.color, 36),
@@ -1029,8 +1029,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
           h('div', { style: {
             padding: '14px 16px', borderRadius: 10,
             background: 'rgba(20,184,166,0.08)',
-            border: '1px solid rgba(20,184,166,0.30)',
-            borderLeft: '4px solid #14b8a6'
+            borderTop: '1px solid rgba(20,184,166,0.30)', borderRight: '1px solid rgba(20,184,166,0.30)', borderBottom: '1px solid rgba(20,184,166,0.30)', borderLeft: '4px solid #14b8a6'
           } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
               circularBadge('🔍', '#14b8a6', 36),
@@ -1070,7 +1069,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
               return h('div', { key: 'maine-' + gi,
                 style: {
                   background: 'rgba(15,23,42,0.6)', borderRadius: 10, padding: '12px 14px',
-                  border: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + group.color
+                  borderTop: '1px solid rgba(100,116,139,0.25)', borderRight: '1px solid rgba(100,116,139,0.25)', borderBottom: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + group.color
                 } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
                   circularBadge(group.icon, group.color, 36),
@@ -1095,7 +1094,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
             'School Behavior Toolkit teaches what school psychs and educators DO. Two sister spaces handle the science and the voices.'),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12 } },
             // BehaviorLab — the science
-            h('div', { style: { background: 'rgba(15,23,42,0.6)', borderRadius: 12, padding: 16, border: '1px solid rgba(251,146,60,0.30)', borderLeft: '4px solid #fb923c' } },
+            h('div', { style: { background: 'rgba(15,23,42,0.6)', borderRadius: 12, padding: 16, borderTop: '1px solid rgba(251,146,60,0.30)', borderRight: '1px solid rgba(251,146,60,0.30)', borderBottom: '1px solid rgba(251,146,60,0.30)', borderLeft: '4px solid #fb923c' } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
                 circularBadge('🐭', '#fb923c', 44),
                 h('div', null,
@@ -1108,7 +1107,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
               h('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, '9 progressive levels · Schedule Sleuth · Function Sleuth · Glossary · Ethics')
             ),
             // Disability Voices — the people
-            h('div', { style: { background: 'rgba(15,23,42,0.6)', borderRadius: 12, padding: 16, border: '1px solid rgba(244,114,182,0.30)', borderLeft: '4px solid #f472b6' } },
+            h('div', { style: { background: 'rgba(15,23,42,0.6)', borderRadius: 12, padding: 16, borderTop: '1px solid rgba(244,114,182,0.30)', borderRight: '1px solid rgba(244,114,182,0.30)', borderBottom: '1px solid rgba(244,114,182,0.30)', borderLeft: '4px solid #f472b6' } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
                 circularBadge('🎤', '#f472b6', 44),
                 h('div', null,

@@ -238,7 +238,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
           ),
 
           // The spirit
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #3b82f6', marginBottom: 14 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #3b82f6', marginBottom: 14 } },
             h('div', { style: { fontSize: 12, color: '#93c5fd', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, '🧭 The spirit of MI (the part underneath all the skills)'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#e2e8f0', fontSize: 13, lineHeight: 1.75 } },
               h('li', null, h('strong', null, 'Partnership'), ' — you are walking with them, not leading them.'),
@@ -260,7 +260,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
 
       function stepCard(title, blurb, onClick, color) {
         return h('button', { onClick: onClick, 'aria-label': title,
-          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, border: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: '#0f172a', cursor: 'pointer', marginBottom: 8, color: '#e2e8f0' } },
+          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: '#0f172a', cursor: 'pointer', marginBottom: 8, color: '#e2e8f0' } },
           h('div', { style: { fontSize: 14, fontWeight: 800, color: color, marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.55 } }, blurb)
         );
@@ -271,13 +271,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
       // ═══════════════════════════════════════════════════════════
       function renderOARS() {
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(59,130,246,0.10)', border: '1px solid rgba(59,130,246,0.3)', borderLeft: '3px solid #3b82f6', marginBottom: 14, fontSize: 12.5, color: '#bfdbfe', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(59,130,246,0.10)', borderTop: '1px solid rgba(59,130,246,0.3)', borderRight: '1px solid rgba(59,130,246,0.3)', borderBottom: '1px solid rgba(59,130,246,0.3)', borderLeft: '3px solid #3b82f6', marginBottom: 14, fontSize: 12.5, color: '#bfdbfe', lineHeight: 1.65 } },
             h('strong', null, '🚣 OARS '),
             'is the basic vocabulary of MI. Most of an MI conversation is OARS plus the rulers. Learning to recognize and use each is the single biggest skill upgrade.'
           ),
 
           OARS.map(function(skill) {
-            return h('div', { key: skill.id, style: { padding: 16, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '4px solid ' + skill.color, marginBottom: 12 } },
+            return h('div', { key: skill.id, style: { padding: 16, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + skill.color, marginBottom: 12 } },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 8 } },
                 h('span', { style: { fontSize: 26 } }, skill.icon),
                 h('span', { style: { fontSize: 22, fontWeight: 900, color: skill.color, fontFamily: 'ui-monospace, monospace' } }, skill.letter),
@@ -313,13 +313,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
       // ═══════════════════════════════════════════════════════════
       function renderRulers() {
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(59,130,246,0.10)', border: '1px solid rgba(59,130,246,0.3)', borderLeft: '3px solid #3b82f6', marginBottom: 14, fontSize: 12.5, color: '#bfdbfe', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(59,130,246,0.10)', borderTop: '1px solid rgba(59,130,246,0.3)', borderRight: '1px solid rgba(59,130,246,0.3)', borderBottom: '1px solid rgba(59,130,246,0.3)', borderLeft: '3px solid #3b82f6', marginBottom: 14, fontSize: 12.5, color: '#bfdbfe', lineHeight: 1.65 } },
             h('strong', null, '📏 The three rulers '),
             'are quick diagnostics: where is this person, REALLY? They surface things that "do you want to change?" never surfaces. The KEY MOVE in all three: ask "why a [their number] and not [their number minus 2]?" The answer is gold.'
           ),
 
           RULERS.map(function(r) {
-            return h('div', { key: r.id, style: { padding: 16, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '4px solid ' + r.color, marginBottom: 10 } },
+            return h('div', { key: r.id, style: { padding: 16, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + r.color, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
                 h('span', { style: { fontSize: 24 } }, r.icon),
                 h('span', { style: { fontSize: 16, fontWeight: 800, color: r.color } }, r.label + ' ruler')
@@ -335,7 +335,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
             );
           }),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', marginTop: 14, fontSize: 13, color: '#e9d5ff', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.3)', borderRight: '1px solid rgba(168,85,247,0.3)', borderBottom: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', marginTop: 14, fontSize: 13, color: '#e9d5ff', lineHeight: 1.7 } },
             h('strong', null, '🔑 Why the follow-up matters: '),
             'If someone says "5 out of 10 important" and you ask "why a 5 and not a 3?" — they will tell you reasons FOR change (because they actually do care, hence the 5 and not the 3). If you ask "why a 5 and not an 8?" they will tell you reasons AGAINST change (sustain talk). MI deliberately asks the first question, because reasons FOR change strengthen the desire to change. The wording of the question is doing real work.'
           ),
@@ -349,13 +349,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
       // ═══════════════════════════════════════════════════════════
       function renderChangeTalk() {
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(59,130,246,0.10)', border: '1px solid rgba(59,130,246,0.3)', borderLeft: '3px solid #3b82f6', marginBottom: 14, fontSize: 12.5, color: '#bfdbfe', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(59,130,246,0.10)', borderTop: '1px solid rgba(59,130,246,0.3)', borderRight: '1px solid rgba(59,130,246,0.3)', borderBottom: '1px solid rgba(59,130,246,0.3)', borderLeft: '3px solid #3b82f6', marginBottom: 14, fontSize: 12.5, color: '#bfdbfe', lineHeight: 1.65 } },
             h('strong', null, '🗣 Change talk '),
             'is when the person\'s OWN words are pointing toward change. Sustain talk is when they are pointing AWAY from change. The single biggest MI move: notice change talk, then ask them to say more about it.'
           ),
 
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10, marginBottom: 14 } },
-            h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '4px solid #22c55e' } },
+            h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid #22c55e' } },
               h('div', { style: { fontSize: 13, fontWeight: 800, color: '#bbf7d0', marginBottom: 8 } }, '✓ Change talk sounds like:'),
               h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#e2e8f0', fontSize: 13, lineHeight: 1.7, fontStyle: 'italic' } },
                 h('li', null, '"I want to..."  (desire)'),
@@ -366,7 +366,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
                 h('li', null, '"I started..."  (taking steps)')
               )
             ),
-            h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '4px solid #ef4444' } },
+            h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid #ef4444' } },
               h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fecaca', marginBottom: 8 } }, '✕ Sustain talk sounds like:'),
               h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#e2e8f0', fontSize: 13, lineHeight: 1.7, fontStyle: 'italic' } },
                 h('li', null, '"I can\'t..."'),
@@ -380,7 +380,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
           ),
 
           // The move
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', marginBottom: 10, fontSize: 13.5, color: '#e9d5ff', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.3)', borderRight: '1px solid rgba(168,85,247,0.3)', borderBottom: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', marginBottom: 10, fontSize: 13.5, color: '#e9d5ff', lineHeight: 1.7 } },
             h('strong', { style: { fontSize: 14 } }, '🎯 The MI move:'),
             h('p', { style: { margin: '6px 0 0' } },
               'When you hear change talk, RESPOND to it. Reflect it back. Ask for more. "You said you want to be more present with your family — tell me more about that." Change talk grows when it is reflected; it shrinks when it is ignored.'),
@@ -389,7 +389,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
           ),
 
           // Common trap
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.3)', borderLeft: '3px solid #ef4444', fontSize: 13, color: '#fecaca', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.3)', borderRight: '1px solid rgba(239,68,68,0.3)', borderBottom: '1px solid rgba(239,68,68,0.3)', borderLeft: '3px solid #ef4444', fontSize: 13, color: '#fecaca', lineHeight: 1.7 } },
             h('strong', null, '⚠️ The "righting reflex" — '),
             'when someone says "I shouldn\'t but I keep doing it," our instinct is to argue FOR the change. ("Yeah you really shouldn\'t! Here\'s why...") This usually makes them argue HARDER for sustain. Their internal debate flips because YOU took the change side, so they take the other. MI deliberately avoids this. You voice neither side; the person voices BOTH and works it out.'
           ),
@@ -411,13 +411,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
         var r = d.myRulers || {};
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 12.5, color: '#fde68a', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 12.5, color: '#fde68a', lineHeight: 1.65 } },
             h('strong', null, '🪞 MI on yourself. '),
             'You can use this framework to think through a change you are working on. Three rulers, then write a reflection that uses the MI move: name change talk, do not argue with sustain talk.'
           ),
 
           // What are you working on
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #3b82f6', marginBottom: 14 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #3b82f6', marginBottom: 14 } },
             h('label', { htmlFor: 'mi-change', style: { display: 'block', fontSize: 12, color: '#93c5fd', fontWeight: 800, marginBottom: 6 } }, 'A change I am thinking about'),
             h('input', { id: 'mi-change', type: 'text', value: d.personalChange || '',
               placeholder: 'e.g. I want to stop scrolling at night so I can sleep.',
@@ -428,7 +428,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
           // Three rulers
           RULERS.map(function(rk) {
             var v = r[rk.id];
-            return h('div', { key: rk.id, style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid ' + rk.color, marginBottom: 10 } },
+            return h('div', { key: rk.id, style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + rk.color, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                 h('span', { style: { fontSize: 18 } }, rk.icon),
                 h('span', { style: { fontSize: 13, fontWeight: 800, color: rk.color } }, rk.label)
@@ -446,7 +446,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
           }),
 
           // Reflection
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
             h('label', { htmlFor: 'mi-reflection', style: { display: 'block', fontSize: 12, color: '#fcd34d', fontWeight: 800, marginBottom: 6 } }, 'What I am noticing'),
             h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 6, fontStyle: 'italic', lineHeight: 1.5 } }, 'Try this structure: One sentence of WHY this matters to me. One sentence about what is making it hard. One sentence about what would be a small, doable first move.'),
             h('textarea', { id: 'mi-reflection', value: d.myReflection || '',
@@ -493,7 +493,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
             sourceCard('Lundahl, B. et al. (2013)', '"Motivational interviewing in medical care settings: A systematic review and meta-analysis of randomized controlled trials," Patient Education and Counseling, 93(2), 157-168', 'Meta-analytic review of MI outcomes.', null)
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'MI is for ambivalence. If someone is in genuine danger or unable to make a decision (crisis, severe intoxication, psychosis), MI is NOT the right tool. Safety first; MI later, if appropriate.'),
@@ -504,7 +504,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(59,130,246,0.10)', border: '1px solid rgba(59,130,246,0.3)', borderLeft: '3px solid #3b82f6', fontSize: 12.5, color: '#bfdbfe', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(59,130,246,0.10)', borderTop: '1px solid rgba(59,130,246,0.3)', borderRight: '1px solid rgba(59,130,246,0.3)', borderBottom: '1px solid rgba(59,130,246,0.3)', borderLeft: '3px solid #3b82f6', fontSize: 12.5, color: '#bfdbfe', lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'MI is the strongest framework for any peer-helper training. A productive sequence for Crew or advisory: Week 1, OARS skills with examples. Week 2, the three rulers with practice partners. Week 3, change talk vs sustain talk. Week 4, role-play scenarios. Pair with the Peer Support tool in this SEL Hub. For counselors and school psychs, the SAMHSA TIP 35 is free and excellent.'
           ),

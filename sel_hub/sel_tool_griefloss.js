@@ -210,7 +210,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
 
       // Strong safety banner — always visible across all views
       function safetyBanner() {
-        return h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.4)', borderLeft: '3px solid #ef4444', marginBottom: 12, fontSize: 12.5, color: '#fecaca', lineHeight: 1.65 } },
+        return h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.4)', borderRight: '1px solid rgba(239,68,68,0.4)', borderBottom: '1px solid rgba(239,68,68,0.4)', borderLeft: '3px solid #ef4444', marginBottom: 12, fontSize: 12.5, color: '#fecaca', lineHeight: 1.65 } },
           h('strong', null, '🆘 Please read: '),
           'Grief is not the same as suicidality. But sometimes, in grief, people have thoughts about wanting to be with the person who died. If you\'re having those thoughts, that is a moment for an adult, not for this tool alone. Call 988 (Suicide and Crisis Lifeline), text HOME to 741741, or open the Crisis Companion in this SEL Hub. You deserve company in this. You do not have to carry it alone.'
         );
@@ -242,7 +242,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
           ),
 
           // Loss types (so students know what counts)
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #fb7185', marginBottom: 14 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #fb7185', marginBottom: 14 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fda4af', marginBottom: 8 } }, '📝 Many things count as loss'),
             h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 10, lineHeight: 1.6, fontStyle: 'italic' } }, 'Not all grief comes from death. If your loss is on this list, the work in this tool applies to you.'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 6 } },
@@ -256,7 +256,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
           ),
 
           // Dual Process explanation
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #818cf8', marginBottom: 14 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #818cf8', marginBottom: 14 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#a5b4fc', marginBottom: 8 } }, '🌊 You will oscillate. That is normal.'),
             h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.7 } },
               'Grief researchers Stroebe and Schut described how grief actually works: people don\'t move in a straight line from "broken" to "healed." They oscillate between LOSS-orientation (sitting with the pain, missing the person) and RESTORATION-orientation (doing daily life, eating, going to school, even laughing). BOTH are part of grief. The oscillation is the work. It is healthy. You are not betraying anyone when you have a good day, and you are not stuck when you have a hard day.'
@@ -275,7 +275,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
 
       function stepCard(title, blurb, onClick, color) {
         return h('button', { onClick: onClick, 'aria-label': title,
-          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, border: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: '#0f172a', cursor: 'pointer', marginBottom: 8, color: '#e2e8f0' } },
+          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: '#0f172a', cursor: 'pointer', marginBottom: 8, color: '#e2e8f0' } },
           h('div', { style: { fontSize: 14, fontWeight: 800, color: color, marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.55 } }, blurb)
         );
@@ -288,13 +288,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
         return h('div', null,
           safetyBanner(),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(251,113,133,0.10)', border: '1px solid rgba(251,113,133,0.3)', borderLeft: '3px solid #fb7185', marginBottom: 14, fontSize: 13, color: '#fecdd3', lineHeight: 1.65 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(251,113,133,0.10)', borderTop: '1px solid rgba(251,113,133,0.3)', borderRight: '1px solid rgba(251,113,133,0.3)', borderBottom: '1px solid rgba(251,113,133,0.3)', borderLeft: '3px solid #fb7185', marginBottom: 14, fontSize: 13, color: '#fecdd3', lineHeight: 1.65 } },
             h('strong', null, '✍️ Name what you\'re carrying. '),
             'You can name as much or as little as you want. Nothing is shared anywhere. This is just for you to have words for it.'
           ),
 
           // Type
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #fb7185', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #fb7185', marginBottom: 10 } },
             h('label', { htmlFor: 'g-type', style: { display: 'block', fontSize: 12, color: '#fda4af', fontWeight: 800, marginBottom: 6 } }, 'What kind of loss is this?'),
             h('select', { id: 'g-type', value: d.lossType || '',
               onChange: function(e) { setG({ lossType: e.target.value }); },
@@ -305,7 +305,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
           ),
 
           // Who/what
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #fb7185', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #fb7185', marginBottom: 10 } },
             h('label', { htmlFor: 'g-who', style: { display: 'block', fontSize: 12, color: '#fda4af', fontWeight: 800, marginBottom: 6 } }, 'Who or what (a name, a relationship, a place — whatever fits)'),
             h('input', { id: 'g-who', type: 'text', value: d.whoOrWhat || '',
               placeholder: 'e.g. My grandma. My dog Rex. My friend group.',
@@ -314,7 +314,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
           ),
 
           // Description
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #fb7185', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #fb7185', marginBottom: 10 } },
             h('label', { htmlFor: 'g-desc', style: { display: 'block', fontSize: 12, color: '#fda4af', fontWeight: 800, marginBottom: 6 } }, 'What happened?'),
             h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 6, fontStyle: 'italic', lineHeight: 1.5 } }, 'In your own words. As much or as little as feels okay right now.'),
             h('textarea', { id: 'g-desc', value: d.loss || '',
@@ -407,7 +407,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
               style: { width: '100%', minHeight: 110, padding: 10, borderRadius: 6, border: '1px solid #334155', background: '#1e293b', color: '#e2e8f0', fontSize: 13.5, fontFamily: 'inherit', lineHeight: 1.75, resize: 'vertical' } })
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', borderLeft: '3px solid #6366f1', fontSize: 13, color: '#c7d2fe', lineHeight: 1.7 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(99,102,241,0.10)', borderTop: '1px solid rgba(99,102,241,0.3)', borderRight: '1px solid rgba(99,102,241,0.3)', borderBottom: '1px solid rgba(99,102,241,0.3)', borderLeft: '3px solid #6366f1', fontSize: 13, color: '#c7d2fe', lineHeight: 1.7 } },
             h('strong', null, '🌊 Remember: '),
             'these are TASKS, not STAGES. You move between them, not through them in order. Today might be heavy on Task 2 (the pain) and weeks from now might be more about Task 4 (connection). Both are real.'
           ),
@@ -423,7 +423,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
         return h('div', null,
           safetyBanner(),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', marginBottom: 14, fontSize: 13, color: '#e9d5ff', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.3)', borderRight: '1px solid rgba(168,85,247,0.3)', borderBottom: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', marginBottom: 14, fontSize: 13, color: '#e9d5ff', lineHeight: 1.7 } },
             h('strong', null, '✉️ Writing a letter you don\'t have to send. '),
             'This is a long-standing grief practice. You can write to the person who died, the pet, the place, the friendship — or to your past self before the loss. Say what you didn\'t get to say. Say what you wish you had said. Say what you would say now. Or just say what is on your mind. No rules.'
           ),
@@ -441,7 +441,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
             )
           ),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #a855f7' } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a855f7' } },
             h('label', { htmlFor: 'g-letter', style: { display: 'block', fontSize: 12, color: '#c4b5fd', fontWeight: 800, marginBottom: 6 } }, 'Your letter'),
             h('textarea', { id: 'g-letter', value: d.letter || '',
               placeholder: 'Dear...',
@@ -460,7 +460,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
         return h('div', null,
           safetyBanner(),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', marginBottom: 14, fontSize: 13, color: '#bbf7d0', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.10)', borderTop: '1px solid rgba(34,197,94,0.3)', borderRight: '1px solid rgba(34,197,94,0.3)', borderBottom: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', marginBottom: 14, fontSize: 13, color: '#bbf7d0', lineHeight: 1.7 } },
             h('strong', null, '🌿 Rituals are how love keeps a place. '),
             'Cultures across human history have developed rituals around loss because they work: they give grief a CONTAINER, so it doesn\'t have to be carried as raw weight all the time. A ritual can be elaborate or it can be a candle on the windowsill once a year. What matters is that you choose it on purpose.'
           ),
@@ -482,7 +482,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
             )
           ),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #22c55e' } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #22c55e' } },
             h('label', { htmlFor: 'g-rituals', style: { display: 'block', fontSize: 12, color: '#bbf7d0', fontWeight: 800, marginBottom: 6 } }, 'My ritual plan'),
             h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 6, fontStyle: 'italic', lineHeight: 1.5 } }, 'What rituals do you want to keep, build, or invent? What dates matter? What objects? What places?'),
             h('textarea', { id: 'g-rituals', value: d.ritualPlan || '',
@@ -575,7 +575,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('griefLoss', h, ctx) : null),
 
           // Strong safety frame first
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.4)', borderLeft: '4px solid #ef4444', marginBottom: 14 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.4)', borderRight: '1px solid rgba(239,68,68,0.4)', borderBottom: '1px solid rgba(239,68,68,0.4)', borderLeft: '4px solid #ef4444', marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 8px', color: '#fca5a5', fontSize: 16 } }, '🆘 Read this first'),
             h('p', { style: { margin: '0 0 8px', color: '#fecaca', fontSize: 13.5, lineHeight: 1.7 } },
               'Grief is a normal response to loss. It is not a mental illness. BUT — sometimes grief gets complicated and crosses into territory that needs a professional:'),
@@ -623,7 +623,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
             sourceCard('American Psychological Association', 'Prolonged Grief Disorder', 'APA position on persistent grief that may warrant clinical attention.', 'https://www.apa.org/topics/grief')
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'A tool cannot grieve with you. Human company is the core of grief work. Use this tool alongside people, not instead of them.'),
@@ -634,7 +634,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(251,113,133,0.10)', border: '1px solid rgba(251,113,133,0.3)', borderLeft: '3px solid #fb7185', fontSize: 12.5, color: '#fecdd3', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(251,113,133,0.10)', borderTop: '1px solid rgba(251,113,133,0.3)', borderRight: '1px solid rgba(251,113,133,0.3)', borderBottom: '1px solid rgba(251,113,133,0.3)', borderLeft: '3px solid #fb7185', fontSize: 12.5, color: '#fecdd3', lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'After a death in the school community, do not assume "everyone is fine." Make space for grief in Crew (see the Heavy News Day protocol in Crew Protocols). Use this tool with students individually after offering it. Do not require it. Be especially attentive to students whose grief is being minimized (a friend rather than a family member, a same-sex partner, a beloved pet). For children whose parent has died, work with the Dougy Center model: peer grief groups, sustained contact, integration into school not isolation from it.'
           ),

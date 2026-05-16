@@ -2107,7 +2107,7 @@ window.SelHub = window.SelHub || {
               }, '← Different trigger')
             ),
             // Scene
-            sceneLine && h('div', { style: { padding: '10px 12px', marginBottom: 10, background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(148,163,184,0.25)', borderLeft: '3px solid #f97316', borderRadius: 8, fontSize: 13, lineHeight: 1.5, color: '#cbd5e1', fontStyle: 'italic' } },
+            sceneLine && h('div', { style: { padding: '10px 12px', marginBottom: 10, background: 'rgba(15,23,42,0.6)', borderTop: '1px solid rgba(148,163,184,0.25)', borderRight: '1px solid rgba(148,163,184,0.25)', borderBottom: '1px solid rgba(148,163,184,0.25)', borderLeft: '3px solid #f97316', borderRadius: 8, fontSize: 13, lineHeight: 1.5, color: '#cbd5e1', fontStyle: 'italic' } },
               h('span', { style: { fontStyle: 'normal', fontWeight: 700, color: '#fdba74', fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, marginRight: 6 } }, 'Scene:'),
               sceneLine
             ),

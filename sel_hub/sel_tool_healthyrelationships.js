@@ -168,7 +168,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
       }
 
       function safetyBanner() {
-        return h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.4)', borderLeft: '3px solid #ef4444', marginBottom: 12, fontSize: 12.5, color: '#fecaca', lineHeight: 1.65 } },
+        return h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.4)', borderRight: '1px solid rgba(239,68,68,0.4)', borderBottom: '1px solid rgba(239,68,68,0.4)', borderLeft: '3px solid #ef4444', marginBottom: 12, fontSize: 12.5, color: '#fecaca', lineHeight: 1.65 } },
           h('strong', null, '🆘 If you are in a relationship that is hurting you: '),
           'help exists. ',
           h('a', { href: 'https://www.loveisrespect.org/', target: '_blank', rel: 'noopener noreferrer',
@@ -210,17 +210,17 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
 
           // The 3 zones
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
-            h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.3)', borderLeft: '4px solid #22c55e' } },
+            h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(34,197,94,0.10)', borderTop: '1px solid rgba(34,197,94,0.3)', borderRight: '1px solid rgba(34,197,94,0.3)', borderBottom: '1px solid rgba(34,197,94,0.3)', borderLeft: '4px solid #22c55e' } },
               h('div', { style: { fontSize: 13, fontWeight: 800, color: '#bbf7d0', marginBottom: 6 } }, '✓ HEALTHY'),
               h('p', { style: { margin: 0, color: '#dcfce7', fontSize: 12.5, lineHeight: 1.65 } },
                 'Mutual respect, communication, trust, support, independence, fairness, consent, safety. Not perfect, but the pattern is good.')
             ),
-            h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '4px solid #f59e0b' } },
+            h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '4px solid #f59e0b' } },
               h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fde68a', marginBottom: 6 } }, '~ UNHEALTHY'),
               h('p', { style: { margin: 0, color: '#fef3c7', fontSize: 12.5, lineHeight: 1.65 } },
                 'Imbalance: one person controls more, one gives more, communication breaks down. Not abuse, but the pattern is wearing you down. Can often be repaired with effort from both people.')
             ),
-            h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.4)', borderLeft: '4px solid #ef4444' } },
+            h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.4)', borderRight: '1px solid rgba(239,68,68,0.4)', borderBottom: '1px solid rgba(239,68,68,0.4)', borderLeft: '4px solid #ef4444' } },
               h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fca5a5', marginBottom: 6 } }, '✕ ABUSIVE'),
               h('p', { style: { margin: 0, color: '#fee2e2', fontSize: 12.5, lineHeight: 1.65 } },
                 'One person controls or harms the other through fear, manipulation, threats, isolation, physical or sexual violence. Cannot be fixed by the person being harmed. NOT your fault. Help exists.')
@@ -228,7 +228,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
           ),
 
           // 8 dimensions overview
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #ec4899', marginBottom: 14 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #ec4899', marginBottom: 14 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbcfe8', marginBottom: 10 } }, '🔍 The 8 dimensions every relationship has'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 6 } },
               DIMENSIONS.map(function(dim) {
@@ -241,7 +241,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
           ),
 
           // Inclusive note
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', marginBottom: 14, fontSize: 12.5, color: '#e9d5ff', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.3)', borderRight: '1px solid rgba(168,85,247,0.3)', borderBottom: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', marginBottom: 14, fontSize: 12.5, color: '#e9d5ff', lineHeight: 1.65 } },
             h('strong', null, '🌐 Applies across all kinds of relationships. '),
             'These principles work the same for friend / romantic, queer / straight, monogamous / non-monogamous, neurotypical / neurodivergent. Disabled folks have higher rates of being abused; this is structural, not their fault. Trans youth face specific dating-violence risks; the Trevor Project (1-866-488-7386) has identity-specific resources.'
           ),
@@ -257,7 +257,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
 
       function stepCard(title, blurb, onClick, color) {
         return h('button', { onClick: onClick, 'aria-label': title,
-          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, border: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: '#0f172a', cursor: 'pointer', marginBottom: 8, color: '#e2e8f0' } },
+          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: '#0f172a', cursor: 'pointer', marginBottom: 8, color: '#e2e8f0' } },
           h('div', { style: { fontSize: 14, fontWeight: 800, color: color, marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.55 } }, blurb)
         );
@@ -280,13 +280,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
         return h('div', null,
           safetyBanner(),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(14,165,233,0.10)', border: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', marginBottom: 14, fontSize: 13, color: '#bae6fd', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(14,165,233,0.10)', borderTop: '1px solid rgba(14,165,233,0.3)', borderRight: '1px solid rgba(14,165,233,0.3)', borderBottom: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', marginBottom: 14, fontSize: 13, color: '#bae6fd', lineHeight: 1.7 } },
             h('strong', null, '🔍 Run a specific relationship through the 8 dimensions. '),
             'Be honest. This is private. The point is clarity, not judgment of the other person. You can think about a friend, a partner, a family member, a coach — any close relationship.'
           ),
 
           // Context
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9', marginBottom: 12 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9', marginBottom: 12 } },
             h('label', { htmlFor: 'hr-context', style: { display: 'block', fontSize: 11, color: '#94a3b8', fontWeight: 700, marginBottom: 4 } }, 'Which relationship am I checking? (optional, private)'),
             h('input', { id: 'hr-context', type: 'text', value: d.checkContext || '',
               placeholder: 'e.g. me and Sam (friend), me and my partner, me and my mom',
@@ -297,7 +297,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
           // Each dimension
           DIMENSIONS.map(function(dim) {
             var current = check[dim.id];
-            return h('div', { key: dim.id, style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid ' + dim.color, marginBottom: 10 } },
+            return h('div', { key: dim.id, style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + dim.color, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 } },
                 h('span', { style: { fontSize: 20 } }, dim.icon),
                 h('span', { style: { fontSize: 14, fontWeight: 800, color: dim.color } }, dim.label)
@@ -325,7 +325,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
           }),
 
           // Summary
-          Object.keys(check).length > 0 ? h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #ec4899', marginTop: 14 } },
+          Object.keys(check).length > 0 ? h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #ec4899', marginTop: 14 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbcfe8', marginBottom: 8 } }, '📊 What this is showing'),
             abuseCount >= 1 ? h('div', { style: { padding: 10, borderRadius: 6, background: 'rgba(239,68,68,0.10)', borderLeft: '3px solid #ef4444', marginBottom: 8, fontSize: 13, color: '#fecaca', lineHeight: 1.7 } },
               h('strong', null, '⚠️ ' + abuseCount + ' dimension' + (abuseCount === 1 ? '' : 's') + ' marked abusive. '),
@@ -356,13 +356,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
           ),
 
           CONSENT_PRINCIPLES.map(function(p) {
-            return h('div', { key: p.id, style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #ec4899', marginBottom: 8 } },
+            return h('div', { key: p.id, style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #ec4899', marginBottom: 8 } },
               h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbcfe8', marginBottom: 4 } }, p.label),
               h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.7 } }, p.what)
             );
           }),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.4)', borderLeft: '3px solid #ef4444', marginTop: 14, fontSize: 13, color: '#fecaca', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.4)', borderRight: '1px solid rgba(239,68,68,0.4)', borderBottom: '1px solid rgba(239,68,68,0.4)', borderLeft: '3px solid #ef4444', marginTop: 14, fontSize: 13, color: '#fecaca', lineHeight: 1.7 } },
             h('strong', null, '⚠️ Coercion is not consent. '),
             'If someone wears you down, threatens to break up with you, threatens to spread photos or rumors, threatens self-harm if you don\'t — that is coercion, and consent under coercion is not consent. If someone has sex with you while you are drunk, high, or asleep, that is sexual assault. If you are not sure: RAINN has trained advocates 24/7 at 1-800-656-4673 or ',
             h('a', { href: 'https://www.rainn.org/', target: '_blank', rel: 'noopener noreferrer',
@@ -371,7 +371,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
           ),
 
           // Age of consent reminder
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginTop: 10, fontSize: 13, color: '#fde68a', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginTop: 10, fontSize: 13, color: '#fde68a', lineHeight: 1.7 } },
             h('strong', null, '⚖️ Age of consent varies by state. '),
             'In Maine, the age of consent is 16. In some states it is 17 or 18. Power-imbalance laws often apply when one person is much older or in a position of authority (teacher, coach, supervisor) regardless of age. A relationship with significant age gap may not be legal even if you both feel like you want it. This is structural, not about your feelings.'
           ),
@@ -398,7 +398,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
           ),
 
           // How abuse builds — grooming as a process
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #f97316', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f97316', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fdba74', marginBottom: 6 } }, '🧩 How abuse builds: grooming as a process'),
             h('p', { style: { margin: '0 0 10px', color: '#cbd5e1', fontSize: 12.5, lineHeight: 1.65 } },
               'Grooming is not just a checklist of warning signs. It is a sequence. Naming the stage you might be in is often the only way to recognize the pattern from the inside, because each stage by itself can look like care, attention, or love. This is true for adult predators AND for peer perpetrators (older partners, older siblings, friends).'
@@ -418,7 +418,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
           ),
 
           // The cycle of abuse — Walker (1979)
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#d8b4fe', marginBottom: 6 } }, '🔄 The cycle of abuse'),
             h('p', { style: { margin: '0 0 10px', color: '#cbd5e1', fontSize: 12.5, lineHeight: 1.65 } },
               'Lenore Walker described this in 1979 and it is still the standard frame in intimate-partner-violence training. The reason "but they apologized and things were good for a while" feels true is because reconciliation is part of the cycle, not evidence the cycle is over.'
@@ -443,7 +443,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
           ),
 
           // Coercive control — Stark (2007)
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #0891b2', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #0891b2', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#67e8f9', marginBottom: 6 } }, '🕸️ Coercive control: the umbrella pattern'),
             h('p', { style: { margin: '0 0 10px', color: '#cbd5e1', fontSize: 12.5, lineHeight: 1.65 } },
               'Evan Stark, 2007, argued that the core dynamic of intimate-partner abuse is not isolated violent incidents but an ongoing pattern of domination. This is now criminalized in the UK, Ireland, France, and several US states (CA, CT, HI). Most teen abuse is coercive-control-shaped, not punch-shaped, which is why it can be invisible to outside observers, parents, friends, even to the survivor.'
@@ -462,7 +462,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
           ),
 
           // Names for the patterns — psychoeducation
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #6366f1', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #6366f1', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#c7d2fe', marginBottom: 6 } }, '📖 Names for the patterns'),
             h('p', { style: { margin: '0 0 10px', color: '#cbd5e1', fontSize: 12.5, lineHeight: 1.65 } },
               'These are common patterns that show up across abusive relationships. Having a name for what is happening is power: you can google it, find others who have experienced it, and stop blaming yourself for not seeing it sooner.'
@@ -485,7 +485,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
           ),
 
           // Identity-specific control tactics
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #14b8a6', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #14b8a6', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#5eead4', marginBottom: 6 } }, '🌈 Identity-specific control tactics'),
             h('p', { style: { margin: '0 0 10px', color: '#cbd5e1', fontSize: 12.5, lineHeight: 1.65 } },
               'Abusers exploit whatever leverage your identity gives them. None of these mean the abuse is your fault. All of them are recognized in domestic-violence training. Help exists that understands these specifics; the hotlines below will not out you, will not call ICE, will not call the police without your consent.'
@@ -500,7 +500,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
           ),
 
           // Red flags
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #ef4444', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #ef4444', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fca5a5', marginBottom: 10 } }, '🚩 Red flags (early warning signs)'),
             h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: '#fee2e2', fontSize: 13, lineHeight: 1.85 } },
               h('li', null, 'Pressuring you for sex or pictures'),
@@ -518,7 +518,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
           ),
 
           // What to do
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#bbf7d0', marginBottom: 10 } }, '✓ What to do (in this order)'),
             h('ol', { style: { margin: 0, padding: '0 0 0 22px', color: '#dcfce7', fontSize: 13, lineHeight: 1.85 } },
               h('li', null, h('strong', null, 'Tell someone. '), 'A trusted adult — parent, school counselor, school psych, coach, aunt, family friend. Isolation is part of how abuse works; breaking it is the first step.'),
@@ -531,7 +531,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
           ),
 
           // Helplines
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #ec4899' } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #ec4899' } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbcfe8', marginBottom: 10 } }, '📞 Free, confidential, 24/7'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 } },
               helplineCard('Loveisrespect (teens, dating violence)', 'Text LOVEIS to 22522', 'Call 1-866-331-9474', 'https://www.loveisrespect.org/'),
@@ -584,7 +584,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
             sourceCard('Vera House', 'verahouse.org', 'Comprehensive sexual and domestic violence services. Good adult survivor resources.', 'https://www.verahouse.org/')
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'Teen dating violence rates are roughly 1 in 3 high schoolers (CDC data). This is common; many students reading this are in or have been in unhealthy relationships. Stigma keeps it hidden.'),
@@ -596,7 +596,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(236,72,153,0.10)', border: '1px solid rgba(236,72,153,0.3)', borderLeft: '3px solid #ec4899', fontSize: 12.5, color: '#fbcfe8', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(236,72,153,0.10)', borderTop: '1px solid rgba(236,72,153,0.3)', borderRight: '1px solid rgba(236,72,153,0.3)', borderBottom: '1px solid rgba(236,72,153,0.3)', borderLeft: '3px solid #ec4899', fontSize: 12.5, color: '#fbcfe8', lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'Teen dating violence is one of the most-missed adolescent health issues. Educators are the most common adults to first hear about it. Listen, believe, don\'t pressure (the student knows their situation better than you do), and connect them to a counselor or hotline. Loveisrespect has free educator training and curriculum at loveisrespect.org/for-professionals. For sexual assault disclosures: most states make educators mandatory reporters; know your state\'s laws. Have hotline numbers visible in your classroom.'
           ),
@@ -623,7 +623,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
         var ratingLabel = { healthy: 'Healthy', mixed: 'Mixed', unhealthy: 'Unhealthy', abusive: 'Abusive' };
 
         return h('div', null,
-          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(236,72,153,0.10)', border: '1px solid rgba(236,72,153,0.4)', borderLeft: '3px solid #ec4899', marginBottom: 12, fontSize: 12.5, color: '#fbcfe8', lineHeight: 1.65 } },
+          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(236,72,153,0.10)', borderTop: '1px solid rgba(236,72,153,0.4)', borderRight: '1px solid rgba(236,72,153,0.4)', borderBottom: '1px solid rgba(236,72,153,0.4)', borderLeft: '3px solid #ec4899', marginBottom: 12, fontSize: 12.5, color: '#fbcfe8', lineHeight: 1.65 } },
             h('strong', null, '🖨 Print my relationship-check artifact. '),
             'This is private. Print only for yourself or to bring to a counselor / school psych you trust. The 8-dimension Loveisrespect spectrum + your ratings + safety contacts. Nothing is saved or shared anywhere.'
           ),

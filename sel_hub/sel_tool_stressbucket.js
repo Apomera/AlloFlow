@@ -347,7 +347,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
 
           // Lists
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10, marginBottom: 12 } },
-            h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #fb7185' } },
+            h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #fb7185' } },
               h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fb7185', marginBottom: 8 } }, '💧 Inflow ' + '(' + inflow + ')'),
               stressors.length > 0
                 ? h('ul', { style: { margin: 0, padding: '0 0 0 16px', color: '#cbd5e1', fontSize: 12.5, lineHeight: 1.65 } },
@@ -357,7 +357,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
                     }))
                 : h('div', { style: { fontSize: 11, color: '#64748b', fontStyle: 'italic' } }, '(none added)')
             ),
-            h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #a78bfa' } },
+            h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a78bfa' } },
               h('div', { style: { fontSize: 13, fontWeight: 800, color: '#a78bfa', marginBottom: 8 } }, '🛟 Outflow ' + '(' + outflow + ')'),
               taps.length > 0
                 ? h('ul', { style: { margin: 0, padding: '0 0 0 16px', color: '#cbd5e1', fontSize: 12.5, lineHeight: 1.65 } },
@@ -369,7 +369,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
             )
           ),
 
-          overflow.length > 0 && overflowing ? h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.3)', borderLeft: '3px solid #ef4444', marginBottom: 12 } },
+          overflow.length > 0 && overflowing ? h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.3)', borderRight: '1px solid rgba(239,68,68,0.3)', borderBottom: '1px solid rgba(239,68,68,0.3)', borderLeft: '3px solid #ef4444', marginBottom: 12 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fca5a5', marginBottom: 6 } }, '⚠️ How my overflow shows up'),
             h('div', { style: { fontSize: 12.5, color: '#fecaca', lineHeight: 1.65 } }, overflow.join('  ·  '))
           ) : null,
@@ -438,7 +438,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
 
         return h('div', null,
           // Stressors
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #fb7185', marginBottom: 12 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #fb7185', marginBottom: 12 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fb7185', marginBottom: 8 } }, '💧 Stressors pouring INTO my bucket'),
             (d.stressors || []).length > 0 ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 10 } },
               (d.stressors || []).map(function(s, i) {
@@ -474,7 +474,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
           ),
 
           // Taps
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #a78bfa', marginBottom: 12 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a78bfa', marginBottom: 12 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#a78bfa', marginBottom: 8 } }, '🛟 Taps draining my bucket'),
             (d.taps || []).length > 0 ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 10 } },
               (d.taps || []).map(function(t, i) {
@@ -510,7 +510,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
           ),
 
           // Overflow signs
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #ef4444', marginBottom: 12 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #ef4444', marginBottom: 12 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fca5a5', marginBottom: 6 } }, '⚠️ How overflow shows up in me'),
             h('div', { style: { fontSize: 11.5, color: '#94a3b8', marginBottom: 8, fontStyle: 'italic', lineHeight: 1.5 } }, 'These are the early signs that your bucket is overflowing, so you can catch it earlier next time.'),
             (d.overflowSigns || []).length > 0
@@ -562,12 +562,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
         var bigTaps = taps.filter(function(t) { return t.capacity === 3; });
 
         return h('div', null,
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(20,184,166,0.08)', border: '1px solid rgba(20,184,166,0.3)', borderLeft: '3px solid #14b8a6', marginBottom: 14, fontSize: 13, color: '#99f6e4', lineHeight: 1.65 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(20,184,166,0.08)', borderTop: '1px solid rgba(20,184,166,0.3)', borderRight: '1px solid rgba(20,184,166,0.3)', borderBottom: '1px solid rgba(20,184,166,0.3)', borderLeft: '3px solid #14b8a6', marginBottom: 14, fontSize: 13, color: '#99f6e4', lineHeight: 1.65 } },
             h('strong', null, '💭 The bucket model is descriptive, not prescriptive. '),
             'It does not say "drain your bucket better." It says "see clearly what is in there, and decide what is yours to act on."'
           ),
 
-          inflow > outflow + 5 ? h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.3)', borderLeft: '3px solid #ef4444', marginBottom: 10 } },
+          inflow > outflow + 5 ? h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.3)', borderRight: '1px solid rgba(239,68,68,0.3)', borderBottom: '1px solid rgba(239,68,68,0.3)', borderLeft: '3px solid #ef4444', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, color: '#fca5a5', fontWeight: 800, marginBottom: 6 } }, '⚠️ Inflow is significantly higher than outflow'),
             h('p', { style: { margin: 0, color: '#fecaca', fontSize: 13, lineHeight: 1.65 } },
               'Your inflow is ' + inflow + ' and your outflow is ' + outflow + '. That is the kind of imbalance that runs people down over time. Two questions worth sitting with: (1) Is there a stressor on the inflow list that an adult could actually help reduce? (a workload, a conflict, a financial thing.) (2) Is there a tap you used to use that has fallen out of your week, that you could bring back?'
@@ -582,7 +582,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
               'A crushing-weight stressor is the kind that does not get solved by adding more taps. It usually needs an adult on it with you (counselor, parent, mentor, school psych). If you have not told anyone about a crushing-weight stressor, that is the most useful single move.')
           ) : null,
 
-          taps.length === 0 ? h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(167,139,250,0.10)', border: '1px solid rgba(167,139,250,0.3)', borderLeft: '3px solid #a78bfa', marginBottom: 10 } },
+          taps.length === 0 ? h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(167,139,250,0.10)', borderTop: '1px solid rgba(167,139,250,0.3)', borderRight: '1px solid rgba(167,139,250,0.3)', borderBottom: '1px solid rgba(167,139,250,0.3)', borderLeft: '3px solid #a78bfa', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, color: '#c4b5fd', fontWeight: 800, marginBottom: 6 } }, '💭 No taps listed'),
             h('p', { style: { margin: 0, color: '#e9d5ff', fontSize: 13, lineHeight: 1.65 } },
               'You have not added anything to the outflow side. Sometimes that is because you do not have any practices that help; sometimes it is because they do not feel "big enough" to count. They count. A 10-minute walk counts. Texting one friend counts. Watching one episode of a show that makes you feel like yourself counts. Add what is actually there.')
@@ -594,7 +594,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
               'These are doing the most work for you right now: ' + bigTaps.map(function(t) { return t.label; }).join('; ') + '. Worth noticing. If one of these is taken away (e.g. a sport season ends, a friend moves), you will probably need to find a new big tap, not just hope.')
           ) : null,
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, color: '#fcd34d', fontWeight: 800, marginBottom: 6 } }, '⚖️ Honest reflection question'),
             h('p', { style: { margin: 0, color: '#fde68a', fontSize: 13, lineHeight: 1.65 } },
               'Looking at your inflow side: which of those stressors is yours to act on, and which is structural? Structural stressors (a school policy, a family situation, a financial reality) are not your fault to "cope better" with. The bucket model is honest about this; if a structural stressor is pouring in at a heavy rate, the only real fix is at the source, not at your taps.'
@@ -719,7 +719,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
           ),
 
           // Honest limits
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'The bucket model can be used to imply that all stress is individually drainable through better coping. It is not. Many inflows are structural: poverty, racism, ableism, housing instability, oppressive school environments, family violence. Adding more "taps" does not fix a structural inflow; the source has to change.'),
@@ -729,7 +729,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(20,184,166,0.10)', border: '1px solid rgba(20,184,166,0.3)', borderLeft: '3px solid #14b8a6', fontSize: 12.5, color: '#99f6e4', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(20,184,166,0.10)', borderTop: '1px solid rgba(20,184,166,0.3)', borderRight: '1px solid rgba(20,184,166,0.3)', borderBottom: '1px solid rgba(20,184,166,0.3)', borderLeft: '3px solid #14b8a6', fontSize: 12.5, color: '#99f6e4', lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'The Stress Bucket pairs well with the Window of Tolerance: the Window is about real-time arousal, the Bucket is about accumulated load. A student whose bucket is overflowing is more likely to live outside their Window. The pair gives students two complementary self-knowledge tools without overcomplicating things.'
           ),

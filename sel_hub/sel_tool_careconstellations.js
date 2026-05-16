@@ -184,14 +184,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
 
         return h('div', null,
           // Empty-state framing
-          conns.length === 0 ? h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(253,164,175,0.10)', border: '1px solid rgba(253,164,175,0.3)', borderLeft: '4px solid #fda4af', marginBottom: 14, fontSize: 13.5, color: '#fecaca', lineHeight: 1.65 } },
+          conns.length === 0 ? h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(253,164,175,0.10)', borderTop: '1px solid rgba(253,164,175,0.3)', borderRight: '1px solid rgba(253,164,175,0.3)', borderBottom: '1px solid rgba(253,164,175,0.3)', borderLeft: '4px solid #fda4af', marginBottom: 14, fontSize: 13.5, color: '#fecaca', lineHeight: 1.65 } },
             h('strong', null, 'Your constellation is empty. '),
             'That is fine. Start with one connection that already exists in your life. The point is not to fill the map; the point is to make visible what is already there.',
             h('div', { style: { marginTop: 10 } },
               h('button', { onClick: function() { goto('add'); },
                 style: { padding: '8px 14px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#f43f5e', color: '#fff', fontWeight: 700, fontSize: 12 } }, '+ Add your first connection')
             )
-          ) : h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(253,164,175,0.08)', border: '1px solid rgba(253,164,175,0.2)', borderLeft: '3px solid #fda4af', marginBottom: 14, fontSize: 12.5, color: '#fecaca', lineHeight: 1.55 } },
+          ) : h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(253,164,175,0.08)', borderTop: '1px solid rgba(253,164,175,0.2)', borderRight: '1px solid rgba(253,164,175,0.2)', borderBottom: '1px solid rgba(253,164,175,0.2)', borderLeft: '3px solid #fda4af', marginBottom: 14, fontSize: 12.5, color: '#fecaca', lineHeight: 1.55 } },
             h('strong', null, conns.length + ' connection' + (conns.length === 1 ? '' : 's') + ' mapped. '),
             'Distance from center shows strength. Color shows category. Click any connection to edit or remove it.'
           ),
@@ -309,7 +309,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
         var cat = CARE_CATEGORIES.find(function(c) { return c.id === drafts.categoryId; }) || CARE_CATEGORIES[0];
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(253,164,175,0.08)', border: '1px solid rgba(253,164,175,0.25)', borderLeft: '3px solid #fda4af', marginBottom: 14, fontSize: 13, color: '#fecaca', lineHeight: 1.55 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(253,164,175,0.08)', borderTop: '1px solid rgba(253,164,175,0.25)', borderRight: '1px solid rgba(253,164,175,0.25)', borderBottom: '1px solid rgba(253,164,175,0.25)', borderLeft: '3px solid #fda4af', marginBottom: 14, fontSize: 13, color: '#fecaca', lineHeight: 1.55 } },
             editing ? 'Editing a connection. Save changes when done, or remove it.' : 'Add a person, practice, place, or non-human kin to your constellation.'
           ),
 
@@ -399,7 +399,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
       // ═══════════════════════════════════════════════════════
       function renderReflect() {
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(253,164,175,0.08)', border: '1px solid rgba(253,164,175,0.25)', borderLeft: '3px solid #fda4af', marginBottom: 14, fontSize: 13, color: '#fecaca', lineHeight: 1.55 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(253,164,175,0.08)', borderTop: '1px solid rgba(253,164,175,0.25)', borderRight: '1px solid rgba(253,164,175,0.25)', borderBottom: '1px solid rgba(253,164,175,0.25)', borderLeft: '3px solid #fda4af', marginBottom: 14, fontSize: 13, color: '#fecaca', lineHeight: 1.55 } },
             h('strong', null, '🧭 Reflection prompts. '),
             'Sit with these one at a time. Write what comes up if it helps. There is no requirement to answer all of them.'
           ),
@@ -427,7 +427,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
       function renderAbout() {
         return h('div', null,
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('careConstellations', h, ctx) : null),
-          h('div', { style: { padding: 14, borderRadius: 12, background: 'rgba(253,164,175,0.10)', border: '1px solid rgba(253,164,175,0.4)', borderLeft: '4px solid #fda4af', marginBottom: 14 } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: 'rgba(253,164,175,0.10)', borderTop: '1px solid rgba(253,164,175,0.4)', borderRight: '1px solid rgba(253,164,175,0.4)', borderBottom: '1px solid rgba(253,164,175,0.4)', borderLeft: '4px solid #fda4af', marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 8px', color: '#fecaca', fontSize: 17, fontWeight: 800 } }, 'Why this is called Care of Self, not Self-Care'),
             h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.75 } },
               'The grammar matters. ',
@@ -497,7 +497,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
           ),
 
           // The critique of consumerist self-care
-          h('div', { style: { padding: 14, borderRadius: 12, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.3)', borderLeft: '4px solid #ef4444', marginBottom: 14 } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: 'rgba(239,68,68,0.08)', borderTop: '1px solid rgba(239,68,68,0.3)', borderRight: '1px solid rgba(239,68,68,0.3)', borderBottom: '1px solid rgba(239,68,68,0.3)', borderLeft: '4px solid #ef4444', marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 8px', color: '#fca5a5', fontSize: 16, fontWeight: 800 } }, 'The critique to take seriously'),
             h('p', { style: { margin: '0 0 10px', color: '#fecaca', fontSize: 13, lineHeight: 1.75 } },
               'There is a real critique of modern "self-care" rhetoric, especially from disability scholars, Black feminist thinkers, and labor organizers:'
@@ -514,7 +514,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
           ),
 
           // Pointer toward the Orientations tool
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', fontSize: 13, color: '#e9d5ff', lineHeight: 1.6, marginBottom: 14 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.3)', borderRight: '1px solid rgba(168,85,247,0.3)', borderBottom: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', fontSize: 13, color: '#e9d5ff', lineHeight: 1.6, marginBottom: 14 } },
             h('strong', { style: { color: '#a855f7' } }, '🧭 More philosophical orientations: '),
             'Care of self is one tradition among many. If you want to see how different philosophies answer "what is the good life," "how should I act," and "what do I do with suffering," the ',
             h('strong', null, 'Orientations'),
@@ -536,7 +536,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
         var dirLabel = { 'to-me': 'cares for me', 'from-me': 'I care for', 'mutual': 'mutual care' };
 
         return h('div', null,
-          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(253,164,175,0.10)', border: '1px solid rgba(253,164,175,0.4)', borderLeft: '3px solid #fda4af', marginBottom: 12, fontSize: 12.5, color: '#fecaca', lineHeight: 1.65 } },
+          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(253,164,175,0.10)', borderTop: '1px solid rgba(253,164,175,0.4)', borderRight: '1px solid rgba(253,164,175,0.4)', borderBottom: '1px solid rgba(253,164,175,0.4)', borderLeft: '3px solid #fda4af', marginBottom: 12, fontSize: 12.5, color: '#fecaca', lineHeight: 1.65 } },
             h('strong', null, '🖨 My constellation map. '),
             'A relational artifact: who cares for me, who I care for, and the mutual care that runs both ways. Useful for IEPs, family meetings, intake with a new counselor, or just to remember on a thin day. Private; you decide who to share it with.'
           ),

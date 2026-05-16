@@ -3180,7 +3180,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                 // Safety entry: render as warm amber alert with embedded crisis-resources block.
                 if (run._safety) {
                   return h('div', { key: i, role: 'alert', 'aria-live': 'assertive', className: i === 0 ? 'llm-lit-fade-in' : '', style: {
-                    background: '#fef3c7', border: '1px solid #fcd34d', borderLeft: '4px solid #d97706', borderRadius: 8, padding: '12px 14px'
+                    background: '#fef3c7', borderTop: '1px solid #fcd34d', borderRight: '1px solid #fcd34d', borderBottom: '1px solid #fcd34d', borderLeft: '4px solid #d97706', borderRadius: 8, padding: '12px 14px'
                   } },
                     h('div', { style: { fontSize: 11, fontWeight: 800, color: '#92400e', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 } }, '🪶 Coach (paused before AI)'),
                     h('div', { style: { fontSize: 13, color: '#0f172a', lineHeight: 1.55, whiteSpace: 'pre-wrap' } }, run.text)
@@ -3494,8 +3494,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
               liveAsk[g.category] && h('span', { style: { fontSize: '11px', color: COLORS.muted, fontStyle: 'italic' } }, 'Compare the live answer to the canned one above.')
             ),
             liveAsk[g.category] && h('div', { className: 'llm-lit-fade-in', style: {
-              background: '#eff6ff', border: '1px solid #bfdbfe',
-              borderLeft: '4px solid ' + COLORS.accent2,
+              background: '#eff6ff', borderTop: '1px solid #bfdbfe', borderRight: '1px solid #bfdbfe', borderBottom: '1px solid #bfdbfe', borderLeft: '4px solid ' + COLORS.accent2,
               borderRadius: '10px', padding: '12px 14px', marginBottom: '10px',
               maxHeight: '260px', overflowY: 'auto'
             } },
@@ -4424,11 +4423,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                 currentAB && h('span', { style: { fontSize: '11px', color: COLORS.muted, fontStyle: 'italic' } }, 'Compare the two columns below.')
               ),
               currentAB && h('div', { className: 'llm-lit-fade-in', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '10px' } },
-                h('div', { style: { background: '#fff', border: '1px solid #fecaca', borderLeft: '4px solid ' + COLORS.bad, borderRadius: '8px', padding: '10px 12px' } },
+                h('div', { style: { background: '#fff', borderTop: '1px solid #fecaca', borderRight: '1px solid #fecaca', borderBottom: '1px solid #fecaca', borderLeft: '4px solid ' + COLORS.bad, borderRadius: '8px', padding: '10px 12px' } },
                   h('div', { style: { fontSize: '11px', color: COLORS.bad, fontWeight: 800, marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '.05em' } }, '\u2717 From WEAK prompt'),
                   h('div', { style: { fontSize: '12.5px', color: COLORS.text, lineHeight: 1.55, whiteSpace: 'pre-wrap', maxHeight: '280px', overflowY: 'auto' } }, flaggedText(currentAB.weak))
                 ),
-                h('div', { style: { background: '#fff', border: '1px solid #bbf7d0', borderLeft: '4px solid ' + COLORS.good, borderRadius: '8px', padding: '10px 12px' } },
+                h('div', { style: { background: '#fff', borderTop: '1px solid #bbf7d0', borderRight: '1px solid #bbf7d0', borderBottom: '1px solid #bbf7d0', borderLeft: '4px solid ' + COLORS.good, borderRadius: '8px', padding: '10px 12px' } },
                   h('div', { style: { fontSize: '11px', color: COLORS.good, fontWeight: 800, marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '.05em' } }, '\u2713 From STRONG prompt'),
                   h('div', { style: { fontSize: '12.5px', color: COLORS.text, lineHeight: 1.55, whiteSpace: 'pre-wrap', maxHeight: '280px', overflowY: 'auto' } }, flaggedText(currentAB.strong))
                 )
@@ -5455,16 +5454,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
               ),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '10px', marginBottom: '10px' } },
                 h('div', { style: {
-                  background: '#f0fdf4', border: '1px solid #bbf7d0',
-                  borderLeft: '4px solid ' + COLORS.good,
+                  background: '#f0fdf4', borderTop: '1px solid #bbf7d0', borderRight: '1px solid #bbf7d0', borderBottom: '1px solid #bbf7d0', borderLeft: '4px solid ' + COLORS.good,
                   borderRadius: '10px', padding: '12px'
                 } },
                   h('div', { style: { fontSize: '11px', fontWeight: 800, color: COLORS.good, marginBottom: '6px', letterSpacing: '.05em' } }, '\uD83E\uDEA1 SCAFFOLD VERSION'),
                   h('div', { style: { fontSize: '13px', color: COLORS.text, lineHeight: 1.6 } }, s.scaffold)
                 ),
                 h('div', { style: {
-                  background: '#fef2f2', border: '1px solid #fecaca',
-                  borderLeft: '4px solid ' + COLORS.bad,
+                  background: '#fef2f2', borderTop: '1px solid #fecaca', borderRight: '1px solid #fecaca', borderBottom: '1px solid #fecaca', borderLeft: '4px solid ' + COLORS.bad,
                   borderRadius: '10px', padding: '12px'
                 } },
                   h('div', { style: { fontSize: '11px', fontWeight: 800, color: COLORS.bad, marginBottom: '6px', letterSpacing: '.05em' } }, '\uD83E\uDDF1 SUBSTITUTE VERSION'),
@@ -5472,8 +5469,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                 )
               ),
               h('div', { style: {
-                background: '#eff6ff', border: '1px solid #bfdbfe',
-                borderLeft: '4px solid ' + COLORS.accent2,
+                background: '#eff6ff', borderTop: '1px solid #bfdbfe', borderRight: '1px solid #bfdbfe', borderBottom: '1px solid #bfdbfe', borderLeft: '4px solid ' + COLORS.accent2,
                 borderRadius: '10px', padding: '12px'
               } },
                 h('div', { style: { fontSize: '11px', fontWeight: 800, color: COLORS.accent2, marginBottom: '6px', letterSpacing: '.05em' } }, '\uD83D\uDD2C WHY THIS ONE MATTERS'),

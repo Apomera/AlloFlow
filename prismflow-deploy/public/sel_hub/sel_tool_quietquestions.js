@@ -230,7 +230,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
           ),
 
           // Guidance about the practice
-          h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(167,139,250,0.10)', border: '1px solid rgba(167,139,250,0.3)', borderLeft: '3px solid #a78bfa', marginBottom: 14, fontSize: 12.5, color: '#e9d5ff', lineHeight: 1.6 } },
+          h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(167,139,250,0.10)', borderTop: '1px solid rgba(167,139,250,0.3)', borderRight: '1px solid rgba(167,139,250,0.3)', borderBottom: '1px solid rgba(167,139,250,0.3)', borderLeft: '3px solid #a78bfa', marginBottom: 14, fontSize: 12.5, color: '#e9d5ff', lineHeight: 1.6 } },
             h('strong', null, '🌒 How this practice works: '),
             'sit with this question for a week. No need to answer it. You can write what comes up at any point: once, three times, every day, or not at all. The point is to let the question work on you, not to dispatch it.'
           ),
@@ -322,7 +322,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
         });
 
         return h('div', null,
-          h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.2)', borderLeft: '3px solid #a78bfa', marginBottom: 14, fontSize: 13, color: '#e9d5ff', lineHeight: 1.55 } },
+          h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(167,139,250,0.08)', borderTop: '1px solid rgba(167,139,250,0.2)', borderRight: '1px solid rgba(167,139,250,0.2)', borderBottom: '1px solid rgba(167,139,250,0.2)', borderLeft: '3px solid #a78bfa', marginBottom: 14, fontSize: 13, color: '#e9d5ff', lineHeight: 1.55 } },
             '📚 All 20 questions. Browse by theme. Click any question to read it or make it your current week\'s focus.'
           ),
           Object.keys(themes).map(function(tkey) {
@@ -374,7 +374,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
           h('div', { style: { fontSize: 12, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, responses.length + ' response' + (responses.length === 1 ? '' : 's')),
           responses.map(function(r, ri) {
             var q = QUERIES.find(function(qq) { return qq.id === r.queryId; }) || { themeLabel: '', themeColor: '#64748b', text: '(question not found)' };
-            return h('div', { key: ri, style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid ' + q.themeColor, marginBottom: 10 } },
+            return h('div', { key: ri, style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + q.themeColor, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' } },
                 h('div', { style: { fontSize: 10, color: q.themeColor, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, q.themeLabel),
                 h('div', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, monospace' } }, r.date),
@@ -424,7 +424,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', fontSize: 12.5, color: '#e9d5ff', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.3)', borderRight: '1px solid rgba(168,85,247,0.3)', borderBottom: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', fontSize: 12.5, color: '#e9d5ff', lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'Quaker queries are typically used in Crew-time and faculty meetings as conversation prompts. A simple Crew protocol: read the week\'s query aloud, three minutes of silent reflection, then pair-share for 90 seconds, then opening to the full Crew with a "no fixing, no judging" norm. Students who shared a Crew-version of their response in the tool can offer it; students who did not should not be asked to.'
           ),

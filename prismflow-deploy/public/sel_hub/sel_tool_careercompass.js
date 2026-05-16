@@ -239,7 +239,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
       }
 
       function authoritativeBanner() {
-        return h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(129,140,248,0.10)', border: '1px solid rgba(129,140,248,0.4)', borderLeft: '3px solid #818cf8', marginBottom: 12, fontSize: 12.5, color: '#e0e7ff', lineHeight: 1.65 } },
+        return h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(129,140,248,0.10)', borderTop: '1px solid rgba(129,140,248,0.4)', borderRight: '1px solid rgba(129,140,248,0.4)', borderBottom: '1px solid rgba(129,140,248,0.4)', borderLeft: '3px solid #818cf8', marginBottom: 12, fontSize: 12.5, color: '#e0e7ff', lineHeight: 1.65 } },
           h('strong', null, '🔗 The authoritative version: '),
           'the US Department of Labor\'s O*NET Interest Profiler at ',
           h('a', { href: 'https://www.mynextmove.org/explore/ip', target: '_blank', rel: 'noopener noreferrer',
@@ -285,7 +285,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
 
       function stepCard(stepNum, title, blurb, status, onClick, color) {
         return h('button', { onClick: onClick, 'aria-label': 'Step ' + stepNum + ': ' + title,
-          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, border: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: '#0f172a', cursor: 'pointer', marginBottom: 8, color: '#e2e8f0' } },
+          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: '#0f172a', cursor: 'pointer', marginBottom: 8, color: '#e2e8f0' } },
           h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4, flexWrap: 'wrap' } },
             h('span', { style: { fontSize: 14, fontWeight: 800, color: color, flex: 1 } }, title),
             h('span', { style: { fontSize: 11, color: color, fontWeight: 700 } }, status)
@@ -319,7 +319,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
         });
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(129,140,248,0.10)', border: '1px solid rgba(129,140,248,0.3)', borderLeft: '3px solid #818cf8', marginBottom: 14, fontSize: 12.5, color: '#e0e7ff', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(129,140,248,0.10)', borderTop: '1px solid rgba(129,140,248,0.3)', borderRight: '1px solid rgba(129,140,248,0.3)', borderBottom: '1px solid rgba(129,140,248,0.3)', borderLeft: '3px solid #818cf8', marginBottom: 14, fontSize: 12.5, color: '#e0e7ff', lineHeight: 1.65 } },
             h('strong', null, '✏️ How to do this: '),
             'For each statement, mark how you feel about doing the activity for work, not just trying it once. ',
             h('span', { style: { color: '#22c55e', fontWeight: 700 } }, 'Like'), ', ',
@@ -344,7 +344,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
           ['R', 'I', 'A', 'S', 'E', 'C'].map(function(typeId) {
             var type = TYPES[typeId];
             var items = typed[typeId] || [];
-            return h('div', { key: typeId, style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid ' + type.color, marginBottom: 10 } },
+            return h('div', { key: typeId, style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + type.color, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
                 h('span', { style: { fontSize: 18 } }, type.icon),
                 h('span', { style: { fontSize: 11, color: type.color, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, type.label + ' · ' + type.shortName)
@@ -420,7 +420,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
           // Per-type descriptions
           topThree.map(function(t, i) {
             var type = TYPES[t];
-            return h('div', { key: t, style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '4px solid ' + type.color, marginBottom: 10 } },
+            return h('div', { key: t, style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + type.color, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
                 h('span', { style: { fontSize: 30 } }, type.icon),
                 h('div', null,
@@ -473,7 +473,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
         var orderedTypes = complete ? topThree.concat(ranking.slice(3)) : ['R', 'I', 'A', 'S', 'E', 'C'];
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(129,140,248,0.10)', border: '1px solid rgba(129,140,248,0.3)', borderLeft: '3px solid #818cf8', marginBottom: 14, fontSize: 12.5, color: '#e0e7ff', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(129,140,248,0.10)', borderTop: '1px solid rgba(129,140,248,0.3)', borderRight: '1px solid rgba(129,140,248,0.3)', borderBottom: '1px solid rgba(129,140,248,0.3)', borderLeft: '3px solid #818cf8', marginBottom: 14, fontSize: 12.5, color: '#e0e7ff', lineHeight: 1.65 } },
             h('strong', null, '💼 Careers by Holland type. '),
             complete ? 'Your top three are listed first. ' : '',
             'These are sample careers, not complete lists. For depth + salary + education paths, check the linked O*NET pages for each.'
@@ -512,13 +512,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
       // ═══════════════════════════════════════════════════════════
       function renderClusters() {
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 12.5, color: '#fde68a', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 12.5, color: '#fde68a', lineHeight: 1.65 } },
             h('strong', null, '🗂️ The 16 Career Clusters '),
             'are a federal framework from the US Department of Education. They group careers by industry rather than by personality type, and they connect directly to Career and Technical Education (CTE) pathways. Many high schools organize their CTE programs around these clusters.'
           ),
 
           // Filter clusters that match top Holland types
-          complete ? h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #818cf8', marginBottom: 14 } },
+          complete ? h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #818cf8', marginBottom: 14 } },
             h('div', { style: { fontSize: 12, color: '#e0e7ff', fontWeight: 800, marginBottom: 8 } }, '⭐ Clusters that connect to your Holland code (' + topThree.join('') + ')'),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
               CLUSTERS.filter(function(c) {
@@ -560,7 +560,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
       // ═══════════════════════════════════════════════════════════
       function renderNextSteps() {
         return h('div', null,
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.3)', borderLeft: '3px solid #ef4444', marginBottom: 14, fontSize: 13, color: '#fecaca', lineHeight: 1.65 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.3)', borderRight: '1px solid rgba(239,68,68,0.3)', borderBottom: '1px solid rgba(239,68,68,0.3)', borderLeft: '3px solid #ef4444', marginBottom: 14, fontSize: 13, color: '#fecaca', lineHeight: 1.65 } },
             h('strong', null, '🚶 Small moves beat a perfect plan. '),
             'You do not need to pick a career today. You need ONE small move that gets you closer to knowing.'
           ),
@@ -590,7 +590,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
           ]),
 
           // Maine-specific note (Aaron is in Portland ME)
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', marginBottom: 12, fontSize: 12.5, color: '#bbf7d0', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(34,197,94,0.10)', borderTop: '1px solid rgba(34,197,94,0.3)', borderRight: '1px solid rgba(34,197,94,0.3)', borderBottom: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', marginBottom: 12, fontSize: 12.5, color: '#bbf7d0', lineHeight: 1.65 } },
             h('strong', null, '🏔 If you are in Maine: '),
             'check out ',
             h('a', { href: 'https://www.maine.gov/doe/cte', target: '_blank', rel: 'noopener noreferrer', style: { color: '#86efac', textDecoration: 'underline', fontWeight: 700 } }, 'Maine DOE Career and Technical Education ↗'),
@@ -598,7 +598,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
           ),
 
           // Cross-links to other AlloFlow tools
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #818cf8', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #818cf8', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#e0e7ff', marginBottom: 8 } }, '🔗 Pair this with other SEL Hub tools'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#cbd5e1', fontSize: 13, lineHeight: 1.75 } },
               h('li', null, h('strong', null, 'VIA Strengths'), ' — your signature character strengths point toward careers where you would thrive (a Social-type with the strength of "Honesty" might be drawn to teaching ethics; with "Bravery", firefighting or social work).'),
@@ -613,7 +613,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
       }
 
       function stepGroup(title, color, items) {
-        return h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid ' + color, marginBottom: 10 } },
+        return h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + color, marginBottom: 10 } },
           h('div', { style: { fontSize: 13, fontWeight: 800, color: color, marginBottom: 8 } }, title),
           h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#e2e8f0', fontSize: 13, lineHeight: 1.7 } },
             items.map(function(it, i) { return h('li', { key: i, style: { marginBottom: 4 } }, it); })
@@ -713,7 +713,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('careerCompass', h, ctx) : null),
 
           // Authoritative pointer
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(129,140,248,0.10)', border: '1px solid rgba(129,140,248,0.4)', borderLeft: '4px solid #818cf8', marginBottom: 14 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(129,140,248,0.10)', borderTop: '1px solid rgba(129,140,248,0.4)', borderRight: '1px solid rgba(129,140,248,0.4)', borderBottom: '1px solid rgba(129,140,248,0.4)', borderLeft: '4px solid #818cf8', marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 8px', color: '#e0e7ff', fontSize: 16 } }, '🔗 The authoritative version'),
             h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13.5, lineHeight: 1.7 } },
               'The US Department of Labor publishes the ',
@@ -752,7 +752,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
             sourceCard('Apprenticeship.gov (US DOL)', 'apprenticeship.gov', 'Find registered apprenticeships across the US. Free public resource.', 'https://www.apprenticeship.gov/')
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'A Holland code is a starting point, not a destiny. Many people thrive in careers outside their top three types; many switch careers in their 20s, 30s, and beyond.'),
@@ -765,7 +765,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(129,140,248,0.10)', border: '1px solid rgba(129,140,248,0.3)', borderLeft: '3px solid #818cf8', fontSize: 12.5, color: '#e0e7ff', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(129,140,248,0.10)', borderTop: '1px solid rgba(129,140,248,0.3)', borderRight: '1px solid rgba(129,140,248,0.3)', borderBottom: '1px solid rgba(129,140,248,0.3)', borderLeft: '3px solid #818cf8', fontSize: 12.5, color: '#e0e7ff', lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'Career Compass works well as a Crew-time or advisory activity over 1-2 sessions: students take the screener individually, then pair-share their Holland code and one career they want to learn more about. Pair with the official O*NET Interest Profiler for students who want depth. For high school, connect to your CTE counselor and dual-enrollment options. For middle school, the goal is exposure, not commitment.'
           ),

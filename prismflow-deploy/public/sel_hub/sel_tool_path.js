@@ -174,7 +174,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('path'))) {
           ),
 
           // Backward-first guidance
-          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.3)', borderLeft: '3px solid #fbbf24', marginBottom: 14, fontSize: 12.5, color: '#fde68a', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(251,191,36,0.10)', borderTop: '1px solid rgba(251,191,36,0.3)', borderRight: '1px solid rgba(251,191,36,0.3)', borderBottom: '1px solid rgba(251,191,36,0.3)', borderLeft: '3px solid #fbbf24', marginBottom: 14, fontSize: 12.5, color: '#fde68a', lineHeight: 1.65 } },
             h('strong', null, '⭐ Start with the North Star. '),
             'PATH is filled out BACKWARDS in the original practice: you begin with where you want to go (the North Star) and work back toward what you can do tomorrow. The reason is that small first steps make a lot more sense once you know what you are walking toward.'
           ),
@@ -375,7 +375,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('path'))) {
           ),
 
           // Honest limits
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'PATH puts a lot of weight on individual hope and effort. A student in a system that does not invest in them can do a beautiful PATH and still not be able to take the first steps. The system carries part of the work.'),
@@ -385,7 +385,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('path'))) {
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(129,140,248,0.10)', border: '1px solid rgba(129,140,248,0.3)', borderLeft: '3px solid #818cf8', fontSize: 12.5, color: '#e0e7ff', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(129,140,248,0.10)', borderTop: '1px solid rgba(129,140,248,0.3)', borderRight: '1px solid rgba(129,140,248,0.3)', borderBottom: '1px solid rgba(129,140,248,0.3)', borderLeft: '3px solid #818cf8', fontSize: 12.5, color: '#e0e7ff', lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'PATH works well at transition points (entering a new school, leaving high school, a major life change). For an in-person PATH meeting, plan 90-120 minutes; bring a large piece of paper and markers if you want to make the visual; have a facilitator who is not the student\'s direct teacher. Inclusion Press offers facilitator training.'
           ),

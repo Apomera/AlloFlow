@@ -1882,8 +1882,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 } },
               SAFE_TEMPS.map(function(t, i) {
                 return h('div', { key: i,
-                  style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
-                    borderLeft: '4px solid #fb923c', borderRadius: 10, padding: '12px 14px' } },
+                  style: { background: 'rgba(15,23,42,0.5)', borderTop: '1px solid rgba(100,116,139,0.3)', borderRight: '1px solid rgba(100,116,139,0.3)', borderBottom: '1px solid rgba(100,116,139,0.3)', borderLeft: '4px solid #fb923c', borderRadius: 10, padding: '12px 14px' } },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
                     h('span', { style: { fontSize: 22 }, 'aria-hidden': 'true' }, t.emoji),
                     h('div', { style: { flex: 1 } },
@@ -1913,7 +1912,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 { icon: '🧽', rule: 'Replace sponges weekly + microwave wet daily', detail: 'Damp kitchen sponges harbor more bacteria per square cm than the toilet seat. Microwaving wet for 90 seconds sanitizes most of it.' },
                 { icon: '🌡️', rule: 'Two-hour rule', detail: 'Cooked food in danger zone (40-140°F) → into fridge within 2 hours (1 hour if room is 90°F+).' }
               ].map(function(r, i) {
-                return h('div', { key: i, style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)', borderLeft: '4px solid #dc2626', padding: '10px 12px', borderRadius: 8 } },
+                return h('div', { key: i, style: { background: 'rgba(15,23,42,0.5)', borderTop: '1px solid rgba(100,116,139,0.3)', borderRight: '1px solid rgba(100,116,139,0.3)', borderBottom: '1px solid rgba(100,116,139,0.3)', borderLeft: '4px solid #dc2626', padding: '10px 12px', borderRadius: 8 } },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
                     h('span', { style: { fontSize: 20 }, 'aria-hidden': 'true' }, r.icon),
                     h('div', { style: { fontSize: 12, fontWeight: 700, color: '#fde68a' } }, r.rule)),
@@ -1927,7 +1926,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               'These 9 cause ~90% of all severe food allergic reactions in the US. Sesame was added in 2023. By law, packaged food must declare these. The "hidden in" column matters most — that\'s where surprises happen.'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 } },
               ALLERGENS_9.map(function(a, i) {
-                return h('div', { key: i, style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)', borderLeft: '4px solid #eab308', padding: '12px 14px', borderRadius: 10 } },
+                return h('div', { key: i, style: { background: 'rgba(15,23,42,0.5)', borderTop: '1px solid rgba(100,116,139,0.3)', borderRight: '1px solid rgba(100,116,139,0.3)', borderBottom: '1px solid rgba(100,116,139,0.3)', borderLeft: '4px solid #eab308', padding: '12px 14px', borderRadius: 10 } },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
                     h('span', { style: { fontSize: 22 }, 'aria-hidden': 'true' }, a.emoji),
                     h('div', { style: { flex: 1 } },
@@ -2072,7 +2071,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 { rule: 'Wash knives alone — never in a soapy sink', why: 'Hidden blade under bubbles is the #1 kitchen ER scenario. Wash separately, dry, return to block immediately.' },
                 { rule: 'Tuck thumb behind fingers when slicing', why: 'Your thumb is the last finger to curl — it sticks out. Tuck it BEHIND your other fingers so the knife can\'t reach it.' }
               ].map(function(r, i) {
-                return h('div', { key: i, style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)', borderLeft: '3px solid #fb923c', padding: '10px 12px', borderRadius: 8 } },
+                return h('div', { key: i, style: { background: 'rgba(15,23,42,0.5)', borderTop: '1px solid rgba(100,116,139,0.3)', borderRight: '1px solid rgba(100,116,139,0.3)', borderBottom: '1px solid rgba(100,116,139,0.3)', borderLeft: '3px solid #fb923c', padding: '10px 12px', borderRadius: 8 } },
                   h('div', { style: { fontSize: 12, fontWeight: 700, color: '#fde68a', marginBottom: 4 } }, r.rule),
                   h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, r.why));
               })))
@@ -2324,8 +2323,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12 } },
               BROWNING_EXAMPLES.map(function(b, i) {
                 return h('div', { key: i,
-                  style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
-                    borderLeft: '4px solid #fb923c', borderRadius: 10, padding: '12px 14px' } },
+                  style: { background: 'rgba(15,23,42,0.5)', borderTop: '1px solid rgba(100,116,139,0.3)', borderRight: '1px solid rgba(100,116,139,0.3)', borderBottom: '1px solid rgba(100,116,139,0.3)', borderLeft: '4px solid #fb923c', borderRadius: 10, padding: '12px 14px' } },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
                     h('span', { style: { fontSize: 24 }, 'aria-hidden': 'true' }, b.emoji),
                     h('div', { style: { flex: 1 } },
@@ -3059,7 +3057,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 return h('div', { key: i,
                   style: { display: 'flex', alignItems: 'center', gap: 14, padding: '12px 14px',
                     background: 'rgba(15,23,42,0.6)', borderRadius: 10,
-                    border: '1px solid rgba(100,116,139,0.3)', borderLeft: '4px solid ' + scoreColor } },
+                    borderTop: '1px solid rgba(100,116,139,0.3)', borderRight: '1px solid rgba(100,116,139,0.3)', borderBottom: '1px solid rgba(100,116,139,0.3)', borderLeft: '4px solid ' + scoreColor } },
                   h('div', { style: { fontSize: 11, fontWeight: 800, color: '#94a3b8', minWidth: 80 } }, 'Round ' + (i + 1)),
                   h('div', { style: { flex: 1, minWidth: 0 } },
                     h('div', { style: { fontSize: 13, fontWeight: 700, color: '#fde68a' } }, rname),
@@ -3278,8 +3276,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 8 } },
               activeConstraints.map(function(c, i) {
                 return h('div', { key: i,
-                  style: { background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(251,146,60,0.3)',
-                    borderLeft: '3px solid #fb923c', padding: '8px 10px', borderRadius: 6 } },
+                  style: { background: 'rgba(15,23,42,0.6)', borderTop: '1px solid rgba(251,146,60,0.3)', borderRight: '1px solid rgba(251,146,60,0.3)', borderBottom: '1px solid rgba(251,146,60,0.3)', borderLeft: '3px solid #fb923c', padding: '8px 10px', borderRadius: 6 } },
                   h('div', { style: { fontSize: 12, fontWeight: 700, color: '#fde68a', marginBottom: 2 } }, c.label),
                   h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.45 } }, c.description),
                   h('div', { style: { fontSize: 10, color: '#86efac', marginTop: 4, fontFamily: 'ui-monospace, Menlo, monospace' } },
@@ -3894,8 +3891,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                                    g.tag === 'principle' ? '#a78bfa' :
                                    g.tag === 'prep' ? '#fbbf24' : '#86efac';
                     return h('div', { key: i,
-                      style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
-                        borderLeft: '3px solid ' + tagColor, padding: '10px 12px', borderRadius: 8 } },
+                      style: { background: 'rgba(15,23,42,0.5)', borderTop: '1px solid rgba(100,116,139,0.3)', borderRight: '1px solid rgba(100,116,139,0.3)', borderBottom: '1px solid rgba(100,116,139,0.3)', borderLeft: '3px solid ' + tagColor, padding: '10px 12px', borderRadius: 8 } },
                       h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4, flexWrap: 'wrap' } },
                         h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fde68a' } }, g.term),
                         g.pron ? h('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, '/' + g.pron + '/') : null,
@@ -3917,8 +3913,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                   var heatLabel = o.smokeF >= 450 ? 'High-heat OK' : o.smokeF >= 375 ? 'Medium-heat' : 'Low-heat only';
                   return h('div', { key: i,
                     style: { display: 'grid', gridTemplateColumns: 'auto 1fr auto', gap: 12, alignItems: 'center',
-                      background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
-                      borderLeft: '4px solid ' + heatColor, padding: '12px 14px', borderRadius: 8 } },
+                      background: 'rgba(15,23,42,0.5)', borderTop: '1px solid rgba(100,116,139,0.3)', borderRight: '1px solid rgba(100,116,139,0.3)', borderBottom: '1px solid rgba(100,116,139,0.3)', borderLeft: '4px solid ' + heatColor, padding: '12px 14px', borderRadius: 8 } },
                     h('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 70 } },
                       h('div', { style: { fontSize: 16, fontWeight: 900, color: heatColor, fontFamily: 'ui-monospace, Menlo, monospace' } }, o.smokeF + '°F'),
                       h('div', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } }, o.smokeC + '°C')),
@@ -3942,8 +3937,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                 CONVERSIONS.map(function(c, i) {
                   return h('div', { key: i,
-                    style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
-                      borderLeft: '3px solid #38bdf8', padding: '10px 14px', borderRadius: 8 } },
+                    style: { background: 'rgba(15,23,42,0.5)', borderTop: '1px solid rgba(100,116,139,0.3)', borderRight: '1px solid rgba(100,116,139,0.3)', borderBottom: '1px solid rgba(100,116,139,0.3)', borderLeft: '3px solid #38bdf8', padding: '10px 14px', borderRadius: 8 } },
                     h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 4, flexWrap: 'wrap' } },
                       h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fde68a', fontFamily: 'ui-monospace, Menlo, monospace' } }, c.from),
                       h('span', { 'aria-hidden': 'true', style: { color: '#fb923c', fontSize: 14, fontWeight: 700 } }, '→'),
@@ -3962,8 +3956,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
                 SUBSTITUTIONS.map(function(s, i) {
                   return h('div', { key: i,
-                    style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
-                      borderLeft: '3px solid #a78bfa', padding: '12px 14px', borderRadius: 8 } },
+                    style: { background: 'rgba(15,23,42,0.5)', borderTop: '1px solid rgba(100,116,139,0.3)', borderRight: '1px solid rgba(100,116,139,0.3)', borderBottom: '1px solid rgba(100,116,139,0.3)', borderLeft: '3px solid #a78bfa', padding: '12px 14px', borderRadius: 8 } },
                     h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fde68a', marginBottom: 6 } },
                       'Missing: ' + s.missing),
                     h('div', { style: { fontSize: 12, color: '#dcfce7', lineHeight: 1.55, marginBottom: 6,
@@ -3982,8 +3975,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
                 TROUBLESHOOTING.map(function(t, i) {
                   return h('details', { key: i,
-                    style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
-                      borderLeft: '3px solid #fbbf24', borderRadius: 8 } },
+                    style: { background: 'rgba(15,23,42,0.5)', borderTop: '1px solid rgba(100,116,139,0.3)', borderRight: '1px solid rgba(100,116,139,0.3)', borderBottom: '1px solid rgba(100,116,139,0.3)', borderLeft: '3px solid #fbbf24', borderRadius: 8 } },
                     h('summary', {
                       style: { padding: '10px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 700, color: '#fde68a',
                         listStyle: 'none', display: 'flex', alignItems: 'center', gap: 8 } },
@@ -4013,8 +4005,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                     { name: 'IARC monographs', topic: 'Acrylamide classification (Group 2A, probable human carcinogen)', url: 'monographs.iarc.who.int' }
                   ].map(function(s, i) {
                     return h('div', { key: i,
-                      style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
-                        borderLeft: '3px solid #fb923c', padding: '10px 12px', borderRadius: 8 } },
+                      style: { background: 'rgba(15,23,42,0.5)', borderTop: '1px solid rgba(100,116,139,0.3)', borderRight: '1px solid rgba(100,116,139,0.3)', borderBottom: '1px solid rgba(100,116,139,0.3)', borderLeft: '3px solid #fb923c', padding: '10px 12px', borderRadius: 8 } },
                       h('div', { style: { fontSize: 12, fontWeight: 700, color: '#fde68a', marginBottom: 4 } }, s.name),
                       h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 4 } }, s.topic),
                       s.url !== 'book' ? h('div', { style: { fontSize: 10, color: '#fb923c', fontFamily: 'ui-monospace, Menlo, monospace' } }, s.url) : null);

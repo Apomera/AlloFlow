@@ -204,7 +204,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
           ),
 
           // Seeker vs avoider basics
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #f97316', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f97316', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fdba74', marginBottom: 10 } }, '🔍 The basic vocabulary'),
             h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: '#e2e8f0', fontSize: 13, lineHeight: 1.85 } },
               h('li', null, h('strong', { style: { color: '#fdba74' } }, 'Seeking'), ': you want MORE of this input. Heavy hugs. Loud music. Spicy food. Spinning. You feel BETTER when you get enough of it.'),
@@ -215,7 +215,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
           ),
 
           // The 8 systems overview
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #f97316', marginBottom: 14 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f97316', marginBottom: 14 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fdba74', marginBottom: 10 } }, '🧠 The 8 sensory systems'),
             h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 10, lineHeight: 1.55, fontStyle: 'italic' } },
               'Most people know 5 senses. There are actually 8 sensory systems, and the three less-known ones (proprioceptive, vestibular, interoceptive) are often the most important for regulation.'),
@@ -240,7 +240,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
 
       function stepCard(title, blurb, onClick, color) {
         return h('button', { onClick: onClick, 'aria-label': title,
-          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, border: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: '#0f172a', cursor: 'pointer', marginBottom: 8, color: '#e2e8f0' } },
+          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: '#0f172a', cursor: 'pointer', marginBottom: 8, color: '#e2e8f0' } },
           h('div', { style: { fontSize: 14, fontWeight: 800, color: color, marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.55 } }, blurb)
         );
@@ -262,7 +262,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
         }
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(249,115,22,0.10)', border: '1px solid rgba(249,115,22,0.3)', borderLeft: '3px solid #f97316', marginBottom: 14, fontSize: 12.5, color: '#fed7aa', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(249,115,22,0.10)', borderTop: '1px solid rgba(249,115,22,0.3)', borderRight: '1px solid rgba(249,115,22,0.3)', borderBottom: '1px solid rgba(249,115,22,0.3)', borderLeft: '3px solid #f97316', marginBottom: 14, fontSize: 12.5, color: '#fed7aa', lineHeight: 1.65 } },
             h('strong', null, '🗺️ Map your profile, one system at a time. '),
             'Don\'t overthink. Pick the answer that fits MOST of the time. You can add notes for the details.'
           ),
@@ -270,7 +270,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
           SYSTEMS.map(function(s) {
             var current = (d.profile || {})[s.id];
             var notes = (d.profileNotes || {})[s.id] || '';
-            return h('div', { key: s.id, style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '4px solid ' + s.color, marginBottom: 10 } },
+            return h('div', { key: s.id, style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + s.color, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
                 h('span', { style: { fontSize: 22 } }, s.icon),
                 h('span', { style: { fontSize: 14, fontWeight: 800, color: s.color } }, s.label)
@@ -338,7 +338,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
         var activities = d.regulatingActivities || [];
 
         return h('div', null,
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', marginBottom: 14, fontSize: 13, color: '#bbf7d0', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.10)', borderTop: '1px solid rgba(34,197,94,0.3)', borderRight: '1px solid rgba(34,197,94,0.3)', borderBottom: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', marginBottom: 14, fontSize: 13, color: '#bbf7d0', lineHeight: 1.7 } },
             h('strong', null, '🥗 A "sensory diet" '),
             'is a planned schedule of regulating sensory activities throughout the day — not food. The term was coined by OT Patricia Wilbarger. The idea: for many sensory-different people, regulation is not automatic. You PLAN regulating input the way some people plan meals.'
           ),
@@ -367,7 +367,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
           ),
 
           // Add activity
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#bbf7d0', marginBottom: 10 } }, '+ Add a regulating activity to my plan'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 8 } },
               h('div', null,
@@ -432,13 +432,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
         }
 
         return h('div', null,
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', borderLeft: '3px solid #6366f1', marginBottom: 14, fontSize: 13, color: '#c7d2fe', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(99,102,241,0.10)', borderTop: '1px solid rgba(99,102,241,0.3)', borderRight: '1px solid rgba(99,102,241,0.3)', borderBottom: '1px solid rgba(99,102,241,0.3)', borderLeft: '3px solid #6366f1', marginBottom: 14, fontSize: 13, color: '#c7d2fe', lineHeight: 1.7 } },
             h('strong', null, '📝 Concrete accommodations '),
             'follow from your sensory profile. Build this list before your next IEP meeting, 504 conversation, or self-advocacy chat with a teacher. The Self-Advocacy and DEAR MAN tools in this SEL Hub help you actually ASK for these.'
           ),
 
           // Selected accommodations
-          (d.myAccommodations || []).length > 0 ? h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #6366f1', marginBottom: 10 } },
+          (d.myAccommodations || []).length > 0 ? h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #6366f1', marginBottom: 10 } },
             h('div', { style: { fontSize: 12, color: '#c7d2fe', fontWeight: 800, marginBottom: 8 } }, 'My accommodations list (' + d.myAccommodations.length + ')'),
             d.myAccommodations.map(function(a, i) {
               return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: '#1e293b', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 } },
@@ -450,7 +450,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
           ) : null,
 
           // Add
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #6366f1', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #6366f1', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#c7d2fe', marginBottom: 8 } }, '+ Add an accommodation'),
             h('div', { style: { display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' } },
               h('label', { htmlFor: 'sens-acc-input', className: 'sr-only', style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 } }, 'Add accommodation'),
@@ -592,7 +592,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
             sourceCard('STAR Institute for Sensory Processing', 'sensoryhealth.org', 'OT-led research and education on sensory processing.', 'https://www.sensoryhealth.org/')
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'Sensory Processing Disorder (SPD) as a standalone diagnosis is contested. It is in the OT framework but not in the DSM-5. This does not mean sensory differences are not real; it means clinical categories are still being worked out.'),
@@ -603,7 +603,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(249,115,22,0.10)', border: '1px solid rgba(249,115,22,0.3)', borderLeft: '3px solid #f97316', fontSize: 12.5, color: '#fed7aa', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(249,115,22,0.10)', borderTop: '1px solid rgba(249,115,22,0.3)', borderRight: '1px solid rgba(249,115,22,0.3)', borderBottom: '1px solid rgba(249,115,22,0.3)', borderLeft: '3px solid #f97316', fontSize: 12.5, color: '#fed7aa', lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'Pair with Self-Advocacy and One-Page Profile for the IEP / 504 use case. For a class introduction (not a screening), simply teaching the 8 systems and the seeker/avoider vocabulary is enormously useful — many students discover language for experiences they have always had. Listen to autistic-led voices on what affirming practice looks like; ASAN is the best entry point.'
           ),

@@ -194,7 +194,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
 
         return h('div', null,
           // The ask in plain language
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #3b82f6', marginBottom: 12 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #3b82f6', marginBottom: 12 } },
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
               h('div', null,
                 h('label', { htmlFor: 'dm-ask', style: { display: 'block', fontSize: 11, color: '#93c5fd', fontWeight: 800, marginBottom: 4 } }, 'What am I asking for, in one sentence?'),
@@ -216,7 +216,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
           // 7 prompt cards
           LETTERS.map(function(L, idx) {
             var v = (d.responses || {})[L.id] || '';
-            return h('div', { key: L.id, style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '4px solid ' + L.color, marginBottom: 10 } },
+            return h('div', { key: L.id, style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + L.color, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 } },
                 h('span', { style: { fontSize: 22, fontWeight: 900, color: L.color, fontFamily: 'ui-monospace, monospace', minWidth: 28 } }, L.letter),
                 h('span', { style: { fontSize: 14, fontWeight: 800, color: L.color } }, L.label),
@@ -287,7 +287,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
           LETTERS.map(function(L) {
             var v = (d.responses || {})[L.id];
             if (!v || !v.trim()) return null;
-            return h('div', { key: L.id, style: { padding: 10, borderRadius: 8, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid ' + L.color, marginBottom: 6 } },
+            return h('div', { key: L.id, style: { padding: 10, borderRadius: 8, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + L.color, marginBottom: 6 } },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 } },
                 h('span', { style: { fontSize: 16, fontWeight: 900, color: L.color, fontFamily: 'ui-monospace, monospace', minWidth: 22 } }, L.letter),
                 h('span', { style: { fontSize: 11, color: L.color, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, L.label)
@@ -297,7 +297,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
           }),
 
           // Practice prompts
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(59,130,246,0.10)', border: '1px solid rgba(59,130,246,0.3)', borderLeft: '3px solid #3b82f6', marginTop: 12, marginBottom: 8 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(59,130,246,0.10)', borderTop: '1px solid rgba(59,130,246,0.3)', borderRight: '1px solid rgba(59,130,246,0.3)', borderBottom: '1px solid rgba(59,130,246,0.3)', borderLeft: '3px solid #3b82f6', marginTop: 12, marginBottom: 8 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#bfdbfe', marginBottom: 6 } }, '🪞 Practice before you do it for real'),
             h('div', { style: { fontSize: 12.5, color: '#dbeafe', lineHeight: 1.7 } },
               h('div', null, '• Read your script out loud in private. Hear yourself say it.'),
@@ -444,7 +444,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
             sourceCard('DBT Self Help', 'dbtselfhelp.com', 'Free open educational resource covering DEAR MAN and the modifiers.', 'https://dbtselfhelp.com/')
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'DEAR MAN works best when the other person is willing to hear you, even if they will not agree. With someone abusive or unsafe, DEAR MAN is the WRONG tool; safety comes first, and the conversation should include an adult who can hold it.'),
@@ -455,7 +455,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(59,130,246,0.10)', border: '1px solid rgba(59,130,246,0.3)', borderLeft: '3px solid #3b82f6', fontSize: 12.5, color: '#bfdbfe', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(59,130,246,0.10)', borderTop: '1px solid rgba(59,130,246,0.3)', borderRight: '1px solid rgba(59,130,246,0.3)', borderBottom: '1px solid rgba(59,130,246,0.3)', borderLeft: '3px solid #3b82f6', fontSize: 12.5, color: '#bfdbfe', lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'DEAR MAN pairs naturally with the Self-Advocacy tool in this SEL Hub. A useful Crew protocol: each student picks a real low-stakes ask, builds the DEAR MAN script in this tool, then pair-practices with a partner playing the listener. Build the muscle on small asks before students need it on big ones. Note: many students benefit from building DEAR MAN scripts with a counselor before family conversations.'
           ),

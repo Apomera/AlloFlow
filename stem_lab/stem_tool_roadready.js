@@ -22109,8 +22109,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 marginBottom: '12px',
                 padding: '14px 16px',
                 background: '#0f172a',
-                border: '1px solid #1e293b',
-                borderLeft: '4px solid ' + sec.color,
+                borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + sec.color,
                 borderRadius: '10px'
               }
             },
@@ -22142,8 +22141,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               marginTop: '16px', marginBottom: '12px',
               padding: '14px 16px',
               background: 'linear-gradient(135deg, rgba(34,197,94,0.10), rgba(15,23,42,0))',
-              border: '1px solid rgba(34,197,94,0.35)',
-              borderLeft: '4px solid #22c55e',
+              borderTop: '1px solid rgba(34,197,94,0.35)', borderRight: '1px solid rgba(34,197,94,0.35)', borderBottom: '1px solid rgba(34,197,94,0.35)', borderLeft: '4px solid #22c55e',
               borderRadius: '10px'
             }
           },
@@ -22176,8 +22174,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               marginBottom: '12px',
               padding: '14px 16px',
               background: 'linear-gradient(135deg, rgba(59,130,246,0.08), rgba(15,23,42,0))',
-              border: '1px solid rgba(59,130,246,0.30)',
-              borderLeft: '4px solid #60a5fa',
+              borderTop: '1px solid rgba(59,130,246,0.30)', borderRight: '1px solid rgba(59,130,246,0.30)', borderBottom: '1px solid rgba(59,130,246,0.30)', borderLeft: '4px solid #60a5fa',
               borderRadius: '10px'
             }
           },
@@ -25667,7 +25664,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '10px' } },
             legend.map(function(lg) {
               var keys = Object.keys(keyMap).filter(function(k) { return keyMap[k].group === lg.group; });
-              return h('div', { key: lg.group, style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155', borderLeft: '4px solid ' + lg.color } },
+              return h('div', { key: lg.group, style: { background: '#0f172a', borderRadius: '10px', padding: '14px', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '4px solid ' + lg.color } },
                 h('div', { style: { fontSize: '11px', fontWeight: 800, color: lg.color, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' } }, lg.label),
                 keys.map(function(k) {
                   return h('div', { key: k, style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '3px 0', fontSize: '11px' } },
@@ -26801,7 +26798,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', { style: { fontSize: '11px', color: '#fda4af' } }, 'What each light means, how serious it is, and exactly what to do.')
           ),
           lights.map(function(lt, i) {
-            return h('div', { key: i, style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155', borderLeft: '4px solid ' + lt.color, marginBottom: '8px' } },
+            return h('div', { key: i, style: { background: '#0f172a', borderRadius: '10px', padding: '14px', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '4px solid ' + lt.color, marginBottom: '8px' } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
                   h('span', { style: { fontSize: '18px' } }, lt.icon),

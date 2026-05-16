@@ -294,7 +294,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
             addTo(key, el.value);
             el.value = '';
           }
-          return h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid ' + color, marginBottom: 12 } },
+          return h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + color, marginBottom: 12 } },
             h('div', { style: { fontSize: 13, color: color, fontWeight: 800, marginBottom: 6 } }, title),
             h('div', { style: { fontSize: 11.5, color: '#94a3b8', marginBottom: 10, lineHeight: 1.55, fontStyle: 'italic' } }, blurb),
 
@@ -376,7 +376,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
 
           // Show triggers + practices if outside the window
           cur && cur !== 'window' ? h('div', null,
-            h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #a78bfa', marginBottom: 10 } },
+            h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a78bfa', marginBottom: 10 } },
               h('div', { style: { fontSize: 13, fontWeight: 800, color: '#a78bfa', marginBottom: 8 } }, '🛟 Things that bring me back to the window'),
               (d.practices || []).length > 0
                 ? h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
@@ -393,7 +393,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
             )
           ) : null,
 
-          cur === 'window' ? h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(20,184,166,0.10)', border: '1px solid rgba(20,184,166,0.3)', borderLeft: '3px solid #14b8a6', fontSize: 13, color: '#99f6e4', lineHeight: 1.65 } },
+          cur === 'window' ? h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(20,184,166,0.10)', borderTop: '1px solid rgba(20,184,166,0.3)', borderRight: '1px solid rgba(20,184,166,0.3)', borderBottom: '1px solid rgba(20,184,166,0.3)', borderLeft: '3px solid #14b8a6', fontSize: 13, color: '#99f6e4', lineHeight: 1.65 } },
             h('strong', null, '🪟 You are in the window. '),
             'Good. Notice what it feels like, in your body, right now. The more you know your own "in-window" signs, the easier it is to tell when you are drifting out.'
           ) : null,
@@ -498,7 +498,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
           ),
 
           // Honest limits
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'The Window of Tolerance is a useful metaphor and a clinical-practice anchor. It is NOT the same kind of empirical model as, say, the Glasgow Coma Scale; the boundaries are heuristic, not measured. Useful for self-knowledge, not for clinical diagnosis.'),
@@ -508,7 +508,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(20,184,166,0.10)', border: '1px solid rgba(20,184,166,0.3)', borderLeft: '3px solid #14b8a6', fontSize: 12.5, color: '#99f6e4', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(20,184,166,0.10)', borderTop: '1px solid rgba(20,184,166,0.3)', borderRight: '1px solid rgba(20,184,166,0.3)', borderBottom: '1px solid rgba(20,184,166,0.3)', borderLeft: '3px solid #14b8a6', fontSize: 12.5, color: '#99f6e4', lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'The Window of Tolerance is a vocabulary that can transform a classroom. A teacher who can name a student\'s zone ("I notice you\'re out of your window right now; what helps?") is doing trauma-informed practice. The vocabulary becomes useful only after students have personally built their own Window; do not impose the language without the personal work.'
           ),

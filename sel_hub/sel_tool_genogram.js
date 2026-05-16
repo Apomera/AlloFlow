@@ -142,7 +142,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
       }
 
       function safetyBanner() {
-        return h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.4)', borderLeft: '3px solid #f59e0b', marginBottom: 12, fontSize: 12.5, color: '#fde68a', lineHeight: 1.65 } },
+        return h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.4)', borderRight: '1px solid rgba(245,158,11,0.4)', borderBottom: '1px solid rgba(245,158,11,0.4)', borderLeft: '3px solid #f59e0b', marginBottom: 12, fontSize: 12.5, color: '#fde68a', lineHeight: 1.65 } },
           h('strong', null, '⚖️ Important framing. '),
           'A genogram is a clinical family-systems tool. Used for personal self-understanding (mapping where you come from) it is generally safe and often useful. Used for deeper work (family-of-origin therapy, intergenerational trauma, addiction patterns, etc.) it should be paired with a family therapist or licensed clinician. This tool is the first kind, not the second.'
         );
@@ -418,7 +418,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
           (d.addingForGen || d.editingPersonId) ? renderForm() : null,
           GENS.map(function(g) {
             var genPeople = people.filter(function(p) { return p.gen === g.id; });
-            return h('div', { key: g.id, style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #fb7185', marginBottom: 10 } },
+            return h('div', { key: g.id, style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #fb7185', marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
                 h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fda4af', flex: 1 } }, g.label),
                 h('button', { onClick: function() { startAdd(g.id); }, 'aria-label': 'Add person in ' + g.label,
@@ -599,7 +599,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
       function renderAbout() {
         return h('div', null,
           // Strong, prominent safety frame at top
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.4)', borderLeft: '4px solid #f59e0b', marginBottom: 14 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.4)', borderRight: '1px solid rgba(245,158,11,0.4)', borderBottom: '1px solid rgba(245,158,11,0.4)', borderLeft: '4px solid #f59e0b', marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 8px', color: '#fcd34d', fontSize: 16 } }, '⚖️ Read this first'),
             h('p', { style: { margin: '0 0 8px', color: '#fde68a', fontSize: 13.5, lineHeight: 1.7 } },
               'A genogram is a clinical family-systems tool. Used for personal self-understanding (mapping where you come from, naming the people in your family, noticing patterns you already know about) it is generally safe and often illuminating.'
@@ -635,7 +635,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
           ),
 
           // Honest limits
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits of this format'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'Family-of-origin work is not a worksheet. The genogram is most useful when paired with a person who can hold the conversation that comes up around it.'),
@@ -645,7 +645,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(251,113,133,0.10)', border: '1px solid rgba(251,113,133,0.3)', borderLeft: '3px solid #fb7185', fontSize: 12.5, color: '#fecdd3', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(251,113,133,0.10)', borderTop: '1px solid rgba(251,113,133,0.3)', borderRight: '1px solid rgba(251,113,133,0.3)', borderBottom: '1px solid rgba(251,113,133,0.3)', borderLeft: '3px solid #fb7185', fontSize: 12.5, color: '#fecdd3', lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'Genograms are typically a clinician\'s tool, not a classroom assignment. If a student wants to draw their own as personal self-understanding, that is appropriate; if a teacher assigns it to a class as homework, that is not. The reason is that family-of-origin material is intimate, the patterns it surfaces can be heavy, and students do not get a choice about whose family they are mapping. For classroom use, the Ecomap or Circles of Support are much safer than a genogram.'
           ),

@@ -130,7 +130,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
       }
 
       function safetyBanner() {
-        return h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(167,139,250,0.10)', border: '1px solid rgba(167,139,250,0.4)', borderLeft: '3px solid #a78bfa', marginBottom: 12, fontSize: 12.5, color: '#e9d5ff', lineHeight: 1.65 } },
+        return h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(167,139,250,0.10)', borderTop: '1px solid rgba(167,139,250,0.4)', borderRight: '1px solid rgba(167,139,250,0.4)', borderBottom: '1px solid rgba(167,139,250,0.4)', borderLeft: '3px solid #a78bfa', marginBottom: 12, fontSize: 12.5, color: '#e9d5ff', lineHeight: 1.65 } },
           h('strong', null, '📓 What this is: '),
           'a CBT (Cognitive Behavioral Therapy) reflection. CBT helps when the thoughts driving a hard feeling are out of proportion to the actual situation. It does NOT help when the situation itself is the problem (an injustice, a real loss, an unsafe environment). If your honest answer to "is this thought really distorted, or is something genuinely wrong?" is the second one, this tool is the wrong tool, and you deserve an adult on the situation with you.'
         );
@@ -293,7 +293,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
       var textareaStyle = { width: '100%', minHeight: 90, padding: 10, borderRadius: 6, border: '1px solid #334155', background: '#1e293b', color: '#e2e8f0', fontSize: 13.5, fontFamily: 'inherit', lineHeight: 1.6, resize: 'vertical' };
 
       function stepBoxStyle(color) {
-        return { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid ' + color, marginBottom: 12 };
+        return { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + color, marginBottom: 12 };
       }
       function stepHeaderStyle(stepNum, title, color) {
         return { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8 };
@@ -334,7 +334,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
           entries.map(function(e) {
             var shift = (e.emotion1Rating || 0) - (e.emotion2Rating || 0);
             var distortionLabels = (e.distortions || []).map(function(id) { var di = DISTORTIONS.find(function(x) { return x.id === id; }); return di ? di.label : ''; }).filter(Boolean);
-            return h('div', { key: e.id, style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #a78bfa', marginBottom: 10 } },
+            return h('div', { key: e.id, style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a78bfa', marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
                 h('span', { style: { fontSize: 11, color: '#94a3b8', fontFamily: 'ui-monospace, monospace' } }, e.date),
                 h('span', { style: { fontSize: 12, color: '#e9d5ff', fontWeight: 700 } }, (e.emotion1 || 'emotion') + ' · ' + e.emotion1Rating + ' → ' + e.emotion2Rating),
@@ -451,7 +451,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
           ),
 
           // Honest limits
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'CBT can be misused. The assumption that distorted thinking is the source of suffering presumes the situation is okay; sometimes it is not. A student in a genuinely unsafe environment who is told their fear is a "catastrophizing distortion" is being gaslit, not helped.'),
@@ -461,7 +461,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(167,139,250,0.10)', border: '1px solid rgba(167,139,250,0.3)', borderLeft: '3px solid #a78bfa', fontSize: 12.5, color: '#e9d5ff', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(167,139,250,0.10)', borderTop: '1px solid rgba(167,139,250,0.3)', borderRight: '1px solid rgba(167,139,250,0.3)', borderBottom: '1px solid rgba(167,139,250,0.3)', borderLeft: '3px solid #a78bfa', fontSize: 12.5, color: '#e9d5ff', lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'Thought records are a clinical-grade tool that students can use as self-help. They work best when paired with a skill-building conversation: walking through a record together once or twice, then handing it back as a private practice. If a student is doing thought records every day and they are not helping, that is a sign the underlying situation needs adult attention, not more records.'
           ),

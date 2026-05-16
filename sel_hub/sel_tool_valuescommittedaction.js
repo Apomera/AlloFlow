@@ -219,7 +219,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
           stepCard(2, 'Pick your top values', 'From your core values, choose 3-5 that feel most central right now.', topCount + ' chosen', function() { goto('top'); }, '#a855f7'),
           stepCard(3, 'Commit to small actions', 'For each top value, list 1-3 concrete things you will do this week.', acts + ' action' + (acts === 1 ? '' : 's'), function() { goto('actions'); }, '#22c55e'),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(129,140,248,0.10)', border: '1px solid rgba(129,140,248,0.3)', borderLeft: '3px solid #818cf8', fontSize: 12.5, color: '#e0e7ff', lineHeight: 1.6, marginTop: 12 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(129,140,248,0.10)', borderTop: '1px solid rgba(129,140,248,0.3)', borderRight: '1px solid rgba(129,140,248,0.3)', borderBottom: '1px solid rgba(129,140,248,0.3)', borderLeft: '3px solid #818cf8', fontSize: 12.5, color: '#e0e7ff', lineHeight: 1.6, marginTop: 12 } },
             h('strong', null, '🧠 The ACT shift: '),
             'When you cannot reach a goal (it gets blocked, life changes, you fail), you can still LIVE the value. If "kindness" is a value, you can do kindness today regardless of whether anyone notices. Values keep working when goals stop.'
           ),
@@ -230,7 +230,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
 
       function stepCard(stepNum, title, blurb, status, onClick, color) {
         return h('button', { onClick: onClick, 'aria-label': 'Go to step ' + stepNum + ': ' + title,
-          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, border: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: '#0f172a', cursor: 'pointer', marginBottom: 10, color: '#e2e8f0' } },
+          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: '#0f172a', cursor: 'pointer', marginBottom: 10, color: '#e2e8f0' } },
           h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 } },
             h('span', { style: { fontSize: 18, fontWeight: 900, color: color } }, 'Step ' + stepNum),
             h('span', { style: { fontSize: 14, fontWeight: 700, color: '#e2e8f0', flex: 1 } }, title),
@@ -257,7 +257,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
         });
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(129,140,248,0.10)', border: '1px solid rgba(129,140,248,0.3)', borderLeft: '3px solid #818cf8', marginBottom: 14, fontSize: 12.5, color: '#e0e7ff', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(129,140,248,0.10)', borderTop: '1px solid rgba(129,140,248,0.3)', borderRight: '1px solid rgba(129,140,248,0.3)', borderBottom: '1px solid rgba(129,140,248,0.3)', borderLeft: '3px solid #818cf8', marginBottom: 14, fontSize: 12.5, color: '#e0e7ff', lineHeight: 1.65 } },
             h('strong', null, '🃏 Sort each value. '),
             'For each card, pick: ',
             h('span', { style: { color: '#22c55e', fontWeight: 700 } }, 'CORE'), ' (essential to me), ',
@@ -329,7 +329,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
         }
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(129,140,248,0.10)', border: '1px solid rgba(129,140,248,0.3)', borderLeft: '3px solid #818cf8', marginBottom: 14, fontSize: 12.5, color: '#e0e7ff', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(129,140,248,0.10)', borderTop: '1px solid rgba(129,140,248,0.3)', borderRight: '1px solid rgba(129,140,248,0.3)', borderBottom: '1px solid rgba(129,140,248,0.3)', borderLeft: '3px solid #818cf8', marginBottom: 14, fontSize: 12.5, color: '#e0e7ff', lineHeight: 1.65 } },
             h('strong', null, '⭐ Pick 3-5 that feel most central right now. '),
             'You can star up to 7. These are the values that, if your week ended and you looked back, you would most want to have lived in the direction of.'
           ),
@@ -350,7 +350,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
             })
           ),
 
-          (d.topValues || []).length > 0 ? h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', marginTop: 14 } },
+          (d.topValues || []).length > 0 ? h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.3)', borderRight: '1px solid rgba(168,85,247,0.3)', borderBottom: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', marginTop: 14 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#e9d5ff', marginBottom: 6 } }, '⭐ Your top values'),
             h('div', { style: { fontSize: 14, color: '#fff', lineHeight: 1.7 } },
               (d.topValues || []).map(function(id) {
@@ -404,7 +404,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
         }
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', marginBottom: 14, fontSize: 12.5, color: '#bbf7d0', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(34,197,94,0.10)', borderTop: '1px solid rgba(34,197,94,0.3)', borderRight: '1px solid rgba(34,197,94,0.3)', borderBottom: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', marginBottom: 14, fontSize: 12.5, color: '#bbf7d0', lineHeight: 1.65 } },
             h('strong', null, '✓ Committed action means small and concrete. '),
             'For each top value, name 1-3 things you will DO this week that move in the direction of that value. "Be more kind" is too vague. "Text my sister and ask how her week is" is a committed action.'
           ),
@@ -413,7 +413,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
             var c = VALUE_CARDS.find(function(x) { return x.id === id; });
             if (!c) return null;
             var actions = (d.actions || {})[id] || [];
-            return h('div', { key: id, style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 12 } },
+            return h('div', { key: id, style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 12 } },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8 } },
                 h('span', { style: { fontSize: 20 } }, '⭐'),
                 h('div', null,
@@ -558,7 +558,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
             sourceCard('A-Tjak, J. G. L. et al. (2015)', '"A Meta-Analysis of the Efficacy of ACT for Clinically Relevant Mental and Physical Health Problems," Psychotherapy and Psychosomatics, 84(1), 30-36', 'Meta-analytic review of ACT outcomes across conditions.', null)
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'ACT was developed in a Western therapeutic tradition. The values list is broad but reflects cultural assumptions; if a core value of yours is not on the list, add it in your own words.'),
@@ -569,7 +569,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(129,140,248,0.10)', border: '1px solid rgba(129,140,248,0.3)', borderLeft: '3px solid #818cf8', fontSize: 12.5, color: '#e0e7ff', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(129,140,248,0.10)', borderTop: '1px solid rgba(129,140,248,0.3)', borderRight: '1px solid rgba(129,140,248,0.3)', borderBottom: '1px solid rgba(129,140,248,0.3)', borderLeft: '3px solid #818cf8', fontSize: 12.5, color: '#e0e7ff', lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'Values and Committed Action pairs naturally with Goal Setter (concrete SMART goals) and HOWL Tracker (Effective Effort persistence). A productive Crew protocol: each student picks one value, names one committed action for the week, then reports back next Crew on what they did and what got in the way. The "what got in the way" piece often surfaces structural barriers that adults can help address.'
           ),

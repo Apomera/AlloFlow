@@ -420,7 +420,7 @@ window.SelHub = window.SelHub || {
             h('button', { onClick: function() { try { window.print(); } catch (e) {} }, 'aria-label': 'Print or save as PDF',
               style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
           ),
-          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: '#ecfdf5', border: '1px solid #6ee7b7', borderLeft: '3px solid #059669', marginBottom: 14, fontSize: 12.5, color: '#065f46', lineHeight: 1.65 } },
+          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: '#ecfdf5', borderTop: '1px solid #6ee7b7', borderRight: '1px solid #6ee7b7', borderBottom: '1px solid #6ee7b7', borderLeft: '3px solid #059669', marginBottom: 14, fontSize: 12.5, color: '#065f46', lineHeight: 1.65 } },
             h('strong', null, '🖨 OARS pocket card. '),
             'A reference for peer support: the four OARS skills, common pitfalls, and the safety signals that mean STOP and get an adult. Designed to fold and carry. Print on one page.'
           ),

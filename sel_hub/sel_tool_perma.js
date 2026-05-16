@@ -237,7 +237,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
             d.lastUpdated ? statCard('Updated', d.lastUpdated, '#94a3b8') : null
           ),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fde68a', marginBottom: 8 } }, '✏️ Take the self-check'),
             h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 8, lineHeight: 1.5 } }, '24 items, 0-10 scale, ~5 minutes. You can stop and come back.'),
             h('button', { onClick: function() { goto('check'); }, 'aria-label': 'Take self-check',
@@ -245,14 +245,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
               complete ? '✏️ Re-take' : '+ Start')
           ),
 
-          complete ? h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
+          complete ? h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#bbf7d0', marginBottom: 8 } }, '📊 See your profile'),
             h('button', { onClick: function() { goto('profile'); }, 'aria-label': 'See profile',
               style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#22c55e', color: '#fff', fontWeight: 800, fontSize: 13 } }, '→ My profile')
           ) : null,
 
           // Cross-link to VIA Strengths
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', fontSize: 12.5, color: '#fde68a', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', fontSize: 12.5, color: '#fde68a', lineHeight: 1.65 } },
             h('strong', null, '🔗 Pair this with VIA Strengths. '),
             'PERMA and VIA were developed by the same author (Martin Seligman). Using your signature strengths in new ways tends to raise PERMA scores across domains. Both tools are in the SEL Hub.'
           ),
@@ -268,7 +268,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
       }
 
       function statCard(label, value, color) {
-        return h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid ' + color } },
+        return h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + color } },
           h('div', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, label),
           h('div', { style: { fontSize: 18, color: color, fontWeight: 900 } }, value)
         );
@@ -288,7 +288,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
         var pct = Math.round((rated / ITEMS.length) * 100);
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 12.5, color: '#fde68a', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 12.5, color: '#fde68a', lineHeight: 1.65 } },
             h('strong', null, '✏️ Rate each on 0-10. '),
             '0 = "not at all true for me right now," 10 = "very true for me right now." Use your honest first impression; do not overthink it.'
           ),
@@ -305,7 +305,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
           ['P', 'E', 'R', 'M', 'A', 'H'].map(function(domainId) {
             var dom = DOMAINS[domainId];
             var items = ITEMS.filter(function(i) { return i.domain === domainId; });
-            return h('div', { key: domainId, style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid ' + dom.color, marginBottom: 10 } },
+            return h('div', { key: domainId, style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + dom.color, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
                 h('span', { style: { fontSize: 20 } }, dom.icon),
                 h('span', { style: { fontSize: 13, fontWeight: 800, color: dom.color } }, dom.label)
@@ -427,7 +427,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
             var dom = DOMAINS[k];
             var s = scores[k];
             var note = s >= 7 ? dom.atHigh : s <= 4 ? dom.atLow : null;
-            return h('div', { key: k, style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid ' + dom.color, marginBottom: 8 } },
+            return h('div', { key: k, style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + dom.color, marginBottom: 8 } },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 } },
                 h('span', { style: { fontSize: 18 } }, dom.icon),
                 h('span', { style: { fontSize: 13, fontWeight: 800, color: dom.color, flex: 1 } }, dom.label),
@@ -470,7 +470,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
         }
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 13, color: '#fde68a', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 13, color: '#fde68a', lineHeight: 1.65 } },
             h('strong', null, '💭 One domain at a time. '),
             'Below are reflection prompts for each PERMA domain. Pick one. Sit with it. You are not trying to "raise your score"; you are trying to see clearly.'
           ),
@@ -478,7 +478,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
           ranked.map(function(k) {
             var dom = DOMAINS[k];
             var s = scores[k];
-            return h('div', { key: k, style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '4px solid ' + dom.color, marginBottom: 10 } },
+            return h('div', { key: k, style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + dom.color, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 } },
                 h('span', { style: { fontSize: 22 } }, dom.icon),
                 h('span', { style: { fontSize: 14, fontWeight: 800, color: dom.color, flex: 1 } }, dom.label + ' · ' + s + '/10')
@@ -488,7 +488,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
           }),
 
           // Cross-tool pointers
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #818cf8', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #818cf8', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#e0e7ff', marginBottom: 8 } }, '🔗 Tools that work directly on each PERMA domain'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#cbd5e1', fontSize: 13, lineHeight: 1.75 } },
               h('li', null, h('strong', null, 'Positive Emotion / Engagement'), ' — Behavioral Activation, Mindfulness Corner'),
@@ -591,7 +591,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
             sourceCard('Goodman, F. R. et al. (2018)', '"Measuring Well-Being: A Comparison of Subjective Well-Being and PERMA," Journal of Positive Psychology, 13(4), 321-332', 'Comparative review of PERMA against other wellbeing measures.', null)
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'PERMA is a snapshot of right now. Scores will shift across weeks, months, and seasons. A low score is information about a season, not a permanent state.'),
@@ -602,7 +602,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', fontSize: 12.5, color: '#fde68a', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', fontSize: 12.5, color: '#fde68a', lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'PERMA works well as a beginning-of-quarter / mid-quarter / end-of-quarter check-in to see how a class is doing as a group (or how an individual student is shifting). Pair with VIA Strengths to add the "what traits am I using" lens. For Crew, a lighter version: each student names one PERMA domain that is going well and one that is going thin this week.'
           ),

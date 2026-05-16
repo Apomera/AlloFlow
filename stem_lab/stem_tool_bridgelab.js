@@ -518,7 +518,7 @@
 
       function sectionCard(title, children, accent) {
         accent = accent || AMBER;
-        return h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155', borderLeft: '3px solid ' + accent, marginBottom: 12 } },
+        return h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + accent, marginBottom: 12 } },
           title ? h('div', { style: { fontSize: 14, fontWeight: 800, color: '#e2e8f0', marginBottom: 8 } }, title) : null,
           children
         );
@@ -1713,19 +1713,19 @@
               h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', marginBottom: includeSuspensionAnalyzer ? 12 : 0 } },
                 h('strong', null, 'Examples: '), t.examples
               ),
-              includeSuspensionAnalyzer ? h('div', { style: { padding: 12, borderRadius: 10, background: '#0a0e1a', border: '1px solid #334155', borderLeft: '3px solid ' + AMBER, marginTop: 8 } },
+              includeSuspensionAnalyzer ? h('div', { style: { padding: 12, borderRadius: 10, background: '#0a0e1a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + AMBER, marginTop: 8 } },
                 h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, '⌣ Interactive catenary cable analyzer'),
                 suspensionAnalyzer()
               ) : null,
-              includeArchAnalyzer ? h('div', { style: { padding: 12, borderRadius: 10, background: '#0a0e1a', border: '1px solid #334155', borderLeft: '3px solid ' + AMBER, marginTop: 8 } },
+              includeArchAnalyzer ? h('div', { style: { padding: 12, borderRadius: 10, background: '#0a0e1a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + AMBER, marginTop: 8 } },
                 h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, '∩ Interactive arch thrust analyzer'),
                 archAnalyzer()
               ) : null,
-              includeBeamAnalyzer ? h('div', { style: { padding: 12, borderRadius: 10, background: '#0a0e1a', border: '1px solid #334155', borderLeft: '3px solid ' + AMBER, marginTop: 8 } },
+              includeBeamAnalyzer ? h('div', { style: { padding: 12, borderRadius: 10, background: '#0a0e1a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + AMBER, marginTop: 8 } },
                 h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, '═ Interactive beam bending analyzer'),
                 beamAnalyzer()
               ) : null,
-              includeCableStayedAnalyzer ? h('div', { style: { padding: 12, borderRadius: 10, background: '#0a0e1a', border: '1px solid #334155', borderLeft: '3px solid ' + AMBER, marginTop: 8 } },
+              includeCableStayedAnalyzer ? h('div', { style: { padding: 12, borderRadius: 10, background: '#0a0e1a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + AMBER, marginTop: 8 } },
                 h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, '✦ Interactive cable-stayed analyzer'),
                 cableStayedAnalyzer()
               ) : null
@@ -2082,7 +2082,7 @@
                     }, t.name);
                   })
                 ),
-                h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
+                h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
                   h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 8, flexWrap: 'wrap' } },
                     h('div', { style: { fontSize: 14, fontWeight: 800, color: sel.color } }, sel.name),
                     h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } }, 'Cost: ' + sel.cost)
@@ -2277,7 +2277,7 @@
                     }, s.name);
                   })
                 ),
-                h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid #334155', borderLeft: '4px solid ' + sel.color, marginBottom: 12 } },
+                h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '4px solid ' + sel.color, marginBottom: 12 } },
                   h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 8, flexWrap: 'wrap' } },
                     h('div', { style: { fontSize: 15, fontWeight: 800, color: '#e2e8f0' } }, sel.name),
                     h('div', { style: { fontSize: 12, color: '#fbbf24', fontWeight: 700 } }, 'Allowable bearing: ~' + (sel.bearingMPa < 1 ? (sel.bearingMPa * 1000).toFixed(0) + ' kPa' : sel.bearingMPa + ' MPa'))
@@ -2353,7 +2353,7 @@
                 h('p', { style: { margin: '0 0 12px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
                   'Modern bridge design considers ENVIRONMENTAL cost alongside dollar cost. Cement is ~8% of global CO₂ emissions; steel ~7%. A typical bridge uses thousands of tons of these materials. Sustainable design = lower embodied carbon + longer life + end-of-life recyclability.'
                 ),
-                h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid #22c55e', marginBottom: 12 } },
+                h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid #22c55e', marginBottom: 12 } },
                   h('div', { style: { fontSize: 13, fontWeight: 800, color: '#86efac', marginBottom: 8 } }, 'Your current design: ' + mat.name),
                   h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8, marginBottom: 8 } },
                     [
@@ -2787,7 +2787,7 @@
               }, f.icon + ' ' + f.name);
             })
           ),
-          h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155', borderLeft: '3px solid ' + selected.color, marginBottom: 16 } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + selected.color, marginBottom: 16 } },
             h('h3', { style: { margin: '0 0 8px', color: selected.color, fontSize: 18 } }, selected.icon + ' ' + selected.name),
             h('p', { style: { margin: '0 0 10px', fontSize: 13.5, color: '#e2e8f0', lineHeight: 1.7 } }, selected.desc),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
@@ -2942,7 +2942,7 @@
                     }, s.name);
                   })
                 ),
-                h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
+                h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
                   h('div', { style: { fontSize: 15, fontWeight: 800, color: sel.color, marginBottom: 8 } }, sel.name),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.08)', borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
                     h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'What it measures'),
@@ -2989,7 +2989,7 @@
                   }, c.name);
                 })
               ),
-              h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + AMBER } },
+              h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + AMBER } },
                 h('h4', { style: { margin: '0 0 8px', color: '#fbbf24', fontSize: 15 } }, sel.name),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.10)', borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
                   h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'History'),
@@ -3447,7 +3447,7 @@
               );
             })
           ),
-          h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155', borderLeft: '3px solid ' + (selected.kind === 'failure' ? '#dc2626' : '#22c55e') } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + (selected.kind === 'failure' ? '#dc2626' : '#22c55e') } },
             h('h3', { style: { margin: '0 0 4px', color: selected.kind === 'failure' ? '#fca5a5' : '#86efac', fontSize: 18 } }, selected.icon + ' ' + selected.name + ' (' + selected.year + ')'),
             h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.5 } }, selected.kind),
             sectionInfo('What happened', selected.what),
@@ -3723,7 +3723,7 @@
               }, s.icon + ' ' + (i + 1) + '. ' + s.name);
             })
           ),
-          h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155', borderLeft: '3px solid ' + AMBER } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + AMBER } },
             h('h3', { style: { margin: '0 0 8px', color: '#fbbf24', fontSize: 20 } }, selected.icon + ' ' + selected.name),
             h('p', { style: { margin: 0, fontSize: 14, color: '#e2e8f0', lineHeight: 1.75 } }, selected.desc)
           ),
@@ -4019,7 +4019,7 @@
         var massKg = a.totalLen * areaM2 * mat.densityKgM3;
         var costUsd = a.totalLen * areaM2 * mat.costPerM3;
         return h('div', { style: { padding: 16 } },
-          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.4)', borderLeft: '3px solid ' + AMBER, marginBottom: 12, fontSize: 12.5, color: '#fde68a', lineHeight: 1.65 } },
+          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.4)', borderRight: '1px solid rgba(245,158,11,0.4)', borderBottom: '1px solid rgba(245,158,11,0.4)', borderLeft: '3px solid ' + AMBER, marginBottom: 12, fontSize: 12.5, color: '#fde68a', lineHeight: 1.65 } },
             h('strong', null, '🖨 Bridge design specification sheet. '),
             'A one-page artifact for engineering portfolios, design competitions, classroom presentations, or maker-faire submissions. Contains the design parameters, the stress analysis result, the material properties, and your design notes.'
           ),

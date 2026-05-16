@@ -435,7 +435,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
           // System grid; each shows nodes + "add" button
           SYSTEMS.map(function(sys) {
             var sysNodes = nodes.filter(function(n) { return n.systemId === sys.id; });
-            return h('div', { key: sys.id, style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid ' + sys.color, marginBottom: 10 } },
+            return h('div', { key: sys.id, style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + sys.color, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
                 h('span', { style: { fontSize: 22 } }, sys.icon),
                 h('div', { style: { fontSize: 13, fontWeight: 800, color: sys.color, flex: 1 } }, sys.label),
@@ -483,7 +483,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
         });
 
         return h('div', null,
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(251,113,133,0.08)', border: '1px solid rgba(251,113,133,0.3)', borderLeft: '3px solid #fb7185', marginBottom: 14, fontSize: 13, color: '#fecdd3', lineHeight: 1.65 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(251,113,133,0.08)', borderTop: '1px solid rgba(251,113,133,0.3)', borderRight: '1px solid rgba(251,113,133,0.3)', borderBottom: '1px solid rgba(251,113,133,0.3)', borderLeft: '3px solid #fb7185', marginBottom: 14, fontSize: 13, color: '#fecdd3', lineHeight: 1.65 } },
             h('strong', null, '💭 The point of reflecting is not to fix anything yet. '),
             'It is to see what is here, with honesty. Some patterns will be a relief to notice; some will be uncomfortable. Both are useful information.'
           ),
@@ -513,7 +513,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
       }
 
       function patternCard(title, list, color, blurb) {
-        return h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid ' + color, marginBottom: 10 } },
+        return h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + color, marginBottom: 10 } },
           h('div', { style: { fontSize: 12, color: color, fontWeight: 700, marginBottom: 6 } }, title + '  (' + list.length + ')'),
           list.length > 0
             ? h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.65, marginBottom: 6 } },
@@ -628,7 +628,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
           ),
 
           // Honest limits
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'An ecomap is a snapshot. The shape of your life right now is not the shape it will have in three months. Redrawing it every few months is more useful than treating any single map as the answer.'),
@@ -638,7 +638,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(251,113,133,0.10)', border: '1px solid rgba(251,113,133,0.3)', borderLeft: '3px solid #fb7185', fontSize: 12.5, color: '#fecdd3', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(251,113,133,0.10)', borderTop: '1px solid rgba(251,113,133,0.3)', borderRight: '1px solid rgba(251,113,133,0.3)', borderBottom: '1px solid rgba(251,113,133,0.3)', borderLeft: '3px solid #fb7185', fontSize: 12.5, color: '#fecdd3', lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'Ecomaps work well as a beginning-of-year inventory, alongside an entry interview or as a private student artifact. For students whose home life is complicated, do NOT require sharing of the ecomap with the class or with families; let it be private to the student, or shared only with a school counselor. The act of drawing the map is often valuable even if no one else ever sees it.'
           ),

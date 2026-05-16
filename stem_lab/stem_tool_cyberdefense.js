@@ -2508,7 +2508,7 @@
               [{ id: 'phish', icon: '\uD83D\uDD75\uFE0F', label: 'Cyber Detective' }, { id: 'password', icon: '\uD83D\uDD10', label: 'Password Forge' }, { id: 'cipher', icon: '\uD83D\uDD11', label: 'Cipher Lab' }, { id: 'network', icon: '\uD83D\uDCE1', label: 'Traffic Analyzer' }, { id: 'social', icon: '\uD83C\uDFAD', label: 'Social Engineering' }, { id: 'warroom', icon: '\u2694\uFE0F', label: 'SOC War Room' }].map(function(tab) {
                 var isActive = cyberTab === tab.id;
                 return el('button', { key: tab.id, onClick: function() { upd('cyberTab', tab.id); },
-                  style: { padding: '12px 20px', border: 'none', borderBottom: isActive ? '2px solid #6366f1' : '2px solid transparent', background: 'none', color: isActive ? '#a5b4fc' : '#94a3b8', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s' } },
+                  style: { padding: '12px 20px', borderTop: 'none', borderRight: 'none', borderLeft: 'none', borderBottom: isActive ? '2px solid #6366f1' : '2px solid transparent', background: 'none', color: isActive ? '#a5b4fc' : '#94a3b8', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s' } },
                   el('span', null, tab.icon), tab.label);
               })
             ),

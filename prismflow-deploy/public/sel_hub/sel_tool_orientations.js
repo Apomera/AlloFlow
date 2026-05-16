@@ -342,7 +342,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
           return renderDetail(d.detailId);
         }
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(167,139,250,0.10)', border: '1px solid rgba(167,139,250,0.3)', borderLeft: '3px solid #a78bfa', marginBottom: 14, fontSize: 13, color: '#e9d5ff', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(167,139,250,0.10)', borderTop: '1px solid rgba(167,139,250,0.3)', borderRight: '1px solid rgba(167,139,250,0.3)', borderBottom: '1px solid rgba(167,139,250,0.3)', borderLeft: '3px solid #a78bfa', marginBottom: 14, fontSize: 13, color: '#e9d5ff', lineHeight: 1.6 } },
             '📚 Eight traditions, each with substantive content. The point is not to pick a winner; the point is to know what is available, see what disagrees with what, and notice what each can\'t do well.'
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 } },
@@ -412,13 +412,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
           ),
 
           // Cannot do well · the honest limits
-          h('div', { style: { padding: 14, borderRadius: 12, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.3)', borderLeft: '4px solid #ef4444', marginBottom: 12 } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: 'rgba(239,68,68,0.08)', borderTop: '1px solid rgba(239,68,68,0.3)', borderRight: '1px solid rgba(239,68,68,0.3)', borderBottom: '1px solid rgba(239,68,68,0.3)', borderLeft: '4px solid #ef4444', marginBottom: 12 } },
             h('div', { style: { fontSize: 11, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 6 } }, '⚠ What this tradition cannot do well'),
             h('p', { style: { margin: 0, color: '#fecaca', fontSize: 13, lineHeight: 1.7 } }, t.cannotDoWell)
           ),
 
           // Learn from
-          h('div', { style: { padding: 14, borderRadius: 12, background: 'rgba(134,239,172,0.08)', border: '1px solid rgba(134,239,172,0.3)', borderLeft: '4px solid #86efac', marginBottom: 12 } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: 'rgba(134,239,172,0.08)', borderTop: '1px solid rgba(134,239,172,0.3)', borderRight: '1px solid rgba(134,239,172,0.3)', borderBottom: '1px solid rgba(134,239,172,0.3)', borderLeft: '4px solid #86efac', marginBottom: 12 } },
             h('div', { style: { fontSize: 11, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 6 } }, '📖 Where to learn more from authoritative voices'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#bbf7d0', fontSize: 12.5, lineHeight: 1.8 } },
               t.learnFrom.map(function(s, i) { return h('li', { key: i }, s); })
@@ -443,7 +443,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
         }
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(167,139,250,0.10)', border: '1px solid rgba(167,139,250,0.3)', borderLeft: '3px solid #a78bfa', marginBottom: 14, fontSize: 13, color: '#e9d5ff', lineHeight: 1.55 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(167,139,250,0.10)', borderTop: '1px solid rgba(167,139,250,0.3)', borderRight: '1px solid rgba(167,139,250,0.3)', borderBottom: '1px solid rgba(167,139,250,0.3)', borderLeft: '3px solid #a78bfa', marginBottom: 14, fontSize: 13, color: '#e9d5ff', lineHeight: 1.55 } },
             h('strong', null, '⚖ Comparison view. '),
             'Pick a question. See how the eight traditions answer it differently. The point is to notice the disagreements; they are real.'
           ),
@@ -494,7 +494,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
             )
           ),
 
-          h('div', { style: { padding: 14, borderRadius: 12, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.3)', borderLeft: '4px solid #ef4444', marginBottom: 12 } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: 'rgba(239,68,68,0.08)', borderTop: '1px solid rgba(239,68,68,0.3)', borderRight: '1px solid rgba(239,68,68,0.3)', borderBottom: '1px solid rgba(239,68,68,0.3)', borderLeft: '4px solid #ef4444', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 8px', color: '#fca5a5', fontSize: 16 } }, 'The trap to avoid: buffet spirituality'),
             h('p', { style: { margin: '0 0 8px', color: '#fecaca', fontSize: 13, lineHeight: 1.7 } },
               'A real risk in comparative philosophy is that you take a vibe from each tradition without understanding any of them deeply. "I like the Zen idea of letting go and the Stoic idea of control and the Indigenous idea of relationship!" · but those three claims actually disagree with each other in important ways, and treating them as compatible flattens what each is actually saying.'
@@ -504,7 +504,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
             )
           ),
 
-          h('div', { style: { padding: 14, borderRadius: 12, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', borderLeft: '4px solid #a855f7', marginBottom: 12 } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: 'rgba(168,85,247,0.08)', borderTop: '1px solid rgba(168,85,247,0.3)', borderRight: '1px solid rgba(168,85,247,0.3)', borderBottom: '1px solid rgba(168,85,247,0.3)', borderLeft: '4px solid #a855f7', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 8px', color: '#c4b5fd', fontSize: 16 } }, 'On Indigenous traditions specifically'),
             h('p', { style: { margin: 0, color: '#e9d5ff', fontSize: 13, lineHeight: 1.75 } },
               'The "Indigenous relationality" entry in this tool is summary, not authority. Indigenous philosophies are alive in specific communities and are taught person-to-person through ceremony, story, and relationship. Treating them as a generic product is a real and ongoing harm called extraction. The right move is to read Indigenous scholars (Robin Wall Kimmerer, Vine Deloria Jr., Linda Tuhiwai Smith, Glen Coulthard), to follow Indigenous-led organizations, and · for Wabanaki specifically · to learn from Wabanaki Public Health and Wellness, the Penobscot Nation Cultural and Historic Preservation Department, the Passamaquoddy Cultural Heritage Museum, and First Light Learning Journey.'

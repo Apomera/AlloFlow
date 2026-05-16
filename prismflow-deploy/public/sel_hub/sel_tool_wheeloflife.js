@@ -264,7 +264,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
         }
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 12.5, color: '#fde68a', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 12.5, color: '#fde68a', lineHeight: 1.65 } },
             h('strong', null, '✏️ Rate each from 1 to 10. '),
             '1 means thin / empty in this area; 10 means full / thriving. Use your gut, not your math.'
           ),
@@ -273,7 +273,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
             var v = ratingOf(dom.id);
             var note = (d.notes || {})[dom.id] || '';
             var noteId = 'wol-note-' + dom.id;
-            return h('div', { key: dom.id, style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid ' + dom.color, marginBottom: 10 } },
+            return h('div', { key: dom.id, style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + dom.color, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' } },
                 h('span', { style: { fontSize: 26 } }, dom.icon),
                 h('div', { style: { flex: 1, minWidth: 140 } },
@@ -320,12 +320,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
         var avg = rated.reduce(function(sum, d2) { return sum + ratingOf(d2.id); }, 0) / rated.length;
 
         return h('div', null,
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 13, color: '#fde68a', lineHeight: 1.65 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 13, color: '#fde68a', lineHeight: 1.65 } },
             h('strong', null, '💭 What to do with this shape: '),
             'A round wheel is not the goal. The goal is honesty about right now, and one or two intentional moves toward something that matters. Average across rated domains: ', h('strong', null, avg.toFixed(1)), '.'
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#bbf7d0', marginBottom: 8 } }, '🟢 Where my wheel is fullest'),
             top.map(function(d2) {
               return h('div', { key: d2.id, style: { fontSize: 13, color: '#e2e8f0', marginBottom: 4 } },
@@ -335,7 +335,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
               'These are doing well. Notice them. They are part of how you are holding the rest.')
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #ef4444', marginBottom: 10 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #ef4444', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fecaca', marginBottom: 8 } }, '🔴 Where my wheel is thinnest'),
             bottom.map(function(d2) {
               return h('div', { key: d2.id, style: { fontSize: 13, color: '#e2e8f0', marginBottom: 4 } },
@@ -345,7 +345,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
               'A low score is not a moral judgment. Sometimes a domain is intentionally thin right now (you are pouring into work for a season, or family is intense and there is no room for romance). The question worth sitting with: which of these would you actually want to move from a 3 to a 5 in the next month? Only one. Pick one.')
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', borderLeft: '3px solid #6366f1', fontSize: 12.5, color: '#c7d2fe', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(99,102,241,0.10)', borderTop: '1px solid rgba(99,102,241,0.3)', borderRight: '1px solid rgba(99,102,241,0.3)', borderBottom: '1px solid rgba(99,102,241,0.3)', borderLeft: '3px solid #6366f1', fontSize: 12.5, color: '#c7d2fe', lineHeight: 1.6 } },
             h('strong', null, '🎯 One-move-at-a-time: '),
             'Coaching tradition wisdom on this tool: do not try to raise three numbers at once. Pick ONE domain. What is one small thing you could do this week that would move it by half a point? Half-point moves are what builds wheels over time. Big-leap moves usually do not stick.'
           ),
@@ -443,7 +443,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
           ),
 
           // Honest limits
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'The Wheel of Life is a heuristic, not a validated psychometric instrument. There is no scientific evidence that a 1-10 self-rating across 8 domains predicts anything; the point is reflection, not measurement.'),
@@ -453,7 +453,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', fontSize: 12.5, color: '#fde68a', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', fontSize: 12.5, color: '#fde68a', lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'The Wheel works well as a beginning-of-quarter Crew activity, with a follow-up at the end of the quarter ("how did your wheel shift?"). For students whose home life is complicated, do NOT require them to share their wheel publicly; private reflection followed by an optional pair-share at the student\'s choosing is much safer.'
           ),

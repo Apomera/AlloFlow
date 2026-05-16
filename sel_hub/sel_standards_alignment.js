@@ -1238,7 +1238,7 @@
     if (!data || !h) return null;
 
     // The "Universal construct" headline is always visible.
-    var headline = h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b', borderLeft: '3px solid #64748b', marginBottom: 0 } },
+    var headline = h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #64748b', marginBottom: 0 } },
       h('div', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Strengthens'),
       h('div', { style: { fontSize: 13.5, color: '#e2e8f0', lineHeight: 1.6, fontWeight: 600 } }, data.construct)
     );
@@ -1290,7 +1290,7 @@
     var pairsPanel = null;
     if (data.pairsWith && data.pairsWith.length) {
       var canNavigate = !!(ctx && typeof ctx.setSelHubTool === 'function');
-      pairsPanel = h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', borderLeft: '3px solid #6366f1' } },
+      pairsPanel = h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.10)', borderTop: '1px solid rgba(99,102,241,0.3)', borderRight: '1px solid rgba(99,102,241,0.3)', borderBottom: '1px solid rgba(99,102,241,0.3)', borderLeft: '3px solid #6366f1' } },
         h('div', { style: { fontSize: 10, color: '#a5b4fc', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, '🔗 Pairs naturally with'),
         h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
           data.pairsWith.map(function(p, i) {

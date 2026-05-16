@@ -1232,7 +1232,7 @@ var d = labToolData.plateTectonics || {};
                 style: {
                   padding: '10px 14px', borderRadius: 12,
                   background: 'linear-gradient(135deg, rgba(220,38,38,0.14) 0%, rgba(220,38,38,0.04) 100%)',
-                  border: '1px solid rgba(220,38,38,0.5)', borderLeft: '3px solid #dc2626',
+                  borderTop: '1px solid rgba(220,38,38,0.5)', borderRight: '1px solid rgba(220,38,38,0.5)', borderBottom: '1px solid rgba(220,38,38,0.5)', borderLeft: '3px solid #dc2626',
                   color: '#7f1d1d', fontSize: 13, lineHeight: 1.55
                 }
               },
@@ -1368,7 +1368,7 @@ var d = labToolData.plateTectonics || {};
                 style: {
                   padding: '10px 14px', borderRadius: 12,
                   background: 'linear-gradient(135deg, rgba(245,158,11,0.14) 0%, rgba(245,158,11,0.04) 100%)',
-                  border: '1px solid rgba(245,158,11,0.5)', borderLeft: '3px solid #f59e0b',
+                  borderTop: '1px solid rgba(245,158,11,0.5)', borderRight: '1px solid rgba(245,158,11,0.5)', borderBottom: '1px solid rgba(245,158,11,0.5)', borderLeft: '3px solid #f59e0b',
                   color: '#78350f', fontSize: 13, lineHeight: 1.55
                 }
               },
