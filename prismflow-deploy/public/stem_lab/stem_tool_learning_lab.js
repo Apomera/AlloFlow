@@ -14703,6 +14703,204 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     );
   }
 
+  // ── IIII. PERSONAL CURRICULUM BUILDER (Wave 19) ──
+  // The capstone tool: students design their OWN learning curriculum.
+  // Subjects + learning goals + resources + checkpoints + reflection.
+  // The Khan-academy-meets-self-determination tool. Especially valuable
+  // for self-directed learners, homeschoolers, and after-school growth.
+  function PersonalCurriculum(props) {
+    if (!R) return null;
+    var data = props.data || { curricula: [] };
+    var setData = props.setData;
+    var vs = R.useState('list');                       var view = vs[0]; var setView = vs[1];
+    var as = R.useState(null);                         var activeId = as[0]; var setActiveId = as[1];
+    var fs = R.useState({ title: '', why: '', timespan: '8 weeks', selfRating: 5 });
+    var newC = fs[0]; var setNewC = fs[1];
+
+    var STEP_TYPES = [
+      { id: 'read',     label: '📖 Read',      color: '#3b82f6' },
+      { id: 'watch',    label: '👁 Watch',     color: '#a855f7' },
+      { id: 'practice', label: '🎯 Practice',  color: '#10b981' },
+      { id: 'project',  label: '🛠 Project',   color: '#fbbf24' },
+      { id: 'discuss',  label: '💬 Discuss',   color: '#ec4899' },
+      { id: 'reflect',  label: '📔 Reflect',   color: '#06b6d4' },
+      { id: 'apply',    label: '🚀 Apply IRL', color: '#ef4444' },
+      { id: 'teach',    label: '🗣 Teach someone', color: '#f97316' }
+    ];
+
+    function createCurriculum() {
+      if (!newC.title.trim()) return;
+      var c = Object.assign({ id: tkId(), createdAt: todayISO(), steps: [], notes: '' }, newC);
+      setData({ curricula: [c].concat(data.curricula || []) });
+      setActiveId(c.id);
+      setNewC({ title: '', why: '', timespan: '8 weeks', selfRating: 5 });
+      setView('edit');
+    }
+    function getCurr() { return (data.curricula || []).filter(function(c) { return c.id === activeId; })[0]; }
+    function updateCurr(patch) {
+      setData({ curricula: (data.curricula || []).map(function(c) { return c.id === activeId ? Object.assign({}, c, patch) : c; }) });
+    }
+    function removeCurr(id) {
+      if (!confirm('Delete this curriculum?')) return;
+      setData({ curricula: (data.curricula || []).filter(function(c) { return c.id !== id; }) });
+    }
+    function addStep(type) {
+      var label = prompt(STEP_TYPES.filter(function(t) { return t.id === type; })[0].label + ' — what?');
+      if (!label) return;
+      var c = getCurr();
+      var step = { id: tkId(), type: type, label: label, done: false, resource: '', notes: '' };
+      updateCurr({ steps: (c.steps || []).concat([step]) });
+    }
+    function updateStep(stepId, patch) {
+      var c = getCurr();
+      updateCurr({ steps: c.steps.map(function(s) { return s.id === stepId ? Object.assign({}, s, patch) : s; }) });
+    }
+    function removeStep(stepId) {
+      var c = getCurr();
+      updateCurr({ steps: c.steps.filter(function(s) { return s.id !== stepId; }) });
+    }
+    function moveStep(stepId, dir) {
+      var c = getCurr();
+      var steps = c.steps.slice();
+      var i = steps.findIndex(function(s) { return s.id === stepId; });
+      var j = i + dir;
+      if (j < 0 || j >= steps.length) return;
+      var tmp = steps[i]; steps[i] = steps[j]; steps[j] = tmp;
+      updateCurr({ steps: steps });
+    }
+
+    if (view === 'edit') {
+      var c = getCurr();
+      if (!c) { setView('list'); return null; }
+      var steps = c.steps || [];
+      var done = steps.filter(function(s) { return s.done; }).length;
+      var pct = steps.length > 0 ? (done / steps.length) * 100 : 0;
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader('🎓', c.title, c.why || 'Self-designed curriculum · ' + steps.length + ' steps · ' + done + ' done', '#a855f7'),
+
+        // Progress
+        hh('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(168,85,247,0.20), rgba(15,23,42,0.7))', border: '1px solid rgba(168,85,247,0.40)', marginBottom: 14 } },
+          hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
+            hh('span', { style: { fontSize: 11, color: '#cbd5e1' } }, c.timespan || 'no timespan'),
+            hh('strong', { style: { fontSize: 16, color: '#c084fc', fontFamily: 'ui-monospace, Menlo, monospace' } }, Math.round(pct) + '%')
+          ),
+          hh('div', { style: { height: 10, background: 'rgba(15,23,42,0.6)', borderRadius: 5, overflow: 'hidden' } },
+            hh('div', { style: { width: pct + '%', height: '100%', background: pct === 100 ? '#10b981' : 'linear-gradient(90deg, #6366f1, #a855f7)', transition: 'width 300ms ease' } })
+          )
+        ),
+
+        // Add steps
+        tkCard('#a855f7',
+          hh('div', null,
+            hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 8 } }, '+ Add a learning step'),
+            hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 4 } },
+              STEP_TYPES.map(function(t) {
+                return hh('button', { key: 'st-' + t.id,
+                  onClick: function() { addStep(t.id); },
+                  style: { padding: '8px 10px', borderRadius: 6, background: t.color + '15', color: t.color, border: '1px solid ' + t.color + '40', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                }, t.label);
+              })
+            )
+          )
+        ),
+
+        // Steps
+        steps.length === 0 ? tkEmptyState('🎓', 'No steps yet. Build your curriculum by adding learning activities above.', null, null)
+        : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+            steps.map(function(s, i) {
+              var t = STEP_TYPES.filter(function(x) { return x.id === s.type; })[0] || STEP_TYPES[0];
+              return hh('div', { key: 'cs-' + s.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid ' + t.color, opacity: s.done ? 0.6 : 1 } },
+                hh('div', { style: { display: 'flex', gap: 8, marginBottom: 6 } },
+                  hh('button', { onClick: function() { updateStep(s.id, { done: !s.done }); },
+                    style: { width: 22, height: 22, borderRadius: 5, background: s.done ? t.color : 'transparent', border: '1.5px solid ' + t.color, color: '#0f172a', fontSize: 12, fontWeight: 900, cursor: 'pointer', flexShrink: 0 }
+                  }, s.done ? '✓' : ''),
+                  hh('div', { style: { flex: 1 } },
+                    hh('div', { style: { display: 'flex', gap: 6, alignItems: 'center', marginBottom: 4 } },
+                      hh('span', { style: { fontSize: 10, padding: '2px 6px', borderRadius: 4, background: t.color + '20', color: t.color, fontWeight: 800 } }, t.label),
+                      hh('strong', { style: { fontSize: 12, color: '#e2e8f0', textDecoration: s.done ? 'line-through' : 'none' } }, s.label)
+                    ),
+                    tkInput(s.resource, function(v) { updateStep(s.id, { resource: v }); }, 'Resource link / book / location (optional)', { marginBottom: 4, fontSize: 10 }),
+                    tkInput(s.notes, function(v) { updateStep(s.id, { notes: v }); }, 'Notes (optional)', { fontSize: 10 })
+                  ),
+                  hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 2 } },
+                    hh('button', { onClick: function() { moveStep(s.id, -1); }, disabled: i === 0,
+                      style: { background: 'transparent', border: 'none', color: t.color, fontSize: 11, cursor: 'pointer', padding: 2 }
+                    }, '▲'),
+                    hh('button', { onClick: function() { moveStep(s.id, 1); }, disabled: i === steps.length - 1,
+                      style: { background: 'transparent', border: 'none', color: t.color, fontSize: 11, cursor: 'pointer', padding: 2 }
+                    }, '▼'),
+                    hh('button', { onClick: function() { removeStep(s.id); },
+                      style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer', padding: 2 }
+                    }, '✕')
+                  )
+                )
+              );
+            })
+          ),
+
+        // Notes
+        hh('div', { style: { marginTop: 14 } },
+          hh('label', { style: { fontSize: 11, fontWeight: 800, color: '#c084fc', display: 'block', marginBottom: 4 } }, '📔 My notes + reflections on this curriculum'),
+          tkTextarea(c.notes, function(v) { updateCurr({ notes: v }); }, 'What\'s working? What surprised you? What did you change mid-stream?', 4)
+        ),
+
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginTop: 14 } },
+          tkBtn('← All curricula', function() { setView('list'); setActiveId(null); }, 'ghost'),
+          tkBtn('🗑 Delete', function() { removeCurr(c.id); setView('list'); }, 'bad')
+        )
+      );
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🎓', 'My Curriculum Builder', 'Design YOUR own learning curriculum across any topic. The capstone toolkit tool.', '#a855f7'),
+
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+        hh('strong', { style: { color: '#a855f7' } }, '🎓 Self-directed learning: '),
+        'You\'re not limited to what school assigns. The most successful adults are self-directed learners who can design their own learning paths. This tool helps you practice that skill. Pick something you actually want to learn outside of any class — a language, an instrument, a skill, a topic you\'re curious about.'
+      ),
+
+      tkCard('#a855f7',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 8 } }, '+ Design a new curriculum'),
+          tkInput(newC.title, function(v) { setNewC(Object.assign({}, newC, { title: v })); }, 'What do you want to learn? (e.g., "Photography basics", "Read Spanish", "Quantum computing 101")', { marginBottom: 8 }),
+          tkInput(newC.why, function(v) { setNewC(Object.assign({}, newC, { why: v })); }, 'Why does this matter to you? (1 line)', { marginBottom: 8 }),
+          hh('div', { style: { display: 'flex', gap: 6, marginBottom: 8 } },
+            tkInput(newC.timespan, function(v) { setNewC(Object.assign({}, newC, { timespan: v })); }, 'Timespan (e.g., "8 weeks")', { flex: 1 }),
+            tkBtn('🎓 Create', createCurriculum, 'primary')
+          )
+        )
+      ),
+
+      (data.curricula || []).length === 0 ? tkEmptyState('🎓', 'No curricula yet. Design one. Pick a topic that\'s YOURS, not assigned.', null, null)
+      : hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10 } },
+          (data.curricula || []).map(function(c) {
+            var steps = c.steps || [];
+            var done = steps.filter(function(s) { return s.done; }).length;
+            var pct = steps.length > 0 ? (done / steps.length) * 100 : 0;
+            return hh('button', { key: 'cc-' + c.id,
+              onClick: function() { setActiveId(c.id); setView('edit'); },
+              style: { display: 'block', textAlign: 'left', padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(168,85,247,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(168,85,247,0.40)', borderLeft: '4px solid #a855f7', cursor: 'pointer' }
+            },
+              hh('strong', { style: { fontSize: 14, color: '#c084fc' } }, '🎓 ' + c.title),
+              c.why ? hh('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic', marginTop: 4 } }, c.why) : null,
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginTop: 8 } },
+                hh('span', { style: { fontSize: 10, color: '#94a3b8' } }, c.timespan + ' · ' + steps.length + ' steps'),
+                hh('strong', { style: { fontSize: 12, color: '#c084fc', fontFamily: 'ui-monospace, Menlo, monospace' } }, Math.round(pct) + '%')
+              ),
+              hh('div', { style: { height: 6, background: 'rgba(15,23,42,0.6)', borderRadius: 3, overflow: 'hidden', marginTop: 6 } },
+                hh('div', { style: { width: pct + '%', height: '100%', background: pct === 100 ? '#10b981' : '#a855f7' } })
+              )
+            );
+          })
+        ),
+
+      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+        hh('strong', { style: { color: '#a855f7' } }, '🌟 Why this is the most important tool in this toolkit: '),
+        'School teaches you content. School rarely teaches you HOW to teach yourself. The students who do well long-term aren\'t the smartest ones — they\'re the ones who learned to learn on their own. Designing your own curriculum + sticking to it is THAT skill. Start small. One curriculum, 8 steps, 8 weeks. You\'ll be a different person at the end.'
+      )
+    );
+  }
+
   // ── F. MY TOOLKIT HUB (landing page) ──
   // Single entry point that shows status of all toolkit tools + quick
   // actions. Today's date, current streak, # active goals, etc.
@@ -14918,7 +15116,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'mytkScript',   icon: '💬', label: 'Script Library',       color: '#a855f7', desc: 'Curated phrases for hard moments + your own',
         stat: ((data.mytkScript || {}).custom || []).length + ' custom', cta: 'Browse scripts' },
       { id: 'mytkKnowl',    icon: '🗺', label: 'Knowledge Map',        color: '#06b6d4', desc: 'Map what you know vs learning vs curious about',
-        stat: ((data.mytkKnowl || {}).areas || []).length + ' areas', cta: 'Map knowledge' }
+        stat: ((data.mytkKnowl || {}).areas || []).length + ' areas', cta: 'Map knowledge' },
+      { id: 'mytkCurr',     icon: '🎓', label: 'Curriculum Builder',   color: '#a855f7', desc: 'Design YOUR own learning curriculum — capstone tool',
+        stat: ((data.mytkCurr || {}).curricula || []).length + ' built', cta: 'Design curriculum' }
     ];
 
     var dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][new Date().getDay()];
@@ -15191,7 +15391,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'mytkConf', icon: '💪',label: 'Confidence Builder',     desc: 'Log moments when you noticed confidence. Pattern reveals what builds it (Bandura 1977).' },
               { id: 'mytkHope', icon: '🌅',label: 'Hope Library',           desc: 'Places, experiences, skills, people, ways of being you hope for. Random pick for hard days.' },
               { id: 'mytkScript',icon: '💬',label: 'Script Library',         desc: 'Curated phrases for hard moments across 5 categories. Especially valuable for ND students.' },
-              { id: 'mytkKnowl',icon: '🗺',label: 'Knowledge Map',           desc: 'Track topics per area across 5 statuses (mastered/know/learning/next/curious).' }
+              { id: 'mytkKnowl',icon: '🗺',label: 'Knowledge Map',           desc: 'Track topics per area across 5 statuses (mastered/know/learning/next/curious).' },
+              { id: 'mytkCurr',icon: '🎓',label: 'Curriculum Builder',       desc: 'Design YOUR own learning curriculum across any topic. 8 step-types. THE capstone tool.' }
             ]
           },
           { id: 'foundation', icon: '🧠', name: 'How learning works (foundation)',
@@ -18907,6 +19108,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           h(PersonalKnowledgeMap, { data: dkn, setData: setDkn })
         );
       }
+      function renderMytkCurr() {
+        var dcu = d.mytkCurr || { curricula: [] };
+        var setDcu = function(newData) { upd('mytkCurr', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalCurriculum, { data: dcu, setData: setDcu })
+        );
+      }
 
       // ─────────────────────────────────────────
       // VIEW ROUTER
@@ -18999,6 +19208,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         case 'mytkHope':      return renderMytkHope();
         case 'mytkScript':    return renderMytkScript();
         case 'mytkKnowl':     return renderMytkKnowl();
+        case 'mytkCurr':      return renderMytkCurr();
         case 'bloom':         return renderBloom();
         case 'cogload':       return renderCogLoad();
         case 'metacog':       return renderMetacog();
