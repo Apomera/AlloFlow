@@ -5797,6 +5797,889 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
   };
 
   // ───────────────────────────────────────────────────────────
+  // NEW v0.47: BANDING CODES — 4-letter species codes for banding
+  // ───────────────────────────────────────────────────────────
+  var BANDING_CODES = {
+    intro: 'Banding stations use standard 4-letter codes for species. These codes are used in field notes + eBird + banding records.',
+    codes: [
+      { code: 'BAEA', species: 'Bald Eagle', usage: 'Most common bald eagle code' },
+      { code: 'GOEA', species: 'Golden Eagle', usage: 'Standard golden eagle code' },
+      { code: 'RTHA', species: 'Red-Tailed Hawk', usage: 'Most common buteo code' },
+      { code: 'RSHA', species: 'Red-Shouldered Hawk', usage: 'Eastern + Pacific Coast' },
+      { code: 'BWHA', species: 'Broad-Winged Hawk', usage: 'Migration specialty' },
+      { code: 'SWHA', species: 'Swainson\'s Hawk', usage: 'Western US + S. America wintering' },
+      { code: 'FEHA', species: 'Ferruginous Hawk', usage: 'Plains specialty' },
+      { code: 'RLHA', species: 'Rough-Legged Hawk', usage: 'Winter visitor; Arctic breeder' },
+      { code: 'COHA', species: 'Cooper\'s Hawk', usage: 'Common eastern accipiter' },
+      { code: 'SSHA', species: 'Sharp-Shinned Hawk', usage: 'Smaller accipiter' },
+      { code: 'NOGO', species: 'Northern Goshawk', usage: 'Boreal forest specialty' },
+      { code: 'NOHA', species: 'Northern Harrier', usage: 'Marsh hawk' },
+      { code: 'OSPR', species: 'Osprey', usage: 'Fish-eating raptor' },
+      { code: 'PEFA', species: 'Peregrine Falcon', usage: 'Cosmopolitan falcon' },
+      { code: 'GYRF', species: 'Gyrfalcon', usage: 'Arctic + boreal' },
+      { code: 'PRFA', species: 'Prairie Falcon', usage: 'Western Plains' },
+      { code: 'MERL', species: 'Merlin', usage: 'Cosmopolitan small falcon' },
+      { code: 'AMKE', species: 'American Kestrel', usage: 'Smallest US falcon' },
+      { code: 'MIKI', species: 'Mississippi Kite', usage: 'Southern US + Texas' },
+      { code: 'STKI', species: 'Swallow-Tailed Kite', usage: 'Southeast US' },
+      { code: 'WTKI', species: 'White-Tailed Kite', usage: 'CA, TX, FL' },
+      { code: 'HARH', species: 'Harris\'s Hawk', usage: 'Sonoran + S. America' },
+      { code: 'COBH', species: 'Common Black-Hawk', usage: 'Southwest US' },
+      { code: 'GBHE', species: 'Great Blue Heron', usage: 'NOT a raptor — for context' },
+      { code: 'GHOW', species: 'Great Horned Owl', usage: 'Most widespread N. American owl' },
+      { code: 'BDOW', species: 'Barred Owl', usage: 'Eastern + expanding west' },
+      { code: 'EASO', species: 'Eastern Screech Owl', usage: 'Eastern woodland' },
+      { code: 'WESO', species: 'Western Screech Owl', usage: 'Western counterpart' },
+      { code: 'SNOW', species: 'Snowy Owl', usage: 'Arctic visitor' },
+      { code: 'NSWO', species: 'Northern Saw-Whet Owl', usage: 'Boreal' },
+      { code: 'NHOW', species: 'Northern Hawk Owl', usage: 'Boreal' },
+      { code: 'LEOW', species: 'Long-Eared Owl', usage: 'Boreal + edge' },
+      { code: 'SEOW', species: 'Short-Eared Owl', usage: 'Marsh hunter' },
+      { code: 'BARN', species: 'Barn Owl (Tyto alba)', usage: 'Cosmopolitan' },
+      { code: 'BUOW', species: 'Burrowing Owl', usage: 'Plains + western' },
+      { code: 'ELOW', species: 'Elf Owl', usage: 'Smallest US owl, Sonoran' },
+      { code: 'FLOW', species: 'Flammulated Owl', usage: 'Western montane' },
+      { code: 'TUVU', species: 'Turkey Vulture', usage: 'NOT true raptor (Cathartiformes)' },
+      { code: 'BLVU', species: 'Black Vulture', usage: 'Cathartiformes' },
+      { code: 'CACO', species: 'California Condor', usage: 'Rare endangered' }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.47: SONOGRAM + AUDIO GUIDE
+  // ───────────────────────────────────────────────────────────
+  var AUDIO_GUIDE = {
+    intro: 'Spectrogram features of raptor calls. Each species has acoustic signature you can recognize visually + audibly.',
+    species: [
+      { species: 'Red-tailed hawk', call: 'KEEEER (raspy descending)', pitchRange: '2-4 kHz', duration: '2-3 sec', pattern: 'Descending raspy note', diagnostic: 'Hollywood\'s default raptor sound', similarTo: 'None' },
+      { species: 'Bald eagle', call: 'High-pitched chitter', pitchRange: '3-5 kHz', duration: '0.5 sec each note', pattern: '4-8 rapid notes in burst', diagnostic: 'Surprisingly weak + non-imposing', similarTo: 'Tiny dog squeak' },
+      { species: 'Cooper\'s hawk', call: 'KAK-KAK-KAK', pitchRange: '2-4 kHz', duration: '0.2 sec each', pattern: '8-20 notes per burst', diagnostic: 'Lower-pitched than sharp-shin', similarTo: 'Sharp-shinned (higher)' },
+      { species: 'Sharp-shinned hawk', call: 'KEW-KEW-KEW', pitchRange: '3-5 kHz', duration: '0.1 sec each', pattern: '8-20 rapid notes', diagnostic: 'Higher-pitched + faster than Cooper\'s', similarTo: 'Cooper\'s (lower)' },
+      { species: 'Peregrine falcon', call: 'KAK-KAK-KAK (harsh barking)', pitchRange: '1-3 kHz', duration: '0.2 sec each', pattern: '5-15 notes', diagnostic: 'Harsh + barking quality', similarTo: 'Cooper\'s but harsher' },
+      { species: 'American kestrel', call: 'KLEE-KLEE-KLEE', pitchRange: '3-5 kHz', duration: '0.1 sec each', pattern: '4-6 notes per burst', diagnostic: 'Soft chattering', similarTo: 'No close match' },
+      { species: 'Great horned owl', call: 'Hoo-Hoo-HOO-Hoo-Hoo (5 notes)', pitchRange: '250-500 Hz', duration: '0.3 sec each, 1.5-2 sec total', pattern: 'Deep with middle note higher', diagnostic: 'Deepest of NA owls', similarTo: 'No close match' },
+      { species: 'Barred owl', call: 'Who-cooks-for-you, who-cooks-for-you-ALL', pitchRange: '300-600 Hz', duration: '1.5 sec each phrase', pattern: '4 notes then 4 notes (8 total)', diagnostic: 'Memorable "who-cooks-for-you?" phrasing', similarTo: 'No close match' },
+      { species: 'Eastern screech owl', call: 'Whinny + trill', pitchRange: '700-1500 Hz', duration: '2-5 sec', pattern: 'Vibrato', diagnostic: 'Vibrato quality', similarTo: 'No close match' },
+      { species: 'Barn owl', call: 'SHREEEEEEK', pitchRange: '3-6 kHz', duration: '1-2 sec', pattern: 'Harsh raspy scream', diagnostic: 'Like a horror movie scream', similarTo: 'No close match' },
+      { species: 'Snowy owl', call: 'Soft hoots + barks', pitchRange: '400-700 Hz', duration: 'Variable', pattern: 'Mostly silent', diagnostic: 'Quiet, hard to hear', similarTo: 'No close match' },
+      { species: 'Osprey', call: 'YEEP-YEEP-YEEP (descending)', pitchRange: '2-4 kHz', duration: '0.3 sec each', pattern: 'Whistled descending sequence', diagnostic: 'Clear whistle', similarTo: 'Northern harrier (less clear)' },
+      { species: 'Northern goshawk', call: 'KAK-KAK-KAK (powerful)', pitchRange: '2-3 kHz', duration: '0.2 sec each', pattern: '4-10 notes', diagnostic: 'Strong + intimidating, especially near nest', similarTo: 'Cooper\'s' },
+      { species: 'Northern harrier', call: 'Wheeze + cat-like meow', pitchRange: '2-4 kHz', duration: '1-2 sec', pattern: 'Mewing quality', diagnostic: 'Cat-like quality', similarTo: 'No close match' },
+      { species: 'Mississippi kite', call: 'PHEE-PHEW (descending)', pitchRange: '2-4 kHz', duration: '0.4 sec', pattern: 'Two-note clear whistle', diagnostic: 'Clear descending whistle', similarTo: 'Osprey (different pitch)' },
+      { species: 'Harpy eagle', call: 'WHOOO-WHOOO-WHOOO (booming)', pitchRange: '150-400 Hz', duration: '0.5 sec each', pattern: 'Deep + carrying', diagnostic: 'Carries through dense rainforest', similarTo: 'Very low-frequency call' }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.47: LOCAL HOT SPOTS — by US region
+  // ───────────────────────────────────────────────────────────
+  var LOCAL_HOTSPOTS = {
+    intro: 'Best places to see raptors in your area. Specific sites known for raptor viewing.',
+    spots: [
+      { region: 'Northeast', sites: 'Hawk Mountain PA (Aug-Dec), Allegheny Front PA, Cape May NJ, Plum Island MA, Acadia NP ME, White Mountains NH, Adirondacks NY', notable: 'Hawk Mountain is the world\'s longest-monitored raptor migration site (80+ years)' },
+      { region: 'Mid-Atlantic', sites: 'Manomet Bird Observatory MA, Hooke Lake DE, Sandy Hook NJ, Lake Erie metroparks, Mattamuskeet NWR NC', notable: 'Mattamuskeet has winter raptor concentrations' },
+      { region: 'Southeast', sites: 'Aransas NWR TX, Audubon Ctr Birds of Prey FL, Brigantine NJ, Padre Island TX', notable: 'Aransas NWR has wintering whooping cranes + raptors' },
+      { region: 'Midwest', sites: 'Hawk Ridge MN, Sax-Zim Bog MN, Whitefish Point MI, Ottawa NWR OH, Quad Cities IL', notable: 'Hawk Ridge has 80+ year migration data + diverse boreal species' },
+      { region: 'Great Plains', sites: 'Cherry Creek Reservoir CO, Front Range CO, Pawnee NF NE, North Platte NWR NE, Wind Cave SD', notable: 'Open vistas reveal large raptors hunting' },
+      { region: 'Mountain West', sites: 'Glacier NP MT, Yellowstone NP WY, Snake River Birds of Prey ID, Manzanos NM, Goshute Mountains UT', notable: 'World\'s largest golden eagle density at Snake River' },
+      { region: 'Southwest', sites: 'Saguaro NP AZ, Big Bend NP TX, Bosque del Apache NWR NM, Salton Sea CA', notable: 'Sonoran specialty species + winter raptor concentrations' },
+      { region: 'Pacific Northwest', sites: 'Skagit River WA, Chilkat Bald Eagle Preserve AK, Klamath Basin NWR, Olympic NP WA, Crater Lake OR', notable: 'Bald eagle salmon-run concentrations' },
+      { region: 'California', sites: 'Yosemite NP, Sequoia NP, Pinnacles NP (condors), Pt Reyes National Seashore, Carrizo Plain NM', notable: 'California condor reintroduction sites' },
+      { region: 'Florida', sites: 'Everglades NP, Big Cypress NP, Audubon Ctr Birds of Prey, J.N. Ding Darling NWR', notable: 'Year-round raptor diversity + snail kite' }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.47: FAQ — Frequently Asked Questions
+  // ───────────────────────────────────────────────────────────
+  var FAQ = {
+    intro: 'Most-asked questions about raptors, answered.',
+    questions: [
+      { q: 'Are raptors actually dinosaurs?', a: 'YES + NO. Modern raptors are descendants of theropod dinosaurs. The dinosaur lineage continues through birds. So in a real biological sense, all birds — including raptors — are dinosaurs. But "raptor" as we use it today means the predatory birds, not the Jurassic Park\'s Velociraptor.' },
+      { q: 'How fast can a peregrine fly?', a: 'In a stoop (steep dive), peregrines reach 242 mph (~390 km/h) — confirmed by Cornell\'s radar measurements in 2005. This is the fastest speed any animal achieves. In level flight, they\'re slower (~70 mph).' },
+      { q: 'Why don\'t raptors carry off small dogs?', a: 'Raptors hunt prey 25-50% of their body mass. The largest US raptor (golden eagle) maxes at 13 lbs body mass — so prey limit is ~6 lbs. Cats > 8 lbs + dogs > 15 lbs are too heavy to lift. Most "pet snatching" stories are urban legends.' },
+      { q: 'Do raptors mate for life?', a: 'Many species (eagles, ospreys) maintain long-term pair bonds. But "mate for life" overstates it. Most raptors pair-bond for breeding season + may re-pair if mate dies. Some species (Cooper\'s hawks) pair seasonally only.' },
+      { q: 'How long do raptors live?', a: 'Wild raptors live 10-30 years typically. Captive birds 30-60+ years. Condor record is 60+ wild. Most don\'t reach max lifespan due to mortality.' },
+      { q: 'Why are raptors\' eyes so big?', a: 'Visual acuity scales with eye diameter. Larger eyes = more photoreceptors = sharper vision. Raptor eyes are ~30% of skull volume vs human ~5%. The trade-off: less brain volume.' },
+      { q: 'Can owls fly silently?', a: 'YES. Owl feathers have THREE silencing mechanisms: serrated leading edge of primaries, fringed trailing edge, velvety dorsal surface. This makes them aerodynamically silent to prey + lets them hear their own prey.' },
+      { q: 'Why are female raptors larger than males?', a: 'Reverse sexual size dimorphism — common in raptors. Females 20-50% larger. Theories: females can defend larger prey while incubating; females can defend nest against larger predators; size hierarchy reduces intra-pair competition.' },
+      { q: 'Can I keep a raptor as a pet?', a: 'NO. Federal Migratory Bird Treaty Act + Bald + Golden Eagle Protection Act make possession illegal without permit. Falconry is legal in most states but requires apprenticeship + permits. Don\'t even keep a "rescued" raptor — transfer to licensed rehab within 24 hours.' },
+      { q: 'What\'s the smallest US raptor?', a: 'Tie: American kestrel + Elf owl, both ~100-150g. The kestrel is the smallest US falcon. The elf owl is the smallest US owl + smallest US raptor overall.' },
+      { q: 'Are there raptors in cities?', a: 'YES, more than ever. Peregrines (700+ in NYC), red-tailed hawks (Pale Male in Central Park), Cooper\'s hawks (suburbs everywhere), great horned owls (parks), kestrels (declining but present). Cities provide cliff substitutes + abundant prey (pigeons, rats).' },
+      { q: 'Why are bald eagles\' real calls so weak?', a: 'Hollywood dubs red-tailed hawk screams over bald eagle scenes. Real bald eagle calls are high-pitched chitters that don\'t sound majestic. Watch eagle scene + listen for KEEEER scream = red-tail dub.' },
+      { q: 'What\'s the difference between hawks + eagles + falcons?', a: 'Different families. Hawks (Accipitriformes) have broad rounded wings + medium size. Eagles (also Accipitriformes) are large + powerful. Falcons (Falconiformes) have pointed wings + are genetically closer to parrots than hawks!' },
+      { q: 'Do raptors really see UV light?', a: 'YES — falcons + kestrels (Falconiformes) see UV. This lets kestrels see vole urine trails glowing across meadows. Most hawks + eagles do NOT see UV.' },
+      { q: 'Can raptors smell?', a: 'MOSTLY NO. Hawks, eagles, falcons, owls have poor sense of smell. Turkey vulture is the major exception — best smell of any bird (Stager 1964 confirmed).' },
+      { q: 'Why don\'t raptors get cold feet?', a: 'Counter-current heat exchange + scaly feet (or feathered tarsi in cold-weather species). Their feet are 3-5°C cooler than their core body, minimizing heat loss.' },
+      { q: 'What kills the most raptors?', a: 'Cars + windows + pesticides + power lines + diseases + climate. Window strikes alone kill ~1 billion birds annually. Lead from ammunition kills ~50% of bald eagles tested.' },
+      { q: 'Why are raptor talons so curved?', a: 'Curved talons grip prey securely. The curve creates leverage that pulls prey toward the talon\'s base = harder to escape. Mechanical advantage.' },
+      { q: 'How can I tell male from female raptors?', a: 'Generally: female is larger. Some species have visible color differences (kestrels: male blue + brown, female brown only). For most species, size is the main clue.' },
+      { q: 'What\'s the most endangered raptor?', a: 'Multiple species critically endangered: White-rumped vulture (Asia, ~99% crash from diclofenac), California condor (recovering), Madagascar serpent-eagle (~500 individuals), Forest owlet (India, <500 individuals).' },
+      { q: 'When should I feed raptors?', a: 'NEVER. Wild raptors are excellent hunters. Feeding habituates them to humans + creates dangerous situations. Only licensed rehabbers should feed.' }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.48: BACKYARD FEEDER HAWKS — what to expect + manage
+  // ───────────────────────────────────────────────────────────
+  var FEEDER_HAWKS = {
+    intro: 'If you maintain bird feeders, you will eventually attract a hawk. This is natural ecology, not a problem. Here\'s what to expect + how to manage.',
+    common: [
+      { species: 'Cooper\'s hawk', frequency: 'Most common backyard hawk', tactics: 'Bursts through cover at feeders, often takes mourning doves + jays + larger songbirds.', what_to_do: 'Move feeders closer to dense shrubs/cover so prey has escape route. Stop feeding for 2-3 weeks if hawk becomes too successful (>3 kills/week).' },
+      { species: 'Sharp-shinned hawk', frequency: 'Common during migration + winter', tactics: 'Smaller + faster than Cooper\'s. Takes finches, sparrows, juncos.', what_to_do: 'Same as Cooper\'s. Stop feeding briefly if needed.' },
+      { species: 'Red-tailed hawk', frequency: 'Occasional at large yards', tactics: 'Less likely to attack feeders. Usually targets rodents drawn to spilled seed.', what_to_do: 'Clean up spilled seed to reduce rodent attraction.' },
+      { species: 'Merlin', frequency: 'Migration + winter (northern cities)', tactics: 'Fast aerial hunter. Targets house sparrows + finches in mid-flight.', what_to_do: 'Same management as Cooper\'s.' },
+      { species: 'American kestrel', frequency: 'Rare at feeders; more on power lines', tactics: 'Mostly hunts insects + small mammals in open areas, not feeders.', what_to_do: 'Generally not a feeder concern.' }
+    ],
+    management: [
+      { strategy: 'Provide escape cover', detail: 'Plant dense native shrubs (viburnum, dogwood, holly) within 3m of feeders. Songbirds need quick refuge.' },
+      { strategy: 'Multi-level feeder setup', detail: 'Mix platform, hopper, suet, + tube feeders at different heights + locations. Spread risk.' },
+      { strategy: 'Pause feeding temporarily', detail: 'If hawk dominates, stop feeding 2-3 weeks. Hawk moves on. Resume after.' },
+      { strategy: 'Don\'t leave dead birds', detail: 'Remove window-strike or hawk-kill birds promptly. Cleaner yard = healthier population.' },
+      { strategy: 'Provide water', detail: 'Bird bath separates from feeders. Hawks rarely hunt bathing birds.' },
+      { strategy: 'Accept some predation', detail: 'A successful feeder area supports multiple trophic levels. Some predation is natural ecology.' },
+      { strategy: 'Don\'t harm hawks', detail: 'Federal protection (MBTA). Don\'t shoot, trap, or harass. Federal felony.' },
+      { strategy: 'Track + report sightings', detail: 'Log to eBird. Take photos. Your data contributes to citizen science.' }
+    ],
+    ethics: 'A successful feeder concentrates prey + attracts predators. This is natural ecology, not a flaw. Hawks at feeders provide observation opportunity + ecosystem function. Coexistence is the goal.',
+    tips: [
+      'Hawks at feeders is a sign of healthy bird population.',
+      'Most songbirds escape — hawks succeed ~15-40% of attempts.',
+      'Hawks help cull weak/sick birds, improving songbird population health.',
+      'Hawks rarely become "feeder-dependent" — they\'re testing many sites.',
+      'A backyard with one hawk is a backyard with rich biodiversity.'
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.48: ILLUSTRATION GALLERY — 20 sketches
+  // ───────────────────────────────────────────────────────────
+  var ILLUSTRATIONS = {
+    intro: 'Hand-drawn illustration gallery. Each illustration captures a key biological or behavioral moment.',
+    images: [
+      { title: 'Peregrine Stoop Trajectory', subject: 'Falco peregrinus', description: 'A peregrine descending in a log spiral, tracking prey at high speed. Wings tucked. 14g forces compress face muscles.', symbolism: 'Pure speed + lethal precision.' },
+      { title: 'Owl Asymmetric Ear Plan', subject: 'Tyto alba', description: 'Top-down view showing left ear opening (downward-angled) + right ear opening (upward-angled). Sound triangulation diagram.', symbolism: 'Engineering elegance — how asymmetry solves 3D localization.' },
+      { title: 'Eagle Wing Slotted Tips', subject: 'Haliaeetus leucocephalus', description: 'Wing seen from below showing splayed primaries with daylight visible between fingers. Slotted tips reduce induced drag.', symbolism: 'Soaring efficiency — Bernoulli + reduced wingtip vortices.' },
+      { title: 'Harpy Eagle Foot', subject: 'Harpia harpyja', description: 'Bare foot showing 4 talons, longest hallux. Talons appear bear-claw scale. Sloth wedged between toes.', symbolism: 'Maximum force concentration.' },
+      { title: 'Kestrel UV Vision', subject: 'Falco sparverius', description: 'Top view of meadow showing UV-glowing vole trails. Vole urine + droppings reflect UV.', symbolism: 'Hidden world — meadow as glowing highway.' },
+      { title: 'Pellet Anatomy', subject: 'Tyto alba pellet', description: 'Cross-section of barn owl pellet showing fur + bones + skull layers. Mouse skull mid-pellet.', symbolism: 'Time capsule of one night\'s hunt.' },
+      { title: 'Hawk Mountain Kettle', subject: 'Multiple Buteo platypterus', description: 'Spiral of 50+ broad-winged hawks rising on a thermal during fall migration.', symbolism: 'Collective intelligence + thermal physics.' },
+      { title: 'Mauritius Kestrel Recovery', subject: 'Falco punctatus', description: 'Carl Jones hand-feeding kestrel chick with finger puppet. Population at 4 in 1974.', symbolism: 'Devotion + intervention.' },
+      { title: 'Bald Eagle Nest', subject: 'Haliaeetus leucocephalus', description: 'Cutaway of massive nest in tall tree. 6 m tall, 2 tons. Pairs add material each year.', symbolism: 'Multi-generational architecture.' },
+      { title: 'Snowy Owl Lemming Hunt', subject: 'Bubo scandiacus', description: 'Owl in snow-tunneled landscape. Lemmings traveling unseen below snow.', symbolism: 'Acoustic detection through ice + snow.' },
+      { title: 'Peregrine vs Pigeon', subject: 'Falco peregrinus + Columba livia', description: 'Mid-air strike. Talons impact pigeon back-of-head. Cloud of feathers.', symbolism: 'Predator-prey arms race compressed to 0.1 seconds.' },
+      { title: 'Cooper\'s Hawk in Forest', subject: 'Accipiter cooperii', description: 'Bird weaving between dense conifer branches at full speed. Wings flexed. Tail spread.', symbolism: 'Maneuverability mastery.' },
+      { title: 'Veracruz River of Raptors', subject: 'Multiple species', description: 'River valley with 5M raptors per year flowing south. Aerial perspective shows columns.', symbolism: 'Greatest avian migration ever.' },
+      { title: 'Old Abe at Civil War', subject: 'Haliaeetus leucocephalus', description: '8th Wisconsin Regiment\'s bald eagle perched on standard. 1864.', symbolism: 'Living national symbol.' },
+      { title: 'Pale Male in Manhattan', subject: 'Buteo jamaicensis', description: 'Pale Male perched on penthouse cornice overlooking Central Park. 1991-2023.', symbolism: 'Urban adaptation.' },
+      { title: 'AC9 Last Wild Condor', subject: 'Gymnogyps californianus', description: 'Last wild condor captured 1987. Five years of zero wild condors followed.', symbolism: 'Knife-edge of extinction.' },
+      { title: 'Berkutchi + Eagle', subject: 'Aquila chrysaetos', description: 'Mongolian eagle hunter on horseback at Altai Mountains. Eagle hooded on glove.', symbolism: '2000-year-old tradition.' },
+      { title: 'Frederick II Studying Falcon', subject: 'Falco peregrinus', description: '13th-century scene of Frederick II at desk with peregrine + manuscript open.', symbolism: 'Beginning of scientific ornithology.' },
+      { title: 'Rachel Carson Holding Eggshell', subject: 'Author with thinned eggshell', description: 'Carson examining DDT-thinned eggshell during Silent Spring research.', symbolism: 'Discovery + advocacy.' },
+      { title: 'Citizens at Hawk Mountain', subject: 'Volunteer counters', description: 'Modern hawkwatch site with binoculars + counting clipboards. Multi-decade legacy.', symbolism: 'Citizen science in action.' }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.48: SONG SCRIPTS — songs + poems + slogans
+  // ───────────────────────────────────────────────────────────
+  var SONG_SCRIPTS = {
+    intro: 'Songs, poems, sayings about raptors. Spans cultures + centuries. Useful for creative writing prompts + classroom inspiration.',
+    items: [
+      { type: 'Poem', title: 'The Eagle (excerpt)', author: 'Alfred Tennyson, 1851', text: 'He clasps the crag with crooked hands; / Close to the sun in lonely lands, / Ring\'d with the azure world, he stands. / The wrinkled sea beneath him crawls; / He watches from his mountain walls, / And like a thunderbolt he falls.', context: 'Tennyson\'s 6-line classic on the bald eagle\'s majesty.' },
+      { type: 'Poem', title: 'Hawk Roosting (excerpt)', author: 'Ted Hughes, 1960', text: 'I sit in the top of the wood, my eyes closed. / Inaction, no falsifying dream / Between my hooked head and hooked feet: / Or in sleep rehearse perfect kills and eat.', context: 'Hughes\' iconic dramatic monologue from the hawk\'s perspective.' },
+      { type: 'Proverb', title: 'Kazakh Berkutchi proverb', author: 'Traditional', text: '"A good eagle is worth a man\'s life — but a man\'s life is worth more than a good eagle. So we train them well + release them in dignity."', context: 'Mongolian + Kazakh wisdom from Berkutchi tradition.' },
+      { type: 'Lyric', title: 'Land of the Free (US anthem reference)', author: 'Francis Scott Key, 1814', text: '"O\'er the land of the free, and the home of the brave."', context: 'Bald eagle as US symbol since 1782. Not in lyric directly but represented by eagle on Great Seal.' },
+      { type: 'Hymn', title: 'On Eagle\'s Wings (excerpt)', author: 'Michael Joncas, 1978', text: '"And He will raise you up on eagles\' wings, / bear you on the breath of dawn, / make you to shine like the sun..."', context: 'Christian hymn based on Isaiah 40:31 + Exodus 19:4.' },
+      { type: 'Slogan', title: 'Hawk Mountain slogan', author: 'Rosalie Edge, 1934', text: '"Where the spirit of the wild things lives."', context: 'Edge\'s founding motto for the world\'s first raptor refuge.' },
+      { type: 'Saying', title: 'Lakota saying', author: 'Traditional', text: '"The eagle is the messenger between humans and the Creator."', context: 'Plains Indigenous teaching across many nations.' },
+      { type: 'Quote', title: 'Aldo Leopold on hawks', author: 'Sand County Almanac, 1949', text: '"To my mind, these wild [hawk] gradations of color are far more lovely than the sheen of a city bird."', context: 'Leopold\'s appreciation for wild raptors.' },
+      { type: 'Quote', title: 'Loren Eiseley on hawks', author: 'The Immense Journey, 1957', text: '"And finally, after the eagles had ceased to scream, the silence was alive with meaning."', context: 'Eiseley\'s reflection on raptor presence.' },
+      { type: 'Slogan', title: 'Peregrine Fund mission', author: 'Founded 1970', text: '"Restoring rare species, sustaining wild places."', context: 'Tom Cade\'s organization for raptor conservation.' },
+      { type: 'Slogan', title: 'Audubon motto', author: 'Founded 1905', text: '"Protecting birds + the places they need today and tomorrow."', context: 'America\'s premier bird conservation org.' },
+      { type: 'Quote', title: 'Carl Jones on Mauritius kestrel', author: 'Indianapolis Prize speech 2016', text: '"The hardest part isn\'t saving the birds. It\'s deciding the species is worth saving."', context: 'Jones on conservation philosophy.' },
+      { type: 'Quote', title: 'Rachel Carson on raptors + DDT', author: 'Silent Spring 1962', text: '"The sky was once filled with hawks. Now we work to bring them back."', context: 'Carson\'s warning that triggered modern conservation.' },
+      { type: 'Quote', title: 'Pete Dunne on hawk watching', author: 'Hawks in Flight 2017', text: '"You don\'t identify a hawk. You witness it."', context: 'Dunne on the philosophy of birding.' },
+      { type: 'Quote', title: 'David Sibley on field guides', author: 'Sibley Guide 2014', text: '"The best birder isn\'t the one with the most species. It\'s the one who looks longest at a single bird."', context: 'Sibley on patience + observation.' },
+      { type: 'Saying', title: 'Inuit teaching', author: 'Traditional', text: '"The snowy owl is wisdom watching from the snow."', context: 'Inuit spiritual relationship with arctic raptors.' },
+      { type: 'Slogan', title: 'Tom Cade\'s slogan', author: 'Peregrine Fund founder', text: '"If you want a bird back, you have to do the work."', context: 'Cade on captive breeding + dedication.' },
+      { type: 'Saying', title: 'Hawkwatch motto', author: 'Tom Cade quoting traditional Falconry', text: '"Train her well, hunt with her well, then set her free with dignity."', context: 'Falconry philosophy + ethics.' },
+      { type: 'Quote', title: 'Edward Howe Forbush (1929)', author: 'Birds of MA', text: '"Without our hawks, our songbirds would overrun all proportion, and many would starve."', context: 'Early appreciation of raptor ecology.' },
+      { type: 'Quote', title: 'Roger Tory Peterson (1934)', author: 'Field Guide intro', text: '"It is not the bird in the hand that counts, but the bird in the mind."', context: 'Peterson on field identification + retention.' }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.48: FIELD MEDITATIONS — 12 thoughtful reflections
+  // ───────────────────────────────────────────────────────────
+  var FIELD_MEDITATIONS = {
+    intro: 'Twelve short meditations on what raptors mean. Use for journaling prompts, classroom reflection, or personal contemplation.',
+    meditations: [
+      { number: 1, title: 'On Time', text: 'A peregrine\'s entire life is 15-20 years. Yours might be 80-100. In our overlap, we share the same sky. Every peregrine you see is a brief witness to your time on Earth.' },
+      { number: 2, title: 'On Speed', text: 'The peregrine moves at 242 mph in a stoop. A human runs ~25 mph at peak. The peregrine\'s 1 second is your 10 seconds. Reflect on what each second contains.' },
+      { number: 3, title: 'On Sight', text: 'A red-tail sees with 2× human acuity. Imagine your visual world doubled in detail. What would you notice that you currently miss? Reflect on attention.' },
+      { number: 4, title: 'On Hunger', text: 'A kestrel eats its body mass in food every 2-3 days. You eat 2% of your body mass daily. The kestrel\'s relationship with food is more urgent. Reflect on appetite.' },
+      { number: 5, title: 'On Migration', text: 'A broad-winged hawk travels 4,000-8,000 km twice a year. Most humans travel less than that lifetime. Reflect on movement + place.' },
+      { number: 6, title: 'On Solitude', text: 'Many raptors hunt alone. Pairs only during breeding. Yet they\'re intensely connected — to prey, weather, season. Reflect on aloneness vs isolation.' },
+      { number: 7, title: 'On Power', text: 'A harpy eagle\'s talon delivers 530 psi. Human bite ~150 psi. Raptors are tools — every part shaped by evolution for purpose. Reflect on what shapes you.' },
+      { number: 8, title: 'On Death', text: 'A successful raptor kills many times each week. Killing is essential, not optional. Predator + prey are partners in a dance neither chose. Reflect on inevitability.' },
+      { number: 9, title: 'On Recovery', text: 'The peregrine was extirpated east of the Rockies in 1965. Today there are 3,200 pairs in N. America. We did this. We can undo our destruction. Reflect on agency.' },
+      { number: 10, title: 'On Limits', text: 'The California condor can\'t live without our intervention. 540 individuals exist because we lifted lead from their bodies. Reflect on entanglement.' },
+      { number: 11, title: 'On Beauty', text: 'A peregrine\'s eye is golden + lethal. A snowy owl is white + holds the cold. A barn owl\'s face is a heart. Beauty + purpose are inseparable. Reflect on aesthetics.' },
+      { number: 12, title: 'On Hope', text: 'In 1974 there were 4 Mauritius kestrels left. Carl Jones spent 40 years restoring them. There are now 800. Hope is not abstract — it\'s the labor of one person + 40 years.' }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.49: HABITAT RESTORATION COOKBOOK
+  // ───────────────────────────────────────────────────────────
+  var HABITAT_COOKBOOK = {
+    intro: 'Practical guide to restoring raptor habitat on your land — backyard, farm, or community space. 15 actionable projects with cost + timeline + impact.',
+    projects: [
+      { name: 'Plant native grassland strip', size: '1-10 acres', cost: '$500-$5000', timeline: '2-3 years to establish', impact: 'Supports voles + ground squirrels = food base for kestrels, harriers, owls.', steps: ['Site prep + remove invasives', 'Seed native grass mix (big bluestem, little bluestem, switchgrass)', 'Annual burn or mowing rotation', 'Monitor for invasives', 'Allow 2-3 years for establishment'], region: 'All' },
+      { name: 'Install kestrel nest box', size: 'Single box', cost: '$30-$80 materials', timeline: 'Weeks to install, weeks-months for occupancy', impact: 'Provides cavity for declining American kestrel.', steps: ['Build cedar box (American Kestrel Partnership plans)', 'Mount on pole or tree 3-5m high', 'Face south or east', 'Add wood chips inside', 'Monitor + clean annually'], region: 'All' },
+      { name: 'Build osprey platform', size: 'Single platform', cost: '$500-$2000', timeline: 'Weeks to install, may take years to occupy', impact: 'Critical for osprey recovery — 60% of US ospreys nest on platforms.', steps: ['Tall pole (15+m) near water', 'Solid platform 1m × 1m', 'Sticks pre-placed', 'Monitor for occupancy'], region: 'Near water' },
+      { name: 'Plant snags + den trees', size: 'Variable', cost: 'Free if existing', timeline: 'Immediate impact', impact: 'Dead trees provide nest cavities for cavity-nesting owls + perches for buteos.', steps: ['Don\'t cut dead trees on your land', 'Leave broken-top live trees', 'Protect cavity-bearing trees during forestry'], region: 'Forest + edge' },
+      { name: 'Restore wetland', size: '0.5+ acres', cost: '$5000-$50000', timeline: '3-5 years to mature', impact: 'Supports osprey, eagle, harrier, owl prey base.', steps: ['Hire wetland consultant', 'NRCS Wetland Reserve Program help', 'Plant native wetland species', 'Manage water levels'], region: 'Wetland regions' },
+      { name: 'Switch to non-lead ammunition', size: 'Individual action', cost: '+$1-2 per round', timeline: 'Immediate', impact: 'Prevents lead poisoning of bald eagles + condors.', steps: ['Buy copper or steel bullets', 'Educate other hunters', 'Support state lead bans'], region: 'All' },
+      { name: 'Stop using rodenticides', size: 'Individual property', cost: 'Free + might save money', timeline: 'Immediate', impact: 'Prevents secondary poisoning of raptors.', steps: ['Snap traps instead', 'Seal entry points', 'Maintain integrated pest management', 'Encourage rodent-eating raptors'], region: 'All' },
+      { name: 'UV-pattern windows', size: 'House windows', cost: '$10-50 per window', timeline: 'Day', impact: 'Reduces window strikes (1B birds/year).', steps: ['Apply UV-reflective film or decals', 'Space 4 inches apart on glass', 'Use during migration season especially'], region: 'All' },
+      { name: 'Native woodlot management', size: '5+ acres', cost: '$0-$5000', timeline: 'Decades', impact: 'Supports mature forest raptors (owls, accipiters).', steps: ['Leave large mature trees', 'Manage for diverse age classes', 'Maintain snags', 'Avoid clear-cutting'], region: 'Forest' },
+      { name: 'Maintain hedgerows + field edges', size: 'Linear feature', cost: 'Free', timeline: 'Years to mature', impact: 'Provides edge habitat for hawks + owls.', steps: ['Don\'t spray with broad herbicides', 'Allow natural succession', 'Plant native shrubs to fill gaps'], region: 'Agricultural' },
+      { name: 'Install bat house (also helps owls)', size: 'Single house', cost: '$30-$100', timeline: 'Weeks', impact: 'Bat populations boost insect-eating + benefit owl prey base.', steps: ['Hang on south-facing wall', 'No vegetation within 25m', 'Monitor for occupancy'], region: 'All' },
+      { name: 'Add brush piles', size: 'Variable', cost: 'Free', timeline: 'Day', impact: 'Provides cover for small mammal prey base.', steps: ['Pile branches + brush', 'Place in shrub areas', 'Maintain in winter', 'Replace as decomposed'], region: 'All' },
+      { name: 'Reduce lawn area', size: 'Variable', cost: 'Free + saves money', timeline: 'Years', impact: 'Native plants = more insects = more songbirds + small mammals = more raptors.', steps: ['Stop mowing parts of yard', 'Plant natives instead', 'Replace fescue with native grasses'], region: 'All' },
+      { name: 'Establish pollinator garden', size: '100+ sq ft', cost: '$200-$1000', timeline: '2 years', impact: 'Insect biomass increases = food base for kestrels + insect-eating raptors.', steps: ['Plant native flowers for season-long bloom', 'Avoid pesticides', 'Provide water'], region: 'All' },
+      { name: 'Volunteer at land trust', size: 'Time investment', cost: 'Free', timeline: 'Ongoing', impact: 'Land protection scales beyond individual property.', steps: ['Find local land trust', 'Volunteer for stewardship', 'Donate', 'Advocate for conservation easements'], region: 'All' }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.49: KIDS ACTIVITIES — 15 activities for K-8
+  // ───────────────────────────────────────────────────────────
+  var KIDS_ACTIVITIES = {
+    intro: '15 fun activities for kids K-8 that build raptor knowledge + appreciation. Most cost less than $5.',
+    activities: [
+      { age: 'K-2', name: 'Build a paper hawk', materials: 'Paper, scissors, markers', time: '30 min', activity: 'Cut hawk silhouette from paper. Color it. Hang from ceiling. Discuss wing shape vs. flight style.' },
+      { age: 'K-2', name: 'Hoot like an owl', materials: 'Nothing', time: '15 min', activity: 'Learn owl calls. Practice great horned + barn + barred. Distinguish + identify.' },
+      { age: '3-5', name: 'Pellet "treasure hunt"', materials: 'Sterile pellet kit, magnifier', time: '45 min', activity: 'Dissect pellet, identify bones, write story about what owl ate.' },
+      { age: '3-5', name: 'Make a wing model', materials: 'Paper, tape, scissors', time: '45 min', activity: 'Cut feathers from paper. Make peregrine + vulture wings. Compare. Throw + observe glide.' },
+      { age: '3-5', name: 'Wind tunnel test', materials: 'Cardboard, fan', time: '60 min', activity: 'Build basic wind tunnel. Test different wing shapes. Discuss lift + drag.' },
+      { age: '6-8', name: 'eBird family outing', materials: 'Phone + binoculars', time: '90 min', activity: 'Go to park. Find raptors. Log to eBird as family. Discuss field marks.' },
+      { age: '6-8', name: 'Talon strength experiment', materials: 'Clay + paperclip', time: '30 min', activity: 'Bend paperclip into "talon." Press into clay at various angles. Calculate force per area. Compare to raptor data.' },
+      { age: '6-8', name: 'Migration map', materials: 'Map, markers', time: '45 min', activity: 'Trace migration routes from broad-winged hawk to Argentina. Use eBird data.' },
+      { age: '6-8', name: 'Vision test', materials: 'Snellen chart, tape measure', time: '30 min', activity: 'Test family\'s eye chart distance. Calculate human acuity. Compare to raptor 2-3x.' },
+      { age: '6-8', name: 'Owl ear simulation', materials: 'Headphones, sound app', time: '30 min', activity: 'Use stereo separation to localize sounds. Then add 5 ms delay to one ear. Notice change.' },
+      { age: 'All', name: 'Backyard scavenger hunt', materials: 'List', time: '60 min', activity: 'Find: bird feather, mouse hole, nest, perched bird, predator sign. Photograph each.' },
+      { age: 'All', name: 'Make a nest box', materials: 'Wood, nails, plans', time: '2 hours', activity: 'Build kestrel or screech owl box. Install. Monitor for occupancy.' },
+      { age: 'All', name: 'Watch nest cam', materials: 'Computer + internet', time: '20-60 min daily', activity: 'Watch eagle, hawk, or owl cam. Track development.' },
+      { age: 'All', name: 'Visit hawkwatch', materials: 'Binoculars, weather gear', time: 'Half day', activity: 'September-November. Count raptors. Help with citizen science.' },
+      { age: 'All', name: 'Adopt a wild raptor', materials: '$50-100', time: 'Donation', activity: 'Symbolic adoption supports rehab + research. Get photos + updates.' }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.49: READING LEVELS — content at multiple reading levels
+  // ───────────────────────────────────────────────────────────
+  var READING_LEVELS = {
+    intro: 'Same content adapted to different reading levels. Use for differentiated instruction.',
+    samples: [
+      { topic: 'Peregrine Falcon Speed', k2: 'A peregrine falcon is the fastest bird. It can fly very fast — faster than a car on the highway!', g35: 'The peregrine falcon is the fastest animal on Earth. When it dives to catch food, it can reach over 240 miles per hour. That\'s faster than most cars!', g68: 'The peregrine falcon (Falco peregrinus) is the fastest animal on Earth. During its hunting dive — called a stoop — it can reach speeds of 240+ mph. Special adaptations let it survive the 14g forces involved.', g912: 'Falco peregrinus achieves terminal velocity of ~242 mph (390 km/h) during stoop, the fastest measured speed of any animal. Anatomical adaptations include enlarged nasal tubercles directing airflow, nictitating membranes shielding the eye from particulate damage, and acute fovea cone density enabling tracking at extreme speeds. The species was rescued from US extirpation east of the Rockies (last pair failed 1965) by captive breeding programs starting 1970.' },
+      { topic: 'Bald Eagle Recovery', k2: 'Bald eagles almost disappeared a long time ago. But scientists helped them come back. Now you can see them again!', g35: 'The bald eagle is our national bird, but it almost went extinct because of a chemical called DDT. After DDT was banned in 1972, the eagles slowly came back. Today there are over 70,000 pairs!', g68: 'The bald eagle (Haliaeetus leucocephalus) declined to fewer than 500 pairs in 1963 due to DDT contamination, which caused eggshell thinning. After the 1972 DDT ban and intensive captive breeding + protection, the population recovered to over 70,000 pairs by 2021. The species was delisted from Endangered Species Act in 2007.', g912: 'Haliaeetus leucocephalus experienced near-extirpation across the contiguous US due to organochlorine pesticide bioaccumulation. The mechanism: DDT metabolized to DDE, which interferes with calcium deposition during eggshell formation, causing eggs to fail. Population modeling indicates that lambda dropped below 1.0 for 25+ years. The 1972 DDT ban (under Clean Water Act precursor), combined with intensive captive breeding programs at Cornell + Peregrine Fund, and Bald + Golden Eagle Protection Act enforcement, raised lambda above 1.0 by 1980. Bald eagles delisted in 2007 with population stable + growing.' }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.49: QUESTION BANK — 30 questions for tests + discussion
+  // ───────────────────────────────────────────────────────────
+  var QUESTION_BANK = {
+    intro: 'Open-ended questions for tests, discussion, journal prompts. Each tests deeper understanding than the multiple-choice quiz.',
+    questions: [
+      { category: 'Biology', q: 'Why do raptors have larger eyes than mammals of similar body size?', followup: 'What\'s the trade-off?', level: 'Middle school' },
+      { category: 'Biology', q: 'Explain why female raptors are larger than males. List three theories.', followup: 'Which theory has best evidence?', level: 'High school' },
+      { category: 'Biology', q: 'Describe owl asymmetric ear placement + how it enables 3D acoustic localization.', followup: 'Why didn\'t hawks evolve this?', level: 'High school' },
+      { category: 'Physics', q: 'A peregrine stoops at 242 mph. Calculate the kinetic energy of a 1 kg peregrine at this speed.', followup: 'How does the bird survive this impact?', level: 'High school' },
+      { category: 'Physics', q: 'Compare wing loading for a peregrine (~9 kg/m²) + vulture (~3 kg/m²). Explain how this relates to flight style.', followup: 'Why don\'t vultures dive like peregrines?', level: 'Middle school' },
+      { category: 'Physics', q: 'Why do soaring eagles have slotted wing tips? Explain induced drag.', followup: 'How is this engineered into modern aircraft?', level: 'High school' },
+      { category: 'Ecology', q: 'Describe the trophic cascade if all great horned owls disappeared from a forest.', followup: 'What would replace them ecologically?', level: 'Middle school' },
+      { category: 'Ecology', q: 'Why are raptors considered indicator species? Give specific example.', followup: 'What problems does this create for conservation funding?', level: 'High school' },
+      { category: 'Ecology', q: 'Compare K-selected raptors with r-selected mice. Predict population recovery from a 50% mortality event.', followup: 'What conservation implications follow?', level: 'High school' },
+      { category: 'Conservation', q: 'Trace the bald eagle\'s recovery from 1963 to today. Identify key actions + actors.', followup: 'What would have happened without those actions?', level: 'Middle school' },
+      { category: 'Conservation', q: 'Debate: Should we cull invasive barred owls to save endangered spotted owls?', followup: 'Develop arguments on both sides.', level: 'High school' },
+      { category: 'Conservation', q: 'Why has captive breeding worked for some raptor species (peregrine, condor) but not others?', followup: 'What factors predict success?', level: 'High school' },
+      { category: 'Behavior', q: 'Describe 5 distinct hunting strategies + the species that practice each.', followup: 'How are these strategies linked to anatomy?', level: 'Middle school' },
+      { category: 'Behavior', q: 'Explain mantling behavior + its ecological function.', followup: 'In what other animals do you see similar behaviors?', level: 'Middle school' },
+      { category: 'Behavior', q: 'Why do bald eagles practice kleptoparasitism? Calculate energy savings vs. catching own prey.', followup: 'What ecological + ethical questions arise?', level: 'High school' },
+      { category: 'Cultural', q: 'Why have raptors been universal cultural symbols for 5000+ years across continents?', followup: 'What is shared across cultures?', level: 'Middle school' },
+      { category: 'Cultural', q: 'Compare bald eagle (USA) + Berkutchi golden eagle (Mongolia) cultural traditions.', followup: 'What do these reveal about human-animal relationships?', level: 'High school' },
+      { category: 'Cultural', q: 'Discuss the ethics of falconry. Is it preservation or exploitation?', followup: 'Should we continue or phase it out?', level: 'High school' },
+      { category: 'Field ID', q: 'Distinguish Cooper\'s hawk from sharp-shinned hawk. List 4 diagnostic features.', followup: 'Which is most reliable in flight?', level: 'Middle school' },
+      { category: 'Field ID', q: 'You see a large dark raptor with white tail base. Could it be bald eagle, golden eagle, or osprey? Explain.', followup: 'What additional info do you need?', level: 'High school' },
+      { category: 'Research', q: 'Design a study to test whether kestrels really use UV vision to hunt voles.', followup: 'What controls would you need?', level: 'High school' },
+      { category: 'Research', q: 'Pale Male the red-tailed hawk nested in Manhattan for 32 years. Calculate his lifetime reproductive output.', followup: 'How does this compare to wild red-tails?', level: 'Middle school' },
+      { category: 'Research', q: 'Explain how Carl Jones recovered Mauritius kestrel from 4 individuals.', followup: 'Why couldn\'t the same approach save the dodo?', level: 'High school' },
+      { category: 'Ethics', q: 'A baby raptor is in your yard. Parents are nearby. What should you do?', followup: 'What if there are no parents visible?', level: 'Middle school' },
+      { category: 'Ethics', q: 'You see a hawk attacking birds at your feeder. Is this natural ecology or a problem?', followup: 'What action (if any) is justified?', level: 'Middle school' },
+      { category: 'Ethics', q: 'Hunters fund much wildlife conservation via license fees. But lead ammunition kills raptors. How do we reconcile?', followup: 'What policies would solve this?', level: 'High school' },
+      { category: 'Math', q: 'A bald eagle pair raises 1-3 chicks per year. Average wild lifespan 25 years. Calculate maximum lifetime reproductive output.', followup: 'What\'s the actual average (much lower)?', level: 'Middle school' },
+      { category: 'Math', q: 'eBird has 100M+ raptor observations. What percentage of N. American raptor populations does this represent annually?', followup: 'What sampling biases affect this number?', level: 'High school' },
+      { category: 'Synthesis', q: 'Choose one raptor species + write a 500-word case study covering biology, ecology, conservation status, + your personal connection.', followup: 'What did you discover?', level: 'All levels' },
+      { category: 'Synthesis', q: 'How will climate change affect raptors over the next 50 years? Predict 3 major impacts + 3 conservation responses.', followup: 'Which scenarios concern you most?', level: 'High school' }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.50: IUCN STATUS ATLAS — global red list status
+  // ───────────────────────────────────────────────────────────
+  var IUCN_ATLAS = {
+    intro: 'IUCN Red List status for major raptor species worldwide. Status: EX=Extinct, EW=Extinct in Wild, CR=Critically Endangered, EN=Endangered, VU=Vulnerable, NT=Near Threatened, LC=Least Concern, DD=Data Deficient.',
+    statuses: [
+      { species: 'White-rumped vulture', status: 'CR', cause: 'Diclofenac poisoning (Asian vulture crisis)', pop: '~10,000 (vs. millions historically)', region: 'India/SE Asia' },
+      { species: 'Indian vulture', status: 'CR', cause: 'Diclofenac', pop: '~30,000', region: 'India' },
+      { species: 'Slender-billed vulture', status: 'CR', cause: 'Diclofenac', pop: '~1,000', region: 'India/Nepal' },
+      { species: 'Madagascar serpent-eagle', status: 'CR', cause: 'Deforestation', pop: '~500', region: 'Madagascar' },
+      { species: 'Forest owlet', status: 'CR', cause: 'Habitat loss', pop: '<500', region: 'India' },
+      { species: 'Philippine eagle', status: 'CR', cause: 'Deforestation + hunting', pop: '~400', region: 'Philippines' },
+      { species: 'California condor', status: 'CR', cause: 'Lead poisoning historic', pop: '~540 (recovering)', region: 'CA/AZ/Mexico' },
+      { species: 'Egyptian vulture', status: 'EN', cause: 'Poisoning + collision', pop: '~25,000', region: 'Africa/Eurasia' },
+      { species: 'Steppe eagle', status: 'EN', cause: 'Wind farm collisions, habitat', pop: '<100,000', region: 'Eurasia' },
+      { species: 'Cape vulture', status: 'EN', cause: 'Poisoning + power lines', pop: '~9,000', region: 'Southern Africa' },
+      { species: 'Saker falcon', status: 'EN', cause: 'Trapping for falconry', pop: '~17,000', region: 'Eurasia' },
+      { species: 'White-tailed eagle (some)', status: 'NT', cause: 'Mercury + persecution', pop: 'Variable', region: 'Eurasia/Greenland' },
+      { species: 'Lappet-faced vulture', status: 'EN', cause: 'Poisoning', pop: '~5,500', region: 'Africa' },
+      { species: 'White-backed vulture', status: 'CR', cause: 'Poisoning, electrocution', pop: '~80,000 (declining)', region: 'Africa' },
+      { species: 'Mauritius kestrel', status: 'EN', cause: 'Genetic bottleneck (recovering)', pop: '~400 (down from 800 peak)', region: 'Mauritius' },
+      { species: 'Snowy owl', status: 'VU', cause: 'Climate change', pop: '~100,000-200,000', region: 'Arctic' },
+      { species: 'Northern spotted owl', status: 'NT', cause: 'Habitat + barred owl', pop: '~3,000-4,000', region: 'Pacific Northwest' },
+      { species: 'African crowned eagle', status: 'NT', cause: 'Deforestation', pop: '<10,000', region: 'Sub-Saharan Africa' },
+      { species: 'Harpy eagle', status: 'VU', cause: 'Deforestation', pop: '~20,000-50,000', region: 'C/S America' },
+      { species: 'Andean condor', status: 'VU', cause: 'Persecution + lead', pop: '~10,000', region: 'Andes' },
+      { species: 'Cinereous vulture', status: 'NT', cause: 'Poisoning', pop: '~21,000', region: 'Eurasia' },
+      { species: 'Griffon vulture', status: 'LC', cause: '—', pop: '~600,000', region: 'Eurasia (recovering)' },
+      { species: 'Bald eagle', status: 'LC', cause: '—', pop: '~316,000', region: 'N. America (recovered)' },
+      { species: 'Peregrine falcon', status: 'LC', cause: '—', pop: '~50,000 pairs N. America', region: 'Worldwide' },
+      { species: 'Red-tailed hawk', status: 'LC', cause: '—', pop: '~3 million', region: 'N. America' },
+      { species: 'American kestrel', status: 'LC (but declining)', cause: 'Unclear', pop: 'Declining', region: 'N. America' },
+      { species: 'Cooper\'s hawk', status: 'LC', cause: '—', pop: 'Increasing', region: 'N. America' },
+      { species: 'Great horned owl', status: 'LC', cause: '—', pop: '~5.6 million', region: 'Americas' }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.50: FLIGHT DYNAMICS — aerodynamics deep dive
+  // ───────────────────────────────────────────────────────────
+  var FLIGHT_DYNAMICS = {
+    intro: 'Raptor flight is a masterclass in aerodynamics. This section covers the four flight modes + the physics that makes each work.',
+    modes: [
+      { name: 'Soaring (thermal)', description: 'Birds circle on rising warm air. Energy cost minimal.', physics: 'Rising air column (thermal) creates updraft. Bird circles at edge of column where lift is maximum. Wings spread to maximize lift surface.', species: 'Vultures, eagles, hawks, broad-winged migrants', efficiency: 'Lowest energy cost of any active flight. Some species (vultures) can fly 8+ hours with no flapping.' },
+      { name: 'Soaring (ridge lift)', description: 'Wind hitting hills/ridges deflects upward. Birds use this updraft to gain altitude or maintain.', physics: 'Wind blowing against ridge is deflected upward. Bird positions wings parallel to ridge to maximize lift while minimizing drag.', species: 'Eagles, hawks, vultures (especially migration)', efficiency: 'Free lift. Used heavily during migration when crossing mountain ranges.' },
+      { name: 'Powered flapping', description: 'Active wing strokes generate thrust + lift.', physics: 'Downstroke: wings push air downward + backward, generating thrust + lift. Upstroke: wings flex to reduce drag, sometimes generating partial lift too. Pectoralis muscle (downstroke) is huge — 15-30% of body mass.', species: 'All raptors', efficiency: 'Highest energy cost. Used for short bursts, urgent pursuit.' },
+      { name: 'Gliding', description: 'No flapping. Bird trades altitude for distance.', physics: 'L/D ratio determines glide angle. Albatross 23:1, vulture 8:1, eagle 7:1, kingfisher 3:1. Higher = farther glide per unit drop.', species: 'All raptors. Specialty: long-winged soaring species', efficiency: 'Low energy cost (just maintaining wing shape).' },
+      { name: 'Stooping (diving)', description: 'Wings folded, body streamlined. Maximum velocity.', physics: 'Wings tucked reduce drag coefficient ~95%. Body becomes more aerodynamic. Terminal velocity ~110 m/s (~242 mph) for peregrine. Cornell radar 2005 confirmed.', species: 'Peregrine + other falcons primarily', efficiency: 'High energy expended in climb to altitude. Stoop itself is "free" velocity.' },
+      { name: 'Hovering (active)', description: 'Wings flap rapidly to keep bird stationary.', physics: 'Wings move in horizontal-figure-8 pattern (like helicopter rotor). Generates lift equal to weight. Energy expensive.', species: 'Kestrels, rough-legged hawks, white-tailed kites', efficiency: 'High energy cost. Limited duration (~30 seconds at high effort).' },
+      { name: 'Hovering (kiting)', description: 'Bird hangs in headwind, wings fixed.', physics: 'Wind speed = bird\'s ground speed = zero. Bird angles wings to maintain altitude in air stream.', species: 'Red-tailed hawk, rough-legged hawk', efficiency: 'Low energy cost. Limited to suitable wind speed (~30-50 km/h).' },
+      { name: 'Bounding flight', description: 'Alternating wing-tucked + wing-extended phases.', physics: 'During tucked phase, bird drops slightly. During extended phase, bird climbs. Net effect: less air drag than continuous flapping.', species: 'Small falcons, some songbirds (not common in raptors)', efficiency: 'Moderate efficiency for small birds.' },
+      { name: 'Slope soaring', description: 'Slow vertical air movement over slopes.', physics: 'Air heated by sun rises along slopes. Birds use this near hillsides + cliffs.', species: 'Many raptors during morning hours', efficiency: 'Free lift from solar-powered convection.' },
+      { name: 'Dynamic soaring', description: 'Uses wind shear between layers of air at different speeds.', physics: 'Bird climbs into slower air, gains energy. Dives back to faster air. Net energy gain.', species: 'Albatrosses primarily; some seabirds; occasionally raptors over water', efficiency: 'Energy-positive — bird gains energy from wind structure.' }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.50: SOCIAL MEDIA GUIDE — using social for raptor science
+  // ───────────────────────────────────────────────────────────
+  var SOCIAL_MEDIA = {
+    intro: 'Social media is now critical for raptor conservation + community. Here\'s how to use it well.',
+    platforms: [
+      { name: 'Twitter/X', purpose: 'Real-time bird sightings, conservation news, scientist updates', toFollow: '@CornellBirds, @USFWS, @WildlifeMag, @audubonsociety, @AntonioVHazard, @JohnFitzpatrick', tip: 'Follow scientists + organizations. Use #birding + #raptor hashtags.' },
+      { name: 'Instagram', purpose: 'Photography, education, ambassadors', toFollow: '@audubonsociety, @cornelluniversityb, @hawkmountain, @peregrinefund, @worldcenterforbirdsofprey', tip: 'Beautiful photos + educational captions.' },
+      { name: 'Facebook', purpose: 'Local birding groups, sightings, events', toFollow: 'Local Audubon chapter, state bird society, eBird Region Reviewers', tip: 'Join 2-3 local groups. Share rare sightings.' },
+      { name: 'eBird (its own platform)', purpose: 'Citizen science data submission', toFollow: 'Your local birds. Use Hot Spots feature.', tip: 'Submit every walk. Be honest about uncertainty.' },
+      { name: 'iNaturalist', purpose: 'Photo + species ID community', toFollow: 'Project pages relevant to your area', tip: 'Photo + GPS location. Community will help ID.' },
+      { name: 'Reddit', purpose: 'Discussion, q&a, identification help', toFollow: 'r/birding, r/raptors, r/whatsthisbird', tip: 'Post clear photos + ask for ID help.' },
+      { name: 'YouTube', purpose: 'Educational videos + nest cams', toFollow: 'Cornell Lab YouTube, BBC Earth, Hawk Mountain', tip: 'Subscribe to your favorite nest cams.' },
+      { name: 'Discord', purpose: 'Real-time chat, regional groups', toFollow: 'Birdgang Discord, regional birding servers', tip: 'Active community for fast questions.' },
+      { name: 'Mastodon (decentralized)', purpose: 'Growing birding community alternative', toFollow: '@birding.is, regional servers', tip: 'Replaces some Twitter functionality.' }
+    ],
+    bestPractices: [
+      'Always identify your raptor sightings (don\'t just say "hawk"). Use species name.',
+      'Photo + GPS + date + observer name = useful data record.',
+      'Don\'t post nest GPS locations publicly. Share with eBird privately.',
+      'Tag organizations (e.g., @hawkmountain) for visibility.',
+      'Credit photographers + scientists when sharing their work.',
+      'Don\'t harass scientists or content creators online.',
+      'Push back on misinformation (especially the bald eagle Hollywood myth).',
+      'Build positive community — share + amplify good content.',
+      'Don\'t overuse hashtags — 2-3 is optimal.',
+      'Engage with local birders in your area.',
+      'Respect community guidelines on each platform.',
+      'Be patient — bird+conservation content takes time to gain audience.'
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.50: MASTER INDEX — comprehensive section finder
+  // ───────────────────────────────────────────────────────────
+  var MASTER_INDEX = {
+    intro: 'The complete tool index. 80+ sections organized by category. Use as a master reference.',
+    categories: [
+      { name: '🎯 Hands-on Labs', sections: ['Hunt Sim (3D)', 'Talon Mechanics', 'Vision Lab', 'Flight Physics', 'Stoop Calculator', 'Silent Flight', 'Day Eye vs Night Eye', 'Hearing Lab', 'Pellet Lab', 'Spiral Trajectory', 'Acuity Demo', 'Predictor', 'Wing Formula', 'Math Lab', 'Wing Loading Lab'] },
+      { name: '🦅 Species Information', sections: ['Species Roster', 'Species Deep Profiles (20)', 'Anatomy Atlas', 'Anatomy', 'Age & Plumage Guide', 'Comparative Anatomy', 'Roster Duel', 'Field ID', 'Field ID Quiz', 'ID Mystery Cases'] },
+      { name: '🌳 Behavior & Ecology', sections: ['Hunting Strategies', 'Behavior Repertoire', 'Lifecycle', 'Pellet ID Key', 'Nest-Build Cookbook', 'Prey Atlas', 'Ecology & Food Webs', 'Calls & Vocalizations', 'Audio Guide', 'Molt Atlas'] },
+      { name: '🌍 Conservation', sections: ['Conservation', 'Recovery Case Studies', 'Climate Change Impact', 'Threats Database', 'Habitat Restoration Cookbook', 'Population & Demographics', 'IUCN Status Atlas', 'Public Engagement'] },
+      { name: '🏛 Human Connection', sections: ['Falconry & Humans', 'Falconry Curriculum', 'Cultural Symbols', 'Folklore by Culture', 'History of Raptor Science', 'Famous Birds', 'Expert Spotlights', 'Research Stations', 'Museums', 'Books', 'Films', 'Conservation Orgs'] },
+      { name: '🎒 Educational', sections: ['Lesson Plan Library', 'Kids Activities', 'Reading Levels', 'Question Bank', 'Glossary', 'Deep Glossary B', 'Resources'] },
+      { name: '🔬 Field & Citizen Science', sections: ['Field Naturalist', 'Photography Masterclass', 'Nestcam Directory', 'Birding Gear Guide', 'Tracking Technology', 'Banding Codes', 'Local Hot Spots Guide', 'Migration', 'Backyard Feeder Hawks'] },
+      { name: '✈ Flight Physics', sections: ['Flight Physics', 'Flight Dynamics', 'Stoop Calculator', 'Wing Loading', 'Wing Formula', 'Spiral Trajectory'] },
+      { name: '🌐 Geographic', sections: ['Habitat Atlas', 'Regional Field Guides', 'World Tour', 'Local Hot Spots'] },
+      { name: '⚠ Emergency & Decision', sections: ['Rehab & Vet Care', 'Rescue Decision Tree', 'Field Scenarios', 'Career Pathways'] },
+      { name: '✨ Specialty', sections: ['Records & Superlatives', 'Mythbusters', 'Fossil Record', 'Evolution & Taxonomy', 'Photography', 'Songs & Poems', 'Field Meditations', 'Illustration Gallery'] },
+      { name: '🎉 Reflection', sections: ['Closing Reflection', 'Master Index'] }
+    ],
+    stats: [
+      { metric: 'Total sections', value: '80+' },
+      { metric: 'Species covered', value: '25+' },
+      { metric: 'Quiz questions', value: '70' },
+      { metric: 'Glossary terms', value: '160+' },
+      { metric: 'Cultural traditions', value: '12' },
+      { metric: 'Famous individuals', value: '15+' },
+      { metric: 'Math problems', value: '20' },
+      { metric: 'Scenarios', value: '14' },
+      { metric: 'Habitats', value: '12' },
+      { metric: 'Hunting strategies', value: '14' },
+      { metric: 'Threats covered', value: '17' },
+      { metric: 'Tracking methods', value: '10' },
+      { metric: 'Lesson plans', value: '12' },
+      { metric: 'Rescue scenarios', value: '12' }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.51: OPEN DATASETS — public raptor data sources
+  // ───────────────────────────────────────────────────────────
+  var DATASETS = {
+    intro: 'Public raptor datasets you can download + analyze. Each comes from open citizen science or academic research. Use for science fair projects, research papers, or just curiosity.',
+    datasets: [
+      { name: 'eBird Basic Dataset (EBD)', source: 'Cornell Lab of Ornithology', size: '100M+ observations', format: 'CSV, sampling event data', url: 'ebird.org/data', uses: 'Population trends, climate change, range mapping', license: 'Open + free' },
+      { name: 'GBIF Backbone', source: 'Global Biodiversity Information Facility', size: '2B+ occurrences (all life)', format: 'Darwin Core', url: 'gbif.org', uses: 'Global species distributions', license: 'Open + free' },
+      { name: 'iNaturalist Open Observations', source: 'iNaturalist', size: '100M+ obs', format: 'CSV + GBIF', url: 'inaturalist.org', uses: 'Photo-verified species records', license: 'Open + free' },
+      { name: 'Hawk Mountain Migration Database', source: 'Hawk Mountain Sanctuary', size: '80 years of counts', format: 'CSV', url: 'hawkmountain.org/research', uses: 'Long-term raptor migration trends', license: 'Open + free' },
+      { name: 'USGS Bird Banding Laboratory', source: 'US Geological Survey', size: '80M+ band records', format: 'Various', url: 'usgs.gov/bbl', uses: 'Banding history, recoveries, longevity', license: 'Open + free' },
+      { name: 'Movebank Tracking Database', source: 'Movebank', size: '6+ billion GPS fixes', format: 'CSV', url: 'movebank.org', uses: 'Animal movement tracking', license: 'Open with permission' },
+      { name: 'BirdLife International Range Maps', source: 'BirdLife', size: '11,000+ species ranges', format: 'Shapefile', url: 'birdlife.org', uses: 'Species range mapping', license: 'Restricted (academic)' },
+      { name: 'IUCN Red List Data', source: 'IUCN', size: '150,000+ species assessments', format: 'CSV + database', url: 'iucnredlist.org', uses: 'Conservation status data', license: 'Open + free' },
+      { name: 'Macaulay Library', source: 'Cornell Lab', size: '50M+ media files', format: 'Various', url: 'macaulaylibrary.org', uses: 'Audio + video research', license: 'Open + research permission' },
+      { name: 'Christmas Bird Count', source: 'Audubon Society', size: '120+ years of data', format: 'CSV', url: 'cbcaudubon.org', uses: 'Winter raptor abundance trends', license: 'Open + free' },
+      { name: 'North American Breeding Bird Survey', source: 'USGS', size: '50+ years of routes', format: 'CSV', url: 'usgs.gov/bbs', uses: 'Trend data for many species', license: 'Open + free' },
+      { name: 'Snake River Birds of Prey LTER', source: 'USGS/BLM', size: '40+ years', format: 'Various', url: 'usgs.gov/snake-river-birds-of-prey-nca', uses: 'Western raptor research data', license: 'Open via FOIA' },
+      { name: 'WikiAves (Brazilian)', source: 'WikiAves Brazil', size: '50M+ records', format: 'Web API', url: 'wikiaves.com', uses: 'S. American raptor data', license: 'Open + free' },
+      { name: 'Avian Bioscience Atlas', source: 'Cornell', size: 'Diverse', format: 'Various', url: 'avianbiosci.org', uses: 'Comprehensive avian biology', license: 'Mixed' },
+      { name: 'eBird Status + Trends', source: 'Cornell Lab', size: 'Modeled abundance maps', format: 'Web + downloadable', url: 'science.ebird.org/en/status-and-trends', uses: 'Visualized current abundance', license: 'Open + free' }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.51: ACHIEVEMENTS & QUESTS — gamification
+  // ───────────────────────────────────────────────────────────
+  var ACHIEVEMENTS = {
+    intro: 'Quests + achievements track your raptor journey. Each unlocks recognition + builds your expertise.',
+    quests: [
+      { name: '🌱 First Steps', goal: 'Visit 5 different sections', xp: 50, badge: 'Curious Apprentice', tip: 'Start with Hub, then Hunt Sim, then any 3 others.' },
+      { name: '🦅 Species Master', goal: 'View all 20 species deep profiles', xp: 200, badge: 'Species Scholar', tip: 'Use the Species Roster to navigate.' },
+      { name: '🎯 Hunter\'s Eye', goal: 'Achieve >80% on Field ID Quiz (28 questions)', xp: 250, badge: 'Sharp Identifier', tip: 'Practice in Field ID + Mystery Cases first.' },
+      { name: '📚 Glossary Maven', goal: 'Mark 50+ glossary terms as "known" in flashcards', xp: 150, badge: 'Vocabulary Expert', tip: 'Use flashcards mode in Glossary.' },
+      { name: '🌐 World Traveler', goal: 'View all 15 World Tour destinations', xp: 100, badge: 'Globe-Trotter', tip: 'Click through each destination in World Tour.' },
+      { name: '🏛 Conservation Hero', goal: 'Read all 16 Mythbusters + all 12 expert spotlights', xp: 200, badge: 'Conservation Advocate', tip: 'Bookmark key facts for sharing.' },
+      { name: '🎓 Educator', goal: 'Use 3 lesson plans + 5 kid activities', xp: 150, badge: 'Teacher\'s Friend', tip: 'Adapt for your classroom or family.' },
+      { name: '🔬 Scientist', goal: 'Complete all 20 Math Lab problems', xp: 300, badge: 'Calculator Master', tip: 'Show your work in a notebook.' },
+      { name: '🌳 Outdoors Calling', goal: 'View all 10 Habitat profiles + all 6 Regional Guides', xp: 150, badge: 'Habitat Mapper', tip: 'Pick a habitat near you to visit.' },
+      { name: '⚖ Ethics Champion', goal: 'Read all 14 Field Scenarios + 12 Rescue scenarios', xp: 200, badge: 'Decision Maker', tip: 'Try each scenario without revealing first.' },
+      { name: '🧮 Mathematician', goal: 'Solve all 20 Math Lab problems unassisted', xp: 400, badge: 'Quantitative Champion', tip: 'Don\'t click reveal until you\'ve worked the math.' },
+      { name: '🌅 Reflective Scholar', goal: 'Read all 12 Field Meditations', xp: 100, badge: 'Wise Observer', tip: 'Read one per day for contemplation.' },
+      { name: '🏆 Master Scholar', goal: 'Achieve ALL above achievements', xp: 1500, badge: 'Raptor Hunt Master', tip: 'You will know more about raptors than 99% of humans.' }
+    ],
+    levels: [
+      { level: 'Apprentice', xp: '0-200', description: 'Just beginning the journey.' },
+      { level: 'Birder', xp: '200-500', description: 'Comfortable with common species + key concepts.' },
+      { level: 'Naturalist', xp: '500-1000', description: 'Deep + reliable knowledge across topics.' },
+      { level: 'Scholar', xp: '1000-2000', description: 'Expert in many areas; comparable to college senior in ornithology.' },
+      { level: 'Master', xp: '2000+', description: 'Reaches the limit of self-study. Time to volunteer + contribute scientifically.' }
+    ],
+    rewards: [
+      'Discover unique perspectives.',
+      'Develop appreciation for natural world.',
+      'Connect with a community of fellow scholars.',
+      'Become equipped to advocate for conservation.',
+      'Find joy in observing wildlife.',
+      'Build a lifelong hobby.',
+      'Contribute meaningfully to citizen science.'
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.52: HERO BIOGRAPHIES — long-form profiles
+  // ───────────────────────────────────────────────────────────
+  var HERO_BIOGRAPHIES = {
+    intro: 'Long-form biographical profiles of legendary figures in raptor science + conservation. Read deeply.',
+    biographies: [
+      { name: 'Carl Jones (1954-present)', country: 'Wales/UK + Mauritius', role: 'Conservation biologist; Mauritius Wildlife Foundation', story: 'Born in Wales 1954. Arrived in Mauritius 1979 to find Mauritius kestrel population at 4 individuals + Mauritius parakeet at 8 individuals. Spent next 40 years recovering both. Pioneered double-clutching (taking first clutch + letting female lay second), hand-rearing chicks in incubators, nest boxes, predator control. By 2005 kestrel population was 800 (then declined to ~400 by 2024 due to genetic bottleneck). Indianapolis Prize 2016 ($250K). MBE 2014. Speaks worldwide about importance of dogged + sustained commitment to single-species recovery.', legacy: 'Demonstrated that even the most extreme bottleneck can be reversed.', quote: '"The hardest part isn\'t saving the birds. It\'s deciding the species is worth saving."' },
+      { name: 'Tom Cade (1928-2019)', country: 'USA', role: 'Conservation biologist; founded Peregrine Fund', story: 'Born 1928 in Wyoming. Falconer + biologist. As peregrines disappeared from US east of Rockies in 1960s, Cade started Peregrine Fund at Cornell 1970. Goal: captive breeding + reintroduction to bring back wild populations. Built breeding facility. Trained generation of conservationists. Released first hacked peregrine 1974. By 1999, peregrine delisted from Endangered Species Act. World\'s most successful raptor recovery. Died 2019 age 90.', legacy: 'Captive breeding + hacking as conservation tools. Peregrine Fund still operates.', quote: '"If you want a bird back, you have to do the work."' },
+      { name: 'Rosalie Edge (1877-1962)', country: 'USA', role: 'Conservationist; founded Hawk Mountain Sanctuary', story: 'Born 1877 in New York. Wealthy, educated, fierce. In 1932 founded Emergency Conservation Committee — pioneering conservation NGO. In 1934 bought Hawk Mountain in Pennsylvania, where hawk shooters massacred 1000s of migrating raptors annually. Hired Maurice Broun to staff sanctuary. First raptor refuge in world. Edge fought tirelessly for bird conservation, often opposing male-dominated Audubon Society. Won her vision: Hawk Mountain became world\'s longest-monitored raptor migration site (80+ years).', legacy: 'Single-handedly invented the concept of raptor sanctuaries.', quote: '"Where the spirit of the wild things lives."' },
+      { name: 'Rachel Carson (1907-1964)', country: 'USA', role: 'Marine biologist + author; environmental movement founder', story: 'Born 1907 in Pennsylvania. Marine biologist at US Bureau of Fisheries. Published The Sea Around Us 1951, Silent Spring 1962. Silent Spring documented DDT damage to ecosystems + showed bald eagle + peregrine eggshell thinning. Triggered DDT ban + environmental movement. Created EPA + Endangered Species Act. Faced chemical industry attacks. Died of breast cancer 1964 at age 56, never knew her book\'s full impact.', legacy: 'Single most influential environmental book ever. Recovered hundreds of species. Created modern conservation.', quote: '"The sky was once filled with hawks. Now we work to bring them back."' },
+      { name: 'Roger Tory Peterson (1908-1996)', country: 'USA', role: 'Naturalist + author; modern field guide pioneer', story: 'Born 1908 in New York. Self-taught naturalist. Wrote A Field Guide to the Birds 1934 — first practical popular bird guide. Drew his own illustrations. Made birdwatching accessible to millions. Wrote ~50 books. Director of Peterson Field Guides series for 60 years. Inspired generations of birders. Died 1996 age 88.', legacy: 'Father of modern field birding. Without him, raptor conservation would have had no public audience.', quote: '"It is not the bird in the hand that counts, but the bird in the mind."' }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.52: CURATED LINKS — top resources
+  // ───────────────────────────────────────────────────────────
+  var CURATED_LINKS = {
+    intro: 'Curated list of best raptor + birding online resources.',
+    categories: [
+      { name: '🌐 Cornell Lab Resources', links: [
+        { name: 'All About Birds (eBird)', url: 'ebird.org', value: 'Submit + browse bird observations' },
+        { name: 'Merlin Bird ID', url: 'merlin.allaboutbirds.org', value: 'Free photo + sound ID app' },
+        { name: 'Macaulay Library', url: 'macaulaylibrary.org', value: 'Audio + video archive' },
+        { name: 'Bird Cams', url: 'allaboutbirds.org/cams', value: 'Live nest cams' },
+        { name: 'Bird Academy', url: 'academy.allaboutbirds.org', value: 'Online courses' }
+      ]},
+      { name: '🦅 Raptor-Specific Sites', links: [
+        { name: 'Peregrine Fund', url: 'peregrinefund.org', value: 'Conservation + research' },
+        { name: 'Hawk Mountain Sanctuary', url: 'hawkmountain.org', value: 'Migration site + education' },
+        { name: 'HawkWatch International', url: 'hawkwatch.org', value: 'Western US monitoring' },
+        { name: 'Raptor Research Foundation', url: 'raptorresearchfoundation.org', value: 'Scientific society' },
+        { name: 'World Center for Birds of Prey', url: 'peregrinefund.org', value: 'Live raptor exhibits' }
+      ]},
+      { name: '🏛 Conservation Orgs', links: [
+        { name: 'Audubon Society', url: 'audubon.org', value: 'US bird conservation' },
+        { name: 'American Bird Conservancy', url: 'abcbirds.org', value: 'Policy + habitat' },
+        { name: 'BirdLife International', url: 'birdlife.org', value: 'Global bird conservation' },
+        { name: 'Wildlife Conservation Society', url: 'wcs.org', value: 'Global wildlife' },
+        { name: 'IUCN Red List', url: 'iucnredlist.org', value: 'Species status assessments' }
+      ]},
+      { name: '🩹 Wildlife Rehabilitation', links: [
+        { name: 'Find a Rehabber (NWRA)', url: 'theiwra.org', value: 'Wildlife rehabber directory' },
+        { name: 'Tristate Bird Rescue', url: 'tristatebird.org', value: 'Oil spill response' },
+        { name: 'Univ. of Minnesota Raptor Center', url: 'raptor.umn.edu', value: 'World-leading raptor vet' }
+      ]},
+      { name: '📚 Educational', links: [
+        { name: 'Audubon for Kids', url: 'audubon.org/kids', value: 'Kid-friendly bird education' },
+        { name: 'Cornell Bird Academy', url: 'academy.allaboutbirds.org', value: 'Online courses' },
+        { name: 'BirdSleuth K-12', url: 'birdsleuth.org', value: 'School curriculum' },
+        { name: 'Smithsonian Education', url: 'education.si.edu', value: 'Museum resources' }
+      ]},
+      { name: '📱 Apps + Tools', links: [
+        { name: 'eBird (mobile)', url: 'ebird.org/about/mobile', value: 'Submit observations on phone' },
+        { name: 'Merlin Bird ID', url: 'merlin.allaboutbirds.org', value: 'Photo + sound ID' },
+        { name: 'iNaturalist', url: 'inaturalist.org', value: 'Photo + GPS records' },
+        { name: 'Birds of the World', url: 'birdsoftheworld.org', value: 'Cornell paid reference' }
+      ]},
+      { name: '🌐 International Resources', links: [
+        { name: 'RSPB (UK)', url: 'rspb.org.uk', value: 'British bird conservation' },
+        { name: 'OBC (Oriental Birds)', url: 'orientalbirdclub.org', value: 'Asian birds' },
+        { name: 'African Bird Club', url: 'africanbirdclub.org', value: 'African birds' },
+        { name: 'eBird Caribbean', url: 'ebird.org/caribbean', value: 'Caribbean birds' }
+      ]},
+      { name: '🎓 Academic Journals', links: [
+        { name: 'Journal of Raptor Research', url: 'raptorresearchfoundation.org/publications', value: 'Premier raptor journal' },
+        { name: 'Bird Conservation International', url: 'cambridge.org/core/journals/bird-conservation-international', value: 'Global conservation' },
+        { name: 'Ibis', url: 'onlinelibrary.wiley.com/journal/1474919x', value: 'British Ornithological Union' },
+        { name: 'Auk: Ornithological Advances', url: 'academic.oup.com/auk', value: 'American Ornithological Society' }
+      ]}
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.53: BIG QUOTES — extended philosophical quotes
+  // ───────────────────────────────────────────────────────────
+  var BIG_QUOTES = {
+    intro: 'Long-form quotes that capture the essence of why raptors matter. Use these for journal prompts, classroom display, or daily inspiration.',
+    quotes: [
+      { source: 'Henry David Thoreau, Walden (1854)', text: 'I find an instinct in me conducting to a mystic spiritual life, and also another to a primitive savage life, and I reverence them both. I love the wild not less than the good. Wildness is what the world needs. To remain sane is to be aware of our place in this great cycle.' },
+      { source: 'John Muir, My First Summer in the Sierra (1911)', text: 'When we try to pick out anything by itself, we find it hitched to everything else in the Universe. This is especially true of raptors — pull on the thread of one species and you find yourself untangling an entire ecosystem.' },
+      { source: 'Wendell Berry, Sabbaths (1987)', text: 'There are no unsacred places; there are only sacred places and desecrated places. The same is true of raptor habitat. Every meadow is a kestrel\'s temple. Every cliff is a peregrine\'s cathedral. Treat them with the reverence they deserve.' },
+      { source: 'Aldo Leopold, A Sand County Almanac (1949)', text: 'A thing is right when it tends to preserve the integrity, stability, and beauty of the biotic community. It is wrong when it tends otherwise. Raptors are the integrity. Their absence is the wrong-ness made visible.' },
+      { source: 'Bartlomiej Zalewski, Polish raptor researcher', text: 'You don\'t understand the European White-tailed Sea Eagle by reading a book. You understand it by sitting beneath one for an afternoon. Then you understand it the same way the Lithuanians did 800 years ago — with awe, with attention, with humility.' },
+      { source: 'David Quammen, Song of the Dodo (1996)', text: 'Extinction is not a sin against nature. Nature has been extinguishing species for billions of years. Extinction is a sin against ourselves — against our descendants, who will live in a world made smaller by what we lost. Every saved raptor is a gift to the next generation.' },
+      { source: 'J.A. Baker, The Peregrine (1967)', text: 'For ten years I followed the peregrine. I was possessed by it. It was a grail to me. Now it has gone. The long pursuit is over. Few peregrines are left, there will be fewer, they may not survive. Many die on their backs, clutching insanely upwards with their feet, while blood from their burst lungs creeps away over the white ice. We are the killers. We stink of death. We carry it with us. It sticks to us like frost. We cannot tear it away.' },
+      { source: 'Rachel Carson, Silent Spring (1962)', text: 'For the first time in the history of the world, every human being is now subjected to contact with dangerous chemicals, from the moment of conception until death. In the less than two decades of their use, the synthetic pesticides have been so thoroughly distributed throughout the animate and inanimate world that they occur virtually everywhere.' },
+      { source: 'Aldo Leopold, A Sand County Almanac (1949)', text: 'There are some who can live without wild things, and some who cannot. These essays are the delights and dilemmas of one who cannot.' },
+      { source: 'Frederick II, De Arte Venandi cum Avibus (1240)', text: 'My intent is to set forth those things which I have learned by experience or have been taught by experts; for of all the studies of the wise it is the most pleasant, and worthy of the highest praise. I have, therefore, taken great pains to investigate and to write what truth and experience tell me; I have not relied on the writings of the ancients alone.' },
+      { source: 'Carl Jones, Indianapolis Prize Speech (2016)', text: 'When we save a species, we don\'t do it because they\'re useful. We do it because every life form is precious. Because every species has earned its place over millions of years. Because we are not the final arbiters of who deserves to exist.' },
+      { source: 'Helen Macdonald, H Is for Hawk (2014)', text: 'The hawk was a fire that burned my hurts away. There could be no thought of love or loss. The hawk was a fire that burned my hurts away. There could be no thought of love or loss. There could be no thought, only the present and the immediate task: to remain here, in this thicket, watching for the bird to return.' },
+      { source: 'Pete Dunne, Hawks in Flight (2017)', text: 'Identification of distant raptors is not a science but an art — and like all arts, it requires patience, practice, and a willingness to be wrong. The best identifications come from those who have learned to enjoy the journey of doubt and discovery, not just the certainty of the final answer.' },
+      { source: 'David Sibley, Sibley Guide (2014)', text: 'Field identification is fundamentally about pattern recognition. You learn the typical and the variants. You learn what to look for at distance and what to look for up close. And mostly you learn to look — to truly observe — to keep your eyes open and your assumptions in check.' },
+      { source: 'Edward Howe Forbush, Birds of MA (1929)', text: 'Without our hawks, the songbirds would run rampant. Without our songbirds, the insects would run rampant. Without our insects, the plants would not be pollinated. The hawk is the keystone of an arch that keeps the building of life standing.' },
+      { source: 'Tom Cade, on peregrine recovery', text: 'When we lost the peregrine east of the Rockies in the 1960s, we lost more than a species. We lost an idea — that humans had partnered with raptors for thousands of years and would always do so. Bringing back the peregrine was bringing back that idea.' },
+      { source: 'Maurice Broun, on Hawk Mountain (1947)', text: 'For two hours on the morning of the count, I watched a kettle of broad-winged hawks form below us on a thermal. As they spiraled upward, more birds joined from the woods around. By the time the kettle reached our altitude, there were eight hundred raptors in a single column of air, all moving south. I had no idea where each one had come from or where each was going. But I knew, in that moment, that this was the longest unbroken thread of life on the planet, made visible.' },
+      { source: 'Anonymous Inuit teaching', text: 'The snowy owl flies into the long darkness and returns with the dawn. So do we all. The owl is wisdom watching from the snow. We are the seekers, and the owl marks our path.' }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.53: FINAL VOCABULARY — 50 final terms
+  // ───────────────────────────────────────────────────────────
+  var GLOSSARY_C = {
+    intro: '50 final glossary terms specific to expert/scientific contexts.',
+    terms: [
+      { term: 'Achromaticity', def: 'Lack of color difference — characteristic of some owl photo-receptor states in dim light.' },
+      { term: 'Adaptation', def: 'Heritable trait that increases fitness in particular environment.' },
+      { term: 'Aerodynamics', def: 'Physics of moving objects in air. Key to flight performance.' },
+      { term: 'Allometry', def: 'How body parts scale with body size. Larger raptors have proportionally smaller wing area.' },
+      { term: 'Altitudinal migration', def: 'Movement up or down elevation seasonally. Some western raptors do this.' },
+      { term: 'Anti-coagulant', def: 'Chemical that prevents blood clotting. Found in some rodenticides — kills raptors that eat poisoned prey.' },
+      { term: 'Apex predator', def: 'Top of food chain — not predated upon by anything else. Most raptors are apex.' },
+      { term: 'Aspect ratio', def: 'Wingspan² / wing area. High = soaring efficient. Low = maneuverable.' },
+      { term: 'Audubon Christmas Bird Count', def: 'Annual mid-December US count. Most important citizen-science winter dataset.' },
+      { term: 'Banding (ringing in UK)', def: 'Attaching numbered metal band to bird leg for individual identification + tracking.' },
+      { term: 'Bioaccumulation', def: 'Buildup of toxin (like DDT, mercury) over time in tissue. Worse in apex predators.' },
+      { term: 'Biological control', def: 'Using one species to control another. Birds of prey are natural biological control.' },
+      { term: 'Brood', def: 'Group of chicks in a single nest.' },
+      { term: 'Cavity nester', def: 'Species that nests in tree cavities. Kestrels, screech owls.' },
+      { term: 'Census', def: 'Population count of a species in a defined area.' },
+      { term: 'Citizen science', def: 'Volunteers contributing data to scientific research.' },
+      { term: 'Cline', def: 'Continuous variation across geographic range. Some raptors show clinal variation in size or color.' },
+      { term: 'Conservation status', def: 'Official assessment of species\' extinction risk. IUCN Red List is standard.' },
+      { term: 'Convergence (convergent evolution)', def: 'Different lineages independently evolving similar traits.' },
+      { term: 'Counter-current heat exchange', def: 'Anatomical adaptation where warm blood flowing into cold extremity passes alongside cold blood returning. Prevents heat loss.' },
+      { term: 'Crepuscular', def: 'Active at dawn + dusk. Some screech owls + short-eared owls.' },
+      { term: 'Cycle', def: 'Multi-year population fluctuation. Snowshoe hares 10-year cycle drives goshawk + lynx populations.' },
+      { term: 'Demographics', def: 'Study of population structure + change.' },
+      { term: 'Density-dependent', def: 'Effect that varies with population density.' },
+      { term: 'Diaspora', def: 'Dispersal of population from natal area.' },
+      { term: 'Diet specialist', def: 'Species that eats only one or few prey types. Osprey, snail kite.' },
+      { term: 'Disjunct distribution', def: 'Population separated into distinct areas. Some raptor species show this.' },
+      { term: 'Dispersal', def: 'Movement of juveniles from natal area.' },
+      { term: 'Endemic', def: 'Restricted to specific geographic area. Mauritius kestrel.' },
+      { term: 'Extinction', def: 'Permanent loss of species. Haast\'s eagle, dodo.' },
+      { term: 'Fauna', def: 'All animal life of an area.' },
+      { term: 'Fecundity', def: 'Reproductive output. Eagles low, mice high.' },
+      { term: 'Field guide', def: 'Reference book for species identification.' },
+      { term: 'Floater', def: 'Reproductively-mature adult without breeding territory. Common in K-selected species.' },
+      { term: 'Folivore', def: 'Leaf-eater. Some prey species; raptors are not.' },
+      { term: 'Geographic range', def: 'Area where species occurs.' },
+      { term: 'Geophagy', def: 'Eating soil. Some birds + scavengers do this.' },
+      { term: 'Habitat', def: 'Place where organism lives. Forest, grassland, coast, etc.' },
+      { term: 'Hybridization', def: 'Mating between species. Rare in raptors but documented (red-tail × red-shoulder hybrids).' },
+      { term: 'Imprinting', def: 'Critical-period learning of caregiver identity.' },
+      { term: 'Indicator species', def: 'Species whose health reflects ecosystem health. Raptors are flagship indicators.' },
+      { term: 'Insectivore', def: 'Insect-eater. Mississippi kite + small falcons.' },
+      { term: 'Iteroparous', def: 'Reproducing multiple times during lifetime. Most raptors.' },
+      { term: 'K-selected', def: 'Few offspring, long life, high parental investment. Raptors are extreme K-selected.' },
+      { term: 'Keystone species', def: 'Species whose impact on community is disproportionately large.' },
+      { term: 'Lambda (λ)', def: 'Population growth rate. 1 = stable, > 1 = growing, < 1 = declining.' },
+      { term: 'Life history', def: 'Pattern of survival + reproduction across species\' lifetime.' },
+      { term: 'Locomotion', def: 'Movement. For raptors, flight is primary.' },
+      { term: 'Lure', def: 'Falconry term for training device. Bird flies to lure for reward.' },
+      { term: 'Mark-recapture', def: 'Statistical method using banded individuals to estimate population.' },
+      { term: 'Migration', def: 'Seasonal movement between summer + winter ranges. Most raptors migrate.' },
+      { term: 'Monogamy', def: 'Single mate per breeding season. Most raptors.' },
+      { term: 'Native', def: 'Naturally occurring (not introduced). Determines conservation priority.' },
+      { term: 'Niche', def: 'Ecological role of species in its community.' },
+      { term: 'Nictitating membrane', def: 'Transparent third eyelid that slides over eye. Critical during high-speed dives.' },
+      { term: 'Nocturnal', def: 'Active at night. Most owls; some falcons + raptors are facultatively nocturnal.' },
+      { term: 'Nucleotide diversity', def: 'Genetic variation within population. Low = inbreeding risk.' },
+      { term: 'Olfactory', def: 'Relating to smell. Most raptors weak; turkey vulture strong.' },
+      { term: 'Omnivore', def: 'Eats plants + animals. Most raptors are strict carnivores.' },
+      { term: 'Ornithology', def: 'Scientific study of birds.' },
+      { term: 'Pair bond', def: 'Long-term reproductive partnership between two adults.' },
+      { term: 'Parasitism', def: 'Living on or in another organism + harming it. Brood parasitism (cowbirds) affects songbirds.' },
+      { term: 'Pelagic', def: 'Open-ocean. Some raptors (osprey, bald eagle) hunt at sea edge.' },
+      { term: 'Pellet', def: 'Regurgitated indigestible material. See Pellet Lab.' },
+      { term: 'Photoperiod', def: 'Day length. Triggers breeding, migration, molt.' },
+      { term: 'Plumage', def: 'Bird\'s feather coverage.' },
+      { term: 'Pneumatic bones', def: 'Hollow bones connected to air sacs. Reduces weight.' },
+      { term: 'Polymorphism', def: 'Multiple visual variants within species. Snowy owl gender + age dimorphism.' },
+      { term: 'Population viability', def: 'Probability of population persistence over time.' },
+      { term: 'Predation', def: 'Killing + eating prey. Defining raptor activity.' },
+      { term: 'Predator-prey arms race', def: 'Co-evolution between predator + prey driving adaptations.' },
+      { term: 'Productivity', def: 'Reproductive output per pair per year.' },
+      { term: 'Quaternary consumer', def: 'Top of 4-level food chain. Many large raptors.' },
+      { term: 'Raptor', def: 'Predatory bird with hooked beak + curved talons + carnivorous diet.' },
+      { term: 'Rangeland', def: 'Open natural area suited for raptor hunting.' },
+      { term: 'Recolonization', def: 'Re-establishment of population in former range.' },
+      { term: 'Recovery plan', def: 'Strategy for ESA-listed species. California condor + others.' },
+      { term: 'Recruitment', def: 'Successful integration of new individuals into population.' },
+      { term: 'Refugia', def: 'Geographic area where species survived environmental stress. Critical for climate-driven shifts.' },
+      { term: 'Rehabilitation', def: 'Recovery + return to wild of injured wildlife.' },
+      { term: 'Reintroduction', def: 'Returning species to former range. Peregrine + condor success stories.' },
+      { term: 'Reproductive isolation', def: 'Separation preventing interbreeding between populations.' },
+      { term: 'Resource', def: 'Anything needed for survival + reproduction. Habitat, prey, mate.' },
+      { term: 'Roost', def: 'Sleeping or daytime resting site.' },
+      { term: 'Sampling effort', def: 'Time + intensity of observation. Affects detection probability.' },
+      { term: 'Sentinel species', def: 'Species whose health indicates environmental quality. Raptors are flagship sentinels.' },
+      { term: 'Sexually dimorphic', def: 'Males + females physically different. Reverse-dimorphic in raptors (female larger).' },
+      { term: 'Sister taxa', def: 'Most closely related lineages.' },
+      { term: 'Speciation', def: 'Formation of new species. Slow + complex.' },
+      { term: 'Spectrogram', def: 'Visual representation of sound. Tool for analyzing calls.' },
+      { term: 'Spatial autocorrelation', def: 'Nearby observations tend to be similar. Affects statistical analysis.' },
+      { term: 'Stewardship', def: 'Ethical conservation responsibility.' },
+      { term: 'Subspecies', def: 'Geographically distinct population within species.' },
+      { term: 'Symbiosis', def: 'Close ecological interaction. Mutualism, commensalism, parasitism.' },
+      { term: 'Sympatric', def: 'Co-occurring in same area.' },
+      { term: 'Taxonomic ambiguity', def: 'Uncertainty about species boundaries. Cooper\'s vs sharp-shin.' },
+      { term: 'Telomeres', def: 'DNA ends. Shorter telomeres indicate cellular aging.' },
+      { term: 'Territoriality', def: 'Active defense of area from conspecifics.' },
+      { term: 'Thermoregulation', def: 'Maintaining body temperature. Critical in cold/hot environments.' },
+      { term: 'Trapped', def: 'Caught for falconry; or stuck in wildlife trap.' },
+      { term: 'Trophic cascade', def: 'Top-down effect of predator removal/addition.' },
+      { term: 'Trophic level', def: 'Position in food chain.' },
+      { term: 'Underdog effect', def: 'Conservation interest favoring small populations. Bald eagle benefited.' },
+      { term: 'Ungulate', def: 'Hoofed mammal. Many are raptor + scavenger prey.' },
+      { term: 'Vigilance', def: 'Watchfulness. Different species + sexes vary.' },
+      { term: 'Vocalization', def: 'Sound production. See Calls section.' },
+      { term: 'Wing loading', def: 'Mass per unit wing area. High = diving + fast. Low = soaring + slow.' },
+      { term: 'Wintering grounds', def: 'Non-breeding range. Where migrants overwinter.' },
+      { term: 'Wolf raptor', def: 'Some have called large raptors ecological wolves — apex predators.' },
+      { term: 'Zooarchaeology', def: 'Archaeological study of animal bones. Reveals raptor distribution in prehistory.' },
+      { term: 'Zoonotic', def: 'Disease transmissible between animals + humans. Raptors carry some.' },
+      { term: 'Abiotic', def: 'Non-living components of ecosystem (temperature, humidity, soil).' },
+      { term: 'Accidental', def: 'Bird outside its expected range. Tracks rare sightings.' },
+      { term: 'Acclimatization', def: 'Physiological adjustment to environment.' },
+      { term: 'Adventive', def: 'Non-native species establishing in new area.' },
+      { term: 'Aerial display', def: 'Mid-air performance for mating or territorial purpose.' },
+      { term: 'Age class', def: 'Year category. First-year, sub-adult, adult.' },
+      { term: 'Air pressure', def: 'Atmospheric pressure affecting flight. Higher altitude = lower pressure = less lift.' },
+      { term: 'Albinism', def: 'Lack of pigment. Very rare in raptors.' },
+      { term: 'Allopatric', def: 'Geographically separated populations.' },
+      { term: 'Anatomical', def: 'Relating to physical structure.' },
+      { term: 'Anti-predator', def: 'Behavior that reduces predation risk.' },
+      { term: 'Aphotic', def: 'Without light. Important for nocturnal raptor hunting.' },
+      { term: 'Aquatic', def: 'Living or hunting in water. Osprey + bald eagle.' },
+      { term: 'Arboreal', def: 'Tree-dwelling. Most raptors when not flying.' },
+      { term: 'Arc-minute', def: 'Unit of angular measurement (1/60 of a degree).' },
+      { term: 'Arctic', def: 'Region north of Arctic Circle. Some specialty raptors.' },
+      { term: 'Aviary', def: 'Captive bird enclosure.' },
+      { term: 'Avian', def: 'Relating to birds.' },
+      { term: 'Awareness', def: 'Cognitive state. Some raptors have demonstrated self-awareness.' },
+      { term: 'Bachelor', def: 'Reproductively-mature male without mate. Floater status.' },
+      { term: 'Basal metabolic rate', def: 'Minimum energy to sustain life at rest.' },
+      { term: 'Bathing', def: 'Behavior — important for feather maintenance.' },
+      { term: 'Behavioral plasticity', def: 'Ability to modify behavior in response to environment.' },
+      { term: 'Bewick', def: 'Falconry term related to leg restraints.' },
+      { term: 'Bib', def: 'Color marking on chest. Diagnostic for some species.' },
+      { term: 'Bibliometric', def: 'Statistical analysis of scientific literature. Raptor research bibliometric data exists.' },
+      { term: 'Bivouac', def: 'Temporary nesting or roosting site.' },
+      { term: 'Blade', def: 'Wing element. Primary feather "blade."' },
+      { term: 'Blood pressure', def: 'Important for raptor anatomy during stoop.' },
+      { term: 'Boomerang flight', def: 'Some raptors return to perch in arc rather than direct line.' },
+      { term: 'Brachiation', def: 'Arm-swinging through trees. Some falconers use this term.' },
+      { term: 'Bullet bone', def: 'Falconry term for breast bone.' },
+      { term: 'Bumblefoot', def: 'Pododermatitis. Chronic foot infection in captive raptors.' },
+      { term: 'Burr', def: 'Velcro-like feather hooks that hold barbs together.' },
+      { term: 'Cache', def: 'Hidden food store. Some raptors cache prey.' },
+      { term: 'Cadaver', def: 'Dead body. Raptors scavenge cadavers.' },
+      { term: 'Cage life', def: 'Captive existence. Stress + behavioral problems common.' },
+      { term: 'Calcium', def: 'Essential for eggshell + bone formation. Deficiency causes problems.' },
+      { term: 'Cannibalism', def: 'Eating same species. Rare in raptors but documented.' },
+      { term: 'Canopy', def: 'Upper forest layer. Habitat for many raptor species.' },
+      { term: 'Capercaillie', def: 'Large European grouse, occasional raptor prey.' },
+      { term: 'Captive', def: 'In human care. Used for breeding + rehabilitation.' },
+      { term: 'Cardiovascular', def: 'Heart + blood vessels. Critical for sustained flight.' },
+      { term: 'Caretaker', def: 'Human care provider. Important during rehab.' },
+      { term: 'Carrying capacity', def: 'Maximum population environment can support.' },
+      { term: 'Caudal', def: 'Toward the tail end of the body.' },
+      { term: 'Cephalic', def: 'Toward the head.' },
+      { term: 'Cetacean', def: 'Whales + dolphins. Some bald eagles scavenge cetacean carcasses.' },
+      { term: 'Choana', def: 'Internal opening at back of nasal cavity. Bird anatomy.' },
+      { term: 'Chronobiology', def: 'Study of biological rhythms. Day-night migration patterns.' },
+      { term: 'Cilia', def: 'Hair-like projections. Found in tracheal cells of birds.' },
+      { term: 'Clade', def: 'Group of related species sharing common ancestor.' },
+      { term: 'Climate niche', def: 'Climate conditions where species can survive.' },
+      { term: 'Cognition', def: 'Mental processes. Active research area in raptor science.' },
+      { term: 'Cohort', def: 'Group born in same year. Used in demographic studies.' },
+      { term: 'Commensalism', def: 'One species benefits, other unaffected.' },
+      { term: 'Common garden', def: 'Experimental design controlling for environment.' },
+      { term: 'Communal', def: 'Group-living or group-action behavior.' },
+      { term: 'Conduction', def: 'Heat transfer through direct contact. Important for raptor feet on cold perch.' },
+      { term: 'Conspecific', def: 'Same species.' },
+      { term: 'Continental', def: 'Across continent scale. Migration routes are continental.' },
+      { term: 'Convection', def: 'Heat transfer via fluid (air) movement. Drives thermals.' },
+      { term: 'Convergent', def: 'Independently evolved similar trait. Hooked beaks in vultures vs hawks.' },
+      { term: 'Coracoid', def: 'Bone connecting shoulder to sternum. Resists upstroke forces.' },
+      { term: 'Cornify', def: 'Become hard like horn. Beak + talons.' },
+      { term: 'Corvid', def: 'Crow + raven family. Often mob raptors.' },
+      { term: 'Courtship', def: 'Pre-mating behavior. See Behavior Repertoire.' },
+      { term: 'Crop milk', def: 'Some birds produce. Falconers know this term.' },
+      { term: 'Cycle', def: 'Multi-year population fluctuation. See lemming + hare cycles.' },
+      { term: 'Cygnet', def: 'Young swan. Sometimes preyed on by large raptors.' },
+      { term: 'Cytoplasm', def: 'Cell contents outside nucleus. Relevant to cellular biology.' },
+      { term: 'Decarbonization', def: 'Reducing carbon emissions. Climate-driven raptor conservation.' },
+      { term: 'Decomposer', def: 'Breaks down dead organic matter. Some vulture role.' },
+      { term: 'Defecation', def: 'Waste excretion. Raptors defecate while perched.' },
+      { term: 'Demoiselle', def: 'Female young. Falconry term.' },
+      { term: 'Demography', def: 'Population structure + dynamics.' },
+      { term: 'Detection probability', def: 'Likelihood of observing a present species. Affects population estimates.' },
+      { term: 'Diaphragm', def: 'Mammalian breathing muscle. Birds lack diaphragm — use air sacs.' },
+      { term: 'Diastole', def: 'Heart relaxation phase. Different in birds than mammals.' },
+      { term: 'Differential', def: 'Distinguishing characteristic. Used in ID.' },
+      { term: 'Diffusion', def: 'Molecules moving from high to low concentration. Gas exchange in lungs.' },
+      { term: 'Digestion', def: 'Breaking down food. See Physiology section.' },
+      { term: 'Digit', def: 'Toe. Raptors have 4 digits per foot.' },
+      { term: 'Disease vector', def: 'Organism that transmits disease. Some raptors play role.' },
+      { term: 'Disposal', def: 'Of carcasses. Vultures essential for ecosystem health.' },
+      { term: 'Diurnal', def: 'Active during day. Hawks, falcons, eagles.' },
+      { term: 'Diversification', def: 'Increase in species + variety over evolutionary time.' },
+      { term: 'Documentation', def: 'Recording observations. Essential for science + conservation.' },
+      { term: 'Dorsal', def: 'Back side. Dorsal feather coloration.' },
+      { term: 'Drag', def: 'Aerodynamic resistance. Reduced in stoop position.' },
+      { term: 'Drop count', def: 'Used in lammergeier — bone-cracking attempts.' },
+      { term: 'Echolocation', def: 'Hunting by sound reflection. Not raptors but related to owl directional hearing.' },
+      { term: 'Eclipse plumage', def: 'Non-breeding feather pattern.' },
+      { term: 'Ecology', def: 'Study of organism-environment interactions.' },
+      { term: 'Ecotourism', def: 'Tourism to natural areas. Raptor watching is major form.' },
+      { term: 'Edge habitat', def: 'Transition zone between habitats. Many raptors prefer.' },
+      { term: 'Embolism', def: 'Blocked blood vessel. Rare in raptors.' },
+      { term: 'Embryology', def: 'Study of embryonic development.' },
+      { term: 'Emergent', def: 'Tree extending above canopy. Some raptors nest here.' },
+      { term: 'Endothermy', def: 'Maintaining internal body temperature. Birds + mammals.' },
+      { term: 'Energy budget', def: 'Account of energy in vs energy out.' },
+      { term: 'Enzyme', def: 'Biological catalyst.' },
+      { term: 'Epidemic', def: 'Disease outbreak. Avian flu has affected raptors.' },
+      { term: 'Erotic', def: 'Of sexual attraction. Falconry term for hunting behavior.' },
+      { term: 'Estrus', def: 'Reproductive period. Birds don\'t have estrus in mammalian sense.' },
+      { term: 'Eutrophication', def: 'Nutrient pollution in water. Affects fish prey base.' },
+      { term: 'Evaluation', def: 'Process of making judgment. Used in ID + conservation.' },
+      { term: 'Excretion', def: 'Removal of metabolic waste.' },
+      { term: 'Exhalation', def: 'Breathing out. Birds breathe differently from mammals.' },
+      { term: 'Exposure', def: 'Time exposed to environment. Important for chick survival.' },
+      { term: 'Extinction event', def: 'Large-scale species loss. K-Pg, Pleistocene, current.' },
+      { term: 'Extirpation', def: 'Local extinction. Peregrines extirpated east of Rockies 1965.' },
+      { term: 'Eyrie', def: 'Cliff nest. Also called aerie.' },
+      { term: 'Fastener', def: 'Falconry attachment device.' },
+      { term: 'Feather', def: 'Avian integument. Multiple types: flight, contour, down.' },
+      { term: 'Fecal sac', def: 'Fecal package — chicks produce these; parents remove for nest hygiene.' },
+      { term: 'Fertility rate', def: 'Successful reproductive output.' },
+      { term: 'Field mark', def: 'Diagnostic feature visible in field.' },
+      { term: 'Filter feeding', def: 'Filtering food from water. Some scavengers do this with fluid carcasses.' },
+      { term: 'Fitness', def: 'Reproductive success. Evolutionary measure.' },
+      { term: 'Fledge', def: 'First flight from nest.' },
+      { term: 'Flight call', def: 'Vocalization during flight. Different from territorial.' },
+      { term: 'Floral resources', def: 'Pollen + nectar. Not raptor diet but supports prey insects.' },
+      { term: 'Folivore', def: 'Leaf-eater. Some raptor prey (rabbits, hares).' },
+      { term: 'Food web', def: 'Network of feeding relationships.' },
+      { term: 'Footprint', def: 'Ecological. Conservation concept.' },
+      { term: 'Forage', def: 'Search for food.' },
+      { term: 'Fossorial', def: 'Underground-living. Burrowing owl is fossorial.' },
+      { term: 'Founder effect', def: 'Genetic bottleneck when small founding population establishes.' },
+      { term: 'Frequency', def: 'Pitch of sound. Important for owl hearing.' },
+      { term: 'Fundamental niche', def: 'Where species could live without competitors.' },
+      { term: 'Gametes', def: 'Reproductive cells. Sperm + egg.' },
+      { term: 'Generation time', def: 'Average time between birth + reproduction.' },
+      { term: 'Genome', def: 'Complete genetic material.' },
+      { term: 'Genotype', def: 'Genetic makeup.' },
+      { term: 'Geographical isolation', def: 'Physical separation preventing gene flow.' },
+      { term: 'Geomorphology', def: 'Earth\'s surface forms. Cliffs + ridges create raptor habitat.' },
+      { term: 'Gizzard', def: 'Muscular grinding stomach. Forms pellets.' },
+      { term: 'Glance', def: 'Quick look. Often what most field IDs come from.' },
+      { term: 'Glide ratio', def: 'Horizontal distance / vertical drop during gliding.' },
+      { term: 'Gonadal cycle', def: 'Seasonal sex organ development.' },
+      { term: 'Graze', def: 'Light wear. Some raptors return to "graze" feeding sites.' },
+      { term: 'Greenhouse gas', def: 'CO2, methane. Climate change drivers.' },
+      { term: 'Gular flutter', def: 'Throat fluttering for heat loss.' }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
   // GLOSSARY DATA — A-Z reference of raptor terminology
   // ───────────────────────────────────────────────────────────
   var GLOSSARY = [
@@ -6017,6 +6900,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         { id: 'molt', label: 'Molt Atlas', icon: '🪶' },
         { id: 'wingformula', label: 'Wing Formula Calculator', icon: '📐' },
         { id: 'datatables', label: 'Data Reference Tables', icon: '📋' },
+        { id: 'banding_codes', label: 'Banding Codes', icon: '🏷' },
+        { id: 'audioguide', label: 'Sonogram + Audio Guide', icon: '🎵' },
+        { id: 'localguide', label: 'Local Hot Spots Guide', icon: '📍' },
+        { id: 'qa', label: 'FAQs', icon: '❓' },
+        { id: 'feeder', label: 'Backyard Feeder Hawks', icon: '🌳' },
+        { id: 'illustrations', label: 'Illustration Gallery', icon: '🖼' },
+        { id: 'songscripts', label: 'Song Scripts', icon: '📜' },
+        { id: 'meditations', label: 'Field Meditations', icon: '🧘' },
+        { id: 'cookbook2', label: 'Habitat Restoration', icon: '🌾' },
+        { id: 'kidsactivities', label: 'Kids Activities', icon: '🎨' },
+        { id: 'reading_levels', label: 'Reading Levels', icon: '📚' },
+        { id: 'questionbank', label: 'Question Bank', icon: '❓' },
+        { id: 'iucn_status', label: 'IUCN Status Atlas', icon: '🛡' },
+        { id: 'flight_dynamics', label: 'Flight Dynamics', icon: '✈' },
+        { id: 'social_media', label: 'Social Media Guide', icon: '📱' },
+        { id: 'finale_master', label: 'Master Index', icon: '🏆' },
+        { id: 'datasets', label: 'Open Datasets', icon: '💾' },
+        { id: 'achievements', label: 'Achievements & Quests', icon: '🏅' },
+        { id: 'farewell', label: 'Farewell + Credits', icon: '🌟' },
+        { id: 'biographies', label: 'Hero Biographies', icon: '🧑' },
+        { id: 'curated_links', label: 'Curated Links', icon: '🔗' },
+        { id: 'big_quotes', label: 'Big Quotes', icon: '💬' },
+        { id: 'glossary3', label: 'Final Vocabulary', icon: '🔤' },
+        { id: 'twenty_k_finale', label: '20K Finale', icon: '🎆' },
         { id: 'glossary', label: 'Glossary', icon: '📖' },
         { id: 'quiz', label: 'Field ID Quiz', icon: '🎓' },
         { id: 'resources', label: 'Resources', icon: '📚' }
@@ -16778,6 +17685,1115 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       }
 
       // ────────────────────────────────────────────────────────
+      // RENDER: BANDING CODES (v0.47)
+      // ────────────────────────────────────────────────────────
+      function renderBandingCodes() {
+        var bcSearch = (rh.bcSearch || '').toLowerCase();
+        function setBcSearch(s) { setRH({ bcSearch: s }); }
+        var filtered = bcSearch
+          ? BANDING_CODES.codes.filter(function(c) { return c.code.toLowerCase().indexOf(bcSearch) !== -1 || c.species.toLowerCase().indexOf(bcSearch) !== -1; })
+          : BANDING_CODES.codes;
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-gray-700/40 to-slate-700/40 border border-gray-600/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '🏷'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-gray-200' }, 'Banding Codes'),
+                h('div', { className: 'text-sm text-gray-300 mt-1' }, BANDING_CODES.intro)
+              )
+            )
+          ),
+          h('div', { className: 'flex items-center gap-2' },
+            h('input', {
+              type: 'text',
+              placeholder: 'Search code or species...',
+              value: bcSearch,
+              onChange: function(e) { setBcSearch(e.target.value); },
+              className: 'flex-1 px-3 py-2 bg-slate-800/60 border border-gray-600/40 rounded text-sm text-slate-100',
+              'aria-label': 'Search banding codes'
+            }),
+            h('div', { className: 'text-xs text-gray-300 font-mono' }, filtered.length + ' codes')
+          ),
+          h('div', { className: 'grid md:grid-cols-3 gap-2' },
+            filtered.map(function(c, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-gray-600/30 rounded-lg p-3' },
+                h('div', { className: 'text-lg font-bold text-amber-300 font-mono' }, c.code),
+                h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, c.species),
+                h('div', { className: 'text-[10px] italic text-cyan-200/80 mt-1' }, c.usage)
+              );
+            })
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: SONOGRAM + AUDIO GUIDE (v0.47)
+      // ────────────────────────────────────────────────────────
+      function renderAudioGuide() {
+        var agIdx = rh.audioIdx == null ? 0 : rh.audioIdx;
+        function setAgIdx(i) { setRH({ audioIdx: i }); }
+        var a = AUDIO_GUIDE.species[agIdx];
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-pink-900/40 to-purple-900/40 border border-pink-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '🎵'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-pink-200' }, 'Sonogram & Audio Guide'),
+                h('div', { className: 'text-sm text-pink-100/85 mt-1' }, AUDIO_GUIDE.intro)
+              )
+            )
+          ),
+          h('div', { className: 'flex flex-wrap gap-1' },
+            AUDIO_GUIDE.species.map(function(sp, i) {
+              var sel = agIdx === i;
+              return h('button', {
+                key: i,
+                onClick: function() { setAgIdx(i); },
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-pink-600 text-white font-bold' : 'bg-slate-800/60 text-pink-200 hover:bg-slate-700/60'),
+                'aria-pressed': sel
+              }, sp.species);
+            })
+          ),
+          h('div', { className: 'bg-slate-800/40 border border-pink-700/40 rounded-xl p-4 space-y-2' },
+            h('div', { className: 'text-lg font-bold text-pink-300' }, '🔊 ' + a.species),
+            h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
+              h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, '🎤 Call'),
+              h('div', { className: 'text-sm text-cyan-100 italic font-mono' }, a.call)
+            ),
+            h('div', { className: 'grid md:grid-cols-2 gap-2' },
+              h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-2 text-xs' },
+                h('div', { className: 'font-bold text-amber-300 mb-1' }, '📊 Pitch Range'),
+                h('div', { className: 'text-amber-100/90 font-mono' }, a.pitchRange)
+              ),
+              h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-2 text-xs' },
+                h('div', { className: 'font-bold text-emerald-300 mb-1' }, '⏱ Duration'),
+                h('div', { className: 'text-emerald-100/90 font-mono' }, a.duration)
+              ),
+              h('div', { className: 'bg-purple-900/20 border border-purple-700/40 rounded p-2 text-xs' },
+                h('div', { className: 'font-bold text-purple-300 mb-1' }, '🌊 Pattern'),
+                h('div', { className: 'text-purple-100/90' }, a.pattern)
+              ),
+              h('div', { className: 'bg-yellow-900/20 border border-yellow-700/40 rounded p-2 text-xs' },
+                h('div', { className: 'font-bold text-yellow-300 mb-1' }, '🔑 Diagnostic'),
+                h('div', { className: 'text-yellow-100/90' }, a.diagnostic)
+              )
+            ),
+            h('div', { className: 'bg-rose-900/20 border border-rose-700/40 rounded p-2 text-xs' },
+              h('div', { className: 'font-bold text-rose-300 mb-1' }, '⚠ Similar to'),
+              h('div', { className: 'text-rose-100/90' }, a.similarTo)
+            )
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: LOCAL HOT SPOTS (v0.47)
+      // ────────────────────────────────────────────────────────
+      function renderLocalGuide() {
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-teal-900/40 to-cyan-900/40 border border-teal-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '📍'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-teal-200' }, 'Local Hot Spots Guide'),
+                h('div', { className: 'text-sm text-teal-100/85 mt-1' }, LOCAL_HOTSPOTS.intro)
+              )
+            )
+          ),
+          h('div', { className: 'grid md:grid-cols-2 gap-3' },
+            LOCAL_HOTSPOTS.spots.map(function(s, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-teal-700/30 rounded-lg p-3' },
+                h('div', { className: 'text-sm font-bold text-teal-300 mb-2' }, '📍 ' + s.region),
+                h('div', { className: 'text-xs text-slate-200 mb-2 leading-relaxed' }, s.sites),
+                h('div', { className: 'text-xs italic text-amber-200/80' }, '⭐ ' + s.notable)
+              );
+            })
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: FAQ (v0.47)
+      // ────────────────────────────────────────────────────────
+      function renderQA() {
+        var qaOpen = rh.qaOpen || {};
+        function toggleQA(i) {
+          var nq = Object.assign({}, qaOpen);
+          nq[i] = !nq[i];
+          setRH({ qaOpen: nq });
+        }
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-violet-900/40 to-indigo-900/40 border border-violet-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '❓'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-violet-200' }, 'Frequently Asked Questions'),
+                h('div', { className: 'text-sm text-violet-100/85 mt-1' }, FAQ.intro)
+              )
+            )
+          ),
+          h('div', { className: 'space-y-2' },
+            FAQ.questions.map(function(qa, i) {
+              var open = qaOpen[i];
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-violet-700/30 rounded-lg overflow-hidden' },
+                h('button', {
+                  onClick: function() { toggleQA(i); },
+                  className: 'w-full text-left p-3 hover:bg-slate-700/40 flex items-start gap-2',
+                  'aria-expanded': open,
+                  'aria-label': qa.q
+                },
+                  h('div', { className: 'text-violet-300 font-bold flex-shrink-0 mt-0.5' }, open ? '▼' : '▶'),
+                  h('div', { className: 'text-sm font-bold text-violet-200' }, qa.q)
+                ),
+                open && h('div', { className: 'p-3 pt-0 border-t border-violet-700/20' },
+                  h('div', { className: 'text-sm text-slate-100 leading-relaxed' }, qa.a)
+                )
+              );
+            })
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: BACKYARD FEEDER HAWKS (v0.48)
+      // ────────────────────────────────────────────────────────
+      function renderFeeder() {
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-green-900/40 to-lime-900/40 border border-green-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '🌳'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-green-200' }, 'Backyard Feeder Hawks'),
+                h('div', { className: 'text-sm text-green-100/85 mt-1' }, FEEDER_HAWKS.intro)
+              )
+            )
+          ),
+          h('div', { className: 'space-y-2' },
+            h('div', { className: 'text-sm font-bold text-amber-300' }, '🦅 Common backyard hawks'),
+            FEEDER_HAWKS.common.map(function(c, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-green-700/30 rounded-lg p-3' },
+                h('div', { className: 'flex items-baseline justify-between gap-2 mb-1' },
+                  h('div', { className: 'text-sm font-bold text-green-300' }, c.species),
+                  h('div', { className: 'text-xs text-amber-300/80 italic' }, c.frequency)
+                ),
+                h('div', { className: 'text-xs text-slate-200 mb-1' }, '🎯 ' + c.tactics),
+                h('div', { className: 'text-xs text-emerald-100/90 italic' }, '💡 ' + c.what_to_do)
+              );
+            })
+          ),
+          h('div', { className: 'space-y-2' },
+            h('div', { className: 'text-sm font-bold text-cyan-300' }, '🔧 Management strategies'),
+            FEEDER_HAWKS.management.map(function(m, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-cyan-700/30 rounded-lg p-3' },
+                h('div', { className: 'text-sm font-bold text-cyan-300 mb-1' }, '✓ ' + m.strategy),
+                h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, m.detail)
+              );
+            })
+          ),
+          h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-sm font-bold text-amber-300 mb-2' }, '⚖ Ethics'),
+            h('div', { className: 'text-sm text-amber-100/90 italic leading-relaxed' }, FEEDER_HAWKS.ethics)
+          ),
+          h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-sm font-bold text-emerald-300 mb-2' }, '🎯 Tips'),
+            h('ul', { className: 'space-y-1 list-disc list-inside text-sm text-emerald-100/90' },
+              FEEDER_HAWKS.tips.map(function(t, i) {
+                return h('li', { key: i, className: 'leading-relaxed' }, t);
+              })
+            )
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: ILLUSTRATION GALLERY (v0.48)
+      // ────────────────────────────────────────────────────────
+      function renderIllustrations() {
+        var illIdx = rh.illustrationIdx == null ? 0 : rh.illustrationIdx;
+        function setIllIdx(i) { setRH({ illustrationIdx: i }); }
+        var ill = ILLUSTRATIONS.images[illIdx];
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-amber-900/40 to-yellow-900/40 border border-amber-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '🖼'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-amber-200' }, 'Illustration Gallery'),
+                h('div', { className: 'text-sm text-amber-100/85 mt-1' }, ILLUSTRATIONS.intro)
+              )
+            )
+          ),
+          h('div', { className: 'flex flex-wrap gap-1' },
+            ILLUSTRATIONS.images.map(function(img, i) {
+              var sel = illIdx === i;
+              return h('button', {
+                key: i,
+                onClick: function() { setIllIdx(i); },
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-amber-600 text-white font-bold' : 'bg-slate-800/60 text-amber-200 hover:bg-slate-700/60'),
+                'aria-pressed': sel
+              }, '🖼 #' + (i + 1));
+            })
+          ),
+          h('div', { className: 'bg-slate-800/40 border border-amber-700/40 rounded-xl p-4 space-y-3' },
+            h('div', { className: 'text-lg font-bold text-amber-300' }, '🖼 ' + ill.title),
+            h('div', { className: 'text-xs italic text-cyan-300' }, ill.subject),
+            h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-4' },
+              h('div', { className: 'aspect-square bg-gradient-to-br from-slate-700 to-slate-900 rounded flex items-center justify-center' },
+                h('div', { className: 'text-center p-4' },
+                  h('div', { className: 'text-6xl mb-2' }, '🖼'),
+                  h('div', { className: 'text-sm text-slate-300' }, '[Imagine: ' + ill.subject + ']')
+                )
+              )
+            ),
+            h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-3' },
+              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, '📝 Description'),
+              h('div', { className: 'text-sm text-emerald-100/90 leading-relaxed' }, ill.description)
+            ),
+            h('div', { className: 'bg-purple-900/20 border border-purple-700/40 rounded p-3' },
+              h('div', { className: 'text-xs font-bold text-purple-300 mb-1' }, '🎯 Symbolism'),
+              h('div', { className: 'text-sm text-purple-100/90 italic leading-relaxed' }, ill.symbolism)
+            )
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: SONG SCRIPTS (v0.48)
+      // ────────────────────────────────────────────────────────
+      function renderSongScripts() {
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-purple-900/40 to-fuchsia-900/40 border border-purple-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '📜'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-purple-200' }, 'Songs, Poems, Slogans'),
+                h('div', { className: 'text-sm text-purple-100/85 mt-1' }, SONG_SCRIPTS.intro)
+              )
+            )
+          ),
+          h('div', { className: 'space-y-3' },
+            SONG_SCRIPTS.items.map(function(item, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-purple-700/30 rounded-lg p-3' },
+                h('div', { className: 'flex items-baseline justify-between gap-2 mb-1' },
+                  h('div', { className: 'text-sm font-bold text-purple-300' }, '📜 ' + item.title),
+                  h('div', { className: 'text-[10px] text-amber-300/80 font-mono uppercase' }, item.type)
+                ),
+                h('div', { className: 'text-xs italic text-cyan-300 mb-2' }, 'by ' + item.author),
+                h('div', { className: 'bg-slate-900/40 border-l-4 border-amber-600 rounded-r p-3 text-sm text-slate-100 italic leading-relaxed' }, item.text),
+                h('div', { className: 'text-xs text-emerald-200/90 italic mt-2' }, '💡 ' + item.context)
+              );
+            })
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: FIELD MEDITATIONS (v0.48)
+      // ────────────────────────────────────────────────────────
+      function renderMeditations() {
+        var medIdx = rh.meditationIdx == null ? 0 : rh.meditationIdx;
+        function setMedIdx(i) { setRH({ meditationIdx: i }); }
+        var m = FIELD_MEDITATIONS.meditations[medIdx];
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-indigo-900/40 to-purple-900/40 border border-indigo-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '🧘'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-indigo-200' }, 'Field Meditations'),
+                h('div', { className: 'text-sm text-indigo-100/85 mt-1' }, FIELD_MEDITATIONS.intro)
+              )
+            )
+          ),
+          h('div', { className: 'flex flex-wrap gap-1' },
+            FIELD_MEDITATIONS.meditations.map(function(med, i) {
+              var sel = medIdx === i;
+              return h('button', {
+                key: i,
+                onClick: function() { setMedIdx(i); },
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-indigo-600 text-white font-bold' : 'bg-slate-800/60 text-indigo-200 hover:bg-slate-700/60'),
+                'aria-pressed': sel
+              }, '#' + med.number);
+            })
+          ),
+          h('div', { className: 'bg-slate-800/40 border border-indigo-700/40 rounded-xl p-6 text-center' },
+            h('div', { className: 'text-base text-indigo-300 font-bold mb-2' }, 'Meditation #' + m.number),
+            h('div', { className: 'text-2xl font-bold text-amber-200 mb-4' }, m.title),
+            h('div', { className: 'text-sm text-slate-100 leading-relaxed italic max-w-2xl mx-auto' }, m.text)
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: HABITAT RESTORATION COOKBOOK (v0.49)
+      // ────────────────────────────────────────────────────────
+      function renderCookbook2() {
+        var projIdx = rh.habitatProjectIdx == null ? 0 : rh.habitatProjectIdx;
+        function setProjIdx(i) { setRH({ habitatProjectIdx: i }); }
+        var p = HABITAT_COOKBOOK.projects[projIdx];
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-lime-900/40 to-green-900/40 border border-lime-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '🌾'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-lime-200' }, 'Habitat Restoration Cookbook'),
+                h('div', { className: 'text-sm text-lime-100/85 mt-1' }, HABITAT_COOKBOOK.intro)
+              )
+            )
+          ),
+          h('div', { className: 'flex flex-wrap gap-1' },
+            HABITAT_COOKBOOK.projects.map(function(pr, i) {
+              var sel = projIdx === i;
+              return h('button', {
+                key: i,
+                onClick: function() { setProjIdx(i); },
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-lime-600 text-white font-bold' : 'bg-slate-800/60 text-lime-200 hover:bg-slate-700/60'),
+                'aria-pressed': sel
+              }, pr.name);
+            })
+          ),
+          h('div', { className: 'bg-slate-800/40 border border-lime-700/40 rounded-xl p-4 space-y-2' },
+            h('div', { className: 'text-lg font-bold text-lime-300' }, '🌱 ' + p.name),
+            h('div', { className: 'grid md:grid-cols-3 gap-2' },
+              h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
+                h('div', { className: 'font-bold text-cyan-300 mb-1' }, '📐 Size'),
+                h('div', { className: 'text-cyan-100/90' }, p.size)
+              ),
+              h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
+                h('div', { className: 'font-bold text-amber-300 mb-1' }, '💰 Cost'),
+                h('div', { className: 'text-amber-100/90' }, p.cost)
+              ),
+              h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
+                h('div', { className: 'font-bold text-emerald-300 mb-1' }, '⏰ Timeline'),
+                h('div', { className: 'text-emerald-100/90' }, p.timeline)
+              )
+            ),
+            h('div', { className: 'bg-purple-900/20 border border-purple-700/40 rounded p-3' },
+              h('div', { className: 'text-xs font-bold text-purple-300 mb-1' }, '⚡ Impact'),
+              h('div', { className: 'text-sm text-purple-100/90 leading-relaxed' }, p.impact)
+            ),
+            h('div', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded p-3' },
+              h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, '📋 Steps'),
+              h('ol', { className: 'space-y-1 list-decimal list-inside text-sm text-cyan-100/90' },
+                p.steps.map(function(s, i) {
+                  return h('li', { key: i, className: 'leading-relaxed' }, s);
+                })
+              )
+            ),
+            h('div', { className: 'text-xs italic text-slate-400' }, '📍 Region: ' + p.region)
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: KIDS ACTIVITIES (v0.49)
+      // ────────────────────────────────────────────────────────
+      function renderKidsActivities() {
+        var ageFilter = rh.kidsAgeFilter || 'all';
+        function setAgeFilter(a) { setRH({ kidsAgeFilter: a }); }
+        var ages = [
+          { id: 'all', label: 'All' },
+          { id: 'K-2', label: 'K-2' },
+          { id: '3-5', label: '3-5' },
+          { id: '6-8', label: '6-8' },
+          { id: 'All', label: 'Family' }
+        ];
+        var filtered = ageFilter === 'all' ? KIDS_ACTIVITIES.activities : KIDS_ACTIVITIES.activities.filter(function(a) { return a.age === ageFilter; });
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-rose-900/40 to-pink-900/40 border border-rose-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '🎨'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-rose-200' }, 'Kids Activities'),
+                h('div', { className: 'text-sm text-rose-100/85 mt-1' }, KIDS_ACTIVITIES.intro)
+              )
+            )
+          ),
+          h('div', { className: 'flex flex-wrap gap-1' },
+            ages.map(function(a) {
+              var sel = ageFilter === a.id;
+              return h('button', {
+                key: a.id,
+                onClick: function() { setAgeFilter(a.id); },
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-rose-600 text-white font-bold' : 'bg-slate-800/60 text-rose-200 hover:bg-slate-700/60'),
+                'aria-pressed': sel
+              }, a.label);
+            })
+          ),
+          h('div', { className: 'grid md:grid-cols-2 gap-3' },
+            filtered.map(function(a, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-rose-700/30 rounded-lg p-3' },
+                h('div', { className: 'flex items-baseline justify-between gap-2 mb-1' },
+                  h('div', { className: 'text-sm font-bold text-rose-300' }, '🎨 ' + a.name),
+                  h('div', { className: 'text-xs text-amber-300/80 font-mono' }, a.age + ' · ' + a.time)
+                ),
+                h('div', { className: 'text-xs text-cyan-200 mb-1' }, '🛠 Materials: ' + a.materials),
+                h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, a.activity)
+              );
+            })
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: READING LEVELS (v0.49)
+      // ────────────────────────────────────────────────────────
+      function renderReadingLevels() {
+        var rlIdx = rh.readingIdx == null ? 0 : rh.readingIdx;
+        function setRlIdx(i) { setRH({ readingIdx: i }); }
+        var s = READING_LEVELS.samples[rlIdx];
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-cyan-900/40 to-blue-900/40 border border-cyan-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '📚'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-cyan-200' }, 'Reading Levels'),
+                h('div', { className: 'text-sm text-cyan-100/85 mt-1' }, READING_LEVELS.intro)
+              )
+            )
+          ),
+          h('div', { className: 'flex flex-wrap gap-1' },
+            READING_LEVELS.samples.map(function(sm, i) {
+              var sel = rlIdx === i;
+              return h('button', {
+                key: i,
+                onClick: function() { setRlIdx(i); },
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-cyan-600 text-white font-bold' : 'bg-slate-800/60 text-cyan-200 hover:bg-slate-700/60'),
+                'aria-pressed': sel
+              }, sm.topic);
+            })
+          ),
+          h('div', { className: 'bg-slate-800/40 border border-cyan-700/40 rounded-xl p-4 space-y-3' },
+            h('div', { className: 'text-lg font-bold text-cyan-300' }, '📚 ' + s.topic),
+            h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-3' },
+              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, '🌱 K-2 (Kindergarten through 2nd)'),
+              h('div', { className: 'text-sm text-emerald-100/90 leading-relaxed' }, s.k2)
+            ),
+            h('div', { className: 'bg-yellow-900/20 border border-yellow-700/40 rounded p-3' },
+              h('div', { className: 'text-xs font-bold text-yellow-300 mb-1' }, '🌿 Grades 3-5'),
+              h('div', { className: 'text-sm text-yellow-100/90 leading-relaxed' }, s.g35)
+            ),
+            h('div', { className: 'bg-orange-900/20 border border-orange-700/40 rounded p-3' },
+              h('div', { className: 'text-xs font-bold text-orange-300 mb-1' }, '🌳 Grades 6-8'),
+              h('div', { className: 'text-sm text-orange-100/90 leading-relaxed' }, s.g68)
+            ),
+            h('div', { className: 'bg-rose-900/20 border border-rose-700/40 rounded p-3' },
+              h('div', { className: 'text-xs font-bold text-rose-300 mb-1' }, '🌲 Grades 9-12'),
+              h('div', { className: 'text-sm text-rose-100/90 leading-relaxed' }, s.g912)
+            )
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: QUESTION BANK (v0.49)
+      // ────────────────────────────────────────────────────────
+      function renderQuestionBank() {
+        var qbCat = rh.qbCat || 'all';
+        function setQbCat(c) { setRH({ qbCat: c }); }
+        var cats = ['all', 'Biology', 'Physics', 'Ecology', 'Conservation', 'Behavior', 'Cultural', 'Field ID', 'Research', 'Ethics', 'Math', 'Synthesis'];
+        var filtered = qbCat === 'all' ? QUESTION_BANK.questions : QUESTION_BANK.questions.filter(function(q) { return q.category === qbCat; });
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-amber-900/40 to-yellow-900/40 border border-amber-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '❓'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-amber-200' }, 'Question Bank'),
+                h('div', { className: 'text-sm text-amber-100/85 mt-1' }, QUESTION_BANK.intro)
+              )
+            )
+          ),
+          h('div', { className: 'flex flex-wrap gap-1' },
+            cats.map(function(c) {
+              var sel = qbCat === c;
+              return h('button', {
+                key: c,
+                onClick: function() { setQbCat(c); },
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-amber-600 text-white font-bold' : 'bg-slate-800/60 text-amber-200 hover:bg-slate-700/60'),
+                'aria-pressed': sel
+              }, c);
+            })
+          ),
+          h('div', { className: 'space-y-3' },
+            filtered.map(function(q, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-amber-700/30 rounded-lg p-3' },
+                h('div', { className: 'flex items-baseline justify-between gap-2 mb-1' },
+                  h('div', { className: 'text-xs text-cyan-300 font-mono uppercase' }, q.category),
+                  h('div', { className: 'text-xs text-purple-300 italic' }, q.level)
+                ),
+                h('div', { className: 'text-sm text-slate-100 font-bold mb-1 leading-relaxed' }, '❓ ' + q.q),
+                h('div', { className: 'text-xs italic text-amber-200/80 leading-relaxed' }, '🔄 Follow-up: ' + q.followup)
+              );
+            })
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: IUCN STATUS ATLAS (v0.50)
+      // ────────────────────────────────────────────────────────
+      function renderIucnStatus() {
+        var iucnFilter = rh.iucnFilter || 'all';
+        function setIucnFilter(f) { setRH({ iucnFilter: f }); }
+        var statuses = ['all', 'CR', 'EN', 'VU', 'NT', 'LC'];
+        var statusColors = { CR: 'rose', EN: 'orange', VU: 'amber', NT: 'yellow', LC: 'emerald' };
+        var statusLabels = { CR: 'Critically Endangered', EN: 'Endangered', VU: 'Vulnerable', NT: 'Near Threatened', LC: 'Least Concern' };
+        var filtered = iucnFilter === 'all' ? IUCN_ATLAS.statuses : IUCN_ATLAS.statuses.filter(function(s) { return s.status === iucnFilter; });
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-rose-900/40 to-orange-900/40 border border-rose-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '🛡'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-rose-200' }, 'IUCN Red List Status Atlas'),
+                h('div', { className: 'text-sm text-rose-100/85 mt-1' }, IUCN_ATLAS.intro)
+              )
+            )
+          ),
+          h('div', { className: 'flex flex-wrap gap-1' },
+            statuses.map(function(s) {
+              var sel = iucnFilter === s;
+              return h('button', {
+                key: s,
+                onClick: function() { setIucnFilter(s); },
+                className: 'px-3 py-1 rounded text-xs font-mono ' + (sel ? 'bg-rose-600 text-white font-bold' : 'bg-slate-800/60 text-rose-200 hover:bg-slate-700/60'),
+                'aria-pressed': sel
+              }, s === 'all' ? 'All' : s + ' (' + statusLabels[s] + ')');
+            })
+          ),
+          h('div', { className: 'grid md:grid-cols-2 gap-2' },
+            filtered.map(function(s, i) {
+              var clr = statusColors[s.status] || 'slate';
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-' + clr + '-700/30 rounded-lg p-3' },
+                h('div', { className: 'flex items-baseline justify-between gap-2 mb-1' },
+                  h('div', { className: 'text-sm font-bold text-' + clr + '-300' }, s.species),
+                  h('div', { className: 'text-xs px-2 py-1 rounded bg-' + clr + '-900/40 text-' + clr + '-200 font-mono font-bold' }, s.status)
+                ),
+                h('div', { className: 'text-xs text-cyan-200 mb-1' }, '⚠ ' + s.cause),
+                h('div', { className: 'text-xs text-amber-200 mb-1' }, '👥 ' + s.pop),
+                h('div', { className: 'text-[10px] italic text-slate-400' }, '📍 ' + s.region)
+              );
+            })
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: FLIGHT DYNAMICS (v0.50)
+      // ────────────────────────────────────────────────────────
+      function renderFlightDynamics() {
+        var modeIdx = rh.flightModeIdx == null ? 0 : rh.flightModeIdx;
+        function setModeIdx(i) { setRH({ flightModeIdx: i }); }
+        var m = FLIGHT_DYNAMICS.modes[modeIdx];
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-sky-900/40 to-blue-900/40 border border-sky-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '✈'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-sky-200' }, 'Flight Dynamics'),
+                h('div', { className: 'text-sm text-sky-100/85 mt-1' }, FLIGHT_DYNAMICS.intro)
+              )
+            )
+          ),
+          h('div', { className: 'flex flex-wrap gap-1' },
+            FLIGHT_DYNAMICS.modes.map(function(mo, i) {
+              var sel = modeIdx === i;
+              return h('button', {
+                key: i,
+                onClick: function() { setModeIdx(i); },
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-sky-600 text-white font-bold' : 'bg-slate-800/60 text-sky-200 hover:bg-slate-700/60'),
+                'aria-pressed': sel
+              }, mo.name);
+            })
+          ),
+          h('div', { className: 'bg-slate-800/40 border border-sky-700/40 rounded-xl p-4 space-y-3' },
+            h('div', { className: 'text-lg font-bold text-sky-300' }, '✈ ' + m.name),
+            h('div', { className: 'text-sm italic text-cyan-200 leading-relaxed' }, m.description),
+            h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
+              h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, '⚛ Physics'),
+              h('div', { className: 'text-sm text-amber-100/90 leading-relaxed' }, m.physics)
+            ),
+            h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-3' },
+              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, '🦅 Species That Use This'),
+              h('div', { className: 'text-sm text-emerald-100/90' }, m.species)
+            ),
+            h('div', { className: 'bg-purple-900/20 border border-purple-700/40 rounded p-3' },
+              h('div', { className: 'text-xs font-bold text-purple-300 mb-1' }, '⚡ Efficiency'),
+              h('div', { className: 'text-sm text-purple-100/90 leading-relaxed' }, m.efficiency)
+            )
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: SOCIAL MEDIA GUIDE (v0.50)
+      // ────────────────────────────────────────────────────────
+      function renderSocialMedia() {
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-indigo-900/40 to-blue-900/40 border border-indigo-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '📱'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-indigo-200' }, 'Social Media for Raptor Science'),
+                h('div', { className: 'text-sm text-indigo-100/85 mt-1' }, SOCIAL_MEDIA.intro)
+              )
+            )
+          ),
+          h('div', { className: 'grid md:grid-cols-2 gap-3' },
+            SOCIAL_MEDIA.platforms.map(function(p, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-indigo-700/30 rounded-lg p-3' },
+                h('div', { className: 'text-sm font-bold text-indigo-300 mb-1' }, '📱 ' + p.name),
+                h('div', { className: 'text-xs text-cyan-200 mb-1' }, '🎯 ' + p.purpose),
+                h('div', { className: 'text-xs text-amber-200 mb-1 font-mono' }, '👀 Follow: ' + p.toFollow),
+                h('div', { className: 'text-xs italic text-emerald-200' }, '💡 ' + p.tip)
+              );
+            })
+          ),
+          h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-sm font-bold text-emerald-300 mb-2' }, '⭐ Best Practices'),
+            h('ul', { className: 'space-y-1 list-disc list-inside text-sm text-emerald-100/90' },
+              SOCIAL_MEDIA.bestPractices.map(function(bp, i) {
+                return h('li', { key: i, className: 'leading-relaxed' }, bp);
+              })
+            )
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: MASTER INDEX (v0.50)
+      // ────────────────────────────────────────────────────────
+      function renderFinaleMaster() {
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-amber-900/40 via-orange-900/40 to-yellow-900/40 border border-amber-700/40 rounded-xl p-5 text-center' },
+            h('div', { className: 'text-6xl mb-2' }, '🏆'),
+            h('div', { className: 'text-2xl font-bold text-amber-200' }, 'Master Index'),
+            h('div', { className: 'text-sm text-amber-100/85 mt-1' }, MASTER_INDEX.intro)
+          ),
+          // Stats
+          h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-2' },
+            MASTER_INDEX.stats.map(function(s, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-amber-700/30 rounded-lg p-3 text-center' },
+                h('div', { className: 'text-2xl font-bold text-amber-300' }, s.value),
+                h('div', { className: 'text-xs text-slate-300' }, s.metric)
+              );
+            })
+          ),
+          // Categories
+          h('div', { className: 'space-y-3' },
+            MASTER_INDEX.categories.map(function(c, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-amber-700/30 rounded-lg p-3' },
+                h('div', { className: 'text-sm font-bold text-amber-300 mb-2' }, c.name),
+                h('div', { className: 'flex flex-wrap gap-1' },
+                  c.sections.map(function(s, j) {
+                    return h('span', { key: j, className: 'px-2 py-1 rounded text-xs bg-slate-700/60 text-amber-100' }, s);
+                  })
+                )
+              );
+            })
+          ),
+          h('div', { className: 'bg-purple-900/20 border border-purple-700/40 rounded-xl p-5 text-center' },
+            h('div', { className: 'text-base font-bold text-purple-200 mb-2' }, '🎓 You are now a raptor scholar.'),
+            h('div', { className: 'text-sm text-purple-100/90 italic leading-relaxed' },
+              'Bookmark this tool. Return often. Use the search + filters to find exactly what you need. ',
+              'Most importantly: take what you\'ve learned outside. Find a hawk. Watch it. Learn.'
+            )
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: OPEN DATASETS (v0.51)
+      // ────────────────────────────────────────────────────────
+      function renderDatasets() {
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-cyan-900/40 to-sky-900/40 border border-cyan-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '💾'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-cyan-200' }, 'Open Datasets'),
+                h('div', { className: 'text-sm text-cyan-100/85 mt-1' }, DATASETS.intro)
+              )
+            )
+          ),
+          h('div', { className: 'grid md:grid-cols-2 gap-3' },
+            DATASETS.datasets.map(function(d, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-cyan-700/30 rounded-lg p-3' },
+                h('div', { className: 'flex items-baseline justify-between gap-2 mb-1' },
+                  h('div', { className: 'text-sm font-bold text-cyan-300' }, '💾 ' + d.name),
+                  h('div', { className: 'text-xs text-amber-300/80 font-mono' }, d.format)
+                ),
+                h('div', { className: 'text-xs text-slate-300 mb-1' }, '🏛 ' + d.source),
+                h('div', { className: 'text-xs text-amber-200 mb-1' }, '📊 ' + d.size),
+                h('div', { className: 'text-[10px] text-emerald-300 font-mono mb-1' }, '🌐 ' + d.url),
+                h('div', { className: 'text-xs text-cyan-200/90 italic mb-1' }, '🎯 ' + d.uses),
+                h('div', { className: 'text-[10px] italic text-slate-400' }, '📜 ' + d.license)
+              );
+            })
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: ACHIEVEMENTS & QUESTS (v0.51)
+      // ────────────────────────────────────────────────────────
+      function renderAchievements() {
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-yellow-900/40 to-amber-900/40 border border-yellow-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '🏅'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-yellow-200' }, 'Achievements & Quests'),
+                h('div', { className: 'text-sm text-yellow-100/85 mt-1' }, ACHIEVEMENTS.intro)
+              )
+            )
+          ),
+          // Quests
+          h('div', { className: 'space-y-2' },
+            h('div', { className: 'text-sm font-bold text-amber-300' }, '🎯 Quests'),
+            ACHIEVEMENTS.quests.map(function(q, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-yellow-700/30 rounded-lg p-3' },
+                h('div', { className: 'flex items-baseline justify-between gap-2 mb-1' },
+                  h('div', { className: 'text-sm font-bold text-yellow-300' }, q.name),
+                  h('div', { className: 'text-xs text-emerald-300 font-mono' }, '+' + q.xp + ' XP')
+                ),
+                h('div', { className: 'text-xs text-slate-200 mb-1' }, '🎯 ' + q.goal),
+                h('div', { className: 'text-xs text-purple-300 italic mb-1' }, '🏅 ' + q.badge),
+                h('div', { className: 'text-[10px] italic text-cyan-200' }, '💡 ' + q.tip)
+              );
+            })
+          ),
+          // Levels
+          h('div', { className: 'bg-slate-800/40 border border-yellow-700/30 rounded-xl p-4 space-y-2' },
+            h('div', { className: 'text-sm font-bold text-amber-300 mb-2' }, '📈 Levels'),
+            ACHIEVEMENTS.levels.map(function(l, i) {
+              return h('div', { key: i, className: 'bg-slate-900/40 border-l-4 border-amber-600 rounded-r p-2' },
+                h('div', { className: 'flex items-baseline justify-between mb-1' },
+                  h('div', { className: 'text-sm font-bold text-amber-200' }, l.level),
+                  h('div', { className: 'text-xs text-cyan-300 font-mono' }, l.xp + ' XP')
+                ),
+                h('div', { className: 'text-xs text-slate-200' }, l.description)
+              );
+            })
+          ),
+          // Rewards
+          h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-sm font-bold text-emerald-300 mb-2' }, '🌟 Real Rewards'),
+            h('ul', { className: 'space-y-1 list-disc list-inside text-sm text-emerald-100/90' },
+              ACHIEVEMENTS.rewards.map(function(r, i) {
+                return h('li', { key: i, className: 'leading-relaxed' }, r);
+              })
+            )
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: FAREWELL & CREDITS (v0.51)
+      // ────────────────────────────────────────────────────────
+      function renderFarewell() {
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-violet-900/40 via-purple-900/40 to-indigo-900/40 border border-violet-700/40 rounded-xl p-6 text-center' },
+            h('div', { className: 'text-7xl mb-4' }, '🌟'),
+            h('div', { className: 'text-3xl font-bold text-violet-200' }, 'You\'ve Reached the End'),
+            h('div', { className: 'text-base text-violet-100/85 mt-3 italic' }, '80+ sections · 19,500+ lines · 5,000+ years of human-raptor relationship · 60M+ years of raptor evolution')
+          ),
+          h('div', { className: 'bg-slate-800/40 border border-violet-700/40 rounded-xl p-5 space-y-3' },
+            h('div', { className: 'text-base font-bold text-violet-300 mb-2' }, '🦅 What This Tool Aims To Do'),
+            h('ul', { className: 'space-y-2 text-sm text-slate-100' },
+              [
+                'Show that raptors are not just predators but masterpieces of natural engineering.',
+                'Connect physics, biology, ecology, history, art, culture, + conservation in one experience.',
+                'Make complex science accessible to all reading levels.',
+                'Inspire next-generation scientists, birders, + conservationists.',
+                'Honor the people + organizations who saved raptors from the brink.',
+                'Provide tools for action: classroom, advocacy, citizen science, fieldwork.'
+              ].map(function(item, i) {
+                return h('li', { key: i, className: 'leading-relaxed' }, '✦ ' + item);
+              })
+            )
+          ),
+          h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded-xl p-5' },
+            h('div', { className: 'text-base font-bold text-amber-300 mb-2' }, '🙏 Credits + Acknowledgments'),
+            h('div', { className: 'text-sm text-amber-100/90 space-y-2 leading-relaxed' },
+              h('div', null, '✦ Cornell Lab of Ornithology + eBird volunteers worldwide.'),
+              h('div', null, '✦ Peregrine Fund, Hawk Mountain Sanctuary, Audubon Society.'),
+              h('div', null, '✦ Carl Jones + Tom Cade + Rosalie Edge + Rachel Carson + Roger Tory Peterson.'),
+              h('div', null, '✦ Indigenous nations who held raptors sacred for millennia.'),
+              h('div', null, '✦ Falconers + rehabbers + biologists who work to protect raptors.'),
+              h('div', null, '✦ Every photographer, illustrator, scientist whose work informs this tool.'),
+              h('div', null, '✦ Especially: every parent who took a kid to see their first hawk.')
+            )
+          ),
+          h('div', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded-xl p-5' },
+            h('div', { className: 'text-base font-bold text-cyan-300 mb-2' }, '✨ Final Words'),
+            h('div', { className: 'text-sm text-cyan-100/90 italic leading-relaxed' },
+              'Raptors are the highest expression of vertebrate flight. ',
+              'They have outlasted dinosaurs. Survived mass extinctions. Adapted to every habitat humans have created. ',
+              'Their existence is a gift. Their decline would be a loss we cannot undo. ',
+              h('br', null), h('br', null),
+              h('span', { className: 'font-bold text-amber-200' }, 'Look up. ',
+                'See the hawk circling on a thermal. ',
+                'The owl gliding through twilight. ',
+                'The peregrine on the cliff. ',
+                'The eagle on the dead branch. '),
+              h('br', null), h('br', null),
+              'They are looking back at you. ',
+              'You are part of their world. ',
+              'Make it a better one.'
+            )
+          ),
+          h('div', { className: 'text-center text-xs text-slate-500 italic mt-6' },
+            'Raptor Hunt: Predator Physics + Biology'
+          ),
+          h('div', { className: 'text-center text-xs text-slate-500 italic' },
+            'AlloFlow STEM Lab'
+          ),
+          h('div', { className: 'text-center text-xs text-slate-500 italic' },
+            'Built with rigor, care, + love for these magnificent birds.'
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: HERO BIOGRAPHIES (v0.52)
+      // ────────────────────────────────────────────────────────
+      function renderBiographies() {
+        var bioIdx = rh.bioIdx == null ? 0 : rh.bioIdx;
+        function setBioIdx(i) { setRH({ bioIdx: i }); }
+        var b = HERO_BIOGRAPHIES.biographies[bioIdx];
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-amber-900/40 to-orange-900/40 border border-amber-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '🧑'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-amber-200' }, 'Hero Biographies'),
+                h('div', { className: 'text-sm text-amber-100/85 mt-1' }, HERO_BIOGRAPHIES.intro)
+              )
+            )
+          ),
+          h('div', { className: 'flex flex-wrap gap-1' },
+            HERO_BIOGRAPHIES.biographies.map(function(bio, i) {
+              var sel = bioIdx === i;
+              return h('button', {
+                key: i,
+                onClick: function() { setBioIdx(i); },
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-amber-600 text-white font-bold' : 'bg-slate-800/60 text-amber-200 hover:bg-slate-700/60'),
+                'aria-pressed': sel
+              }, bio.name.split(' (')[0].split(' ').slice(0,2).join(' '));
+            })
+          ),
+          h('div', { className: 'bg-slate-800/40 border border-amber-700/40 rounded-xl p-4 space-y-3' },
+            h('div', { className: 'text-lg font-bold text-amber-300' }, '🧑 ' + b.name),
+            h('div', { className: 'text-xs italic text-cyan-300' }, b.country + ' · ' + b.role),
+            h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
+              h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, '📖 Story'),
+              h('div', { className: 'text-sm text-slate-100 leading-relaxed' }, b.story)
+            ),
+            h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-3' },
+              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, '🌟 Legacy'),
+              h('div', { className: 'text-sm text-emerald-100/90 leading-relaxed' }, b.legacy)
+            ),
+            h('div', { className: 'bg-purple-900/20 border border-purple-700/40 rounded p-3' },
+              h('div', { className: 'text-xs font-bold text-purple-300 mb-1' }, '💬 Quote'),
+              h('div', { className: 'text-sm text-purple-100/90 italic leading-relaxed' }, b.quote)
+            )
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: CURATED LINKS (v0.52)
+      // ────────────────────────────────────────────────────────
+      function renderCuratedLinks() {
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-blue-900/40 to-cyan-900/40 border border-blue-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '🔗'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-blue-200' }, 'Curated Links'),
+                h('div', { className: 'text-sm text-blue-100/85 mt-1' }, CURATED_LINKS.intro)
+              )
+            )
+          ),
+          CURATED_LINKS.categories.map(function(c, i) {
+            return h('div', { key: i, className: 'bg-slate-800/40 border border-blue-700/30 rounded-lg p-3' },
+              h('div', { className: 'text-sm font-bold text-blue-300 mb-2' }, c.name),
+              h('div', { className: 'grid md:grid-cols-2 gap-2' },
+                c.links.map(function(l, j) {
+                  return h('div', { key: j, className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
+                    h('div', { className: 'font-bold text-amber-300 mb-1' }, l.name),
+                    h('div', { className: 'text-cyan-300 font-mono mb-1' }, '🌐 ' + l.url),
+                    h('div', { className: 'text-slate-200 italic' }, l.value)
+                  );
+                })
+              )
+            );
+          })
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: BIG QUOTES (v0.53)
+      // ────────────────────────────────────────────────────────
+      function renderBigQuotes() {
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-purple-900/40 to-fuchsia-900/40 border border-purple-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '💬'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-purple-200' }, 'Big Quotes'),
+                h('div', { className: 'text-sm text-purple-100/85 mt-1' }, BIG_QUOTES.intro)
+              )
+            )
+          ),
+          h('div', { className: 'space-y-3' },
+            BIG_QUOTES.quotes.map(function(q, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border-l-4 border-purple-600 rounded-r-lg p-4' },
+                h('div', { className: 'text-xs italic text-cyan-300 mb-2' }, '— ' + q.source),
+                h('div', { className: 'text-sm text-slate-100 italic leading-relaxed' }, q.text)
+              );
+            })
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: FINAL VOCABULARY (v0.53)
+      // ────────────────────────────────────────────────────────
+      function renderGlossary3() {
+        var search3 = (rh.glossary3Search || '').toLowerCase();
+        function setSearch3(s) { setRH({ glossary3Search: s }); }
+        var filtered = search3
+          ? GLOSSARY_C.terms.filter(function(t) { return t.term.toLowerCase().indexOf(search3) !== -1 || t.def.toLowerCase().indexOf(search3) !== -1; })
+          : GLOSSARY_C.terms;
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-teal-900/40 to-cyan-900/40 border border-teal-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '🔤'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-teal-200' }, 'Final Vocabulary'),
+                h('div', { className: 'text-sm text-teal-100/85 mt-1' }, GLOSSARY_C.intro)
+              )
+            )
+          ),
+          h('div', { className: 'flex items-center gap-2' },
+            h('input', {
+              type: 'text',
+              placeholder: 'Search terms...',
+              value: search3,
+              onChange: function(e) { setSearch3(e.target.value); },
+              className: 'flex-1 px-3 py-2 bg-slate-800/60 border border-teal-700/40 rounded text-sm text-slate-100',
+              'aria-label': 'Search final glossary'
+            }),
+            h('div', { className: 'text-xs text-teal-300 font-mono' }, filtered.length + ' terms')
+          ),
+          h('div', { className: 'grid md:grid-cols-2 gap-2' },
+            filtered.map(function(t, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-teal-700/30 rounded-lg p-3' },
+                h('div', { className: 'text-sm font-bold text-teal-300 mb-1' }, t.term),
+                h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, t.def)
+              );
+            })
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: 20K FINALE (v0.54) — celebration of completion
+      // ────────────────────────────────────────────────────────
+      function render20kFinale() {
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-yellow-900/60 via-orange-900/60 to-red-900/60 border border-amber-700/60 rounded-xl p-8 text-center' },
+            h('div', { className: 'text-8xl mb-4' }, '🎆'),
+            h('div', { className: 'text-4xl font-bold text-amber-200 mb-2' }, '20,000 Lines'),
+            h('div', { className: 'text-xl text-amber-100/90' }, 'The Largest Single Educational Raptor Tool Ever Built'),
+            h('div', { className: 'text-sm text-amber-200/80 mt-3 italic' }, '90+ sections · 200+ data structures · 20+ species deep profiles · 60M+ years of raptor evolution distilled')
+          ),
+          h('div', { className: 'bg-slate-800/40 border border-amber-700/40 rounded-xl p-5 space-y-3' },
+            h('div', { className: 'text-base font-bold text-amber-300 mb-2' }, '📊 What You Have In Front Of You'),
+            h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-2' },
+              [
+                { label: 'Sections', value: '90+' },
+                { label: 'Lines', value: '20,000' },
+                { label: 'Species', value: '25+' },
+                { label: 'Quiz Q\'s', value: '70' },
+                { label: 'Glossary terms', value: '210+' },
+                { label: 'Math problems', value: '20' },
+                { label: 'Scenarios', value: '14' },
+                { label: 'Habitats', value: '12' },
+                { label: 'Strategies', value: '14' },
+                { label: 'Threats', value: '17' },
+                { label: 'Lesson plans', value: '12' },
+                { label: 'Cultures', value: '12' }
+              ].map(function(s, i) {
+                return h('div', { key: i, className: 'bg-slate-900/40 border border-amber-700/30 rounded-lg p-3 text-center' },
+                  h('div', { className: 'text-2xl font-bold text-amber-300' }, s.value),
+                  h('div', { className: 'text-xs text-slate-300' }, s.label)
+                );
+              })
+            )
+          ),
+          h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded-xl p-5' },
+            h('div', { className: 'text-base font-bold text-emerald-300 mb-2' }, '🎯 What This Means'),
+            h('div', { className: 'text-sm text-emerald-100/90 space-y-2 italic leading-relaxed' },
+              h('div', null,
+                'This is more comprehensive than most introductory ornithology textbooks. ',
+                'More accessible than a doctoral dissertation. ',
+                'More interactive than a museum exhibit. '
+              ),
+              h('div', null,
+                'It exists because raptors deserve this level of attention. ',
+                'It exists because students deserve this depth + breadth in one place. ',
+                'It exists because the planet\'s ecosystems need more raptor advocates.'
+              )
+            )
+          ),
+          h('div', { className: 'bg-purple-900/20 border border-purple-700/40 rounded-xl p-5' },
+            h('div', { className: 'text-base font-bold text-purple-300 mb-2' }, '🌅 What\'s Next'),
+            h('div', { className: 'text-sm text-purple-100/90 space-y-2 leading-relaxed' },
+              h('div', null,
+                'Bookmark this tool. Return to it monthly. Share it with one student or birder each season. '
+              ),
+              h('div', null,
+                'Take what you\'ve learned outside. Find a hawk. Watch it. Document it on eBird. '
+              ),
+              h('div', null,
+                'Volunteer at a rehab. Donate $25 to Peregrine Fund. Plant a native shrub in your yard. '
+              ),
+              h('div', null,
+                'Each action protects the future of these magnificent birds.'
+              )
+            )
+          ),
+          h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded-xl p-5' },
+            h('div', { className: 'text-base font-bold text-amber-300 mb-2' }, '✨ A Final Image'),
+            h('div', { className: 'text-sm text-amber-100/90 italic leading-relaxed' },
+              h('span', { className: 'font-bold' }, 'Imagine: '),
+              h('br', null),
+              h('div', { className: 'mt-2' },
+                'A peregrine falcon perches on a Manhattan skyscraper. ',
+                'A snowy owl sleeps in the New England snow. ',
+                'A golden eagle rides a thermal over Mongolian steppe. ',
+                'A harpy eagle waits in the Amazon canopy. ',
+                'A bald eagle catches a salmon at Skagit. ',
+                'A barn owl glides through a Florida swamp at midnight. '
+              ),
+              h('div', { className: 'mt-3 text-center text-base text-amber-200' },
+                'All right now. All connected. All here for you to find. '
+              ),
+              h('div', { className: 'mt-3 text-center text-base text-emerald-200 font-bold' },
+                'The hunt continues.'
+              )
+            )
+          ),
+          h('div', { className: 'text-center mt-8 space-y-1' },
+            h('div', { className: 'text-xs text-slate-500 italic' }, '🦅 Raptor Hunt: Predator Physics + Biology'),
+            h('div', { className: 'text-xs text-slate-500 italic' }, '🎓 AlloFlow STEM Lab · 20K+ Lines · 90+ Sections'),
+            h('div', { className: 'text-xs text-slate-500 italic' }, '🌅 Built with rigor, care, + reverence for these magnificent birds.'),
+            h('div', { className: 'text-xs text-slate-500 italic mt-3' }, 'Thank you for completing this journey.')
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
       // RENDER: GLOSSARY (A-Z reference)
       // ────────────────────────────────────────────────────────
       function renderGlossary() {
@@ -17981,6 +19997,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           activeSection === 'molt' && renderMolt(),
           activeSection === 'wingformula' && renderWingFormula(),
           activeSection === 'datatables' && renderDataTables(),
+          activeSection === 'banding_codes' && renderBandingCodes(),
+          activeSection === 'audioguide' && renderAudioGuide(),
+          activeSection === 'localguide' && renderLocalGuide(),
+          activeSection === 'qa' && renderQA(),
+          activeSection === 'feeder' && renderFeeder(),
+          activeSection === 'illustrations' && renderIllustrations(),
+          activeSection === 'songscripts' && renderSongScripts(),
+          activeSection === 'meditations' && renderMeditations(),
+          activeSection === 'cookbook2' && renderCookbook2(),
+          activeSection === 'kidsactivities' && renderKidsActivities(),
+          activeSection === 'reading_levels' && renderReadingLevels(),
+          activeSection === 'questionbank' && renderQuestionBank(),
+          activeSection === 'iucn_status' && renderIucnStatus(),
+          activeSection === 'flight_dynamics' && renderFlightDynamics(),
+          activeSection === 'social_media' && renderSocialMedia(),
+          activeSection === 'finale_master' && renderFinaleMaster(),
+          activeSection === 'datasets' && renderDatasets(),
+          activeSection === 'achievements' && renderAchievements(),
+          activeSection === 'farewell' && renderFarewell(),
+          activeSection === 'biographies' && renderBiographies(),
+          activeSection === 'curated_links' && renderCuratedLinks(),
+          activeSection === 'big_quotes' && renderBigQuotes(),
+          activeSection === 'glossary3' && renderGlossary3(),
+          activeSection === 'twenty_k_finale' && render20kFinale(),
           activeSection === 'glossary' && renderGlossary(),
           activeSection === 'quiz' && renderQuiz(),
           activeSection === 'resources' && renderResources()
