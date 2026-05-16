@@ -1970,6 +1970,66 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             )
           ),
 
+          // ── NEW v0.23: Vulture sidebar — are they raptors? ──
+          (function() {
+            var vultures = [
+              {
+                emoji: '🦅', name: 'Turkey Vulture', sci: 'Cathartes aura',
+                trait: 'Olfactory hunter — finds carrion by SMELL (huge olfactory bulb, unique among "raptors")',
+                ecology: 'Most widespread vulture in the Americas. Range expanding NORTH ~10 km/decade with climate warming. Wintering in places it never did 30 years ago.',
+                weird: 'Discovered to use smell as primary sense by Kenneth Stager (1964) — natural gas pipelines now route through known vulture territories because vultures circle leaks (mercaptan in nat-gas smells like dead animals).'
+              },
+              {
+                emoji: '🦅', name: 'Black Vulture', sci: 'Coragyps atratus',
+                trait: 'Visual hunter — finds carrion by sight; often follows turkey vultures to a carcass + then aggressively displaces them',
+                ecology: 'Range expanding NORTH at fastest rate of any North American bird. Reached New England by 2010. Highly social — nests + roosts in groups, hunts in packs.',
+                weird: 'Will kill + eat newborn livestock (calves, lambs, foals) — only "vulture" that hunts live prey. Causes legitimate agricultural-loss disputes in cattle country.'
+              },
+              {
+                emoji: '🦅', name: 'California Condor', sci: 'Gymnogyps californianus',
+                trait: 'Largest flying bird in North America (9.5 ft wingspan). Pure scavenger.',
+                ecology: 'See Recovery Case Studies — 22 birds 1987 → 530 today via 40-year captive-breeding program.',
+                weird: 'Lives 60+ years in captivity. Lays 1 egg every 2 years. Recovery cost ~$50M to date + ongoing.'
+              }
+            ];
+            return h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4 space-y-3' },
+              h('div', { className: 'flex items-baseline justify-between gap-2' },
+                h('div', { className: 'text-sm font-bold text-slate-300' }, '🦅 New World Vultures — Honorary Raptors?'),
+                h('div', { className: 'text-[10px] text-amber-300 font-mono' }, 'Cathartiformes')
+              ),
+              h('div', { className: 'text-xs text-slate-300 leading-relaxed' },
+                'New World vultures (turkey, black, condor) hunt + soar like raptors but they\'re not in the raptor families Accipitriformes (hawks, eagles, kites) or Falconiformes (falcons). DNA evidence in the early 2000s placed them in their own order — ',
+                h('span', { className: 'font-bold text-amber-300' }, 'Cathartiformes'),
+                ' — closer to storks than to true raptors. The hooked beak + talons + soaring lifestyle are convergent evolution: they evolved the raptor body plan independently from carrion-eating ancestors.'
+              ),
+              h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-3 text-xs text-amber-100/90' },
+                h('span', { className: 'font-bold text-amber-300' }, '🔬 The "is it a raptor?" debate: '),
+                'Modern usage: most ornithologists + Hawk Mountain count vultures as "raptors" in counts because they fly the same migration corridors + face the same human threats (lead poisoning, wind farms). Strict taxonomy: they\'re NOT raptors. This kind of "lumper vs splitter" disagreement is common in biology + a great teaching moment about how scientific categories work.'
+              ),
+              // 3-species mini-cards
+              h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-2' },
+                vultures.map(function(v, i) {
+                  return h('div', { key: i, className: 'bg-slate-800/40 rounded-lg p-3 border border-slate-700/40' },
+                    h('div', { className: 'flex items-baseline gap-2 mb-1' },
+                      h('div', { className: 'text-xl' }, v.emoji),
+                      h('div', null,
+                        h('div', { className: 'text-xs font-bold text-amber-300' }, v.name),
+                        h('div', { className: 'text-[10px] italic text-slate-500' }, v.sci)
+                      )
+                    ),
+                    h('div', { className: 'text-[10px] text-cyan-300 font-bold mt-1' }, 'Key trait:'),
+                    h('div', { className: 'text-xs text-slate-200 leading-relaxed mb-2' }, v.trait),
+                    h('div', { className: 'text-[10px] text-emerald-300 font-bold' }, 'Ecology:'),
+                    h('div', { className: 'text-xs text-slate-300 leading-relaxed mb-2' }, v.ecology),
+                    h('div', { className: 'text-[10px] text-orange-300 font-bold' }, 'Weird:'),
+                    h('div', { className: 'text-xs text-orange-100/90 italic leading-relaxed' }, v.weird)
+                  );
+                })
+              ),
+              h('div', { className: 'text-[10px] text-slate-500 italic' }, 'Old World vultures (Egypt, India, Africa) ARE in Accipitriformes — they evolved the carrion lifestyle from within the hawk/eagle family. New World vultures evolved it independently. Convergent evolution at the order level.')
+            );
+          })(),
+
           // ── NEW v0.21: Vocalizations panel ──
           (function() {
             var VOCALS = [
@@ -4218,6 +4278,75 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, c.text)
               );
             })
+          ),
+
+          // ── NEW v0.23: Action Tier — "What can YOU do?" ──
+          h('div', { className: 'bg-gradient-to-br from-emerald-900/40 to-cyan-900/40 border border-emerald-700/40 rounded-xl p-4 space-y-3' },
+            h('div', { className: 'text-base font-bold text-emerald-300' }, '🎯 What can YOU do? — Student Action Tier'),
+            h('div', { className: 'text-xs text-emerald-100/90 leading-relaxed' },
+              'Reading about conservation is half the work. Doing matters. Below are real actions organized by effort level — start with 5-minute commitments, work up to multi-day projects. Every line item is a thing students have actually done that meaningfully helps raptors.'
+            ),
+            // 3 tiers
+            [
+              {
+                effort: '⏱ 5-MINUTE ACTIONS',
+                color: 'emerald',
+                items: [
+                  'Log a raptor sighting on eBird or iNaturalist. You\'ve just contributed to the largest biodiversity dataset in human history.',
+                  'Add window decals to your house\'s south-facing windows. ~1 billion birds die in window strikes per year in North America alone.',
+                  'Talk a hunter you know into using non-lead ammunition (copper bullets). Lead poisoning is the #1 ongoing eagle + condor mortality cause.',
+                  'Follow @PeregrineFund + @HawkMountain + @CornellBirds on social media. Share their content. Visibility = funding.',
+                  'Replace one paper towel with a cloth rag. Reduces forest demand → preserves raptor nest habitat.'
+                ]
+              },
+              {
+                effort: '⏰ 1-HOUR ACTIONS',
+                color: 'amber',
+                items: [
+                  'Volunteer one fall day at a local hawkwatch. Sites need spotters + counters — full training in 1 hour.',
+                  'Write an email to your state legislator supporting non-lead ammunition (or against rodenticide use in your school district).',
+                  'Take the FREE 1-hour eBird onboarding course (ebird.org/learn). You\'ll never forget how to log birds.',
+                  'Build + install a kestrel or owl nest box. Free plans on Cornell + Peregrine Fund websites. American kestrels are nest-cavity limited.',
+                  'Plant a native tree or fruit-bearing shrub in your yard. Habitat is the base of the food chain.',
+                  'Pledge to never throw out used fishing line where ospreys could entangle. Use a recycling tube at marinas.'
+                ]
+              },
+              {
+                effort: '📅 MULTI-DAY / SEASONAL ACTIONS',
+                color: 'cyan',
+                items: [
+                  'Adopt-a-Highway in your community + collect plastic + entangled-line debris.',
+                  'Join Project FeederWatch (Nov-Apr) — log birds at your feeder, including the Cooper\'s hawk who visits to hunt them.',
+                  'Volunteer at a wildlife rehab facility 2-4 hours/week. Most accept ages 14+ with training. Hands-on with ambassador birds.',
+                  'Coordinate a class trip to a hawkwatch (use the Field-Trip Planning Checklist in Resources).',
+                  'Lead a "raptor week" at your school — share your Raptor Hunt knowledge with younger students.',
+                  'Run a school fundraiser for a specific recovery project (Mauritius kestrel, Philippine eagle, condor).'
+                ]
+              },
+              {
+                effort: '🎓 SEMESTER / YEAR-LONG PROJECTS',
+                color: 'violet',
+                items: [
+                  'Complete a 1-year migration data analysis using HawkCount data. Open source — students can do real science.',
+                  'Build + maintain a 4-camera raptor nest cam in your community.',
+                  'Become a licensed wildlife rehabilitator (state-licensed; 100-200 hours apprenticeship; ages 18+).',
+                  'Apply for falconry apprenticeship — 7-year path that ALSO contributes to raptor science + community education.',
+                  'Independent-research project: collect + analyze 25-50 pellets from a local owl roost; publish in a regional journal.',
+                  'Run a community campaign in your town to ban brodifacoum rodenticide.'
+                ]
+              }
+            ].map(function(tier, ti) {
+              return h('div', { key: ti, className: 'bg-' + tier.color + '-900/20 border border-' + tier.color + '-700/40 rounded-lg p-3' },
+                h('div', { className: 'text-xs font-bold text-' + tier.color + '-300 mb-2 uppercase tracking-wider' }, tier.effort),
+                h('ul', { className: 'space-y-1 text-xs text-' + tier.color + '-100/90 list-disc list-inside' },
+                  tier.items.map(function(item, ii) { return h('li', { key: ii, className: 'leading-relaxed' }, item); })
+                )
+              );
+            }),
+            h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-3 text-xs text-amber-100/90 italic text-center' },
+              h('span', { className: 'font-bold text-amber-300' }, '✦ Pick ONE this week. '),
+              'Conservation is built from millions of small actions. The 90-year Hawk Mountain dataset exists because someone showed up to count birds, every fall, for 90 years.'
+            )
           )
         );
       }
@@ -7857,10 +7986,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 id: 'mp10', topic: '🪶 Glide ratio',
                 problem: 'A bald eagle has aspect ratio 6.5. Using the rough approximation L/D ≈ 0.5 + 1.5×AR, calculate glide ratio. If the eagle starts at 500 m altitude in still air, how far can it glide before landing?',
                 solution: 'L/D = 0.5 + 1.5 × 6.5 = 0.5 + 9.75 = 10.25. Distance = altitude × L/D = 500 × 10.25 = 5,125 m ≈ 5.1 km (~3.2 miles). This is in still air; thermal lift can extend this indefinitely if the bird finds a column with sink rate exceeding its glide sink rate.'
+              },
+              // ── NEW v0.23 problems ──
+              {
+                id: 'mp11', topic: '❄ Arctic Amplification',
+                problem: 'Global average temperature has risen ~1.1°C since 1900. Arctic warming proceeds at ~4× the global rate. How much has the Arctic warmed in the same period? If projection rates continue, where will the Arctic be in another 50 years (at 2.5°C global warming)?',
+                solution: 'Arctic warming so far ≈ 1.1°C × 4 = 4.4°C. At 2.5°C global (projected 2070), Arctic ≈ 10°C above 1900 baseline. THIS is why Arctic species (snowy owl, gyrfalcon) are the most at-risk — their entire ecosystem (lemming cycles, tundra vegetation, ice-dependent prey) is built around the OLD temperature regime. There is no analog.'
+              },
+              {
+                id: 'mp12', topic: '⚥ Sexual Dimorphism',
+                problem: 'A northern goshawk pair: male weighs 800 g, female weighs 1,200 g. Compute the female:male ratio. How does it compare to the most-extreme RSD raptor (harpy eagle at 1.50×)? Why might forest-interior species like goshawks have stronger SSD than open-country species like Mississippi kites (1.08×)?',
+                solution: 'Ratio = 1,200 / 800 = 1.50. Tied with harpy eagle for the most extreme RSD in the tool. The niche-divergence hypothesis explains why: forest-interior raptors hunt highly variable prey (small songbirds to large grouse). The two genders divide that prey range — male takes the smaller agile prey, female takes the larger. Open-country aerial insectivores like Mississippi kites face less diverse prey + less benefit from gender niche-divergence, so SSD is weak (1.08×).'
+              },
+              {
+                id: 'mp13', topic: '👁 Eye Mass Scaling',
+                problem: 'A great horned owl weighs 1.5 kg + has eyes that are ~5% of body mass. Calculate the total mass of both eyes. How does this compare to a 70 kg human, whose eyes are ~0.01% of body mass?',
+                solution: 'Owl eye mass = 1.5 × 0.05 = 0.075 kg = 75 g (both eyes). Per eye = 37.5 g. Human eye mass = 70 × 0.0001 = 0.007 kg = 7 g for both, 3.5 g per eye. The owl has eyes 10× the relative mass + ~10× the absolute mass per eye despite being 47× smaller in body mass overall. The cost: owl eyes are so large they can\'t rotate; head turns instead. The benefit: ~100× more sensitive at low light than human eyes.'
+              },
+              {
+                id: 'mp14', topic: '🪂 Wing-Loading Compare',
+                problem: 'Two raptors: kestrel (m=0.12 kg, A=0.039 m²) + gyrfalcon (m=1.5 kg, A=0.16 m²). Calculate wing loading for each. Despite the kestrel being much smaller, what does the comparison say about their hunt styles?',
+                solution: 'Kestrel WL = 0.12/0.039 = 3.1 kg/m². Gyrfalcon WL = 1.5/0.16 = 9.4 kg/m². Gyrfalcon has 3× the wing loading — much faster + harder to maneuver, terrible at slow flight. Kestrel has low WL = active hover-hunting (windmill its wings to stay stationary). Both are Falconidae but they\'ve specialized in OPPOSITE hunt strategies — kestrel = slow, gyrfalcon = fast pursuit. Demonstrates that family alone doesn\'t predict hunt style; wing-loading does.'
               }
             ];
             return h('details', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded-xl p-3' },
-              h('summary', { className: 'text-sm font-bold text-emerald-300 cursor-pointer' }, '🧮 Math Practice Problems — 10 numerical workouts'),
+              h('summary', { className: 'text-sm font-bold text-emerald-300 cursor-pointer' }, '🧮 Math Practice Problems — 14 numerical workouts'),
               h('div', { className: 'mt-3 space-y-2' },
                 h('div', { className: 'text-xs text-slate-400 italic mb-2' }, 'Real physics problems from this tool. Work them out on paper, then click Show Solution to check. Topics: wing loading, terminal velocity, KE, aspect ratio, acuity scaling, population λ, talon pressure, fall time, pellet biomass, glide ratio.'),
                 problems.map(function(p) {
