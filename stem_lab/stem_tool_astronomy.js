@@ -3027,8 +3027,152 @@
               );
             })(),
             '#eab308'
-          )
+          ),
+          namedStarsDatabaseSection()
         );
+
+        // ──────────────────────────────────────────────────────────────
+        // Named stars database — top 50 brightest + selected nearest
+        // ──────────────────────────────────────────────────────────────
+        function namedStarsDatabaseSection() {
+          // Each star: name, designation, constellation, spectral, magnitude(V), distance(ly), notes
+          var STARS = [
+            // Top brightest stars (by apparent magnitude)
+            { name: 'Sirius', desig: 'α CMa', con: 'Canis Major', spec: 'A1V', mag: -1.46, dist: 8.6, notes: 'Brightest star in the night sky. Binary system with a white-dwarf companion (Sirius B). The name "scorching" reflects Sirius\'s heat from helical rising during late summer. "Dog Star" of antiquity.' },
+            { name: 'Canopus', desig: 'α Car', con: 'Carina', spec: 'A9II', mag: -0.74, dist: 310, notes: 'Second-brightest star in the night sky. F-class supergiant. Used by spacecraft (Voyager, Galileo, others) as a navigation reference because of its brightness + isolation in southern sky.' },
+            { name: 'Arcturus', desig: 'α Boo', con: 'Boötes', spec: 'K0III', mag: -0.05, dist: 37, notes: 'Third-brightest star; brightest in northern celestial hemisphere. Red-orange giant. Moving rapidly through the local star neighborhood — has the highest known proper motion of any first-magnitude star.' },
+            { name: 'Alpha Centauri', desig: 'α Cen', con: 'Centaurus', spec: 'G2V+K1V', mag: -0.27, dist: 4.37, notes: 'Closest naked-eye stellar system. Triple system: A (sunlike) + B (orange dwarf) + Proxima Centauri (red dwarf, hosts confirmed planets). Visible only from south + tropical latitudes.' },
+            { name: 'Vega', desig: 'α Lyr', con: 'Lyra', spec: 'A0V', mag: 0.03, dist: 25, notes: 'The astronomical photometric standard (defined magnitude 0). Will be the pole star ~ 12,000 years from now. The "Summer Triangle" star with Deneb + Altair. Hosts a known debris disk.' },
+            { name: 'Capella', desig: 'α Aur', con: 'Auriga', spec: 'G3III+G0III', mag: 0.08, dist: 42, notes: 'Quadruple star system; 4th brightest star in night sky. Two giant G-type stars + two M dwarfs. "She-goat" (Capra in Latin), held by the charioteer.' },
+            { name: 'Rigel', desig: 'β Ori', con: 'Orion', spec: 'B8Ia', mag: 0.18, dist: 860, notes: 'Blue supergiant 120,000× the luminosity of the Sun. Will eventually go supernova. Beta designation (despite being brighter than Alpha) because of Bayer ranking choices. Multiple system with at least 4 components.' },
+            { name: 'Procyon', desig: 'α CMi', con: 'Canis Minor', spec: 'F5IV', mag: 0.34, dist: 11.5, notes: 'One of nearest stars. Binary with a white-dwarf companion (Procyon B). Together with Sirius forms one of the closest pair of bright stars.' },
+            { name: 'Achernar', desig: 'α Eri', con: 'Eridanus', spec: 'B6Vpe', mag: 0.46, dist: 140, notes: 'One of the most oblate stars known — rotates so rapidly (250+ km/s equatorial) that its equator bulges to 50% wider than its poles. Visible only from south + low northern latitudes.' },
+            { name: 'Betelgeuse', desig: 'α Ori', con: 'Orion', spec: 'M1Iab', mag: 0.45, dist: 550, notes: 'Red supergiant — one of the largest known stars (700-1000× the Sun\'s diameter). Variable brightness, with the dramatic 2019-2020 "Great Dimming" event that puzzled astronomers (probably a dust cloud). Will go supernova in ~ 100,000 years (likely).' },
+            { name: 'Hadar', desig: 'β Cen', con: 'Centaurus', spec: 'B1III', mag: 0.61, dist: 390, notes: 'Triple system; second-brightest star in Centaurus. Together with Alpha Cen forms a striking visual pair.' },
+            { name: 'Altair', desig: 'α Aql', con: 'Aquila', spec: 'A7V', mag: 0.77, dist: 17, notes: 'One of closest naked-eye stars. The "third corner" of the Summer Triangle with Vega + Deneb. Rotates rapidly (286 km/s equatorial); has a notably oblate shape resolved by interferometry.' },
+            { name: 'Acrux', desig: 'α Cru', con: 'Crux', spec: 'B0.5IV+B1V', mag: 0.77, dist: 320, notes: 'Brightest star in the Southern Cross. Multiple system. Marker for celestial South in southern-hemisphere navigation.' },
+            { name: 'Aldebaran', desig: 'α Tau', con: 'Taurus', spec: 'K5III', mag: 0.85, dist: 65, notes: 'The "Eye of the Bull." Orange giant. Pioneer 10 spacecraft is currently heading roughly toward Aldebaran + will reach its vicinity in about 2 million years.' },
+            { name: 'Antares', desig: 'α Sco', con: 'Scorpius', spec: 'M1.5Iab', mag: 1.06, dist: 550, notes: 'Red supergiant nearly as large as Betelgeuse. Name = "rival of Mars" (anti-Ares) for similar red color. Has a hot blue companion that\'s often lost in glare.' },
+            { name: 'Spica', desig: 'α Vir', con: 'Virgo', spec: 'B1III+B2V', mag: 1.04, dist: 250, notes: 'Spectroscopic binary; the two stars orbit each other in just 4 days. Hot blue stars. Name = "ear of grain" representing the wheat sheaf held by Virgo.' },
+            { name: 'Pollux', desig: 'β Gem', con: 'Gemini', spec: 'K0III', mag: 1.14, dist: 34, notes: 'Orange giant. The brighter of the twins (despite Beta designation). Has a confirmed planet (Pollux b).' },
+            { name: 'Fomalhaut', desig: 'α PsA', con: 'Piscis Austrinus', spec: 'A4V', mag: 1.16, dist: 25, notes: 'A-class main-sequence star surrounded by a famous debris disk imaged by Hubble + JWST. The disk shows evidence of planet formation.' },
+            { name: 'Deneb', desig: 'α Cyg', con: 'Cygnus', spec: 'A2Ia', mag: 1.25, dist: 1500, notes: 'White supergiant — intrinsically the most luminous star visible to the naked eye (~ 200,000× the Sun). Looks moderate because it\'s ~ 1500 light-years away. Tail of the swan + corner of Summer Triangle.' },
+            { name: 'Regulus', desig: 'α Leo', con: 'Leo', spec: 'B7V+K2V+M4V', mag: 1.40, dist: 79, notes: 'Quadruple system. Spins extremely rapidly (~ 1 rotation in 16 hours, vs the Sun\'s ~ 25 days). "Little king" — close to the ecliptic, so often near the Moon + planets.' },
+
+            // Continuing brightest...
+            { name: 'Adhara', desig: 'ε CMa', con: 'Canis Major', spec: 'B2II', mag: 1.50, dist: 430, notes: 'Hot blue giant. ~ 4 million years ago, when it was only ~ 30 ly from Earth, Adhara was the brightest star in our sky at magnitude -3.99 (brighter than Venus). Cosmic timing.' },
+            { name: 'Castor', desig: 'α Gem', con: 'Gemini', spec: 'A2V', mag: 1.58, dist: 51, notes: 'Sextuple star system — 6 individual stars in 3 binary pairs. The brighter twin to Pollux.' },
+            { name: 'Shaula', desig: 'λ Sco', con: 'Scorpius', spec: 'B1.5IV', mag: 1.62, dist: 700, notes: 'The "stinger" of Scorpius. Multiple system.' },
+            { name: 'Bellatrix', desig: 'γ Ori', con: 'Orion', spec: 'B2III', mag: 1.64, dist: 245, notes: 'The "Amazon Star" — bright blue-white giant. Orion\'s left shoulder.' },
+            { name: 'Alnath', desig: 'β Tau', con: 'Taurus', spec: 'B7III', mag: 1.65, dist: 130, notes: 'The "northern horn" of the bull. Shared border star — historically also part of Auriga (where it would be γ Aur).' },
+            { name: 'Miaplacidus', desig: 'β Car', con: 'Carina', spec: 'A1IV', mag: 1.69, dist: 110, notes: 'Second-brightest in Carina. Subgiant — beginning post-main-sequence evolution.' },
+            { name: 'Alnilam', desig: 'ε Ori', con: 'Orion', spec: 'B0Ia', mag: 1.69, dist: 1400, notes: 'Central star of Orion\'s Belt. Blue supergiant — among the most luminous stars in the galaxy (~ 500,000× the Sun).' },
+            { name: 'Alnitak', desig: 'ζ Ori', con: 'Orion', spec: 'O9.7Ib', mag: 1.74, dist: 1260, notes: 'Easternmost star of Orion\'s Belt. Hot O-class supergiant. Triple system.' },
+            { name: 'Alioth', desig: 'ε UMa', con: 'Ursa Major', spec: 'A1III', mag: 1.76, dist: 81, notes: 'Brightest star in the Big Dipper. Variable magnetic field. Member of the Ursa Major Moving Group.' },
+            { name: 'Mirfak', desig: 'α Per', con: 'Perseus', spec: 'F5Ib', mag: 1.79, dist: 510, notes: 'Yellow-white supergiant. Brightest member of the Alpha Persei Cluster (a moving group of related stars).' },
+
+            // Stars near the Sun (often dim but important for being close)
+            { name: 'Proxima Centauri', desig: 'α Cen C', con: 'Centaurus', spec: 'M5.5V', mag: 11.13, dist: 4.244, notes: 'The closest star to the Sun. Red dwarf, much dimmer than its sister stars Alpha Cen A+B. Hosts at least 3 planets, including Proxima b in the habitable zone (discovered 2016).' },
+            { name: 'Barnard\'s Star', desig: '—', con: 'Ophiuchus', spec: 'M4V', mag: 9.53, dist: 5.96, notes: 'Second-closest stellar system. Red dwarf with the highest known proper motion (10.4 arcseconds/year — moves a full Moon diameter every 180 years).' },
+            { name: 'Wolf 359', desig: '—', con: 'Leo', spec: 'M6V', mag: 13.50, dist: 7.86, notes: 'Famous as the site of a key Star Trek battle. Real-life: a flare star — dim red dwarf that briefly brightens during flares.' },
+            { name: 'Lalande 21185', desig: '—', con: 'Ursa Major', spec: 'M2V', mag: 7.49, dist: 8.31, notes: 'Closest star NOT visible to the unaided eye, despite being only 8 ly away. Has at least 2 planets.' },
+            { name: 'Luyten 726-8', desig: 'A+B', con: 'Cetus', spec: 'M5.5V+M5.5V', mag: 12.5, dist: 8.73, notes: 'Binary pair of dim red dwarfs. UV Ceti (one component) is a prototype flare star — brightens dramatically + briefly.' },
+            { name: 'Ross 154', desig: '—', con: 'Sagittarius', spec: 'M3.5V', mag: 10.43, dist: 9.69, notes: 'Red-dwarf flare star.' },
+            { name: 'Ross 248', desig: '—', con: 'Andromeda', spec: 'M5.5V', mag: 12.29, dist: 10.30, notes: 'Red dwarf. In ~ 30,000 years it will pass within 3 light-years of the Sun, the closest stellar approach in our history.' },
+            { name: 'Epsilon Eridani', desig: 'ε Eri', con: 'Eridanus', spec: 'K2V', mag: 3.73, dist: 10.5, notes: 'Naked-eye young K-dwarf. Famous for being one of the first stars searched in SETI Project Ozma (1960). Has a debris disk + at least one planet.' },
+            { name: 'Lacaille 9352', desig: '—', con: 'Piscis Austrinus', spec: 'M0V', mag: 7.34, dist: 10.7, notes: 'Red dwarf. Frequently used as a baseline reference for nearby stars.' },
+            { name: 'Ross 128', desig: '—', con: 'Virgo', spec: 'M4V', mag: 11.13, dist: 11.0, notes: 'Has a confirmed planet in the habitable zone (Ross 128 b, 2017). One of closest known potentially habitable exoplanets.' },
+            { name: 'Epsilon Indi', desig: 'ε Ind', con: 'Indus', spec: 'K5V', mag: 4.69, dist: 11.9, notes: 'Naked-eye K-dwarf. Has two brown-dwarf companions + a confirmed planet.' },
+            { name: '61 Cygni', desig: '61 Cyg', con: 'Cygnus', spec: 'K5V+K7V', mag: 5.2, dist: 11.4, notes: 'First star to have its parallax + distance measured (Bessel, 1838). Binary system. Bessel\'s measurement was a watershed in astronomy.' },
+            { name: 'Tau Ceti', desig: 'τ Cet', con: 'Cetus', spec: 'G8V', mag: 3.5, dist: 11.9, notes: 'Closest sunlike star. SETI Project Ozma target. May have 4 planets, including one in the habitable zone.' },
+
+            // Notable for variable / spectroscopic / multiple star reasons
+            { name: 'Algol', desig: 'β Per', con: 'Perseus', spec: 'B8V+K0IV', mag: 2.12, dist: 90, notes: 'Prototype eclipsing binary. Every 2.87 days, dims from mag 2.1 to 3.4 for ~ 10 hours. Discovered to be eclipsing by Goodricke 1782.' },
+            { name: 'Mira', desig: 'ο Cet', con: 'Cetus', spec: 'M7III', mag: 'Var 2-10', dist: 420, notes: 'Prototype long-period variable. Period 332 days, dimming from magnitude 2 to 10 (a factor of ~ 1000). Has a vast trailing tail of expelled gas 13 light-years long.' },
+            { name: 'Delta Cephei', desig: 'δ Cep', con: 'Cepheus', spec: 'F5Iab', mag: 'Var 3.5-4.4', dist: 890, notes: 'Prototype CEPHEID variable — the basis for Henrietta Leavitt\'s period-luminosity calibration of the cosmic distance ladder.' },
+            { name: 'Polaris', desig: 'α UMi', con: 'Ursa Minor', spec: 'F7Ib', mag: 1.97, dist: 433, notes: 'Currently the North Star. Within 1° of celestial pole. Itself a triple system; the main star is a Cepheid variable with a small amplitude.' },
+            { name: 'Eta Carinae', desig: 'η Car', con: 'Carina', spec: 'LBV', mag: 'Var 4-7', dist: 7500, notes: 'Luminous blue variable. Underwent the "Great Eruption" of 1843, briefly becoming the 2nd-brightest star in the night sky. Will eventually go supernova (or hypernova).' }
+          ];
+
+          var search = d.starsSearch || '';
+          var conFilter = d.starsConstellation || '';
+          var maxDist = d.starsMaxDist != null ? d.starsMaxDist : 5000;
+
+          var filtered = STARS.filter(function(s) {
+            if (search) {
+              var q = search.toLowerCase();
+              if (s.name.toLowerCase().indexOf(q) === -1 && s.desig.toLowerCase().indexOf(q) === -1 && s.notes.toLowerCase().indexOf(q) === -1) return false;
+            }
+            if (conFilter && s.con !== conFilter) return false;
+            if (typeof s.dist === 'number' && s.dist > maxDist) return false;
+            return true;
+          });
+
+          var constellations = STARS.map(function(s) { return s.con; }).filter(function(c, i, arr) { return arr.indexOf(c) === i; }).sort();
+
+          return sectionCard('⭐ Named stars database',
+            h('div', null,
+              h('p', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.55, marginBottom: 10 } }, 'Bright + notable named stars. Each entry: name, Bayer designation, constellation, spectral class, apparent magnitude, distance in light-years, + significance. Search by name, filter by constellation, or restrict to nearest stars.'),
+
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 8 } },
+                h('input', {
+                  type: 'text',
+                  placeholder: 'Search stars (Sirius, Vega…)',
+                  value: search,
+                  onChange: function(e) { upd({ starsSearch: e.target.value }); },
+                  'aria-label': 'Search stars',
+                  className: 'astr-focus',
+                  style: { flex: 1, minWidth: 140, padding: '5px 10px', borderRadius: 6, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 11 }
+                }),
+                h('select', {
+                  value: conFilter,
+                  onChange: function(e) { upd({ starsConstellation: e.target.value }); },
+                  'aria-label': 'Filter by constellation',
+                  className: 'astr-focus',
+                  style: { padding: '4px 8px', borderRadius: 6, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 11 }
+                },
+                  h('option', { value: '' }, 'All constellations'),
+                  constellations.map(function(c) { return h('option', { key: c, value: c }, c); })
+                )
+              ),
+
+              h('div', { style: { marginBottom: 8 } },
+                a11ySlider({
+                  id: 'astr-stars-dist',
+                  label: 'Max distance',
+                  value: maxDist, min: 5, max: 10000, step: 5,
+                  valueText: maxDist + ' ly' + (maxDist <= 50 ? ' (nearest only)' : (maxDist >= 5000 ? ' (all)' : '')),
+                  onChange: function(v) { upd({ starsMaxDist: v }); },
+                  accent: '#eab308'
+                })
+              ),
+
+              h('div', { 'aria-live': 'polite', style: { fontSize: 11, color: '#64748b', marginBottom: 8 } }, 'Showing ' + filtered.length + ' stars'),
+
+              h('div', { style: { maxHeight: 600, overflowY: 'auto', padding: 4 } },
+                filtered.map(function(s, idx) {
+                  return h('div', {
+                    key: 'star-' + idx,
+                    style: { padding: 8, marginBottom: 6, background: '#0f172a', borderRadius: 6, borderLeft: '3px solid #eab308' }
+                  },
+                    h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: 4, marginBottom: 4 } },
+                      h('h4', { style: { margin: 0, color: '#fde047', fontSize: 13 } }, s.name + ' ' + (s.desig ? '(' + s.desig + ')' : '')),
+                      h('span', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'monospace' } }, 'mag ' + s.mag + ' · ' + (typeof s.dist === 'number' ? s.dist + ' ly' : s.dist) + ' · ' + s.spec)
+                    ),
+                    h('div', { style: { fontSize: 10, color: '#a5b4fc', marginBottom: 4 } }, s.con),
+                    h('p', { style: { margin: 0, fontSize: 11, color: '#e2e8f0', lineHeight: 1.5 } }, s.notes)
+                  );
+                })
+              ),
+
+              h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(234,179,8,0.08)', border: '1px solid rgba(234,179,8,0.3)', fontSize: 11.5, color: '#fde68a', lineHeight: 1.65 } },
+                h('strong', null, '📚 About stellar nomenclature: '),
+                'Stars have multiple naming schemes. (1) PROPER NAMES — Arabic, Greek, Latin, occasionally Mayan or Chinese origin (Sirius, Vega, Betelgeuse). The IAU formally approved a list of 313 traditional names in 2016. (2) BAYER designation — Greek letter + constellation (α Centauri, β Persei). Roughly orders stars by brightness within the constellation. (3) FLAMSTEED numbers — sequential numbers within a constellation by right ascension (61 Cygni). (4) HIPPARCOS/Gaia catalogs — modern systematic catalog numbers (HIP, HD, TYC, Gaia DR-X). For amateur observers, the proper-name + Bayer system is what you\'ll encounter; for professional astronomy, the systematic catalog numbers dominate.'
+              )
+            ),
+            '#eab308'
+          );
+        }
       }
 
       // ──────────────────────────────────────────────────────────────
@@ -3914,6 +4058,7 @@
       function renderEvents() {
         return h('div', { style: { padding: 16 } },
           safetyBanner('NEVER look at the Sun without certified solar-eclipse glasses (ISO 12312-2). Even brief exposure can cause permanent eye damage. Regular sunglasses, smoked glass, exposed film, and most welding goggles are NOT safe. The only safe direct view is during TOTALITY (the brief moment when the Moon completely covers the Sun in a TOTAL solar eclipse — and only at that exact moment).'),
+          eclipseSimulatorSection(),
           meteorShowerSimulatorSection(),
           EVENTS_LEARN.map(function(e) {
             return h('div', { key: e.id, style: { padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155', marginBottom: 10 } },
@@ -4164,6 +4309,239 @@
             '#06b6d4'
           )
         );
+
+        // ── Eclipse simulator (Sun-Earth-Moon geometry) ──────────
+        function eclipseSimulatorSection() {
+          // Eclipse phase 0-100 (0 = Moon east of Sun, 50 = exact alignment, 100 = Moon west of Sun)
+          var phase = d.eclipsePhase != null ? d.eclipsePhase : 50;
+          // Eclipse type: solar / lunar
+          var eclipseType = d.eclipseType || 'solar';
+          // Geometry type: total / annular / partial / penumbral
+          var geometryType = d.eclipseGeometry || 'total';
+          var playing = d.eclipsePlaying || false;
+
+          // Auto-advance frame if playing
+          if (playing && typeof window !== 'undefined' && !window._astrEclipseTimer) {
+            window._astrEclipseTimer = setTimeout(function() {
+              window._astrEclipseTimer = null;
+              var nextPhase = phase + (_prefersReducedMotion ? 5 : 2);
+              if (nextPhase > 100) nextPhase = 0;
+              upd({ eclipsePhase: nextPhase });
+            }, _prefersReducedMotion ? 800 : 100);
+          }
+          if (!playing && typeof window !== 'undefined' && window._astrEclipseTimer) {
+            clearTimeout(window._astrEclipseTimer);
+            window._astrEclipseTimer = null;
+          }
+
+          // Geometry: Moon moves across Sun (solar) or Earth's shadow (lunar)
+          // For SOLAR: Moon disk crosses Sun disk
+          // For LUNAR: Moon enters Earth's shadow (umbra)
+
+          // Moon offset based on phase (0 = far right, 50 = aligned, 100 = far left)
+          var moonOffset = (phase - 50) / 50 * 200; // -200 to +200 px
+
+          // Sun + Moon apparent size depends on geometry
+          var sunR = 80;
+          var moonR = geometryType === 'annular' ? 70 : (geometryType === 'partial' ? 75 : 82);
+
+          // For total/annular: alignment matters
+          var aligned = Math.abs(moonOffset) < (sunR + moonR);
+          var coverage = 0;
+          if (aligned) {
+            // Approximate area coverage
+            var d_centers = Math.abs(moonOffset);
+            if (d_centers + moonR <= sunR) {
+              // Moon entirely inside Sun (annular if moonR < sunR)
+              coverage = (moonR * moonR) / (sunR * sunR);
+            } else if (d_centers - moonR >= sunR) {
+              coverage = 0;
+            } else {
+              // Partial overlap approximation
+              coverage = Math.max(0, 1 - (d_centers - Math.abs(sunR - moonR)) / (sunR + moonR));
+            }
+          }
+
+          var coveragePct = Math.round(Math.min(1, coverage) * 100);
+
+          // Solar eclipse SVG
+          function solarEclipseSvg() {
+            var cx = 300, cy = 175;
+            return h('svg', {
+              viewBox: '0 0 600 350',
+              role: 'img',
+              'aria-label': 'Solar eclipse animation. ' + geometryType + ' eclipse type. Coverage: ' + coveragePct + ' percent.',
+              style: { width: '100%', height: 'auto', display: 'block', maxHeight: 400 }
+            },
+              // Black sky background
+              h('rect', { x: 0, y: 0, width: 600, height: 350, fill: '#000' }),
+              // Background stars (visible during totality)
+              coveragePct > 95 ? Array.from({length: 40}, function(_, idx) {
+                return h('circle', { key: 'star-' + idx, cx: ((idx * 47) % 580) + 10, cy: ((idx * 29) % 330) + 10, r: 0.6 + (idx % 2) * 0.4, fill: '#fff', opacity: 0.6 + (idx % 3) / 10 });
+              }) : null,
+              // Sun's corona (visible during totality)
+              coveragePct > 95 ? h('g', null,
+                h('defs', null,
+                  h('radialGradient', { id: 'corona-grad', cx: '50%', cy: '50%' },
+                    h('stop', { offset: '0%', stopColor: '#fef3c7', stopOpacity: 0.7 }),
+                    h('stop', { offset: '50%', stopColor: '#fdba74', stopOpacity: 0.4 }),
+                    h('stop', { offset: '100%', stopColor: '#7c2d12', stopOpacity: 0 })
+                  )
+                ),
+                h('circle', { cx: cx, cy: cy, r: sunR * 2.2, fill: 'url(#corona-grad)' })
+              ) : null,
+              // Sun
+              h('defs', null,
+                h('radialGradient', { id: 'sun-grad', cx: '40%', cy: '40%' },
+                  h('stop', { offset: '0%', stopColor: '#fff' }),
+                  h('stop', { offset: '50%', stopColor: '#fde047' }),
+                  h('stop', { offset: '100%', stopColor: '#dc2626' })
+                )
+              ),
+              h('circle', { cx: cx, cy: cy, r: sunR, fill: 'url(#sun-grad)' }),
+              // Moon (occulting disk)
+              h('circle', { cx: cx + moonOffset, cy: cy, r: moonR, fill: '#1c1917' }),
+              h('circle', { cx: cx + moonOffset, cy: cy, r: moonR, fill: 'none', stroke: '#475569', strokeWidth: 0.5 }),
+              // Phase markers
+              h('text', { x: 20, y: 340, fill: '#94a3b8', fontSize: 11, fontFamily: 'monospace' }, 'Coverage: ' + coveragePct + '%'),
+              h('text', { x: 580, y: 340, fill: '#94a3b8', fontSize: 11, fontFamily: 'monospace', textAnchor: 'end' }, geometryType.toUpperCase()),
+              // Annotation lines
+              coveragePct === 100 && geometryType === 'total' ? h('text', { x: cx, y: 50, fill: '#fbbf24', fontSize: 14, fontWeight: 700, textAnchor: 'middle' }, '🌑 TOTALITY 🌑') : null,
+              coveragePct === 100 && geometryType === 'annular' ? h('text', { x: cx, y: 50, fill: '#fdba74', fontSize: 14, fontWeight: 700, textAnchor: 'middle' }, '💍 ANNULARITY 💍') : null
+            );
+          }
+
+          // Lunar eclipse SVG
+          function lunarEclipseSvg() {
+            // Earth at center, casts shadow to the right; Moon traverses through it
+            var cx = 300, cy = 175;
+            // Moon position (left-to-right traversal through Earth's shadow)
+            var moonX = (phase / 100) * 500 + 50;
+            var moonInShadow = Math.abs(moonX - cx) < 80;
+            var moonInUmbra = Math.abs(moonX - cx) < 30;
+
+            return h('svg', {
+              viewBox: '0 0 600 350',
+              role: 'img',
+              'aria-label': 'Lunar eclipse animation. The Moon traverses Earth\'s shadow.',
+              style: { width: '100%', height: 'auto', display: 'block', maxHeight: 400 }
+            },
+              h('rect', { x: 0, y: 0, width: 600, height: 350, fill: '#000' }),
+              // Background stars
+              Array.from({length: 50}, function(_, idx) {
+                return h('circle', { key: 's-' + idx, cx: ((idx * 47) % 580) + 10, cy: ((idx * 29) % 330) + 10, r: 0.5 + (idx % 2) * 0.4, fill: '#fff', opacity: 0.5 });
+              }),
+              // Earth's umbra (full shadow) — depicted abstractly
+              h('defs', null,
+                h('radialGradient', { id: 'umbra-grad', cx: '50%', cy: '50%' },
+                  h('stop', { offset: '0%', stopColor: '#1c1917', stopOpacity: 0.85 }),
+                  h('stop', { offset: '60%', stopColor: '#1c1917', stopOpacity: 0.5 }),
+                  h('stop', { offset: '100%', stopColor: '#1c1917', stopOpacity: 0 })
+                )
+              ),
+              h('circle', { cx: cx, cy: cy, r: 100, fill: 'url(#umbra-grad)' }),
+              h('circle', { cx: cx, cy: cy, r: 60, fill: 'none', stroke: '#dc2626', strokeWidth: 0.6, strokeDasharray: '3 3', opacity: 0.5 }),
+              h('text', { x: cx, y: cy - 105, fill: '#dc2626', fontSize: 10, textAnchor: 'middle' }, "Earth's umbra"),
+              // Moon
+              h('defs', null,
+                h('radialGradient', { id: 'lunar-moon-grad', cx: '40%', cy: '40%' },
+                  h('stop', { offset: '0%', stopColor: moonInUmbra ? '#7f1d1d' : '#e0e0e0' }),
+                  h('stop', { offset: '100%', stopColor: moonInUmbra ? '#450a0a' : '#888888' })
+                )
+              ),
+              h('circle', { cx: moonX, cy: cy, r: 30, fill: 'url(#lunar-moon-grad)' }),
+              // Trajectory line
+              h('line', { x1: 50, y1: cy, x2: 550, y2: cy, stroke: '#475569', strokeWidth: 0.5, strokeDasharray: '4 8', opacity: 0.4 }),
+              // Labels
+              h('text', { x: 20, y: 340, fill: '#94a3b8', fontSize: 11, fontFamily: 'monospace' }, moonInUmbra ? 'TOTAL ECLIPSE' : (moonInShadow ? 'PENUMBRAL' : 'Not in eclipse')),
+              moonInUmbra ? h('text', { x: cx, y: 50, fill: '#dc2626', fontSize: 14, fontWeight: 700, textAnchor: 'middle' }, '🌑 BLOOD MOON 🌑') : null
+            );
+          }
+
+          return sectionCard('🌑 Eclipse simulator — Sun-Earth-Moon geometry',
+            h('div', null,
+              h('p', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.55, marginBottom: 10 } }, 'Eclipses happen because the Moon\'s apparent size in the sky is almost exactly the same as the Sun\'s — about 0.5° both. This is a cosmic coincidence (the Sun is 400× larger than the Moon, but ~ 400× farther). Adjust the alignment + watch how solar + lunar eclipses appear.'),
+
+              // Type selector
+              h('div', { role: 'tablist', 'aria-label': 'Eclipse type', style: { display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' } },
+                ['solar', 'lunar'].map(function(t) {
+                  var on = eclipseType === t;
+                  return a11yButton({
+                    key: t, role: 'tab', 'aria-selected': on,
+                    onClick: function() { upd({ eclipseType: t, eclipsePhase: 50 }); },
+                    style: { padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', background: on ? '#fbbf24' : '#1e293b', color: on ? '#0f172a' : '#cbd5e1', border: on ? '2px solid #fbbf24' : '1px solid #334155' }
+                  }, t === 'solar' ? '☀️ Solar eclipse' : '🌕 Lunar eclipse');
+                })
+              ),
+
+              // For solar: select geometry type
+              eclipseType === 'solar' ? h('div', { style: { display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' } },
+                ['total', 'annular', 'partial'].map(function(t) {
+                  var on = geometryType === t;
+                  return a11yButton({
+                    key: t,
+                    onClick: function() { upd({ eclipseGeometry: t }); },
+                    'aria-pressed': on,
+                    style: { padding: '5px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer', background: on ? '#6366f1' : '#1e293b', color: on ? '#0f172a' : '#cbd5e1', border: on ? '2px solid #6366f1' : '1px solid #334155' }
+                  }, t.charAt(0).toUpperCase() + t.slice(1));
+                })
+              ) : null,
+
+              // Animation viewport
+              h('div', { style: { borderRadius: 10, overflow: 'hidden', border: '1px solid #334155', background: '#000', marginBottom: 10 } },
+                eclipseType === 'solar' ? solarEclipseSvg() : lunarEclipseSvg()
+              ),
+
+              // Phase slider + controls
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10, flexWrap: 'wrap' } },
+                a11yButton({
+                  onClick: function() { upd({ eclipsePlaying: !playing }); },
+                  'aria-label': playing ? 'Pause animation' : 'Play animation',
+                  style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #fbbf24', background: playing ? '#fbbf24' : '#0f172a', color: playing ? '#0f172a' : '#fbbf24', fontWeight: 700, cursor: 'pointer', fontSize: 12 }
+                }, playing ? '⏸ Pause' : '▶ Play'),
+                h('div', { style: { flex: 1, minWidth: 200 } },
+                  a11ySlider({
+                    id: 'astr-eclipse-phase',
+                    label: 'Eclipse phase',
+                    value: phase, min: 0, max: 100, step: 1,
+                    valueText: phase + '%',
+                    onChange: function(v) { upd({ eclipsePhase: v, eclipsePlaying: false }); },
+                    accent: '#fbbf24'
+                  })
+                )
+              ),
+
+              // Explanation panels
+              eclipseType === 'solar' ? h('div', null,
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 10 } },
+                  h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', borderLeft: '3px solid #fbbf24' } },
+                    h('div', { style: { fontSize: 12, fontWeight: 700, color: '#fbbf24', marginBottom: 4 } }, 'Total eclipse'),
+                    h('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.5 } }, 'Moon completely covers the Sun. Only happens when the Moon is near perigee (closest to Earth, so larger apparent size). Totality lasts up to 7.5 minutes max; usually 2-4 min. Reveals the Sun\'s corona, prominences, + the diamond-ring effect.')
+                  ),
+                  h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', borderLeft: '3px solid #fdba74' } },
+                    h('div', { style: { fontSize: 12, fontWeight: 700, color: '#fdba74', marginBottom: 4 } }, 'Annular eclipse'),
+                    h('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.5 } }, 'Moon is near apogee (farthest from Earth, smaller apparent size). Center of Sun is covered but a bright ring of fire ("annulus") remains visible. NOT safe for unprotected viewing — solar filter required throughout.')
+                  ),
+                  h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', borderLeft: '3px solid #6366f1' } },
+                    h('div', { style: { fontSize: 12, fontWeight: 700, color: '#6366f1', marginBottom: 4 } }, 'Partial eclipse'),
+                    h('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.5 } }, 'Moon covers only part of the Sun. Visible from outside the path of totality even during a "total" event. Most-observed eclipse type. Still requires eclipse glasses — even 99% coverage is dangerously bright.')
+                  )
+                )
+              ) : h('div', null,
+                h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', borderLeft: '3px solid #dc2626', marginBottom: 10 } },
+                  h('div', { style: { fontSize: 12, fontWeight: 700, color: '#dc2626', marginBottom: 4 } }, 'Lunar eclipse — the "Blood Moon"'),
+                  h('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.55 } }, 'Earth passes between Sun + Moon, casting its shadow on the Moon. The Moon turns RED because Earth\'s atmosphere refracts longer-wavelength light into the umbra (essentially every sunrise + sunset on Earth at once illuminating the Moon). Safe to view with naked eye — no equipment needed. Lasts hours, visible from anywhere the Moon is up.')
+                )
+              ),
+
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 11.5, color: '#c7d2fe', lineHeight: 1.65 } },
+                h('strong', null, '🗓️ Upcoming eclipses (2025-2030): '),
+                'August 12 2026: TOTAL solar eclipse across Greenland + Iceland + Spain. February 17 2026: ANNULAR solar eclipse across Antarctica. August 2 2027: TOTAL solar eclipse across N. Africa + Saudi Arabia (one of the longest of the century, 6 min 23 sec). For Maine: April 8 2024 totality crossed the state (already past); next US totality April 20 2052. Plan eclipse trips well in advance — totality paths are narrow + accommodations book years ahead.'
+              )
+            ),
+            '#fbbf24'
+          );
+        }
 
         // ── Meteor shower simulator (animated SVG) ──────────────────
         function meteorShowerSimulatorSection() {
