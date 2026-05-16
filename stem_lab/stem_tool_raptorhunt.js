@@ -2322,6 +2322,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           'forest':        { sky: 0x9bc7f2, fog: 0xd9f99d, ground: 0x166534 }   // temperate forest, green ground
         };
         var bc = biomeColors[species.biome] || biomeColors.grassland;
+        // ─── NEW v0.26: Proper sky gradient dome (zenith → horizon) ───
+        var skyCanvas = document.createElement('canvas');
+        skyCanvas.width = 16; skyCanvas.height = 512;
+        var skCtx = skyCanvas.getContext('2d');
+        var skGrad = skCtx.createLinearGradient(0, 0, 0, 512);
+        // Zenith → middle → horizon
+        var skyHex = '#' + new THREE.Color(bc.sky).getHexString();
+        var fogHex = '#' + new THREE.Color(bc.fog).getHexString();
+        if (species.biome === 'forest-night') {
+          skGrad.addColorStop(0, '#020617');     // dark zenith
+          skGrad.addColorStop(0.5, '#1e1b4b');   // deep indigo
+          skGrad.addColorStop(0.85, '#4338ca');  // lighter near horizon
+          skGrad.addColorStop(1, '#312e81');     // horizon glow
+        } else if (species.biome === 'tundra') {
+          skGrad.addColorStop(0, '#7dd3fc');     // pale arctic zenith
+          skGrad.addColorStop(0.6, '#bae6fd');
+          skGrad.addColorStop(1, '#e0f2fe');     // very pale horizon
+        } else if (species.biome === 'cliff' || species.biome === 'urban-cliff') {
+          skGrad.addColorStop(0, '#1e40af');     // deep blue zenith
+          skGrad.addColorStop(0.5, '#3b82f6');
+          skGrad.addColorStop(1, '#bfdbfe');     // pale horizon
+        } else if (species.biome === 'rainforest') {
+          skGrad.addColorStop(0, '#7dd3fc');     // tropical blue
+          skGrad.addColorStop(0.5, '#a7f3d0');   // hazy green-tint
+          skGrad.addColorStop(1, '#d9f99d');     // hazy horizon
+        } else {
+          // Default day-sky gradient (grassland, lake, forest, boreal, mountain)
+          skGrad.addColorStop(0, '#1e3a8a');     // deep blue zenith
+          skGrad.addColorStop(0.4, skyHex);      // mid sky uses biome color
+          skGrad.addColorStop(0.85, fogHex);     // horizon fades to fog color
+          skGrad.addColorStop(1, '#fef3c7');     // warm amber at horizon
+        }
+        skCtx.fillStyle = skGrad;
+        skCtx.fillRect(0, 0, 16, 512);
+        var skyTex = new THREE.CanvasTexture(skyCanvas);
+        var skyDome = new THREE.Mesh(
+          new THREE.SphereGeometry(900, 32, 16),
+          new THREE.MeshBasicMaterial({ map: skyTex, side: THREE.BackSide, depthWrite: false, fog: false })
+        );
+        scene.add(skyDome);
+        // Keep solid color as backup
         scene.background = new THREE.Color(bc.sky);
         scene.fog = new THREE.Fog(bc.fog, 80, 600);
 
@@ -2451,14 +2492,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           return hits.length > 0 ? hits[0].point.y : 0;
         }
 
-        // ─── Lake (osprey + eagle biomes) ───
+        // ─── NEW v0.26: Animated water for lake biome (vertex-displaced ripples) ───
+        var lake = null;
+        var lakeOriginalY = null;
         if (species.biome === 'lake') {
-          var lakeGeo = new THREE.CircleGeometry(110, 36);
-          var lakeMat = new THREE.MeshStandardMaterial({ color: 0x1e40af, roughness: 0.2, metalness: 0.3, transparent: true, opacity: 0.85 });
-          var lake = new THREE.Mesh(lakeGeo, lakeMat);
+          var lakeGeo = new THREE.CircleGeometry(110, 64);  // higher segment count for vertex animation
+          // Save original Y of each vertex (all 0 initially since it's a circle, but we add noise)
+          var lakePos = lakeGeo.attributes.position.array;
+          lakeOriginalY = new Float32Array(lakePos.length / 3);
+          for (var li = 0; li < lakePos.length / 3; li++) {
+            lakeOriginalY[li] = 0;  // base height
+          }
+          var lakeMat = new THREE.MeshStandardMaterial({
+            color: 0x1e40af, roughness: 0.15, metalness: 0.45,
+            transparent: true, opacity: 0.88,
+            flatShading: false
+          });
+          lake = new THREE.Mesh(lakeGeo, lakeMat);
           lake.rotation.x = -Math.PI / 2;
           lake.position.y = -1.5;
           scene.add(lake);
+          // Add a brighter "sheen" highlight near the sun position — gives reflection feel
+          var sheen = new THREE.Mesh(
+            new THREE.CircleGeometry(35, 24),
+            new THREE.MeshBasicMaterial({ color: 0xfde047, transparent: true, opacity: 0.20, depthWrite: false })
+          );
+          sheen.rotation.x = -Math.PI / 2;
+          sheen.position.set(20, -1.45, 15);  // offset toward sun direction
+          scene.add(sheen);
         }
 
         // ─── Trees + obstacles ───
@@ -2479,29 +2540,66 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var treeHeight = 8 + Math.random() * 14;
           if (species.biome === 'rainforest') treeHeight = 20 + Math.random() * 20;
           if (species.biome === 'mountain') treeHeight = 5 + Math.random() * 5;
+          // ── NEW v0.26: 3 tree variants per biome — randomly picked ──
+          var treeType = Math.floor(Math.random() * 3);  // 0=conifer, 1=deciduous, 2=tall-thin
+          // Adjust based on biome
+          if (species.biome === 'boreal-forest' || species.biome === 'tundra') treeType = Math.random() < 0.85 ? 0 : 2;  // mostly conifers
+          if (species.biome === 'rainforest') treeType = 1;  // mostly tall round
+          if (species.biome === 'cliff' || species.biome === 'mountain') treeType = Math.random() < 0.6 ? 0 : 2;
+          // Trunk
           var trunkR = treeHeight * 0.04;
           var trunkGeo = new THREE.CylinderGeometry(trunkR * 0.7, trunkR, treeHeight * 0.55, 6);
-          var trunkMat = new THREE.MeshStandardMaterial({ color: 0x4a2c1a, roughness: 0.95 });
+          var trunkColor = species.biome === 'tundra' ? 0x44403c : 0x4a2c1a;
+          var trunkMat = new THREE.MeshStandardMaterial({ color: trunkColor, roughness: 0.95 });
           var trunk = new THREE.Mesh(trunkGeo, trunkMat);
           trunk.position.set(tx, ty + treeHeight * 0.275, tz);
           scene.add(trunk);
-          // Foliage cone
-          var folHeight = treeHeight * 0.6;
-          var folR = treeHeight * 0.25;
-          var folGeo = species.biome === 'rainforest'
-            ? new THREE.SphereGeometry(folR, 8, 6)
-            : new THREE.ConeGeometry(folR, folHeight, 6);
+          // Foliage — different geometry per type
+          var folGeo, folHeight, folR;
+          if (treeType === 0) {
+            // Conifer — tall narrow cone (multiple stacked cones for layered look)
+            folHeight = treeHeight * 0.75;
+            folR = treeHeight * 0.22;
+            folGeo = new THREE.ConeGeometry(folR, folHeight, 7);
+          } else if (treeType === 1) {
+            // Deciduous — round sphere/cluster
+            folHeight = treeHeight * 0.55;
+            folR = treeHeight * 0.32;
+            folGeo = new THREE.SphereGeometry(folR, 10, 7);
+          } else {
+            // Tall-thin (poplar/columnar)
+            folHeight = treeHeight * 0.85;
+            folR = treeHeight * 0.14;
+            folGeo = new THREE.ConeGeometry(folR, folHeight, 6);
+          }
           var folColor = species.biome === 'rainforest' ? 0x14532d :
                          species.biome === 'forest-night' ? 0x14532d :
-                         species.biome === 'boreal-forest' ? 0x064e3b :
-                         species.biome === 'forest' ? 0x166534 :
-                         species.biome === 'tundra' ? 0xe2e8f0 :
+                         species.biome === 'boreal-forest' ? (treeType === 0 ? 0x064e3b : 0x166534) :
+                         species.biome === 'forest' ? (treeType === 0 ? 0x166534 : 0x16a34a) :
+                         species.biome === 'tundra' ? (treeType === 0 ? 0xe2e8f0 : 0xcbd5e1) :
                          species.biome === 'mountain' ? 0x166534 : 0x166534;
-          var folMat = new THREE.MeshStandardMaterial({ color: folColor, roughness: 0.95 });
+          // Slight color variation per tree
+          var folColorObj = new THREE.Color(folColor);
+          folColorObj.offsetHSL(0, 0, (Math.random() - 0.5) * 0.06);
+          var folMat = new THREE.MeshStandardMaterial({ color: folColorObj.getHex(), roughness: 0.95 });
           var foliage = new THREE.Mesh(folGeo, folMat);
           foliage.position.set(tx, ty + treeHeight * 0.55 + folHeight * 0.45, tz);
           scene.add(foliage);
-          trees.push({ mesh: trunk, foliage: foliage, x: tx, z: tz, y: ty, height: treeHeight });
+          // Conifer second layer for visual richness
+          if (treeType === 0) {
+            var topCone = new THREE.Mesh(
+              new THREE.ConeGeometry(folR * 0.55, folHeight * 0.6, 6),
+              folMat
+            );
+            topCone.position.set(tx, ty + treeHeight * 0.55 + folHeight * 0.8, tz);
+            scene.add(topCone);
+          }
+          // Save sway data for animation
+          trees.push({
+            mesh: trunk, foliage: foliage, x: tx, z: tz, y: ty, height: treeHeight,
+            swayPhase: Math.random() * Math.PI * 2,
+            swayAmount: 0.02 + Math.random() * 0.04  // radians of max sway
+          });
         }
 
         // ─── Cliff for cliff biomes ───
@@ -3183,6 +3281,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var shadowScale = Math.max(1.5, 4 - altAboveGround * 0.04);
           birdShadow.scale.set(shadowScale, shadowScale * 0.55, 1);
           birdShadow.material.opacity = Math.max(0.05, 0.5 - altAboveGround * 0.005);
+
+          // ── NEW v0.26: Animated lake water (vertex sin-wave ripples) ──
+          if (lake && lakeOriginalY) {
+            var lakePos2 = lake.geometry.attributes.position.array;
+            var tnow = now / 1000;
+            for (var lpi2 = 0; lpi2 < lakeOriginalY.length; lpi2++) {
+              var vx2 = lakePos2[lpi2 * 3], vz2 = lakePos2[lpi2 * 3 + 1];
+              // Two crossing sine waves at different frequencies for natural ripple
+              var ripple = Math.sin(vx2 * 0.08 + tnow * 1.3) * 0.25 +
+                           Math.cos(vz2 * 0.10 + tnow * 1.7) * 0.20 +
+                           Math.sin((vx2 + vz2) * 0.05 + tnow * 0.8) * 0.15;
+              lakePos2[lpi2 * 3 + 2] = lakeOriginalY[lpi2] + ripple;
+            }
+            lake.geometry.attributes.position.needsUpdate = true;
+            lake.geometry.computeVertexNormals();
+          }
+
+          // ── NEW v0.26: Tree sway (gentle wind motion) ──
+          var windPhase = now * 0.001;
+          for (var tsi = 0; tsi < trees.length; tsi++) {
+            var tr = trees[tsi];
+            // Subtle rotation around base for trunk + foliage matches
+            var sway = Math.sin(windPhase + tr.swayPhase) * tr.swayAmount;
+            // Apply to foliage only (trunk stays fixed); foliage offsets slightly
+            tr.foliage.rotation.z = sway;
+            tr.foliage.position.x = tr.x + Math.sin(sway) * tr.height * 0.05;
+          }
 
           // ── NEW v0.25: Drifting clouds ──
           if (typeof cloudList !== 'undefined' && cloudList) {
