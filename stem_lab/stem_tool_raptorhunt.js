@@ -5290,6 +5290,292 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
   };
 
   // ───────────────────────────────────────────────────────────
+  // NEW v0.45: NEST-BUILD COOKBOOK — 14 raptor nests with how-to
+  // ───────────────────────────────────────────────────────────
+  var NEST_COOKBOOK = {
+    intro: 'How do raptors build their nests? Each species has unique architecture, materials, location preferences. This cookbook details 14 nest types — perfect for biology classes building nest models or understanding raptor real estate.',
+    nests: [
+      { species: 'Bald eagle', location: 'Tall live or dead tree, often near water', size: 'Up to 4 m diameter, 6 m deep, 2 tons (largest US bird nest)', materials: 'Large sticks (>5 cm), sod, moss, conifer boughs, grasses; cup lined with finer material', construction: 'Both parents build over 1-3 months. Pairs add to nest each year — old nests can be massive. Record nest in St. Petersburg FL (1963) was 2 tons.', stages: 'Frame (sticks) → walls → cup → lining', timing: 'Sep-Feb, peaking Jan' },
+      { species: 'Golden eagle', location: 'Cliff ledge or large tree', size: '1-2 m diameter', materials: 'Sticks, sod, grasses, dead vegetation', construction: 'Pair maintains 2+ alternate nests. Builds 1-2 weeks; uses for years.', stages: 'Frame → cup → lining', timing: 'Late winter' },
+      { species: 'Red-tailed hawk', location: 'Tall tree, top of broken trunk, sometimes cliff', size: '70 cm × 50 cm cup', materials: 'Twigs, sticks, lined with fresh greenery (oak, pine needles)', construction: 'Built in 1-2 weeks. Lining of fresh greenery added daily during incubation.', stages: 'Frame → cup → fresh greenery', timing: 'Feb-March' },
+      { species: 'Cooper\'s hawk', location: 'Forest tree, often near edge', size: '40-50 cm diameter', materials: 'Sticks + bark, twigs', construction: 'Female builds while male brings materials. Usually new nest each year.', stages: 'Frame → walls → cup', timing: 'April-May' },
+      { species: 'Osprey', location: 'Top of dead tree or human-made platform', size: '1-1.5 m diameter; pairs add material annually', materials: 'Large sticks, sod, plastic, fishing line + nets (modern problem)', construction: 'Both parents. Often messy with plastic + fishing line. Pairs build huge structures over decades.', stages: 'Foundation → walls → cup', timing: 'March-May' },
+      { species: 'Great horned owl', location: 'Reuses old hawk or crow nest', size: 'Variable (depending on reused nest)', materials: 'Doesn\'t build — uses existing structure', construction: 'NO building. Takes over old nest. Adds soft material for chicks.', stages: 'Takeover existing', timing: 'Dec-Feb' },
+      { species: 'Barred owl', location: 'Tree cavity in mature forest', size: 'Natural cavity (variable)', materials: 'Wood debris from cavity', construction: 'Uses existing cavity. May add minimal material.', stages: 'Cavity prep', timing: 'Feb-April' },
+      { species: 'Eastern screech owl', location: 'Tree cavity, often natural', size: 'Cavity volume', materials: 'No construction', construction: 'No building. Lines with fur + debris already in cavity.', stages: 'Cavity occupation', timing: 'March-April' },
+      { species: 'American kestrel', location: 'Cavity in dead tree, old woodpecker hole, nest box', size: 'Cavity volume', materials: 'No construction; nest cup lined with debris', construction: 'Cavity nester. No external construction. Loves nest boxes.', stages: 'Cavity occupation', timing: 'March-May' },
+      { species: 'Northern goshawk', location: 'Forest interior, deciduous + conifer', size: '50-70 cm diameter', materials: 'Sticks, vegetation', construction: 'Both parents. Usually new nest each year (though may reuse).', stages: 'Frame → walls → cup', timing: 'March-May' },
+      { species: 'Peregrine falcon', location: 'Cliff ledge, urban skyscraper ledge, bridge support', size: 'Minimal — just a "scrape"', materials: 'Scrape only; some gravel; no built structure', construction: 'NO construction. Female creates depression ("scrape") in gravel/debris. Urban: nest box.', stages: 'Scrape creation', timing: 'Feb-April' },
+      { species: 'Mississippi kite', location: 'Tall tree (often residential)', size: '30-40 cm diameter', materials: 'Twigs, leaves', construction: 'Both parents build small platform. Often in urban trees.', stages: 'Frame → cup', timing: 'May-June' },
+      { species: 'Northern harrier', location: 'Ground in tall grass', size: '50 cm diameter cup on ground', materials: 'Grass + sticks gathered nearby', construction: 'Both parents build ground nest. Concealed in tall vegetation.', stages: 'Cup on ground', timing: 'April-May' },
+      { species: 'Burrowing owl', location: 'Underground burrow (prairie dog or ground squirrel)', size: 'Burrow length 1-3 m', materials: 'Reuses existing burrow; lines with cattle dung (!), feathers', construction: 'Reuses prairie dog burrows. Adds dung to chamber (likely to attract dung beetles for chicks). May extend burrow.', stages: 'Burrow occupation + extension', timing: 'March-May' }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.45: RAPTOR MATH LAB — 30+ physics + biology problems
+  // ───────────────────────────────────────────────────────────
+  var MATH_LAB = {
+    intro: 'Math + physics problems involving raptors. Practice quantitative reasoning while learning raptor biology.',
+    problems: [
+      {
+        category: 'Wing Loading',
+        problem: 'A peregrine falcon weighs 0.9 kg. Its wing area is 0.1 m². Calculate its wing loading (kg/m²).',
+        approach: 'Wing loading = mass / wing area',
+        calc: '0.9 ÷ 0.1 = 9.0',
+        answer: '9.0 kg/m²',
+        interpretation: 'High wing loading enables fast diving + stoop. Compare to vulture (~3 kg/m²) for soaring efficiency.'
+      },
+      {
+        category: 'Wing Loading',
+        problem: 'A turkey vulture weighs 1.5 kg with wing area 0.5 m². Calculate wing loading + compare to peregrine.',
+        approach: 'WL = mass / area',
+        calc: '1.5 ÷ 0.5 = 3.0',
+        answer: '3.0 kg/m²',
+        interpretation: 'Low WL = soaring efficient. Vulture\'s 3 vs peregrine\'s 9 = 3× difference. Explains soaring vs diving strategies.'
+      },
+      {
+        category: 'Stoop Physics',
+        problem: 'A peregrine falcon stoops from 1000m. If it accelerates at 9.8 m/s², how long to reach the ground (ignoring drag)?',
+        approach: 't = sqrt(2h/g)',
+        calc: 'sqrt(2 × 1000 / 9.8) = 14.3 seconds',
+        answer: '~14.3 seconds',
+        interpretation: 'Real stoops factor air drag; actual time is 10-20 seconds. Max velocity ~110 m/s (242 mph) at terminal.'
+      },
+      {
+        category: 'Stoop Physics',
+        problem: 'Convert 242 mph (peregrine top speed) to m/s + km/h.',
+        approach: '1 mph = 0.447 m/s = 1.609 km/h',
+        calc: '242 × 0.447 = 108 m/s; 242 × 1.609 = 389 km/h',
+        answer: '~108 m/s + ~389 km/h',
+        interpretation: 'The peregrine reaches 1/3 the speed of sound during stoop.'
+      },
+      {
+        category: 'Visual Acuity',
+        problem: 'A red-tailed hawk has visual acuity 2× human. Human can resolve 1 arc-minute. What\'s the hawk\'s resolution?',
+        approach: '1 / 2 × 1 = 0.5 arc-min',
+        calc: '0.5 arc-min',
+        answer: '0.5 arc-minute',
+        interpretation: 'The hawk can see twice as fine detail. From 1 km, the hawk can spot a 7mm object (human: 14mm).'
+      },
+      {
+        category: 'Caloric Energy',
+        problem: 'A bald eagle weighs 5 kg. Its daily caloric need = body mass × 120 = 600 kcal/day. How many 30 kcal voles does it need daily?',
+        approach: 'kcal needed / kcal per prey',
+        calc: '600 ÷ 30 = 20',
+        answer: '20 voles per day',
+        interpretation: 'Eagles can\'t live on voles. They need larger prey: 1-2 ducks (200-400 kcal each) suffice.'
+      },
+      {
+        category: 'Population Math',
+        problem: 'A population of 100 peregrines has lambda = 1.05. How many in 10 years (assuming no other factors)?',
+        approach: 'N(t) = N0 × λ^t',
+        calc: '100 × 1.05^10 = 163',
+        answer: '~163 individuals',
+        interpretation: 'Small lambda differences compound over time. 5% annual growth → 63% increase in 10 years.'
+      },
+      {
+        category: 'Population Math',
+        problem: 'California condor at 22 (1980). Lambda must be > 1 for recovery. If condors took 25 years to reach 200, what was lambda?',
+        approach: 'λ = (N(t)/N0)^(1/t)',
+        calc: '(200/22)^(1/25) = 1.092',
+        answer: '~9.2% annual growth',
+        interpretation: 'Captive breeding can achieve high lambda. Wild reintroductions typically have lower lambda.'
+      },
+      {
+        category: 'Talon Force',
+        problem: 'A harpy eagle\'s talon delivers 530 psi. Convert to Pa (Pascals).',
+        approach: '1 psi = 6895 Pa',
+        calc: '530 × 6895 = 3,654,350 Pa',
+        answer: '~3.7 MPa',
+        interpretation: 'For comparison, human bite force ~2.3 MPa. Harpy talon ~1.6× human bite.'
+      },
+      {
+        category: 'Wing Span Calculation',
+        problem: 'A bald eagle weighs 6 kg. Its wing area is 0.7 m². If aspect ratio = wingspan² / wing area, calculate wingspan if aspect ratio = 7.',
+        approach: 'wingspan = sqrt(aspect ratio × wing area)',
+        calc: 'sqrt(7 × 0.7) = sqrt(4.9) = 2.21 m',
+        answer: '~2.2 m wingspan',
+        interpretation: 'Real bald eagle wingspan: 1.8-2.3 m. Calculation matches reality.'
+      },
+      {
+        category: 'Migration Energy',
+        problem: 'A broad-winged hawk migrates 4,000 km. If it uses 30 kcal/km, total energy cost?',
+        approach: 'energy = distance × kcal/km',
+        calc: '4000 × 30 = 120,000',
+        answer: '120,000 kcal',
+        interpretation: 'Equal to ~40 days of normal feeding for a hawk that size. Requires careful pre-migration fueling.'
+      },
+      {
+        category: 'Reproductive Math',
+        problem: 'A snowy owl pair lays 11 eggs (max during high-lemming years). Fledging rate is 50%. How many fledglings?',
+        approach: 'eggs × fledging rate',
+        calc: '11 × 0.5 = 5.5',
+        answer: '5-6 fledglings',
+        interpretation: 'Variable with prey. Low lemming years: 2-3 eggs, 1-2 fledglings.'
+      },
+      {
+        category: 'Surface Area-to-Volume',
+        problem: 'A baby owl (50g) vs adult owl (1500g). The baby has 30× higher surface area per gram. Why does this matter for incubation?',
+        approach: 'Heat loss ∝ surface area; heat production ∝ volume',
+        calc: 'Baby has 30× more surface per gram → loses heat 30× faster per gram',
+        answer: 'Baby is much more vulnerable to cold',
+        interpretation: 'Why parents brood chicks. Why owls breed in winter when food (rodents) is abundant.'
+      },
+      {
+        category: 'Hunting Success',
+        problem: 'A Cooper\'s hawk attempts 12 hunts/day. Success rate is 15%. How many catches/day?',
+        approach: 'attempts × success rate',
+        calc: '12 × 0.15 = 1.8',
+        answer: '1-2 catches/day',
+        interpretation: 'Songbird = 30 kcal. 1.8 × 30 = 54 kcal — about 1/3 daily need. Need to hunt all day.'
+      },
+      {
+        category: 'Light Sensitivity',
+        problem: 'Owl eye is 30× larger than human eye proportionally. Photon capture ∝ area = π × r². If owl pupil diameter is 1.5 cm vs human 0.5 cm, light captured?',
+        approach: 'Light ∝ pupil radius²',
+        calc: '(1.5/2)² / (0.5/2)² = 9× more light',
+        answer: '~9× more light reaches retina',
+        interpretation: 'Combined with retina density + tapetum lucidum, owls see ~100× better in low light than humans.'
+      },
+      {
+        category: 'Statistics',
+        problem: 'Hawk Mountain count 2023: 18,000 birds recorded. Species breakdown: 60% broad-winged, 15% sharp-shinned, 15% red-tailed, 10% other. How many broad-wings?',
+        approach: 'total × proportion',
+        calc: '18,000 × 0.60 = 10,800',
+        answer: '10,800 broad-wings',
+        interpretation: 'Broad-winged migration is one of nature\'s great spectacles. Kettles of 1000s common in PA.'
+      },
+      {
+        category: 'Probability',
+        problem: 'A peregrine has 20% stoop success. What\'s the chance of at least one catch in 5 attempts?',
+        approach: 'P(at least 1) = 1 - P(0)',
+        calc: '1 - 0.8^5 = 1 - 0.328 = 0.672',
+        answer: '~67% chance of success',
+        interpretation: 'Multiple attempts compound. Why peregrines work multiple opportunities each day.'
+      },
+      {
+        category: 'Conservation Math',
+        problem: 'Mauritius kestrel: 4 (1974) to 800 (peak 2005). Average annual growth rate?',
+        approach: '(800/4)^(1/31) - 1',
+        calc: '(200)^(1/31) - 1 = 1.181 - 1 = 0.181',
+        answer: '~18.1% annual growth',
+        interpretation: 'Among the fastest-recovering raptors ever, due to intensive intervention.'
+      },
+      {
+        category: 'Ecological Math',
+        problem: 'Red-tailed hawk territory = 4 km². Lower 48 area = 7.5M km². Theoretical max population?',
+        approach: 'area ÷ territory',
+        calc: '7,500,000 ÷ 4 = 1,875,000',
+        answer: '~1.875 million pairs',
+        interpretation: 'Actually ~1.5-2M pairs in lower 48. Population at carrying capacity.'
+      },
+      {
+        category: 'Heat Math',
+        problem: 'An owl maintains 40°C body temp in 0°C ambient. Heat must be generated continuously. If owl produces 5W/kg + has 1.5 kg, total wattage?',
+        approach: 'mass × power per kg',
+        calc: '1.5 × 5 = 7.5 watts',
+        answer: '7.5 watts continuous',
+        interpretation: 'Same as small bulb. Owl converts ~25 kcal/day (a vole) into this thermal output.'
+      }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.45: PUBLIC ENGAGEMENT — how to advocate
+  // ───────────────────────────────────────────────────────────
+  var PUBLIC_ENGAGEMENT = {
+    intro: 'How to advocate for raptor conservation in your community. Practical action items + tools.',
+    actions: [
+      { action: 'Convert backyard to bird-friendly', impact: 'Reduce window strikes + provide habitat', how: 'Plant native shrubs/trees (oak, maple, dogwood). Install nest boxes (kestrel, screech owl). Add water source. UV-pattern windows.', resources: 'NWF Backyard Wildlife Habitat program (nwf.org). Audubon At Home (audubon.org/athome).' },
+      { action: 'Stop using rodenticides', impact: 'Prevent secondary poisoning of raptors + pets', how: 'Snap traps + integrated pest management. Seal entry points. Don\'t leave pet food outside.', resources: 'Raptors Are The Solution (RATS) campaign. EPA pesticide info.' },
+      { action: 'Volunteer at rehab', impact: 'Hands-on raptor care + research', how: 'Apply at local licensed rehab. Expect cleaning + feeding + paperwork. 6+ months of training.', resources: 'Find local rehab via state wildlife agency directory.' },
+      { action: 'Participate in citizen science', impact: 'Data for population monitoring + climate research', how: 'eBird (every walk!). iNaturalist photos. Christmas Bird Count.', resources: 'ebird.org, inaturalist.org. Local Audubon chapter.' },
+      { action: 'Visit hawkwatch sites', impact: 'Support migration monitoring + see raptors firsthand', how: 'Go to Hawk Mountain PA, Cape May NJ, Veracruz Mexico Sep-Nov. Bring binoculars + camera.', resources: 'hawkwatch.org maintains site directory.' },
+      { action: 'Educate kids', impact: 'Future generation of conservationists', how: 'Bring raptors into classroom (live or video). Take students to nature center. Run school nest-box program.', resources: 'Audubon Adventures (audubon.org/adventures). Cornell Lab Educational Resources.' },
+      { action: 'Donate to NGOs', impact: 'Direct funding for research + protection', how: 'Annual donations to multiple orgs. $50-200 typical individual.', resources: 'audubon.org, peregrinefund.org, hawkmountain.org, cornell.edu.' },
+      { action: 'Switch to non-lead ammunition', impact: 'Prevents lead poisoning of bald eagles + condors', how: 'Use copper or steel bullets. Cost ~$1-2 more per round.', resources: 'Hunters Helping Wildlife. National Park Service lead-free hunting info.' },
+      { action: 'Report illegal activity', impact: 'Federal enforcement against illegal shooting/possession', how: 'USFWS tips line 1-844-FWS-TIPS (1-844-397-8477). State wildlife also accepts tips.', resources: 'USFWS Office of Law Enforcement.' },
+      { action: 'Advocate for raptor habitat protection', impact: 'Long-term land protection', how: 'Support land trusts, write letters to elected officials. Show up at planning meetings.', resources: 'Local land trusts. Council meetings. Audubon advocacy.' },
+      { action: 'Reduce light pollution', impact: 'Less disorientation for migrating birds', how: 'Use dark-sky friendly outdoor lighting. Turn off unnecessary lights during migration.', resources: 'darksky.org. NYC Lights Out program model.' },
+      { action: 'Report sick or dead raptors', impact: 'Data for monitoring + investigation', how: 'Call local rehab + state wildlife. Document with photo + GPS.', resources: 'Local rehab finder. State wildlife agency.' },
+      { action: 'Encourage business + property owners', impact: 'Wider habitat protection', how: 'Educate property managers about nest sites + lighting + windows.', resources: 'NWF Certified Wildlife Habitat (business level).' },
+      { action: 'Support pollinator-friendly landscaping', impact: 'Increases prey base for raptors', how: 'Plant native flowers. Don\'t use pesticides. Increase insect biomass.', resources: 'Xerces Society.' },
+      { action: 'Write your representative', impact: 'Federal policy on ESA, MBTA, lead ammo', how: 'Email your senator/rep about specific bills. Templates available from Audubon.', resources: 'audubon.org/advocacy.' }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.45: DEEP GLOSSARY B — 50 more advanced terms
+  // ───────────────────────────────────────────────────────────
+  var DEEP_GLOSSARY_B = {
+    intro: '50 more advanced terms beyond the main glossary — pulled from raptor research literature + specialty fields.',
+    terms: [
+      { term: 'Allopreening', def: 'Two birds preen each other. Strengthens pair bond. Common in raptor pairs.' },
+      { term: 'Altricial', def: 'Hatched helpless + naked. Raptor chicks are altricial. Opposite of precocial (chickens, ducks).' },
+      { term: 'Aposematic', def: 'Warning coloration. Rare in raptors but seen in some prey.' },
+      { term: 'Asynchronous hatching', def: 'Eggs hatch on different days. Common in raptors. Creates age hierarchy in brood.' },
+      { term: 'Atavism', def: 'Reversion to ancestral trait. Occasionally seen in feather pattern.' },
+      { term: 'Banding', def: 'Marking raptor with numbered metal band for tracking. USGS Bird Banding Lab database.' },
+      { term: 'Bate', def: 'Falconry term: bird flutters off perch trying to fly. Indicates excitement or stress.' },
+      { term: 'Block + jump', def: 'Falconry hunting technique: bird returns to perch between flights at prey.' },
+      { term: 'Bow perch', def: 'Curved perch in falconry mews. Bird grips top of perch.' },
+      { term: 'Brancher', def: 'Young raptor out of nest but still mostly stationary on branches. Pre-fledging.' },
+      { term: 'Brood reduction', def: 'Smaller siblings die or get killed. Common in raptors (Cain + Abel syndrome).' },
+      { term: 'Broody', def: 'Female actively incubating eggs.' },
+      { term: 'Cain + Abel syndrome', def: 'Older chick attacks + kills younger chick. Famous in eagles + boobies.' },
+      { term: 'Carunculate', def: 'Having fleshy ornaments. Some vultures + condors.' },
+      { term: 'Carrion', def: 'Dead animal flesh. Primary food of vultures + scavengers.' },
+      { term: 'Carrier', def: 'Falconry term: prey held in bird\'s feet during flight.' },
+      { term: 'Cere', def: 'Soft skin at base of upper beak. Often yellow or blue. Contains nostrils.' },
+      { term: 'Cock + hen', def: 'Falconry terms for male + female bird (regardless of species).' },
+      { term: 'Cooper\'s rule', def: 'Birds that prey on Cooper\'s hawks are larger. Tells you about predator-prey size relations.' },
+      { term: 'Copulation', def: 'Mating event. Brief in birds — typically <10 seconds.' },
+      { term: 'Crop sport', def: 'Falconry term: when crop is full + bird is "in fed."' },
+      { term: 'Cute aggression', def: 'The phenomenon where seeing cute animals triggers urge to handle. Risk for chick disturbance.' },
+      { term: 'Diaphanoplastic vision', def: 'Owls\' ability to detect movement in low light through retinal scanning.' },
+      { term: 'Diel pattern', def: 'Daily activity cycle. Diurnal (day), nocturnal (night), crepuscular (twilight).' },
+      { term: 'Dispersal', def: 'Movement of juveniles away from natal area. Different from migration.' },
+      { term: 'Eclipse plumage', def: 'Some birds have non-breeding plumage; rare in raptors.' },
+      { term: 'Eggshell thinning', def: 'DDT effect: eggs broken before hatching. Devastating in 1947-1972.' },
+      { term: 'Eyas / Eyess', def: 'Young raptor in falconry. From "aerie" (nest).' },
+      { term: 'Fecundity', def: 'Reproductive rate. Eagles: low fecundity, ~1-2 chicks/year.' },
+      { term: 'Feeding sympatric', def: 'Multiple species using same food in same area.' },
+      { term: 'Fledgling', def: 'Bird that has just left nest. Still learning to fly.' },
+      { term: 'Flushing distance', def: 'Distance at which a wild animal flees from approaching human. Used in conservation policy.' },
+      { term: 'Frounce', def: 'Trichomoniasis. Yellow lesions in throat. Common in pigeon-eating hawks.' },
+      { term: 'Fulvous', def: 'Reddish-yellow color. Some raptors.' },
+      { term: 'Glide ratio', def: 'Horizontal distance to vertical drop. Albatross 23:1, vulture 8:1, eagle 7:1.' },
+      { term: 'Hack box', def: 'Falconry / conservation term: enclosure where bird is fed remotely until ready for release.' },
+      { term: 'Hacked', def: 'Term for a captive-bred bird soft-released via hack box.' },
+      { term: 'Halsband', def: 'Falconry leash. From German "Hals" = neck.' },
+      { term: 'Imprinting', def: 'Critical early learning. Chick recognizes care-giver. CAN be reversed in early period only.' },
+      { term: 'Intraspecific competition', def: 'Within-species competition. Common in raptors at carrying capacity.' },
+      { term: 'Kettle', def: 'Group of raptors riding thermal upward.' },
+      { term: 'Kiting', def: 'Holding stationary in air facing wind. Red-tail + rough-leg behavior.' },
+      { term: 'Klepton', def: 'Stealing food from another species. "Kleptoparasitism" is common in bald eagles.' },
+      { term: 'Landing pad', def: 'Flat area used for landing. Important nest characteristic.' },
+      { term: 'Lift-to-drag ratio', def: 'Aerodynamic efficiency. Soaring birds have high L/D.' },
+      { term: 'Manatee preening', def: 'Sea eagle equivalent of allopreening with manatees (rare but documented).' },
+      { term: 'Mantling', def: 'Spreading wings over prey to hide it from competitors.' },
+      { term: 'Mews', def: 'Falconry housing. From "mew" (moult — bird moves there during molt).' },
+      { term: 'Molt', def: 'Annual feather replacement. Energy-intensive period.' },
+      { term: 'Moustache mark', def: 'Dark line below eye in falcons. Reduces glare. Distinguishes peregrine.' },
+      { term: 'Nictitating membrane', def: 'Clear third eyelid. Protects eye during stoop + dust.' },
+      { term: 'Niche partitioning', def: 'Coexisting species use different food/habitat resources.' },
+      { term: 'Pellet', def: 'Regurgitated indigestible material — bones, fur, exoskeleton.' },
+      { term: 'Petty bird', def: 'Falconry term for small prey unworthy of pursuit.' },
+      { term: 'Pinning', def: 'Holding prey with feet during processing.' },
+      { term: 'Plumage', def: 'Bird\'s feather coverage. Adult vs juvenile plumage distinct.' },
+      { term: 'Polyandry', def: 'Female mates with multiple males. Rare in raptors but documented.' },
+      { term: 'Polygyny', def: 'Male mates with multiple females. Some raptors (e.g., some harriers).' },
+      { term: 'Preening', def: 'Cleaning + aligning feathers with beak. Essential daily activity.' },
+      { term: 'Prey commitment', def: 'Falconry term: bird focuses on chosen prey + ignores other quarry.' },
+      { term: 'Promiscuity', def: 'Mating with multiple partners. Variable in raptors.' }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
   // GLOSSARY DATA — A-Z reference of raptor terminology
   // ───────────────────────────────────────────────────────────
   var GLOSSARY = [
@@ -5500,6 +5786,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         { id: 'museums', label: 'Raptor Museums', icon: '🏛' },
         { id: 'books', label: 'Recommended Reading', icon: '📕' },
         { id: 'films', label: 'Documentaries + Films', icon: '🎥' },
+        { id: 'cookbook', label: 'Nest-Build Cookbook', icon: '🪺' },
+        { id: 'mathlab', label: 'Raptor Math Lab', icon: '🧮' },
+        { id: 'engagement', label: 'Public Engagement', icon: '📢' },
+        { id: 'glossary2', label: 'Deep Glossary B', icon: '🅱' },
+        { id: 'finale', label: 'Closing Reflection', icon: '🌅' },
         { id: 'glossary', label: 'Glossary', icon: '📖' },
         { id: 'quiz', label: 'Field ID Quiz', icon: '🎓' },
         { id: 'resources', label: 'Resources', icon: '📚' }
@@ -15755,6 +16046,273 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       }
 
       // ────────────────────────────────────────────────────────
+      // RENDER: NEST-BUILD COOKBOOK (v0.45)
+      // ────────────────────────────────────────────────────────
+      function renderCookbook() {
+        var cookIdx = rh.cookbookIdx == null ? 0 : rh.cookbookIdx;
+        function setCookIdx(i) { setRH({ cookbookIdx: i }); }
+        var n = NEST_COOKBOOK.nests[cookIdx];
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-amber-900/40 to-yellow-900/40 border border-amber-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '🪺'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-amber-200' }, 'Nest-Build Cookbook'),
+                h('div', { className: 'text-sm text-amber-100/85 mt-1' }, NEST_COOKBOOK.intro)
+              )
+            )
+          ),
+          h('div', { className: 'flex flex-wrap gap-1' },
+            NEST_COOKBOOK.nests.map(function(nest, i) {
+              var sel = cookIdx === i;
+              return h('button', {
+                key: i,
+                onClick: function() { setCookIdx(i); },
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-amber-600 text-white font-bold' : 'bg-slate-800/60 text-amber-200 hover:bg-slate-700/60'),
+                'aria-pressed': sel
+              }, nest.species);
+            })
+          ),
+          h('div', { className: 'bg-slate-800/40 border border-amber-700/40 rounded-xl p-4 space-y-2' },
+            h('div', { className: 'text-lg font-bold text-amber-300' }, '🪺 ' + n.species),
+            h('div', { className: 'grid md:grid-cols-2 gap-2' },
+              h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
+                h('div', { className: 'font-bold text-cyan-300 mb-1' }, '📍 Location'),
+                h('div', { className: 'text-cyan-100/90' }, n.location)
+              ),
+              h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
+                h('div', { className: 'font-bold text-purple-300 mb-1' }, '📐 Size'),
+                h('div', { className: 'text-purple-100/90' }, n.size)
+              ),
+              h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
+                h('div', { className: 'font-bold text-emerald-300 mb-1' }, '🌿 Materials'),
+                h('div', { className: 'text-emerald-100/90' }, n.materials)
+              ),
+              h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
+                h('div', { className: 'font-bold text-yellow-300 mb-1' }, '🔨 Construction'),
+                h('div', { className: 'text-yellow-100/90' }, n.construction)
+              ),
+              h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
+                h('div', { className: 'font-bold text-rose-300 mb-1' }, '📋 Stages'),
+                h('div', { className: 'text-rose-100/90' }, n.stages)
+              ),
+              h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
+                h('div', { className: 'font-bold text-blue-300 mb-1' }, '📅 Timing'),
+                h('div', { className: 'text-blue-100/90' }, n.timing)
+              )
+            )
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: RAPTOR MATH LAB (v0.45)
+      // ────────────────────────────────────────────────────────
+      function renderMathLab() {
+        var mathIdx = rh.mathIdx == null ? 0 : rh.mathIdx;
+        function setMathIdx(i) { setRH({ mathIdx: i }); }
+        var mathReveal = rh.mathReveal || {};
+        function toggleRev() {
+          var newR = Object.assign({}, mathReveal);
+          newR[mathIdx] = !newR[mathIdx];
+          setRH({ mathReveal: newR });
+        }
+        var p = MATH_LAB.problems[mathIdx];
+        var revealed = mathReveal[mathIdx];
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-blue-900/40 to-indigo-900/40 border border-blue-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '🧮'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-blue-200' }, 'Raptor Math Lab'),
+                h('div', { className: 'text-sm text-blue-100/85 mt-1' }, MATH_LAB.intro)
+              )
+            )
+          ),
+          h('div', { className: 'flex flex-wrap gap-1' },
+            MATH_LAB.problems.map(function(pr, i) {
+              var sel = mathIdx === i;
+              return h('button', {
+                key: i,
+                onClick: function() { setMathIdx(i); },
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-blue-600 text-white font-bold' : 'bg-slate-800/60 text-blue-200 hover:bg-slate-700/60'),
+                'aria-pressed': sel
+              }, '#' + (i + 1));
+            })
+          ),
+          h('div', { className: 'bg-slate-800/40 border border-blue-700/40 rounded-xl p-4 space-y-3' },
+            h('div', { className: 'text-xs uppercase font-mono text-cyan-300' }, '📊 ' + p.category),
+            h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
+              h('div', { className: 'text-xs font-bold text-blue-300 mb-1' }, '❓ Problem'),
+              h('div', { className: 'text-sm text-slate-100 leading-relaxed' }, p.problem)
+            ),
+            !revealed && h('button', {
+              onClick: toggleRev,
+              className: 'w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-bold',
+              'aria-label': 'Reveal solution'
+            }, '🔓 Reveal Solution'),
+            revealed && h('div', { className: 'space-y-2' },
+              h('div', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded p-2 text-xs' },
+                h('div', { className: 'font-bold text-cyan-300 mb-1' }, '🛤 Approach'),
+                h('div', { className: 'text-cyan-100/90' }, p.approach)
+              ),
+              h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-2 text-xs' },
+                h('div', { className: 'font-bold text-emerald-300 mb-1' }, '🔢 Calculation'),
+                h('div', { className: 'text-emerald-100/90 font-mono' }, p.calc)
+              ),
+              h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-2 text-xs' },
+                h('div', { className: 'font-bold text-amber-300 mb-1' }, '✅ Answer'),
+                h('div', { className: 'text-amber-100/90 font-bold' }, p.answer)
+              ),
+              h('div', { className: 'bg-purple-900/20 border border-purple-700/40 rounded p-2 text-xs' },
+                h('div', { className: 'font-bold text-purple-300 mb-1' }, '💡 Interpretation'),
+                h('div', { className: 'text-purple-100/90 italic leading-relaxed' }, p.interpretation)
+              ),
+              h('button', {
+                onClick: toggleRev,
+                className: 'text-xs text-blue-300 hover:text-blue-200',
+                'aria-label': 'Hide solution'
+              }, '🔒 Hide')
+            )
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: PUBLIC ENGAGEMENT (v0.45)
+      // ────────────────────────────────────────────────────────
+      function renderEngagement() {
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-emerald-900/40 to-green-900/40 border border-emerald-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '📢'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-emerald-200' }, 'Public Engagement'),
+                h('div', { className: 'text-sm text-emerald-100/85 mt-1' }, PUBLIC_ENGAGEMENT.intro)
+              )
+            )
+          ),
+          h('div', { className: 'grid md:grid-cols-2 gap-3' },
+            PUBLIC_ENGAGEMENT.actions.map(function(a, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-emerald-700/30 rounded-lg p-3' },
+                h('div', { className: 'text-sm font-bold text-emerald-300 mb-1' }, '🎯 ' + a.action),
+                h('div', { className: 'text-xs text-amber-200/90 mb-1' }, '⚡ Impact: ' + a.impact),
+                h('div', { className: 'text-xs text-slate-200 mb-1 leading-relaxed' }, '🔧 How: ' + a.how),
+                h('div', { className: 'text-[10px] italic text-cyan-300' }, '📚 ' + a.resources)
+              );
+            })
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: DEEP GLOSSARY B (v0.45)
+      // ────────────────────────────────────────────────────────
+      function renderGlossary2() {
+        var search2 = (rh.glossary2Search || '').toLowerCase();
+        function setSearch2(s) { setRH({ glossary2Search: s }); }
+        var filtered = search2
+          ? DEEP_GLOSSARY_B.terms.filter(function(t) { return t.term.toLowerCase().indexOf(search2) !== -1 || t.def.toLowerCase().indexOf(search2) !== -1; })
+          : DEEP_GLOSSARY_B.terms;
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-indigo-900/40 to-blue-900/40 border border-indigo-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '🅱'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-indigo-200' }, 'Deep Glossary B'),
+                h('div', { className: 'text-sm text-indigo-100/85 mt-1' }, DEEP_GLOSSARY_B.intro)
+              )
+            )
+          ),
+          h('div', { className: 'flex items-center gap-2' },
+            h('input', {
+              type: 'text',
+              placeholder: 'Search terms...',
+              value: search2,
+              onChange: function(e) { setSearch2(e.target.value); },
+              className: 'flex-1 px-3 py-2 bg-slate-800/60 border border-indigo-700/40 rounded text-sm text-slate-100',
+              'aria-label': 'Search advanced glossary'
+            }),
+            h('div', { className: 'text-xs text-indigo-300 font-mono' }, filtered.length + ' terms')
+          ),
+          h('div', { className: 'grid md:grid-cols-2 gap-2' },
+            filtered.map(function(t, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-indigo-700/30 rounded-lg p-3' },
+                h('div', { className: 'text-sm font-bold text-indigo-300 mb-1' }, t.term),
+                h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, t.def)
+              );
+            })
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: FINALE — Closing Reflection (v0.45)
+      // ────────────────────────────────────────────────────────
+      function renderFinale() {
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-orange-900/40 via-amber-900/40 to-yellow-900/40 border border-amber-700/40 rounded-xl p-6 text-center' },
+            h('div', { className: 'text-7xl mb-4' }, '🌅'),
+            h('div', { className: 'text-2xl font-bold text-amber-100' }, 'You Are Now A Raptor Scholar'),
+            h('div', { className: 'text-sm text-amber-200/80 mt-2 italic' }, '60+ sections · 20+ species · 100s of facts · centuries of knowledge')
+          ),
+          h('div', { className: 'bg-slate-800/40 border border-amber-700/40 rounded-xl p-5 space-y-3' },
+            h('div', { className: 'text-base font-bold text-amber-300' }, '🎓 What you\'ve learned'),
+            h('ul', { className: 'space-y-2 text-sm text-slate-100' },
+              [
+                'The physics of a 240 mph peregrine stoop + how the body survives 14g forces.',
+                'Why owls fly silently + how their asymmetric ears localize prey to 1° in pitch dark.',
+                'The cultural symbolism of raptors across 12+ cultures + 5000+ years of human history.',
+                'How conservation recovered peregrine, bald eagle, condor, kestrel — what worked + what didn\'t.',
+                'The ethics of falconry, photography, rehabilitation, and citizen science.',
+                'The 14 distinct hunting strategies + the species that practice each.',
+                'The K-selected life history + why raptor populations recover slowly.',
+                'The climate-change threats facing each species + what we can do.',
+                'How to identify confusing species + work through field-ID mysteries.',
+                'How to volunteer, donate, advocate, + become part of raptor conservation.'
+              ].map(function(item, i) {
+                return h('li', { key: i, className: 'leading-relaxed' }, '✓ ' + item);
+              })
+            )
+          ),
+          h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-sm font-bold text-emerald-300 mb-2' }, '🎯 What Next'),
+            h('ul', { className: 'space-y-1 list-disc list-inside text-sm text-emerald-100/90' },
+              [
+                'Visit a hawkwatch site this fall.',
+                'Get binoculars + a field guide.',
+                'Submit to eBird every walk.',
+                'Volunteer at a wildlife rehab.',
+                'Visit a Raptor Museum near you.',
+                'Become a regular eBird user — your data matters.',
+                'Read one book from the Library section.',
+                'Watch one documentary from the Films section.',
+                'Visit a hawkwatch + meet other birders.',
+                'Donate $50 to a conservation org.',
+                'Bring a raptor program to your kids\' school.'
+              ].map(function(item, i) {
+                return h('li', { key: i, className: 'leading-relaxed' }, item);
+              })
+            )
+          ),
+          h('div', { className: 'bg-purple-900/20 border border-purple-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-sm font-bold text-purple-300 mb-2' }, '🦅 A Closing Thought'),
+            h('div', { className: 'text-sm text-purple-100/90 italic leading-relaxed' },
+              'Raptors have been on this planet for 60+ million years. Humans have been here for 0.04 million. ',
+              'In our short overlap, we have nearly extinguished species (peregrine, condor, Mauritius kestrel) ',
+              '— and brought them back from the brink. ',
+              'Every choice you make — what you eat, what you spray on your lawn, what kind of ammunition you use, ',
+              'what light you leave on at night — affects raptors somewhere. ',
+              'You are now part of the story. Make it a good one.'
+            )
+          ),
+          h('div', { className: 'text-center text-xs text-slate-500 italic mt-6' },
+            'Raptor Hunt: Predator Physics + Biology · AlloFlow STEM Lab · Built with rigor + care.'
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
       // RENDER: GLOSSARY (A-Z reference)
       // ────────────────────────────────────────────────────────
       function renderGlossary() {
@@ -16948,6 +17506,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           activeSection === 'museums' && renderMuseums(),
           activeSection === 'books' && renderBooks(),
           activeSection === 'films' && renderFilms(),
+          activeSection === 'cookbook' && renderCookbook(),
+          activeSection === 'mathlab' && renderMathLab(),
+          activeSection === 'engagement' && renderEngagement(),
+          activeSection === 'glossary2' && renderGlossary2(),
+          activeSection === 'finale' && renderFinale(),
           activeSection === 'glossary' && renderGlossary(),
           activeSection === 'quiz' && renderQuiz(),
           activeSection === 'resources' && renderResources()
