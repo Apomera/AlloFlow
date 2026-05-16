@@ -483,9 +483,76 @@
       }
       function sectionCard(title, children, accent) {
         accent = accent || INDIGO;
-        return h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + accent, marginBottom: 12 } },
+        return h('div', {
+          role: 'region',
+          'aria-label': typeof title === 'string' ? title : undefined,
+          style: { padding: 14, borderRadius: 12, background: '#1e293b', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + accent, marginBottom: 12 }
+        },
           title ? h('div', { style: { fontSize: 14, fontWeight: 800, color: '#e2e8f0', marginBottom: 8 } }, title) : null,
           children
+        );
+      }
+
+      // ──────────────────────────────────────────────────────────────
+      // WCAG / Accessibility helpers
+      // ──────────────────────────────────────────────────────────────
+      // Detect prefers-reduced-motion to honor user system setting for animations
+      var _prefersReducedMotion = false;
+      try {
+        if (typeof window !== 'undefined' && window.matchMedia) {
+          _prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        }
+      } catch (e) { _prefersReducedMotion = false; }
+
+      // Inline CSS: focus rings, screen-reader-only, animation-respect classes
+      // Inject once per tool render via a unique style block keyed by data-attribute
+      function wcagStyleBlock() {
+        return h('style', {
+          dangerouslySetInnerHTML: { __html:
+            '.astr-focus:focus-visible{outline:2px solid #fbbf24;outline-offset:2px;border-radius:8px}' +
+            '.astr-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}' +
+            '@media (prefers-reduced-motion: reduce){.astr-anim{animation:none!important;transition:none!important}.astr-anim-bg{background-position:0 0!important}}' +
+            '.astr-btn{transition:background-color 0.15s ease-out, transform 0.05s ease-out}' +
+            '.astr-btn:hover:not(:disabled){filter:brightness(1.1)}' +
+            '.astr-btn:active:not(:disabled){transform:translateY(1px)}' +
+            '.astr-btn:disabled{opacity:0.5;cursor:not-allowed}'
+          }
+        });
+      }
+
+      // Screen-reader-only text helper
+      function srOnly(text) {
+        return h('span', { className: 'astr-sr-only' }, text);
+      }
+
+      // Accessible button wrapper with focus ring + transitions
+      function a11yButton(props, content) {
+        var p = Object.assign({}, props || {});
+        p.className = 'astr-focus astr-btn ' + (p.className || '');
+        if (!p['aria-label'] && typeof content === 'string') {
+          p['aria-label'] = content;
+        }
+        return h('button', p, content);
+      }
+
+      // Accessible slider with label association + value text
+      function a11ySlider(opts) {
+        // opts: { id, label, value, min, max, step, onChange, accent, valueText, ariaDescribedBy }
+        var sliderId = opts.id || ('astr-slider-' + Math.random().toString(36).slice(2, 8));
+        var accent = opts.accent || INDIGO;
+        return h('div', null,
+          h('label', { htmlFor: sliderId, style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#cbd5e1', marginBottom: 4 } },
+            h('span', null, opts.label),
+            h('span', { style: { color: accent, fontWeight: 700 }, 'aria-live': 'polite' }, opts.valueText || String(opts.value))
+          ),
+          h('input', {
+            id: sliderId, type: 'range',
+            min: opts.min, max: opts.max, step: opts.step || 1, value: opts.value,
+            onChange: function(e) { opts.onChange(parseFloat(e.target.value)); },
+            'aria-describedby': opts.ariaDescribedBy || undefined,
+            className: 'astr-focus',
+            style: { width: '100%', accentColor: accent, cursor: 'pointer' }
+          })
         );
       }
 
@@ -3438,6 +3505,7 @@
       function renderEvents() {
         return h('div', { style: { padding: 16 } },
           safetyBanner('NEVER look at the Sun without certified solar-eclipse glasses (ISO 12312-2). Even brief exposure can cause permanent eye damage. Regular sunglasses, smoked glass, exposed film, and most welding goggles are NOT safe. The only safe direct view is during TOTALITY (the brief moment when the Moon completely covers the Sun in a TOTAL solar eclipse — and only at that exact moment).'),
+          meteorShowerSimulatorSection(),
           EVENTS_LEARN.map(function(e) {
             return h('div', { key: e.id, style: { padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155', marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 8 } },
@@ -3687,6 +3755,295 @@
             '#06b6d4'
           )
         );
+
+        // ── Meteor shower simulator (animated SVG) ──────────────────
+        function meteorShowerSimulatorSection() {
+          var SHOWERS = [
+            { id: 'quadrantids', name: 'Quadrantids', peak: 'Jan 3-4', zhr: 110, radiantConst: 'Boötes', parent: '2003 EH1 (Marsden group)', speed: 41, bestHr: '4-6 AM local',
+              about: 'One of the strongest annual showers. Sharp peak lasting only ~6 hours, so timing matters. Parent body is likely a fragment of an extinct comet, possibly 2003 EH1. Radiant in the now-defunct constellation Quadrans Muralis (the "Mural Quadrant"), absorbed into Boötes when constellation boundaries were standardized in 1922.',
+              maine: 'Excellent viewing potential from Maine — radiant rises in northeast sky after midnight. Cold January viewing requires serious bundling. The peak is sharp + can be missed; use IMO\'s Live Meteor Shower Map.'
+            },
+            { id: 'lyrids', name: 'Lyrids', peak: 'Apr 21-22', zhr: 18, radiantConst: 'Lyra', parent: 'Comet C/1861 G1 Thatcher', speed: 49, bestHr: 'After midnight to dawn',
+              about: 'One of the OLDEST documented meteor showers — Chinese records describe a Lyrid outburst in 687 BCE. Parent body is Comet Thatcher (415-year orbit, last seen 1861, next predicted 2276). Occasionally produces unexpected outbursts ("storms") of several hundred meteors per hour, last seen in 1982.',
+              maine: 'Modest rates in most years, but Vega (the brightest star in the northern summer sky) rises around midnight + leads the radiant. Spring viewing in Maine can be cold + buggy but skies are often clear.'
+            },
+            { id: 'etaaqu', name: 'Eta Aquariids', peak: 'May 5-6', zhr: 50, radiantConst: 'Aquarius', parent: "Comet 1P/Halley", speed: 66, bestHr: 'Pre-dawn (3-5 AM)',
+              about: 'One of TWO showers (the other is October\'s Orionids) caused by debris from Halley\'s Comet — when Earth passes through the comet\'s long debris trail. Eta Aquariid meteors are FAST (66 km/s) + leave persistent glowing trains. Better viewed from southern hemisphere, where radiant rises higher.',
+              maine: 'Lower altitude from Maine\'s latitude — radiant only reaches ~ 25° altitude at twilight. Earth-grazer meteors (low-altitude meteors that graze through the atmosphere on a long slanting path) are especially long + colorful at this latitude.'
+            },
+            { id: 'perseids', name: 'Perseids', peak: 'Aug 12-13', zhr: 100, radiantConst: 'Perseus', parent: 'Comet 109P/Swift-Tuttle', speed: 59, bestHr: 'Pre-dawn (2-5 AM)',
+              about: 'THE most popular shower for Northern Hemisphere observers. Warm summer nights + high zenithal hourly rate (ZHR ~ 100) + Perseus high in the sky make this an ideal viewing target. Comet Swift-Tuttle is a "Halley-type" comet with a 133-year orbit; last seen 1992, next predicted 2126.',
+              maine: 'BEST SHOWER OF THE YEAR from Maine. Warm August, radiant high in sky after midnight, peak rates often 50-80 visible meteors/hour from dark sites. Acadia + Katahdin host annual Perseid star parties. Plan your astronomy weekend around Aug 12-13.'
+            },
+            { id: 'orionids', name: 'Orionids', peak: 'Oct 21-22', zhr: 25, radiantConst: 'Orion', parent: 'Comet 1P/Halley', speed: 66, bestHr: '11 PM to dawn',
+              about: 'Halley\'s Comet\'s OTHER annual shower (paired with May Eta Aquariids). Orionid meteors are fast + leave persistent trains. Activity spread over several nights before + after peak. Moderate rates but excellent viewing because Orion is the iconic winter constellation rising in late October.',
+              maine: 'Orion rises in late evening + dominates the sky by midnight. October offers cool clear nights with low humidity — among the best observation months. Combine with Halley\'s Comet science discussion for student trips.'
+            },
+            { id: 'leonids', name: 'Leonids', peak: 'Nov 17-18', zhr: 15, radiantConst: 'Leo', parent: 'Comet 55P/Tempel-Tuttle', speed: 71, bestHr: 'After midnight',
+              about: 'Famous for periodic STORMS — when Earth passes through a dense debris trail freshly laid by Comet Tempel-Tuttle (33-year orbit). The 1833 Leonid storm produced ~ 100,000 meteors per hour + terrified observers in the US who thought the world was ending. The 1966 + 2001 storms produced thousands per hour. Most years see only ~ 15 ZHR, but storm years happen every 33 years (next predicted 2034-2036).',
+              maine: 'November Maine = often cold + cloudy, but clear nights are crystal-clear. Leo rises late evening. Storm years (next ~ 2034) are once-in-a-generation events worth planning extensive trips for.'
+            },
+            { id: 'geminids', name: 'Geminids', peak: 'Dec 13-14', zhr: 150, radiantConst: 'Gemini', parent: 'Asteroid 3200 Phaethon', speed: 35, bestHr: '10 PM to dawn',
+              about: 'STRONGEST annual shower with ZHR of 150 (vs Perseids\' 100). Unusual: the parent body is an ASTEROID (3200 Phaethon, a B-type asteroid that gets very close to the Sun), not a comet. Phaethon\'s exact mechanism for producing the dust trail is debated — possibly thermal cracking from solar heating, possibly cometary outgassing on a body now classified as an asteroid. Meteors are slower than most showers + often multi-colored.',
+              maine: 'Cold December nights but the rate is unbeatable. Gemini rises in early evening, so observation can start before midnight. Often the most-recorded meteor shower of any year in Maine. Combine with winter star party + hot cocoa.'
+            },
+            { id: 'ursids', name: 'Ursids', peak: 'Dec 22-23', zhr: 10, radiantConst: 'Ursa Minor', parent: 'Comet 8P/Tuttle', speed: 33, bestHr: 'After midnight',
+              about: 'Modest shower around the December solstice. Activity from Comet Tuttle\'s debris stream. Less-observed than the major showers but reliable + adjacent in time to the Geminids.',
+              maine: 'The radiant (Ursa Minor / Little Dipper) is CIRCUMPOLAR from Maine — never sets. Cold solstice nights but the rate is modest. A small extension if you\'re already out for the Geminids.'
+            }
+          ];
+
+          var selectedId = d.selectedShower || 'perseids';
+          var selected = SHOWERS.find(function(s) { return s.id === selectedId; }) || SHOWERS[0];
+
+          // Simulator state
+          var simRate = d.simZhr != null ? d.simZhr : selected.zhr;
+          var simBortle = d.simBortleSim != null ? d.simBortleSim : 4;
+          var simAlt = d.simRadiantAlt != null ? d.simRadiantAlt : 60; // radiant altitude degrees
+          var animFrame = d.simMeteorFrame || 0;
+          var animPlaying = d.simMeteorPlaying || false;
+
+          // Calculate effective rate (visible meteors per hour at observer's location)
+          // ZHR is at radiant in zenith + Bortle 1; corrections apply:
+          // Rate visible = ZHR * sin(altitude) / population-index-correction-for-limiting-magnitude
+          var altFactor = Math.max(0.05, Math.sin(simAlt * Math.PI / 180));
+          // Limiting magnitude rough by Bortle: B1=6.8, B2=6.5, B3=6.0, B4=5.5, B5=5.0, B6=4.5, B7=4.0, B8=3.5, B9=3.0
+          var lmByBortle = [6.8, 6.5, 6.0, 5.5, 5.0, 4.5, 4.0, 3.5, 3.0];
+          var lm = lmByBortle[Math.max(0, Math.min(8, simBortle - 1))];
+          // Population index typically ~ 2-2.5 for most showers
+          var r = 2.2;
+          var rateCorrection = Math.pow(r, 6.5 - lm);
+          var effectiveRate = Math.round(simRate * altFactor / rateCorrection);
+
+          // Build the SVG meteor view + radiant
+          // SVG is a 600x400 sky with radiant at center
+          var seed = animFrame; // deterministic pseudo-random
+          function prand(idx, mod) { var x = Math.sin(seed * 91 + idx * 37 + 11) * 10000; return Math.abs(x - Math.floor(x)) * mod; }
+
+          // Generate "stars" (static background) — 60 random points
+          var stars = [];
+          for (var si = 0; si < 60; si++) {
+            stars.push({
+              x: ((si * 73 + 11) % 590) + 5,
+              y: ((si * 97 + 23) % 380) + 10,
+              size: 0.6 + ((si * 13) % 100) / 80,
+              op: 0.3 + ((si * 17) % 100) / 200
+            });
+          }
+          // Generate "meteors" — count proportional to effective rate
+          var meteorCount = Math.min(15, Math.max(1, Math.round(effectiveRate / 8)));
+          var meteors = [];
+          for (var mi = 0; mi < meteorCount; mi++) {
+            // Radiant at (300, 200). Each meteor starts near radiant, streaks outward.
+            var angle = (mi * 0.7 + animFrame * 0.05) % (Math.PI * 2);
+            var distFromRadiant = ((mi * 47 + animFrame * 8) % 280) + 20;
+            var startX = 300 + Math.cos(angle) * (distFromRadiant * 0.3);
+            var startY = 200 + Math.sin(angle) * (distFromRadiant * 0.3);
+            var endX = 300 + Math.cos(angle) * distFromRadiant;
+            var endY = 200 + Math.sin(angle) * distFromRadiant;
+            var brightness = 0.4 + ((mi * 23) % 100) / 200;
+            meteors.push({ x1: startX, y1: startY, x2: endX, y2: endY, brightness: brightness });
+          }
+
+          // Animation tick handler (manual frame advance via setTimeout if playing)
+          // Note: using upd() to bump frame each second; React.useEffect would be cleaner but tool uses class-free approach
+          if (animPlaying && typeof window !== 'undefined' && !window._astrMeteorTimer) {
+            window._astrMeteorTimer = setTimeout(function() {
+              window._astrMeteorTimer = null;
+              upd({ simMeteorFrame: (animFrame + 1) % 1000 });
+            }, _prefersReducedMotion ? 2000 : 800);
+          }
+          if (!animPlaying && typeof window !== 'undefined' && window._astrMeteorTimer) {
+            clearTimeout(window._astrMeteorTimer);
+            window._astrMeteorTimer = null;
+          }
+
+          return sectionCard('🌠 Meteor shower simulator + observation guide',
+            h('div', null,
+              // Picker for shower selection
+              h('div', { role: 'tablist', 'aria-label': 'Meteor showers', style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+                SHOWERS.map(function(s) {
+                  var on = s.id === selectedId;
+                  return a11yButton({
+                    key: s.id,
+                    role: 'tab',
+                    'aria-selected': on,
+                    onClick: function() { upd({ selectedShower: s.id, simZhr: s.zhr }); },
+                    style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#fbbf24' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #fbbf24' : '1px solid #334155' }
+                  }, '🌠 ' + s.name);
+                })
+              ),
+
+              // Shower summary card
+              h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155', marginBottom: 12 } },
+                h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 6, flexWrap: 'wrap' } },
+                  h('h4', { style: { margin: 0, color: '#fbbf24', fontSize: 17 } }, selected.name),
+                  h('span', { style: { fontSize: 11, color: '#94a3b8' } }, 'Peak: '),
+                  h('span', { style: { fontSize: 12, color: '#e2e8f0', fontWeight: 600 } }, selected.peak),
+                  h('span', { style: { fontSize: 11, color: '#94a3b8', marginLeft: 8 } }, 'ZHR: '),
+                  h('span', { style: { fontSize: 12, color: '#e2e8f0', fontWeight: 600 } }, selected.zhr + '/hr'),
+                  h('span', { style: { fontSize: 11, color: '#94a3b8', marginLeft: 8 } }, 'Radiant: '),
+                  h('span', { style: { fontSize: 12, color: '#e2e8f0', fontWeight: 600 } }, selected.radiantConst)
+                ),
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(140px,1fr))', gap: 6, marginBottom: 8 } },
+                  h('div', { style: { padding: 6, borderRadius: 6, background: '#1e293b' } },
+                    h('div', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Parent body'),
+                    h('div', { style: { fontSize: 11, color: '#e2e8f0', marginTop: 2 } }, selected.parent)
+                  ),
+                  h('div', { style: { padding: 6, borderRadius: 6, background: '#1e293b' } },
+                    h('div', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Meteor speed'),
+                    h('div', { style: { fontSize: 11, color: '#e2e8f0', marginTop: 2 } }, selected.speed + ' km/s')
+                  ),
+                  h('div', { style: { padding: 6, borderRadius: 6, background: '#1e293b' } },
+                    h('div', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Best viewing hour'),
+                    h('div', { style: { fontSize: 11, color: '#e2e8f0', marginTop: 2 } }, selected.bestHr)
+                  )
+                ),
+                h('p', { style: { margin: 0, fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65 } }, selected.about)
+              ),
+
+              // Maine note
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 12, color: '#dcfce7', lineHeight: 1.65, marginBottom: 12 } },
+                h('strong', null, '🌲 From Maine: '), selected.maine
+              ),
+
+              // Interactive simulator panel
+              h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', border: '1px solid #334155' } },
+                h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, '🎬 Live meteor sky simulator'),
+                h('p', { style: { margin: '0 0 10px', fontSize: 11.5, color: '#94a3b8', lineHeight: 1.55 } }, 'Each frame shows ~ 1 second of sky. Meteor streaks point AWAY from the radiant (the shower\'s named constellation). Adjust your sky conditions + radiant altitude to see how many meteors you would realistically observe.'),
+
+                // Sliders
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 10 } },
+                  a11ySlider({
+                    id: 'astr-sim-zhr',
+                    label: 'Shower activity (ZHR)',
+                    value: simRate, min: 5, max: 300, step: 5,
+                    valueText: simRate + ' /hr',
+                    onChange: function(v) { upd({ simZhr: v }); },
+                    accent: '#fbbf24'
+                  }),
+                  a11ySlider({
+                    id: 'astr-sim-bortle',
+                    label: 'Sky quality (Bortle)',
+                    value: simBortle, min: 1, max: 9, step: 1,
+                    valueText: 'Bortle ' + simBortle,
+                    onChange: function(v) { upd({ simBortleSim: v }); },
+                    accent: '#fbbf24'
+                  }),
+                  a11ySlider({
+                    id: 'astr-sim-alt',
+                    label: 'Radiant altitude',
+                    value: simAlt, min: 5, max: 90, step: 5,
+                    valueText: simAlt + '°',
+                    onChange: function(v) { upd({ simRadiantAlt: v }); },
+                    accent: '#fbbf24'
+                  })
+                ),
+
+                // Effective rate live display
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, padding: 10, borderRadius: 8, background: '#0f172a', marginBottom: 10, flexWrap: 'wrap' } },
+                  h('div', null,
+                    h('div', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Effective rate at your site'),
+                    h('div', { style: { fontSize: 20, color: '#fbbf24', fontWeight: 900, lineHeight: 1, marginTop: 2 }, 'aria-live': 'polite' }, effectiveRate + ' /hr')
+                  ),
+                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, flex: 1, minWidth: 200 } },
+                    h('strong', null, 'Why: '),
+                    'ZHR is the rate ONE observer would see if the radiant were AT THE ZENITH under PRISTINE skies (Bortle 1, limiting magnitude 6.5). Most observers see far fewer. Lower altitude = sin(alt) reduction. Higher Bortle = more dim meteors lost.'
+                  )
+                ),
+
+                // Play/pause button
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
+                  a11yButton({
+                    onClick: function() { upd({ simMeteorPlaying: !animPlaying }); },
+                    'aria-label': animPlaying ? 'Pause meteor simulation' : 'Play meteor simulation',
+                    style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #fbbf24', background: animPlaying ? '#fbbf24' : '#0f172a', color: animPlaying ? '#0f172a' : '#fbbf24', fontWeight: 700, cursor: 'pointer', fontSize: 12 }
+                  }, animPlaying ? '⏸ Pause' : '▶ Play sim'),
+                  _prefersReducedMotion ? h('span', { style: { fontSize: 11, color: '#a5b4fc', fontStyle: 'italic' } }, '(Reduced motion: sim runs at slow refresh)') : null,
+                  a11yButton({
+                    onClick: function() { upd({ simMeteorFrame: animFrame + 1 }); },
+                    'aria-label': 'Advance one frame',
+                    style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#cbd5e1', cursor: 'pointer', fontSize: 12 }
+                  }, '⏭ Step')
+                ),
+
+                // SVG sky view — animated when playing
+                h('div', { style: { borderRadius: 10, overflow: 'hidden', border: '1px solid #334155', background: '#000', position: 'relative' } },
+                  h('svg', {
+                    viewBox: '0 0 600 400',
+                    style: { width: '100%', height: 'auto', display: 'block' },
+                    role: 'img',
+                    'aria-label': 'Animated meteor shower sky view. Radiant at center. Currently showing ' + meteorCount + ' meteors radiating outward.'
+                  },
+                    // Sky gradient background
+                    h('defs', null,
+                      h('radialGradient', { id: 'sky-grad-meteor', cx: '50%', cy: '50%', r: '70%' },
+                        h('stop', { offset: '0%', stopColor: '#0a0a2e' }),
+                        h('stop', { offset: '70%', stopColor: '#000511' }),
+                        h('stop', { offset: '100%', stopColor: '#000000' })
+                      )
+                    ),
+                    h('rect', { x: 0, y: 0, width: 600, height: 400, fill: 'url(#sky-grad-meteor)' }),
+                    // Atmospheric glow from light pollution (varies with Bortle)
+                    simBortle > 4 ? h('rect', {
+                      x: 0, y: 280, width: 600, height: 120,
+                      fill: 'url(#skyglow-grad-meteor)',
+                      opacity: (simBortle - 4) / 10
+                    }) : null,
+                    h('defs', null,
+                      h('linearGradient', { id: 'skyglow-grad-meteor', x1: '0%', y1: '100%', x2: '0%', y2: '0%' },
+                        h('stop', { offset: '0%', stopColor: '#cc8800', stopOpacity: 0.4 }),
+                        h('stop', { offset: '100%', stopColor: '#cc8800', stopOpacity: 0 })
+                      )
+                    ),
+                    // Background stars
+                    stars.map(function(s, i) {
+                      return h('circle', { key: 'star-' + i, cx: s.x, cy: s.y, r: s.size, fill: '#ffffff', opacity: s.op });
+                    }),
+                    // Horizon line (radiant altitude relative)
+                    h('line', { x1: 0, y1: 400 - (simAlt / 90 * 200) - 30, x2: 600, y2: 400 - (simAlt / 90 * 200) - 30, stroke: '#1e293b', strokeWidth: 1, strokeDasharray: '4 6', opacity: 0.7 }),
+                    h('text', { x: 10, y: 400 - (simAlt / 90 * 200) - 36, fill: '#64748b', fontSize: 9 }, 'Horizon'),
+                    // Radiant marker
+                    h('circle', { cx: 300, cy: 200, r: 18, fill: 'none', stroke: '#fbbf24', strokeWidth: 1, strokeDasharray: '3 3', opacity: 0.6 }),
+                    h('circle', { cx: 300, cy: 200, r: 3, fill: '#fbbf24' }),
+                    h('text', { x: 320, y: 197, fill: '#fbbf24', fontSize: 11, fontWeight: 600 }, 'Radiant'),
+                    h('text', { x: 320, y: 211, fill: '#fbbf24', fontSize: 9, opacity: 0.7 }, '(' + selected.radiantConst + ')'),
+                    // Meteor streaks — translucent gradient lines from radiant outward
+                    meteors.map(function(m, i) {
+                      return h('g', { key: 'meteor-' + i },
+                        h('line', {
+                          x1: m.x1, y1: m.y1, x2: m.x2, y2: m.y2,
+                          stroke: '#fef3c7', strokeWidth: 1.5, strokeLinecap: 'round',
+                          opacity: m.brightness
+                        }),
+                        h('circle', { cx: m.x2, cy: m.y2, r: 1.5, fill: '#fff', opacity: m.brightness * 1.2 })
+                      );
+                    }),
+                    // Frame counter
+                    h('text', { x: 595, y: 395, fill: '#475569', fontSize: 8, textAnchor: 'end' }, 'frame ' + animFrame)
+                  )
+                ),
+                h('p', { style: { margin: '8px 0 0', fontSize: 11, color: '#94a3b8', lineHeight: 1.5 } },
+                  h('strong', null, 'How to read this view: '),
+                  'The yellow dot at center is the radiant — the perspective point where meteors APPEAR to come from. Each yellow-white streak is a meteor entering the atmosphere. Earth\'s motion through the comet/asteroid debris stream gives all meteors the same parallel motion through space, but viewed from Earth they appear to RADIATE outward from a single point (the same way parallel railroad tracks appear to converge in the distance).'
+                )
+              ),
+
+              // Observation tips
+              h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 12, color: '#c7d2fe', lineHeight: 1.65 } },
+                h('strong', null, '👁️ Observation tips for any meteor shower: '),
+                h('ol', { style: { margin: '6px 0 0 18px', padding: 0, lineHeight: 1.7 } },
+                  h('li', null, h('strong', null, 'Get away from lights. '), 'Even a 30-minute drive to darker sky doubles or triples your visible meteor count. Bortle 4 is the threshold for serious viewing.'),
+                  h('li', null, h('strong', null, 'Look ~ 60° away from the radiant, not AT it. '), 'Meteors near the radiant are short (foreshortened); those 60° away are longest + brightest because they cross the most of the field of view perpendicular to your line of sight.'),
+                  h('li', null, h('strong', null, 'Reclining is essential. '), 'A reclining lawn chair or sleeping pad means you can watch the sky for hours without neck strain. Bring a blanket; nights get cold fast even in summer.'),
+                  h('li', null, h('strong', null, 'Allow 20-30 minutes for dark adaptation. '), 'Eyes need time to develop rod-cell sensitivity for dim meteors. No phone screens, no white flashlights — use red-light only.'),
+                  h('li', null, h('strong', null, 'Best hours are pre-dawn. '), 'After midnight, Earth\'s rotation puts you on the LEADING edge of its orbit — the side facing the direction Earth is moving. You sweep up more meteors than the trailing side.')
+                )
+              )
+            ),
+            '#fbbf24'
+          );
+        }
       }
 
       // ──────────────────────────────────────────────────────────────
@@ -4628,8 +4985,369 @@
               );
             })(),
             '#f97316'
-          )
+          ),
+          eyepieceViewSimulatorSection()
         );
+
+        // ──────────────────────────────────────────────────────────────
+        // Eyepiece View Simulator — what you'd actually see in a telescope
+        // ──────────────────────────────────────────────────────────────
+        function eyepieceViewSimulatorSection() {
+          // Target catalog with apparent magnitude, angular size (arcmin), object type, mythology
+          var TARGETS = [
+            { id: 'moon', name: 'The Moon', type: 'Solar System', mag: -12.7, sizeArcmin: 31, color: '#e0e0e0', spec: 'rocky',
+              info: 'Earth\'s only natural satellite. Diameter 3,474 km; orbits at ~ 384,400 km. Magnitude -12.7 at full phase. Through ANY telescope: craters, mountains, dark maria, terminator detail. Best viewing: gibbous phase (more shadow detail than full).',
+              eyepiece: 'At 50× a 100-mm scope shows the full Moon nearly filling the field of view. At 200× you can see craters smaller than 1 km across at the terminator.'
+            },
+            { id: 'saturn', name: 'Saturn', type: 'Planet', mag: 0.4, sizeArcmin: 0.7, color: '#fde68a', spec: 'planet',
+              info: 'The most-photographed planet through amateur scopes. Rings visible at 30× + above. Cloud bands + the Cassini division (gap in the rings) at 100× + good seeing. Titan (largest moon) visible at any magnification as a star-like dot. Up to 5 moons in a 6-inch scope.',
+              eyepiece: 'Through a 6-inch (150 mm) Dobsonian at 100×, Saturn looks unmistakable + breathtaking. The first time most observers see it, they think they\'re looking at a Hubble image. Best apparition: summer evenings when Saturn is highest in the sky.'
+            },
+            { id: 'jupiter', name: 'Jupiter', type: 'Planet', mag: -2.5, sizeArcmin: 0.8, color: '#fdba74', spec: 'planet',
+              info: 'Largest planet. Cloud bands visible at 50× — typically 2-4 bands depending on the year. Great Red Spot visible at 150×+ on appropriate longitude rotation. Galilean moons (Io, Europa, Ganymede, Callisto) easily visible at any magnification + change position from night to night.',
+              eyepiece: 'A 6-inch scope at 100× shows Jupiter as a small disk with 2-4 visible bands + the 4 Galilean moons as a string of bright dots. Apt Jupiter session: watch moon positions change over 2 hours, drawing them each 30 minutes.'
+            },
+            { id: 'venus', name: 'Venus', type: 'Planet', mag: -4.5, sizeArcmin: 0.9, color: '#fef9c3', spec: 'planet',
+              info: 'Bright "morning/evening star." Through a telescope, it shows PHASES like the Moon — Galileo\'s 1610 observation of Venus\' phases was decisive evidence for the heliocentric model. NO surface detail (Venus is permanently shrouded in clouds). The "crescent Venus" near sun-grazing is one of the most striking simple telescope views.',
+              eyepiece: 'A 4-inch refractor at 75× shows phases beautifully. Best when Venus is at gibbous-to-crescent transition. Use a Moon filter or grey filter to reduce dazzle.'
+            },
+            { id: 'mars', name: 'Mars', type: 'Planet', mag: -0.5, sizeArcmin: 0.2, color: '#fb923c', spec: 'planet',
+              info: 'Visible detail depends ENTIRELY on apparition (Mars is at opposition only every 2 years). At opposition, polar ice caps + dark surface features visible at 150×+. Off-opposition, Mars is just a small orange dot. The 2018 + 2020 apparitions were strong; 2022 was good; 2025 + 2027 are weak.',
+              eyepiece: 'At a strong opposition with a 6-inch scope at 200×, Mars shows polar caps + Syrtis Major (a dark albedo feature). At a weak apparition, just an orange dot. Patience + opposition timing matter more than equipment size.'
+            },
+            { id: 'orion-nebula', name: 'Orion Nebula (M42)', type: 'Nebula', mag: 4.0, sizeArcmin: 65, color: '#86efac', spec: 'nebula',
+              info: 'The most famous emission nebula + the easiest deep-sky target. Visible to the naked eye in Orion\'s sword as a fuzzy patch. Through a small telescope, the green-grey wings of glowing gas surround the Trapezium cluster (4 hot young stars at center, technically 6 in good seeing). 1,344 light-years away. Active stellar nursery.',
+              eyepiece: 'Through a 6-inch scope at 50× with a 25-mm wide-field eyepiece, M42 fills the field with delicate green wings of nebulosity + the bright Trapezium cluster at center. An OIII filter dramatically enhances contrast. One of the most rewarding amateur targets year-round (best in winter when Orion is high).'
+            },
+            { id: 'andromeda', name: 'Andromeda Galaxy (M31)', type: 'Galaxy', mag: 3.4, sizeArcmin: 180, color: '#fde68a', spec: 'galaxy',
+              info: 'Largest galaxy in the Local Group. Naked-eye visible from dark skies as a small fuzzy patch. Through binoculars or a low-power telescope, the bright central bulge + extended disk are visible. 2.5 million light-years away — the farthest object visible to the naked eye. Will collide with the Milky Way in ~ 4 billion years.',
+              eyepiece: 'A 6-inch Dobsonian at 30× shows the bright central core + extends fading from there. Companion galaxies M32 (small bright dot) + M110 (faint elongated patch) visible nearby. Dust lanes + spiral structure require larger apertures (10-inch+) or astrophotography.'
+            },
+            { id: 'pleiades', name: 'Pleiades (M45)', type: 'Open Cluster', mag: 1.6, sizeArcmin: 110, color: '#bae6fd', spec: 'cluster',
+              info: 'The "Seven Sisters" — one of the brightest + closest open clusters. 6-7 naked-eye stars in a small group. Through binoculars or a low-power telescope, dozens of stars + faint blue reflection nebulosity around the brightest stars (the Maia + Merope nebulae — dust the cluster is passing through, NOT the cluster\'s birth gas which dissipated long ago).',
+              eyepiece: 'Best in a 50-mm finder scope or wide-field eyepiece — the cluster is too LARGE for most telescope fields. Through 10×50 binoculars, the cluster is glorious. A 25-mm 70°-field eyepiece in a small scope works well.'
+            },
+            { id: 'ring-nebula', name: 'Ring Nebula (M57)', type: 'Planetary Nebula', mag: 8.8, sizeArcmin: 1.4, color: '#fbcfe8', spec: 'planetary',
+              info: 'A textbook planetary nebula in Lyra. Looks like a small smoke ring — the expanding shell of gas + dust thrown off by a dying star ~ 6,000-8,000 years ago. The central white dwarf is faint (magnitude 15.7) + visible only in larger scopes. Distance: ~ 2,300 light-years.',
+              eyepiece: 'A 4-inch scope at 100× clearly shows the ring shape — like a small smoke ring with darker center. A 6-inch scope at 150× reveals the ring structure beautifully. An OIII filter enhances the nebula significantly. One of the great visual treats of the summer sky.'
+            },
+            { id: 'hercules-cluster', name: 'Hercules Cluster (M13)', type: 'Globular Cluster', mag: 5.8, sizeArcmin: 20, color: '#e2e8f0', spec: 'globular',
+              info: 'The brightest globular cluster visible from the Northern Hemisphere. ~ 300,000 stars in a tight spherical ball ~ 145 light-years across, at 22,200 light-years distance. Halley first noticed it in 1714; Messier catalogued it in 1764. The 1974 Arecibo Message was famously aimed at M13.',
+              eyepiece: 'A 4-inch scope at 100× resolves outer stars but the core remains a glow. A 6-inch at 150× resolves the cluster into "frozen swarm of bees." An 8-inch at 200× resolves to the core. One of the great progressions of amateur astronomy — see how aperture transforms the view.'
+            },
+            { id: 'double-cluster', name: 'Double Cluster (NGC 869/884)', type: 'Open Cluster Pair', mag: 4.3, sizeArcmin: 60, color: '#bfdbfe', spec: 'cluster',
+              info: 'Two open clusters about half a degree apart in Perseus — both visible at once in any low-power eyepiece. NGC 869 + NGC 884 are ~ 7,000 + 14,000 light-years away, around 12 million years old. The pair was first catalogued by Hipparchus around 130 BCE.',
+              eyepiece: 'Best in a wide-field eyepiece (30-50× with a 70°+ field) — fills the view with dozens to hundreds of stars in two adjacent groupings, plus a sprinkling of red giants. Spectacular through ANY equipment from binoculars up.'
+            },
+            { id: 'whirlpool', name: 'Whirlpool Galaxy (M51)', type: 'Galaxy', mag: 8.4, sizeArcmin: 11, color: '#fef3c7', spec: 'galaxy',
+              info: 'A face-on interacting spiral galaxy with a small companion (NGC 5195) connected by a tidal bridge of stars. 31 million light-years away. The first object identified as a "spiral nebula" (Lord Rosse, 1845). The spiral arms are visible in larger amateur scopes; in smaller scopes, just two adjacent bright patches.',
+              eyepiece: 'A 4-inch scope at 75× shows the bright cores of both galaxies. A 10-inch scope at dark sky shows the spiral arms wrapping around — a remarkable view. A challenging but rewarding target for spring evening observing in Ursa Major.'
+            }
+          ];
+
+          var selectedTargetId = d.eyepieceTarget || 'orion-nebula';
+          var selectedTarget = TARGETS.find(function(t) { return t.id === selectedTargetId; }) || TARGETS[0];
+
+          // Telescope/eyepiece settings
+          var apMm = d.eyApertureMm != null ? d.eyApertureMm : 150;
+          var focalMm = d.eyFocalMm != null ? d.eyFocalMm : 1200;
+          var epFlMm = d.eyEpFlMm != null ? d.eyEpFlMm : 25;
+          var epField = d.eyEpField != null ? d.eyEpField : 60; // apparent field of view, degrees
+          var seeingArcsec = d.eySeeing != null ? d.eySeeing : 2.5;
+          var bortleSim = d.eyBortle != null ? d.eyBortle : 4;
+
+          // Calculations
+          var magnification = focalMm / epFlMm;
+          var trueFOVdeg = epField / magnification;
+          var trueFOVarcmin = trueFOVdeg * 60;
+          var lightGain = (apMm * apMm) / (7 * 7); // vs 7mm naked-eye pupil
+          var limitingMag = 2.0 + 5 * Math.log10(apMm);
+          var exitPupilMm = apMm / magnification;
+          var dawesLimit = 116 / apMm; // arcseconds
+
+          // Visibility check — can this telescope at this setting see the target?
+          var targetVisible = limitingMag >= selectedTarget.mag - 1.5;
+          var targetTooSmall = selectedTarget.sizeArcmin < (seeingArcsec / 60) * 5;
+          var targetTooBig = selectedTarget.sizeArcmin > trueFOVarcmin * 0.9;
+
+          // Render the eyepiece view as an SVG
+          // 600 px diameter virtual eyepiece. Scale target size to fit FOV.
+          var viewSize = 480;
+          var targetPxRadius = Math.min(viewSize / 2 - 10, (selectedTarget.sizeArcmin / trueFOVarcmin) * (viewSize / 2));
+          if (targetPxRadius < 4) targetPxRadius = 4; // Minimum visible
+
+          // Define the object visualization based on spec
+          function renderTargetSvg() {
+            var cx = viewSize / 2;
+            var cy = viewSize / 2;
+
+            if (selectedTarget.spec === 'rocky') {
+              // Moon-like cratered disk
+              return h('g', null,
+                h('defs', null,
+                  h('radialGradient', { id: 'moon-grad', cx: '40%', cy: '40%' },
+                    h('stop', { offset: '0%', stopColor: '#f5f5f0' }),
+                    h('stop', { offset: '70%', stopColor: '#c0c0b8' }),
+                    h('stop', { offset: '100%', stopColor: '#404038' })
+                  )
+                ),
+                h('circle', { cx: cx, cy: cy, r: targetPxRadius, fill: 'url(#moon-grad)' }),
+                // craters
+                [0.3, 0.5, 0.7, 0.4, 0.6, 0.55].map(function(d, i) {
+                  var angle = i * 1.05;
+                  var x = cx + Math.cos(angle) * targetPxRadius * d;
+                  var y = cy + Math.sin(angle) * targetPxRadius * d;
+                  var r = targetPxRadius * (0.04 + i * 0.015);
+                  return h('g', { key: 'crater-' + i },
+                    h('circle', { cx: x, cy: y, r: r, fill: '#a09c8e', stroke: '#fffce8', strokeWidth: 0.5 }),
+                    h('circle', { cx: x - r * 0.3, cy: y - r * 0.3, r: r * 0.7, fill: '#888370' })
+                  );
+                }),
+                // dark maria
+                h('ellipse', { cx: cx - targetPxRadius * 0.2, cy: cy - targetPxRadius * 0.2, rx: targetPxRadius * 0.25, ry: targetPxRadius * 0.2, fill: '#525250', opacity: 0.6 }),
+                h('ellipse', { cx: cx + targetPxRadius * 0.3, cy: cy + targetPxRadius * 0.1, rx: targetPxRadius * 0.3, ry: targetPxRadius * 0.18, fill: '#525250', opacity: 0.55 })
+              );
+            }
+            if (selectedTarget.spec === 'planet' && selectedTargetId === 'saturn') {
+              // Saturn with rings
+              var ry = targetPxRadius * 0.85;
+              return h('g', null,
+                h('ellipse', { cx: cx, cy: cy, rx: targetPxRadius * 2.2, ry: targetPxRadius * 0.35, fill: 'none', stroke: '#fde68a', strokeWidth: targetPxRadius * 0.12, opacity: 0.85 }),
+                h('ellipse', { cx: cx, cy: cy, rx: targetPxRadius * 1.8, ry: targetPxRadius * 0.28, fill: 'none', stroke: '#1e293b', strokeWidth: 2, opacity: 0.8 }), // Cassini division
+                h('ellipse', { cx: cx, cy: cy, rx: targetPxRadius * 1.0, ry: ry, fill: '#fde68a', stroke: '#fdba74', strokeWidth: 1 }),
+                // bands
+                h('ellipse', { cx: cx, cy: cy + ry * 0.3, rx: targetPxRadius * 0.95, ry: ry * 0.06, fill: '#a16207', opacity: 0.5 }),
+                h('ellipse', { cx: cx, cy: cy - ry * 0.3, rx: targetPxRadius * 0.92, ry: ry * 0.06, fill: '#a16207', opacity: 0.5 })
+              );
+            }
+            if (selectedTarget.spec === 'planet' && selectedTargetId === 'jupiter') {
+              return h('g', null,
+                h('ellipse', { cx: cx, cy: cy, rx: targetPxRadius * 1.0, ry: targetPxRadius * 0.94, fill: '#fdba74', stroke: '#c2410c', strokeWidth: 1 }),
+                // bands
+                h('ellipse', { cx: cx, cy: cy + targetPxRadius * 0.2, rx: targetPxRadius * 0.96, ry: targetPxRadius * 0.12, fill: '#9a3412', opacity: 0.5 }),
+                h('ellipse', { cx: cx, cy: cy - targetPxRadius * 0.25, rx: targetPxRadius * 0.94, ry: targetPxRadius * 0.1, fill: '#9a3412', opacity: 0.45 }),
+                h('ellipse', { cx: cx, cy: cy + targetPxRadius * 0.5, rx: targetPxRadius * 0.85, ry: targetPxRadius * 0.07, fill: '#7c2d12', opacity: 0.4 }),
+                // Great Red Spot
+                h('ellipse', { cx: cx + targetPxRadius * 0.3, cy: cy + targetPxRadius * 0.25, rx: targetPxRadius * 0.18, ry: targetPxRadius * 0.08, fill: '#dc2626', opacity: 0.75 }),
+                // Moons (Galilean) — as small white dots offset from Jupiter
+                magnification < 50 ? null : [
+                  { x: -2.5, name: 'Io' }, { x: -1.5, name: 'Europa' }, { x: 1.7, name: 'Ganymede' }, { x: 2.8, name: 'Callisto' }
+                ].map(function(m, i) {
+                  return h('circle', { key: 'moon-' + i, cx: cx + targetPxRadius * m.x, cy: cy, r: 1.5, fill: '#fff' });
+                })
+              );
+            }
+            if (selectedTarget.spec === 'planet' && selectedTargetId === 'venus') {
+              // Crescent Venus
+              return h('g', null,
+                h('circle', { cx: cx, cy: cy, r: targetPxRadius, fill: '#1e293b' }),
+                h('path', { d: 'M ' + (cx - targetPxRadius) + ' ' + cy + ' A ' + targetPxRadius + ' ' + targetPxRadius + ' 0 0 1 ' + (cx + targetPxRadius) + ' ' + cy + ' A ' + (targetPxRadius * 0.3) + ' ' + targetPxRadius + ' 0 0 0 ' + (cx - targetPxRadius) + ' ' + cy + ' Z', fill: '#fef9c3' })
+              );
+            }
+            if (selectedTarget.spec === 'planet' && selectedTargetId === 'mars') {
+              return h('g', null,
+                h('circle', { cx: cx, cy: cy, r: targetPxRadius, fill: '#fb923c', stroke: '#c2410c', strokeWidth: 1 }),
+                // polar cap
+                magnification >= 100 ? h('ellipse', { cx: cx, cy: cy - targetPxRadius * 0.85, rx: targetPxRadius * 0.3, ry: targetPxRadius * 0.12, fill: '#fff', opacity: 0.7 }) : null,
+                // surface feature
+                magnification >= 150 ? h('ellipse', { cx: cx - targetPxRadius * 0.15, cy: cy + targetPxRadius * 0.1, rx: targetPxRadius * 0.4, ry: targetPxRadius * 0.18, fill: '#7c2d12', opacity: 0.55 }) : null
+              );
+            }
+            if (selectedTarget.spec === 'nebula') {
+              // Diffuse green-grey clouds
+              return h('g', null,
+                h('defs', null,
+                  h('radialGradient', { id: 'neb-grad', cx: '50%', cy: '50%' },
+                    h('stop', { offset: '0%', stopColor: '#86efac', stopOpacity: 0.7 }),
+                    h('stop', { offset: '50%', stopColor: '#22c55e', stopOpacity: 0.3 }),
+                    h('stop', { offset: '100%', stopColor: '#14532d', stopOpacity: 0 })
+                  )
+                ),
+                h('ellipse', { cx: cx, cy: cy, rx: targetPxRadius * 1.2, ry: targetPxRadius * 0.95, fill: 'url(#neb-grad)' }),
+                // Trapezium cluster (4 dots)
+                h('circle', { cx: cx - 4, cy: cy - 3, r: 1.5, fill: '#fff' }),
+                h('circle', { cx: cx + 5, cy: cy - 2, r: 1.7, fill: '#fff' }),
+                h('circle', { cx: cx - 2, cy: cy + 5, r: 1.4, fill: '#fff' }),
+                h('circle', { cx: cx + 4, cy: cy + 4, r: 1.3, fill: '#fff' }),
+                // diffuse star field
+                [0,1,2,3,4,5,6,7,8,9,10,11].map(function(idx) {
+                  var ang = idx * 0.53;
+                  var dist = (idx * 7 + 30) % (targetPxRadius - 10);
+                  return h('circle', { key: 'fs-' + idx, cx: cx + Math.cos(ang) * dist, cy: cy + Math.sin(ang) * dist, r: 0.7, fill: '#fff', opacity: 0.6 });
+                })
+              );
+            }
+            if (selectedTarget.spec === 'galaxy') {
+              // Elliptical fuzzy patch with bright core
+              return h('g', null,
+                h('defs', null,
+                  h('radialGradient', { id: 'gal-grad', cx: '50%', cy: '50%' },
+                    h('stop', { offset: '0%', stopColor: '#fde68a', stopOpacity: 0.95 }),
+                    h('stop', { offset: '30%', stopColor: '#fbbf24', stopOpacity: 0.7 }),
+                    h('stop', { offset: '70%', stopColor: '#a16207', stopOpacity: 0.35 }),
+                    h('stop', { offset: '100%', stopColor: '#0f172a', stopOpacity: 0 })
+                  )
+                ),
+                h('ellipse', { cx: cx, cy: cy, rx: targetPxRadius * 1.4, ry: targetPxRadius * 0.5, fill: 'url(#gal-grad)' }),
+                h('circle', { cx: cx, cy: cy, r: targetPxRadius * 0.15, fill: '#fff' })
+              );
+            }
+            if (selectedTarget.spec === 'cluster') {
+              // Open cluster — sprinkling of bright stars
+              return h('g', null,
+                Array.from({length: 25}, function(_, idx) {
+                  var ang = idx * 0.51;
+                  var dist = ((idx * 13) % 100) / 100 * targetPxRadius;
+                  var size = 1 + (idx % 3) * 0.6;
+                  var color = idx % 5 === 0 ? '#fbbf24' : (idx % 3 === 0 ? '#bfdbfe' : '#fff');
+                  return h('circle', { key: 'cs-' + idx, cx: cx + Math.cos(ang) * dist, cy: cy + Math.sin(ang) * dist, r: size, fill: color });
+                })
+              );
+            }
+            if (selectedTarget.spec === 'planetary') {
+              // Ring nebula
+              return h('g', null,
+                h('circle', { cx: cx, cy: cy, r: targetPxRadius, fill: 'none', stroke: '#fbcfe8', strokeWidth: targetPxRadius * 0.3, opacity: 0.75 }),
+                h('circle', { cx: cx, cy: cy, r: targetPxRadius * 0.5, fill: '#1e293b', opacity: 0.8 })
+              );
+            }
+            if (selectedTarget.spec === 'globular') {
+              // Globular cluster — dense star ball
+              return h('g', null,
+                h('defs', null,
+                  h('radialGradient', { id: 'glob-grad', cx: '50%', cy: '50%' },
+                    h('stop', { offset: '0%', stopColor: '#fff', stopOpacity: 0.9 }),
+                    h('stop', { offset: '30%', stopColor: '#e2e8f0', stopOpacity: 0.6 }),
+                    h('stop', { offset: '100%', stopColor: '#cbd5e1', stopOpacity: 0 })
+                  )
+                ),
+                h('circle', { cx: cx, cy: cy, r: targetPxRadius, fill: 'url(#glob-grad)' }),
+                // sprinkled resolved stars (if aperture is large)
+                apMm >= 150 ? Array.from({length: 60}, function(_, idx) {
+                  var ang = idx * 0.85;
+                  var dist = ((idx * 11) % 100) / 100 * targetPxRadius * 0.95;
+                  return h('circle', { key: 'gs-' + idx, cx: cx + Math.cos(ang) * dist, cy: cy + Math.sin(ang) * dist, r: 0.6, fill: '#fff', opacity: 0.85 });
+                }) : null
+              );
+            }
+            return h('circle', { cx: cx, cy: cy, r: targetPxRadius, fill: selectedTarget.color });
+          }
+
+          return sectionCard('🔭 Eyepiece view simulator — what you would see',
+            h('div', null,
+              h('p', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.55, marginBottom: 10 } }, 'Pick a target, adjust your telescope, eyepiece, sky conditions — see what would actually be visible. This simulator approximates real visual appearance: small telescopes show less; light-polluted skies wash out faint objects; higher magnification shrinks the field of view + dims everything.'),
+
+              // Target picker
+              h('div', { role: 'tablist', 'aria-label': 'Observing targets', style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+                TARGETS.map(function(t) {
+                  var on = t.id === selectedTargetId;
+                  return a11yButton({
+                    key: t.id, role: 'tab', 'aria-selected': on,
+                    onClick: function() { upd({ eyepieceTarget: t.id }); },
+                    style: { padding: '5px 9px', borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: 'pointer', background: on ? '#f97316' : '#1e293b', color: on ? '#0f172a' : '#cbd5e1', border: on ? '2px solid #f97316' : '1px solid #334155' }
+                  }, t.name);
+                })
+              ),
+
+              // Layout: 2 columns - SVG view + controls
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(280px, 1fr) minmax(240px, 1fr)', gap: 12, alignItems: 'start' } },
+                // Left: eyepiece view (SVG)
+                h('div', { style: { position: 'relative', background: '#000', borderRadius: '50%', overflow: 'hidden', aspectRatio: '1', maxWidth: 500, justifySelf: 'center', width: '100%', border: '6px solid #1e293b' } },
+                  h('svg', {
+                    viewBox: '0 0 ' + viewSize + ' ' + viewSize,
+                    role: 'img',
+                    'aria-label': 'Telescope eyepiece view of ' + selectedTarget.name + '. ' + (targetVisible ? 'Target is visible.' : 'Target may be too dim for this setup.'),
+                    style: { width: '100%', height: '100%' }
+                  },
+                    // Sky background — affected by Bortle
+                    h('defs', null,
+                      h('radialGradient', { id: 'eyepiece-sky', cx: '50%', cy: '50%' },
+                        h('stop', { offset: '0%', stopColor: bortleSim <= 3 ? '#000' : (bortleSim <= 6 ? '#1a1a3a' : '#3a3a5a') }),
+                        h('stop', { offset: '100%', stopColor: bortleSim <= 3 ? '#000' : (bortleSim <= 6 ? '#0a0a2a' : '#1a1a3a') })
+                      )
+                    ),
+                    h('rect', { x: 0, y: 0, width: viewSize, height: viewSize, fill: 'url(#eyepiece-sky)' }),
+                    // Background field stars — count depends on aperture/Bortle
+                    Array.from({length: Math.round(Math.max(5, Math.min(80, apMm / 2 - bortleSim * 5)))}, function(_, idx) {
+                      var sx = ((idx * 47 + 11) % viewSize);
+                      var sy = ((idx * 71 + 23) % viewSize);
+                      var ssize = 0.5 + ((idx * 13) % 100) / 80;
+                      var sop = 0.4 + ((idx * 17) % 100) / 250;
+                      return h('circle', { key: 's' + idx, cx: sx, cy: sy, r: ssize, fill: '#fff', opacity: sop });
+                    }),
+                    // Show target only if visible
+                    targetVisible ? renderTargetSvg() : null,
+                    // Crosshair (reticle) for aiming
+                    h('line', { x1: viewSize / 2 - 8, y1: viewSize / 2, x2: viewSize / 2 + 8, y2: viewSize / 2, stroke: '#fbbf24', strokeWidth: 0.6, opacity: 0.45 }),
+                    h('line', { x1: viewSize / 2, y1: viewSize / 2 - 8, x2: viewSize / 2, y2: viewSize / 2 + 8, stroke: '#fbbf24', strokeWidth: 0.6, opacity: 0.45 }),
+                    // Field of view caption
+                    h('text', { x: 12, y: viewSize - 12, fill: '#94a3b8', fontSize: 11, fontFamily: 'monospace' }, 'FOV: ' + (trueFOVdeg < 1 ? (trueFOVarcmin.toFixed(1) + "'") : (trueFOVdeg.toFixed(2) + '°'))),
+                    h('text', { x: viewSize - 12, y: viewSize - 12, fill: '#94a3b8', fontSize: 11, fontFamily: 'monospace', textAnchor: 'end' }, magnification.toFixed(0) + '×'),
+                    !targetVisible ? h('text', { x: viewSize / 2, y: viewSize / 2 + 5, fill: '#ef4444', fontSize: 13, textAnchor: 'middle', fontWeight: 700 }, 'Target too dim for this setup') : null
+                  )
+                ),
+
+                // Right: controls + readout
+                h('div', null,
+                  h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', marginBottom: 10 } },
+                    h('h4', { style: { margin: 0, color: '#f97316', fontSize: 14, marginBottom: 4 } }, selectedTarget.name),
+                    h('div', { style: { fontSize: 11, color: '#94a3b8' } }, selectedTarget.type + ' · magnitude ' + selectedTarget.mag + ' · ~ ' + selectedTarget.sizeArcmin + " arcmin"),
+                    h('p', { style: { margin: '6px 0 0', fontSize: 12, color: '#e2e8f0', lineHeight: 1.55 } }, selectedTarget.info)
+                  ),
+
+                  h('div', { style: { display: 'grid', gap: 10, marginBottom: 10 } },
+                    a11ySlider({
+                      id: 'astr-ey-ap', label: 'Aperture', value: apMm, min: 50, max: 400, step: 10,
+                      valueText: apMm + ' mm (' + (apMm / 25.4).toFixed(1) + '")',
+                      onChange: function(v) { upd({ eyApertureMm: v, eyFocalMm: v * 8 }); }, accent: '#f97316'
+                    }),
+                    a11ySlider({
+                      id: 'astr-ey-ep', label: 'Eyepiece focal length', value: epFlMm, min: 4, max: 40, step: 1,
+                      valueText: epFlMm + ' mm',
+                      onChange: function(v) { upd({ eyEpFlMm: v }); }, accent: '#f97316'
+                    }),
+                    a11ySlider({
+                      id: 'astr-ey-fld', label: 'Eyepiece apparent field', value: epField, min: 40, max: 100, step: 5,
+                      valueText: epField + '°',
+                      onChange: function(v) { upd({ eyEpField: v }); }, accent: '#f97316'
+                    }),
+                    a11ySlider({
+                      id: 'astr-ey-bort', label: 'Sky quality (Bortle)', value: bortleSim, min: 1, max: 9, step: 1,
+                      valueText: 'Bortle ' + bortleSim,
+                      onChange: function(v) { upd({ eyBortle: v }); }, accent: '#f97316'
+                    })
+                  ),
+
+                  // Calculations panel
+                  h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(249,115,22,0.10)', border: '1px solid rgba(249,115,22,0.35)', fontSize: 11.5, color: '#fed7aa', lineHeight: 1.7 } },
+                    h('div', null, h('strong', null, 'Magnification: '), magnification.toFixed(0) + '×'),
+                    h('div', null, h('strong', null, 'True field of view: '), trueFOVdeg < 1 ? trueFOVarcmin.toFixed(1) + " arcmin" : trueFOVdeg.toFixed(2) + '°'),
+                    h('div', null, h('strong', null, 'Exit pupil: '), exitPupilMm.toFixed(1) + ' mm', exitPupilMm > 7 ? ' (too large — wasted light)' : (exitPupilMm < 0.5 ? ' (too small — image dim)' : ' (good)')),
+                    h('div', null, h('strong', null, 'Limiting magnitude: '), limitingMag.toFixed(1)),
+                    h('div', null, h('strong', null, 'Light gathering: '), lightGain.toFixed(0) + '× naked eye'),
+                    h('div', null, h('strong', null, 'Dawes limit: '), dawesLimit.toFixed(2) + '" (resolution)')
+                  )
+                )
+              ),
+
+              h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 11.5, color: '#dcfce7', lineHeight: 1.65 } },
+                h('strong', null, '👁️ What this is like through a real telescope: '),
+                selectedTarget.eyepiece
+              ),
+
+              targetTooBig ? h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11.5, color: '#fde68a', lineHeight: 1.65 } },
+                h('strong', null, '⚠️ Target is larger than your field of view. '),
+                'Try a longer focal-length eyepiece (lower magnification, wider FOV).'
+              ) : null,
+
+              targetTooSmall ? h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11.5, color: '#fde68a', lineHeight: 1.65 } },
+                h('strong', null, '⚠️ Target is small relative to atmospheric seeing. '),
+                'Use higher magnification + wait for steady atmosphere.'
+              ) : null
+            ),
+            '#f97316'
+          );
+        }
       }
 
       // ──────────────────────────────────────────────────────────────
@@ -4835,6 +5553,8 @@
       }
 
       return h('div', { className: 'selh-astronomy', style: { display: 'flex', flexDirection: 'column', height: '100%', background: BG, color: '#e2e8f0' } },
+        // WCAG style block (focus rings, reduced-motion respect)
+        wcagStyleBlock(),
         // Header
         h('div', { style: { padding: '12px 16px', borderBottom: '1px solid #1e293b', background: 'linear-gradient(135deg, #1e1b4b, #0f172a)', display: 'flex', alignItems: 'center', gap: 12 } },
           h('div', { style: { fontSize: 28 }, 'aria-hidden': 'true' }, '🔭'),
@@ -4844,7 +5564,7 @@
           )
         ),
         tabBar,
-        h('div', { style: { flex: 1, overflow: 'auto' } }, body)
+        h('main', { id: 'astronomy-main', tabIndex: -1, style: { flex: 1, overflow: 'auto' } }, body)
       );
     }
   });
