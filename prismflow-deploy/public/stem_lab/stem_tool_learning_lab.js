@@ -9258,6 +9258,715 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     );
   }
 
+  // ── EE. PERSONAL CHALLENGE BOARD (Wave 7) ──
+  // Declare a personal challenge (book in a month, learn a skill, save
+  // money, etc.). Log daily progress. Mark complete or extend. Inspired
+  // by 30-day challenges + Tiny Habits (Fogg 2019).
+  function PersonalChallengeBoard(props) {
+    if (!R) return null;
+    var data = props.data || { challenges: [] };
+    var setData = props.setData;
+    var vs = R.useState('list');                       var view = vs[0]; var setView = vs[1];
+    var fs = R.useState({ title: '', why: '', target: '', startDate: todayISO(), days: 30, dailyAction: '' });
+    var form = fs[0]; var setForm = fs[1];
+
+    function addChallenge() {
+      if (!form.title.trim() || !form.dailyAction.trim()) { alert('Need title + daily action.'); return; }
+      var ch = Object.assign({ id: tkId(), createdAt: todayISO(), logs: [] }, form);
+      setData({ challenges: [ch].concat(data.challenges || []) });
+      setForm({ title: '', why: '', target: '', startDate: todayISO(), days: 30, dailyAction: '' });
+      setView('list');
+    }
+    function remove(id) {
+      if (!confirm('Delete this challenge?')) return;
+      setData({ challenges: (data.challenges || []).filter(function(c) { return c.id !== id; }) });
+    }
+    function logDay(challengeId) {
+      var ch = (data.challenges || []).filter(function(c) { return c.id === challengeId; })[0];
+      if (!ch) return;
+      var today = todayISO();
+      var logs = (ch.logs || []).slice();
+      var idx = logs.findIndex(function(l) { return l.date === today; });
+      if (idx >= 0) logs.splice(idx, 1);
+      else logs.push({ date: today, time: Date.now() });
+      setData({
+        challenges: data.challenges.map(function(c) { return c.id === challengeId ? Object.assign({}, c, { logs: logs }) : c; })
+      });
+    }
+
+    var challenges = data.challenges || [];
+
+    function daysFromStart(c) {
+      var start = new Date(c.startDate + 'T12:00:00').getTime();
+      var now = new Date().getTime();
+      return Math.floor((now - start) / 86400000);
+    }
+
+    if (view === 'new') {
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader('🏆', 'New challenge', 'Declare a 30 day (or other) challenge. Daily ONE action.', '#fbbf24'),
+        tkCard('#fbbf24',
+          hh('div', null,
+            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Challenge name'),
+            tkInput(form.title, function(v) { setForm(Object.assign({}, form, { title: v })); }, 'e.g., "Read 20 pages every day for 30 days"', { marginBottom: 10 }),
+            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'The daily action (one specific thing)'),
+            tkInput(form.dailyAction, function(v) { setForm(Object.assign({}, form, { dailyAction: v })); }, 'e.g., "Read 20 pages"', { marginBottom: 10 }),
+            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Why this challenge matters to you'),
+            tkTextarea(form.why, function(v) { setForm(Object.assign({}, form, { why: v })); }, 'Connect to a deeper "why" — important for sticking with it on hard days.', 3, { marginBottom: 10 }),
+            hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
+              hh('div', null,
+                hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Start date'),
+                hh('input', { type: 'date', value: form.startDate,
+                  onChange: function(e) { setForm(Object.assign({}, form, { startDate: e.target.value })); },
+                  style: { width: '100%', padding: '10px 12px', fontSize: 12, color: '#fbbf24', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(251,191,36,0.40)', borderRadius: 6, boxSizing: 'border-box', fontWeight: 800 }
+                })
+              ),
+              hh('div', null,
+                hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Days'),
+                hh('input', { type: 'number', min: 1, max: 365, value: form.days,
+                  onChange: function(e) { setForm(Object.assign({}, form, { days: parseInt(e.target.value, 10) || 30 })); },
+                  style: { width: '100%', padding: '10px 12px', fontSize: 14, color: '#fbbf24', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(251,191,36,0.40)', borderRadius: 6, boxSizing: 'border-box', fontWeight: 800, textAlign: 'center' }
+                })
+              )
+            )
+          )
+        ),
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+          tkBtn('← Cancel', function() { setView('list'); }, 'ghost'),
+          tkBtn('🏆 Start challenge', addChallenge, 'primary')
+        )
+      );
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🏆', 'Challenge Board', '30-day (or any) personal challenges. One daily action. Cross off as you go.', '#fbbf24'),
+
+      hh('div', { style: { display: 'flex', justifyContent: 'flex-end', marginBottom: 12 } },
+        tkBtn('+ New challenge', function() { setForm({ title: '', why: '', target: '', startDate: todayISO(), days: 30, dailyAction: '' }); setView('new'); }, 'primary')
+      ),
+
+      challenges.length === 0 ? tkEmptyState('🏆', 'No challenges yet. Pick something you want to build a habit around — daily action + 30 days.', '+ Start your first challenge', function() { setView('new'); })
+      : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
+          challenges.map(function(c) {
+            var dayNum = daysFromStart(c);
+            var doneCount = (c.logs || []).length;
+            var pct = Math.min(100, (doneCount / c.days) * 100);
+            var todayDone = (c.logs || []).some(function(l) { return l.date === todayISO(); });
+            return hh('div', { key: 'ch-' + c.id, style: {
+              padding: 14, borderRadius: 12,
+              background: 'linear-gradient(135deg, rgba(251,191,36,0.15), rgba(15,23,42,0.7))',
+              border: '1px solid rgba(251,191,36,0.40)', borderLeft: '4px solid #fbbf24'
+            } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 8 } },
+                hh('div', { style: { flex: 1, minWidth: 0 } },
+                  hh('strong', { style: { fontSize: 14, color: '#fbbf24' } }, '🏆 ' + c.title),
+                  c.why ? hh('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic', marginTop: 2 } }, 'why: ' + c.why) : null
+                ),
+                hh('div', { style: { padding: '6px 12px', borderRadius: 999, background: 'rgba(251,191,36,0.25)', color: '#fbbf24', fontSize: 14, fontWeight: 900, fontFamily: 'ui-monospace, Menlo, monospace' } }, doneCount + '/' + c.days)
+              ),
+              hh('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 8, padding: 8, background: 'rgba(2,6,23,0.4)', borderRadius: 6, borderLeft: '2px solid #fbbf24' } },
+                '📝 Today: ', c.dailyAction
+              ),
+              hh('div', { style: { height: 8, background: 'rgba(15,23,42,0.6)', borderRadius: 4, overflow: 'hidden', marginBottom: 8 } },
+                hh('div', { style: { width: pct + '%', height: '100%', background: 'linear-gradient(90deg, #fbbf24, #f97316)', transition: 'width 300ms ease' } })
+              ),
+              // Day strip
+              hh('div', { style: { display: 'flex', gap: 1, flexWrap: 'wrap', marginBottom: 10 } },
+                (function() {
+                  var arr = [];
+                  for (var i = 0; i < c.days; i++) {
+                    var dt = new Date(c.startDate + 'T12:00:00');
+                    dt.setDate(dt.getDate() + i);
+                    var iso = dt.toISOString().slice(0, 10);
+                    var done = (c.logs || []).some(function(l) { return l.date === iso; });
+                    var isToday = iso === todayISO();
+                    arr.push(hh('div', { key: 'cd-' + i,
+                      title: iso + (done ? ' ✓' : ''),
+                      style: { width: 10, height: 10, borderRadius: 2, background: done ? '#fbbf24' : 'rgba(100,116,139,0.20)', border: isToday ? '1px solid #fff' : 'none' }
+                    }));
+                  }
+                  return arr;
+                })()
+              ),
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 6 } },
+                hh('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Day ' + (dayNum + 1) + ' of ' + c.days),
+                hh('div', { style: { display: 'flex', gap: 6 } },
+                  tkBtn(todayDone ? '✓ Done today (tap to undo)' : '+ Log today', function() { logDay(c.id); }, todayDone ? 'good' : 'primary', { padding: '6px 14px', fontSize: 11 }),
+                  hh('button', { onClick: function() { remove(c.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 12, cursor: 'pointer' } }, '✕')
+                )
+              )
+            );
+          })
+        ),
+
+      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+        hh('strong', { style: { color: '#fbbf24' } }, '🎓 BJ Fogg 2019 — Tiny Habits: '),
+        'Three things matter: (1) make it tiny enough to do on hard days, (2) attach it to an existing habit ("after I brush my teeth I will..."), (3) celebrate IMMEDIATELY (even just a smile). 30-day challenges work when the daily action is small enough to never skip.'
+      )
+    );
+  }
+
+  // ── FF. PERSONAL TIME-ESTIMATION TRAINER (Wave 7) ──
+  // Predict how long a task will take. Log actual. Calibration improves
+  // over time. ADHD students often under-estimate by 30-100%; this builds
+  // the meta-skill.
+  function PersonalTimeEstimator(props) {
+    if (!R) return null;
+    var data = props.data || { predictions: [] };
+    var setData = props.setData;
+    var fs = R.useState({ task: '', predictedMin: 30 });
+    var form = fs[0]; var setForm = fs[1];
+    var as = R.useState(null);                          var activePrediction = as[0]; var setActivePrediction = as[1];
+    var es = R.useState({ actualMin: 30, notes: '' });
+    var endForm = es[0]; var setEndForm = es[1];
+
+    function startTimer() {
+      if (!form.task.trim()) { alert('Need a task name.'); return; }
+      var p = { id: tkId(), task: form.task.trim(), predictedMin: form.predictedMin, startedAt: Date.now(), date: todayISO() };
+      setActivePrediction(p);
+      setForm({ task: '', predictedMin: 30 });
+    }
+    function stopTimer() {
+      if (!activePrediction) return;
+      var actual = Math.round((Date.now() - activePrediction.startedAt) / 60000);
+      setEndForm({ actualMin: actual, notes: '' });
+    }
+    function logComplete() {
+      var p = Object.assign({}, activePrediction, { actualMin: endForm.actualMin, notes: endForm.notes, completedAt: Date.now() });
+      setData({ predictions: [p].concat(data.predictions || []) });
+      setActivePrediction(null);
+      setEndForm({ actualMin: 30, notes: '' });
+    }
+    function cancelTimer() {
+      setActivePrediction(null);
+      setEndForm({ actualMin: 30, notes: '' });
+    }
+    function remove(id) {
+      setData({ predictions: (data.predictions || []).filter(function(p) { return p.id !== id; }) });
+    }
+
+    var predictions = data.predictions || [];
+
+    // Stats
+    var completed = predictions.filter(function(p) { return p.actualMin; });
+    var avgRatio = completed.length > 0 ? completed.reduce(function(s, p) { return s + (p.actualMin / p.predictedMin); }, 0) / completed.length : 0;
+    var avgRatioPct = avgRatio > 0 ? Math.round((avgRatio - 1) * 100) : 0;
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('⏱', 'Time Estimation Trainer', 'Predict how long. Log actual. Calibration improves with practice. ADHD students typically under-estimate by 30-100%.', '#9333ea'),
+
+      activePrediction ? tkCard('#9333ea',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 8 } }, '⏱ Currently timing'),
+          hh('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(2,6,23,0.7)', marginBottom: 12, textAlign: 'center' } },
+            hh('div', { style: { fontSize: 14, color: '#e2e8f0', marginBottom: 6 } }, activePrediction.task),
+            hh('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'You predicted: ', hh('strong', { style: { color: '#c084fc', fontSize: 14, fontFamily: 'ui-monospace, Menlo, monospace' } }, activePrediction.predictedMin + ' min'))
+          ),
+          endForm.actualMin > 0 && endForm.actualMin !== 30 ? hh('div', null,
+            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#c084fc', display: 'block', marginBottom: 4 } }, 'Actual time taken'),
+            hh('input', { type: 'number', value: endForm.actualMin,
+              onChange: function(e) { setEndForm(Object.assign({}, endForm, { actualMin: parseInt(e.target.value, 10) })); },
+              style: { width: '100%', padding: '10px 12px', fontSize: 14, color: '#c084fc', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(147,51,234,0.40)', borderRadius: 6, boxSizing: 'border-box', fontWeight: 800, marginBottom: 10 }
+            }),
+            tkTextarea(endForm.notes, function(v) { setEndForm(Object.assign({}, endForm, { notes: v })); }, 'What surprised you? (optional)', 2, { marginBottom: 10 }),
+            hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+              tkBtn('Cancel', cancelTimer, 'ghost'),
+              tkBtn('💾 Log it', logComplete, 'primary')
+            )
+          ) : hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+            tkBtn('Cancel', cancelTimer, 'ghost'),
+            tkBtn('⏹ Stop + log', stopTimer, 'primary')
+          )
+        )
+      ) : tkCard('#9333ea',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 10 } }, '⏱ New task — predict how long'),
+          tkInput(form.task, function(v) { setForm(Object.assign({}, form, { task: v })); }, 'Task you\'re about to do (e.g., "Write history outline")', { marginBottom: 10 }),
+          hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#cbd5e1', marginBottom: 4 } },
+            hh('span', null, 'I think this will take...'),
+            hh('strong', { style: { color: '#c084fc', fontSize: 16, fontFamily: 'ui-monospace, Menlo, monospace' } }, form.predictedMin + ' min')
+          ),
+          hh('input', { type: 'range', min: 5, max: 180, step: 5, value: form.predictedMin,
+            onChange: function(e) { setForm(Object.assign({}, form, { predictedMin: parseInt(e.target.value, 10) })); },
+            style: { width: '100%', accentColor: '#9333ea', marginBottom: 12 }
+          }),
+          tkBtn('▶ Start timer', startTimer, 'primary', { padding: '12px 24px', fontSize: 12 })
+        )
+      ),
+
+      // Calibration stats
+      completed.length > 0 ? hh('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(147,51,234,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(147,51,234,0.40)', marginBottom: 12, textAlign: 'center' } },
+        hh('div', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 } }, 'Your calibration over ' + completed.length + ' tasks'),
+        hh('div', { style: { fontSize: 32, fontWeight: 900, color: avgRatioPct > 30 ? '#ef4444' : avgRatioPct > 10 ? '#fbbf24' : avgRatioPct < -10 ? '#3b82f6' : '#10b981', fontFamily: 'ui-monospace, Menlo, monospace' } },
+          avgRatioPct > 0 ? '+' + avgRatioPct + '%' : avgRatioPct + '%'
+        ),
+        hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 4 } },
+          avgRatioPct > 30 ? '⚠ You under-estimate by a lot. Multiply your gut number by 1.5.'
+          : avgRatioPct > 10 ? '🟡 Mild under-estimation. Add a buffer.'
+          : avgRatioPct < -10 ? '🔵 Over-estimating. You\'re actually faster than you think.'
+          : '✅ Well-calibrated!'
+        )
+      ) : null,
+
+      // History
+      predictions.length > 0 ? hh('div', null,
+        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, '📚 Past predictions'),
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+          predictions.slice(0, 15).map(function(p) {
+            var diff = p.actualMin - p.predictedMin;
+            var diffPct = p.predictedMin > 0 ? Math.round((diff / p.predictedMin) * 100) : 0;
+            var col = Math.abs(diffPct) <= 10 ? '#10b981' : Math.abs(diffPct) <= 30 ? '#fbbf24' : '#ef4444';
+            return hh('div', { key: 'pr-' + p.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + col } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 } },
+                hh('div', { style: { flex: 1, minWidth: 0 } },
+                  hh('strong', { style: { fontSize: 12, color: '#cbd5e1' } }, p.task),
+                  hh('div', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 2 } },
+                    'predicted ' + p.predictedMin + 'm · actual ' + p.actualMin + 'm · ',
+                    hh('span', { style: { color: col, fontWeight: 800 } }, (diffPct > 0 ? '+' : '') + diffPct + '%')
+                  )
+                ),
+                hh('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+              ),
+              p.notes ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', fontStyle: 'italic', marginTop: 4 } }, p.notes) : null
+            );
+          })
+        )
+      ) : null
+    );
+  }
+
+  // ── GG. PERSONAL DISTRACTION LOG (Wave 7) ──
+  // When you notice you've been distracted, log it. Pattern reveals
+  // YOUR specific distractions. Surfacing the pattern is half the work.
+  function PersonalDistractionLog(props) {
+    if (!R) return null;
+    var data = props.data || { events: [] };
+    var setData = props.setData;
+    var fs = R.useState({ source: '', context: '', durationMin: 5 });
+    var form = fs[0]; var setForm = fs[1];
+
+    var SOURCES = [
+      { id: 'phone',    label: 'Phone',           icon: '📱', color: '#ef4444' },
+      { id: 'people',   label: 'People',          icon: '👥', color: '#fbbf24' },
+      { id: 'noise',    label: 'Noise',           icon: '🔊', color: '#a855f7' },
+      { id: 'thoughts', label: 'My own thoughts', icon: '💭', color: '#06b6d4' },
+      { id: 'hungry',   label: 'Hungry / tired',  icon: '😴', color: '#3b82f6' },
+      { id: 'bored',    label: 'Boredom',         icon: '😑', color: '#94a3b8' },
+      { id: 'overwhelm',label: 'Overwhelm',       icon: '😵', color: '#f97316' },
+      { id: 'other',    label: 'Other',           icon: '❓', color: '#64748b' }
+    ];
+
+    function log() {
+      if (!form.source) { alert('Pick a distraction source.'); return; }
+      var entry = Object.assign({ id: tkId(), date: todayISO(), time: Date.now() }, form);
+      setData({ events: [entry].concat(data.events || []) });
+      setForm({ source: '', context: '', durationMin: 5 });
+    }
+    function remove(id) {
+      setData({ events: (data.events || []).filter(function(e) { return e.id !== id; }) });
+    }
+
+    var events = data.events || [];
+    // Per-source totals
+    var bySource = SOURCES.map(function(s) {
+      var ev = events.filter(function(e) { return e.source === s.id; });
+      var totalMin = ev.reduce(function(sum, e) { return sum + (e.durationMin || 0); }, 0);
+      return { source: s, count: ev.length, totalMin: totalMin };
+    }).sort(function(a, b) { return b.totalMin - a.totalMin; });
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🚨', 'Distraction Log', 'When you catch yourself distracted, log it (no shame, just data). The pattern is the insight.', '#ef4444'),
+
+      tkCard('#ef4444',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fca5a5', marginBottom: 8 } }, '🚨 Log a distraction (right now or just happened)'),
+          hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 10 } },
+            SOURCES.map(function(s) {
+              var on = form.source === s.id;
+              return hh('button', { key: 'sr-' + s.id,
+                onClick: function() { setForm(Object.assign({}, form, { source: s.id })); },
+                style: { padding: '8px 10px', borderRadius: 6, background: on ? s.color + '30' : 'rgba(15,23,42,0.5)', color: on ? s.color : '#94a3b8', border: '1px solid ' + (on ? s.color : 'rgba(100,116,139,0.30)'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+              }, s.icon + ' ' + s.label);
+            })
+          ),
+          tkInput(form.context, function(v) { setForm(Object.assign({}, form, { context: v })); }, 'Context (what were you trying to do?)', { marginBottom: 8 }),
+          hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 } },
+            hh('span', { style: { fontSize: 11, color: '#cbd5e1' } }, 'Approximate duration'),
+            hh('strong', { style: { color: '#fca5a5', fontSize: 14, fontFamily: 'ui-monospace, Menlo, monospace' } }, form.durationMin + ' min')
+          ),
+          hh('input', { type: 'range', min: 1, max: 60, step: 1, value: form.durationMin,
+            onChange: function(e) { setForm(Object.assign({}, form, { durationMin: parseInt(e.target.value, 10) })); },
+            style: { width: '100%', accentColor: '#ef4444', marginBottom: 10 }
+          }),
+          tkBtn('🚨 Log it', log, 'primary')
+        )
+      ),
+
+      // Top distractions
+      events.length > 0 ? hh('div', { style: { marginBottom: 14 } },
+        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, '🔥 Your top distractions (sorted by total time lost)'),
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+          bySource.filter(function(s) { return s.count > 0; }).map(function(s, i) {
+            return hh('div', { key: 'rk-' + i, style: { display: 'flex', alignItems: 'center', gap: 10, padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + s.source.color } },
+              hh('div', { style: { width: 24, height: 24, borderRadius: '50%', background: s.source.color + '20', color: s.source.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 900, flexShrink: 0 } }, '#' + (i + 1)),
+              hh('div', { style: { fontSize: 14, flexShrink: 0 } }, s.source.icon),
+              hh('div', { style: { flex: 1, minWidth: 0 } },
+                hh('strong', { style: { fontSize: 12, color: s.source.color } }, s.source.label),
+                hh('div', { style: { fontSize: 10, color: '#94a3b8' } }, s.count + ' events · ' + s.totalMin + ' min total')
+              )
+            );
+          })
+        )
+      ) : null,
+
+      // Recent log
+      events.length > 0 ? hh('div', null,
+        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, '📚 Recent'),
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+          events.slice(0, 15).map(function(e) {
+            var s = SOURCES.filter(function(x) { return x.id === e.source; })[0] || SOURCES[0];
+            return hh('div', { key: 'el-' + e.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + s.color, display: 'flex', justifyContent: 'space-between' } },
+              hh('div', { style: { flex: 1, minWidth: 0 } },
+                hh('div', { style: { fontSize: 11, color: '#cbd5e1' } }, s.icon + ' ' + s.label, e.context ? ' · ' + e.context : ''),
+                hh('div', { style: { fontSize: 9, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } }, e.durationMin + 'm · ' + new Date(e.time).toLocaleString())
+              ),
+              hh('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+            );
+          })
+        )
+      ) : null,
+
+      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+        hh('strong', { style: { color: '#ef4444' } }, '🎓 Why log distractions: '),
+        'Most distraction-coaching fails because it generic ("eliminate phones!"). YOUR pattern is specific. After 2 weeks of logging you\'ll see your real top 1-2 — often surprising. The intervention follows the data, not generic advice.'
+      )
+    );
+  }
+
+  // ── HH. PERSONAL CLASS NOTES SEARCH HUB (Wave 7) ──
+  // Quick search across all journal entries + Cornell notes + reflection
+  // prompts. Unified search across content. Doesn't store separately —
+  // pulls from the other tools.
+  function PersonalSearchHub(props) {
+    if (!R) return null;
+    var allData = props.allData || {};
+    var qs = R.useState(''); var query = qs[0]; var setQuery = qs[1];
+
+    var results = [];
+    if (query.length >= 2) {
+      var q = query.toLowerCase();
+      var notes = ((allData.mytkNotes || {}).notes || []);
+      notes.forEach(function(n) {
+        var match = (n.title || '').toLowerCase().indexOf(q) >= 0 ||
+                    (n.main || '').toLowerCase().indexOf(q) >= 0 ||
+                    (n.cue || '').toLowerCase().indexOf(q) >= 0 ||
+                    (n.summary || '').toLowerCase().indexOf(q) >= 0;
+        if (match) results.push({ source: 'Cornell Notes', sourceIcon: '📝', sourceColor: '#3b82f6', title: n.title, snippet: n.summary || n.main || '', date: n.createdAt });
+      });
+      var journal = ((allData.mytkJournal || {}).entries || []);
+      journal.forEach(function(j) {
+        var match = (j.title || '').toLowerCase().indexOf(q) >= 0 ||
+                    (j.body || '').toLowerCase().indexOf(q) >= 0 ||
+                    (j.tags || '').toLowerCase().indexOf(q) >= 0;
+        if (match) results.push({ source: 'Learning Journal', sourceIcon: '📓', sourceColor: '#ec4899', title: j.title || j.subject || 'untitled', snippet: j.body, date: j.date });
+      });
+      var prompts = ((allData.mytkPrompts || {}).responses || []);
+      prompts.forEach(function(p) {
+        if ((p.text || '').toLowerCase().indexOf(q) >= 0 || (p.promptText || '').toLowerCase().indexOf(q) >= 0) {
+          results.push({ source: 'Reflection Prompts', sourceIcon: '📓', sourceColor: '#a855f7', title: p.promptText, snippet: p.text, date: p.date });
+        }
+      });
+      var reflect = ((allData.mytkReflect || {}).entries || []);
+      reflect.forEach(function(r) {
+        ['went_well', 'stuck', 'will_try', 'wins', 'proud'].forEach(function(k) {
+          if ((r[k] || '').toLowerCase().indexOf(q) >= 0) {
+            results.push({ source: 'Weekly Reflection', sourceIcon: '📔', sourceColor: '#f472b6', title: r.week, snippet: r[k], date: r.date });
+          }
+        });
+      });
+      var goals = ((allData.mytkGoals || {}).goals || []);
+      goals.forEach(function(g) {
+        var match = (g.title || '').toLowerCase().indexOf(q) >= 0 ||
+                    ['specific', 'measurable', 'achievable', 'relevant', 'timebound'].some(function(k) {
+                      return (g[k] || '').toLowerCase().indexOf(q) >= 0;
+                    });
+        if (match) results.push({ source: 'Goals', sourceIcon: '🎯', sourceColor: '#9333ea', title: g.title, snippet: g.specific || '', date: g.createdAt });
+      });
+      var brain = ((allData.mytkBrain || {}).items || []);
+      brain.forEach(function(b) {
+        if ((b.text || '').toLowerCase().indexOf(q) >= 0) {
+          results.push({ source: 'Brain Dump', sourceIcon: '🧠', sourceColor: '#60a5fa', title: b.cat, snippet: b.text, date: new Date(b.createdAt).toISOString().slice(0, 10) });
+        }
+      });
+      results.sort(function(a, b) { return (b.date || '').localeCompare(a.date || ''); });
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🔎', 'Search My Toolkit', 'Find anything across your notes, journal, reflections, prompts, goals, and brain dumps.', '#06b6d4'),
+
+      hh('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 12, padding: 14, border: '2px solid #06b6d4', marginBottom: 14 } },
+        hh('input', { type: 'text', value: query, autoFocus: true,
+          onChange: function(e) { setQuery(e.target.value); },
+          placeholder: 'Search across all your saved content...',
+          style: { width: '100%', padding: '12px 14px', fontSize: 14, color: '#e2e8f0', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(6,182,212,0.40)', borderRadius: 8, outline: 'none', boxSizing: 'border-box' }
+        })
+      ),
+
+      query.length < 2 ? hh('div', { style: { padding: 20, textAlign: 'center', color: '#64748b', fontStyle: 'italic' } }, 'Type 2+ characters to search.')
+      : results.length === 0 ? hh('div', { style: { padding: 20, textAlign: 'center', color: '#64748b', fontStyle: 'italic' } }, 'No matches across your toolkit.')
+      : hh('div', null,
+          hh('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10 } }, results.length + ' result' + (results.length !== 1 ? 's' : '')),
+          hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+            results.slice(0, 30).map(function(r, i) {
+              return hh('div', { key: 'sr-' + i, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + r.sourceColor } },
+                hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
+                  hh('span', { style: { fontSize: 10, color: r.sourceColor, fontWeight: 700, fontFamily: 'ui-monospace, Menlo, monospace' } }, r.sourceIcon + ' ' + r.source),
+                  hh('span', { style: { fontSize: 10, color: '#94a3b8' } }, r.date)
+                ),
+                r.title ? hh('strong', { style: { fontSize: 12, color: '#e2e8f0' } }, r.title) : null,
+                hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 2, lineHeight: 1.55 } },
+                  (r.snippet || '').substring(0, 200) + ((r.snippet || '').length > 200 ? '…' : '')
+                )
+              );
+            })
+          )
+        )
+    );
+  }
+
+  // ── II. PERSONAL CHEAT-SHEET BUILDER (Wave 7) ──
+  // Build a one-page cheat-sheet per topic. Sections + bullets.
+  // The act of building a cheat-sheet is itself retrieval practice +
+  // compression — both Dunlosky-high-utility strategies.
+  function PersonalCheatSheets(props) {
+    if (!R) return null;
+    var data = props.data || { sheets: [] };
+    var setData = props.setData;
+    var vs = R.useState('list');                       var view = vs[0]; var setView = vs[1];
+    var as = R.useState(null);                         var activeId = as[0]; var setActiveId = as[1];
+    var ns = R.useState('');                           var newTitle = ns[0]; var setNewTitle = ns[1];
+
+    function createSheet() {
+      if (!newTitle.trim()) return;
+      var sheet = { id: tkId(), title: newTitle.trim(), sections: [{ id: tkId(), title: 'Key concepts', bullets: [''] }], createdAt: todayISO() };
+      setData({ sheets: [sheet].concat(data.sheets || []) });
+      setActiveId(sheet.id);
+      setNewTitle('');
+      setView('edit');
+    }
+    function getSheet() { return (data.sheets || []).filter(function(s) { return s.id === activeId; })[0]; }
+    function updateSheet(patch) {
+      setData({
+        sheets: (data.sheets || []).map(function(s) { return s.id === activeId ? Object.assign({}, s, patch) : s; })
+      });
+    }
+    function removeSheet(id) {
+      if (!confirm('Delete this cheat sheet?')) return;
+      setData({ sheets: (data.sheets || []).filter(function(s) { return s.id !== id; }) });
+    }
+    function addSection() {
+      var s = getSheet();
+      updateSheet({ sections: (s.sections || []).concat([{ id: tkId(), title: 'New section', bullets: [''] }]) });
+    }
+    function updateSection(i, patch) {
+      var s = getSheet();
+      var sections = s.sections.slice();
+      sections[i] = Object.assign({}, sections[i], patch);
+      updateSheet({ sections: sections });
+    }
+    function removeSection(i) {
+      var s = getSheet();
+      updateSheet({ sections: s.sections.filter(function(_, j) { return j !== i; }) });
+    }
+    function updateBullet(secI, bulI, text) {
+      var s = getSheet();
+      var sections = s.sections.slice();
+      var bullets = sections[secI].bullets.slice();
+      bullets[bulI] = text;
+      sections[secI] = Object.assign({}, sections[secI], { bullets: bullets });
+      updateSheet({ sections: sections });
+    }
+    function addBullet(secI) {
+      var s = getSheet();
+      var sections = s.sections.slice();
+      sections[secI] = Object.assign({}, sections[secI], { bullets: (sections[secI].bullets || []).concat(['']) });
+      updateSheet({ sections: sections });
+    }
+    function removeBullet(secI, bulI) {
+      var s = getSheet();
+      var sections = s.sections.slice();
+      sections[secI] = Object.assign({}, sections[secI], { bullets: sections[secI].bullets.filter(function(_, j) { return j !== bulI; }) });
+      updateSheet({ sections: sections });
+    }
+
+    if (view === 'edit') {
+      var sheet = getSheet();
+      if (!sheet) { setView('list'); return null; }
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader('📋', sheet.title, (sheet.sections || []).length + ' sections', '#fbbf24'),
+        hh('div', { style: { display: 'flex', gap: 6, marginBottom: 10 } },
+          tkBtn('← All sheets', function() { setView('list'); setActiveId(null); }, 'ghost'),
+          tkBtn('+ Add section', addSection, 'primary'),
+          tkBtn('🖨 Print', function() { try { window.print(); } catch (e) {} }, 'secondary')
+        ),
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
+          (sheet.sections || []).map(function(sec, secI) {
+            return hh('div', { key: 'sec-' + sec.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid #fbbf24' } },
+              hh('div', { style: { display: 'flex', gap: 6, marginBottom: 8 } },
+                tkInput(sec.title, function(v) { updateSection(secI, { title: v }); }, 'Section title', { flex: 1, fontWeight: 800, color: '#fbbf24' }),
+                hh('button', { onClick: function() { removeSection(secI); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 14, cursor: 'pointer', padding: '0 8px' } }, '✕')
+              ),
+              hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+                (sec.bullets || []).map(function(b, bulI) {
+                  return hh('div', { key: 'bul-' + secI + '-' + bulI, style: { display: 'flex', gap: 4, alignItems: 'center' } },
+                    hh('span', { style: { color: '#fbbf24', fontWeight: 800, minWidth: 14 } }, '•'),
+                    tkInput(b, function(v) { updateBullet(secI, bulI, v); }, 'Bullet point', { flex: 1, fontSize: 11 }),
+                    hh('button', { onClick: function() { removeBullet(secI, bulI); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer', padding: 4 } }, '✕')
+                  );
+                }),
+                tkBtn('+ Bullet', function() { addBullet(secI); }, 'ghost', { padding: '4px 10px', fontSize: 10 })
+              )
+            );
+          })
+        )
+      );
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('📋', 'Cheat Sheet Builder', 'Make a 1-page cheat sheet per topic. The BUILDING is the studying — retrieval + compression.', '#fbbf24'),
+
+      tkCard('#fbbf24',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, '+ New cheat sheet'),
+          hh('div', { style: { display: 'flex', gap: 6 } },
+            tkInput(newTitle, setNewTitle, 'Topic (e.g., "Cell biology chapter 5")', { flex: 1 }),
+            tkBtn('Create', createSheet, 'primary')
+          )
+        )
+      ),
+
+      (data.sheets || []).length === 0 ? tkEmptyState('📋', 'No cheat sheets yet. Build your first.', null, null)
+      : hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
+          (data.sheets || []).map(function(s) {
+            var totalBullets = (s.sections || []).reduce(function(sum, sec) { return sum + (sec.bullets || []).length; }, 0);
+            return hh('div', { key: 'sh-' + s.id, style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(251,191,36,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(251,191,36,0.40)', borderLeft: '4px solid #fbbf24' } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+                hh('strong', { style: { fontSize: 13, color: '#fbbf24' } }, '📋 ' + s.title),
+                hh('button', { onClick: function() { removeSheet(s.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: 12 } }, '✕')
+              ),
+              hh('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 4, marginBottom: 8 } }, (s.sections || []).length + ' sections · ' + totalBullets + ' bullets · ' + relDate(s.createdAt)),
+              tkBtn('Open ↗', function() { setActiveId(s.id); setView('edit'); }, 'primary', { width: '100%', textAlign: 'center' })
+            );
+          })
+        ),
+
+      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+        hh('strong', { style: { color: '#fbbf24' } }, '🎓 Why cheat-sheet building works: '),
+        'The act of deciding what goes ON the cheat sheet forces compression + retrieval. Often you don\'t need to USE the sheet — the building taught you the content. Try it before tests where cheat sheets are allowed (some classes), or as a study tool when they\'re not.'
+      )
+    );
+  }
+
+  // ── JJ. PERSONAL ASK-FOR-HELP TRACKER (Wave 7) ──
+  // Log every time you ask for help — destigmatize the act. ADHD/autistic
+  // students often UNDER-ask. Tracking surfaces the pattern + builds the
+  // muscle.
+  function PersonalAskTracker(props) {
+    if (!R) return null;
+    var data = props.data || { asks: [] };
+    var setData = props.setData;
+    var fs = R.useState({ who: '', what: '', outcome: 'helpful', notes: '' });
+    var form = fs[0]; var setForm = fs[1];
+
+    var OUTCOMES = [
+      { id: 'helpful',    label: 'Helpful', icon: '✓', color: '#10b981' },
+      { id: 'partial',    label: 'Partial', icon: '~', color: '#fbbf24' },
+      { id: 'not-useful', label: 'Not useful', icon: '✗', color: '#94a3b8' },
+      { id: 'hard',       label: 'Hard to ask', icon: '😰', color: '#a855f7' }
+    ];
+
+    function log() {
+      if (!form.what.trim()) { alert('Need at least "what".'); return; }
+      var entry = Object.assign({ id: tkId(), date: todayISO(), time: Date.now() }, form);
+      setData({ asks: [entry].concat(data.asks || []) });
+      setForm({ who: '', what: '', outcome: 'helpful', notes: '' });
+    }
+    function remove(id) {
+      setData({ asks: (data.asks || []).filter(function(a) { return a.id !== id; }) });
+    }
+
+    var asks = data.asks || [];
+    var weekCount = asks.filter(function(a) { return daysAgo(a.date) <= 7; }).length;
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🙋', 'Ask-for-Help Tracker', 'Log every help-ask. The act of asking is the skill, separate from whether the help was useful.', '#10b981'),
+
+      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 8, marginBottom: 12 } },
+        [
+          { label: 'Total asks', value: asks.length, color: '#10b981', icon: '🙋' },
+          { label: 'This week', value: weekCount, color: '#fbbf24', icon: '📅' },
+          { label: 'Helpful %', value: asks.length > 0 ? Math.round(asks.filter(function(a) { return a.outcome === 'helpful'; }).length / asks.length * 100) + '%' : '—', color: '#a855f7', icon: '✨' }
+        ].map(function(s, i) {
+          return hh('div', { key: 'ats-' + i, style: { padding: 10, borderRadius: 8, background: s.color + '12', border: '1px solid ' + s.color + '30', textAlign: 'center' } },
+            hh('div', { style: { fontSize: 14, marginBottom: 2 } }, s.icon),
+            hh('div', { style: { fontSize: 16, fontWeight: 900, color: s.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, s.value),
+            hh('div', { style: { fontSize: 9, color: '#94a3b8', textTransform: 'uppercase' } }, s.label)
+          );
+        })
+      ),
+
+      tkCard('#10b981',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#10b981', marginBottom: 8 } }, '🙋 Log an ask'),
+          hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 8, marginBottom: 8 } },
+            tkInput(form.who, function(v) { setForm(Object.assign({}, form, { who: v })); }, 'Who?'),
+            tkInput(form.what, function(v) { setForm(Object.assign({}, form, { what: v })); }, 'What did you ask for?')
+          ),
+          hh('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 4 } }, 'How did it go?'),
+          hh('div', { style: { display: 'flex', gap: 4, marginBottom: 10, flexWrap: 'wrap' } },
+            OUTCOMES.map(function(o) {
+              var on = form.outcome === o.id;
+              return hh('button', { key: 'oc-' + o.id,
+                onClick: function() { setForm(Object.assign({}, form, { outcome: o.id })); },
+                style: { padding: '6px 10px', borderRadius: 6, background: on ? o.color + '30' : 'rgba(15,23,42,0.5)', color: on ? o.color : '#94a3b8', border: '1px solid ' + (on ? o.color : 'rgba(100,116,139,0.30)'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+              }, o.icon + ' ' + o.label);
+            })
+          ),
+          tkTextarea(form.notes, function(v) { setForm(Object.assign({}, form, { notes: v })); }, 'Notes (optional) — what surprised you?', 2, { marginBottom: 8 }),
+          tkBtn('💾 Log', log, 'primary')
+        )
+      ),
+
+      asks.length > 0 ? hh('div', null,
+        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, '📚 Recent asks'),
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+          asks.slice(0, 15).map(function(a) {
+            var o = OUTCOMES.filter(function(x) { return x.id === a.outcome; })[0] || OUTCOMES[0];
+            return hh('div', { key: 'as-' + a.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + o.color } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+                hh('div', { style: { flex: 1 } },
+                  hh('div', { style: { fontSize: 11, color: '#cbd5e1' } },
+                    hh('span', { style: { color: o.color, fontWeight: 700, marginRight: 4 } }, o.icon),
+                    a.who ? hh('strong', { style: { color: '#10b981' } }, a.who + ': ') : null,
+                    a.what
+                  ),
+                  hh('div', { style: { fontSize: 9, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 2 } }, relDate(a.date))
+                ),
+                hh('button', { onClick: function() { remove(a.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+              ),
+              a.notes ? hh('div', { style: { fontSize: 10, color: '#cbd5e1', marginTop: 4, fontStyle: 'italic' } }, a.notes) : null
+            );
+          })
+        )
+      ) : null,
+
+      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+        hh('strong', { style: { color: '#10b981' } }, '🎓 Why log this: '),
+        'Asking for help is THE most underused academic skill. Especially among neurodivergent students and high-achievers. Logging it normalizes it — converts an internal "I should be able to figure this out" voice into a behavior that has data. Watch the pattern: who do you ask easily? Who do you avoid?'
+      )
+    );
+  }
+
   // ── F. MY TOOLKIT HUB (landing page) ──
   // Single entry point that shows status of all toolkit tools + quick
   // actions. Today's date, current streak, # active goals, etc.
@@ -9361,7 +10070,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'mytkCompass',  icon: '💖', label: 'Self-Compassion',      color: '#f472b6', desc: 'RAIN + Inner Coach + Self-Compassion Break',
         stat: ((data.mytkCompass || {}).sessions || []).length + ' practices', cta: 'Practice now' },
       { id: 'mytkDash',     icon: '📊', label: 'Progress Dashboard',   color: '#10b981', desc: 'All toolkit stats + trends in one view',
-        stat: 'live', cta: 'See progress' }
+        stat: 'live', cta: 'See progress' },
+      { id: 'mytkChall',    icon: '🏆', label: 'Challenge Board',      color: '#fbbf24', desc: '30-day challenges with daily action log',
+        stat: ((data.mytkChall || {}).challenges || []).length + ' active', cta: 'Start a challenge' },
+      { id: 'mytkTime',     icon: '⏱', label: 'Time Estimator',       color: '#9333ea', desc: 'Predict + log time. Build calibration.',
+        stat: ((data.mytkTime || {}).predictions || []).length + ' logged', cta: 'Time a task' },
+      { id: 'mytkDist',     icon: '🚨', label: 'Distraction Log',      color: '#ef4444', desc: 'Log distractions, see your top 1-2',
+        stat: ((data.mytkDist || {}).events || []).length + ' events', cta: 'Log a distraction' },
+      { id: 'mytkSearch',   icon: '🔎', label: 'Search My Toolkit',    color: '#06b6d4', desc: 'Search across all saved content',
+        stat: 'instant', cta: 'Search now' },
+      { id: 'mytkCheats',   icon: '📋', label: 'Cheat Sheet Builder',  color: '#fbbf24', desc: 'Build 1-page cheat sheets per topic',
+        stat: ((data.mytkCheats || {}).sheets || []).length + ' sheets', cta: 'Build a sheet' },
+      { id: 'mytkAsk',      icon: '🙋', label: 'Ask-for-Help Tracker', color: '#10b981', desc: 'Log every help-ask. Destigmatize the skill.',
+        stat: ((data.mytkAsk || {}).asks || []).length + ' asks', cta: 'Log an ask' }
     ];
 
     var dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][new Date().getDay()];
@@ -9578,7 +10299,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'mytkGrat',   icon: '🙏', label: 'Gratitude Log',        desc: '3 daily gratitudes (Emmons + McCullough 2003) — strongest single positive-psychology intervention.' },
               { id: 'mytkRead',   icon: '📚', label: 'Reading Tracker',      desc: 'Books read + want-to-read + reflections + page counter (Krashen 2004).' },
               { id: 'mytkCompass',icon: '💖', label: 'Self-Compassion',      desc: 'Guided RAIN + Inner Coach + Self-Compassion Break (Neff 2003).' },
-              { id: 'mytkDash',   icon: '📊', label: 'Progress Dashboard',   desc: 'Single overview of every toolkit tool with 14-day activity strip + suggestions.' }
+              { id: 'mytkDash',   icon: '📊', label: 'Progress Dashboard',   desc: 'Single overview of every toolkit tool with 14-day activity strip + suggestions.' },
+              { id: 'mytkChall',  icon: '🏆', label: 'Challenge Board',      desc: '30-day challenges with daily action log + Fogg 2019 Tiny Habits.' },
+              { id: 'mytkTime',   icon: '⏱', label: 'Time Estimator',       desc: 'Predict task time, log actual, see your calibration percentage.' },
+              { id: 'mytkDist',   icon: '🚨', label: 'Distraction Log',      desc: 'Log distractions across 8 sources. Surfaces YOUR pattern, not generic advice.' },
+              { id: 'mytkSearch', icon: '🔎', label: 'Search My Toolkit',    desc: 'Instant full-text search across notes, journal, reflections, prompts, goals, brain dumps.' },
+              { id: 'mytkCheats', icon: '📋', label: 'Cheat Sheet Builder',  desc: 'Build 1-page cheat sheets per topic. Building IS the studying.' },
+              { id: 'mytkAsk',    icon: '🙋', label: 'Ask-for-Help Tracker', desc: 'Log every help-ask. Normalize the most underused academic skill.' }
             ]
           },
           { id: 'foundation', icon: '🧠', name: 'How learning works (foundation)',
@@ -12848,6 +13575,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           h(PersonalProgressDashboard, { allData: d })
         );
       }
+      function renderMytkChall() {
+        var dch = d.mytkChall || { challenges: [] };
+        var setDch = function(newData) { upd('mytkChall', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalChallengeBoard, { data: dch, setData: setDch })
+        );
+      }
+      function renderMytkTime() {
+        var dtm = d.mytkTime || { predictions: [] };
+        var setDtm = function(newData) { upd('mytkTime', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalTimeEstimator, { data: dtm, setData: setDtm })
+        );
+      }
+      function renderMytkDist() {
+        var ddi = d.mytkDist || { events: [] };
+        var setDdi = function(newData) { upd('mytkDist', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalDistractionLog, { data: ddi, setData: setDdi })
+        );
+      }
+      function renderMytkSearch() {
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalSearchHub, { allData: d })
+        );
+      }
+      function renderMytkCheats() {
+        var dcs = d.mytkCheats || { sheets: [] };
+        var setDcs = function(newData) { upd('mytkCheats', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalCheatSheets, { data: dcs, setData: setDcs })
+        );
+      }
+      function renderMytkAsk() {
+        var dak = d.mytkAsk || { asks: [] };
+        var setDak = function(newData) { upd('mytkAsk', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalAskTracker, { data: dak, setData: setDak })
+        );
+      }
 
       // ─────────────────────────────────────────
       // VIEW ROUTER
@@ -12884,6 +13657,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         case 'mytkRead':      return renderMytkRead();
         case 'mytkCompass':   return renderMytkCompass();
         case 'mytkDash':      return renderMytkDash();
+        case 'mytkChall':     return renderMytkChall();
+        case 'mytkTime':      return renderMytkTime();
+        case 'mytkDist':      return renderMytkDist();
+        case 'mytkSearch':    return renderMytkSearch();
+        case 'mytkCheats':    return renderMytkCheats();
+        case 'mytkAsk':       return renderMytkAsk();
         case 'bloom':         return renderBloom();
         case 'cogload':       return renderCogLoad();
         case 'metacog':       return renderMetacog();
