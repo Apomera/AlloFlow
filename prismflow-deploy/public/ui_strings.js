@@ -4650,7 +4650,22 @@
       "label_start": "Start",
       "label_current": "Current"
     },
-    "notebook_activity": "Notebook Activity"
+    "notebook_activity": "Notebook Activity",
+    "class_notebook": {
+      "no_ai": "AI is not available right now.",
+      "need_more_students": "Need at least 2 students with notebook entries to surface class patterns.",
+      "error": "Could not generate class insights right now. Try again in a moment.",
+      "title": "Class Notebook Activity",
+      "ai_button_aria": "Generate AI insights on class-wide note-taking patterns",
+      "need_more_short": "Need 2+ students with notebook",
+      "ai_button_tooltip": "AI looks for class-wide patterns and suggests mini-lessons",
+      "ai_button": "AI Class Insights",
+      "students_with": "Students using",
+      "loading": "AI is reading across the class...",
+      "overview_label": "Class overview",
+      "mini_lesson_label": "Try a mini-lesson:",
+      "celebration_label": "Class strength"
+    }
   },
   "tools": {
     "source": "Source Material",

@@ -2351,6 +2351,209 @@ const LongitudinalProgressChart = React.memo(({ logs }) => {
         </div>
     );
 });
+// ── ClassNotebookSection ─────────────────────────────────────────────────
+// Class-wide aggregate of note-taking + anchor-chart activity, with an AI
+// button that surfaces patterns across the roster (parallel to the per-
+// student Note-Taking Insights but cross-classroom: "12 of your 22 students
+// consistently skip CER Reasoning — consider a mini-lesson").
+//
+// Drops into the Insights tab. Shows nothing if the roster has no notebook
+// activity at all (avoids a useless empty section for classes that haven't
+// adopted note-taking templates yet).
+const ClassNotebookSection = React.memo(({ dashboardData, callGemini, addToast, t }) => {
+  const [insights, setInsights] = React.useState(null);
+  const [insightsLoading, setInsightsLoading] = React.useState(false);
+
+  // Aggregate notebook activity across the whole roster.
+  const agg = React.useMemo(() => {
+    const out = {
+      studentsWithNotebook: 0,
+      totalEntries: 0,
+      cornell: 0,
+      labReport: 0,
+      readingResponse: 0,
+      anchorChart: 0,
+      feedbackRequests: 0,
+      byStudent: [], // [{ name, total, cornell, labReport, readingResponse, anchorChart, feedbackRequests }]
+    };
+    (dashboardData || []).forEach(s => {
+      const hist = s.history || [];
+      const notes = hist.filter(h => h && h.type === 'note-taking');
+      const anchors = hist.filter(h => h && h.type === 'anchor-chart');
+      if (notes.length === 0 && anchors.length === 0) return;
+      out.studentsWithNotebook++;
+      const sCornell = notes.filter(e => (e.data && e.data.templateType) === 'cornell-notes').length;
+      const sLab = notes.filter(e => (e.data && e.data.templateType) === 'lab-report').length;
+      const sReading = notes.filter(e => (e.data && e.data.templateType) === 'reading-response').length;
+      const sFeedback = notes.reduce((sum, e) => sum + ((e.data && e.data.feedbackCount) || 0), 0);
+      out.cornell += sCornell;
+      out.labReport += sLab;
+      out.readingResponse += sReading;
+      out.anchorChart += anchors.length;
+      out.feedbackRequests += sFeedback;
+      out.totalEntries += notes.length + anchors.length;
+      out.byStudent.push({
+        name: s.studentNickname || 'Anonymous',
+        total: notes.length + anchors.length,
+        cornell: sCornell, labReport: sLab, readingResponse: sReading, anchorChart: anchors.length,
+        feedbackRequests: sFeedback,
+      });
+    });
+    return out;
+  }, [dashboardData]);
+
+  const handleGenerateClassInsights = React.useCallback(async () => {
+    if (typeof callGemini !== 'function') {
+      addToast(t('dashboard.class_notebook.no_ai') || 'AI is not available right now.', 'warning');
+      return;
+    }
+    if (agg.studentsWithNotebook < 2) {
+      addToast(t('dashboard.class_notebook.need_more_students') || 'Need at least 2 students with notebook entries to surface class patterns.', 'info');
+      return;
+    }
+    setInsightsLoading(true);
+    setInsights(null);
+    try {
+      // Compact per-student summary (don't ship full note bodies — too large).
+      // We sample up to 3 entries per student and serialize headline fields only.
+      const sampleEntries = [];
+      (dashboardData || []).forEach(s => {
+        const hist = s.history || [];
+        const notes = hist.filter(h => h && h.type === 'note-taking').slice(0, 3);
+        notes.forEach(n => {
+          const d = n.data || {};
+          const tt = d.templateType || 'cornell-notes';
+          const headline = ({
+            'cornell-notes': () => `cues=${(d.cues || []).length}, notes=${(d.notes || []).length}, summary_len=${(d.summary || '').length}`,
+            'lab-report': () => `hyp_len=${(d.hypothesis || '').length}, analysis_len=${(d.analysis || '').length}, conclusion_len=${(d.conclusion || '').length}`,
+            'reading-response': () => `evidence_len=${(d.favoriteLine || '').length}, thinking_len=${(d.thinkings || '').length}, connection_type=${(d.connection && d.connection.type) || 'none'}`,
+          })[tt];
+          sampleEntries.push(`${s.studentNickname || 'Anon'} (${tt}): ${headline ? headline() : 'no data'}`);
+        });
+      });
+      const prompt = `
+You are a teaching coach analyzing patterns ACROSS a class's note-taking work. Your goal is to surface 2-4 class-wide patterns that would inform the teacher's next mini-lesson, not individual student feedback.
+
+CLASS COMPOSITION:
+- Total students: ${dashboardData.length}
+- Students using notebook tools: ${agg.studentsWithNotebook}
+- Total Cornell Notes entries: ${agg.cornell}
+- Total Lab Reports: ${agg.labReport}
+- Total Reading Responses: ${agg.readingResponse}
+- Total Anchor Charts: ${agg.anchorChart}
+- Total AI feedback requests across class: ${agg.feedbackRequests}
+
+PER-STUDENT ENTRY HEADLINES (sample of up to 3 entries per student):
+${sampleEntries.slice(0, 80).join('\n')}
+
+Surface 2-4 patterns the teacher can act on. Examples of useful patterns:
+- "Cornell summary boxes are consistently 1-2 sentences across the class (avg estimated <20 words). Consider a mini-lesson on summary writing."
+- "12 of 22 students have not yet tried Lab Report mode. If you have a lab coming up, model the template explicitly."
+- "AI feedback requests are concentrated in 4 students. Consider explicitly inviting reluctant students to use the Get AI Feedback button."
+
+DO NOT name individual students unless flagging an equity / engagement disparity that needs attention.
+
+Return ONLY JSON:
+{
+  "classSummary": "1-2 sentence overview of the class's notebook engagement.",
+  "patterns": [
+    { "title": "Short label (4-8 words)", "observation": "1-2 sentences describing the pattern.", "miniLesson": "1 sentence suggesting a concrete next step or mini-lesson." }
+  ],
+  "celebration": "1 sentence naming a class-wide strength worth acknowledging."
+}
+`.trim();
+      const raw = await callGemini(prompt, true);
+      const parsed = JSON.parse((window.__alloUtils && window.__alloUtils.cleanJson ? window.__alloUtils.cleanJson(raw) : raw));
+      setInsights(parsed);
+    } catch (e) {
+      console.warn('[ClassNotebookInsights] failed', e);
+      addToast(t('dashboard.class_notebook.error') || 'Could not generate class insights right now. Try again in a moment.', 'error');
+    } finally {
+      setInsightsLoading(false);
+    }
+  }, [callGemini, dashboardData, agg, addToast, t]);
+
+  if (agg.totalEntries === 0) return null;
+
+  return (
+    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-400" data-help-key="dashboard_class_notebook_section">
+      <div className="flex items-start justify-between mb-4">
+        <h4 className="text-sm font-bold text-violet-700 uppercase tracking-wider flex items-center gap-2">
+          📓 {t('dashboard.class_notebook.title') || 'Class Notebook Activity'}
+        </h4>
+        <button
+          onClick={handleGenerateClassInsights}
+          disabled={insightsLoading || agg.studentsWithNotebook < 2}
+          className="px-3 py-1.5 text-xs font-bold text-violet-800 bg-violet-100 border border-violet-300 rounded-full hover:bg-violet-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+          aria-label={t('dashboard.class_notebook.ai_button_aria') || 'Generate AI insights on class-wide note-taking patterns'}
+          title={agg.studentsWithNotebook < 2 ? (t('dashboard.class_notebook.need_more_short') || 'Need 2+ students with notebook') : (t('dashboard.class_notebook.ai_button_tooltip') || 'AI looks for class-wide patterns and suggests mini-lessons')}
+          data-help-key="dashboard_class_notebook_ai_btn"
+        >
+          {insightsLoading ? '⏳' : '✨'} {t('dashboard.class_notebook.ai_button') || 'AI Class Insights'}
+        </button>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+        <div className="bg-violet-50 rounded-xl p-3 text-center border border-violet-200">
+          <div className="text-2xl font-black text-violet-700">{agg.studentsWithNotebook}</div>
+          <div className="text-[10px] font-bold text-violet-600 uppercase mt-1">{t('dashboard.class_notebook.students_with') || 'Students using'}</div>
+        </div>
+        {agg.cornell > 0 && <div className="bg-indigo-50 rounded-xl p-3 text-center border border-indigo-200">
+          <div className="text-2xl font-black text-indigo-700">{agg.cornell}</div>
+          <div className="text-[10px] font-bold text-indigo-600 uppercase mt-1">📓 Cornell</div>
+        </div>}
+        {agg.labReport > 0 && <div className="bg-sky-50 rounded-xl p-3 text-center border border-sky-200">
+          <div className="text-2xl font-black text-sky-700">{agg.labReport}</div>
+          <div className="text-[10px] font-bold text-sky-600 uppercase mt-1">🧪 Lab Report</div>
+        </div>}
+        {agg.readingResponse > 0 && <div className="bg-fuchsia-50 rounded-xl p-3 text-center border border-fuchsia-200">
+          <div className="text-2xl font-black text-fuchsia-700">{agg.readingResponse}</div>
+          <div className="text-[10px] font-bold text-fuchsia-600 uppercase mt-1">📖 Reading</div>
+        </div>}
+        {agg.anchorChart > 0 && <div className="bg-amber-50 rounded-xl p-3 text-center border border-amber-200">
+          <div className="text-2xl font-black text-amber-700">{agg.anchorChart}</div>
+          <div className="text-[10px] font-bold text-amber-600 uppercase mt-1">📋 Anchor Chart</div>
+        </div>}
+      </div>
+      {agg.feedbackRequests > 0 && (
+        <div className="bg-emerald-50 border-l-4 border-emerald-400 rounded-r-md p-3 mb-4 text-sm">
+          <span className="font-bold text-emerald-800">💬 {agg.feedbackRequests} AI-feedback request{agg.feedbackRequests === 1 ? '' : 's'}</span>
+          <span className="text-emerald-700"> across the class. A useful proxy for metacognitive engagement (students who request feedback are practicing self-assessment).</span>
+        </div>
+      )}
+      {insightsLoading ? (
+        <div className="text-center py-8">
+          <div className="text-4xl mb-2 animate-pulse">📓</div>
+          <p className="text-sm text-slate-600 font-bold">{t('dashboard.class_notebook.loading') || 'AI is reading across the class...'}</p>
+        </div>
+      ) : insights ? (
+        <div className="space-y-3 mt-4 bg-slate-50 rounded-xl p-4 border border-slate-200">
+          {insights.classSummary && (
+            <div className="bg-white border border-slate-200 rounded-md p-3">
+              <div className="text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1">{t('dashboard.class_notebook.overview_label') || 'Class overview'}</div>
+              <div className="text-sm text-slate-700 leading-relaxed">{insights.classSummary}</div>
+            </div>
+          )}
+          {Array.isArray(insights.patterns) && insights.patterns.map((p, i) => (
+            <div key={i} className="bg-white border-l-4 border-violet-400 rounded-r-md p-3">
+              <div className="text-sm font-black text-violet-800 mb-1">{p.title}</div>
+              <div className="text-sm text-slate-700 leading-relaxed mb-2">{p.observation}</div>
+              <div className="text-xs bg-violet-50 border border-violet-200 rounded p-2 text-violet-900">
+                <span className="font-bold">{t('dashboard.class_notebook.mini_lesson_label') || 'Try a mini-lesson:'}</span> {p.miniLesson}
+              </div>
+            </div>
+          ))}
+          {insights.celebration && (
+            <div className="bg-emerald-50 border-2 border-emerald-300 rounded-md p-3">
+              <div className="text-[11px] font-black text-emerald-800 uppercase tracking-wider mb-1">🌱 {t('dashboard.class_notebook.celebration_label') || 'Class strength'}</div>
+              <div className="text-sm text-slate-700 leading-relaxed">{insights.celebration}</div>
+            </div>
+          )}
+        </div>
+      ) : null}
+    </div>
+  );
+});
+
 // @section LEARNER_PROGRESS — Student learning journey view
 const LearnerProgressView = React.memo(({
     globalPoints = 0, globalLevel = 1, globalProgress = 0, currentLevelXP = 0, globalXPNext = 100,
@@ -2905,7 +3108,7 @@ const LearnerProgressView = React.memo(({
     );
 });
 // @section TEACHER_DASHBOARD — Main teacher dashboard
-const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboardData, addToast, setSelectedStudentId, setDashboardView, dashboardView, selectedStudentId, generateResourceHTML, onOpenBehaviorLens }) => {
+const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboardData, addToast, setSelectedStudentId, setDashboardView, dashboardView, selectedStudentId, generateResourceHTML, onOpenBehaviorLens, callGemini }) => {
   const { t } = useContext(LanguageContext);
   const modalRef = useRef(null);
   useFocusTrap(modalRef, true);
@@ -3138,6 +3341,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
             ${dashboardData.filter(s => {
                                           if (studentFilter === 'probes') return s.probeHistory && Object.keys(s.probeHistory).length > 0;
                                           if (studentFilter === 'surveys') return s.surveyResponses && s.surveyResponses.length > 0;
+                                          if (studentFilter === 'notebook') return (s.history || []).some(h => h && (h.type === 'note-taking' || h.type === 'anchor-chart'));
                                           if (studentFilter === 'graded') return gradedIds.has(s.id);
                                           if (studentFilter === 'ungraded') return !gradedIds.has(s.id);
                                           return true;
@@ -3806,6 +4010,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                                  ["all", "👥 All", dashboardData.length],
                                  ["probes", "📊 Has Probes", dashboardData.filter(s => s.probeHistory && Object.keys(s.probeHistory).length > 0).length],
                                  ["surveys", "📝 Has Surveys", dashboardData.filter(s => s.surveyResponses && s.surveyResponses.length > 0).length],
+                                 ["notebook", "📓 Has Notebook", dashboardData.filter(s => (s.history || []).some(h => h && (h.type === 'note-taking' || h.type === 'anchor-chart'))).length],
                                  ["graded", "✅ Graded", dashboardData.filter(s => gradedIds.has(s.id)).length],
                                  ["ungraded", "⬜ Ungraded", dashboardData.filter(s => !gradedIds.has(s.id)).length],
                              ].map(([key, label, count]) => (
@@ -3960,6 +4165,9 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                                     </div>
                                 )}
                             </div>
+                            {/* Class Notebook Activity — note-taking + anchor-chart aggregated across roster */}
+                            <ClassNotebookSection dashboardData={dashboardData} callGemini={callGemini} addToast={addToast} t={t} />
+
                             {/* Research & Assessment Analytics */}
                             {(() => {
                                 const allProbes = dashboardData.flatMap(s => 

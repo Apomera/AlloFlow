@@ -1828,6 +1828,133 @@ const LongitudinalProgressChart = React.memo(({ logs }) => {
     return /* @__PURE__ */ React.createElement("g", { key: i, className: "group cursor-pointer" }, /* @__PURE__ */ React.createElement("circle", { cx: x, cy: y, r: "5", className: "fill-white stroke-indigo-600 stroke-2 transition-all duration-300 group-hover:r-7 group-hover:fill-indigo-50" }), /* @__PURE__ */ React.createElement("foreignObject", { x: Math.min(width - 120, Math.max(0, x - 60)), y: y - 50, width: "120", height: "50", className: "opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-800 text-white text-[11px] px-3 py-2 rounded-lg text-center shadow-xl" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold" }, new Date(l.timestamp).toLocaleDateString()), /* @__PURE__ */ React.createElement("div", { className: "text-yellow-300 font-mono" }, l.xp, " XP"))));
   }))), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600 font-medium mt-2 px-2" }, /* @__PURE__ */ React.createElement("span", null, t("dashboard.progress_chart.label_start"), ": ", new Date(logs[0].timestamp).toLocaleDateString()), /* @__PURE__ */ React.createElement("span", null, t("dashboard.progress_chart.label_current"), ": ", new Date(logs[logs.length - 1].timestamp).toLocaleDateString())));
 });
+const ClassNotebookSection = React.memo(({ dashboardData, callGemini, addToast: addToast2, t }) => {
+  const [insights, setInsights] = React.useState(null);
+  const [insightsLoading, setInsightsLoading] = React.useState(false);
+  const agg = React.useMemo(() => {
+    const out = {
+      studentsWithNotebook: 0,
+      totalEntries: 0,
+      cornell: 0,
+      labReport: 0,
+      readingResponse: 0,
+      anchorChart: 0,
+      feedbackRequests: 0,
+      byStudent: []
+      // [{ name, total, cornell, labReport, readingResponse, anchorChart, feedbackRequests }]
+    };
+    (dashboardData || []).forEach((s2) => {
+      const hist = s2.history || [];
+      const notes = hist.filter((h) => h && h.type === "note-taking");
+      const anchors = hist.filter((h) => h && h.type === "anchor-chart");
+      if (notes.length === 0 && anchors.length === 0) return;
+      out.studentsWithNotebook++;
+      const sCornell = notes.filter((e) => (e.data && e.data.templateType) === "cornell-notes").length;
+      const sLab = notes.filter((e) => (e.data && e.data.templateType) === "lab-report").length;
+      const sReading = notes.filter((e) => (e.data && e.data.templateType) === "reading-response").length;
+      const sFeedback = notes.reduce((sum, e) => sum + (e.data && e.data.feedbackCount || 0), 0);
+      out.cornell += sCornell;
+      out.labReport += sLab;
+      out.readingResponse += sReading;
+      out.anchorChart += anchors.length;
+      out.feedbackRequests += sFeedback;
+      out.totalEntries += notes.length + anchors.length;
+      out.byStudent.push({
+        name: s2.studentNickname || "Anonymous",
+        total: notes.length + anchors.length,
+        cornell: sCornell,
+        labReport: sLab,
+        readingResponse: sReading,
+        anchorChart: anchors.length,
+        feedbackRequests: sFeedback
+      });
+    });
+    return out;
+  }, [dashboardData]);
+  const handleGenerateClassInsights = React.useCallback(async () => {
+    if (typeof callGemini !== "function") {
+      addToast2(t("dashboard.class_notebook.no_ai") || "AI is not available right now.", "warning");
+      return;
+    }
+    if (agg.studentsWithNotebook < 2) {
+      addToast2(t("dashboard.class_notebook.need_more_students") || "Need at least 2 students with notebook entries to surface class patterns.", "info");
+      return;
+    }
+    setInsightsLoading(true);
+    setInsights(null);
+    try {
+      const sampleEntries = [];
+      (dashboardData || []).forEach((s2) => {
+        const hist = s2.history || [];
+        const notes = hist.filter((h) => h && h.type === "note-taking").slice(0, 3);
+        notes.forEach((n) => {
+          const d = n.data || {};
+          const tt = d.templateType || "cornell-notes";
+          const headline = {
+            "cornell-notes": () => `cues=${(d.cues || []).length}, notes=${(d.notes || []).length}, summary_len=${(d.summary || "").length}`,
+            "lab-report": () => `hyp_len=${(d.hypothesis || "").length}, analysis_len=${(d.analysis || "").length}, conclusion_len=${(d.conclusion || "").length}`,
+            "reading-response": () => `evidence_len=${(d.favoriteLine || "").length}, thinking_len=${(d.thinkings || "").length}, connection_type=${d.connection && d.connection.type || "none"}`
+          }[tt];
+          sampleEntries.push(`${s2.studentNickname || "Anon"} (${tt}): ${headline ? headline() : "no data"}`);
+        });
+      });
+      const prompt = `
+You are a teaching coach analyzing patterns ACROSS a class's note-taking work. Your goal is to surface 2-4 class-wide patterns that would inform the teacher's next mini-lesson, not individual student feedback.
+
+CLASS COMPOSITION:
+- Total students: ${dashboardData.length}
+- Students using notebook tools: ${agg.studentsWithNotebook}
+- Total Cornell Notes entries: ${agg.cornell}
+- Total Lab Reports: ${agg.labReport}
+- Total Reading Responses: ${agg.readingResponse}
+- Total Anchor Charts: ${agg.anchorChart}
+- Total AI feedback requests across class: ${agg.feedbackRequests}
+
+PER-STUDENT ENTRY HEADLINES (sample of up to 3 entries per student):
+${sampleEntries.slice(0, 80).join("\n")}
+
+Surface 2-4 patterns the teacher can act on. Examples of useful patterns:
+- "Cornell summary boxes are consistently 1-2 sentences across the class (avg estimated <20 words). Consider a mini-lesson on summary writing."
+- "12 of 22 students have not yet tried Lab Report mode. If you have a lab coming up, model the template explicitly."
+- "AI feedback requests are concentrated in 4 students. Consider explicitly inviting reluctant students to use the Get AI Feedback button."
+
+DO NOT name individual students unless flagging an equity / engagement disparity that needs attention.
+
+Return ONLY JSON:
+{
+  "classSummary": "1-2 sentence overview of the class's notebook engagement.",
+  "patterns": [
+    { "title": "Short label (4-8 words)", "observation": "1-2 sentences describing the pattern.", "miniLesson": "1 sentence suggesting a concrete next step or mini-lesson." }
+  ],
+  "celebration": "1 sentence naming a class-wide strength worth acknowledging."
+}
+`.trim();
+      const raw = await callGemini(prompt, true);
+      const parsed = JSON.parse(window.__alloUtils && window.__alloUtils.cleanJson ? window.__alloUtils.cleanJson(raw) : raw);
+      setInsights(parsed);
+    } catch (e) {
+      console.warn("[ClassNotebookInsights] failed", e);
+      addToast2(t("dashboard.class_notebook.error") || "Could not generate class insights right now. Try again in a moment.", "error");
+    } finally {
+      setInsightsLoading(false);
+    }
+  }, [callGemini, dashboardData, agg, addToast2, t]);
+  if (agg.totalEntries === 0) return null;
+  return /* @__PURE__ */ React.createElement("div", { className: "bg-white p-6 rounded-2xl shadow-sm border border-slate-400", "data-help-key": "dashboard_class_notebook_section" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between mb-4" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-violet-700 uppercase tracking-wider flex items-center gap-2" }, "\u{1F4D3} ", t("dashboard.class_notebook.title") || "Class Notebook Activity"), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: handleGenerateClassInsights,
+      disabled: insightsLoading || agg.studentsWithNotebook < 2,
+      className: "px-3 py-1.5 text-xs font-bold text-violet-800 bg-violet-100 border border-violet-300 rounded-full hover:bg-violet-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1",
+      "aria-label": t("dashboard.class_notebook.ai_button_aria") || "Generate AI insights on class-wide note-taking patterns",
+      title: agg.studentsWithNotebook < 2 ? t("dashboard.class_notebook.need_more_short") || "Need 2+ students with notebook" : t("dashboard.class_notebook.ai_button_tooltip") || "AI looks for class-wide patterns and suggests mini-lessons",
+      "data-help-key": "dashboard_class_notebook_ai_btn"
+    },
+    insightsLoading ? "\u23F3" : "\u2728",
+    " ",
+    t("dashboard.class_notebook.ai_button") || "AI Class Insights"
+  )), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-5 gap-3 mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-violet-50 rounded-xl p-3 text-center border border-violet-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-violet-700" }, agg.studentsWithNotebook), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-violet-600 uppercase mt-1" }, t("dashboard.class_notebook.students_with") || "Students using")), agg.cornell > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 rounded-xl p-3 text-center border border-indigo-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-indigo-700" }, agg.cornell), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-indigo-600 uppercase mt-1" }, "\u{1F4D3} Cornell")), agg.labReport > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-sky-50 rounded-xl p-3 text-center border border-sky-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-sky-700" }, agg.labReport), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-sky-600 uppercase mt-1" }, "\u{1F9EA} Lab Report")), agg.readingResponse > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-fuchsia-50 rounded-xl p-3 text-center border border-fuchsia-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-fuchsia-700" }, agg.readingResponse), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-fuchsia-600 uppercase mt-1" }, "\u{1F4D6} Reading")), agg.anchorChart > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 rounded-xl p-3 text-center border border-amber-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-amber-700" }, agg.anchorChart), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-amber-600 uppercase mt-1" }, "\u{1F4CB} Anchor Chart"))), agg.feedbackRequests > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border-l-4 border-emerald-400 rounded-r-md p-3 mb-4 text-sm" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-emerald-800" }, "\u{1F4AC} ", agg.feedbackRequests, " AI-feedback request", agg.feedbackRequests === 1 ? "" : "s"), /* @__PURE__ */ React.createElement("span", { className: "text-emerald-700" }, " across the class. A useful proxy for metacognitive engagement (students who request feedback are practicing self-assessment).")), insightsLoading ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-8" }, /* @__PURE__ */ React.createElement("div", { className: "text-4xl mb-2 animate-pulse" }, "\u{1F4D3}"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 font-bold" }, t("dashboard.class_notebook.loading") || "AI is reading across the class...")) : insights ? /* @__PURE__ */ React.createElement("div", { className: "space-y-3 mt-4 bg-slate-50 rounded-xl p-4 border border-slate-200" }, insights.classSummary && /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-200 rounded-md p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1" }, t("dashboard.class_notebook.overview_label") || "Class overview"), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed" }, insights.classSummary)), Array.isArray(insights.patterns) && insights.patterns.map((p, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "bg-white border-l-4 border-violet-400 rounded-r-md p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-black text-violet-800 mb-1" }, p.title), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed mb-2" }, p.observation), /* @__PURE__ */ React.createElement("div", { className: "text-xs bg-violet-50 border border-violet-200 rounded p-2 text-violet-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("dashboard.class_notebook.mini_lesson_label") || "Try a mini-lesson:"), " ", p.miniLesson))), insights.celebration && /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border-2 border-emerald-300 rounded-md p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-emerald-800 uppercase tracking-wider mb-1" }, "\u{1F331} ", t("dashboard.class_notebook.celebration_label") || "Class strength"), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed" }, insights.celebration))) : null);
+});
 const LearnerProgressView = React.memo(({
   globalPoints = 0,
   globalLevel = 1,
@@ -2028,7 +2155,7 @@ const LearnerProgressView = React.memo(({
     " Share Progress with Teacher"
   )));
 });
-const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboardData, addToast: addToast2, setSelectedStudentId, setDashboardView, dashboardView, selectedStudentId, generateResourceHTML, onOpenBehaviorLens }) => {
+const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboardData, addToast: addToast2, setSelectedStudentId, setDashboardView, dashboardView, selectedStudentId, generateResourceHTML, onOpenBehaviorLens, callGemini }) => {
   const { t } = useContext(LanguageContext);
   const modalRef = useRef(null);
   useFocusTrap(modalRef, true);
@@ -2255,6 +2382,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
             ${dashboardData.filter((s2) => {
       if (studentFilter === "probes") return s2.probeHistory && Object.keys(s2.probeHistory).length > 0;
       if (studentFilter === "surveys") return s2.surveyResponses && s2.surveyResponses.length > 0;
+      if (studentFilter === "notebook") return (s2.history || []).some((h) => h && (h.type === "note-taking" || h.type === "anchor-chart"));
       if (studentFilter === "graded") return gradedIds.has(s2.id);
       if (studentFilter === "ungraded") return !gradedIds.has(s2.id);
       return true;
@@ -2708,6 +2836,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
       ["all", "\u{1F465} All", dashboardData.length],
       ["probes", "\u{1F4CA} Has Probes", dashboardData.filter((s2) => s2.probeHistory && Object.keys(s2.probeHistory).length > 0).length],
       ["surveys", "\u{1F4DD} Has Surveys", dashboardData.filter((s2) => s2.surveyResponses && s2.surveyResponses.length > 0).length],
+      ["notebook", "\u{1F4D3} Has Notebook", dashboardData.filter((s2) => (s2.history || []).some((h) => h && (h.type === "note-taking" || h.type === "anchor-chart"))).length],
       ["graded", "\u2705 Graded", dashboardData.filter((s2) => gradedIds.has(s2.id)).length],
       ["ungraded", "\u2B1C Ungraded", dashboardData.filter((s2) => !gradedIds.has(s2.id)).length]
     ].map(([key, label, count]) => /* @__PURE__ */ React.createElement(
@@ -2764,7 +2893,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
         label: `${Math.round(analytics.quizCompletionRate)}%`,
         color: "blue"
       }
-    ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-2 text-center" }, t("dashboard.insights.students_participating"))), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-6 rounded-2xl shadow-sm border border-slate-400 flex flex-col justify-center" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-600 uppercase tracking-wider mb-2" }, t("dashboard.insights.avg_adv_level")), /* @__PURE__ */ React.createElement("div", { className: "text-5xl font-black text-purple-600 text-center mb-2" }, analytics.avgAdventureLevel.toFixed(1)), /* @__PURE__ */ React.createElement("div", { className: "w-full bg-slate-100 rounded-full h-2 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "bg-purple-500 h-full", style: { width: `${Math.min(100, analytics.avgAdventureLevel / 10 * 100)}%` } })), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-2 text-center" }, t("dashboard.insights.adv_level_desc")))), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-6 rounded-2xl shadow-sm border border-slate-400" }, /* @__PURE__ */ React.createElement("h3", { className: "text-lg font-bold text-slate-800 mb-4 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 20, className: "text-red-500" }), " ", t("dashboard.insights.misconceptions_title")), misconceptionChartData.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-col md:flex-row gap-8 items-center" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 w-full" }, /* @__PURE__ */ React.createElement(SimpleBarChart, { data: misconceptionChartData, color: "red" })), /* @__PURE__ */ React.createElement("div", { className: "flex-1 w-full" }, /* @__PURE__ */ React.createElement("ul", { className: "space-y-3" }, analytics.misconceptions.map((m, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "text-sm bg-red-50 p-3 rounded-lg border border-red-100" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-red-800 mb-1 flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, "Question ", i + 1), /* @__PURE__ */ React.createElement("span", { className: "bg-white px-2 rounded text-red-600 border border-red-200" }, m.count, " ", t("dashboard.insights.misses"))), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 italic line-clamp-2" }, '"', m.question, '"')))))) : /* @__PURE__ */ React.createElement("div", { className: "text-center py-10 text-slate-600 italic" }, t("dashboard.insights.no_misconceptions"))), (() => {
+    ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-2 text-center" }, t("dashboard.insights.students_participating"))), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-6 rounded-2xl shadow-sm border border-slate-400 flex flex-col justify-center" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-600 uppercase tracking-wider mb-2" }, t("dashboard.insights.avg_adv_level")), /* @__PURE__ */ React.createElement("div", { className: "text-5xl font-black text-purple-600 text-center mb-2" }, analytics.avgAdventureLevel.toFixed(1)), /* @__PURE__ */ React.createElement("div", { className: "w-full bg-slate-100 rounded-full h-2 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "bg-purple-500 h-full", style: { width: `${Math.min(100, analytics.avgAdventureLevel / 10 * 100)}%` } })), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-2 text-center" }, t("dashboard.insights.adv_level_desc")))), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-6 rounded-2xl shadow-sm border border-slate-400" }, /* @__PURE__ */ React.createElement("h3", { className: "text-lg font-bold text-slate-800 mb-4 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 20, className: "text-red-500" }), " ", t("dashboard.insights.misconceptions_title")), misconceptionChartData.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-col md:flex-row gap-8 items-center" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 w-full" }, /* @__PURE__ */ React.createElement(SimpleBarChart, { data: misconceptionChartData, color: "red" })), /* @__PURE__ */ React.createElement("div", { className: "flex-1 w-full" }, /* @__PURE__ */ React.createElement("ul", { className: "space-y-3" }, analytics.misconceptions.map((m, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "text-sm bg-red-50 p-3 rounded-lg border border-red-100" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-red-800 mb-1 flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, "Question ", i + 1), /* @__PURE__ */ React.createElement("span", { className: "bg-white px-2 rounded text-red-600 border border-red-200" }, m.count, " ", t("dashboard.insights.misses"))), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 italic line-clamp-2" }, '"', m.question, '"')))))) : /* @__PURE__ */ React.createElement("div", { className: "text-center py-10 text-slate-600 italic" }, t("dashboard.insights.no_misconceptions"))), /* @__PURE__ */ React.createElement(ClassNotebookSection, { dashboardData, callGemini, addToast: addToast2, t }), (() => {
       const allProbes = dashboardData.flatMap(
         (s2) => s2.probeHistory ? Object.values(s2.probeHistory).flat() : []
       );
