@@ -838,7 +838,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 { k: 'SPACE', d: 'Jet propulsion — burst speed, drains stamina', color: '#60a5fa' },
                 { k: 'CLICK', d: 'Pounce nearest crab or fish in range', color: '#fbbf24' },
                 { k: 'HOLD E', d: 'Drill open a clam (1.8s, big calorie payoff)', color: '#fb923c' },
-                { k: 'I', d: 'Ink defense — breaks predator visual lock', color: '#a78bfa' },
+                { k: 'I', d: 'Ink defense — 3 charges, 8s cooldown between', color: '#a78bfa' },
+                { k: 'G', d: 'Grab / drop a coconut — drop = temp shelter', color: '#a07840' },
                 { k: '(passive)', d: 'Camouflage — settle on a substrate to blend', color: '#22d3ee' }
               ].map(function(c, i) {
                 return h('div', { key: i, style: { background: 'rgba(15,23,42,0.5)', padding: 10, borderRadius: 8, borderLeft: '3px solid ' + c.color } },
@@ -862,9 +863,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               h('p', { style: { margin: '0 0 8px' } },
                 h('b', { style: { color: '#fbbf24' } }, 'Two predators with different rhythms.'),
                 ' The moray eel ambushes from a fixed hole (marked by a torus ring) and is more aggressive at night. The grouper roams the open water during the day with a longer detection range but slower charge — and sleeps at night.'),
-              h('p', { style: { margin: 0 } },
+              h('p', { style: { margin: '0 0 8px' } },
                 h('b', { style: { color: '#a78bfa' } }, 'Ink is finite and panicked.'),
-                ' Drop a black cloud that breaks every predator\'s visual lock for 3 seconds. Real octopus biology: a chemical resource, not a recharge.'))) : null,
+                ' 3 charges per dive, 8 seconds between releases. Drop a black cloud that breaks every predator\'s visual lock for ~3 seconds. Real octopus biology: ink is a chemical resource carried in the ink sac (~3-5 doses), with refractory time between releases — not an infinite-use spell.'),
+              h('p', { style: { margin: '0 0 8px' } },
+                h('b', { style: { color: '#a07840' } }, 'Coconuts are tools.'),
+                ' Press G near a coconut half to pick it up — it travels with you and adds +30% camouflage (the shell partially obscures your body). Press G again to drop it where you stand; the dropped coconut becomes a temporary shelter that acts like a den for ~90 seconds. Documented in Finn et al. 2009 — coconut octopuses (Amphioctopus marginatus) genuinely carry shells across open sand for portable shelter, the clearest example of tool use in an invertebrate.'),
+              h('p', { style: { margin: 0 } },
+                h('b', { style: { color: '#22c55e' } }, 'The ocean is endless.'),
+                ' Reef rocks, coral, sea grass, crabs, clams, fish, and bubbles all stream toward you as you wander. Fog obscures the horizon. Dens spawn ahead of you when you go off-map. You can never explore everything — just go.'))) : null,
 
           // Three.js loader (only visible until loaded)
           !active && !threeLoaded && !threeError ? h('div', { style: { textAlign: 'center', marginBottom: 16 } },
@@ -986,7 +993,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         scene.add(sun);
 
         // ─── Sandy seafloor with displacement ───
-        var floorGeo = new THREE.PlaneGeometry(140, 140, 80, 80);
+        // Floor follows the player each frame, so a 200×200 plane combined
+        // with fog at ~70u gives the visual impression of an endless ocean.
+        var floorGeo = new THREE.PlaneGeometry(200, 200, 80, 80);
         var floorPos = floorGeo.attributes.position.array;
         for (var fi = 0; fi < floorPos.length; fi += 3) {
           var fx = floorPos[fi], fy = floorPos[fi + 1];
@@ -1010,7 +1019,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         }
         var sandTex = new THREE.CanvasTexture(sandCv);
         sandTex.wrapS = sandTex.wrapT = THREE.RepeatWrapping;
-        sandTex.repeat.set(10, 10);
+        sandTex.repeat.set(14, 14);
         var floor = new THREE.Mesh(floorGeo,
           new THREE.MeshStandardMaterial({ map: sandTex, roughness: 0.97, metalness: 0.02 }));
         floor.rotation.x = -Math.PI / 2;
@@ -1236,12 +1245,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             claw.position.set(clawSide * 0.32, 0, 0.22);
             crab.add(claw);
           }
-          var cx, cz;
-          do {
-            cx = (Math.random() - 0.5) * 90;
-            cz = (Math.random() - 0.5) * 90;
-          } while (Math.abs(cx) < 8 && Math.abs(cz) < 8);
-          crab.position.set(cx, 0.18, cz);
+          // Spawn near the player (40-80u away) so respawns stream content
+          // into view rather than into faraway corners they may never see.
+          var spawnRefX = (typeof octopus !== 'undefined') ? octopus.position.x : 0;
+          var spawnRefZ = (typeof octopus !== 'undefined') ? octopus.position.z : 0;
+          var spawnAng = Math.random() * Math.PI * 2;
+          var spawnRad = 40 + Math.random() * 40;
+          crab.position.set(
+            spawnRefX + Math.sin(spawnAng) * spawnRad,
+            0.18,
+            spawnRefZ + Math.cos(spawnAng) * spawnRad
+          );
           crab.userData = {
             wanderAngle: Math.random() * Math.PI * 2,
             wanderTimer: 0,
@@ -1333,6 +1347,70 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           cooldownUntil: 0,
         };
         scene.add(grouper);
+
+        // ─── Coconuts (carriable shells — real coconut-octopus tool use) ───
+        // 10 coconut halves on the seafloor. Press G near one (within 1.6u)
+        // to pick it up; it attaches to one of the octopus's arms and travels
+        // with you. While carrying: camoEff +0.30 capped to 1 (shell partly
+        // obscures the body), movement speed −10%. Press G again to drop —
+        // the dropped coconut becomes a static "rest spot" that acts like a
+        // mini-den (predators give up within 1.5u). Real biology: Amphioctopus
+        // marginatus (Finn et al. 2009) carries coconut halves to assemble
+        // portable shelters when crossing open sand.
+        var COCONUT_PICKUP_RANGE = 1.6;
+        var COCONUT_DEN_RADIUS = 1.5;
+        var COCONUT_LIFE_MS = 90000;  // dropped coconut "ages out" after 90s
+        var coconuts = [];
+        function makeCoconutMesh() {
+          var g = new THREE.Group();
+          // Two halves stuck together with a slight gap
+          var halfMat = new THREE.MeshStandardMaterial({ color: 0x5a3a20, roughness: 0.9 });
+          var insideMat = new THREE.MeshStandardMaterial({ color: 0xeed2a4, roughness: 0.7 });
+          var topGeo = new THREE.SphereGeometry(0.32, 10, 7, 0, Math.PI * 2, 0, Math.PI / 2);
+          var top = new THREE.Mesh(topGeo, halfMat);
+          top.position.y = 0.05;
+          g.add(top);
+          var bottomGeo = new THREE.SphereGeometry(0.32, 10, 7, 0, Math.PI * 2, 0, Math.PI / 2);
+          var bottom = new THREE.Mesh(bottomGeo, halfMat);
+          bottom.rotation.x = Math.PI;
+          bottom.position.y = -0.05;
+          g.add(bottom);
+          // Inside texture peek
+          var insideGeo = new THREE.SphereGeometry(0.27, 8, 6);
+          var inside = new THREE.Mesh(insideGeo, insideMat);
+          g.add(inside);
+          // Fibrous texture lines
+          for (var fi = 0; fi < 6; fi++) {
+            var lineGeo = new THREE.TorusGeometry(0.31, 0.018, 4, 12, Math.PI * 1.8);
+            var line = new THREE.Mesh(lineGeo, new THREE.MeshStandardMaterial({ color: 0x3a2010 }));
+            line.rotation.y = (fi / 6) * Math.PI * 2;
+            line.rotation.x = Math.PI / 2;
+            g.add(line);
+          }
+          return g;
+        }
+        function spawnCoconut(x, z) {
+          var c = makeCoconutMesh();
+          c.position.set(x, 0.32, z);
+          c.userData = {
+            state: 'free',         // free | carried | dropped
+            createdAt: 0,           // 0 means original; set to now() when dropped
+            wobble: Math.random() * Math.PI * 2,
+          };
+          scene.add(c);
+          coconuts.push(c);
+          return c;
+        }
+        for (var coc = 0; coc < 10; coc++) {
+          var ccx, ccz;
+          do {
+            ccx = (Math.random() - 0.5) * 110;
+            ccz = (Math.random() - 0.5) * 110;
+          } while (Math.abs(ccx) < 8 && Math.abs(ccz) < 8);
+          spawnCoconut(ccx, ccz);
+        }
+        var carriedCoconut = null;
+        var gKeyDownPrev = false;   // edge-triggered G key
 
         // ─── Reef shark (rare, edge-spawned, electroreception-resistant) ───
         // Unlike the moray (visual ambush) and grouper (visual roam), the
@@ -1638,7 +1716,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         var inkRequested = false;
         function onKeyDown(e) {
           keys[e.code] = true;
-          if (['Space','KeyW','KeyA','KeyS','KeyD','KeyE','KeyI','KeyM'].indexOf(e.code) !== -1) e.preventDefault();
+          if (['Space','KeyW','KeyA','KeyS','KeyD','KeyE','KeyI','KeyM','KeyG'].indexOf(e.code) !== -1) e.preventDefault();
           if (e.code === 'KeyI') inkRequested = true;
           if (e.code === 'KeyE') clickRequested = true;
         }
@@ -1657,7 +1735,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
 
         var tutorial = document.createElement('div');
         tutorial.style.cssText = 'position:absolute;bottom:14px;left:50%;transform:translateX(-50%);color:#fff;font-family:ui-monospace,Menlo,monospace;font-size:12px;background:rgba(10,20,40,0.78);padding:8px 16px;border-radius:8px;pointer-events:none;text-align:center;max-width:90%;';
-        tutorial.textContent = 'WASD crawl · SPACE jet · CLICK pounce · HOLD E drill clam · I ink · stay still to camouflage · enter a den for safety';
+        tutorial.textContent = 'WASD crawl · SPACE jet · CLICK pounce · HOLD E drill clam · I ink (3 charges) · G grab/drop coconut · stay still to camouflage';
         canvasEl.parentElement.appendChild(tutorial);
         setTimeout(function() { if (tutorial.parentElement) tutorial.parentElement.removeChild(tutorial); }, 12000);
 
@@ -1728,6 +1806,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           inkCloudsActive: [],
           isInked: false,
           inkUntil: 0,
+          // Finite ink reserve — real octopuses carry 3-5 ink doses + need
+          // refractory time between releases. We model both: 3 charges per
+          // run + 8s cooldown after each release.
+          inkReserves: 3,
+          inkMaxReserves: 3,
+          inkCooldownUntil: 0,
+          inkCooldownMs: 8000,
           gameOver: false,
           tookHitAt: 0,
           // Camouflage state — current skin RGB lerps toward substrate target.
@@ -1788,12 +1873,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
 
             gameState.facingAngle += turn * 2.0 * dt;
 
-            var moveSpeed = isJetting ? 8.5 : 2.6;
+            // Carrying a coconut imposes a 10% speed penalty (real biology:
+            // coconut octopuses 'stilt-walk' awkwardly when carrying shells).
+            var carryPenalty = carriedCoconut ? 0.9 : 1.0;
+            var moveSpeed = (isJetting ? 8.5 : 2.6) * species.jetSpeedMul * carryPenalty;
             var moveDir = new THREE.Vector3(Math.sin(gameState.facingAngle), 0, Math.cos(gameState.facingAngle));
             octopus.position.x += moveDir.x * moveFwd * moveSpeed * dt;
             octopus.position.z += moveDir.z * moveFwd * moveSpeed * dt;
-            octopus.position.x = Math.max(-65, Math.min(65, octopus.position.x));
-            octopus.position.z = Math.max(-65, Math.min(65, octopus.position.z));
+            // No hard map clamp — world is procedurally recycled around the
+            // player below, so wandering forever is supported. (Tracking
+            // furthest distance from origin for fun stats.)
             octopus.position.y = 0.55 + (isJetting ? 0.15 : 0) + Math.sin(now * 0.004) * 0.05;
             octopus.rotation.y = gameState.facingAngle;
 
@@ -1864,6 +1953,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             gameState.stationaryTime = isMoving ? 0 : Math.min(3, gameState.stationaryTime + dt);
             var stillnessBonus = Math.min(1, gameState.stationaryTime / 2.0);
             gameState.camoEff = matchScore * stillnessBonus * species.camoQualityMul;
+            // Carrying a coconut adds a flat +30% camo (shell partly obscures
+            // the body; predators have a harder time visually parsing the
+            // octopus shape). Capped at 1.0.
+            if (carriedCoconut) gameState.camoEff = Math.min(1, gameState.camoEff + 0.30);
             // Update run-stats max-camo
             if (gameState.camoEff > gameState.runStats.maxCamoEff) gameState.runStats.maxCamoEff = gameState.camoEff;
             if (gameState.stationaryTime * 1000 > gameState.runStats.maxStationaryMs) gameState.runStats.maxStationaryMs = gameState.stationaryTime * 1000;
@@ -1932,6 +2025,82 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 arm.mesh.position.z = arm.basePosZ * tuck;
               });
             })();
+
+            // ─── Coconut tool use (G to grab/drop) ───────────────
+            // Edge-triggered G (only fires once per press). Carry one
+            // coconut at a time. Carried coconut follows the octopus on
+            // arm 0. Drop creates a static "rest spot" that acts like a
+            // mini-den (predators give up within COCONUT_DEN_RADIUS).
+            // Aged-out coconuts disappear after COCONUT_LIFE_MS.
+            var gKeyNow = !!keys.KeyG;
+            if (gKeyNow && !gKeyDownPrev) {
+              if (carriedCoconut) {
+                // Drop: leave coconut at current position, mark as dropped
+                octopus.remove(carriedCoconut);
+                scene.add(carriedCoconut);
+                carriedCoconut.position.set(octopus.position.x, 0.32, octopus.position.z);
+                carriedCoconut.rotation.set(0, 0, 0);
+                carriedCoconut.userData.state = 'dropped';
+                carriedCoconut.userData.createdAt = now;
+                clAnnounce('Coconut placed — temporary den');
+                carriedCoconut = null;
+              } else {
+                // Pickup: nearest free coconut within range
+                var bestC = null, bestCd = COCONUT_PICKUP_RANGE;
+                for (var coi = 0; coi < coconuts.length; coi++) {
+                  if (coconuts[coi].userData.state !== 'free') continue;
+                  var cdx = coconuts[coi].position.x - octopus.position.x;
+                  var cdz = coconuts[coi].position.z - octopus.position.z;
+                  var cd = Math.sqrt(cdx * cdx + cdz * cdz);
+                  if (cd < bestCd) { bestC = coconuts[coi]; bestCd = cd; }
+                }
+                if (bestC) {
+                  scene.remove(bestC);
+                  // Attach to arm 0 (front-right)
+                  octopus.add(bestC);
+                  // Position relative to octopus body — slightly in front + below
+                  bestC.position.set(0.0, -0.1, 0.6);
+                  bestC.userData.state = 'carried';
+                  carriedCoconut = bestC;
+                  clAnnounce('Coconut picked up');
+                }
+              }
+            }
+            gKeyDownPrev = gKeyNow;
+            // While carrying: gentle wobble + camo boost; speed already
+            // handled by checking carriedCoconut for the move-speed mod.
+            if (carriedCoconut) {
+              carriedCoconut.userData.wobble += dt * 2;
+              carriedCoconut.rotation.z = Math.sin(carriedCoconut.userData.wobble) * 0.12;
+            }
+            // Age dropped coconuts; remove when expired
+            for (var ai2 = coconuts.length - 1; ai2 >= 0; ai2--) {
+              var coc2 = coconuts[ai2];
+              if (coc2.userData.state === 'dropped' && now - coc2.userData.createdAt > COCONUT_LIFE_MS) {
+                scene.remove(coc2);
+                coc2.traverse(function(o) {
+                  if (o.geometry) o.geometry.dispose();
+                  if (o.material) { if (Array.isArray(o.material)) o.material.forEach(function(m){m.dispose();}); else o.material.dispose(); }
+                });
+                coconuts.splice(ai2, 1);
+              }
+            }
+            // Check if octopus is near a dropped coconut → acts as mini-den
+            var nearDroppedCoconut = false;
+            for (var coc3i = 0; coc3i < coconuts.length; coc3i++) {
+              if (coconuts[coc3i].userData.state !== 'dropped') continue;
+              var ccdx = coconuts[coc3i].position.x - octopus.position.x;
+              var ccdz = coconuts[coc3i].position.z - octopus.position.z;
+              if (ccdx * ccdx + ccdz * ccdz < COCONUT_DEN_RADIUS * COCONUT_DEN_RADIUS) {
+                nearDroppedCoconut = true;
+                break;
+              }
+            }
+            // Dropped coconuts count as dens for the predator-block logic too
+            if (nearDroppedCoconut && !gameState.inDen) {
+              gameState.inDen = true;  // treat as a den temporarily this frame
+              gameState.health = Math.min(gameState.maxHealth, gameState.health + 8 * dt);
+            }
 
             // ─── Mimic-octopus impersonation (hold M) ───────────
             // Costs stamina while held. Visually fades in red spike-tendrils
@@ -2081,10 +2250,168 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               g.mesh.rotation.z = Math.sin(now * 0.001 + g.phase) * 0.18;
             });
 
-            // ─── Caustics shimmer ───
-            caustics.material.opacity = 0.4 + Math.sin(now * 0.001) * 0.15;
-            caustics.position.x = Math.sin(now * 0.0003) * 4;
-            caustics.position.z = Math.cos(now * 0.00025) * 4;
+            // ─── Floor + caustics follow the player ───
+            // Snap-tile the seafloor to track the octopus: floor.position is
+            // updated each frame so the player is always near the center of
+            // the plane. Caustics layer also rides along + adds a slow drift
+            // for the shimmer effect. Combined with fog far ≈ 70, the visible
+            // ocean wraps endlessly even though geometrically the floor is
+            // a finite plane.
+            floor.position.x = octopus.position.x;
+            floor.position.z = octopus.position.z;
+            // Slide the sand texture so it doesn't appear to teleport along
+            // with the plane — the world should feel like it's moving past
+            // the octopus, not the floor jumping under you.
+            sandTex.offset.x = -octopus.position.x * 0.07;
+            sandTex.offset.y = -octopus.position.z * 0.07;
+            caustics.position.x = octopus.position.x + Math.sin(now * 0.0003) * 4;
+            caustics.position.z = octopus.position.z + Math.cos(now * 0.00025) * 4;
+            caustics.material.opacity = (0.4 + Math.sin(now * 0.001) * 0.15) * dayMix;
+
+            // ─── Endless-ocean object recycling ──────────────────
+            // Throttled to every 400ms (cheap enough on a per-frame budget
+            // for hundreds of objects, but we don't need to be jitter-perfect).
+            // For each tracked world object, if it's >RECYCLE_DIST from the
+            // octopus, teleport it to a position SPAWN_RING_MIN..SPAWN_RING_MAX
+            // units from the octopus in a random direction. The octopus can
+            // wander forever and content keeps streaming in.
+            if (!gameState._recycleNextAt || now > gameState._recycleNextAt) {
+              gameState._recycleNextAt = now + 400;
+              var RECYCLE_DIST = 120;
+              var SPAWN_RING_MIN = 55;
+              var SPAWN_RING_MAX = 95;
+              function recyclePos(near) {
+                var ang = Math.random() * Math.PI * 2;
+                var rad = SPAWN_RING_MIN + Math.random() * (SPAWN_RING_MAX - SPAWN_RING_MIN);
+                return { x: near.x + Math.sin(ang) * rad, z: near.z + Math.cos(ang) * rad };
+              }
+              // Rocks
+              for (var rri = 0; rri < rocks.length; rri++) {
+                var rrx = rocks[rri].position.x - octopus.position.x;
+                var rrz = rocks[rri].position.z - octopus.position.z;
+                if (rrx * rrx + rrz * rrz > RECYCLE_DIST * RECYCLE_DIST) {
+                  var np = recyclePos(octopus.position);
+                  rocks[rri].position.x = np.x;
+                  rocks[rri].position.z = np.z;
+                }
+              }
+              // Corals
+              for (var crri = 0; crri < corals.length; crri++) {
+                var crx = corals[crri].position.x - octopus.position.x;
+                var crz = corals[crri].position.z - octopus.position.z;
+                if (crx * crx + crz * crz > RECYCLE_DIST * RECYCLE_DIST) {
+                  var nc = recyclePos(octopus.position);
+                  corals[crri].position.x = nc.x;
+                  corals[crri].position.z = nc.z;
+                }
+              }
+              // Grass
+              for (var gri = 0; gri < grass.length; gri++) {
+                var grx = grass[gri].mesh.position.x - octopus.position.x;
+                var grz = grass[gri].mesh.position.z - octopus.position.z;
+                if (grx * grx + grz * grz > RECYCLE_DIST * RECYCLE_DIST) {
+                  var ng = recyclePos(octopus.position);
+                  grass[gri].mesh.position.x = ng.x;
+                  grass[gri].mesh.position.z = ng.z;
+                  grass[gri].mesh.rotation.y = Math.random() * Math.PI;
+                }
+              }
+              // Crabs (alive ones that wandered far)
+              for (var crci = 0; crci < crabs.length; crci++) {
+                if (!crabs[crci].userData.alive) continue;
+                var ccrx = crabs[crci].position.x - octopus.position.x;
+                var ccrz = crabs[crci].position.z - octopus.position.z;
+                if (ccrx * ccrx + ccrz * ccrz > RECYCLE_DIST * RECYCLE_DIST) {
+                  var ncc = recyclePos(octopus.position);
+                  crabs[crci].position.x = ncc.x;
+                  crabs[crci].position.z = ncc.z;
+                  crabs[crci].userData.wanderAngle = Math.random() * Math.PI * 2;
+                }
+              }
+              // Clams (only "alive" clams get recycled — drilled ones stay gone
+              // until a respawn timer adds new ones). If we have <4 alive clams,
+              // spawn a new one ahead of the player.
+              for (var cli = 0; cli < clams.length; cli++) {
+                if (!clams[cli].userData.alive) continue;
+                var cldx = clams[cli].position.x - octopus.position.x;
+                var cldz = clams[cli].position.z - octopus.position.z;
+                if (cldx * cldx + cldz * cldz > RECYCLE_DIST * RECYCLE_DIST) {
+                  var ncm = recyclePos(octopus.position);
+                  clams[cli].position.x = ncm.x;
+                  clams[cli].position.z = ncm.z;
+                }
+              }
+              // Free coconuts (not carried/dropped) — recycle so player can
+              // always find one to pick up.
+              for (var cci2 = 0; cci2 < coconuts.length; cci2++) {
+                if (coconuts[cci2].userData.state !== 'free') continue;
+                var cco2dx = coconuts[cci2].position.x - octopus.position.x;
+                var cco2dz = coconuts[cci2].position.z - octopus.position.z;
+                if (cco2dx * cco2dx + cco2dz * cco2dz > RECYCLE_DIST * RECYCLE_DIST) {
+                  var nco = recyclePos(octopus.position);
+                  coconuts[cci2].position.x = nco.x;
+                  coconuts[cci2].position.z = nco.z;
+                }
+              }
+              // Bubble particles — recycle on the seafloor near the player
+              for (var bri = 0; bri < BUBBLE_COUNT; bri++) {
+                var brx = bubblePositions[bri * 3] - octopus.position.x;
+                var brz = bubblePositions[bri * 3 + 2] - octopus.position.z;
+                if (brx * brx + brz * brz > RECYCLE_DIST * RECYCLE_DIST) {
+                  var nb = recyclePos(octopus.position);
+                  bubblePositions[bri * 3] = nb.x;
+                  bubblePositions[bri * 3 + 1] = Math.random() * 2;
+                  bubblePositions[bri * 3 + 2] = nb.z;
+                  bubbles.geometry.attributes.position.needsUpdate = true;
+                }
+              }
+              // Light rays — keep them roughly above the player
+              lightRays.forEach(function(r) {
+                var lrx = r.mesh.position.x - octopus.position.x;
+                var lrz = r.mesh.position.z - octopus.position.z;
+                if (lrx * lrx + lrz * lrz > RECYCLE_DIST * RECYCLE_DIST) {
+                  var nlr = recyclePos(octopus.position);
+                  r.mesh.position.x = nlr.x;
+                  r.mesh.position.z = nlr.z;
+                }
+              });
+              // Dens: when the octopus has wandered far from origin and
+              // there's no den within 80u, spawn a new den nearby (cap at 12)
+              var nearestDenD = Infinity;
+              dens.forEach(function(d2) {
+                var ddx = d2.x - octopus.position.x;
+                var ddz = d2.z - octopus.position.z;
+                var dd = Math.sqrt(ddx * ddx + ddz * ddz);
+                if (dd < nearestDenD) nearestDenD = dd;
+              });
+              if (nearestDenD > 80 && dens.length < 12) {
+                var ndp = recyclePos(octopus.position);
+                var newDen = new THREE.Group();
+                var pmat2 = new THREE.MeshStandardMaterial({ color: 0x3d342a, roughness: 0.9 });
+                var np1 = new THREE.Mesh(new THREE.BoxGeometry(0.7, 1.4, 0.7), pmat2);
+                np1.position.set(-0.9, 0.7, 0); newDen.add(np1);
+                var np2 = new THREE.Mesh(new THREE.BoxGeometry(0.7, 1.4, 0.7), pmat2);
+                np2.position.set(0.9, 0.7, 0); newDen.add(np2);
+                var nlintel = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.4, 0.7), pmat2);
+                nlintel.position.set(0, 1.6, 0); newDen.add(nlintel);
+                var nshadow = new THREE.Mesh(
+                  new THREE.PlaneGeometry(2.0, 1.5),
+                  new THREE.MeshBasicMaterial({ color: 0x080608, transparent: true, opacity: 0.85 })
+                );
+                nshadow.position.set(0, 0.75, 0.01); newDen.add(nshadow);
+                var nglow = new THREE.Mesh(
+                  new THREE.RingGeometry(DEN_RADIUS - 0.3, DEN_RADIUS, 24),
+                  new THREE.MeshBasicMaterial({ color: 0x22c55e, transparent: true, opacity: 0, side: THREE.DoubleSide })
+                );
+                nglow.position.set(0, 0.06, 0);
+                nglow.rotation.x = -Math.PI / 2;
+                newDen.add(nglow);
+                newDen.position.set(ndp.x, 0, ndp.z);
+                newDen.rotation.y = Math.random() * Math.PI;
+                scene.add(newDen);
+                dens.push({ group: newDen, x: ndp.x, z: ndp.z, glow: nglow });
+              }
+            }
 
             // ─── Crab AI ───
             crabs.forEach(function(crab) {
@@ -2104,8 +2431,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               }
               crab.position.x += Math.sin(crab.userData.wanderAngle) * cs * dt;
               crab.position.z += Math.cos(crab.userData.wanderAngle) * cs * dt;
-              crab.position.x = Math.max(-65, Math.min(65, crab.position.x));
-              crab.position.z = Math.max(-65, Math.min(65, crab.position.z));
               crab.rotation.y = crab.userData.wanderAngle;
               // Leg wiggle
               crab.userData.legPhase += dt * 8;
@@ -2412,10 +2737,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             }
 
             // ─── Ink defense ───
-            if (inkRequested && !gameState.isInked) {
+            if (inkRequested && !gameState.isInked && gameState.inkReserves > 0 && now > gameState.inkCooldownUntil) {
               inkRequested = false;
               gameState.isInked = true;
               gameState.inkUntil = now + 3200;
+              gameState.inkReserves--;
+              gameState.inkCooldownUntil = now + gameState.inkCooldownMs;
               gameState.runStats.inkUsed++;
               var inkGeo = new THREE.SphereGeometry(2.6, 16, 12);
               var inkMat = new THREE.MeshBasicMaterial({ color: 0x080812, transparent: true, opacity: 0.72 });
@@ -2423,8 +2750,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               inkCloud.position.set(octopus.position.x, 1.2, octopus.position.z);
               scene.add(inkCloud);
               gameState.inkCloudsActive.push({ mesh: inkCloud, expiresAt: now + 3200 });
-              clAnnounce('Ink released — predator visual lock broken');
+              clAnnounce('Ink released — ' + gameState.inkReserves + ' ink left');
             } else {
+              if (inkRequested) {
+                // Tried to ink but blocked (no reserves, or cooldown, or already inked)
+                if (gameState.inkReserves <= 0) clAnnounce('Out of ink');
+                else if (now <= gameState.inkCooldownUntil) {
+                  var remCd = Math.ceil((gameState.inkCooldownUntil - now) / 1000);
+                  clAnnounce('Ink recharging — ' + remCd + 's');
+                }
+              }
               inkRequested = false;
             }
             if (gameState.isInked && now > gameState.inkUntil) gameState.isInked = false;
@@ -2553,7 +2888,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             '<div style="display:flex;align-items:center;gap:6px;border-top:1px solid rgba(255,255,255,0.1);margin-top:4px;padding-top:4px">CAMO&nbsp;&nbsp;&nbsp;' + bar(camo, camoColor) + '<span style="color:' + camoColor + ';min-width:30px;text-align:right">' + camo.toFixed(0) + '%</span></div>' +
             '<div style="font-size:10px;color:#94a3b8;margin-left:54px;margin-top:-2px">' + subIcon + ' on ' + gameState.currentSubstrate.replace('_', ' ') + (gameState.stationaryTime > 0.5 ? ' · still' : ' · moving') + '</div>' +
             '<div style="border-top:1px solid rgba(255,255,255,0.1);margin-top:4px;padding-top:4px;display:flex;justify-content:space-between"><span>SCORE <span style="color:#86efac;font-weight:bold">' + gameState.score + '</span></span><span>TIME <span style="color:#fff">' + elapsed + 's</span></span></div>' +
+            // INK row: shows reserves (3 dots) + cooldown timer if on cd
+            (function() {
+              var dots = '';
+              for (var idi = 0; idi < gameState.inkMaxReserves; idi++) {
+                dots += (idi < gameState.inkReserves)
+                  ? '<span style="display:inline-block;width:9px;height:9px;background:#a78bfa;border-radius:50%;margin-right:2px"></span>'
+                  : '<span style="display:inline-block;width:9px;height:9px;background:rgba(255,255,255,0.18);border-radius:50%;margin-right:2px"></span>';
+              }
+              var cdLine = '';
+              if (gameState.inkReserves > 0 && now < gameState.inkCooldownUntil) {
+                var remCd = Math.ceil((gameState.inkCooldownUntil - now) / 1000);
+                cdLine = '<span style="color:#fbbf24;font-size:10px;margin-left:6px">recharging ' + remCd + 's</span>';
+              } else if (gameState.inkReserves === 0) {
+                cdLine = '<span style="color:#fca5a5;font-size:10px;margin-left:6px">depleted</span>';
+              }
+              return '<div style="display:flex;align-items:center;gap:6px;border-top:1px solid rgba(255,255,255,0.1);margin-top:4px;padding-top:4px">INK&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' + dots + cdLine + '</div>';
+            })() +
             (gameState.inDen ? '<div style="color:#22c55e;font-weight:bold;margin-top:5px;font-size:11px">🏠 IN DEN — safe, regenerating</div>' : '') +
+            (carriedCoconut ? '<div style="color:#a07840;font-weight:bold;margin-top:5px;font-size:11px">🥥 CARRYING coconut — +30% camo, drop with G</div>' : '') +
             (gameState.isInked ? '<div style="color:#a78bfa;font-weight:bold;margin-top:5px;font-size:11px">⚫ INKED — predators can\'t see you</div>' : '') +
             (gameState.drillProgress > 0 && gameState.drillProgress < 1 ? '<div style="color:#fbbf24;font-weight:bold;margin-top:5px;font-size:11px">🔧 Drilling clam ' + (gameState.drillProgress * 100).toFixed(0) + '%</div>' : '') +
             (gameState.hunger <= 0 ? '<div style="color:#fca5a5;font-weight:bold;margin-top:5px;font-size:11px">⚠ STARVING — eat soon</div>' : '') +
