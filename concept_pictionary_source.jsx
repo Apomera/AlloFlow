@@ -707,6 +707,20 @@ const PictionaryHostView = React.memo((props) => {
   const [roundActive, setRoundActive] = React.useState(false);
   const [roundResolved, setRoundResolved] = React.useState(null);    // { concept, winnerUid, reason }
   const [isLoadingIdeas, setIsLoadingIdeas] = React.useState(false);
+  // Per-drawer last-stroke timestamp for the "X is drawing right now" indicator.
+  // Ref so updates don't re-render; a separate tick state forces re-render
+  // every 250ms while a round is active.
+  const drawerActivityRef = React.useRef(new Map());
+  const [activityTick, setActivityTick] = React.useState(0);
+  React.useEffect(() => {
+    if (!roundActive) return;
+    const id = setInterval(() => setActivityTick((t) => (t + 1) % 1000000), 250);
+    return () => clearInterval(id);
+  }, [roundActive]);
+  const isDrawerActive = (uid) => {
+    const last = drawerActivityRef.current.get(uid);
+    return last && (Date.now() - last) < 1500;
+  };
 
   // Seed concept ideas from a bridge tool when the overlay opens.
   React.useEffect(() => {
@@ -723,7 +737,10 @@ const PictionaryHostView = React.memo((props) => {
       sessionCode,
       onGuestConnected: (uid, codename) => setConnectedGuests((prev) => ({ ...prev, [uid]: codename })),
       onGuestLeft: (uid) => setConnectedGuests((prev) => { const next = { ...prev }; delete next[uid]; return next; }),
-      onStroke: (uid, codename, stroke) => setStrokes((prev) => prev.concat([stroke])),
+      onStroke: (uid, codename, stroke) => {
+        setStrokes((prev) => prev.concat([stroke]));
+        drawerActivityRef.current.set(uid, Date.now());
+      },
       onStrokeUndo: (uid, strokeId) => setStrokes((prev) => prev.filter((s) => s.strokeId !== strokeId)),
       onGuess: (uid, codename, payload) => setGuessFeed((prev) => prev.concat([{
         id: _pic_genId('guess'), uid, codename, text: payload.text, ts: payload.timestamp || Date.now(), marked: null,
@@ -976,8 +993,26 @@ const PictionaryHostView = React.memo((props) => {
               <div className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-xs">
                 <div className="font-bold text-rose-800 mb-1">Round in progress</div>
                 <div className="text-slate-700"><strong>Concept:</strong> {concept}</div>
-                <div className="text-slate-700 mt-1"><strong>Drawers:</strong> {drawerUids.map((uid) => (roster[uid] && roster[uid].name) || 'Student').join(', ')}</div>
-                <p className="text-slate-500 italic mt-2 leading-snug">Mark a guess correct on the left when someone gets it.</p>
+                <div className="text-slate-700 mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <strong>Drawers:</strong>
+                  {drawerUids.map((uid, i) => {
+                    const active = isDrawerActive(uid);
+                    const dotColor = (PEN_COLORS[i % PEN_COLORS.length] && PEN_COLORS[i % PEN_COLORS.length].hex) || '#1a202c';
+                    const name = (roster[uid] && roster[uid].name) || 'Student';
+                    return (
+                      <span key={uid} className="inline-flex items-center gap-1.5">
+                        <span
+                          className={`inline-block rounded-full ${active ? 'pic-drawer-pulse' : ''}`}
+                          style={{ width: 9, height: 9, background: dotColor, opacity: active ? 1 : 0.3, boxShadow: active ? `0 0 0 2px ${dotColor}30` : 'none' }}
+                          aria-hidden="true"
+                          title={active ? `${name} is drawing` : name}
+                        />
+                        <span>{name}</span>
+                      </span>
+                    );
+                  })}
+                </div>
+                <p className="text-slate-500 italic mt-2 leading-snug">Mark a guess correct on the left when someone gets it. Activity dots glow while a drawer is actively streaming strokes.</p>
               </div>
             )}
             <div className="bg-slate-50 border border-slate-200 rounded-xl p-2 text-[11px] text-slate-600">

@@ -13,7 +13,7 @@
   if (!document.getElementById("concept-pictionary-module-a11y")) {
     var _s = document.createElement("style");
     _s.id = "concept-pictionary-module-a11y";
-    _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }";
+    _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } @keyframes pic-drawer-pulse-kf { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.4); opacity: 0.55; } } .pic-drawer-pulse { animation: pic-drawer-pulse-kf 0.9s ease-in-out infinite; }";
     document.head.appendChild(_s);
   }
   (function() {
@@ -763,6 +763,17 @@ const PictionaryHostView = React.memo((props) => {
   const [roundActive, setRoundActive] = React.useState(false);
   const [roundResolved, setRoundResolved] = React.useState(null);
   const [isLoadingIdeas, setIsLoadingIdeas] = React.useState(false);
+  const drawerActivityRef = React.useRef(/* @__PURE__ */ new Map());
+  const [activityTick, setActivityTick] = React.useState(0);
+  React.useEffect(() => {
+    if (!roundActive) return;
+    const id = setInterval(() => setActivityTick((t) => (t + 1) % 1e6), 250);
+    return () => clearInterval(id);
+  }, [roundActive]);
+  const isDrawerActive = (uid) => {
+    const last = drawerActivityRef.current.get(uid);
+    return last && Date.now() - last < 1500;
+  };
   React.useEffect(() => {
     if (!isOpen) return;
     if (initialConceptIdeas && initialConceptIdeas.length > 0) {
@@ -780,7 +791,10 @@ const PictionaryHostView = React.memo((props) => {
         delete next[uid];
         return next;
       }),
-      onStroke: (uid, codename, stroke) => setStrokes((prev) => prev.concat([stroke])),
+      onStroke: (uid, codename, stroke) => {
+        setStrokes((prev) => prev.concat([stroke]));
+        drawerActivityRef.current.set(uid, Date.now());
+      },
       onStrokeUndo: (uid, strokeId) => setStrokes((prev) => prev.filter((s) => s.strokeId !== strokeId)),
       onGuess: (uid, codename, payload) => setGuessFeed((prev) => prev.concat([{
         id: _pic_genId("guess"),
@@ -936,7 +950,20 @@ const PictionaryHostView = React.memo((props) => {
       className: "w-full px-3 py-2 text-sm font-black rounded-full bg-rose-600 text-white hover:bg-rose-700 disabled:opacity-40 shadow-lg shadow-rose-500/30"
     },
     "\u25B6 Start round"
-  )) : /* @__PURE__ */ React.createElement("div", { className: "bg-rose-50 border border-rose-200 rounded-xl p-3 text-xs" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-rose-800 mb-1" }, "Round in progress"), /* @__PURE__ */ React.createElement("div", { className: "text-slate-700" }, /* @__PURE__ */ React.createElement("strong", null, "Concept:"), " ", concept), /* @__PURE__ */ React.createElement("div", { className: "text-slate-700 mt-1" }, /* @__PURE__ */ React.createElement("strong", null, "Drawers:"), " ", drawerUids.map((uid) => roster[uid] && roster[uid].name || "Student").join(", ")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-500 italic mt-2 leading-snug" }, "Mark a guess correct on the left when someone gets it.")), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border border-slate-200 rounded-xl p-2 text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-slate-700 mb-1" }, "Connected: ", Object.keys(connectedGuests).length), Object.keys(connectedGuests).length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, Object.entries(connectedGuests).map(([uid, codename]) => /* @__PURE__ */ React.createElement("span", { key: uid, className: "px-1.5 py-0.5 bg-white border border-slate-200 rounded text-[10px]" }, codename))) : null)))));
+  )) : /* @__PURE__ */ React.createElement("div", { className: "bg-rose-50 border border-rose-200 rounded-xl p-3 text-xs" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-rose-800 mb-1" }, "Round in progress"), /* @__PURE__ */ React.createElement("div", { className: "text-slate-700" }, /* @__PURE__ */ React.createElement("strong", null, "Concept:"), " ", concept), /* @__PURE__ */ React.createElement("div", { className: "text-slate-700 mt-1 flex flex-wrap items-center gap-x-2 gap-y-1" }, /* @__PURE__ */ React.createElement("strong", null, "Drawers:"), drawerUids.map((uid, i) => {
+    const active = isDrawerActive(uid);
+    const dotColor = PEN_COLORS[i % PEN_COLORS.length] && PEN_COLORS[i % PEN_COLORS.length].hex || "#1a202c";
+    const name = roster[uid] && roster[uid].name || "Student";
+    return /* @__PURE__ */ React.createElement("span", { key: uid, className: "inline-flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(
+      "span",
+      {
+        className: `inline-block rounded-full ${active ? "pic-drawer-pulse" : ""}`,
+        style: { width: 9, height: 9, background: dotColor, opacity: active ? 1 : 0.3, boxShadow: active ? `0 0 0 2px ${dotColor}30` : "none" },
+        "aria-hidden": "true",
+        title: active ? `${name} is drawing` : name
+      }
+    ), /* @__PURE__ */ React.createElement("span", null, name));
+  })), /* @__PURE__ */ React.createElement("p", { className: "text-slate-500 italic mt-2 leading-snug" }, "Mark a guess correct on the left when someone gets it. Activity dots glow while a drawer is actively streaming strokes.")), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border border-slate-200 rounded-xl p-2 text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-slate-700 mb-1" }, "Connected: ", Object.keys(connectedGuests).length), Object.keys(connectedGuests).length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, Object.entries(connectedGuests).map(([uid, codename]) => /* @__PURE__ */ React.createElement("span", { key: uid, className: "px-1.5 py-0.5 bg-white border border-slate-200 rounded text-[10px]" }, codename))) : null)))));
 });
 const PictionaryGuestOverlay = React.memo((props) => {
   const sessionCode = props.sessionCode;
