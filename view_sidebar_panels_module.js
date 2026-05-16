@@ -863,7 +863,7 @@ function MathPanel(props) {
         onProbeComplete: (entry) => setHistory((prev) => [...prev, entry])
       }
     );
-  })(), mathMode === "Fluency Maze" && /* @__PURE__ */ (() => {
+  })(), mathMode === "Fluency Maze" && (() => {
     const launchMaze = () => {
       const newItem = {
         id: "fluency-maze-" + Date.now(),
@@ -878,15 +878,15 @@ function MathPanel(props) {
       setActiveView("math-fluency-maze");
       if (typeof addToast === "function") addToast("\u{1F3F0} Fluency Maze opened in main view", "success");
     };
-    return /* @__PURE__ */ React.createElement("div", { className: "p-4 bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border-2 border-amber-200 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-3xl mb-2" }, "\u{1F3F0}"), /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-black text-amber-900 mb-1" }, "Fluency Maze"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-800 mb-3 leading-relaxed" }, "Navigate a torchlit dungeon. Each gate is locked by a math fact \u2014 solve it to pass. Find the golden key to unlock the exit."), /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "p-4 bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border-2 border-amber-200 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-3xl mb-2" }, "\u{1F3F0}"), /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-black text-amber-900 mb-1" }, t("fluency_maze.title") || "Fluency Maze"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-800 mb-3 leading-relaxed" }, t("fluency_maze.description") || "Navigate a torchlit dungeon. Each gate is locked by a math fact \u2014 solve it to pass. Find the golden key to unlock the exit."), /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: launchMaze,
         className: "w-full px-4 py-2.5 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white text-sm font-bold rounded-lg transition-all shadow-md flex items-center justify-center gap-2",
-        "aria-label": "Open Fluency Maze in main view"
+        "aria-label": t("fluency_maze.open_aria") || "Open Fluency Maze in main view"
       },
-      "\u{1F6AA} Open Maze (full view)"
-    ), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-amber-700 mt-2 italic" }, "Saved to history so you can re-enter later."));
+      t("fluency_maze.open_button") || "\u{1F6AA} Open Maze (full view)"
+    ), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-amber-700 mt-2 italic" }, t("fluency_maze.saved_note") || "Saved to history so you can re-enter later."));
   })(), mathMode === "Volume Builder" && window.AlloModules && window.AlloModules.VolumeBuilderView && React.createElement(window.AlloModules.VolumeBuilderView, {
     cubeAnswer,
     cubeChallenge,
@@ -984,12 +984,12 @@ function DbqPanel(props) {
     t
   } = props;
   if (!expandedTools || !expandedTools.includes("dbq")) return null;
-  return /* @__PURE__ */ React.createElement("div", { className: "animate-in slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 border-b border-slate-100 bg-rose-50 space-y-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, t("dbq.desc") || "Generate a complete Document-Based Question activity from your source text \u2014 with primary sources, HAPP framework, sourcing questions, corroboration analysis, synthesis essay prompt, and rubric."), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1" }, "Analysis Mode"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, [
-    ["standard", "\u{1F4C4} Standard DBQ", "Extract documents from your source text"],
-    ["perspectives", "\u2694\uFE0F Competing Perspectives", "AI finds 2+ viewpoints that agree and disagree"],
-    ["search", "\u{1F50D} Web-Enhanced", "Find real primary sources from archives (LOC, NARA, etc.)"],
-    ["links", "\u{1F517} Teacher Links", "Paste URLs to articles \u2014 AI builds DBQ around them"],
-    ["custom", "\u270F\uFE0F Teacher Docs", "Paste your own document text directly"]
+  return /* @__PURE__ */ React.createElement("div", { className: "animate-in slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 border-b border-slate-100 bg-rose-50 space-y-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, t("dbq.desc") || "Generate a complete Document-Based Question activity from your source text \u2014 with primary sources, HAPP framework, sourcing questions, corroboration analysis, synthesis essay prompt, and rubric."), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1" }, t("dbq.analysis_mode") || "Analysis Mode"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, [
+    ["standard", t("dbq.mode_standard_label") || "\u{1F4C4} Standard DBQ", t("dbq.mode_standard_desc") || "Extract documents from your source text"],
+    ["perspectives", t("dbq.mode_perspectives_label") || "\u2694\uFE0F Competing Perspectives", t("dbq.mode_perspectives_desc") || "AI finds 2+ viewpoints that agree and disagree"],
+    ["search", t("dbq.mode_search_label") || "\u{1F50D} Web-Enhanced", t("dbq.mode_search_desc") || "Find real primary sources from archives (LOC, NARA, etc.)"],
+    ["links", t("dbq.mode_links_label") || "\u{1F517} Teacher Links", t("dbq.mode_links_desc") || "Paste URLs to articles \u2014 AI builds DBQ around them"],
+    ["custom", t("dbq.mode_custom_label") || "\u270F\uFE0F Teacher Docs", t("dbq.mode_custom_desc") || "Paste your own document text directly"]
   ].map(([mode, label, desc]) => /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -1002,31 +1002,31 @@ function DbqPanel(props) {
     },
     /* @__PURE__ */ React.createElement("div", null, label),
     /* @__PURE__ */ React.createElement("div", { className: "font-normal mt-0.5 opacity-70" }, desc)
-  )))), (window._dbqMode === "search" || window._dbqMode === "perspectives" || window._dbqMode === "links") && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "text-[11px] font-bold text-slate-600 uppercase block mb-1" }, window._dbqMode === "search" ? "Search Topic (optional \u2014 refines source hunting)" : window._dbqMode === "links" ? "Topic Context (helps AI understand the links)" : "Perspectives to Compare (optional)"), /* @__PURE__ */ React.createElement(
+  )))), (window._dbqMode === "search" || window._dbqMode === "perspectives" || window._dbqMode === "links") && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "text-[11px] font-bold text-slate-600 uppercase block mb-1" }, window._dbqMode === "search" ? t("dbq.focus_label_search") || "Search Topic (optional \u2014 refines source hunting)" : window._dbqMode === "links" ? t("dbq.focus_label_links") || "Topic Context (helps AI understand the links)" : t("dbq.focus_label_perspectives") || "Perspectives to Compare (optional)"), /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "text",
-      placeholder: window._dbqMode === "search" ? 'e.g. "Japanese internment primary sources"' : window._dbqMode === "links" ? 'e.g. "Civil Rights Movement"' : 'e.g. "Federalists vs Anti-Federalists"',
-      "aria-label": window._dbqMode === "search" ? "Search topic for primary source hunting" : window._dbqMode === "links" ? "Topic context for AI link analysis" : "Perspectives to compare for DBQ",
+      placeholder: window._dbqMode === "search" ? t("dbq.focus_placeholder_search") || 'e.g. "Japanese internment primary sources"' : window._dbqMode === "links" ? t("dbq.focus_placeholder_links") || 'e.g. "Civil Rights Movement"' : t("dbq.focus_placeholder_perspectives") || 'e.g. "Federalists vs Anti-Federalists"',
+      "aria-label": window._dbqMode === "search" ? t("dbq.focus_aria_search") || "Search topic for primary source hunting" : window._dbqMode === "links" ? t("dbq.focus_aria_links") || "Topic context for AI link analysis" : t("dbq.focus_aria_perspectives") || "Perspectives to compare for DBQ",
       className: "w-full text-xs border border-rose-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-rose-300 outline-none",
       id: "dbq-focus-topic"
     }
-  )), window._dbqMode === "links" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "text-[11px] font-bold text-slate-600 uppercase block mb-1" }, "Document URLs (one per line)"), /* @__PURE__ */ React.createElement(
+  )), window._dbqMode === "links" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "text-[11px] font-bold text-slate-600 uppercase block mb-1" }, t("dbq.urls_label") || "Document URLs (one per line)"), /* @__PURE__ */ React.createElement(
     "textarea",
     {
       id: "dbq-teacher-links",
       placeholder: "https://www.loc.gov/item/example-document/\nhttps://founders.archives.gov/documents/...\nhttps://www.archives.gov/milestone-documents/...",
       className: "w-full text-xs border border-rose-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-rose-300 outline-none h-20 font-mono",
-      "aria-label": "Document URLs for DBQ"
+      "aria-label": t("dbq.urls_aria") || "Document URLs for DBQ"
     }
-  ), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mt-1" }, "Paste links to articles, primary sources, or documents. AI will build the DBQ scaffolding around them.")), window._dbqMode === "custom" && /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 border border-indigo-200 rounded-lg p-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-indigo-700 mb-2" }, /* @__PURE__ */ React.createElement("strong", null, "Paste each document below."), " Separate documents with ", /* @__PURE__ */ React.createElement("code", { className: "bg-indigo-100 px-1 rounded" }, "---"), " on its own line. Or use the import buttons to fetch from a URL or upload an image of a document."), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-indigo-500" }, "For each document, optionally include a title and source on the first lines:"), /* @__PURE__ */ React.createElement("pre", { className: "text-[11px] bg-white border border-indigo-100 rounded p-2 mt-1 text-indigo-600 whitespace-pre-wrap" }, "Title: Letter from Abigail Adams to John Adams", "\n", "Source: March 31, 1776", "\n", "Remember the Ladies, and be more generous and favourable to them than your ancestors...", "\n", "---", "\n", "Title: Declaration of Independence (excerpt)", "\n", "Source: Thomas Jefferson, July 4, 1776", "\n", "We hold these truths to be self-evident, that all men are created equal...")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 flex-wrap items-end" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-[200px]" }, /* @__PURE__ */ React.createElement("label", { className: "text-[11px] font-bold text-slate-600 uppercase block mb-1" }, "Import from URL"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mt-1" }, t("dbq.urls_help") || "Paste links to articles, primary sources, or documents. AI will build the DBQ scaffolding around them.")), window._dbqMode === "custom" && /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 border border-indigo-200 rounded-lg p-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-indigo-700 mb-2" }, /* @__PURE__ */ React.createElement("strong", null, t("dbq.custom_paste_intro_strong") || "Paste each document below."), " ", t("dbq.custom_paste_intro_part1") || "Separate documents with", " ", /* @__PURE__ */ React.createElement("code", { className: "bg-indigo-100 px-1 rounded" }, "---"), " ", t("dbq.custom_paste_intro_part2") || "on its own line. Or use the import buttons to fetch from a URL or upload an image of a document."), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-indigo-500" }, t("dbq.custom_title_source_hint") || "For each document, optionally include a title and source on the first lines:"), /* @__PURE__ */ React.createElement("pre", { className: "text-[11px] bg-white border border-indigo-100 rounded p-2 mt-1 text-indigo-600 whitespace-pre-wrap" }, "Title: Letter from Abigail Adams to John Adams", "\n", "Source: March 31, 1776", "\n", "Remember the Ladies, and be more generous and favourable to them than your ancestors...", "\n", "---", "\n", "Title: Declaration of Independence (excerpt)", "\n", "Source: Thomas Jefferson, July 4, 1776", "\n", "We hold these truths to be self-evident, that all men are created equal...")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 flex-wrap items-end" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-[200px]" }, /* @__PURE__ */ React.createElement("label", { className: "text-[11px] font-bold text-slate-600 uppercase block mb-1" }, t("dbq.import_from_url_label") || "Import from URL"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "text",
       id: "dbq-import-url",
       className: "flex-1 text-xs border border-indigo-600 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-indigo-300 outline-none",
-      placeholder: "https://... (article, speech, primary source)",
-      "aria-label": "URL to import as document"
+      placeholder: t("dbq.import_url_placeholder") || "https://... (article, speech, primary source)",
+      "aria-label": t("dbq.import_url_aria") || "URL to import as document"
     }
   ), /* @__PURE__ */ React.createElement(
     "button",
@@ -1050,10 +1050,10 @@ function DbqPanel(props) {
         }
       },
       className: "px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold rounded-lg transition-all shrink-0",
-      "aria-label": "Fetch URL"
+      "aria-label": t("dbq.fetch_url_aria") || "Fetch URL"
     },
-    "\u{1F517} Fetch"
-  ))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "text-[11px] font-bold text-slate-600 uppercase block mb-1" }, "Upload Document Image"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, /* @__PURE__ */ React.createElement(
+    t("dbq.fetch_url_button") || "\u{1F517} Fetch"
+  ))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "text-[11px] font-bold text-slate-600 uppercase block mb-1" }, t("dbq.upload_image_label") || "Upload Document Image"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "file",
@@ -1096,9 +1096,9 @@ function DbqPanel(props) {
     {
       onClick: () => document.getElementById("dbq-import-image")?.click(),
       className: "px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-[11px] font-bold rounded-lg transition-all flex items-center gap-1",
-      "aria-label": "Upload document image"
+      "aria-label": t("dbq.upload_image_aria") || "Upload document image"
     },
-    "\u{1F4F7} Upload Image"
+    t("dbq.upload_image_button") || "\u{1F4F7} Upload Image"
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -1138,17 +1138,17 @@ function DbqPanel(props) {
         }
       },
       className: "px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white text-[11px] font-bold rounded-lg transition-all flex items-center gap-1",
-      "aria-label": "Paste image from clipboard"
+      "aria-label": t("dbq.paste_clipboard_aria") || "Paste image from clipboard"
     },
-    "\u{1F4CB} Paste Image"
+    t("dbq.paste_clipboard_button") || "\u{1F4CB} Paste Image"
   )))), /* @__PURE__ */ React.createElement(
     "textarea",
     {
       id: "dbq-custom-docs",
       className: "w-full text-xs border border-rose-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-rose-300 outline-none font-mono",
       rows: 8,
-      placeholder: "Paste your documents here, separated by --- on its own line...",
-      "aria-label": "Custom documents for DBQ"
+      placeholder: t("dbq.custom_docs_placeholder") || "Paste your documents here, separated by --- on its own line...",
+      "aria-label": t("dbq.custom_docs_aria") || "Custom documents for DBQ"
     }
   ), /* @__PURE__ */ React.createElement(
     "input",
@@ -1156,13 +1156,13 @@ function DbqPanel(props) {
       type: "text",
       id: "dbq-custom-essay-focus",
       className: "w-full text-xs border border-rose-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-rose-300 outline-none",
-      placeholder: "Essay focus question (optional) \u2014 e.g. 'How did different groups define liberty in 1776?'",
-      "aria-label": "Custom essay focus question"
+      placeholder: t("dbq.custom_essay_placeholder") || "Essay focus question (optional) \u2014 e.g. 'How did different groups define liberty in 1776?'",
+      "aria-label": t("dbq.custom_essay_aria") || "Custom essay focus question"
     }
-  )), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-lg p-2 border border-rose-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1" }, t("dbq.includes") || "DBQ Packet Includes"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium" }, "\u{1F4C4} Document Excerpts"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium" }, "\u{1F50D} HAPP Sourcing"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium" }, "\u{1F517} Corroboration"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium" }, "\u270D\uFE0F Essay Prompt"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium" }, "\u{1F4CA} 4-Point Rubric"), window._dbqMode === "perspectives" && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full border border-purple-200 font-medium" }, "\u2694\uFE0F POV Comparison"), window._dbqMode === "search" && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full border border-blue-200 font-medium" }, "\u{1F310} Web Sources"), window._dbqMode === "custom" && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full border border-indigo-200 font-medium" }, "\u270F\uFE0F Teacher Docs")))), !hasSourceOrAnalysis && window._dbqMode !== "custom" && /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-rose-400 italic flex items-center gap-1" }, "\u2B06\uFE0F Paste a source text above first \u2014 the DBQ will be built from it.")), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-lg p-2 border border-rose-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1" }, t("dbq.includes") || "DBQ Packet Includes"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium" }, "\u{1F4C4} Document Excerpts"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium" }, "\u{1F50D} HAPP Sourcing"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium" }, "\u{1F517} Corroboration"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium" }, "\u270D\uFE0F Essay Prompt"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium" }, "\u{1F4CA} 4-Point Rubric"), window._dbqMode === "perspectives" && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full border border-purple-200 font-medium" }, "\u2694\uFE0F POV Comparison"), window._dbqMode === "search" && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full border border-blue-200 font-medium" }, "\u{1F310} Web Sources"), window._dbqMode === "custom" && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full border border-indigo-200 font-medium" }, "\u270F\uFE0F Teacher Docs")))), !hasSourceOrAnalysis && window._dbqMode !== "custom" && /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-rose-400 italic flex items-center gap-1" }, t("dbq.need_source_hint") || "\u2B06\uFE0F Paste a source text above first \u2014 the DBQ will be built from it.")), /* @__PURE__ */ React.createElement(
     "button",
     {
-      "aria-label": "Generate DBQ",
+      "aria-label": t("dbq.generate_aria") || "Generate DBQ",
       "data-help-key": "dbq_generate_button",
       onClick: () => handleGenerate("dbq"),
       disabled: !hasSourceOrAnalysis || isProcessing,
@@ -1670,7 +1670,7 @@ function QuizPanel(props) {
     },
     /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Settings2, { size: 12 }), "Item Mix", extraTotal > 0 && /* @__PURE__ */ React.createElement("span", { className: "ml-1 text-[10px] font-medium bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-full" }, "+", extraTotal, " extra")),
     /* @__PURE__ */ React.createElement(ChevronDown, { size: 14, className: "transition-transform duration-200" + (itemMixOpen ? " rotate-180" : "") })
-  ), itemMixOpen && /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-3 pt-1 space-y-2 animate-in slide-in-from-top-1 duration-150 bg-slate-50/50" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 leading-snug" }, "Control how many of each question type are generated. MCQ and Reflections are set above."), visibleTypes.map((et) => {
+  ), itemMixOpen && /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-3 pt-1 space-y-2 animate-in slide-in-from-top-1 duration-150 bg-slate-50/50" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 leading-snug" }, t("quiz.item_mix_help") || "Control how many of each question type are generated. MCQ and Reflections are set above."), visibleTypes.map((et) => {
     const count = effectiveMix[et.key] || 0;
     return /* @__PURE__ */ React.createElement("div", { key: et.key, className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm flex-shrink-0 w-5 text-center", "aria-hidden": "true" }, et.emoji), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-semibold text-slate-700" }, et.label), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-400 ml-1" }, et.desc)), /* @__PURE__ */ React.createElement(
       "input",
@@ -1680,7 +1680,7 @@ function QuizPanel(props) {
         max: "5",
         value: count,
         onChange: (e) => handleMixChange(et.key, parseInt(e.target.value) || 0),
-        "aria-label": et.label + " count",
+        "aria-label": t("quiz.item_count_aria", { type: et.label }) || et.label + " count",
         className: "w-12 text-center text-sm border border-slate-300 rounded-md p-1 focus:ring-indigo-200 focus:border-indigo-300 bg-white"
       }
     ));
@@ -1691,8 +1691,8 @@ function QuizPanel(props) {
       onClick: handleResetMix,
       className: "text-[11px] text-indigo-600 hover:text-indigo-800 font-medium mt-1 transition-colors"
     },
-    "\u21A9 Reset to mode defaults"
-  ))), /* @__PURE__ */ React.createElement("div", { className: "px-3 pt-2 pb-1 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "quiz-mode-select", className: "text-[10px] font-bold uppercase tracking-wider text-slate-600 flex-shrink-0" }, "Mode:"), /* @__PURE__ */ React.createElement(
+    t("quiz.reset_mix") || "\u21A9 Reset to mode defaults"
+  ))), /* @__PURE__ */ React.createElement("div", { className: "px-3 pt-2 pb-1 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "quiz-mode-select", className: "text-[10px] font-bold uppercase tracking-wider text-slate-600 flex-shrink-0" }, t("quiz.mode_label") || "Mode:"), /* @__PURE__ */ React.createElement(
     "select",
     {
       id: "quiz-mode-select",
@@ -1701,14 +1701,14 @@ function QuizPanel(props) {
       disabled: isProcessing,
       "data-help-key": "quiz_pedagogical_mode_select",
       className: "flex-1 min-w-0 text-xs font-semibold px-2 py-1 rounded border border-slate-300 bg-white hover:border-indigo-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all disabled:opacity-50",
-      "aria-label": "Quiz mode",
-      title: "Quiz mode: choose what this quiz is for. Pre-check probes prerequisites; Exit Ticket assesses today's content; Formative is a quick mid-lesson pulse; Spaced Review re-tests prior content."
+      "aria-label": t("quiz.mode_aria") || "Quiz mode",
+      title: t("quiz.mode_tooltip") || "Quiz mode: choose what this quiz is for. Pre-check probes prerequisites; Exit Ticket assesses today's content; Formative is a quick mid-lesson pulse; Spaced Review re-tests prior content."
     },
-    /* @__PURE__ */ React.createElement("option", { value: "exit-ticket" }, "\u{1F4DD} Exit Ticket"),
-    /* @__PURE__ */ React.createElement("option", { value: "pre-check" }, "\u{1F3AF} Pre-Check (Readiness)"),
-    /* @__PURE__ */ React.createElement("option", { value: "formative" }, "\u{1F321}\uFE0F Formative Check"),
-    /* @__PURE__ */ React.createElement("option", { value: "review" }, "\u{1F501} Spaced Review")
-  )), /* @__PURE__ */ React.createElement("div", { className: "px-3 pt-1 pb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "quiz-visuals-select", className: "text-[10px] font-bold uppercase tracking-wider text-slate-600 flex-shrink-0" }, "Visuals:"), /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("option", { value: "exit-ticket" }, t("quiz.mode_exit_ticket") || "\u{1F4DD} Exit Ticket"),
+    /* @__PURE__ */ React.createElement("option", { value: "pre-check" }, t("quiz.mode_pre_check") || "\u{1F3AF} Pre-Check (Readiness)"),
+    /* @__PURE__ */ React.createElement("option", { value: "formative" }, t("quiz.mode_formative") || "\u{1F321}\uFE0F Formative Check"),
+    /* @__PURE__ */ React.createElement("option", { value: "review" }, t("quiz.mode_review") || "\u{1F501} Spaced Review")
+  )), /* @__PURE__ */ React.createElement("div", { className: "px-3 pt-1 pb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "quiz-visuals-select", className: "text-[10px] font-bold uppercase tracking-wider text-slate-600 flex-shrink-0" }, t("quiz.visuals_label") || "Visuals:"), /* @__PURE__ */ React.createElement(
     "select",
     {
       id: "quiz-visuals-select",
@@ -1717,14 +1717,14 @@ function QuizPanel(props) {
       disabled: isProcessing,
       "data-help-key": "quiz_visual_mode_select",
       className: "flex-1 min-w-0 text-xs font-semibold px-2 py-1 rounded border border-slate-300 bg-white hover:border-indigo-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all disabled:opacity-50",
-      "aria-label": "MCQ visual mode",
-      title: "Visuals (MCQ items only): None = text-only (free, fastest). Question = generate one image per question stem. Options = generate 4 images per question (one per option). Both = question + options. Image gen takes ~3-5s per image and uses Imagen credits."
+      "aria-label": t("quiz.visuals_aria") || "MCQ visual mode",
+      title: t("quiz.visuals_tooltip") || "Visuals (MCQ items only): None = text-only (free, fastest). Question = generate one image per question stem. Options = generate 4 images per question (one per option). Both = question + options. Image gen takes ~3-5s per image and uses Imagen credits."
     },
-    /* @__PURE__ */ React.createElement("option", { value: "none" }, "\u2205 None (text only)"),
-    /* @__PURE__ */ React.createElement("option", { value: "question" }, "\u{1F5BC}\uFE0F Question images"),
-    /* @__PURE__ */ React.createElement("option", { value: "options" }, "\u{1F3B4} Option images"),
-    /* @__PURE__ */ React.createElement("option", { value: "both" }, "\u{1F5BC}\uFE0F\u{1F3B4} Both")
-  )), mcqVisualMode !== "none" && /* @__PURE__ */ React.createElement("div", { className: "px-3 pt-0 pb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "quiz-image-style-input", className: "text-[10px] font-bold uppercase tracking-wider text-slate-600 flex-shrink-0" }, "Style:"), /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("option", { value: "none" }, t("quiz.visuals_none") || "\u2205 None (text only)"),
+    /* @__PURE__ */ React.createElement("option", { value: "question" }, t("quiz.visuals_question") || "\u{1F5BC}\uFE0F Question images"),
+    /* @__PURE__ */ React.createElement("option", { value: "options" }, t("quiz.visuals_options") || "\u{1F3B4} Option images"),
+    /* @__PURE__ */ React.createElement("option", { value: "both" }, t("quiz.visuals_both") || "\u{1F5BC}\uFE0F\u{1F3B4} Both")
+  )), mcqVisualMode !== "none" && /* @__PURE__ */ React.createElement("div", { className: "px-3 pt-0 pb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "quiz-image-style-input", className: "text-[10px] font-bold uppercase tracking-wider text-slate-600 flex-shrink-0" }, t("quiz.style_label") || "Style:"), /* @__PURE__ */ React.createElement(
     "input",
     {
       id: "quiz-image-style-input",
@@ -1733,11 +1733,11 @@ function QuizPanel(props) {
       onChange: (ev) => setImageStyle(ev.target.value),
       disabled: isProcessing,
       "data-help-key": "quiz_image_style_input",
-      placeholder: "e.g. watercolor, flat vector, photorealistic, line drawing",
+      placeholder: t("quiz.style_placeholder") || "e.g. watercolor, flat vector, photorealistic, line drawing",
       maxLength: 120,
       className: "flex-1 min-w-0 text-xs px-2 py-1 rounded border border-slate-300 bg-white hover:border-indigo-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all disabled:opacity-50 placeholder:italic placeholder:text-slate-400",
-      "aria-label": "Image style hint",
-      title: "Optional. Applied to every image in the quiz (question + options). Empty = default style. Persisted with the quiz so refine actions stay on-brand."
+      "aria-label": t("quiz.style_aria") || "Image style hint",
+      title: t("quiz.style_tooltip") || "Optional. Applied to every image in the quiz (question + options). Empty = default style. Persisted with the quiz so refine actions stay on-brand."
     }
   )), /* @__PURE__ */ React.createElement(
     "button",
@@ -1749,7 +1749,7 @@ function QuizPanel(props) {
       "aria-busy": isProcessing,
       className: "w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
     },
-    /* @__PURE__ */ React.createElement("span", { className: "text-sm text-slate-600 group-hover:text-indigo-700 transition-colors flex items-center gap-2" }, quizMode === "exit-ticket" ? t("quiz.generate") : quizMode === "pre-check" ? "Generate Pre-Check" : quizMode === "formative" ? "Generate Formative Check" : "Generate Spaced Review", " ", /* @__PURE__ */ React.createElement(Sparkles, { size: 14, className: "text-yellow-600" })),
+    /* @__PURE__ */ React.createElement("span", { className: "text-sm text-slate-600 group-hover:text-indigo-700 transition-colors flex items-center gap-2" }, quizMode === "exit-ticket" ? t("quiz.generate") : quizMode === "pre-check" ? t("quiz.generate_pre_check") || "Generate Pre-Check" : quizMode === "formative" ? t("quiz.generate_formative") || "Generate Formative Check" : t("quiz.generate_review") || "Generate Spaced Review", " ", /* @__PURE__ */ React.createElement(Sparkles, { size: 14, className: "text-yellow-600" })),
     /* @__PURE__ */ React.createElement(ArrowRight, { size: 16, className: "text-slate-600 group-hover:text-indigo-600" })
   ));
 }
@@ -1908,27 +1908,27 @@ function ConceptSortPanel(props) {
       type: "number",
       min: "4",
       max: "30",
-      placeholder: "Auto (AI decides)",
+      placeholder: t("concept_sort.item_count_placeholder") || "Auto (AI decides)",
       value: conceptItemCount,
       onChange: (e) => {
         const v = e.target.value;
         setConceptItemCount(v === "" ? "" : parseInt(v, 10) || "");
       },
-      title: "Leave blank to let AI pick the right number based on your source text. Or type 4\u201330 to force a specific count.",
+      title: t("concept_sort.item_count_tooltip") || "Leave blank to let AI pick the right number based on your source text. Or type 4\u201330 to force a specific count.",
       className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 p-1"
     }
-  )), /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium" }, "Card visuals"), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium" }, t("concept_sort.card_visuals_label") || "Card visuals"), /* @__PURE__ */ React.createElement(
     "select",
     {
-      "aria-label": "Card visuals",
+      "aria-label": t("concept_sort.card_visuals_label") || "Card visuals",
       "data-help-key": "concept_sort_image_mode",
       value: conceptImageMode,
       onChange: (e) => setConceptImageMode(e.target.value),
       className: "w-full text-xs border-slate-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 p-1"
     },
-    /* @__PURE__ */ React.createElement("option", { value: "auto" }, "Auto (only on short items)"),
-    /* @__PURE__ */ React.createElement("option", { value: "always" }, "Always generate images"),
-    /* @__PURE__ */ React.createElement("option", { value: "never" }, "Never (text-only cards)")
+    /* @__PURE__ */ React.createElement("option", { value: "auto" }, t("concept_sort.card_visuals_auto") || "Auto (only on short items)"),
+    /* @__PURE__ */ React.createElement("option", { value: "always" }, t("concept_sort.card_visuals_always") || "Always generate images"),
+    /* @__PURE__ */ React.createElement("option", { value: "never" }, t("concept_sort.card_visuals_never") || "Never (text-only cards)")
   )), conceptImageMode !== "never" && /* @__PURE__ */ React.createElement("div", { "data-help-key": "concept_sort_image_style" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium" }, /* @__PURE__ */ React.createElement(Palette, { size: 12, className: "inline mr-1 text-purple-500" }), " ", t("concept_sort.image_style_label") || "Image style", " ", /* @__PURE__ */ React.createElement("span", { className: "text-amber-600 font-normal" }, t("common.optional"))), /* @__PURE__ */ React.createElement(
     "input",
     {

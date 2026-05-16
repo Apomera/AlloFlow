@@ -303,14 +303,14 @@ function AIBackendModal(props) {
             <button onClick={() => setShowAIBackendModal(false)} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10" aria-label={t('common.close') || "Close"}><X size={20}/></button>
             <div className="flex items-center gap-2 mb-6 text-violet-900">
                 <div className="bg-violet-100 p-2 rounded-full"><Unplug size={20} className="text-violet-600"/></div>
-                <h3 className="font-black text-lg">AI Backend Settings</h3>
+                <h3 className="font-black text-lg">{t('ai_backend.title') || 'AI Backend Settings'}</h3>
             </div>
             <div className="space-y-4">
                 {/* ─── Section 1: Provider & Connection ─── */}
                 <div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">Provider</label>
+                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('ai_backend.provider_label') || 'Provider'}</label>
                     <select
-                        aria-label="AI Backend Provider"
+                        aria-label={t('ai_backend.provider_aria') || 'AI Backend Provider'}
                         id="ai-backend-provider"
                         defaultValue={(() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').backend || 'gemini'; } catch { return 'gemini'; } })()}
                         onChange={(e) => {
@@ -333,9 +333,9 @@ function AIBackendModal(props) {
                     </select>
                 </div>
                 <div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">Server URL</label>
+                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('ai_backend.server_url_label') || 'Server URL'}</label>
                     <input
-                        id="ai-backend-url" aria-label="Custom AI backend URL"
+                        id="ai-backend-url" aria-label={t('ai_backend.server_url_aria') || 'Custom AI backend URL'}
                         type="text"
                         placeholder="http://localhost:8080"
                         defaultValue={(() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').baseUrl || ''; } catch { return ''; } })()}
@@ -347,11 +347,11 @@ function AIBackendModal(props) {
                     />
                 </div>
                 <div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">API Key <span className="normal-case font-normal text-slate-600">(cloud providers only)</span></label>
+                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('ai_backend.api_key_label') || 'API Key'} <span className="normal-case font-normal text-slate-600">{t('ai_backend.api_key_hint') || '(cloud providers only)'}</span></label>
                     <input
-                        id="ai-backend-apikey" aria-label="Custom AI backend API key"
+                        id="ai-backend-apikey" aria-label={t('ai_backend.api_key_aria') || 'Custom AI backend API key'}
                         type="password"
-                        placeholder="Your API key..."
+                        placeholder={t('ai_backend.api_key_placeholder') || 'Your API key...'}
                         defaultValue={(() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').apiKey || ''; } catch { return ''; } })()}
                         onChange={(e) => {
                             const current = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');
@@ -361,11 +361,11 @@ function AIBackendModal(props) {
                     />
                 </div>
                 <div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">Wolfram Alpha App ID <span className="normal-case font-normal text-slate-600">(optional — enhances math)</span></label>
+                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('ai_backend.wolfram_label') || 'Wolfram Alpha App ID'} <span className="normal-case font-normal text-slate-600">{t('ai_backend.wolfram_hint') || '(optional — enhances math)'}</span></label>
                     <input
-                        id="ai-backend-wolfram" aria-label="Custom backend Wolfram App ID"
+                        id="ai-backend-wolfram" aria-label={t('ai_backend.wolfram_aria') || 'Custom backend Wolfram App ID'}
                         type="text"
-                        placeholder="XXXXX-XXXXXXXXXX (from developer.wolframalpha.com)"
+                        placeholder={t('ai_backend.wolfram_placeholder') || 'XXXXX-XXXXXXXXXX (from developer.wolframalpha.com)'}
                         defaultValue={(() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').wolframAppId || ''; } catch { return ''; } })()}
                         onChange={(e) => {
                             const current = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');
@@ -373,7 +373,7 @@ function AIBackendModal(props) {
                         }}
                         className="w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
                     />
-                    <p className="text-[11px] text-slate-600 mt-1">Free: 2,000 queries/month • Adds exact math solving & step-by-step verification</p>
+                    <p className="text-[11px] text-slate-600 mt-1">{t('ai_backend.wolfram_free_note') || 'Free: 2,000 queries/month • Adds exact math solving & step-by-step verification'}</p>
                 </div>
                 <div className="flex gap-2 pt-1">
                     <button
@@ -446,13 +446,13 @@ function AIBackendModal(props) {
                 <div className="pt-3 border-t-2 border-violet-50">
                     <div className="flex items-center gap-2 mb-3">
                         <div className="bg-blue-100 p-1.5 rounded-lg"><Cpu size={14} className="text-blue-600"/></div>
-                        <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider">Model Selection</h4>
+                        <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider">{t('ai_backend.model_selection_header') || 'Model Selection'}</h4>
                     </div>
                     <div className="space-y-3">
                         <div>
-                            <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">Default Model <span className="normal-case font-normal text-slate-600">(text generation)</span></label>
+                            <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">{t('ai_backend.default_model_label') || 'Default Model'} <span className="normal-case font-normal text-slate-600">{t('ai_backend.default_model_hint') || '(text generation)'}</span></label>
                             <select
-                                aria-label="Default AI model"
+                                aria-label={t('ai_backend.default_model_aria') || 'Default AI model'}
                                 id="ai-backend-model-default"
                                 defaultValue={(() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').models?.default || ''; } catch { return ''; } })()}
                                 onChange={(e) => {
@@ -463,13 +463,13 @@ function AIBackendModal(props) {
                                 }}
                                 className="w-full p-2 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
                             >
-                                <option value="">Auto (server default)</option>
+                                <option value="">{t('ai_backend.auto_server_default') || 'Auto (server default)'}</option>
                             </select>
                         </div>
                         <div>
-                            <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">Fallback Model <span className="normal-case font-normal text-slate-600">(rate-limit cascade)</span></label>
+                            <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">{t('ai_backend.fallback_model_label') || 'Fallback Model'} <span className="normal-case font-normal text-slate-600">{t('ai_backend.fallback_model_hint') || '(rate-limit cascade)'}</span></label>
                             <select
-                                aria-label="Fallback AI model"
+                                aria-label={t('ai_backend.fallback_model_aria') || 'Fallback AI model'}
                                 id="ai-backend-model-fallback"
                                 defaultValue={(() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').models?.fallback || ''; } catch { return ''; } })()}
                                 onChange={(e) => {
@@ -480,7 +480,7 @@ function AIBackendModal(props) {
                                 }}
                                 className="w-full p-2 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
                             >
-                                <option value="">Same as default</option>
+                                <option value="">{t('ai_backend.same_as_default') || 'Same as default'}</option>
                             </select>
                         </div>
                         <p className="text-[11px] text-slate-600 italic">💡 Click "Test Connection" above to auto-populate available models from your backend.</p>
@@ -494,7 +494,7 @@ function AIBackendModal(props) {
                         <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider">Text-to-Speech</h4>
                     </div>
                     <select
-                        aria-label="Text-to-speech provider"
+                        aria-label={t('ai_backend.tts_provider_aria') || 'Text-to-speech provider'}
                         id="ai-backend-tts-provider"
                         defaultValue={(() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').ttsProvider || 'auto'; } catch { return 'auto'; } })()}
                         onChange={(e) => {
@@ -515,7 +515,7 @@ function AIBackendModal(props) {
                             Narrator voice selection is in the header bar (🎧 button).
                         </p>
                         <p className="text-[11px] text-emerald-600 mt-1">
-                            <strong>Local cascade:</strong> Kokoro (:8880, 8 langs) → Edge TTS (:5500, 40+ langs) → Browser fallback
+                            <strong>{t('ai_backend.local_cascade_label') || 'Local cascade:'}</strong> Kokoro (:8880, 8 langs) → Edge TTS (:5500, 40+ langs) → Browser fallback
                         </p>
                     </div>
                 </div>
@@ -524,10 +524,10 @@ function AIBackendModal(props) {
                 <div className="pt-3 border-t-2 border-violet-50">
                     <div className="flex items-center gap-2 mb-3">
                         <div className="bg-amber-100 p-1.5 rounded-lg"><ImageIcon size={14} className="text-amber-600"/></div>
-                        <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider">Image Generation</h4>
+                        <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider">{t('ai_backend.image_generation_header') || 'Image Generation'}</h4>
                     </div>
                     <select
-                        aria-label="Image generation provider"
+                        aria-label={t('ai_backend.image_provider_aria') || 'Image generation provider'}
                         id="ai-backend-image-provider"
                         defaultValue={(() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').imageProvider || 'auto'; } catch { return 'auto'; } })()}
                         onChange={(e) => {

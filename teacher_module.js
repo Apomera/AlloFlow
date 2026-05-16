@@ -502,7 +502,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     },
     /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2192"),
     groupIds.map((gId) => /* @__PURE__ */ React.createElement("option", { key: gId, value: gId }, groups[gId].name))
-  ), /* @__PURE__ */ React.createElement("button", { onClick: () => handleRemoveStudent(name), className: "hover:text-red-500 transition-colors", "aria-label": "Remove " + name }, /* @__PURE__ */ React.createElement(X, { size: 12 })))))), rosterKey && /* @__PURE__ */ React.createElement("div", { className: "flex gap-4 pt-3 border-t border-slate-100 text-[11px] text-slate-600 font-medium" }, /* @__PURE__ */ React.createElement("span", null, groupIds.length, " group", groupIds.length !== 1 ? "s" : ""), /* @__PURE__ */ React.createElement("span", null, Object.keys(students).length, " student", Object.keys(students).length !== 1 ? "s" : ""), /* @__PURE__ */ React.createElement("span", null, getUnassigned().length, " unassigned"), /* @__PURE__ */ React.createElement("span", { className: "ml-auto flex items-center gap-1" }, /* @__PURE__ */ React.createElement(ShieldCheck, { size: 10, className: "text-green-500" }), " Local only")))));
+  ), /* @__PURE__ */ React.createElement("button", { onClick: () => handleRemoveStudent(name), className: "hover:text-red-500 transition-colors", "aria-label": "Remove " + name }, /* @__PURE__ */ React.createElement(X, { size: 12 })))))), rosterKey && /* @__PURE__ */ React.createElement("div", { className: "flex gap-4 pt-3 border-t border-slate-100 text-[11px] text-slate-600 font-medium" }, /* @__PURE__ */ React.createElement("span", null, groupIds.length, " group", groupIds.length !== 1 ? "s" : ""), /* @__PURE__ */ React.createElement("span", null, Object.keys(students).length, " student", Object.keys(students).length !== 1 ? "s" : ""), /* @__PURE__ */ React.createElement("span", null, getUnassigned().length, " unassigned"), /* @__PURE__ */ React.createElement("span", { className: "ml-auto flex items-center gap-1" }, /* @__PURE__ */ React.createElement(ShieldCheck, { size: 10, className: "text-green-500" }), " ", t("teacher.local_only") || "Local only")))));
 });
 const SimpleBarChart = React.memo(({ data, color = "indigo" }) => {
   const { t } = useContext(LanguageContext);
@@ -1585,7 +1585,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     /* @__PURE__ */ React.createElement("span", null, showQuizRoutingPanel ? "\u25BE" : "\u25B8"),
     /* @__PURE__ */ React.createElement("span", null, "\u{1F4CA} Auto-routing rules for this question"),
     /* @__PURE__ */ React.createElement("span", { className: "font-normal text-amber-700" }, "(", currentRules.length, " rule", currentRules.length === 1 ? "" : "s", ")")
-  ), showQuizRoutingPanel && /* @__PURE__ */ React.createElement("div", { className: "mt-2 space-y-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-700 leading-snug" }, "When a student answers, auto-assign them to a group. Use this for ", /* @__PURE__ */ React.createElement("strong", null, "choice"), ' (e.g., "Pirate Crew vs Space Crew") or ', /* @__PURE__ */ React.createElement("strong", null, "formative-assessment"), " routing. Group resources can then be staged per group via the Groups panel above."), groupEntriesForRouting.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-red-700 italic" }, "Create at least one group in the Groups panel above before adding routing rules."), currentRules.map((rule) => /* @__PURE__ */ React.createElement("div", { key: rule.id, className: "flex flex-wrap items-center gap-1 bg-white border border-amber-200 rounded p-1.5 text-xs" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "When answer"), /* @__PURE__ */ React.createElement(
+  ), showQuizRoutingPanel && /* @__PURE__ */ React.createElement("div", { className: "mt-2 space-y-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-700 leading-snug" }, "When a student answers, auto-assign them to a group. Use this for ", /* @__PURE__ */ React.createElement("strong", null, "choice"), ' (e.g., "Pirate Crew vs Space Crew") or ', /* @__PURE__ */ React.createElement("strong", null, "formative-assessment"), " routing. Group resources can then be staged per group via the Groups panel above."), groupEntriesForRouting.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-red-700 italic" }, t("teacher.quiz_routing.no_groups_warning") || "Create at least one group in the Groups panel above before adding routing rules."), currentRules.map((rule) => /* @__PURE__ */ React.createElement("div", { key: rule.id, className: "flex flex-wrap items-center gap-1 bg-white border border-amber-200 rounded p-1.5 text-xs" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, t("teacher.quiz_routing.when_answer_label") || "When answer"), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": "Predicate",
@@ -1598,7 +1598,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
   ), /* @__PURE__ */ React.createElement(
     "select",
     {
-      "aria-label": "Answer option",
+      "aria-label": t("teacher.quiz_routing.answer_option_aria") || "Answer option",
       value: rule.when.predicate === "in" ? "" : rule.when.value,
       onChange: (e) => updateQuizRoutingRule(rule.id, { when: { value: e.target.value } }),
       className: "px-1 py-0.5 border border-slate-300 rounded text-xs"
@@ -1608,7 +1608,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
   ), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "\u2192 assign to"), /* @__PURE__ */ React.createElement(
     "select",
     {
-      "aria-label": "Target group",
+      "aria-label": t("teacher.quiz_routing.target_group_aria") || "Target group",
       value: rule.then.groupId,
       onChange: (e) => updateQuizRoutingRule(rule.id, { then: { groupId: e.target.value } }),
       className: "px-1 py-0.5 border border-slate-300 rounded text-xs"
@@ -1619,7 +1619,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     "button",
     {
       onClick: () => removeQuizRoutingRule(rule.id),
-      "aria-label": "Remove rule",
+      "aria-label": t("teacher.quiz_routing.remove_rule_aria") || "Remove rule",
       className: "ml-auto px-1.5 py-0.5 text-red-700 hover:bg-red-50 rounded border border-red-200"
     },
     "\u2715"
@@ -1675,7 +1675,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     t("common.next"),
     " ",
     /* @__PURE__ */ React.createElement(ArrowDown, { className: "-rotate-90", size: 16 })
-  )))), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 rounded-xl border border-slate-400 p-6 flex flex-col items-center justify-center min-h-[300px] relative" }, showLocalStats || mode === "live-pulse" ? answeredCount > 0 ? renderAnalytics() : /* @__PURE__ */ React.createElement("div", { className: "text-slate-600 italic flex flex-col items-center gap-2 h-full justify-center" }, /* @__PURE__ */ React.createElement(Layout, { size: 48, className: "opacity-20" }), /* @__PURE__ */ React.createElement("span", { className: "text-sm font-medium" }, t("quiz.waiting_responses"))) : /* @__PURE__ */ React.createElement(React.Fragment, null, mode === "boss-battle" && bossStats ? /* @__PURE__ */ React.createElement("div", { className: "w-full h-full flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300 relative" }, phase === "boss-defeated" && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-green-900/95 to-emerald-800/95 backdrop-blur-lg rounded-xl animate-in zoom-in duration-500" }, /* @__PURE__ */ React.createElement("div", { className: "text-center p-8" }, /* @__PURE__ */ React.createElement("div", { className: "text-7xl mb-4" }, "\u{1F389}"), /* @__PURE__ */ React.createElement("h2", { className: "text-4xl font-black text-white mb-2 drop-shadow-lg" }, t("quiz.boss.victory_msg")), /* @__PURE__ */ React.createElement("p", { className: "text-lg text-green-200" }, bossStats?.name || "Boss", " has been defeated!"))), phase === "class-defeated" && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-red-900/95 to-rose-800/95 backdrop-blur-lg rounded-xl animate-in zoom-in duration-500" }, /* @__PURE__ */ React.createElement("div", { className: "text-center p-8" }, /* @__PURE__ */ React.createElement("div", { className: "text-7xl mb-4" }, "\u{1F480}"), /* @__PURE__ */ React.createElement("h2", { className: "text-4xl font-black text-white mb-2 drop-shadow-lg" }, t("quiz.boss.class_defeat_msg")), /* @__PURE__ */ React.createElement("p", { className: "text-lg text-red-200" }, "The class has fallen..."))), /* @__PURE__ */ React.createElement("div", { className: `relative mb-6 ${phase === "revealed" && bossStats.lastDamage > 0 ? "animate-shake" : ""}` }, bossStats.image ? /* @__PURE__ */ React.createElement(
+  )))), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 rounded-xl border border-slate-400 p-6 flex flex-col items-center justify-center min-h-[300px] relative" }, showLocalStats || mode === "live-pulse" ? answeredCount > 0 ? renderAnalytics() : /* @__PURE__ */ React.createElement("div", { className: "text-slate-600 italic flex flex-col items-center gap-2 h-full justify-center" }, /* @__PURE__ */ React.createElement(Layout, { size: 48, className: "opacity-20" }), /* @__PURE__ */ React.createElement("span", { className: "text-sm font-medium" }, t("quiz.waiting_responses"))) : /* @__PURE__ */ React.createElement(React.Fragment, null, mode === "boss-battle" && bossStats ? /* @__PURE__ */ React.createElement("div", { className: "w-full h-full flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300 relative" }, phase === "boss-defeated" && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-green-900/95 to-emerald-800/95 backdrop-blur-lg rounded-xl animate-in zoom-in duration-500" }, /* @__PURE__ */ React.createElement("div", { className: "text-center p-8" }, /* @__PURE__ */ React.createElement("div", { className: "text-7xl mb-4" }, "\u{1F389}"), /* @__PURE__ */ React.createElement("h2", { className: "text-4xl font-black text-white mb-2 drop-shadow-lg" }, t("quiz.boss.victory_msg")), /* @__PURE__ */ React.createElement("p", { className: "text-lg text-green-200" }, bossStats?.name || "Boss", " has been defeated!"))), phase === "class-defeated" && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-red-900/95 to-rose-800/95 backdrop-blur-lg rounded-xl animate-in zoom-in duration-500" }, /* @__PURE__ */ React.createElement("div", { className: "text-center p-8" }, /* @__PURE__ */ React.createElement("div", { className: "text-7xl mb-4" }, "\u{1F480}"), /* @__PURE__ */ React.createElement("h2", { className: "text-4xl font-black text-white mb-2 drop-shadow-lg" }, t("quiz.boss.class_defeat_msg")), /* @__PURE__ */ React.createElement("p", { className: "text-lg text-red-200" }, t("teacher.boss.class_fallen") || "The class has fallen..."))), /* @__PURE__ */ React.createElement("div", { className: `relative mb-6 ${phase === "revealed" && bossStats.lastDamage > 0 ? "animate-shake" : ""}` }, bossStats.image ? /* @__PURE__ */ React.createElement(
     "img",
     {
       loading: "lazy",
@@ -2162,10 +2162,10 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
     const totalFidelity = dashboardData.reduce((s2, st) => s2 + (st.fidelityLog ? st.fidelityLog.length : 0), 0);
     const reportHtml = `
         <div style="font-family: 'Times New Roman', serif; padding: 40px; color: #333; max-width: 800px; margin: 0 auto;">
-            <h1 style="text-align: center; font-size: 18px; font-weight: bold; margin-bottom: 5px;">AlloFlow UDL Platform \u2014 Research Data Report</h1>
+            <h1 style="text-align: center; font-size: 18px; font-weight: bold; margin-bottom: 5px;">${t("teacher.research.report_title") || "AlloFlow UDL Platform \u2014 Research Data Report"}</h1>
             <p style="text-align: center; font-size: 12px; color: #666; margin-bottom: 30px;">Generated: ${date} | N = ${dashboardData.length} students</p>
             <hr style="border: 1px solid #333; margin-bottom: 25px;">
-            <h2 style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">Table 1. TAM Survey Construct Descriptives</h2>
+            <h2 style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">${t("teacher.research.table1_heading") || "Table 1. TAM Survey Construct Descriptives"}</h2>
             <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 25px;">
                 <thead>
                     <tr style="border-bottom: 2px solid #333; border-top: 2px solid #333;">
@@ -2200,7 +2200,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                     </tr>
                 </tbody>
             </table>
-            <h2 style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">Table 2. Oral Reading Fluency Probe Descriptives</h2>
+            <h2 style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">${t("teacher.research.table2_heading") || "Table 2. Oral Reading Fluency Probe Descriptives"}</h2>
             <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 25px;">
                 <thead>
                     <tr style="border-bottom: 2px solid #333; border-top: 2px solid #333;">
@@ -2212,26 +2212,26 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                 </thead>
                 <tbody>
                     <tr style="border-bottom: 1px solid #ddd;">
-                        <td style="padding: 6px 8px;">Words Correct Per Minute (WCPM)</td>
+                        <td style="padding: 6px 8px;">${t("teacher.research.measure_wcpm") || "Words Correct Per Minute (WCPM)"}</td>
                         <td style="text-align: center; padding: 6px 8px;">${wcpmStats.n}</td>
                         <td style="text-align: center; padding: 6px 8px;">${wcpmStats.mean}</td>
                         <td style="text-align: center; padding: 6px 8px;">${wcpmStats.sd}</td>
                     </tr>
                     <tr style="border-bottom: 1px solid #ddd;">
-                        <td style="padding: 6px 8px;">Digits Correct Per Minute (DCPM)</td>
+                        <td style="padding: 6px 8px;">${t("teacher.research.measure_dcpm") || "Digits Correct Per Minute (DCPM)"}</td>
                         <td style="text-align: center; padding: 6px 8px;">${dcpmStats.n}</td>
                         <td style="text-align: center; padding: 6px 8px;">${dcpmStats.mean}</td>
                         <td style="text-align: center; padding: 6px 8px;">${dcpmStats.sd}</td>
                     </tr>
                     <tr style="border-bottom: 2px solid #333;">
-                        <td style="padding: 6px 8px;">Accuracy (%)</td>
+                        <td style="padding: 6px 8px;">${t("teacher.research.measure_accuracy_pct") || "Accuracy (%)"}</td>
                         <td style="text-align: center; padding: 6px 8px;">${accStats.n}</td>
                         <td style="text-align: center; padding: 6px 8px;">${accStats.mean}</td>
                         <td style="text-align: center; padding: 6px 8px;">${accStats.sd}</td>
                     </tr>
                 </tbody>
             </table>
-            <h2 style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">Table 3. Implementation Fidelity Summary</h2>
+            <h2 style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">${t("teacher.research.table3_heading") || "Table 3. Implementation Fidelity Summary"}</h2>
             <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 25px;">
                 <thead>
                     <tr style="border-bottom: 2px solid #333; border-top: 2px solid #333;">
@@ -2248,7 +2248,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                 </tbody>
             </table>
             <div style="page-break-before: always;"></div>
-            <h2 style="font-size: 16px; font-weight: bold; margin-top: 30px; margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 5px;">Appendix A: Individual Student Data</h2>
+            <h2 style="font-size: 16px; font-weight: bold; margin-top: 30px; margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 5px;">${t("teacher.research.appendix_a_heading") || "Appendix A: Individual Student Data"}</h2>
             ${dashboardData.filter((s2) => {
       if (studentFilter === "probes") return s2.probeHistory && Object.keys(s2.probeHistory).length > 0;
       if (studentFilter === "surveys") return s2.surveyResponses && s2.surveyResponses.length > 0;
@@ -2289,19 +2289,19 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                         </tr>
                     </table>
                     ${sProbeWcpm.length > 0 ? `
-                    <p style="font-size: 10px; font-weight: bold; color: #555; margin-bottom: 4px;">Probe History (WCPM):</p>
+                    <p style="font-size: 10px; font-weight: bold; color: #555; margin-bottom: 4px;">${t("teacher.research.probe_history_wcpm_label") || "Probe History (WCPM):"}</p>
                     <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px;">
                         ${sProbeWcpm.map((p) => `<span style="font-size: 9px; padding: 2px 6px; border-radius: 3px; background: ${p.wcpm >= 100 ? "#d1fae5" : p.wcpm >= 60 ? "#fef3c7" : "#fee2e2"}; color: ${p.wcpm >= 100 ? "#065f46" : p.wcpm >= 60 ? "#92400e" : "#991b1b"}; font-weight: bold;">${p.wcpm}${p.date ? " (" + new Date(p.date).toLocaleDateString("en", { month: "short", day: "numeric" }) + ")" : ""}</span>`).join("")}
                     </div>
                     ` : ""}
                     ${sQuizzes.length > 0 ? `
-                    <p style="font-size: 10px; font-weight: bold; color: #555; margin-bottom: 4px;">Quiz Scores:</p>
+                    <p style="font-size: 10px; font-weight: bold; color: #555; margin-bottom: 4px;">${t("teacher.research.quiz_scores_label") || "Quiz Scores:"}</p>
                     <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px;">
                         ${sQuizzes.map((q) => `<span style="font-size: 9px; padding: 2px 6px; border-radius: 3px; background: #ede9fe; color: #5b21b6; font-weight: bold;">${q.score !== void 0 ? q.score : "\u2014"}${q.label ? " " + q.label : ""}</span>`).join("")}
                     </div>
                     ` : ""}
                     ${sSurveys.length > 0 ? `
-                    <p style="font-size: 10px; font-weight: bold; color: #555; margin-bottom: 4px;">Survey Responses:</p>
+                    <p style="font-size: 10px; font-weight: bold; color: #555; margin-bottom: 4px;">${t("teacher.research.survey_responses_label") || "Survey Responses:"}</p>
                     <div style="display: flex; gap: 4px; flex-wrap: wrap;">
                         ${sSurveys.map((s2) => `<span style="font-size: 9px; padding: 2px 6px; border-radius: 3px; background: #fce7f3; color: #9d174d; font-weight: bold;">${s2.construct || "\u2014"}: ${s2.score !== void 0 ? s2.score + "/5" : "\u2014"}</span>`).join("")}
                     </div>
@@ -2311,7 +2311,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
     }).join("")}
                         <div style="margin-top: 40px; font-size: 10px; color: #999; text-align: center; border-top: 1px solid #eee; padding-top: 15px;">
                 <p><em>Note.</em> TAM = Technology Acceptance Model (Davis, 1989). WCPM = Words Correct Per Minute. DCPM = Digits Correct Per Minute.</p>
-                <p>Generated by AlloFlow UDL Platform \u2014 Research Export Module</p>
+                <p>${t("teacher.research.export_footer") || "Generated by AlloFlow UDL Platform \u2014 Research Export Module"}</p>
             </div>
         </div>
     `;
@@ -2544,7 +2544,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
         "data-help-key": "dashboard_export_research_btn",
         className: "text-xs font-bold text-purple-600 hover:text-purple-800 hover:bg-purple-50 px-3 py-1.5 rounded-full transition-colors mr-2 border border-purple-200 shadow-sm flex items-center gap-1",
         title: t("research.export_apa_title"),
-        "aria-label": "Export Research Report"
+        "aria-label": t("teacher.research.export_btn_aria") || "Export Research Report"
       },
       /* @__PURE__ */ React.createElement(FileDown, { size: 14 }),
       " \u{1F4CA} Research PDF"
@@ -2950,13 +2950,13 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
       },
       "\u{1F50D} ",
       t("behavior_lens.hub.open_btn") || "Open BehaviorLens"
-    ))), activeTab === "stems" && /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-right-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white p-6 rounded-2xl shadow-sm border border-slate-400" }, /* @__PURE__ */ React.createElement("h3", { className: "text-lg font-black text-slate-800 flex items-center gap-2 mb-4" }, "\u{1F52C} STEM Station Activity"), (() => {
+    ))), activeTab === "stems" && /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-right-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white p-6 rounded-2xl shadow-sm border border-slate-400" }, /* @__PURE__ */ React.createElement("h3", { className: "text-lg font-black text-slate-800 flex items-center gap-2 mb-4" }, t("teacher.stem_stations.section_title") || "\u{1F52C} STEM Station Activity"), (() => {
       const stations = JSON.parse(localStorage.getItem("alloflow_stem_stations") || "[]");
       const xpLog = JSON.parse(localStorage.getItem("alloflow_stem_xp_log") || "[]");
       if (stations.length === 0) {
-        return /* @__PURE__ */ React.createElement("div", { className: "text-center py-8" }, /* @__PURE__ */ React.createElement("div", { className: "text-4xl mb-3" }, "\u{1F4CC}"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600" }, "No STEM Stations created yet."), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, "Generate a lesson plan to get AI-recommended STEM tools."));
+        return /* @__PURE__ */ React.createElement("div", { className: "text-center py-8" }, /* @__PURE__ */ React.createElement("div", { className: "text-4xl mb-3" }, "\u{1F4CC}"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600" }, t("teacher.stem_stations.empty_title") || "No STEM Stations created yet."), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, t("teacher.stem_stations.empty_hint") || "Generate a lesson plan to get AI-recommended STEM tools."));
       }
-      return /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 gap-4 mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 rounded-xl p-4 text-center border border-emerald-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-emerald-700" }, stations.length), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-emerald-600 font-bold mt-1" }, "Stations Created")), /* @__PURE__ */ React.createElement("div", { className: "bg-teal-50 rounded-xl p-4 text-center border border-teal-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-teal-700" }, new Set(stations.flatMap((s2) => s2.tools)).size), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-teal-600 font-bold mt-1" }, "Unique Tools Used")), /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 rounded-xl p-4 text-center border border-indigo-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-indigo-700" }, xpLog.filter((e) => e.stationId).length), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-indigo-600 font-bold mt-1" }, "Station XP Events"))), stations.map((st) => {
+      return /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 gap-4 mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 rounded-xl p-4 text-center border border-emerald-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-emerald-700" }, stations.length), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-emerald-600 font-bold mt-1" }, t("teacher.stem_stations.stations_created") || "Stations Created")), /* @__PURE__ */ React.createElement("div", { className: "bg-teal-50 rounded-xl p-4 text-center border border-teal-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-teal-700" }, new Set(stations.flatMap((s2) => s2.tools)).size), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-teal-600 font-bold mt-1" }, t("teacher.stem_stations.unique_tools_used") || "Unique Tools Used")), /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 rounded-xl p-4 text-center border border-indigo-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-indigo-700" }, xpLog.filter((e) => e.stationId).length), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-indigo-600 font-bold mt-1" }, t("teacher.stem_stations.station_xp_events") || "Station XP Events"))), stations.map((st) => {
         const stationXP = xpLog.filter((e) => e.stationId === st.id);
         const totalXP = stationXP.reduce((s2, e) => s2 + (e.xp || 0), 0);
         return /* @__PURE__ */ React.createElement("div", { key: st.id, className: "bg-slate-50 rounded-xl p-4 border border-slate-400 hover:border-emerald-300 transition-all" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-lg" }, "\u{1F4CC}"), /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-sm text-slate-800" }, st.name), /* @__PURE__ */ React.createElement("span", { className: "bg-emerald-100 text-emerald-700 text-[11px] font-bold px-2 py-0.5 rounded-full" }, st.tools.length, " tool", st.tools.length !== 1 ? "s" : "")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600" }, new Date(st.createdAt).toLocaleDateString()), /* @__PURE__ */ React.createElement("span", { className: "bg-indigo-100 text-indigo-700 text-[11px] font-bold px-2 py-0.5 rounded-full" }, totalXP, " XP"))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-2" }, st.tools.map((toolId) => {

@@ -69,7 +69,7 @@ const GameThemeToggle = () => {
     <button
       onClick={() => { if (typeof window.AlloToggleTheme === 'function') window.AlloToggleTheme(); }}
       className="p-2 hover:bg-white/20 rounded-full transition-colors flex items-center gap-1 text-white"
-      aria-label="Toggle theme (light / dark / high contrast)"
+      aria-label={t('games.theme_toggle_aria') || 'Toggle theme (light / dark / high contrast)'}
       title={isContrast ? 'High Contrast' : isDark ? 'Dark Mode' : 'Light Mode'}
       type="button"
     >
@@ -84,7 +84,7 @@ const SpeakButton = ({ text, size = 13, className = "" }) => (
     onClick={(e) => { e.stopPropagation(); e.preventDefault(); speakText(text); }}
     className={`inline-flex items-center justify-center w-7 h-7 rounded-full bg-indigo-100 hover:bg-indigo-200 text-indigo-600 transition-colors shrink-0 focus:outline-none focus:ring-2 focus:ring-indigo-400 ${className}`}
     aria-label={`Read aloud: ${text || ""}`}
-    title="Read aloud"
+    title={t('games.read_aloud_title') || 'Read aloud'}
     type="button"
   >
     <Volume2 size={size} />
@@ -490,7 +490,7 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
                     {card.type === 'image' ? (
                       <img loading="lazy"
                         src={card.content}
-                        alt="memory card"
+                        alt={t('games.memory.card_alt') || 'memory card'}
                         className="w-full h-full object-contain rounded"
                         decoding="async"
                       />
@@ -1797,7 +1797,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                  <button
                    onClick={(e) => { e.stopPropagation(); handleExplainClick(item); }}
                    className="mt-1 w-full text-[11px] font-bold text-indigo-600 hover:text-indigo-800 bg-white border border-indigo-200 hover:border-indigo-400 rounded px-1 py-0.5 transition-colors"
-                   aria-label="Explain why this was incorrect"
+                   aria-label={t('games.explain_incorrect_aria') || 'Explain why this was incorrect'}
                  >
                    {explanations[item.id] === 'loading' ? (t('concept_sort.why_loading') || '…') : (explanations[item.id] ? (t('concept_sort.why_hide') || 'Hide why') : (t('concept_sort.why_label') || 'Why?'))}
                  </button>
@@ -2033,7 +2033,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                                if (el) el.scrollBy({ left: -300, behavior: 'smooth' });
                            }}
                            className="absolute left-2 top-1/2 -translate-y-1/2 bg-white border border-slate-400 rounded-full w-8 h-8 flex items-center justify-center shadow-md hover:bg-slate-50 text-slate-600"
-                           aria-label="Scroll deck left"
+                           aria-label={t('games.scroll_deck_left_aria') || 'Scroll deck left'}
                        >
                            ‹
                        </button>
@@ -2045,7 +2045,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                                if (el) el.scrollBy({ left: 300, behavior: 'smooth' });
                            }}
                            className="absolute right-2 top-1/2 -translate-y-1/2 bg-white border border-slate-400 rounded-full w-8 h-8 flex items-center justify-center shadow-md hover:bg-slate-50 text-slate-600"
-                           aria-label="Scroll deck right to see more cards"
+                           aria-label={t('games.scroll_deck_right_aria') || 'Scroll deck right to see more cards'}
                        >
                            ›
                        </button>
@@ -2649,7 +2649,7 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                         ref={moveMenuRef}
                         className="bg-white p-4 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-2 animate-in zoom-in duration-200 max-w-md w-full pointer-events-auto"
                         role="dialog"
-                        aria-label="Choose a zone"
+                        aria-label={t('games.choose_zone_aria') || 'Choose a zone'}
                     >
                         <h4 className="text-xs font-bold text-slate-700 text-center mb-1">{t('concept_sort.tap_target') || 'Tap a zone above, or pick one here:'}</h4>
                         <div className="grid grid-cols-2 gap-2">
@@ -3072,7 +3072,7 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
         )}
         {keyboardSelectedItemId && (
           <div className="absolute inset-x-0 bottom-4 z-50 flex justify-center pointer-events-none px-4">
-            <div ref={moveMenuRef} className="bg-white p-4 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-2 animate-in zoom-in duration-200 pointer-events-auto max-w-md w-full" role="dialog" aria-label="Choose a column">
+            <div ref={moveMenuRef} className="bg-white p-4 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-2 animate-in zoom-in duration-200 pointer-events-auto max-w-md w-full" role="dialog" aria-label={t('games.choose_column_aria') || 'Choose a column'}>
               <h4 className="text-xs font-bold text-slate-700 text-center mb-1">{t('concept_sort.tap_target') || 'Tap a column above, or pick one here:'}</h4>
               <div className="grid grid-cols-2 gap-2">
                 <button onClick={() => handleKeyboardMove('left')} className="px-4 py-3 bg-cyan-100 hover:bg-cyan-200 text-cyan-800 rounded-xl font-bold text-xs transition-colors border border-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-500">{leftTitle}</button>
@@ -3322,7 +3322,7 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
               <p className="text-slate-600">{t('games.bucket_sort.victory_desc') || 'You sorted every item correctly!'}</p>
               <p className="text-2xl font-black text-yellow-500 mt-2">{score} pts</p>
               <div className="flex gap-3 mt-4 justify-center">
-                <button ref={playAgainRef} onClick={reset} className="px-6 py-2 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-700 transition-colors flex items-center gap-2"><RefreshCw size={14}/> Play Again</button>
+                <button ref={playAgainRef} onClick={reset} className="px-6 py-2 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-700 transition-colors flex items-center gap-2"><RefreshCw size={14}/> {t('games.memory.play_again') || 'Play Again'}</button>
                 <button onClick={onClose} className="px-6 py-2 bg-slate-200 text-slate-700 rounded-full font-bold hover:bg-slate-300 transition-colors">Close</button>
               </div>
             </div>
@@ -3336,7 +3336,7 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
         )}
         {keyboardSelectedItemId && (
           <div className="fixed inset-x-0 bottom-4 z-50 flex justify-center pointer-events-none px-4">
-            <div ref={moveMenuRef} className="bg-white p-4 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-2 animate-in zoom-in duration-200 max-w-md w-full pointer-events-auto" role="dialog" aria-label="Choose a destination">
+            <div ref={moveMenuRef} className="bg-white p-4 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-2 animate-in zoom-in duration-200 max-w-md w-full pointer-events-auto" role="dialog" aria-label={t('games.choose_destination_aria') || 'Choose a destination'}>
               <h4 className="text-xs font-bold text-slate-700 text-center mb-1">{t('concept_sort.tap_target') || 'Tap a bucket above, or pick one here:'}</h4>
               <div className="grid grid-cols-2 gap-2">
                 {buckets.map(b => (
@@ -3891,7 +3891,7 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
           <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="pipeline-victory-title">
             <div className={`bg-white p-8 rounded-3xl text-center shadow-2xl ${!useReducedMotion() ? 'animate-bounce' : ''}`}>
               <h2 id="pipeline-victory-title" className="text-4xl font-black text-indigo-600 mb-2">🏗️ Pipeline Complete!</h2>
-              <p className="text-slate-600">You built the entire process flow correctly!</p>
+              <p className="text-slate-600">{t('games.pipeline.victory_desc') || 'You built the entire process flow correctly!'}</p>
               <p className="text-2xl font-black text-yellow-500 mt-2">{score} pts</p>
               <div className="flex gap-3 mt-4 justify-center">
                 <button onClick={handleReset} className="px-6 py-2 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-700 transition-colors flex items-center gap-2">
@@ -3994,8 +3994,8 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                     onMouseDown={(e) => handleGripDown(e, step.id)}
                     onTouchStart={(e) => handleGripDown(e, step.id)}
                     className="absolute top-1 right-1 z-30 p-1 rounded-lg cursor-grab active:cursor-grabbing text-slate-300 hover:text-indigo-400 hover:bg-indigo-50 transition-colors"
-                    aria-label="Drag to reposition"
-                    title="Drag to reposition"
+                    aria-label={t('games.pipeline.drag_reposition_aria') || 'Drag to reposition'}
+                    title={t('games.pipeline.drag_reposition_aria') || 'Drag to reposition'}
                   >
                     <GripVertical size={14}/>
                   </div>
@@ -4462,7 +4462,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
                     {clues.across.length + clues.down.length} {t('games.crossword.clues')}
                  </div>
                  <div className="flex gap-2" data-help-key="crossword_controls">
-                     {!isWon && <button onClick={revealHint} className="px-3 py-1 bg-amber-100 text-amber-700 rounded text-xs font-bold hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-500 flex items-center gap-1" aria-label="Reveal one letter hint"><HelpCircle size={12}/> Hint{hintsUsed > 0 ? ` (${hintsUsed})` : ''}</button>}
+                     {!isWon && <button onClick={revealHint} className="px-3 py-1 bg-amber-100 text-amber-700 rounded text-xs font-bold hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-500 flex items-center gap-1" aria-label={t('games.crossword.reveal_letter_hint_aria') || 'Reveal one letter hint'}><HelpCircle size={12}/> {t('games.crossword.hint_button') || 'Hint'}{hintsUsed > 0 ? ` (${hintsUsed})` : ''}</button>}
                      <button onClick={checkPuzzle} className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded text-xs font-bold hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">{t('games.crossword.check')}</button>
                      <button onClick={revealPuzzle} className="px-3 py-1 bg-red-100 text-red-700 rounded text-xs font-bold hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500">{t('games.crossword.reveal')}</button>
                  </div>
@@ -5652,8 +5652,8 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }
                                 aria-label={t('games.scramble.input_placeholder')}
                             />
                             <div className="flex gap-2 w-full">
-                                <button onClick={useHint} className="flex-1 py-3 rounded-xl font-bold text-amber-600 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-colors flex items-center justify-center gap-1" aria-label="Get a hint">
-                                    <HelpCircle size={14}/> Hint
+                                <button onClick={useHint} className="flex-1 py-3 rounded-xl font-bold text-amber-600 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-colors flex items-center justify-center gap-1" aria-label={t('games.scramble.get_hint_aria') || 'Get a hint'}>
+                                    <HelpCircle size={14}/> {t('games.scramble.hint_button') || 'Hint'}
                                 </button>
                                 <button data-help-ignore="true"
                                     aria-label={t('common.skip')}
@@ -5901,7 +5901,7 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
           </div>
           <div className="flex flex-wrap gap-2 justify-center min-h-[50px]">
             {bankItems.length === 0 ? (
-              <span className="text-xs italic text-slate-400">All items placed.</span>
+              <span className="text-xs italic text-slate-400">{t('games.bucket_sort.bank_empty') || 'All items placed.'}</span>
             ) : (
               bankItems.map(item => (
                 <div
@@ -5927,10 +5927,10 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
           <div className="fixed inset-0 z-[210] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full text-center">
               <div className="text-5xl mb-3">🎉</div>
-              <h3 className="text-2xl font-black text-slate-800 mb-2">All sorted!</h3>
-              <p className="text-sm text-slate-600 mb-4">Final score: <strong className="text-indigo-600">{score}</strong>{attempts > 0 ? ` (with ${attempts} incorrect ${attempts === 1 ? 'attempt' : 'attempts'})` : ''}</p>
+              <h3 className="text-2xl font-black text-slate-800 mb-2">{t('games.bucket_sort.all_sorted') || 'All sorted!'}</h3>
+              <p className="text-sm text-slate-600 mb-4">{t('games.bucket_sort.final_score_label') || 'Final score:'} <strong className="text-indigo-600">{score}</strong>{attempts > 0 ? ` (with ${attempts} incorrect ${attempts === 1 ? 'attempt' : 'attempts'})` : ''}</p>
               <div className="flex gap-2 justify-center">
-                <button ref={playAgainRef} onClick={reset} className="px-4 py-2 bg-indigo-600 text-white rounded-md font-bold hover:bg-indigo-700">Play again</button>
+                <button ref={playAgainRef} onClick={reset} className="px-4 py-2 bg-indigo-600 text-white rounded-md font-bold hover:bg-indigo-700">{t('games.bucket_sort.play_again') || 'Play again'}</button>
                 <button onClick={onClose} className="px-4 py-2 bg-slate-200 text-slate-800 rounded-md font-bold hover:bg-slate-300">Close</button>
               </div>
             </div>

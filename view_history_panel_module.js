@@ -245,7 +245,7 @@ function HistoryPanel(props) {
             addToast && addToast("Station removed");
           },
           className: "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 text-red-400 hover:text-red-300 p-1 transition-opacity",
-          "aria-label": "Delete station"
+          "aria-label": t("history.delete_station_aria") || "Delete station"
         },
         /* @__PURE__ */ React.createElement(X, { size: 12 })
       )
@@ -429,7 +429,7 @@ function HistoryPanel(props) {
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
-        "aria-label": "Share to AlloFlow community catalog",
+        "aria-label": t("history.share_to_community_aria") || "Share to AlloFlow community catalog",
         onClick: (e) => {
           e.stopPropagation();
           try {
@@ -444,10 +444,11 @@ function HistoryPanel(props) {
           }
         },
         className: "p-1 text-indigo-300 hover:text-emerald-300 hover:bg-indigo-900/50 rounded transition-colors flex items-center gap-1 text-[11px]",
-        title: "Share this lesson to the AlloFlow community catalog (opens the in-canvas Submit form prefilled)"
+        title: t("history.share_to_community_tooltip") || "Share this lesson to the AlloFlow community catalog (opens the in-canvas Submit form prefilled)"
       },
       /* @__PURE__ */ React.createElement(Share2, { size: 12 }),
-      " Share"
+      " ",
+      t("history.share_button") || "Share"
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -464,7 +465,7 @@ function HistoryPanel(props) {
     (isParentMode || isIndependentMode) && !isTeacherMode && /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-end mt-2 pt-2 border-t border-indigo-800/30", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement(
       "button",
       {
-        "aria-label": "Share to AlloFlow community catalog",
+        "aria-label": t("history.share_to_community_aria") || "Share to AlloFlow community catalog",
         onClick: (e) => {
           e.stopPropagation();
           try {
@@ -479,10 +480,11 @@ function HistoryPanel(props) {
           }
         },
         className: "p-1 text-indigo-300 hover:text-emerald-300 hover:bg-indigo-900/50 rounded transition-colors flex items-center gap-1 text-[11px]",
-        title: "Share this lesson to the AlloFlow community catalog (opens the in-canvas Submit form prefilled)"
+        title: t("history.share_to_community_tooltip") || "Share this lesson to the AlloFlow community catalog (opens the in-canvas Submit form prefilled)"
       },
       /* @__PURE__ */ React.createElement(Share2, { size: 12 }),
-      " Share"
+      " ",
+      t("history.share_button") || "Share"
     ))
   ))));
 }

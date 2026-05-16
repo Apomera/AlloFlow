@@ -31,14 +31,15 @@ var Sparkles = _lazyIcon('Sparkles');
 var Unlock = _lazyIcon('Unlock');
 var Unplug = _lazyIcon('Unplug');
 const renderFormattedText = (text, enableGlossary = true, isDarkBg = false, deps) => {
-  const { sanitizeTruncatedCitations, warnLog, SimpleBarChart, SimpleDonutChart, formatInlineText, normalizeResourceLinks } = deps;
+  const { sanitizeTruncatedCitations, warnLog, SimpleBarChart, SimpleDonutChart, formatInlineText, normalizeResourceLinks, t } = deps;
+  const _t = t || ((k) => null);
   try {
     if (window._DEBUG_VIEW_RENDERERS) console.log("[ViewRenderers] renderFormattedText fired");
   } catch (_) {
   }
   if (!text) return null;
   if (typeof text !== "string") {
-    return /* @__PURE__ */ React.createElement("div", { className: "text-red-500 text-xs" }, "Error: Invalid text format");
+    return /* @__PURE__ */ React.createElement("div", { className: "text-red-500 text-xs" }, _t("renderers.error_invalid_text_format") || "Error: Invalid text format");
   }
   text = sanitizeTruncatedCitations(text);
   const processedText = normalizeResourceLinks(text);
@@ -343,7 +344,7 @@ const renderOutlineContent = (deps) => {
     ), branches.map((b, i) => {
       const hasConnectsTo = Array.isArray(b.connectsTo) && b.connectsTo.length > 0;
       const isBranching = hasConnectsTo && b.connectsTo.length > 1;
-      return /* @__PURE__ */ React.createElement("div", { key: i, className: "relative w-full flex flex-col items-center group" }, i > 0 && /* @__PURE__ */ React.createElement("div", { className: "absolute -top-9 z-10 text-indigo-300 bg-white rounded-full p-1 border border-indigo-100 shadow-sm" }, /* @__PURE__ */ React.createElement(ArrowDown, { size: 20, strokeWidth: 3 })), /* @__PURE__ */ React.createElement("div", { className: `w-full max-w-lg p-1 rounded-2xl bg-white shadow-lg transition-all duration-200 border-l-[6px] ${isBranching ? "border-l-amber-500 ring-2 ring-amber-100" : i % 2 === 0 ? "border-l-indigo-500" : "border-l-purple-500"} hover:shadow-xl hover:ring-2 hover:ring-indigo-100` }, /* @__PURE__ */ React.createElement("div", { className: `absolute -left-5 top-1/2 -translate-y-1/2 text-white text-sm font-black w-10 h-10 flex items-center justify-center rounded-full border-4 border-slate-50 shadow-md ${isBranching ? "bg-amber-500" : i % 2 === 0 ? "bg-indigo-500" : "bg-purple-500"}` }, isBranching ? "\u2442" : i + 1), /* @__PURE__ */ React.createElement(BranchItem, { branch: b, bIdx: i, colorClass: "bg-white border-none shadow-none" }), isBranching && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 px-4 pb-2 flex-wrap" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-black text-amber-700 uppercase tracking-wider" }, "Branches to:"), b.connectsTo.map((target) => /* @__PURE__ */ React.createElement("span", { key: target, className: "text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200 px-2 py-0.5 rounded-full" }, "Step ", target + 1, ": ", branches[target]?.title || "?")))));
+      return /* @__PURE__ */ React.createElement("div", { key: i, className: "relative w-full flex flex-col items-center group" }, i > 0 && /* @__PURE__ */ React.createElement("div", { className: "absolute -top-9 z-10 text-indigo-300 bg-white rounded-full p-1 border border-indigo-100 shadow-sm" }, /* @__PURE__ */ React.createElement(ArrowDown, { size: 20, strokeWidth: 3 })), /* @__PURE__ */ React.createElement("div", { className: `w-full max-w-lg p-1 rounded-2xl bg-white shadow-lg transition-all duration-200 border-l-[6px] ${isBranching ? "border-l-amber-500 ring-2 ring-amber-100" : i % 2 === 0 ? "border-l-indigo-500" : "border-l-purple-500"} hover:shadow-xl hover:ring-2 hover:ring-indigo-100` }, /* @__PURE__ */ React.createElement("div", { className: `absolute -left-5 top-1/2 -translate-y-1/2 text-white text-sm font-black w-10 h-10 flex items-center justify-center rounded-full border-4 border-slate-50 shadow-md ${isBranching ? "bg-amber-500" : i % 2 === 0 ? "bg-indigo-500" : "bg-purple-500"}` }, isBranching ? "\u2442" : i + 1), /* @__PURE__ */ React.createElement(BranchItem, { branch: b, bIdx: i, colorClass: "bg-white border-none shadow-none" }), isBranching && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 px-4 pb-2 flex-wrap" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-black text-amber-700 uppercase tracking-wider" }, t("outline.branches_to") || "Branches to:"), b.connectsTo.map((target) => /* @__PURE__ */ React.createElement("span", { key: target, className: "text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200 px-2 py-0.5 rounded-full" }, t("outline.step_target", { number: target + 1, title: branches[target]?.title || "?" }) || "Step " + (target + 1) + ": " + (branches[target]?.title || "?"))))));
     }), /* @__PURE__ */ React.createElement("div", { className: "px-8 py-3 bg-slate-800 text-white rounded-full font-black text-sm mt-4 z-10 shadow-lg border-4 border-white tracking-widest uppercase" }, t("outline.labels.end"))));
   }
   if (type === "Venn Diagram") {
@@ -876,27 +877,27 @@ const renderOutlineContent = (deps) => {
         onClick: onRefineFrayerVisual,
         disabled: isProcessing,
         className: "px-3 py-1.5 text-xs font-bold bg-violet-50 text-violet-800 border border-violet-300 rounded-md hover:bg-violet-100 disabled:opacity-50",
-        "aria-label": "Refine the Examples-quadrant visual via image-to-image edit"
+        "aria-label": t("outline.frayer_refine_visual_aria") || "Refine the Examples-quadrant visual via image-to-image edit"
       },
-      "\u2728 Refine visual"
+      t("outline.frayer_refine_visual_button") || "\u2728 Refine visual"
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: onRemoveFrayerVisual,
         disabled: isProcessing,
         className: "px-3 py-1.5 text-xs font-bold bg-white text-slate-700 border border-slate-300 rounded-md hover:bg-slate-100 disabled:opacity-50",
-        "aria-label": "Remove the Examples-quadrant visual"
+        "aria-label": t("outline.frayer_remove_visual_aria") || "Remove the Examples-quadrant visual"
       },
-      "Remove visual"
+      t("outline.frayer_remove_visual_button") || "Remove visual"
     )) : /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: onGenerateFrayerVisual,
         disabled: isProcessing,
         className: "px-3 py-1.5 text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300 rounded-md hover:bg-amber-100 disabled:opacity-50",
-        "aria-label": "Generate an AI visual for the Examples quadrant"
+        "aria-label": t("outline.frayer_add_visual_aria") || "Generate an AI visual for the Examples quadrant"
       },
-      "\u{1F5BC}\uFE0F Add visual to Examples"
+      t("outline.frayer_add_visual_button") || "\u{1F5BC}\uFE0F Add visual to Examples"
     )) : null, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 italic text-center mt-3" }, t("outline.frayer_caption") || "Frayer Model: vocabulary term in the center, definition + characteristics + examples + non-examples in the four quadrants."));
   }
   if (type === "See-Think-Wonder" && !isEditingOutline) {
@@ -990,7 +991,7 @@ const renderOutlineContent = (deps) => {
       /* @__PURE__ */ React.createElement(Gamepad2, { size: 16 }),
       " ",
       t("games.story_map_sort.play_btn") || "Sort Events Along the Arc"
-    )), /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-b from-sky-50/80 via-white to-amber-50/40 border-2 border-slate-300 rounded-2xl p-6 shadow-lg" }, /* @__PURE__ */ React.createElement("svg", { viewBox: "0 0 900 400", className: "w-full h-auto", preserveAspectRatio: "xMidYMid meet", role: "img", "aria-label": "Plot diagram arc showing narrative tension rising to the climax and falling toward resolution" }, /* @__PURE__ */ React.createElement("path", { d: "M 60 340 Q 250 280 450 70 Q 650 280 840 340", fill: "none", stroke: "#94a3b8", strokeWidth: "3", strokeLinecap: "round", strokeDasharray: "6 6" }), stages.map((stage, i) => /* @__PURE__ */ React.createElement("g", { key: i }, /* @__PURE__ */ React.createElement("circle", { cx: stage.x, cy: stage.y, r: "9", fill: stage.color, stroke: "white", strokeWidth: "3" }), /* @__PURE__ */ React.createElement("text", { x: stage.x, y: stage.y - 20, textAnchor: stage.anchor, style: { fontSize: "13px", fontWeight: 900, fill: stage.color, textTransform: "uppercase", letterSpacing: "0.05em" } }, stage.branch.title)))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 mt-6" }, stages.map((stage, i) => {
+    )), /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-b from-sky-50/80 via-white to-amber-50/40 border-2 border-slate-300 rounded-2xl p-6 shadow-lg" }, /* @__PURE__ */ React.createElement("svg", { viewBox: "0 0 900 400", className: "w-full h-auto", preserveAspectRatio: "xMidYMid meet", role: "img", "aria-label": t("outline.plot_diagram_arc_aria") || "Plot diagram arc showing narrative tension rising to the climax and falling toward resolution" }, /* @__PURE__ */ React.createElement("path", { d: "M 60 340 Q 250 280 450 70 Q 650 280 840 340", fill: "none", stroke: "#94a3b8", strokeWidth: "3", strokeLinecap: "round", strokeDasharray: "6 6" }), stages.map((stage, i) => /* @__PURE__ */ React.createElement("g", { key: i }, /* @__PURE__ */ React.createElement("circle", { cx: stage.x, cy: stage.y, r: "9", fill: stage.color, stroke: "white", strokeWidth: "3" }), /* @__PURE__ */ React.createElement("text", { x: stage.x, y: stage.y - 20, textAnchor: stage.anchor, style: { fontSize: "13px", fontWeight: 900, fill: stage.color, textTransform: "uppercase", letterSpacing: "0.05em" } }, stage.branch.title)))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 mt-6" }, stages.map((stage, i) => {
       const items = (stage.branch.items || []).map(itemText).filter(Boolean);
       return /* @__PURE__ */ React.createElement("div", { key: i, className: "bg-white rounded-lg border border-slate-200 p-3 shadow-sm" }, /* @__PURE__ */ React.createElement("h5", { className: "text-xs font-black uppercase tracking-wider mb-2", style: { color: stage.color } }, stage.branch.title), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1" }, items.length > 0 ? items.map((text, k) => /* @__PURE__ */ React.createElement("li", { key: k, className: "text-xs text-slate-700 leading-snug" }, "\u2022 ", text)) : /* @__PURE__ */ React.createElement("li", { className: "text-xs text-slate-400 italic" }, "\u2014")));
     }))), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 italic text-center mt-3" }, t("outline.story_map_caption") || "Story Map: tension rises through Rising Action to the Climax, then falls toward Resolution. The arc visualizes the shape of narrative tension."));

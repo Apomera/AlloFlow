@@ -308,19 +308,19 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in fade-in duration-300">
             <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
                 <div className="p-6 border-b bg-gradient-to-r from-pink-500 to-violet-500 text-white flex-shrink-0">
-                    <h2 className="text-2xl font-black flex items-center gap-2">📋 Pre-Activity Review
+                    <h2 className="text-2xl font-black flex items-center gap-2">{t('word_sounds.pre_activity_review') || '📋 Pre-Activity Review'}
                         <span className="relative group ml-2">
                             <span className="cursor-help text-white/70 hover:text-white text-base">ℹ️</span>
                             <div className="absolute left-0 top-8 w-72 p-3 bg-slate-800 text-white text-xs rounded-lg shadow-xl opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50 pointer-events-none">
-                                <strong className="block mb-1">📖 Phonics Counting Guide</strong>
-                                <p className="mb-2">R-controlled vowels (ar, er, ir, or, ur) are counted as <strong>single sounds</strong> because the vowel and R blend together.</p>
-                                <p className="text-slate-600">Example: "star" = 3 sounds (s-t-ar), not 4. This aligns with Orton-Gillingham and Wilson Reading methods.</p>
+                                <strong className="block mb-1">{t('word_sounds.phonics_counting_guide_title') || '📖 Phonics Counting Guide'}</strong>
+                                <p className="mb-2">{t('word_sounds.r_controlled_explanation_prefix') || 'R-controlled vowels (ar, er, ir, or, ur) are counted as '}<strong>{t('word_sounds.single_sounds') || 'single sounds'}</strong>{t('word_sounds.r_controlled_explanation_suffix') || ' because the vowel and R blend together.'}</p>
+                                <p className="text-slate-600">{t('word_sounds.r_controlled_example') || 'Example: "star" = 3 sounds (s-t-ar), not 4. This aligns with Orton-Gillingham and Wilson Reading methods.'}</p>
                             </div>
                         </span>
                     </h2>
                     <p className="text-sm opacity-80 mt-1 flex items-center gap-2 flex-wrap">
-                        <span>Review and edit words • {preloadedWords.length} words ready</span>
-                        {isLoading && <span className="flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full text-xs animate-pulse"><div className="w-2 h-2 bg-white rounded-full animate-bounce"/> Generating more...</span>}
+                        <span>{t('word_sounds.review_and_edit_words') || 'Review and edit words'} • {preloadedWords.length} {t('word_sounds.words_ready') || 'words ready'}</span>
+                        {isLoading && <span className="flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full text-xs animate-pulse"><div className="w-2 h-2 bg-white rounded-full animate-bounce"/> {t('word_sounds.generating_more') || 'Generating more...'}</span>}
                         {!isLoading && preloadedWords.some(w => w && w._ttsFailed) && (
                             <span className="flex items-center gap-2 bg-red-500/30 border border-red-200/60 px-3 py-1 rounded-full text-xs">
                                 <span>🔇 Audio missing for {preloadedWords.filter(w => w && w._ttsFailed).length} word{preloadedWords.filter(w => w && w._ttsFailed).length === 1 ? '' : 's'}</span>
@@ -329,8 +329,8 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                         type="button"
                                         onClick={(e) => { e.stopPropagation(); onRetryFailedTTS(); }}
                                         className="px-2 py-0.5 bg-white/90 hover:bg-white text-red-600 font-bold rounded-full text-xs"
-                                        title="Retry audio generation for words that failed"
-                                    >Retry audio</button>
+                                        title={t('word_sounds.retry_audio_tooltip') || 'Retry audio generation for words that failed'}
+                                    >{t('word_sounds.retry_audio') || 'Retry audio'}</button>
                                 )}
                             </span>
                         )}
@@ -340,7 +340,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                     {preloadedWords.length === 0 ? (
                         <div className="text-center py-12 text-slate-600">
                             <div className="text-4xl mb-2">⏳</div>
-                            {isLoading ? <p className="animate-pulse">Generating new words... this may take a moment</p> : <p>No words preloaded yet. Start the activity to generate words.</p>}
+                            {isLoading ? <p className="animate-pulse">{t('word_sounds.generating_new_words') || 'Generating new words... this may take a moment'}</p> : <p>{t('word_sounds.no_words_preloaded') || 'No words preloaded yet. Start the activity to generate words.'}</p>}
                         </div>
                     ) : (
                         (preloadedWords || []).map((word, idx) => (
@@ -456,7 +456,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                             ? 'bg-pink-50 text-pink-300 cursor-not-allowed'
                                                             : 'bg-pink-100 hover:bg-pink-200 text-pink-600'
                                             }`}
-                                            title={playingWordIndex === idx ? "Playing..." : word._ttsFailed ? "Audio failed to generate — click Retry audio in header" : !word.ttsReady ? "Loading audio..." : "Play word"}
+                                            title={playingWordIndex === idx ? (t('word_sounds.playing') || 'Playing...') : word._ttsFailed ? (t('word_sounds.audio_failed_retry_hint') || 'Audio failed to generate — click Retry audio in header') : !word.ttsReady ? (t('word_sounds.loading_audio') || 'Loading audio...') : (t('word_sounds.play_word') || 'Play word')}
                                         >
                                             {word._ttsFailed ? '🔇' : (playingWordIndex === idx ? <RefreshCw size={18} className="animate-spin" /> : <Volume2 size={18} />)}
                                         </button>
@@ -525,9 +525,9 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                     data-help-key="word_sounds_review_image_gen" title={t('common.generate_image_for_this_word')}
                                                 >
                                                     {generatingImageIndex === idx ? (
-                                                        <><RefreshCw size={16} className="animate-spin"/> Generating...</>
+                                                        <><RefreshCw size={16} className="animate-spin"/> {t('word_sounds.generating_image') || 'Generating...'}</>
                                                     ) : (
-                                                        <><ImageIcon size={16}/> + Image</>
+                                                        <><ImageIcon size={16}/> {t('word_sounds.add_image_button') || '+ Image'}</>
                                                     )}
                                                 </button>
                                             )}
@@ -564,10 +564,10 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                         onClick={() => onRegenerateWord && onRegenerateWord(idx)}
                                                         disabled={regeneratingIndex === idx}
                                                         className={`text-[11px] px-2 py-0.5 rounded-full flex items-center gap-1 font-bold transition-colors ${regeneratingIndex === idx ? 'bg-slate-100 text-slate-600' : 'bg-violet-100 text-violet-600 hover:bg-violet-200'}`}
-                                                        title="Re-check phonemes with Gemini"
+                                                        title={t('word_sounds.recheck_phonemes_tooltip') || 'Re-check phonemes with Gemini'}
                                                     >
                                                         {regeneratingIndex === idx ? <div className="animate-spin h-3 w-3 border-2 border-current border-t-transparent rounded-full" /> : '✨'}
-                                                        Check
+                                                        {t('word_sounds.recheck_phonemes_button') || 'Check'}
                                                     </button>
                                                 </div>
                                                 </div>
@@ -575,7 +575,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                     data-help-key="word_sounds_review_phoneme_bank" onClick={() => setShowPhonemeBank(showPhonemeBank === idx ? null : idx)}
                                                     className={`text-xs px-2 py-1 rounded-full transition-colors ${showPhonemeBank === idx ? 'bg-pink-700 text-white' : 'bg-pink-100 text-pink-600 hover:bg-pink-200'}`}
                                                 >
-                                                    {showPhonemeBank === idx ? '✕ Close Bank' : '+ Add Sound'}
+                                                    {showPhonemeBank === idx ? (t('word_sounds.close_bank') || '✕ Close Bank') : (t('word_sounds.add_sound') || '+ Add Sound')}
                                                 </button>
                                             </div>
                                             <div
@@ -606,13 +606,13 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                     </div>
                                                 ))}
                                                 {((() => { const p = word.phonemes; const a = Array.isArray(p) ? p : (p?.phonemes && Array.isArray(p.phonemes)) ? p.phonemes : []; return a.length === 0; })()) && (
-                                                    <span className="text-slate-600 text-sm italic">No phonemes - click "Add Sound" to build</span>
+                                                    <span className="text-slate-600 text-sm italic">{t('word_sounds.no_phonemes_hint') || 'No phonemes - click "Add Sound" to build'}</span>
                                                 )}
                                             </div>
                                             {showPhonemeBank === idx && (
                                                 <div className="bg-slate-50 border-2 border-slate-200 rounded-xl p-3 mt-2 animate-in slide-in-from-top-2">
                                                     <div className="flex items-center justify-between mb-2">
-                                                        <span className="text-xs text-slate-600 italic">💡 Hover any sound for teaching tips</span>
+                                                        <span className="text-xs text-slate-600 italic">{t('word_sounds.phoneme_bank_hover_hint') || '💡 Hover any sound for teaching tips'}</span>
                                                     </div>
                                                     {Object.entries(PHONEME_BANK).map(([category, phonemes]) => (
                                                         <div key={category} className="mb-3">
@@ -685,7 +685,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                                 {playingAudioKey === `${idx}-rhyme-${i}` ? <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" /> : '🔊'}
                                                             </button>
                                                             <button
-                                                                aria-label="Refresh audio"
+                                                                aria-label={t('word_sounds.refresh_audio') || 'Refresh audio'}
                                                                 onClick={async () => {
                                                                     if (!onRegenerateOption) return;
                                                                     const key = `${idx}-rhyme-${i}`;
@@ -698,9 +698,9 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                                 }}
                                                                 disabled={!!regeneratingOptions[`${idx}-rhyme-${i}`]}
                                                                 className={`${regeneratingOptions[`${idx}-rhyme-${i}`] ? 'w-auto px-2 gap-1 bg-orange-200 text-orange-800' : 'w-8 bg-orange-50 hover:bg-orange-100 text-orange-400 hover:text-orange-600'} h-8 rounded-lg transition-colors flex items-center justify-center text-xs font-bold`}
-                                                                title="Refresh audio (re-synthesize TTS for this word)"
+                                                                title={t('word_sounds.refresh_audio_tooltip') || 'Refresh audio (re-synthesize TTS for this word)'}
                                                             >
-                                                                {regeneratingOptions[`${idx}-rhyme-${i}`] ? (<><RefreshCw size={14} className="animate-spin" /><span>Refreshing…</span></>) : '🔄'}
+                                                                {regeneratingOptions[`${idx}-rhyme-${i}`] ? (<><RefreshCw size={14} className="animate-spin" /><span>{t('word_sounds.refreshing') || 'Refreshing…'}</span></>) : '🔄'}
                                                             </button>
                                                         </div>
                                                     ))}
@@ -710,7 +710,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                             onUpdateWord(idx, { ...word, rhymeDistractors: newDist });
                                                         }}
                                                         className="px-3 py-1.5 bg-orange-100 text-orange-600 rounded-lg border-2 border-dashed border-orange-300 hover:bg-orange-200 text-sm font-bold"
-                                                    >+ Add</button>
+                                                    >{t('word_sounds.add_distractor') || '+ Add'}</button>
                                                 </div>
                                             </div>
                                         <div>
@@ -745,7 +745,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                                 {playingAudioKey === `${idx}-blend-${i}` ? <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" /> : '🔊'}
                                                             </button>
                                                             <button
-                                                                aria-label="Refresh audio"
+                                                                aria-label={t('word_sounds.refresh_audio') || 'Refresh audio'}
                                                                 onClick={async () => {
                                                                     if (!onRegenerateOption) return;
                                                                     const key = `${idx}-blend-${i}`;
@@ -758,9 +758,9 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                                 }}
                                                                 disabled={!!regeneratingOptions[`${idx}-blend-${i}`]}
                                                                 className={`${regeneratingOptions[`${idx}-blend-${i}`] ? 'w-auto px-2 gap-1 bg-violet-200 text-violet-800' : 'w-8 bg-violet-50 hover:bg-violet-100 text-violet-400 hover:text-violet-600'} h-8 rounded-lg transition-colors flex items-center justify-center text-xs font-bold`}
-                                                                title="Refresh audio (re-synthesize TTS for this word)"
+                                                                title={t('word_sounds.refresh_audio_tooltip') || 'Refresh audio (re-synthesize TTS for this word)'}
                                                             >
-                                                                {regeneratingOptions[`${idx}-blend-${i}`] ? (<><RefreshCw size={14} className="animate-spin" /><span>Refreshing…</span></>) : '🔄'}
+                                                                {regeneratingOptions[`${idx}-blend-${i}`] ? (<><RefreshCw size={14} className="animate-spin" /><span>{t('word_sounds.refreshing') || 'Refreshing…'}</span></>) : '🔄'}
                                                             </button>
                                                         </div>
                                                     ))}
@@ -770,12 +770,12 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                             onUpdateWord(idx, { ...word, blendingDistractors: newDist });
                                                         }}
                                                         className="px-3 py-1.5 bg-violet-100 text-violet-600 rounded-lg border-2 border-dashed border-violet-300 hover:bg-violet-200 text-sm font-bold"
-                                                    >+ Add</button>
+                                                    >{t('word_sounds.add_distractor') || '+ Add'}</button>
                                                 </div>
                                             </div>
                                         <div>
                                             <div className="flex items-center justify-between mb-2">
-                                                <label className="text-xs font-bold text-amber-600 uppercase tracking-wider block">Sound Swap (Manipulation Activity)</label>
+                                                <label className="text-xs font-bold text-amber-600 uppercase tracking-wider block">{t('word_sounds.sound_swap_label') || 'Sound Swap (Manipulation Activity)'}</label>
                                                 {word.manipulationTask?.type && (
                                                     <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-300">
                                                         {word.manipulationTask.type}
@@ -785,17 +785,17 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                             {word.manipulationTask ? (
                                                 <div className="space-y-2 p-3 bg-amber-50 border-2 border-amber-200 rounded-lg">
                                                     <div>
-                                                        <label className="text-[10px] font-bold text-amber-700 uppercase tracking-wider block mb-1">Instruction (spoken to student)</label>
+                                                        <label className="text-[10px] font-bold text-amber-700 uppercase tracking-wider block mb-1">{t('word_sounds.instruction_label') || 'Instruction (spoken to student)'}</label>
                                                         <div className="flex items-center gap-1">
                                                             <input
-                                                                aria-label="Sound Swap instruction"
+                                                                aria-label={t('word_sounds.sound_swap_instruction_aria') || 'Sound Swap instruction'}
                                                                 value={word.manipulationTask.instruction || ''}
                                                                 onChange={(e) => onUpdateWord(idx, { ...word, manipulationTask: { ...word.manipulationTask, instruction: e.target.value } })}
                                                                 className="flex-1 px-3 py-1.5 text-sm font-medium border-2 border-amber-200 rounded-lg focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-300 bg-white"
-                                                                placeholder="Say 'word'. Now say it again, but leave out the /x/ sound."
+                                                                placeholder={t('word_sounds.sound_swap_instruction_placeholder') || "Say 'word'. Now say it again, but leave out the /x/ sound."}
                                                             />
                                                             <button
-                                                                aria-label="Preview instruction TTS"
+                                                                aria-label={t('word_sounds.preview_instruction_tts_aria') || 'Preview instruction TTS'}
                                                                 onClick={async (e) => {
                                                                     e.stopPropagation();
                                                                     const key = `${idx}-manip-instruction`;
@@ -804,25 +804,25 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                                     try { await onPlayAudio(word.manipulationTask.instruction); } finally { setPlayingAudioKey(null); }
                                                                 }}
                                                                 className="p-2 rounded-lg bg-slate-100 hover:bg-amber-100 text-slate-600 hover:text-amber-600 transition-colors min-w-[32px] flex justify-center"
-                                                                title="Preview instruction"
+                                                                title={t('word_sounds.preview_instruction_tooltip') || 'Preview instruction'}
                                                             >
                                                                 {playingAudioKey === `${idx}-manip-instruction` ? <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" /> : '🔊'}
                                                             </button>
                                                         </div>
                                                     </div>
                                                     <div>
-                                                        <label className="text-[10px] font-bold text-amber-700 uppercase tracking-wider block mb-1">Answer (correct) + Distractors</label>
+                                                        <label className="text-[10px] font-bold text-amber-700 uppercase tracking-wider block mb-1">{t('word_sounds.answer_distractors_label') || 'Answer (correct) + Distractors'}</label>
                                                         <div className="flex flex-wrap gap-2">
                                                             <div className="flex items-center gap-1">
                                                                 <input
-                                                                    aria-label="Correct answer"
+                                                                    aria-label={t('word_sounds.correct_answer_aria') || 'Correct answer'}
                                                                     value={word.manipulationTask.answer || ''}
                                                                     onChange={(e) => onUpdateWord(idx, { ...word, manipulationTask: { ...word.manipulationTask, answer: e.target.value } })}
                                                                     className="px-3 py-1.5 font-bold border-2 border-green-300 bg-green-50 rounded-lg focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-300"
-                                                                    placeholder="answer"
+                                                                    placeholder={t('word_sounds.answer_placeholder') || 'answer'}
                                                                 />
                                                                 <button
-                                                                    aria-label="Preview answer"
+                                                                    aria-label={t('word_sounds.preview_answer_aria') || 'Preview answer'}
                                                                     onClick={async (e) => {
                                                                         e.stopPropagation();
                                                                         const key = `${idx}-manip-answer`;
@@ -831,7 +831,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                                         try { await onPlayAudio(word.manipulationTask.answer); } finally { setPlayingAudioKey(null); }
                                                                     }}
                                                                     className="p-2 rounded-lg bg-slate-100 hover:bg-green-100 text-slate-600 hover:text-green-600 transition-colors min-w-[32px] flex justify-center"
-                                                                    title="Preview answer"
+                                                                    title={t('word_sounds.preview_answer_tooltip') || 'Preview answer'}
                                                                 >
                                                                     {playingAudioKey === `${idx}-manip-answer` ? <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" /> : '🔊'}
                                                                 </button>
@@ -847,10 +847,10 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                                             onUpdateWord(idx, { ...word, manipulationTask: { ...word.manipulationTask, distractors: newDist } });
                                                                         }}
                                                                         className="flex-1 px-3 py-1.5 font-medium border-2 border-slate-200 rounded-lg focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-300 bg-white"
-                                                                        placeholder="distractor"
+                                                                        placeholder={t('word_sounds.distractor_placeholder') || 'distractor'}
                                                                     />
                                                                     <button
-                                                                        aria-label="Preview distractor"
+                                                                        aria-label={t('word_sounds.preview_distractor_aria') || 'Preview distractor'}
                                                                         onClick={async (e) => {
                                                                             e.stopPropagation();
                                                                             const key = `${idx}-manip-d-${i}`;
@@ -859,7 +859,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                                             try { await onPlayAudio(d); } finally { setPlayingAudioKey(null); }
                                                                         }}
                                                                         className="p-2 rounded-lg bg-slate-100 hover:bg-amber-100 text-slate-600 hover:text-amber-600 transition-colors min-w-[32px] flex justify-center"
-                                                                        title="Preview distractor"
+                                                                        title={t('word_sounds.preview_distractor_tooltip') || 'Preview distractor'}
                                                                     >
                                                                         {playingAudioKey === `${idx}-manip-d-${i}` ? <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" /> : '🔊'}
                                                                     </button>
@@ -878,14 +878,14 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                             }
                                                         }}
                                                         className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-amber-100 text-amber-700 hover:bg-amber-200 border-2 border-amber-300 rounded-lg text-sm font-bold transition-all"
-                                                        title="Generate a fresh Sound Swap task for this word"
+                                                        title={t('word_sounds.regenerate_sound_swap_tooltip') || 'Generate a fresh Sound Swap task for this word'}
                                                     >
-                                                        {regeneratingOptions[`${idx}-manip-regen`] ? <><RefreshCw size={14} className="animate-spin"/> Regenerating…</> : <><RefreshCw size={14}/> Regenerate Task</>}
+                                                        {regeneratingOptions[`${idx}-manip-regen`] ? <><RefreshCw size={14} className="animate-spin"/> {t('word_sounds.regenerating') || 'Regenerating…'}</> : <><RefreshCw size={14}/> {t('word_sounds.regenerate_task') || 'Regenerate Task'}</>}
                                                     </button>
                                                 </div>
                                             ) : (
                                                 <div className="p-3 bg-slate-50 border-2 border-dashed border-slate-300 rounded-lg flex items-center justify-between gap-3">
-                                                    <span className="text-sm text-slate-600 italic">No Sound Swap task generated for this word yet.</span>
+                                                    <span className="text-sm text-slate-600 italic">{t('word_sounds.no_sound_swap_yet') || 'No Sound Swap task generated for this word yet.'}</span>
                                                     <button
                                                         onClick={async () => {
                                                             if (onRegenerateManipulationTask) {
@@ -898,13 +898,13 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                         }}
                                                         className="flex items-center gap-2 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-sm font-bold shadow"
                                                     >
-                                                        {regeneratingOptions[`${idx}-manip-regen`] ? <><RefreshCw size={14} className="animate-spin"/> Generating…</> : <><Sparkles size={14}/> Generate</>}
+                                                        {regeneratingOptions[`${idx}-manip-regen`] ? <><RefreshCw size={14} className="animate-spin"/> {t('word_sounds.generating') || 'Generating…'}</> : <><Sparkles size={14}/> {t('word_sounds.generate') || 'Generate'}</>}
                                                     </button>
                                                 </div>
                                             )}
                                         </div>
                                         <div>
-                                            <label className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 block">Sound Positions (Find Sounds Activity)</label>
+                                            <label className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 block">{t('word_sounds.sound_positions_label') || 'Sound Positions (Find Sounds Activity)'}</label>
                                             <div className="flex flex-wrap gap-2">
                                                 {(() => {
                                                     const phonemesRaw = word.phonemes;
@@ -927,7 +927,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                         </div>
                                         <div className="mt-4 pt-4 border-t border-slate-200">
                                             <label className="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-2 block flex items-center gap-2">
-                                                <ImageIcon size={12} /> Word Image
+                                                <ImageIcon size={12} /> {t('word_sounds.word_image_label') || 'Word Image'}
                                             </label>
                                             <div className="flex items-start gap-4">
                                                 <div className="flex-shrink-0">
@@ -955,11 +955,11 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                         }`}
                                                     >
                                                         {generatingImageIndex === idx ? (
-                                                            <><RefreshCw size={14} className="animate-spin"/> Generating...</>
+                                                            <><RefreshCw size={14} className="animate-spin"/> {t('word_sounds.generating_image') || 'Generating...'}</>
                                                         ) : word.image ? (
-                                                            <><RefreshCw size={14}/> Regenerate Image</>
+                                                            <><RefreshCw size={14}/> {t('word_sounds.regenerate_image_button') || 'Regenerate Image'}</>
                                                         ) : (
-                                                            <><Sparkles size={14}/> Generate Image</>
+                                                            <><Sparkles size={14}/> {t('word_sounds.generate_image_button') || 'Generate Image'}</>
                                                         )}
                                                     </button>
                                                     {word.image && (
@@ -969,14 +969,14 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                                 disabled={generatingImageIndex === idx}
                                                                 className="w-full flex items-center justify-center gap-1 px-2 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 rounded-lg text-xs font-bold transition-all"
                                                             >
-                                                                <Ban size={12}/> Remove Text from Image
+                                                                <Ban size={12}/> {t('word_sounds.remove_text_from_image') || 'Remove Text from Image'}
                                                             </button>
                                                             <div className="flex gap-1">
                                                                 <input aria-label={t('common.e_g_make_it_cuter_add_a_banana')}
                                                                     type="text"
                                                                     value={imageRefinementInputs[idx] || ''}
                                                                     onChange={(e) => setImageRefinementInputs(prev => ({...prev, [idx]: e.target.value}))}
-                                                                    placeholder="e.g., make it cuter, add a banana"
+                                                                    placeholder={t('word_sounds.image_refine_placeholder') || 'e.g., make it cuter, add a banana'}
                                                                     className="flex-1 text-xs border border-yellow-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-yellow-400"
                                                                     onKeyDown={(e) => e.key === 'Enter' && onRefineImage && imageRefinementInputs[idx] && onRefineImage(idx, imageRefinementInputs[idx])}
                                                                 />
@@ -994,7 +994,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                                     {generatingImageIndex === idx ? <RefreshCw size={12} className="animate-spin"/> : <Send size={12}/>}
                                                                 </button>
                                                             </div>
-                                                            <span className="text-[11px] text-slate-600 italic">✨ Nano Mode: Type custom edits like "make it blue" or "add a hat"</span>
+                                                            <span className="text-[11px] text-slate-600 italic">{t('word_sounds.nano_mode_hint') || '✨ Nano Mode: Type custom edits like "make it blue" or "add a hat"'}</span>
                                                         </div>
                                                     )}
                                                 </div>
@@ -1013,7 +1013,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                         data-help-key="word_sounds_review_back" className="px-4 py-2 text-slate-600 hover:text-slate-800 font-medium flex items-center gap-2 hover:bg-slate-100 rounded-lg transition-colors"
                     >
                         <ChevronLeft size={18} />
-                        Back to Setup
+                        {t('word_sounds.back_to_setup') || 'Back to Setup'}
                     </button>
                     <div className="flex gap-3">
                         <button
@@ -1021,7 +1021,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                             onClick={onStartActivity}
                             data-help-key="word_sounds_review_start" className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-full font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all flex items-center gap-2"
                         >
-                            <Play size={18} /> Start Activity
+                            <Play size={18} /> {t('word_sounds.start_activity') || 'Start Activity'}
                         </button>
                     </div>
                 </div>

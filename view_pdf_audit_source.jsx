@@ -57,7 +57,7 @@ function PdfAuditView(props) {
   return (
         <div
           className="fixed inset-0 z-[200] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
-          role="dialog" aria-modal="true" aria-label="PDF Accessibility Audit"
+          role="dialog" aria-modal="true" aria-label={t('pdf_audit.modal_aria') || 'PDF Accessibility Audit'}
           tabIndex={-1}
           onClick={(e) => {
             if (e.target === e.currentTarget && !pdfFixLoading && !pdfAutoContinueRunning) {
@@ -79,8 +79,8 @@ function PdfAuditView(props) {
                 type="button"
                 onClick={() => { safeCloseAudit(); }}
                 disabled={pdfFixLoading || pdfAutoContinueRunning}
-                aria-label="Close audit modal"
-                title={(pdfFixLoading || pdfAutoContinueRunning) ? 'Wait for remediation to finish or click Stop first' : 'Close (Esc)'}
+                aria-label={t('pdf_audit.close_modal_aria') || 'Close audit modal'}
+                title={(pdfFixLoading || pdfAutoContinueRunning) ? (t('pdf_audit.close_wait_title') || 'Wait for remediation to finish or click Stop first') : (t('pdf_audit.close_esc_title') || 'Close (Esc)')}
                 className="pointer-events-auto w-9 h-9 bg-white hover:bg-red-50 text-slate-600 hover:text-red-600 rounded-full shadow-md border border-slate-400 flex items-center justify-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-slate-600"
               >
                 <X size={18} aria-hidden="true"/>
@@ -98,14 +98,14 @@ function PdfAuditView(props) {
                 </div>
                 {pdfWebMode ? (
                   <div className="text-left space-y-4">
-                    <h3 className="text-lg font-black text-slate-800 mb-1 text-center">🌐 Website & HTML Accessibility</h3>
-                    <p className="text-xs text-slate-600 text-center">Audit a website URL or paste HTML for full WCAG 2.1 AA audit + remediation</p>
+                    <h3 className="text-lg font-black text-slate-800 mb-1 text-center">{t('pdf_audit.web.heading') || '🌐 Website & HTML Accessibility'}</h3>
+                    <p className="text-xs text-slate-600 text-center">{t('pdf_audit.web.subheading') || 'Audit a website URL or paste HTML for full WCAG 2.1 AA audit + remediation'}</p>
 
                     {/* URL Input */}
                     <div>
-                      <label className="text-[11px] font-bold text-slate-600 uppercase" htmlFor="web-audit-url">Website URL</label>
+                      <label className="text-[11px] font-bold text-slate-600 uppercase" htmlFor="web-audit-url">{t('pdf_audit.web.url_label') || 'Website URL'}</label>
                       <div className="flex gap-2 mt-1">
-                        <input type="url" id="web-audit-url" placeholder="https://example.com" aria-label="Website URL to audit"
+                        <input type="url" id="web-audit-url" placeholder="https://example.com" aria-label={t('pdf_audit.web.url_aria') || 'Website URL to audit'}
                           className="flex-1 text-sm border border-slate-400 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-indigo-300 outline-none" />
                         <button onClick={async () => {
                           const url = document.getElementById('web-audit-url')?.value?.trim();
@@ -125,19 +125,19 @@ function PdfAuditView(props) {
                           } catch (e) {
                             addToast('Could not fetch URL — try pasting the HTML source instead. Error: ' + e.message, 'error');
                           }
-                        }} className="px-4 py-2.5 bg-indigo-600 text-white rounded-lg font-bold text-sm hover:bg-indigo-700 transition-colors" aria-label="Fetch website HTML">
+                        }} className="px-4 py-2.5 bg-indigo-600 text-white rounded-lg font-bold text-sm hover:bg-indigo-700 transition-colors" aria-label={t('pdf_audit.web.fetch_aria') || 'Fetch website HTML'}>
                           🔍 Fetch
                         </button>
                       </div>
-                      <p className="text-[11px] text-slate-600 mt-1">Or paste HTML source code directly below</p>
+                      <p className="text-[11px] text-slate-600 mt-1">{t('pdf_audit.web.or_paste_hint') || 'Or paste HTML source code directly below'}</p>
                     </div>
 
                     {/* HTML Input */}
                     <div>
-                      <label className="text-[11px] font-bold text-slate-600 uppercase" htmlFor="web-audit-html">HTML Source</label>
-                      <textarea id="web-audit-html" rows={8} placeholder="Paste HTML source code here, or use Fetch above..."
+                      <label className="text-[11px] font-bold text-slate-600 uppercase" htmlFor="web-audit-html">{t('pdf_audit.web.html_label') || 'HTML Source'}</label>
+                      <textarea id="web-audit-html" rows={8} placeholder={t('pdf_audit.web.html_placeholder') || 'Paste HTML source code here, or use Fetch above...'}
                         className="w-full text-xs border border-slate-400 rounded-lg px-3 py-2 mt-1 font-mono focus:ring-2 focus:ring-indigo-300 outline-none resize-y"
-                        aria-label="HTML source code to audit" />
+                        aria-label={t('pdf_audit.web.html_aria') || 'HTML source code to audit'} />
                     </div>
 
                     {/* Audit + Remediate buttons */}
@@ -242,7 +242,7 @@ function PdfAuditView(props) {
                         }}
                       >
                         <div className="text-4xl mb-2">📥</div>
-                        <p className="text-sm font-bold text-indigo-600">Drag & drop PDFs here</p>
+                        <p className="text-sm font-bold text-indigo-600">{t('pdf_audit.batch.drop_text') || 'Drag & drop PDFs here'}</p>
                         <p className="text-xs text-slate-600 mt-1">or click to browse</p>
                         <input type="file" accept=".pdf" multiple className="hidden" id="batch-pdf-input" onChange={(e) => {
                           const files = [...(e.target.files || [])].filter(f => f.type === 'application/pdf');
@@ -257,7 +257,7 @@ function PdfAuditView(props) {
                           if (files.length > 0) addToast(`Added ${files.length} PDF(s)`, 'success');
                           e.target.value = '';
                         }} />
-                        <label htmlFor="batch-pdf-input" className="inline-block mt-2 px-4 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold cursor-pointer hover:bg-indigo-200 transition-colors">Browse Files</label>
+                        <label htmlFor="batch-pdf-input" className="inline-block mt-2 px-4 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold cursor-pointer hover:bg-indigo-200 transition-colors">{t('pdf_audit.batch.browse_files') || 'Browse Files'}</label>
                       </div>
                     )}
 
@@ -266,7 +266,7 @@ function PdfAuditView(props) {
                       <div className="mb-4">
                         <div className="flex justify-between items-center mb-2">
                           <span className="text-xs font-bold text-slate-600">{pdfBatchQueue.length} file{pdfBatchQueue.length !== 1 ? 's' : ''} queued</span>
-                          {!pdfBatchProcessing && <button onClick={() => setPdfBatchQueue([])} className="text-xs text-red-400 hover:text-red-600 font-bold">Clear All</button>}
+                          {!pdfBatchProcessing && <button onClick={() => setPdfBatchQueue([])} className="text-xs text-red-400 hover:text-red-600 font-bold">{t('pdf_audit.batch.clear_all') || 'Clear All'}</button>}
                         </div>
                         <div className="max-h-40 overflow-y-auto space-y-1">
                           {pdfBatchQueue.map((item, idx) => (
@@ -290,7 +290,7 @@ function PdfAuditView(props) {
                           <span className="animate-spin">{'\u23f3'}</span>
                           <span className="text-sm font-bold text-indigo-700">Processing {pdfBatchCurrentIndex + 1}/{pdfBatchQueue.length}</span>
                         </div>
-                        <div className="w-full bg-indigo-200 rounded-full h-2 mb-2" role="progressbar" aria-label="Batch remediation progress" aria-valuenow={pdfBatchCurrentIndex + 1} aria-valuemin={0} aria-valuemax={pdfBatchQueue.length}>
+                        <div className="w-full bg-indigo-200 rounded-full h-2 mb-2" role="progressbar" aria-label={t('pdf_audit.batch.progress_aria') || 'Batch remediation progress'} aria-valuenow={pdfBatchCurrentIndex + 1} aria-valuemin={0} aria-valuemax={pdfBatchQueue.length}>
                           <div className="bg-indigo-600 h-2 rounded-full transition-all duration-500" style={{width: `${((pdfBatchCurrentIndex + 1) / pdfBatchQueue.length * 100)}%`}}></div>
                         </div>
                         <div className="flex items-start justify-between gap-3">
@@ -305,7 +305,7 @@ function PdfAuditView(props) {
                               addToast('Stopping batch — finishing current file then halting…', 'info');
                             }}
                             className="shrink-0 px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-md text-[11px] font-bold"
-                            aria-label="Stop batch remediation"
+                            aria-label={t('pdf_audit.batch.stop_aria') || 'Stop batch remediation'}
                           >
                             ⏸ Stop
                           </button>
@@ -319,8 +319,8 @@ function PdfAuditView(props) {
                         <h4 className="text-sm font-black text-green-800 mb-2">{'\u2705'} Batch Complete</h4>
                         <div className="grid grid-cols-3 gap-2 mb-3">
                           <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-green-600">{pdfBatchSummary.succeeded}/{pdfBatchSummary.total}</div><div className="text-[11px] text-slate-600">Succeeded</div></div>
-                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-indigo-600">+{pdfBatchSummary.avgImprovement}</div><div className="text-[11px] text-slate-600">Avg Improvement</div></div>
-                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-emerald-600">{pdfBatchSummary.above90}</div><div className="text-[11px] text-slate-600">Scored 90+</div></div>
+                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-indigo-600">+{pdfBatchSummary.avgImprovement}</div><div className="text-[11px] text-slate-600">{t('pdf_audit.batch.avg_improvement') || 'Avg Improvement'}</div></div>
+                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-emerald-600">{pdfBatchSummary.above90}</div><div className="text-[11px] text-slate-600">{t('pdf_audit.batch.scored_90_plus') || 'Scored 90+'}</div></div>
                         </div>
                         <div className="text-xs text-slate-600 space-y-0.5">
                           <p>{'\ud83d\udcc8'} Average: {pdfBatchSummary.avgBefore} {'\u2192'} {pdfBatchSummary.avgAfter}</p>
@@ -343,7 +343,7 @@ function PdfAuditView(props) {
                           <button onClick={() => downloadBatchResults()} className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-bold text-sm hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg flex items-center gap-2">
                             {'\ud83d\udce5'} Download All (ZIP)
                           </button>
-                          <button onClick={() => { setPdfBatchQueue([]); setPdfBatchSummary(null); }} className="px-4 py-3 bg-slate-100 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors">New Batch</button>
+                          <button onClick={() => { setPdfBatchQueue([]); setPdfBatchSummary(null); }} className="px-4 py-3 bg-slate-100 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors">{t('pdf_audit.batch.new_batch') || 'New Batch'}</button>
                           <button onClick={() => {
                             const queue = pdfBatchQueue;
                             const summary = pdfBatchSummary;
@@ -483,7 +483,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                 <div className="text-5xl mb-4">📄</div>
                 <h3 className="text-lg font-black text-slate-800 mb-2">PDF Uploaded: {pdfAuditResult.fileName}</h3>
                 <p className="text-sm text-slate-600 mb-1">{(pdfAuditResult.fileSize / (1024*1024)).toFixed(1)} MB</p>
-                <p className="text-sm text-slate-600 mb-4">Choose how to process this PDF:</p>
+                <p className="text-sm text-slate-600 mb-4">{t('pdf_audit.choose_how') || 'Choose how to process this PDF:'}</p>
 
                 <details open className="text-left mb-4 bg-slate-50 rounded-xl p-3 border border-slate-400">
                   <summary className="text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600">⚙️ Pipeline Settings</summary>
@@ -493,7 +493,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <span className="font-bold text-slate-600">Audit Passes: {pdfAuditorCount}</span>
                         <span className="text-slate-600">{pdfAuditorCount <= 2 ? 'Fast' : pdfAuditorCount <= 5 ? 'Balanced' : pdfAuditorCount <= 7 ? 'Thorough' : 'Research-grade'}</span>
                       </div>
-                      <input type="range" min="1" max="10" value={pdfAuditorCount} onChange={(e) => setPdfAuditorCount(parseInt(e.target.value))} className="w-full" aria-label="Number of audit passes" />
+                      <input type="range" min="1" max="10" value={pdfAuditorCount} onChange={(e) => setPdfAuditorCount(parseInt(e.target.value))} className="w-full" aria-label={t('pdf_audit.settings.audit_passes_aria') || 'Number of audit passes'} />
                       <div className="flex justify-between text-[11px] text-slate-600"><span>1 (quick)</span><span>5 (default)</span><span>10 (max)</span></div>
                     </div>
                     <div>
@@ -501,7 +501,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <span className="font-bold text-slate-600">Target Score: {pdfTargetScore}</span>
                         <span className="text-slate-600">{pdfTargetScore >= 95 ? 'Near-perfect' : pdfTargetScore >= 90 ? 'Excellent' : pdfTargetScore >= 80 ? 'Good' : 'Minimum'}</span>
                       </div>
-                      <input type="range" min="60" max="100" step="5" value={pdfTargetScore} onChange={(e) => setPdfTargetScore(parseInt(e.target.value))} className="w-full" aria-label="Target accessibility score" />
+                      <input type="range" min="60" max="100" step="5" value={pdfTargetScore} onChange={(e) => setPdfTargetScore(parseInt(e.target.value))} className="w-full" aria-label={t('pdf_audit.settings.target_score_aria') || 'Target accessibility score'} />
                       <div className="flex justify-between text-[11px] text-slate-600"><span>60 (min)</span><span>90 (default)</span><span>100</span></div>
                     </div>
                     <div>
@@ -509,11 +509,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <span className="font-bold text-slate-600">Max Fix Passes: {pdfAutoFixPasses}</span>
                         <span className="text-slate-600">{pdfAutoFixPasses === 0 ? 'Disabled' : pdfAutoFixPasses <= 3 ? 'Quick' : pdfAutoFixPasses <= 5 ? 'Standard' : pdfAutoFixPasses <= 8 ? 'Thorough' : 'Maximum'}</span>
                       </div>
-                      <input type="range" min="0" max="15" value={pdfAutoFixPasses} onChange={(e) => setPdfAutoFixPasses(parseInt(e.target.value))} className="w-full" aria-label="Max fix pass count" />
+                      <input type="range" min="0" max="15" value={pdfAutoFixPasses} onChange={(e) => setPdfAutoFixPasses(parseInt(e.target.value))} className="w-full" aria-label={t('pdf_audit.settings.max_fix_passes_aria') || 'Max fix pass count'} />
                       <div className="flex justify-between text-[11px] text-slate-600"><span>0 (off)</span><span>8 (default)</span><span>15 (max)</span></div>
                     </div>
                     <label className="flex items-start gap-2 text-[11px] text-slate-700 cursor-pointer bg-indigo-50 rounded-lg p-2 border border-indigo-200">
-                      <input type="checkbox" checked={pdfAutoContinue} onChange={(e) => setPdfAutoContinue(e.target.checked)} className="mt-0.5 rounded" aria-label="Auto-continue remediation until target score" />
+                      <input type="checkbox" checked={pdfAutoContinue} onChange={(e) => setPdfAutoContinue(e.target.checked)} className="mt-0.5 rounded" aria-label={t('pdf_audit.settings.auto_continue_aria') || 'Auto-continue remediation until target score'} />
                       <span>🔁 <b>Auto-continue</b> until score ≥ <b>{pdfTargetScore}</b> — runs up to 3 extra rounds of fixes automatically, stopping early when no more progress is possible.</span>
                     </label>
                     <div>
@@ -521,7 +521,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <span className="font-bold text-slate-600">Polish Passes: {pdfPolishPasses}</span>
                         <span className="text-slate-600">{pdfPolishPasses === 0 ? 'None' : pdfPolishPasses === 1 ? 'Standard' : 'Extra polish'}</span>
                       </div>
-                      <input type="range" min="0" max="3" value={pdfPolishPasses} onChange={(e) => setPdfPolishPasses(parseInt(e.target.value))} className="w-full" aria-label="Polish pass count" />
+                      <input type="range" min="0" max="3" value={pdfPolishPasses} onChange={(e) => setPdfPolishPasses(parseInt(e.target.value))} className="w-full" aria-label={t('pdf_audit.settings.polish_passes_aria') || 'Polish pass count'} />
                       <div className="flex justify-between text-[11px] text-slate-600"><span>0</span><span>2 (default)</span><span>3</span></div>
                     </div>
                   </div>
@@ -534,19 +534,19 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   <div className="px-3 pb-3 pt-1 space-y-3">
                     {/* Branding source */}
                     <div>
-                      <div className="text-[11px] font-bold text-slate-600 uppercase mb-0.5">Brand Colors</div>
-                      <p className="text-[11px] text-slate-600 mb-1">Where do the colors come from?</p>
+                      <div className="text-[11px] font-bold text-slate-600 uppercase mb-0.5">{t('pdf_audit.brand.heading') || 'Brand Colors'}</div>
+                      <p className="text-[11px] text-slate-600 mb-1">{t('pdf_audit.brand.where_from') || 'Where do the colors come from?'}</p>
                       <div className="flex flex-wrap gap-1">
                         <button onClick={() => { window.__pdfBrandMode = 'auto'; document.querySelectorAll('[data-brand-mode]').forEach(b => b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50')); document.querySelector('[data-brand-mode="auto"]')?.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); }}
                           data-brand-mode="auto"
                           className="px-2 py-1.5 rounded-lg border text-left transition-all ring-2 ring-indigo-400 bg-indigo-50 border-indigo-600">
-                          <div className="text-[11px] font-bold text-slate-700">🎨 Match Original</div>
-                          <div className="text-[11px] text-slate-600">Extract colors from this PDF</div>
+                          <div className="text-[11px] font-bold text-slate-700">{t('pdf_audit.brand.match_original') || '🎨 Match Original'}</div>
+                          <div className="text-[11px] text-slate-600">{t('pdf_audit.brand.match_original_desc') || 'Extract colors from this PDF'}</div>
                         </button>
                         <label data-brand-mode="upload"
                           className="px-2 py-1.5 rounded-lg border text-left transition-all border-slate-200 hover:border-indigo-200 hover:bg-indigo-50 cursor-pointer">
-                          <div className="text-[11px] font-bold text-slate-700">📎 Upload Brand Guide</div>
-                          <div className="text-[11px] text-slate-600">Use a different doc/logo</div>
+                          <div className="text-[11px] font-bold text-slate-700">{t('pdf_audit.brand.upload_guide') || '📎 Upload Brand Guide'}</div>
+                          <div className="text-[11px] text-slate-600">{t('pdf_audit.brand.upload_guide_desc') || 'Use a different doc/logo'}</div>
                           <input type="file" accept="image/*,.pdf" className="hidden" onChange={async (e) => {
                             const file = e.target.files?.[0]; if (!file || !callGeminiVision) return;
                             addToast('🎨 Extracting brand colors...', 'info');
@@ -575,16 +575,16 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <button onClick={() => { window.__pdfBrandMode = 'none'; window.__pdfBrandOverride = null; document.querySelectorAll('[data-brand-mode]').forEach(b => b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50')); document.querySelector('[data-brand-mode="none"]')?.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); }}
                           data-brand-mode="none"
                           className="px-2 py-1.5 rounded-lg border text-left transition-all border-slate-200 hover:border-indigo-600 hover:bg-indigo-50">
-                          <div className="text-[11px] font-bold text-slate-700">⬜ No Branding</div>
-                          <div className="text-[11px] text-slate-600">Use default palette</div>
+                          <div className="text-[11px] font-bold text-slate-700">{t('pdf_audit.brand.no_branding') || '⬜ No Branding'}</div>
+                          <div className="text-[11px] text-slate-600">{t('pdf_audit.brand.no_branding_desc') || 'Use default palette'}</div>
                         </button>
                       </div>
-                      <p className="text-[10px] text-slate-600 italic mt-1.5 leading-snug">Tip: If you pick a specific Style Seed below (not "Match Original"), that seed's colors override your branding choice. To use your brand colors, pair them with the Match Original seed.</p>
+                      <p className="text-[10px] text-slate-600 italic mt-1.5 leading-snug">{t('pdf_audit.brand.tip') || 'Tip: If you pick a specific Style Seed below (not "Match Original"), that seed\'s colors override your branding choice. To use your brand colors, pair them with the Match Original seed.'}</p>
                     </div>
                     {/* Style Seeds — unified pre-remediation style selection */}
                     <div>
-                      <div className="text-[11px] font-bold text-slate-600 uppercase mb-0.5">Style Seed</div>
-                      <p className="text-[11px] text-slate-600 mb-1.5">What design style should the AI apply? WCAG compliance guaranteed by deterministic sanitizer.</p>
+                      <div className="text-[11px] font-bold text-slate-600 uppercase mb-0.5">{t('pdf_audit.style.heading') || 'Style Seed'}</div>
+                      <p className="text-[11px] text-slate-600 mb-1.5">{t('pdf_audit.style.subtext') || 'What design style should the AI apply? WCAG compliance guaranteed by deterministic sanitizer.'}</p>
                       <div className="flex flex-wrap gap-1">
                         {[
                           { id: 'professional', label: '💼 Professional', desc: 'Clean, corporate' },
@@ -615,7 +615,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <>
                             {savedKeys.length > 0 && (
                               <div className="mt-2">
-                                <div className="text-[11px] text-slate-600 font-bold mb-1">Your Custom Styles</div>
+                                <div className="text-[11px] text-slate-600 font-bold mb-1">{t('pdf_audit.style.your_custom') || 'Your Custom Styles'}</div>
                                 <div className="flex flex-wrap gap-1">
                                   {savedKeys.map(k => {
                                     var s = saved[k];
@@ -648,34 +648,34 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               <div className="mt-2 bg-slate-50 rounded-lg p-3 border border-slate-400 space-y-2">
                                 <div className="grid grid-cols-2 gap-2">
                                   <div>
-                                    <label htmlFor="custom-style-name" className="text-[11px] text-slate-600 font-bold">Style Name</label>
-                                    <input id="custom-style-name" type="text" placeholder="My Style" aria-label="Custom style name" className="w-full px-2 py-1 text-[11px] border border-slate-400 rounded" />
+                                    <label htmlFor="custom-style-name" className="text-[11px] text-slate-600 font-bold">{t('pdf_audit.style.name_label') || 'Style Name'}</label>
+                                    <input id="custom-style-name" type="text" placeholder={t('pdf_audit.style.name_placeholder') || 'My Style'} aria-label={t('pdf_audit.style.name_aria') || 'Custom style name'} className="w-full px-2 py-1 text-[11px] border border-slate-400 rounded" />
                                   </div>
                                   <div>
                                     <label htmlFor="custom-style-font" className="text-[11px] text-slate-600 font-bold">Font</label>
-                                    <select id="custom-style-font" aria-label="Font family" className="w-full px-2 py-1 text-[11px] border border-slate-400 rounded">
-                                      <option value="'Inter', system-ui, sans-serif">Inter (Clean)</option>
-                                      <option value="'Georgia', serif">Georgia (Serif)</option>
-                                      <option value="'Atkinson Hyperlegible', sans-serif">Atkinson (A11y)</option>
-                                      <option value="'Lexend', sans-serif">Lexend (Readable)</option>
-                                      <option value="'Comic Sans MS', cursive">Comic Sans (Fun)</option>
-                                      <option value="'Times New Roman', serif">Times (Classic)</option>
+                                    <select id="custom-style-font" aria-label={t('pdf_audit.style.font_aria') || 'Font family'} className="w-full px-2 py-1 text-[11px] border border-slate-400 rounded">
+                                      <option value="'Inter', system-ui, sans-serif">{t('pdf_audit.style.font_inter') || 'Inter (Clean)'}</option>
+                                      <option value="'Georgia', serif">{t('pdf_audit.style.font_georgia') || 'Georgia (Serif)'}</option>
+                                      <option value="'Atkinson Hyperlegible', sans-serif">{t('pdf_audit.style.font_atkinson') || 'Atkinson (A11y)'}</option>
+                                      <option value="'Lexend', sans-serif">{t('pdf_audit.style.font_lexend') || 'Lexend (Readable)'}</option>
+                                      <option value="'Comic Sans MS', cursive">{t('pdf_audit.style.font_comic') || 'Comic Sans (Fun)'}</option>
+                                      <option value="'Times New Roman', serif">{t('pdf_audit.style.font_times') || 'Times (Classic)'}</option>
                                       <option value="'OpenDyslexic', sans-serif">OpenDyslexic</option>
                                     </select>
                                   </div>
                                 </div>
                                 <div className="grid grid-cols-3 gap-2">
                                   <div>
-                                    <label htmlFor="custom-style-heading" className="text-[11px] text-slate-600 font-bold">Heading Color</label>
-                                    <input id="custom-style-heading" type="color" defaultValue="#1e3a5f" aria-label="Heading color" className="w-full h-6 rounded border border-slate-400 cursor-pointer" />
+                                    <label htmlFor="custom-style-heading" className="text-[11px] text-slate-600 font-bold">{t('pdf_audit.style.heading_color_label') || 'Heading Color'}</label>
+                                    <input id="custom-style-heading" type="color" defaultValue="#1e3a5f" aria-label={t('pdf_audit.style.heading_color_aria') || 'Heading color'} className="w-full h-6 rounded border border-slate-400 cursor-pointer" />
                                   </div>
                                   <div>
-                                    <label htmlFor="custom-style-accent" className="text-[11px] text-slate-600 font-bold">Accent Color</label>
-                                    <input id="custom-style-accent" type="color" defaultValue="#2563eb" aria-label="Accent color" className="w-full h-6 rounded border border-slate-400 cursor-pointer" />
+                                    <label htmlFor="custom-style-accent" className="text-[11px] text-slate-600 font-bold">{t('pdf_audit.style.accent_color_label') || 'Accent Color'}</label>
+                                    <input id="custom-style-accent" type="color" defaultValue="#2563eb" aria-label={t('pdf_audit.style.accent_color_aria') || 'Accent color'} className="w-full h-6 rounded border border-slate-400 cursor-pointer" />
                                   </div>
                                   <div>
                                     <label htmlFor="custom-style-bg" className="text-[11px] text-slate-600 font-bold">Background</label>
-                                    <input id="custom-style-bg" type="color" defaultValue="#ffffff" aria-label="Background color" className="w-full h-6 rounded border border-slate-400 cursor-pointer" />
+                                    <input id="custom-style-bg" type="color" defaultValue="#ffffff" aria-label={t('pdf_audit.style.bg_color_aria') || 'Background color'} className="w-full h-6 rounded border border-slate-400 cursor-pointer" />
                                   </div>
                                 </div>
                                 <button onClick={() => {
@@ -753,7 +753,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <div className="text-sm font-black text-slate-800">{pc}</div>
                         </div>
                         <div className="bg-white border border-slate-400 rounded-lg px-2 py-1.5">
-                          <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Source type</div>
+                          <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{t('pdf_audit.triage.source_type') || 'Source type'}</div>
                           <div className={`text-sm font-black ${isScanned ? 'text-amber-700' : 'text-emerald-700'}`}>{isScanned ? 'Scanned' : 'Text layer'}</div>
                         </div>
                         <div className="bg-white border border-slate-400 rounded-lg px-2 py-1.5">
@@ -767,7 +767,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       </div>
                       {(critCount + seriousCount + moderateCount + minorCount) > 0 && (
                         <div className="flex items-center gap-2 flex-wrap text-[11px] mb-2">
-                          <span className="text-slate-600 font-bold">Issues to fix:</span>
+                          <span className="text-slate-600 font-bold">{t('pdf_audit.triage.issues_to_fix') || 'Issues to fix:'}</span>
                           {critCount > 0 && <span className="px-1.5 py-0.5 bg-red-100 text-red-700 rounded font-bold">{critCount} critical</span>}
                           {seriousCount > 0 && <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded font-bold">{seriousCount} serious</span>}
                           {moderateCount > 0 && <span className="px-1.5 py-0.5 bg-yellow-100 text-yellow-700 rounded font-bold">{moderateCount} moderate</span>}
@@ -775,13 +775,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         </div>
                       )}
                       <div className="flex items-center gap-2 flex-wrap text-[11px] mb-2.5">
-                        <span className="text-slate-600 font-bold">Estimated remediation time:</span>
+                        <span className="text-slate-600 font-bold">{t('pdf_audit.triage.estimated_time') || 'Estimated remediation time:'}</span>
                         <span className="px-2 py-0.5 bg-indigo-100 text-indigo-800 rounded font-black">{fmt(estLow)}–{fmt(estHigh)}</span>
                         {isScanned && <span className="text-amber-700 text-[10px]">↑ scanned PDFs take longer (OCR required)</span>}
                       </div>
                       <div className="pt-2 border-t border-indigo-200">
-                        <div className="text-[10px] text-slate-600 font-bold uppercase tracking-wider mb-1.5">Post-fix mode</div>
-                        <div className="flex gap-1.5 flex-wrap" role="radiogroup" aria-label="Post-fix mode">
+                        <div className="text-[10px] text-slate-600 font-bold uppercase tracking-wider mb-1.5">{t('pdf_audit.post_fix.label') || 'Post-fix mode'}</div>
+                        <div className="flex gap-1.5 flex-wrap" role="radiogroup" aria-label={t('pdf_audit.post_fix.aria') || 'Post-fix mode'}>
                           {[
                             { id: 'auto', label: '⚡ Auto', tip: 'Commit result immediately. Default.' },
                             { id: 'review', label: '📝 Review', tip: 'Open Diff view after fix — inspect source ↔ final fidelity before treating as final.' },
@@ -813,7 +813,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           counts so the user can see real proof of tagging,
                           not just a filename change. */}
                       <div className="pt-2 mt-2 border-t border-indigo-200">
-                        <div className="text-[10px] text-slate-600 font-bold uppercase tracking-wider mb-1.5">Quick downloads (no remediation needed)</div>
+                        <div className="text-[10px] text-slate-600 font-bold uppercase tracking-wider mb-1.5">{t('pdf_audit.quick_downloads.heading') || 'Quick downloads (no remediation needed)'}</div>
                         <button
                           onClick={async () => {
                             try {
@@ -871,7 +871,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             }
                           }}
                           className="px-3 py-1.5 bg-slate-50 text-slate-700 border border-slate-300 rounded-lg text-[11px] font-bold hover:bg-slate-100 hover:border-slate-400 transition-colors flex items-center gap-1.5"
-                          title="Download a Tagged PDF based on the original. For richer tagging — extracted headings, properly scoped tables, alt text — run Fix & Verify first and download the tagged version after."
+                          title={t('pdf_audit.quick_downloads.tagged_pdf_title') || 'Download a Tagged PDF based on the original. For richer tagging — extracted headings, properly scoped tables, alt text — run Fix & Verify first and download the tagged version after.'}
                         >
                           📄 Tagged PDF (baseline)
                         </button>
@@ -923,9 +923,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
             ) : pdfAuditLoading ? (
               <div className="p-12 text-center" role="status" aria-live="polite">
                 <div className="text-5xl mb-4 animate-pulse" aria-hidden="true">♿</div>
-                <h3 className="text-lg font-black text-slate-800 mb-2">Auditing PDF Accessibility...</h3>
-                <p className="text-sm text-slate-600">Running 5 parallel WCAG 2.1 AA audits with triangulation. This may take 15-30 seconds.</p>
-                <div className="mt-4 w-56 h-2.5 bg-slate-200 rounded-full mx-auto overflow-hidden" role="progressbar" aria-label="Audit in progress" aria-valuemin={0} aria-valuemax={100}>
+                <h3 className="text-lg font-black text-slate-800 mb-2">{t('pdf_audit.loading.title') || 'Auditing PDF Accessibility...'}</h3>
+                <p className="text-sm text-slate-600">{t('pdf_audit.loading.subtitle') || 'Running 5 parallel WCAG 2.1 AA audits with triangulation. This may take 15-30 seconds.'}</p>
+                <div className="mt-4 w-56 h-2.5 bg-slate-200 rounded-full mx-auto overflow-hidden" role="progressbar" aria-label={t('pdf_audit.loading.progress_aria') || 'Audit in progress'} aria-valuemin={0} aria-valuemax={100}>
                   <div className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-violet-500 rounded-full" style={{animation: 'auditProgress 25s ease-out forwards'}}></div>
                 </div>
                 <style>{`@keyframes auditProgress { 0% { width: 5%; } 20% { width: 30%; } 50% { width: 55%; } 75% { width: 75%; } 90% { width: 85%; } 100% { width: 92%; } } @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }`}</style>
@@ -939,11 +939,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-sm font-bold text-slate-800">Knowbility</span>
-                        <span className="text-[11px] font-bold text-indigo-600 bg-indigo-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider">Accessibility Partner</span>
+                        <span className="text-[11px] font-bold text-indigo-600 bg-indigo-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider">{t('pdf_audit.knowbility.partner_badge') || 'Accessibility Partner'}</span>
                         <span className="text-[11px] font-bold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider">501(c)(3) Nonprofit</span>
                       </div>
                       <p className="text-[11px] text-slate-600 leading-relaxed mt-1.5">
-                        <strong className="text-slate-700">Creating an inclusive digital world for people with disabilities</strong> — Knowbility is
+                        <strong className="text-slate-700">{t('pdf_audit.knowbility.mission_lead') || 'Creating an inclusive digital world for people with disabilities'}</strong> — Knowbility is
                         a nonprofit organization based in Austin, TX, and an award-winning leader in accessible information technology since 1999.
                       </p>
                     </div>
@@ -953,7 +953,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-3 space-y-2" style={{ animation: 'fadeInUp 0.7s ease-out 5s both' }}>
                     <div className="text-[11px] font-black text-amber-800 uppercase tracking-wider flex items-center gap-1.5">⚖️ Why Digital Accessibility Matters</div>
                     <p className="text-[11px] text-slate-700 leading-relaxed">
-                      <strong className="text-amber-900">The Americans with Disabilities Act (ADA) Title II</strong> requires state and local governments to make their digital services accessible to people with disabilities. In April 2024, the Department of Justice published <strong>final regulations</strong> mandating <strong>WCAG 2.1 Level AA</strong> compliance for all web content and mobile applications, with compliance deadlines ranging from <strong>April 2026 to April 2027</strong> depending on population size.
+                      <strong className="text-amber-900">{t('pdf_audit.knowbility.ada_title') || 'The Americans with Disabilities Act (ADA) Title II'}</strong> requires state and local governments to make their digital services accessible to people with disabilities. In April 2024, the Department of Justice published <strong>final regulations</strong> mandating <strong>{t('pdf_audit.knowbility.wcag_label') || 'WCAG 2.1 Level AA'}</strong> compliance for all web content and mobile applications, with compliance deadlines ranging from <strong>{t('pdf_audit.knowbility.deadline_range') || 'April 2026 to April 2027'}</strong> depending on population size.
                     </p>
                     <p className="text-[11px] text-slate-600 leading-relaxed">
                       But compliance is just the baseline. Accessible documents benefit <strong>everyone</strong> — not just the 1 in 4 Americans living with a disability:
@@ -961,41 +961,41 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     <div className="grid grid-cols-2 gap-1.5">
                       <div className="bg-white/90 rounded-lg p-2 border border-amber-100">
                         <div className="text-[11px] font-black text-emerald-700">🌍 Broader Reach</div>
-                        <div className="text-[11px] text-slate-600 leading-snug">Accessible content works on any device, any bandwidth, any assistive technology — reaching more users</div>
+                        <div className="text-[11px] text-slate-600 leading-snug">{t('pdf_audit.knowbility.broader_reach_desc') || 'Accessible content works on any device, any bandwidth, any assistive technology — reaching more users'}</div>
                       </div>
                       <div className="bg-white/90 rounded-lg p-2 border border-amber-100">
                         <div className="text-[11px] font-black text-blue-700">🔍 Better SEO & Findability</div>
-                        <div className="text-[11px] text-slate-600 leading-snug">Structured headings, alt text, and semantic HTML improve search ranking and content discovery</div>
+                        <div className="text-[11px] text-slate-600 leading-snug">{t('pdf_audit.knowbility.seo_desc') || 'Structured headings, alt text, and semantic HTML improve search ranking and content discovery'}</div>
                       </div>
                       <div className="bg-white/90 rounded-lg p-2 border border-amber-100">
                         <div className="text-[11px] font-black text-violet-700">🧠 Cognitive Clarity</div>
-                        <div className="text-[11px] text-slate-600 leading-snug">Clear navigation, consistent layouts, and plain language help all users — especially in high-cognitive-load contexts</div>
+                        <div className="text-[11px] text-slate-600 leading-snug">{t('pdf_audit.knowbility.cognitive_desc') || 'Clear navigation, consistent layouts, and plain language help all users — especially in high-cognitive-load contexts'}</div>
                       </div>
                       <div className="bg-white/90 rounded-lg p-2 border border-amber-100">
                         <div className="text-[11px] font-black text-rose-700">⚡ Future-Proofing</div>
-                        <div className="text-[11px] text-slate-600 leading-snug">WCAG-compliant content adapts to new devices, AI readers, and emerging assistive technologies</div>
+                        <div className="text-[11px] text-slate-600 leading-snug">{t('pdf_audit.knowbility.future_desc') || 'WCAG-compliant content adapts to new devices, AI readers, and emerging assistive technologies'}</div>
                       </div>
                     </div>
-                    <p className="text-[11px] text-amber-700 italic leading-relaxed">WCAG 2.1 AA isn't just about avoiding litigation — it's about building documents that are perceivable, operable, understandable, and robust for every human being.</p>
+                    <p className="text-[11px] text-amber-700 italic leading-relaxed">{t('pdf_audit.knowbility.italic_callout') || "WCAG 2.1 AA isn't just about avoiding litigation — it's about building documents that are perceivable, operable, understandable, and robust for every human being."}</p>
                   </div>
 
                   {/* Services Grid */}
                   <div className="grid grid-cols-2 gap-2">
                     <div className="bg-white/80 rounded-lg border border-indigo-100 p-2.5 space-y-0.5">
                       <div className="text-[11px] font-black text-indigo-600 uppercase tracking-wider">🔍 Auditing & Testing</div>
-                      <div className="text-[11px] text-slate-600 leading-snug">Expert WCAG audits and document remediation by certified professionals</div>
+                      <div className="text-[11px] text-slate-600 leading-snug">{t('pdf_audit.knowbility.audit_service_desc') || 'Expert WCAG audits and document remediation by certified professionals'}</div>
                     </div>
                     <div className="bg-white/80 rounded-lg border border-indigo-100 p-2.5 space-y-0.5">
                       <div className="text-[11px] font-black text-indigo-600 uppercase tracking-wider">♿ AccessWorks</div>
-                      <div className="text-[11px] text-slate-600 leading-snug">Real-world usability testing by people who use assistive technology daily</div>
+                      <div className="text-[11px] text-slate-600 leading-snug">{t('pdf_audit.knowbility.usability_service_desc') || 'Real-world usability testing by people who use assistive technology daily'}</div>
                     </div>
                     <div className="bg-white/80 rounded-lg border border-indigo-100 p-2.5 space-y-0.5">
                       <div className="text-[11px] font-black text-indigo-600 uppercase tracking-wider">📄 Document Remediation</div>
-                      <div className="text-[11px] text-slate-600 leading-snug">Specialist team for PDF and MS Office docs — full usability with assistive technology</div>
+                      <div className="text-[11px] text-slate-600 leading-snug">{t('pdf_audit.knowbility.docrem_service_desc') || 'Specialist team for PDF and MS Office docs — full usability with assistive technology'}</div>
                     </div>
                     <div className="bg-white/80 rounded-lg border border-indigo-100 p-2.5 space-y-0.5">
                       <div className="text-[11px] font-black text-indigo-600 uppercase tracking-wider">🎓 Training & AccessU</div>
-                      <div className="text-[11px] text-slate-600 leading-snug">Annual conference and on-demand courses — beginner to advanced accessibility skills</div>
+                      <div className="text-[11px] text-slate-600 leading-snug">{t('pdf_audit.knowbility.training_service_desc') || 'Annual conference and on-demand courses — beginner to advanced accessibility skills'}</div>
                     </div>
                   </div>
 
@@ -1033,11 +1033,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
               <div role="alert" className="rounded-2xl overflow-hidden border border-slate-400 shadow-lg">
                 <div className="p-6 text-center bg-gradient-to-r from-slate-600 to-slate-700 text-white">
                   <div className="text-4xl mb-2">⚠️</div>
-                  <h3 className="text-lg font-bold">Audit Unavailable</h3>
-                  <p className="text-sm opacity-80 mt-1">The AI accessibility audit could not complete. This is usually caused by a temporary API issue, rate limiting, or a very large/complex PDF.</p>
+                  <h3 className="text-lg font-bold">{t('pdf_audit.unavailable.title') || 'Audit Unavailable'}</h3>
+                  <p className="text-sm opacity-80 mt-1">{t('pdf_audit.unavailable.body') || 'The AI accessibility audit could not complete. This is usually caused by a temporary API issue, rate limiting, or a very large/complex PDF.'}</p>
                 </div>
                 <div className="p-4 bg-white space-y-3">
-                  <p className="text-xs text-slate-600 text-center">You can still proceed — Fix & Verify will transform the document and run a full audit afterward.</p>
+                  <p className="text-xs text-slate-600 text-center">{t('pdf_audit.unavailable.proceed_hint') || 'You can still proceed — Fix & Verify will transform the document and run a full audit afterward.'}</p>
                   <div className="flex gap-2 justify-center">
                     <button onClick={async () => { setPdfAuditResult(null); addToast('Retrying audit...', 'info'); await runPdfAccessibilityAudit(pendingPdfBase64); }} className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-colors">🔄 Retry Audit</button>
                     <button onClick={() => { _closePdfAuditModal(); }} className="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors">Cancel</button>
@@ -1047,9 +1047,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
             ) : pdfAuditResult && (
               <div role="status" aria-live="polite" aria-label={`PDF accessibility audit complete. Score: ${pdfAuditResult.score} out of 100.`}>
                 {pdfFixResult && (
-                  <div role="tablist" aria-label="Audit view" className="flex gap-1 mb-3 bg-slate-100 p-1 rounded-xl w-fit">
-                    <button role="tab" aria-selected={pdfAuditTab === 'results'} onClick={() => setPdfAuditTab('results')} className={`px-4 py-2 rounded-lg text-xs font-bold transition-colors ${pdfAuditTab === 'results' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-800'}`}>Remediation Results</button>
-                    <button role="tab" aria-selected={pdfAuditTab === 'original'} onClick={() => setPdfAuditTab('original')} className={`px-4 py-2 rounded-lg text-xs font-bold transition-colors ${pdfAuditTab === 'original' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-800'}`}>Original Audit</button>
+                  <div role="tablist" aria-label={t('pdf_audit.tabs.aria') || 'Audit view'} className="flex gap-1 mb-3 bg-slate-100 p-1 rounded-xl w-fit">
+                    <button role="tab" aria-selected={pdfAuditTab === 'results'} onClick={() => setPdfAuditTab('results')} className={`px-4 py-2 rounded-lg text-xs font-bold transition-colors ${pdfAuditTab === 'results' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-800'}`}>{t('pdf_audit.tabs.remediation_results') || 'Remediation Results'}</button>
+                    <button role="tab" aria-selected={pdfAuditTab === 'original'} onClick={() => setPdfAuditTab('original')} className={`px-4 py-2 rounded-lg text-xs font-bold transition-colors ${pdfAuditTab === 'original' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-800'}`}>{t('pdf_audit.tabs.original_audit') || 'Original Audit'}</button>
                   </div>
                 )}
                 {(!pdfFixResult || pdfAuditTab === 'original') && (
@@ -1070,11 +1070,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                 <div className="p-5 space-y-4" aria-labelledby="pdf-audit-title">
                   {(!pdfFixResult || pdfAuditTab === 'original') && (<>
                   {/* Document info */}
-                  <div className="flex gap-2 flex-wrap" role="list" aria-label="Document properties">
+                  <div className="flex gap-2 flex-wrap" role="list" aria-label={t('pdf_audit.doc_props.aria') || 'Document properties'}>
                     {pdfAuditResult.hasSearchableText !== undefined && <span role="listitem" className={`px-2 py-1 rounded-full text-[11px] font-bold ${pdfAuditResult.hasSearchableText ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{pdfAuditResult.hasSearchableText ? '✓ Searchable Text' : '✗ No Text Layer'}</span>}
-                    {pdfAuditResult.hasImages && <span role="listitem" className="px-2 py-1 rounded-full text-[11px] font-bold bg-blue-100 text-blue-700">Contains Images</span>}
-                    {pdfAuditResult.hasTables && <span role="listitem" className="px-2 py-1 rounded-full text-[11px] font-bold bg-purple-100 text-purple-700">Contains Tables</span>}
-                    {pdfAuditResult.hasForms && <span role="listitem" className="px-2 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-700">Contains Forms</span>}
+                    {pdfAuditResult.hasImages && <span role="listitem" className="px-2 py-1 rounded-full text-[11px] font-bold bg-blue-100 text-blue-700">{t('pdf_audit.doc_props.contains_images') || 'Contains Images'}</span>}
+                    {pdfAuditResult.hasTables && <span role="listitem" className="px-2 py-1 rounded-full text-[11px] font-bold bg-purple-100 text-purple-700">{t('pdf_audit.doc_props.contains_tables') || 'Contains Tables'}</span>}
+                    {pdfAuditResult.hasForms && <span role="listitem" className="px-2 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-700">{t('pdf_audit.doc_props.contains_forms') || 'Contains Forms'}</span>}
                     {pdfAuditResult.pageCount && <span role="listitem" className="px-2 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600">{pdfAuditResult.pageCount} pages</span>}
                   </div>
 
@@ -1092,16 +1092,16 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           </div>
                           <div className="bg-white rounded-lg p-2 text-center border border-indigo-100">
                             <div className="text-lg font-black text-indigo-700">{pdfAuditResult.scoreSD}</div>
-                            <div className="text-[11px] text-slate-600 font-bold uppercase">Standard Deviation</div>
+                            <div className="text-[11px] text-slate-600 font-bold uppercase">{t('pdf_audit.reliability.std_dev') || 'Standard Deviation'}</div>
                           </div>
                           <div className="bg-white rounded-lg p-2 text-center border border-indigo-100">
                             <div className={`text-lg font-black ${pdfAuditResult.icc >= 0.75 ? 'text-green-700' : pdfAuditResult.icc >= 0.5 ? 'text-amber-700' : 'text-red-700'}`}>{pdfAuditResult.icc}</div>
-                            <div className="text-[11px] text-slate-600 font-bold uppercase" title="Custom 1−(SD/50) index; not textbook ICC">Auditor Consistency (ICC-like)</div>
+                            <div className="text-[11px] text-slate-600 font-bold uppercase" title={t('pdf_audit.reliability.icc_title') || 'Custom 1−(SD/50) index; not textbook ICC'}>{t('pdf_audit.reliability.icc_label') || 'Auditor Consistency (ICC-like)'}</div>
                           </div>
                           {pdfAuditResult.cronbachAlpha !== null && (
                             <div className="bg-white rounded-lg p-2 text-center border border-indigo-100">
                               <div className={`text-lg font-black ${pdfAuditResult.cronbachAlpha >= 0.7 ? 'text-green-700' : 'text-amber-700'}`}>{pdfAuditResult.cronbachAlpha}</div>
-                              <div className="text-[11px] text-slate-600 font-bold uppercase">Cronbach's α</div>
+                              <div className="text-[11px] text-slate-600 font-bold uppercase">{t('pdf_audit.reliability.cronbach') || "Cronbach's α"}</div>
                             </div>
                           )}
                         </div>
@@ -1140,9 +1140,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     <div className="px-3 pb-3 text-[11px] text-slate-700 space-y-2 mt-1">
                       {/* Overview */}
                       <div className="bg-white rounded-lg border border-slate-400 p-2.5 space-y-1">
-                        <div className="flex justify-between"><span>Total checks performed</span><span className="font-bold">{totalChecks}</span></div>
+                        <div className="flex justify-between"><span>{t('pdf_audit.score.total_checks') || 'Total checks performed'}</span><span className="font-bold">{totalChecks}</span></div>
                         <div className="flex justify-between text-green-700 font-bold"><span>Passed</span><span>{passCount} ({passRate}%)</span></div>
-                        <div className="flex justify-between text-red-700 font-bold"><span>Issues found</span><span>{totalIssues}</span></div>
+                        <div className="flex justify-between text-red-700 font-bold"><span>{t('pdf_audit.score.issues_found') || 'Issues found'}</span><span>{totalIssues}</span></div>
                         {totalIssues > 0 && (
                           <div className="text-[11px] text-slate-600 pl-2">{[critCount > 0 && `${critCount} critical`, seriousCount > 0 && `${seriousCount} serious`, modCount > 0 && `${modCount} moderate`, minCount > 0 && `${minCount} minor`].filter(Boolean).join(', ')}</div>
                         )}
@@ -1153,20 +1153,20 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <div className="bg-purple-100 rounded-lg border-2 border-purple-300 p-2.5">
                           <div className="flex justify-between items-baseline mb-1">
                             <span className="font-black text-purple-900 text-sm">{aiScore}<span className="text-[11px] font-bold text-purple-500">/100</span></span>
-                            <span className="text-[11px] font-black text-purple-600 uppercase">AI Rubric</span>
+                            <span className="text-[11px] font-black text-purple-600 uppercase">{t('pdf_audit.score.ai_rubric_label') || 'AI Rubric'}</span>
                           </div>
                           <div className="text-[11px] text-purple-800 space-y-0.5">
-                            <div>Starts at 100, deducts per issue type</div>
+                            <div>{t('pdf_audit.score.starts_at_100') || 'Starts at 100, deducts per issue type'}</div>
                             {totalIssues > 0 && <div>{totalIssues} issues found</div>}
                             {passBenefit > 0 && <div className="text-green-700 font-bold">{passCount} passes recovered +{passBenefit} pts</div>}
                           </div>
                           <details className="mt-1 text-[11px]">
-                            <summary className="cursor-pointer text-purple-500 hover:text-purple-800 font-bold">How AI scores</summary>
+                            <summary className="cursor-pointer text-purple-500 hover:text-purple-800 font-bold">{t('pdf_audit.score.how_ai_scores') || 'How AI scores'}</summary>
                             <div className="mt-1 space-y-0.5 text-purple-700">
-                              <div>Critical: -15 each (lang, title, alt, landmark, contrast)</div>
-                              <div>Major: -10 each (headings, tables, forms)</div>
-                              <div>Minor: -5 each (skip-nav, landmarks, links, lists)</div>
-                              <div>Passes reduce total deductions proportionally</div>
+                              <div>{t('pdf_audit.score.ai_critical_rule') || 'Critical: -15 each (lang, title, alt, landmark, contrast)'}</div>
+                              <div>{t('pdf_audit.score.ai_major_rule') || 'Major: -10 each (headings, tables, forms)'}</div>
+                              <div>{t('pdf_audit.score.ai_minor_rule') || 'Minor: -5 each (skip-nav, landmarks, links, lists)'}</div>
+                              <div>{t('pdf_audit.score.ai_passes_rule') || 'Passes reduce total deductions proportionally'}</div>
                             </div>
                           </details>
                         </div>
@@ -1178,18 +1178,18 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <span className="text-[11px] font-black text-blue-600 uppercase">axe-core</span>
                           </div>
                           <div className="text-[11px] text-blue-800 space-y-0.5">
-                            <div>Deque automated WCAG 2.1 AA checker</div>
+                            <div>{t('pdf_audit.score.axe_desc') || 'Deque automated WCAG 2.1 AA checker'}</div>
                             <div>{axeAudit.totalViolations} violation{axeAudit.totalViolations !== 1 ? 's' : ''}, {axeAudit.totalPasses} passed</div>
                           </div>
                           <details className="mt-1 text-[11px]">
-                            <summary className="cursor-pointer text-blue-500 hover:text-blue-800 font-bold">How axe-core scores</summary>
+                            <summary className="cursor-pointer text-blue-500 hover:text-blue-800 font-bold">{t('pdf_audit.score.how_axe_scores') || 'How axe-core scores'}</summary>
                             <div className="mt-1 space-y-0.5 text-blue-700">
                               <div>100 - (critical x15) - (serious x10) - (moderate x5) - (minor x2)</div>
                               {(axeAudit.critical || []).length > 0 && <div className="text-red-600">{axeAudit.critical.length} critical: {axeAudit.critical.map(v => v.id).join(', ')}</div>}
                               {(axeAudit.serious || []).length > 0 && <div className="text-amber-600">{axeAudit.serious.length} serious: {axeAudit.serious.map(v => v.id).join(', ')}</div>}
                               {(axeAudit.moderate || []).length > 0 && <div>{axeAudit.moderate.length} moderate: {axeAudit.moderate.map(v => v.id).join(', ')}</div>}
                               {(axeAudit.minor || []).length > 0 && <div>{axeAudit.minor.length} minor: {axeAudit.minor.map(v => v.id).join(', ')}</div>}
-                              {axeAudit.totalViolations === 0 && <div className="text-green-700 font-bold">No violations detected</div>}
+                              {axeAudit.totalViolations === 0 && <div className="text-green-700 font-bold">{t('pdf_audit.score.no_violations') || 'No violations detected'}</div>}
                             </div>
                           </details>
                         </div>
@@ -1210,7 +1210,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <span className="font-black text-slate-900 text-lg">{displayedScore}</span>
                             <span className="text-slate-600 text-xs">/100</span>
                           </div>
-                          <div className="text-[11px] text-slate-600 mt-0.5">Average of both engines (equal weight)</div>
+                          <div className="text-[11px] text-slate-600 mt-0.5">{t('pdf_audit.score.average_both') || 'Average of both engines (equal weight)'}</div>
                         </div>
                       )}
                     </div>
@@ -1357,7 +1357,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       {pendingPdfFile && !pendingPdfBase64 && (
                         <div className="text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded px-2 py-1.5 mb-2 flex items-start gap-1.5" role="status">
                           <span aria-hidden="true">📎</span>
-                          <span>Original PDF isn't attached to this session — you'll be prompted to re-select it from disk when you start the fix. (Project files don't include the PDF bytes to stay small.)</span>
+                          <span>{t('pdf_audit.multi_session.no_pdf_attached') || "Original PDF isn't attached to this session — you'll be prompted to re-select it from disk when you start the fix. (Project files don't include the PDF bytes to stay small.)"}</span>
                         </div>
                       )}
                       <div className="flex items-center gap-2 flex-wrap">
@@ -1374,7 +1374,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             const end = pdfPageRange?.end || Math.min(v + 29, pdfAuditResult.pageCount);
                             setPdfPageRange({ start: Math.max(1, Math.min(v, pdfAuditResult.pageCount)), end });
                           }}
-                          aria-label="Start page"
+                          aria-label={t('pdf_audit.page_range.start_aria') || 'Start page'}
                           className="w-16 text-xs px-2 py-1 border border-indigo-300 rounded"
                         />
                         <span className="text-xs text-indigo-900">to</span>
@@ -1390,7 +1390,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             const start = pdfPageRange?.start || 1;
                             setPdfPageRange({ start, end: Math.max(start, Math.min(v, pdfAuditResult.pageCount)) });
                           }}
-                          aria-label="End page"
+                          aria-label={t('pdf_audit.page_range.end_aria') || 'End page'}
                           className="w-16 text-xs px-2 py-1 border border-indigo-300 rounded"
                         />
                         <span className="text-xs text-indigo-700">of {pdfAuditResult.pageCount}</span>
@@ -1398,7 +1398,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <button
                             onClick={() => setPdfPageRange(null)}
                             className="text-xs text-indigo-600 underline hover:text-indigo-900"
-                            aria-label="Clear page range and remediate whole document"
+                            aria-label={t('pdf_audit.page_range.clear_aria') || 'Clear page range and remediate whole document'}
                           >
                             (clear — do all)
                           </button>
@@ -1420,10 +1420,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           checked={pdfAutoSaveProject}
                           onChange={(e) => setPdfAutoSaveProject(e.target.checked)}
                           className="mt-0.5 accent-indigo-600"
-                          aria-label="Auto-save project file after each completed range"
+                          aria-label={t('pdf_audit.multi_session.autosave_aria') || 'Auto-save project file after each completed range'}
                         />
                         <span>
-                          <span className="font-bold">Auto-save project file after each range</span>
+                          <span className="font-bold">{t('pdf_audit.multi_session.autosave_label') || 'Auto-save project file after each range'}</span>
                           <span className="block text-indigo-700">
                             {pdfAutoSaveProject
                               ? 'A .alloflow.json file will download after each completed range so you can resume across sessions or browsers.'
@@ -1482,7 +1482,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         } catch(e) { addToast('Sweep failed: ' + (e?.message || ''), 'error'); }
                         finally { setPdfFixLoading(false); setPdfFixStep(''); pdfFixModeRef.current = ''; }
                       }} disabled={pdfFixLoading} className="flex-1 px-5 py-3 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-violet-700 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-40">
-                        {pdfFixLoading && pdfFixModeRef.current === 'sweep' ? <><span className="animate-spin">&#9203;</span> {pdfFixStep || 'Sweeping...'}</> : <><Sparkles size={16} /> Additional Sweep</>}
+                        {pdfFixLoading && pdfFixModeRef.current === 'sweep' ? <><span className="animate-spin">&#9203;</span> {pdfFixStep || 'Sweeping...'}</> : <><Sparkles size={16} /> {t('pdf_audit.fix_pass.additional_sweep') || 'Additional Sweep'}</>}
                       </button>
                       {/* Fix Remaining — always visible after first remediation so user can continue fixing */}
                       <button onClick={async () => {
@@ -1641,7 +1641,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     )}
                     {pdfFixLoading && (
                       <div className="basis-full mt-1" role="status" aria-live="polite">
-                        <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden" role="progressbar" aria-label="Fix and verify progress" aria-valuenow={pdfFixStep.includes('Step 1') ? 15 : pdfFixStep.includes('Step 2') ? 50 : pdfFixStep.includes('Step 3') ? 80 : pdfFixStep.includes('Step 4') ? 92 : pdfFixStep.includes('Auto-fix') ? 96 : 5} aria-valuemin={0} aria-valuemax={100}>
+                        <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden" role="progressbar" aria-label={t('pdf_audit.fix_pass.progress_aria') || 'Fix and verify progress'} aria-valuenow={pdfFixStep.includes('Step 1') ? 15 : pdfFixStep.includes('Step 2') ? 50 : pdfFixStep.includes('Step 3') ? 80 : pdfFixStep.includes('Step 4') ? 92 : pdfFixStep.includes('Auto-fix') ? 96 : 5} aria-valuemin={0} aria-valuemax={100}>
                           <div className="h-full bg-gradient-to-r from-green-500 to-emerald-500 transition-all duration-700 rounded-full" style={{ width: pdfFixStep.includes('Step 1') ? '15%' : pdfFixStep.includes('Step 2') ? '50%' : pdfFixStep.includes('Step 3') ? '80%' : pdfFixStep.includes('Step 4') ? '92%' : pdfFixStep.includes('Auto-fix') ? '96%' : '5%' }}></div>
                         </div>
                         <div className="text-xs text-slate-700 mt-0.5 text-center" role="status" aria-live="polite">{pdfFixStep}</div>
@@ -1705,7 +1705,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           };
                           const context = getContextNote(pdfFixStep);
                           return (
-                            <div className="mt-3 bg-white rounded-xl border border-slate-400 p-3 space-y-2" role="region" aria-label="Pipeline progress tracker">
+                            <div className="mt-3 bg-white rounded-xl border border-slate-400 p-3 space-y-2" role="region" aria-label={t('pdf_audit.pipeline.tracker_aria') || 'Pipeline progress tracker'}>
                               <div className="flex items-center gap-1.5 text-[11px]">
                                 {steps.map((s, i) => {
                                   const currentStep = pdfFixStep.includes('Step ' + s.step) || pdfFixStep.includes('step ' + s.step);
@@ -1724,7 +1724,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               {context && (
                                 <div className="text-[11px] bg-gradient-to-r from-slate-50 to-indigo-50 rounded-xl px-4 py-3 border border-slate-400 space-y-1.5">
                                   <div className="text-slate-800 font-semibold leading-relaxed whitespace-pre-line">🔄 {context.what}</div>
-                                  <div className="text-slate-600 leading-relaxed border-t border-slate-200 pt-1.5">💡 <span className="font-medium">Why this matters:</span> {context.why}</div>
+                                  <div className="text-slate-600 leading-relaxed border-t border-slate-200 pt-1.5">💡 <span className="font-medium">{t('pdf_audit.pipeline.why_matters') || 'Why this matters:'}</span> {context.why}</div>
                                 </div>
                               )}
                             </div>
@@ -1735,7 +1735,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         {boringPalettePrompt && (
                           <div className="mt-3 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-3 animate-in fade-in duration-300">
                             <div className="text-xs font-bold text-amber-800 mb-1.5">🎨 The original document has minimal styling</div>
-                            <div className="text-[10px] text-amber-700 mb-2">Would you like to keep the original look or apply a theme?</div>
+                            <div className="text-[10px] text-amber-700 mb-2">{t('pdf_audit.boring_palette.prompt') || 'Would you like to keep the original look or apply a theme?'}</div>
                             <div className="flex flex-wrap gap-1.5">
                               {[
                                 { id: null, label: 'Keep Original', icon: '📎' },
@@ -1757,10 +1757,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
 
                         {/* ── Live Chunk Review — inline during processing so user sees it immediately ── */}
                         {(liveChunkSessionActive || liveChunkStream.length > 0) && (
-                          <div id="live-remediation-panel" className="mt-3 bg-gradient-to-b from-white to-indigo-50 rounded-2xl border-2 border-indigo-300 p-4 space-y-2" role="region" aria-label="Live chunk remediation review">
+                          <div id="live-remediation-panel" className="mt-3 bg-gradient-to-b from-white to-indigo-50 rounded-2xl border-2 border-indigo-300 p-4 space-y-2" role="region" aria-label={t('pdf_audit.live_chunk.review_aria') || 'Live chunk remediation review'}>
                             <div className="flex items-center gap-2">
                               <span className="text-lg" aria-hidden="true">🔬</span>
-                              <h4 className="text-sm font-bold text-indigo-800">Live Remediation</h4>
+                              <h4 className="text-sm font-bold text-indigo-800">{t('pdf_audit.live_chunk.heading_short') || 'Live Remediation'}</h4>
                               <span className="text-xs text-slate-600 ml-auto">{liveChunkStream.filter(c => c.status === 'complete').length}/{liveChunkStream.length} sections</span>
                             </div>
                             <div className="w-full bg-indigo-100 rounded-full h-1.5 overflow-hidden">
@@ -1792,14 +1792,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       {totalFixes === 0 && !chunk.usedOriginal && <>
                                         <span className="text-slate-400" aria-hidden="true">·</span>
                                         {chunk.score >= 80
-                                          ? <span className="text-emerald-700 italic" title="This section already meets WCAG accessibility standards — the pipeline made no changes because none were needed.">✓ no fixes needed</span>
+                                          ? <span className="text-emerald-700 italic" title={t('pdf_audit.live_chunk.no_fixes_title') || 'This section already meets WCAG accessibility standards — the pipeline made no changes because none were needed.'}>✓ no fixes needed</span>
                                           : chunk.score >= 60
                                             ? <span className="text-amber-700 italic" title={`Score ${chunk.score}/100 — this pipeline run made 0 changes to this section. Re-running with different prompts, more fix passes, or a manual review may improve the score. The label is not a verdict that the section is unfixable.`}>0 changes this run · re-run or review may help</span>
                                             : <span className="text-amber-800 italic" title={`Score ${chunk.score}/100 — this pipeline run made 0 changes to this section. The remaining WCAG issues weren't ones the deterministic + surgical-AI + full-rewrite passes targeted on this run. Try re-running, increasing fix passes, or reviewing manually.`}>0 changes this run · low score · re-run or review</span>}
                                       </>}
-                                      {chunk.wasRetried && <span className="text-amber-700 font-bold" title="AI had to retry this section once after the first attempt failed integrity or token-preservation checks.">↻ retried</span>}
-                                      {chunk.aiVerified && !chunk.usedOriginal && <span className="text-emerald-700" title="AI content-preservation check passed — the section's text content was preserved through the rewrite.">✓ content verified</span>}
-                                      {chunk.usedOriginal && <span className="text-red-700 font-bold" title="AI rewrite failed or was rejected for this section — only deterministic (rule-based) fixes were applied. The section is still more accessible than the original, just less so than successfully AI-fixed sections.">AI skipped · rule-based only</span>}
+                                      {chunk.wasRetried && <span className="text-amber-700 font-bold" title={t('pdf_audit.live_chunk.retried_title') || 'AI had to retry this section once after the first attempt failed integrity or token-preservation checks.'}>↻ retried</span>}
+                                      {chunk.aiVerified && !chunk.usedOriginal && <span className="text-emerald-700" title={t('pdf_audit.live_chunk.content_verified_title') || "AI content-preservation check passed — the section's text content was preserved through the rewrite."}>✓ content verified</span>}
+                                      {chunk.usedOriginal && <span className="text-red-700 font-bold" title={t('pdf_audit.live_chunk.ai_skipped_long_title') || 'AI rewrite failed or was rejected for this section — only deterministic (rule-based) fixes were applied. The section is still more accessible than the original, just less so than successfully AI-fixed sections.'}>{t('pdf_audit.live_chunk.ai_skipped_rule_only') || 'AI skipped · rule-based only'}</span>}
                                     </>}
                                     {isWorking && <span className="ml-auto text-indigo-600 font-bold">Fixing...</span>}
                                   </div>
@@ -1816,7 +1816,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               <span className="text-white text-lg" aria-hidden="true">♿</span>
                             </div>
                             <div className="flex-1 min-w-0">
-                              <h4 className="text-sm font-bold text-slate-800">Why Accessible Documents Matter</h4>
+                              <h4 className="text-sm font-bold text-slate-800">{t('pdf_audit.why_matters.heading') || 'Why Accessible Documents Matter'}</h4>
                               <p className="text-[11px] text-slate-600 leading-relaxed mt-1">
                                 Over <strong className="text-slate-700">1 billion people worldwide</strong> live with some form of disability.
                                 When digital documents lack proper structure, alt text, or sufficient contrast, they become invisible walls
@@ -1830,19 +1830,19 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <div className="grid grid-cols-2 gap-2">
                             <div className="bg-white/80 rounded-lg border border-sky-100 p-2.5">
                               <div className="text-[11px] font-black text-sky-700 uppercase tracking-wider mb-0.5">🎓 Equitable Education</div>
-                              <div className="text-[11px] text-slate-600 leading-snug">Accessible materials support Universal Design for Learning (UDL) — benefiting <em>all</em> learners regardless of ability, language, or learning style</div>
+                              <div className="text-[11px] text-slate-600 leading-snug">{t('pdf_audit.why_matters.udl_part1') || 'Accessible materials support Universal Design for Learning (UDL) — benefiting'} <em>{t('pdf_audit.why_matters.all') || 'all'}</em> {t('pdf_audit.why_matters.udl_part2') || 'learners regardless of ability, language, or learning style'}</div>
                             </div>
                             <div className="bg-white/80 rounded-lg border border-sky-100 p-2.5">
                               <div className="text-[11px] font-black text-sky-700 uppercase tracking-wider mb-0.5">👥 Better User Experience (UX) for Everyone</div>
-                              <div className="text-[11px] text-slate-600 leading-snug">Clear headings, logical structure, and sufficient contrast make documents easier to read for <em>all</em> users — including on mobile and in bright sunlight</div>
+                              <div className="text-[11px] text-slate-600 leading-snug">{t('pdf_audit.why_matters.ux_part1') || 'Clear headings, logical structure, and sufficient contrast make documents easier to read for'} <em>{t('pdf_audit.why_matters.all') || 'all'}</em> {t('pdf_audit.why_matters.ux_part2') || 'users — including on mobile and in bright sunlight'}</div>
                             </div>
                             <div className="bg-white/80 rounded-lg border border-sky-100 p-2.5">
                               <div className="text-[11px] font-black text-sky-700 uppercase tracking-wider mb-0.5">🔍 Improved SEO & Findability</div>
-                              <div className="text-[11px] text-slate-600 leading-snug">Semantic HTML, alt text, and proper headings help search engines index content — boosting discoverability and organic reach</div>
+                              <div className="text-[11px] text-slate-600 leading-snug">{t('pdf_audit.why_matters.seo_desc') || 'Semantic HTML, alt text, and proper headings help search engines index content — boosting discoverability and organic reach'}</div>
                             </div>
                             <div className="bg-white/80 rounded-lg border border-sky-100 p-2.5">
                               <div className="text-[11px] font-black text-sky-700 uppercase tracking-wider mb-0.5">💡 Innovation Driver</div>
-                              <div className="text-[11px] text-slate-600 leading-snug">Voice recognition, closed captioning, and screen readers all began as accessibility features — then became essential tools used by millions</div>
+                              <div className="text-[11px] text-slate-600 leading-snug">{t('pdf_audit.why_matters.innovation_desc') || 'Voice recognition, closed captioning, and screen readers all began as accessibility features — then became essential tools used by millions'}</div>
                             </div>
                           </div>
 
@@ -1859,12 +1859,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <h4 className="text-sm font-bold text-slate-800">ADA Title II & WCAG 2.1 AA</h4>
-                                <span className="text-[11px] font-bold text-rose-600 bg-rose-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider animate-pulse">Deadline: April 24, 2026</span>
+                                <h4 className="text-sm font-bold text-slate-800">{t('pdf_audit.ada.heading') || 'ADA Title II & WCAG 2.1 AA'}</h4>
+                                <span className="text-[11px] font-bold text-rose-600 bg-rose-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider animate-pulse">{t('pdf_audit.ada.deadline_badge') || 'Deadline: April 24, 2026'}</span>
                               </div>
                               <p className="text-[11px] text-slate-600 leading-relaxed mt-1">
-                                The U.S. Department of Justice finalized a rule under <strong className="text-slate-700">Title II of the Americans with Disabilities Act (ADA)</strong> requiring
-                                all state and local government entities to make their web content and digital documents conform to <strong className="text-slate-700">WCAG 2.1 Level AA</strong>.
+                                The U.S. Department of Justice finalized a rule under <strong className="text-slate-700">{t('pdf_audit.ada.title_strong') || 'Title II of the Americans with Disabilities Act (ADA)'}</strong> requiring
+                                all state and local government entities to make their web content and digital documents conform to <strong className="text-slate-700">{t('pdf_audit.ada.wcag_strong') || 'WCAG 2.1 Level AA'}</strong>.
                                 This applies to websites, mobile apps, PDFs, Word documents, and social media content.
                               </p>
                             </div>
@@ -1875,27 +1875,27 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <div className="bg-white/80 rounded-lg border border-amber-100 p-2.5">
                               <div className="text-[11px] font-black text-amber-700 uppercase tracking-wider mb-0.5">📅 Compliance Deadlines</div>
                               <div className="text-[11px] text-slate-600 leading-snug">
-                                <strong className="text-rose-700">April 24, 2026</strong> — entities serving 50,000+ people<br/>
-                                <strong className="text-amber-700">April 26, 2027</strong> — entities serving fewer than 50,000 and special districts
+                                <strong className="text-rose-700">{t('pdf_audit.ada.deadline_50k') || 'April 24, 2026'}</strong> — entities serving 50,000+ people<br/>
+                                <strong className="text-amber-700">{t('pdf_audit.ada.deadline_small') || 'April 26, 2027'}</strong> — entities serving fewer than 50,000 and special districts
                               </div>
                             </div>
                             <div className="bg-white/80 rounded-lg border border-amber-100 p-2.5">
                               <div className="text-[11px] font-black text-amber-700 uppercase tracking-wider mb-0.5">📋 What's Covered</div>
-                              <div className="text-[11px] text-slate-600 leading-snug">Public-facing websites, mobile apps, digital documents (PDFs, Word, Excel, PowerPoint), and social media published by government entities</div>
+                              <div className="text-[11px] text-slate-600 leading-snug">{t('pdf_audit.ada.covered_desc') || 'Public-facing websites, mobile apps, digital documents (PDFs, Word, Excel, PowerPoint), and social media published by government entities'}</div>
                             </div>
                             <div className="bg-white/80 rounded-lg border border-amber-100 p-2.5">
                               <div className="text-[11px] font-black text-amber-700 uppercase tracking-wider mb-0.5">🏛️ Who Must Comply</div>
-                              <div className="text-[11px] text-slate-600 leading-snug">All state and local government entities — including public schools, universities, courts, libraries, transit agencies, and municipal services</div>
+                              <div className="text-[11px] text-slate-600 leading-snug">{t('pdf_audit.ada.who_desc') || 'All state and local government entities — including public schools, universities, courts, libraries, transit agencies, and municipal services'}</div>
                             </div>
                             <div className="bg-white/80 rounded-lg border border-amber-100 p-2.5">
                               <div className="text-[11px] font-black text-amber-700 uppercase tracking-wider mb-0.5">🎯 Why It Matters</div>
-                              <div className="text-[11px] text-slate-600 leading-snug">Beyond legal compliance: accessible documents ensure people with disabilities can equally access education, public services, employment, and civic participation</div>
+                              <div className="text-[11px] text-slate-600 leading-snug">{t('pdf_audit.ada.matters_desc') || 'Beyond legal compliance: accessible documents ensure people with disabilities can equally access education, public services, employment, and civic participation'}</div>
                             </div>
                           </div>
 
                           <div className="bg-white/80 rounded-lg border border-amber-100 p-2.5 text-center">
                             <p className="text-[11px] text-slate-600 leading-snug">
-                              <strong className="text-amber-800">The standard AlloFlow targets — WCAG 2.1 Level AA — is the exact standard required by this federal rule.</strong>{' '}
+                              <strong className="text-amber-800">{t('pdf_audit.ada.standard_callout') || 'The standard AlloFlow targets — WCAG 2.1 Level AA — is the exact standard required by this federal rule.'}</strong>{' '}
                               This remediation pipeline helps ensure your documents meet the technical requirements set by the DOJ.
                             </p>
                             <a href="https://www.ada.gov/resources/web-guidance/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 mt-1.5 text-[11px] font-bold text-amber-700 hover:text-amber-900 underline decoration-amber-300">
@@ -1912,7 +1912,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
                                 <span className="text-2xl">📋</span>
                                 <div className="flex-1">
-                                  <h4 className="text-sm font-bold text-slate-800">Document Details</h4>
+                                  <h4 className="text-sm font-bold text-slate-800">{t('pdf_audit.doc_details.heading') || 'Document Details'}</h4>
                                   <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-[11px] text-slate-600">
                                     <span>📄 {extractionData.metadata.pageCount} pages</span>
                                     <span>📝 {Math.round(extractionData.metadata.extractedChars / 1000)}K characters</span>
@@ -1950,17 +1950,17 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               <div>
                                 <div className="flex items-center gap-2 mb-2 flex-wrap">
                                   <span className="text-lg">🖼️</span>
-                                  <h4 className="text-sm font-bold text-slate-800">Review Image Descriptions</h4>
+                                  <h4 className="text-sm font-bold text-slate-800">{t('pdf_audit.images.review_heading') || 'Review Image Descriptions'}</h4>
                                   <button
                                     onClick={_downloadAll}
                                     disabled={_downloadableCount === 0}
                                     className="text-[10px] px-2 py-1 bg-indigo-100 text-indigo-700 rounded-md hover:bg-indigo-200 font-bold inline-flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    title="Download every extracted image — useful as a manual fallback if AI reinsertion misplaces or skips one."
+                                    title={t('pdf_audit.images.download_all_title') || 'Download every extracted image — useful as a manual fallback if AI reinsertion misplaces or skips one.'}
                                     aria-label={`Download all ${_downloadableCount} extracted images`}
                                   >
                                     ⬇ Download all
                                   </button>
-                                  <span className="text-[10px] text-slate-500 ml-auto">Edit alt text below — changes apply to the final document</span>
+                                  <span className="text-[10px] text-slate-500 ml-auto">{t('pdf_audit.images.edit_alt_hint') || 'Edit alt text below — changes apply to the final document'}</span>
                                 </div>
                                 <div className="space-y-3">
                                   {extractionData.images.map((img, imgIdx) => (
@@ -1972,7 +1972,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                             href={img.src}
                                             download={'image-' + (imgIdx + 1) + '.' + _extFromSrc(img.src)}
                                             className="text-[10px] text-indigo-600 hover:text-indigo-800 hover:underline font-medium inline-flex items-center gap-0.5"
-                                            title="Download this image"
+                                            title={t('pdf_audit.images.download_one_title') || 'Download this image'}
                                             aria-label={`Download image ${imgIdx + 1}`}
                                           >
                                             ⬇ Download
@@ -1982,7 +1982,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       <div className="flex-1 space-y-1.5">
                                         <div className="flex items-center gap-2">
                                           <span className="text-[10px] font-bold text-slate-500 uppercase">Image {imgIdx + 1}</span>
-                                          {img.isRegenerated && <span className="text-[9px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold">AI Generated</span>}
+                                          {img.isRegenerated && <span className="text-[9px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold">{t('pdf_audit.images.ai_generated_badge') || 'AI Generated'}</span>}
                                           {img.type === 'decorative' && <span className="text-[9px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-bold">Decorative</span>}
                                         </div>
                                         <textarea
@@ -1995,7 +1995,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                               return updated;
                                             });
                                           }}
-                                          placeholder="Describe this image for screen reader users..."
+                                          placeholder={t('pdf_audit.images.alt_placeholder') || 'Describe this image for screen reader users...'}
                                           rows={2}
                                           className="w-full text-[11px] p-2 border border-slate-400 rounded-lg resize-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-300 outline-none"
                                           aria-label={`Alt text for image ${imgIdx + 1}`}
@@ -2163,7 +2163,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     return (
                                       <div className="mb-2 bg-sky-50 border border-sky-200 rounded-xl px-3 py-2 text-xs text-sky-900 flex items-center gap-2 flex-wrap">
                                         <RefreshCw size={14} className="animate-spin text-sky-600 shrink-0" />
-                                        <span className="font-bold">Verifying content integrity…</span>
+                                        <span className="font-bold">{t('pdf_audit.integrity.verifying') || 'Verifying content integrity…'}</span>
                                         <span className="text-sky-700 text-[11px]">pdf.js source comparison in progress — banner will update when recovery finishes.</span>
                                         {_hasDiffInputs && (
                                           <button
@@ -2177,8 +2177,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                               }
                                             }}
                                             className="ml-auto text-[10px] px-2 py-1 bg-white border border-sky-300 text-sky-700 rounded-md hover:bg-sky-50 font-bold inline-flex items-center gap-1 shrink-0"
-                                            aria-label="Open diff view (verification still running in background)"
-                                            title="Open the word-level diff view. The integrity verification is still running in the background, but the diff itself is ready now."
+                                            aria-label={t('pdf_audit.integrity.diff_open_verifying_aria') || 'Open diff view (verification still running in background)'}
+                                            title={t('pdf_audit.integrity.diff_open_verifying_title') || 'Open the word-level diff view. The integrity verification is still running in the background, but the diff itself is ready now.'}
                                           >
                                             📝 Diff view
                                           </button>
@@ -2191,7 +2191,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     return (
                                       <div className="mb-2 bg-slate-50 border border-slate-400 rounded-xl px-3 py-2 text-xs text-slate-700 flex items-center gap-2 flex-wrap">
                                         <span className="text-slate-500">ℹ</span>
-                                        <span className="font-bold">Content integrity unverified</span>
+                                        <span className="font-bold">{t('pdf_audit.integrity.unverified') || 'Content integrity unverified'}</span>
                                         <span className="text-slate-500 text-[11px]">(ground-truth extraction unavailable — use Diff view to inspect source ↔ HTML manually, or Re-check to retry)</span>
                                         <div className="ml-auto inline-flex items-center gap-1 shrink-0">
                                           <button
@@ -2205,16 +2205,16 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                             }
                                           }}
                                             className="text-[10px] px-2 py-1 bg-white border border-slate-400 text-slate-700 rounded-md hover:bg-slate-50 font-bold inline-flex items-center gap-1"
-                                            aria-label="Open diff view of source PDF text vs. final HTML"
-                                            title="Side-by-side word-level diff: see every insertion, deletion, and paraphrase between the source PDF and the remediated HTML."
+                                            aria-label={t('pdf_audit.integrity.diff_open_aria') || 'Open diff view of source PDF text vs. final HTML'}
+                                            title={t('pdf_audit.integrity.diff_open_title') || 'Side-by-side word-level diff: see every insertion, deletion, and paraphrase between the source PDF and the remediated HTML.'}
                                           >
                                             📝 Diff view
                                           </button>
                                           <button
                                             onClick={_runCheck}
                                             className="text-[10px] px-2 py-1 bg-white border border-slate-400 text-slate-700 rounded-md hover:bg-slate-50 font-bold inline-flex items-center gap-1"
-                                            aria-label="Re-run pdf.js content integrity check"
-                                            title="Re-run the fidelity recovery ladder (Stages A-D) against the current remediated HTML."
+                                            aria-label={t('pdf_audit.integrity.recheck_aria') || 'Re-run pdf.js content integrity check'}
+                                            title={t('pdf_audit.integrity.recheck_title') || 'Re-run the fidelity recovery ladder (Stages A-D) against the current remediated HTML.'}
                                           >
                                             🔍 Re-check
                                           </button>
@@ -2236,8 +2236,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                             }
                                           }}
                                           className="text-[10px] px-2 py-1 bg-white border border-slate-400 text-slate-700 rounded-md hover:bg-slate-50 font-bold inline-flex items-center gap-1"
-                                          aria-label="Open diff view of source PDF text vs. final HTML"
-                                          title="Side-by-side word-level diff: see every insertion, deletion, and paraphrase between the source PDF and the remediated HTML."
+                                          aria-label={t('pdf_audit.integrity.diff_open_aria') || 'Open diff view of source PDF text vs. final HTML'}
+                                          title={t('pdf_audit.integrity.diff_open_title') || 'Side-by-side word-level diff: see every insertion, deletion, and paraphrase between the source PDF and the remediated HTML.'}
                                         >
                                           📝 Diff view
                                         </button>
@@ -2245,8 +2245,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       <button
                                         onClick={_runCheck}
                                         className="text-[10px] px-2 py-1 bg-white border border-slate-400 text-slate-700 rounded-md hover:bg-slate-50 font-bold inline-flex items-center gap-1"
-                                        aria-label="Re-run pdf.js content integrity check"
-                                        title="Re-run the fidelity recovery ladder (Stages A-D) against the current remediated HTML."
+                                        aria-label={t('pdf_audit.integrity.recheck_aria') || 'Re-run pdf.js content integrity check'}
+                                        title={t('pdf_audit.integrity.recheck_title') || 'Re-run the fidelity recovery ladder (Stages A-D) against the current remediated HTML.'}
                                       >
                                         🔍 Re-check
                                       </button>
@@ -2318,25 +2318,25 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     <details open className="mb-2 bg-slate-50 border border-slate-400 rounded-xl text-[11px]">
                                       <summary className="cursor-pointer font-bold text-slate-700 select-none px-3 py-1.5 hover:bg-slate-100 rounded-xl inline-flex items-center gap-2">
                                         <span>📋</span>
-                                        <span>Verification details</span>
+                                        <span>{t('pdf_audit.verification.details_heading') || 'Verification details'}</span>
                                         <span className="text-slate-500 font-normal text-[10px]">— char + word coverage, recovery stages, source method</span>
                                       </summary>
                                       <div className="px-3 pb-3 pt-1 grid grid-cols-2 sm:grid-cols-4 gap-2 text-slate-700">
                                         {_charPct != null && (
                                           <div className="bg-white border border-slate-400 rounded-lg px-2 py-1.5">
-                                            <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Char coverage</div>
+                                            <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{t('pdf_audit.verification.char_coverage') || 'Char coverage'}</div>
                                             <div className={`text-sm font-black ${_charPct >= 98 ? 'text-emerald-600' : _charPct >= 95 ? 'text-amber-600' : 'text-rose-600'}`}>{_charPct}%</div>
                                           </div>
                                         )}
                                         {_wordPct != null && (
                                           <div className="bg-white border border-slate-400 rounded-lg px-2 py-1.5">
-                                            <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Word coverage</div>
+                                            <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{t('pdf_audit.verification.word_coverage') || 'Word coverage'}</div>
                                             <div className={`text-sm font-black ${_wordPct >= 98 ? 'text-emerald-600' : _wordPct >= 95 ? 'text-amber-600' : 'text-rose-600'}`}>{_wordPct}%</div>
                                           </div>
                                         )}
                                         {_totalSrc != null && (
                                           <div className="bg-white border border-slate-400 rounded-lg px-2 py-1.5">
-                                            <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Source words</div>
+                                            <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{t('pdf_audit.verification.source_words') || 'Source words'}</div>
                                             <div className="text-sm font-black text-slate-700">{_totalSrc.toLocaleString()}</div>
                                           </div>
                                         )}
@@ -2347,9 +2347,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                           </div>
                                         )}
                                         <div className="bg-white border border-slate-400 rounded-lg px-2 py-1.5 col-span-2 sm:col-span-4">
-                                          <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Recovery stages applied</div>
+                                          <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">{t('pdf_audit.verification.recovery_stages') || 'Recovery stages applied'}</div>
                                           <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px]">
-                                            <span><span className="font-bold text-indigo-700">{_stagesRan.retry || 0}</span> AI retry</span>
+                                            <span><span className="font-bold text-indigo-700">{_stagesRan.retry || 0}</span> {t('pdf_audit.verification.ai_retry') || 'AI retry'}</span>
                                             <span><span className="font-bold text-indigo-700">{_stagesRan.sentence || 0}</span> deterministic sentence</span>
                                             <span><span className="font-bold text-indigo-700">{_stagesRan.fuzzy || 0}</span> fuzzy anchor</span>
                                             <span><span className="font-bold text-indigo-700">{_stagesRan.dedup || 0}</span> duplicate collapsed</span>
@@ -2357,7 +2357,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                         </div>
                                         <div className="bg-white border border-slate-400 rounded-lg px-2 py-1.5 col-span-2 sm:col-span-4 flex items-center gap-3 flex-wrap">
                                           <div>
-                                            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mr-1">Ground truth:</span>
+                                            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mr-1">{t('pdf_audit.verification.ground_truth') || 'Ground truth:'}</span>
                                             <span className="text-[11px] font-mono text-slate-700">{_method}</span>
                                           </div>
                                           {_verifiedAt && (
@@ -2378,7 +2378,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                             }
                                           }}
                                               className="ml-auto text-[10px] px-2 py-1 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 font-bold inline-flex items-center gap-1"
-                                              title="Open the word-level diff view"
+                                              title={t('pdf_audit.verification.open_diff_title') || 'Open the word-level diff view'}
                                             >
                                               📝 Open diff view
                                             </button>
@@ -2403,7 +2403,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                           <button
                                             onClick={() => _regenerateImage(m.idx, m.description)}
                                             className="text-[10px] px-2 py-0.5 bg-indigo-600 text-white rounded font-bold hover:bg-indigo-700 shrink-0"
-                                            title="Regenerate this image via AI using the stored description"
+                                            title={t('pdf_audit.images.regen_title') || 'Regenerate this image via AI using the stored description'}
                                             aria-label={`Regenerate image ${m.idx} via AI`}
                                           >🪄 Regenerate</button>
                                         </div>
@@ -2414,17 +2414,17 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                         return (
                                         <div key={`ai-${i}`} className="flex items-center gap-2">
                                           <span className="font-mono text-[10px] bg-red-100 text-red-800 px-1.5 py-0.5 rounded shrink-0">#{idx}</span>
-                                          <span className="text-[10px] text-slate-700 shrink-0">Dropped by AI pass</span>
+                                          <span className="text-[10px] text-slate-700 shrink-0">{t('pdf_audit.images.dropped_by_ai') || 'Dropped by AI pass'}</span>
                                           <span className="text-[10px] text-slate-500 italic truncate flex-1">{(desc || '').substring(0, 80)}</span>
                                           <button
                                             onClick={() => _regenerateImage(idx, desc)}
                                             className="text-[10px] px-2 py-0.5 bg-indigo-600 text-white rounded font-bold hover:bg-indigo-700 shrink-0"
-                                            title="Regenerate this image via AI using the stored description"
+                                            title={t('pdf_audit.images.regen_title') || 'Regenerate this image via AI using the stored description'}
                                             aria-label={`Regenerate image ${idx} via AI`}
                                           >🪄 Regenerate</button>
                                         </div>);
                                       })}
-                                      <p className="text-[10px] text-slate-500 italic mt-2">Click Regenerate to recreate an image via AI using its stored description, or use Upload/Replace inside the figure in the preview.</p>
+                                      <p className="text-[10px] text-slate-500 italic mt-2">{t('pdf_audit.images.regen_hint') || 'Click Regenerate to recreate an image via AI using its stored description, or use Upload/Replace inside the figure in the preview.'}</p>
                                     </div>
                                   </details>
                                 )}
@@ -2440,15 +2440,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 )}
                                 <div className="flex items-center gap-2 mb-2 flex-wrap">
                                   <span className="text-lg">🔍</span>
-                                  <h4 className="text-sm font-bold text-slate-800">Verify Text Fidelity</h4>
+                                  <h4 className="text-sm font-bold text-slate-800">{t('pdf_audit.fidelity.heading') || 'Verify Text Fidelity'}</h4>
                                   <span className="text-[9px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-bold uppercase">
                                     via {String(method).replace('+', ' + ')}
                                   </span>
                                   <button
                                     onClick={_runCheck}
                                     className="text-[10px] px-2 py-1 bg-emerald-100 text-emerald-700 rounded-md hover:bg-emerald-200 font-bold inline-flex items-center gap-1"
-                                    title="Compare the remediated document against the source text — flags any words that appear in the source but not in the current remediated output."
-                                    aria-label="Run text fidelity check against source OCR"
+                                    title={t('pdf_audit.fidelity.run_title') || 'Compare the remediated document against the source text — flags any words that appear in the source but not in the current remediated output.'}
+                                    aria-label={t('pdf_audit.fidelity.run_aria') || 'Run text fidelity check against source OCR'}
                                   >
                                     🔍 Run fidelity check
                                   </button>
@@ -2456,8 +2456,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     <button
                                       onClick={_manualRestore}
                                       className="text-[10px] px-2 py-1 bg-indigo-100 text-indigo-700 rounded-md hover:bg-indigo-200 font-bold inline-flex items-center gap-1"
-                                      title="Splice missing words back into the remediated document using fuzzy context-anchor matching. Unplaceable words go to a Content Recovery appendix so nothing is lost."
-                                      aria-label="Restore missing words into the remediated document"
+                                      title={t('pdf_audit.fidelity.restore_title') || 'Splice missing words back into the remediated document using fuzzy context-anchor matching. Unplaceable words go to a Content Recovery appendix so nothing is lost.'}
+                                      aria-label={t('pdf_audit.fidelity.restore_aria') || 'Restore missing words into the remediated document'}
                                     >
                                       🔧 Restore missing words
                                     </button>
@@ -2470,7 +2470,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 </div>
                                 {fidelityResult && fidelityResult.notReady && (
                                   <div className="bg-amber-50 rounded-xl border border-amber-200 p-3 text-xs text-amber-900">
-                                    <strong>Remediation not ready.</strong> The fidelity check compares source text to the remediated preview, but the preview is empty. Finish (or start) remediation, then click Run fidelity check again.
+                                    <strong>{t('pdf_audit.fidelity.not_ready') || 'Remediation not ready.'}</strong> The fidelity check compares source text to the remediated preview, but the preview is empty. Finish (or start) remediation, then click Run fidelity check again.
                                   </div>
                                 )}
                                 {fidelityResult && !fidelityResult.notReady && (
@@ -2551,11 +2551,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 flex-wrap">
                                 <span className="text-sm font-bold text-slate-800">Knowbility</span>
-                                <span className="text-[11px] font-bold text-indigo-600 bg-indigo-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider">Accessibility Partner</span>
+                                <span className="text-[11px] font-bold text-indigo-600 bg-indigo-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider">{t('pdf_audit.knowbility.partner_badge') || 'Accessibility Partner'}</span>
                                 <span className="text-[11px] font-bold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider">501(c)(3) Nonprofit</span>
                               </div>
                               <p className="text-[11px] text-slate-600 leading-relaxed mt-1">
-                                <strong className="text-slate-700">Mission: Create an inclusive digital world for people with disabilities.</strong>{' '}
+                                <strong className="text-slate-700">{t('pdf_audit.knowbility.mission_strong') || 'Mission: Create an inclusive digital world for people with disabilities.'}</strong>{' '}
                                 Founded in 1999 in Austin, TX, Knowbility is an award-winning nonprofit that helps organizations ensure
                                 their technology meets the highest accessibility benchmarks through expert testing, training, and remediation.
                               </p>
@@ -2566,19 +2566,19 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <div className="grid grid-cols-2 gap-2">
                             <div className="bg-white/80 rounded-lg border border-indigo-100 p-2.5">
                               <div className="text-[11px] font-black text-indigo-700 uppercase tracking-wider mb-0.5">🔍 Testing & Auditing</div>
-                              <div className="text-[11px] text-slate-600 leading-snug">Manual WCAG audits producing actionable reports and remediation paths for websites, apps, and documents</div>
+                              <div className="text-[11px] text-slate-600 leading-snug">{t('pdf_audit.knowbility.testing_desc') || 'Manual WCAG audits producing actionable reports and remediation paths for websites, apps, and documents'}</div>
                             </div>
                             <div className="bg-white/80 rounded-lg border border-indigo-100 p-2.5">
                               <div className="text-[11px] font-black text-indigo-700 uppercase tracking-wider mb-0.5">📄 Document Remediation</div>
-                              <div className="text-[11px] text-slate-600 leading-snug">Specialist team for PDF and MS Office documents — ensuring full usability with assistive technology</div>
+                              <div className="text-[11px] text-slate-600 leading-snug">{t('pdf_audit.knowbility.docrem_full_desc') || 'Specialist team for PDF and MS Office documents — ensuring full usability with assistive technology'}</div>
                             </div>
                             <div className="bg-white/80 rounded-lg border border-indigo-100 p-2.5">
                               <div className="text-[11px] font-black text-indigo-700 uppercase tracking-wider mb-0.5">♿ AccessWorks</div>
-                              <div className="text-[11px] text-slate-600 leading-snug">Real-world usability testing by people with disabilities who use assistive technology daily</div>
+                              <div className="text-[11px] text-slate-600 leading-snug">{t('pdf_audit.knowbility.accessworks_desc') || 'Real-world usability testing by people with disabilities who use assistive technology daily'}</div>
                             </div>
                             <div className="bg-white/80 rounded-lg border border-indigo-100 p-2.5">
                               <div className="text-[11px] font-black text-indigo-700 uppercase tracking-wider mb-0.5">🎓 Training & AccessU</div>
-                              <div className="text-[11px] text-slate-600 leading-snug">Annual conference and on-demand courses — from beginner to advanced accessibility skills</div>
+                              <div className="text-[11px] text-slate-600 leading-snug">{t('pdf_audit.knowbility.training_full_desc') || 'Annual conference and on-demand courses — from beginner to advanced accessibility skills'}</div>
                             </div>
                           </div>
 
@@ -2621,7 +2621,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       </div>
                     )}
                     <div className="relative group">
-                      <button className="px-4 py-3 bg-indigo-50 text-indigo-700 rounded-xl font-bold text-sm hover:bg-indigo-100 transition-colors flex items-center gap-1.5" title="Download audit report">
+                      <button className="px-4 py-3 bg-indigo-50 text-indigo-700 rounded-xl font-bold text-sm hover:bg-indigo-100 transition-colors flex items-center gap-1.5" title={t('pdf_audit.report.download_title') || 'Download audit report'}>
                         <FileDown size={14} /> Report ▾
                       </button>
                       <div className="hidden group-hover:block group-focus-within:block absolute top-full left-0 mt-1 bg-white border border-indigo-200 rounded-xl shadow-xl z-10 min-w-[180px] overflow-hidden">
@@ -2662,7 +2662,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         </button>
                       </div>
                     </div>
-                    <button onClick={() => { setPdfAuditResult(null); proceedWithPdfTransform(); }} className="px-4 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-200 transition-colors" title="Extract text for content generation">
+                    <button onClick={() => { setPdfAuditResult(null); proceedWithPdfTransform(); }} className="px-4 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-200 transition-colors" title={t('pdf_audit.report.text_extract_title') || 'Extract text for content generation'}>
                       Text Extract
                     </button>
                   </div>
@@ -2674,7 +2674,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       <div className="flex items-start gap-3">
                         <span className="text-2xl">💾</span>
                         <div className="flex-1">
-                          <h4 className="text-sm font-bold text-amber-800">Saved Progress Found</h4>
+                          <h4 className="text-sm font-bold text-amber-800">{t('pdf_audit.resume.heading') || 'Saved Progress Found'}</h4>
                           <p className="text-xs text-amber-700 mt-1">
                             {chunkResumePrompt.completedChunks} of {chunkResumePrompt.totalChunks} sections were completed
                             {chunkResumePrompt.savedAt && <span> ({Math.round((Date.now() - chunkResumePrompt.savedAt) / 60000)} min ago)</span>}.
@@ -2698,13 +2698,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   {/* ── Live Chunk Review Panel ── */}
                   {/* Shows each chunk's fix as it happens in real time, with Accept/Reject/Re-fix per chunk */}
                   {(liveChunkSessionActive || liveChunkStream.length > 0) && (
-                    <div id="live-remediation-panel" className="mt-4 bg-gradient-to-b from-white to-indigo-50 rounded-2xl border-2 border-indigo-300 p-5 space-y-3 animate-in slide-in-from-bottom duration-300" role="region" aria-label="Live chunk remediation review">
+                    <div id="live-remediation-panel" className="mt-4 bg-gradient-to-b from-white to-indigo-50 rounded-2xl border-2 border-indigo-300 p-5 space-y-3 animate-in slide-in-from-bottom duration-300" role="region" aria-label={t('pdf_audit.live_chunk.review_aria') || 'Live chunk remediation review'}>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <span className="text-xl" aria-hidden="true">🔬</span>
                           <div>
-                            <h4 className="text-sm font-bold text-indigo-800">Live Remediation Review</h4>
-                            <div className="text-xs text-indigo-700">Watch each section get fixed in real time — reject or re-fix anything that looks wrong</div>
+                            <h4 className="text-sm font-bold text-indigo-800">{t('pdf_audit.live_chunk.review_heading') || 'Live Remediation Review'}</h4>
+                            <div className="text-xs text-indigo-700">{t('pdf_audit.live_chunk.review_subhead') || 'Watch each section get fixed in real time — reject or re-fix anything that looks wrong'}</div>
                           </div>
                         </div>
                         <div className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold" role="status" aria-live="polite" aria-atomic="true">
@@ -2713,7 +2713,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       </div>
 
                       {/* Progress bar */}
-                      <div className="w-full bg-indigo-100 rounded-full h-1.5 overflow-hidden" role="progressbar" aria-label="Live remediation progress" aria-valuenow={liveChunkStream.filter(c => c.status === 'complete').length} aria-valuemin={0} aria-valuemax={liveChunkStream.length || 1}>
+                      <div className="w-full bg-indigo-100 rounded-full h-1.5 overflow-hidden" role="progressbar" aria-label={t('pdf_audit.live_chunk.progress_aria') || 'Live remediation progress'} aria-valuenow={liveChunkStream.filter(c => c.status === 'complete').length} aria-valuemin={0} aria-valuemax={liveChunkStream.length || 1}>
                         <div className="h-full bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full transition-all duration-500" style={{ width: liveChunkStream.length > 0 ? `${(liveChunkStream.filter(c => c.status === 'complete').length / liveChunkStream.length) * 100}%` : '0%' }}></div>
                       </div>
 
@@ -2739,12 +2739,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     <span className="text-[11px] font-bold text-slate-700">Section {chunk.index + 1}</span>
                                     <span className="text-[11px] text-slate-600">{chunk.sizeKB || '?'}KB</span>
                                     {isWorking && <span className="text-[11px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-bold animate-pulse">Fixing...</span>}
-                                    {!isWorking && (chunk.deterministicFixCount > 0) && <span className="text-[11px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold" title="Rule-based (deterministic) regex fixes applied — always safe, no AI involved">{chunk.deterministicFixCount} rule-based</span>}
-                                    {!isWorking && (chunk.surgicalFixCount > 0) && <span className="text-[11px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-bold" title="AI-diagnosed targeted micro-fixes applied via deterministic tools (content-preserving)">{chunk.surgicalFixCount} targeted</span>}
-                                    {!isWorking && chunk.usedOriginal && <span className="text-[11px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold" title="AI rewrite failed or was rejected for this section — only rule-based fixes were applied. Still more accessible than the original.">AI skipped</span>}
+                                    {!isWorking && (chunk.deterministicFixCount > 0) && <span className="text-[11px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold" title={t('pdf_audit.live_chunk.rule_based_title') || 'Rule-based (deterministic) regex fixes applied — always safe, no AI involved'}>{chunk.deterministicFixCount} rule-based</span>}
+                                    {!isWorking && (chunk.surgicalFixCount > 0) && <span className="text-[11px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-bold" title={t('pdf_audit.live_chunk.targeted_title') || 'AI-diagnosed targeted micro-fixes applied via deterministic tools (content-preserving)'}>{chunk.surgicalFixCount} targeted</span>}
+                                    {!isWorking && chunk.usedOriginal && <span className="text-[11px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold" title={t('pdf_audit.live_chunk.ai_skipped_short_title') || 'AI rewrite failed or was rejected for this section — only rule-based fixes were applied. Still more accessible than the original.'}>{t('pdf_audit.live_chunk.ai_skipped_short') || 'AI skipped'}</span>}
                                     {!isWorking && chunk.wasRetried && !chunk.usedOriginal && <span className="text-[11px] bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded font-bold">retried</span>}
-                                    {!isWorking && chunk.aiVerified && <span className="text-[11px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-bold" title="AI verified content preserved">✓ verified</span>}
-                                    {!isWorking && chunk.integrityPassed && <span className="text-[11px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold" title="Word overlap integrity check passed">integrity ✓</span>}
+                                    {!isWorking && chunk.aiVerified && <span className="text-[11px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-bold" title={t('pdf_audit.live_chunk.verified_title') || 'AI verified content preserved'}>✓ verified</span>}
+                                    {!isWorking && chunk.integrityPassed && <span className="text-[11px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold" title={t('pdf_audit.live_chunk.integrity_title') || 'Word overlap integrity check passed'}>integrity ✓</span>}
                                     {isRejected && <span className="text-[11px] bg-slate-300 text-slate-700 px-1.5 py-0.5 rounded font-bold">rejected</span>}
                                   </div>
                                 </div>
@@ -2853,22 +2853,22 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 <div className="px-2 pb-2 space-y-2">
                                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
                                     <div className="bg-white rounded-lg border border-slate-400 p-2">
-                                      <div className="text-[11px] font-bold text-slate-600 uppercase mb-1">Before (original)</div>
+                                      <div className="text-[11px] font-bold text-slate-600 uppercase mb-1">{t('pdf_audit.live_chunk.before') || 'Before (original)'}</div>
                                       <pre className="text-[11px] text-slate-700 whitespace-pre-wrap break-all max-h-40 overflow-y-auto font-mono">{(chunk.originalHtml || '').substring(0, 2000)}{(chunk.originalHtml || '').length > 2000 ? '\n... (truncated)' : ''}</pre>
                                     </div>
                                     <div className="bg-white rounded-lg border border-emerald-200 p-2">
-                                      <div className="text-[11px] font-bold text-emerald-600 uppercase mb-1">After (fixed)</div>
+                                      <div className="text-[11px] font-bold text-emerald-600 uppercase mb-1">{t('pdf_audit.live_chunk.after') || 'After (fixed)'}</div>
                                       <pre className="text-[11px] text-slate-700 whitespace-pre-wrap break-all max-h-40 overflow-y-auto font-mono">{(chunk.fixedHtml || '').substring(0, 2000)}{(chunk.fixedHtml || '').length > 2000 ? '\n... (truncated)' : ''}</pre>
                                     </div>
                                   </div>
                                   {chunk.integrityReason && chunk.integrityReason !== 'ok' && (
                                     <div className="text-[11px] bg-amber-50 border border-amber-200 rounded p-1.5 text-amber-800">
-                                      <span className="font-bold">Integrity note:</span> {chunk.integrityReason}
+                                      <span className="font-bold">{t('pdf_audit.live_chunk.integrity_note') || 'Integrity note:'}</span> {chunk.integrityReason}
                                     </div>
                                   )}
                                   {chunk.violationInstructions && (
                                     <details className="bg-slate-50 border border-slate-400 rounded p-1.5">
-                                      <summary className="text-[11px] font-bold text-slate-600 cursor-pointer">Violations targeted in this pass</summary>
+                                      <summary className="text-[11px] font-bold text-slate-600 cursor-pointer">{t('pdf_audit.live_chunk.violations_targeted') || 'Violations targeted in this pass'}</summary>
                                       <pre className="text-[11px] text-slate-600 whitespace-pre-wrap mt-1">{chunk.violationInstructions}</pre>
                                     </details>
                                   )}
@@ -2885,7 +2885,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <button
                             onClick={() => { setLiveChunkStream([]); setLiveChunkRejected({}); setLiveChunkExpanded({}); }}
                             className="text-[11px] text-slate-600 hover:text-slate-700 font-bold underline"
-                            aria-label="Clear live review history"
+                            aria-label={t('pdf_audit.live_chunk.clear_history_aria') || 'Clear live review history'}
                           >
                             Clear history
                           </button>
@@ -2901,12 +2901,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <h4 className="text-sm font-bold text-emerald-800 flex items-center gap-2 flex-1">♿ Remediation Complete</h4>
                         <button
                           onClick={() => {
-                            if (window.confirm('Start a new audit? Your current audit will be cleared — make sure you have downloaded the remediated HTML if you need it.')) {
+                            if (window.confirm(t('pdf_audit.start_new_confirm') || 'Start a new audit? Your current audit will be cleared — make sure you have downloaded the remediated HTML if you need it.')) {
                               startNewPdfAudit();
                             }
                           }}
                           className="text-[11px] px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-600 border border-slate-400 rounded-md font-bold inline-flex items-center gap-1"
-                          title="Clear this audit result and start fresh with a new PDF"
+                          title={t('pdf_audit.start_new_title') || 'Clear this audit result and start fresh with a new PDF'}
                         >
                           🗑️ {t('pdf_audit.start_new_audit') || 'Start New Audit'}
                         </button>
@@ -2959,7 +2959,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       <div className="text-center mt-1 text-[11px]">
                         <div className="inline-flex items-center gap-1">
                           <span className="text-slate-600">(</span>
-                          <span className="text-purple-700 font-bold" title="AI Rubric">AI: {initialAi ?? '?'}{'\u2192'}{afterAi ?? '?'}</span>
+                          <span className="text-purple-700 font-bold" title={t('pdf_audit.score.ai_rubric_label') || 'AI Rubric'}>AI: {initialAi ?? '?'}{'\u2192'}{afterAi ?? '?'}</span>
                           <span className="text-slate-600">+</span>
                           <span className="text-blue-700 font-bold" title="axe-core">axe: {initialAxe ?? '?'}{'\u2192'}{afterAxe ?? '?'}</span>
                           <span className="text-slate-600">) / 2</span>
@@ -2982,7 +2982,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           )}
                           {(pdfFixResult.verificationAudit.passes || []).length > 0 && (
                             <div className="bg-green-50 rounded-lg p-2 border border-green-200">
-                              <div className="text-[11px] font-bold text-green-600 uppercase mb-1">Verified Accessible</div>
+                              <div className="text-[11px] font-bold text-green-600 uppercase mb-1">{t('pdf_audit.results.verified_accessible') || 'Verified Accessible'}</div>
                               {pdfFixResult.verificationAudit.passes.map((pass, i) => (
                                 <div key={i} className="text-[11px] text-green-700 mb-0.5">✓ {pass}</div>
                               ))}
@@ -3009,7 +3009,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
 
                           {pdfFixResult.axeAudit.totalViolations === 0 && (
                             <div className="bg-green-100 rounded-lg p-2 border border-green-300 text-center">
-                              <div className="text-sm font-bold text-green-800">Zero WCAG violations detected</div>
+                              <div className="text-sm font-bold text-green-800">{t('pdf_audit.results.zero_violations') || 'Zero WCAG violations detected'}</div>
                               <div className="text-[11px] text-green-600">{pdfFixResult.axeAudit.totalPasses} accessibility checks passed</div>
                             </div>
                           )}
@@ -3153,7 +3153,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     );
                                   })}
                                 </div>
-                                <p className="mt-2 text-[10px] text-slate-500 italic">Coverage may be incomplete — this view aggregates axe-core rules by WCAG SC. Manual review still required for some criteria (e.g. semantic meaning, reading order, complex forms).</p>
+                                <p className="mt-2 text-[10px] text-slate-500 italic">{t('pdf_audit.wcag_report.coverage_note') || 'Coverage may be incomplete — this view aggregates axe-core rules by WCAG SC. Manual review still required for some criteria (e.g. semantic meaning, reading order, complex forms).'}</p>
                               </details>
                             );
                           })()}
@@ -3169,12 +3169,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             )}
                             {pdfFixResult.axeAudit.totalViolations > 0 && !pdfFixLoading && (
                               <label className="flex items-center gap-1.5 text-[11px] text-slate-700 cursor-pointer bg-indigo-50 border border-indigo-200 px-2 py-1 rounded-full hover:bg-indigo-100 transition-colors" title={`Auto-continue until score ≥ ${pdfTargetScore}`}>
-                                <input type="checkbox" checked={pdfAutoContinue} onChange={(e) => setPdfAutoContinue(e.target.checked)} className="rounded" aria-label="Auto-continue remediation until target score" />
+                                <input type="checkbox" checked={pdfAutoContinue} onChange={(e) => setPdfAutoContinue(e.target.checked)} className="rounded" aria-label={t('pdf_audit.settings.auto_continue_aria') || 'Auto-continue remediation until target score'} />
                                 <span>🔁 Auto-continue</span>
                               </label>
                             )}
                             {pdfAutoContinueRunning && (
-                              <button onClick={() => { pdfAutoContinueAbortRef.current = true; try { pdfAutoContinueAbortCtrlRef.current?.abort(); } catch(_) {} addToast('Stopping — aborting in-flight Gemini call…', 'info'); }} className="text-[11px] bg-red-100 text-red-700 border border-red-300 px-2.5 py-1 rounded-full font-bold hover:bg-red-200 transition-colors" aria-label="Stop auto-continue remediation">
+                              <button onClick={() => { pdfAutoContinueAbortRef.current = true; try { pdfAutoContinueAbortCtrlRef.current?.abort(); } catch(_) {} addToast('Stopping — aborting in-flight Gemini call…', 'info'); }} className="text-[11px] bg-red-100 text-red-700 border border-red-300 px-2.5 py-1 rounded-full font-bold hover:bg-red-200 transition-colors" aria-label={t('pdf_audit.auto_fix.stop_aria') || 'Stop auto-continue remediation'}>
                                 ⏸ Stop auto-continue
                               </button>
                             )}
@@ -3184,7 +3184,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   <span className="animate-spin text-sm" aria-hidden="true">⏳</span>
                                   <span className="text-[11px] font-bold text-indigo-700">{pdfFixStep}</span>
                                 </div>
-                                <div className="w-full bg-indigo-100 rounded-full h-2 overflow-hidden" role="progressbar" aria-label="Auto-fix progress" aria-valuenow={pdfFixStep.includes('pass 2') ? 70 : pdfFixStep.includes('Re-check') || pdfFixStep.includes('Re-verif') ? 85 : 40} aria-valuemin={0} aria-valuemax={100}>
+                                <div className="w-full bg-indigo-100 rounded-full h-2 overflow-hidden" role="progressbar" aria-label={t('pdf_audit.auto_fix.progress_aria') || 'Auto-fix progress'} aria-valuenow={pdfFixStep.includes('pass 2') ? 70 : pdfFixStep.includes('Re-check') || pdfFixStep.includes('Re-verif') ? 85 : 40} aria-valuemin={0} aria-valuemax={100}>
                                   <div className="h-full bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full transition-all duration-700" style={{ width: pdfFixStep.includes('pass 2') ? '70%' : pdfFixStep.includes('Re-check') || pdfFixStep.includes('Re-verif') ? '85%' : '40%' }}></div>
                                 </div>
                               </div>
@@ -3205,7 +3205,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <div className="flex items-center gap-2">
                               <span className="text-lg">🧩</span>
                               <div>
-                                <div className="text-xs font-bold text-slate-800">Document Section Map</div>
+                                <div className="text-xs font-bold text-slate-800">{t('pdf_audit.section_map.heading') || 'Document Section Map'}</div>
                                 <div className="text-[11px] text-slate-600">{pdfFixResult.chunkState.chunkResults.length} sections — re-fix individual sections without affecting others</div>
                               </div>
                             </div>
@@ -3225,9 +3225,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   <div className="flex items-center gap-1.5">
                                     <span className="text-[11px] font-bold text-slate-700">Section {ci + 1}</span>
                                     <span className="text-[11px] text-slate-600">{cr.sizeKB || '?'}KB</span>
-                                    {cr.deterministicFixes > 0 && <span className="text-[11px] bg-blue-100 text-blue-600 px-1 rounded font-bold" title="Rule-based (deterministic) fixes applied">{cr.deterministicFixes} rule-based</span>}
-                                    {cr.surgicalFixes > 0 && <span className="text-[11px] bg-purple-100 text-purple-600 px-1 rounded font-bold" title="AI-diagnosed targeted micro-fixes">{cr.surgicalFixes} targeted</span>}
-                                    {cr.usedOriginal && <span className="text-[11px] bg-amber-100 text-amber-700 px-1 rounded font-bold" title="AI rewrite was rejected — only rule-based fixes applied">AI skipped</span>}
+                                    {cr.deterministicFixes > 0 && <span className="text-[11px] bg-blue-100 text-blue-600 px-1 rounded font-bold" title={t('pdf_audit.section_map.rule_based_title') || 'Rule-based (deterministic) fixes applied'}>{cr.deterministicFixes} rule-based</span>}
+                                    {cr.surgicalFixes > 0 && <span className="text-[11px] bg-purple-100 text-purple-600 px-1 rounded font-bold" title={t('pdf_audit.section_map.targeted_title') || 'AI-diagnosed targeted micro-fixes'}>{cr.surgicalFixes} targeted</span>}
+                                    {cr.usedOriginal && <span className="text-[11px] bg-amber-100 text-amber-700 px-1 rounded font-bold" title={t('pdf_audit.section_map.ai_skipped_title') || 'AI rewrite was rejected — only rule-based fixes applied'}>{t('pdf_audit.section_map.ai_skipped') || 'AI skipped'}</span>}
                                     {cr.wasRetried && !cr.usedOriginal && <span className="text-[11px] bg-slate-100 text-slate-600 px-1 rounded font-bold">retried</span>}
                                   </div>
                                   {/* Score bar */}
@@ -3289,7 +3289,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <div className="flex items-start gap-3">
                             <span className="text-2xl shrink-0">🔍</span>
                             <div>
-                              <h4 className="text-sm font-bold text-amber-900">This Document Needs Expert Accessibility Remediation</h4>
+                              <h4 className="text-sm font-bold text-amber-900">{t('pdf_audit.expert_referral.heading') || 'This Document Needs Expert Accessibility Remediation'}</h4>
                               <p className="text-xs text-amber-800 leading-relaxed mt-1">
                                 AlloFlow's automated pipeline improved this document but could not resolve all accessibility barriers.
                                 Complex elements (forms, multi-column layouts, interactive content, or deeply nested structures) require
@@ -3530,15 +3530,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                             }
                                           }}
                             className="px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-colors flex items-center gap-1.5"
-                            aria-label="Open word-level diff view between source PDF and remediated HTML"
-                            title="Open the word-level diff modal — see every insertion, deletion, and paraphrase between the source PDF text and the remediated HTML, with click-to-reject and Apply &amp; Export."
+                            aria-label={t('pdf_audit.diff.button_aria') || 'Open word-level diff view between source PDF and remediated HTML'}
+                            title={t('pdf_audit.diff.button_title') || 'Open the word-level diff modal — see every insertion, deletion, and paraphrase between the source PDF text and the remediated HTML, with click-to-reject and Apply & Export.'}
                           >
                             📝 Diff
                           </button>
                         )}
                         <button onClick={() => downloadAccessiblePdf(pdfFixResult.accessibleHtml, (pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '') + '-accessible')}
                           className="px-4 py-2.5 bg-blue-50 text-blue-700 rounded-xl font-bold text-sm hover:bg-blue-100 transition-colors flex items-center gap-1.5"
-                          title="Regenerate a PDF from the remediated HTML. Layout reflows — page breaks, fonts, and pagination may differ from the original. Works well for simple prose documents.">
+                          title={t('pdf_audit.pdf_from_html.title') || 'Regenerate a PDF from the remediated HTML. Layout reflows — page breaks, fonts, and pagination may differ from the original. Works well for simple prose documents.'}>
                           📥 PDF (from HTML)
                         </button>
                         {/* Tagged PDF (original + structure tags). Preserves the
@@ -3650,7 +3650,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             }
                           }}
                           className="px-4 py-2.5 bg-indigo-50 text-indigo-700 rounded-xl font-bold text-sm hover:bg-indigo-100 transition-colors flex items-center gap-1.5"
-                          title="Preserve the original PDF's visual layout byte-identical and inject accessibility tags into its structure tree. Best for textbooks, multi-column documents, and branded PDFs where visual fidelity matters."
+                          title={t('pdf_audit.tagged_pdf.title') || "Preserve the original PDF's visual layout byte-identical and inject accessibility tags into its structure tree. Best for textbooks, multi-column documents, and branded PDFs where visual fidelity matters."}
                         >
                           📄 Tagged PDF
                         </button>
@@ -3977,7 +3977,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           📑 Alternative Formats <span className="text-[11px] text-slate-600 group-open:hidden">▸</span>
                         </summary>
                         <div className="mt-2 bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-600 rounded-xl p-3 space-y-1.5">
-                          <p className="text-[11px] text-slate-600">Download the remediated document in accessible alternative formats</p>
+                          <p className="text-[11px] text-slate-600">{t('pdf_audit.alt_formats.intro') || 'Download the remediated document in accessible alternative formats'}</p>
 
                           {/* ePub */}
                           <button onClick={() => {
@@ -4163,7 +4163,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             onChange={(e) => setExpertCommandInput(e.target.value)}
                             placeholder={isAgentRunning ? 'Agent working...' : 'audit, auto, or describe what to fix...'}
                             disabled={isAgentRunning}
-                            aria-label="Expert remediation command"
+                            aria-label={t('pdf_audit.expert.command_aria') || 'Expert remediation command'}
                             className="flex-1 px-2 py-1.5 bg-slate-700 text-white text-[11px] rounded border border-slate-600 placeholder-slate-500 focus:ring-1 focus:ring-purple-400 focus:outline-none disabled:opacity-50"
                           />
                           <button type="submit" disabled={isAgentRunning || !expertCommandInput.trim()}
@@ -4172,7 +4172,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         </form>
                         {agentActivityLog.length > 0 && (
                           <div>
-                            <div className={(agentLogFullView ? 'max-h-64' : 'max-h-20') + ' overflow-y-auto bg-slate-900 rounded-lg px-2 py-1 space-y-0.5 text-[11px] font-mono'} aria-live="polite" aria-label="Agent activity log">
+                            <div className={(agentLogFullView ? 'max-h-64' : 'max-h-20') + ' overflow-y-auto bg-slate-900 rounded-lg px-2 py-1 space-y-0.5 text-[11px] font-mono'} aria-live="polite" aria-label={t('pdf_audit.expert.log_aria') || 'Agent activity log'}>
                               {(agentLogFullView ? agentActivityLog : agentActivityLog.slice(-6)).map((entry, i) => (
                                 <div key={i} className={'flex items-start gap-1 ' + (entry.type === 'error' ? 'text-red-400' : entry.type === 'score' ? 'text-cyan-300' : entry.type === 'success' || entry.type === 'complete' ? 'text-green-400' : entry.type === 'tool' ? 'text-amber-300' : entry.type === 'command' ? 'text-purple-300' : 'text-slate-400')}>
                                   <span className="text-slate-600 shrink-0">{entry.time}</span>
@@ -4255,7 +4255,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
 
                         {/* Translate with free-text input + datalist suggestions */}
                         <div className="flex gap-1.5">
-                          <input id="pdf-translate-lang" list="pdf-translate-suggestions" className="flex-1 text-[11px] border border-violet-600 rounded-lg px-2 py-2 bg-white text-slate-700" aria-label="Translation language — type any language or pick from suggestions" placeholder="🌐 Type language (e.g. Spanish, Tagalog, Dari...)" />
+                          <input id="pdf-translate-lang" list="pdf-translate-suggestions" className="flex-1 text-[11px] border border-violet-600 rounded-lg px-2 py-2 bg-white text-slate-700" aria-label={t('pdf_audit.translate.lang_aria') || 'Translation language — type any language or pick from suggestions'} placeholder={t('pdf_audit.translate.lang_placeholder') || '🌐 Type language (e.g. Spanish, Tagalog, Dari...)'} />
                           <datalist id="pdf-translate-suggestions">
                             <option value="Spanish" /><option value="French" /><option value="Arabic" />
                             <option value="Somali" /><option value="Vietnamese" /><option value="Portuguese" />
@@ -4337,7 +4337,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
 
                         {/* Simplify with grade level dropdown */}
                         <div className="flex gap-1.5">
-                          <select id="pdf-simplify-level" className="flex-1 text-[11px] border border-violet-600 rounded-lg px-2 py-2 bg-white text-slate-700" aria-label="Simplification grade level" defaultValue="5th">
+                          <select id="pdf-simplify-level" className="flex-1 text-[11px] border border-violet-600 rounded-lg px-2 py-2 bg-white text-slate-700" aria-label={t('pdf_audit.simplify.level_aria') || 'Simplification grade level'} defaultValue="5th">
                             <option value="K">📖 Kindergarten</option>
                             <option value="1st">📖 1st Grade</option>
                             <option value="2nd">📖 2nd Grade</option>
@@ -4489,11 +4489,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           📖 Plain Language Summary <span className="text-[11px] text-slate-600 group-open:hidden">▸</span>
                         </summary>
                         <div className="mt-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-600 rounded-xl p-3 space-y-2">
-                          <p className="text-[11px] text-slate-600">Generate an easy-to-read version for parents, guardians, or community members.</p>
+                          <p className="text-[11px] text-slate-600">{t('pdf_audit.plain_summary.intro') || 'Generate an easy-to-read version for parents, guardians, or community members.'}</p>
                           <div className="flex gap-2">
                             <div className="flex-1">
                               <label className="text-[11px] font-bold text-slate-600 uppercase">Language</label>
-                              <input id="summary-lang" aria-label="Translation language" list="summary-lang-list" className="w-full text-[11px] border border-blue-600 rounded-lg px-2 py-1.5 bg-white" placeholder="English" defaultValue="English" />
+                              <input id="summary-lang" aria-label={t('pdf_audit.plain_summary.lang_aria') || 'Translation language'} list="summary-lang-list" className="w-full text-[11px] border border-blue-600 rounded-lg px-2 py-1.5 bg-white" placeholder="English" defaultValue="English" />
                               <datalist id="summary-lang-list">
                                 <option value="English" /><option value="Spanish" /><option value="French" /><option value="Arabic" /><option value="Somali" /><option value="Vietnamese" /><option value="Portuguese" /><option value="Mandarin Chinese" /><option value="Haitian Creole" /><option value="Russian" />
                               </datalist>
@@ -4583,7 +4583,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
           ref={(el) => { if (el && !el.contains(document.activeElement)) { try { el.focus({ preventScroll: true }); } catch(_){ el.focus(); } } }}
         >
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 border-2 border-amber-300">
-            <h3 id="pdf-close-confirm-title" className="text-lg font-bold text-slate-800 mb-2">Close without saving?</h3>
+            <h3 id="pdf-close-confirm-title" className="text-lg font-bold text-slate-800 mb-2">{t('pdf_audit.close_confirm.title') || 'Close without saving?'}</h3>
             <p className="text-sm text-slate-600 mb-5 leading-relaxed">
               This audit hasn't been saved as a <strong>Project</strong> file. If you close,
               your remediated HTML and audit results won't survive a browser reload.
@@ -4609,7 +4609,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-colors shadow-sm"
                 autoFocus
               >
-                💾 Save & close
+                💾 {t('pdf_audit.close_confirm.save_close') || 'Save & close'}
               </button>
             </div>
             <p className="text-[11px] text-slate-500 mt-4">
@@ -4622,22 +4622,22 @@ Return ONLY the plain language summary in ${lang}.`, false);
 
       {/* ═══ PDF Preview & Edit Modal ═══ */}
       {pdfPreviewOpen && pdfFixResult && (
-        <div className="fixed inset-0 z-[70] bg-black/50 flex items-stretch" role="dialog" aria-modal="true" aria-label="Accessible document preview and editor">
+        <div className="fixed inset-0 z-[70] bg-black/50 flex items-stretch" role="dialog" aria-modal="true" aria-label={t('pdf_audit.preview.modal_aria') || 'Accessible document preview and editor'}>
           <div className="flex flex-1 m-4 gap-0 animate-in fade-in duration-200">
             {/* Left panel: controls */}
             <div className="w-72 bg-white rounded-l-2xl border-2 border-r-0 border-indigo-600 p-4 flex flex-col gap-3 overflow-y-auto shrink-0">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-bold text-indigo-800">♿ Preview & Edit</h3>
-                <button onClick={() => setPdfPreviewOpen(false)} className="p-1 hover:bg-slate-100 rounded-lg transition-colors" aria-label="Close preview">
+                <button onClick={() => setPdfPreviewOpen(false)} className="p-1 hover:bg-slate-100 rounded-lg transition-colors" aria-label={t('pdf_audit.preview.close_aria') || 'Close preview'}>
                   <X size={18} />
                 </button>
               </div>
-              <p className="text-[11px] text-slate-600">Click anywhere in the preview to edit text directly. Use the controls below to customize appearance.</p>
+              <p className="text-[11px] text-slate-600">{t('pdf_audit.preview.edit_hint') || 'Click anywhere in the preview to edit text directly. Use the controls below to customize appearance.'}</p>
 
               {/* Style Seed picker — WCAG-validated styling */}
               <div>
                 <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-1">Style</div>
-                <p className="text-[11px] text-slate-600 mb-1">WCAG compliance guaranteed — sanitizer runs on every style change.</p>
+                <p className="text-[11px] text-slate-600 mb-1">{t('pdf_audit.preview.wcag_guaranteed') || 'WCAG compliance guaranteed — sanitizer runs on every style change.'}</p>
                 <div className="grid grid-cols-2 gap-1">
                   {Object.entries(STYLE_SEEDS).filter(([, s]) => s.cssVars || s.name === 'Match Original').map(([key, s]) => (
                     <button key={key} onClick={() => { setPdfPreviewTheme(key); setTimeout(() => updatePdfPreview(key), 50); }}
@@ -4698,7 +4698,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     }} className="px-2 py-1 bg-red-50 border border-red-600 rounded-md text-[11px] font-bold text-red-500 hover:bg-red-100 transition-colors">✕ Reset</button>
                   )}
                 </div>
-                <p className="text-[11px] text-slate-600 mb-2">One-click AI restyling. These override the theme above.</p>
+                <p className="text-[11px] text-slate-600 mb-2">{t('pdf_audit.preview.ai_restyle_hint') || 'One-click AI restyling. These override the theme above.'}</p>
               </div>
 
               {/* Reference document theme extraction */}
@@ -4780,7 +4780,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     </div>
                   ))}
                   <div className="flex items-center gap-2">
-                    <select aria-label="Body font" defaultValue="system-ui"
+                    <select aria-label={t('pdf_audit.preview.body_font_aria') || 'Body font'} defaultValue="system-ui"
                       onChange={(e) => {
                         const doc = pdfPreviewRef.current?.contentDocument; if (!doc) return;
                         doc.body.style.fontFamily = e.target.value;
@@ -4810,15 +4810,15 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         }
                       }}
                       className="flex-1 text-[11px] border border-slate-400 rounded px-1 py-1 bg-white">
-                      <option value="system-ui, sans-serif">System (Default)</option>
+                      <option value="system-ui, sans-serif">{t('pdf_audit.preview.font_system') || 'System (Default)'}</option>
                       <option value="'Inter', sans-serif">Inter</option>
-                      <option value="'Georgia', serif">Georgia (Serif)</option>
-                      <option value="'Times New Roman', serif">Times New Roman</option>
-                      <option value="'Atkinson Hyperlegible', sans-serif">Atkinson Hyperlegible</option>
+                      <option value="'Georgia', serif">{t('pdf_audit.preview.font_georgia') || 'Georgia (Serif)'}</option>
+                      <option value="'Times New Roman', serif">{t('pdf_audit.preview.font_times_new') || 'Times New Roman'}</option>
+                      <option value="'Atkinson Hyperlegible', sans-serif">{t('pdf_audit.preview.font_atkinson_hyper') || 'Atkinson Hyperlegible'}</option>
                       <option value="'OpenDyslexic', sans-serif">OpenDyslexic</option>
                       <option value="'Lexend', sans-serif">Lexend</option>
-                      <option value="'Comic Sans MS', cursive">Comic Sans</option>
-                      <option value="'Courier New', monospace">Courier (Mono)</option>
+                      <option value="'Comic Sans MS', cursive">{t('pdf_audit.preview.font_comic_short') || 'Comic Sans'}</option>
+                      <option value="'Courier New', monospace">{t('pdf_audit.preview.font_courier') || 'Courier (Mono)'}</option>
                     </select>
                     <span className="text-[11px] text-slate-600 shrink-0">Font</span>
                   </div>
@@ -4830,7 +4830,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-1">Font Size: {pdfPreviewFontSize}px</div>
                 <input type="range" min="12" max="28" value={pdfPreviewFontSize}
                   onChange={(e) => { const v = parseInt(e.target.value); setPdfPreviewFontSize(v); setTimeout(() => updatePdfPreview(undefined, v), 50); }}
-                  className="w-full" aria-label="Font size" />
+                  className="w-full" aria-label={t('pdf_audit.preview.font_size_aria') || 'Font size'} />
                 <div className="flex justify-between text-[11px] text-slate-600"><span>12px</span><span>28px</span></div>
               </div>
 
@@ -4845,7 +4845,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   <span className="text-[11px] text-slate-600 hidden group-open:inline">▾</span>
                 </summary>
                 <div className="bg-gradient-to-br from-amber-50 to-rose-50 rounded-lg border border-amber-600 p-2 space-y-2 mt-2">
-                  <input type="text" id="pdf-wordart-text-input" placeholder="Your word art text..." defaultValue="" className="w-full text-xs border border-amber-300 rounded px-2 py-1.5 bg-white focus:border-amber-500 outline-none" aria-label="Word art text" />
+                  <input type="text" id="pdf-wordart-text-input" placeholder={t('pdf_audit.wordart.text_placeholder') || 'Your word art text...'} defaultValue="" className="w-full text-xs border border-amber-300 rounded px-2 py-1.5 bg-white focus:border-amber-500 outline-none" aria-label={t('pdf_audit.wordart.text_aria') || 'Word art text'} />
                   <div>
                     <div className="text-[10px] font-bold text-slate-600 uppercase mb-1">Style</div>
                     <div className="grid grid-cols-3 gap-1" role="radiogroup">
@@ -4972,12 +4972,12 @@ Return ONLY the plain language summary in ${lang}.`, false);
               </button>
               {pdfPreviewA11yInspect && (
                 <div className="text-[11px] text-slate-600 space-y-0.5 bg-slate-50 rounded-lg p-2">
-                  <div><span className="inline-block w-3 h-2 bg-violet-600 rounded mr-1"></span> Headings (H1-H6)</div>
-                  <div><span className="inline-block w-3 h-2 bg-blue-600 rounded mr-1"></span> Images + alt text</div>
-                  <div><span className="inline-block w-3 h-2 bg-emerald-600 rounded mr-1"></span> Tables + headers</div>
-                  <div><span className="inline-block w-3 h-2 bg-cyan-600 rounded mr-1"></span> Figures + captions</div>
-                  <div><span className="inline-block w-3 h-2 bg-green-600 rounded mr-1"></span> Main landmark</div>
-                  <div><span className="inline-block w-3 h-2 bg-orange-600 rounded mr-1"></span> ARIA roles</div>
+                  <div><span className="inline-block w-3 h-2 bg-violet-600 rounded mr-1"></span> {t('pdf_audit.a11y_inspect.headings') || 'Headings (H1-H6)'}</div>
+                  <div><span className="inline-block w-3 h-2 bg-blue-600 rounded mr-1"></span> {t('pdf_audit.a11y_inspect.images') || 'Images + alt text'}</div>
+                  <div><span className="inline-block w-3 h-2 bg-emerald-600 rounded mr-1"></span> {t('pdf_audit.a11y_inspect.tables') || 'Tables + headers'}</div>
+                  <div><span className="inline-block w-3 h-2 bg-cyan-600 rounded mr-1"></span> {t('pdf_audit.a11y_inspect.figures') || 'Figures + captions'}</div>
+                  <div><span className="inline-block w-3 h-2 bg-green-600 rounded mr-1"></span> {t('pdf_audit.a11y_inspect.main_landmark') || 'Main landmark'}</div>
+                  <div><span className="inline-block w-3 h-2 bg-orange-600 rounded mr-1"></span> {t('pdf_audit.a11y_inspect.aria_roles') || 'ARIA roles'}</div>
                 </div>
               )}
 
@@ -5128,8 +5128,8 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   </summary>
                   <div className="mt-1.5 space-y-2 bg-slate-50 rounded-lg p-2 border border-slate-400">
                     <div>
-                      <input type="text" id="pdf-preview-img-prompt" placeholder="Describe an image to generate..."
-                        aria-label="Image generation prompt"
+                      <input type="text" id="pdf-preview-img-prompt" placeholder={t('pdf_audit.ai_image.prompt_placeholder') || 'Describe an image to generate...'}
+                        aria-label={t('pdf_audit.ai_image.prompt_aria') || 'Image generation prompt'}
                         className="w-full text-[11px] p-1.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-indigo-300"
                         onKeyDown={(e) => { if (e.key === 'Enter') document.getElementById('pdf-preview-gen-img-btn')?.click(); }} />
                       <button id="pdf-preview-gen-img-btn" onClick={async () => {
@@ -5161,7 +5161,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         ✨ Generate & Insert
                       </button>
                     </div>
-                    <p className="text-[11px] text-slate-600">Click an image in the preview to select it, then:</p>
+                    <p className="text-[11px] text-slate-600">{t('pdf_audit.ai_image.select_hint') || 'Click an image in the preview to select it, then:'}</p>
                     <button onClick={async () => {
                       const img = selectedPreviewImgRef.current;
                       if (!img || !img.src) { addToast('Click an image in the preview to select it first', 'info'); return; }
@@ -5203,7 +5203,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   📐 Layout & Design <span className="text-[11px] text-slate-600 group-open:hidden">▸</span>
                 </summary>
                 <div className="mt-1.5 space-y-1.5 bg-slate-50 rounded-lg p-2 border border-slate-400">
-                  <div className="text-[11px] font-bold text-slate-600 uppercase">Insert Blocks</div>
+                  <div className="text-[11px] font-bold text-slate-600 uppercase">{t('pdf_audit.layout.insert_blocks') || 'Insert Blocks'}</div>
                   {(() => {
                     // ── Stylesheet injected once into the iframe doc ──
                     // Class-based (no inline color) so accessibility templates can override.
@@ -6502,7 +6502,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     ))}
                   </div>
 
-                  <div className="text-[11px] font-bold text-slate-600 uppercase mt-2">Header / Branding</div>
+                  <div className="text-[11px] font-bold text-slate-600 uppercase mt-2">{t('pdf_audit.layout.header_branding') || 'Header / Branding'}</div>
                   <button onClick={() => {
                     const doc = pdfPreviewRef.current?.contentDocument; if (!doc) return;
                     const existing = doc.getElementById('doc-header-brand');
@@ -6559,8 +6559,8 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       addToast('Template applied: ' + e.target.value, 'success');
                     }
                     e.target.value = '';
-                  }} className="w-full text-[11px] border border-slate-400 rounded-lg px-2 py-1.5 bg-white text-slate-600" aria-label="Document template" defaultValue="">
-                    <option value="" disabled>Apply template...</option>
+                  }} className="w-full text-[11px] border border-slate-400 rounded-lg px-2 py-1.5 bg-white text-slate-600" aria-label={t('pdf_audit.templates.aria') || 'Document template'} defaultValue="">
+                    <option value="" disabled>{t('pdf_audit.templates.apply_placeholder') || 'Apply template...'}</option>
                     <option value="syllabus">📚 Syllabus</option>
                     <option value="handout">📝 Handout</option>
                     <option value="worksheet">✏️ Worksheet</option>
@@ -6578,7 +6578,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     try { savedTemplates = JSON.parse(localStorage.getItem('alloflow_templates') || '[]'); } catch(e) {}
                     return savedTemplates.length > 0 ? (
                       <div className="mt-1.5">
-                        <div className="text-[11px] font-bold text-slate-600 uppercase mb-1">Saved Accessible Templates</div>
+                        <div className="text-[11px] font-bold text-slate-600 uppercase mb-1">{t('pdf_audit.templates.saved_heading') || 'Saved Accessible Templates'}</div>
                         <div className="space-y-1">
                           {savedTemplates.map((tmpl, i) => (
                             <button key={i} onClick={() => {
@@ -6888,7 +6888,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     </button>
                   ))}
                   <div className="border-t border-slate-200 pt-1.5 mt-1">
-                    <div className="text-[11px] font-bold text-slate-600 uppercase mb-1">Version Stamp</div>
+                    <div className="text-[11px] font-bold text-slate-600 uppercase mb-1">{t('pdf_audit.version_stamp.heading') || 'Version Stamp'}</div>
                     {[
                       { label: 'Version 1.0', icon: '📌' },
                       { label: 'Revised ' + new Date().toLocaleDateString(), icon: '📝' },
@@ -7058,7 +7058,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   <summary className="cursor-pointer text-[11px] font-bold text-slate-600 uppercase tracking-widest select-none">
                     🖼 Extracted Images ({extractedImagesList.length})
                   </summary>
-                  <p className="text-[10px] text-slate-500 mt-1 mb-2">Drag a thumbnail onto any image placeholder in the preview to insert it, or click "📷 Upload" inside a placeholder and choose "Use extracted image".</p>
+                  <p className="text-[10px] text-slate-500 mt-1 mb-2">{t('pdf_audit.extracted_images.drag_hint') || 'Drag a thumbnail onto any image placeholder in the preview to insert it, or click "📷 Upload" inside a placeholder and choose "Use extracted image".'}</p>
                   <div className="grid grid-cols-3 gap-1.5 max-h-64 overflow-y-auto">
                     {extractedImagesList.map((img, i) => (
                       <div key={i} className="relative group">
@@ -7115,12 +7115,12 @@ Return ONLY the plain language summary in ${lang}.`, false);
             {/* Right panel: live preview iframe */}
             <div className="flex-1 bg-white rounded-r-2xl border-2 border-l border-indigo-600 overflow-hidden flex flex-col">
               <div className="px-3 py-2 bg-slate-50 border-b border-slate-200 flex items-center gap-2 text-[11px] text-slate-600 shrink-0">
-                <span className="font-bold text-slate-700">Live Preview</span>
+                <span className="font-bold text-slate-700">{t('pdf_audit.preview.live_preview') || 'Live Preview'}</span>
                 <span>— select text, then use the toolbar to format</span>
                 <span className="ml-auto font-mono">{(pendingPdfFile?.name || 'document.pdf')}</span>
               </div>
               {/* Formatting toolbar */}
-              <div className="px-2 py-1.5 bg-white border-b border-slate-200 flex items-center gap-0.5 flex-wrap shrink-0" role="toolbar" aria-label="Text formatting">
+              <div className="px-2 py-1.5 bg-white border-b border-slate-200 flex items-center gap-0.5 flex-wrap shrink-0" role="toolbar" aria-label={t('pdf_audit.toolbar.aria') || 'Text formatting'}>
                 {[
                   { cmd: 'bold', icon: 'B', label: 'Bold', style: 'font-bold' },
                   { cmd: 'italic', icon: 'I', label: 'Italic', style: 'italic' },
@@ -7145,40 +7145,40 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 <span className="w-px h-5 bg-slate-200 mx-1" aria-hidden="true"></span>
                 <button onClick={() => { const doc = pdfPreviewRef.current?.contentDocument; if (doc) doc.execCommand('insertUnorderedList', false, null); }}
                   className="w-7 h-7 rounded text-xs text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600"
-                  aria-label="Bullet list" title="Bullet list">•</button>
+                  aria-label={t('pdf_audit.toolbar.bullet_list') || 'Bullet list'} title={t('pdf_audit.toolbar.bullet_list') || 'Bullet list'}>•</button>
                 <button onClick={() => { const doc = pdfPreviewRef.current?.contentDocument; if (doc) doc.execCommand('insertOrderedList', false, null); }}
                   className="w-7 h-7 rounded text-[11px] font-bold text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600"
-                  aria-label="Numbered list" title="Numbered list">1.</button>
+                  aria-label={t('pdf_audit.toolbar.numbered_list') || 'Numbered list'} title={t('pdf_audit.toolbar.numbered_list') || 'Numbered list'}>1.</button>
                 <span className="w-px h-5 bg-slate-200 mx-1" aria-hidden="true"></span>
                 <button onClick={() => { const doc = pdfPreviewRef.current?.contentDocument; if (doc) doc.execCommand('justifyLeft', false, null); }}
                   className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600"
-                  aria-label="Align left" title="Align left">≡</button>
+                  aria-label={t('pdf_audit.toolbar.align_left') || 'Align left'} title={t('pdf_audit.toolbar.align_left') || 'Align left'}>≡</button>
                 <button onClick={() => { const doc = pdfPreviewRef.current?.contentDocument; if (doc) doc.execCommand('justifyCenter', false, null); }}
                   className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600"
-                  aria-label="Align center" title="Center">≡</button>
+                  aria-label={t('pdf_audit.toolbar.align_center') || 'Align center'} title={t('pdf_audit.toolbar.align_center_title') || 'Center'}>≡</button>
                 <span className="w-px h-5 bg-slate-200 mx-1" aria-hidden="true"></span>
                 <button onClick={() => {
                   const doc = pdfPreviewRef.current?.contentDocument; if (!doc) return;
                   const url = prompt('Enter link URL:');
                   if (url) doc.execCommand('createLink', false, url);
                 }} className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600"
-                  aria-label="Insert link" title="Insert link">🔗</button>
+                  aria-label={t('pdf_audit.toolbar.insert_link') || 'Insert link'} title={t('pdf_audit.toolbar.insert_link') || 'Insert link'}>🔗</button>
                 <button onClick={() => { const doc = pdfPreviewRef.current?.contentDocument; if (doc) doc.execCommand('unlink', false, null); }}
                   className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600"
-                  aria-label="Remove link" title="Remove link">🚫</button>
+                  aria-label={t('pdf_audit.toolbar.remove_link') || 'Remove link'} title={t('pdf_audit.toolbar.remove_link') || 'Remove link'}>🚫</button>
                 <span className="w-px h-5 bg-slate-200 mx-1" aria-hidden="true"></span>
                 <button onClick={() => { const doc = pdfPreviewRef.current?.contentDocument; if (doc) doc.execCommand('removeFormat', false, null); }}
                   className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600"
-                  aria-label="Clear formatting" title="Clear formatting">✕</button>
+                  aria-label={t('pdf_audit.toolbar.clear_formatting') || 'Clear formatting'} title={t('pdf_audit.toolbar.clear_formatting') || 'Clear formatting'}>✕</button>
                 <button onClick={() => { const doc = pdfPreviewRef.current?.contentDocument; if (doc) doc.execCommand('undo', false, null); }}
                   className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600"
-                  aria-label="Undo" title="Undo">↩</button>
+                  aria-label={t('pdf_audit.toolbar.undo') || 'Undo'} title={t('pdf_audit.toolbar.undo') || 'Undo'}>↩</button>
                 <button onClick={() => { const doc = pdfPreviewRef.current?.contentDocument; if (doc) doc.execCommand('redo', false, null); }}
                   className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600"
-                  aria-label="Redo" title="Redo">↪</button>
+                  aria-label={t('pdf_audit.toolbar.redo') || 'Redo'} title={t('pdf_audit.toolbar.redo') || 'Redo'}>↪</button>
                 <span className="w-px h-5 bg-slate-200 mx-1" aria-hidden="true"></span>
                 <select onChange={(e) => { const doc = pdfPreviewRef.current?.contentDocument; if (doc && e.target.value) doc.execCommand('foreColor', false, e.target.value); e.target.value = ''; }}
-                  className="h-7 text-[11px] border border-slate-400 rounded px-1 text-slate-600" aria-label="Text color" defaultValue="">
+                  className="h-7 text-[11px] border border-slate-400 rounded px-1 text-slate-600" aria-label={t('pdf_audit.toolbar.text_color') || 'Text color'} defaultValue="">
                   <option value="" disabled>Color</option>
                   <option value="#000000">⬛ Black</option>
                   <option value="#1e3a5f">🟦 Navy</option>
@@ -7188,7 +7188,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   <option value="#92400e">🟫 Brown</option>
                 </select>
                 <select onChange={(e) => { const doc = pdfPreviewRef.current?.contentDocument; if (doc && e.target.value) doc.execCommand('hiliteColor', false, e.target.value); e.target.value = ''; }}
-                  className="h-7 text-[11px] border border-slate-400 rounded px-1 text-slate-600" aria-label="Highlight color" defaultValue="">
+                  className="h-7 text-[11px] border border-slate-400 rounded px-1 text-slate-600" aria-label={t('pdf_audit.toolbar.highlight_color') || 'Highlight color'} defaultValue="">
                   <option value="" disabled>Highlight</option>
                   <option value="#fef08a">🟡 Yellow</option>
                   <option value="#bbf7d0">🟢 Green</option>
@@ -7201,9 +7201,9 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   const doc = pdfPreviewRef.current?.contentDocument; if (!doc) return;
                   doc.execCommand('insertHTML', false, '<table style="width:100%;border-collapse:collapse;margin:12px 0"><caption style="font-weight:bold;margin-bottom:4px">Table Title</caption><thead><tr><th scope="col" style="border:1px solid #cbd5e1;padding:8px;background:#f1f5f9;text-align:left;font-weight:bold">Header 1</th><th scope="col" style="border:1px solid #cbd5e1;padding:8px;background:#f1f5f9;text-align:left;font-weight:bold">Header 2</th><th scope="col" style="border:1px solid #cbd5e1;padding:8px;background:#f1f5f9;text-align:left;font-weight:bold">Header 3</th></tr></thead><tbody><tr><td style="border:1px solid #cbd5e1;padding:8px">Data</td><td style="border:1px solid #cbd5e1;padding:8px">Data</td><td style="border:1px solid #cbd5e1;padding:8px">Data</td></tr><tr><td style="border:1px solid #cbd5e1;padding:8px">Data</td><td style="border:1px solid #cbd5e1;padding:8px">Data</td><td style="border:1px solid #cbd5e1;padding:8px">Data</td></tr></tbody></table>');
                 }} className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600"
-                  aria-label="Insert table" title="Insert accessible table">📊</button>
+                  aria-label={t('pdf_audit.toolbar.insert_table_aria') || 'Insert table'} title={t('pdf_audit.toolbar.insert_table_title') || 'Insert accessible table'}>📊</button>
               </div>
-              <iframe ref={pdfPreviewRef} title="Accessible document preview" className="flex-1 w-full border-0"
+              <iframe ref={pdfPreviewRef} title={t('pdf_audit.preview.iframe_title') || 'Accessible document preview'} className="flex-1 w-full border-0"
                 sandbox="allow-same-origin allow-scripts allow-forms allow-modals"
                 onLoad={() => {
                   const iframe = pdfPreviewRef.current;

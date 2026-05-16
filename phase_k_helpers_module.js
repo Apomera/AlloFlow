@@ -1147,7 +1147,7 @@ const autoConfigureSettings = async (text, grade, standards, language, customInp
       existingBlock = `ALREADY GENERATED RESOURCES (reference these specifically in the lesson plan \u2014 tell teachers exactly which resource to use and what content it contains):
 ${resourceSummaries.map((s, i) => `  ${i + 1}. ${s}`).join("\n")}`;
     }
-    const VALID_TOOLS_LIST = "analysis, simplified, glossary, outline, image, quiz, sentence-frames, brainstorm, timeline, concept-sort, adventure, faq, persona, dbq";
+    const VALID_TOOLS_LIST = typeof window !== "undefined" && typeof window.getToolIdsCsv === "function" ? window.getToolIdsCsv() : "analysis, simplified, glossary, outline, image, quiz, sentence-frames, brainstorm, timeline, concept-sort, adventure, faq, persona, dbq, note-taking, anchor-chart, math, lesson-plan, gemini-bridge, alignment-report";
     let countConstraint = "";
     let allowDuplicates = false;
     if (targetCount === "All") {
@@ -1175,7 +1175,7 @@ ${resourceSummaries.map((s, i) => `  ${i + 1}. ${s}`).join("\n")}`;
             "${text.substring(0, 3e3)}...",
             STEP 1: DIAGNOSE THE CONTENT TOPOLOGY
             Determine the best tools to teach this specific content. Available tools and when to use them:
-            - **analysis**: Analyze source text for key ideas, vocabulary, structure. ALWAYS include as first resource.
+${typeof window !== "undefined" && typeof window.formatToolCatalogForPrompt === "function" ? window.formatToolCatalogForPrompt() : `            - **analysis**: Analyze source text for key ideas, vocabulary, structure. ALWAYS include as first resource.
             - **simplified**: Adapt text to a specific reading level. Good for differentiation.
             - **glossary**: Key vocabulary with definitions, examples, images. Essential for content-heavy texts.
             - **outline**: Visual organizer (Venn Diagram, Flow Chart, Structured Outline). Match to content topology.
@@ -1186,8 +1186,14 @@ ${resourceSummaries.map((s, i) => `  ${i + 1}. ${s}`).join("\n")}`;
             - **timeline**: Chronological sequence of events. Use for historical or procedural content.
             - **concept-sort**: Categorization activity \u2014 students sort terms into groups. Good for vocabulary/classification.
             - **adventure**: Interactive choose-your-own-adventure narrative. Good for engagement and decision-making.
-            - **persona**: Interview historical figures, scientists, or literary characters AS IF they were real. Students ask questions and the character responds in-character with historically/textually accurate answers. EXCELLENT for history, literature, biography, social studies. Use when the text involves notable people, historical events, or characters with distinct perspectives. HIGHLY RECOMMENDED \u2014 do not overlook this tool.
-            - **dbq**: Document-Based Question activity with primary sources, HAPP sourcing framework, corroboration analysis, synthesis essay, and rubric. Use for social studies, history, civics, or any text with multiple perspectives or viewpoints.
+            - **persona**: Interview historical figures, scientists, or literary characters AS IF they were real. EXCELLENT for history, literature, biography, social studies. HIGHLY RECOMMENDED \u2014 do not overlook this tool.
+            - **dbq**: Document-Based Question activity with primary sources. Use for social studies, history, civics.
+            - **note-taking**: Scaffolded note-taking templates (Cornell / Lab Report / Reading Response). Persists across lessons.
+            - **anchor-chart**: EL-style class anchor chart (Reference / Process / Concept Map / Comparison).
+            - **math**: Opens the STEM Lab (interactive math/science exploration).
+            - **lesson-plan**: Teacher-facing synthesis. ALWAYS place LAST.
+            - **gemini-bridge**: Interactive sim/app generator.
+            - **alignment-report**: Post-hoc audit. Only include if explicit standards + user requests audit.`}
             STEP 2: IDENTIFY THE "GOLDEN THREAD"
             - What is the ONE main learning objective? Phrase it as a guiding "essential question" students will answer.
             - Pick 5 specific vocabulary terms that are critical to this objective.

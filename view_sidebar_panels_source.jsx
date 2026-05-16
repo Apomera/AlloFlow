@@ -983,19 +983,18 @@ function MathPanel(props) {
                             return (
                                 <div className="p-4 bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border-2 border-amber-200 text-center">
                                     <div className="text-3xl mb-2">🏰</div>
-                                    <h4 className="text-sm font-black text-amber-900 mb-1">Fluency Maze</h4>
+                                    <h4 className="text-sm font-black text-amber-900 mb-1">{t('fluency_maze.title') || 'Fluency Maze'}</h4>
                                     <p className="text-xs text-amber-800 mb-3 leading-relaxed">
-                                        Navigate a torchlit dungeon. Each gate is locked by a math fact —
-                                        solve it to pass. Find the golden key to unlock the exit.
+                                        {t('fluency_maze.description') || 'Navigate a torchlit dungeon. Each gate is locked by a math fact — solve it to pass. Find the golden key to unlock the exit.'}
                                     </p>
                                     <button
                                         onClick={launchMaze}
                                         className="w-full px-4 py-2.5 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white text-sm font-bold rounded-lg transition-all shadow-md flex items-center justify-center gap-2"
-                                        aria-label="Open Fluency Maze in main view"
+                                        aria-label={t('fluency_maze.open_aria') || 'Open Fluency Maze in main view'}
                                     >
-                                        🚪 Open Maze (full view)
+                                        {t('fluency_maze.open_button') || '🚪 Open Maze (full view)'}
                                     </button>
-                                    <p className="text-[10px] text-amber-700 mt-2 italic">Saved to history so you can re-enter later.</p>
+                                    <p className="text-[10px] text-amber-700 mt-2 italic">{t('fluency_maze.saved_note') || 'Saved to history so you can re-enter later.'}</p>
                                 </div>
                             );
                         })()}
@@ -1109,13 +1108,13 @@ function DbqPanel(props) {
                         <p className="text-xs text-slate-600">{t('dbq.desc') || 'Generate a complete Document-Based Question activity from your source text — with primary sources, HAPP framework, sourcing questions, corroboration analysis, synthesis essay prompt, and rubric.'}</p>
                         {/* DBQ Mode Selector */}
                         <div>
-                            <div className="text-[11px] font-bold text-slate-600 uppercase mb-1">Analysis Mode</div>
+                            <div className="text-[11px] font-bold text-slate-600 uppercase mb-1">{t('dbq.analysis_mode') || 'Analysis Mode'}</div>
                             <div className="flex gap-1">
-                                {[['standard', '📄 Standard DBQ', 'Extract documents from your source text'],
-                                  ['perspectives', '⚔️ Competing Perspectives', 'AI finds 2+ viewpoints that agree and disagree'],
-                                  ['search', '🔍 Web-Enhanced', 'Find real primary sources from archives (LOC, NARA, etc.)'],
-                                  ['links', '🔗 Teacher Links', 'Paste URLs to articles — AI builds DBQ around them'],
-                                  ['custom', '✏️ Teacher Docs', 'Paste your own document text directly']
+                                {[['standard', t('dbq.mode_standard_label') || '📄 Standard DBQ', t('dbq.mode_standard_desc') || 'Extract documents from your source text'],
+                                  ['perspectives', t('dbq.mode_perspectives_label') || '⚔️ Competing Perspectives', t('dbq.mode_perspectives_desc') || 'AI finds 2+ viewpoints that agree and disagree'],
+                                  ['search', t('dbq.mode_search_label') || '🔍 Web-Enhanced', t('dbq.mode_search_desc') || 'Find real primary sources from archives (LOC, NARA, etc.)'],
+                                  ['links', t('dbq.mode_links_label') || '🔗 Teacher Links', t('dbq.mode_links_desc') || 'Paste URLs to articles — AI builds DBQ around them'],
+                                  ['custom', t('dbq.mode_custom_label') || '✏️ Teacher Docs', t('dbq.mode_custom_desc') || 'Paste your own document text directly']
                                 ].map(([mode, label, desc]) => (
                                     <button key={mode} onClick={() => { window._dbqMode = mode; setExpandedTools(prev => [...prev]); }}
                                         className={`flex-1 text-left p-2 rounded-lg text-[11px] font-bold transition-all border ${(window._dbqMode || 'standard') === mode ? 'border-rose-400 bg-rose-100 text-rose-800' : 'border-slate-200 bg-white text-slate-600 hover:bg-rose-50'}`}>
@@ -1129,10 +1128,10 @@ function DbqPanel(props) {
                         {(window._dbqMode === 'search' || window._dbqMode === 'perspectives' || window._dbqMode === 'links') && (
                             <div>
                                 <label className="text-[11px] font-bold text-slate-600 uppercase block mb-1">
-                                    {window._dbqMode === 'search' ? 'Search Topic (optional — refines source hunting)' : window._dbqMode === 'links' ? 'Topic Context (helps AI understand the links)' : 'Perspectives to Compare (optional)'}
+                                    {window._dbqMode === 'search' ? (t('dbq.focus_label_search') || 'Search Topic (optional — refines source hunting)') : window._dbqMode === 'links' ? (t('dbq.focus_label_links') || 'Topic Context (helps AI understand the links)') : (t('dbq.focus_label_perspectives') || 'Perspectives to Compare (optional)')}
                                 </label>
-                                <input type="text" placeholder={window._dbqMode === 'search' ? 'e.g. "Japanese internment primary sources"' : window._dbqMode === 'links' ? 'e.g. "Civil Rights Movement"' : 'e.g. "Federalists vs Anti-Federalists"'}
-                                    aria-label={window._dbqMode === 'search' ? 'Search topic for primary source hunting' : window._dbqMode === 'links' ? 'Topic context for AI link analysis' : 'Perspectives to compare for DBQ'}
+                                <input type="text" placeholder={window._dbqMode === 'search' ? (t('dbq.focus_placeholder_search') || 'e.g. "Japanese internment primary sources"') : window._dbqMode === 'links' ? (t('dbq.focus_placeholder_links') || 'e.g. "Civil Rights Movement"') : (t('dbq.focus_placeholder_perspectives') || 'e.g. "Federalists vs Anti-Federalists"')}
+                                    aria-label={window._dbqMode === 'search' ? (t('dbq.focus_aria_search') || 'Search topic for primary source hunting') : window._dbqMode === 'links' ? (t('dbq.focus_aria_links') || 'Topic context for AI link analysis') : (t('dbq.focus_aria_perspectives') || 'Perspectives to compare for DBQ')}
                                     className="w-full text-xs border border-rose-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-rose-300 outline-none"
                                     id="dbq-focus-topic" />
                             </div>
@@ -1140,32 +1139,32 @@ function DbqPanel(props) {
                         {/* Teacher Links mode — paste URLs */}
                         {window._dbqMode === 'links' && (
                             <div>
-                                <label className="text-[11px] font-bold text-slate-600 uppercase block mb-1">Document URLs (one per line)</label>
+                                <label className="text-[11px] font-bold text-slate-600 uppercase block mb-1">{t('dbq.urls_label') || 'Document URLs (one per line)'}</label>
                                 <textarea
                                     id="dbq-teacher-links"
                                     placeholder={"https://www.loc.gov/item/example-document/\nhttps://founders.archives.gov/documents/...\nhttps://www.archives.gov/milestone-documents/..."}
                                     className="w-full text-xs border border-rose-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-rose-300 outline-none h-20 font-mono"
-                                    aria-label="Document URLs for DBQ" />
-                                <p className="text-[11px] text-slate-600 mt-1">Paste links to articles, primary sources, or documents. AI will build the DBQ scaffolding around them.</p>
+                                    aria-label={t('dbq.urls_aria') || 'Document URLs for DBQ'} />
+                                <p className="text-[11px] text-slate-600 mt-1">{t('dbq.urls_help') || 'Paste links to articles, primary sources, or documents. AI will build the DBQ scaffolding around them.'}</p>
                             </div>
                         )}
                         {/* Teacher Documents mode — paste your own documents */}
                         {window._dbqMode === 'custom' && (
                             <div className="space-y-2">
                                 <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-3">
-                                    <p className="text-[11px] text-indigo-700 mb-2"><strong>Paste each document below.</strong> Separate documents with <code className="bg-indigo-100 px-1 rounded">---</code> on its own line. Or use the import buttons to fetch from a URL or upload an image of a document.</p>
-                                    <p className="text-[11px] text-indigo-500">For each document, optionally include a title and source on the first lines:</p>
+                                    <p className="text-[11px] text-indigo-700 mb-2"><strong>{t('dbq.custom_paste_intro_strong') || 'Paste each document below.'}</strong> {t('dbq.custom_paste_intro_part1') || 'Separate documents with'} <code className="bg-indigo-100 px-1 rounded">---</code> {t('dbq.custom_paste_intro_part2') || "on its own line. Or use the import buttons to fetch from a URL or upload an image of a document."}</p>
+                                    <p className="text-[11px] text-indigo-500">{t('dbq.custom_title_source_hint') || 'For each document, optionally include a title and source on the first lines:'}</p>
                                     <pre className="text-[11px] bg-white border border-indigo-100 rounded p-2 mt-1 text-indigo-600 whitespace-pre-wrap">Title: Letter from Abigail Adams to John Adams{'\n'}Source: March 31, 1776{'\n'}Remember the Ladies, and be more generous and favourable to them than your ancestors...{'\n'}---{'\n'}Title: Declaration of Independence (excerpt){'\n'}Source: Thomas Jefferson, July 4, 1776{'\n'}We hold these truths to be self-evident, that all men are created equal...</pre>
                                 </div>
                                 {/* Import tools — URL fetch + image upload */}
                                 <div className="flex gap-2 flex-wrap items-end">
                                     <div className="flex-1 min-w-[200px]">
-                                        <label className="text-[11px] font-bold text-slate-600 uppercase block mb-1">Import from URL</label>
+                                        <label className="text-[11px] font-bold text-slate-600 uppercase block mb-1">{t('dbq.import_from_url_label') || 'Import from URL'}</label>
                                         <div className="flex gap-1">
                                             <input type="text" id="dbq-import-url"
                                                 className="flex-1 text-xs border border-indigo-600 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-indigo-300 outline-none"
-                                                placeholder="https://... (article, speech, primary source)"
-                                                aria-label="URL to import as document" />
+                                                placeholder={t('dbq.import_url_placeholder') || 'https://... (article, speech, primary source)'}
+                                                aria-label={t('dbq.import_url_aria') || 'URL to import as document'} />
                                             <button onClick={async () => {
                                                 const urlInput = document.getElementById('dbq-import-url');
                                                 const docArea = document.getElementById('dbq-custom-docs');
@@ -1182,11 +1181,11 @@ function DbqPanel(props) {
                                                     }
                                                 } catch (e) { addToast && addToast('Import failed: ' + e.message, 'error'); }
                                             }} className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold rounded-lg transition-all shrink-0"
-                                                aria-label="Fetch URL">🔗 Fetch</button>
+                                                aria-label={t('dbq.fetch_url_aria') || 'Fetch URL'}>{t('dbq.fetch_url_button') || '🔗 Fetch'}</button>
                                         </div>
                                     </div>
                                     <div>
-                                        <label className="text-[11px] font-bold text-slate-600 uppercase block mb-1">Upload Document Image</label>
+                                        <label className="text-[11px] font-bold text-slate-600 uppercase block mb-1">{t('dbq.upload_image_label') || 'Upload Document Image'}</label>
                                         <div className="flex gap-1">
                                             <input type="file" id="dbq-import-image" accept="image/*,.pdf" className="hidden"
                                                 onChange={async (e) => {
@@ -1217,7 +1216,7 @@ function DbqPanel(props) {
                                                 }} />
                                             <button onClick={() => document.getElementById('dbq-import-image')?.click()}
                                                 className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-[11px] font-bold rounded-lg transition-all flex items-center gap-1"
-                                                aria-label="Upload document image">📷 Upload Image</button>
+                                                aria-label={t('dbq.upload_image_aria') || 'Upload document image'}>{t('dbq.upload_image_button') || '📷 Upload Image'}</button>
                                             <button onClick={async () => {
                                                 const docArea = document.getElementById('dbq-custom-docs');
                                                 if (!docArea || !callGeminiVision) return;
@@ -1247,18 +1246,18 @@ function DbqPanel(props) {
                                                     addToast && addToast('No image found in clipboard. Copy an image first (screenshot, right-click copy, etc.)', 'info');
                                                 } catch (err) { addToast && addToast('Clipboard access failed. Try uploading instead.', 'info'); }
                                             }} className="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white text-[11px] font-bold rounded-lg transition-all flex items-center gap-1"
-                                                aria-label="Paste image from clipboard">📋 Paste Image</button>
+                                                aria-label={t('dbq.paste_clipboard_aria') || 'Paste image from clipboard'}>{t('dbq.paste_clipboard_button') || '📋 Paste Image'}</button>
                                         </div>
                                     </div>
                                 </div>
                                 <textarea id="dbq-custom-docs"
                                     className="w-full text-xs border border-rose-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-rose-300 outline-none font-mono"
-                                    rows={8} placeholder="Paste your documents here, separated by --- on its own line..."
-                                    aria-label="Custom documents for DBQ" />
+                                    rows={8} placeholder={t('dbq.custom_docs_placeholder') || 'Paste your documents here, separated by --- on its own line...'}
+                                    aria-label={t('dbq.custom_docs_aria') || 'Custom documents for DBQ'} />
                                 <input type="text" id="dbq-custom-essay-focus"
                                     className="w-full text-xs border border-rose-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-rose-300 outline-none"
-                                    placeholder="Essay focus question (optional) — e.g. 'How did different groups define liberty in 1776?'"
-                                    aria-label="Custom essay focus question" />
+                                    placeholder={t('dbq.custom_essay_placeholder') || "Essay focus question (optional) — e.g. 'How did different groups define liberty in 1776?'"}
+                                    aria-label={t('dbq.custom_essay_aria') || 'Custom essay focus question'} />
                             </div>
                         )}
                         <div className="bg-white rounded-lg p-2 border border-rose-100">
@@ -1277,11 +1276,11 @@ function DbqPanel(props) {
                     </div>
                     {!hasSourceOrAnalysis && window._dbqMode !== 'custom' && (
                         <div className="px-3 pb-2">
-                            <p className="text-[11px] text-rose-400 italic flex items-center gap-1">⬆️ Paste a source text above first — the DBQ will be built from it.</p>
+                            <p className="text-[11px] text-rose-400 italic flex items-center gap-1">{t('dbq.need_source_hint') || '⬆️ Paste a source text above first — the DBQ will be built from it.'}</p>
                         </div>
                     )}
                     <button
-                        aria-label="Generate DBQ"
+                        aria-label={t('dbq.generate_aria') || 'Generate DBQ'}
                         data-help-key="dbq_generate_button"
                         onClick={() => handleGenerate('dbq')}
                         disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
@@ -1794,7 +1793,7 @@ function QuizPanel(props) {
                          </button>
                          {itemMixOpen && (
                            <div className="px-3 pb-3 pt-1 space-y-2 animate-in slide-in-from-top-1 duration-150 bg-slate-50/50">
-                             <p className="text-[11px] text-slate-500 leading-snug">Control how many of each question type are generated. MCQ and Reflections are set above.</p>
+                             <p className="text-[11px] text-slate-500 leading-snug">{t('quiz.item_mix_help') || 'Control how many of each question type are generated. MCQ and Reflections are set above.'}</p>
                              {visibleTypes.map(et => {
                                const count = effectiveMix[et.key] || 0;
                                return (
@@ -1810,7 +1809,7 @@ function QuizPanel(props) {
                                      max="5"
                                      value={count}
                                      onChange={(e) => handleMixChange(et.key, parseInt(e.target.value) || 0)}
-                                     aria-label={et.label + ' count'}
+                                     aria-label={(t('quiz.item_count_aria', { type: et.label }) || (et.label + ' count'))}
                                      className="w-12 text-center text-sm border border-slate-300 rounded-md p-1 focus:ring-indigo-200 focus:border-indigo-300 bg-white"
                                    />
                                  </div>
@@ -1821,14 +1820,14 @@ function QuizPanel(props) {
                                  type="button"
                                  onClick={handleResetMix}
                                  className="text-[11px] text-indigo-600 hover:text-indigo-800 font-medium mt-1 transition-colors"
-                               >↩ Reset to mode defaults</button>
+                               >{t('quiz.reset_mix') || '↩ Reset to mode defaults'}</button>
                              )}
                            </div>
                          )}
                        </div>
                      )}
                      <div className="px-3 pt-2 pb-1 flex items-center gap-2">
-                       <label htmlFor="quiz-mode-select" className="text-[10px] font-bold uppercase tracking-wider text-slate-600 flex-shrink-0">Mode:</label>
+                       <label htmlFor="quiz-mode-select" className="text-[10px] font-bold uppercase tracking-wider text-slate-600 flex-shrink-0">{t('quiz.mode_label') || 'Mode:'}</label>
                        <select
                          id="quiz-mode-select"
                          value={quizMode}
@@ -1836,17 +1835,17 @@ function QuizPanel(props) {
                          disabled={isProcessing}
                          data-help-key="quiz_pedagogical_mode_select"
                          className="flex-1 min-w-0 text-xs font-semibold px-2 py-1 rounded border border-slate-300 bg-white hover:border-indigo-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all disabled:opacity-50"
-                         aria-label="Quiz mode"
-                         title="Quiz mode: choose what this quiz is for. Pre-check probes prerequisites; Exit Ticket assesses today's content; Formative is a quick mid-lesson pulse; Spaced Review re-tests prior content."
+                         aria-label={t('quiz.mode_aria') || 'Quiz mode'}
+                         title={t('quiz.mode_tooltip') || "Quiz mode: choose what this quiz is for. Pre-check probes prerequisites; Exit Ticket assesses today's content; Formative is a quick mid-lesson pulse; Spaced Review re-tests prior content."}
                        >
-                         <option value="exit-ticket">📝 Exit Ticket</option>
-                         <option value="pre-check">🎯 Pre-Check (Readiness)</option>
-                         <option value="formative">🌡️ Formative Check</option>
-                         <option value="review">🔁 Spaced Review</option>
+                         <option value="exit-ticket">{t('quiz.mode_exit_ticket') || '📝 Exit Ticket'}</option>
+                         <option value="pre-check">{t('quiz.mode_pre_check') || '🎯 Pre-Check (Readiness)'}</option>
+                         <option value="formative">{t('quiz.mode_formative') || '🌡️ Formative Check'}</option>
+                         <option value="review">{t('quiz.mode_review') || '🔁 Spaced Review'}</option>
                        </select>
                      </div>
                      <div className="px-3 pt-1 pb-2 flex items-center gap-2">
-                       <label htmlFor="quiz-visuals-select" className="text-[10px] font-bold uppercase tracking-wider text-slate-600 flex-shrink-0">Visuals:</label>
+                       <label htmlFor="quiz-visuals-select" className="text-[10px] font-bold uppercase tracking-wider text-slate-600 flex-shrink-0">{t('quiz.visuals_label') || 'Visuals:'}</label>
                        <select
                          id="quiz-visuals-select"
                          value={mcqVisualMode}
@@ -1854,20 +1853,20 @@ function QuizPanel(props) {
                          disabled={isProcessing}
                          data-help-key="quiz_visual_mode_select"
                          className="flex-1 min-w-0 text-xs font-semibold px-2 py-1 rounded border border-slate-300 bg-white hover:border-indigo-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all disabled:opacity-50"
-                         aria-label="MCQ visual mode"
-                         title="Visuals (MCQ items only): None = text-only (free, fastest). Question = generate one image per question stem. Options = generate 4 images per question (one per option). Both = question + options. Image gen takes ~3-5s per image and uses Imagen credits."
+                         aria-label={t('quiz.visuals_aria') || 'MCQ visual mode'}
+                         title={t('quiz.visuals_tooltip') || "Visuals (MCQ items only): None = text-only (free, fastest). Question = generate one image per question stem. Options = generate 4 images per question (one per option). Both = question + options. Image gen takes ~3-5s per image and uses Imagen credits."}
                        >
-                         <option value="none">∅ None (text only)</option>
-                         <option value="question">🖼️ Question images</option>
-                         <option value="options">🎴 Option images</option>
-                         <option value="both">🖼️🎴 Both</option>
+                         <option value="none">{t('quiz.visuals_none') || '∅ None (text only)'}</option>
+                         <option value="question">{t('quiz.visuals_question') || '🖼️ Question images'}</option>
+                         <option value="options">{t('quiz.visuals_options') || '🎴 Option images'}</option>
+                         <option value="both">{t('quiz.visuals_both') || '🖼️🎴 Both'}</option>
                        </select>
                      </div>
                      {/* Plan T v3+ Chunk 10: optional image-style hint. Affects all images
                          in the quiz consistently + persists for refine pipeline. */}
                      {mcqVisualMode !== 'none' && (
                      <div className="px-3 pt-0 pb-2 flex items-center gap-2">
-                       <label htmlFor="quiz-image-style-input" className="text-[10px] font-bold uppercase tracking-wider text-slate-600 flex-shrink-0">Style:</label>
+                       <label htmlFor="quiz-image-style-input" className="text-[10px] font-bold uppercase tracking-wider text-slate-600 flex-shrink-0">{t('quiz.style_label') || 'Style:'}</label>
                        <input
                          id="quiz-image-style-input"
                          type="text"
@@ -1875,11 +1874,11 @@ function QuizPanel(props) {
                          onChange={(ev) => setImageStyle(ev.target.value)}
                          disabled={isProcessing}
                          data-help-key="quiz_image_style_input"
-                         placeholder="e.g. watercolor, flat vector, photorealistic, line drawing"
+                         placeholder={t('quiz.style_placeholder') || 'e.g. watercolor, flat vector, photorealistic, line drawing'}
                          maxLength={120}
                          className="flex-1 min-w-0 text-xs px-2 py-1 rounded border border-slate-300 bg-white hover:border-indigo-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all disabled:opacity-50 placeholder:italic placeholder:text-slate-400"
-                         aria-label="Image style hint"
-                         title="Optional. Applied to every image in the quiz (question + options). Empty = default style. Persisted with the quiz so refine actions stay on-brand."
+                         aria-label={t('quiz.style_aria') || 'Image style hint'}
+                         title={t('quiz.style_tooltip') || 'Optional. Applied to every image in the quiz (question + options). Empty = default style. Persisted with the quiz so refine actions stay on-brand.'}
                        />
                      </div>
                      )}
@@ -1890,7 +1889,7 @@ function QuizPanel(props) {
                      disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                      className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                      >
-                     <span className="text-sm text-slate-600 group-hover:text-indigo-700 transition-colors flex items-center gap-2">{quizMode === 'exit-ticket' ? t('quiz.generate') : (quizMode === 'pre-check' ? 'Generate Pre-Check' : quizMode === 'formative' ? 'Generate Formative Check' : 'Generate Spaced Review')} <Sparkles size={14} className="text-yellow-600"/></span>
+                     <span className="text-sm text-slate-600 group-hover:text-indigo-700 transition-colors flex items-center gap-2">{quizMode === 'exit-ticket' ? t('quiz.generate') : (quizMode === 'pre-check' ? (t('quiz.generate_pre_check') || 'Generate Pre-Check') : quizMode === 'formative' ? (t('quiz.generate_formative') || 'Generate Formative Check') : (t('quiz.generate_review') || 'Generate Spaced Review'))} <Sparkles size={14} className="text-yellow-600"/></span>
                      <ArrowRight size={16} className="text-slate-600 group-hover:text-indigo-600" />
                      </button>
                   </div>
@@ -2064,28 +2063,28 @@ function ConceptSortPanel(props) {
                                 type="number"
                                 min="4"
                                 max="30"
-                                placeholder="Auto (AI decides)"
+                                placeholder={t('concept_sort.item_count_placeholder') || 'Auto (AI decides)'}
                                 value={conceptItemCount}
                                 onChange={(e) => {
                                   const v = e.target.value;
                                   setConceptItemCount(v === '' ? '' : (parseInt(v, 10) || ''));
                                 }}
-                                title="Leave blank to let AI pick the right number based on your source text. Or type 4–30 to force a specific count."
+                                title={t('concept_sort.item_count_tooltip') || 'Leave blank to let AI pick the right number based on your source text. Or type 4–30 to force a specific count.'}
                                 className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 p-1"
                             />
                         </div>
                         <div className="mt-2">
-                            <label className="block text-xs text-slate-600 mb-1 font-medium">Card visuals</label>
+                            <label className="block text-xs text-slate-600 mb-1 font-medium">{t('concept_sort.card_visuals_label') || 'Card visuals'}</label>
                             <select
-                                aria-label="Card visuals"
+                                aria-label={t('concept_sort.card_visuals_label') || 'Card visuals'}
                                 data-help-key="concept_sort_image_mode"
                                 value={conceptImageMode}
                                 onChange={(e) => setConceptImageMode(e.target.value)}
                                 className="w-full text-xs border-slate-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 p-1"
                             >
-                                <option value="auto">Auto (only on short items)</option>
-                                <option value="always">Always generate images</option>
-                                <option value="never">Never (text-only cards)</option>
+                                <option value="auto">{t('concept_sort.card_visuals_auto') || 'Auto (only on short items)'}</option>
+                                <option value="always">{t('concept_sort.card_visuals_always') || 'Always generate images'}</option>
+                                <option value="never">{t('concept_sort.card_visuals_never') || 'Never (text-only cards)'}</option>
                             </select>
                         </div>
                         {conceptImageMode !== 'never' && (

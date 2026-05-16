@@ -465,7 +465,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
               <span>{groupIds.length} group{groupIds.length !== 1 ? 's' : ''}</span>
               <span>{Object.keys(students).length} student{Object.keys(students).length !== 1 ? 's' : ''}</span>
               <span>{getUnassigned().length} unassigned</span>
-              <span className="ml-auto flex items-center gap-1"><ShieldCheck size={10} className="text-green-500" /> Local only</span>
+              <span className="ml-auto flex items-center gap-1"><ShieldCheck size={10} className="text-green-500" /> {t('teacher.local_only') || 'Local only'}</span>
             </div>
           )}
         </div>
@@ -1989,11 +1989,11 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                      When a student answers, auto-assign them to a group. Use this for <strong>choice</strong> (e.g., "Pirate Crew vs Space Crew") or <strong>formative-assessment</strong> routing. Group resources can then be staged per group via the Groups panel above.
                                  </p>
                                  {groupEntriesForRouting.length === 0 && (
-                                     <p className="text-[11px] text-red-700 italic">Create at least one group in the Groups panel above before adding routing rules.</p>
+                                     <p className="text-[11px] text-red-700 italic">{t('teacher.quiz_routing.no_groups_warning') || 'Create at least one group in the Groups panel above before adding routing rules.'}</p>
                                  )}
                                  {currentRules.map(rule => (
                                      <div key={rule.id} className="flex flex-wrap items-center gap-1 bg-white border border-amber-200 rounded p-1.5 text-xs">
-                                         <span className="text-slate-600">When answer</span>
+                                         <span className="text-slate-600">{t('teacher.quiz_routing.when_answer_label') || 'When answer'}</span>
                                          <select
                                              aria-label="Predicate"
                                              value={rule.when.predicate}
@@ -2004,7 +2004,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                              <option value="in">is one of</option>
                                          </select>
                                          <select
-                                             aria-label="Answer option"
+                                             aria-label={t('teacher.quiz_routing.answer_option_aria') || 'Answer option'}
                                              value={rule.when.predicate === 'in' ? '' : rule.when.value}
                                              onChange={(e) => updateQuizRoutingRule(rule.id, { when: { value: e.target.value } })}
                                              className="px-1 py-0.5 border border-slate-300 rounded text-xs"
@@ -2016,7 +2016,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                          </select>
                                          <span className="text-slate-600">→ assign to</span>
                                          <select
-                                             aria-label="Target group"
+                                             aria-label={t('teacher.quiz_routing.target_group_aria') || 'Target group'}
                                              value={rule.then.groupId}
                                              onChange={(e) => updateQuizRoutingRule(rule.id, { then: { groupId: e.target.value } })}
                                              className="px-1 py-0.5 border border-slate-300 rounded text-xs"
@@ -2028,7 +2028,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                          </select>
                                          <button
                                              onClick={() => removeQuizRoutingRule(rule.id)}
-                                             aria-label="Remove rule"
+                                             aria-label={t('teacher.quiz_routing.remove_rule_aria') || 'Remove rule'}
                                              className="ml-auto px-1.5 py-0.5 text-red-700 hover:bg-red-50 rounded border border-red-200"
                                          >✕</button>
                                      </div>
@@ -2101,7 +2101,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                              <div className="text-center p-8">
                                                  <div className="text-7xl mb-4">💀</div>
                                                  <h2 className="text-4xl font-black text-white mb-2 drop-shadow-lg">{t('quiz.boss.class_defeat_msg')}</h2>
-                                                 <p className="text-lg text-red-200">The class has fallen...</p>
+                                                 <p className="text-lg text-red-200">{t('teacher.boss.class_fallen') || 'The class has fallen...'}</p>
                                              </div>
                                          </div>
                                      )}
@@ -3045,10 +3045,10 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
     const totalFidelity = dashboardData.reduce((s, st) => s + (st.fidelityLog ? st.fidelityLog.length : 0), 0);
     const reportHtml = `
         <div style="font-family: 'Times New Roman', serif; padding: 40px; color: #333; max-width: 800px; margin: 0 auto;">
-            <h1 style="text-align: center; font-size: 18px; font-weight: bold; margin-bottom: 5px;">AlloFlow UDL Platform — Research Data Report</h1>
+            <h1 style="text-align: center; font-size: 18px; font-weight: bold; margin-bottom: 5px;">${t('teacher.research.report_title') || 'AlloFlow UDL Platform — Research Data Report'}</h1>
             <p style="text-align: center; font-size: 12px; color: #666; margin-bottom: 30px;">Generated: ${date} | N = ${dashboardData.length} students</p>
             <hr style="border: 1px solid #333; margin-bottom: 25px;">
-            <h2 style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">Table 1. TAM Survey Construct Descriptives</h2>
+            <h2 style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">${t('teacher.research.table1_heading') || 'Table 1. TAM Survey Construct Descriptives'}</h2>
             <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 25px;">
                 <thead>
                     <tr style="border-bottom: 2px solid #333; border-top: 2px solid #333;">
@@ -3083,7 +3083,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                     </tr>
                 </tbody>
             </table>
-            <h2 style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">Table 2. Oral Reading Fluency Probe Descriptives</h2>
+            <h2 style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">${t('teacher.research.table2_heading') || 'Table 2. Oral Reading Fluency Probe Descriptives'}</h2>
             <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 25px;">
                 <thead>
                     <tr style="border-bottom: 2px solid #333; border-top: 2px solid #333;">
@@ -3095,26 +3095,26 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                 </thead>
                 <tbody>
                     <tr style="border-bottom: 1px solid #ddd;">
-                        <td style="padding: 6px 8px;">Words Correct Per Minute (WCPM)</td>
+                        <td style="padding: 6px 8px;">${t('teacher.research.measure_wcpm') || 'Words Correct Per Minute (WCPM)'}</td>
                         <td style="text-align: center; padding: 6px 8px;">${wcpmStats.n}</td>
                         <td style="text-align: center; padding: 6px 8px;">${wcpmStats.mean}</td>
                         <td style="text-align: center; padding: 6px 8px;">${wcpmStats.sd}</td>
                     </tr>
                     <tr style="border-bottom: 1px solid #ddd;">
-                        <td style="padding: 6px 8px;">Digits Correct Per Minute (DCPM)</td>
+                        <td style="padding: 6px 8px;">${t('teacher.research.measure_dcpm') || 'Digits Correct Per Minute (DCPM)'}</td>
                         <td style="text-align: center; padding: 6px 8px;">${dcpmStats.n}</td>
                         <td style="text-align: center; padding: 6px 8px;">${dcpmStats.mean}</td>
                         <td style="text-align: center; padding: 6px 8px;">${dcpmStats.sd}</td>
                     </tr>
                     <tr style="border-bottom: 2px solid #333;">
-                        <td style="padding: 6px 8px;">Accuracy (%)</td>
+                        <td style="padding: 6px 8px;">${t('teacher.research.measure_accuracy_pct') || 'Accuracy (%)'}</td>
                         <td style="text-align: center; padding: 6px 8px;">${accStats.n}</td>
                         <td style="text-align: center; padding: 6px 8px;">${accStats.mean}</td>
                         <td style="text-align: center; padding: 6px 8px;">${accStats.sd}</td>
                     </tr>
                 </tbody>
             </table>
-            <h2 style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">Table 3. Implementation Fidelity Summary</h2>
+            <h2 style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">${t('teacher.research.table3_heading') || 'Table 3. Implementation Fidelity Summary'}</h2>
             <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 25px;">
                 <thead>
                     <tr style="border-bottom: 2px solid #333; border-top: 2px solid #333;">
@@ -3131,7 +3131,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                 </tbody>
             </table>
             <div style="page-break-before: always;"></div>
-            <h2 style="font-size: 16px; font-weight: bold; margin-top: 30px; margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 5px;">Appendix A: Individual Student Data</h2>
+            <h2 style="font-size: 16px; font-weight: bold; margin-top: 30px; margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 5px;">${t('teacher.research.appendix_a_heading') || 'Appendix A: Individual Student Data'}</h2>
             ${dashboardData.filter(s => {
                                           if (studentFilter === 'probes') return s.probeHistory && Object.keys(s.probeHistory).length > 0;
                                           if (studentFilter === 'surveys') return s.surveyResponses && s.surveyResponses.length > 0;
@@ -3172,19 +3172,19 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                         </tr>
                     </table>
                     ${sProbeWcpm.length > 0 ? `
-                    <p style="font-size: 10px; font-weight: bold; color: #555; margin-bottom: 4px;">Probe History (WCPM):</p>
+                    <p style="font-size: 10px; font-weight: bold; color: #555; margin-bottom: 4px;">${t('teacher.research.probe_history_wcpm_label') || 'Probe History (WCPM):'}</p>
                     <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px;">
                         ${sProbeWcpm.map(p => `<span style="font-size: 9px; padding: 2px 6px; border-radius: 3px; background: ${p.wcpm >= 100 ? "#d1fae5" : p.wcpm >= 60 ? "#fef3c7" : "#fee2e2"}; color: ${p.wcpm >= 100 ? "#065f46" : p.wcpm >= 60 ? "#92400e" : "#991b1b"}; font-weight: bold;">${p.wcpm}${p.date ? " (" + new Date(p.date).toLocaleDateString("en", {month: "short", day: "numeric"}) + ")" : ""}</span>`).join("")}
                     </div>
                     ` : ""}
                     ${sQuizzes.length > 0 ? `
-                    <p style="font-size: 10px; font-weight: bold; color: #555; margin-bottom: 4px;">Quiz Scores:</p>
+                    <p style="font-size: 10px; font-weight: bold; color: #555; margin-bottom: 4px;">${t('teacher.research.quiz_scores_label') || 'Quiz Scores:'}</p>
                     <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px;">
                         ${sQuizzes.map(q => `<span style="font-size: 9px; padding: 2px 6px; border-radius: 3px; background: #ede9fe; color: #5b21b6; font-weight: bold;">${q.score !== undefined ? q.score : "—"}${q.label ? " " + q.label : ""}</span>`).join("")}
                     </div>
                     ` : ""}
                     ${sSurveys.length > 0 ? `
-                    <p style="font-size: 10px; font-weight: bold; color: #555; margin-bottom: 4px;">Survey Responses:</p>
+                    <p style="font-size: 10px; font-weight: bold; color: #555; margin-bottom: 4px;">${t('teacher.research.survey_responses_label') || 'Survey Responses:'}</p>
                     <div style="display: flex; gap: 4px; flex-wrap: wrap;">
                         ${sSurveys.map(s => `<span style="font-size: 9px; padding: 2px 6px; border-radius: 3px; background: #fce7f3; color: #9d174d; font-weight: bold;">${s.construct || "—"}: ${s.score !== undefined ? s.score + "/5" : "—"}</span>`).join("")}
                     </div>
@@ -3194,7 +3194,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
             }).join("")}
                         <div style="margin-top: 40px; font-size: 10px; color: #999; text-align: center; border-top: 1px solid #eee; padding-top: 15px;">
                 <p><em>Note.</em> TAM = Technology Acceptance Model (Davis, 1989). WCPM = Words Correct Per Minute. DCPM = Digits Correct Per Minute.</p>
-                <p>Generated by AlloFlow UDL Platform — Research Export Module</p>
+                <p>${t('teacher.research.export_footer') || 'Generated by AlloFlow UDL Platform — Research Export Module'}</p>
             </div>
         </div>
     `;
@@ -3422,7 +3422,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                         onClick={handleExportResearchPDF} data-help-key="dashboard_export_research_btn"
                         className="text-xs font-bold text-purple-600 hover:text-purple-800 hover:bg-purple-50 px-3 py-1.5 rounded-full transition-colors mr-2 border border-purple-200 shadow-sm flex items-center gap-1"
                         title={t('research.export_apa_title')}
-                        aria-label="Export Research Report"
+                        aria-label={t('teacher.research.export_btn_aria') || 'Export Research Report'}
                     >
                         <FileDown size={14} /> 📊 Research PDF
                     </button>
@@ -4067,7 +4067,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                          <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-right-4">
                              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-400">
                                  <h3 className="text-lg font-black text-slate-800 flex items-center gap-2 mb-4">
-                                     🔬 STEM Station Activity
+                                     {t('teacher.stem_stations.section_title') || '🔬 STEM Station Activity'}
                                  </h3>
                                  {(() => {
                                      const stations = JSON.parse(localStorage.getItem('alloflow_stem_stations') || '[]');
@@ -4076,8 +4076,8 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                                          return (
                                              <div className="text-center py-8">
                                                  <div className="text-4xl mb-3">📌</div>
-                                                 <p className="text-sm text-slate-600">No STEM Stations created yet.</p>
-                                                 <p className="text-xs text-slate-600 mt-1">Generate a lesson plan to get AI-recommended STEM tools.</p>
+                                                 <p className="text-sm text-slate-600">{t('teacher.stem_stations.empty_title') || 'No STEM Stations created yet.'}</p>
+                                                 <p className="text-xs text-slate-600 mt-1">{t('teacher.stem_stations.empty_hint') || 'Generate a lesson plan to get AI-recommended STEM tools.'}</p>
                                              </div>
                                          );
                                      }
@@ -4086,19 +4086,19 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                                              <div className="grid grid-cols-3 gap-4 mb-4">
                                                  <div className="bg-emerald-50 rounded-xl p-4 text-center border border-emerald-100">
                                                      <div className="text-2xl font-black text-emerald-700">{stations.length}</div>
-                                                     <div className="text-xs text-emerald-600 font-bold mt-1">Stations Created</div>
+                                                     <div className="text-xs text-emerald-600 font-bold mt-1">{t('teacher.stem_stations.stations_created') || 'Stations Created'}</div>
                                                  </div>
                                                  <div className="bg-teal-50 rounded-xl p-4 text-center border border-teal-100">
                                                      <div className="text-2xl font-black text-teal-700">
                                                          {new Set(stations.flatMap(s => s.tools)).size}
                                                      </div>
-                                                     <div className="text-xs text-teal-600 font-bold mt-1">Unique Tools Used</div>
+                                                     <div className="text-xs text-teal-600 font-bold mt-1">{t('teacher.stem_stations.unique_tools_used') || 'Unique Tools Used'}</div>
                                                  </div>
                                                  <div className="bg-indigo-50 rounded-xl p-4 text-center border border-indigo-100">
                                                      <div className="text-2xl font-black text-indigo-700">
                                                          {xpLog.filter(e => e.stationId).length}
                                                      </div>
-                                                     <div className="text-xs text-indigo-600 font-bold mt-1">Station XP Events</div>
+                                                     <div className="text-xs text-indigo-600 font-bold mt-1">{t('teacher.stem_stations.station_xp_events') || 'Station XP Events'}</div>
                                                  </div>
                                              </div>
                                              {stations.map((st) => {

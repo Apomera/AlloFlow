@@ -215,7 +215,7 @@ ${_effectiveText}`;
           if (remarkedHtml) {
             const _stripTags = (h) => h.replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<style[\s\S]*?<\/style>/gi, " ").replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
             const newText = _stripTags(remarkedHtml);
-            const approvedTokens = _effectiveText.split(/\s+/).filter((t) => t.length > 2);
+            const approvedTokens = _effectiveText.split(/\s+/).filter((t2) => t2.length > 2);
             const newLower = newText.toLowerCase();
             let found = 0;
             for (const tok of approvedTokens) {
@@ -288,12 +288,12 @@ ${_effectiveText}`;
           if (e.target === e.currentTarget) setDiffViewOpen(false);
         }
       },
-      /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 px-4 py-3 border-b border-slate-200 bg-slate-50" }, /* @__PURE__ */ React.createElement("span", { className: "text-lg" }, "\u{1F4DD}"), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("h2", { id: "allo-diff-title", className: "text-sm font-black text-slate-800 truncate" }, "Source PDF \u2194 Remediated HTML \xB7 Diff"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600" }, "Click any colored span to reject the change. Drag-select across spans to batch-reject. Del\u2192Add paraphrase pairs toggle together.")), /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 px-4 py-3 border-b border-slate-200 bg-slate-50" }, /* @__PURE__ */ React.createElement("span", { className: "text-lg" }, "\u{1F4DD}"), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("h2", { id: "allo-diff-title", className: "text-sm font-black text-slate-800 truncate" }, t("diff_view.title") || "Source PDF \u2194 Remediated HTML \xB7 Diff"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600" }, t("diff_view.subtitle") || "Click any colored span to reject the change. Drag-select across spans to batch-reject. Del\u2192Add paraphrase pairs toggle together.")), /* @__PURE__ */ React.createElement(
         "button",
         {
           onClick: () => setDiffViewOpen(false),
           className: "shrink-0 w-8 h-8 rounded-lg hover:bg-slate-200 text-slate-600 flex items-center justify-center",
-          "aria-label": "Close diff view"
+          "aria-label": t("diff_view.close_aria") || "Close diff view"
         },
         "\u2715"
       )), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 px-4 py-2 border-b border-slate-200 bg-white flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "inline-flex rounded-lg border border-slate-400 overflow-hidden text-[11px]" }, ["words", "sentences", "chars"].map((g) => /* @__PURE__ */ React.createElement(
@@ -305,7 +305,7 @@ ${_effectiveText}`;
           "aria-pressed": diffGranularity === g
         },
         g.charAt(0).toUpperCase() + g.slice(1)
-      ))), _chunks && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 ml-2 text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "w-3 h-3 rounded-sm bg-emerald-200 border border-emerald-400" }), " ", /* @__PURE__ */ React.createElement("span", { className: "font-bold text-emerald-700" }, _ins.toLocaleString()), " added"), /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "w-3 h-3 rounded-sm bg-rose-200 border border-rose-400" }), " ", /* @__PURE__ */ React.createElement("span", { className: "font-bold text-rose-700" }, _del.toLocaleString()), " removed"), /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1 text-slate-600" }, /* @__PURE__ */ React.createElement("span", { className: "w-3 h-3 rounded-sm bg-slate-100 border border-slate-400" }), " ", /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, _same.toLocaleString()), " unchanged"), _rejCount > 0 && /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1 ml-1 bg-amber-100 border border-amber-300 px-1.5 py-0.5 rounded font-bold text-amber-800" }, _rejCount.toLocaleString(), " rejected", /* @__PURE__ */ React.createElement("button", { onClick: _undoAllRejections, className: "ml-1 underline hover:no-underline text-amber-900", title: "Undo every rejection in this view" }, "undo all"))), /* @__PURE__ */ React.createElement("div", { className: "ml-auto text-[11px] text-slate-500" }, /* @__PURE__ */ React.createElement("span", { className: "font-mono" }, _src.length.toLocaleString()), " \u2192 ", /* @__PURE__ */ React.createElement("span", { className: "font-mono" }, _fin.length.toLocaleString()), " chars")), /* @__PURE__ */ React.createElement(
+      ))), _chunks && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 ml-2 text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "w-3 h-3 rounded-sm bg-emerald-200 border border-emerald-400" }), " ", /* @__PURE__ */ React.createElement("span", { className: "font-bold text-emerald-700" }, _ins.toLocaleString()), " added"), /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "w-3 h-3 rounded-sm bg-rose-200 border border-rose-400" }), " ", /* @__PURE__ */ React.createElement("span", { className: "font-bold text-rose-700" }, _del.toLocaleString()), " removed"), /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1 text-slate-600" }, /* @__PURE__ */ React.createElement("span", { className: "w-3 h-3 rounded-sm bg-slate-100 border border-slate-400" }), " ", /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, _same.toLocaleString()), " unchanged"), _rejCount > 0 && /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1 ml-1 bg-amber-100 border border-amber-300 px-1.5 py-0.5 rounded font-bold text-amber-800" }, _rejCount.toLocaleString(), " rejected", /* @__PURE__ */ React.createElement("button", { onClick: _undoAllRejections, className: "ml-1 underline hover:no-underline text-amber-900", title: t("diff_view.undo_all_tooltip") || "Undo every rejection in this view" }, t("diff_view.undo_all_button") || "undo all"))), /* @__PURE__ */ React.createElement("div", { className: "ml-auto text-[11px] text-slate-500" }, /* @__PURE__ */ React.createElement("span", { className: "font-mono" }, _src.length.toLocaleString()), " \u2192 ", /* @__PURE__ */ React.createElement("span", { className: "font-mono" }, _fin.length.toLocaleString()), " chars")), /* @__PURE__ */ React.createElement(
         "div",
         {
           className: "flex-1 overflow-auto p-4 bg-slate-50 relative",
@@ -313,7 +313,7 @@ ${_effectiveText}`;
         },
         !diffLibReady && diffLibLoading && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 text-sm text-slate-600" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin" }), " Loading diff engine (jsdiff)\u2026"),
         !diffLibReady && !diffLibLoading && /* @__PURE__ */ React.createElement("div", { className: "text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-lg p-3" }, "Couldn't load the diff engine (network blocked?). Try re-opening the diff view, or check your connection."),
-        diffLibReady && !_chunks && !diffLibLoading && /* @__PURE__ */ React.createElement("div", { className: "text-sm text-amber-800 bg-amber-50 border border-amber-300 rounded-lg p-3 flex items-center gap-3" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin shrink-0" }), /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold mb-1" }, "Computing diff\u2026"), /* @__PURE__ */ React.createElement("div", { className: "text-[12px] text-amber-700 leading-relaxed" }, "If this persists, the source text and remediated HTML may have drifted out of sync (or the diff cache is stale).")), /* @__PURE__ */ React.createElement(
+        diffLibReady && !_chunks && !diffLibLoading && /* @__PURE__ */ React.createElement("div", { className: "text-sm text-amber-800 bg-amber-50 border border-amber-300 rounded-lg p-3 flex items-center gap-3" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin shrink-0" }), /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold mb-1" }, t("diff_view.computing") || "Computing diff\u2026"), /* @__PURE__ */ React.createElement("div", { className: "text-[12px] text-amber-700 leading-relaxed" }, t("diff_view.computing_stale_hint") || "If this persists, the source text and remediated HTML may have drifted out of sync (or the diff cache is stale).")), /* @__PURE__ */ React.createElement(
           "button",
           {
             onClick: () => {
@@ -325,9 +325,9 @@ ${_effectiveText}`;
               setDiffGranularity((g) => g);
             },
             className: "shrink-0 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-md font-bold text-[12px]",
-            title: "Clear the diff cache and recompute chunks against the current source \u2194 remediated pair."
+            title: t("diff_view.rebuild_tooltip") || "Clear the diff cache and recompute chunks against the current source \u2194 remediated pair."
           },
-          "Rebuild diff"
+          t("diff_view.rebuild_button") || "Rebuild diff"
         )),
         diffLibReady && _chunks && /* @__PURE__ */ React.createElement(
           "pre",
@@ -368,7 +368,7 @@ ${_effectiveText}`;
             return /* @__PURE__ */ React.createElement("span", { key: c.id, "data-chunk-id": c.id }, c.value);
           })
         ),
-        diffLibReady && !_chunks && /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-600" }, "Computing diff\u2026"),
+        diffLibReady && !_chunks && /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-600" }, t("diff_view.computing") || "Computing diff\u2026"),
         diffSelection && /* @__PURE__ */ React.createElement(
           "div",
           {
@@ -382,7 +382,7 @@ ${_effectiveText}`;
               onClick: () => setRangeRejected(diffSelection.firstId, diffSelection.lastId, true),
               className: "px-2 py-1 rounded bg-rose-600 hover:bg-rose-700 font-bold"
             },
-            "Reject selection"
+            t("diff_view.reject_selection") || "Reject selection"
           ),
           /* @__PURE__ */ React.createElement(
             "button",
@@ -390,25 +390,25 @@ ${_effectiveText}`;
               onClick: () => setRangeRejected(diffSelection.firstId, diffSelection.lastId, false),
               className: "px-2 py-1 rounded bg-emerald-600 hover:bg-emerald-700 font-bold"
             },
-            "Keep selection"
+            t("diff_view.keep_selection") || "Keep selection"
           ),
           /* @__PURE__ */ React.createElement(
             "button",
             {
               onClick: () => setDiffSelection(null),
               className: "px-1.5 py-1 rounded hover:bg-slate-700",
-              "aria-label": "Dismiss toolbar"
+              "aria-label": t("diff_view.dismiss_toolbar_aria") || "Dismiss toolbar"
             },
             "\u2715"
           )
         )
-      ), /* @__PURE__ */ React.createElement("div", { className: "px-4 py-2 border-t border-slate-200 bg-slate-50 text-[11px] text-slate-600 flex items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("span", null, "\u{1F4DA} jsdiff@5.2.0"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-400" }, "\xB7"), /* @__PURE__ */ React.createElement("span", null, "Click spans or drag-select to edit. Pairs toggle together."), _canRevert && /* @__PURE__ */ React.createElement(
+      ), /* @__PURE__ */ React.createElement("div", { className: "px-4 py-2 border-t border-slate-200 bg-slate-50 text-[11px] text-slate-600 flex items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("span", null, "\u{1F4DA} jsdiff@5.2.0"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-400" }, "\xB7"), /* @__PURE__ */ React.createElement("span", null, t("diff_view.footer_help") || "Click spans or drag-select to edit. Pairs toggle together."), _canRevert && /* @__PURE__ */ React.createElement(
         "button",
         {
           onClick: _revertLastApply,
           disabled: applyingRemarkup,
           className: "ml-auto px-3 py-1.5 bg-white border border-slate-400 hover:bg-slate-100 disabled:opacity-60 text-slate-700 rounded-md font-bold inline-flex items-center gap-1.5",
-          title: "Restore the accessible HTML to the state before your last Apply & Export"
+          title: t("diff_view.revert_tooltip") || "Restore the accessible HTML to the state before your last Apply & Export"
         },
         "\u21B6 Revert last Apply"
       ), _rejCount > 0 && /* @__PURE__ */ React.createElement(
@@ -417,7 +417,7 @@ ${_effectiveText}`;
           onClick: _applyAndExport,
           disabled: applyingRemarkup,
           className: (_canRevert ? "" : "ml-auto ") + "px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white rounded-md font-bold inline-flex items-center gap-1.5 shadow",
-          title: "Apply rejections via text surgery (preserves all markup, instant, no Gemini call). Falls back to Gemini round-trip only if surgery can't map some chunks."
+          title: t("diff_view.apply_export_tooltip") || "Apply rejections via text surgery (preserves all markup, instant, no Gemini call). Falls back to Gemini round-trip only if surgery can't map some chunks."
         },
         applyingRemarkup ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, className: "animate-spin" }), " Applying\u2026") : /* @__PURE__ */ React.createElement(React.Fragment, null, "\u2713 Apply & Export (", _rejCount, ")")
       )))
@@ -445,7 +445,7 @@ function GroupSessionModal(props) {
     setDraggedResourceId,
     setNewGroupName,
     showGroupModal,
-    t,
+    t: t2,
     updateDoc,
     warnLog
   } = props;
@@ -481,7 +481,7 @@ function GroupSessionModal(props) {
       try {
         const sessionRef = doc(db, "artifacts", appId, "public", "data", "sessions", activeSessionCode);
         await updateDoc(sessionRef, { resources });
-        addToast(t("groups.resources_reordered") || "Resources reordered", "success");
+        addToast(t2("groups.resources_reordered") || "Resources reordered", "success");
       } catch (err) {
         warnLog("Failed to reorder resources:", err);
       }
@@ -551,21 +551,21 @@ function GroupSessionModal(props) {
     simplified: "\u2728",
     default: "\u{1F4C4}"
   };
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 bg-black/90 z-[160] flex items-center justify-center p-4 animate-in fade-in duration-200", onClick: handleSetShowGroupModalToFalse, "data-help-key": "group_modal_container" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl w-[95vw] h-[90vh] relative animate-in zoom-in-95 duration-200 flex flex-col overflow-hidden", onClick: (e) => e.stopPropagation(), role: "dialog", "aria-modal": "true", "aria-label": t("groups.modal_title") }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between p-5 border-b border-slate-200 bg-gradient-to-r from-purple-50 to-indigo-50 flex-shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-purple-600 p-3 rounded-xl shadow-md" }, /* @__PURE__ */ React.createElement(Users, { size: 28, className: "text-white" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "text-2xl font-black text-slate-800" }, t("groups.modal_title")), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600" }, t("groups.modal_subtitle")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 bg-black/90 z-[160] flex items-center justify-center p-4 animate-in fade-in duration-200", onClick: handleSetShowGroupModalToFalse, "data-help-key": "group_modal_container" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl w-[95vw] h-[90vh] relative animate-in zoom-in-95 duration-200 flex flex-col overflow-hidden", onClick: (e) => e.stopPropagation(), role: "dialog", "aria-modal": "true", "aria-label": t2("groups.modal_title") }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between p-5 border-b border-slate-200 bg-gradient-to-r from-purple-50 to-indigo-50 flex-shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-purple-600 p-3 rounded-xl shadow-md" }, /* @__PURE__ */ React.createElement(Users, { size: 28, className: "text-white" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "text-2xl font-black text-slate-800" }, t2("groups.modal_title")), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600" }, t2("groups.modal_subtitle")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement(
     "input",
     {
-      "aria-label": t("common.groups_new_group_placeholder"),
+      "aria-label": t2("common.groups_new_group_placeholder"),
       type: "text",
       value: newGroupName,
       onChange: (e) => setNewGroupName(e.target.value),
-      placeholder: t("groups.new_group_placeholder"),
+      placeholder: t2("groups.new_group_placeholder"),
       className: "text-sm p-3 rounded-lg border border-slate-400 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none w-48",
       "data-help-key": "group_create_input"
     }
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
-      "aria-label": t("common.add"),
+      "aria-label": t2("common.add"),
       onClick: () => handleCreateGroup(),
       disabled: !newGroupName.trim(),
       className: "bg-purple-600 text-white px-5 py-3 rounded-lg text-sm font-bold hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm flex items-center gap-2",
@@ -573,8 +573,8 @@ function GroupSessionModal(props) {
     },
     /* @__PURE__ */ React.createElement(Plus, { size: 18 }),
     " ",
-    t("groups.add_button")
-  )), /* @__PURE__ */ React.createElement("button", { onClick: handleSetShowGroupModalToFalse, className: "p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-white/80 transition-colors", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 24 }))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 grid grid-cols-1 lg:grid-cols-3 gap-5 p-5 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "lg:col-span-2 flex flex-col min-h-0", "data-help-key": "group_resource_library" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-3" }, /* @__PURE__ */ React.createElement(FileText, { size: 16, className: "text-indigo-600" }), /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-indigo-600 uppercase tracking-wider" }, t("groups.resource_library")), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 ml-2" }, "(", sessionData.resources?.length || 0, " items)"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-purple-400 ml-auto italic flex items-center gap-1" }, /* @__PURE__ */ React.createElement(GripVertical, { size: 12 }), " ", t("groups.drag_to_reorder") || "Drag to reorder")), /* @__PURE__ */ React.createElement("div", { className: "flex-1 bg-gradient-to-br from-indigo-50/80 to-purple-50/80 rounded-xl p-4 border border-indigo-100 overflow-y-auto custom-scrollbar" }, sessionData.resources && sessionData.resources.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3", style: { gridAutoRows: "min-content" } }, sessionData.resources.map((res, index) => {
+    t2("groups.add_button")
+  )), /* @__PURE__ */ React.createElement("button", { onClick: handleSetShowGroupModalToFalse, className: "p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-white/80 transition-colors", "aria-label": t2("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 24 }))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 grid grid-cols-1 lg:grid-cols-3 gap-5 p-5 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "lg:col-span-2 flex flex-col min-h-0", "data-help-key": "group_resource_library" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-3" }, /* @__PURE__ */ React.createElement(FileText, { size: 16, className: "text-indigo-600" }), /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-indigo-600 uppercase tracking-wider" }, t2("groups.resource_library")), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 ml-2" }, "(", sessionData.resources?.length || 0, " items)"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-purple-400 ml-auto italic flex items-center gap-1" }, /* @__PURE__ */ React.createElement(GripVertical, { size: 12 }), " ", t2("groups.drag_to_reorder") || "Drag to reorder")), /* @__PURE__ */ React.createElement("div", { className: "flex-1 bg-gradient-to-br from-indigo-50/80 to-purple-50/80 rounded-xl p-4 border border-indigo-100 overflow-y-auto custom-scrollbar" }, sessionData.resources && sessionData.resources.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3", style: { gridAutoRows: "min-content" } }, sessionData.resources.map((res, index) => {
     const assignedGroup = sessionData.groups && Object.entries(sessionData.groups).find(([_, g]) => g && g.resourceId === res.id);
     const icon = typeIcons[res.type] || typeIcons.default;
     const description = getResourceDescription(res);
@@ -608,41 +608,41 @@ function GroupSessionModal(props) {
       (language || dateStr) && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1 mb-1" }, language && (Array.isArray(language) ? language.slice(0, 5).map((lang, li) => /* @__PURE__ */ React.createElement("span", { key: li, className: "inline-flex items-center gap-0.5 text-[11px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded font-medium" }, /* @__PURE__ */ React.createElement(Globe, { size: 8 }), " ", lang)) : /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-0.5 text-[11px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded font-medium" }, /* @__PURE__ */ React.createElement(Globe, { size: 8 }), " ", language)), dateStr && /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-0.5 text-[11px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded" }, /* @__PURE__ */ React.createElement(Clock, { size: 8 }), " ", dateStr)),
       assignedGroup && /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-[11px] font-bold text-green-800 bg-green-100 px-2 py-1 rounded-md flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Users, { size: 10 }), " ", assignedGroup[1].name)
     );
-  })) : /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center h-full text-slate-600 italic" }, t("groups.no_resources") || "No resources in this session"))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-5 min-h-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex flex-col min-h-0" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Layers, { size: 14 }), " ", t("groups.active_groups")), /* @__PURE__ */ React.createElement("div", { className: "flex-1 space-y-3 overflow-y-auto custom-scrollbar pr-1", "data-help-key": "group_active_list" }, sessionData.groups && activeSessionGroups.map(([gid, group]) => /* @__PURE__ */ React.createElement("div", { key: gid, className: "bg-white p-4 rounded-xl border border-slate-400 shadow-sm hover:shadow-md transition-shadow" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-3" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, group.name), /* @__PURE__ */ React.createElement("button", { onClick: () => handleDeleteGroup(gid), className: "text-red-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors", "aria-label": t("common.delete") }, /* @__PURE__ */ React.createElement(X, { size: 16 }))), /* @__PURE__ */ React.createElement("label", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1 block flex items-center gap-2" }, t("groups.assign_resource_label"), isPushingResource[gid] === "pushing" && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1 text-[10px] text-purple-600 font-bold normal-case" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 11, className: "animate-spin" }), " ", t("groups.pushing") || "Pushing\u2026"), isPushingResource[gid] === "success" && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1 text-[10px] text-emerald-600 font-bold normal-case" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 11 }), " ", t("groups.pushed") || "Sent")), /* @__PURE__ */ React.createElement(
+  })) : /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center h-full text-slate-600 italic" }, t2("groups.no_resources") || "No resources in this session"))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-5 min-h-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex flex-col min-h-0" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Layers, { size: 14 }), " ", t2("groups.active_groups")), /* @__PURE__ */ React.createElement("div", { className: "flex-1 space-y-3 overflow-y-auto custom-scrollbar pr-1", "data-help-key": "group_active_list" }, sessionData.groups && activeSessionGroups.map(([gid, group]) => /* @__PURE__ */ React.createElement("div", { key: gid, className: "bg-white p-4 rounded-xl border border-slate-400 shadow-sm hover:shadow-md transition-shadow" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-3" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, group.name), /* @__PURE__ */ React.createElement("button", { onClick: () => handleDeleteGroup(gid), className: "text-red-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors", "aria-label": t2("common.delete") }, /* @__PURE__ */ React.createElement(X, { size: 16 }))), /* @__PURE__ */ React.createElement("label", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1 block flex items-center gap-2" }, t2("groups.assign_resource_label"), isPushingResource[gid] === "pushing" && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1 text-[10px] text-purple-600 font-bold normal-case" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 11, className: "animate-spin" }), " ", t2("groups.pushing") || "Pushing\u2026"), isPushingResource[gid] === "success" && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1 text-[10px] text-emerald-600 font-bold normal-case" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 11 }), " ", t2("groups.pushed") || "Sent")), /* @__PURE__ */ React.createElement(
     "select",
     {
-      "aria-label": t("common.selection"),
+      "aria-label": t2("common.selection"),
       value: group.resourceId || "",
       onChange: (e) => handleSetGroupResource(gid, e.target.value || null),
       disabled: isPushingResource[gid] === "pushing",
       className: "w-full text-sm p-2 rounded-lg border border-slate-400 bg-slate-50 text-slate-700 focus:ring-2 focus:ring-purple-300 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
     },
-    /* @__PURE__ */ React.createElement("option", { value: "" }, t("groups.assign_resource_placeholder")),
+    /* @__PURE__ */ React.createElement("option", { value: "" }, t2("groups.assign_resource_placeholder")),
     sessionData.resources && sessionData.resources.map((res) => {
       const icon = typeIcons[res.type] || typeIcons.default;
       const desc = getResourceDescription(res);
       return /* @__PURE__ */ React.createElement("option", { key: res.id, value: res.id }, icon, " ", res.title || "Untitled", desc ? ` (${desc})` : "");
     })
-  ))), (!sessionData.groups || Object.values(sessionData.groups).filter((g) => g !== null).length === 0) && /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-600 italic text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-200" }, t("groups.no_groups")))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex flex-col min-h-0" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(UserCheck, { size: 14 }), " ", t("groups.roster_assignment")), /* @__PURE__ */ React.createElement("div", { className: "flex-1 bg-slate-50 rounded-xl p-3 overflow-y-auto custom-scrollbar", "data-help-key": "group_roster_list" }, sessionData.roster && Object.entries(sessionData.roster).length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, Object.entries(sessionData.roster).map(([uid, student]) => /* @__PURE__ */ React.createElement("div", { key: uid, className: "flex items-center justify-between gap-3 bg-white p-3 rounded-lg border border-slate-100" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: `w-2.5 h-2.5 rounded-full flex-shrink-0 ${student.connected ? "bg-green-500 animate-pulse" : "bg-slate-300"}` }), /* @__PURE__ */ React.createElement("span", { className: "truncate font-medium text-slate-700 text-sm", title: student.name }, student.name)), /* @__PURE__ */ React.createElement(
+  ))), (!sessionData.groups || Object.values(sessionData.groups).filter((g) => g !== null).length === 0) && /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-600 italic text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-200" }, t2("groups.no_groups")))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex flex-col min-h-0" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(UserCheck, { size: 14 }), " ", t2("groups.roster_assignment")), /* @__PURE__ */ React.createElement("div", { className: "flex-1 bg-slate-50 rounded-xl p-3 overflow-y-auto custom-scrollbar", "data-help-key": "group_roster_list" }, sessionData.roster && Object.entries(sessionData.roster).length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, Object.entries(sessionData.roster).map(([uid, student]) => /* @__PURE__ */ React.createElement("div", { key: uid, className: "flex items-center justify-between gap-3 bg-white p-3 rounded-lg border border-slate-100" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: `w-2.5 h-2.5 rounded-full flex-shrink-0 ${student.connected ? "bg-green-500 animate-pulse" : "bg-slate-300"}` }), /* @__PURE__ */ React.createElement("span", { className: "truncate font-medium text-slate-700 text-sm", title: student.name }, student.name)), /* @__PURE__ */ React.createElement(
     "select",
     {
-      "aria-label": t("common.selection"),
+      "aria-label": t2("common.selection"),
       value: student.groupId || "",
       onChange: (e) => handleAssignStudent(uid, e.target.value),
       className: "text-xs p-2 rounded-lg border border-slate-400 bg-white focus:ring-2 focus:ring-purple-300 outline-none min-w-[100px]"
     },
-    /* @__PURE__ */ React.createElement("option", { value: "" }, t("groups.unassigned")),
+    /* @__PURE__ */ React.createElement("option", { value: "" }, t2("groups.unassigned")),
     sessionData.groups && activeSessionGroups.map(([gid, group]) => /* @__PURE__ */ React.createElement("option", { key: gid, value: gid }, group.name))
-  )))) : /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center h-full text-sm text-slate-600 italic" }, t("session.waiting_for_students")))))), /* @__PURE__ */ React.createElement("div", { className: "p-4 border-t border-slate-200 bg-slate-50 flex justify-end flex-shrink-0" }, /* @__PURE__ */ React.createElement(
+  )))) : /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center h-full text-sm text-slate-600 italic" }, t2("session.waiting_for_students")))))), /* @__PURE__ */ React.createElement("div", { className: "p-4 border-t border-slate-200 bg-slate-50 flex justify-end flex-shrink-0" }, /* @__PURE__ */ React.createElement(
     "button",
     {
-      "aria-label": t("common.confirm"),
+      "aria-label": t2("common.confirm"),
       onClick: handleSetShowGroupModalToFalse,
       className: "px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-full transition-colors shadow-md flex items-center gap-2"
     },
     /* @__PURE__ */ React.createElement(Check, { size: 18 }),
     " ",
-    t("groups.done_button")
+    t2("groups.done_button")
   ))));
 }
 function FluencyModePanel(props) {
@@ -678,7 +678,7 @@ function FluencyModePanel(props) {
     setFluencyTranscript,
     setIsFluencyMode,
     showFluencyConfetti,
-    t,
+    t: t2,
     toggleFluencyRecording
   } = props;
   if (!(isFluencyMode && generatedContent)) return null;
@@ -688,13 +688,13 @@ function FluencyModePanel(props) {
       ref: fluencyModalRef,
       role: "dialog",
       "aria-modal": "true",
-      "aria-label": t("fluency.tool_label"),
+      "aria-label": t2("fluency.tool_label"),
       className: "bg-white rounded-2xl shadow-2xl w-full max-w-3xl relative border-4 border-rose-200 overflow-hidden flex flex-col h-[80vh]"
     },
-    /* @__PURE__ */ React.createElement("div", { className: "bg-rose-50 p-4 border-b border-rose-100 flex justify-between items-center shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "w-10 h-10 bg-rose-100 rounded-full flex items-center justify-center border border-rose-200 shadow-sm" }, /* @__PURE__ */ React.createElement(Mic, { size: 20, className: "text-rose-700" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-black text-lg text-slate-800 leading-tight" }, t("fluency.title")), /* @__PURE__ */ React.createElement("p", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider" }, t("fluency.instruction")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, fluencyStatus === "idle" && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600" }, t("fluency.time_limit")), /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { className: "bg-rose-50 p-4 border-b border-rose-100 flex justify-between items-center shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "w-10 h-10 bg-rose-100 rounded-full flex items-center justify-center border border-rose-200 shadow-sm" }, /* @__PURE__ */ React.createElement(Mic, { size: 20, className: "text-rose-700" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-black text-lg text-slate-800 leading-tight" }, t2("fluency.title")), /* @__PURE__ */ React.createElement("p", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider" }, t2("fluency.instruction")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, fluencyStatus === "idle" && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600" }, t2("fluency.time_limit")), /* @__PURE__ */ React.createElement(
       "select",
       {
-        "aria-label": t("common.selection"),
+        "aria-label": t2("common.selection"),
         value: fluencyTimeLimit,
         onChange: (e) => {
           setFluencyTimeLimit(parseInt(e.target.value));
@@ -702,7 +702,7 @@ function FluencyModePanel(props) {
         },
         className: "text-xs font-bold border border-slate-400 rounded-lg px-2 py-1 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-300"
       },
-      /* @__PURE__ */ React.createElement("option", { value: 0 }, t("fluency.time_limit_none")),
+      /* @__PURE__ */ React.createElement("option", { value: 0 }, t2("fluency.time_limit_none")),
       /* @__PURE__ */ React.createElement("option", { value: 30 }, "30 sec"),
       /* @__PURE__ */ React.createElement("option", { value: 60 }, "60 sec"),
       /* @__PURE__ */ React.createElement("option", { value: 90 }, "90 sec"),
@@ -710,13 +710,13 @@ function FluencyModePanel(props) {
     ), fluencyTimeLimit > 0 && /* @__PURE__ */ React.createElement(
       "select",
       {
-        "aria-label": t("common.timer_display"),
+        "aria-label": t2("common.timer_display"),
         value: fluencyTimerVisibility,
         onChange: (e) => setFluencyTimerVisibility(e.target.value),
         className: "text-xs font-bold border border-slate-400 rounded-lg px-2 py-1 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-300 ml-1"
       },
-      /* @__PURE__ */ React.createElement("option", { value: "visible" }, t("math.timer_visible")),
-      /* @__PURE__ */ React.createElement("option", { value: "hidden" }, t("math.timer_hidden"))
+      /* @__PURE__ */ React.createElement("option", { value: "visible" }, t2("math.timer_visible")),
+      /* @__PURE__ */ React.createElement("option", { value: "hidden" }, t2("math.timer_hidden"))
     )), /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -726,7 +726,7 @@ function FluencyModePanel(props) {
           setFluencyTimeRemaining(fluencyTimeLimit);
         },
         className: "p-1.5 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors",
-        "aria-label": t("fluency.close_label")
+        "aria-label": t2("fluency.close_label")
       },
       /* @__PURE__ */ React.createElement(X, { size: 24 })
     ))),
@@ -734,10 +734,10 @@ function FluencyModePanel(props) {
       const rrMetrics = calculateRunningRecordMetrics(fluencyResult.wordData, fluencyResult.insertions);
       const benchmarkResult = getBenchmarkComparison(fluencyResult.wcpm, fluencyBenchmarkGrade, fluencyBenchmarkSeason, fluencyCustomNorms);
       const levelColors = { above: "text-green-600 bg-green-50 border-green-200", at: "text-emerald-600 bg-emerald-50 border-emerald-200", approaching: "text-yellow-600 bg-yellow-50 border-yellow-200", well_below: "text-red-600 bg-red-50 border-red-200", unknown: "text-slate-600 bg-slate-50 border-slate-200" };
-      const levelLabels = { above: t("fluency.benchmark_above"), at: t("fluency.benchmark_at"), approaching: t("fluency.benchmark_approaching"), well_below: t("fluency.benchmark_below"), unknown: "\u2014" };
+      const levelLabels = { above: t2("fluency.benchmark_above"), at: t2("fluency.benchmark_at"), approaching: t2("fluency.benchmark_approaching"), well_below: t2("fluency.benchmark_below"), unknown: "\u2014" };
       const readingLevelColors = { independent: "bg-green-100 text-green-700 border-green-300", instructional: "bg-yellow-100 text-yellow-700 border-yellow-300", frustrational: "bg-red-100 text-red-700 border-red-300" };
-      const readingLevelLabels = { independent: t("fluency.independent"), instructional: t("fluency.instructional"), frustrational: t("fluency.frustrational") };
-      return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4 gap-4 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white p-6 rounded-2xl shadow-lg border border-slate-400 text-center relative overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-600 uppercase tracking-widest mb-2" }, t("fluency.accuracy_score")), /* @__PURE__ */ React.createElement("div", { className: `text-6xl font-black ${fluencyResult.accuracy >= 90 ? "text-green-500" : fluencyResult.accuracy >= 70 ? "text-yellow-500" : "text-red-500"}` }, fluencyResult.accuracy, "%"), /* @__PURE__ */ React.createElement("div", { className: `mt-2 text-xs font-bold px-3 py-1 rounded-full border inline-block ${readingLevelColors[rrMetrics.readingLevel]}` }, readingLevelLabels[rrMetrics.readingLevel])), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-6 rounded-2xl shadow-lg border border-slate-400 text-center relative overflow-hidden animate-in zoom-in duration-300 delay-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-600 uppercase tracking-widest mb-2" }, t("fluency.rate_label")), /* @__PURE__ */ React.createElement("div", { className: "text-6xl font-black text-indigo-600" }, fluencyResult.wcpm), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 font-bold uppercase tracking-wider mt-1" }, t("fluency.wcpm_label")), /* @__PURE__ */ React.createElement("div", { className: `mt-2 text-xs font-bold px-3 py-1 rounded-full border inline-block ${levelColors[benchmarkResult.level]}` }, levelLabels[benchmarkResult.level]))), /* @__PURE__ */ React.createElement("div", { className: "flex justify-center gap-3 mb-4 items-center" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase" }, t("fluency.benchmark_title")), /* @__PURE__ */ React.createElement("select", { "aria-label": t("common.grade"), value: fluencyBenchmarkGrade, onChange: (e) => setFluencyBenchmarkGrade(e.target.value), className: "text-xs font-bold border border-slate-400 rounded-lg px-2 py-1 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300" }, Object.keys(FLUENCY_BENCHMARKS).map((g) => /* @__PURE__ */ React.createElement("option", { key: g, value: g }, t("fluency.grade_select"), " ", g)), /* @__PURE__ */ React.createElement("option", { value: "custom" }, t("fluency.custom_norms") || "Custom (Manual)")), /* @__PURE__ */ React.createElement("select", { "aria-label": t("common.season"), value: fluencyBenchmarkSeason, onChange: (e) => setFluencyBenchmarkSeason(e.target.value), className: "text-xs font-bold border border-slate-400 rounded-lg px-2 py-1 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300" }, /* @__PURE__ */ React.createElement("option", { value: "fall" }, t("fluency.season_fall")), /* @__PURE__ */ React.createElement("option", { value: "winter" }, t("fluency.season_winter")), /* @__PURE__ */ React.createElement("option", { value: "spring" }, t("fluency.season_spring"))), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600" }, t("fluency.benchmark_target"), ": ", benchmarkResult.target, " WCPM")), fluencyBenchmarkGrade === "custom" && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center gap-3 mb-4 items-center animate-in slide-in-from-top duration-200" }, /* @__PURE__ */ React.createElement("label", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("fluency.custom_wcpm") || "Target WCPM", ":"), ["fall", "winter", "spring"].map((s) => /* @__PURE__ */ React.createElement("div", { key: s, className: "flex flex-col items-center gap-0.5" }, /* @__PURE__ */ React.createElement(
+      const readingLevelLabels = { independent: t2("fluency.independent"), instructional: t2("fluency.instructional"), frustrational: t2("fluency.frustrational") };
+      return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4 gap-4 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white p-6 rounded-2xl shadow-lg border border-slate-400 text-center relative overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-600 uppercase tracking-widest mb-2" }, t2("fluency.accuracy_score")), /* @__PURE__ */ React.createElement("div", { className: `text-6xl font-black ${fluencyResult.accuracy >= 90 ? "text-green-500" : fluencyResult.accuracy >= 70 ? "text-yellow-500" : "text-red-500"}` }, fluencyResult.accuracy, "%"), /* @__PURE__ */ React.createElement("div", { className: `mt-2 text-xs font-bold px-3 py-1 rounded-full border inline-block ${readingLevelColors[rrMetrics.readingLevel]}` }, readingLevelLabels[rrMetrics.readingLevel])), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-6 rounded-2xl shadow-lg border border-slate-400 text-center relative overflow-hidden animate-in zoom-in duration-300 delay-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-600 uppercase tracking-widest mb-2" }, t2("fluency.rate_label")), /* @__PURE__ */ React.createElement("div", { className: "text-6xl font-black text-indigo-600" }, fluencyResult.wcpm), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 font-bold uppercase tracking-wider mt-1" }, t2("fluency.wcpm_label")), /* @__PURE__ */ React.createElement("div", { className: `mt-2 text-xs font-bold px-3 py-1 rounded-full border inline-block ${levelColors[benchmarkResult.level]}` }, levelLabels[benchmarkResult.level]))), /* @__PURE__ */ React.createElement("div", { className: "flex justify-center gap-3 mb-4 items-center" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase" }, t2("fluency.benchmark_title")), /* @__PURE__ */ React.createElement("select", { "aria-label": t2("common.grade"), value: fluencyBenchmarkGrade, onChange: (e) => setFluencyBenchmarkGrade(e.target.value), className: "text-xs font-bold border border-slate-400 rounded-lg px-2 py-1 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300" }, Object.keys(FLUENCY_BENCHMARKS).map((g) => /* @__PURE__ */ React.createElement("option", { key: g, value: g }, t2("fluency.grade_select"), " ", g)), /* @__PURE__ */ React.createElement("option", { value: "custom" }, t2("fluency.custom_norms") || "Custom (Manual)")), /* @__PURE__ */ React.createElement("select", { "aria-label": t2("common.season"), value: fluencyBenchmarkSeason, onChange: (e) => setFluencyBenchmarkSeason(e.target.value), className: "text-xs font-bold border border-slate-400 rounded-lg px-2 py-1 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300" }, /* @__PURE__ */ React.createElement("option", { value: "fall" }, t2("fluency.season_fall")), /* @__PURE__ */ React.createElement("option", { value: "winter" }, t2("fluency.season_winter")), /* @__PURE__ */ React.createElement("option", { value: "spring" }, t2("fluency.season_spring"))), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600" }, t2("fluency.benchmark_target"), ": ", benchmarkResult.target, " WCPM")), fluencyBenchmarkGrade === "custom" && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center gap-3 mb-4 items-center animate-in slide-in-from-top duration-200" }, /* @__PURE__ */ React.createElement("label", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t2("fluency.custom_wcpm") || "Target WCPM", ":"), ["fall", "winter", "spring"].map((s) => /* @__PURE__ */ React.createElement("div", { key: s, className: "flex flex-col items-center gap-0.5" }, /* @__PURE__ */ React.createElement(
         "input",
         {
           type: "number",
@@ -749,30 +749,30 @@ function FluencyModePanel(props) {
           placeholder: "0",
           "aria-label": `${s} target WCPM`
         }
-      ), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 font-bold uppercase" }, t(`fluency.season_${s}`) || s)))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-red-50 border border-red-200 rounded-xl p-3 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-red-600" }, rrMetrics.substitutions), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("fluency.substitutions"))), /* @__PURE__ */ React.createElement("div", { className: "bg-orange-50 border border-orange-200 rounded-xl p-3 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-orange-600" }, rrMetrics.omissions), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("fluency.omissions"))), /* @__PURE__ */ React.createElement("div", { className: "bg-purple-50 border border-purple-200 rounded-xl p-3 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-purple-600" }, rrMetrics.insertions), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("fluency.insertions_label"))), /* @__PURE__ */ React.createElement("div", { className: "bg-blue-50 border border-blue-200 rounded-xl p-3 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-blue-600" }, rrMetrics.selfCorrections), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("fluency.self_corrections")))), /* @__PURE__ */ React.createElement("div", { className: "flex justify-center gap-6 mb-6 text-xs" }, /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("span", { className: "block text-lg font-black text-slate-700" }, "1:", rrMetrics.errorRate), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 font-bold uppercase" }, t("fluency.error_rate"))), /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("span", { className: "block text-lg font-black text-slate-700" }, rrMetrics.scRate, "%"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 font-bold uppercase" }, t("fluency.sc_rate"))), /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("span", { className: "block text-lg font-black text-slate-700" }, rrMetrics.totalErrors), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 font-bold uppercase" }, t("fluency.errors_label")))), fluencyResult.prosody && /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 gap-3 mb-4 animate-in fade-in duration-300" }, [
-        { key: "pacing", label: t("fluency.prosody_pacing") || "Pacing", color: "indigo" },
-        { key: "expression", label: t("fluency.prosody_expression") || "Expression", color: "violet" },
-        { key: "phrasing", label: t("fluency.prosody_phrasing") || "Phrasing", color: "fuchsia" }
+      ), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 font-bold uppercase" }, t2(`fluency.season_${s}`) || s)))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-red-50 border border-red-200 rounded-xl p-3 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-red-600" }, rrMetrics.substitutions), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t2("fluency.substitutions"))), /* @__PURE__ */ React.createElement("div", { className: "bg-orange-50 border border-orange-200 rounded-xl p-3 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-orange-600" }, rrMetrics.omissions), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t2("fluency.omissions"))), /* @__PURE__ */ React.createElement("div", { className: "bg-purple-50 border border-purple-200 rounded-xl p-3 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-purple-600" }, rrMetrics.insertions), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t2("fluency.insertions_label"))), /* @__PURE__ */ React.createElement("div", { className: "bg-blue-50 border border-blue-200 rounded-xl p-3 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-blue-600" }, rrMetrics.selfCorrections), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t2("fluency.self_corrections")))), /* @__PURE__ */ React.createElement("div", { className: "flex justify-center gap-6 mb-6 text-xs" }, /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("span", { className: "block text-lg font-black text-slate-700" }, "1:", rrMetrics.errorRate), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 font-bold uppercase" }, t2("fluency.error_rate"))), /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("span", { className: "block text-lg font-black text-slate-700" }, rrMetrics.scRate, "%"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 font-bold uppercase" }, t2("fluency.sc_rate"))), /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("span", { className: "block text-lg font-black text-slate-700" }, rrMetrics.totalErrors), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 font-bold uppercase" }, t2("fluency.errors_label")))), fluencyResult.prosody && /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 gap-3 mb-4 animate-in fade-in duration-300" }, [
+        { key: "pacing", label: t2("fluency.prosody_pacing") || "Pacing", color: "indigo" },
+        { key: "expression", label: t2("fluency.prosody_expression") || "Expression", color: "violet" },
+        { key: "phrasing", label: t2("fluency.prosody_phrasing") || "Phrasing", color: "fuchsia" }
       ].map(({ key, label, color }) => {
         const val = fluencyResult.prosody[key] || 0;
         const pct = val / 5 * 100;
         return /* @__PURE__ */ React.createElement("div", { key, className: `bg-${color}-50 border border-${color}-200 rounded-xl p-3 text-center` }, /* @__PURE__ */ React.createElement("div", { className: `text-2xl font-black text-${color}-600` }, val, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-bold text-slate-600" }, "/5")), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, label), /* @__PURE__ */ React.createElement("div", { className: "w-full bg-slate-200 rounded-full h-1.5 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: `h-full bg-${color}-500 rounded-full transition-all duration-500`, style: { width: `${pct}%` } })));
-      }), Boolean(fluencyResult.prosody.note) && /* @__PURE__ */ React.createElement("div", { className: "col-span-3 text-xs text-slate-600 italic text-center mt-1" }, fluencyResult.prosody.note)), fluencyResult.confidence && /* @__PURE__ */ React.createElement("div", { className: `rounded-xl p-4 mb-4 border ${fluencyResult.confidence.overall >= 7 ? "bg-green-50 border-green-200" : fluencyResult.confidence.overall >= 4 ? "bg-amber-50 border-amber-200" : "bg-red-50 border-red-200"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 mb-2" }, /* @__PURE__ */ React.createElement("div", { className: `text-2xl font-black ${fluencyResult.confidence.overall >= 7 ? "text-green-600" : fluencyResult.confidence.overall >= 4 ? "text-amber-600" : "text-red-600"}` }, fluencyResult.confidence.overall, /* @__PURE__ */ React.createElement("span", { className: "text-sm opacity-60" }, "/10")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-700" }, "AI Confidence in This Analysis"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600" }, fluencyResult.confidence.overall >= 7 ? "High confidence" : fluencyResult.confidence.overall >= 4 ? "Moderate confidence \u2014 some results may be inaccurate" : "Low confidence \u2014 human verification recommended"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 text-[11px] mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "\u{1F399}\uFE0F Audio: ", fluencyResult.confidence.audioQuality, "/10"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "\u{1F5E3}\uFE0F Clarity: ", fluencyResult.confidence.speakerClarity, "/10"), fluencyResult.confidence.accentDetected && /* @__PURE__ */ React.createElement("span", { className: "bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold" }, "Accent detected \u2014 scored conservatively"), fluencyResult.confidence.youngVoiceDetected && /* @__PURE__ */ React.createElement("span", { className: "bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-bold" }, "Young voice detected"), fluencyResult.confidence.dialectalPatternsDetected && /* @__PURE__ */ React.createElement("span", { className: "bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full font-bold" }, "Dialectal patterns respected")), fluencyResult.confidence.lowConfidenceWordCount > 0 && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-amber-700 font-medium" }, "\u26A0 ", fluencyResult.confidence.lowConfidenceWordCount, " word(s) marked with low confidence \u2014 look for \u26A0 in the word display below"), fluencyResult.confidence.note && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-1 italic" }, fluencyResult.confidence.note), fluencyResult.confidence.limitationsApplied && fluencyResult.confidence.limitationsApplied !== "none" && fluencyResult.confidence.limitationsApplied !== "none detected" && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-1" }, "Research basis: ", fluencyResult.confidence.limitationsApplied)));
+      }), Boolean(fluencyResult.prosody.note) && /* @__PURE__ */ React.createElement("div", { className: "col-span-3 text-xs text-slate-600 italic text-center mt-1" }, fluencyResult.prosody.note)), fluencyResult.confidence && /* @__PURE__ */ React.createElement("div", { className: `rounded-xl p-4 mb-4 border ${fluencyResult.confidence.overall >= 7 ? "bg-green-50 border-green-200" : fluencyResult.confidence.overall >= 4 ? "bg-amber-50 border-amber-200" : "bg-red-50 border-red-200"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 mb-2" }, /* @__PURE__ */ React.createElement("div", { className: `text-2xl font-black ${fluencyResult.confidence.overall >= 7 ? "text-green-600" : fluencyResult.confidence.overall >= 4 ? "text-amber-600" : "text-red-600"}` }, fluencyResult.confidence.overall, /* @__PURE__ */ React.createElement("span", { className: "text-sm opacity-60" }, "/10")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-700" }, t2("fluency.ai_confidence_title") || "AI Confidence in This Analysis"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600" }, fluencyResult.confidence.overall >= 7 ? "High confidence" : fluencyResult.confidence.overall >= 4 ? "Moderate confidence \u2014 some results may be inaccurate" : "Low confidence \u2014 human verification recommended"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 text-[11px] mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "\u{1F399}\uFE0F Audio: ", fluencyResult.confidence.audioQuality, "/10"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "\u{1F5E3}\uFE0F Clarity: ", fluencyResult.confidence.speakerClarity, "/10"), fluencyResult.confidence.accentDetected && /* @__PURE__ */ React.createElement("span", { className: "bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold" }, t2("fluency.accent_detected_badge") || "Accent detected \u2014 scored conservatively"), fluencyResult.confidence.youngVoiceDetected && /* @__PURE__ */ React.createElement("span", { className: "bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-bold" }, t2("fluency.young_voice_badge") || "Young voice detected"), fluencyResult.confidence.dialectalPatternsDetected && /* @__PURE__ */ React.createElement("span", { className: "bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full font-bold" }, t2("fluency.dialectal_patterns_badge") || "Dialectal patterns respected")), fluencyResult.confidence.lowConfidenceWordCount > 0 && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-amber-700 font-medium" }, "\u26A0 ", fluencyResult.confidence.lowConfidenceWordCount, " word(s) marked with low confidence \u2014 look for \u26A0 in the word display below"), fluencyResult.confidence.note && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-1 italic" }, fluencyResult.confidence.note), fluencyResult.confidence.limitationsApplied && fluencyResult.confidence.limitationsApplied !== "none" && fluencyResult.confidence.limitationsApplied !== "none detected" && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-1" }, "Research basis: ", fluencyResult.confidence.limitationsApplied)));
     })(), fluencyFeedback && /* @__PURE__ */ React.createElement("div", { className: "mb-6 animate-in slide-in-from-bottom-2 fade-in" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-2 text-left bg-indigo-50 p-3 rounded-lg border border-indigo-100" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-100 p-1.5 rounded-full text-indigo-600 mt-0.5 shrink-0" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 14 })), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-indigo-900 leading-relaxed font-medium" }, fluencyFeedback))), /* @__PURE__ */ React.createElement("div", { className: "text-xl md:text-2xl font-serif leading-loose text-center flex flex-wrap justify-center gap-1.5" }, fluencyResult.wordData.map((w, i) => /* @__PURE__ */ React.createElement(
       "span",
       {
         key: i,
-        title: w.said ? `${t("fluency.said_label")}: "${w.said}"${w.lowConfidence ? " (\u26A0 low confidence)" : ""}` : w.lowConfidence ? "\u26A0 AI is uncertain about this word" : "",
+        title: w.said ? `${t2("fluency.said_label")}: "${w.said}"${w.lowConfidence ? " (\u26A0 low confidence)" : ""}` : w.lowConfidence ? "\u26A0 AI is uncertain about this word" : "",
         className: `px-1 rounded relative group cursor-default ${w.lowConfidence ? "ring-1 ring-amber-400 ring-offset-1 " : ""}${w.status === "correct" ? "text-green-600 font-medium" : w.status === "missed" ? "bg-red-700 text-white" : w.status === "stumbled" ? "bg-yellow-100 text-yellow-700" : w.status === "self_corrected" ? "bg-blue-100 text-blue-700 border-b-2 border-blue-400" : w.status === "mispronounced" ? "bg-red-100 text-red-700 border-b-2 border-red-400" : "text-slate-600"}`
       },
       w.word,
       w.said && /* @__PURE__ */ React.createElement("span", { className: "absolute -top-5 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[11px] px-1.5 py-0.5 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity pointer-events-none z-10" }, w.said)
-    ))), /* @__PURE__ */ React.createElement("div", { className: "mt-8 pt-6 border-t border-slate-100 w-full" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 font-bold uppercase tracking-widest text-center mb-3" }, t("fluency.analysis_key")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap justify-center gap-3 sm:gap-5 text-xs font-medium text-slate-600" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 rounded text-green-600 font-medium bg-green-50/50" }, t("fluency.legend_word")), /* @__PURE__ */ React.createElement("span", null, t("fluency.legend_correct"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 rounded bg-yellow-100 text-yellow-700" }, t("fluency.legend_word")), /* @__PURE__ */ React.createElement("span", null, t("fluency.legend_hesitation"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 rounded bg-blue-100 text-blue-700 border-b-2 border-blue-400" }, t("fluency.legend_word")), /* @__PURE__ */ React.createElement("span", null, t("fluency.legend_self_corrected"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 rounded bg-red-100 text-red-700 border-b-2 border-red-400" }, t("fluency.legend_word")), /* @__PURE__ */ React.createElement("span", null, t("fluency.legend_mispronounced"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 rounded bg-red-700 text-white" }, t("fluency.legend_word")), /* @__PURE__ */ React.createElement("span", null, t("fluency.legend_missed"))))), /* @__PURE__ */ React.createElement("div", { className: "mt-6 pt-4 border-t border-slate-100 flex justify-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement(
+    ))), /* @__PURE__ */ React.createElement("div", { className: "mt-8 pt-6 border-t border-slate-100 w-full" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 font-bold uppercase tracking-widest text-center mb-3" }, t2("fluency.analysis_key")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap justify-center gap-3 sm:gap-5 text-xs font-medium text-slate-600" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 rounded text-green-600 font-medium bg-green-50/50" }, t2("fluency.legend_word")), /* @__PURE__ */ React.createElement("span", null, t2("fluency.legend_correct"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 rounded bg-yellow-100 text-yellow-700" }, t2("fluency.legend_word")), /* @__PURE__ */ React.createElement("span", null, t2("fluency.legend_hesitation"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 rounded bg-blue-100 text-blue-700 border-b-2 border-blue-400" }, t2("fluency.legend_word")), /* @__PURE__ */ React.createElement("span", null, t2("fluency.legend_self_corrected"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 rounded bg-red-100 text-red-700 border-b-2 border-red-400" }, t2("fluency.legend_word")), /* @__PURE__ */ React.createElement("span", null, t2("fluency.legend_mispronounced"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 rounded bg-red-700 text-white" }, t2("fluency.legend_word")), /* @__PURE__ */ React.createElement("span", null, t2("fluency.legend_missed"))))), /* @__PURE__ */ React.createElement("div", { className: "mt-6 pt-4 border-t border-slate-100 flex justify-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: () => generateFluencyScoreSheet(fluencyResult, typeof generatedContent?.data === "string" ? generatedContent.data : ""),
         className: "flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition-colors",
-        "aria-label": t("common.print_score_sheet")
+        "aria-label": t2("common.print_score_sheet")
       },
       /* @__PURE__ */ React.createElement(FileText, { size: 15 }),
       " Print Score Sheet"
@@ -781,12 +781,12 @@ function FluencyModePanel(props) {
       {
         onClick: exportFluencyCSV,
         className: "flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-colors",
-        "aria-label": t("common.export_fluency_csv")
+        "aria-label": t2("common.export_fluency_csv")
       },
       /* @__PURE__ */ React.createElement(Download, { size: 15 }),
       " Export Fluency CSV"
-    ))) : /* @__PURE__ */ React.createElement("div", { className: "max-w-2xl" }, fluencyTranscript && /* @__PURE__ */ React.createElement("div", { className: "mb-8 p-4 bg-white rounded-xl border border-slate-400 shadow-sm text-sm text-slate-600 italic" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold uppercase text-xs text-rose-400 block mb-1" }, t("fluency.hearing_label")), '"', fluencyTranscript, '"'), /* @__PURE__ */ React.createElement("div", { className: "text-xl md:text-3xl font-serif text-slate-800 leading-loose text-center" }, typeof generatedContent?.data === "string" ? generatedContent?.data.split("--- ENGLISH TRANSLATION ---")[0].replace(/\[([^\]]+)\]\([^)]+\)/g, "$1").replace(/\[\d+\]/g, "").replace(/[⁽][⁰¹²³⁴⁵⁶⁷⁸⁹]+[⁾]/g, "").replace(/https?:\/\/[^\s]+/g, "").replace(/^#{1,6}\s/gm, "").replace(/\*{1,3}/g, "").trim() : /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 italic text-base" }, t("fluency.format_error"))))),
-    /* @__PURE__ */ React.createElement("div", { className: "p-6 bg-white border-t border-slate-100 flex flex-col items-center justify-center shrink-0 gap-4" }, fluencyStatus === "listening" && fluencyTimeLimit > 0 && fluencyTimerVisibility === "visible" && /* @__PURE__ */ React.createElement("div", { className: `text-4xl font-black tabular-nums transition-colors ${fluencyTimeRemaining <= 10 ? "text-red-500 animate-pulse" : fluencyTimeRemaining <= 30 ? "text-yellow-500" : "text-indigo-600"}` }, Math.floor(fluencyTimeRemaining / 60), ":", (fluencyTimeRemaining % 60).toString().padStart(2, "0")), /* @__PURE__ */ React.createElement("div", { className: `text-sm font-bold uppercase tracking-widest transition-colors ${fluencyStatus === "listening" ? "text-red-500" : fluencyStatus === "processing" ? "text-indigo-500 animate-pulse" : "text-slate-600"}` }, fluencyStatus === "listening" ? t("fluency.listening") : fluencyStatus === "processing" ? t("fluency.processing") : fluencyStatus === "complete" ? t("fluency.complete") : t("fluency.prompt")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-4 items-center" }, fluencyStatus === "complete" && /* @__PURE__ */ React.createElement(
+    ))) : /* @__PURE__ */ React.createElement("div", { className: "max-w-2xl" }, fluencyTranscript && /* @__PURE__ */ React.createElement("div", { className: "mb-8 p-4 bg-white rounded-xl border border-slate-400 shadow-sm text-sm text-slate-600 italic" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold uppercase text-xs text-rose-400 block mb-1" }, t2("fluency.hearing_label")), '"', fluencyTranscript, '"'), /* @__PURE__ */ React.createElement("div", { className: "text-xl md:text-3xl font-serif text-slate-800 leading-loose text-center" }, typeof generatedContent?.data === "string" ? generatedContent?.data.split("--- ENGLISH TRANSLATION ---")[0].replace(/\[([^\]]+)\]\([^)]+\)/g, "$1").replace(/\[\d+\]/g, "").replace(/[⁽][⁰¹²³⁴⁵⁶⁷⁸⁹]+[⁾]/g, "").replace(/https?:\/\/[^\s]+/g, "").replace(/^#{1,6}\s/gm, "").replace(/\*{1,3}/g, "").trim() : /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 italic text-base" }, t2("fluency.format_error"))))),
+    /* @__PURE__ */ React.createElement("div", { className: "p-6 bg-white border-t border-slate-100 flex flex-col items-center justify-center shrink-0 gap-4" }, fluencyStatus === "listening" && fluencyTimeLimit > 0 && fluencyTimerVisibility === "visible" && /* @__PURE__ */ React.createElement("div", { className: `text-4xl font-black tabular-nums transition-colors ${fluencyTimeRemaining <= 10 ? "text-red-500 animate-pulse" : fluencyTimeRemaining <= 30 ? "text-yellow-500" : "text-indigo-600"}` }, Math.floor(fluencyTimeRemaining / 60), ":", (fluencyTimeRemaining % 60).toString().padStart(2, "0")), /* @__PURE__ */ React.createElement("div", { className: `text-sm font-bold uppercase tracking-widest transition-colors ${fluencyStatus === "listening" ? "text-red-500" : fluencyStatus === "processing" ? "text-indigo-500 animate-pulse" : "text-slate-600"}` }, fluencyStatus === "listening" ? t2("fluency.listening") : fluencyStatus === "processing" ? t2("fluency.processing") : fluencyStatus === "complete" ? t2("fluency.complete") : t2("fluency.prompt")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-4 items-center" }, fluencyStatus === "complete" && /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: () => {
@@ -796,18 +796,18 @@ function FluencyModePanel(props) {
           setFluencyStatus("idle");
         },
         className: "flex items-center gap-2 px-6 py-3 rounded-full font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors animate-in slide-in-from-right-4",
-        "aria-label": t("fluency.reset_label")
+        "aria-label": t2("fluency.reset_label")
       },
       /* @__PURE__ */ React.createElement(RefreshCw, { size: 18 }),
       " ",
-      t("fluency.try_again")
+      t2("fluency.try_again")
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: toggleFluencyRecording,
         disabled: fluencyStatus === "processing",
         className: `w-20 h-20 rounded-full flex items-center justify-center shadow-xl transition-all transform border-4 ${fluencyStatus === "listening" ? "bg-red-700 text-white animate-pulse border-red-200 shadow-red-500/30 hover:scale-105 active:scale-95" : fluencyStatus === "complete" ? "bg-white text-indigo-600 border-indigo-200 hover:bg-indigo-50 hover:scale-105 active:scale-95" : fluencyStatus === "processing" ? "bg-slate-300 text-slate-600 border-slate-200 cursor-not-allowed" : "bg-indigo-600 text-white hover:bg-indigo-700 border-indigo-100 shadow-indigo-500/30 hover:scale-105 active:scale-95"}`,
-        "aria-label": fluencyStatus === "listening" ? t("fluency.stop_recording") : fluencyStatus === "processing" ? t("fluency.processing") : t("fluency.start_recording")
+        "aria-label": fluencyStatus === "listening" ? t2("fluency.stop_recording") : fluencyStatus === "processing" ? t2("fluency.processing") : t2("fluency.start_recording")
       },
       fluencyStatus === "listening" ? /* @__PURE__ */ React.createElement(StopCircle, { size: 32, className: "fill-current" }) : fluencyStatus === "processing" ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 32, className: "animate-spin" }) : fluencyStatus === "complete" ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 32 }) : /* @__PURE__ */ React.createElement(Mic, { size: 32, className: "fill-current" })
     )))
@@ -850,103 +850,103 @@ function SourceGenPanel(props) {
     standardInputValue,
     standardMode,
     suggestedStandards,
-    t,
+    t: t2,
     targetStandards
   } = props;
   if (!showSourceGen) return null;
-  return /* @__PURE__ */ React.createElement("div", { className: "p-4 bg-indigo-50/50 border-b border-indigo-100 animate-in slide-in-from-top-2 space-y-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "allo-source-topic", className: "block text-xs font-medium text-indigo-900 mb-1" }, t("input.topic")), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "p-4 bg-indigo-50/50 border-b border-indigo-100 animate-in slide-in-from-top-2 space-y-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "allo-source-topic", className: "block text-xs font-medium text-indigo-900 mb-1" }, t2("input.topic")), /* @__PURE__ */ React.createElement(
     "input",
     {
       id: "allo-source-topic",
       type: "text",
       value: sourceTopic,
       onChange: (e) => setSourceTopic(e.target.value),
-      placeholder: t("wizard.topic_placeholder"),
-      "aria-label": t("common.topic_subject_aria"),
+      placeholder: t2("wizard.topic_placeholder"),
+      "aria-label": t2("common.topic_subject_aria"),
       className: "w-full text-sm p-2 border border-indigo-200 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300",
       onKeyDown: (e) => e.key === "Enter" && handleGenerateSource(),
       autoFocus: true
     }
-  )), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-indigo-900 mb-1" }, t("input.tone")), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-indigo-900 mb-1" }, t2("input.tone")), /* @__PURE__ */ React.createElement(
     "select",
     {
       value: sourceTone,
       onChange: (e) => setSourceTone(e.target.value),
       className: "w-full text-sm p-2 border border-indigo-200 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300",
-      "aria-label": t("input.tone")
+      "aria-label": t2("input.tone")
     },
-    /* @__PURE__ */ React.createElement("option", { value: "Informative" }, t("input.tone_options.informative")),
-    /* @__PURE__ */ React.createElement("option", { value: "Narrative" }, t("input.tone_options.narrative")),
-    /* @__PURE__ */ React.createElement("option", { value: "Dialogue" }, t("input.tone_options.dialogue")),
-    /* @__PURE__ */ React.createElement("option", { value: "Persuasive" }, t("input.tone_options.persuasive")),
-    /* @__PURE__ */ React.createElement("option", { value: "Humorous" }, t("input.tone_options.humorous")),
-    /* @__PURE__ */ React.createElement("option", { value: "Step-by-Step" }, t("input.tone_options.procedural"))
-  )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-indigo-900 mb-1" }, t("input.target_level")), /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("option", { value: "Informative" }, t2("input.tone_options.informative")),
+    /* @__PURE__ */ React.createElement("option", { value: "Narrative" }, t2("input.tone_options.narrative")),
+    /* @__PURE__ */ React.createElement("option", { value: "Dialogue" }, t2("input.tone_options.dialogue")),
+    /* @__PURE__ */ React.createElement("option", { value: "Persuasive" }, t2("input.tone_options.persuasive")),
+    /* @__PURE__ */ React.createElement("option", { value: "Humorous" }, t2("input.tone_options.humorous")),
+    /* @__PURE__ */ React.createElement("option", { value: "Step-by-Step" }, t2("input.tone_options.procedural"))
+  )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-indigo-900 mb-1" }, t2("input.target_level")), /* @__PURE__ */ React.createElement(
     "select",
     {
       value: sourceLevel,
       onChange: (e) => setSourceLevel(e.target.value),
       className: "w-full text-sm p-2 border border-indigo-200 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300",
-      "aria-label": t("common.target_level")
+      "aria-label": t2("common.target_level")
     },
-    /* @__PURE__ */ React.createElement("option", { value: "Kindergarten" }, t("input.level_options.k")),
-    /* @__PURE__ */ React.createElement("option", { value: "1st Grade" }, t("input.level_options.g1")),
-    /* @__PURE__ */ React.createElement("option", { value: "2nd Grade" }, t("input.level_options.g2")),
-    /* @__PURE__ */ React.createElement("option", { value: "3rd Grade" }, t("input.level_options.g3")),
-    /* @__PURE__ */ React.createElement("option", { value: "4th Grade" }, t("input.level_options.g4")),
-    /* @__PURE__ */ React.createElement("option", { value: "5th Grade" }, t("input.level_options.g5")),
-    /* @__PURE__ */ React.createElement("option", { value: "6th Grade" }, t("input.level_options.g6")),
-    /* @__PURE__ */ React.createElement("option", { value: "7th Grade" }, t("input.level_options.g7")),
-    /* @__PURE__ */ React.createElement("option", { value: "8th Grade" }, t("input.level_options.g8")),
-    /* @__PURE__ */ React.createElement("option", { value: "9th Grade" }, t("input.level_options.g9")),
-    /* @__PURE__ */ React.createElement("option", { value: "10th Grade" }, t("input.level_options.g10")),
-    /* @__PURE__ */ React.createElement("option", { value: "11th Grade" }, t("input.level_options.g11")),
-    /* @__PURE__ */ React.createElement("option", { value: "12th Grade" }, t("input.level_options.g12")),
-    /* @__PURE__ */ React.createElement("option", { value: "College" }, t("input.level_options.college")),
-    /* @__PURE__ */ React.createElement("option", { value: "Graduate Level" }, t("input.level_options.grad"))
-  ))), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 p-2 rounded-lg border border-slate-400" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs text-slate-600 font-bold flex items-center gap-1" }, /* @__PURE__ */ React.createElement(CheckCircle, { size: 12, className: "text-green-600" }), " ", isIndependentMode ? t("wizard.learning_goal_header") : t("standards.target_standard")), !isIndependentMode && /* @__PURE__ */ React.createElement("div", { className: "flex bg-white rounded-md border border-slate-400 p-0.5 shadow-sm" }, /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("option", { value: "Kindergarten" }, t2("input.level_options.k")),
+    /* @__PURE__ */ React.createElement("option", { value: "1st Grade" }, t2("input.level_options.g1")),
+    /* @__PURE__ */ React.createElement("option", { value: "2nd Grade" }, t2("input.level_options.g2")),
+    /* @__PURE__ */ React.createElement("option", { value: "3rd Grade" }, t2("input.level_options.g3")),
+    /* @__PURE__ */ React.createElement("option", { value: "4th Grade" }, t2("input.level_options.g4")),
+    /* @__PURE__ */ React.createElement("option", { value: "5th Grade" }, t2("input.level_options.g5")),
+    /* @__PURE__ */ React.createElement("option", { value: "6th Grade" }, t2("input.level_options.g6")),
+    /* @__PURE__ */ React.createElement("option", { value: "7th Grade" }, t2("input.level_options.g7")),
+    /* @__PURE__ */ React.createElement("option", { value: "8th Grade" }, t2("input.level_options.g8")),
+    /* @__PURE__ */ React.createElement("option", { value: "9th Grade" }, t2("input.level_options.g9")),
+    /* @__PURE__ */ React.createElement("option", { value: "10th Grade" }, t2("input.level_options.g10")),
+    /* @__PURE__ */ React.createElement("option", { value: "11th Grade" }, t2("input.level_options.g11")),
+    /* @__PURE__ */ React.createElement("option", { value: "12th Grade" }, t2("input.level_options.g12")),
+    /* @__PURE__ */ React.createElement("option", { value: "College" }, t2("input.level_options.college")),
+    /* @__PURE__ */ React.createElement("option", { value: "Graduate Level" }, t2("input.level_options.grad"))
+  ))), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 p-2 rounded-lg border border-slate-400" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs text-slate-600 font-bold flex items-center gap-1" }, /* @__PURE__ */ React.createElement(CheckCircle, { size: 12, className: "text-green-600" }), " ", isIndependentMode ? t2("wizard.learning_goal_header") : t2("standards.target_standard")), !isIndependentMode && /* @__PURE__ */ React.createElement("div", { className: "flex bg-white rounded-md border border-slate-400 p-0.5 shadow-sm" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: handleSetStandardModeToAi,
       className: `px-2 py-0.5 text-[11px] font-bold rounded transition-colors ${standardMode === "ai" ? "bg-indigo-100 text-indigo-700" : "text-slate-600 hover:text-slate-600"}`
     },
-    t("standards.ai_match")
+    t2("standards.ai_match")
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: handleSetStandardModeToManual,
       className: `px-2 py-0.5 text-[11px] font-bold rounded transition-colors ${standardMode === "manual" ? "bg-indigo-100 text-indigo-700" : "text-slate-600 hover:text-slate-600"}`
     },
-    t("standards.manual")
+    t2("standards.manual")
   ))), standardMode === "ai" ? /* @__PURE__ */ React.createElement("div", { className: "space-y-2 animate-in fade-in slide-in-from-top-1 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
     "input",
     {
-      "aria-label": t("common.standards_region_optional"),
+      "aria-label": t2("common.standards_region_optional"),
       type: "text",
       value: aiStandardRegion,
       onChange: (e) => setAiStandardRegion(e.target.value),
-      placeholder: t("standards.region_optional"),
+      placeholder: t2("standards.region_optional"),
       className: "w-1/3 text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
     }
   ), /* @__PURE__ */ React.createElement(
     "input",
     {
-      "aria-label": t("common.enter_ai_standard_query"),
+      "aria-label": t2("common.enter_ai_standard_query"),
       type: "text",
       value: aiStandardQuery,
       onChange: (e) => setAiStandardQuery(e.target.value),
       onKeyDown: (e) => e.key === "Enter" && handleFindStandards(gradeLevel),
-      placeholder: t("standards.finder_placeholder"),
+      placeholder: t2("standards.finder_placeholder"),
       className: "flex-grow text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
     }
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
-      "aria-label": t("common.refresh"),
+      "aria-label": t2("common.refresh"),
       onClick: () => handleFindStandards(gradeLevel),
       disabled: !aiStandardQuery.trim() || isFindingStandards,
       className: "bg-indigo-600 hover:bg-indigo-700 text-white p-1.5 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors",
-      title: t("standards.search_button_title")
+      title: t2("standards.search_button_title")
     },
     isFindingStandards ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin" }) : /* @__PURE__ */ React.createElement(Search, { size: 14 })
   )), suggestedStandards.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "max-h-32 overflow-y-auto custom-scrollbar border border-slate-400 rounded bg-white divide-y divide-slate-100" }, suggestedStandards.map((std, idx) => /* @__PURE__ */ React.createElement(
@@ -959,54 +959,54 @@ function SourceGenPanel(props) {
           setTargetStandards((prev) => [...prev, val]);
           addToast(`Added ${std.code} to list`, "success");
         } else if (targetStandards.length >= 3) {
-          addToast(t("standards.toast_max_limit"), "error");
+          addToast(t2("standards.toast_max_limit"), "error");
         }
       },
       className: "w-full text-left p-2 hover:bg-indigo-50 transition-colors group"
     },
     /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-indigo-700 bg-indigo-50 px-1 rounded border border-indigo-100" }, std.code), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 uppercase" }, std.framework)),
     /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 leading-snug mt-1 line-clamp-2 group-hover:text-indigo-900" }, std.description)
-  ))), suggestedStandards.length === 0 && !isFindingStandards && aiStandardQuery && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 italic text-center p-1" }, t("standards.press_search_hint"))) : /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
+  ))), suggestedStandards.length === 0 && !isFindingStandards && aiStandardQuery && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 italic text-center p-1" }, t2("standards.press_search_hint"))) : /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
     "input",
     {
-      "aria-label": t("common.enter_standard_input_value"),
+      "aria-label": t2("common.enter_standard_input_value"),
       type: "text",
       value: standardInputValue,
       onChange: (e) => setStandardInputValue(e.target.value),
       onKeyDown: (e) => e.key === "Enter" && handleAddStandard(),
-      placeholder: t("standards.manual_placeholder"),
+      placeholder: t2("standards.manual_placeholder"),
       className: "flex-grow text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300 p-1.5"
     }
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
-      "aria-label": t("common.add"),
+      "aria-label": t2("common.add"),
       onClick: handleAddStandard,
       disabled: !standardInputValue.trim() || targetStandards.length >= 3,
       className: "bg-indigo-100 text-indigo-700 p-1.5 rounded-md hover:bg-indigo-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
-      title: t("standards.add_button")
+      title: t2("standards.add_button")
     },
     /* @__PURE__ */ React.createElement(Plus, { size: 16 })
   ))), targetStandards.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 mt-2 mb-2" }, targetStandards.map((std, idx) => /* @__PURE__ */ React.createElement("span", { key: idx, className: "inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold bg-green-100 text-green-700 border border-green-200 animate-in slide-in-from-left-1 max-w-full" }, /* @__PURE__ */ React.createElement("span", { className: "truncate", title: std }, std), /* @__PURE__ */ React.createElement(
     "button",
     {
-      "aria-label": t("common.close"),
+      "aria-label": t2("common.close"),
       onClick: () => handleRemoveStandard(idx),
       className: "hover:text-green-900 ml-1 shrink-0",
-      title: t("standards.remove_button")
+      title: t2("standards.remove_button")
     },
     /* @__PURE__ */ React.createElement(X, { size: 10 })
-  )))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-indigo-900 mb-1" }, t("input.vocab"), " ", /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600 font-normal" }, t("common.optional"))), /* @__PURE__ */ React.createElement(
+  )))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-indigo-900 mb-1" }, t2("input.vocab"), " ", /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600 font-normal" }, t2("common.optional"))), /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "text",
       value: sourceVocabulary,
       onChange: (e) => setSourceVocabulary(e.target.value),
-      placeholder: t("wizard.vocab_placeholder"),
+      placeholder: t2("wizard.vocab_placeholder"),
       className: "w-full text-sm p-2 border border-indigo-200 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300",
-      "aria-label": t("input.vocab")
+      "aria-label": t2("input.vocab")
     }
-  )), /* @__PURE__ */ React.createElement("div", { "data-help-key": "source_settings_length" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-indigo-900 mb-1" }, t("input.length"), " ", /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600 font-normal" }, t("input.approx_words"))), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("div", { "data-help-key": "source_settings_length" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-indigo-900 mb-1" }, t2("input.length"), " ", /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600 font-normal" }, t2("input.approx_words"))), /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "number",
@@ -1015,31 +1015,31 @@ function SourceGenPanel(props) {
       placeholder: "250",
       step: "50",
       className: "w-full text-sm p-2 border border-indigo-200 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300",
-      "aria-label": t("wizard.aria_length_label")
+      "aria-label": t2("wizard.aria_length_label")
     }
-  )), /* @__PURE__ */ React.createElement("div", { "data-help-key": "source_settings_instructions" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-indigo-900 mb-1" }, t("input.custom_instructions"), " ", /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600 font-normal" }, t("common.optional"))), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("div", { "data-help-key": "source_settings_instructions" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-indigo-900 mb-1" }, t2("input.custom_instructions"), " ", /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600 font-normal" }, t2("common.optional"))), /* @__PURE__ */ React.createElement(
     "textarea",
     {
       value: sourceCustomInstructions,
       onChange: (e) => setSourceCustomInstructions(e.target.value),
-      placeholder: t("wizard.instructions_placeholder"),
+      placeholder: t2("wizard.instructions_placeholder"),
       className: "w-full text-sm p-2 border border-indigo-200 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none resize-none h-16 transition-shadow duration-300",
-      "aria-label": t("wizard.input_instructions_label")
+      "aria-label": t2("wizard.input_instructions_label")
     }
   )), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2 bg-purple-50 p-2.5 rounded-lg border-2 border-purple-200 shadow-sm", "data-help-key": "source_verify_checkbox" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
     "input",
     {
-      "aria-label": t("common.toggle_include_source_citations"),
+      "aria-label": t2("common.toggle_include_source_citations"),
       id: "includeCitations",
       type: "checkbox",
       checked: includeSourceCitations,
       onChange: (e) => setIncludeSourceCitations(e.target.checked),
       className: "w-4 h-4 text-purple-600 border-purple-300 rounded focus:ring-purple-500 cursor-pointer"
     }
-  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "includeCitations", className: "text-xs font-bold text-purple-900 cursor-pointer select-none flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Search, { size: 12, className: "text-purple-600" }), " ", t("input.verify_facts"))), includeSourceCitations && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-purple-700 ml-6 leading-relaxed" }, t("input.verify_facts_desc"))), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "includeCitations", className: "text-xs font-bold text-purple-900 cursor-pointer select-none flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Search, { size: 12, className: "text-purple-600" }), " ", t2("input.verify_facts"))), includeSourceCitations && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-purple-700 ml-6 leading-relaxed" }, t2("input.verify_facts_desc"))), /* @__PURE__ */ React.createElement(
     "button",
     {
-      "aria-label": t("common.generate_source_text"),
+      "aria-label": t2("common.generate_source_text"),
       "data-help-key": "source_generate_button",
       onClick: handleGenerateSource,
       disabled: !sourceTopic.trim() && targetStandards.length === 0 || isGeneratingSource,
@@ -1047,7 +1047,7 @@ function SourceGenPanel(props) {
       className: "w-full bg-indigo-600 text-white text-sm font-medium py-2 rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
     },
     isGeneratingSource ? /* @__PURE__ */ React.createElement(RefreshCw, { className: "animate-spin", size: 14 }) : /* @__PURE__ */ React.createElement(Pencil, { size: 14 }),
-    isGeneratingSource ? t("input.writing") : t("input.generate")
+    isGeneratingSource ? t2("input.writing") : t2("input.generate")
   ));
 }
 function TourOverlay(props) {
@@ -1062,7 +1062,7 @@ function TourOverlay(props) {
     setRunTour,
     setSpotlightMessage,
     spotlightMessage,
-    t,
+    t: t2,
     tourRect,
     tourStep,
     tourSteps
@@ -1124,7 +1124,7 @@ function TourOverlay(props) {
     {
       className: `fixed top-4 bottom-4 bg-white p-8 pt-6 shadow-2xl w-[500px] max-h-[calc(100vh-2rem)] overflow-y-auto flex flex-col gap-6 animate-in duration-500 z-[11000] border-amber-300 ${tourRect && tourRect.left > window.innerWidth / 2 ? "left-0 border-r-4 rounded-r-3xl slide-in-from-left" : "right-0 border-l-4 rounded-l-3xl slide-in-from-right"}`
     },
-    spotlightMessage ? /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-indigo-900 text-lg flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 18, className: "text-yellow-500 fill-current" }), " ", spotlightMessage.title || t("tour.spotlight_title")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2 mt-2" }, (spotlightMessage.text || spotlightMessage || "").split(/\r?\n/).map((line, i) => {
+    spotlightMessage ? /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-indigo-900 text-lg flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 18, className: "text-yellow-500 fill-current" }), " ", spotlightMessage.title || t2("tour.spotlight_title")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2 mt-2" }, (spotlightMessage.text || spotlightMessage || "").split(/\r?\n/).map((line, i) => {
       const cleanLine = line.trim();
       if (!cleanLine) return /* @__PURE__ */ React.createElement("div", { key: i, className: "h-3" });
       const formatText = (text) => {
@@ -1203,24 +1203,24 @@ function TourOverlay(props) {
         },
         className: "bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-sm w-full"
       },
-      t("common.close")
-    ) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("button", { onClick: handleSetRunTourToFalse, className: "text-xs font-bold text-slate-600 hover:text-slate-600" }, t("common.skip")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
+      t2("common.close")
+    ) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("button", { onClick: handleSetRunTourToFalse, className: "text-xs font-bold text-slate-600 hover:text-slate-600" }, t2("common.skip")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
       "button",
       {
-        "aria-label": t("common.continue"),
+        "aria-label": t2("common.continue"),
         onClick: handlePrevTourStep,
         disabled: tourStep === 0,
         className: "text-slate-600 hover:text-indigo-600 px-3 py-2 rounded-lg text-sm font-bold transition-colors disabled:opacity-30"
       },
-      t("common.back")
+      t2("common.back")
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
-        "aria-label": t("common.next"),
+        "aria-label": t2("common.next"),
         onClick: handleNextTourStep,
         className: "bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-sm flex items-center gap-2"
       },
-      tourStep === tourSteps.length - 1 ? t("common.finish") : t("common.next"),
+      tourStep === tourSteps.length - 1 ? t2("common.finish") : t2("common.next"),
       " ",
       /* @__PURE__ */ React.createElement(ArrowRight, { size: 14 })
     ))))
@@ -1251,7 +1251,7 @@ function VolumeBuilderView(props) {
     setCubeShape,
     setCubeShowLayers,
     setExploreDifficulty,
-    t
+    t: t2
   } = props;
   if (!(mathMode === "Volume Builder")) return null;
   const isLBlock = cubeShape === "lblock";
@@ -1358,10 +1358,10 @@ function VolumeBuilderView(props) {
           )
         );
       }
-  return /* @__PURE__ */ React.createElement("div", { className: "space-y-3 p-3 bg-emerald-50 rounded-xl border border-emerald-200 animate-in fade-in slide-in-from-top-1" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 text-emerald-800 font-bold text-sm" }, "\u{1F4E6} 3D Volume Explorer"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("button", { onClick: () => setCubeScale((s) => Math.max(0.4, s - 0.15)), className: "w-7 h-7 rounded-full bg-white border border-emerald-300 text-emerald-700 font-bold text-sm hover:bg-emerald-100 transition-all flex items-center justify-center", "aria-label": "Zoom out" }, "\u2212"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-emerald-600 font-mono w-10 text-center" }, Math.round(cubeScale * 100), "%"), /* @__PURE__ */ React.createElement("button", { onClick: () => setCubeScale((s) => Math.min(2.5, s + 0.15)), className: "w-7 h-7 rounded-full bg-white border border-emerald-300 text-emerald-700 font-bold text-sm hover:bg-emerald-100 transition-all flex items-center justify-center", "aria-label": "Zoom in" }, "+"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+  return /* @__PURE__ */ React.createElement("div", { className: "space-y-3 p-3 bg-emerald-50 rounded-xl border border-emerald-200 animate-in fade-in slide-in-from-top-1" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 text-emerald-800 font-bold text-sm" }, "\u{1F4E6} 3D Volume Explorer"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("button", { onClick: () => setCubeScale((s) => Math.max(0.4, s - 0.15)), className: "w-7 h-7 rounded-full bg-white border border-emerald-300 text-emerald-700 font-bold text-sm hover:bg-emerald-100 transition-all flex items-center justify-center", "aria-label": t2("volume_builder.zoom_out_aria") || "Zoom out" }, "\u2212"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-emerald-600 font-mono w-10 text-center" }, Math.round(cubeScale * 100), "%"), /* @__PURE__ */ React.createElement("button", { onClick: () => setCubeScale((s) => Math.min(2.5, s + 0.15)), className: "w-7 h-7 rounded-full bg-white border border-emerald-300 text-emerald-700 font-bold text-sm hover:bg-emerald-100 transition-all flex items-center justify-center", "aria-label": t2("volume_builder.zoom_in_aria") || "Zoom in" }, "+"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
     setCubeRotation({ x: -25, y: -35 });
     setCubeScale(1);
-  }, className: "ml-1 px-2 py-1 rounded-md bg-white border border-emerald-300 text-emerald-700 font-bold text-[11px] hover:bg-emerald-100 transition-all", "aria-label": "Reset view" }, "\u21BA"))), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-emerald-700/70" }, "Drag to rotate \u2022 Scroll to zoom \u2022 Build rectangular prisms or L-blocks with unit cubes (5.MD.3-5)"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 justify-center", role: "radiogroup", "aria-label": "Volume Builder shape" }, [
+  }, className: "ml-1 px-2 py-1 rounded-md bg-white border border-emerald-300 text-emerald-700 font-bold text-[11px] hover:bg-emerald-100 transition-all", "aria-label": t2("volume_builder.reset_view_aria") || "Reset view" }, "\u21BA"))), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-emerald-700/70" }, t2("volume_builder.help_caption") || "Drag to rotate \u2022 Scroll to zoom \u2022 Build rectangular prisms or L-blocks with unit cubes (5.MD.3-5)"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 justify-center", role: "radiogroup", "aria-label": t2("volume_builder.shape_radiogroup_aria") || "Volume Builder shape" }, [
     { id: "rect", label: "\u{1F9CA} Rectangular" },
     { id: "lblock", label: "\u{1F4D0} L-Block" }
   ].map((s) => {
@@ -1456,11 +1456,11 @@ function VolumeBuilderView(props) {
       min: "1",
       max: cubeDims.h,
       value: cubeShowLayers !== null ? cubeShowLayers : cubeDims.h,
-      "aria-label": t("stem.layers_slider") || "Visible layers",
+      "aria-label": t2("stem.layers_slider") || "Visible layers",
       onChange: (e) => setCubeShowLayers(parseInt(e.target.value)),
       className: "flex-1 h-1.5 bg-emerald-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
     }
-  ), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-mono text-emerald-600 w-12 text-center" }, cubeShowLayers !== null ? cubeShowLayers : cubeDims.h, " / ", cubeDims.h), cubeShowLayers !== null && cubeShowLayers < cubeDims.h && /* @__PURE__ */ React.createElement("button", { onClick: () => setCubeShowLayers(null), className: "text-xs text-emerald-500 hover:text-emerald-700 font-bold" }, "All")), /* @__PURE__ */ React.createElement("div", { className: "bg-white/80 rounded-lg p-3 border border-emerald-100" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1" }, t("stem.volume")), /* @__PURE__ */ React.createElement("div", { className: "text-lg font-bold text-emerald-800" }, isLBlock ? /* @__PURE__ */ React.createElement(React.Fragment, null, "V = (", cubeDims.l, "\xD7", cubeDims.w, "\xD7", cubeDims.h, ") \u2212 (", safeNotch.l, "\xD7", safeNotch.w, "\xD7", safeNotch.h, ") = ", rectVolume, " \u2212 ", notchVolume, " = ", /* @__PURE__ */ React.createElement("span", { className: "text-2xl text-emerald-600" }, volume)) : /* @__PURE__ */ React.createElement(React.Fragment, null, "V = ", cubeDims.l, " \xD7 ", cubeDims.w, " \xD7 ", cubeDims.h, " = ", /* @__PURE__ */ React.createElement("span", { className: "text-2xl text-emerald-600" }, volume))), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600" }, volume, " unit cube", volume !== 1 ? "s" : "")), /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-teal-600 uppercase tracking-wider mb-1" }, t("stem.surface_area"), isLBlock && /* @__PURE__ */ React.createElement("span", { className: "ml-1 text-[10px] font-normal text-teal-500/70" }, "(approx \u2014 full prism)")), /* @__PURE__ */ React.createElement("div", { className: "text-lg font-bold text-teal-800" }, "SA ", isLBlock ? "\u2248 " : "= ", /* @__PURE__ */ React.createElement("span", { className: "text-2xl text-teal-600" }, surfaceArea)), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600" }, "2(", cubeDims.l, "\xD7", cubeDims.w, " + ", cubeDims.l, "\xD7", cubeDims.h, " + ", cubeDims.w, "\xD7", cubeDims.h, ")")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-emerald-700" }, "Difficulty:"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-0.5" }, ["easy", "medium", "hard"].map((d) => /* @__PURE__ */ React.createElement("button", { key: d, onClick: () => setExploreDifficulty(d), className: "text-[11px] font-bold px-1.5 py-0.5 rounded-full transition-all " + (exploreDifficulty === d ? d === "easy" ? "bg-green-700 text-white" : d === "hard" ? "bg-red-700 text-white" : "bg-emerald-700 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200") }, d)))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
+  ), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-mono text-emerald-600 w-12 text-center" }, cubeShowLayers !== null ? cubeShowLayers : cubeDims.h, " / ", cubeDims.h), cubeShowLayers !== null && cubeShowLayers < cubeDims.h && /* @__PURE__ */ React.createElement("button", { onClick: () => setCubeShowLayers(null), className: "text-xs text-emerald-500 hover:text-emerald-700 font-bold" }, "All")), /* @__PURE__ */ React.createElement("div", { className: "bg-white/80 rounded-lg p-3 border border-emerald-100" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1" }, t2("stem.volume")), /* @__PURE__ */ React.createElement("div", { className: "text-lg font-bold text-emerald-800" }, isLBlock ? /* @__PURE__ */ React.createElement(React.Fragment, null, "V = (", cubeDims.l, "\xD7", cubeDims.w, "\xD7", cubeDims.h, ") \u2212 (", safeNotch.l, "\xD7", safeNotch.w, "\xD7", safeNotch.h, ") = ", rectVolume, " \u2212 ", notchVolume, " = ", /* @__PURE__ */ React.createElement("span", { className: "text-2xl text-emerald-600" }, volume)) : /* @__PURE__ */ React.createElement(React.Fragment, null, "V = ", cubeDims.l, " \xD7 ", cubeDims.w, " \xD7 ", cubeDims.h, " = ", /* @__PURE__ */ React.createElement("span", { className: "text-2xl text-emerald-600" }, volume))), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600" }, volume, " unit cube", volume !== 1 ? "s" : "")), /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-teal-600 uppercase tracking-wider mb-1" }, t2("stem.surface_area"), isLBlock && /* @__PURE__ */ React.createElement("span", { className: "ml-1 text-[10px] font-normal text-teal-500/70" }, "(approx \u2014 full prism)")), /* @__PURE__ */ React.createElement("div", { className: "text-lg font-bold text-teal-800" }, "SA ", isLBlock ? "\u2248 " : "= ", /* @__PURE__ */ React.createElement("span", { className: "text-2xl text-teal-600" }, surfaceArea)), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600" }, "2(", cubeDims.l, "\xD7", cubeDims.w, " + ", cubeDims.l, "\xD7", cubeDims.h, " + ", cubeDims.w, "\xD7", cubeDims.h, ")")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-emerald-700" }, "Difficulty:"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-0.5" }, ["easy", "medium", "hard"].map((d) => /* @__PURE__ */ React.createElement("button", { key: d, onClick: () => setExploreDifficulty(d), className: "text-[11px] font-bold px-1.5 py-0.5 rounded-full transition-all " + (exploreDifficulty === d ? d === "easy" ? "bg-green-700 text-white" : d === "hard" ? "bg-red-700 text-white" : "bg-emerald-700 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200") }, d)))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
     const vdiff = getAdaptiveDifficulty();
     const vmax = vdiff === "easy" ? 4 : vdiff === "hard" ? 10 : 7;
     const l = Math.floor(Math.random() * (vmax - 1)) + 1;
@@ -1507,9 +1507,9 @@ function VolumeBuilderView(props) {
           setCubeFeedback(ans === cubeChallenge.answer ? { correct: true, msg: correctMsg } : { correct: false, msg: wrongMsg });
         }
       },
-      placeholder: "Enter volume...",
+      placeholder: t2("volume_builder.answer_placeholder") || "Enter volume...",
       className: "flex-1 px-3 py-2 border border-amber-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-amber-400 outline-none",
-      "aria-label": "Volume answer"
+      "aria-label": t2("volume_builder.answer_aria") || "Volume answer"
     }
   ), /* @__PURE__ */ React.createElement(
     "button",

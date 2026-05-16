@@ -16,6 +16,7 @@ var Sparkles = _lazyIcon('Sparkles');
 var Trash2 = _lazyIcon('Trash2');
 
 const GoldenThreadPanel = ({ config, isEditing, onUpdate }) => {
+    const { t } = useContext(LanguageContext);
     const [newConcept, setNewConcept] = useState('');
     const [newTerm, setNewTerm] = useState('');
     const dna = (config && config.lessonDNA) || null;
@@ -53,25 +54,25 @@ const GoldenThreadPanel = ({ config, isEditing, onUpdate }) => {
         <div className="mb-4 p-3 rounded-lg bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-200">
             <div className="flex items-center gap-2 mb-2">
                 <Sparkles size={14} className="text-amber-500 fill-current" />
-                <h5 className="text-xs font-bold text-amber-900 uppercase tracking-wider">Golden Thread</h5>
-                {isEditing && <span className="text-[10px] text-amber-700 italic ml-auto">Edits apply before generation</span>}
+                <h5 className="text-xs font-bold text-amber-900 uppercase tracking-wider">{t('persona.golden_thread') || 'Golden Thread'}</h5>
+                {isEditing && <span className="text-[10px] text-amber-700 italic ml-auto">{t('persona.edits_apply_before_generation') || 'Edits apply before generation'}</span>}
             </div>
             <div className="mb-2">
-                <p className="text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-0.5">Essential Question</p>
+                <p className="text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-0.5">{t('persona.essential_question') || 'Essential Question'}</p>
                 {isEditing ? (
                     <textarea
                         value={eq}
                         onChange={(e) => writeDNA({ essentialQuestion: e.target.value })}
-                        placeholder="The ONE main learning question students will answer..."
+                        placeholder={t('persona.essential_question_placeholder') || 'The ONE main learning question students will answer...'}
                         rows={2}
                         className="w-full text-sm text-slate-700 italic bg-white border border-amber-200 rounded p-1.5 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none resize-none"
                     />
                 ) : (
-                    eq ? <p className="text-sm text-slate-700 italic leading-relaxed">"{eq}"</p> : <p className="text-xs text-slate-500 italic">(none set)</p>
+                    eq ? <p className="text-sm text-slate-700 italic leading-relaxed">"{eq}"</p> : <p className="text-xs text-slate-500 italic">{t('persona.none_set') || '(none set)'}</p>
                 )}
             </div>
             <div className="mb-2">
-                <p className="text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-1">Core Concepts</p>
+                <p className="text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-1">{t('persona.core_concepts') || 'Core Concepts'}</p>
                 <div className="flex flex-wrap gap-1 items-center">
                     {concepts.map(function(c, i) {
                         return (
@@ -80,7 +81,7 @@ const GoldenThreadPanel = ({ config, isEditing, onUpdate }) => {
                                 {isEditing && (
                                     <button
                                         onClick={() => removeConcept(i)}
-                                        aria-label={'Remove concept ' + c}
+                                        aria-label={t('persona.remove_concept_aria', { concept: c }) || ('Remove concept ' + c)}
                                         className="ml-1 text-amber-600 hover:text-red-500 font-bold leading-none"
                                     >×</button>
                                 )}
@@ -94,16 +95,16 @@ const GoldenThreadPanel = ({ config, isEditing, onUpdate }) => {
                                 value={newConcept}
                                 onChange={(e) => setNewConcept(e.target.value)}
                                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addConcept(); } }}
-                                placeholder="+ add concept"
+                                placeholder={t('persona.add_concept_placeholder') || '+ add concept'}
                                 className="text-[11px] px-2 py-0.5 bg-white border border-amber-200 rounded-full focus:border-amber-500 outline-none w-28"
                             />
                         </span>
                     )}
-                    {!isEditing && concepts.length === 0 && <span className="text-xs text-slate-500 italic">(none set)</span>}
+                    {!isEditing && concepts.length === 0 && <span className="text-xs text-slate-500 italic">{t('persona.none_set') || '(none set)'}</span>}
                 </div>
             </div>
             <div>
-                <p className="text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-1">Key Vocabulary</p>
+                <p className="text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-1">{t('persona.key_vocabulary') || 'Key Vocabulary'}</p>
                 <div className="flex flex-wrap gap-1 items-center">
                     {terms.map(function(term, i) {
                         return (
@@ -112,7 +113,7 @@ const GoldenThreadPanel = ({ config, isEditing, onUpdate }) => {
                                 {isEditing && (
                                     <button
                                         onClick={() => removeTerm(i)}
-                                        aria-label={'Remove term ' + term}
+                                        aria-label={t('persona.remove_term_aria', { term: term }) || ('Remove term ' + term)}
                                         className="ml-1 text-indigo-600 hover:text-red-500 font-bold leading-none"
                                     >×</button>
                                 )}
@@ -126,12 +127,12 @@ const GoldenThreadPanel = ({ config, isEditing, onUpdate }) => {
                                 value={newTerm}
                                 onChange={(e) => setNewTerm(e.target.value)}
                                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTerm(); } }}
-                                placeholder="+ add term"
+                                placeholder={t('persona.add_term_placeholder') || '+ add term'}
                                 className="text-[11px] px-2 py-0.5 bg-white border border-indigo-200 rounded-full focus:border-indigo-500 outline-none w-28"
                             />
                         </span>
                     )}
-                    {!isEditing && terms.length === 0 && <span className="text-xs text-slate-500 italic">(none set)</span>}
+                    {!isEditing && terms.length === 0 && <span className="text-xs text-slate-500 italic">{t('persona.none_set') || '(none set)'}</span>}
                 </div>
             </div>
         </div>

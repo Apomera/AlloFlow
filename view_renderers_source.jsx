@@ -8,11 +8,12 @@
 // and helpers come through the per-renderer deps interface.
 
 const renderFormattedText = (text, enableGlossary = true, isDarkBg = false, deps) => {
-  const { sanitizeTruncatedCitations, warnLog, SimpleBarChart, SimpleDonutChart, formatInlineText, normalizeResourceLinks } = deps;
+  const { sanitizeTruncatedCitations, warnLog, SimpleBarChart, SimpleDonutChart, formatInlineText, normalizeResourceLinks, t } = deps;
+  const _t = t || ((k) => null);
   try { if (window._DEBUG_VIEW_RENDERERS) console.log("[ViewRenderers] renderFormattedText fired"); } catch(_) {}
     if (!text) return null;
     if (typeof text !== 'string') {
-        return <div className="text-red-500 text-xs">Error: Invalid text format</div>;
+        return <div className="text-red-500 text-xs">{_t('renderers.error_invalid_text_format') || 'Error: Invalid text format'}</div>;
     }
     text = sanitizeTruncatedCitations(text);
     const processedText = normalizeResourceLinks(text);
@@ -377,10 +378,10 @@ const renderOutlineContent = (deps) => {
                                     <BranchItem branch={b} bIdx={i} colorClass="bg-white border-none shadow-none" />
                                     {isBranching && (
                                         <div className="flex items-center gap-2 px-4 pb-2 flex-wrap">
-                                            <span className="text-[10px] font-black text-amber-700 uppercase tracking-wider">Branches to:</span>
+                                            <span className="text-[10px] font-black text-amber-700 uppercase tracking-wider">{t('outline.branches_to') || 'Branches to:'}</span>
                                             {b.connectsTo.map((target) => (
                                                 <span key={target} className="text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200 px-2 py-0.5 rounded-full">
-                                                    Step {target + 1}: {branches[target]?.title || '?'}
+                                                    {t('outline.step_target', { number: target + 1, title: branches[target]?.title || '?' }) || ('Step ' + (target + 1) + ': ' + (branches[target]?.title || '?'))}
                                                 </span>
                                             ))}
                                         </div>
@@ -1364,17 +1365,17 @@ const renderOutlineContent = (deps) => {
                                         onClick={onRefineFrayerVisual}
                                         disabled={isProcessing}
                                         className="px-3 py-1.5 text-xs font-bold bg-violet-50 text-violet-800 border border-violet-300 rounded-md hover:bg-violet-100 disabled:opacity-50"
-                                        aria-label="Refine the Examples-quadrant visual via image-to-image edit"
+                                        aria-label={t('outline.frayer_refine_visual_aria') || 'Refine the Examples-quadrant visual via image-to-image edit'}
                                     >
-                                        ✨ Refine visual
+                                        {t('outline.frayer_refine_visual_button') || '✨ Refine visual'}
                                     </button>
                                     <button
                                         onClick={onRemoveFrayerVisual}
                                         disabled={isProcessing}
                                         className="px-3 py-1.5 text-xs font-bold bg-white text-slate-700 border border-slate-300 rounded-md hover:bg-slate-100 disabled:opacity-50"
-                                        aria-label="Remove the Examples-quadrant visual"
+                                        aria-label={t('outline.frayer_remove_visual_aria') || 'Remove the Examples-quadrant visual'}
                                     >
-                                        Remove visual
+                                        {t('outline.frayer_remove_visual_button') || 'Remove visual'}
                                     </button>
                                 </>
                             ) : (
@@ -1382,9 +1383,9 @@ const renderOutlineContent = (deps) => {
                                     onClick={onGenerateFrayerVisual}
                                     disabled={isProcessing}
                                     className="px-3 py-1.5 text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300 rounded-md hover:bg-amber-100 disabled:opacity-50"
-                                    aria-label="Generate an AI visual for the Examples quadrant"
+                                    aria-label={t('outline.frayer_add_visual_aria') || 'Generate an AI visual for the Examples quadrant'}
                                 >
-                                    🖼️ Add visual to Examples
+                                    {t('outline.frayer_add_visual_button') || '🖼️ Add visual to Examples'}
                                 </button>
                             )}
                         </div>
@@ -1551,7 +1552,7 @@ const renderOutlineContent = (deps) => {
                         </div>
                     )}
                     <div className="bg-gradient-to-b from-sky-50/80 via-white to-amber-50/40 border-2 border-slate-300 rounded-2xl p-6 shadow-lg">
-                        <svg viewBox="0 0 900 400" className="w-full h-auto" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Plot diagram arc showing narrative tension rising to the climax and falling toward resolution">
+                        <svg viewBox="0 0 900 400" className="w-full h-auto" preserveAspectRatio="xMidYMid meet" role="img" aria-label={t('outline.plot_diagram_arc_aria') || 'Plot diagram arc showing narrative tension rising to the climax and falling toward resolution'}>
                             <path d="M 60 340 Q 250 280 450 70 Q 650 280 840 340" fill="none" stroke="#94a3b8" strokeWidth="3" strokeLinecap="round" strokeDasharray="6 6" />
                             {stages.map((stage, i) => (
                                 <g key={i}>

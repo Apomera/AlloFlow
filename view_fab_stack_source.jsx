@@ -126,8 +126,8 @@ function FabStack(props) {
                   <button
                     onClick={handleToggleVisualSupports}
                     className={`p-3 rounded-full transition-all shadow-sm ${showVisualSupports ? 'bg-purple-100 text-purple-600 ring-2 ring-purple-500' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
-                    title="Visual Supports"
-                    aria-label="Visual Supports"
+                    title={t('fab.visual_supports') || 'Visual Supports'}
+                    aria-label={t('fab.visual_supports') || 'Visual Supports'}
                   >
                     <span style={{fontSize: 20, lineHeight: 1}}>🖼️</span>
                   </button>

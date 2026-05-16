@@ -210,7 +210,7 @@ const FocusReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
                 <div className="flex items-center gap-4 flex-wrap text-xs font-bold" style={{ color: c.strong }}>
                     <label className="flex items-center gap-2">
                         <span style={{ color: c.light }}>WORDS</span>
-                        <input aria-label="Words per chunk" type="range" min="1" max="6" value={chunkSize} onChange={e => setChunkSize(parseInt(e.target.value))} className="w-16 accent-indigo-600" />
+                        <input aria-label={t('immersive.words_per_chunk_aria') || 'Words per chunk'} type="range" min="1" max="6" value={chunkSize} onChange={e => setChunkSize(parseInt(e.target.value))} className="w-16 accent-indigo-600" />
                         <span className="font-mono w-4 text-right">{chunkSize}</span>
                     </label>
                     <label className="flex items-center gap-2">
@@ -285,8 +285,8 @@ const FocusReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
                 )}
                 <div className="mt-10 text-sm flex items-center gap-2 flex-wrap justify-center max-w-3xl" style={{ color: c.light }}>
                     {isPlaying
-                        ? <><Pause size={16} /> Tap to pause · ← → navigate · +/− speed · [ ] chunk size · P pause-style</>
-                        : <><Play size={16} /> Tap or Space to play · ← → navigate · +/− speed · [ ] chunk size · P pause-style · Esc closes</>}
+                        ? <><Pause size={16} /> {t('immersive.focus_reader_hint_playing') || 'Tap to pause · ← → navigate · +/− speed · [ ] chunk size · P pause-style'}</>
+                        : <><Play size={16} /> {t('immersive.focus_reader_hint_paused') || 'Tap or Space to play · ← → navigate · +/− speed · [ ] chunk size · P pause-style · Esc closes'}</>}
                 </div>
             </div>
             <div className="h-2 w-full" style={{ background: c.light + '33' }}>
@@ -502,7 +502,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
                     aria-label={safeT(t, 'immersive.chunk_mood', 'Chunk Read animation mood')}
                     value={chunkReaderMood || 'highlight'}
                     onChange={e => setChunkReaderMood(e.target.value)}
-                    title="Animation mood for active chunk · Enter skips typewriter reveal"
+                    title={t('immersive.chunk_mood_tooltip') || 'Animation mood for active chunk · Enter skips typewriter reveal'}
                     className="text-[11px] font-bold rounded-full px-2 py-1 border border-slate-300 bg-slate-100 text-slate-700 cursor-pointer hover:bg-slate-200"
                     data-help-key="immersive_chunk_mood"
                   >
@@ -576,12 +576,12 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
               data-help-key="immersive_font_family"
             >
                 <option value="">Default</option>
-                <option value="'Lexend', system-ui, sans-serif">Lexend (readable)</option>
+                <option value="'Lexend', system-ui, sans-serif">{t('immersive.font_lexend') || 'Lexend (readable)'}</option>
                 <option value="'OpenDyslexic', 'Atkinson Hyperlegible', sans-serif">OpenDyslexic</option>
-                <option value="'Atkinson Hyperlegible', system-ui, sans-serif">Atkinson Hyperlegible</option>
-                <option value="Georgia, 'Iowan Old Style', serif">Serif (Georgia)</option>
-                <option value="'Inter', system-ui, sans-serif">Sans (Inter)</option>
-                <option value="'Comic Sans MS', 'Comic Neue', cursive">Comic Sans</option>
+                <option value="'Atkinson Hyperlegible', system-ui, sans-serif">{t('immersive.font_atkinson') || 'Atkinson Hyperlegible'}</option>
+                <option value="Georgia, 'Iowan Old Style', serif">{t('immersive.font_serif_georgia') || 'Serif (Georgia)'}</option>
+                <option value="'Inter', system-ui, sans-serif">{t('immersive.font_sans_inter') || 'Sans (Inter)'}</option>
+                <option value="'Comic Sans MS', 'Comic Neue', cursive">{t('immersive.font_comic_sans') || 'Comic Sans'}</option>
                 <option value="ui-monospace, 'SF Mono', Consolas, monospace">Monospace</option>
             </select>
         </div>
@@ -838,7 +838,7 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
                 <div className="flex items-center gap-3 text-xs font-bold flex-wrap">
                     <label className="flex items-center gap-2">
                         <span style={{ opacity: 0.7 }}>SPEED</span>
-                        <input aria-label="Crawl speed" type="range" min="10" max="140" value={speedPxPerSec} onChange={e => setSpeedPxPerSec(parseInt(e.target.value))} className="w-24 accent-yellow-400" />
+                        <input aria-label={t('immersive.crawl_speed_aria') || 'Crawl speed'} type="range" min="10" max="140" value={speedPxPerSec} onChange={e => setSpeedPxPerSec(parseInt(e.target.value))} className="w-24 accent-yellow-400" />
                         <span className="font-mono w-14 text-right">{speedPxPerSec}px/s</span>
                     </label>
                     <label className="flex items-center gap-2">
@@ -1240,14 +1240,14 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl })
                 </div>
                 <div className="flex items-center gap-4 flex-wrap text-xs font-bold">
                     <label className="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" checked={autoAdvance} onChange={e => setAutoAdvance(e.target.checked)} aria-label="Auto-advance to next sentence" />
+                        <input type="checkbox" checked={autoAdvance} onChange={e => setAutoAdvance(e.target.checked)} aria-label={t('immersive.auto_advance_aria') || 'Auto-advance to next sentence'} />
                         <span style={{ color: c.ink }}>Auto-advance</span>
                     </label>
                     {/* Playback speed. Applies live to Gemini audio (the speed
                         flips on the currently-playing sentence); browser TTS
                         picks it up on the next sentence since speechSynthesis
                         rate is locked once speak() fires. */}
-                    <div className="flex items-center gap-1" role="group" aria-label="Playback speed">
+                    <div className="flex items-center gap-1" role="group" aria-label={t('immersive.playback_speed_aria') || 'Playback speed'}>
                         <span style={{ color: c.dim }}>SPEED</span>
                         {[0.75, 1, 1.25, 1.5].map(rate => (
                             <button

@@ -523,7 +523,7 @@
                                         <span className="text-xl">🎤</span>
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="font-bold text-amber-900 text-sm mb-1">Recommended for Word Sounds: Kokoro local voice</p>
+                                        <p className="font-bold text-amber-900 text-sm mb-1">{t('word_sounds.kokoro_recommended') || 'Recommended for Word Sounds: Kokoro local voice'}</p>
                                         <p className="text-amber-800 text-xs leading-relaxed mb-2">
                                             Preloading synthesizes ~5 audio clips per word. On Gemini this can hit the 60-second rate-limit cooldown mid-preload. Kokoro is a free on-device voice — one-time ~40 MB download, then every Word Sounds session is instant and rate-limit-free.
                                         </p>
@@ -674,7 +674,7 @@
                                             />
                                         </div>
                                     </div>
-                                    <p className="text-xs text-slate-600 mt-2">Limit word complexity (Min/Max Syllables)</p>
+                                    <p className="text-xs text-slate-600 mt-2">{t('word_sounds.syllable_range_hint') || 'Limit word complexity (Min/Max Syllables)'}</p>
                                 </div>
                             </div>
                             <div className="space-y-3">
@@ -779,7 +779,7 @@
                                             onChange={(e) => setSelectedSightWordList(e.target.value)}
                                             className="mt-3 w-full p-2 rounded-lg border border-amber-200 bg-white text-sm focus:ring-2 focus:ring-amber-400 focus:outline-none"
                                         >
-                                            <option value="">Select a sight word list...</option>
+                                            <option value="">{t('word_sounds.sight_word_list_placeholder') || 'Select a sight word list...'}</option>
                                             {Object.keys(SIGHT_WORD_PRESETS).map(k => (
                                                 <option key={k} value={k}>{k} ({SIGHT_WORD_PRESETS[k].length} words)</option>
                                             ))}
@@ -798,7 +798,7 @@
                                         <div className="mt-3 flex gap-2">
                                             <input aria-label={t('common.e_g_space_ocean')}
                                                 value={aiTopic} onChange={(e) => setAiTopic(e.target.value)}
-                                                placeholder="e.g. Space, Ocean..."
+                                                placeholder={t('word_sounds.ai_topic_placeholder') || 'e.g. Space, Ocean...'}
                                                 className="flex-1 p-2 rounded-lg border border-violet-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
                                             />
                                             <button
@@ -960,7 +960,7 @@
                                              <div className="flex items-center justify-between mb-1.5">
                                                  <div className="flex items-center gap-2">
                                                      <Volume2 size={14} className="text-teal-600" />
-                                                     <span className="text-teal-700 font-bold text-xs uppercase tracking-wider">Preloading voices for instant playback</span>
+                                                     <span className="text-teal-700 font-bold text-xs uppercase tracking-wider">{t('word_sounds.preloading_voices') || 'Preloading voices for instant playback'}</span>
                                                  </div>
                                                  <span className="text-teal-600 font-bold text-sm">{prewarmCount} / {prewarmTotal}</span>
                                              </div>
@@ -1301,7 +1301,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                     </h2>
                     <p className="text-sm opacity-80 mt-1 flex items-center gap-2 flex-wrap">
                         <span>Review and edit words • {preloadedWords.length} words ready</span>
-                        {isLoading && <span className="flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full text-xs animate-pulse"><div className="w-2 h-2 bg-white rounded-full animate-bounce"/> Generating more...</span>}
+                        {isLoading && <span className="flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full text-xs animate-pulse"><div className="w-2 h-2 bg-white rounded-full animate-bounce"/> {t('word_sounds.generating_more') || 'Generating more...'}</span>}
                         {/* Failed-TTS banner: counts words whose audio prefetch exhausted retries
                             (typically 401 / 429 / transient errors). Shown only after loading completes
                             so we don't scare the teacher mid-preload. Click the button to re-run the
@@ -1314,8 +1314,8 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                         type="button"
                                         onClick={(e) => { e.stopPropagation(); onRetryFailedTTS(); }}
                                         className="px-2 py-0.5 bg-white/90 hover:bg-white text-red-600 font-bold rounded-full text-xs"
-                                        title="Retry audio generation for words that failed"
-                                    >Retry audio</button>
+                                        title={t('word_sounds.retry_audio_tooltip') || 'Retry audio generation for words that failed'}
+                                    >{t('word_sounds.retry_audio_button') || 'Retry audio'}</button>
                                 )}
                             </span>
                         )}
@@ -1325,7 +1325,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                     {preloadedWords.length === 0 ? (
                         <div className="text-center py-12 text-slate-600">
                             <div className="text-4xl mb-2">⏳</div>
-                            {isLoading ? <p className="animate-pulse">Generating new words... this may take a moment</p> : <p>No words preloaded yet. Start the activity to generate words.</p>}
+                            {isLoading ? <p className="animate-pulse">{t('word_sounds.generating_new_words') || 'Generating new words... this may take a moment'}</p> : <p>{t('word_sounds.no_words_preloaded') || 'No words preloaded yet. Start the activity to generate words.'}</p>}
                         </div>
                     ) : (
                         (preloadedWords || []).map((word, idx) => (
@@ -1549,7 +1549,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                         onClick={() => onRegenerateWord && onRegenerateWord(idx)}
                                                         disabled={regeneratingIndex === idx}
                                                         className={`text-[11px] px-2 py-0.5 rounded-full flex items-center gap-1 font-bold transition-colors ${regeneratingIndex === idx ? 'bg-slate-100 text-slate-600' : 'bg-violet-100 text-violet-600 hover:bg-violet-200'}`}
-                                                        title="Re-check phonemes with Gemini"
+                                                        title={t('word_sounds.recheck_phonemes_tooltip') || 'Re-check phonemes with Gemini'}
                                                     >
                                                         {regeneratingIndex === idx ? <div className="animate-spin h-3 w-3 border-2 border-current border-t-transparent rounded-full" /> : '✨'}
                                                         Check
@@ -1591,7 +1591,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                     </div>
                                                 ))}
                                                 {((() => { const p = word.phonemes; const a = Array.isArray(p) ? p : (p?.phonemes && Array.isArray(p.phonemes)) ? p.phonemes : []; return a.length === 0; })()) && (
-                                                    <span className="text-slate-600 text-sm italic">No phonemes - click "Add Sound" to build</span>
+                                                    <span className="text-slate-600 text-sm italic">{t('word_sounds.no_phonemes_add_hint') || 'No phonemes - click "Add Sound" to build'}</span>
                                                 )}
                                             </div>
                                             {showPhonemeBank === idx && (
@@ -1753,7 +1753,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                 </div>
                                             </div>
                                         <div>
-                                            <label className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 block">Sound Positions (Find Sounds Activity)</label>
+                                            <label className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 block">{t('word_sounds.sound_positions_label') || 'Sound Positions (Find Sounds Activity)'}</label>
                                             <div className="flex flex-wrap gap-2">
                                                 {(() => {
                                                     const phonemesRaw = word.phonemes;
@@ -1806,9 +1806,9 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                         {generatingImageIndex === idx ? (
                                                             <><RefreshCw size={14} className="animate-spin"/> Generating...</>
                                                         ) : word.image ? (
-                                                            <><RefreshCw size={14}/> Regenerate Image</>
+                                                            <><RefreshCw size={14}/> {t('word_sounds.regenerate_image_button') || 'Regenerate Image'}</>
                                                         ) : (
-                                                            <><Sparkles size={14}/> Generate Image</>
+                                                            <><Sparkles size={14}/> {t('word_sounds.generate_image_button') || 'Generate Image'}</>
                                                         )}
                                                     </button>
                                                     {word.image && (
@@ -1825,7 +1825,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                                     type="text"
                                                                     value={imageRefinementInputs[idx] || ''}
                                                                     onChange={(e) => setImageRefinementInputs(prev => ({...prev, [idx]: e.target.value}))}
-                                                                    placeholder="e.g., make it cuter, add a banana"
+                                                                    placeholder={t('word_sounds.image_refine_placeholder') || 'e.g., make it cuter, add a banana'}
                                                                     className="flex-1 text-xs border border-yellow-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-yellow-400"
                                                                     onKeyDown={(e) => e.key === 'Enter' && onRefineImage && imageRefinementInputs[idx] && onRefineImage(idx, imageRefinementInputs[idx])}
                                                                 />

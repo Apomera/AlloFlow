@@ -15,13 +15,13 @@ function LearningHubModal(props) {
   } = props;
   return (
         <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4" onClick={() => setShowLearningHub(false)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') setShowLearningHub(false); }}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8" role="dialog" aria-modal="true" aria-label="Learning Tools" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8" role="dialog" aria-modal="true" aria-label={t('learning_hub.title') || 'Learning Tools'} onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">{'\uD83E\uDDE9'} {t('learning_hub.title') || 'Learning Tools'}</h2>
                 <p className="text-sm text-slate-600 mt-1">{t('learning_hub.subtitle') || 'Choose a tool to explore'}</p>
               </div>
-              <button onClick={() => setShowLearningHub(false)} className="text-slate-600 hover:text-slate-600 text-xl" aria-label="Close learning hub">{'\u2715'}</button>
+              <button onClick={() => setShowLearningHub(false)} className="text-slate-600 hover:text-slate-600 text-xl" aria-label={t('learning_hub.close_aria') || 'Close learning hub'}>{'\u2715'}</button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <button onClick={() => { setShowLearningHub(false); setShowStemLab(true); setStemLabTab('explore'); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-blue-50 to-indigo-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
@@ -41,15 +41,15 @@ function LearningHubModal(props) {
               <button onClick={() => { setShowLearningHub(false); setShowLitLab(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
                 <span className="text-4xl">🎭</span>
                 <div>
-                  <h3 className="font-bold text-violet-800">LitLab</h3>
-                  <p className="text-xs text-violet-600 mt-1">Bring stories to life with character voices & literary analysis</p>
+                  <h3 className="font-bold text-violet-800">{t('learning_hub.litlab_title') || 'LitLab'}</h3>
+                  <p className="text-xs text-violet-600 mt-1">{t('learning_hub.litlab_desc') || 'Bring stories to life with character voices & literary analysis'}</p>
                 </div>
               </button>
               <button onClick={() => { setShowLearningHub(false); setShowPoetTree(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
                 <span className="text-4xl">🌳</span>
                 <div>
-                  <h3 className="font-bold text-teal-800">PoetTree</h3>
-                  <p className="text-xs text-teal-600 mt-1">Write poems with form scaffolds, rhyme & meter analysis, AI feedback</p>
+                  <h3 className="font-bold text-teal-800">{t('learning_hub.poettree_title') || 'PoetTree'}</h3>
+                  <p className="text-xs text-teal-600 mt-1">{t('learning_hub.poettree_desc') || 'Write poems with form scaffolds, rhyme & meter analysis, AI feedback'}</p>
                 </div>
               </button>
               <button onClick={() => { setShowLearningHub(false); setShowSelHub(true); setSelHubTab('explore'); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">

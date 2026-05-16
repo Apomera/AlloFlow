@@ -242,7 +242,72 @@
     "back_to_class": "← Back to class",
     "run_in_background": "Run in Background",
     "switch_to_clicking": "Switch to Clicking",
-    "use_microphone": "Use Microphone"
+    "use_microphone": "Use Microphone",
+    "pre_activity_review": "📋 Pre-Activity Review",
+    "phonics_counting_guide_title": "📖 Phonics Counting Guide",
+    "r_controlled_explanation_prefix": "R-controlled vowels (ar, er, ir, or, ur) are counted as ",
+    "single_sounds": "single sounds",
+    "r_controlled_explanation_suffix": " because the vowel and R blend together.",
+    "r_controlled_example": "Example: \"star\" = 3 sounds (s-t-ar), not 4. This aligns with Orton-Gillingham and Wilson Reading methods.",
+    "review_and_edit_words": "Review and edit words",
+    "words_ready": "words ready",
+    "generating_more": "Generating more...",
+    "retry_audio_tooltip": "Retry audio generation for words that failed",
+    "retry_audio": "Retry audio",
+    "generating_new_words": "Generating new words... this may take a moment",
+    "no_words_preloaded": "No words preloaded yet. Start the activity to generate words.",
+    "playing": "Playing...",
+    "audio_failed_retry_hint": "Audio failed to generate — click Retry audio in header",
+    "loading_audio": "Loading audio...",
+    "play_word": "Play word",
+    "generating_image": "Generating...",
+    "add_image_button": "+ Image",
+    "recheck_phonemes_tooltip": "Re-check phonemes with Gemini",
+    "recheck_phonemes_button": "Check",
+    "close_bank": "✕ Close Bank",
+    "add_sound": "+ Add Sound",
+    "no_phonemes_hint": "No phonemes - click \"Add Sound\" to build",
+    "phoneme_bank_hover_hint": "💡 Hover any sound for teaching tips",
+    "refresh_audio": "Refresh audio",
+    "refresh_audio_tooltip": "Refresh audio (re-synthesize TTS for this word)",
+    "refreshing": "Refreshing…",
+    "add_distractor": "+ Add",
+    "sound_swap_label": "Sound Swap (Manipulation Activity)",
+    "instruction_label": "Instruction (spoken to student)",
+    "sound_swap_instruction_aria": "Sound Swap instruction",
+    "sound_swap_instruction_placeholder": "Say 'word'. Now say it again, but leave out the /x/ sound.",
+    "preview_instruction_tts_aria": "Preview instruction TTS",
+    "preview_instruction_tooltip": "Preview instruction",
+    "answer_distractors_label": "Answer (correct) + Distractors",
+    "correct_answer_aria": "Correct answer",
+    "answer_placeholder": "answer",
+    "preview_answer_aria": "Preview answer",
+    "preview_answer_tooltip": "Preview answer",
+    "distractor_placeholder": "distractor",
+    "preview_distractor_aria": "Preview distractor",
+    "preview_distractor_tooltip": "Preview distractor",
+    "regenerate_sound_swap_tooltip": "Generate a fresh Sound Swap task for this word",
+    "regenerating": "Regenerating…",
+    "regenerate_task": "Regenerate Task",
+    "no_sound_swap_yet": "No Sound Swap task generated for this word yet.",
+    "generating": "Generating…",
+    "generate": "Generate",
+    "sound_positions_label": "Sound Positions (Find Sounds Activity)",
+    "word_image_label": "Word Image",
+    "regenerate_image_button": "Regenerate Image",
+    "generate_image_button": "Generate Image",
+    "remove_text_from_image": "Remove Text from Image",
+    "image_refine_placeholder": "e.g., make it cuter, add a banana",
+    "nano_mode_hint": "✨ Nano Mode: Type custom edits like \"make it blue\" or \"add a hat\"",
+    "back_to_setup": "Back to Setup",
+    "start_activity": "Start Activity",
+    "kokoro_recommended": "Recommended for Word Sounds: Kokoro local voice",
+    "syllable_range_hint": "Limit word complexity (Min/Max Syllables)",
+    "sight_word_list_placeholder": "Select a sight word list...",
+    "ai_topic_placeholder": "e.g. Space, Ocean...",
+    "preloading_voices": "Preloading voices for instant playback",
+    "retry_audio_button": "Retry audio",
+    "no_phonemes_add_hint": "No phonemes - click \"Add Sound\" to build"
   },
   "common": {
     "student_analytics": "Student Analytics",
@@ -768,7 +833,16 @@
     "left": "left",
     "replay_instructions": "Replay instructions",
     "toggle_no_text": "Toggle",
-    "upload_replacement_image": "Upload replacement image"
+    "upload_replacement_image": "Upload replacement image",
+    "toggle_note_taking": "Toggle note-taking templates",
+    "toggle_anchor_chart": "Toggle anchor chart",
+    "loading_module": "Loading {name}...",
+    "cdn_loading_hint_short": "Module loading from CDN.",
+    "cdn_loading_hint_long": "Module loading from CDN. If this persists, check your connection.",
+    "more_information": "More information",
+    "loading_game": "Loading game...",
+    "alloflow_loading_aria": "AlloFlow loading",
+    "optional_parenthetical": "(optional)"
   },
   "meta": {
     "engagement_ideas": "Engagement Ideas",
@@ -1090,7 +1164,21 @@
     "support_tooltip": "Support AlloFlow",
     "support_aria": "Buy me a coffee",
     "jump_to_lesson": "Jump to Lesson Plan",
-    "applied_standard": "Applied standard: {code}"
+    "applied_standard": "Applied standard: {code}",
+    "reading_theme_aria": "Reading theme",
+    "voice_browser_default": "Browser Default",
+    "voice_quality_label": "Voice Quality",
+    "voice_quality_desc": "Fast uses a smaller model for quicker response. High Quality is richer but slower.",
+    "browser_tts_fallback_aria": "Use browser voice as fallback when Gemini TTS refuses or fails",
+    "browser_tts_fallback_label": "Browser-voice fallback",
+    "browser_tts_fallback_desc": "Read refused/failed sentences with the system voice instead of skipping.",
+    "kokoro_english_only": "Kokoro voice applies to English content",
+    "ai_backend_config": "AI Backend Configuration",
+    "educator_tools_tooltip": "Educator Tools (Symbol Studio, BehaviorLens, Report Writer)",
+    "educator_tools_aria": "Educator Tools",
+    "documents_menu_aria": "Documents menu",
+    "open_doc_builder_pdf_aria": "Open Document Builder for PDF",
+    "export_slides_tooltip": "Opens Document Builder in Slides mode"
   },
   "translate": {
     "target_label": "Target Language",
@@ -1130,7 +1218,14 @@
     "tool_lesson": "Lesson Plan",
     "tool_bridge": "Gemini Bridge",
     "resource_pack_history": "Resource Pack History",
-    "my_resources": "My Resources"
+    "my_resources": "My Resources",
+    "tool_note_taking": "Note-Taking Templates",
+    "tool_anchor_chart": "Anchor Chart",
+    "tool_wordsounds": "Word Sounds",
+    "open_storyforge_aria": "Open StoryForge",
+    "storyforge_label": "StoryForge",
+    "tool_dbq_aria": "Document-Based Questions",
+    "open_stem_lab_explore_aria": "Open STEM Lab Explore"
   },
   "history": {
     "load_project": "Load Project",
@@ -1156,7 +1251,11 @@
     "tooltips": {
       "move_to_unit": "Move to Unit Folder",
       "remove_item": "Remove from pack"
-    }
+    },
+    "delete_station_aria": "Delete station",
+    "share_to_community_aria": "Share to AlloFlow community catalog",
+    "share_to_community_tooltip": "Share this lesson to the AlloFlow community catalog (opens the in-canvas Submit form prefilled)",
+    "share_button": "Share"
   },
   "input": {
     "placeholder": "Paste curriculum text here, upload a PDF/Image/Text/Audio file (max 20MB), or use 'Generate Source Text'...",
@@ -1209,7 +1308,9 @@
       "college": "College",
       "grad": "Graduate Level"
     },
-    "drafting_story_outline": "Planning dialogue structure..."
+    "drafting_story_outline": "Planning dialogue structure...",
+    "load_project_tooltip": "Load a previously saved AlloFlow PDF project",
+    "load_project": "Load Project"
   },
   "wizard": {
     "title": "Quick Start",
@@ -1400,7 +1501,9 @@
       "skip": "Skip",
       "submit": "Submit",
       "score": "Final Score",
-      "loading": "Game loading..."
+      "loading": "Game loading...",
+      "get_hint_aria": "Get a hint",
+      "hint_button": "Hint"
     },
     "crossword": {
       "title": "Crossword Challenge",
@@ -1418,7 +1521,9 @@
       "announce_started": "Crossword started. Use Arrow Keys to navigate, Type to fill, Space to toggle direction.",
       "announce_direction_toggle": "Direction toggled to {dir}",
       "close_puzzle_aria": "Close Crossword Puzzle",
-      "grid_capture_aria": "Crossword Grid Keyboard Capture"
+      "grid_capture_aria": "Crossword Grid Keyboard Capture",
+      "reveal_letter_hint_aria": "Reveal one letter hint",
+      "hint_button": "Hint"
     },
     "bingo": {
       "generator_title": "Bingo Generator",
@@ -1464,7 +1569,8 @@
       "victory": "Victory!",
       "final_score": "Final Score",
       "play_again": "Play Again",
-      "cleared_message": "You cleared the board in {moves} moves."
+      "cleared_message": "You cleared the board in {moves} moves.",
+      "card_alt": "memory card"
     },
     "fill_blank": {
       "input_label": "Type your answer"
@@ -1489,7 +1595,9 @@
       "title": "Pipeline Builder",
       "play_btn": "Build the Flow",
       "instruction": "Click a step's output port, then click another step's input port to draw a connection.",
-      "then": "then"
+      "then": "then",
+      "victory_desc": "You built the entire process flow correctly!",
+      "drag_reposition_aria": "Drag to reposition"
     },
     "tchart_sort": {
       "title": "T-Chart Sort",
@@ -1518,9 +1626,30 @@
     },
     "bucket_sort": {
       "title": "Sort",
-      "victory_desc": "You sorted every item correctly!"
+      "victory_desc": "You sorted every item correctly!",
+      "bank_empty": "All items placed.",
+      "all_sorted": "All sorted!",
+      "final_score_label": "Final score:",
+      "play_again": "Play again"
     },
-    "button_hint": "Practice what you just learned with a quick drag-and-drop sorting game. Keyboard friendly: press Enter to select an item, then choose a destination."
+    "button_hint": "Practice what you just learned with a quick drag-and-drop sorting game. Keyboard friendly: press Enter to select an item, then choose a destination.",
+    "frayer_sort": {
+      "play_btn": "Play Frayer Sort Game"
+    },
+    "see_think_wonder_sort": {
+      "play_btn": "Play See-Think-Wonder Sort Game"
+    },
+    "story_map_sort": {
+      "play_btn": "Play Story Map Sort Game"
+    },
+    "theme_toggle_aria": "Toggle theme (light / dark / high contrast)",
+    "read_aloud_title": "Read aloud",
+    "explain_incorrect_aria": "Explain why this was incorrect",
+    "scroll_deck_left_aria": "Scroll deck left",
+    "scroll_deck_right_aria": "Scroll deck right to see more cards",
+    "choose_zone_aria": "Choose a zone",
+    "choose_column_aria": "Choose a column",
+    "choose_destination_aria": "Choose a destination"
   },
   "glossary": {
     "title": "Glossary & Language Selection",
@@ -2679,7 +2808,31 @@
     "edit_question": "Edit question",
     "edit_question_english": "Edit question (English)",
     "edit_reflection": "Edit reflection",
-    "edit_reflection_translation": "Edit reflection translation"
+    "edit_reflection_translation": "Edit reflection translation",
+    "item_mix_help": "Control how many of each question type are generated. MCQ and Reflections are set above.",
+    "item_count_aria": "{type} count",
+    "reset_mix": "↩ Reset to mode defaults",
+    "mode_label": "Mode:",
+    "mode_aria": "Quiz mode",
+    "mode_tooltip": "Quiz mode: choose what this quiz is for. Pre-check probes prerequisites; Exit Ticket assesses today's content; Formative is a quick mid-lesson pulse; Spaced Review re-tests prior content.",
+    "mode_exit_ticket": "📝 Exit Ticket",
+    "mode_pre_check": "🎯 Pre-Check (Readiness)",
+    "mode_formative": "🌡️ Formative Check",
+    "mode_review": "🔁 Spaced Review",
+    "visuals_label": "Visuals:",
+    "visuals_aria": "MCQ visual mode",
+    "visuals_tooltip": "Visuals (MCQ items only): None = text-only (free, fastest). Question = generate one image per question stem. Options = generate 4 images per question (one per option). Both = question + options. Image gen takes ~3-5s per image and uses Imagen credits.",
+    "visuals_none": "∅ None (text only)",
+    "visuals_question": "🖼️ Question images",
+    "visuals_options": "🎴 Option images",
+    "visuals_both": "🖼️🎴 Both",
+    "style_label": "Style:",
+    "style_aria": "Image style hint",
+    "style_placeholder": "e.g. watercolor, flat vector, photorealistic, line drawing",
+    "style_tooltip": "Optional. Applied to every image in the quiz (question + options). Empty = default style. Persisted with the quiz so refine actions stay on-brand.",
+    "generate_pre_check": "Generate Pre-Check",
+    "generate_formative": "Generate Formative Check",
+    "generate_review": "Generate Spaced Review"
   },
   "outline": {
     "title": "Visual Organizer",
@@ -2725,7 +2878,26 @@
     "tchart_left_default": "Left",
     "tchart_right_default": "Right",
     "venn_fallback_title": "Venn diagram unavailable",
-    "venn_fallback_desc": "Couldn't render the Venn diagram. Showing items as a list."
+    "venn_fallback_desc": "Couldn't render the Venn diagram. Showing items as a list.",
+    "frayer": "Frayer Model (Vocabulary)",
+    "kwl": "KWL Chart (Know / Want / Learned)",
+    "cer": "Claim, Evidence, Reasoning (CER)",
+    "story_map": "Story Map (Plot Diagram)",
+    "see_think_wonder": "See, Think, Wonder",
+    "frayer_caption": "Frayer Model: vocabulary term in the center, definition + characteristics + examples + non-examples in the four quadrants.",
+    "kwl_caption": "KWL Chart: prior knowledge on the left, anticipated questions in the middle, learning captured on the right after the lesson.",
+    "kwl_learned_placeholder": "(students fill this in after the lesson)",
+    "see_think_wonder_caption": "See, Think, Wonder (Harvard Project Zero): observation, inference, and open questioning kept distinct.",
+    "story_map_caption": "Story Map: tension rises through Rising Action to the Climax, then falls toward Resolution. The arc visualizes the shape of narrative tension.",
+    "branches_to": "Branches to:",
+    "step_target": "Step {number}: {title}",
+    "frayer_refine_visual_aria": "Refine the Examples-quadrant visual via image-to-image edit",
+    "frayer_refine_visual_button": "✨ Refine visual",
+    "frayer_remove_visual_aria": "Remove the Examples-quadrant visual",
+    "frayer_remove_visual_button": "Remove visual",
+    "frayer_add_visual_aria": "Generate an AI visual for the Examples quadrant",
+    "frayer_add_visual_button": "🖼️ Add visual to Examples",
+    "plot_diagram_arc_aria": "Plot diagram arc showing narrative tension rising to the climax and falling toward resolution"
   },
   "visuals": {
     "title": "Visual Support",
@@ -3071,7 +3243,382 @@
     "reject_selection": "Reject selection",
     "keep_selection": "Keep selection",
     "edits_applied": "Edits applied. Accessible HTML updated.",
-    "start_new_confirm": "Start a new audit? Your current audit will be cleared — make sure you have downloaded the remediated HTML if you need it."
+    "start_new_confirm": "Start a new audit? Your current audit will be cleared — make sure you have downloaded the remediated HTML if you need it.",
+    "modal_aria": "PDF Accessibility Audit",
+    "close_modal_aria": "Close audit modal",
+    "close_wait_title": "Wait for remediation to finish or click Stop first",
+    "close_esc_title": "Close (Esc)",
+    "web": {
+      "heading": "🌐 Website & HTML Accessibility",
+      "subheading": "Audit a website URL or paste HTML for full WCAG 2.1 AA audit + remediation",
+      "url_label": "Website URL",
+      "url_aria": "Website URL to audit",
+      "fetch_aria": "Fetch website HTML",
+      "or_paste_hint": "Or paste HTML source code directly below",
+      "html_label": "HTML Source",
+      "html_placeholder": "Paste HTML source code here, or use Fetch above...",
+      "html_aria": "HTML source code to audit"
+    },
+    "batch": {
+      "drop_text": "Drag & drop PDFs here",
+      "browse_files": "Browse Files",
+      "clear_all": "Clear All",
+      "progress_aria": "Batch remediation progress",
+      "stop_aria": "Stop batch remediation",
+      "avg_improvement": "Avg Improvement",
+      "scored_90_plus": "Scored 90+",
+      "new_batch": "New Batch"
+    },
+    "choose_how": "Choose how to process this PDF:",
+    "settings": {
+      "audit_passes_aria": "Number of audit passes",
+      "target_score_aria": "Target accessibility score",
+      "max_fix_passes_aria": "Max fix pass count",
+      "auto_continue_aria": "Auto-continue remediation until target score",
+      "polish_passes_aria": "Polish pass count"
+    },
+    "brand": {
+      "heading": "Brand Colors",
+      "where_from": "Where do the colors come from?",
+      "match_original": "🎨 Match Original",
+      "match_original_desc": "Extract colors from this PDF",
+      "upload_guide": "📎 Upload Brand Guide",
+      "upload_guide_desc": "Use a different doc/logo",
+      "no_branding": "⬜ No Branding",
+      "no_branding_desc": "Use default palette",
+      "tip": "Tip: If you pick a specific Style Seed below (not \"Match Original\"), that seed's colors override your branding choice. To use your brand colors, pair them with the Match Original seed."
+    },
+    "style": {
+      "heading": "Style Seed",
+      "subtext": "What design style should the AI apply? WCAG compliance guaranteed by deterministic sanitizer.",
+      "your_custom": "Your Custom Styles",
+      "name_label": "Style Name",
+      "name_placeholder": "My Style",
+      "name_aria": "Custom style name",
+      "font_aria": "Font family",
+      "font_inter": "Inter (Clean)",
+      "font_georgia": "Georgia (Serif)",
+      "font_atkinson": "Atkinson (A11y)",
+      "font_lexend": "Lexend (Readable)",
+      "font_comic": "Comic Sans (Fun)",
+      "font_times": "Times (Classic)",
+      "heading_color_label": "Heading Color",
+      "heading_color_aria": "Heading color",
+      "accent_color_label": "Accent Color",
+      "accent_color_aria": "Accent color",
+      "bg_color_aria": "Background color"
+    },
+    "triage": {
+      "source_type": "Source type",
+      "issues_to_fix": "Issues to fix:",
+      "estimated_time": "Estimated remediation time:"
+    },
+    "post_fix": {
+      "label": "Post-fix mode",
+      "aria": "Post-fix mode"
+    },
+    "quick_downloads": {
+      "heading": "Quick downloads (no remediation needed)",
+      "tagged_pdf_title": "Download a Tagged PDF based on the original. For richer tagging — extracted headings, properly scoped tables, alt text — run Fix & Verify first and download the tagged version after."
+    },
+    "loading": {
+      "title": "Auditing PDF Accessibility...",
+      "subtitle": "Running 5 parallel WCAG 2.1 AA audits with triangulation. This may take 15-30 seconds.",
+      "progress_aria": "Audit in progress"
+    },
+    "knowbility": {
+      "partner_badge": "Accessibility Partner",
+      "mission_lead": "Creating an inclusive digital world for people with disabilities",
+      "ada_title": "The Americans with Disabilities Act (ADA) Title II",
+      "wcag_label": "WCAG 2.1 Level AA",
+      "deadline_range": "April 2026 to April 2027",
+      "broader_reach_desc": "Accessible content works on any device, any bandwidth, any assistive technology — reaching more users",
+      "seo_desc": "Structured headings, alt text, and semantic HTML improve search ranking and content discovery",
+      "cognitive_desc": "Clear navigation, consistent layouts, and plain language help all users — especially in high-cognitive-load contexts",
+      "future_desc": "WCAG-compliant content adapts to new devices, AI readers, and emerging assistive technologies",
+      "italic_callout": "WCAG 2.1 AA isn't just about avoiding litigation — it's about building documents that are perceivable, operable, understandable, and robust for every human being.",
+      "audit_service_desc": "Expert WCAG audits and document remediation by certified professionals",
+      "usability_service_desc": "Real-world usability testing by people who use assistive technology daily",
+      "docrem_service_desc": "Specialist team for PDF and MS Office docs — full usability with assistive technology",
+      "training_service_desc": "Annual conference and on-demand courses — beginner to advanced accessibility skills",
+      "mission_strong": "Mission: Create an inclusive digital world for people with disabilities.",
+      "testing_desc": "Manual WCAG audits producing actionable reports and remediation paths for websites, apps, and documents",
+      "docrem_full_desc": "Specialist team for PDF and MS Office documents — ensuring full usability with assistive technology",
+      "accessworks_desc": "Real-world usability testing by people with disabilities who use assistive technology daily",
+      "training_full_desc": "Annual conference and on-demand courses — from beginner to advanced accessibility skills"
+    },
+    "unavailable": {
+      "title": "Audit Unavailable",
+      "body": "The AI accessibility audit could not complete. This is usually caused by a temporary API issue, rate limiting, or a very large/complex PDF.",
+      "proceed_hint": "You can still proceed — Fix & Verify will transform the document and run a full audit afterward."
+    },
+    "tabs": {
+      "aria": "Audit view",
+      "remediation_results": "Remediation Results",
+      "original_audit": "Original Audit"
+    },
+    "doc_props": {
+      "aria": "Document properties",
+      "contains_images": "Contains Images",
+      "contains_tables": "Contains Tables",
+      "contains_forms": "Contains Forms"
+    },
+    "reliability": {
+      "std_dev": "Standard Deviation",
+      "icc_title": "Custom 1−(SD/50) index; not textbook ICC",
+      "icc_label": "Auditor Consistency (ICC-like)",
+      "cronbach": "Cronbach's α"
+    },
+    "score": {
+      "total_checks": "Total checks performed",
+      "issues_found": "Issues found",
+      "ai_rubric_label": "AI Rubric",
+      "starts_at_100": "Starts at 100, deducts per issue type",
+      "how_ai_scores": "How AI scores",
+      "ai_critical_rule": "Critical: -15 each (lang, title, alt, landmark, contrast)",
+      "ai_major_rule": "Major: -10 each (headings, tables, forms)",
+      "ai_minor_rule": "Minor: -5 each (skip-nav, landmarks, links, lists)",
+      "ai_passes_rule": "Passes reduce total deductions proportionally",
+      "axe_desc": "Deque automated WCAG 2.1 AA checker",
+      "how_axe_scores": "How axe-core scores",
+      "no_violations": "No violations detected",
+      "average_both": "Average of both engines (equal weight)"
+    },
+    "multi_session": {
+      "no_pdf_attached": "Original PDF isn't attached to this session — you'll be prompted to re-select it from disk when you start the fix. (Project files don't include the PDF bytes to stay small.)",
+      "autosave_aria": "Auto-save project file after each completed range",
+      "autosave_label": "Auto-save project file after each range"
+    },
+    "page_range": {
+      "start_aria": "Start page",
+      "end_aria": "End page",
+      "clear_aria": "Clear page range and remediate whole document"
+    },
+    "fix_pass": {
+      "additional_sweep": "Additional Sweep",
+      "progress_aria": "Fix and verify progress"
+    },
+    "pipeline": {
+      "tracker_aria": "Pipeline progress tracker",
+      "why_matters": "Why this matters:"
+    },
+    "boring_palette": {
+      "prompt": "Would you like to keep the original look or apply a theme?"
+    },
+    "live_chunk": {
+      "review_aria": "Live chunk remediation review",
+      "heading_short": "Live Remediation",
+      "no_fixes_title": "This section already meets WCAG accessibility standards — the pipeline made no changes because none were needed.",
+      "retried_title": "AI had to retry this section once after the first attempt failed integrity or token-preservation checks.",
+      "content_verified_title": "AI content-preservation check passed — the section's text content was preserved through the rewrite.",
+      "ai_skipped_long_title": "AI rewrite failed or was rejected for this section — only deterministic (rule-based) fixes were applied. The section is still more accessible than the original, just less so than successfully AI-fixed sections.",
+      "ai_skipped_rule_only": "AI skipped · rule-based only",
+      "review_heading": "Live Remediation Review",
+      "review_subhead": "Watch each section get fixed in real time — reject or re-fix anything that looks wrong",
+      "progress_aria": "Live remediation progress",
+      "rule_based_title": "Rule-based (deterministic) regex fixes applied — always safe, no AI involved",
+      "targeted_title": "AI-diagnosed targeted micro-fixes applied via deterministic tools (content-preserving)",
+      "ai_skipped_short_title": "AI rewrite failed or was rejected for this section — only rule-based fixes were applied. Still more accessible than the original.",
+      "ai_skipped_short": "AI skipped",
+      "verified_title": "AI verified content preserved",
+      "integrity_title": "Word overlap integrity check passed",
+      "before": "Before (original)",
+      "after": "After (fixed)",
+      "integrity_note": "Integrity note:",
+      "violations_targeted": "Violations targeted in this pass",
+      "clear_history_aria": "Clear live review history"
+    },
+    "why_matters": {
+      "heading": "Why Accessible Documents Matter",
+      "udl_part1": "Accessible materials support Universal Design for Learning (UDL) — benefiting",
+      "all": "all",
+      "udl_part2": "learners regardless of ability, language, or learning style",
+      "ux_part1": "Clear headings, logical structure, and sufficient contrast make documents easier to read for",
+      "ux_part2": "users — including on mobile and in bright sunlight",
+      "seo_desc": "Semantic HTML, alt text, and proper headings help search engines index content — boosting discoverability and organic reach",
+      "innovation_desc": "Voice recognition, closed captioning, and screen readers all began as accessibility features — then became essential tools used by millions"
+    },
+    "ada": {
+      "heading": "ADA Title II & WCAG 2.1 AA",
+      "deadline_badge": "Deadline: April 24, 2026",
+      "title_strong": "Title II of the Americans with Disabilities Act (ADA)",
+      "wcag_strong": "WCAG 2.1 Level AA",
+      "deadline_50k": "April 24, 2026",
+      "deadline_small": "April 26, 2027",
+      "covered_desc": "Public-facing websites, mobile apps, digital documents (PDFs, Word, Excel, PowerPoint), and social media published by government entities",
+      "who_desc": "All state and local government entities — including public schools, universities, courts, libraries, transit agencies, and municipal services",
+      "matters_desc": "Beyond legal compliance: accessible documents ensure people with disabilities can equally access education, public services, employment, and civic participation",
+      "standard_callout": "The standard AlloFlow targets — WCAG 2.1 Level AA — is the exact standard required by this federal rule."
+    },
+    "doc_details": {
+      "heading": "Document Details"
+    },
+    "images": {
+      "review_heading": "Review Image Descriptions",
+      "download_all_title": "Download every extracted image — useful as a manual fallback if AI reinsertion misplaces or skips one.",
+      "edit_alt_hint": "Edit alt text below — changes apply to the final document",
+      "download_one_title": "Download this image",
+      "ai_generated_badge": "AI Generated",
+      "alt_placeholder": "Describe this image for screen reader users...",
+      "regen_title": "Regenerate this image via AI using the stored description",
+      "dropped_by_ai": "Dropped by AI pass",
+      "regen_hint": "Click Regenerate to recreate an image via AI using its stored description, or use Upload/Replace inside the figure in the preview."
+    },
+    "integrity": {
+      "verifying": "Verifying content integrity…",
+      "diff_open_verifying_aria": "Open diff view (verification still running in background)",
+      "diff_open_verifying_title": "Open the word-level diff view. The integrity verification is still running in the background, but the diff itself is ready now.",
+      "unverified": "Content integrity unverified",
+      "diff_open_aria": "Open diff view of source PDF text vs. final HTML",
+      "diff_open_title": "Side-by-side word-level diff: see every insertion, deletion, and paraphrase between the source PDF and the remediated HTML.",
+      "recheck_aria": "Re-run pdf.js content integrity check",
+      "recheck_title": "Re-run the fidelity recovery ladder (Stages A-D) against the current remediated HTML."
+    },
+    "verification": {
+      "details_heading": "Verification details",
+      "char_coverage": "Char coverage",
+      "word_coverage": "Word coverage",
+      "source_words": "Source words",
+      "recovery_stages": "Recovery stages applied",
+      "ai_retry": "AI retry",
+      "ground_truth": "Ground truth:",
+      "open_diff_title": "Open the word-level diff view"
+    },
+    "fidelity": {
+      "heading": "Verify Text Fidelity",
+      "run_title": "Compare the remediated document against the source text — flags any words that appear in the source but not in the current remediated output.",
+      "run_aria": "Run text fidelity check against source OCR",
+      "restore_title": "Splice missing words back into the remediated document using fuzzy context-anchor matching. Unplaceable words go to a Content Recovery appendix so nothing is lost.",
+      "restore_aria": "Restore missing words into the remediated document",
+      "not_ready": "Remediation not ready."
+    },
+    "report": {
+      "download_title": "Download audit report",
+      "text_extract_title": "Extract text for content generation"
+    },
+    "resume": {
+      "heading": "Saved Progress Found"
+    },
+    "start_new_title": "Clear this audit result and start fresh with a new PDF",
+    "results": {
+      "verified_accessible": "Verified Accessible",
+      "zero_violations": "Zero WCAG violations detected"
+    },
+    "wcag_report": {
+      "coverage_note": "Coverage may be incomplete — this view aggregates axe-core rules by WCAG SC. Manual review still required for some criteria (e.g. semantic meaning, reading order, complex forms)."
+    },
+    "auto_fix": {
+      "stop_aria": "Stop auto-continue remediation",
+      "progress_aria": "Auto-fix progress"
+    },
+    "section_map": {
+      "heading": "Document Section Map",
+      "rule_based_title": "Rule-based (deterministic) fixes applied",
+      "targeted_title": "AI-diagnosed targeted micro-fixes",
+      "ai_skipped_title": "AI rewrite was rejected — only rule-based fixes applied",
+      "ai_skipped": "AI skipped"
+    },
+    "expert_referral": {
+      "heading": "This Document Needs Expert Accessibility Remediation"
+    },
+    "diff": {
+      "button_aria": "Open word-level diff view between source PDF and remediated HTML",
+      "button_title": "Open the word-level diff modal — see every insertion, deletion, and paraphrase between the source PDF text and the remediated HTML, with click-to-reject and Apply & Export."
+    },
+    "pdf_from_html": {
+      "title": "Regenerate a PDF from the remediated HTML. Layout reflows — page breaks, fonts, and pagination may differ from the original. Works well for simple prose documents."
+    },
+    "tagged_pdf": {
+      "title": "Preserve the original PDF's visual layout byte-identical and inject accessibility tags into its structure tree. Best for textbooks, multi-column documents, and branded PDFs where visual fidelity matters."
+    },
+    "alt_formats": {
+      "intro": "Download the remediated document in accessible alternative formats"
+    },
+    "expert": {
+      "command_aria": "Expert remediation command",
+      "log_aria": "Agent activity log"
+    },
+    "translate": {
+      "lang_aria": "Translation language — type any language or pick from suggestions",
+      "lang_placeholder": "🌐 Type language (e.g. Spanish, Tagalog, Dari...)"
+    },
+    "simplify": {
+      "level_aria": "Simplification grade level"
+    },
+    "plain_summary": {
+      "intro": "Generate an easy-to-read version for parents, guardians, or community members.",
+      "lang_aria": "Translation language"
+    },
+    "close_confirm": {
+      "title": "Close without saving?",
+      "save_close": "Save & close"
+    },
+    "preview": {
+      "modal_aria": "Accessible document preview and editor",
+      "close_aria": "Close preview",
+      "edit_hint": "Click anywhere in the preview to edit text directly. Use the controls below to customize appearance.",
+      "wcag_guaranteed": "WCAG compliance guaranteed — sanitizer runs on every style change.",
+      "ai_restyle_hint": "One-click AI restyling. These override the theme above.",
+      "body_font_aria": "Body font",
+      "font_system": "System (Default)",
+      "font_georgia": "Georgia (Serif)",
+      "font_times_new": "Times New Roman",
+      "font_atkinson_hyper": "Atkinson Hyperlegible",
+      "font_comic_short": "Comic Sans",
+      "font_courier": "Courier (Mono)",
+      "font_size_aria": "Font size",
+      "live_preview": "Live Preview",
+      "iframe_title": "Accessible document preview"
+    },
+    "wordart": {
+      "text_placeholder": "Your word art text...",
+      "text_aria": "Word art text"
+    },
+    "a11y_inspect": {
+      "headings": "Headings (H1-H6)",
+      "images": "Images + alt text",
+      "tables": "Tables + headers",
+      "figures": "Figures + captions",
+      "main_landmark": "Main landmark",
+      "aria_roles": "ARIA roles"
+    },
+    "ai_image": {
+      "prompt_placeholder": "Describe an image to generate...",
+      "prompt_aria": "Image generation prompt",
+      "select_hint": "Click an image in the preview to select it, then:"
+    },
+    "layout": {
+      "insert_blocks": "Insert Blocks",
+      "header_branding": "Header / Branding"
+    },
+    "templates": {
+      "aria": "Document template",
+      "apply_placeholder": "Apply template...",
+      "saved_heading": "Saved Accessible Templates"
+    },
+    "version_stamp": {
+      "heading": "Version Stamp"
+    },
+    "extracted_images": {
+      "drag_hint": "Drag a thumbnail onto any image placeholder in the preview to insert it, or click \"📷 Upload\" inside a placeholder and choose \"Use extracted image\"."
+    },
+    "toolbar": {
+      "aria": "Text formatting",
+      "bullet_list": "Bullet list",
+      "numbered_list": "Numbered list",
+      "align_left": "Align left",
+      "align_center": "Align center",
+      "align_center_title": "Center",
+      "insert_link": "Insert link",
+      "remove_link": "Remove link",
+      "clear_formatting": "Clear formatting",
+      "undo": "Undo",
+      "redo": "Redo",
+      "text_color": "Text color",
+      "highlight_color": "Highlight color",
+      "insert_table_aria": "Insert table",
+      "insert_table_title": "Insert accessible table"
+    }
   },
   "concept_sort": {
     "title": "Concept Sort",
@@ -3139,7 +3686,13 @@
       "checked_perfect": "All items sorted correctly. Activity complete.",
       "reset": "Board reset. All items returned to deck."
     },
-    "why_none": "No explanation available."
+    "why_none": "No explanation available.",
+    "item_count_placeholder": "Auto (AI decides)",
+    "item_count_tooltip": "Leave blank to let AI pick the right number based on your source text. Or type 4–30 to force a specific count.",
+    "card_visuals_label": "Card visuals",
+    "card_visuals_auto": "Auto (only on short items)",
+    "card_visuals_always": "Always generate images",
+    "card_visuals_never": "Never (text-only cards)"
   },
   "dbq": {
     "title": "Document Analysis (DBQ)",
@@ -3186,7 +3739,50 @@
     "completed": "Completed",
     "doc_label": "Doc",
     "claim_label": "Claim",
-    "teacher_notes": "Teacher Notes"
+    "teacher_notes": "Teacher Notes",
+    "analysis_mode": "Analysis Mode",
+    "mode_standard_label": "📄 Standard DBQ",
+    "mode_standard_desc": "Extract documents from your source text",
+    "mode_perspectives_label": "⚔️ Competing Perspectives",
+    "mode_perspectives_desc": "AI finds 2+ viewpoints that agree and disagree",
+    "mode_search_label": "🔍 Web-Enhanced",
+    "mode_search_desc": "Find real primary sources from archives (LOC, NARA, etc.)",
+    "mode_links_label": "🔗 Teacher Links",
+    "mode_links_desc": "Paste URLs to articles — AI builds DBQ around them",
+    "mode_custom_label": "✏️ Teacher Docs",
+    "mode_custom_desc": "Paste your own document text directly",
+    "focus_label_search": "Search Topic (optional — refines source hunting)",
+    "focus_label_links": "Topic Context (helps AI understand the links)",
+    "focus_label_perspectives": "Perspectives to Compare (optional)",
+    "focus_placeholder_search": "e.g. \"Japanese internment primary sources\"",
+    "focus_placeholder_links": "e.g. \"Civil Rights Movement\"",
+    "focus_placeholder_perspectives": "e.g. \"Federalists vs Anti-Federalists\"",
+    "focus_aria_search": "Search topic for primary source hunting",
+    "focus_aria_links": "Topic context for AI link analysis",
+    "focus_aria_perspectives": "Perspectives to compare for DBQ",
+    "urls_label": "Document URLs (one per line)",
+    "urls_aria": "Document URLs for DBQ",
+    "urls_help": "Paste links to articles, primary sources, or documents. AI will build the DBQ scaffolding around them.",
+    "custom_paste_intro_strong": "Paste each document below.",
+    "custom_paste_intro_part1": "Separate documents with",
+    "custom_paste_intro_part2": "on its own line. Or use the import buttons to fetch from a URL or upload an image of a document.",
+    "custom_title_source_hint": "For each document, optionally include a title and source on the first lines:",
+    "import_from_url_label": "Import from URL",
+    "import_url_placeholder": "https://... (article, speech, primary source)",
+    "import_url_aria": "URL to import as document",
+    "fetch_url_aria": "Fetch URL",
+    "fetch_url_button": "🔗 Fetch",
+    "upload_image_label": "Upload Document Image",
+    "upload_image_aria": "Upload document image",
+    "upload_image_button": "📷 Upload Image",
+    "paste_clipboard_aria": "Paste image from clipboard",
+    "paste_clipboard_button": "📋 Paste Image",
+    "custom_docs_placeholder": "Paste your documents here, separated by --- on its own line...",
+    "custom_docs_aria": "Custom documents for DBQ",
+    "custom_essay_placeholder": "Essay focus question (optional) — e.g. 'How did different groups define liberty in 1776?'",
+    "custom_essay_aria": "Custom essay focus question",
+    "need_source_hint": "⬆️ Paste a source text above first — the DBQ will be built from it.",
+    "generate_aria": "Generate DBQ"
   },
   "concept_map": {
     "toolbar": {
@@ -3429,7 +4025,21 @@
       "chatbot_desc": "Best for: Roleplaying with historical figures."
     },
     "bridge_message": "Bridge Message",
-    "student_reactions": "Student Reactions"
+    "student_reactions": "Student Reactions",
+    "use_generated_button": "Use Generated",
+    "target_language_label": "Target Language",
+    "reading_level_label": "Reading Level",
+    "autotranslate_hint": "Each student device auto-translates to its group's language & reading level",
+    "how_it_works_label": "How it works:",
+    "how_it_works_desc": "In a live session, each student device automatically generates the translation using its group's configured language and reading level. The language/grade selectors above only affect your teacher preview unless you enable 'Override group settings'.",
+    "autoplay_toggle_aria": "Auto-play bridge narration",
+    "autoplay_toggle_desc": "Auto-play TTS when students receive",
+    "generating_progress_desc": "Creating explanation, translation, and visual content",
+    "generating_bilingual_status": "Generating bilingual content...",
+    "generate_and_send_button": "Generate & Send to Class",
+    "visual_aid_alt": "Visual aid",
+    "reaction_prompt": "How do you feel about this?",
+    "response_sent_confirmation": "Response sent ✓"
   },
   "lesson_headers": {
     "teacher": {
@@ -3638,7 +4248,10 @@
       "user_label": "? YOU",
       "print_button": "Print Storybook"
     },
-    "answer_key_title": "Answer Key"
+    "answer_key_title": "Answer Key",
+    "teacher_toc": "Teacher Contents",
+    "toc": "Contents",
+    "related_words_label": "Related words:"
   },
   "export_status": {
     "lib_loading": "Compression library loading...",
@@ -3806,7 +4419,19 @@
     "reflection_complete": "Reflection Complete",
     "save_tooltip": "Save conversation",
     "topic_spark_tooltip": "Get a topic suggestion ({remaining} remaining)",
-    "reflection_input": "Your reflection…"
+    "reflection_input": "Your reflection…",
+    "analyzing_historical_figures": "Analyzing content for historical figures...",
+    "golden_thread": "Golden Thread",
+    "edits_apply_before_generation": "Edits apply before generation",
+    "essential_question": "Essential Question",
+    "essential_question_placeholder": "The ONE main learning question students will answer...",
+    "none_set": "(none set)",
+    "core_concepts": "Core Concepts",
+    "remove_concept_aria": "Remove concept ",
+    "add_concept_placeholder": "+ add concept",
+    "key_vocabulary": "Key Vocabulary",
+    "remove_term_aria": "Remove term ",
+    "add_term_placeholder": "+ add term"
   },
   "session": {
     "start": "Start Live Class",
@@ -4157,7 +4782,19 @@
     "speak": "Speak",
     "define": "Define",
     "tap_speak": "Tap a word to hear it",
-    "tap_define": "Tap a word to see its definition and picture"
+    "tap_define": "Tap a word to see its definition and picture",
+    "words_per_chunk_aria": "Words per chunk",
+    "focus_reader_hint_playing": "Tap to pause · ← → navigate · +/− speed · [ ] chunk size · P pause-style",
+    "focus_reader_hint_paused": "Tap or Space to play · ← → navigate · +/− speed · [ ] chunk size · P pause-style · Esc closes",
+    "chunk_mood_tooltip": "Animation mood for active chunk · Enter skips typewriter reveal",
+    "font_lexend": "Lexend (readable)",
+    "font_atkinson": "Atkinson Hyperlegible",
+    "font_serif_georgia": "Serif (Georgia)",
+    "font_sans_inter": "Sans (Inter)",
+    "font_comic_sans": "Comic Sans",
+    "crawl_speed_aria": "Crawl speed",
+    "auto_advance_aria": "Auto-advance to next sentence",
+    "playback_speed_aria": "Playback speed"
   },
   "timer": {
     "title": "Task Timer",
@@ -5170,7 +5807,9 @@
     "story_unfolds": "The story unfolds...",
     "your_choice": "Your Choice",
     "upload_portrait": "Upload your own portrait image",
-    "aria_free_response": "Free response"
+    "aria_free_response": "Free response",
+    "portrait_refine_placeholder": "e.g. Add green glasses",
+    "appearance_placeholder": "Appearance (e.g. tall, silver hair, blue robe)"
   },
   "grades": {
     "k": "Kindergarten",
@@ -5654,7 +6293,11 @@
     "custom_wcpm": "Target WCPM",
     "prosody_expression": "Expression",
     "prosody_pacing": "Pacing",
-    "prosody_phrasing": "Phrasing"
+    "prosody_phrasing": "Phrasing",
+    "ai_confidence_title": "AI Confidence in This Analysis",
+    "accent_detected_badge": "Accent detected — scored conservatively",
+    "young_voice_badge": "Young voice detected",
+    "dialectal_patterns_badge": "Dialectal patterns respected"
   },
   "socratic": {
     "title": "Socratic Tutor",
@@ -7066,7 +7709,8 @@
     "initializing": "Initializing...",
     "loading_resources": "Loading resources...",
     "preparing_workspace": "Preparing your workspace...",
-    "almost_ready": "Almost ready..."
+    "almost_ready": "Almost ready...",
+    "loading_screen_aria": "AlloFlow loading screen"
   },
   "behavior_lens": {
     "title": "BehaviorLens",
@@ -8651,7 +9295,22 @@
     "behavior_lens_title": "BehaviorLens",
     "behavior_lens_desc": "FBA/BIP behavioral observation, ABC data collection, and 60+ clinical tools",
     "report_writer_title": "Report Writer",
-    "report_writer_desc": "AI-powered clinical report generation with fact-chunks, accuracy audit, and developmental norms"
+    "report_writer_desc": "AI-powered clinical report generation with fact-chunks, accuracy audit, and developmental norms",
+    "dialog_aria": "Educator Tools",
+    "close_aria": "Close educator tools",
+    "symbol_studio_title": "Symbol Studio",
+    "symbol_studio_desc": "AI-generated PCS-style icons for visual supports, AAC boards, and schedules — powered by image-to-image editing",
+    "document_hub_title": "Document Hub",
+    "document_hub_desc": "Document builder with themes, WYSIWYG editing, accessibility audit, and multi-format export (PDF, HTML, worksheet, slides)",
+    "pdf_accessibility_title": "PDF Accessibility",
+    "pdf_accessibility_desc": "Upload PDFs for WCAG accessibility audit & remediation with axe-core verification",
+    "view_last_audit_tooltip": "Re-open the last PDF audit — view the diff, verification, and remediated HTML without re-running the pipeline",
+    "books_emoji_aria": "books",
+    "community_catalog_title": "Community Catalog",
+    "community_catalog_desc": "Browse open-licensed lessons from the AlloFlow community, or submit your own for review",
+    "magnifying_glass_emoji_aria": "magnifying glass",
+    "accessibility_lab_title": "Accessibility Lab",
+    "accessibility_lab_desc": "Verify the student experience: preview as student, keyboard-only tour, live WCAG audit (axe-core) with violations framed by student impact, screen-reader announcement preview, and disability simulators (low-vision, color-blindness, dyslexia, motor delay)."
   },
   "report_writer": {
     "loading": "Loading Report Writer...",
@@ -8665,7 +9324,12 @@
     "storyforge_title": "StoryForge",
     "storyforge_desc": "Create illustrated stories with AI writing tools",
     "sel_title": "SEL Hub",
-    "sel_desc": "Social-emotional learning for self-awareness & growth"
+    "sel_desc": "Social-emotional learning for self-awareness & growth",
+    "close_aria": "Close learning hub",
+    "litlab_title": "LitLab",
+    "litlab_desc": "Bring stories to life with character voices & literary analysis",
+    "poettree_title": "PoetTree",
+    "poettree_desc": "Write poems with form scaffolds, rhyme & meter analysis, AI feedback"
   },
   "sel_hub": {
     "loading": "Loading SEL Hub...",
@@ -8710,5 +9374,166 @@
   "docbuilder": {
     "search_aria": "Search blocks",
     "search_placeholder": "Search blocks…"
+  },
+  "note_taking": {
+    "template_label": "Template type",
+    "cornell": "Cornell Notes (2-column + summary)",
+    "lab_report": "Lab Report (Q / Hypothesis / Method / Data / CER / Conclusion)",
+    "reading_response": "Reading Response Journal Entry",
+    "help": "Each template is scaffolded from today's source text but persists in your history so you can keep adding to it across lessons.",
+    "generate": "Generate template"
+  },
+  "anchor_chart": {
+    "type_label": "Chart type",
+    "reference": "Reference (features / norms / conventions)",
+    "process": "Process (sequential steps)",
+    "concept_map": "Concept Map (parts of a whole)",
+    "comparison": "Comparison (across categories)",
+    "help": "EL-style class anchor chart. AI drafts the structure + hand-drawn icons; edit anytime; open critique mode for peers to leave I notice / I wonder notes.",
+    "generate": "Generate anchor chart"
+  },
+  "fluency_maze": {
+    "title": "Fluency Maze",
+    "description": "Navigate a torchlit dungeon. Each gate is locked by a math fact — solve it to pass. Find the golden key to unlock the exit.",
+    "open_aria": "Open Fluency Maze in main view",
+    "open_button": "🚪 Open Maze (full view)",
+    "saved_note": "Saved to history so you can re-enter later.",
+    "tagline": "Math facts unlock the gates"
+  },
+  "lms": {
+    "dismiss_banner_aria": "Dismiss LMS banner",
+    "dismiss_button": "Dismiss",
+    "audit_queue_help": "Click a document to fetch and load it into the accessibility pipeline. Some LMS files may require you to be logged in to the LMS in this browser."
+  },
+  "annotation": {
+    "undo_tooltip": "Undo last annotation ({count} available) — Ctrl/Cmd+Z",
+    "nothing_to_undo": "Nothing to undo",
+    "undo_aria": "Undo last annotation",
+    "undo_button": "↩ Undo",
+    "show_all_tooltip": "Show all annotations",
+    "toggle_list_aria": "Toggle annotation list",
+    "list_button": "📋 List"
+  },
+  "live_polling": {
+    "open_aria": "Open live polling",
+    "button": "Live Polling"
+  },
+  "pictionary": {
+    "open_aria": "Open Concept Pictionary",
+    "button": "🎨 Pictionary"
+  },
+  "visual_support": {
+    "teacher_modal_aria": "Visual Support from your teacher"
+  },
+  "canvas_settings": {
+    "title": "Advanced Settings",
+    "google_api_label": "Google Search API Key",
+    "google_api_placeholder": "Your Google API key...",
+    "google_api_hint": "Power users: enter your own Google Custom Search API key (100 free queries/day)",
+    "wolfram_label": "Wolfram Alpha App ID",
+    "wolfram_placeholder": "XXXXX-XXXXXXXXXX (from developer.wolframalpha.com)",
+    "wolfram_hint": "Free: 2,000 queries/month. Adds exact math solving and step-by-step verification"
+  },
+  "read_this_page": {
+    "panel_aria": "Read This Page panel",
+    "title": "Read This Page",
+    "read_all_button": "Read All",
+    "stop_button": "Stop",
+    "focus_narration_label": "Keyboard Focus Narration",
+    "focus_narration_on_hint": "Tab to hear controls"
+  },
+  "teacher": {
+    "local_only": "Local only",
+    "quiz_routing": {
+      "no_groups_warning": "Create at least one group in the Groups panel above before adding routing rules.",
+      "when_answer_label": "When answer",
+      "answer_option_aria": "Answer option",
+      "target_group_aria": "Target group",
+      "remove_rule_aria": "Remove rule"
+    },
+    "boss": {
+      "class_fallen": "The class has fallen..."
+    },
+    "research": {
+      "report_title": "AlloFlow UDL Platform — Research Data Report",
+      "table1_heading": "Table 1. TAM Survey Construct Descriptives",
+      "table2_heading": "Table 2. Oral Reading Fluency Probe Descriptives",
+      "measure_wcpm": "Words Correct Per Minute (WCPM)",
+      "measure_dcpm": "Digits Correct Per Minute (DCPM)",
+      "measure_accuracy_pct": "Accuracy (%)",
+      "table3_heading": "Table 3. Implementation Fidelity Summary",
+      "appendix_a_heading": "Appendix A: Individual Student Data",
+      "probe_history_wcpm_label": "Probe History (WCPM):",
+      "quiz_scores_label": "Quiz Scores:",
+      "survey_responses_label": "Survey Responses:",
+      "export_footer": "Generated by AlloFlow UDL Platform — Research Export Module",
+      "export_btn_aria": "Export Research Report"
+    },
+    "stem_stations": {
+      "section_title": "🔬 STEM Station Activity",
+      "empty_title": "No STEM Stations created yet.",
+      "empty_hint": "Generate a lesson plan to get AI-recommended STEM tools.",
+      "stations_created": "Stations Created",
+      "unique_tools_used": "Unique Tools Used",
+      "station_xp_events": "Station XP Events"
+    }
+  },
+  "fab": {
+    "visual_supports": "Visual Supports"
+  },
+  "ai_backend": {
+    "title": "AI Backend Settings",
+    "provider_label": "Provider",
+    "provider_aria": "AI Backend Provider",
+    "server_url_label": "Server URL",
+    "server_url_aria": "Custom AI backend URL",
+    "api_key_label": "API Key",
+    "api_key_hint": "(cloud providers only)",
+    "api_key_aria": "Custom AI backend API key",
+    "api_key_placeholder": "Your API key...",
+    "wolfram_label": "Wolfram Alpha App ID",
+    "wolfram_hint": "(optional — enhances math)",
+    "wolfram_aria": "Custom backend Wolfram App ID",
+    "wolfram_placeholder": "XXXXX-XXXXXXXXXX (from developer.wolframalpha.com)",
+    "wolfram_free_note": "Free: 2,000 queries/month • Adds exact math solving & step-by-step verification",
+    "model_selection_header": "Model Selection",
+    "default_model_label": "Default Model",
+    "default_model_hint": "(text generation)",
+    "default_model_aria": "Default AI model",
+    "auto_server_default": "Auto (server default)",
+    "fallback_model_label": "Fallback Model",
+    "fallback_model_hint": "(rate-limit cascade)",
+    "fallback_model_aria": "Fallback AI model",
+    "same_as_default": "Same as default",
+    "tts_provider_aria": "Text-to-speech provider",
+    "local_cascade_label": "Local cascade:",
+    "image_generation_header": "Image Generation",
+    "image_provider_aria": "Image generation provider"
+  },
+  "diff_view": {
+    "title": "Source PDF ↔ Remediated HTML · Diff",
+    "subtitle": "Click any colored span to reject the change. Drag-select across spans to batch-reject. Del→Add paraphrase pairs toggle together.",
+    "close_aria": "Close diff view",
+    "undo_all_tooltip": "Undo every rejection in this view",
+    "undo_all_button": "undo all",
+    "computing": "Computing diff…",
+    "computing_stale_hint": "If this persists, the source text and remediated HTML may have drifted out of sync (or the diff cache is stale).",
+    "rebuild_tooltip": "Clear the diff cache and recompute chunks against the current source ↔ remediated pair.",
+    "rebuild_button": "Rebuild diff",
+    "reject_selection": "Reject selection",
+    "keep_selection": "Keep selection",
+    "dismiss_toolbar_aria": "Dismiss toolbar",
+    "footer_help": "Click spans or drag-select to edit. Pairs toggle together.",
+    "revert_tooltip": "Restore the accessible HTML to the state before your last Apply & Export",
+    "apply_export_tooltip": "Apply rejections via text surgery (preserves all markup, instant, no Gemini call). Falls back to Gemini round-trip only if surgery can't map some chunks."
+  },
+  "volume_builder": {
+    "zoom_out_aria": "Zoom out",
+    "zoom_in_aria": "Zoom in",
+    "reset_view_aria": "Reset view",
+    "help_caption": "Drag to rotate • Scroll to zoom • Build rectangular prisms or L-blocks with unit cubes (5.MD.3-5)",
+    "shape_radiogroup_aria": "Volume Builder shape",
+    "answer_placeholder": "Enter volume...",
+    "answer_aria": "Volume answer"
   }
 }

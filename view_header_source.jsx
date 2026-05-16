@@ -286,7 +286,7 @@ function HeaderBar(props) {
                                                     <span className="text-[11px] font-mono bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded">{readingTheme === 'default' ? 'Default' : readingTheme}</span>
                                                 </div>
                                                 <p className="text-[11px] text-slate-600 mb-2">{t('settings.reading_theme_desc') || 'Background & text color for all content views'}</p>
-                                                <div className="grid grid-cols-5 gap-1.5" role="radiogroup" aria-label="Reading theme">
+                                                <div className="grid grid-cols-5 gap-1.5" role="radiogroup" aria-label={t('header.reading_theme_aria') || 'Reading theme'}>
                                                     {[
                                                         { id: 'default', label: 'Default', bg: '#ffffff', fg: '#1e293b', border: '#e2e8f0', emoji: '○' },
                                                         { id: 'warm', label: 'Warm', bg: '#fef3c7', fg: '#5c4033', border: '#fde68a', emoji: '☀️' },
@@ -369,7 +369,7 @@ function HeaderBar(props) {
                                                                 ))}
                                                             </optgroup>
                                                             <optgroup label="🌐 Browser Fallback">
-                                                                <option value="browser">Browser Default</option>
+                                                                <option value="browser">{t('header.voice_browser_default') || 'Browser Default'}</option>
                                                             </optgroup>
                                                         </>
                                                     ) : (ai?._ttsProvider === 'local' || (ai?._ttsProvider !== 'gemini' && ai?._ttsProvider !== 'browser' && (ai?.backend === 'ollama' || ai?.backend === 'localai'))) ? (
@@ -380,7 +380,7 @@ function HeaderBar(props) {
                                                                 ))}
                                                             </optgroup>
                                                             <optgroup label="🔇 Browser Fallback">
-                                                                <option value="browser">Browser Default</option>
+                                                                <option value="browser">{t('header.voice_browser_default') || 'Browser Default'}</option>
                                                             </optgroup>
                                                         </>
                                                     ) : (
@@ -392,7 +392,7 @@ function HeaderBar(props) {
                                                 {/* ── Kokoro Quality Toggle (only visible for Kokoro voices) ── */}
                                                 {_isCanvasEnv && selectedVoice && selectedVoice.includes('_') && window._kokoroTTS && (
                                                     <div className="mt-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-700/50 border border-slate-400 dark:border-slate-600">
-                                                        <label className="text-[11px] uppercase font-bold text-slate-600 block mb-1.5">Voice Quality</label>
+                                                        <label className="text-[11px] uppercase font-bold text-slate-600 block mb-1.5">{t('header.voice_quality_label') || 'Voice Quality'}</label>
                                                         <div className="flex gap-1">
                                                             <button
                                                                 onClick={() => { window._kokoroTTS.setQuality('fast'); }}
@@ -415,7 +415,7 @@ function HeaderBar(props) {
                                                                 🎵 High Quality (~86MB)
                                                             </button>
                                                         </div>
-                                                        <p className="text-[11px] text-slate-600 mt-1">Fast uses a smaller model for quicker response. High Quality is richer but slower.</p>
+                                                        <p className="text-[11px] text-slate-600 mt-1">{t('header.voice_quality_desc') || 'Fast uses a smaller model for quicker response. High Quality is richer but slower.'}</p>
                                                     </div>
                                                 )}
                                                 {/* ── Browser-TTS Fallback Toggle ──
@@ -434,11 +434,11 @@ function HeaderBar(props) {
                                                                     localStorage.setItem('alloflow_ai_config', JSON.stringify({ ...cur, browserTtsFallback: e.target.checked }));
                                                                 } catch {}
                                                             }}
-                                                            aria-label="Use browser voice as fallback when Gemini TTS refuses or fails"
+                                                            aria-label={t('header.browser_tts_fallback_aria') || 'Use browser voice as fallback when Gemini TTS refuses or fails'}
                                                         />
                                                         <span className="text-[11px] leading-tight">
-                                                            <span className="font-bold text-slate-600 dark:text-slate-200 block">Browser-voice fallback</span>
-                                                            <span className="text-slate-600 dark:text-slate-400">Read refused/failed sentences with the system voice instead of skipping.</span>
+                                                            <span className="font-bold text-slate-600 dark:text-slate-200 block">{t('header.browser_tts_fallback_label') || 'Browser-voice fallback'}</span>
+                                                            <span className="text-slate-600 dark:text-slate-400">{t('header.browser_tts_fallback_desc') || 'Read refused/failed sentences with the system voice instead of skipping.'}</span>
                                                         </span>
                                                     </label>
                                                 </div>
@@ -451,7 +451,7 @@ function HeaderBar(props) {
                                                                 ? 'Piper Neural Voice \u2014 auto-selected'
                                                                 : 'Browser fallback \u2014 language not yet supported'}
                                                         </div>
-                                                        <div className="text-[11px] text-blue-500/70 dark:text-blue-400/70 mt-0.5">Kokoro voice applies to English content</div>
+                                                        <div className="text-[11px] text-blue-500/70 dark:text-blue-400/70 mt-0.5">{t('header.kokoro_english_only') || 'Kokoro voice applies to English content'}</div>
                                                     </div>
                                                 )}
                                                 <div className="flex gap-2 mt-3">
@@ -704,8 +704,8 @@ function HeaderBar(props) {
                               ? 'bg-violet-500 text-white shadow-lg shadow-violet-500/50'
                               : 'hover:bg-white/10 text-white/80 hover:text-white border border-white/10'
                           }`}
-                          title="AI Backend Configuration"
-                          aria-label="AI Backend Configuration"
+                          title={t('header.ai_backend_config') || 'AI Backend Configuration'}
+                          aria-label={t('header.ai_backend_config') || 'AI Backend Configuration'}
                         >
                           <Unplug size={14} aria-hidden="true" />
                           <span className="hidden lg:inline">AI</span>
@@ -723,8 +723,8 @@ function HeaderBar(props) {
                           }}
                           data-help-key="header_educator_hub"
                           className="px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wider hover:bg-white/10 text-white/80 hover:text-white border border-white/10"
-                          title="Educator Tools (Symbol Studio, BehaviorLens, Report Writer)"
-                          aria-label="Educator Tools"
+                          title={t('header.educator_tools_tooltip') || 'Educator Tools (Symbol Studio, BehaviorLens, Report Writer)'}
+                          aria-label={t('header.educator_tools_aria') || 'Educator Tools'}
                         >
                           <span style={{fontSize:'14px',lineHeight:1}}>🎓</span>
                           <span className="hidden lg:inline">Tools</span>
@@ -835,7 +835,7 @@ function HeaderBar(props) {
                                 <Languages size={14} /> <span className="hidden lg:inline">{t('header.translate_button')}</span>
                             </button>
                             <button
-                                aria-label="Documents menu"
+                                aria-label={t('header.documents_menu_aria') || 'Documents menu'}
                                 aria-haspopup="menu"
                                 aria-expanded={showExportMenu}
                                 onClick={handleToggleShowExportMenu}
@@ -846,7 +846,7 @@ function HeaderBar(props) {
                                 <FileText size={14} /> <span className="hidden lg:inline">Documents</span> {showExportMenu ? <ChevronUp size={12}/> : <ChevronDown size={12}/>}
                             </button>
                             {showExportMenu && (
-                                <div role="menu" aria-label="Documents menu" onKeyDown={(e) => {
+                                <div role="menu" aria-label={t('header.documents_menu_aria') || 'Documents menu'} onKeyDown={(e) => {
                                     const items = e.currentTarget.querySelectorAll('[role="menuitem"]:not([disabled])');
                                     const idx = Array.from(items).indexOf(document.activeElement);
                                     if (e.key === 'ArrowDown') { e.preventDefault(); items[(idx + 1) % items.length]?.focus(); }
@@ -858,7 +858,7 @@ function HeaderBar(props) {
                                     {customExportCSS && <div className="text-[11px] text-green-600 font-medium px-2 mb-1">✓ Custom style active</div>}
                                     <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1">{"\ud83d\udcc4"} Print & PDF</div>
                                     <button role="menuitem"
-                                        aria-label="Open Document Builder for PDF"
+                                        aria-label={t('header.open_doc_builder_pdf_aria') || 'Open Document Builder for PDF'}
                                         onClick={() => openExportPreview('print')}
                                         className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-green-50 text-green-700 text-xs font-bold transition-colors"
                                         data-help-key="export_pdf"
@@ -882,7 +882,7 @@ function HeaderBar(props) {
                                     </button>
                                     <button role="menuitem" aria-label={t('common.export_as_slides')}
                                         onClick={() => openExportPreview('slides')}
-                                        disabled={!pptxLoaded} title="Opens Document Builder in Slides mode"
+                                        disabled={!pptxLoaded} title={t('header.export_slides_tooltip') || 'Opens Document Builder in Slides mode'}
                                         className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-orange-50 text-orange-700 text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                         data-help-key="export_slides"
                                     >
