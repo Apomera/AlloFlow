@@ -1130,6 +1130,855 @@ window.SelHub = window.SelHub || {
   ];
 
   // ══════════════════════════════════════════════════════════════
+  // ── MY ADVOCACY KIT — Personalized student tools (module scope)
+  // Mirror of Learning Lab "My Toolkit" pattern but for self-advocacy.
+  // Students BUILD their own kit: request log, script vault, rights
+  // card, champions list, IEP prep, needs inventory, boundaries,
+  // advocacy journal. All persistent via ctx.update.
+  // ══════════════════════════════════════════════════════════════
+  var R_ADV = (typeof window !== 'undefined' && window.React) ? window.React : null;
+  var hh = R_ADV ? R_ADV.createElement : null;
+
+  function adv_today() {
+    var d = new Date();
+    var m = String(d.getMonth() + 1).padStart(2, '0');
+    var dd = String(d.getDate()).padStart(2, '0');
+    return d.getFullYear() + '-' + m + '-' + dd;
+  }
+  function adv_daysAgo(iso) {
+    if (!iso) return null;
+    var t = new Date(iso + 'T12:00:00').getTime();
+    return Math.floor((Date.now() - t) / 86400000);
+  }
+  function adv_relDate(iso) {
+    var d = adv_daysAgo(iso);
+    if (d === 0) return 'today';
+    if (d === 1) return 'yesterday';
+    if (d < 7) return d + ' days ago';
+    if (d < 30) return Math.floor(d / 7) + ' weeks ago';
+    return Math.floor(d / 30) + ' months ago';
+  }
+  function adv_id() { return 'av-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7); }
+
+  function advCard(border, children) {
+    return hh('div', { style: {
+      background: 'rgba(15,23,42,0.7)', borderRadius: 12, padding: 14, marginBottom: 12,
+      borderTop: '1px solid ' + border + '40', borderRight: '1px solid ' + border + '40',
+      borderBottom: '1px solid ' + border + '40', borderLeft: '4px solid ' + border,
+      boxShadow: '0 2px 12px rgba(0,0,0,0.20)'
+    } }, children);
+  }
+  function advBtn(label, onClick, kind, extra) {
+    var styles = {
+      primary:   { bg: '#6366f1', color: '#fff', border: '#6366f1' },
+      secondary: { bg: 'rgba(99,102,241,0.15)', color: '#a5b4fc', border: 'rgba(99,102,241,0.50)' },
+      good:      { bg: 'rgba(16,185,129,0.15)', color: '#10b981', border: 'rgba(16,185,129,0.50)' },
+      bad:       { bg: 'rgba(239,68,68,0.10)',  color: '#fca5a5', border: 'rgba(239,68,68,0.40)' },
+      warn:      { bg: 'rgba(251,191,36,0.10)', color: '#fbbf24', border: 'rgba(251,191,36,0.40)' },
+      ghost:     { bg: 'rgba(148,163,184,0.08)', color: '#94a3b8', border: 'rgba(148,163,184,0.30)' }
+    };
+    var s = styles[kind || 'secondary'] || styles.secondary;
+    return hh('button', Object.assign({
+      onClick: onClick,
+      style: Object.assign({
+        padding: '8px 16px', borderRadius: 8,
+        background: s.bg, color: s.color,
+        border: '1.5px solid ' + s.border,
+        fontSize: 11, fontWeight: 800, cursor: 'pointer',
+        transition: 'all 160ms ease'
+      }, extra || {})
+    }), label);
+  }
+  function advInput(value, onChange, placeholder, extra) {
+    return hh('input', Object.assign({
+      type: 'text', value: value || '', placeholder: placeholder || '',
+      onChange: function(e) { onChange(e.target.value); },
+      style: Object.assign({
+        width: '100%', padding: '10px 12px',
+        fontSize: 12, color: '#e2e8f0',
+        background: 'rgba(2,6,23,0.7)',
+        border: '1px solid rgba(100,116,139,0.40)',
+        borderRadius: 6, outline: 'none', boxSizing: 'border-box'
+      }, extra || {})
+    }));
+  }
+  function advTextarea(value, onChange, placeholder, rows, extra) {
+    return hh('textarea', Object.assign({
+      value: value || '', placeholder: placeholder || '', rows: rows || 3,
+      onChange: function(e) { onChange(e.target.value); },
+      style: Object.assign({
+        width: '100%', padding: '10px 12px',
+        fontSize: 12, color: '#e2e8f0',
+        background: 'rgba(2,6,23,0.7)',
+        border: '1px solid rgba(100,116,139,0.40)',
+        borderRadius: 6, outline: 'none', boxSizing: 'border-box',
+        fontFamily: 'inherit', resize: 'vertical'
+      }, extra || {})
+    }));
+  }
+  function advSectionHeader(icon, title, subtitle, accent) {
+    accent = accent || '#6366f1';
+    return hh('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap', paddingBottom: 10, borderBottom: '1px solid ' + accent + '30' } },
+      hh('div', { 'aria-hidden': 'true', style: {
+        width: 42, height: 42, borderRadius: '50%',
+        background: 'linear-gradient(135deg, ' + accent + '30, ' + accent + '10)',
+        border: '1.5px solid ' + accent,
+        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22
+      } }, icon),
+      hh('div', { style: { flex: 1, minWidth: 180 } },
+        hh('div', { style: { fontSize: 15, fontWeight: 900, color: accent + 'ee', letterSpacing: '-0.01em' } }, title),
+        hh('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } }, subtitle)
+      )
+    );
+  }
+  function advEmpty(icon, text) {
+    return hh('div', { style: { padding: '30px 16px', textAlign: 'center', background: 'rgba(2,6,23,0.4)', borderRadius: 12, border: '1px dashed rgba(99,102,241,0.30)', marginBottom: 12 } },
+      hh('div', { style: { fontSize: 36, marginBottom: 10, opacity: 0.5 } }, icon),
+      hh('div', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.6 } }, text)
+    );
+  }
+
+  // ── A. MY REQUEST LOG ──
+  // Log every time I asked for something + outcome. Pattern = the skill.
+  function AdvRequestLog(props) {
+    if (!R_ADV) return null;
+    var data = props.data || { requests: [] };
+    var setData = props.setData;
+    var fs = R_ADV.useState({ what: '', who: '', how: 'in-person', outcome: 'good', notes: '' });
+    var form = fs[0]; var setForm = fs[1];
+
+    var HOW = [
+      { id: 'in-person', label: 'In person', icon: '🗣' },
+      { id: 'email',     label: 'Email',     icon: '📧' },
+      { id: 'text',      label: 'Text/DM',   icon: '💬' },
+      { id: 'phone',     label: 'Phone',     icon: '📞' },
+      { id: 'letter',    label: 'Letter',    icon: '✉' }
+    ];
+    var OUT = [
+      { id: 'good',       label: '✓ Got what I needed', color: '#10b981' },
+      { id: 'partial',    label: '~ Partial yes',       color: '#fbbf24' },
+      { id: 'no',         label: '✗ Declined',          color: '#ef4444' },
+      { id: 'pending',    label: '⌛ Pending',          color: '#a5b4fc' },
+      { id: 'unhelpful',  label: '😐 Not useful',       color: '#94a3b8' }
+    ];
+
+    function log() {
+      if (!form.what.trim()) { alert('Need "what" you asked for.'); return; }
+      var r = Object.assign({ id: adv_id(), date: adv_today(), time: Date.now() }, form);
+      setData({ requests: [r].concat(data.requests || []) });
+      setForm({ what: '', who: '', how: 'in-person', outcome: 'good', notes: '' });
+    }
+    function remove(id) { setData({ requests: (data.requests || []).filter(function(r) { return r.id !== id; }) }); }
+
+    var requests = data.requests || [];
+    var goodPct = requests.length > 0 ? Math.round(requests.filter(function(r) { return r.outcome === 'good'; }).length / requests.length * 100) : 0;
+    var weekCount = requests.filter(function(r) { return adv_daysAgo(r.date) <= 7; }).length;
+
+    return hh('div', { style: { padding: 14 } },
+      advSectionHeader('📓', 'My Request Log', 'Log every time you spoke up for something. Pattern = the skill becoming yours.', '#6366f1'),
+
+      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 8, marginBottom: 12 } },
+        [
+          { label: 'Total requests', value: requests.length, color: '#6366f1', icon: '📓' },
+          { label: 'This week', value: weekCount, color: '#a5b4fc', icon: '📅' },
+          { label: 'Yes rate', value: goodPct + '%', color: '#10b981', icon: '✓' }
+        ].map(function(s, i) {
+          return hh('div', { key: 'rls-' + i, style: { padding: 10, borderRadius: 8, background: s.color + '12', border: '1px solid ' + s.color + '30', textAlign: 'center' } },
+            hh('div', { style: { fontSize: 14, marginBottom: 2 } }, s.icon),
+            hh('div', { style: { fontSize: 16, fontWeight: 900, color: s.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, s.value),
+            hh('div', { style: { fontSize: 9, color: '#94a3b8', textTransform: 'uppercase' } }, s.label)
+          );
+        })
+      ),
+
+      advCard('#6366f1',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#a5b4fc', marginBottom: 8 } }, '+ Log a request'),
+          hh('div', { style: { display: 'grid', gridTemplateColumns: '2fr 2fr', gap: 6, marginBottom: 6 } },
+            advInput(form.what, function(v) { setForm(Object.assign({}, form, { what: v })); }, 'What did I ask for?'),
+            advInput(form.who, function(v) { setForm(Object.assign({}, form, { who: v })); }, 'Who?')
+          ),
+          hh('div', { style: { fontSize: 11, color: '#a5b4fc', marginTop: 8, marginBottom: 4 } }, 'How?'),
+          hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 } },
+            HOW.map(function(h) {
+              var on = form.how === h.id;
+              return hh('button', { key: 'hw-' + h.id,
+                onClick: function() { setForm(Object.assign({}, form, { how: h.id })); },
+                style: { padding: '6px 10px', borderRadius: 6, background: on ? 'rgba(99,102,241,0.20)' : 'rgba(15,23,42,0.5)', color: on ? '#a5b4fc' : '#94a3b8', border: '1px solid ' + (on ? '#6366f1' : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
+              }, h.icon + ' ' + h.label);
+            })
+          ),
+          hh('div', { style: { fontSize: 11, color: '#a5b4fc', marginBottom: 4 } }, 'Outcome'),
+          hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 } },
+            OUT.map(function(o) {
+              var on = form.outcome === o.id;
+              return hh('button', { key: 'oc-' + o.id,
+                onClick: function() { setForm(Object.assign({}, form, { outcome: o.id })); },
+                style: { padding: '6px 10px', borderRadius: 6, background: on ? o.color + '30' : 'rgba(15,23,42,0.5)', color: on ? o.color : '#94a3b8', border: '1px solid ' + (on ? o.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
+              }, o.label);
+            })
+          ),
+          advTextarea(form.notes, function(v) { setForm(Object.assign({}, form, { notes: v })); }, 'Notes — what worked? what surprised you?', 2, { marginBottom: 8 }),
+          advBtn('💾 Log it', log, 'primary')
+        )
+      ),
+
+      requests.length === 0 ? advEmpty('📓', 'No requests logged yet. Track every ask — the data reveals patterns.')
+      : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+          requests.slice(0, 25).map(function(r) {
+            var o = OUT.filter(function(x) { return x.id === r.outcome; })[0] || OUT[0];
+            var hw = HOW.filter(function(x) { return x.id === r.how; })[0] || HOW[0];
+            return hh('div', { key: 'lr-' + r.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + o.color } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
+                hh('div', null,
+                  hh('span', { style: { color: o.color, fontWeight: 700, marginRight: 6, fontSize: 11 } }, o.label),
+                  r.who ? hh('strong', { style: { color: '#a5b4fc', fontSize: 11 } }, r.who + ': ') : null,
+                  hh('span', { style: { fontSize: 11, color: '#cbd5e1' } }, r.what)
+                ),
+                hh('button', { onClick: function() { remove(r.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+              ),
+              hh('div', { style: { fontSize: 9, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } }, hw.icon + ' ' + hw.label + ' · ' + adv_relDate(r.date)),
+              r.notes ? hh('div', { style: { fontSize: 10, color: '#cbd5e1', marginTop: 4, fontStyle: 'italic' } }, r.notes) : null
+            );
+          })
+        )
+    );
+  }
+
+  // ── B. MY SCRIPT VAULT ──
+  // Save customized scripts for hard moments. Tag by situation type.
+  function AdvScriptVault(props) {
+    if (!R_ADV) return null;
+    var data = props.data || { scripts: [] };
+    var setData = props.setData;
+    var fs = R_ADV.useState({ title: '', situation: '', script: '', category: 'ask', tags: '' });
+    var form = fs[0]; var setForm = fs[1];
+    var qs = R_ADV.useState(''); var search = qs[0]; var setSearch = qs[1];
+
+    var CATS = [
+      { id: 'ask',       label: '🙋 Asking',     color: '#10b981' },
+      { id: 'boundary',  label: '🛡 Boundaries', color: '#ef4444' },
+      { id: 'disagree',  label: '⚖ Disagreeing', color: '#fbbf24' },
+      { id: 'accom',     label: '🪪 Accommodation', color: '#a5b4fc' },
+      { id: 'help',      label: '🆘 Help needed', color: '#06b6d4' },
+      { id: 'feedback',  label: '💬 Feedback',    color: '#ec4899' }
+    ];
+
+    function save() {
+      if (!form.script.trim()) { alert('Need the script text.'); return; }
+      var s = Object.assign({ id: adv_id(), createdAt: adv_today(), useCount: 0 }, form);
+      setData({ scripts: [s].concat(data.scripts || []) });
+      setForm({ title: '', situation: '', script: '', category: 'ask', tags: '' });
+    }
+    function remove(id) { setData({ scripts: (data.scripts || []).filter(function(s) { return s.id !== id; }) }); }
+    function markUsed(id) {
+      setData({ scripts: (data.scripts || []).map(function(s) { return s.id === id ? Object.assign({}, s, { useCount: (s.useCount || 0) + 1, lastUsed: adv_today() }) : s; }) });
+    }
+
+    var scripts = data.scripts || [];
+    var filtered = search ? scripts.filter(function(s) {
+      var q = search.toLowerCase();
+      return (s.title || '').toLowerCase().indexOf(q) >= 0 ||
+             (s.situation || '').toLowerCase().indexOf(q) >= 0 ||
+             (s.script || '').toLowerCase().indexOf(q) >= 0 ||
+             (s.tags || '').toLowerCase().indexOf(q) >= 0;
+    }) : scripts;
+
+    return hh('div', { style: { padding: 14 } },
+      advSectionHeader('💬', 'My Script Vault', 'YOUR phrases for hard moments. Save + customize + practice.', '#10b981'),
+
+      advCard('#10b981',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#10b981', marginBottom: 8 } }, '+ Save a script'),
+          advInput(form.title, function(v) { setForm(Object.assign({}, form, { title: v })); }, 'Short title (e.g., "When teacher rushes me")', { marginBottom: 6 }),
+          advInput(form.situation, function(v) { setForm(Object.assign({}, form, { situation: v })); }, 'When this situation happens...', { marginBottom: 6 }),
+          advTextarea(form.script, function(v) { setForm(Object.assign({}, form, { script: v })); }, '... I will say:', 4, { marginBottom: 8 }),
+          hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 } },
+            CATS.map(function(c) {
+              var on = form.category === c.id;
+              return hh('button', { key: 'sc-' + c.id,
+                onClick: function() { setForm(Object.assign({}, form, { category: c.id })); },
+                style: { padding: '6px 10px', borderRadius: 6, background: on ? c.color + '30' : 'rgba(15,23,42,0.5)', color: on ? c.color : '#94a3b8', border: '1px solid ' + (on ? c.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
+              }, c.label);
+            })
+          ),
+          advInput(form.tags, function(v) { setForm(Object.assign({}, form, { tags: v })); }, 'Tags (comma-separated, optional)', { marginBottom: 8 }),
+          advBtn('💾 Save', save, 'primary')
+        )
+      ),
+
+      hh('div', { style: { marginBottom: 10 } },
+        advInput(search, setSearch, '🔎 Search my vault')
+      ),
+
+      filtered.length === 0 ? advEmpty('💬', scripts.length === 0 ? 'No saved scripts yet. Customize ones from the Scripts/Phrases tabs OR write your own.' : 'No matches.')
+      : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+          filtered.map(function(s) {
+            var c = CATS.filter(function(x) { return x.id === s.category; })[0] || CATS[0];
+            return hh('div', { key: 'sv-' + s.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid ' + c.color } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
+                hh('div', null,
+                  hh('strong', { style: { fontSize: 12, color: c.color } }, c.label + ' · ' + (s.title || 'untitled')),
+                  s.situation ? hh('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic', marginTop: 2 } }, 'When: ' + s.situation) : null
+                ),
+                hh('div', null,
+                  hh('span', { style: { fontSize: 9, color: '#94a3b8', marginRight: 6, fontFamily: 'ui-monospace, Menlo, monospace' } }, 'used ' + (s.useCount || 0) + 'x'),
+                  hh('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                )
+              ),
+              hh('div', { style: { padding: 10, borderRadius: 6, background: 'rgba(2,6,23,0.5)', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, fontStyle: 'italic', fontFamily: 'Georgia, serif' } }, '"' + s.script + '"'),
+              hh('div', { style: { marginTop: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 6 } },
+                s.tags ? hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
+                  s.tags.split(',').map(function(t, i) {
+                    return hh('span', { key: 'tg-' + i, style: { padding: '2px 6px', borderRadius: 4, background: c.color + '15', color: c.color, fontSize: 9, fontWeight: 700 } }, '#' + t.trim());
+                  })
+                ) : hh('span'),
+                hh('div', { style: { display: 'flex', gap: 4 } },
+                  advBtn('📋 Copy', function() { try { navigator.clipboard.writeText(s.script); } catch(e) {} }, 'ghost', { padding: '4px 8px', fontSize: 9 }),
+                  advBtn('+1 used', function() { markUsed(s.id); }, 'good', { padding: '4px 10px', fontSize: 9 })
+                )
+              )
+            );
+          })
+        )
+    );
+  }
+
+  // ── C. MY RIGHTS CARD ──
+  // Personal subset of rights I'm actively claiming + why each matters.
+  function AdvRightsCard(props) {
+    if (!R_ADV) return null;
+    var data = props.data || { rights: [], reflections: {} };
+    var setData = props.setData;
+    var fs = R_ADV.useState({ text: '', why: '' });
+    var form = fs[0]; var setForm = fs[1];
+
+    var BUILTIN = [
+      'I have the right to ask questions when I don\'t understand.',
+      'I have the right to ask for what I need to learn.',
+      'I have the right to my accommodations under IDEA / Section 504.',
+      'I have the right to disagree respectfully.',
+      'I have the right to say no.',
+      'I have the right to take a break when I need one.',
+      'I have the right to make mistakes + learn from them.',
+      'I have the right to ask for help.',
+      'I have the right to be treated with dignity.',
+      'I have the right to my own pace.',
+      'I have the right to my own thoughts + feelings.',
+      'I have the right to take time before responding.',
+      'I have the right to participate in decisions about my education.',
+      'I have the right to ask for things to be explained again.',
+      'I have the right to my privacy.',
+      'I have the right to set limits on what I share.',
+      'I have the right to ask for what I need without justifying it endlessly.',
+      'I have the right to be heard.',
+      'I have the right to change my mind.',
+      'I have the right to be safe (physically + emotionally).'
+    ];
+
+    function toggleBuiltin(text) {
+      var r = (data.rights || []).slice();
+      var i = r.indexOf(text);
+      if (i >= 0) r.splice(i, 1);
+      else r.push(text);
+      setData(Object.assign({}, data, { rights: r }));
+    }
+    function addCustom() {
+      if (!form.text.trim()) return;
+      var r = (data.rights || []).concat([form.text.trim()]);
+      var refl = Object.assign({}, data.reflections || {});
+      if (form.why.trim()) refl[form.text.trim()] = form.why.trim();
+      setData({ rights: r, reflections: refl });
+      setForm({ text: '', why: '' });
+    }
+    function updateReflection(text, why) {
+      setData(Object.assign({}, data, { reflections: Object.assign({}, data.reflections || {}, (function() { var o = {}; o[text] = why; return o; })()) }));
+    }
+
+    var selected = data.rights || [];
+
+    return hh('div', { style: { padding: 14 } },
+      advSectionHeader('⚖', 'My Rights Card', 'YOUR personal selection of rights you\'re actively claiming. Pick from common rights + add your own.', '#fbbf24'),
+
+      // Selected rights with reflection
+      selected.length > 0 ? advCard('#fbbf24',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', marginBottom: 10 } }, '📜 My claimed rights (' + selected.length + ')'),
+          hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+            selected.map(function(r) {
+              var why = (data.reflections || {})[r] || '';
+              return hh('div', { key: 'sr-' + r, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #fbbf24' } },
+                hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
+                  hh('strong', { style: { fontSize: 12, color: '#fbbf24', flex: 1 } }, '⚖ ' + r),
+                  hh('button', { onClick: function() { toggleBuiltin(r); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                ),
+                advTextarea(why, function(v) { updateReflection(r, v); }, 'Why this matters to me right now (optional)', 2)
+              );
+            })
+          )
+        )
+      ) : null,
+
+      // Built-in list
+      advCard('#fbbf24',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', marginBottom: 10 } }, '✨ 20 common rights — tap to add to YOUR card'),
+          hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 4 } },
+            BUILTIN.map(function(r) {
+              var on = selected.indexOf(r) >= 0;
+              return hh('button', { key: 'br-' + r,
+                onClick: function() { toggleBuiltin(r); },
+                style: { display: 'block', textAlign: 'left', padding: '8px 10px', borderRadius: 6, background: on ? 'rgba(251,191,36,0.20)' : 'rgba(15,23,42,0.5)', color: on ? '#fbbf24' : '#cbd5e1', border: '1px solid ' + (on ? '#fbbf24' : 'rgba(100,116,139,0.30)'), fontSize: 11, fontWeight: on ? 700 : 500, cursor: 'pointer', lineHeight: 1.5 }
+              }, (on ? '✓ ' : '') + r);
+            })
+          )
+        )
+      ),
+
+      // Add custom
+      advCard('#a5b4fc',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#a5b4fc', marginBottom: 8 } }, '+ Add my own right'),
+          advInput(form.text, function(v) { setForm(Object.assign({}, form, { text: v })); }, 'I have the right to...', { marginBottom: 6 }),
+          advInput(form.why, function(v) { setForm(Object.assign({}, form, { why: v })); }, 'Why this matters (optional)', { marginBottom: 8 }),
+          advBtn('+ Add', addCustom, 'primary')
+        )
+      ),
+
+      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+        hh('strong', { style: { color: '#fbbf24' } }, '⚖ Why this matters: '),
+        'Naming what you\'re entitled to — and rehearsing it as YOURS — makes it easier to claim in real moments. Don\'t pick all 20. Pick the 3-5 you most need right now.'
+      )
+    );
+  }
+
+  // ── D. MY ADVOCACY CHAMPIONS ──
+  // People who back me + how to reach them.
+  function AdvChampions(props) {
+    if (!R_ADV) return null;
+    var data = props.data || { champions: [] };
+    var setData = props.setData;
+    var fs = R_ADV.useState({ name: '', role: '', context: '', contact: '', howTheyHelp: '' });
+    var form = fs[0]; var setForm = fs[1];
+
+    var ROLES = [
+      { id: 'family',    label: 'Family',    icon: '🏠', color: '#ef4444' },
+      { id: 'teacher',   label: 'Teacher',   icon: '🍎', color: '#3b82f6' },
+      { id: 'mentor',    label: 'Mentor',    icon: '🌟', color: '#fbbf24' },
+      { id: 'friend',    label: 'Friend',    icon: '🤝', color: '#10b981' },
+      { id: 'pro',       label: 'Professional', icon: '⚕', color: '#a5b4fc' },
+      { id: 'community', label: 'Community', icon: '🏘', color: '#06b6d4' }
+    ];
+
+    function add() {
+      if (!form.name.trim()) { alert('Need a name.'); return; }
+      var c = Object.assign({ id: adv_id(), addedAt: adv_today() }, form);
+      setData({ champions: [c].concat(data.champions || []) });
+      setForm({ name: '', role: '', context: '', contact: '', howTheyHelp: '' });
+    }
+    function remove(id) { setData({ champions: (data.champions || []).filter(function(c) { return c.id !== id; }) }); }
+
+    var champions = data.champions || [];
+
+    return hh('div', { style: { padding: 14 } },
+      advSectionHeader('🤝', 'My Advocacy Champions', 'People who back you. Visible reminder for hard days that you\'re not alone in this.', '#10b981'),
+
+      advCard('#10b981',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#10b981', marginBottom: 8 } }, '+ Add a champion'),
+          hh('div', { style: { display: 'grid', gridTemplateColumns: '2fr 1fr 2fr', gap: 6, marginBottom: 6 } },
+            advInput(form.name, function(v) { setForm(Object.assign({}, form, { name: v })); }, 'Their name'),
+            (function() {
+              var first = ROLES[0];
+              return hh('select', { value: form.role || '',
+                onChange: function(e) { setForm(Object.assign({}, form, { role: e.target.value })); },
+                style: { padding: '10px 8px', fontSize: 11, color: '#10b981', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(16,185,129,0.40)', borderRadius: 6 }
+              },
+                hh('option', { value: '' }, 'Role'),
+                ROLES.map(function(r) { return hh('option', { key: 'rl-' + r.id, value: r.id }, r.icon + ' ' + r.label); })
+              );
+            })(),
+            advInput(form.context, function(v) { setForm(Object.assign({}, form, { context: v })); }, 'Where I know them')
+          ),
+          advInput(form.contact, function(v) { setForm(Object.assign({}, form, { contact: v })); }, 'Best way to reach them (phone/email/in-person)', { marginBottom: 6 }),
+          advTextarea(form.howTheyHelp, function(v) { setForm(Object.assign({}, form, { howTheyHelp: v })); }, 'How do they help me advocate? (specific)', 2, { marginBottom: 8 }),
+          advBtn('+ Add champion', add, 'primary')
+        )
+      ),
+
+      champions.length === 0 ? advEmpty('🤝', 'No champions yet. Start with 1-2 people who genuinely back you.')
+      : ROLES.map(function(role) {
+          var inRole = champions.filter(function(c) { return c.role === role.id; });
+          if (inRole.length === 0) return null;
+          return hh('div', { key: 'rc-' + role.id, style: { marginBottom: 14 } },
+            hh('div', { style: { fontSize: 11, fontWeight: 800, color: role.color, marginBottom: 8, padding: '4px 10px', background: role.color + '15', borderRadius: 6, display: 'inline-block' } }, role.icon + ' ' + role.label),
+            hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+              inRole.map(function(c) {
+                return hh('div', { key: 'cp-' + c.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid ' + role.color } },
+                  hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
+                    hh('strong', { style: { fontSize: 13, color: role.color } }, '🤝 ' + c.name),
+                    hh('button', { onClick: function() { remove(c.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  ),
+                  c.context ? hh('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, c.context) : null,
+                  c.contact ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 4 } }, '📞 ' + c.contact) : null,
+                  c.howTheyHelp ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 6, padding: 8, background: 'rgba(2,6,23,0.4)', borderRadius: 6, lineHeight: 1.55 } },
+                    hh('strong', { style: { color: role.color } }, '💛 How they help: '), c.howTheyHelp
+                  ) : null
+                );
+              })
+            )
+          );
+        }).filter(Boolean)
+    );
+  }
+
+  // ── E. MY IEP MEETING PREP ──
+  // Notes for upcoming IEP meeting. What to share + what to ask.
+  function AdvIEPPrep(props) {
+    if (!R_ADV) return null;
+    var data = props.data || { prep: {}, meetings: [] };
+    var setData = props.setData;
+    var p = data.prep || {};
+
+    function update(key, val) {
+      setData(Object.assign({}, data, { prep: Object.assign({}, p, (function() { var o = {}; o[key] = val; return o; })()) }));
+    }
+    function archiveCurrent() {
+      var entry = Object.assign({ id: adv_id(), archivedAt: adv_today() }, p);
+      var newMeetings = [entry].concat(data.meetings || []);
+      setData({ prep: { whatWorking: '', whatNotWorking: '', wantToAsk: '', goalsThisYear: '', accomNeeded: '', meetingDate: '' }, meetings: newMeetings });
+    }
+
+    var FIELDS = [
+      { id: 'meetingDate',   label: 'Meeting date',                                  type: 'date' },
+      { id: 'whatWorking',   label: '✅ What\'s working this year',                  prompt: 'Be specific. Which accommodations help? Which teachers get it?' },
+      { id: 'whatNotWorking',label: '⚠ What\'s not working',                         prompt: 'Honest. Which strategies aren\'t landing? Which environments are hard?' },
+      { id: 'wantToAsk',     label: '🙋 What I want to ask for',                     prompt: 'New accommodations, changes to existing ones, services, etc.' },
+      { id: 'goalsThisYear', label: '🎯 Goals I want for the rest of this year',     prompt: 'In my own words — what do I actually want to learn / do?' },
+      { id: 'accomNeeded',   label: '🪪 Accommodations I need next semester',        prompt: 'Specifically. What helped in past? What\'s missing?' }
+    ];
+
+    var meetings = data.meetings || [];
+
+    return hh('div', { style: { padding: 14 } },
+      advSectionHeader('📋', 'My IEP Meeting Prep', 'Notes for your next IEP/504 meeting. By high school, you should be helping lead these. Practice here.', '#a5b4fc'),
+
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(165,180,252,0.10)', border: '1px solid rgba(165,180,252,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+        hh('strong', { style: { color: '#a5b4fc' } }, '🎯 The goal: '),
+        'You shouldn\'t walk into an IEP meeting and just have things happen to you. You should walk in knowing what you want to say + what you want to ask. This is the prep that makes that possible.'
+      ),
+
+      advCard('#a5b4fc',
+        hh('div', null,
+          FIELDS.map(function(f) {
+            return hh('div', { key: 'if-' + f.id, style: { marginBottom: 12 } },
+              hh('label', { style: { display: 'block', fontSize: 11, fontWeight: 800, color: '#a5b4fc', marginBottom: 4 } }, f.label),
+              f.prompt ? hh('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic', marginBottom: 6 } }, f.prompt) : null,
+              f.type === 'date' ? hh('input', { type: 'date', value: p[f.id] || '',
+                onChange: function(e) { update(f.id, e.target.value); },
+                style: { padding: '10px 12px', fontSize: 12, color: '#a5b4fc', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(165,180,252,0.40)', borderRadius: 6, boxSizing: 'border-box' }
+              }) : advTextarea(p[f.id], function(v) { update(f.id, v); }, '', 3)
+            );
+          }),
+          (p.whatWorking || p.whatNotWorking || p.wantToAsk) ? advBtn('📦 Archive after meeting (start fresh for next)', archiveCurrent, 'secondary') : null
+        )
+      ),
+
+      meetings.length > 0 ? hh('div', null,
+        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#a5b4fc', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, '📚 Past meeting prep'),
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+          meetings.map(function(m) {
+            return hh('div', { key: 'mm-' + m.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #a5b4fc' } },
+              hh('div', { style: { fontSize: 11, color: '#a5b4fc', fontWeight: 700, marginBottom: 4 } }, '📋 Meeting prep · ' + (m.meetingDate || 'undated') + ' · archived ' + adv_relDate(m.archivedAt)),
+              m.wantToAsk ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 4 } }, hh('strong', { style: { color: '#a5b4fc' } }, '🙋 Asked for: '), m.wantToAsk.substring(0, 200)) : null
+            );
+          })
+        )
+      ) : null
+    );
+  }
+
+  // ── F. MY NEEDS INVENTORY ──
+  // What I actually need across 6 dimensions. The thing self-advocacy is FOR.
+  function AdvNeedsInventory(props) {
+    if (!R_ADV) return null;
+    var data = props.data || { needs: {} };
+    var setData = props.setData;
+    var n = data.needs || {};
+
+    var DIMS = [
+      { id: 'sensory',    label: '🌈 Sensory needs',         prompt: 'Quiet space? Movement? Specific textures or lighting?' },
+      { id: 'academic',   label: '📚 Academic needs',        prompt: 'Extended time? Reader? Visual schedule? Specific format?' },
+      { id: 'social',     label: '🤝 Social needs',          prompt: 'Solo work? Pair? Small group? Wait-time before responding?' },
+      { id: 'mh',         label: '💖 Mental-health needs',   prompt: 'Breaks? Counselor access? Trauma-informed responses?' },
+      { id: 'physical',   label: '💪 Physical needs',        prompt: 'Movement? Standing desk? Medical equipment? Bathroom access?' },
+      { id: 'communication', label: '💬 Communication needs', prompt: 'Written backup? AAC? Pre-warning before speaking? Visual cues?' }
+    ];
+
+    function update(key, val) {
+      setData({ needs: Object.assign({}, n, (function() { var o = {}; o[key] = val; return o; })()) });
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      advSectionHeader('🧭', 'My Needs Inventory', 'Self-advocacy is FOR something. Name what you actually need across 6 dimensions.', '#06b6d4'),
+
+      advCard('#06b6d4',
+        hh('div', null,
+          DIMS.map(function(d) {
+            return hh('div', { key: 'nd-' + d.id, style: { marginBottom: 12, padding: 10, borderRadius: 8, background: 'rgba(2,6,23,0.4)', borderLeft: '3px solid #06b6d4' } },
+              hh('label', { style: { display: 'block', fontSize: 12, fontWeight: 800, color: '#67e8f9', marginBottom: 4 } }, d.label),
+              hh('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic', marginBottom: 6 } }, d.prompt),
+              advTextarea(n[d.id], function(v) { update(d.id, v); }, '', 3)
+            );
+          })
+        )
+      ),
+
+      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(6,182,212,0.08)', border: '1px solid rgba(6,182,212,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+        hh('strong', { style: { color: '#06b6d4' } }, '🧭 Why this matters: '),
+        'You can\'t advocate for needs you can\'t name. Write what\'s true for YOU even if it sounds "weird" — your nervous system isn\'t wrong for having preferences. This becomes the basis for accommodation requests, conversations with teachers, and your own self-knowledge.'
+      )
+    );
+  }
+
+  // ── G. MY BOUNDARIES LIST ──
+  // What's non-negotiable for me. With permission scripts.
+  function AdvBoundariesList(props) {
+    if (!R_ADV) return null;
+    var data = props.data || { boundaries: [] };
+    var setData = props.setData;
+    var fs = R_ADV.useState({ what: '', why: '', script: '', category: 'social' });
+    var form = fs[0]; var setForm = fs[1];
+
+    var CATS = [
+      { id: 'physical',  label: '🛡 Physical',  color: '#ef4444' },
+      { id: 'emotional', label: '💖 Emotional', color: '#ec4899' },
+      { id: 'social',    label: '🤝 Social',    color: '#10b981' },
+      { id: 'digital',   label: '📱 Digital',   color: '#a5b4fc' },
+      { id: 'academic',  label: '📚 Academic',  color: '#3b82f6' },
+      { id: 'time',      label: '⏰ Time',      color: '#fbbf24' }
+    ];
+
+    function add() {
+      if (!form.what.trim()) return;
+      var b = Object.assign({ id: adv_id(), createdAt: adv_today() }, form);
+      setData({ boundaries: [b].concat(data.boundaries || []) });
+      setForm({ what: '', why: '', script: '', category: 'social' });
+    }
+    function remove(id) { setData({ boundaries: (data.boundaries || []).filter(function(b) { return b.id !== id; }) }); }
+
+    var boundaries = data.boundaries || [];
+
+    return hh('div', { style: { padding: 14 } },
+      advSectionHeader('🛡', 'My Boundaries', 'Things that are non-negotiable for you. With practice-scripts for when they\'re crossed.', '#ef4444'),
+
+      advCard('#ef4444',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fca5a5', marginBottom: 8 } }, '+ Add a boundary'),
+          advInput(form.what, function(v) { setForm(Object.assign({}, form, { what: v })); }, 'What\'s the boundary? (specific)', { marginBottom: 6 }),
+          hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 } },
+            CATS.map(function(c) {
+              var on = form.category === c.id;
+              return hh('button', { key: 'bc-' + c.id,
+                onClick: function() { setForm(Object.assign({}, form, { category: c.id })); },
+                style: { padding: '6px 10px', borderRadius: 6, background: on ? c.color + '30' : 'rgba(15,23,42,0.5)', color: on ? c.color : '#94a3b8', border: '1px solid ' + (on ? c.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
+              }, c.label);
+            })
+          ),
+          advTextarea(form.why, function(v) { setForm(Object.assign({}, form, { why: v })); }, 'Why this boundary matters to me', 2, { marginBottom: 6 }),
+          advTextarea(form.script, function(v) { setForm(Object.assign({}, form, { script: v })); }, 'What I\'ll say when it\'s crossed (script)', 2, { marginBottom: 8 }),
+          advBtn('+ Add', add, 'primary')
+        )
+      ),
+
+      boundaries.length === 0 ? advEmpty('🛡', 'No boundaries written yet. Start with 1-2 of the most important ones to you.')
+      : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+          boundaries.map(function(b) {
+            var c = CATS.filter(function(x) { return x.id === b.category; })[0] || CATS[0];
+            return hh('div', { key: 'bd-' + b.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid ' + c.color } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
+                hh('div', null,
+                  hh('span', { style: { padding: '2px 6px', borderRadius: 4, background: c.color + '20', color: c.color, fontSize: 9, fontWeight: 800, marginRight: 6 } }, c.label),
+                  hh('strong', { style: { fontSize: 12, color: c.color } }, b.what)
+                ),
+                hh('button', { onClick: function() { remove(b.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+              ),
+              b.why ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', fontStyle: 'italic', marginBottom: 6 } }, '💭 ' + b.why) : null,
+              b.script ? hh('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.5)', fontSize: 11, color: '#e2e8f0', lineHeight: 1.6, fontStyle: 'italic', fontFamily: 'Georgia, serif' } },
+                '🗣 "' + b.script + '"'
+              ) : null
+            );
+          })
+        )
+    );
+  }
+
+  // ── H. MY ADVOCACY JOURNAL ──
+  // Moments when I spoke up + what I learned.
+  function AdvJournal(props) {
+    if (!R_ADV) return null;
+    var data = props.data || { entries: [] };
+    var setData = props.setData;
+    var fs = R_ADV.useState({ moment: '', what_I_did: '', what_I_learned: '', felt: 5 });
+    var form = fs[0]; var setForm = fs[1];
+
+    function save() {
+      if (!form.moment.trim()) { alert('Need a moment.'); return; }
+      var e = Object.assign({ id: adv_id(), date: adv_today() }, form);
+      setData({ entries: [e].concat(data.entries || []) });
+      setForm({ moment: '', what_I_did: '', what_I_learned: '', felt: 5 });
+    }
+    function remove(id) { setData({ entries: (data.entries || []).filter(function(e) { return e.id !== id; }) }); }
+
+    var entries = data.entries || [];
+
+    return hh('div', { style: { padding: 14 } },
+      advSectionHeader('📔', 'My Advocacy Journal', 'Moments when you spoke up. What happened. What it taught you.', '#ec4899'),
+
+      advCard('#ec4899',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#f472b6', marginBottom: 8 } }, '+ Journal a moment'),
+          advInput(form.moment, function(v) { setForm(Object.assign({}, form, { moment: v })); }, 'The moment (brief — "I asked Mr. Garcia for extended time on test")', { marginBottom: 6 }),
+          advTextarea(form.what_I_did, function(v) { setForm(Object.assign({}, form, { what_I_did: v })); }, 'What I did + said', 3, { marginBottom: 6 }),
+          advTextarea(form.what_I_learned, function(v) { setForm(Object.assign({}, form, { what_I_learned: v })); }, 'What I learned (about myself, the situation, what works)', 3, { marginBottom: 8 }),
+          hh('div', { style: { marginBottom: 8 } },
+            hh('span', { style: { fontSize: 11, color: '#f472b6', marginRight: 6 } }, 'How did it feel?'),
+            hh('strong', { style: { color: '#f472b6', fontSize: 14, fontFamily: 'ui-monospace, Menlo, monospace' } }, form.felt + '/10'),
+            hh('input', { type: 'range', min: 1, max: 10, step: 1, value: form.felt,
+              onChange: function(e) { setForm(Object.assign({}, form, { felt: parseInt(e.target.value, 10) })); },
+              style: { width: '100%', accentColor: '#ec4899', marginTop: 4 }
+            })
+          ),
+          advBtn('💾 Save', save, 'primary')
+        )
+      ),
+
+      entries.length === 0 ? advEmpty('📔', 'No advocacy moments logged yet. Even small ones count.')
+      : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+          entries.map(function(e) {
+            var col = e.felt >= 7 ? '#10b981' : e.felt >= 4 ? '#fbbf24' : '#ef4444';
+            return hh('div', { key: 'aj-' + e.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid ' + col } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
+                hh('strong', { style: { fontSize: 12, color: '#f472b6' } }, '📔 ' + e.moment),
+                hh('div', null,
+                  hh('span', { style: { fontSize: 10, color: col, fontFamily: 'ui-monospace, Menlo, monospace', marginRight: 6 } }, e.felt + '/10'),
+                  hh('span', { style: { fontSize: 10, color: '#94a3b8', marginRight: 6 } }, adv_relDate(e.date)),
+                  hh('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                )
+              ),
+              e.what_I_did ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 4 } }, hh('strong', { style: { color: '#f472b6' } }, '🗣 What I did: '), e.what_I_did) : null,
+              e.what_I_learned ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, fontStyle: 'italic', padding: 8, background: 'rgba(2,6,23,0.4)', borderRadius: 6, marginTop: 6 } }, hh('strong', { style: { color: '#f472b6' } }, '🎓 Learned: '), e.what_I_learned) : null
+            );
+          })
+        )
+    );
+  }
+
+  // ── I. MY ADVOCACY KIT HUB (landing page) ──
+  function AdvKitHub(props) {
+    if (!R_ADV) return null;
+    var d = props.d || {};
+    var navigate = props.navigate;
+
+    var tools = [
+      { id: 'requests', icon: '📓', label: 'My Request Log',     color: '#6366f1', desc: 'Track every ask + outcome',
+        stat: (((d.kit_requests || {}).requests) || []).length + ' logged' },
+      { id: 'scripts',  icon: '💬', label: 'My Script Vault',    color: '#10b981', desc: 'Save customized phrases',
+        stat: (((d.kit_scripts || {}).scripts) || []).length + ' saved' },
+      { id: 'rights',   icon: '⚖', label: 'My Rights Card',     color: '#fbbf24', desc: 'Pick + name rights I claim',
+        stat: (((d.kit_rights || {}).rights) || []).length + ' claimed' },
+      { id: 'champs',   icon: '🤝', label: 'My Champions',       color: '#10b981', desc: 'People who back me',
+        stat: (((d.kit_champs || {}).champions) || []).length + ' people' },
+      { id: 'iep',      icon: '📋', label: 'My IEP Prep',        color: '#a5b4fc', desc: 'Notes for next IEP meeting',
+        stat: Object.keys(((d.kit_iep || {}).prep) || {}).length + ' fields' },
+      { id: 'needs',    icon: '🧭', label: 'My Needs Inventory', color: '#06b6d4', desc: '6-dim need-naming',
+        stat: Object.keys(((d.kit_needs || {}).needs) || {}).length + ' named' },
+      { id: 'bounds',   icon: '🛡', label: 'My Boundaries',      color: '#ef4444', desc: 'What\'s non-negotiable',
+        stat: (((d.kit_bounds || {}).boundaries) || []).length + ' set' },
+      { id: 'journal',  icon: '📔', label: 'My Journal',         color: '#ec4899', desc: 'Moments + what I learned',
+        stat: (((d.kit_journal || {}).entries) || []).length + ' entries' }
+    ];
+
+    return hh('div', { style: { padding: 14 } },
+      // Hero
+      hh('div', { style: {
+        padding: '22px 20px', borderRadius: 14, marginBottom: 16,
+        background: 'linear-gradient(135deg, rgba(99,102,241,0.25), rgba(168,85,247,0.10))',
+        border: '1px solid rgba(99,102,241,0.40)',
+        boxShadow: '0 4px 20px rgba(99,102,241,0.20)'
+      } },
+        hh('div', { style: { fontSize: 11, color: '#a5b4fc', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.10em', marginBottom: 4 } }, '💼 My Advocacy Kit'),
+        hh('div', { style: { fontSize: 20, fontWeight: 900, color: '#e2e8f0', marginBottom: 6 } }, 'Personal evidence-based self-advocacy tools'),
+        hh('div', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.55 } },
+          '8 tools to build YOUR self-advocacy skills. Track requests + outcomes, save your own scripts, claim your rights, map your support team. Everything saves to your browser.'
+        )
+      ),
+
+      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 } },
+        tools.map(function(t) {
+          return hh('button', { key: 'tk-' + t.id,
+            onClick: function() { navigate(t.id); },
+            style: {
+              display: 'block', textAlign: 'left', padding: 14, borderRadius: 12,
+              background: 'linear-gradient(135deg, ' + t.color + '15, rgba(15,23,42,0.7))',
+              border: '1px solid ' + t.color + '40', borderLeft: '4px solid ' + t.color,
+              cursor: 'pointer', transition: 'all 200ms ease',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.20)'
+            }
+          },
+            hh('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 8 } },
+              hh('div', { style: { fontSize: 26, lineHeight: 1 } }, t.icon),
+              hh('div', { style: { flex: 1 } },
+                hh('div', { style: { fontSize: 13, fontWeight: 800, color: t.color, marginBottom: 2 } }, t.label),
+                hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, t.desc)
+              )
+            ),
+            hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, paddingTop: 8, borderTop: '1px solid ' + t.color + '30' } },
+              hh('span', { style: { fontSize: 10, color: t.color, fontWeight: 700, fontFamily: 'ui-monospace, Menlo, monospace' } }, t.stat),
+              hh('span', { style: { fontSize: 11, color: t.color, fontWeight: 700 } }, 'Open →')
+            )
+          );
+        })
+      )
+    );
+  }
+
+  // Master kit renderer with sub-navigation
+  function PersonalAdvocacyKit(props) {
+    if (!R_ADV) return null;
+    var d = props.d || {};
+    var upd = props.upd;
+    var vs = R_ADV.useState('hub'); var view = vs[0]; var setView = vs[1];
+
+    function bind(key, defaultVal) {
+      return {
+        data: d[key] || defaultVal,
+        setData: function(newData) { upd(key, newData); }
+      };
+    }
+
+    if (view === 'hub') return hh(AdvKitHub, { d: d, navigate: function(v) { setView(v); } });
+
+    var backBar = hh('button', {
+      onClick: function() { setView('hub'); },
+      style: { padding: '6px 12px', borderRadius: 8, background: 'rgba(148,163,184,0.08)', color: '#94a3b8', border: '1px solid rgba(148,163,184,0.30)', fontSize: 11, fontWeight: 700, cursor: 'pointer', marginBottom: 8, marginLeft: 14 }
+    }, '← My Advocacy Kit');
+
+    var Comp, props2;
+    if (view === 'requests') { Comp = AdvRequestLog;     props2 = bind('kit_requests', { requests: [] }); }
+    else if (view === 'scripts') { Comp = AdvScriptVault; props2 = bind('kit_scripts',  { scripts: [] }); }
+    else if (view === 'rights')  { Comp = AdvRightsCard;  props2 = bind('kit_rights',   { rights: [], reflections: {} }); }
+    else if (view === 'champs')  { Comp = AdvChampions;   props2 = bind('kit_champs',   { champions: [] }); }
+    else if (view === 'iep')     { Comp = AdvIEPPrep;     props2 = bind('kit_iep',      { prep: {}, meetings: [] }); }
+    else if (view === 'needs')   { Comp = AdvNeedsInventory; props2 = bind('kit_needs', { needs: {} }); }
+    else if (view === 'bounds')  { Comp = AdvBoundariesList; props2 = bind('kit_bounds', { boundaries: [] }); }
+    else if (view === 'journal') { Comp = AdvJournal;     props2 = bind('kit_journal',  { entries: [] }); }
+    else return hh(AdvKitHub, { d: d, navigate: function(v) { setView(v); } });
+
+    return hh('div', null, backBar, hh(Comp, props2));
+  }
+
+  // ══════════════════════════════════════════════════════════════
   // ── Register Tool ──
   // ══════════════════════════════════════════════════════════════
   window.SelHub.registerTool('advocacy', {
@@ -1158,7 +2007,7 @@ window.SelHub = window.SelHub || {
         else { if (ctx.update) ctx.update('advocacy', key, val); }
       };
 
-      var activeTab     = d.activeTab || 'scenarios';
+      var activeTab     = d.activeTab || 'mykit';
       var soundEnabled  = d.soundEnabled != null ? d.soundEnabled : true;
 
       // Scenarios state
@@ -1252,6 +2101,7 @@ window.SelHub = window.SelHub || {
       // ── Tab Bar ──
       // ══════════════════════════════════════════════════════════
       var tabs = [
+        { id: 'mykit',     label: '\uD83D\uDCBC My Kit' },
         { id: 'scenarios', label: '\uD83D\uDCE2 Scenarios' },
         { id: 'scripts',   label: '\uD83D\uDCDD Scripts' },
         { id: 'advocacy_scripts', label: '\uD83C\uDFA4 Practice' },
@@ -1349,6 +2199,14 @@ window.SelHub = window.SelHub || {
             )
           )
         );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // ── TAB: My Advocacy Kit (personalized tools) ──
+      // ══════════════════════════════════════════════════════════
+      var myKitContent = null;
+      if (activeTab === 'mykit') {
+        myKitContent = h(PersonalAdvocacyKit, { d: d, upd: upd });
       }
 
       // ══════════════════════════════════════════════════════════
@@ -2408,7 +3266,7 @@ window.SelHub = window.SelHub || {
         );
       }
 
-      var content = scenariosContent || scriptsContent || advocacyScriptsContent || rightsContent || voiceContent || phrasesContent || assessmentContent || lettersContent || progressContent || printContent;
+      var content = myKitContent || scenariosContent || scriptsContent || advocacyScriptsContent || rightsContent || voiceContent || phrasesContent || assessmentContent || lettersContent || progressContent || printContent;
 
       return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
         (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('advocacy', h, ctx) : null),
