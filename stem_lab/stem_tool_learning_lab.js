@@ -3414,6 +3414,548 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     );
   }
 
+  // ──────────────────────────────────────────────────────────────────
+  // INTERACTIVE WIDGETS — wave 3
+  // (1) DigitSpanTest — measure user's actual working-memory capacity
+  // (2) SleepCycleViz — interactive hypnogram with REM-by-hours slider
+  // (3) SmartGoalBuilder — live SMART composition + completeness scoring
+  // ──────────────────────────────────────────────────────────────────
+
+  // ── 7. DIGIT SPAN TEST — measure your own working memory ──
+  // Classic Wechsler-style digit-span procedure. Show sequence one digit
+  // at a time (~700ms per digit). User types the sequence back. Length
+  // increases by 1 if correct, ends if 2 consecutive failures at same
+  // length. Reports forward span (typical adult: 7±2 per Miller; 4 per
+  // Cowan's pure-WM measure). Backward toggle adds manipulation demand.
+  function DigitSpanTest(props) {
+    if (!R) return null;
+    var awardXP = props.awardXP;
+    var ps = R.useState('idle');   var phase = ps[0];   var setPhase = ps[1];   // idle | showing | recall | done
+    var ls = R.useState(3);        var seqLen = ls[0];  var setSeqLen = ls[1];
+    var ss = R.useState([]);       var seq = ss[0];     var setSeq = ss[1];
+    var fs = R.useState(0);        var flashIdx = fs[0];var setFlashIdx = fs[1];
+    var ws = R.useState('');       var typed = ws[0];   var setTyped = ws[1];
+    var hs = R.useState(0);        var bestSpan = hs[0];var setBestSpan = hs[1];
+    var es = R.useState(0);        var fails = es[0];   var setFails = es[1];
+    var bs = R.useState(false);    var backward = bs[0];var setBackward = bs[1];
+    var ar = R.useRef(false);
+
+    function genSeq(n) {
+      var out = []; var last = -1;
+      for (var i = 0; i < n; i++) {
+        var d; do { d = Math.floor(Math.random() * 10); } while (d === last);
+        out.push(d); last = d;
+      }
+      return out;
+    }
+
+    function startTrial(len) {
+      var s = genSeq(len);
+      setSeq(s); setSeqLen(len); setFlashIdx(0); setTyped(''); setPhase('showing');
+    }
+
+    R.useEffect(function() {
+      if (phase !== 'showing') return;
+      if (flashIdx >= seq.length) {
+        setPhase('recall');
+        return;
+      }
+      var t = setTimeout(function() { setFlashIdx(flashIdx + 1); }, 800);
+      return function() { clearTimeout(t); };
+    }, [phase, flashIdx, seq]);
+
+    function submit() {
+      var expected = backward ? seq.slice().reverse().join('') : seq.join('');
+      var ok = typed === expected;
+      if (ok) {
+        setBestSpan(Math.max(bestSpan, seqLen));
+        setFails(0);
+        if (seqLen < 12) {
+          setTimeout(function() { startTrial(seqLen + 1); }, 800);
+        } else {
+          finish();
+        }
+      } else {
+        var nFails = fails + 1;
+        setFails(nFails);
+        if (nFails >= 2) finish();
+        else setTimeout(function() { startTrial(seqLen); }, 800);
+      }
+    }
+
+    function finish() {
+      setPhase('done');
+      if (!ar.current && awardXP && bestSpan >= 5) { ar.current = true; awardXP(2); }
+    }
+
+    function reset() {
+      setPhase('idle'); setSeqLen(3); setSeq([]); setFlashIdx(0); setTyped(''); setBestSpan(0); setFails(0); ar.current = false;
+    }
+
+    function start() { startTrial(3); }
+
+    return hh('div', {
+      style: { background: 'rgba(15,23,42,0.7)', borderRadius: 12, padding: 16, marginBottom: 14,
+        borderTop: '1px solid rgba(147,51,234,0.30)', borderRight: '1px solid rgba(147,51,234,0.30)',
+        borderBottom: '1px solid rgba(147,51,234,0.30)', borderLeft: '4px solid #9333ea' }
+    },
+      hh('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
+        hh('div', { 'aria-hidden': 'true', style: { width: 36, height: 36, borderRadius: '50%', background: 'rgba(147,51,234,0.18)', border: '1.5px solid #9333ea', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 } }, '🧮'),
+        hh('div', { style: { flex: 1, minWidth: 200 } },
+          hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#c084fc' } }, 'Measure your own working memory · digit span test'),
+          hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, 'Watch a sequence of digits, then type them back. Sequence grows by 1 each round you get right. Stops after 2 fails at the same length.')
+        ),
+        bestSpan > 0 ? hh('div', { style: { padding: '4px 10px', borderRadius: 999, background: 'rgba(16,185,129,0.18)', color: '#10b981', fontSize: 11, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', border: '1px solid rgba(16,185,129,0.40)' } }, 'Best: ' + bestSpan) : null
+      ),
+
+      // Idle screen
+      phase === 'idle' ? hh('div', { style: { textAlign: 'center', padding: '20px 12px' } },
+        hh('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.7, marginBottom: 14, maxWidth: 420, margin: '0 auto 14px' } },
+          'Each digit will flash for 0.8 seconds.', hh('br'),
+          backward
+            ? hh('span', null, 'Then type them back ', hh('strong', { style: { color: '#fbbf24' } }, 'in REVERSE order'), ' — much harder, tests both storage AND manipulation.')
+            : 'Then type them back in the same order. Forward span is what most "working memory capacity" research measures.',
+        ),
+        hh('label', { style: { display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#94a3b8', marginBottom: 14, cursor: 'pointer' } },
+          hh('input', { type: 'checkbox', checked: backward, onChange: function(e) { setBackward(e.target.checked); } }),
+          'Backward span (harder)'
+        ),
+        hh('div', null,
+          hh('button', { onClick: start,
+            style: { padding: '12px 24px', borderRadius: 8, background: '#9333ea', color: '#fff', border: 'none', fontSize: 13, fontWeight: 800, cursor: 'pointer' }
+          }, '▶ Start the test')
+        )
+      ) : null,
+
+      // Showing phase — flash digit
+      phase === 'showing' ? hh('div', null,
+        hh('div', { style: { fontSize: 11, color: '#94a3b8', textAlign: 'center', marginBottom: 8, fontFamily: 'ui-monospace, Menlo, monospace' } }, 'Length ' + seqLen + ' · digit ' + Math.min(flashIdx + 1, seq.length) + ' of ' + seq.length),
+        hh('div', { style: { background: 'rgba(2,6,23,0.7)', borderRadius: 12, padding: '50px 12px', textAlign: 'center', border: '2px solid #9333ea', minHeight: 160 } },
+          flashIdx < seq.length ? hh('div', { style: { fontSize: 96, fontWeight: 900, color: '#c084fc', lineHeight: 1, fontFamily: 'ui-monospace, Menlo, monospace' } }, seq[flashIdx]) : hh('div', { style: { fontSize: 14, color: '#94a3b8', fontStyle: 'italic' } }, 'Get ready to type...')
+        )
+      ) : null,
+
+      // Recall phase
+      phase === 'recall' ? hh('div', null,
+        hh('div', { style: { fontSize: 11, color: '#94a3b8', textAlign: 'center', marginBottom: 8 } }, 'Type the ' + seqLen + ' digits ', backward ? 'IN REVERSE ORDER' : 'in the order shown'),
+        hh('input', {
+          type: 'text', autoFocus: true, value: typed, inputMode: 'numeric',
+          maxLength: seqLen,
+          onChange: function(e) { setTyped(e.target.value.replace(/[^0-9]/g, '')); },
+          onKeyDown: function(e) { if (e.key === 'Enter' && typed.length === seqLen) submit(); },
+          'aria-label': 'Recall sequence',
+          style: {
+            display: 'block', width: '100%', maxWidth: 260, margin: '0 auto 12px',
+            padding: '14px', textAlign: 'center',
+            fontSize: 32, fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 800,
+            color: '#c084fc', background: 'rgba(2,6,23,0.7)',
+            border: '2px solid #9333ea', borderRadius: 10, outline: 'none',
+            letterSpacing: '0.4em'
+          }
+        }),
+        hh('div', { style: { textAlign: 'center' } },
+          hh('button', { onClick: submit, disabled: typed.length !== seqLen,
+            style: { padding: '10px 24px', borderRadius: 8, background: typed.length === seqLen ? '#9333ea' : 'rgba(147,51,234,0.20)', color: '#fff', border: 'none', fontSize: 12, fontWeight: 800, cursor: typed.length === seqLen ? 'pointer' : 'default', opacity: typed.length === seqLen ? 1 : 0.5 }
+          }, 'Submit')
+        ),
+        fails > 0 ? hh('div', { style: { textAlign: 'center', marginTop: 8, fontSize: 10, color: '#fbbf24' } }, 'Strike ' + fails + ' / 2 at length ' + seqLen) : null
+      ) : null,
+
+      // Done screen
+      phase === 'done' ? (function() {
+        var span = bestSpan;
+        var verdict, verdictColor, interp;
+        if (backward) {
+          verdict = span >= 7 ? 'Exceptional backward span' : span >= 5 ? 'Above average backward span' : span >= 3 ? 'Typical backward span' : 'Practice can improve';
+          verdictColor = span >= 7 ? '#10b981' : span >= 5 ? '#22c55e' : span >= 3 ? '#fbbf24' : '#94a3b8';
+          interp = 'Backward span requires not just holding the digits, but mentally REVERSING them — a working-memory manipulation task. Typical adult backward span is 4-6 (one less than forward). Lower than expected? Sleep, anxiety, and screen distraction all suppress it.';
+        } else {
+          verdict = span >= 9 ? 'Exceptional forward span' : span >= 7 ? 'Above-average forward span' : span >= 5 ? 'Typical adult range (Miller 7±2)' : span >= 3 ? 'Below typical adult range' : 'Sub-typical — try again calmer';
+          verdictColor = span >= 9 ? '#10b981' : span >= 7 ? '#22c55e' : span >= 5 ? '#fbbf24' : '#f97316';
+          interp = 'Forward span averages 7±2 in adults (Miller 1956). Cowan (2001) argues "pure" working memory (without chunking strategies) is closer to 4. The cog-load section explains why — capacity is the hard limit your instructional design has to respect.';
+        }
+        return hh('div', { style: { padding: '6px' } },
+          hh('div', { style: { textAlign: 'center', padding: 16 } },
+            hh('div', { style: { fontSize: 14, color: '#94a3b8', marginBottom: 4 } }, 'Your ' + (backward ? 'backward ' : 'forward ') + 'digit span'),
+            hh('div', { style: { fontSize: 48, fontWeight: 900, color: verdictColor, fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1 } }, span),
+            hh('div', { style: { fontSize: 13, color: verdictColor, fontWeight: 700, marginTop: 6 } }, verdict)
+          ),
+          hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(147,51,234,0.10)', border: '1px solid rgba(147,51,234,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 10 } },
+            hh('strong', { style: { color: '#c084fc' } }, '🎓 What this means: '), interp
+          ),
+          hh('div', { style: { textAlign: 'center' } },
+            hh('button', { onClick: reset,
+              style: { padding: '10px 22px', borderRadius: 8, background: '#9333ea', color: '#fff', border: 'none', fontSize: 12, fontWeight: 800, cursor: 'pointer' }
+            }, '↺ Test again')
+          )
+        );
+      })() : null
+    );
+  }
+
+  // ── 8. SLEEP CYCLE VISUALIZER ──
+  // Interactive hypnogram. Slider for total sleep hours (4-10).
+  // Shows 4-6 sleep cycles, each ~90 min, oscillating through
+  // stages (Awake, REM, N1, N2, N3 deep). REM dominates the 2nd
+  // half of night → cutting sleep short cuts disproportionately
+  // more REM. Computes total REM + deep sleep + memory-
+  // consolidation index based on chosen hours.
+  function SleepCycleViz(props) {
+    if (!R) return null;
+    var awardXP = props.awardXP;
+    var hs = R.useState(8);  var hours = hs[0];  var setHours = hs[1];
+    var as = R.useState(false); var awarded = as[0]; var setAwarded = as[1];
+
+    R.useEffect(function() {
+      if (!awarded && hours <= 5 && awardXP) { setAwarded(true); awardXP(1); }
+    }, [hours]);
+
+    // Build hypnogram: simulate sleep stages over `hours`.
+    // Each cycle ~90 min. Early cycles deep-sleep heavy; late cycles REM heavy.
+    function buildHypnogram(totalHrs) {
+      var totalMin = totalHrs * 60;
+      var cycleLen = 90;
+      var nCycles = totalMin / cycleLen;
+      // Sample every 2 minutes
+      var samples = [];
+      for (var t = 0; t < totalMin; t += 2) {
+        var cycleNum = t / cycleLen; // 0..nCycles
+        var cyclePhase = (t % cycleLen) / cycleLen; // 0..1 within cycle
+        // First cycle: deep N3 dominates middle; later cycles: REM dominates end
+        var stage;
+        // Early in cycle: N1 → N2 → N3 → N2 → REM
+        if (cyclePhase < 0.06)        stage = 1; // N1 light
+        else if (cyclePhase < 0.20)   stage = 2; // N2
+        else if (cyclePhase < 0.55) {
+          // Deep sleep: heavy in early cycles, light in late
+          var deepFactor = Math.max(0, 1 - cycleNum / 3.5);
+          stage = deepFactor > 0.4 ? 3 : 2; // N3 deep or N2
+        } else if (cyclePhase < 0.75) stage = 2; // back to N2
+        else {
+          // REM phase: longer in late cycles
+          var remFactor = Math.min(1, cycleNum / 2);
+          stage = remFactor > 0.3 ? 4 : 2; // REM or N2
+        }
+        samples.push({ t: t, stage: stage });
+      }
+      return samples;
+    }
+
+    var samples = buildHypnogram(hours);
+    var totals = { rem: 0, deep: 0, light: 0, n1: 0 };
+    samples.forEach(function(s) {
+      if (s.stage === 4) totals.rem += 2;
+      else if (s.stage === 3) totals.deep += 2;
+      else if (s.stage === 2) totals.light += 2;
+      else if (s.stage === 1) totals.n1 += 2;
+    });
+    // Normal 8h sleep gives ~90 min REM + ~75 min deep
+    // Memory consolidation index: weighted by REM (declarative + procedural) + deep (declarative)
+    var optimalRem = 90, optimalDeep = 75;
+    var memIdx = Math.min(100, Math.round(((totals.rem / optimalRem) * 0.55 + (totals.deep / optimalDeep) * 0.45) * 100));
+
+    var STAGES = [
+      { id: 0, label: 'Awake', color: '#fbbf24', y: 0 },
+      { id: 4, label: 'REM',   color: '#a855f7', y: 1 },
+      { id: 1, label: 'N1',    color: '#94a3b8', y: 2 },
+      { id: 2, label: 'N2',    color: '#06b6d4', y: 3 },
+      { id: 3, label: 'N3 deep', color: '#1d4ed8', y: 4 }
+    ];
+
+    var W = 360, H = 100, mx = 30, my = 8;
+    function pathFromSamples() {
+      var xStep = (W - mx * 2) / Math.max(1, samples.length - 1);
+      var rowH = (H - my * 2) / 4;
+      return samples.map(function(s, i) {
+        var x = mx + i * xStep;
+        var stageObj = STAGES.filter(function(st) { return st.id === s.stage; })[0];
+        var y = my + (stageObj ? stageObj.y * rowH : 0);
+        return (i === 0 ? 'M ' : 'L ') + x.toFixed(1) + ' ' + y.toFixed(1);
+      }).join(' ');
+    }
+
+    return hh('div', {
+      style: { background: 'rgba(15,23,42,0.7)', borderRadius: 12, padding: 16, marginBottom: 14,
+        borderTop: '1px solid rgba(147,51,234,0.30)', borderRight: '1px solid rgba(147,51,234,0.30)',
+        borderBottom: '1px solid rgba(147,51,234,0.30)', borderLeft: '4px solid #9333ea' }
+    },
+      hh('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
+        hh('div', { 'aria-hidden': 'true', style: { width: 36, height: 36, borderRadius: '50%', background: 'rgba(147,51,234,0.18)', border: '1.5px solid #9333ea', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 } }, '😴'),
+        hh('div', { style: { flex: 1, minWidth: 200 } },
+          hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#c084fc' } }, 'Sleep cycle visualizer'),
+          hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, 'Drag the slider to change total sleep hours. Watch which stages get cut first when you sleep less. (REM concentrates in the second half — that\'s why short sleep hits memory hardest.)')
+        )
+      ),
+
+      // Hypnogram SVG
+      hh('div', { style: { background: 'rgba(2,6,23,0.7)', borderRadius: 10, padding: 10, marginBottom: 10 } },
+        hh('svg', {
+          viewBox: '0 0 ' + W + ' ' + H,
+          'aria-label': 'Hypnogram showing sleep stages over ' + hours + ' hours',
+          preserveAspectRatio: 'xMidYMid meet',
+          style: { width: '100%', height: 180, display: 'block' }
+        },
+          // Stage row backgrounds + labels
+          STAGES.map(function(s) {
+            var rowH = (H - my * 2) / 4;
+            var y = my + s.y * rowH;
+            return hh('g', { key: 'sl-' + s.id },
+              hh('line', { x1: mx, y1: y, x2: W - mx, y2: y, stroke: s.color, strokeWidth: 0.3, opacity: 0.25 }),
+              hh('text', { x: mx - 2, y: y + 1.5, fontSize: 5, fill: s.color, textAnchor: 'end', fontWeight: 700, fontFamily: 'ui-monospace, Menlo, monospace' }, s.label)
+            );
+          }),
+          // Hour gridlines
+          (function() {
+            var lines = [];
+            for (var hr = 1; hr <= hours; hr++) {
+              var x = mx + (hr / hours) * (W - mx * 2);
+              lines.push(hh('line', { key: 'hr-' + hr, x1: x, y1: my, x2: x, y2: H - my, stroke: '#475569', strokeWidth: 0.3, strokeDasharray: '1,1', opacity: 0.5 }));
+              if (hr % 2 === 0 || hr === hours) {
+                lines.push(hh('text', { key: 'hl-' + hr, x: x, y: H - 1, fontSize: 4, fill: '#94a3b8', textAnchor: 'middle' }, hr + 'h'));
+              }
+            }
+            return lines;
+          })(),
+          // The hypnogram trace
+          hh('path', { d: pathFromSamples(), stroke: '#c084fc', strokeWidth: 1.2, fill: 'none', strokeLinejoin: 'round' })
+        )
+      ),
+
+      // Slider
+      hh('div', { style: { padding: '0 4px', marginBottom: 12 } },
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#cbd5e1', marginBottom: 6 } },
+          hh('span', null, 'Total sleep'),
+          hh('strong', { style: { color: '#c084fc', fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 14 } }, hours + 'h ' + Math.round((hours - Math.floor(hours)) * 60) + 'm')
+        ),
+        hh('input', {
+          type: 'range', min: 4, max: 10, step: 0.5, value: hours,
+          'aria-label': 'Total sleep hours',
+          onChange: function(e) { setHours(parseFloat(e.target.value)); },
+          style: { width: '100%', accentColor: '#9333ea' }
+        }),
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#64748b', marginTop: 2, fontFamily: 'ui-monospace, Menlo, monospace' } },
+          hh('span', null, '4h (severe)'), hh('span', null, '7h (low end)'), hh('span', null, '8-9h (recommended)'), hh('span', null, '10h')
+        )
+      ),
+
+      // Stage totals
+      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 6, marginBottom: 10 } },
+        [
+          { label: 'REM', mins: totals.rem, optimal: optimalRem, color: '#a855f7', why: 'Memory + emotion' },
+          { label: 'Deep (N3)', mins: totals.deep, optimal: optimalDeep, color: '#1d4ed8', why: 'Declarative memory' },
+          { label: 'Light (N2)', mins: totals.light, optimal: 240, color: '#06b6d4', why: 'Spindles + transfer' }
+        ].map(function(s, i) {
+          var pct = Math.min(100, Math.round((s.mins / s.optimal) * 100));
+          return hh('div', { key: 'st-' + i, style: { padding: 8, borderRadius: 8, background: s.color + '14', border: '1px solid ' + s.color + '40' } },
+            hh('div', { style: { fontSize: 9, fontWeight: 800, color: s.color, textTransform: 'uppercase', marginBottom: 2 } }, s.label),
+            hh('div', { style: { fontSize: 16, fontWeight: 900, color: s.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, Math.round(s.mins) + 'm'),
+            hh('div', { style: { fontSize: 9, color: '#94a3b8', marginTop: 2 } }, pct + '% of optimal · ', s.why)
+          );
+        })
+      ),
+
+      // Memory consolidation index
+      hh('div', { style: {
+        padding: 10, borderRadius: 8, marginBottom: 10,
+        background: memIdx >= 90 ? 'rgba(34,197,94,0.10)' : memIdx >= 70 ? 'rgba(251,191,36,0.10)' : 'rgba(239,68,68,0.10)',
+        border: '1px solid ' + (memIdx >= 90 ? 'rgba(34,197,94,0.30)' : memIdx >= 70 ? 'rgba(251,191,36,0.30)' : 'rgba(239,68,68,0.30)'),
+        fontSize: 11, color: '#cbd5e1', lineHeight: 1.6
+      } },
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 } },
+          hh('strong', { style: { color: memIdx >= 90 ? '#22c55e' : memIdx >= 70 ? '#fbbf24' : '#ef4444' } }, '🧠 Memory consolidation index'),
+          hh('span', { style: { fontSize: 18, fontWeight: 900, color: memIdx >= 90 ? '#22c55e' : memIdx >= 70 ? '#fbbf24' : '#ef4444', fontFamily: 'ui-monospace, Menlo, monospace' } }, memIdx + '%')
+        ),
+        memIdx >= 90
+          ? 'Full consolidation. Anything you learned today gets full sleep-dependent processing tonight. Stickgold (2005): post-learning sleep produces 30-50% better retention vs equivalent waking time.'
+          : memIdx >= 70
+            ? 'Partial consolidation. You\'re cutting REM (which dominates the 2nd half of the night). Material learned today gets ~70-90% of full processing — the gap shows up as forgetting by week\'s end.'
+            : memIdx >= 50
+              ? 'Major consolidation deficit. ~half the REM you need. Walker (2017): chronic <6 hours sleep cuts learning capacity by ~40% AND impairs memory of yesterday\'s study.'
+              : 'Severe sleep restriction. At this duration the brain skips most of the consolidation work entirely. Studying through the night is a net memory LOSS in many cases — better to sleep + relearn fast next morning.'
+      ),
+
+      // Adolescent note
+      hours < 8 ? hh('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(147,51,234,0.08)', border: '1px solid rgba(147,51,234,0.30)', fontSize: 10, color: '#cbd5e1', lineHeight: 1.55 } },
+        hh('strong', { style: { color: '#c084fc' } }, '🌙 Adolescent note: '),
+        'Teens need 8-10 hours (AAP 2014). The circadian shift in puberty pushes sleep onset later AND school start times pull wake earlier — most US teens are chronically sleep-restricted. Schools that delay start to 8:30+ see measurable academic + mental-health gains.'
+      ) : null
+    );
+  }
+
+  // ── 9. SMART GOAL BUILDER ──
+  // Five inputs (Specific, Measurable, Achievable, Relevant, Time-bound).
+  // Live composition into a real sentence + completeness scoring per
+  // field (length threshold + keyword check). Reveals which fields
+  // students typically skimp (Measurable + Time-bound are the usual
+  // weak spots; "I want to do better in math" fails BOTH).
+  function SmartGoalBuilder(props) {
+    if (!R) return null;
+    var awardXP = props.awardXP;
+    var fs = R.useState({
+      specific: '', measurable: '', achievable: '', relevant: '', timebound: ''
+    });
+    var fields = fs[0], setFields = fs[1];
+    var as = R.useState(false); var awarded = as[0]; var setAwarded = as[1];
+
+    var SCHEMA = [
+      { id: 'specific',   label: 'Specific',     icon: '🎯', color: '#3b82f6',
+        prompt: 'WHAT exactly will you do?',
+        placeholder: 'e.g., Practice retrieval flashcards on biology vocabulary',
+        threshold: 12,
+        hint: 'Avoid "do better" or "improve" — name the action.' },
+      { id: 'measurable', label: 'Measurable',   icon: '📏', color: '#10b981',
+        prompt: 'How will you KNOW you did it?',
+        placeholder: 'e.g., 20 cards per session, score >= 85% on Friday quiz',
+        threshold: 10,
+        hint: 'Numbers, percentages, counts, dates — something you can verify.' },
+      { id: 'achievable', label: 'Achievable',   icon: '⚖️', color: '#fbbf24',
+        prompt: 'Why is this realistic FOR YOU right now?',
+        placeholder: 'e.g., I have 30 minutes after school and access to the textbook',
+        threshold: 12,
+        hint: 'Reality check on resources, time, and current skill level.' },
+      { id: 'relevant',   label: 'Relevant',     icon: '🧭', color: '#a855f7',
+        prompt: 'WHY does this matter to you?',
+        placeholder: 'e.g., Biology is required for the EMT pathway I want to apply for',
+        threshold: 12,
+        hint: 'Connect to a longer-term aim, identity, or value.' },
+      { id: 'timebound',  label: 'Time-bound',   icon: '⏰', color: '#ef4444',
+        prompt: 'BY WHEN — start date + end date?',
+        placeholder: 'e.g., Start Monday May 18, finish by Friday May 29',
+        threshold: 8,
+        hint: 'Both ends matter. "Eventually" is not a deadline.' }
+    ];
+
+    function setField(id, val) {
+      setFields(Object.assign({}, fields, (function() { var o = {}; o[id] = val; return o; })()));
+    }
+    function loadExample() {
+      setFields({
+        specific: 'Practice retrieval flashcards on biology vocabulary using Anki',
+        measurable: '20 new cards reviewed per session, achieve 85%+ on Friday module quiz',
+        achievable: 'I have 30 minutes after cross-country practice and the textbook is on my Kindle',
+        relevant: 'Biology is required for the EMT certification pathway I want to apply to next year',
+        timebound: 'Start Monday May 18, finish module by Friday May 29 (12 days)'
+      });
+    }
+    function clearAll() { setFields({ specific: '', measurable: '', achievable: '', relevant: '', timebound: '' }); }
+
+    var scores = SCHEMA.map(function(s) {
+      var v = fields[s.id] || '';
+      var len = v.trim().length;
+      if (len === 0) return 0;
+      if (len < s.threshold * 0.5) return 30;
+      if (len < s.threshold) return 60;
+      return 100;
+    });
+    var avgScore = Math.round(scores.reduce(function(a, b) { return a + b; }, 0) / scores.length);
+    var anyEmpty = scores.some(function(s) { return s === 0; });
+
+    R.useEffect(function() {
+      if (!awarded && avgScore >= 80 && awardXP) { setAwarded(true); awardXP(2); }
+    }, [avgScore]);
+
+    return hh('div', {
+      style: { background: 'rgba(15,23,42,0.7)', borderRadius: 12, padding: 16, marginBottom: 14,
+        borderTop: '1px solid rgba(147,51,234,0.30)', borderRight: '1px solid rgba(147,51,234,0.30)',
+        borderBottom: '1px solid rgba(147,51,234,0.30)', borderLeft: '4px solid #9333ea' }
+    },
+      hh('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
+        hh('div', { 'aria-hidden': 'true', style: { width: 36, height: 36, borderRadius: '50%', background: 'rgba(147,51,234,0.18)', border: '1.5px solid #9333ea', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 } }, '🎯'),
+        hh('div', { style: { flex: 1, minWidth: 200 } },
+          hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#c084fc' } }, 'SMART goal builder'),
+          hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, 'Fill the five fields. Each scores live. The composed goal sentence appears below as you type.')
+        ),
+        hh('div', { style: { padding: '4px 10px', borderRadius: 999, background: avgScore >= 80 ? 'rgba(34,197,94,0.18)' : avgScore >= 50 ? 'rgba(251,191,36,0.18)' : 'rgba(148,163,184,0.18)', color: avgScore >= 80 ? '#22c55e' : avgScore >= 50 ? '#fbbf24' : '#94a3b8', fontSize: 11, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', border: '1px solid currentColor' } }, avgScore + '/100')
+      ),
+
+      // Field grid
+      hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 12 } },
+        SCHEMA.map(function(s, i) {
+          var sc = scores[i];
+          var scoreColor = sc >= 80 ? '#22c55e' : sc >= 50 ? '#fbbf24' : sc > 0 ? '#f97316' : '#475569';
+          return hh('div', { key: 'fld-' + s.id, style: {
+            padding: 10, borderRadius: 8, background: 'rgba(2,6,23,0.5)',
+            border: '1px solid ' + scoreColor + '40',
+            borderLeft: '3px solid ' + s.color
+          } },
+            hh('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' } },
+              hh('span', { style: { fontSize: 16 } }, s.icon),
+              hh('strong', { style: { fontSize: 12, color: s.color, fontWeight: 800 } }, s.label.toUpperCase()),
+              hh('span', { style: { fontSize: 11, color: '#94a3b8', flex: 1 } }, s.prompt),
+              hh('span', { style: {
+                padding: '2px 8px', borderRadius: 999,
+                background: scoreColor + '18', color: scoreColor,
+                fontSize: 9, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace',
+                border: '1px solid ' + scoreColor + '60'
+              } }, sc + '%')
+            ),
+            hh('input', {
+              type: 'text', value: fields[s.id], placeholder: s.placeholder,
+              onChange: function(e) { setField(s.id, e.target.value); },
+              'aria-label': s.label,
+              style: {
+                display: 'block', width: '100%',
+                padding: '8px 10px', marginTop: 4,
+                fontSize: 12, color: '#e2e8f0',
+                background: 'rgba(15,23,42,0.7)',
+                border: '1px solid ' + (sc > 0 ? scoreColor + '40' : 'rgba(100,116,139,0.30)'),
+                borderRadius: 6, outline: 'none',
+                boxSizing: 'border-box'
+              }
+            }),
+            hh('div', { style: { fontSize: 9, color: '#64748b', marginTop: 4, fontStyle: 'italic' } }, '💡 ' + s.hint)
+          );
+        })
+      ),
+
+      // Composed goal preview
+      anyEmpty
+        ? hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px dashed rgba(100,116,139,0.40)', fontSize: 11, color: '#64748b', textAlign: 'center', fontStyle: 'italic' } }, 'Fill all five fields to compose your SMART goal.')
+        : hh('div', { style: {
+            padding: '14px 16px', borderRadius: 10, marginBottom: 10,
+            background: 'linear-gradient(135deg, rgba(147,51,234,0.12), rgba(15,23,42,0.7))',
+            border: '1px solid #9333ea',
+            fontSize: 13, color: '#e2e8f0', lineHeight: 1.7
+          } },
+            hh('div', { style: { fontSize: 9, color: '#c084fc', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 } }, '🎯 Your SMART goal'),
+            hh('div', null,
+              'I will ', hh('strong', { style: { color: '#60a5fa' } }, fields.specific),
+              ', measured by ', hh('strong', { style: { color: '#10b981' } }, fields.measurable),
+              '. This is realistic because ', hh('strong', { style: { color: '#fbbf24' } }, fields.achievable),
+              '. It matters because ', hh('strong', { style: { color: '#a855f7' } }, fields.relevant),
+              '. ', hh('strong', { style: { color: '#ef4444' } }, fields.timebound), '.'
+            )
+          ),
+
+      // Actions
+      hh('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' } },
+        hh('button', { onClick: loadExample,
+          style: { padding: '8px 14px', borderRadius: 8, background: 'rgba(147,51,234,0.18)', color: '#c084fc', border: '1.5px solid rgba(147,51,234,0.50)', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+        }, '📋 Load example'),
+        hh('button', { onClick: clearAll,
+          style: { padding: '8px 14px', borderRadius: 8, background: 'rgba(148,163,184,0.10)', color: '#94a3b8', border: '1px solid rgba(148,163,184,0.30)', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+        }, '↺ Clear all')
+      ),
+
+      // Diagnosis card — appears when score reveals weak fields
+      avgScore < 80 && !anyEmpty
+        ? hh('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+            hh('strong', { style: { color: '#fbbf24' } }, '💡 Most-skipped fields: '),
+            (function() {
+              var weak = SCHEMA.filter(function(s, i) { return scores[i] < 80; });
+              return weak.map(function(s) { return s.label; }).join(', ') + '. ';
+            })(),
+            'In real-world goal-setting research, students consistently skimp on Measurable + Time-bound — leaving the goal vague enough to feel ambitious but vague enough to never check. Tighten those two and the goal becomes runnable.'
+          )
+        : avgScore >= 80 && !anyEmpty
+          ? hh('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+              hh('strong', { style: { color: '#22c55e' } }, '🎓 Strong SMART goal. '),
+              'You can transcribe this directly into a planner or accountability conversation. Goal-setting research (Locke + Latham 1990, ~50 years of meta-analysis) consistently shows specific + difficult goals outperform "do your best" by ~25%. The difference is testable progress, which your Measurable field provides.'
+            )
+          : null
+    );
+  }
+
   window.StemLab.registerTool('learningLab', {
     name: 'Learning Lab',
     icon: '🧠',
@@ -4984,6 +5526,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         var pickedTech = picked ? MEMORY_TECHNIQUES.find(function(t) { return t.id === picked; }) : null;
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🧠 Memory + active learning techniques'),
+          h(DigitSpanTest, { awardXP: ctx.awardXP }),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🧠 8 specific techniques'),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
@@ -5811,6 +6354,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         var pickedItem = picked ? SLEEP_FOR_LEARNING.find(function(s) { return s.id === picked; }) : null;
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('😴 Sleep + learning'),
+          h(SleepCycleViz, { awardXP: ctx.awardXP }),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '😴 The single most under-discussed factor in academic performance'),
             h('p', { style: { margin: 0, color: T.text, fontSize: 13, lineHeight: 1.55 } },
@@ -5872,6 +6416,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             onClick: function() { upd('gView', id); },
             style: Object.assign({}, btnSecondary(), { background: active ? T.accent : T.cardAlt, color: active ? '#fff' : T.text, fontWeight: active ? 800 : 600 }) }, label);
         }
+        // SMART builder appears at the top of the section regardless of which sub-tab is active
+        var smartBuilder = h(SmartGoalBuilder, { awardXP: ctx.awardXP });
 
         function frameworksTab() {
           var picked = d.gFwPicked || null;
@@ -5958,6 +6504,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🎯 Goals + procrastination'),
+          smartBuilder,
           h('div', { role: 'tablist', 'aria-label': 'Goals + procrastination sections',
             style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
             tabBtn('frameworks', '🎯 4 frameworks'),
