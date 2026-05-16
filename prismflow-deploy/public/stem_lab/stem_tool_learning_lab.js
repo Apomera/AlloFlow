@@ -13034,6 +13034,477 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     );
   }
 
+  // ── PPP. PERSONAL GREAT-DAY PATTERN (Wave 14) ──
+  // What made today great? Capture in 4 categories. Find your pattern
+  // over time — what reliably produces good days for YOU.
+  function PersonalGreatDay(props) {
+    if (!R) return null;
+    var data = props.data || { entries: [] };
+    var setData = props.setData;
+    var fs = R.useState({ slept: '', ate: '', moved: '', connected: '', accomplished: '', rating: 7 });
+    var form = fs[0]; var setForm = fs[1];
+
+    function save() {
+      var e = Object.assign({ id: tkId(), date: todayISO() }, form);
+      setData({ entries: [e].concat(data.entries || []) });
+      setForm({ slept: '', ate: '', moved: '', connected: '', accomplished: '', rating: 7 });
+    }
+    function remove(id) { setData({ entries: (data.entries || []).filter(function(e) { return e.id !== id; }) }); }
+
+    var entries = data.entries || [];
+    var greatEntries = entries.filter(function(e) { return e.rating >= 8; });
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('☀', 'Great-Day Pattern', 'What made today great? Track the ingredients. Find YOUR formula.', '#fbbf24'),
+
+      tkCard('#fbbf24',
+        hh('div', null,
+          hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 } },
+            hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24' } }, '☀ Today\'s ingredients'),
+            hh('div', null,
+              hh('span', { style: { fontSize: 11, color: '#cbd5e1', marginRight: 6 } }, 'Day rating:'),
+              hh('strong', { style: { fontSize: 16, color: '#fbbf24', fontFamily: 'ui-monospace, Menlo, monospace' } }, form.rating + '/10')
+            )
+          ),
+          hh('input', { type: 'range', min: 1, max: 10, step: 1, value: form.rating,
+            onChange: function(e) { setForm(Object.assign({}, form, { rating: parseInt(e.target.value, 10) })); },
+            style: { width: '100%', accentColor: '#fbbf24', marginBottom: 12 }
+          }),
+          [
+            { id: 'slept',        label: '😴 How did I sleep?',           placeholder: 'e.g., "7.5h, slept through"' },
+            { id: 'ate',          label: '🍽 How did I eat?',             placeholder: 'e.g., "had breakfast, real lunch"' },
+            { id: 'moved',        label: '🏃 How did I move my body?',     placeholder: 'e.g., "walked to school + back"' },
+            { id: 'connected',    label: '🤝 Who did I connect with?',     placeholder: 'e.g., "actually talked to mom at dinner"' },
+            { id: 'accomplished', label: '✓ What did I accomplish?',       placeholder: 'e.g., "finished biology lab"' }
+          ].map(function(f) {
+            return hh('div', { key: 'gd-' + f.id, style: { marginBottom: 8 } },
+              hh('label', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', display: 'block', marginBottom: 4 } }, f.label),
+              tkInput(form[f.id], function(v) { setForm(Object.assign({}, form, (function() { var o = {}; o[f.id] = v; return o; })())); }, f.placeholder)
+            );
+          }),
+          tkBtn('💾 Log today', save, 'primary')
+        )
+      ),
+
+      greatEntries.length > 0 ? hh('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.40)', marginBottom: 12 } },
+        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, '☀ ' + greatEntries.length + ' great days logged (rating 8+)'),
+        hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.7 } }, 'Browse the patterns below — what shows up most often in your great days?')
+      ) : null,
+
+      entries.length > 0 ? hh('div', null,
+        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', marginBottom: 8 } }, '📚 Past days'),
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+          entries.slice(0, 14).map(function(e) {
+            var col = e.rating >= 8 ? '#22c55e' : e.rating >= 6 ? '#fbbf24' : '#ef4444';
+            return hh('div', { key: 'ge-' + e.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + col } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
+                hh('span', { style: { fontSize: 11, color: col, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace' } }, e.date + ' · ' + e.rating + '/10'),
+                hh('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+              ),
+              hh('div', { style: { fontSize: 10, color: '#cbd5e1', lineHeight: 1.6 } },
+                e.slept ? hh('div', null, '😴 ', e.slept) : null,
+                e.ate ? hh('div', null, '🍽 ', e.ate) : null,
+                e.moved ? hh('div', null, '🏃 ', e.moved) : null,
+                e.connected ? hh('div', null, '🤝 ', e.connected) : null,
+                e.accomplished ? hh('div', null, '✓ ', e.accomplished) : null
+              )
+            );
+          })
+        )
+      ) : null
+    );
+  }
+
+  // ── QQQ. PERSONAL SENSORY PROFILE (Wave 14) ──
+  // Track sensory environment preferences. Light, sound, touch, smell.
+  // Especially valuable for autistic + ADHD + SPD students.
+  function PersonalSensoryProfile(props) {
+    if (!R) return null;
+    var data = props.data || { profile: {}, observations: [] };
+    var setData = props.setData;
+    var p = data.profile || {};
+
+    function update(key, val) {
+      setData(Object.assign({}, data, { profile: Object.assign({}, p, (function() { var o = {}; o[key] = val; return o; })()) }));
+    }
+    function addObs(text) {
+      if (!text.trim()) return;
+      var obs = { id: tkId(), date: todayISO(), text: text.trim() };
+      setData(Object.assign({}, data, { observations: [obs].concat(data.observations || []) }));
+    }
+    function removeObs(id) {
+      setData(Object.assign({}, data, { observations: (data.observations || []).filter(function(o) { return o.id !== id; }) }));
+    }
+
+    var DIMENSIONS = [
+      { id: 'light',    label: '💡 Light',      what: 'Bright sun? Soft lamps? Dim? Fluorescents are hard for me?' },
+      { id: 'sound',    label: '🔊 Sound',      what: 'Silence? Background noise? Specific music? Headphones?' },
+      { id: 'touch',    label: '✋ Touch',      what: 'Soft clothes? Tags off? Compression? Weighted blanket?' },
+      { id: 'smell',    label: '👃 Smell',      what: 'What smells help me focus? What smells overwhelm me?' },
+      { id: 'taste',    label: '👅 Taste + food', what: 'Crunchy? Smooth? Specific safe foods?' },
+      { id: 'space',    label: '🏠 Space',      what: 'Cozy enclosed? Open + airy? Specific corner?' },
+      { id: 'movement', label: '🤸 Movement',   what: 'Need to fidget? Pace? Stand-up desk? Rock?' },
+      { id: 'social',   label: '👥 Social',     what: 'Alone? 1-on-1? Small group? Big group? People nearby but not interacting?' }
+    ];
+
+    var obs = data.observations || [];
+    var newObs = R.useState(''); var nt = newObs[0]; var setNt = newObs[1];
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🌈', 'Sensory Profile', 'Map YOUR sensory preferences across 8 dimensions. Helps you build environments that work.', '#a855f7'),
+
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+        hh('strong', { style: { color: '#a855f7' } }, '🌈 Why this matters: '),
+        'Especially for autistic, ADHD, and sensory-sensitive students — your nervous system isn\'t broken, it just has specific preferences. Naming them gives you the language to ask for what works.'
+      ),
+
+      hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14 } },
+        DIMENSIONS.map(function(d) {
+          return hh('div', { key: 'sp-' + d.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid #a855f7' } },
+            hh('label', { style: { display: 'block', fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 4 } }, d.label),
+            hh('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic', marginBottom: 8 } }, d.what),
+            tkTextarea(p[d.id], function(v) { update(d.id, v); }, '', 2)
+          );
+        })
+      ),
+
+      // Observations
+      tkCard('#a855f7',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 8 } }, '👁 Sensory observation log'),
+          hh('div', { style: { display: 'flex', gap: 6, marginBottom: 8 } },
+            tkInput(nt, setNt, 'e.g., "I focus best with rain sounds + dimmer light"', { flex: 1 }),
+            tkBtn('+', function() { addObs(nt); setNt(''); }, 'primary', { padding: '8px 14px' })
+          ),
+          obs.length > 0 ? hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+            obs.slice(0, 15).map(function(o) {
+              return hh('div', { key: 'so-' + o.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '2px solid #a855f7', display: 'flex', justifyContent: 'space-between' } },
+                hh('div', null,
+                  hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } }, o.text),
+                  hh('div', { style: { fontSize: 9, color: '#94a3b8', marginTop: 2, fontFamily: 'ui-monospace, Menlo, monospace' } }, o.date)
+                ),
+                hh('button', { onClick: function() { removeObs(o.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+              );
+            })
+          ) : null
+        )
+      )
+    );
+  }
+
+  // ── RRR. PERSONAL NEURODIVERGENCE JOURNAL (Wave 14) ──
+  // Specifically for autistic, ADHD, dyslexic, etc. students to journal
+  // the lived experience of being neurodivergent in a neurotypical world.
+  function PersonalNDJournal(props) {
+    if (!R) return null;
+    var data = props.data || { entries: [], identity: '' };
+    var setData = props.setData;
+    var fs = R.useState({ topic: '', text: '', felt: '5' });
+    var form = fs[0]; var setForm = fs[1];
+
+    var TOPICS = [
+      { id: 'masking',     label: 'Masking moment', icon: '🎭' },
+      { id: 'sensory',     label: 'Sensory situation', icon: '🌈' },
+      { id: 'social',      label: 'Social interaction', icon: '🤝' },
+      { id: 'misunderstood', label: 'Being misunderstood', icon: '😕' },
+      { id: 'success',     label: 'Neurodivergent strength win', icon: '⭐' },
+      { id: 'community',   label: 'Connection with other ND people', icon: '🤝' },
+      { id: 'advocacy',    label: 'Self-advocacy moment', icon: '🛡' },
+      { id: 'overload',    label: 'Overload / shutdown', icon: '😵' },
+      { id: 'other',       label: 'Other', icon: '📝' }
+    ];
+
+    function save() {
+      if (!form.text.trim()) { alert('Need some text.'); return; }
+      var e = Object.assign({ id: tkId(), date: todayISO(), time: Date.now() }, form);
+      setData(Object.assign({}, data, { entries: [e].concat(data.entries || []) }));
+      setForm({ topic: '', text: '', felt: '5' });
+    }
+    function remove(id) { setData(Object.assign({}, data, { entries: (data.entries || []).filter(function(e) { return e.id !== id; }) })); }
+    function setIdentity(v) { setData(Object.assign({}, data, { identity: v })); }
+
+    var entries = data.entries || [];
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🧠', 'Neurodivergence Journal', 'For autistic, ADHD, dyslexic, sensory-processing, anxious, and other ND students. Journal the lived experience.', '#a855f7'),
+
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+        hh('strong', { style: { color: '#a855f7' } }, '🧠 Identity-first by default: '),
+        '"Autistic student" not "student with autism" (community consensus: Kenny 2016, Bury 2020). Override if YOUR preference is different.'
+      ),
+
+      tkCard('#a855f7',
+        hh('div', null,
+          hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#c084fc', display: 'block', marginBottom: 4 } }, 'My ND identity (in my own words)'),
+          tkInput(data.identity, setIdentity, 'e.g., "autistic + ADHD" or "anxious + dyslexic"', { marginBottom: 14 }),
+
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 8 } }, '+ Log an experience'),
+          hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 } },
+            TOPICS.map(function(t) {
+              var on = form.topic === t.id;
+              return hh('button', { key: 'nt-' + t.id,
+                onClick: function() { setForm(Object.assign({}, form, { topic: t.id })); },
+                style: { padding: '6px 10px', borderRadius: 6, background: on ? 'rgba(168,85,247,0.25)' : 'rgba(15,23,42,0.5)', color: on ? '#c084fc' : '#94a3b8', border: '1px solid ' + (on ? '#a855f7' : 'rgba(100,116,139,0.30)'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+              }, t.icon + ' ' + t.label);
+            })
+          ),
+          tkTextarea(form.text, function(v) { setForm(Object.assign({}, form, { text: v })); }, 'What happened? How did it feel? What did you notice?', 4, { marginBottom: 10 }),
+          tkBtn('💾 Save', save, 'primary')
+        )
+      ),
+
+      entries.length > 0 ? hh('div', null,
+        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', marginBottom: 8 } }, '📚 My journal'),
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+          entries.slice(0, 20).map(function(e) {
+            var t = TOPICS.filter(function(x) { return x.id === e.topic; })[0] || TOPICS[TOPICS.length - 1];
+            return hh('div', { key: 'nd-' + e.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid #a855f7' } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
+                hh('strong', { style: { fontSize: 11, color: '#c084fc' } }, t.icon + ' ' + t.label),
+                hh('div', null,
+                  hh('span', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace', marginRight: 6 } }, e.date),
+                  hh('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                )
+              ),
+              hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, e.text)
+            );
+          })
+        )
+      ) : null
+    );
+  }
+
+  // ── SSS. PERSONAL LIFE MAP (Wave 14) ──
+  // Visual representation of life across 8 dimensions. Self-assess + see
+  // what areas need attention.
+  function PersonalLifeMap(props) {
+    if (!R) return null;
+    var data = props.data || { snapshots: [] };
+    var setData = props.setData;
+    var fs = R.useState({});                          var form = fs[0]; var setForm = fs[1];
+
+    var DIMENSIONS = [
+      { id: 'school',    label: 'School + academic', color: '#3b82f6', icon: '📚' },
+      { id: 'family',    label: 'Family',            color: '#ef4444', icon: '🏠' },
+      { id: 'friends',   label: 'Friends',           color: '#fbbf24', icon: '🤝' },
+      { id: 'health',    label: 'Physical health',   color: '#10b981', icon: '💪' },
+      { id: 'mental',    label: 'Mental health',     color: '#a855f7', icon: '🧠' },
+      { id: 'creative',  label: 'Creative / hobbies', color: '#ec4899', icon: '🎨' },
+      { id: 'identity',  label: 'Identity + values', color: '#06b6d4', icon: '🪞' },
+      { id: 'future',    label: 'Future / direction', color: '#f97316', icon: '🌅' }
+    ];
+
+    function setRating(id, val) { setForm(Object.assign({}, form, (function() { var o = {}; o[id] = val; return o; })())); }
+    function save() {
+      var entry = { id: tkId(), date: todayISO(), ratings: form };
+      setData({ snapshots: [entry].concat(data.snapshots || []) });
+      setForm({});
+    }
+    function remove(id) { setData({ snapshots: (data.snapshots || []).filter(function(s) { return s.id !== id; }) }); }
+
+    var snapshots = data.snapshots || [];
+    var allRated = DIMENSIONS.every(function(d) { return form[d.id]; });
+
+    // SVG radar chart
+    function makeRadar(ratings, size) {
+      var cx = size / 2, cy = size / 2;
+      var n = DIMENSIONS.length;
+      var pts = DIMENSIONS.map(function(d, i) {
+        var angle = (i / n) * Math.PI * 2 - Math.PI / 2;
+        var r = ((ratings[d.id] || 0) / 10) * (size / 2 - 30);
+        return { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle), label: d.label, color: d.color, icon: d.icon };
+      });
+      var polyPts = pts.map(function(p) { return p.x + ',' + p.y; }).join(' ');
+      return hh('svg', { viewBox: '0 0 ' + size + ' ' + size, style: { width: '100%', maxWidth: 300, display: 'block', margin: '0 auto' } },
+        // grid circles
+        [2, 4, 6, 8, 10].map(function(level) {
+          var r = ((level) / 10) * (size / 2 - 30);
+          return hh('circle', { key: 'gc-' + level, cx: cx, cy: cy, r: r, fill: 'none', stroke: 'rgba(100,116,139,0.20)', strokeWidth: 0.5 });
+        }),
+        // axes
+        DIMENSIONS.map(function(d, i) {
+          var angle = (i / n) * Math.PI * 2 - Math.PI / 2;
+          var ex = cx + (size / 2 - 30) * Math.cos(angle);
+          var ey = cy + (size / 2 - 30) * Math.sin(angle);
+          return hh('line', { key: 'ax-' + i, x1: cx, y1: cy, x2: ex, y2: ey, stroke: 'rgba(100,116,139,0.25)', strokeWidth: 0.5 });
+        }),
+        // value polygon
+        hh('polygon', { points: polyPts, fill: 'rgba(168,85,247,0.20)', stroke: '#a855f7', strokeWidth: 1.5, strokeLinejoin: 'round' }),
+        // dots + labels
+        pts.map(function(p, i) {
+          var angle = (i / n) * Math.PI * 2 - Math.PI / 2;
+          var lx = cx + (size / 2 - 12) * Math.cos(angle);
+          var ly = cy + (size / 2 - 12) * Math.sin(angle);
+          return hh('g', { key: 'pt-' + i },
+            hh('circle', { cx: p.x, cy: p.y, r: 3, fill: p.color, stroke: '#0f172a', strokeWidth: 1 }),
+            hh('text', { x: lx, y: ly, fontSize: 9, fill: p.color, textAnchor: 'middle', dominantBaseline: 'middle' }, p.icon)
+          );
+        })
+      );
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🗺', 'Life Map', '8-dimension life snapshot. Rate each from 0-10. Visualize where you are. Notice what needs attention.', '#a855f7'),
+
+      tkCard('#a855f7',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 10 } }, '🗺 Rate each dimension (0 = struggling, 10 = thriving)'),
+          DIMENSIONS.map(function(d) {
+            var v = form[d.id] || 5;
+            return hh('div', { key: 'lm-' + d.id, style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, padding: 6, borderRadius: 4, background: 'rgba(2,6,23,0.4)', borderLeft: '3px solid ' + d.color } },
+              hh('div', { style: { fontSize: 16, flexShrink: 0 } }, d.icon),
+              hh('strong', { style: { fontSize: 11, color: d.color, flex: 1 } }, d.label),
+              hh('input', { type: 'range', min: 0, max: 10, step: 1, value: v,
+                onChange: function(e) { setRating(d.id, parseInt(e.target.value, 10)); },
+                style: { width: 100, accentColor: d.color }
+              }),
+              hh('strong', { style: { width: 30, textAlign: 'right', color: d.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, v)
+            );
+          }),
+          allRated ? hh('div', { style: { marginTop: 12, padding: 12, borderRadius: 10, background: 'rgba(2,6,23,0.5)' } },
+            makeRadar(form, 280)
+          ) : null,
+          hh('div', { style: { marginTop: 10, textAlign: 'right' } },
+            tkBtn('💾 Save snapshot', save, 'primary')
+          )
+        )
+      ),
+
+      snapshots.length > 0 ? hh('div', null,
+        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', marginBottom: 8 } }, '📚 Past snapshots'),
+        hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
+          snapshots.slice(0, 8).map(function(s) {
+            var avg = DIMENSIONS.reduce(function(sum, d) { return sum + (s.ratings[d.id] || 0); }, 0) / DIMENSIONS.length;
+            return hh('div', { key: 'ss-' + s.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid #a855f7' } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
+                hh('strong', { style: { fontSize: 11, color: '#c084fc' } }, s.date),
+                hh('div', null,
+                  hh('span', { style: { fontSize: 11, color: '#a855f7', fontFamily: 'ui-monospace, Menlo, monospace', marginRight: 6 } }, 'avg ' + avg.toFixed(1)),
+                  hh('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                )
+              ),
+              makeRadar(s.ratings, 160)
+            );
+          })
+        )
+      ) : null
+    );
+  }
+
+  // ── TTT. PERSONAL OPEN LETTER (Wave 14) ──
+  // Write a letter to anyone. Don't send. The writing IS the work.
+  function PersonalOpenLetter(props) {
+    if (!R) return null;
+    var data = props.data || { letters: [] };
+    var setData = props.setData;
+    var fs = R.useState({ to: '', body: '', context: '' });
+    var form = fs[0]; var setForm = fs[1];
+
+    function save() {
+      if (!form.body.trim()) { alert('Need letter text.'); return; }
+      var l = Object.assign({ id: tkId(), date: todayISO() }, form);
+      setData({ letters: [l].concat(data.letters || []) });
+      setForm({ to: '', body: '', context: '' });
+    }
+    function remove(id) { setData({ letters: (data.letters || []).filter(function(l) { return l.id !== id; }) }); }
+
+    var letters = data.letters || [];
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('✉', 'Unsent Letters', 'Write a letter to ANYONE — alive, gone, fictional, future you. Don\'t send. The writing IS the work.', '#ec4899'),
+
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(236,72,153,0.10)', border: '1px solid rgba(236,72,153,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+        hh('strong', { style: { color: '#ec4899' } }, '✉ Therapeutic letter-writing: '),
+        'Pennebaker 1986 — expressive writing about emotional experiences has measurable health + mood benefits. The letter doesn\'t have to be sent. The processing happens in the writing.'
+      ),
+
+      tkCard('#ec4899',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#f472b6', marginBottom: 8 } }, '✉ Write a letter'),
+          tkInput(form.to, function(v) { setForm(Object.assign({}, form, { to: v })); }, 'To... (a person, a younger you, future you, anyone)', { marginBottom: 8 }),
+          tkInput(form.context, function(v) { setForm(Object.assign({}, form, { context: v })); }, 'Optional context (private to you)', { marginBottom: 8 }),
+          tkTextarea(form.body, function(v) { setForm(Object.assign({}, form, { body: v })); }, 'Dear...\n\nWhat do you wish you could say? What never got said? What needs to be said even if no one will hear it?', 12, { fontFamily: 'Georgia, serif', marginBottom: 10 }),
+          tkBtn('💾 Save (private)', save, 'primary')
+        )
+      ),
+
+      letters.length > 0 ? hh('div', null,
+        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#f472b6', textTransform: 'uppercase', marginBottom: 8 } }, '📚 Letters'),
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+          letters.map(function(l) {
+            return hh('div', { key: 'ol-' + l.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid #ec4899' } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
+                hh('strong', { style: { fontSize: 12, color: '#f472b6', fontFamily: 'Georgia, serif' } }, 'Dear ' + (l.to || 'whoever'),','),
+                hh('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+              ),
+              hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.7, whiteSpace: 'pre-wrap', fontFamily: 'Georgia, serif' } }, l.body),
+              hh('div', { style: { fontSize: 9, color: '#94a3b8', marginTop: 6, fontFamily: 'ui-monospace, Menlo, monospace' } }, l.date)
+            );
+          })
+        )
+      ) : null
+    );
+  }
+
+  // ── UUU. PERSONAL DAILY HIGHLIGHTS (Wave 14) ──
+  // 5-minute end-of-day highlight reel. What were the brightest moments?
+  function PersonalHighlights(props) {
+    if (!R) return null;
+    var data = props.data || { highlights: [] };
+    var setData = props.setData;
+    var fs = R.useState({ moments: ['', '', ''], lesson: '', tomorrow: '' });
+    var form = fs[0]; var setForm = fs[1];
+
+    function setMoment(i, v) {
+      var m = form.moments.slice(); m[i] = v;
+      setForm(Object.assign({}, form, { moments: m }));
+    }
+    function save() {
+      var entry = Object.assign({ id: tkId(), date: todayISO() }, form);
+      setData({ highlights: [entry].concat(data.highlights || []) });
+      setForm({ moments: ['', '', ''], lesson: '', tomorrow: '' });
+    }
+
+    var highlights = data.highlights || [];
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('✨', 'Daily Highlights', '5-minute end-of-day reel. Compresses the day to its highest-value moments.', '#fbbf24'),
+
+      tkCard('#fbbf24',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', marginBottom: 10 } }, '✨ Today\'s 3 brightest moments'),
+          form.moments.map(function(m, i) {
+            return hh('div', { key: 'mh-' + i, style: { display: 'flex', gap: 8, alignItems: 'center', marginBottom: 6 } },
+              hh('span', { style: { color: '#fbbf24', fontWeight: 800, minWidth: 16, fontSize: 14 } }, '✦'),
+              tkInput(m, function(v) { setMoment(i, v); }, 'Bright moment ' + (i + 1), { flex: 1 })
+            );
+          }),
+          hh('label', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', display: 'block', marginTop: 10, marginBottom: 4 } }, '🎓 One thing I learned today (about anything)'),
+          tkInput(form.lesson, function(v) { setForm(Object.assign({}, form, { lesson: v })); }, 'Even a tiny lesson counts', { marginBottom: 10 }),
+          hh('label', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', display: 'block', marginBottom: 4 } }, '🌅 One thing I want for tomorrow'),
+          tkInput(form.tomorrow, function(v) { setForm(Object.assign({}, form, { tomorrow: v })); }, 'Specific. Achievable.', { marginBottom: 10 }),
+          tkBtn('💾 Save', save, 'primary')
+        )
+      ),
+
+      highlights.length > 0 ? hh('div', null,
+        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', marginBottom: 8 } }, '📚 Past highlights'),
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+          highlights.slice(0, 15).map(function(h) {
+            return hh('div', { key: 'hl-' + h.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #fbbf24' } },
+              hh('div', { style: { fontSize: 11, color: '#fbbf24', fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 4 } }, h.date),
+              h.moments.filter(function(m) { return m; }).map(function(m, i) {
+                return hh('div', { key: 'hm-' + i, style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } }, '✦ ' + m);
+              }),
+              h.lesson ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 6 } }, hh('strong', { style: { color: '#fbbf24' } }, '🎓 '), h.lesson) : null,
+              h.tomorrow ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 4 } }, hh('strong', { style: { color: '#fbbf24' } }, '🌅 '), h.tomorrow) : null
+            );
+          })
+        )
+      ) : null
+    );
+  }
+
   // ── F. MY TOOLKIT HUB (landing page) ──
   // Single entry point that shows status of all toolkit tools + quick
   // actions. Today's date, current streak, # active goals, etc.
@@ -13211,7 +13682,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'mytkRecovery', icon: '🌧', label: 'Recovery Kit',         color: '#06b6d4', desc: '8-step post-hard-day reset checklist',
         stat: ((data.mytkRecovery || {}).recoveries || []).length + ' recoveries', cta: 'Walk the kit' },
       { id: 'mytkCurrentRead',icon: '📖',label: 'Currently Reading',   color: '#fbbf24', desc: 'Track multiple books in progress with page count',
-        stat: ((data.mytkCurrentRead || {}).books || []).length + ' in progress', cta: 'Update reading' }
+        stat: ((data.mytkCurrentRead || {}).books || []).length + ' in progress', cta: 'Update reading' },
+      { id: 'mytkGreatDay', icon: '☀', label: 'Great-Day Pattern',    color: '#fbbf24', desc: '5-ingredient tracker — find YOUR formula',
+        stat: ((data.mytkGreatDay || {}).entries || []).length + ' days logged', cta: 'Log today' },
+      { id: 'mytkSensory',  icon: '🌈', label: 'Sensory Profile',      color: '#a855f7', desc: '8-dimension preferences for ND students',
+        stat: 'configured', cta: 'Map sensory' },
+      { id: 'mytkND',       icon: '🧠', label: 'ND Journal',           color: '#a855f7', desc: 'Journal the neurodivergent experience',
+        stat: ((data.mytkND || {}).entries || []).length + ' entries', cta: 'Journal' },
+      { id: 'mytkLifeMap',  icon: '🗺', label: 'Life Map',             color: '#a855f7', desc: '8-dimension life snapshot with radar viz',
+        stat: ((data.mytkLifeMap || {}).snapshots || []).length + ' snapshots', cta: 'Map life' },
+      { id: 'mytkOpen',     icon: '✉', label: 'Unsent Letters',       color: '#ec4899', desc: 'Write to anyone. Don\'t send (Pennebaker 1986)',
+        stat: ((data.mytkOpen || {}).letters || []).length + ' letters', cta: 'Write a letter' },
+      { id: 'mytkHigh',     icon: '✨', label: 'Daily Highlights',     color: '#fbbf24', desc: '5-min end-of-day reel + tomorrow intention',
+        stat: ((data.mytkHigh || {}).highlights || []).length + ' reels', cta: 'Highlight today' }
     ];
 
     var dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][new Date().getDay()];
@@ -13465,7 +13948,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'mytkPrio',   icon: '📊', label: 'Priorities Matrix',    desc: 'Eisenhower 4-quadrant matrix. Goal: live more in Q2 (important, not urgent).' },
               { id: 'mytkParent', icon: '💌', label: 'Parent Message Builder',desc: '6 templates for hard parent conversations (struggling, MH, IEP, future, boundary, thanks).' },
               { id: 'mytkRecovery',icon: '🌧',label: 'Recovery Kit',         desc: '8-step post-hard-day reset checklist. Even 2 steps helps.' },
-              { id: 'mytkCurrentRead',icon: '📖',label: 'Currently Reading', desc: 'Track multiple books in progress with current/total pages + percent.' }
+              { id: 'mytkCurrentRead',icon: '📖',label: 'Currently Reading', desc: 'Track multiple books in progress with current/total pages + percent.' },
+              { id: 'mytkGreatDay',icon: '☀',label: 'Great-Day Pattern',    desc: '5 ingredients (sleep/ate/moved/connected/accomplished) → find YOUR formula.' },
+              { id: 'mytkSensory',icon: '🌈',label: 'Sensory Profile',      desc: '8-dimension preferences for autistic/ADHD/sensory-sensitive students.' },
+              { id: 'mytkND',     icon: '🧠',label: 'Neurodivergence Journal', desc: 'Identity-first journal for the lived ND experience.' },
+              { id: 'mytkLifeMap',icon: '🗺',label: 'Life Map',             desc: '8-dimension life snapshot with SVG radar visualization.' },
+              { id: 'mytkOpen',   icon: '✉',label: 'Unsent Letters',       desc: 'Therapeutic letter-writing (Pennebaker 1986). Don\'t send.' },
+              { id: 'mytkHigh',   icon: '✨',label: 'Daily Highlights',     desc: '5-min end-of-day reel: 3 bright moments + lesson + tomorrow intention.' }
             ]
           },
           { id: 'foundation', icon: '🧠', name: 'How learning works (foundation)',
@@ -17029,6 +17518,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           h(PersonalCurrentReading, { data: dcr, setData: setDcr })
         );
       }
+      function renderMytkGreatDay() {
+        var dgd = d.mytkGreatDay || { entries: [] };
+        var setDgd = function(newData) { upd('mytkGreatDay', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalGreatDay, { data: dgd, setData: setDgd })
+        );
+      }
+      function renderMytkSensory() {
+        var dsy = d.mytkSensory || { profile: {}, observations: [] };
+        var setDsy = function(newData) { upd('mytkSensory', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalSensoryProfile, { data: dsy, setData: setDsy })
+        );
+      }
+      function renderMytkND() {
+        var dnd = d.mytkND || { entries: [] };
+        var setDnd = function(newData) { upd('mytkND', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalNDJournal, { data: dnd, setData: setDnd })
+        );
+      }
+      function renderMytkLifeMap() {
+        var dlm = d.mytkLifeMap || { snapshots: [] };
+        var setDlm = function(newData) { upd('mytkLifeMap', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalLifeMap, { data: dlm, setData: setDlm })
+        );
+      }
+      function renderMytkOpen() {
+        var dol = d.mytkOpen || { letters: [] };
+        var setDol = function(newData) { upd('mytkOpen', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalOpenLetter, { data: dol, setData: setDol })
+        );
+      }
+      function renderMytkHigh() {
+        var dhl = d.mytkHigh || { highlights: [] };
+        var setDhl = function(newData) { upd('mytkHigh', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalHighlights, { data: dhl, setData: setDhl })
+        );
+      }
 
       // ─────────────────────────────────────────
       // VIEW ROUTER
@@ -17102,6 +17639,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         case 'mytkParent':    return renderMytkParent();
         case 'mytkRecovery':  return renderMytkRecovery();
         case 'mytkCurrentRead': return renderMytkCurrentRead();
+        case 'mytkGreatDay':  return renderMytkGreatDay();
+        case 'mytkSensory':   return renderMytkSensory();
+        case 'mytkND':        return renderMytkND();
+        case 'mytkLifeMap':   return renderMytkLifeMap();
+        case 'mytkOpen':      return renderMytkOpen();
+        case 'mytkHigh':      return renderMytkHigh();
         case 'bloom':         return renderBloom();
         case 'cogload':       return renderCogLoad();
         case 'metacog':       return renderMetacog();
