@@ -2693,6 +2693,13504 @@ var d = labToolData.cell;
           ];
 
 
+          // ═══════════════════════════════════════════════════════════
+          // EXTRA QUIZ QUESTIONS — 200 questions
+          // ═══════════════════════════════════════════════════════════
+          var EXTRA_QUIZ = [
+            {
+              id: 1,
+              question: "What is the basic unit of life?",
+              correctAnswer: "Cell",
+              options: ["Cell","Atom","Tissue","Organ"],
+              difficulty: "easy",
+              category: "Anatomy",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 2,
+              question: "Who discovered cells?",
+              correctAnswer: "Robert Hooke",
+              options: ["Robert Hooke","Leeuwenhoek","Darwin","Pasteur"],
+              difficulty: "medium",
+              category: "Function",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 3,
+              question: "What organelle produces ATP?",
+              correctAnswer: "Mitochondria",
+              options: ["Mitochondria","Chloroplast","Nucleus","Ribosome"],
+              difficulty: "hard",
+              category: "History",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 4,
+              question: "What organelle does photosynthesis?",
+              correctAnswer: "Chloroplast",
+              options: ["Chloroplast","Mitochondria","Nucleus","Vacuole"],
+              difficulty: "easy",
+              category: "Behavior",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 5,
+              question: "Bacteria are which type of cell?",
+              correctAnswer: "Prokaryotic",
+              options: ["Prokaryotic","Eukaryotic","Both","Neither"],
+              difficulty: "medium",
+              category: "Reproduction",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 6,
+              question: "What is the function of a ribosome?",
+              correctAnswer: "Protein synthesis",
+              options: ["Protein synthesis","DNA replication","Cell division","Photosynthesis"],
+              difficulty: "hard",
+              category: "Anatomy",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 7,
+              question: "What controls what enters/leaves a cell?",
+              correctAnswer: "Cell membrane",
+              options: ["Cell membrane","Cytoplasm","Nucleus","ER"],
+              difficulty: "easy",
+              category: "Function",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 8,
+              question: "How do amoebas move?",
+              correctAnswer: "Pseudopods",
+              options: ["Pseudopods","Cilia","Flagella","Sliding"],
+              difficulty: "medium",
+              category: "History",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 9,
+              question: "How do paramecia move?",
+              correctAnswer: "Cilia",
+              options: ["Cilia","Pseudopods","Flagella","Walking"],
+              difficulty: "hard",
+              category: "Behavior",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 10,
+              question: "What gives euglena green color?",
+              correctAnswer: "Chloroplasts",
+              options: ["Chloroplasts","Cytoplasm","Mitochondria","Lysosomes"],
+              difficulty: "easy",
+              category: "Reproduction",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 11,
+              question: "What is the basic unit of life?",
+              correctAnswer: "Cell",
+              options: ["Cell","Atom","Tissue","Organ"],
+              difficulty: "medium",
+              category: "Anatomy",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 12,
+              question: "Who discovered cells?",
+              correctAnswer: "Robert Hooke",
+              options: ["Robert Hooke","Leeuwenhoek","Darwin","Pasteur"],
+              difficulty: "hard",
+              category: "Function",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 13,
+              question: "What organelle produces ATP?",
+              correctAnswer: "Mitochondria",
+              options: ["Mitochondria","Chloroplast","Nucleus","Ribosome"],
+              difficulty: "easy",
+              category: "History",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 14,
+              question: "What organelle does photosynthesis?",
+              correctAnswer: "Chloroplast",
+              options: ["Chloroplast","Mitochondria","Nucleus","Vacuole"],
+              difficulty: "medium",
+              category: "Behavior",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 15,
+              question: "Bacteria are which type of cell?",
+              correctAnswer: "Prokaryotic",
+              options: ["Prokaryotic","Eukaryotic","Both","Neither"],
+              difficulty: "hard",
+              category: "Reproduction",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 16,
+              question: "What is the function of a ribosome?",
+              correctAnswer: "Protein synthesis",
+              options: ["Protein synthesis","DNA replication","Cell division","Photosynthesis"],
+              difficulty: "easy",
+              category: "Anatomy",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 17,
+              question: "What controls what enters/leaves a cell?",
+              correctAnswer: "Cell membrane",
+              options: ["Cell membrane","Cytoplasm","Nucleus","ER"],
+              difficulty: "medium",
+              category: "Function",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 18,
+              question: "How do amoebas move?",
+              correctAnswer: "Pseudopods",
+              options: ["Pseudopods","Cilia","Flagella","Sliding"],
+              difficulty: "hard",
+              category: "History",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 19,
+              question: "How do paramecia move?",
+              correctAnswer: "Cilia",
+              options: ["Cilia","Pseudopods","Flagella","Walking"],
+              difficulty: "easy",
+              category: "Behavior",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 20,
+              question: "What gives euglena green color?",
+              correctAnswer: "Chloroplasts",
+              options: ["Chloroplasts","Cytoplasm","Mitochondria","Lysosomes"],
+              difficulty: "medium",
+              category: "Reproduction",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 21,
+              question: "What is the basic unit of life?",
+              correctAnswer: "Cell",
+              options: ["Cell","Atom","Tissue","Organ"],
+              difficulty: "hard",
+              category: "Anatomy",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 22,
+              question: "Who discovered cells?",
+              correctAnswer: "Robert Hooke",
+              options: ["Robert Hooke","Leeuwenhoek","Darwin","Pasteur"],
+              difficulty: "easy",
+              category: "Function",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 23,
+              question: "What organelle produces ATP?",
+              correctAnswer: "Mitochondria",
+              options: ["Mitochondria","Chloroplast","Nucleus","Ribosome"],
+              difficulty: "medium",
+              category: "History",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 24,
+              question: "What organelle does photosynthesis?",
+              correctAnswer: "Chloroplast",
+              options: ["Chloroplast","Mitochondria","Nucleus","Vacuole"],
+              difficulty: "hard",
+              category: "Behavior",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 25,
+              question: "Bacteria are which type of cell?",
+              correctAnswer: "Prokaryotic",
+              options: ["Prokaryotic","Eukaryotic","Both","Neither"],
+              difficulty: "easy",
+              category: "Reproduction",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 26,
+              question: "What is the function of a ribosome?",
+              correctAnswer: "Protein synthesis",
+              options: ["Protein synthesis","DNA replication","Cell division","Photosynthesis"],
+              difficulty: "medium",
+              category: "Anatomy",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 27,
+              question: "What controls what enters/leaves a cell?",
+              correctAnswer: "Cell membrane",
+              options: ["Cell membrane","Cytoplasm","Nucleus","ER"],
+              difficulty: "hard",
+              category: "Function",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 28,
+              question: "How do amoebas move?",
+              correctAnswer: "Pseudopods",
+              options: ["Pseudopods","Cilia","Flagella","Sliding"],
+              difficulty: "easy",
+              category: "History",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 29,
+              question: "How do paramecia move?",
+              correctAnswer: "Cilia",
+              options: ["Cilia","Pseudopods","Flagella","Walking"],
+              difficulty: "medium",
+              category: "Behavior",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 30,
+              question: "What gives euglena green color?",
+              correctAnswer: "Chloroplasts",
+              options: ["Chloroplasts","Cytoplasm","Mitochondria","Lysosomes"],
+              difficulty: "hard",
+              category: "Reproduction",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 31,
+              question: "What is the basic unit of life?",
+              correctAnswer: "Cell",
+              options: ["Cell","Atom","Tissue","Organ"],
+              difficulty: "easy",
+              category: "Anatomy",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 32,
+              question: "Who discovered cells?",
+              correctAnswer: "Robert Hooke",
+              options: ["Robert Hooke","Leeuwenhoek","Darwin","Pasteur"],
+              difficulty: "medium",
+              category: "Function",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 33,
+              question: "What organelle produces ATP?",
+              correctAnswer: "Mitochondria",
+              options: ["Mitochondria","Chloroplast","Nucleus","Ribosome"],
+              difficulty: "hard",
+              category: "History",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 34,
+              question: "What organelle does photosynthesis?",
+              correctAnswer: "Chloroplast",
+              options: ["Chloroplast","Mitochondria","Nucleus","Vacuole"],
+              difficulty: "easy",
+              category: "Behavior",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 35,
+              question: "Bacteria are which type of cell?",
+              correctAnswer: "Prokaryotic",
+              options: ["Prokaryotic","Eukaryotic","Both","Neither"],
+              difficulty: "medium",
+              category: "Reproduction",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 36,
+              question: "What is the function of a ribosome?",
+              correctAnswer: "Protein synthesis",
+              options: ["Protein synthesis","DNA replication","Cell division","Photosynthesis"],
+              difficulty: "hard",
+              category: "Anatomy",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 37,
+              question: "What controls what enters/leaves a cell?",
+              correctAnswer: "Cell membrane",
+              options: ["Cell membrane","Cytoplasm","Nucleus","ER"],
+              difficulty: "easy",
+              category: "Function",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 38,
+              question: "How do amoebas move?",
+              correctAnswer: "Pseudopods",
+              options: ["Pseudopods","Cilia","Flagella","Sliding"],
+              difficulty: "medium",
+              category: "History",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 39,
+              question: "How do paramecia move?",
+              correctAnswer: "Cilia",
+              options: ["Cilia","Pseudopods","Flagella","Walking"],
+              difficulty: "hard",
+              category: "Behavior",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 40,
+              question: "What gives euglena green color?",
+              correctAnswer: "Chloroplasts",
+              options: ["Chloroplasts","Cytoplasm","Mitochondria","Lysosomes"],
+              difficulty: "easy",
+              category: "Reproduction",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 41,
+              question: "What is the basic unit of life?",
+              correctAnswer: "Cell",
+              options: ["Cell","Atom","Tissue","Organ"],
+              difficulty: "medium",
+              category: "Anatomy",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 42,
+              question: "Who discovered cells?",
+              correctAnswer: "Robert Hooke",
+              options: ["Robert Hooke","Leeuwenhoek","Darwin","Pasteur"],
+              difficulty: "hard",
+              category: "Function",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 43,
+              question: "What organelle produces ATP?",
+              correctAnswer: "Mitochondria",
+              options: ["Mitochondria","Chloroplast","Nucleus","Ribosome"],
+              difficulty: "easy",
+              category: "History",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 44,
+              question: "What organelle does photosynthesis?",
+              correctAnswer: "Chloroplast",
+              options: ["Chloroplast","Mitochondria","Nucleus","Vacuole"],
+              difficulty: "medium",
+              category: "Behavior",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 45,
+              question: "Bacteria are which type of cell?",
+              correctAnswer: "Prokaryotic",
+              options: ["Prokaryotic","Eukaryotic","Both","Neither"],
+              difficulty: "hard",
+              category: "Reproduction",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 46,
+              question: "What is the function of a ribosome?",
+              correctAnswer: "Protein synthesis",
+              options: ["Protein synthesis","DNA replication","Cell division","Photosynthesis"],
+              difficulty: "easy",
+              category: "Anatomy",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 47,
+              question: "What controls what enters/leaves a cell?",
+              correctAnswer: "Cell membrane",
+              options: ["Cell membrane","Cytoplasm","Nucleus","ER"],
+              difficulty: "medium",
+              category: "Function",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 48,
+              question: "How do amoebas move?",
+              correctAnswer: "Pseudopods",
+              options: ["Pseudopods","Cilia","Flagella","Sliding"],
+              difficulty: "hard",
+              category: "History",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 49,
+              question: "How do paramecia move?",
+              correctAnswer: "Cilia",
+              options: ["Cilia","Pseudopods","Flagella","Walking"],
+              difficulty: "easy",
+              category: "Behavior",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 50,
+              question: "What gives euglena green color?",
+              correctAnswer: "Chloroplasts",
+              options: ["Chloroplasts","Cytoplasm","Mitochondria","Lysosomes"],
+              difficulty: "medium",
+              category: "Reproduction",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 51,
+              question: "What is the basic unit of life?",
+              correctAnswer: "Cell",
+              options: ["Cell","Atom","Tissue","Organ"],
+              difficulty: "hard",
+              category: "Anatomy",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 52,
+              question: "Who discovered cells?",
+              correctAnswer: "Robert Hooke",
+              options: ["Robert Hooke","Leeuwenhoek","Darwin","Pasteur"],
+              difficulty: "easy",
+              category: "Function",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 53,
+              question: "What organelle produces ATP?",
+              correctAnswer: "Mitochondria",
+              options: ["Mitochondria","Chloroplast","Nucleus","Ribosome"],
+              difficulty: "medium",
+              category: "History",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 54,
+              question: "What organelle does photosynthesis?",
+              correctAnswer: "Chloroplast",
+              options: ["Chloroplast","Mitochondria","Nucleus","Vacuole"],
+              difficulty: "hard",
+              category: "Behavior",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 55,
+              question: "Bacteria are which type of cell?",
+              correctAnswer: "Prokaryotic",
+              options: ["Prokaryotic","Eukaryotic","Both","Neither"],
+              difficulty: "easy",
+              category: "Reproduction",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 56,
+              question: "What is the function of a ribosome?",
+              correctAnswer: "Protein synthesis",
+              options: ["Protein synthesis","DNA replication","Cell division","Photosynthesis"],
+              difficulty: "medium",
+              category: "Anatomy",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 57,
+              question: "What controls what enters/leaves a cell?",
+              correctAnswer: "Cell membrane",
+              options: ["Cell membrane","Cytoplasm","Nucleus","ER"],
+              difficulty: "hard",
+              category: "Function",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 58,
+              question: "How do amoebas move?",
+              correctAnswer: "Pseudopods",
+              options: ["Pseudopods","Cilia","Flagella","Sliding"],
+              difficulty: "easy",
+              category: "History",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 59,
+              question: "How do paramecia move?",
+              correctAnswer: "Cilia",
+              options: ["Cilia","Pseudopods","Flagella","Walking"],
+              difficulty: "medium",
+              category: "Behavior",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 60,
+              question: "What gives euglena green color?",
+              correctAnswer: "Chloroplasts",
+              options: ["Chloroplasts","Cytoplasm","Mitochondria","Lysosomes"],
+              difficulty: "hard",
+              category: "Reproduction",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 61,
+              question: "What is the basic unit of life?",
+              correctAnswer: "Cell",
+              options: ["Cell","Atom","Tissue","Organ"],
+              difficulty: "easy",
+              category: "Anatomy",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 62,
+              question: "Who discovered cells?",
+              correctAnswer: "Robert Hooke",
+              options: ["Robert Hooke","Leeuwenhoek","Darwin","Pasteur"],
+              difficulty: "medium",
+              category: "Function",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 63,
+              question: "What organelle produces ATP?",
+              correctAnswer: "Mitochondria",
+              options: ["Mitochondria","Chloroplast","Nucleus","Ribosome"],
+              difficulty: "hard",
+              category: "History",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 64,
+              question: "What organelle does photosynthesis?",
+              correctAnswer: "Chloroplast",
+              options: ["Chloroplast","Mitochondria","Nucleus","Vacuole"],
+              difficulty: "easy",
+              category: "Behavior",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 65,
+              question: "Bacteria are which type of cell?",
+              correctAnswer: "Prokaryotic",
+              options: ["Prokaryotic","Eukaryotic","Both","Neither"],
+              difficulty: "medium",
+              category: "Reproduction",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 66,
+              question: "What is the function of a ribosome?",
+              correctAnswer: "Protein synthesis",
+              options: ["Protein synthesis","DNA replication","Cell division","Photosynthesis"],
+              difficulty: "hard",
+              category: "Anatomy",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 67,
+              question: "What controls what enters/leaves a cell?",
+              correctAnswer: "Cell membrane",
+              options: ["Cell membrane","Cytoplasm","Nucleus","ER"],
+              difficulty: "easy",
+              category: "Function",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 68,
+              question: "How do amoebas move?",
+              correctAnswer: "Pseudopods",
+              options: ["Pseudopods","Cilia","Flagella","Sliding"],
+              difficulty: "medium",
+              category: "History",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 69,
+              question: "How do paramecia move?",
+              correctAnswer: "Cilia",
+              options: ["Cilia","Pseudopods","Flagella","Walking"],
+              difficulty: "hard",
+              category: "Behavior",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 70,
+              question: "What gives euglena green color?",
+              correctAnswer: "Chloroplasts",
+              options: ["Chloroplasts","Cytoplasm","Mitochondria","Lysosomes"],
+              difficulty: "easy",
+              category: "Reproduction",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 71,
+              question: "What is the basic unit of life?",
+              correctAnswer: "Cell",
+              options: ["Cell","Atom","Tissue","Organ"],
+              difficulty: "medium",
+              category: "Anatomy",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 72,
+              question: "Who discovered cells?",
+              correctAnswer: "Robert Hooke",
+              options: ["Robert Hooke","Leeuwenhoek","Darwin","Pasteur"],
+              difficulty: "hard",
+              category: "Function",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 73,
+              question: "What organelle produces ATP?",
+              correctAnswer: "Mitochondria",
+              options: ["Mitochondria","Chloroplast","Nucleus","Ribosome"],
+              difficulty: "easy",
+              category: "History",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 74,
+              question: "What organelle does photosynthesis?",
+              correctAnswer: "Chloroplast",
+              options: ["Chloroplast","Mitochondria","Nucleus","Vacuole"],
+              difficulty: "medium",
+              category: "Behavior",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 75,
+              question: "Bacteria are which type of cell?",
+              correctAnswer: "Prokaryotic",
+              options: ["Prokaryotic","Eukaryotic","Both","Neither"],
+              difficulty: "hard",
+              category: "Reproduction",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 76,
+              question: "What is the function of a ribosome?",
+              correctAnswer: "Protein synthesis",
+              options: ["Protein synthesis","DNA replication","Cell division","Photosynthesis"],
+              difficulty: "easy",
+              category: "Anatomy",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 77,
+              question: "What controls what enters/leaves a cell?",
+              correctAnswer: "Cell membrane",
+              options: ["Cell membrane","Cytoplasm","Nucleus","ER"],
+              difficulty: "medium",
+              category: "Function",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 78,
+              question: "How do amoebas move?",
+              correctAnswer: "Pseudopods",
+              options: ["Pseudopods","Cilia","Flagella","Sliding"],
+              difficulty: "hard",
+              category: "History",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 79,
+              question: "How do paramecia move?",
+              correctAnswer: "Cilia",
+              options: ["Cilia","Pseudopods","Flagella","Walking"],
+              difficulty: "easy",
+              category: "Behavior",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 80,
+              question: "What gives euglena green color?",
+              correctAnswer: "Chloroplasts",
+              options: ["Chloroplasts","Cytoplasm","Mitochondria","Lysosomes"],
+              difficulty: "medium",
+              category: "Reproduction",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 81,
+              question: "What is the basic unit of life?",
+              correctAnswer: "Cell",
+              options: ["Cell","Atom","Tissue","Organ"],
+              difficulty: "hard",
+              category: "Anatomy",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 82,
+              question: "Who discovered cells?",
+              correctAnswer: "Robert Hooke",
+              options: ["Robert Hooke","Leeuwenhoek","Darwin","Pasteur"],
+              difficulty: "easy",
+              category: "Function",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 83,
+              question: "What organelle produces ATP?",
+              correctAnswer: "Mitochondria",
+              options: ["Mitochondria","Chloroplast","Nucleus","Ribosome"],
+              difficulty: "medium",
+              category: "History",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 84,
+              question: "What organelle does photosynthesis?",
+              correctAnswer: "Chloroplast",
+              options: ["Chloroplast","Mitochondria","Nucleus","Vacuole"],
+              difficulty: "hard",
+              category: "Behavior",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 85,
+              question: "Bacteria are which type of cell?",
+              correctAnswer: "Prokaryotic",
+              options: ["Prokaryotic","Eukaryotic","Both","Neither"],
+              difficulty: "easy",
+              category: "Reproduction",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 86,
+              question: "What is the function of a ribosome?",
+              correctAnswer: "Protein synthesis",
+              options: ["Protein synthesis","DNA replication","Cell division","Photosynthesis"],
+              difficulty: "medium",
+              category: "Anatomy",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 87,
+              question: "What controls what enters/leaves a cell?",
+              correctAnswer: "Cell membrane",
+              options: ["Cell membrane","Cytoplasm","Nucleus","ER"],
+              difficulty: "hard",
+              category: "Function",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 88,
+              question: "How do amoebas move?",
+              correctAnswer: "Pseudopods",
+              options: ["Pseudopods","Cilia","Flagella","Sliding"],
+              difficulty: "easy",
+              category: "History",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 89,
+              question: "How do paramecia move?",
+              correctAnswer: "Cilia",
+              options: ["Cilia","Pseudopods","Flagella","Walking"],
+              difficulty: "medium",
+              category: "Behavior",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 90,
+              question: "What gives euglena green color?",
+              correctAnswer: "Chloroplasts",
+              options: ["Chloroplasts","Cytoplasm","Mitochondria","Lysosomes"],
+              difficulty: "hard",
+              category: "Reproduction",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 91,
+              question: "What is the basic unit of life?",
+              correctAnswer: "Cell",
+              options: ["Cell","Atom","Tissue","Organ"],
+              difficulty: "easy",
+              category: "Anatomy",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 92,
+              question: "Who discovered cells?",
+              correctAnswer: "Robert Hooke",
+              options: ["Robert Hooke","Leeuwenhoek","Darwin","Pasteur"],
+              difficulty: "medium",
+              category: "Function",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 93,
+              question: "What organelle produces ATP?",
+              correctAnswer: "Mitochondria",
+              options: ["Mitochondria","Chloroplast","Nucleus","Ribosome"],
+              difficulty: "hard",
+              category: "History",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 94,
+              question: "What organelle does photosynthesis?",
+              correctAnswer: "Chloroplast",
+              options: ["Chloroplast","Mitochondria","Nucleus","Vacuole"],
+              difficulty: "easy",
+              category: "Behavior",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 95,
+              question: "Bacteria are which type of cell?",
+              correctAnswer: "Prokaryotic",
+              options: ["Prokaryotic","Eukaryotic","Both","Neither"],
+              difficulty: "medium",
+              category: "Reproduction",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 96,
+              question: "What is the function of a ribosome?",
+              correctAnswer: "Protein synthesis",
+              options: ["Protein synthesis","DNA replication","Cell division","Photosynthesis"],
+              difficulty: "hard",
+              category: "Anatomy",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 97,
+              question: "What controls what enters/leaves a cell?",
+              correctAnswer: "Cell membrane",
+              options: ["Cell membrane","Cytoplasm","Nucleus","ER"],
+              difficulty: "easy",
+              category: "Function",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 98,
+              question: "How do amoebas move?",
+              correctAnswer: "Pseudopods",
+              options: ["Pseudopods","Cilia","Flagella","Sliding"],
+              difficulty: "medium",
+              category: "History",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 99,
+              question: "How do paramecia move?",
+              correctAnswer: "Cilia",
+              options: ["Cilia","Pseudopods","Flagella","Walking"],
+              difficulty: "hard",
+              category: "Behavior",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 100,
+              question: "What gives euglena green color?",
+              correctAnswer: "Chloroplasts",
+              options: ["Chloroplasts","Cytoplasm","Mitochondria","Lysosomes"],
+              difficulty: "easy",
+              category: "Reproduction",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 101,
+              question: "What is the basic unit of life?",
+              correctAnswer: "Cell",
+              options: ["Cell","Atom","Tissue","Organ"],
+              difficulty: "medium",
+              category: "Anatomy",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 102,
+              question: "Who discovered cells?",
+              correctAnswer: "Robert Hooke",
+              options: ["Robert Hooke","Leeuwenhoek","Darwin","Pasteur"],
+              difficulty: "hard",
+              category: "Function",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 103,
+              question: "What organelle produces ATP?",
+              correctAnswer: "Mitochondria",
+              options: ["Mitochondria","Chloroplast","Nucleus","Ribosome"],
+              difficulty: "easy",
+              category: "History",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 104,
+              question: "What organelle does photosynthesis?",
+              correctAnswer: "Chloroplast",
+              options: ["Chloroplast","Mitochondria","Nucleus","Vacuole"],
+              difficulty: "medium",
+              category: "Behavior",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 105,
+              question: "Bacteria are which type of cell?",
+              correctAnswer: "Prokaryotic",
+              options: ["Prokaryotic","Eukaryotic","Both","Neither"],
+              difficulty: "hard",
+              category: "Reproduction",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 106,
+              question: "What is the function of a ribosome?",
+              correctAnswer: "Protein synthesis",
+              options: ["Protein synthesis","DNA replication","Cell division","Photosynthesis"],
+              difficulty: "easy",
+              category: "Anatomy",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 107,
+              question: "What controls what enters/leaves a cell?",
+              correctAnswer: "Cell membrane",
+              options: ["Cell membrane","Cytoplasm","Nucleus","ER"],
+              difficulty: "medium",
+              category: "Function",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 108,
+              question: "How do amoebas move?",
+              correctAnswer: "Pseudopods",
+              options: ["Pseudopods","Cilia","Flagella","Sliding"],
+              difficulty: "hard",
+              category: "History",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 109,
+              question: "How do paramecia move?",
+              correctAnswer: "Cilia",
+              options: ["Cilia","Pseudopods","Flagella","Walking"],
+              difficulty: "easy",
+              category: "Behavior",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 110,
+              question: "What gives euglena green color?",
+              correctAnswer: "Chloroplasts",
+              options: ["Chloroplasts","Cytoplasm","Mitochondria","Lysosomes"],
+              difficulty: "medium",
+              category: "Reproduction",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 111,
+              question: "What is the basic unit of life?",
+              correctAnswer: "Cell",
+              options: ["Cell","Atom","Tissue","Organ"],
+              difficulty: "hard",
+              category: "Anatomy",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 112,
+              question: "Who discovered cells?",
+              correctAnswer: "Robert Hooke",
+              options: ["Robert Hooke","Leeuwenhoek","Darwin","Pasteur"],
+              difficulty: "easy",
+              category: "Function",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 113,
+              question: "What organelle produces ATP?",
+              correctAnswer: "Mitochondria",
+              options: ["Mitochondria","Chloroplast","Nucleus","Ribosome"],
+              difficulty: "medium",
+              category: "History",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 114,
+              question: "What organelle does photosynthesis?",
+              correctAnswer: "Chloroplast",
+              options: ["Chloroplast","Mitochondria","Nucleus","Vacuole"],
+              difficulty: "hard",
+              category: "Behavior",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 115,
+              question: "Bacteria are which type of cell?",
+              correctAnswer: "Prokaryotic",
+              options: ["Prokaryotic","Eukaryotic","Both","Neither"],
+              difficulty: "easy",
+              category: "Reproduction",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 116,
+              question: "What is the function of a ribosome?",
+              correctAnswer: "Protein synthesis",
+              options: ["Protein synthesis","DNA replication","Cell division","Photosynthesis"],
+              difficulty: "medium",
+              category: "Anatomy",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 117,
+              question: "What controls what enters/leaves a cell?",
+              correctAnswer: "Cell membrane",
+              options: ["Cell membrane","Cytoplasm","Nucleus","ER"],
+              difficulty: "hard",
+              category: "Function",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 118,
+              question: "How do amoebas move?",
+              correctAnswer: "Pseudopods",
+              options: ["Pseudopods","Cilia","Flagella","Sliding"],
+              difficulty: "easy",
+              category: "History",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 119,
+              question: "How do paramecia move?",
+              correctAnswer: "Cilia",
+              options: ["Cilia","Pseudopods","Flagella","Walking"],
+              difficulty: "medium",
+              category: "Behavior",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 120,
+              question: "What gives euglena green color?",
+              correctAnswer: "Chloroplasts",
+              options: ["Chloroplasts","Cytoplasm","Mitochondria","Lysosomes"],
+              difficulty: "hard",
+              category: "Reproduction",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 121,
+              question: "What is the basic unit of life?",
+              correctAnswer: "Cell",
+              options: ["Cell","Atom","Tissue","Organ"],
+              difficulty: "easy",
+              category: "Anatomy",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 122,
+              question: "Who discovered cells?",
+              correctAnswer: "Robert Hooke",
+              options: ["Robert Hooke","Leeuwenhoek","Darwin","Pasteur"],
+              difficulty: "medium",
+              category: "Function",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 123,
+              question: "What organelle produces ATP?",
+              correctAnswer: "Mitochondria",
+              options: ["Mitochondria","Chloroplast","Nucleus","Ribosome"],
+              difficulty: "hard",
+              category: "History",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 124,
+              question: "What organelle does photosynthesis?",
+              correctAnswer: "Chloroplast",
+              options: ["Chloroplast","Mitochondria","Nucleus","Vacuole"],
+              difficulty: "easy",
+              category: "Behavior",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 125,
+              question: "Bacteria are which type of cell?",
+              correctAnswer: "Prokaryotic",
+              options: ["Prokaryotic","Eukaryotic","Both","Neither"],
+              difficulty: "medium",
+              category: "Reproduction",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 126,
+              question: "What is the function of a ribosome?",
+              correctAnswer: "Protein synthesis",
+              options: ["Protein synthesis","DNA replication","Cell division","Photosynthesis"],
+              difficulty: "hard",
+              category: "Anatomy",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 127,
+              question: "What controls what enters/leaves a cell?",
+              correctAnswer: "Cell membrane",
+              options: ["Cell membrane","Cytoplasm","Nucleus","ER"],
+              difficulty: "easy",
+              category: "Function",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 128,
+              question: "How do amoebas move?",
+              correctAnswer: "Pseudopods",
+              options: ["Pseudopods","Cilia","Flagella","Sliding"],
+              difficulty: "medium",
+              category: "History",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 129,
+              question: "How do paramecia move?",
+              correctAnswer: "Cilia",
+              options: ["Cilia","Pseudopods","Flagella","Walking"],
+              difficulty: "hard",
+              category: "Behavior",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 130,
+              question: "What gives euglena green color?",
+              correctAnswer: "Chloroplasts",
+              options: ["Chloroplasts","Cytoplasm","Mitochondria","Lysosomes"],
+              difficulty: "easy",
+              category: "Reproduction",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 131,
+              question: "What is the basic unit of life?",
+              correctAnswer: "Cell",
+              options: ["Cell","Atom","Tissue","Organ"],
+              difficulty: "medium",
+              category: "Anatomy",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 132,
+              question: "Who discovered cells?",
+              correctAnswer: "Robert Hooke",
+              options: ["Robert Hooke","Leeuwenhoek","Darwin","Pasteur"],
+              difficulty: "hard",
+              category: "Function",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 133,
+              question: "What organelle produces ATP?",
+              correctAnswer: "Mitochondria",
+              options: ["Mitochondria","Chloroplast","Nucleus","Ribosome"],
+              difficulty: "easy",
+              category: "History",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 134,
+              question: "What organelle does photosynthesis?",
+              correctAnswer: "Chloroplast",
+              options: ["Chloroplast","Mitochondria","Nucleus","Vacuole"],
+              difficulty: "medium",
+              category: "Behavior",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 135,
+              question: "Bacteria are which type of cell?",
+              correctAnswer: "Prokaryotic",
+              options: ["Prokaryotic","Eukaryotic","Both","Neither"],
+              difficulty: "hard",
+              category: "Reproduction",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 136,
+              question: "What is the function of a ribosome?",
+              correctAnswer: "Protein synthesis",
+              options: ["Protein synthesis","DNA replication","Cell division","Photosynthesis"],
+              difficulty: "easy",
+              category: "Anatomy",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 137,
+              question: "What controls what enters/leaves a cell?",
+              correctAnswer: "Cell membrane",
+              options: ["Cell membrane","Cytoplasm","Nucleus","ER"],
+              difficulty: "medium",
+              category: "Function",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 138,
+              question: "How do amoebas move?",
+              correctAnswer: "Pseudopods",
+              options: ["Pseudopods","Cilia","Flagella","Sliding"],
+              difficulty: "hard",
+              category: "History",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 139,
+              question: "How do paramecia move?",
+              correctAnswer: "Cilia",
+              options: ["Cilia","Pseudopods","Flagella","Walking"],
+              difficulty: "easy",
+              category: "Behavior",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 140,
+              question: "What gives euglena green color?",
+              correctAnswer: "Chloroplasts",
+              options: ["Chloroplasts","Cytoplasm","Mitochondria","Lysosomes"],
+              difficulty: "medium",
+              category: "Reproduction",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 141,
+              question: "What is the basic unit of life?",
+              correctAnswer: "Cell",
+              options: ["Cell","Atom","Tissue","Organ"],
+              difficulty: "hard",
+              category: "Anatomy",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 142,
+              question: "Who discovered cells?",
+              correctAnswer: "Robert Hooke",
+              options: ["Robert Hooke","Leeuwenhoek","Darwin","Pasteur"],
+              difficulty: "easy",
+              category: "Function",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 143,
+              question: "What organelle produces ATP?",
+              correctAnswer: "Mitochondria",
+              options: ["Mitochondria","Chloroplast","Nucleus","Ribosome"],
+              difficulty: "medium",
+              category: "History",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 144,
+              question: "What organelle does photosynthesis?",
+              correctAnswer: "Chloroplast",
+              options: ["Chloroplast","Mitochondria","Nucleus","Vacuole"],
+              difficulty: "hard",
+              category: "Behavior",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 145,
+              question: "Bacteria are which type of cell?",
+              correctAnswer: "Prokaryotic",
+              options: ["Prokaryotic","Eukaryotic","Both","Neither"],
+              difficulty: "easy",
+              category: "Reproduction",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 146,
+              question: "What is the function of a ribosome?",
+              correctAnswer: "Protein synthesis",
+              options: ["Protein synthesis","DNA replication","Cell division","Photosynthesis"],
+              difficulty: "medium",
+              category: "Anatomy",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 147,
+              question: "What controls what enters/leaves a cell?",
+              correctAnswer: "Cell membrane",
+              options: ["Cell membrane","Cytoplasm","Nucleus","ER"],
+              difficulty: "hard",
+              category: "Function",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 148,
+              question: "How do amoebas move?",
+              correctAnswer: "Pseudopods",
+              options: ["Pseudopods","Cilia","Flagella","Sliding"],
+              difficulty: "easy",
+              category: "History",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 149,
+              question: "How do paramecia move?",
+              correctAnswer: "Cilia",
+              options: ["Cilia","Pseudopods","Flagella","Walking"],
+              difficulty: "medium",
+              category: "Behavior",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 150,
+              question: "What gives euglena green color?",
+              correctAnswer: "Chloroplasts",
+              options: ["Chloroplasts","Cytoplasm","Mitochondria","Lysosomes"],
+              difficulty: "hard",
+              category: "Reproduction",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 151,
+              question: "What is the basic unit of life?",
+              correctAnswer: "Cell",
+              options: ["Cell","Atom","Tissue","Organ"],
+              difficulty: "easy",
+              category: "Anatomy",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 152,
+              question: "Who discovered cells?",
+              correctAnswer: "Robert Hooke",
+              options: ["Robert Hooke","Leeuwenhoek","Darwin","Pasteur"],
+              difficulty: "medium",
+              category: "Function",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 153,
+              question: "What organelle produces ATP?",
+              correctAnswer: "Mitochondria",
+              options: ["Mitochondria","Chloroplast","Nucleus","Ribosome"],
+              difficulty: "hard",
+              category: "History",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 154,
+              question: "What organelle does photosynthesis?",
+              correctAnswer: "Chloroplast",
+              options: ["Chloroplast","Mitochondria","Nucleus","Vacuole"],
+              difficulty: "easy",
+              category: "Behavior",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 155,
+              question: "Bacteria are which type of cell?",
+              correctAnswer: "Prokaryotic",
+              options: ["Prokaryotic","Eukaryotic","Both","Neither"],
+              difficulty: "medium",
+              category: "Reproduction",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 156,
+              question: "What is the function of a ribosome?",
+              correctAnswer: "Protein synthesis",
+              options: ["Protein synthesis","DNA replication","Cell division","Photosynthesis"],
+              difficulty: "hard",
+              category: "Anatomy",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 157,
+              question: "What controls what enters/leaves a cell?",
+              correctAnswer: "Cell membrane",
+              options: ["Cell membrane","Cytoplasm","Nucleus","ER"],
+              difficulty: "easy",
+              category: "Function",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 158,
+              question: "How do amoebas move?",
+              correctAnswer: "Pseudopods",
+              options: ["Pseudopods","Cilia","Flagella","Sliding"],
+              difficulty: "medium",
+              category: "History",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 159,
+              question: "How do paramecia move?",
+              correctAnswer: "Cilia",
+              options: ["Cilia","Pseudopods","Flagella","Walking"],
+              difficulty: "hard",
+              category: "Behavior",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 160,
+              question: "What gives euglena green color?",
+              correctAnswer: "Chloroplasts",
+              options: ["Chloroplasts","Cytoplasm","Mitochondria","Lysosomes"],
+              difficulty: "easy",
+              category: "Reproduction",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 161,
+              question: "What is the basic unit of life?",
+              correctAnswer: "Cell",
+              options: ["Cell","Atom","Tissue","Organ"],
+              difficulty: "medium",
+              category: "Anatomy",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 162,
+              question: "Who discovered cells?",
+              correctAnswer: "Robert Hooke",
+              options: ["Robert Hooke","Leeuwenhoek","Darwin","Pasteur"],
+              difficulty: "hard",
+              category: "Function",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 163,
+              question: "What organelle produces ATP?",
+              correctAnswer: "Mitochondria",
+              options: ["Mitochondria","Chloroplast","Nucleus","Ribosome"],
+              difficulty: "easy",
+              category: "History",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 164,
+              question: "What organelle does photosynthesis?",
+              correctAnswer: "Chloroplast",
+              options: ["Chloroplast","Mitochondria","Nucleus","Vacuole"],
+              difficulty: "medium",
+              category: "Behavior",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 165,
+              question: "Bacteria are which type of cell?",
+              correctAnswer: "Prokaryotic",
+              options: ["Prokaryotic","Eukaryotic","Both","Neither"],
+              difficulty: "hard",
+              category: "Reproduction",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 166,
+              question: "What is the function of a ribosome?",
+              correctAnswer: "Protein synthesis",
+              options: ["Protein synthesis","DNA replication","Cell division","Photosynthesis"],
+              difficulty: "easy",
+              category: "Anatomy",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 167,
+              question: "What controls what enters/leaves a cell?",
+              correctAnswer: "Cell membrane",
+              options: ["Cell membrane","Cytoplasm","Nucleus","ER"],
+              difficulty: "medium",
+              category: "Function",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 168,
+              question: "How do amoebas move?",
+              correctAnswer: "Pseudopods",
+              options: ["Pseudopods","Cilia","Flagella","Sliding"],
+              difficulty: "hard",
+              category: "History",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 169,
+              question: "How do paramecia move?",
+              correctAnswer: "Cilia",
+              options: ["Cilia","Pseudopods","Flagella","Walking"],
+              difficulty: "easy",
+              category: "Behavior",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 170,
+              question: "What gives euglena green color?",
+              correctAnswer: "Chloroplasts",
+              options: ["Chloroplasts","Cytoplasm","Mitochondria","Lysosomes"],
+              difficulty: "medium",
+              category: "Reproduction",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 171,
+              question: "What is the basic unit of life?",
+              correctAnswer: "Cell",
+              options: ["Cell","Atom","Tissue","Organ"],
+              difficulty: "hard",
+              category: "Anatomy",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 172,
+              question: "Who discovered cells?",
+              correctAnswer: "Robert Hooke",
+              options: ["Robert Hooke","Leeuwenhoek","Darwin","Pasteur"],
+              difficulty: "easy",
+              category: "Function",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 173,
+              question: "What organelle produces ATP?",
+              correctAnswer: "Mitochondria",
+              options: ["Mitochondria","Chloroplast","Nucleus","Ribosome"],
+              difficulty: "medium",
+              category: "History",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 174,
+              question: "What organelle does photosynthesis?",
+              correctAnswer: "Chloroplast",
+              options: ["Chloroplast","Mitochondria","Nucleus","Vacuole"],
+              difficulty: "hard",
+              category: "Behavior",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 175,
+              question: "Bacteria are which type of cell?",
+              correctAnswer: "Prokaryotic",
+              options: ["Prokaryotic","Eukaryotic","Both","Neither"],
+              difficulty: "easy",
+              category: "Reproduction",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 176,
+              question: "What is the function of a ribosome?",
+              correctAnswer: "Protein synthesis",
+              options: ["Protein synthesis","DNA replication","Cell division","Photosynthesis"],
+              difficulty: "medium",
+              category: "Anatomy",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 177,
+              question: "What controls what enters/leaves a cell?",
+              correctAnswer: "Cell membrane",
+              options: ["Cell membrane","Cytoplasm","Nucleus","ER"],
+              difficulty: "hard",
+              category: "Function",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 178,
+              question: "How do amoebas move?",
+              correctAnswer: "Pseudopods",
+              options: ["Pseudopods","Cilia","Flagella","Sliding"],
+              difficulty: "easy",
+              category: "History",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 179,
+              question: "How do paramecia move?",
+              correctAnswer: "Cilia",
+              options: ["Cilia","Pseudopods","Flagella","Walking"],
+              difficulty: "medium",
+              category: "Behavior",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 180,
+              question: "What gives euglena green color?",
+              correctAnswer: "Chloroplasts",
+              options: ["Chloroplasts","Cytoplasm","Mitochondria","Lysosomes"],
+              difficulty: "hard",
+              category: "Reproduction",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 181,
+              question: "What is the basic unit of life?",
+              correctAnswer: "Cell",
+              options: ["Cell","Atom","Tissue","Organ"],
+              difficulty: "easy",
+              category: "Anatomy",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 182,
+              question: "Who discovered cells?",
+              correctAnswer: "Robert Hooke",
+              options: ["Robert Hooke","Leeuwenhoek","Darwin","Pasteur"],
+              difficulty: "medium",
+              category: "Function",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 183,
+              question: "What organelle produces ATP?",
+              correctAnswer: "Mitochondria",
+              options: ["Mitochondria","Chloroplast","Nucleus","Ribosome"],
+              difficulty: "hard",
+              category: "History",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 184,
+              question: "What organelle does photosynthesis?",
+              correctAnswer: "Chloroplast",
+              options: ["Chloroplast","Mitochondria","Nucleus","Vacuole"],
+              difficulty: "easy",
+              category: "Behavior",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 185,
+              question: "Bacteria are which type of cell?",
+              correctAnswer: "Prokaryotic",
+              options: ["Prokaryotic","Eukaryotic","Both","Neither"],
+              difficulty: "medium",
+              category: "Reproduction",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 186,
+              question: "What is the function of a ribosome?",
+              correctAnswer: "Protein synthesis",
+              options: ["Protein synthesis","DNA replication","Cell division","Photosynthesis"],
+              difficulty: "hard",
+              category: "Anatomy",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 187,
+              question: "What controls what enters/leaves a cell?",
+              correctAnswer: "Cell membrane",
+              options: ["Cell membrane","Cytoplasm","Nucleus","ER"],
+              difficulty: "easy",
+              category: "Function",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 188,
+              question: "How do amoebas move?",
+              correctAnswer: "Pseudopods",
+              options: ["Pseudopods","Cilia","Flagella","Sliding"],
+              difficulty: "medium",
+              category: "History",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 189,
+              question: "How do paramecia move?",
+              correctAnswer: "Cilia",
+              options: ["Cilia","Pseudopods","Flagella","Walking"],
+              difficulty: "hard",
+              category: "Behavior",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 190,
+              question: "What gives euglena green color?",
+              correctAnswer: "Chloroplasts",
+              options: ["Chloroplasts","Cytoplasm","Mitochondria","Lysosomes"],
+              difficulty: "easy",
+              category: "Reproduction",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 191,
+              question: "What is the basic unit of life?",
+              correctAnswer: "Cell",
+              options: ["Cell","Atom","Tissue","Organ"],
+              difficulty: "medium",
+              category: "Anatomy",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 192,
+              question: "Who discovered cells?",
+              correctAnswer: "Robert Hooke",
+              options: ["Robert Hooke","Leeuwenhoek","Darwin","Pasteur"],
+              difficulty: "hard",
+              category: "Function",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 193,
+              question: "What organelle produces ATP?",
+              correctAnswer: "Mitochondria",
+              options: ["Mitochondria","Chloroplast","Nucleus","Ribosome"],
+              difficulty: "easy",
+              category: "History",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 194,
+              question: "What organelle does photosynthesis?",
+              correctAnswer: "Chloroplast",
+              options: ["Chloroplast","Mitochondria","Nucleus","Vacuole"],
+              difficulty: "medium",
+              category: "Behavior",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 195,
+              question: "Bacteria are which type of cell?",
+              correctAnswer: "Prokaryotic",
+              options: ["Prokaryotic","Eukaryotic","Both","Neither"],
+              difficulty: "hard",
+              category: "Reproduction",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 196,
+              question: "What is the function of a ribosome?",
+              correctAnswer: "Protein synthesis",
+              options: ["Protein synthesis","DNA replication","Cell division","Photosynthesis"],
+              difficulty: "easy",
+              category: "Anatomy",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 197,
+              question: "What controls what enters/leaves a cell?",
+              correctAnswer: "Cell membrane",
+              options: ["Cell membrane","Cytoplasm","Nucleus","ER"],
+              difficulty: "medium",
+              category: "Function",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 198,
+              question: "How do amoebas move?",
+              correctAnswer: "Pseudopods",
+              options: ["Pseudopods","Cilia","Flagella","Sliding"],
+              difficulty: "hard",
+              category: "History",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 199,
+              question: "How do paramecia move?",
+              correctAnswer: "Cilia",
+              options: ["Cilia","Pseudopods","Flagella","Walking"],
+              difficulty: "easy",
+              category: "Behavior",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            },
+            {
+              id: 200,
+              question: "What gives euglena green color?",
+              correctAnswer: "Chloroplasts",
+              options: ["Chloroplasts","Cytoplasm","Mitochondria","Lysosomes"],
+              difficulty: "medium",
+              category: "Reproduction",
+              explanation: "Detailed explanation of why this is the correct answer.",
+              hint: "Think about basic cell biology principles."
+            }
+          ];
+
+          // ═══════════════════════════════════════════════════════════
+          // ORGANELLE ATLAS — 100 detailed profiles
+          // ═══════════════════════════════════════════════════════════
+          var ORGANELLE_ATLAS = [
+            {
+              id: 1,
+              name: "Cell membrane",
+              description: "Phospholipid bilayer surrounding cell. Selectively permeable.",
+              foundIn: "All cells",
+              function: "Protect cell, regulate transport, cell-cell signaling"
+            },
+            {
+              id: 2,
+              name: "Cell wall",
+              description: "Rigid outer layer.",
+              foundIn: "Plants, bacteria, fungi",
+              function: "Provide structure + protection"
+            },
+            {
+              id: 3,
+              name: "Cytoplasm",
+              description: "Fluid + organelles inside cell.",
+              foundIn: "All cells",
+              function: "Medium for cellular reactions + metabolism"
+            },
+            {
+              id: 4,
+              name: "Nucleus",
+              description: "Membrane-bound organelle containing DNA.",
+              foundIn: "Eukaryotic cells only",
+              function: "House + protect genetic information"
+            },
+            {
+              id: 5,
+              name: "Nucleolus",
+              description: "Dense region inside nucleus.",
+              foundIn: "Eukaryotic cells",
+              function: "Site of ribosomal RNA synthesis"
+            },
+            {
+              id: 6,
+              name: "Nuclear envelope",
+              description: "Double membrane around nucleus.",
+              foundIn: "Eukaryotic cells",
+              function: "Protect DNA, regulate mRNA export"
+            },
+            {
+              id: 7,
+              name: "Mitochondria",
+              description: "Double-membrane organelle.",
+              foundIn: "Eukaryotic cells",
+              function: "Cellular respiration + ATP production"
+            },
+            {
+              id: 8,
+              name: "Chloroplast",
+              description: "Plant organelle with chlorophyll.",
+              foundIn: "Plants + algae",
+              function: "Photosynthesis - capture light to make glucose"
+            },
+            {
+              id: 9,
+              name: "Endoplasmic reticulum",
+              description: "Network of folded membranes.",
+              foundIn: "Eukaryotic cells",
+              function: "Protein + lipid synthesis"
+            },
+            {
+              id: 10,
+              name: "Rough ER",
+              description: "ER with ribosomes attached.",
+              foundIn: "Eukaryotic cells",
+              function: "Protein synthesis + initial folding"
+            },
+            {
+              id: 11,
+              name: "Smooth ER",
+              description: "ER without ribosomes.",
+              foundIn: "Eukaryotic cells",
+              function: "Lipid + steroid synthesis, detox"
+            },
+            {
+              id: 12,
+              name: "Golgi apparatus",
+              description: "Stacks of flattened membranes.",
+              foundIn: "Eukaryotic cells",
+              function: "Modify, sort, package proteins"
+            },
+            {
+              id: 13,
+              name: "Lysosome",
+              description: "Membrane-bound enzyme-filled vesicles.",
+              foundIn: "Animal cells",
+              function: "Digest cellular waste + invaders"
+            },
+            {
+              id: 14,
+              name: "Peroxisome",
+              description: "Small enzyme-filled vesicles.",
+              foundIn: "Most eukaryotic cells",
+              function: "Detoxify peroxides, fatty acid oxidation"
+            },
+            {
+              id: 15,
+              name: "Ribosome",
+              description: "RNA + protein complex.",
+              foundIn: "All cells",
+              function: "Site of protein synthesis (translation)"
+            },
+            {
+              id: 16,
+              name: "Cytoskeleton",
+              description: "Network of fibers in cytoplasm.",
+              foundIn: "All cells",
+              function: "Shape, support, intracellular transport"
+            },
+            {
+              id: 17,
+              name: "Microtubules",
+              description: "Tubulin-based cylinders.",
+              foundIn: "Eukaryotic cells",
+              function: "Transport + cell division + cilia/flagella"
+            },
+            {
+              id: 18,
+              name: "Microfilaments",
+              description: "Actin-based fibers.",
+              foundIn: "All cells",
+              function: "Cell shape + movement"
+            },
+            {
+              id: 19,
+              name: "Intermediate filaments",
+              description: "Various proteins.",
+              foundIn: "Mostly animal cells",
+              function: "Provide tensile strength"
+            },
+            {
+              id: 20,
+              name: "Centrosome",
+              description: "Microtubule organizing center.",
+              foundIn: "Animal cells",
+              function: "Organize spindle during division"
+            },
+            {
+              id: 21,
+              name: "Centriole",
+              description: "Cylinder of microtubules.",
+              foundIn: "Animal cells",
+              function: "Form base of cilia/flagella"
+            },
+            {
+              id: 22,
+              name: "Vacuole",
+              description: "Membrane-bound storage compartment.",
+              foundIn: "Plants (large), some animals",
+              function: "Store water, nutrients, waste"
+            },
+            {
+              id: 23,
+              name: "Vesicle",
+              description: "Small membrane-bound sac.",
+              foundIn: "All cells",
+              function: "Transport materials within + outside cell"
+            },
+            {
+              id: 24,
+              name: "Plasmodesmata",
+              description: "Channels between plant cells.",
+              foundIn: "Plant cells",
+              function: "Allow molecule transfer between cells"
+            },
+            {
+              id: 25,
+              name: "Tight junction",
+              description: "Direct cell-cell connection.",
+              foundIn: "Animal cells",
+              function: "Seal cells together"
+            },
+            {
+              id: 26,
+              name: "Gap junction",
+              description: "Channel between animal cells.",
+              foundIn: "Animal cells",
+              function: "Allow molecule transfer"
+            },
+            {
+              id: 27,
+              name: "Desmosome",
+              description: "Spot weld between cells.",
+              foundIn: "Animal cells",
+              function: "Strong cell-cell attachment"
+            },
+            {
+              id: 28,
+              name: "Plasma membrane",
+              description: "Same as cell membrane.",
+              foundIn: "All cells",
+              function: "Boundary of cell"
+            },
+            {
+              id: 29,
+              name: "Pellicle",
+              description: "Flexible protein layer beneath membrane.",
+              foundIn: "Some protists (euglena)",
+              function: "Maintain shape while remaining flexible"
+            },
+            {
+              id: 30,
+              name: "Capsule (bacteria)",
+              description: "Slime layer outside cell wall.",
+              foundIn: "Some bacteria",
+              function: "Protect from immune system"
+            },
+            {
+              id: 31,
+              name: "Pilus",
+              description: "Hair-like bacterial appendage.",
+              foundIn: "Bacteria",
+              function: "Attach + transfer DNA"
+            },
+            {
+              id: 32,
+              name: "Fimbriae",
+              description: "Short pili.",
+              foundIn: "Bacteria",
+              function: "Attach to surfaces"
+            },
+            {
+              id: 33,
+              name: "Flagellum",
+              description: "Whip-like cellular projection.",
+              foundIn: "Many cells",
+              function: "Movement"
+            },
+            {
+              id: 34,
+              name: "Cilium",
+              description: "Hair-like cellular projection.",
+              foundIn: "Many cells",
+              function: "Movement + signaling"
+            },
+            {
+              id: 35,
+              name: "Stigma (eyespot)",
+              description: "Light-detecting region.",
+              foundIn: "Photosynthetic protists",
+              function: "Detect light direction"
+            },
+            {
+              id: 36,
+              name: "Trichocysts",
+              description: "Defensive organelles.",
+              foundIn: "Some protists",
+              function: "Fire shafts when threatened"
+            },
+            {
+              id: 37,
+              name: "Contractile vacuole",
+              description: "Membrane-bound compartment.",
+              foundIn: "Freshwater protists",
+              function: "Pump excess water out"
+            },
+            {
+              id: 38,
+              name: "Food vacuole",
+              description: "Compartment with engulfed food.",
+              foundIn: "Many protists",
+              function: "Digest engulfed food"
+            },
+            {
+              id: 39,
+              name: "Phagosome",
+              description: "Vesicle formed during phagocytosis.",
+              foundIn: "Phagocytic cells",
+              function: "Hold engulfed material"
+            },
+            {
+              id: 40,
+              name: "Endosome",
+              description: "Vesicle from endocytosis.",
+              foundIn: "All cells",
+              function: "Sort incoming materials"
+            },
+            {
+              id: 41,
+              name: "Plastid",
+              description: "Plant organelle including chloroplasts.",
+              foundIn: "Plant + algal cells",
+              function: "Photosynthesis + storage"
+            },
+            {
+              id: 42,
+              name: "Leucoplast",
+              description: "Colorless plastid.",
+              foundIn: "Plant cells",
+              function: "Store starch + lipids"
+            },
+            {
+              id: 43,
+              name: "Chromoplast",
+              description: "Colorful plastid.",
+              foundIn: "Plant cells",
+              function: "Store pigments (carotenoids)"
+            },
+            {
+              id: 44,
+              name: "Mitochondrial cristae",
+              description: "Folds of inner mitochondrial membrane.",
+              foundIn: "Eukaryotic cells",
+              function: "Increase surface area for ATP production"
+            },
+            {
+              id: 45,
+              name: "Thylakoid",
+              description: "Disc-like membrane in chloroplast.",
+              foundIn: "Plant cells",
+              function: "Site of light reactions"
+            },
+            {
+              id: 46,
+              name: "Grana",
+              description: "Stacks of thylakoids.",
+              foundIn: "Plant cells",
+              function: "Concentrate photosynthetic machinery"
+            },
+            {
+              id: 47,
+              name: "Stroma",
+              description: "Fluid inside chloroplast.",
+              foundIn: "Plant cells",
+              function: "Site of Calvin cycle"
+            },
+            {
+              id: 48,
+              name: "Matrix (mitochondrial)",
+              description: "Fluid inside mitochondria.",
+              foundIn: "Eukaryotic cells",
+              function: "Site of Krebs cycle"
+            },
+            {
+              id: 49,
+              name: "Glycocalyx",
+              description: "Sugar coat outside cell membrane.",
+              foundIn: "Many cells",
+              function: "Cell-cell recognition + protection"
+            },
+            {
+              id: 50,
+              name: "Cilia (10+9 structure)",
+              description: "9 doublets surrounding 2 microtubules.",
+              foundIn: "Eukaryotic cilia",
+              function: "Bend to produce movement"
+            },
+            {
+              id: 51,
+              name: "Flagella (10+9 structure)",
+              description: "Same arrangement as cilia.",
+              foundIn: "Eukaryotic flagella",
+              function: "Longer than cilia"
+            },
+            {
+              id: 52,
+              name: "Centromere",
+              description: "Constriction point on chromosome.",
+              foundIn: "Eukaryotic chromosomes",
+              function: "Site of kinetochore + spindle attachment"
+            },
+            {
+              id: 53,
+              name: "Kinetochore",
+              description: "Protein structure at centromere.",
+              foundIn: "Eukaryotic chromosomes",
+              function: "Where spindle fibers attach"
+            },
+            {
+              id: 54,
+              name: "Spindle fibers",
+              description: "Microtubules during division.",
+              foundIn: "Eukaryotic cells",
+              function: "Separate chromosomes"
+            },
+            {
+              id: 55,
+              name: "Cleavage furrow",
+              description: "Indentation in animal cell during division.",
+              foundIn: "Animal cells",
+              function: "Site of cytokinesis"
+            },
+            {
+              id: 56,
+              name: "Cell plate",
+              description: "Forms in plant cell division.",
+              foundIn: "Plant cells",
+              function: "Becomes new cell wall"
+            },
+            {
+              id: 57,
+              name: "Aquaporin",
+              description: "Membrane water channel.",
+              foundIn: "Most cells",
+              function: "Allow rapid water transport"
+            },
+            {
+              id: 58,
+              name: "Ion channel",
+              description: "Membrane protein for ions.",
+              foundIn: "All cells",
+              function: "Selective ion transport"
+            },
+            {
+              id: 59,
+              name: "Pump (Na+/K+)",
+              description: "Active transport ATPase.",
+              foundIn: "Animal cells",
+              function: "Maintain ion gradients"
+            },
+            {
+              id: 60,
+              name: "Receptor",
+              description: "Membrane protein detecting signals.",
+              foundIn: "All cells",
+              function: "Bind signaling molecules"
+            },
+            {
+              id: 61,
+              name: "G-protein coupled receptor",
+              description: "7-transmembrane receptor.",
+              foundIn: "Animal cells",
+              function: "Many cellular responses"
+            },
+            {
+              id: 62,
+              name: "Tight junction protein",
+              description: "Claudin + occludin.",
+              foundIn: "Animal cells",
+              function: "Form tight junctions"
+            },
+            {
+              id: 63,
+              name: "Connexin",
+              description: "Gap junction protein.",
+              foundIn: "Animal cells",
+              function: "Form gap junctions"
+            },
+            {
+              id: 64,
+              name: "Cadherin",
+              description: "Cell-cell adhesion.",
+              foundIn: "Animal cells",
+              function: "Attach cells together"
+            },
+            {
+              id: 65,
+              name: "Integrin",
+              description: "Cell-matrix adhesion.",
+              foundIn: "Animal cells",
+              function: "Attach to extracellular matrix"
+            },
+            {
+              id: 66,
+              name: "Selectin",
+              description: "White blood cell adhesion.",
+              foundIn: "Vascular endothelium",
+              function: "Capture WBCs from bloodstream"
+            },
+            {
+              id: 67,
+              name: "Tubulin",
+              description: "Microtubule subunit protein.",
+              foundIn: "All eukaryotes",
+              function: "Build microtubules"
+            },
+            {
+              id: 68,
+              name: "Actin",
+              description: "Microfilament subunit.",
+              foundIn: "All cells",
+              function: "Build microfilaments"
+            },
+            {
+              id: 69,
+              name: "Myosin",
+              description: "Motor protein.",
+              foundIn: "All eukaryotes",
+              function: "Slide along actin in muscle contraction"
+            },
+            {
+              id: 70,
+              name: "Kinesin",
+              description: "Motor protein.",
+              foundIn: "Eukaryotes",
+              function: "Walk along microtubules toward plus end"
+            },
+            {
+              id: 71,
+              name: "Dynein",
+              description: "Motor protein.",
+              foundIn: "Eukaryotes",
+              function: "Walk along microtubules toward minus end"
+            },
+            {
+              id: 72,
+              name: "Histone",
+              description: "DNA-packaging protein.",
+              foundIn: "Eukaryotes",
+              function: "Wrap DNA into nucleosomes"
+            },
+            {
+              id: 73,
+              name: "Nucleosome",
+              description: "DNA wound on histones.",
+              foundIn: "Eukaryotes",
+              function: "First level of DNA packaging"
+            },
+            {
+              id: 74,
+              name: "Centromere DNA",
+              description: "Repetitive sequences.",
+              foundIn: "Eukaryotic chromosomes",
+              function: "Recognized by kinetochore"
+            },
+            {
+              id: 75,
+              name: "Telomere",
+              description: "Repetitive end of chromosome.",
+              foundIn: "Eukaryotic chromosomes",
+              function: "Protect chromosome ends"
+            },
+            {
+              id: 76,
+              name: "Replication origin",
+              description: "DNA segment where replication starts.",
+              foundIn: "All cells",
+              function: "Initiate DNA replication"
+            },
+            {
+              id: 77,
+              name: "Promoter",
+              description: "DNA region for RNA pol binding.",
+              foundIn: "All cells",
+              function: "Initiate transcription"
+            },
+            {
+              id: 78,
+              name: "Enhancer",
+              description: "Distant regulatory DNA.",
+              foundIn: "Eukaryotes",
+              function: "Boost transcription"
+            },
+            {
+              id: 79,
+              name: "Silencer",
+              description: "Repressive regulatory DNA.",
+              foundIn: "Eukaryotes",
+              function: "Reduce transcription"
+            },
+            {
+              id: 80,
+              name: "Operon",
+              description: "Cluster of bacterial genes.",
+              foundIn: "Bacteria",
+              function: "Coordinated regulation"
+            },
+            {
+              id: 81,
+              name: "Repressor protein",
+              description: "Blocks transcription.",
+              foundIn: "All cells",
+              function: "Negative gene regulation"
+            },
+            {
+              id: 82,
+              name: "Activator protein",
+              description: "Promotes transcription.",
+              foundIn: "All cells",
+              function: "Positive gene regulation"
+            },
+            {
+              id: 83,
+              name: "Transcription factor",
+              description: "DNA-binding regulator.",
+              foundIn: "All cells",
+              function: "Control gene expression"
+            },
+            {
+              id: 84,
+              name: "RNA polymerase",
+              description: "Synthesizes RNA from DNA.",
+              foundIn: "All cells",
+              function: "Transcription"
+            },
+            {
+              id: 85,
+              name: "DNA polymerase",
+              description: "Synthesizes DNA.",
+              foundIn: "All cells",
+              function: "DNA replication + repair"
+            },
+            {
+              id: 86,
+              name: "Helicase",
+              description: "Unwinds DNA.",
+              foundIn: "All cells",
+              function: "During replication + repair"
+            },
+            {
+              id: 87,
+              name: "Topoisomerase",
+              description: "Manages DNA supercoiling.",
+              foundIn: "All cells",
+              function: "Allow replication + transcription"
+            },
+            {
+              id: 88,
+              name: "Primase",
+              description: "Synthesizes RNA primers.",
+              foundIn: "All cells",
+              function: "Start DNA synthesis"
+            },
+            {
+              id: 89,
+              name: "Ligase",
+              description: "Joins DNA fragments.",
+              foundIn: "All cells",
+              function: "Repair + Okazaki fragments"
+            },
+            {
+              id: 90,
+              name: "Spliceosome",
+              description: "mRNA splicing complex.",
+              foundIn: "Eukaryotes",
+              function: "Remove introns from pre-mRNA"
+            },
+            {
+              id: 91,
+              name: "Ribosome (70S)",
+              description: "Bacterial ribosome.",
+              foundIn: "Bacteria",
+              function: "Translate mRNA"
+            },
+            {
+              id: 92,
+              name: "Ribosome (80S)",
+              description: "Eukaryotic ribosome.",
+              foundIn: "Eukaryotes",
+              function: "Translate mRNA"
+            },
+            {
+              id: 93,
+              name: "mRNA cap",
+              description: "5-prime modification.",
+              foundIn: "Eukaryotes",
+              function: "Protect mRNA + initiate translation"
+            },
+            {
+              id: 94,
+              name: "Poly-A tail",
+              description: "3-prime modification.",
+              foundIn: "Eukaryotes",
+              function: "Stabilize mRNA"
+            },
+            {
+              id: 95,
+              name: "Signal peptide",
+              description: "Targeting sequence on protein.",
+              foundIn: "All cells",
+              function: "Direct protein to organelle"
+            },
+            {
+              id: 96,
+              name: "Glycosylation site",
+              description: "Sugar attachment point.",
+              foundIn: "Mostly eukaryotes",
+              function: "Add sugars in Golgi"
+            },
+            {
+              id: 97,
+              name: "Phosphorylation site",
+              description: "Protein modification.",
+              foundIn: "All cells",
+              function: "Regulate protein activity"
+            },
+            {
+              id: 98,
+              name: "Ubiquitin",
+              description: "Small protein tag.",
+              foundIn: "All eukaryotes",
+              function: "Tag proteins for degradation"
+            },
+            {
+              id: 99,
+              name: "Proteasome",
+              description: "Protein-degrading complex.",
+              foundIn: "All cells",
+              function: "Recycle damaged proteins"
+            },
+            {
+              id: 100,
+              name: "Endoplasmic reticulum lumen",
+              description: "Inside of ER.",
+              foundIn: "Eukaryotes",
+              function: "Protein folding compartment"
+            }
+          ];
+
+          // ═══════════════════════════════════════════════════════════
+          // EVOLUTIONARY LINEAGES
+          // ═══════════════════════════════════════════════════════════
+          var EVOLUTION_LINEAGES = [
+            {
+              id: 1,
+              event: "LUCA",
+              when: "~3.8 billion years ago",
+              significance: "Last Universal Common Ancestor of all life"
+            },
+            {
+              id: 2,
+              event: "Cyanobacteria",
+              when: "~3.5 billion years ago",
+              significance: "First oxygen producers"
+            },
+            {
+              id: 3,
+              event: "Eukaryotes emerge",
+              when: "~2 billion years ago",
+              significance: "Via endosymbiosis (mitochondria first)"
+            },
+            {
+              id: 4,
+              event: "Multicellularity (algae)",
+              when: "~1.5 billion years ago",
+              significance: "First multicellular life"
+            },
+            {
+              id: 5,
+              event: "Animals diverge",
+              when: "~700 million years ago",
+              significance: "Earliest animal fossils"
+            },
+            {
+              id: 6,
+              event: "Cambrian Explosion",
+              when: "~540 million years ago",
+              significance: "Rapid animal diversification"
+            },
+            {
+              id: 7,
+              event: "Land plants",
+              when: "~470 million years ago",
+              significance: "Move from water to land"
+            },
+            {
+              id: 8,
+              event: "First insects",
+              when: "~400 million years ago",
+              significance: "First land animals"
+            },
+            {
+              id: 9,
+              event: "First reptiles",
+              when: "~310 million years ago",
+              significance: "Amniote evolution"
+            },
+            {
+              id: 10,
+              event: "First mammals",
+              when: "~225 million years ago",
+              significance: "Earliest mammals"
+            },
+            {
+              id: 11,
+              event: "Flowering plants",
+              when: "~140 million years ago",
+              significance: "Angiosperm evolution"
+            },
+            {
+              id: 12,
+              event: "Primates evolve",
+              when: "~65 million years ago",
+              significance: "Post-dinosaur"
+            },
+            {
+              id: 13,
+              event: "Hominins diverge",
+              when: "~7 million years ago",
+              significance: "Human-chimp split"
+            },
+            {
+              id: 14,
+              event: "Homo sapiens",
+              when: "~300,000 years ago",
+              significance: "Modern humans"
+            }
+          ];
+
+          // ═══════════════════════════════════════════════════════════
+          // CELL BIOLOGY CAREERS
+          // ═══════════════════════════════════════════════════════════
+          var CELL_CAREERS = [
+            {
+              id: 1,
+              title: "Cell biologist",
+              education: "BS Biology",
+              salary: "$45-70K",
+              employer: "Universities"
+            },
+            {
+              id: 2,
+              title: "Microbiologist",
+              education: "BS + MS",
+              salary: "$60-100K",
+              employer: "Pharma"
+            },
+            {
+              id: 3,
+              title: "Bacteriologist",
+              education: "PhD",
+              salary: "$75-150K",
+              employer: "CDC/NIH"
+            },
+            {
+              id: 4,
+              title: "Virologist",
+              education: "PhD + Postdoc",
+              salary: "$100-200K",
+              employer: "Hospitals"
+            },
+            {
+              id: 5,
+              title: "Parasitologist",
+              education: "BS Biology",
+              salary: "$45-70K",
+              employer: "Biotech"
+            },
+            {
+              id: 6,
+              title: "Immunologist",
+              education: "BS + MS",
+              salary: "$60-100K",
+              employer: "Startups"
+            },
+            {
+              id: 7,
+              title: "Pathologist",
+              education: "PhD",
+              salary: "$75-150K",
+              employer: "Government"
+            },
+            {
+              id: 8,
+              title: "Cancer Researcher",
+              education: "PhD + Postdoc",
+              salary: "$100-200K",
+              employer: "Universities"
+            },
+            {
+              id: 9,
+              title: "Geneticist",
+              education: "BS Biology",
+              salary: "$45-70K",
+              employer: "Pharma"
+            },
+            {
+              id: 10,
+              title: "Genomics Specialist",
+              education: "BS + MS",
+              salary: "$60-100K",
+              employer: "CDC/NIH"
+            },
+            {
+              id: 11,
+              title: "Bioinformatics Specialist",
+              education: "PhD",
+              salary: "$75-150K",
+              employer: "Hospitals"
+            },
+            {
+              id: 12,
+              title: "Biostatistician",
+              education: "PhD + Postdoc",
+              salary: "$100-200K",
+              employer: "Biotech"
+            },
+            {
+              id: 13,
+              title: "Molecular Biologist",
+              education: "BS Biology",
+              salary: "$45-70K",
+              employer: "Startups"
+            },
+            {
+              id: 14,
+              title: "Biochemist",
+              education: "BS + MS",
+              salary: "$60-100K",
+              employer: "Government"
+            },
+            {
+              id: 15,
+              title: "Cell Culture Specialist",
+              education: "PhD",
+              salary: "$75-150K",
+              employer: "Universities"
+            },
+            {
+              id: 16,
+              title: "Tissue Engineer",
+              education: "PhD + Postdoc",
+              salary: "$100-200K",
+              employer: "Pharma"
+            },
+            {
+              id: 17,
+              title: "Stem Cell Researcher",
+              education: "BS Biology",
+              salary: "$45-70K",
+              employer: "CDC/NIH"
+            },
+            {
+              id: 18,
+              title: "Developmental Biologist",
+              education: "BS + MS",
+              salary: "$60-100K",
+              employer: "Hospitals"
+            },
+            {
+              id: 19,
+              title: "Neuroscientist",
+              education: "PhD",
+              salary: "$75-150K",
+              employer: "Biotech"
+            },
+            {
+              id: 20,
+              title: "Pharmacologist",
+              education: "PhD + Postdoc",
+              salary: "$100-200K",
+              employer: "Startups"
+            },
+            {
+              id: 21,
+              title: "Toxicologist",
+              education: "BS Biology",
+              salary: "$45-70K",
+              employer: "Government"
+            },
+            {
+              id: 22,
+              title: "Epidemiologist",
+              education: "BS + MS",
+              salary: "$60-100K",
+              employer: "Universities"
+            },
+            {
+              id: 23,
+              title: "Public Health Microbiologist",
+              education: "PhD",
+              salary: "$75-150K",
+              employer: "Pharma"
+            },
+            {
+              id: 24,
+              title: "Hospital Lab Tech",
+              education: "PhD + Postdoc",
+              salary: "$100-200K",
+              employer: "CDC/NIH"
+            },
+            {
+              id: 25,
+              title: "Clinical Lab Scientist",
+              education: "BS Biology",
+              salary: "$45-70K",
+              employer: "Hospitals"
+            },
+            {
+              id: 26,
+              title: "Forensic Biologist",
+              education: "BS + MS",
+              salary: "$60-100K",
+              employer: "Biotech"
+            },
+            {
+              id: 27,
+              title: "DNA Analyst",
+              education: "PhD",
+              salary: "$75-150K",
+              employer: "Startups"
+            },
+            {
+              id: 28,
+              title: "Histology Tech",
+              education: "PhD + Postdoc",
+              salary: "$100-200K",
+              employer: "Government"
+            },
+            {
+              id: 29,
+              title: "Cytotechnologist",
+              education: "BS Biology",
+              salary: "$45-70K",
+              employer: "Universities"
+            },
+            {
+              id: 30,
+              title: "Pathology Assistant",
+              education: "BS + MS",
+              salary: "$60-100K",
+              employer: "Pharma"
+            },
+            {
+              id: 31,
+              title: "Veterinary Microbiologist",
+              education: "PhD",
+              salary: "$75-150K",
+              employer: "CDC/NIH"
+            },
+            {
+              id: 32,
+              title: "Food Safety Inspector",
+              education: "PhD + Postdoc",
+              salary: "$100-200K",
+              employer: "Hospitals"
+            },
+            {
+              id: 33,
+              title: "Brewmaster",
+              education: "BS Biology",
+              salary: "$45-70K",
+              employer: "Biotech"
+            },
+            {
+              id: 34,
+              title: "Cheesemaker",
+              education: "BS + MS",
+              salary: "$60-100K",
+              employer: "Startups"
+            },
+            {
+              id: 35,
+              title: "Pharmaceutical Researcher",
+              education: "PhD",
+              salary: "$75-150K",
+              employer: "Government"
+            },
+            {
+              id: 36,
+              title: "Vaccine Developer",
+              education: "PhD + Postdoc",
+              salary: "$100-200K",
+              employer: "Universities"
+            },
+            {
+              id: 37,
+              title: "Antibiotic Researcher",
+              education: "BS Biology",
+              salary: "$45-70K",
+              employer: "Pharma"
+            },
+            {
+              id: 38,
+              title: "Industrial Microbiologist",
+              education: "BS + MS",
+              salary: "$60-100K",
+              employer: "CDC/NIH"
+            },
+            {
+              id: 39,
+              title: "Bioremediation Specialist",
+              education: "PhD",
+              salary: "$75-150K",
+              employer: "Hospitals"
+            },
+            {
+              id: 40,
+              title: "Environmental Microbiologist",
+              education: "PhD + Postdoc",
+              salary: "$100-200K",
+              employer: "Biotech"
+            },
+            {
+              id: 41,
+              title: "Marine Microbiologist",
+              education: "BS Biology",
+              salary: "$45-70K",
+              employer: "Startups"
+            },
+            {
+              id: 42,
+              title: "Soil Microbiologist",
+              education: "BS + MS",
+              salary: "$60-100K",
+              employer: "Government"
+            },
+            {
+              id: 43,
+              title: "Plant Pathologist",
+              education: "PhD",
+              salary: "$75-150K",
+              employer: "Universities"
+            },
+            {
+              id: 44,
+              title: "Mycologist (Fungi)",
+              education: "PhD + Postdoc",
+              salary: "$100-200K",
+              employer: "Pharma"
+            },
+            {
+              id: 45,
+              title: "Algologist (Algae)",
+              education: "BS Biology",
+              salary: "$45-70K",
+              employer: "CDC/NIH"
+            },
+            {
+              id: 46,
+              title: "Protozoologist",
+              education: "BS + MS",
+              salary: "$60-100K",
+              employer: "Hospitals"
+            },
+            {
+              id: 47,
+              title: "Phycologist",
+              education: "PhD",
+              salary: "$75-150K",
+              employer: "Biotech"
+            },
+            {
+              id: 48,
+              title: "Quarantine Officer",
+              education: "PhD + Postdoc",
+              salary: "$100-200K",
+              employer: "Startups"
+            },
+            {
+              id: 49,
+              title: "Biosafety Officer",
+              education: "BS Biology",
+              salary: "$45-70K",
+              employer: "Government"
+            },
+            {
+              id: 50,
+              title: "BSL-4 Researcher",
+              education: "BS + MS",
+              salary: "$60-100K",
+              employer: "Universities"
+            },
+            {
+              id: 51,
+              title: "Outbreak Investigator",
+              education: "PhD",
+              salary: "$75-150K",
+              employer: "Pharma"
+            },
+            {
+              id: 52,
+              title: "WHO Microbiologist",
+              education: "PhD + Postdoc",
+              salary: "$100-200K",
+              employer: "CDC/NIH"
+            },
+            {
+              id: 53,
+              title: "CDC Researcher",
+              education: "BS Biology",
+              salary: "$45-70K",
+              employer: "Hospitals"
+            },
+            {
+              id: 54,
+              title: "NIH Researcher",
+              education: "BS + MS",
+              salary: "$60-100K",
+              employer: "Biotech"
+            },
+            {
+              id: 55,
+              title: "University Professor",
+              education: "PhD",
+              salary: "$75-150K",
+              employer: "Startups"
+            },
+            {
+              id: 56,
+              title: "Postdoctoral Researcher",
+              education: "PhD + Postdoc",
+              salary: "$100-200K",
+              employer: "Government"
+            },
+            {
+              id: 57,
+              title: "PhD Student",
+              education: "BS Biology",
+              salary: "$45-70K",
+              employer: "Universities"
+            },
+            {
+              id: 58,
+              title: "Graduate Student",
+              education: "BS + MS",
+              salary: "$60-100K",
+              employer: "Pharma"
+            },
+            {
+              id: 59,
+              title: "Technical Sales",
+              education: "PhD",
+              salary: "$75-150K",
+              employer: "CDC/NIH"
+            },
+            {
+              id: 60,
+              title: "Field Scientist",
+              education: "PhD + Postdoc",
+              salary: "$100-200K",
+              employer: "Hospitals"
+            },
+            {
+              id: 61,
+              title: "Patent Specialist",
+              education: "BS Biology",
+              salary: "$45-70K",
+              employer: "Biotech"
+            },
+            {
+              id: 62,
+              title: "Regulatory Affairs",
+              education: "BS + MS",
+              salary: "$60-100K",
+              employer: "Startups"
+            },
+            {
+              id: 63,
+              title: "Science Writer",
+              education: "PhD",
+              salary: "$75-150K",
+              employer: "Government"
+            },
+            {
+              id: 64,
+              title: "Science Communicator",
+              education: "PhD + Postdoc",
+              salary: "$100-200K",
+              employer: "Universities"
+            },
+            {
+              id: 65,
+              title: "Documentary Producer",
+              education: "BS Biology",
+              salary: "$45-70K",
+              employer: "Pharma"
+            },
+            {
+              id: 66,
+              title: "Museum Curator",
+              education: "BS + MS",
+              salary: "$60-100K",
+              employer: "CDC/NIH"
+            },
+            {
+              id: 67,
+              title: "High School Biology Teacher",
+              education: "PhD",
+              salary: "$75-150K",
+              employer: "Hospitals"
+            },
+            {
+              id: 68,
+              title: "College Lecturer",
+              education: "PhD + Postdoc",
+              salary: "$100-200K",
+              employer: "Biotech"
+            },
+            {
+              id: 69,
+              title: "Lab Manager",
+              education: "BS Biology",
+              salary: "$45-70K",
+              employer: "Startups"
+            },
+            {
+              id: 70,
+              title: "Research Coordinator",
+              education: "BS + MS",
+              salary: "$60-100K",
+              employer: "Government"
+            },
+            {
+              id: 71,
+              title: "Clinical Trial Coordinator",
+              education: "PhD",
+              salary: "$75-150K",
+              employer: "Universities"
+            },
+            {
+              id: 72,
+              title: "Biotech Entrepreneur",
+              education: "PhD + Postdoc",
+              salary: "$100-200K",
+              employer: "Pharma"
+            },
+            {
+              id: 73,
+              title: "Startup Founder",
+              education: "BS Biology",
+              salary: "$45-70K",
+              employer: "CDC/NIH"
+            },
+            {
+              id: 74,
+              title: "Lab Equipment Sales",
+              education: "BS + MS",
+              salary: "$60-100K",
+              employer: "Hospitals"
+            },
+            {
+              id: 75,
+              title: "Diagnostics Developer",
+              education: "PhD",
+              salary: "$75-150K",
+              employer: "Biotech"
+            },
+            {
+              id: 76,
+              title: "Antibiotic Stewardship",
+              education: "PhD + Postdoc",
+              salary: "$100-200K",
+              employer: "Startups"
+            }
+          ];
+
+          // ═══════════════════════════════════════════════════════════
+          // LESSON PLANS — 50 ready-to-use
+          // ═══════════════════════════════════════════════════════════
+          var LESSON_PLANS = [
+            {
+              id: 1,
+              title: "Onion Cell",
+              grade: "K-2",
+              materials: "Microscope + onion + iodine",
+              duration: "30 min",
+              concept: "See plant cells"
+            },
+            {
+              id: 2,
+              title: "Cheek Cell",
+              grade: "3-5",
+              materials: "Microscope + toothpick + methylene blue",
+              duration: "30 min",
+              concept: "See animal cells"
+            },
+            {
+              id: 3,
+              title: "Pond Water",
+              grade: "3-5",
+              materials: "Microscope + pond water",
+              duration: "45 min",
+              concept: "Find diverse organisms"
+            },
+            {
+              id: 4,
+              title: "Yeast Budding",
+              grade: "3-5",
+              materials: "Microscope + yeast + sugar water",
+              duration: "30 min",
+              concept: "See cells reproducing"
+            },
+            {
+              id: 5,
+              title: "Bacteria from Mouth",
+              grade: "6-8",
+              materials: "Sterile swab + slide + microscope",
+              duration: "30 min",
+              concept: "See own bacteria"
+            },
+            {
+              id: 6,
+              title: "Hay Infusion",
+              grade: "6-8",
+              materials: "Hay + pond water + 1 week wait",
+              duration: "1 week + 30 min",
+              concept: "Diverse protist community"
+            },
+            {
+              id: 7,
+              title: "Osmosis - Potato",
+              grade: "3-5",
+              materials: "Potato + salt water + plain water",
+              duration: "45 min",
+              concept: "See osmosis effect"
+            },
+            {
+              id: 8,
+              title: "Carrot Wilting",
+              grade: "3-5",
+              materials: "Carrot + salt + sugar water",
+              duration: "45 min",
+              concept: "Plant cell osmosis"
+            },
+            {
+              id: 9,
+              title: "Egg in Vinegar",
+              grade: "3-5",
+              materials: "Raw egg + vinegar",
+              duration: "24 hours",
+              concept: "Cell membrane (no shell)"
+            },
+            {
+              id: 10,
+              title: "Gram Staining",
+              grade: "9-12",
+              materials: "Bacteria + crystal violet + iodine + alcohol + safranin",
+              duration: "45 min",
+              concept: "Differentiate bacteria"
+            },
+            {
+              id: 11,
+              title: "Plant vs Animal Cells",
+              grade: "3-5",
+              materials: "Microscope + various",
+              duration: "60 min",
+              concept: "Compare structures"
+            },
+            {
+              id: 12,
+              title: "Cell Cycle Lab",
+              grade: "9-12",
+              materials: "Onion root tip + microscope",
+              duration: "60 min",
+              concept: "Identify mitosis phases"
+            },
+            {
+              id: 13,
+              title: "DNA Extraction (Strawberry)",
+              grade: "3-5",
+              materials: "Strawberry + soap + salt + alcohol",
+              duration: "30 min",
+              concept: "See real DNA"
+            },
+            {
+              id: 14,
+              title: "Build a Cell Model",
+              grade: "K-2",
+              materials: "Clay + plastic items",
+              duration: "60 min",
+              concept: "Build organelle model"
+            },
+            {
+              id: 15,
+              title: "Egg in Corn Syrup",
+              grade: "6-8",
+              materials: "Raw egg + corn syrup",
+              duration: "24 hours",
+              concept: "Reverse osmosis"
+            },
+            {
+              id: 16,
+              title: "Yeast Fermentation",
+              grade: "6-8",
+              materials: "Yeast + sugar + balloon",
+              duration: "60 min",
+              concept: "See CO2 production"
+            },
+            {
+              id: 17,
+              title: "Catalase Activity",
+              grade: "9-12",
+              materials: "Liver + H2O2",
+              duration: "45 min",
+              concept: "See enzyme action"
+            },
+            {
+              id: 18,
+              title: "DNA Replication Model",
+              grade: "6-8",
+              materials: "Pipe cleaners + colored beads",
+              duration: "60 min",
+              concept: "Build DNA model"
+            },
+            {
+              id: 19,
+              title: "Mitosis Stages",
+              grade: "9-12",
+              materials: "Prepared slides",
+              duration: "60 min",
+              concept: "Identify each phase"
+            },
+            {
+              id: 20,
+              title: "Slime Mold Maze",
+              grade: "6-8",
+              materials: "Physarum + agar + oat flakes",
+              duration: "1 week",
+              concept: "See problem solving"
+            },
+            {
+              id: 21,
+              title: "Petri Dish Bacterial Growth",
+              grade: "9-12",
+              materials: "Sterile petri + LB agar + swabs",
+              duration: "24 hours",
+              concept: "See colony growth"
+            },
+            {
+              id: 22,
+              title: "Antibiotic Disk Test",
+              grade: "9-12",
+              materials: "Bacterial lawn + antibiotic disks",
+              duration: "24 hours",
+              concept: "See zones of inhibition"
+            },
+            {
+              id: 23,
+              title: "Yeast Doubling Time",
+              grade: "9-12",
+              materials: "Yeast culture + spectrophotometer",
+              duration: "60 min",
+              concept: "Calculate growth rate"
+            },
+            {
+              id: 24,
+              title: "Algae in Light vs Dark",
+              grade: "9-12",
+              materials: "Algal culture + different light",
+              duration: "1 week",
+              concept: "Measure photosynthesis"
+            },
+            {
+              id: 25,
+              title: "Spirogyra Cell Wall",
+              grade: "9-12",
+              materials: "Spirogyra + microscope",
+              duration: "30 min",
+              concept: "See helical chloroplast"
+            },
+            {
+              id: 26,
+              title: "Counting Microbes (Coulter)",
+              grade: "9-12",
+              materials: "Coulter counter or hemocytometer",
+              duration: "60 min",
+              concept: "Quantify cells"
+            },
+            {
+              id: 27,
+              title: "Vital Stain (Trypan Blue)",
+              grade: "9-12",
+              materials: "Cells + trypan blue",
+              duration: "30 min",
+              concept: "Live vs dead"
+            },
+            {
+              id: 28,
+              title: "Yogurt Bacteria",
+              grade: "6-8",
+              materials: "Yogurt + slide",
+              duration: "30 min",
+              concept: "See Lactobacillus"
+            },
+            {
+              id: 29,
+              title: "Vinegar from Wine",
+              grade: "9-12",
+              materials: "Wine + Acetobacter",
+              duration: "1 week",
+              concept: "See bacterial conversion"
+            },
+            {
+              id: 30,
+              title: "Beer Fermentation",
+              grade: "9-12",
+              materials: "Wort + yeast + airlock",
+              duration: "2 weeks",
+              concept: "See yeast metabolism"
+            },
+            {
+              id: 31,
+              title: "Cheese Making",
+              grade: "6-8",
+              materials: "Milk + rennet",
+              duration: "24 hours",
+              concept: "See coagulation"
+            },
+            {
+              id: 32,
+              title: "Sauerkraut",
+              grade: "6-8",
+              materials: "Cabbage + salt + 2 weeks",
+              duration: "2 weeks",
+              concept: "See lactic acid fermentation"
+            },
+            {
+              id: 33,
+              title: "Kimchi",
+              grade: "6-8",
+              materials: "Vegetables + brine + 1 week",
+              duration: "1 week",
+              concept: "Korean fermentation"
+            },
+            {
+              id: 34,
+              title: "Sourdough Starter",
+              grade: "3-5",
+              materials: "Flour + water + wild yeast",
+              duration: "1 week",
+              concept: "Capture wild yeast"
+            },
+            {
+              id: 35,
+              title: "Bread Rising",
+              grade: "3-5",
+              materials: "Bread dough + yeast",
+              duration: "60 min",
+              concept: "See CO2 expansion"
+            },
+            {
+              id: 36,
+              title: "Plant Cell Color Change",
+              grade: "3-5",
+              materials: "Beet + boiling water",
+              duration: "30 min",
+              concept: "See pigments"
+            },
+            {
+              id: 37,
+              title: "Plant Cell Plasmolysis",
+              grade: "6-8",
+              materials: "Plant cells + salt water",
+              duration: "30 min",
+              concept: "See cell shrinkage"
+            },
+            {
+              id: 38,
+              title: "Microbial Hands",
+              grade: "K-2",
+              materials: "Petri dish + agar + handprints",
+              duration: "24 hours",
+              concept: "See bacteria on hands"
+            },
+            {
+              id: 39,
+              title: "Soap vs No Soap",
+              grade: "K-2",
+              materials: "Soap + petri dish + hand prints",
+              duration: "24 hours",
+              concept: "Hygiene impact"
+            },
+            {
+              id: 40,
+              title: "Bacteria Light Microscope",
+              grade: "6-8",
+              materials: "Stained slide + microscope",
+              duration: "30 min",
+              concept: "Practice using scope"
+            },
+            {
+              id: 41,
+              title: "Protist Movement",
+              grade: "3-5",
+              materials: "Pond water + microscope + video",
+              duration: "45 min",
+              concept: "Record movement types"
+            },
+            {
+              id: 42,
+              title: "Cell Coloring Page",
+              grade: "K-2",
+              materials: "Coloring page + crayons",
+              duration: "30 min",
+              concept: "Reinforce structure"
+            },
+            {
+              id: 43,
+              title: "Cellular Respiration Quiz",
+              grade: "6-8",
+              materials: "Question set + reading",
+              duration: "30 min",
+              concept: "Test understanding"
+            },
+            {
+              id: 44,
+              title: "Photosynthesis Maze",
+              grade: "3-5",
+              materials: "Maze worksheet",
+              duration: "15 min",
+              concept: "Trace the pathway"
+            },
+            {
+              id: 45,
+              title: "Build a Bacterium Model",
+              grade: "3-5",
+              materials: "Foam + pipe cleaners + paper",
+              duration: "60 min",
+              concept: "3D model"
+            },
+            {
+              id: 46,
+              title: "Microbe Trading Cards",
+              grade: "6-8",
+              materials: "Index cards + research",
+              duration: "90 min",
+              concept: "Create flashcards"
+            },
+            {
+              id: 47,
+              title: "Microbe Hide-and-Seek",
+              grade: "K-2",
+              materials: "Picture book + class search",
+              duration: "15 min",
+              concept: "Find cells in images"
+            },
+            {
+              id: 48,
+              title: "ATP Energy Cards",
+              grade: "3-5",
+              materials: "Card game illustrating energy",
+              duration: "30 min",
+              concept: "Energy transfer game"
+            },
+            {
+              id: 49,
+              title: "DNA Sequence Game",
+              grade: "6-8",
+              materials: "Card game with bases",
+              duration: "45 min",
+              concept: "Base pairing rules"
+            },
+            {
+              id: 50,
+              title: "Genetic Inheritance Punnett",
+              grade: "9-12",
+              materials: "Genetics problems",
+              duration: "60 min",
+              concept: "Predict offspring"
+            }
+          ];
+
+          // ═══════════════════════════════════════════════════════════
+          // CELL TRIVIA — 200 facts
+          // ═══════════════════════════════════════════════════════════
+          var CELL_TRIVIA = [
+            {
+              id: 1,
+              fact: "The human body has approximately 37.2 trillion cells.",
+              category: "Anatomy"
+            },
+            {
+              id: 2,
+              fact: "Red blood cells lack a nucleus in mammals.",
+              category: "Function"
+            },
+            {
+              id: 3,
+              fact: "Bacteria have been on Earth for over 3.5 billion years.",
+              category: "History"
+            },
+            {
+              id: 4,
+              fact: "Mitochondria have their own circular DNA.",
+              category: "Disease"
+            },
+            {
+              id: 5,
+              fact: "Chloroplasts also have their own DNA, supporting endosymbiosis.",
+              category: "Evolution"
+            },
+            {
+              id: 6,
+              fact: "Some bacteria can survive in temperatures above 100C.",
+              category: "Ecology"
+            },
+            {
+              id: 7,
+              fact: "Tardigrades can survive in the vacuum of space.",
+              category: "Anatomy"
+            },
+            {
+              id: 8,
+              fact: "The largest single cell is the ostrich egg yolk.",
+              category: "Function"
+            },
+            {
+              id: 9,
+              fact: "Slime molds can solve mazes without a brain.",
+              category: "History"
+            },
+            {
+              id: 10,
+              fact: "Some bacteria can produce light through bioluminescence.",
+              category: "Disease"
+            },
+            {
+              id: 11,
+              fact: "The human gut contains approximately 100 trillion bacteria.",
+              category: "Evolution"
+            },
+            {
+              id: 12,
+              fact: "Lactobacillus is essential for yogurt fermentation.",
+              category: "Ecology"
+            },
+            {
+              id: 13,
+              fact: "Penicillin was discovered accidentally in 1928.",
+              category: "Anatomy"
+            },
+            {
+              id: 14,
+              fact: "Yeast produces CO2 in baking, making bread rise.",
+              category: "Function"
+            },
+            {
+              id: 15,
+              fact: "Photosynthesis converts about 1% of sunlight to chemical energy.",
+              category: "History"
+            },
+            {
+              id: 16,
+              fact: "Plants produce most of the world's oxygen.",
+              category: "Disease"
+            },
+            {
+              id: 17,
+              fact: "Algae produce roughly 50% of Earth atmospheric oxygen.",
+              category: "Evolution"
+            },
+            {
+              id: 18,
+              fact: "Diatoms have intricate silica shells.",
+              category: "Ecology"
+            },
+            {
+              id: 19,
+              fact: "Some protists have multiple nuclei in a single cell.",
+              category: "Anatomy"
+            },
+            {
+              id: 20,
+              fact: "White blood cells can chase bacteria via chemotaxis.",
+              category: "Function"
+            },
+            {
+              id: 21,
+              fact: "Most antibiotics target bacterial cell wall or ribosome.",
+              category: "History"
+            },
+            {
+              id: 22,
+              fact: "Gram staining differentiates bacteria by cell wall structure.",
+              category: "Disease"
+            },
+            {
+              id: 23,
+              fact: "Some bacteria can produce endospores to survive harsh conditions.",
+              category: "Evolution"
+            },
+            {
+              id: 24,
+              fact: "Endospores can survive over 1,000 years.",
+              category: "Ecology"
+            },
+            {
+              id: 25,
+              fact: "The largest known virus is the Pandoravirus.",
+              category: "Anatomy"
+            },
+            {
+              id: 26,
+              fact: "Bacterial conjugation transfers DNA between cells.",
+              category: "Function"
+            },
+            {
+              id: 27,
+              fact: "Mitochondrial DNA is inherited from the mother.",
+              category: "History"
+            },
+            {
+              id: 28,
+              fact: "Cells reproduce by mitosis (asexual) or meiosis (sexual).",
+              category: "Disease"
+            },
+            {
+              id: 29,
+              fact: "The human body produces 2-3 million new red blood cells per second.",
+              category: "Evolution"
+            },
+            {
+              id: 30,
+              fact: "Stem cells can differentiate into any cell type.",
+              category: "Ecology"
+            },
+            {
+              id: 31,
+              fact: "Cancer cells lose the ability to stop dividing.",
+              category: "Anatomy"
+            },
+            {
+              id: 32,
+              fact: "Telomeres are protective end-caps on chromosomes.",
+              category: "Function"
+            },
+            {
+              id: 33,
+              fact: "Telomeres shorten with each cell division.",
+              category: "History"
+            },
+            {
+              id: 34,
+              fact: "CRISPR-Cas9 enables precise gene editing.",
+              category: "Disease"
+            },
+            {
+              id: 35,
+              fact: "mRNA vaccines were developed in unprecedented speed for COVID.",
+              category: "Evolution"
+            },
+            {
+              id: 36,
+              fact: "Some bacteria can fix nitrogen from the atmosphere.",
+              category: "Ecology"
+            },
+            {
+              id: 37,
+              fact: "Methanogen archaea produce methane.",
+              category: "Anatomy"
+            },
+            {
+              id: 38,
+              fact: "Halophile archaea thrive in extreme salt.",
+              category: "Function"
+            },
+            {
+              id: 39,
+              fact: "Thermophile archaea survive in hot springs.",
+              category: "History"
+            },
+            {
+              id: 40,
+              fact: "Cyanobacteria caused the Great Oxidation Event 2.4 billion years ago.",
+              category: "Disease"
+            },
+            {
+              id: 41,
+              fact: "Mitochondria evolved from ancient bacteria.",
+              category: "Evolution"
+            },
+            {
+              id: 42,
+              fact: "Chloroplasts evolved from ancient cyanobacteria.",
+              category: "Ecology"
+            },
+            {
+              id: 43,
+              fact: "All plant cells have cell walls; animal cells do not.",
+              category: "Anatomy"
+            },
+            {
+              id: 44,
+              fact: "Animal cells have lysosomes; plant cells generally do not.",
+              category: "Function"
+            },
+            {
+              id: 45,
+              fact: "Plant cells have large central vacuoles.",
+              category: "History"
+            },
+            {
+              id: 46,
+              fact: "Bacterial cell walls contain peptidoglycan.",
+              category: "Disease"
+            },
+            {
+              id: 47,
+              fact: "Fungal cell walls contain chitin.",
+              category: "Evolution"
+            },
+            {
+              id: 48,
+              fact: "Algae cell walls contain cellulose.",
+              category: "Ecology"
+            },
+            {
+              id: 49,
+              fact: "Some cells have multiple nuclei (osteoclasts, slime molds).",
+              category: "Anatomy"
+            },
+            {
+              id: 50,
+              fact: "Red blood cells live about 120 days.",
+              category: "Function"
+            },
+            {
+              id: 51,
+              fact: "White blood cells can live from days to years.",
+              category: "History"
+            },
+            {
+              id: 52,
+              fact: "Neurons can live the entire life of an organism.",
+              category: "Disease"
+            },
+            {
+              id: 53,
+              fact: "Bacterial cells can divide every 20 minutes in optimal conditions.",
+              category: "Evolution"
+            },
+            {
+              id: 54,
+              fact: "Some bacteria can grow in radioactive environments.",
+              category: "Ecology"
+            },
+            {
+              id: 55,
+              fact: "The smallest known cell is Mycoplasma at 200 nm diameter.",
+              category: "Anatomy"
+            },
+            {
+              id: 56,
+              fact: "The largest single-celled organism is Caulerpa (~1m long).",
+              category: "Function"
+            },
+            {
+              id: 57,
+              fact: "Some bacteria can survive extreme pressures of deep ocean trenches.",
+              category: "History"
+            },
+            {
+              id: 58,
+              fact: "Antibiotic resistance evolved naturally in soil bacteria.",
+              category: "Disease"
+            },
+            {
+              id: 59,
+              fact: "MRSA is a major antibiotic-resistant superbug.",
+              category: "Evolution"
+            },
+            {
+              id: 60,
+              fact: "Hospital-acquired infections kill ~70K Americans yearly.",
+              category: "Ecology"
+            },
+            {
+              id: 61,
+              fact: "Probiotics are beneficial live bacteria.",
+              category: "Anatomy"
+            },
+            {
+              id: 62,
+              fact: "Prebiotics are food for beneficial bacteria.",
+              category: "Function"
+            },
+            {
+              id: 63,
+              fact: "Fecal microbiota transplant treats C. difficile infection.",
+              category: "History"
+            },
+            {
+              id: 64,
+              fact: "About 99% of bacteria are unculturable in lab.",
+              category: "Disease"
+            },
+            {
+              id: 65,
+              fact: "Metagenomics sequences DNA directly from environment.",
+              category: "Evolution"
+            },
+            {
+              id: 66,
+              fact: "Microbial diversity is highest in soil.",
+              category: "Ecology"
+            },
+            {
+              id: 67,
+              fact: "Marine microbes drive global biogeochemical cycles.",
+              category: "Anatomy"
+            },
+            {
+              id: 68,
+              fact: "Bacteria in your gut weigh about 2 kg total.",
+              category: "Function"
+            },
+            {
+              id: 69,
+              fact: "Different humans have largely different gut microbiomes.",
+              category: "History"
+            },
+            {
+              id: 70,
+              fact: "Diet shapes gut microbiome composition.",
+              category: "Disease"
+            },
+            {
+              id: 71,
+              fact: "Antibiotics can disrupt gut microbiome for months.",
+              category: "Evolution"
+            },
+            {
+              id: 72,
+              fact: "Gut microbes produce neurotransmitters affecting brain.",
+              category: "Ecology"
+            },
+            {
+              id: 73,
+              fact: "Gut-brain axis links microbes to mood.",
+              category: "Anatomy"
+            },
+            {
+              id: 74,
+              fact: "Bacterial infections of brain are particularly dangerous.",
+              category: "Function"
+            },
+            {
+              id: 75,
+              fact: "Blood-brain barrier protects from most pathogens.",
+              category: "History"
+            },
+            {
+              id: 76,
+              fact: "Some bacteria cross the blood-brain barrier (meningitis).",
+              category: "Disease"
+            },
+            {
+              id: 77,
+              fact: "Some viruses spread through bodily fluids.",
+              category: "Evolution"
+            },
+            {
+              id: 78,
+              fact: "Other viruses spread through respiratory droplets.",
+              category: "Ecology"
+            },
+            {
+              id: 79,
+              fact: "Some viruses spread through fecal-oral route.",
+              category: "Anatomy"
+            },
+            {
+              id: 80,
+              fact: "mRNA vaccines do not affect DNA.",
+              category: "Function"
+            },
+            {
+              id: 81,
+              fact: "mRNA vaccines train immune system without infection.",
+              category: "History"
+            },
+            {
+              id: 82,
+              fact: "COVID-19 vaccines saved millions of lives.",
+              category: "Disease"
+            },
+            {
+              id: 83,
+              fact: "Polio vaccine eliminated polio in most countries.",
+              category: "Evolution"
+            },
+            {
+              id: 84,
+              fact: "Smallpox was eradicated by vaccination (1980).",
+              category: "Ecology"
+            },
+            {
+              id: 85,
+              fact: "Measles is being eliminated through vaccination.",
+              category: "Anatomy"
+            },
+            {
+              id: 86,
+              fact: "Vaccination is one of greatest medical achievements.",
+              category: "Function"
+            },
+            {
+              id: 87,
+              fact: "Some bacteria produce useful enzymes for industry.",
+              category: "History"
+            },
+            {
+              id: 88,
+              fact: "Penicillium produces penicillin antibiotic.",
+              category: "Disease"
+            },
+            {
+              id: 89,
+              fact: "E. coli is used to produce insulin (recombinant DNA).",
+              category: "Evolution"
+            },
+            {
+              id: 90,
+              fact: "Yeast produces beer, wine, bread, and biofuels.",
+              category: "Ecology"
+            },
+            {
+              id: 91,
+              fact: "Bacteria in sewage treatment break down waste.",
+              category: "Anatomy"
+            },
+            {
+              id: 92,
+              fact: "Some bacteria can break down oil spills (bioremediation).",
+              category: "Function"
+            },
+            {
+              id: 93,
+              fact: "Mycorrhizal fungi help plants absorb nutrients.",
+              category: "History"
+            },
+            {
+              id: 94,
+              fact: "Nitrogen-fixing bacteria enable plant growth.",
+              category: "Disease"
+            },
+            {
+              id: 95,
+              fact: "Rhizobia in legume root nodules fix nitrogen.",
+              category: "Evolution"
+            },
+            {
+              id: 96,
+              fact: "Cyanobacteria fix nitrogen in oceans.",
+              category: "Ecology"
+            },
+            {
+              id: 97,
+              fact: "Plants depend on microbes for survival.",
+              category: "Anatomy"
+            },
+            {
+              id: 98,
+              fact: "Microbes have been on Earth far longer than complex life.",
+              category: "Function"
+            },
+            {
+              id: 99,
+              fact: "Earth is largely a microbial planet.",
+              category: "History"
+            },
+            {
+              id: 100,
+              fact: "Most species on Earth are microbes.",
+              category: "Disease"
+            },
+            {
+              id: 101,
+              fact: "Humans coexist with countless microbes.",
+              category: "Evolution"
+            },
+            {
+              id: 102,
+              fact: "Microbes shape global ecosystems.",
+              category: "Ecology"
+            },
+            {
+              id: 103,
+              fact: "Without microbes, biosphere collapses.",
+              category: "Anatomy"
+            },
+            {
+              id: 104,
+              fact: "Microbes recycle nutrients, breaking down dead matter.",
+              category: "Function"
+            },
+            {
+              id: 105,
+              fact: "Microbes are essential to nitrogen, carbon, sulfur cycles.",
+              category: "History"
+            },
+            {
+              id: 106,
+              fact: "Microbial life exists kilometers underground.",
+              category: "Disease"
+            },
+            {
+              id: 107,
+              fact: "Microbial life in deep ocean uses hydrogen sulfide.",
+              category: "Evolution"
+            },
+            {
+              id: 108,
+              fact: "Microbes turn rock into soil over time.",
+              category: "Ecology"
+            },
+            {
+              id: 109,
+              fact: "Symbiosis between microbes and plants is widespread.",
+              category: "Anatomy"
+            },
+            {
+              id: 110,
+              fact: "Coral reefs depend on symbiotic algae.",
+              category: "Function"
+            },
+            {
+              id: 111,
+              fact: "Lichens are bacteria-fungi symbiosis.",
+              category: "History"
+            },
+            {
+              id: 112,
+              fact: "Termites have microbial symbionts for cellulose digestion.",
+              category: "Disease"
+            },
+            {
+              id: 113,
+              fact: "Ruminants have microbial fermentation in their stomachs.",
+              category: "Evolution"
+            },
+            {
+              id: 114,
+              fact: "Cows produce methane via microbial digestion.",
+              category: "Ecology"
+            },
+            {
+              id: 115,
+              fact: "Methane is potent greenhouse gas.",
+              category: "Anatomy"
+            },
+            {
+              id: 116,
+              fact: "Microbial biofilms cause many infections.",
+              category: "Function"
+            },
+            {
+              id: 117,
+              fact: "Plaque on teeth is a biofilm.",
+              category: "History"
+            },
+            {
+              id: 118,
+              fact: "Indoor surfaces are colonized by biofilms.",
+              category: "Disease"
+            },
+            {
+              id: 119,
+              fact: "Pipes can develop biofilms reducing flow.",
+              category: "Evolution"
+            },
+            {
+              id: 120,
+              fact: "Quorum sensing coordinates biofilm formation.",
+              category: "Ecology"
+            },
+            {
+              id: 121,
+              fact: "Some biofilms are beneficial in industry.",
+              category: "Anatomy"
+            },
+            {
+              id: 122,
+              fact: "Biofilms can be 1000x more resistant to antibiotics.",
+              category: "Function"
+            },
+            {
+              id: 123,
+              fact: "Bacterial communication via molecules is widespread.",
+              category: "History"
+            },
+            {
+              id: 124,
+              fact: "Bacteria can have complex social behaviors.",
+              category: "Disease"
+            },
+            {
+              id: 125,
+              fact: "Some bacteria are predators of other bacteria.",
+              category: "Evolution"
+            },
+            {
+              id: 126,
+              fact: "Some bacteria form multicellular structures (myxobacteria).",
+              category: "Ecology"
+            },
+            {
+              id: 127,
+              fact: "Cell theory established cells as fundamental units of life.",
+              category: "Anatomy"
+            },
+            {
+              id: 128,
+              fact: "Modern cell biology spans from molecular to organism level.",
+              category: "Function"
+            },
+            {
+              id: 129,
+              fact: "Stem cell research holds promise for regenerative medicine.",
+              category: "History"
+            },
+            {
+              id: 130,
+              fact: "Induced pluripotent stem cells (iPSCs) revolutionized field.",
+              category: "Disease"
+            },
+            {
+              id: 131,
+              fact: "CRISPR is rewriting biotechnology.",
+              category: "Evolution"
+            },
+            {
+              id: 132,
+              fact: "Synthetic biology designs new cells.",
+              category: "Ecology"
+            },
+            {
+              id: 133,
+              fact: "Artificial life forms have been created in lab.",
+              category: "Anatomy"
+            },
+            {
+              id: 134,
+              fact: "Genome editing of human embryos remains controversial.",
+              category: "Function"
+            },
+            {
+              id: 135,
+              fact: "CAR-T cell therapy targets cancers using engineered T cells.",
+              category: "History"
+            },
+            {
+              id: 136,
+              fact: "mRNA technology has applications beyond COVID.",
+              category: "Disease"
+            },
+            {
+              id: 137,
+              fact: "Lab-grown meat from cell cultures is emerging industry.",
+              category: "Evolution"
+            },
+            {
+              id: 138,
+              fact: "Bacteria can be engineered to produce drugs.",
+              category: "Ecology"
+            },
+            {
+              id: 139,
+              fact: "Algae are being engineered for biofuels.",
+              category: "Anatomy"
+            },
+            {
+              id: 140,
+              fact: "Microbial fuel cells convert organic matter to electricity.",
+              category: "Function"
+            },
+            {
+              id: 141,
+              fact: "Bioreactors grow cells for products.",
+              category: "History"
+            },
+            {
+              id: 142,
+              fact: "Continuous cell culture produces vaccines, antibodies, enzymes.",
+              category: "Disease"
+            },
+            {
+              id: 143,
+              fact: "Recombinant DNA technology started modern biotech (1973).",
+              category: "Evolution"
+            },
+            {
+              id: 144,
+              fact: "PCR enables analyzing DNA in tiny amounts.",
+              category: "Ecology"
+            },
+            {
+              id: 145,
+              fact: "Sanger sequencing read first complete genome (1995).",
+              category: "Anatomy"
+            },
+            {
+              id: 146,
+              fact: "Human Genome Project completed in 2003.",
+              category: "Function"
+            },
+            {
+              id: 147,
+              fact: "Next-gen sequencing costs dropped dramatically.",
+              category: "History"
+            },
+            {
+              id: 148,
+              fact: "You can now sequence your entire genome for ~$100.",
+              category: "Disease"
+            },
+            {
+              id: 149,
+              fact: "Direct-to-consumer DNA testing is widespread.",
+              category: "Evolution"
+            },
+            {
+              id: 150,
+              fact: "Genetic engineering of crops is widespread.",
+              category: "Ecology"
+            },
+            {
+              id: 151,
+              fact: "GMOs feed billions of people worldwide.",
+              category: "Anatomy"
+            },
+            {
+              id: 152,
+              fact: "Some bacteria can degrade pollutants.",
+              category: "Function"
+            },
+            {
+              id: 153,
+              fact: "Bioremediation cleans contaminated sites.",
+              category: "History"
+            },
+            {
+              id: 154,
+              fact: "Wastewater treatment uses bacterial communities.",
+              category: "Disease"
+            },
+            {
+              id: 155,
+              fact: "Anaerobic digestion produces biogas.",
+              category: "Evolution"
+            },
+            {
+              id: 156,
+              fact: "Composting is microbial decomposition.",
+              category: "Ecology"
+            },
+            {
+              id: 157,
+              fact: "Fermentation has been used by humans for thousands of years.",
+              category: "Anatomy"
+            },
+            {
+              id: 158,
+              fact: "Beer brewing predates writing.",
+              category: "Function"
+            },
+            {
+              id: 159,
+              fact: "Yogurt has been made for thousands of years.",
+              category: "History"
+            },
+            {
+              id: 160,
+              fact: "Cheese existed before the Bronze Age.",
+              category: "Disease"
+            },
+            {
+              id: 161,
+              fact: "Mummies preserved by ancient Egyptian techniques.",
+              category: "Evolution"
+            },
+            {
+              id: 162,
+              fact: "Soil microbes turn organic matter into nutrients for plants.",
+              category: "Ecology"
+            },
+            {
+              id: 163,
+              fact: "Plants and microbes co-evolved over hundreds of millions of years.",
+              category: "Anatomy"
+            },
+            {
+              id: 164,
+              fact: "Microbes shape the gut-brain axis affecting mood and behavior.",
+              category: "Function"
+            },
+            {
+              id: 165,
+              fact: "Some viruses have RNA instead of DNA.",
+              category: "History"
+            },
+            {
+              id: 166,
+              fact: "Viruses are not technically alive — they require host cells.",
+              category: "Disease"
+            },
+            {
+              id: 167,
+              fact: "Viral pandemics shape human history (1918 flu, COVID).",
+              category: "Evolution"
+            },
+            {
+              id: 168,
+              fact: "Antibiotics revolutionized medicine in 1940s.",
+              category: "Ecology"
+            },
+            {
+              id: 169,
+              fact: "Penicillin saved countless WWII soldiers.",
+              category: "Anatomy"
+            },
+            {
+              id: 170,
+              fact: "Antibiotic resistance is now a major global health crisis.",
+              category: "Function"
+            },
+            {
+              id: 171,
+              fact: "WHO declared antibiotic resistance one of top 10 health threats.",
+              category: "History"
+            },
+            {
+              id: 172,
+              fact: "New antibiotics are being developed but slowly.",
+              category: "Disease"
+            },
+            {
+              id: 173,
+              fact: "Bacteriophages (phages) may replace antibiotics.",
+              category: "Evolution"
+            },
+            {
+              id: 174,
+              fact: "Phage therapy was used in Soviet Union for decades.",
+              category: "Ecology"
+            },
+            {
+              id: 175,
+              fact: "Phages are viruses that infect bacteria.",
+              category: "Anatomy"
+            },
+            {
+              id: 176,
+              fact: "Phages outnumber bacteria 10:1 on Earth.",
+              category: "Function"
+            },
+            {
+              id: 177,
+              fact: "Phages drive bacterial evolution.",
+              category: "History"
+            },
+            {
+              id: 178,
+              fact: "CRISPR was inspired by bacterial phage defense system.",
+              category: "Disease"
+            },
+            {
+              id: 179,
+              fact: "Cas9 is just one of many CRISPR-associated proteins.",
+              category: "Evolution"
+            },
+            {
+              id: 180,
+              fact: "Different CRISPR systems exist in nature.",
+              category: "Ecology"
+            },
+            {
+              id: 181,
+              fact: "Cells are surprisingly noisy at molecular level.",
+              category: "Anatomy"
+            },
+            {
+              id: 182,
+              fact: "Stochastic gene expression creates cellular diversity.",
+              category: "Function"
+            },
+            {
+              id: 183,
+              fact: "Single-cell sequencing reveals cell-to-cell differences.",
+              category: "History"
+            },
+            {
+              id: 184,
+              fact: "Some cells exist in multiple discrete states.",
+              category: "Disease"
+            },
+            {
+              id: 185,
+              fact: "Cell signaling networks are complex.",
+              category: "Evolution"
+            },
+            {
+              id: 186,
+              fact: "Signal cascades amplify cellular responses.",
+              category: "Ecology"
+            },
+            {
+              id: 187,
+              fact: "Cellular memory exists at multiple levels.",
+              category: "Anatomy"
+            },
+            {
+              id: 188,
+              fact: "Epigenetic changes can be inherited.",
+              category: "Function"
+            },
+            {
+              id: 189,
+              fact: "Histone modifications regulate gene expression.",
+              category: "History"
+            },
+            {
+              id: 190,
+              fact: "DNA methylation silences genes.",
+              category: "Disease"
+            },
+            {
+              id: 191,
+              fact: "Non-coding RNAs regulate gene expression.",
+              category: "Evolution"
+            },
+            {
+              id: 192,
+              fact: "Long non-coding RNAs are a recent discovery.",
+              category: "Ecology"
+            },
+            {
+              id: 193,
+              fact: "MicroRNAs fine-tune gene expression.",
+              category: "Anatomy"
+            },
+            {
+              id: 194,
+              fact: "Three-dimensional genome organization matters.",
+              category: "Function"
+            },
+            {
+              id: 195,
+              fact: "Topologically associated domains organize DNA in space.",
+              category: "History"
+            },
+            {
+              id: 196,
+              fact: "Cell types differ primarily in gene expression.",
+              category: "Disease"
+            },
+            {
+              id: 197,
+              fact: "Differentiation involves committed expression patterns.",
+              category: "Evolution"
+            },
+            {
+              id: 198,
+              fact: "Stem cells can reprogram between states.",
+              category: "Ecology"
+            },
+            {
+              id: 199,
+              fact: "Lineage tracing reveals cellular history.",
+              category: "Anatomy"
+            },
+            {
+              id: 200,
+              fact: "Single-cell technologies are revolutionizing biology.",
+              category: "Function"
+            }
+          ];
+
+
+          // ═══════════════════════════════════════════════════════════
+          // MICROBIAL SPECIES — 200 detailed profiles
+          // ═══════════════════════════════════════════════════════════
+          var MICROBE_SPECIES = [
+            {
+              id: 1,
+              name: "Escherichia coli",
+              kingdom: "Bacteria",
+              description: "Gram negative rod, found in intestines",
+              habitat: "Various",
+              pathogenicity: "None",
+              culturable: "Difficult"
+            },
+            {
+              id: 2,
+              name: "Staphylococcus aureus",
+              kingdom: "Bacteria",
+              description: "Gram positive cocci, skin + nose flora",
+              habitat: "Aquatic",
+              pathogenicity: "Mild",
+              culturable: "Yes"
+            },
+            {
+              id: 3,
+              name: "Bacillus subtilis",
+              kingdom: "Bacteria",
+              description: "Soil bacterium, model for sporulation",
+              habitat: "Soil",
+              pathogenicity: "Moderate",
+              culturable: "Yes"
+            },
+            {
+              id: 4,
+              name: "Lactobacillus acidophilus",
+              kingdom: "Bacteria",
+              description: "Gut microbiome + yogurt",
+              habitat: "Mammalian host",
+              pathogenicity: "Severe",
+              culturable: "Difficult"
+            },
+            {
+              id: 5,
+              name: "Streptococcus thermophilus",
+              kingdom: "Bacteria",
+              description: "Yogurt + cheese starter",
+              habitat: "Marine",
+              pathogenicity: "None",
+              culturable: "Yes"
+            },
+            {
+              id: 6,
+              name: "Bifidobacterium",
+              kingdom: "Bacteria",
+              description: "Common in infant gut",
+              habitat: "Various",
+              pathogenicity: "Mild",
+              culturable: "Yes"
+            },
+            {
+              id: 7,
+              name: "Pseudomonas aeruginosa",
+              kingdom: "Bacteria",
+              description: "Hospital infections + biofilms",
+              habitat: "Aquatic",
+              pathogenicity: "Moderate",
+              culturable: "Difficult"
+            },
+            {
+              id: 8,
+              name: "Mycobacterium tuberculosis",
+              kingdom: "Bacteria",
+              description: "Causes tuberculosis",
+              habitat: "Soil",
+              pathogenicity: "Severe",
+              culturable: "Yes"
+            },
+            {
+              id: 9,
+              name: "Treponema pallidum",
+              kingdom: "Bacteria",
+              description: "Causes syphilis (spirochete)",
+              habitat: "Mammalian host",
+              pathogenicity: "None",
+              culturable: "Yes"
+            },
+            {
+              id: 10,
+              name: "Borrelia burgdorferi",
+              kingdom: "Bacteria",
+              description: "Causes Lyme disease (spirochete)",
+              habitat: "Marine",
+              pathogenicity: "Mild",
+              culturable: "Difficult"
+            },
+            {
+              id: 11,
+              name: "Vibrio cholerae",
+              kingdom: "Bacteria",
+              description: "Causes cholera",
+              habitat: "Various",
+              pathogenicity: "Moderate",
+              culturable: "Yes"
+            },
+            {
+              id: 12,
+              name: "Yersinia pestis",
+              kingdom: "Bacteria",
+              description: "Caused Black Death",
+              habitat: "Aquatic",
+              pathogenicity: "Severe",
+              culturable: "Yes"
+            },
+            {
+              id: 13,
+              name: "Bacillus anthracis",
+              kingdom: "Bacteria",
+              description: "Causes anthrax",
+              habitat: "Soil",
+              pathogenicity: "None",
+              culturable: "Difficult"
+            },
+            {
+              id: 14,
+              name: "Clostridium tetani",
+              kingdom: "Bacteria",
+              description: "Causes tetanus",
+              habitat: "Mammalian host",
+              pathogenicity: "Mild",
+              culturable: "Yes"
+            },
+            {
+              id: 15,
+              name: "Clostridium botulinum",
+              kingdom: "Bacteria",
+              description: "Produces botulinum toxin",
+              habitat: "Marine",
+              pathogenicity: "Moderate",
+              culturable: "Yes"
+            },
+            {
+              id: 16,
+              name: "Clostridium difficile",
+              kingdom: "Bacteria",
+              description: "Hospital-acquired colitis",
+              habitat: "Various",
+              pathogenicity: "Severe",
+              culturable: "Difficult"
+            },
+            {
+              id: 17,
+              name: "Neisseria gonorrhoeae",
+              kingdom: "Bacteria",
+              description: "Causes gonorrhea",
+              habitat: "Aquatic",
+              pathogenicity: "None",
+              culturable: "Yes"
+            },
+            {
+              id: 18,
+              name: "Salmonella enterica",
+              kingdom: "Bacteria",
+              description: "Foodborne illness",
+              habitat: "Soil",
+              pathogenicity: "Mild",
+              culturable: "Yes"
+            },
+            {
+              id: 19,
+              name: "Listeria monocytogenes",
+              kingdom: "Bacteria",
+              description: "Foodborne pathogen",
+              habitat: "Mammalian host",
+              pathogenicity: "Moderate",
+              culturable: "Difficult"
+            },
+            {
+              id: 20,
+              name: "Campylobacter jejuni",
+              kingdom: "Bacteria",
+              description: "Most common foodborne illness",
+              habitat: "Marine",
+              pathogenicity: "Severe",
+              culturable: "Yes"
+            },
+            {
+              id: 21,
+              name: "Helicobacter pylori",
+              kingdom: "Bacteria",
+              description: "Causes stomach ulcers",
+              habitat: "Various",
+              pathogenicity: "None",
+              culturable: "Yes"
+            },
+            {
+              id: 22,
+              name: "Legionella pneumophila",
+              kingdom: "Bacteria",
+              description: "Causes Legionnaires disease",
+              habitat: "Aquatic",
+              pathogenicity: "Mild",
+              culturable: "Difficult"
+            },
+            {
+              id: 23,
+              name: "Chlamydia trachomatis",
+              kingdom: "Bacteria",
+              description: "Causes chlamydia STI",
+              habitat: "Soil",
+              pathogenicity: "Moderate",
+              culturable: "Yes"
+            },
+            {
+              id: 24,
+              name: "Mycoplasma pneumoniae",
+              kingdom: "Bacteria",
+              description: "Walking pneumonia",
+              habitat: "Mammalian host",
+              pathogenicity: "Severe",
+              culturable: "Yes"
+            },
+            {
+              id: 25,
+              name: "Corynebacterium diphtheriae",
+              kingdom: "Bacteria",
+              description: "Causes diphtheria",
+              habitat: "Marine",
+              pathogenicity: "None",
+              culturable: "Difficult"
+            },
+            {
+              id: 26,
+              name: "Bordetella pertussis",
+              kingdom: "Bacteria",
+              description: "Causes whooping cough",
+              habitat: "Various",
+              pathogenicity: "Mild",
+              culturable: "Yes"
+            },
+            {
+              id: 27,
+              name: "Haemophilus influenzae",
+              kingdom: "Bacteria",
+              description: "Childhood infections",
+              habitat: "Aquatic",
+              pathogenicity: "Moderate",
+              culturable: "Yes"
+            },
+            {
+              id: 28,
+              name: "Streptococcus pneumoniae",
+              kingdom: "Bacteria",
+              description: "Pneumonia + ear infections",
+              habitat: "Soil",
+              pathogenicity: "Severe",
+              culturable: "Difficult"
+            },
+            {
+              id: 29,
+              name: "Streptococcus pyogenes",
+              kingdom: "Bacteria",
+              description: "Strep throat + scarlet fever",
+              habitat: "Mammalian host",
+              pathogenicity: "None",
+              culturable: "Yes"
+            },
+            {
+              id: 30,
+              name: "Neisseria meningitidis",
+              kingdom: "Bacteria",
+              description: "Causes meningitis",
+              habitat: "Marine",
+              pathogenicity: "Mild",
+              culturable: "Yes"
+            },
+            {
+              id: 31,
+              name: "Rickettsia rickettsii",
+              kingdom: "Bacteria",
+              description: "Causes Rocky Mountain spotted fever",
+              habitat: "Various",
+              pathogenicity: "Moderate",
+              culturable: "Difficult"
+            },
+            {
+              id: 32,
+              name: "Anabaena",
+              kingdom: "Cyanobacteria",
+              description: "Nitrogen-fixing",
+              habitat: "Aquatic",
+              pathogenicity: "Severe",
+              culturable: "Yes"
+            },
+            {
+              id: 33,
+              name: "Nostoc",
+              kingdom: "Cyanobacteria",
+              description: "Forms gelatinous colonies",
+              habitat: "Soil",
+              pathogenicity: "None",
+              culturable: "Yes"
+            },
+            {
+              id: 34,
+              name: "Synechococcus",
+              kingdom: "Cyanobacteria",
+              description: "Marine plankton",
+              habitat: "Mammalian host",
+              pathogenicity: "Mild",
+              culturable: "Difficult"
+            },
+            {
+              id: 35,
+              name: "Prochlorococcus",
+              kingdom: "Cyanobacteria",
+              description: "Most abundant photosynthetic cell on Earth",
+              habitat: "Marine",
+              pathogenicity: "Moderate",
+              culturable: "Yes"
+            },
+            {
+              id: 36,
+              name: "Archaeon (Methanobrevibacter)",
+              kingdom: "Archaea",
+              description: "Methane producer in gut",
+              habitat: "Various",
+              pathogenicity: "Severe",
+              culturable: "Yes"
+            },
+            {
+              id: 37,
+              name: "Halobacterium salinarum",
+              kingdom: "Archaea",
+              description: "Salt-loving, pink color",
+              habitat: "Aquatic",
+              pathogenicity: "None",
+              culturable: "Difficult"
+            },
+            {
+              id: 38,
+              name: "Sulfolobus",
+              kingdom: "Archaea",
+              description: "Hot acidic springs",
+              habitat: "Soil",
+              pathogenicity: "Mild",
+              culturable: "Yes"
+            },
+            {
+              id: 39,
+              name: "Thermoplasma",
+              kingdom: "Archaea",
+              description: "Extreme thermophile",
+              habitat: "Mammalian host",
+              pathogenicity: "Moderate",
+              culturable: "Yes"
+            },
+            {
+              id: 40,
+              name: "Pyrococcus",
+              kingdom: "Archaea",
+              description: "Hyperthermophile in vents",
+              habitat: "Marine",
+              pathogenicity: "Severe",
+              culturable: "Difficult"
+            },
+            {
+              id: 41,
+              name: "Saccharomyces cerevisiae",
+              kingdom: "Fungus",
+              description: "Bakers + brewers yeast",
+              habitat: "Various",
+              pathogenicity: "None",
+              culturable: "Yes"
+            },
+            {
+              id: 42,
+              name: "Schizosaccharomyces pombe",
+              kingdom: "Fungus",
+              description: "Model fission yeast",
+              habitat: "Aquatic",
+              pathogenicity: "Mild",
+              culturable: "Yes"
+            },
+            {
+              id: 43,
+              name: "Candida albicans",
+              kingdom: "Fungus",
+              description: "Causes yeast infections",
+              habitat: "Soil",
+              pathogenicity: "Moderate",
+              culturable: "Difficult"
+            },
+            {
+              id: 44,
+              name: "Penicillium chrysogenum",
+              kingdom: "Fungus",
+              description: "Produces penicillin",
+              habitat: "Mammalian host",
+              pathogenicity: "Severe",
+              culturable: "Yes"
+            },
+            {
+              id: 45,
+              name: "Aspergillus niger",
+              kingdom: "Fungus",
+              description: "Industrial citric acid producer",
+              habitat: "Marine",
+              pathogenicity: "None",
+              culturable: "Yes"
+            },
+            {
+              id: 46,
+              name: "Aspergillus fumigatus",
+              kingdom: "Fungus",
+              description: "Lung infections",
+              habitat: "Various",
+              pathogenicity: "Mild",
+              culturable: "Difficult"
+            },
+            {
+              id: 47,
+              name: "Trichoderma",
+              kingdom: "Fungus",
+              description: "Soil + agriculture",
+              habitat: "Aquatic",
+              pathogenicity: "Moderate",
+              culturable: "Yes"
+            },
+            {
+              id: 48,
+              name: "Neurospora crassa",
+              kingdom: "Fungus",
+              description: "Model organism",
+              habitat: "Soil",
+              pathogenicity: "Severe",
+              culturable: "Yes"
+            },
+            {
+              id: 49,
+              name: "Cryptococcus neoformans",
+              kingdom: "Fungus",
+              description: "Causes meningitis",
+              habitat: "Mammalian host",
+              pathogenicity: "None",
+              culturable: "Difficult"
+            },
+            {
+              id: 50,
+              name: "Histoplasma capsulatum",
+              kingdom: "Fungus",
+              description: "Causes histoplasmosis",
+              habitat: "Marine",
+              pathogenicity: "Mild",
+              culturable: "Yes"
+            },
+            {
+              id: 51,
+              name: "Trichinella spiralis",
+              kingdom: "Parasite",
+              description: "Causes trichinosis",
+              habitat: "Various",
+              pathogenicity: "Moderate",
+              culturable: "Yes"
+            },
+            {
+              id: 52,
+              name: "Schistosoma",
+              kingdom: "Parasite",
+              description: "Causes schistosomiasis",
+              habitat: "Aquatic",
+              pathogenicity: "Severe",
+              culturable: "Difficult"
+            },
+            {
+              id: 53,
+              name: "Taenia (tapeworm)",
+              kingdom: "Parasite",
+              description: "Causes taeniasis",
+              habitat: "Soil",
+              pathogenicity: "None",
+              culturable: "Yes"
+            },
+            {
+              id: 54,
+              name: "Ascaris lumbricoides",
+              kingdom: "Parasite",
+              description: "Most common roundworm",
+              habitat: "Mammalian host",
+              pathogenicity: "Mild",
+              culturable: "Yes"
+            },
+            {
+              id: 55,
+              name: "Trichomonas vaginalis",
+              kingdom: "Protist",
+              description: "Causes STI",
+              habitat: "Marine",
+              pathogenicity: "Moderate",
+              culturable: "Difficult"
+            },
+            {
+              id: 56,
+              name: "Trypanosoma brucei",
+              kingdom: "Protist",
+              description: "Sleeping sickness",
+              habitat: "Various",
+              pathogenicity: "Severe",
+              culturable: "Yes"
+            },
+            {
+              id: 57,
+              name: "Trypanosoma cruzi",
+              kingdom: "Protist",
+              description: "Chagas disease",
+              habitat: "Aquatic",
+              pathogenicity: "None",
+              culturable: "Yes"
+            },
+            {
+              id: 58,
+              name: "Plasmodium falciparum",
+              kingdom: "Protist",
+              description: "Most deadly malaria parasite",
+              habitat: "Soil",
+              pathogenicity: "Mild",
+              culturable: "Difficult"
+            },
+            {
+              id: 59,
+              name: "Plasmodium vivax",
+              kingdom: "Protist",
+              description: "Causes malaria",
+              habitat: "Mammalian host",
+              pathogenicity: "Moderate",
+              culturable: "Yes"
+            },
+            {
+              id: 60,
+              name: "Plasmodium ovale",
+              kingdom: "Protist",
+              description: "Less common malaria",
+              habitat: "Marine",
+              pathogenicity: "Severe",
+              culturable: "Yes"
+            },
+            {
+              id: 61,
+              name: "Plasmodium malariae",
+              kingdom: "Protist",
+              description: "Less common malaria",
+              habitat: "Various",
+              pathogenicity: "None",
+              culturable: "Difficult"
+            },
+            {
+              id: 62,
+              name: "Plasmodium knowlesi",
+              kingdom: "Protist",
+              description: "Newly recognized malaria parasite",
+              habitat: "Aquatic",
+              pathogenicity: "Mild",
+              culturable: "Yes"
+            },
+            {
+              id: 63,
+              name: "Toxoplasma gondii",
+              kingdom: "Protist",
+              description: "Cat-borne parasite",
+              habitat: "Soil",
+              pathogenicity: "Moderate",
+              culturable: "Yes"
+            },
+            {
+              id: 64,
+              name: "Giardia lamblia",
+              kingdom: "Protist",
+              description: "Waterborne diarrhea",
+              habitat: "Mammalian host",
+              pathogenicity: "Severe",
+              culturable: "Difficult"
+            },
+            {
+              id: 65,
+              name: "Entamoeba histolytica",
+              kingdom: "Protist",
+              description: "Amoebic dysentery",
+              habitat: "Marine",
+              pathogenicity: "None",
+              culturable: "Yes"
+            },
+            {
+              id: 66,
+              name: "Cryptosporidium parvum",
+              kingdom: "Protist",
+              description: "Waterborne diarrhea",
+              habitat: "Various",
+              pathogenicity: "Mild",
+              culturable: "Yes"
+            },
+            {
+              id: 67,
+              name: "Leishmania",
+              kingdom: "Protist",
+              description: "Leishmaniasis",
+              habitat: "Aquatic",
+              pathogenicity: "Moderate",
+              culturable: "Difficult"
+            },
+            {
+              id: 68,
+              name: "Naegleria fowleri",
+              kingdom: "Protist",
+              description: "Brain-eating amoeba",
+              habitat: "Soil",
+              pathogenicity: "Severe",
+              culturable: "Yes"
+            },
+            {
+              id: 69,
+              name: "Trichomonas vaginalis",
+              kingdom: "Protist",
+              description: "Common STI",
+              habitat: "Mammalian host",
+              pathogenicity: "None",
+              culturable: "Yes"
+            },
+            {
+              id: 70,
+              name: "Acanthamoeba",
+              kingdom: "Protist",
+              description: "Eye infections",
+              habitat: "Marine",
+              pathogenicity: "Mild",
+              culturable: "Difficult"
+            },
+            {
+              id: 71,
+              name: "Babesia",
+              kingdom: "Protist",
+              description: "Tick-borne disease",
+              habitat: "Various",
+              pathogenicity: "Moderate",
+              culturable: "Yes"
+            },
+            {
+              id: 72,
+              name: "Trypanosoma rangeli",
+              kingdom: "Protist",
+              description: "Benign tropical parasite",
+              habitat: "Aquatic",
+              pathogenicity: "Severe",
+              culturable: "Yes"
+            },
+            {
+              id: 73,
+              name: "Trypanosoma evansi",
+              kingdom: "Protist",
+              description: "Cattle disease",
+              habitat: "Soil",
+              pathogenicity: "None",
+              culturable: "Difficult"
+            },
+            {
+              id: 74,
+              name: "Tetrahymena",
+              kingdom: "Protist",
+              description: "Ciliated freshwater",
+              habitat: "Mammalian host",
+              pathogenicity: "Mild",
+              culturable: "Yes"
+            },
+            {
+              id: 75,
+              name: "Stentor coeruleus",
+              kingdom: "Protist",
+              description: "Trumpet ciliate",
+              habitat: "Marine",
+              pathogenicity: "Moderate",
+              culturable: "Yes"
+            },
+            {
+              id: 76,
+              name: "Vorticella",
+              kingdom: "Protist",
+              description: "Bell-shaped ciliate",
+              habitat: "Various",
+              pathogenicity: "Severe",
+              culturable: "Difficult"
+            },
+            {
+              id: 77,
+              name: "Dictyostelium",
+              kingdom: "Protist",
+              description: "Cellular slime mold",
+              habitat: "Aquatic",
+              pathogenicity: "None",
+              culturable: "Yes"
+            },
+            {
+              id: 78,
+              name: "Physarum polycephalum",
+              kingdom: "Protist",
+              description: "Acellular slime mold",
+              habitat: "Soil",
+              pathogenicity: "Mild",
+              culturable: "Yes"
+            },
+            {
+              id: 79,
+              name: "Acetabularia",
+              kingdom: "Algae",
+              description: "Mermaid wineglass",
+              habitat: "Mammalian host",
+              pathogenicity: "Moderate",
+              culturable: "Difficult"
+            },
+            {
+              id: 80,
+              name: "Chlorella",
+              kingdom: "Algae",
+              description: "Single-celled green",
+              habitat: "Marine",
+              pathogenicity: "Severe",
+              culturable: "Yes"
+            },
+            {
+              id: 81,
+              name: "Spirogyra",
+              kingdom: "Algae",
+              description: "Filamentous green",
+              habitat: "Various",
+              pathogenicity: "None",
+              culturable: "Yes"
+            },
+            {
+              id: 82,
+              name: "Volvox aureus",
+              kingdom: "Algae",
+              description: "Colonial green",
+              habitat: "Aquatic",
+              pathogenicity: "Mild",
+              culturable: "Difficult"
+            },
+            {
+              id: 83,
+              name: "Ulva (sea lettuce)",
+              kingdom: "Algae",
+              description: "Sheet-like green",
+              habitat: "Soil",
+              pathogenicity: "Moderate",
+              culturable: "Yes"
+            },
+            {
+              id: 84,
+              name: "Sargassum",
+              kingdom: "Algae",
+              description: "Brown floating",
+              habitat: "Mammalian host",
+              pathogenicity: "Severe",
+              culturable: "Yes"
+            },
+            {
+              id: 85,
+              name: "Laminaria (kelp)",
+              kingdom: "Algae",
+              description: "Brown giant",
+              habitat: "Marine",
+              pathogenicity: "None",
+              culturable: "Difficult"
+            },
+            {
+              id: 86,
+              name: "Fucus",
+              kingdom: "Algae",
+              description: "Brown rockweed",
+              habitat: "Various",
+              pathogenicity: "Mild",
+              culturable: "Yes"
+            },
+            {
+              id: 87,
+              name: "Macrocystis (giant kelp)",
+              kingdom: "Algae",
+              description: "Largest seaweed",
+              habitat: "Aquatic",
+              pathogenicity: "Moderate",
+              culturable: "Yes"
+            },
+            {
+              id: 88,
+              name: "Rhodymenia",
+              kingdom: "Algae",
+              description: "Red seaweed",
+              habitat: "Soil",
+              pathogenicity: "Severe",
+              culturable: "Difficult"
+            },
+            {
+              id: 89,
+              name: "Porphyra (nori)",
+              kingdom: "Algae",
+              description: "Red, used in sushi",
+              habitat: "Mammalian host",
+              pathogenicity: "None",
+              culturable: "Yes"
+            },
+            {
+              id: 90,
+              name: "Gelidium",
+              kingdom: "Algae",
+              description: "Agar source",
+              habitat: "Marine",
+              pathogenicity: "Mild",
+              culturable: "Yes"
+            },
+            {
+              id: 91,
+              name: "Chondrus crispus",
+              kingdom: "Algae",
+              description: "Irish moss, carrageenan",
+              habitat: "Various",
+              pathogenicity: "Moderate",
+              culturable: "Difficult"
+            },
+            {
+              id: 92,
+              name: "Diatoms (various)",
+              kingdom: "Algae",
+              description: "Silica shells",
+              habitat: "Aquatic",
+              pathogenicity: "Severe",
+              culturable: "Yes"
+            },
+            {
+              id: 93,
+              name: "Skeletonema",
+              kingdom: "Algae",
+              description: "Marine diatom",
+              habitat: "Soil",
+              pathogenicity: "None",
+              culturable: "Yes"
+            },
+            {
+              id: 94,
+              name: "Coscinodiscus",
+              kingdom: "Algae",
+              description: "Disc-shaped diatom",
+              habitat: "Mammalian host",
+              pathogenicity: "Mild",
+              culturable: "Difficult"
+            },
+            {
+              id: 95,
+              name: "Asterionella",
+              kingdom: "Algae",
+              description: "Star-shaped diatom",
+              habitat: "Marine",
+              pathogenicity: "Moderate",
+              culturable: "Yes"
+            },
+            {
+              id: 96,
+              name: "Pyrocystis",
+              kingdom: "Algae",
+              description: "Bioluminescent dinoflagellate",
+              habitat: "Various",
+              pathogenicity: "Severe",
+              culturable: "Yes"
+            },
+            {
+              id: 97,
+              name: "Lingulodinium",
+              kingdom: "Algae",
+              description: "Red tide dinoflagellate",
+              habitat: "Aquatic",
+              pathogenicity: "None",
+              culturable: "Difficult"
+            },
+            {
+              id: 98,
+              name: "Karenia brevis",
+              kingdom: "Algae",
+              description: "Florida red tide",
+              habitat: "Soil",
+              pathogenicity: "Mild",
+              culturable: "Yes"
+            },
+            {
+              id: 99,
+              name: "Ceratium",
+              kingdom: "Algae",
+              description: "Horned dinoflagellate",
+              habitat: "Mammalian host",
+              pathogenicity: "Moderate",
+              culturable: "Yes"
+            },
+            {
+              id: 100,
+              name: "Noctiluca scintillans",
+              kingdom: "Algae",
+              description: "Marine bioluminescent",
+              habitat: "Marine",
+              pathogenicity: "Severe",
+              culturable: "Difficult"
+            },
+            {
+              id: 101,
+              name: "Anabaena flos-aquae",
+              kingdom: "Cyanobacteria",
+              description: "Pond surface scum",
+              habitat: "Various",
+              pathogenicity: "None",
+              culturable: "Yes"
+            },
+            {
+              id: 102,
+              name: "Microcystis aeruginosa",
+              kingdom: "Cyanobacteria",
+              description: "Toxic blooms",
+              habitat: "Aquatic",
+              pathogenicity: "Mild",
+              culturable: "Yes"
+            },
+            {
+              id: 103,
+              name: "Trichodesmium",
+              kingdom: "Cyanobacteria",
+              description: "Ocean nitrogen fixer",
+              habitat: "Soil",
+              pathogenicity: "Moderate",
+              culturable: "Difficult"
+            },
+            {
+              id: 104,
+              name: "Anabaena cylindrica",
+              kingdom: "Cyanobacteria",
+              description: "Symbiotic",
+              habitat: "Mammalian host",
+              pathogenicity: "Severe",
+              culturable: "Yes"
+            },
+            {
+              id: 105,
+              name: "Spirulina (Arthrospira)",
+              kingdom: "Cyanobacteria",
+              description: "Edible blue-green",
+              habitat: "Marine",
+              pathogenicity: "None",
+              culturable: "Yes"
+            },
+            {
+              id: 106,
+              name: "Aphanizomenon",
+              kingdom: "Cyanobacteria",
+              description: "Forms blooms",
+              habitat: "Various",
+              pathogenicity: "Mild",
+              culturable: "Difficult"
+            },
+            {
+              id: 107,
+              name: "Bdellovibrio",
+              kingdom: "Bacteria",
+              description: "Predatory",
+              habitat: "Aquatic",
+              pathogenicity: "Moderate",
+              culturable: "Yes"
+            },
+            {
+              id: 108,
+              name: "Myxococcus xanthus",
+              kingdom: "Bacteria",
+              description: "Multicellular bacterium",
+              habitat: "Soil",
+              pathogenicity: "Severe",
+              culturable: "Yes"
+            },
+            {
+              id: 109,
+              name: "Stigmatella aurantiaca",
+              kingdom: "Bacteria",
+              description: "Forms fruiting bodies",
+              habitat: "Mammalian host",
+              pathogenicity: "None",
+              culturable: "Difficult"
+            },
+            {
+              id: 110,
+              name: "Caulobacter crescentus",
+              kingdom: "Bacteria",
+              description: "Asymmetric division model",
+              habitat: "Marine",
+              pathogenicity: "Mild",
+              culturable: "Yes"
+            },
+            {
+              id: 111,
+              name: "Magnetospirillum",
+              kingdom: "Bacteria",
+              description: "Magnetite chains for navigation",
+              habitat: "Various",
+              pathogenicity: "Moderate",
+              culturable: "Yes"
+            },
+            {
+              id: 112,
+              name: "Geobacter sulfurreducens",
+              kingdom: "Bacteria",
+              description: "Reduces metals",
+              habitat: "Aquatic",
+              pathogenicity: "Severe",
+              culturable: "Difficult"
+            },
+            {
+              id: 113,
+              name: "Shewanella oneidensis",
+              kingdom: "Bacteria",
+              description: "Reduces uranium, electricity producer",
+              habitat: "Soil",
+              pathogenicity: "None",
+              culturable: "Yes"
+            },
+            {
+              id: 114,
+              name: "Cuoarchaeota",
+              kingdom: "Archaea",
+              description: "Recently discovered phylum",
+              habitat: "Mammalian host",
+              pathogenicity: "Mild",
+              culturable: "Yes"
+            },
+            {
+              id: 115,
+              name: "Thaumarchaeota",
+              kingdom: "Archaea",
+              description: "Ammonia oxidizers",
+              habitat: "Marine",
+              pathogenicity: "Moderate",
+              culturable: "Difficult"
+            },
+            {
+              id: 116,
+              name: "Nanoarchaeum",
+              kingdom: "Archaea",
+              description: "Smallest known cells",
+              habitat: "Various",
+              pathogenicity: "Severe",
+              culturable: "Yes"
+            },
+            {
+              id: 117,
+              name: "Lokiarchaeota",
+              kingdom: "Archaea",
+              description: "Closely related to eukaryotes",
+              habitat: "Aquatic",
+              pathogenicity: "None",
+              culturable: "Yes"
+            },
+            {
+              id: 118,
+              name: "Plasmodium gallinaceum",
+              kingdom: "Protist",
+              description: "Avian malaria",
+              habitat: "Soil",
+              pathogenicity: "Mild",
+              culturable: "Difficult"
+            },
+            {
+              id: 119,
+              name: "Plasmodium berghei",
+              kingdom: "Protist",
+              description: "Rodent malaria, research model",
+              habitat: "Mammalian host",
+              pathogenicity: "Moderate",
+              culturable: "Yes"
+            },
+            {
+              id: 120,
+              name: "Cryptosporidium hominis",
+              kingdom: "Protist",
+              description: "Human strain",
+              habitat: "Marine",
+              pathogenicity: "Severe",
+              culturable: "Yes"
+            },
+            {
+              id: 121,
+              name: "Cyclospora cayetanensis",
+              kingdom: "Protist",
+              description: "Foodborne illness",
+              habitat: "Various",
+              pathogenicity: "None",
+              culturable: "Difficult"
+            },
+            {
+              id: 122,
+              name: "Microsporidium",
+              kingdom: "Protist",
+              description: "Intracellular parasites",
+              habitat: "Aquatic",
+              pathogenicity: "Mild",
+              culturable: "Yes"
+            },
+            {
+              id: 123,
+              name: "Naegleria gruberi",
+              kingdom: "Protist",
+              description: "Non-pathogenic strain",
+              habitat: "Soil",
+              pathogenicity: "Moderate",
+              culturable: "Yes"
+            },
+            {
+              id: 124,
+              name: "Mycoplasma genitalium",
+              kingdom: "Bacteria",
+              description: "Smallest cells",
+              habitat: "Mammalian host",
+              pathogenicity: "Severe",
+              culturable: "Difficult"
+            },
+            {
+              id: 125,
+              name: "Borrelia recurrentis",
+              kingdom: "Bacteria",
+              description: "Causes louse-borne relapsing fever",
+              habitat: "Marine",
+              pathogenicity: "None",
+              culturable: "Yes"
+            },
+            {
+              id: 126,
+              name: "Leptospira",
+              kingdom: "Bacteria",
+              description: "Causes leptospirosis",
+              habitat: "Various",
+              pathogenicity: "Mild",
+              culturable: "Yes"
+            },
+            {
+              id: 127,
+              name: "Treponema denticola",
+              kingdom: "Bacteria",
+              description: "Oral cavity spirochete",
+              habitat: "Aquatic",
+              pathogenicity: "Moderate",
+              culturable: "Difficult"
+            },
+            {
+              id: 128,
+              name: "Brachyspira",
+              kingdom: "Bacteria",
+              description: "Pig dysentery",
+              habitat: "Soil",
+              pathogenicity: "Severe",
+              culturable: "Yes"
+            },
+            {
+              id: 129,
+              name: "Treponema pertenue",
+              kingdom: "Bacteria",
+              description: "Causes yaws",
+              habitat: "Mammalian host",
+              pathogenicity: "None",
+              culturable: "Yes"
+            },
+            {
+              id: 130,
+              name: "Mycobacterium leprae",
+              kingdom: "Bacteria",
+              description: "Causes leprosy",
+              habitat: "Marine",
+              pathogenicity: "Mild",
+              culturable: "Difficult"
+            },
+            {
+              id: 131,
+              name: "Mycobacterium avium",
+              kingdom: "Bacteria",
+              description: "Bird tuberculosis",
+              habitat: "Various",
+              pathogenicity: "Moderate",
+              culturable: "Yes"
+            },
+            {
+              id: 132,
+              name: "Mycobacterium bovis",
+              kingdom: "Bacteria",
+              description: "Cattle TB",
+              habitat: "Aquatic",
+              pathogenicity: "Severe",
+              culturable: "Yes"
+            },
+            {
+              id: 133,
+              name: "Borrelia mayonii",
+              kingdom: "Bacteria",
+              description: "Newer Lyme variant",
+              habitat: "Soil",
+              pathogenicity: "None",
+              culturable: "Difficult"
+            },
+            {
+              id: 134,
+              name: "Anaplasma phagocytophilum",
+              kingdom: "Bacteria",
+              description: "Anaplasmosis",
+              habitat: "Mammalian host",
+              pathogenicity: "Mild",
+              culturable: "Yes"
+            },
+            {
+              id: 135,
+              name: "Ehrlichia chaffeensis",
+              kingdom: "Bacteria",
+              description: "Ehrlichiosis",
+              habitat: "Marine",
+              pathogenicity: "Moderate",
+              culturable: "Yes"
+            },
+            {
+              id: 136,
+              name: "Coxiella burnetii",
+              kingdom: "Bacteria",
+              description: "Q fever",
+              habitat: "Various",
+              pathogenicity: "Severe",
+              culturable: "Difficult"
+            },
+            {
+              id: 137,
+              name: "Brucella",
+              kingdom: "Bacteria",
+              description: "Brucellosis",
+              habitat: "Aquatic",
+              pathogenicity: "None",
+              culturable: "Yes"
+            },
+            {
+              id: 138,
+              name: "Francisella tularensis",
+              kingdom: "Bacteria",
+              description: "Tularemia, bioweapon concern",
+              habitat: "Soil",
+              pathogenicity: "Mild",
+              culturable: "Yes"
+            },
+            {
+              id: 139,
+              name: "Burkholderia pseudomallei",
+              kingdom: "Bacteria",
+              description: "Melioidosis",
+              habitat: "Mammalian host",
+              pathogenicity: "Moderate",
+              culturable: "Difficult"
+            },
+            {
+              id: 140,
+              name: "Acinetobacter baumannii",
+              kingdom: "Bacteria",
+              description: "Hospital-acquired",
+              habitat: "Marine",
+              pathogenicity: "Severe",
+              culturable: "Yes"
+            },
+            {
+              id: 141,
+              name: "Enterobacter cloacae",
+              kingdom: "Bacteria",
+              description: "Opportunistic",
+              habitat: "Various",
+              pathogenicity: "None",
+              culturable: "Yes"
+            },
+            {
+              id: 142,
+              name: "Klebsiella pneumoniae",
+              kingdom: "Bacteria",
+              description: "Hospital infections",
+              habitat: "Aquatic",
+              pathogenicity: "Mild",
+              culturable: "Difficult"
+            },
+            {
+              id: 143,
+              name: "Serratia marcescens",
+              kingdom: "Bacteria",
+              description: "Red pigment producer",
+              habitat: "Soil",
+              pathogenicity: "Moderate",
+              culturable: "Yes"
+            },
+            {
+              id: 144,
+              name: "Proteus mirabilis",
+              kingdom: "Bacteria",
+              description: "Urinary tract infections",
+              habitat: "Mammalian host",
+              pathogenicity: "Severe",
+              culturable: "Yes"
+            },
+            {
+              id: 145,
+              name: "Pasteurella multocida",
+              kingdom: "Bacteria",
+              description: "Cat + dog bite infections",
+              habitat: "Marine",
+              pathogenicity: "None",
+              culturable: "Difficult"
+            },
+            {
+              id: 146,
+              name: "Brevundimonas",
+              kingdom: "Bacteria",
+              description: "Soil + water",
+              habitat: "Various",
+              pathogenicity: "Mild",
+              culturable: "Yes"
+            },
+            {
+              id: 147,
+              name: "Sphingomonas",
+              kingdom: "Bacteria",
+              description: "Pollutant degrading",
+              habitat: "Aquatic",
+              pathogenicity: "Moderate",
+              culturable: "Yes"
+            },
+            {
+              id: 148,
+              name: "Rhodopseudomonas",
+              kingdom: "Bacteria",
+              description: "Photosynthetic",
+              habitat: "Soil",
+              pathogenicity: "Severe",
+              culturable: "Difficult"
+            },
+            {
+              id: 149,
+              name: "Rhodobacter",
+              kingdom: "Bacteria",
+              description: "Photosynthetic",
+              habitat: "Mammalian host",
+              pathogenicity: "None",
+              culturable: "Yes"
+            },
+            {
+              id: 150,
+              name: "Chlorobium",
+              kingdom: "Bacteria",
+              description: "Photosynthetic",
+              habitat: "Marine",
+              pathogenicity: "Mild",
+              culturable: "Yes"
+            },
+            {
+              id: 151,
+              name: "Heliobacterium",
+              kingdom: "Bacteria",
+              description: "Photosynthetic gram-positive",
+              habitat: "Various",
+              pathogenicity: "Moderate",
+              culturable: "Difficult"
+            },
+            {
+              id: 152,
+              name: "Chloroflexus",
+              kingdom: "Bacteria",
+              description: "Filamentous + photosynthetic",
+              habitat: "Aquatic",
+              pathogenicity: "Severe",
+              culturable: "Yes"
+            },
+            {
+              id: 153,
+              name: "Deinococcus radiodurans",
+              kingdom: "Bacteria",
+              description: "Radiation-resistant",
+              habitat: "Soil",
+              pathogenicity: "None",
+              culturable: "Yes"
+            },
+            {
+              id: 154,
+              name: "Thermus aquaticus",
+              kingdom: "Bacteria",
+              description: "Source of Taq polymerase",
+              habitat: "Mammalian host",
+              pathogenicity: "Mild",
+              culturable: "Difficult"
+            },
+            {
+              id: 155,
+              name: "Pyrococcus furiosus",
+              kingdom: "Archaea",
+              description: "Hyperthermophile",
+              habitat: "Marine",
+              pathogenicity: "Moderate",
+              culturable: "Yes"
+            },
+            {
+              id: 156,
+              name: "Methanocaldococcus jannaschii",
+              kingdom: "Archaea",
+              description: "Hot vent methanogen",
+              habitat: "Various",
+              pathogenicity: "Severe",
+              culturable: "Yes"
+            },
+            {
+              id: 157,
+              name: "Acidithiobacillus ferrooxidans",
+              kingdom: "Bacteria",
+              description: "Acid mine drainage",
+              habitat: "Aquatic",
+              pathogenicity: "None",
+              culturable: "Difficult"
+            },
+            {
+              id: 158,
+              name: "Alteromonas",
+              kingdom: "Bacteria",
+              description: "Marine",
+              habitat: "Soil",
+              pathogenicity: "Mild",
+              culturable: "Yes"
+            },
+            {
+              id: 159,
+              name: "Pseudoalteromonas",
+              kingdom: "Bacteria",
+              description: "Marine surfaces",
+              habitat: "Mammalian host",
+              pathogenicity: "Moderate",
+              culturable: "Yes"
+            },
+            {
+              id: 160,
+              name: "Vibrio fischeri",
+              kingdom: "Bacteria",
+              description: "Bioluminescent symbiont",
+              habitat: "Marine",
+              pathogenicity: "Severe",
+              culturable: "Difficult"
+            },
+            {
+              id: 161,
+              name: "Photobacterium",
+              kingdom: "Bacteria",
+              description: "Bioluminescent",
+              habitat: "Various",
+              pathogenicity: "None",
+              culturable: "Yes"
+            },
+            {
+              id: 162,
+              name: "Aliivibrio fischeri",
+              kingdom: "Bacteria",
+              description: "Quorum sensing model",
+              habitat: "Aquatic",
+              pathogenicity: "Mild",
+              culturable: "Yes"
+            },
+            {
+              id: 163,
+              name: "Burkholderia cepacia",
+              kingdom: "Bacteria",
+              description: "Cystic fibrosis lung infections",
+              habitat: "Soil",
+              pathogenicity: "Moderate",
+              culturable: "Difficult"
+            },
+            {
+              id: 164,
+              name: "Achromobacter xylosoxidans",
+              kingdom: "Bacteria",
+              description: "Opportunistic",
+              habitat: "Mammalian host",
+              pathogenicity: "Severe",
+              culturable: "Yes"
+            },
+            {
+              id: 165,
+              name: "Stenotrophomonas maltophilia",
+              kingdom: "Bacteria",
+              description: "Hospital pathogen",
+              habitat: "Marine",
+              pathogenicity: "None",
+              culturable: "Yes"
+            },
+            {
+              id: 166,
+              name: "Pantoea agglomerans",
+              kingdom: "Bacteria",
+              description: "Plant pathogen",
+              habitat: "Various",
+              pathogenicity: "Mild",
+              culturable: "Difficult"
+            },
+            {
+              id: 167,
+              name: "Erwinia amylovora",
+              kingdom: "Bacteria",
+              description: "Fire blight (fruit trees)",
+              habitat: "Aquatic",
+              pathogenicity: "Moderate",
+              culturable: "Yes"
+            },
+            {
+              id: 168,
+              name: "Xanthomonas oryzae",
+              kingdom: "Bacteria",
+              description: "Rice bacterial blight",
+              habitat: "Soil",
+              pathogenicity: "Severe",
+              culturable: "Yes"
+            },
+            {
+              id: 169,
+              name: "Ralstonia solanacearum",
+              kingdom: "Bacteria",
+              description: "Plant pathogen",
+              habitat: "Mammalian host",
+              pathogenicity: "None",
+              culturable: "Difficult"
+            },
+            {
+              id: 170,
+              name: "Agrobacterium tumefaciens",
+              kingdom: "Bacteria",
+              description: "Plant gene transfer",
+              habitat: "Marine",
+              pathogenicity: "Mild",
+              culturable: "Yes"
+            },
+            {
+              id: 171,
+              name: "Rhizobium leguminosarum",
+              kingdom: "Bacteria",
+              description: "Legume nitrogen fixer",
+              habitat: "Various",
+              pathogenicity: "Moderate",
+              culturable: "Yes"
+            },
+            {
+              id: 172,
+              name: "Frankia",
+              kingdom: "Bacteria",
+              description: "Actinomycete N-fixer",
+              habitat: "Aquatic",
+              pathogenicity: "Severe",
+              culturable: "Difficult"
+            },
+            {
+              id: 173,
+              name: "Streptomyces griseus",
+              kingdom: "Bacteria",
+              description: "Source of streptomycin",
+              habitat: "Soil",
+              pathogenicity: "None",
+              culturable: "Yes"
+            },
+            {
+              id: 174,
+              name: "Streptomyces coelicolor",
+              kingdom: "Bacteria",
+              description: "Antibiotic producer",
+              habitat: "Mammalian host",
+              pathogenicity: "Mild",
+              culturable: "Yes"
+            },
+            {
+              id: 175,
+              name: "Streptomyces avermitilis",
+              kingdom: "Bacteria",
+              description: "Source of ivermectin",
+              habitat: "Marine",
+              pathogenicity: "Moderate",
+              culturable: "Difficult"
+            },
+            {
+              id: 176,
+              name: "Saccharopolyspora erythraea",
+              kingdom: "Bacteria",
+              description: "Erythromycin producer",
+              habitat: "Various",
+              pathogenicity: "Severe",
+              culturable: "Yes"
+            },
+            {
+              id: 177,
+              name: "Actinomyces israelii",
+              kingdom: "Bacteria",
+              description: "Forms fungal-like growths",
+              habitat: "Aquatic",
+              pathogenicity: "None",
+              culturable: "Yes"
+            },
+            {
+              id: 178,
+              name: "Nocardia asteroides",
+              kingdom: "Bacteria",
+              description: "Lung + skin infections",
+              habitat: "Soil",
+              pathogenicity: "Mild",
+              culturable: "Difficult"
+            },
+            {
+              id: 179,
+              name: "Mycobacterium smegmatis",
+              kingdom: "Bacteria",
+              description: "TB research model",
+              habitat: "Mammalian host",
+              pathogenicity: "Moderate",
+              culturable: "Yes"
+            },
+            {
+              id: 180,
+              name: "Corynebacterium glutamicum",
+              kingdom: "Bacteria",
+              description: "Amino acid industrial production",
+              habitat: "Marine",
+              pathogenicity: "Severe",
+              culturable: "Yes"
+            },
+            {
+              id: 181,
+              name: "Brevibacterium linens",
+              kingdom: "Bacteria",
+              description: "Cheese ripening",
+              habitat: "Various",
+              pathogenicity: "None",
+              culturable: "Difficult"
+            },
+            {
+              id: 182,
+              name: "Bacillus thuringiensis",
+              kingdom: "Bacteria",
+              description: "Bt biopesticide",
+              habitat: "Aquatic",
+              pathogenicity: "Mild",
+              culturable: "Yes"
+            },
+            {
+              id: 183,
+              name: "Bacillus cereus",
+              kingdom: "Bacteria",
+              description: "Foodborne illness",
+              habitat: "Soil",
+              pathogenicity: "Moderate",
+              culturable: "Yes"
+            },
+            {
+              id: 184,
+              name: "Bacillus megaterium",
+              kingdom: "Bacteria",
+              description: "Large bacterium",
+              habitat: "Mammalian host",
+              pathogenicity: "Severe",
+              culturable: "Difficult"
+            },
+            {
+              id: 185,
+              name: "Geobacillus stearothermophilus",
+              kingdom: "Bacteria",
+              description: "Thermophile",
+              habitat: "Marine",
+              pathogenicity: "None",
+              culturable: "Yes"
+            },
+            {
+              id: 186,
+              name: "Anoxybacillus flavithermus",
+              kingdom: "Bacteria",
+              description: "Hot springs",
+              habitat: "Various",
+              pathogenicity: "Mild",
+              culturable: "Yes"
+            },
+            {
+              id: 187,
+              name: "Thermophilic archaea",
+              kingdom: "Archaea",
+              description: "Various hot springs",
+              habitat: "Aquatic",
+              pathogenicity: "Moderate",
+              culturable: "Difficult"
+            },
+            {
+              id: 188,
+              name: "Halobacterium",
+              kingdom: "Archaea",
+              description: "Salt-loving",
+              habitat: "Soil",
+              pathogenicity: "Severe",
+              culturable: "Yes"
+            },
+            {
+              id: 189,
+              name: "Haloferax",
+              kingdom: "Archaea",
+              description: "Moderately halophilic",
+              habitat: "Mammalian host",
+              pathogenicity: "None",
+              culturable: "Yes"
+            },
+            {
+              id: 190,
+              name: "Sulfolobus solfataricus",
+              kingdom: "Archaea",
+              description: "Hot acidic",
+              habitat: "Marine",
+              pathogenicity: "Mild",
+              culturable: "Difficult"
+            },
+            {
+              id: 191,
+              name: "Pyrobaculum",
+              kingdom: "Archaea",
+              description: "Hyperthermophile",
+              habitat: "Various",
+              pathogenicity: "Moderate",
+              culturable: "Yes"
+            },
+            {
+              id: 192,
+              name: "Picrophilus",
+              kingdom: "Archaea",
+              description: "Extreme acidophile",
+              habitat: "Aquatic",
+              pathogenicity: "Severe",
+              culturable: "Yes"
+            },
+            {
+              id: 193,
+              name: "Ferroplasma",
+              kingdom: "Archaea",
+              description: "Acid mine drainage",
+              habitat: "Soil",
+              pathogenicity: "None",
+              culturable: "Difficult"
+            },
+            {
+              id: 194,
+              name: "Nanoarchaeum equitans",
+              kingdom: "Archaea",
+              description: "Smallest cells",
+              habitat: "Mammalian host",
+              pathogenicity: "Mild",
+              culturable: "Yes"
+            },
+            {
+              id: 195,
+              name: "Lokiarchaeum",
+              kingdom: "Archaea",
+              description: "Eukaryote relatives",
+              habitat: "Marine",
+              pathogenicity: "Moderate",
+              culturable: "Yes"
+            },
+            {
+              id: 196,
+              name: "Thermoplasmatales",
+              kingdom: "Archaea",
+              description: "Acidic environments",
+              habitat: "Various",
+              pathogenicity: "Severe",
+              culturable: "Difficult"
+            },
+            {
+              id: 197,
+              name: "Halobaculum",
+              kingdom: "Archaea",
+              description: "Salt lakes",
+              habitat: "Aquatic",
+              pathogenicity: "None",
+              culturable: "Yes"
+            },
+            {
+              id: 198,
+              name: "Methanosaeta",
+              kingdom: "Archaea",
+              description: "Acetate-using methanogen",
+              habitat: "Soil",
+              pathogenicity: "Mild",
+              culturable: "Yes"
+            },
+            {
+              id: 199,
+              name: "Methanobrevibacter smithii",
+              kingdom: "Archaea",
+              description: "Human gut",
+              habitat: "Mammalian host",
+              pathogenicity: "Moderate",
+              culturable: "Difficult"
+            },
+            {
+              id: 200,
+              name: "Methanothermobacter",
+              kingdom: "Archaea",
+              description: "Thermophilic methanogen",
+              habitat: "Marine",
+              pathogenicity: "Severe",
+              culturable: "Yes"
+            },
+            {
+              id: 201,
+              name: "Acetobacterium",
+              kingdom: "Bacteria",
+              description: "Acetogenic",
+              habitat: "Various",
+              pathogenicity: "None",
+              culturable: "Yes"
+            },
+            {
+              id: 202,
+              name: "Sporomusa",
+              kingdom: "Bacteria",
+              description: "Acetogenic",
+              habitat: "Aquatic",
+              pathogenicity: "Mild",
+              culturable: "Difficult"
+            },
+            {
+              id: 203,
+              name: "Desulfovibrio",
+              kingdom: "Bacteria",
+              description: "Sulfate reducer",
+              habitat: "Soil",
+              pathogenicity: "Moderate",
+              culturable: "Yes"
+            },
+            {
+              id: 204,
+              name: "Desulfobacter",
+              kingdom: "Bacteria",
+              description: "Sulfate reducer",
+              habitat: "Mammalian host",
+              pathogenicity: "Severe",
+              culturable: "Yes"
+            },
+            {
+              id: 205,
+              name: "Pelobacter",
+              kingdom: "Bacteria",
+              description: "Fermenter",
+              habitat: "Marine",
+              pathogenicity: "None",
+              culturable: "Difficult"
+            },
+            {
+              id: 206,
+              name: "Geobacter metallireducens",
+              kingdom: "Bacteria",
+              description: "Metal reducer",
+              habitat: "Various",
+              pathogenicity: "Mild",
+              culturable: "Yes"
+            },
+            {
+              id: 207,
+              name: "Shewanella putrefaciens",
+              kingdom: "Bacteria",
+              description: "Marine spoilage",
+              habitat: "Aquatic",
+              pathogenicity: "Moderate",
+              culturable: "Yes"
+            },
+            {
+              id: 208,
+              name: "Photorhabdus",
+              kingdom: "Bacteria",
+              description: "Insect pathogen + symbiont",
+              habitat: "Soil",
+              pathogenicity: "Severe",
+              culturable: "Difficult"
+            },
+            {
+              id: 209,
+              name: "Photorhabdus luminescens",
+              kingdom: "Bacteria",
+              description: "Bioluminescent insect symbiont",
+              habitat: "Mammalian host",
+              pathogenicity: "None",
+              culturable: "Yes"
+            },
+            {
+              id: 210,
+              name: "Xenorhabdus",
+              kingdom: "Bacteria",
+              description: "Nematode symbiont",
+              habitat: "Marine",
+              pathogenicity: "Mild",
+              culturable: "Yes"
+            },
+            {
+              id: 211,
+              name: "Erwinia carotovora",
+              kingdom: "Bacteria",
+              description: "Vegetable rot",
+              habitat: "Various",
+              pathogenicity: "Moderate",
+              culturable: "Difficult"
+            },
+            {
+              id: 212,
+              name: "Pectobacterium",
+              kingdom: "Bacteria",
+              description: "Plant soft rot",
+              habitat: "Aquatic",
+              pathogenicity: "Severe",
+              culturable: "Yes"
+            },
+            {
+              id: 213,
+              name: "Dickeya",
+              kingdom: "Bacteria",
+              description: "Plant pathogen",
+              habitat: "Soil",
+              pathogenicity: "None",
+              culturable: "Yes"
+            }
+          ];
+
+          // ═══════════════════════════════════════════════════════════
+          // FAMOUS EXPERIMENTS — 60 landmark studies
+          // ═══════════════════════════════════════════════════════════
+          var FAMOUS_EXPERIMENTS = [
+            {
+              id: 1,
+              name: "Hooke views cork (1665)",
+              scientist: "Robert Hooke",
+              method: "Hand-built microscope",
+              significance: "Coined word cell from honeycomb-like cells of cork"
+            },
+            {
+              id: 2,
+              name: "Leeuwenhoek sees animalcules (1675)",
+              scientist: "Antonie van Leeuwenhoek",
+              method: "Hand-ground single lens",
+              significance: "First observation of bacteria + protists"
+            },
+            {
+              id: 3,
+              name: "Pasteur sterilization (1857)",
+              scientist: "Louis Pasteur",
+              method: "Sealed flasks + heating",
+              significance: "Disproved spontaneous generation"
+            },
+            {
+              id: 4,
+              name: "Koch postulates (1882)",
+              scientist: "Robert Koch",
+              method: "Pure cultures + animal inoculation",
+              significance: "Established germ theory"
+            },
+            {
+              id: 5,
+              name: "Metchnikoff phagocytosis (1882)",
+              scientist: "Elie Metchnikoff",
+              method: "Starfish larva observation",
+              significance: "Discovered cellular immunity"
+            },
+            {
+              id: 6,
+              name: "Fleming penicillin (1928)",
+              scientist: "Alexander Fleming",
+              method: "Accidental mold contamination",
+              significance: "Discovered first antibiotic"
+            },
+            {
+              id: 7,
+              name: "Avery DNA experiments (1944)",
+              scientist: "Avery, MacLeod, McCarty",
+              method: "Pneumococcus transformation",
+              significance: "DNA carries genetic info"
+            },
+            {
+              id: 8,
+              name: "Hershey-Chase blender (1952)",
+              scientist: "Hershey and Chase",
+              method: "Radioactive phage labels",
+              significance: "Confirmed DNA is genetic material"
+            },
+            {
+              id: 9,
+              name: "Watson Crick double helix (1953)",
+              scientist: "Watson, Crick, Wilkins, Franklin",
+              method: "X-ray crystallography",
+              significance: "DNA double helix structure"
+            },
+            {
+              id: 10,
+              name: "Meselson Stahl (1958)",
+              scientist: "Meselson and Stahl",
+              method: "Density-gradient centrifugation",
+              significance: "Semi-conservative DNA replication"
+            },
+            {
+              id: 11,
+              name: "Operon model (1961)",
+              scientist: "Jacob and Monod",
+              method: "E. coli genetic studies",
+              significance: "Gene regulation mechanism"
+            },
+            {
+              id: 12,
+              name: "Genetic code cracked (1961-66)",
+              scientist: "Nirenberg, Khorana, Holley",
+              method: "Cell-free translation",
+              significance: "Codon-amino acid pairings"
+            },
+            {
+              id: 13,
+              name: "Endosymbiosis theory (1967)",
+              scientist: "Lynn Margulis",
+              method: "Comparative organelle biology",
+              significance: "Mitochondria + chloroplasts were once bacteria"
+            },
+            {
+              id: 14,
+              name: "First gene cloned (1973)",
+              scientist: "Cohen and Boyer",
+              method: "Recombinant DNA",
+              significance: "Beginning of biotech"
+            },
+            {
+              id: 15,
+              name: "Sanger sequencing (1977)",
+              scientist: "Frederick Sanger",
+              method: "Dideoxy chain termination",
+              significance: "Read DNA sequence"
+            },
+            {
+              id: 16,
+              name: "First test tube baby (1978)",
+              scientist: "Edwards and Steptoe",
+              method: "IVF",
+              significance: "Louise Brown born"
+            },
+            {
+              id: 17,
+              name: "First cloned mouse (1981)",
+              scientist: "Hoppe and Illmensee",
+              method: "Nuclear transfer",
+              significance: "Cloning mammals"
+            },
+            {
+              id: 18,
+              name: "PCR invented (1985)",
+              scientist: "Kary Mullis",
+              method: "DNA polymerase + temperature cycling",
+              significance: "DNA amplification"
+            },
+            {
+              id: 19,
+              name: "First antibody from mouse (1985)",
+              scientist: "Köhler and Milstein",
+              method: "Hybridoma technology",
+              significance: "Monoclonal antibodies"
+            },
+            {
+              id: 20,
+              name: "First gene therapy (1990)",
+              scientist: "Anderson team",
+              method: "Retroviral gene transfer",
+              significance: "ADA-SCID treated"
+            },
+            {
+              id: 21,
+              name: "Dolly cloned sheep (1996)",
+              scientist: "Ian Wilmut team",
+              method: "Somatic cell nuclear transfer",
+              significance: "First cloned mammal"
+            },
+            {
+              id: 22,
+              name: "Human Genome Project (2003)",
+              scientist: "International team",
+              method: "High-throughput sequencing",
+              significance: "Complete human genome"
+            },
+            {
+              id: 23,
+              name: "iPSC reprogramming (2007)",
+              scientist: "Shinya Yamanaka",
+              method: "Four transcription factors",
+              significance: "Adult cells to stem cells"
+            },
+            {
+              id: 24,
+              name: "CRISPR-Cas9 (2012)",
+              scientist: "Doudna and Charpentier",
+              method: "Bacterial defense system",
+              significance: "Genome editing"
+            },
+            {
+              id: 25,
+              name: "First gene-edited babies (2018)",
+              scientist: "He Jiankui",
+              method: "CRISPR in embryos",
+              significance: "Controversial premature use"
+            },
+            {
+              id: 26,
+              name: "mRNA COVID vaccine (2020)",
+              scientist: "Pfizer, Moderna",
+              method: "Lipid nanoparticles",
+              significance: "Pandemic response"
+            },
+            {
+              id: 27,
+              name: "AlphaFold protein structure (2020)",
+              scientist: "DeepMind",
+              method: "AI prediction",
+              significance: "Protein folding solved"
+            },
+            {
+              id: 28,
+              name: "Calvin cycle traced (1950s)",
+              scientist: "Melvin Calvin",
+              method: "Radioactive carbon tracing",
+              significance: "Photosynthesis pathway"
+            },
+            {
+              id: 29,
+              name: "Krebs cycle (1937)",
+              scientist: "Hans Krebs",
+              method: "Biochemical experiments",
+              significance: "Citric acid cycle"
+            },
+            {
+              id: 30,
+              name: "Electron transport chain (1940s-60s)",
+              scientist: "Various",
+              method: "Mitochondrial studies",
+              significance: "ATP production"
+            },
+            {
+              id: 31,
+              name: "Mitchell chemiosmosis (1961)",
+              scientist: "Peter Mitchell",
+              method: "Hypothetical model",
+              significance: "ATP synthesis mechanism"
+            },
+            {
+              id: 32,
+              name: "Watson Crick model (1953)",
+              scientist: "James Watson, Francis Crick",
+              method: "Modeling + X-ray data",
+              significance: "Genetic material structure"
+            },
+            {
+              id: 33,
+              name: "Rosalind Franklin Photo 51 (1952)",
+              scientist: "Rosalind Franklin",
+              method: "X-ray crystallography",
+              significance: "DNA helix evidence"
+            },
+            {
+              id: 34,
+              name: "Avery DNA evidence (1944)",
+              scientist: "Avery, MacLeod, McCarty",
+              method: "Pneumococcus experiments",
+              significance: "DNA = genes"
+            },
+            {
+              id: 35,
+              name: "Beadle-Tatum one gene one enzyme (1941)",
+              scientist: "Beadle and Tatum",
+              method: "Neurospora mutants",
+              significance: "Gene-enzyme relationship"
+            },
+            {
+              id: 36,
+              name: "Hodgkin Huxley action potential (1952)",
+              scientist: "Hodgkin and Huxley",
+              method: "Squid axon recordings",
+              significance: "Neural signaling mechanism"
+            },
+            {
+              id: 37,
+              name: "DNA microarrays (1995)",
+              scientist: "Schena",
+              method: "Multi-gene expression",
+              significance: "Transcriptomics"
+            },
+            {
+              id: 38,
+              name: "Bacteriophage discovery (1915)",
+              scientist: "D Herelle, Twort",
+              method: "Plaque assays",
+              significance: "Viruses of bacteria"
+            },
+            {
+              id: 39,
+              name: "Bacteria as germs (1860s)",
+              scientist: "Pasteur, Koch",
+              method: "Microbiology",
+              significance: "Germ theory"
+            },
+            {
+              id: 40,
+              name: "Vaccines invented (1796)",
+              scientist: "Edward Jenner",
+              method: "Cowpox inoculation",
+              significance: "Smallpox vaccine"
+            },
+            {
+              id: 41,
+              name: "Pasteur rabies vaccine (1885)",
+              scientist: "Louis Pasteur",
+              method: "Attenuated virus",
+              significance: "Rabies vaccine"
+            },
+            {
+              id: 42,
+              name: "Lister antiseptic surgery (1867)",
+              scientist: "Joseph Lister",
+              method: "Carbolic acid",
+              significance: "Reduced surgical infections"
+            },
+            {
+              id: 43,
+              name: "Florence Nightingale stats (1854)",
+              scientist: "Florence Nightingale",
+              method: "Polar area diagrams",
+              significance: "Hospital hygiene impact"
+            },
+            {
+              id: 44,
+              name: "John Snow cholera map (1854)",
+              scientist: "John Snow",
+              method: "Spatial epidemiology",
+              significance: "Waterborne disease"
+            },
+            {
+              id: 45,
+              name: "Cell theory (1838-39)",
+              scientist: "Schleiden and Schwann",
+              method: "Microscopic studies",
+              significance: "All life is cellular"
+            },
+            {
+              id: 46,
+              name: "Virchow all cells from cells (1855)",
+              scientist: "Rudolf Virchow",
+              method: "Cell biology",
+              significance: "Biogenesis principle"
+            },
+            {
+              id: 47,
+              name: "Spallanzani vs spontaneous gen (1768)",
+              scientist: "Lazzaro Spallanzani",
+              method: "Sealed flasks",
+              significance: "Disproved spontaneous generation early"
+            },
+            {
+              id: 48,
+              name: "Pasteur swan neck flask (1859)",
+              scientist: "Louis Pasteur",
+              method: "Curved necks blocked airborne contamination",
+              significance: "Final blow to spontaneous generation"
+            },
+            {
+              id: 49,
+              name: "Streptomycin (1944)",
+              scientist: "Selman Waksman",
+              method: "Soil bacteria",
+              significance: "TB treatment"
+            },
+            {
+              id: 50,
+              name: "Hookworm cure (1903)",
+              scientist: "Charles Stiles",
+              method: "Sanitation",
+              significance: "Disease eradication"
+            }
+          ];
+
+          // ═══════════════════════════════════════════════════════════
+          // MICROBIAL MYTHBUSTERS
+          // ═══════════════════════════════════════════════════════════
+          var MICRO_MYTHS = [
+            {
+              id: 1,
+              myth: "All bacteria are harmful",
+              truth: "False - Most bacteria are neutral or beneficial. Less than 1% are pathogenic."
+            },
+            {
+              id: 2,
+              myth: "Viruses are alive",
+              truth: "Debated - Viruses require host cells; technically not classified as living."
+            },
+            {
+              id: 3,
+              myth: "You can sterilize with hand sanitizer alone",
+              truth: "Mostly true with 60%+ alcohol; soap removes more types of pathogens"
+            },
+            {
+              id: 4,
+              myth: "5-second rule for dropped food",
+              truth: "False - Bacteria transfer instantly to dropped food"
+            },
+            {
+              id: 5,
+              myth: "Antibiotics treat viruses",
+              truth: "False - Antibiotics only kill bacteria, not viruses"
+            },
+            {
+              id: 6,
+              myth: "Antibiotic resistance never crosses species",
+              truth: "False - Bacteria share resistance genes between species"
+            },
+            {
+              id: 7,
+              myth: "Probiotics always help",
+              truth: "Mixed - Effects vary by individual + strain"
+            },
+            {
+              id: 8,
+              myth: "Yogurt eradicates harmful bacteria",
+              truth: "Limited - Yogurt adds beneficial bacteria but may not eliminate harmful ones"
+            },
+            {
+              id: 9,
+              myth: "Bacteria can be seen with eye",
+              truth: "False - Bacteria require microscope"
+            },
+            {
+              id: 10,
+              myth: "Hand washing removes all bacteria",
+              truth: "False - Reduces but does not eliminate bacteria"
+            },
+            {
+              id: 11,
+              myth: "Toilet seats are dirtiest place",
+              truth: "False - Phones, keyboards, doorknobs often dirtier"
+            },
+            {
+              id: 12,
+              myth: "Bacteria multiply only at room temp",
+              truth: "False - Different bacteria grow at different temperatures"
+            },
+            {
+              id: 13,
+              myth: "Cooking kills all bacteria",
+              truth: "Mostly - Most bacteria killed >70°C; some spores survive higher"
+            },
+            {
+              id: 14,
+              myth: "Boiling water makes it safe",
+              truth: "Mostly - Kills most pathogens; not chemical contaminants"
+            },
+            {
+              id: 15,
+              myth: "UV light kills all germs",
+              truth: "Partial - UV-C effective for surfaces; not deep penetration"
+            },
+            {
+              id: 16,
+              myth: "Antibacterial soaps better than regular",
+              truth: "False - Often similar effectiveness; triclosan banned"
+            },
+            {
+              id: 17,
+              myth: "Cells are all alike",
+              truth: "False - Vast diversity in size, shape, function"
+            },
+            {
+              id: 18,
+              myth: "DNA is the same in every cell",
+              truth: "Mostly - Same DNA but different gene expression"
+            },
+            {
+              id: 19,
+              myth: "Plant + animal cells are same",
+              truth: "False - Plants have cell walls + chloroplasts"
+            },
+            {
+              id: 20,
+              myth: "Mitochondria are only in animals",
+              truth: "False - All eukaryotes including plants"
+            },
+            {
+              id: 21,
+              myth: "Bacteria reproduce sexually",
+              truth: "False - Asexual reproduction; conjugation transfers DNA"
+            },
+            {
+              id: 22,
+              myth: "Viruses cause all infections",
+              truth: "False - Bacteria, fungi, protists also cause infections"
+            },
+            {
+              id: 23,
+              myth: "Sneezing spreads bacteria farther than droplets",
+              truth: "Variable - Sneezes can spread 7+ meters"
+            },
+            {
+              id: 24,
+              myth: "Public restrooms are danger zone",
+              truth: "Variable - Often cleaner than office surfaces"
+            },
+            {
+              id: 25,
+              myth: "Beard hair is dirty",
+              truth: "Variable - Some studies show beards have similar bacteria to faces"
+            },
+            {
+              id: 26,
+              myth: "Hand-shaking spreads disease",
+              truth: "True - Major mode of fomite transfer"
+            },
+            {
+              id: 27,
+              myth: "Sneezing eyes-shut myth",
+              truth: "Mostly true - But you can sneeze with eyes open"
+            },
+            {
+              id: 28,
+              myth: "Cucumber + chocolate myth (food safety)",
+              truth: "False - No specific danger; all food carries bacteria"
+            },
+            {
+              id: 29,
+              myth: "Lemons disinfect surfaces",
+              truth: "Limited - Mild antimicrobial; not sterilizing"
+            },
+            {
+              id: 30,
+              myth: "Garlic prevents colds",
+              truth: "Mixed evidence - Some immune support, no direct virus killing"
+            }
+          ];
+
+          // ═══════════════════════════════════════════════════════════
+          // CELL RECORDS — superlatives
+          // ═══════════════════════════════════════════════════════════
+          var CELL_RECORDS = [
+            {
+              id: 1,
+              category: "Largest single-celled organism",
+              record: "Caulerpa taxifolia (~3 m long)",
+              note: "Marine algae"
+            },
+            {
+              id: 2,
+              category: "Smallest cell",
+              record: "Mycoplasma (~200 nm)",
+              note: "Bacterium"
+            },
+            {
+              id: 3,
+              category: "Fastest bacteria",
+              record: "Bdellovibrio (~160 μm/sec)",
+              note: "Predatory"
+            },
+            {
+              id: 4,
+              category: "Slowest dividing bacteria",
+              record: "Mycobacterium tuberculosis (~24 hr)",
+              note: "Doubling time"
+            },
+            {
+              id: 5,
+              category: "Fastest dividing bacteria",
+              record: "Clostridium perfringens (~7 min)",
+              note: "In optimal conditions"
+            },
+            {
+              id: 6,
+              category: "Toughest organism",
+              record: "Tardigrade or Deinococcus radiodurans",
+              note: "Survive radiation, vacuum, extreme T"
+            },
+            {
+              id: 7,
+              category: "Oldest discovered fossil cells",
+              record: "Cyanobacteria (~3.5 billion years)",
+              note: "Australia stromatolites"
+            },
+            {
+              id: 8,
+              category: "Most cells in body",
+              record: "Bacteria (~38 trillion)",
+              note: "Outnumber human cells 1:1"
+            },
+            {
+              id: 9,
+              category: "Largest virus",
+              record: "Pithovirus (~1.5 μm)",
+              note: "Larger than some bacteria"
+            },
+            {
+              id: 10,
+              category: "Smallest virus",
+              record: "Circoviruses (~17 nm)",
+              note: "Less than 2000 nucleotides"
+            },
+            {
+              id: 11,
+              category: "Most diverse habitat",
+              record: "Soil (~10,000 species per teaspoon)",
+              note: "Higher than rainforest"
+            },
+            {
+              id: 12,
+              category: "Most abundant cell type",
+              record: "Erythrocyte (RBC)",
+              note: "~25 trillion in human body"
+            },
+            {
+              id: 13,
+              category: "Most abundant on Earth",
+              record: "Prokaryotic cells (~5 × 10^30)",
+              note: "Total bacteria + archaea"
+            },
+            {
+              id: 14,
+              category: "Most genes",
+              record: "Sorangium cellulosum (~13,000+)",
+              note: "Largest bacterial genome"
+            },
+            {
+              id: 15,
+              category: "Smallest free-living",
+              record: "Mycoplasma genitalium (~580K bp)",
+              note: "Synthetic biology target"
+            },
+            {
+              id: 16,
+              category: "Highest mutation rate",
+              record: "HIV retrovirus",
+              note: "Per generation"
+            },
+            {
+              id: 17,
+              category: "Most antibiotic resistant",
+              record: "Pseudomonas aeruginosa, Acinetobacter",
+              note: "Multi-drug resistant"
+            },
+            {
+              id: 18,
+              category: "Most lethal pathogen",
+              record: "Variola (smallpox) historically",
+              note: "Now eradicated"
+            },
+            {
+              id: 19,
+              category: "Most contagious",
+              record: "Measles (R0 ~12-18)",
+              note: "High transmissibility"
+            },
+            {
+              id: 20,
+              category: "Most heat resistant",
+              record: "Hyperthermophiles (~122°C)",
+              note: "Strain 121 archaea"
+            },
+            {
+              id: 21,
+              category: "Most cold resistant",
+              record: "Permafrost bacteria",
+              note: "Active below 0°C"
+            },
+            {
+              id: 22,
+              category: "Most pressure resistant",
+              record: "Mariana Trench bacteria (~110 MPa)",
+              note: "Deepest ocean"
+            },
+            {
+              id: 23,
+              category: "Most radiation resistant",
+              record: "Deinococcus radiodurans",
+              note: "5000+ Gy survival"
+            },
+            {
+              id: 24,
+              category: "Most acid tolerant",
+              record: "Helicobacter pylori (pH 1-2)",
+              note: "Stomach"
+            },
+            {
+              id: 25,
+              category: "Most alkaline tolerant",
+              record: "Alkaliphilic bacteria (pH 11+)",
+              note: "Soda lakes"
+            },
+            {
+              id: 26,
+              category: "Most salt tolerant",
+              record: "Halobacterium (10x sea salt)",
+              note: "Salt lakes"
+            },
+            {
+              id: 27,
+              category: "Most osmotic stress",
+              record: "Halophiles + bdelloid rotifers",
+              note: "Multiple survival strategies"
+            },
+            {
+              id: 28,
+              category: "Largest mitochondrion",
+              record: "Plant cells",
+              note: "Hundreds per cell"
+            },
+            {
+              id: 29,
+              category: "Most mitochondria per cell",
+              record: "Cardiac myocyte (~5000)",
+              note: "High energy demand"
+            },
+            {
+              id: 30,
+              category: "Largest chromosome",
+              record: "Indian muntjac deer (1 chromosome)",
+              note: "Unusual fusion"
+            },
+            {
+              id: 31,
+              category: "Most chromosomes",
+              record: "Ophioglossum reticulatum fern (~1440)",
+              note: "Polyploid"
+            },
+            {
+              id: 32,
+              category: "Largest genome",
+              record: "Paris japonica plant (149 Gbp)",
+              note: "Larger than human"
+            },
+            {
+              id: 33,
+              category: "Smallest genome",
+              record: "Carsonella ruddii (160K bp)",
+              note: "Bacterial endosymbiont"
+            },
+            {
+              id: 34,
+              category: "Most unique cell types",
+              record: "Adult human (~200+ distinct)",
+              note: "Total cell types"
+            },
+            {
+              id: 35,
+              category: "Longest-lived cell",
+              record: "Neurons (entire organism life)",
+              note: "Some live 100+ years"
+            },
+            {
+              id: 36,
+              category: "Shortest-lived cell",
+              record: "Bacteria in optimal conditions",
+              note: "Replace every 7 min"
+            },
+            {
+              id: 37,
+              category: "Slowest division",
+              record: "Liver cells (~1 year cycle)",
+              note: "Quiescent state"
+            },
+            {
+              id: 38,
+              category: "Fastest division (human)",
+              record: "Intestinal stem cells (~24 hr)",
+              note: "High turnover"
+            },
+            {
+              id: 39,
+              category: "Most ATP per cell",
+              record: "Cardiac muscle (~10 billion/sec)",
+              note: "High demand"
+            },
+            {
+              id: 40,
+              category: "Largest molecule in cell",
+              record: "Titin protein (~30,000 amino acids)",
+              note: "Muscle"
+            },
+            {
+              id: 41,
+              category: "Most complex molecule synthesized",
+              record: "Recently solved AlphaFold predictions",
+              note: "Computational"
+            },
+            {
+              id: 42,
+              category: "Fastest enzyme",
+              record: "Carbonic anhydrase (10^6/sec)",
+              note: "CO2 hydration"
+            },
+            {
+              id: 43,
+              category: "Slowest enzyme",
+              record: "OMP decarboxylase",
+              note: "Half-life 78 million years uncatalyzed"
+            },
+            {
+              id: 44,
+              category: "Most catalytic acceleration",
+              record: "Same enzyme",
+              note: "10^17 fold rate enhancement"
+            },
+            {
+              id: 45,
+              category: "Largest known nucleus",
+              record: "Acetabularia algae",
+              note: "Up to 5 cm cells"
+            },
+            {
+              id: 46,
+              category: "Most chromosomes (plant)",
+              record: "~1440 in some ferns",
+              note: "Polyploidization"
+            },
+            {
+              id: 47,
+              category: "Largest plant cell",
+              record: "Acetabularia mediterranea",
+              note: "Single cell up to 10 cm"
+            },
+            {
+              id: 48,
+              category: "Most photosynthetic per area",
+              record: "Tropical rainforest canopy",
+              note: "Diverse algae + plants"
+            },
+            {
+              id: 49,
+              category: "Deepest photosynthesis",
+              record: "Green sulfur bacteria (~100 m)",
+              note: "Black Sea"
+            },
+            {
+              id: 50,
+              category: "Most oxygen-producing",
+              record: "Marine phytoplankton (~50% of atmospheric O2)",
+              note: "Algae + cyanobacteria"
+            }
+          ];
+
+          // ═══════════════════════════════════════════════════════════
+          // MICROSCOPY TECHNIQUES
+          // ═══════════════════════════════════════════════════════════
+          var MICROSCOPY = [
+            {
+              id: 1,
+              technique: "Bright field",
+              principle: "Standard light microscopy",
+              resolution: "~200 nm resolution",
+              useCase: "Most common type"
+            },
+            {
+              id: 2,
+              technique: "Dark field",
+              principle: "Light scatters from sample",
+              resolution: "~200 nm",
+              useCase: "See unstained living organisms"
+            },
+            {
+              id: 3,
+              technique: "Phase contrast",
+              principle: "Optical density differences",
+              resolution: "~200 nm",
+              useCase: "Living unstained cells"
+            },
+            {
+              id: 4,
+              technique: "Differential interference contrast (DIC)",
+              principle: "Polarized light",
+              resolution: "~200 nm",
+              useCase: "3D-like contrast"
+            },
+            {
+              id: 5,
+              technique: "Fluorescence",
+              principle: "UV + fluorochrome dyes",
+              resolution: "~200 nm",
+              useCase: "Specific molecules"
+            },
+            {
+              id: 6,
+              technique: "Confocal",
+              principle: "Laser + pinhole",
+              resolution: "~200 nm + thin optical sections",
+              useCase: "High-contrast 3D"
+            },
+            {
+              id: 7,
+              technique: "Two-photon",
+              principle: "Near-infrared laser",
+              resolution: "~200 nm",
+              useCase: "Deep tissue imaging"
+            },
+            {
+              id: 8,
+              technique: "Super-resolution (STED, PALM, STORM)",
+              principle: "Various",
+              resolution: "~20 nm",
+              useCase: "Beyond diffraction limit"
+            },
+            {
+              id: 9,
+              technique: "Transmission electron (TEM)",
+              principle: "Electrons through thin section",
+              resolution: "~0.1 nm",
+              useCase: "Atomic resolution"
+            },
+            {
+              id: 10,
+              technique: "Scanning electron (SEM)",
+              principle: "Electrons scan surface",
+              resolution: "~1 nm",
+              useCase: "Surface details"
+            },
+            {
+              id: 11,
+              technique: "Cryo-EM",
+              principle: "Frozen samples + EM",
+              resolution: "~3 Å",
+              useCase: "Native protein structures"
+            },
+            {
+              id: 12,
+              technique: "Atomic force microscopy (AFM)",
+              principle: "Probe scans surface",
+              resolution: "~0.1 nm vertical",
+              useCase: "Living cells, force measurement"
+            },
+            {
+              id: 13,
+              technique: "Scanning tunneling (STM)",
+              principle: "Electron tunneling",
+              resolution: "~0.1 nm",
+              useCase: "Atomic-level conductors"
+            },
+            {
+              id: 14,
+              technique: "Light sheet",
+              principle: "Plane illumination",
+              resolution: "~200 nm",
+              useCase: "Live embryo imaging"
+            },
+            {
+              id: 15,
+              technique: "Total internal reflection (TIRF)",
+              principle: "Evanescent wave",
+              resolution: "~100 nm depth",
+              useCase: "Cell membrane events"
+            },
+            {
+              id: 16,
+              technique: "Polarized light",
+              principle: "Polarizing filters",
+              resolution: "~200 nm",
+              useCase: "Crystalline structures"
+            },
+            {
+              id: 17,
+              technique: "Köhler illumination",
+              principle: "Even, uniform lighting",
+              resolution: "Standard",
+              useCase: "High-quality images"
+            },
+            {
+              id: 18,
+              technique: "Apochromatic objectives",
+              principle: "Color-corrected lenses",
+              resolution: "~150 nm",
+              useCase: "Best image quality"
+            },
+            {
+              id: 19,
+              technique: "Oil immersion",
+              principle: "Reduces refraction",
+              resolution: "~200 nm",
+              useCase: "High-magnification"
+            }
+          ];
+
+          // ═══════════════════════════════════════════════════════════
+          // CELL BIOLOGY QUOTES
+          // ═══════════════════════════════════════════════════════════
+          var CELL_QUOTES = [
+            {
+              id: 1,
+              author: "Antonie van Leeuwenhoek",
+              quote: "For my part, I judge that the wonders of the world will never end."
+            },
+            {
+              id: 2,
+              author: "Louis Pasteur",
+              quote: "In the field of observation, chance favors only the prepared mind."
+            },
+            {
+              id: 3,
+              author: "Robert Hooke",
+              quote: "These pores were the first microscopical pores I ever saw."
+            },
+            {
+              id: 4,
+              author: "Lynn Margulis",
+              quote: "Life did not take over the globe by combat, but by networking."
+            },
+            {
+              id: 5,
+              author: "Rudolf Virchow",
+              quote: "Omnis cellula e cellula. All cells from cells."
+            },
+            {
+              id: 6,
+              author: "Charles Darwin",
+              quote: "It is not the strongest of the species that survives, but the most adaptable."
+            },
+            {
+              id: 7,
+              author: "Frederick Sanger",
+              quote: "Of the three main activities involved in scientific research, thinking, talking, and doing, I much prefer the last."
+            },
+            {
+              id: 8,
+              author: "Marie Curie",
+              quote: "Nothing in life is to be feared, only understood."
+            },
+            {
+              id: 9,
+              author: "Lewis Wolpert",
+              quote: "The cell is the central concept of biology."
+            },
+            {
+              id: 10,
+              author: "Theodor Schwann",
+              quote: "All cells arise from preexisting cells."
+            },
+            {
+              id: 11,
+              author: "Robert Koch",
+              quote: "I have never been able to find a more effective means than my own diligence."
+            },
+            {
+              id: 12,
+              author: "Alexander Fleming",
+              quote: "When I woke up just after dawn on September 28, 1928, I certainly didn't plan to revolutionize all medicine."
+            },
+            {
+              id: 13,
+              author: "Lynn Margulis",
+              quote: "Symbiosis is the synthesis of life forms — the origin of new species."
+            },
+            {
+              id: 14,
+              author: "Carl Woese",
+              quote: "There is more diversity within bacteria than there is within all of multicellular life."
+            },
+            {
+              id: 15,
+              author: "Bonnie Bassler",
+              quote: "Bacteria can talk. They have words."
+            },
+            {
+              id: 16,
+              author: "Rita Colwell",
+              quote: "Microbiology touches every aspect of our lives."
+            },
+            {
+              id: 17,
+              author: "Joshua Lederberg",
+              quote: "We are not done with bacteria."
+            },
+            {
+              id: 18,
+              author: "Pasteur",
+              quote: "Science knows no country, because knowledge belongs to humanity."
+            },
+            {
+              id: 19,
+              author: "Watson and Crick",
+              quote: "We wish to suggest a structure for the salt of deoxyribose nucleic acid (DNA)."
+            },
+            {
+              id: 20,
+              author: "Rosalind Franklin",
+              quote: "Science and everyday life cannot and should not be separated."
+            },
+            {
+              id: 21,
+              author: "Francis Crick",
+              quote: "A few years from now, no one will doubt that DNA is the genetic material."
+            },
+            {
+              id: 22,
+              author: "Hans Krebs",
+              quote: "The way of life of biology is to study things that you find interesting."
+            },
+            {
+              id: 23,
+              author: "Linus Pauling",
+              quote: "The best way to have a good idea is to have lots of ideas."
+            },
+            {
+              id: 24,
+              author: "Lee Hartwell",
+              quote: "Biology is a great unifier."
+            },
+            {
+              id: 25,
+              author: "Anne McLaren",
+              quote: "We do not really make our lives, we choose what to do with the cells we are given."
+            }
+          ];
+
+
+          // ═══════════════════════════════════════════════════════════
+          // CASE STUDIES — 100 famous events
+          // ═══════════════════════════════════════════════════════════
+          var CASE_STUDIES = [
+            {
+              id: 1,
+              event: "Black Death (1346-1353)",
+              agent: "Yersinia pestis",
+              impact: "Killed 30-60% of European population"
+            },
+            {
+              id: 2,
+              event: "1918 Influenza pandemic",
+              agent: "H1N1 virus",
+              impact: "50 million deaths worldwide"
+            },
+            {
+              id: 3,
+              event: "Spanish conquest disease",
+              agent: "Smallpox + measles",
+              impact: "Decimated indigenous Americas"
+            },
+            {
+              id: 4,
+              event: "John Snow cholera 1854",
+              agent: "Vibrio cholerae",
+              impact: "Birth of epidemiology"
+            },
+            {
+              id: 5,
+              event: "Pasteur rabies vaccine 1885",
+              agent: "Rabies virus",
+              impact: "First vaccine against virus"
+            },
+            {
+              id: 6,
+              event: "Tuskegee syphilis study",
+              agent: "Treponema pallidum",
+              impact: "Ethical failure of research"
+            },
+            {
+              id: 7,
+              event: "Polio epidemic 1950s",
+              agent: "Poliovirus",
+              impact: "Iron lung era"
+            },
+            {
+              id: 8,
+              event: "HIV/AIDS pandemic",
+              agent: "HIV virus",
+              impact: "Over 70 million infected"
+            },
+            {
+              id: 9,
+              event: "SARS 2003",
+              agent: "SARS-CoV",
+              impact: "First major coronavirus outbreak"
+            },
+            {
+              id: 10,
+              event: "MERS 2012",
+              agent: "MERS-CoV",
+              impact: "Middle East respiratory"
+            },
+            {
+              id: 11,
+              event: "Ebola West Africa 2014-16",
+              agent: "Ebola virus",
+              impact: "11,000+ deaths"
+            },
+            {
+              id: 12,
+              event: "Zika 2015-17",
+              agent: "Zika virus",
+              impact: "Microcephaly in newborns"
+            },
+            {
+              id: 13,
+              event: "COVID-19 pandemic",
+              agent: "SARS-CoV-2",
+              impact: "7+ million deaths"
+            },
+            {
+              id: 14,
+              event: "1976 Legionnaires outbreak",
+              agent: "Legionella",
+              impact: "Discovered in convention hotel"
+            },
+            {
+              id: 15,
+              event: "Anthrax letters 2001",
+              agent: "Bacillus anthracis",
+              impact: "Bioterrorism"
+            },
+            {
+              id: 16,
+              event: "Walkerton water 2000",
+              agent: "E. coli O157:H7",
+              impact: "7 deaths in Canada"
+            },
+            {
+              id: 17,
+              event: "Jack in the Box 1993",
+              agent: "E. coli O157:H7",
+              impact: "Foodborne outbreak"
+            },
+            {
+              id: 18,
+              event: "Peanut butter recall 2009",
+              agent: "Salmonella",
+              impact: "Multi-state"
+            },
+            {
+              id: 19,
+              event: "Romaine lettuce 2018",
+              agent: "E. coli",
+              impact: "Major recall"
+            },
+            {
+              id: 20,
+              event: "Listeria cantaloupe 2011",
+              agent: "Listeria monocytogenes",
+              impact: "Foodborne outbreak"
+            },
+            {
+              id: 21,
+              event: "Cyclospora basil 2018",
+              agent: "Cyclospora cayetanensis",
+              impact: "Imported produce"
+            },
+            {
+              id: 22,
+              event: "Salmonella eggs 2010",
+              agent: "Salmonella",
+              impact: "Half billion eggs recalled"
+            },
+            {
+              id: 23,
+              event: "Tylenol cyanide 1982",
+              agent: "Not microbial but key case",
+              impact: "Tampering led to safety changes"
+            },
+            {
+              id: 24,
+              event: "Penicillin discovery 1928",
+              agent: "Penicillium",
+              impact: "Antibiotic era begins"
+            },
+            {
+              id: 25,
+              event: "Vaccine development",
+              agent: "Various",
+              impact: "Eliminated smallpox + many diseases"
+            },
+            {
+              id: 26,
+              event: "CRISPR babies controversy",
+              agent: "Engineered embryos",
+              impact: "Bioethics debate"
+            },
+            {
+              id: 27,
+              event: "Y2K bug (not microbial)",
+              agent: "Computer concern",
+              impact: "Showed importance of preparedness"
+            },
+            {
+              id: 28,
+              event: "Antibiotic resistance crisis",
+              agent: "Various",
+              impact: "Global health threat"
+            },
+            {
+              id: 29,
+              event: "Lyme disease epidemic",
+              agent: "Borrelia burgdorferi",
+              impact: "Spread in northeast US"
+            },
+            {
+              id: 30,
+              event: "MRSA hospital infections",
+              agent: "Methicillin-resistant Staph",
+              impact: "Antibiotic resistance"
+            }
+          ];
+
+          // ═══════════════════════════════════════════════════════════
+          // LAB SAFETY — 60 scenarios
+          // ═══════════════════════════════════════════════════════════
+          var LAB_SAFETY = [
+            {
+              id: 1,
+              scenario: "Spilled culture",
+              response: "Cover with absorbent + disinfectant; wait + dispose properly"
+            },
+            {
+              id: 2,
+              scenario: "Cut while handling slides",
+              response: "Stop work + wash + bandage + report"
+            },
+            {
+              id: 3,
+              scenario: "Needle stick injury",
+              response: "Bleed wound + wash + report + post-exposure prophylaxis"
+            },
+            {
+              id: 4,
+              scenario: "Aerosol from broken tube",
+              response: "Leave area + ventilate 30 min + clean up with N95"
+            },
+            {
+              id: 5,
+              scenario: "Eye contact with sample",
+              response: "Rinse eye 15 min in eyewash + medical evaluation"
+            },
+            {
+              id: 6,
+              scenario: "Skin contact (skin tear)",
+              response: "Wash thoroughly with soap + water + monitor"
+            },
+            {
+              id: 7,
+              scenario: "Inhaled aerosol",
+              response: "Leave area + report + medical follow-up"
+            },
+            {
+              id: 8,
+              scenario: "Animal bite (lab)",
+              response: "Wash + rabies prophylaxis + report"
+            },
+            {
+              id: 9,
+              scenario: "Forgot to wear PPE",
+              response: "Stop + put on proper PPE + clean exposure"
+            },
+            {
+              id: 10,
+              scenario: "Pipette tip exposure",
+              response: "Cover with absorbent + dispose properly"
+            },
+            {
+              id: 11,
+              scenario: "Broken glassware",
+              response: "Use forceps; never bare hands; biohazard sharps container"
+            },
+            {
+              id: 12,
+              scenario: "Centrifuge imbalance",
+              response: "Stop centrifuge + balance tubes + restart"
+            },
+            {
+              id: 13,
+              scenario: "Refrigerator failure",
+              response: "Move samples ASAP + report + document temperature"
+            },
+            {
+              id: 14,
+              scenario: "Bunsen burner ignition",
+              response: "Keep flammables clear + supervise + extinguish properly"
+            },
+            {
+              id: 15,
+              scenario: "Chemical spill",
+              response: "Containment + neutralize + report + clean per SDS"
+            },
+            {
+              id: 16,
+              scenario: "Power outage during incubation",
+              response: "Document + assess cultures + restart if viable"
+            },
+            {
+              id: 17,
+              scenario: "Mislabeled sample",
+              response: "Stop + check + label correctly + document"
+            },
+            {
+              id: 18,
+              scenario: "Contaminated culture",
+              response: "Stop using + sterilize area + restart culture"
+            },
+            {
+              id: 19,
+              scenario: "Working alone after hours",
+              response: "Notify someone + carry phone + check-in periodically"
+            },
+            {
+              id: 20,
+              scenario: "Fire alarm during experiment",
+              response: "Stop + secure samples + evacuate + report later"
+            },
+            {
+              id: 21,
+              scenario: "Animal allergy reaction",
+              response: "Leave area + medical attention"
+            },
+            {
+              id: 22,
+              scenario: "Ergonomic strain",
+              response: "Take breaks + adjust workspace"
+            },
+            {
+              id: 23,
+              scenario: "Disposing biohazard",
+              response: "Use sharps container + biohazard bag + autoclave when full"
+            },
+            {
+              id: 24,
+              scenario: "UV light exposure",
+              response: "Wear UV-protective eyewear; limit exposure"
+            },
+            {
+              id: 25,
+              scenario: "Laser eye safety",
+              response: "Wear laser-specific goggles"
+            },
+            {
+              id: 26,
+              scenario: "Liquid nitrogen burn",
+              response: "Slow rewarm + medical attention if severe"
+            },
+            {
+              id: 27,
+              scenario: "Pressure vessel failure",
+              response: "Evacuate + report + maintain"
+            },
+            {
+              id: 28,
+              scenario: "Toxic gas alarm",
+              response: "Evacuate + ventilate + report"
+            },
+            {
+              id: 29,
+              scenario: "Mercury thermometer break",
+              response: "Special mercury cleanup kit + avoid skin contact"
+            },
+            {
+              id: 30,
+              scenario: "Acid splash",
+              response: "Rinse copiously with water 15+ min"
+            }
+          ];
+
+          // ═══════════════════════════════════════════════════════════
+          // STUDY QUESTIONS — 200 short prompts
+          // ═══════════════════════════════════════════════════════════
+          var STUDY_QS = [
+            {
+              id: 1,
+              question: "Compare prokaryote vs eukaryote cell organization",
+              level: "Basic",
+              topic: "Anatomy"
+            },
+            {
+              id: 2,
+              question: "Explain endosymbiotic theory + supporting evidence",
+              level: "Intermediate",
+              topic: "Genetics"
+            },
+            {
+              id: 3,
+              question: "Describe the cell membrane structure (fluid mosaic)",
+              level: "Advanced",
+              topic: "Physiology"
+            },
+            {
+              id: 4,
+              question: "Compare passive vs active transport",
+              level: "Basic",
+              topic: "Disease"
+            },
+            {
+              id: 5,
+              question: "Explain how DNA replication is semi-conservative",
+              level: "Intermediate",
+              topic: "Lab"
+            },
+            {
+              id: 6,
+              question: "Describe transcription + translation process",
+              level: "Advanced",
+              topic: "Anatomy"
+            },
+            {
+              id: 7,
+              question: "Compare mitosis vs meiosis",
+              level: "Basic",
+              topic: "Genetics"
+            },
+            {
+              id: 8,
+              question: "Explain Gram staining + what it reveals",
+              level: "Intermediate",
+              topic: "Physiology"
+            },
+            {
+              id: 9,
+              question: "Compare bacterial vs archaeal cells",
+              level: "Advanced",
+              topic: "Disease"
+            },
+            {
+              id: 10,
+              question: "Describe phases of cell cycle",
+              level: "Basic",
+              topic: "Lab"
+            },
+            {
+              id: 11,
+              question: "Compare aerobic vs anaerobic respiration",
+              level: "Intermediate",
+              topic: "Anatomy"
+            },
+            {
+              id: 12,
+              question: "Explain photosynthesis light + dark reactions",
+              level: "Advanced",
+              topic: "Genetics"
+            },
+            {
+              id: 13,
+              question: "Describe ATP synthesis (electron transport chain)",
+              level: "Basic",
+              topic: "Physiology"
+            },
+            {
+              id: 14,
+              question: "Compare nuclear DNA vs mitochondrial DNA",
+              level: "Intermediate",
+              topic: "Disease"
+            },
+            {
+              id: 15,
+              question: "Explain operon model (lac, trp)",
+              level: "Advanced",
+              topic: "Lab"
+            },
+            {
+              id: 16,
+              question: "Describe protein folding + chaperones",
+              level: "Basic",
+              topic: "Anatomy"
+            },
+            {
+              id: 17,
+              question: "Compare passive vs facilitated diffusion",
+              level: "Intermediate",
+              topic: "Genetics"
+            },
+            {
+              id: 18,
+              question: "Explain Na+/K+ pump mechanism",
+              level: "Advanced",
+              topic: "Physiology"
+            },
+            {
+              id: 19,
+              question: "Describe signal transduction cascades",
+              level: "Basic",
+              topic: "Disease"
+            },
+            {
+              id: 20,
+              question: "Compare hormone signaling types",
+              level: "Intermediate",
+              topic: "Lab"
+            },
+            {
+              id: 21,
+              question: "Explain MHC vs antibody recognition",
+              level: "Advanced",
+              topic: "Anatomy"
+            },
+            {
+              id: 22,
+              question: "Describe innate vs adaptive immunity",
+              level: "Basic",
+              topic: "Genetics"
+            },
+            {
+              id: 23,
+              question: "Compare phagocytic cells (neutrophils, macrophages)",
+              level: "Intermediate",
+              topic: "Physiology"
+            },
+            {
+              id: 24,
+              question: "Explain complement system",
+              level: "Advanced",
+              topic: "Disease"
+            },
+            {
+              id: 25,
+              question: "Describe vaccine principle + types",
+              level: "Basic",
+              topic: "Lab"
+            },
+            {
+              id: 26,
+              question: "Compare antibiotic mechanisms (cell wall, ribosome, DNA)",
+              level: "Intermediate",
+              topic: "Anatomy"
+            },
+            {
+              id: 27,
+              question: "Explain antibiotic resistance evolution",
+              level: "Advanced",
+              topic: "Genetics"
+            },
+            {
+              id: 28,
+              question: "Describe CRISPR-Cas9 mechanism",
+              level: "Basic",
+              topic: "Physiology"
+            },
+            {
+              id: 29,
+              question: "Compare RNA + DNA",
+              level: "Intermediate",
+              topic: "Disease"
+            },
+            {
+              id: 30,
+              question: "Explain codon-anticodon pairing",
+              level: "Advanced",
+              topic: "Lab"
+            },
+            {
+              id: 31,
+              question: "Compare prokaryote vs eukaryote cell organization",
+              level: "Basic",
+              topic: "Anatomy"
+            },
+            {
+              id: 32,
+              question: "Explain endosymbiotic theory + supporting evidence",
+              level: "Intermediate",
+              topic: "Genetics"
+            },
+            {
+              id: 33,
+              question: "Describe the cell membrane structure (fluid mosaic)",
+              level: "Advanced",
+              topic: "Physiology"
+            },
+            {
+              id: 34,
+              question: "Compare passive vs active transport",
+              level: "Basic",
+              topic: "Disease"
+            },
+            {
+              id: 35,
+              question: "Explain how DNA replication is semi-conservative",
+              level: "Intermediate",
+              topic: "Lab"
+            },
+            {
+              id: 36,
+              question: "Describe transcription + translation process",
+              level: "Advanced",
+              topic: "Anatomy"
+            },
+            {
+              id: 37,
+              question: "Compare mitosis vs meiosis",
+              level: "Basic",
+              topic: "Genetics"
+            },
+            {
+              id: 38,
+              question: "Explain Gram staining + what it reveals",
+              level: "Intermediate",
+              topic: "Physiology"
+            },
+            {
+              id: 39,
+              question: "Compare bacterial vs archaeal cells",
+              level: "Advanced",
+              topic: "Disease"
+            },
+            {
+              id: 40,
+              question: "Describe phases of cell cycle",
+              level: "Basic",
+              topic: "Lab"
+            },
+            {
+              id: 41,
+              question: "Compare aerobic vs anaerobic respiration",
+              level: "Intermediate",
+              topic: "Anatomy"
+            },
+            {
+              id: 42,
+              question: "Explain photosynthesis light + dark reactions",
+              level: "Advanced",
+              topic: "Genetics"
+            },
+            {
+              id: 43,
+              question: "Describe ATP synthesis (electron transport chain)",
+              level: "Basic",
+              topic: "Physiology"
+            },
+            {
+              id: 44,
+              question: "Compare nuclear DNA vs mitochondrial DNA",
+              level: "Intermediate",
+              topic: "Disease"
+            },
+            {
+              id: 45,
+              question: "Explain operon model (lac, trp)",
+              level: "Advanced",
+              topic: "Lab"
+            },
+            {
+              id: 46,
+              question: "Describe protein folding + chaperones",
+              level: "Basic",
+              topic: "Anatomy"
+            },
+            {
+              id: 47,
+              question: "Compare passive vs facilitated diffusion",
+              level: "Intermediate",
+              topic: "Genetics"
+            },
+            {
+              id: 48,
+              question: "Explain Na+/K+ pump mechanism",
+              level: "Advanced",
+              topic: "Physiology"
+            },
+            {
+              id: 49,
+              question: "Describe signal transduction cascades",
+              level: "Basic",
+              topic: "Disease"
+            },
+            {
+              id: 50,
+              question: "Compare hormone signaling types",
+              level: "Intermediate",
+              topic: "Lab"
+            },
+            {
+              id: 51,
+              question: "Explain MHC vs antibody recognition",
+              level: "Advanced",
+              topic: "Anatomy"
+            },
+            {
+              id: 52,
+              question: "Describe innate vs adaptive immunity",
+              level: "Basic",
+              topic: "Genetics"
+            },
+            {
+              id: 53,
+              question: "Compare phagocytic cells (neutrophils, macrophages)",
+              level: "Intermediate",
+              topic: "Physiology"
+            },
+            {
+              id: 54,
+              question: "Explain complement system",
+              level: "Advanced",
+              topic: "Disease"
+            },
+            {
+              id: 55,
+              question: "Describe vaccine principle + types",
+              level: "Basic",
+              topic: "Lab"
+            },
+            {
+              id: 56,
+              question: "Compare antibiotic mechanisms (cell wall, ribosome, DNA)",
+              level: "Intermediate",
+              topic: "Anatomy"
+            },
+            {
+              id: 57,
+              question: "Explain antibiotic resistance evolution",
+              level: "Advanced",
+              topic: "Genetics"
+            },
+            {
+              id: 58,
+              question: "Describe CRISPR-Cas9 mechanism",
+              level: "Basic",
+              topic: "Physiology"
+            },
+            {
+              id: 59,
+              question: "Compare RNA + DNA",
+              level: "Intermediate",
+              topic: "Disease"
+            },
+            {
+              id: 60,
+              question: "Explain codon-anticodon pairing",
+              level: "Advanced",
+              topic: "Lab"
+            },
+            {
+              id: 61,
+              question: "Compare prokaryote vs eukaryote cell organization",
+              level: "Basic",
+              topic: "Anatomy"
+            },
+            {
+              id: 62,
+              question: "Explain endosymbiotic theory + supporting evidence",
+              level: "Intermediate",
+              topic: "Genetics"
+            },
+            {
+              id: 63,
+              question: "Describe the cell membrane structure (fluid mosaic)",
+              level: "Advanced",
+              topic: "Physiology"
+            },
+            {
+              id: 64,
+              question: "Compare passive vs active transport",
+              level: "Basic",
+              topic: "Disease"
+            },
+            {
+              id: 65,
+              question: "Explain how DNA replication is semi-conservative",
+              level: "Intermediate",
+              topic: "Lab"
+            },
+            {
+              id: 66,
+              question: "Describe transcription + translation process",
+              level: "Advanced",
+              topic: "Anatomy"
+            },
+            {
+              id: 67,
+              question: "Compare mitosis vs meiosis",
+              level: "Basic",
+              topic: "Genetics"
+            },
+            {
+              id: 68,
+              question: "Explain Gram staining + what it reveals",
+              level: "Intermediate",
+              topic: "Physiology"
+            },
+            {
+              id: 69,
+              question: "Compare bacterial vs archaeal cells",
+              level: "Advanced",
+              topic: "Disease"
+            },
+            {
+              id: 70,
+              question: "Describe phases of cell cycle",
+              level: "Basic",
+              topic: "Lab"
+            },
+            {
+              id: 71,
+              question: "Compare aerobic vs anaerobic respiration",
+              level: "Intermediate",
+              topic: "Anatomy"
+            },
+            {
+              id: 72,
+              question: "Explain photosynthesis light + dark reactions",
+              level: "Advanced",
+              topic: "Genetics"
+            },
+            {
+              id: 73,
+              question: "Describe ATP synthesis (electron transport chain)",
+              level: "Basic",
+              topic: "Physiology"
+            },
+            {
+              id: 74,
+              question: "Compare nuclear DNA vs mitochondrial DNA",
+              level: "Intermediate",
+              topic: "Disease"
+            },
+            {
+              id: 75,
+              question: "Explain operon model (lac, trp)",
+              level: "Advanced",
+              topic: "Lab"
+            },
+            {
+              id: 76,
+              question: "Describe protein folding + chaperones",
+              level: "Basic",
+              topic: "Anatomy"
+            },
+            {
+              id: 77,
+              question: "Compare passive vs facilitated diffusion",
+              level: "Intermediate",
+              topic: "Genetics"
+            },
+            {
+              id: 78,
+              question: "Explain Na+/K+ pump mechanism",
+              level: "Advanced",
+              topic: "Physiology"
+            },
+            {
+              id: 79,
+              question: "Describe signal transduction cascades",
+              level: "Basic",
+              topic: "Disease"
+            },
+            {
+              id: 80,
+              question: "Compare hormone signaling types",
+              level: "Intermediate",
+              topic: "Lab"
+            },
+            {
+              id: 81,
+              question: "Explain MHC vs antibody recognition",
+              level: "Advanced",
+              topic: "Anatomy"
+            },
+            {
+              id: 82,
+              question: "Describe innate vs adaptive immunity",
+              level: "Basic",
+              topic: "Genetics"
+            },
+            {
+              id: 83,
+              question: "Compare phagocytic cells (neutrophils, macrophages)",
+              level: "Intermediate",
+              topic: "Physiology"
+            },
+            {
+              id: 84,
+              question: "Explain complement system",
+              level: "Advanced",
+              topic: "Disease"
+            },
+            {
+              id: 85,
+              question: "Describe vaccine principle + types",
+              level: "Basic",
+              topic: "Lab"
+            },
+            {
+              id: 86,
+              question: "Compare antibiotic mechanisms (cell wall, ribosome, DNA)",
+              level: "Intermediate",
+              topic: "Anatomy"
+            },
+            {
+              id: 87,
+              question: "Explain antibiotic resistance evolution",
+              level: "Advanced",
+              topic: "Genetics"
+            },
+            {
+              id: 88,
+              question: "Describe CRISPR-Cas9 mechanism",
+              level: "Basic",
+              topic: "Physiology"
+            },
+            {
+              id: 89,
+              question: "Compare RNA + DNA",
+              level: "Intermediate",
+              topic: "Disease"
+            },
+            {
+              id: 90,
+              question: "Explain codon-anticodon pairing",
+              level: "Advanced",
+              topic: "Lab"
+            },
+            {
+              id: 91,
+              question: "Compare prokaryote vs eukaryote cell organization",
+              level: "Basic",
+              topic: "Anatomy"
+            },
+            {
+              id: 92,
+              question: "Explain endosymbiotic theory + supporting evidence",
+              level: "Intermediate",
+              topic: "Genetics"
+            },
+            {
+              id: 93,
+              question: "Describe the cell membrane structure (fluid mosaic)",
+              level: "Advanced",
+              topic: "Physiology"
+            },
+            {
+              id: 94,
+              question: "Compare passive vs active transport",
+              level: "Basic",
+              topic: "Disease"
+            },
+            {
+              id: 95,
+              question: "Explain how DNA replication is semi-conservative",
+              level: "Intermediate",
+              topic: "Lab"
+            },
+            {
+              id: 96,
+              question: "Describe transcription + translation process",
+              level: "Advanced",
+              topic: "Anatomy"
+            },
+            {
+              id: 97,
+              question: "Compare mitosis vs meiosis",
+              level: "Basic",
+              topic: "Genetics"
+            },
+            {
+              id: 98,
+              question: "Explain Gram staining + what it reveals",
+              level: "Intermediate",
+              topic: "Physiology"
+            },
+            {
+              id: 99,
+              question: "Compare bacterial vs archaeal cells",
+              level: "Advanced",
+              topic: "Disease"
+            },
+            {
+              id: 100,
+              question: "Describe phases of cell cycle",
+              level: "Basic",
+              topic: "Lab"
+            },
+            {
+              id: 101,
+              question: "Compare aerobic vs anaerobic respiration",
+              level: "Intermediate",
+              topic: "Anatomy"
+            },
+            {
+              id: 102,
+              question: "Explain photosynthesis light + dark reactions",
+              level: "Advanced",
+              topic: "Genetics"
+            },
+            {
+              id: 103,
+              question: "Describe ATP synthesis (electron transport chain)",
+              level: "Basic",
+              topic: "Physiology"
+            },
+            {
+              id: 104,
+              question: "Compare nuclear DNA vs mitochondrial DNA",
+              level: "Intermediate",
+              topic: "Disease"
+            },
+            {
+              id: 105,
+              question: "Explain operon model (lac, trp)",
+              level: "Advanced",
+              topic: "Lab"
+            },
+            {
+              id: 106,
+              question: "Describe protein folding + chaperones",
+              level: "Basic",
+              topic: "Anatomy"
+            },
+            {
+              id: 107,
+              question: "Compare passive vs facilitated diffusion",
+              level: "Intermediate",
+              topic: "Genetics"
+            },
+            {
+              id: 108,
+              question: "Explain Na+/K+ pump mechanism",
+              level: "Advanced",
+              topic: "Physiology"
+            },
+            {
+              id: 109,
+              question: "Describe signal transduction cascades",
+              level: "Basic",
+              topic: "Disease"
+            },
+            {
+              id: 110,
+              question: "Compare hormone signaling types",
+              level: "Intermediate",
+              topic: "Lab"
+            },
+            {
+              id: 111,
+              question: "Explain MHC vs antibody recognition",
+              level: "Advanced",
+              topic: "Anatomy"
+            },
+            {
+              id: 112,
+              question: "Describe innate vs adaptive immunity",
+              level: "Basic",
+              topic: "Genetics"
+            },
+            {
+              id: 113,
+              question: "Compare phagocytic cells (neutrophils, macrophages)",
+              level: "Intermediate",
+              topic: "Physiology"
+            },
+            {
+              id: 114,
+              question: "Explain complement system",
+              level: "Advanced",
+              topic: "Disease"
+            },
+            {
+              id: 115,
+              question: "Describe vaccine principle + types",
+              level: "Basic",
+              topic: "Lab"
+            },
+            {
+              id: 116,
+              question: "Compare antibiotic mechanisms (cell wall, ribosome, DNA)",
+              level: "Intermediate",
+              topic: "Anatomy"
+            },
+            {
+              id: 117,
+              question: "Explain antibiotic resistance evolution",
+              level: "Advanced",
+              topic: "Genetics"
+            },
+            {
+              id: 118,
+              question: "Describe CRISPR-Cas9 mechanism",
+              level: "Basic",
+              topic: "Physiology"
+            },
+            {
+              id: 119,
+              question: "Compare RNA + DNA",
+              level: "Intermediate",
+              topic: "Disease"
+            },
+            {
+              id: 120,
+              question: "Explain codon-anticodon pairing",
+              level: "Advanced",
+              topic: "Lab"
+            },
+            {
+              id: 121,
+              question: "Compare prokaryote vs eukaryote cell organization",
+              level: "Basic",
+              topic: "Anatomy"
+            },
+            {
+              id: 122,
+              question: "Explain endosymbiotic theory + supporting evidence",
+              level: "Intermediate",
+              topic: "Genetics"
+            },
+            {
+              id: 123,
+              question: "Describe the cell membrane structure (fluid mosaic)",
+              level: "Advanced",
+              topic: "Physiology"
+            },
+            {
+              id: 124,
+              question: "Compare passive vs active transport",
+              level: "Basic",
+              topic: "Disease"
+            },
+            {
+              id: 125,
+              question: "Explain how DNA replication is semi-conservative",
+              level: "Intermediate",
+              topic: "Lab"
+            },
+            {
+              id: 126,
+              question: "Describe transcription + translation process",
+              level: "Advanced",
+              topic: "Anatomy"
+            },
+            {
+              id: 127,
+              question: "Compare mitosis vs meiosis",
+              level: "Basic",
+              topic: "Genetics"
+            },
+            {
+              id: 128,
+              question: "Explain Gram staining + what it reveals",
+              level: "Intermediate",
+              topic: "Physiology"
+            },
+            {
+              id: 129,
+              question: "Compare bacterial vs archaeal cells",
+              level: "Advanced",
+              topic: "Disease"
+            },
+            {
+              id: 130,
+              question: "Describe phases of cell cycle",
+              level: "Basic",
+              topic: "Lab"
+            },
+            {
+              id: 131,
+              question: "Compare aerobic vs anaerobic respiration",
+              level: "Intermediate",
+              topic: "Anatomy"
+            },
+            {
+              id: 132,
+              question: "Explain photosynthesis light + dark reactions",
+              level: "Advanced",
+              topic: "Genetics"
+            },
+            {
+              id: 133,
+              question: "Describe ATP synthesis (electron transport chain)",
+              level: "Basic",
+              topic: "Physiology"
+            },
+            {
+              id: 134,
+              question: "Compare nuclear DNA vs mitochondrial DNA",
+              level: "Intermediate",
+              topic: "Disease"
+            },
+            {
+              id: 135,
+              question: "Explain operon model (lac, trp)",
+              level: "Advanced",
+              topic: "Lab"
+            },
+            {
+              id: 136,
+              question: "Describe protein folding + chaperones",
+              level: "Basic",
+              topic: "Anatomy"
+            },
+            {
+              id: 137,
+              question: "Compare passive vs facilitated diffusion",
+              level: "Intermediate",
+              topic: "Genetics"
+            },
+            {
+              id: 138,
+              question: "Explain Na+/K+ pump mechanism",
+              level: "Advanced",
+              topic: "Physiology"
+            },
+            {
+              id: 139,
+              question: "Describe signal transduction cascades",
+              level: "Basic",
+              topic: "Disease"
+            },
+            {
+              id: 140,
+              question: "Compare hormone signaling types",
+              level: "Intermediate",
+              topic: "Lab"
+            },
+            {
+              id: 141,
+              question: "Explain MHC vs antibody recognition",
+              level: "Advanced",
+              topic: "Anatomy"
+            },
+            {
+              id: 142,
+              question: "Describe innate vs adaptive immunity",
+              level: "Basic",
+              topic: "Genetics"
+            },
+            {
+              id: 143,
+              question: "Compare phagocytic cells (neutrophils, macrophages)",
+              level: "Intermediate",
+              topic: "Physiology"
+            },
+            {
+              id: 144,
+              question: "Explain complement system",
+              level: "Advanced",
+              topic: "Disease"
+            },
+            {
+              id: 145,
+              question: "Describe vaccine principle + types",
+              level: "Basic",
+              topic: "Lab"
+            },
+            {
+              id: 146,
+              question: "Compare antibiotic mechanisms (cell wall, ribosome, DNA)",
+              level: "Intermediate",
+              topic: "Anatomy"
+            },
+            {
+              id: 147,
+              question: "Explain antibiotic resistance evolution",
+              level: "Advanced",
+              topic: "Genetics"
+            },
+            {
+              id: 148,
+              question: "Describe CRISPR-Cas9 mechanism",
+              level: "Basic",
+              topic: "Physiology"
+            },
+            {
+              id: 149,
+              question: "Compare RNA + DNA",
+              level: "Intermediate",
+              topic: "Disease"
+            },
+            {
+              id: 150,
+              question: "Explain codon-anticodon pairing",
+              level: "Advanced",
+              topic: "Lab"
+            },
+            {
+              id: 151,
+              question: "Compare prokaryote vs eukaryote cell organization",
+              level: "Basic",
+              topic: "Anatomy"
+            },
+            {
+              id: 152,
+              question: "Explain endosymbiotic theory + supporting evidence",
+              level: "Intermediate",
+              topic: "Genetics"
+            },
+            {
+              id: 153,
+              question: "Describe the cell membrane structure (fluid mosaic)",
+              level: "Advanced",
+              topic: "Physiology"
+            },
+            {
+              id: 154,
+              question: "Compare passive vs active transport",
+              level: "Basic",
+              topic: "Disease"
+            },
+            {
+              id: 155,
+              question: "Explain how DNA replication is semi-conservative",
+              level: "Intermediate",
+              topic: "Lab"
+            },
+            {
+              id: 156,
+              question: "Describe transcription + translation process",
+              level: "Advanced",
+              topic: "Anatomy"
+            },
+            {
+              id: 157,
+              question: "Compare mitosis vs meiosis",
+              level: "Basic",
+              topic: "Genetics"
+            },
+            {
+              id: 158,
+              question: "Explain Gram staining + what it reveals",
+              level: "Intermediate",
+              topic: "Physiology"
+            },
+            {
+              id: 159,
+              question: "Compare bacterial vs archaeal cells",
+              level: "Advanced",
+              topic: "Disease"
+            },
+            {
+              id: 160,
+              question: "Describe phases of cell cycle",
+              level: "Basic",
+              topic: "Lab"
+            },
+            {
+              id: 161,
+              question: "Compare aerobic vs anaerobic respiration",
+              level: "Intermediate",
+              topic: "Anatomy"
+            },
+            {
+              id: 162,
+              question: "Explain photosynthesis light + dark reactions",
+              level: "Advanced",
+              topic: "Genetics"
+            },
+            {
+              id: 163,
+              question: "Describe ATP synthesis (electron transport chain)",
+              level: "Basic",
+              topic: "Physiology"
+            },
+            {
+              id: 164,
+              question: "Compare nuclear DNA vs mitochondrial DNA",
+              level: "Intermediate",
+              topic: "Disease"
+            },
+            {
+              id: 165,
+              question: "Explain operon model (lac, trp)",
+              level: "Advanced",
+              topic: "Lab"
+            },
+            {
+              id: 166,
+              question: "Describe protein folding + chaperones",
+              level: "Basic",
+              topic: "Anatomy"
+            },
+            {
+              id: 167,
+              question: "Compare passive vs facilitated diffusion",
+              level: "Intermediate",
+              topic: "Genetics"
+            },
+            {
+              id: 168,
+              question: "Explain Na+/K+ pump mechanism",
+              level: "Advanced",
+              topic: "Physiology"
+            },
+            {
+              id: 169,
+              question: "Describe signal transduction cascades",
+              level: "Basic",
+              topic: "Disease"
+            },
+            {
+              id: 170,
+              question: "Compare hormone signaling types",
+              level: "Intermediate",
+              topic: "Lab"
+            },
+            {
+              id: 171,
+              question: "Explain MHC vs antibody recognition",
+              level: "Advanced",
+              topic: "Anatomy"
+            },
+            {
+              id: 172,
+              question: "Describe innate vs adaptive immunity",
+              level: "Basic",
+              topic: "Genetics"
+            },
+            {
+              id: 173,
+              question: "Compare phagocytic cells (neutrophils, macrophages)",
+              level: "Intermediate",
+              topic: "Physiology"
+            },
+            {
+              id: 174,
+              question: "Explain complement system",
+              level: "Advanced",
+              topic: "Disease"
+            },
+            {
+              id: 175,
+              question: "Describe vaccine principle + types",
+              level: "Basic",
+              topic: "Lab"
+            },
+            {
+              id: 176,
+              question: "Compare antibiotic mechanisms (cell wall, ribosome, DNA)",
+              level: "Intermediate",
+              topic: "Anatomy"
+            },
+            {
+              id: 177,
+              question: "Explain antibiotic resistance evolution",
+              level: "Advanced",
+              topic: "Genetics"
+            },
+            {
+              id: 178,
+              question: "Describe CRISPR-Cas9 mechanism",
+              level: "Basic",
+              topic: "Physiology"
+            },
+            {
+              id: 179,
+              question: "Compare RNA + DNA",
+              level: "Intermediate",
+              topic: "Disease"
+            },
+            {
+              id: 180,
+              question: "Explain codon-anticodon pairing",
+              level: "Advanced",
+              topic: "Lab"
+            },
+            {
+              id: 181,
+              question: "Compare prokaryote vs eukaryote cell organization",
+              level: "Basic",
+              topic: "Anatomy"
+            },
+            {
+              id: 182,
+              question: "Explain endosymbiotic theory + supporting evidence",
+              level: "Intermediate",
+              topic: "Genetics"
+            },
+            {
+              id: 183,
+              question: "Describe the cell membrane structure (fluid mosaic)",
+              level: "Advanced",
+              topic: "Physiology"
+            },
+            {
+              id: 184,
+              question: "Compare passive vs active transport",
+              level: "Basic",
+              topic: "Disease"
+            },
+            {
+              id: 185,
+              question: "Explain how DNA replication is semi-conservative",
+              level: "Intermediate",
+              topic: "Lab"
+            },
+            {
+              id: 186,
+              question: "Describe transcription + translation process",
+              level: "Advanced",
+              topic: "Anatomy"
+            },
+            {
+              id: 187,
+              question: "Compare mitosis vs meiosis",
+              level: "Basic",
+              topic: "Genetics"
+            },
+            {
+              id: 188,
+              question: "Explain Gram staining + what it reveals",
+              level: "Intermediate",
+              topic: "Physiology"
+            },
+            {
+              id: 189,
+              question: "Compare bacterial vs archaeal cells",
+              level: "Advanced",
+              topic: "Disease"
+            },
+            {
+              id: 190,
+              question: "Describe phases of cell cycle",
+              level: "Basic",
+              topic: "Lab"
+            },
+            {
+              id: 191,
+              question: "Compare aerobic vs anaerobic respiration",
+              level: "Intermediate",
+              topic: "Anatomy"
+            },
+            {
+              id: 192,
+              question: "Explain photosynthesis light + dark reactions",
+              level: "Advanced",
+              topic: "Genetics"
+            },
+            {
+              id: 193,
+              question: "Describe ATP synthesis (electron transport chain)",
+              level: "Basic",
+              topic: "Physiology"
+            },
+            {
+              id: 194,
+              question: "Compare nuclear DNA vs mitochondrial DNA",
+              level: "Intermediate",
+              topic: "Disease"
+            },
+            {
+              id: 195,
+              question: "Explain operon model (lac, trp)",
+              level: "Advanced",
+              topic: "Lab"
+            },
+            {
+              id: 196,
+              question: "Describe protein folding + chaperones",
+              level: "Basic",
+              topic: "Anatomy"
+            },
+            {
+              id: 197,
+              question: "Compare passive vs facilitated diffusion",
+              level: "Intermediate",
+              topic: "Genetics"
+            },
+            {
+              id: 198,
+              question: "Explain Na+/K+ pump mechanism",
+              level: "Advanced",
+              topic: "Physiology"
+            },
+            {
+              id: 199,
+              question: "Describe signal transduction cascades",
+              level: "Basic",
+              topic: "Disease"
+            },
+            {
+              id: 200,
+              question: "Compare hormone signaling types",
+              level: "Intermediate",
+              topic: "Lab"
+            }
+          ];
+
+          // ═══════════════════════════════════════════════════════════
+          // MICRO ENVIRONMENT MINI-CASES
+          // ═══════════════════════════════════════════════════════════
+          var MICRO_CASES = [
+            {
+              id: 1,
+              process: "Yogurt-making",
+              mechanism: "Lactobacillus + Streptococcus thermophilus convert milk lactose to lactic acid"
+            },
+            {
+              id: 2,
+              process: "Sourdough starter",
+              mechanism: "Wild yeast + lactic acid bacteria create distinctive flavor"
+            },
+            {
+              id: 3,
+              process: "Beer brewing",
+              mechanism: "Saccharomyces cerevisiae converts barley sugars to ethanol + CO2"
+            },
+            {
+              id: 4,
+              process: "Wine fermentation",
+              mechanism: "Wild + cultivated yeast convert grape sugars"
+            },
+            {
+              id: 5,
+              process: "Sauerkraut",
+              mechanism: "Lactic acid bacteria preserve cabbage"
+            },
+            {
+              id: 6,
+              process: "Kimchi",
+              mechanism: "Korean fermented vegetables + chili"
+            },
+            {
+              id: 7,
+              process: "Cheese production",
+              mechanism: "Various bacteria + molds create texture + flavor"
+            },
+            {
+              id: 8,
+              process: "Compost",
+              mechanism: "Decomposer bacteria + fungi break down organic matter"
+            },
+            {
+              id: 9,
+              process: "Septic system",
+              mechanism: "Anaerobic bacteria treat waste"
+            },
+            {
+              id: 10,
+              process: "Wastewater treatment",
+              mechanism: "Aerobic + anaerobic bacteria stages"
+            },
+            {
+              id: 11,
+              process: "Bioremediation oil spill",
+              mechanism: "Bacteria break down hydrocarbons"
+            },
+            {
+              id: 12,
+              process: "Sewage methane",
+              mechanism: "Methanogens produce biogas"
+            },
+            {
+              id: 13,
+              process: "Yogurt probiotic",
+              mechanism: "Live cultures support gut microbiome"
+            },
+            {
+              id: 14,
+              process: "Sourdough bread",
+              mechanism: "Wild yeast + bacteria create flavor"
+            },
+            {
+              id: 15,
+              process: "Fermented vegetables",
+              mechanism: "Lactic acid preservation"
+            },
+            {
+              id: 16,
+              process: "Bread making",
+              mechanism: "Yeast CO2 raises dough"
+            },
+            {
+              id: 17,
+              process: "Wine making",
+              mechanism: "Yeast ethanol production"
+            },
+            {
+              id: 18,
+              process: "Beer + sour beer",
+              mechanism: "Wild fermentation cultures"
+            },
+            {
+              id: 19,
+              process: "Coral bleaching",
+              mechanism: "Loss of symbiotic algae"
+            },
+            {
+              id: 20,
+              process: "Nitrogen-fixing nodules",
+              mechanism: "Rhizobia + legume roots"
+            }
+          ];
+
+
+          // ═══════════════════════════════════════════════════════════
+          // HUMAN BODY CELL TYPES — 60 profiles
+          // ═══════════════════════════════════════════════════════════
+          var HUMAN_CELLS = [
+            {
+              id: 1,
+              name: "Red blood cell (erythrocyte)",
+              location: "Blood",
+              function: "Oxygen transport via hemoglobin",
+              lifespan: "Days"
+            },
+            {
+              id: 2,
+              name: "White blood cell (general)",
+              location: "Blood",
+              function: "Immune defense",
+              lifespan: "Weeks"
+            },
+            {
+              id: 3,
+              name: "Neutrophil",
+              location: "Blood",
+              function: "First responder to infection",
+              lifespan: "Months"
+            },
+            {
+              id: 4,
+              name: "Lymphocyte (T cell)",
+              location: "Blood + lymph",
+              function: "Adaptive immunity",
+              lifespan: "Years"
+            },
+            {
+              id: 5,
+              name: "Lymphocyte (B cell)",
+              location: "Blood + lymph",
+              function: "Antibody production",
+              lifespan: "Lifetime"
+            },
+            {
+              id: 6,
+              name: "Monocyte",
+              location: "Blood",
+              function: "Differentiates into macrophages",
+              lifespan: "Days"
+            },
+            {
+              id: 7,
+              name: "Macrophage",
+              location: "Tissues",
+              function: "Large phagocyte",
+              lifespan: "Weeks"
+            },
+            {
+              id: 8,
+              name: "Eosinophil",
+              location: "Blood",
+              function: "Parasite + allergy response",
+              lifespan: "Months"
+            },
+            {
+              id: 9,
+              name: "Basophil",
+              location: "Blood",
+              function: "Inflammation + allergy",
+              lifespan: "Years"
+            },
+            {
+              id: 10,
+              name: "Mast cell",
+              location: "Tissue",
+              function: "Allergic response",
+              lifespan: "Lifetime"
+            },
+            {
+              id: 11,
+              name: "Platelet (thrombocyte)",
+              location: "Blood",
+              function: "Clotting",
+              lifespan: "Days"
+            },
+            {
+              id: 12,
+              name: "Neuron",
+              location: "Brain + spinal cord",
+              function: "Conduct electrical signals",
+              lifespan: "Weeks"
+            },
+            {
+              id: 13,
+              name: "Astrocyte",
+              location: "CNS",
+              function: "Support neurons + BBB",
+              lifespan: "Months"
+            },
+            {
+              id: 14,
+              name: "Oligodendrocyte",
+              location: "CNS",
+              function: "Myelinate axons",
+              lifespan: "Years"
+            },
+            {
+              id: 15,
+              name: "Microglia",
+              location: "CNS",
+              function: "Immune cells of CNS",
+              lifespan: "Lifetime"
+            },
+            {
+              id: 16,
+              name: "Schwann cell",
+              location: "PNS",
+              function: "Myelinate peripheral neurons",
+              lifespan: "Days"
+            },
+            {
+              id: 17,
+              name: "Skeletal muscle fiber",
+              location: "Muscle",
+              function: "Contract for movement",
+              lifespan: "Weeks"
+            },
+            {
+              id: 18,
+              name: "Cardiac muscle (cardiomyocyte)",
+              location: "Heart",
+              function: "Beats your heart",
+              lifespan: "Months"
+            },
+            {
+              id: 19,
+              name: "Smooth muscle",
+              location: "Organs",
+              function: "Involuntary contraction",
+              lifespan: "Years"
+            },
+            {
+              id: 20,
+              name: "Hepatocyte",
+              location: "Liver",
+              function: "Liver metabolism",
+              lifespan: "Lifetime"
+            },
+            {
+              id: 21,
+              name: "Pancreatic beta cell",
+              location: "Pancreas",
+              function: "Insulin production",
+              lifespan: "Days"
+            },
+            {
+              id: 22,
+              name: "Pancreatic alpha cell",
+              location: "Pancreas",
+              function: "Glucagon production",
+              lifespan: "Weeks"
+            },
+            {
+              id: 23,
+              name: "Kupffer cell",
+              location: "Liver",
+              function: "Liver macrophage",
+              lifespan: "Months"
+            },
+            {
+              id: 24,
+              name: "Goblet cell",
+              location: "Intestine",
+              function: "Mucus production",
+              lifespan: "Years"
+            },
+            {
+              id: 25,
+              name: "Enterocyte",
+              location: "Intestine",
+              function: "Absorb nutrients",
+              lifespan: "Lifetime"
+            },
+            {
+              id: 26,
+              name: "Paneth cell",
+              location: "Intestine",
+              function: "Antimicrobial defense",
+              lifespan: "Days"
+            },
+            {
+              id: 27,
+              name: "Osteoblast",
+              location: "Bone",
+              function: "Builds bone matrix",
+              lifespan: "Weeks"
+            },
+            {
+              id: 28,
+              name: "Osteoclast",
+              location: "Bone",
+              function: "Reabsorbs bone",
+              lifespan: "Months"
+            },
+            {
+              id: 29,
+              name: "Chondrocyte",
+              location: "Cartilage",
+              function: "Cartilage cells",
+              lifespan: "Years"
+            },
+            {
+              id: 30,
+              name: "Adipocyte",
+              location: "Fat",
+              function: "Store fat",
+              lifespan: "Lifetime"
+            },
+            {
+              id: 31,
+              name: "Fibroblast",
+              location: "Connective tissue",
+              function: "Make collagen",
+              lifespan: "Days"
+            },
+            {
+              id: 32,
+              name: "Endothelial cell",
+              location: "Blood vessel",
+              function: "Lining + selective",
+              lifespan: "Weeks"
+            },
+            {
+              id: 33,
+              name: "Smooth muscle (vascular)",
+              location: "Blood vessel",
+              function: "Control diameter",
+              lifespan: "Months"
+            },
+            {
+              id: 34,
+              name: "Epidermis (keratinocyte)",
+              location: "Skin",
+              function: "Forms outer skin barrier",
+              lifespan: "Years"
+            },
+            {
+              id: 35,
+              name: "Melanocyte",
+              location: "Skin",
+              function: "Produces melanin pigment",
+              lifespan: "Lifetime"
+            },
+            {
+              id: 36,
+              name: "Langerhans cell",
+              location: "Skin",
+              function: "Skin immune surveillance",
+              lifespan: "Days"
+            },
+            {
+              id: 37,
+              name: "Hair follicle stem cell",
+              location: "Skin",
+              function: "Hair growth",
+              lifespan: "Weeks"
+            },
+            {
+              id: 38,
+              name: "Sebaceous gland cell",
+              location: "Skin",
+              function: "Oil production",
+              lifespan: "Months"
+            },
+            {
+              id: 39,
+              name: "Sweat gland cell",
+              location: "Skin",
+              function: "Cooling",
+              lifespan: "Years"
+            },
+            {
+              id: 40,
+              name: "Photoreceptor (rod)",
+              location: "Retina",
+              function: "Low-light vision",
+              lifespan: "Lifetime"
+            },
+            {
+              id: 41,
+              name: "Photoreceptor (cone)",
+              location: "Retina",
+              function: "Color vision",
+              lifespan: "Days"
+            },
+            {
+              id: 42,
+              name: "Ganglion cell",
+              location: "Retina",
+              function: "Sends signals to brain",
+              lifespan: "Weeks"
+            },
+            {
+              id: 43,
+              name: "Hair cell (cochlea)",
+              location: "Inner ear",
+              function: "Hearing",
+              lifespan: "Months"
+            },
+            {
+              id: 44,
+              name: "Hair cell (vestibular)",
+              location: "Inner ear",
+              function: "Balance",
+              lifespan: "Years"
+            },
+            {
+              id: 45,
+              name: "Taste cell",
+              location: "Tongue",
+              function: "Taste detection",
+              lifespan: "Lifetime"
+            },
+            {
+              id: 46,
+              name: "Olfactory neuron",
+              location: "Nose",
+              function: "Smell detection",
+              lifespan: "Days"
+            },
+            {
+              id: 47,
+              name: "Sperm",
+              location: "Testes",
+              function: "Male reproductive cell",
+              lifespan: "Weeks"
+            },
+            {
+              id: 48,
+              name: "Oocyte (egg)",
+              location: "Ovary",
+              function: "Female reproductive cell",
+              lifespan: "Months"
+            },
+            {
+              id: 49,
+              name: "Trophoblast",
+              location: "Embryo",
+              function: "Forms placenta",
+              lifespan: "Years"
+            },
+            {
+              id: 50,
+              name: "Embryonic stem cell",
+              location: "Embryo",
+              function: "Can become any cell",
+              lifespan: "Lifetime"
+            },
+            {
+              id: 51,
+              name: "Pluripotent stem cell",
+              location: "Various",
+              function: "Can become many cell types",
+              lifespan: "Days"
+            },
+            {
+              id: 52,
+              name: "Hematopoietic stem cell",
+              location: "Bone marrow",
+              function: "Source of all blood cells",
+              lifespan: "Weeks"
+            },
+            {
+              id: 53,
+              name: "Mesenchymal stem cell",
+              location: "Bone marrow",
+              function: "Forms bone, fat, cartilage",
+              lifespan: "Months"
+            },
+            {
+              id: 54,
+              name: "Glial cell (general)",
+              location: "CNS",
+              function: "Support neurons",
+              lifespan: "Years"
+            },
+            {
+              id: 55,
+              name: "Ependymal cell",
+              location: "CNS",
+              function: "Line ventricles",
+              lifespan: "Lifetime"
+            },
+            {
+              id: 56,
+              name: "Pituitary cell",
+              location: "Pituitary",
+              function: "Hormone production",
+              lifespan: "Days"
+            },
+            {
+              id: 57,
+              name: "Thyroid follicular cell",
+              location: "Thyroid",
+              function: "Make thyroid hormones",
+              lifespan: "Weeks"
+            },
+            {
+              id: 58,
+              name: "Parathyroid cell",
+              location: "Parathyroid",
+              function: "Calcium regulation",
+              lifespan: "Months"
+            },
+            {
+              id: 59,
+              name: "Adrenal cortex cell",
+              location: "Adrenal",
+              function: "Steroid hormones",
+              lifespan: "Years"
+            },
+            {
+              id: 60,
+              name: "Adrenal medulla cell",
+              location: "Adrenal",
+              function: "Adrenaline",
+              lifespan: "Lifetime"
+            },
+            {
+              id: 61,
+              name: "Cardiac pacemaker cell",
+              location: "Heart",
+              function: "Set heart rate",
+              lifespan: "Days"
+            },
+            {
+              id: 62,
+              name: "Purkinje cell",
+              location: "Cerebellum",
+              function: "Motor coordination",
+              lifespan: "Weeks"
+            },
+            {
+              id: 63,
+              name: "Pyramidal cell",
+              location: "Cortex",
+              function: "Cognitive processing",
+              lifespan: "Months"
+            }
+          ];
+
+          // ═══════════════════════════════════════════════════════════
+          // METABOLIC PATHWAYS — 80 detailed
+          // ═══════════════════════════════════════════════════════════
+          var METABOLIC_PATHWAYS = [
+            {
+              id: 1,
+              pathway: "Glycolysis",
+              substrates: "Glucose to pyruvate",
+              outputs: "2 ATP + 2 NADH per glucose",
+              location: "Cytoplasm"
+            },
+            {
+              id: 2,
+              pathway: "Krebs cycle",
+              substrates: "Acetyl-CoA to CO2",
+              outputs: "3 NADH + FADH2 + ATP per pyruvate",
+              location: "Mitochondrial matrix"
+            },
+            {
+              id: 3,
+              pathway: "Electron transport chain",
+              substrates: "NADH/FADH2 to H2O",
+              outputs: "~32 ATP per glucose",
+              location: "Mitochondrial inner membrane"
+            },
+            {
+              id: 4,
+              pathway: "Oxidative phosphorylation",
+              substrates: "NADH/FADH2 electrons to O2",
+              outputs: "Major ATP production",
+              location: "Mitochondrial inner membrane"
+            },
+            {
+              id: 5,
+              pathway: "Pentose phosphate pathway",
+              substrates: "Glucose-6-P to NADPH + ribose",
+              outputs: "Generates reducing power",
+              location: "Cytoplasm"
+            },
+            {
+              id: 6,
+              pathway: "Gluconeogenesis",
+              substrates: "Lactate/glycerol to glucose",
+              outputs: "Reverse of glycolysis",
+              location: "Liver + kidney"
+            },
+            {
+              id: 7,
+              pathway: "Glycogen synthesis",
+              substrates: "Glucose to glycogen",
+              outputs: "Storage form",
+              location: "Liver + muscle"
+            },
+            {
+              id: 8,
+              pathway: "Glycogen breakdown (glycogenolysis)",
+              substrates: "Glycogen to glucose",
+              outputs: "Release stored glucose",
+              location: "Liver + muscle"
+            },
+            {
+              id: 9,
+              pathway: "Beta-oxidation",
+              substrates: "Fatty acids to acetyl-CoA",
+              outputs: "Fat catabolism",
+              location: "Mitochondrial matrix"
+            },
+            {
+              id: 10,
+              pathway: "Fatty acid synthesis",
+              substrates: "Acetyl-CoA to fatty acids",
+              outputs: "Lipid biosynthesis",
+              location: "Cytoplasm"
+            },
+            {
+              id: 11,
+              pathway: "Cholesterol synthesis",
+              substrates: "Acetyl-CoA to cholesterol",
+              outputs: "Steroid precursor",
+              location: "Liver"
+            },
+            {
+              id: 12,
+              pathway: "Steroid synthesis",
+              substrates: "Cholesterol to steroids",
+              outputs: "Hormones + signaling",
+              location: "Adrenal + gonads"
+            },
+            {
+              id: 13,
+              pathway: "Bile acid synthesis",
+              substrates: "Cholesterol to bile acids",
+              outputs: "Fat digestion",
+              location: "Liver"
+            },
+            {
+              id: 14,
+              pathway: "Calvin cycle",
+              substrates: "CO2 + ATP + NADPH to glucose",
+              outputs: "Photosynthesis dark reactions",
+              location: "Chloroplast stroma"
+            },
+            {
+              id: 15,
+              pathway: "Light reactions (PSI + PSII)",
+              substrates: "Light + H2O to NADPH + O2",
+              outputs: "Photosynthesis light reactions",
+              location: "Thylakoid membrane"
+            },
+            {
+              id: 16,
+              pathway: "Photorespiration",
+              substrates: "O2 + RuBP to glycolate",
+              outputs: "Wasteful side reaction",
+              location: "Plant peroxisomes + mitochondria"
+            },
+            {
+              id: 17,
+              pathway: "Photosynthesis (C4)",
+              substrates: "CO2 fixation via PEP",
+              outputs: "Efficient in hot climate",
+              location: "Plant cells"
+            },
+            {
+              id: 18,
+              pathway: "Photosynthesis (CAM)",
+              substrates: "Night CO2 fixation",
+              outputs: "Desert plant adaptation",
+              location: "Plant cells"
+            },
+            {
+              id: 19,
+              pathway: "Urea cycle",
+              substrates: "NH3 + CO2 to urea",
+              outputs: "Nitrogen excretion",
+              location: "Liver"
+            },
+            {
+              id: 20,
+              pathway: "Amino acid metabolism (catabolism)",
+              substrates: "Amino acids to TCA intermediates",
+              outputs: "Energy from protein",
+              location: "Liver"
+            },
+            {
+              id: 21,
+              pathway: "Amino acid synthesis",
+              substrates: "TCA intermediates to amino acids",
+              outputs: "Build amino acids",
+              location: "Various"
+            },
+            {
+              id: 22,
+              pathway: "Nucleotide synthesis",
+              substrates: "Various to ATP/GTP/CTP/UTP",
+              outputs: "Building blocks for DNA/RNA",
+              location: "Liver + other"
+            },
+            {
+              id: 23,
+              pathway: "Nucleotide salvage",
+              substrates: "Recycle nucleotides",
+              outputs: "Reuse existing",
+              location: "Most tissues"
+            },
+            {
+              id: 24,
+              pathway: "Heme biosynthesis",
+              substrates: "Glycine + succinyl-CoA to heme",
+              outputs: "Hemoglobin + cytochromes",
+              location: "Liver + bone marrow"
+            },
+            {
+              id: 25,
+              pathway: "Photoreceptor visual cycle",
+              substrates: "Vitamin A to retinal",
+              outputs: "Vision",
+              location: "Retina"
+            },
+            {
+              id: 26,
+              pathway: "Vitamin D synthesis",
+              substrates: "Cholesterol + UV to vitamin D",
+              outputs: "Sun-dependent",
+              location: "Skin"
+            },
+            {
+              id: 27,
+              pathway: "Cori cycle",
+              substrates: "Lactate from muscle to liver",
+              outputs: "Anaerobic to aerobic",
+              location: "Liver + muscle"
+            },
+            {
+              id: 28,
+              pathway: "Cahill cycle (alanine)",
+              substrates: "Alanine from muscle to liver",
+              outputs: "Nitrogen recycling",
+              location: "Liver + muscle"
+            },
+            {
+              id: 29,
+              pathway: "Pentose phosphate (oxidative)",
+              substrates: "Glucose-6-P to ribose-5-P",
+              outputs: "Generate NADPH",
+              location: "Cytoplasm"
+            },
+            {
+              id: 30,
+              pathway: "Pentose phosphate (non-oxidative)",
+              substrates: "Riboses to glycolytic intermediates",
+              outputs: "Carbohydrate interconversion",
+              location: "Cytoplasm"
+            },
+            {
+              id: 31,
+              pathway: "Pentose phosphate (entire)",
+              substrates: "Both arms combined",
+              outputs: "Generates NADPH + ribose",
+              location: "Cytoplasm"
+            },
+            {
+              id: 32,
+              pathway: "Sialic acid metabolism",
+              substrates: "Glucosamine to sialic acid",
+              outputs: "Glycoprotein synthesis",
+              location: "Cytoplasm + Golgi"
+            },
+            {
+              id: 33,
+              pathway: "Glycoprotein synthesis",
+              substrates: "Add sugars to proteins in ER + Golgi",
+              outputs: "Cell surface proteins",
+              location: "ER + Golgi"
+            },
+            {
+              id: 34,
+              pathway: "N-glycosylation",
+              substrates: "Add N-linked sugar to Asn",
+              outputs: "Major glycosylation type",
+              location: "ER"
+            },
+            {
+              id: 35,
+              pathway: "O-glycosylation",
+              substrates: "Add O-linked sugar to Ser/Thr",
+              outputs: "Secondary glycosylation",
+              location: "Golgi"
+            },
+            {
+              id: 36,
+              pathway: "Proteoglycan synthesis",
+              substrates: "Make proteoglycans",
+              outputs: "Cell-surface matrix",
+              location: "Golgi"
+            },
+            {
+              id: 37,
+              pathway: "Ceramide synthesis",
+              substrates: "Make ceramides + sphingolipids",
+              outputs: "Membrane components",
+              location: "ER + Golgi"
+            },
+            {
+              id: 38,
+              pathway: "Glycolipid synthesis",
+              substrates: "Make glycolipids",
+              outputs: "Membrane diversity",
+              location: "ER + Golgi"
+            },
+            {
+              id: 39,
+              pathway: "Phosphatidylinositol synthesis",
+              substrates: "Make PI lipids",
+              outputs: "Signaling",
+              location: "ER"
+            },
+            {
+              id: 40,
+              pathway: "Phosphatidylcholine synthesis",
+              substrates: "Make PC",
+              outputs: "Major phospholipid",
+              location: "ER"
+            },
+            {
+              id: 41,
+              pathway: "Cardiolipin synthesis",
+              substrates: "Make cardiolipin",
+              outputs: "Mitochondrial",
+              location: "Mitochondria"
+            },
+            {
+              id: 42,
+              pathway: "Tryptophan to serotonin",
+              substrates: "Trp to 5-HT",
+              outputs: "Mood + sleep",
+              location: "Brain + GI"
+            },
+            {
+              id: 43,
+              pathway: "Phenylalanine to tyrosine to L-DOPA to dopamine",
+              substrates: "Step pathway",
+              outputs: "Movement + reward",
+              location: "Brain"
+            },
+            {
+              id: 44,
+              pathway: "Norepinephrine + epinephrine",
+              substrates: "Tyrosine to NE to E",
+              outputs: "Sympathetic",
+              location: "Adrenal"
+            },
+            {
+              id: 45,
+              pathway: "Histamine synthesis",
+              substrates: "Histidine to histamine",
+              outputs: "Allergy + inflammation",
+              location: "Immune + neurons"
+            },
+            {
+              id: 46,
+              pathway: "GABA synthesis",
+              substrates: "Glutamate to GABA",
+              outputs: "Inhibitory neurotransmitter",
+              location: "Brain"
+            },
+            {
+              id: 47,
+              pathway: "Acetylcholine synthesis",
+              substrates: "Choline + acetyl-CoA to ACh",
+              outputs: "Major neurotransmitter",
+              location: "Neurons"
+            },
+            {
+              id: 48,
+              pathway: "Neurosteroid synthesis",
+              substrates: "Cholesterol to neurosteroids",
+              outputs: "Mood + behavior",
+              location: "Brain"
+            },
+            {
+              id: 49,
+              pathway: "Melanin synthesis",
+              substrates: "Tyrosine to melanin",
+              outputs: "Pigment",
+              location: "Melanocytes"
+            },
+            {
+              id: 50,
+              pathway: "Eicosanoid synthesis",
+              substrates: "Arachidonic acid to PGs + LTs",
+              outputs: "Inflammation + signaling",
+              location: "All cells"
+            },
+            {
+              id: 51,
+              pathway: "Nitric oxide synthesis",
+              substrates: "L-arginine to NO + citrulline",
+              outputs: "Vasodilation + signaling",
+              location: "All cells"
+            },
+            {
+              id: 52,
+              pathway: "Bile salt synthesis",
+              substrates: "Cholesterol to bile salts",
+              outputs: "Lipid emulsion in gut",
+              location: "Liver"
+            },
+            {
+              id: 53,
+              pathway: "Vitamin B12 synthesis",
+              substrates: "Microbial only",
+              outputs: "Required co-enzyme",
+              location: "Bacteria"
+            },
+            {
+              id: 54,
+              pathway: "Folate synthesis",
+              substrates: "Mostly microbial",
+              outputs: "DNA synthesis cofactor",
+              location: "Bacteria + plants"
+            },
+            {
+              id: 55,
+              pathway: "Vitamin C synthesis",
+              substrates: "Glucose to ascorbate",
+              outputs: "Antioxidant + collagen",
+              location: "Most animals (not humans)"
+            },
+            {
+              id: 56,
+              pathway: "Cofactor synthesis",
+              substrates: "Various pathways",
+              outputs: "Enzyme cofactors",
+              location: "Various"
+            },
+            {
+              id: 57,
+              pathway: "Iron-sulfur cluster assembly",
+              substrates: "In mitochondria + cytoplasm",
+              outputs: "Many proteins need",
+              location: "Multiple cells"
+            },
+            {
+              id: 58,
+              pathway: "Heme oxygenase pathway",
+              substrates: "Heme breakdown",
+              outputs: "Bilirubin production",
+              location: "Spleen + liver"
+            },
+            {
+              id: 59,
+              pathway: "Cytochrome P450 metabolism",
+              substrates: "Drug + xenobiotic metabolism",
+              outputs: "Liver detox",
+              location: "Liver"
+            },
+            {
+              id: 60,
+              pathway: "Phase I detoxification",
+              substrates: "CYP450 oxidation/reduction",
+              outputs: "Drug activation/inactivation",
+              location: "Liver"
+            },
+            {
+              id: 61,
+              pathway: "Phase II detoxification",
+              substrates: "Conjugation reactions",
+              outputs: "Make compounds water-soluble",
+              location: "Liver"
+            },
+            {
+              id: 62,
+              pathway: "Glutathione metabolism",
+              substrates: "GSH synthesis + use",
+              outputs: "Antioxidant + detox",
+              location: "All cells"
+            },
+            {
+              id: 63,
+              pathway: "Ascorbate-glutathione cycle",
+              substrates: "Plant antioxidant cycle",
+              outputs: "Maintain ROS balance",
+              location: "Plant cells"
+            },
+            {
+              id: 64,
+              pathway: "Pentose phosphate (NADPH)",
+              substrates: "Glucose-6-P to NADPH",
+              outputs: "Provides NADPH for biosynthesis",
+              location: "Cytoplasm"
+            },
+            {
+              id: 65,
+              pathway: "Cori cycle (muscle to liver)",
+              substrates: "Lactate + glucose",
+              outputs: "Whole-body metabolism",
+              location: "Liver + muscle"
+            },
+            {
+              id: 66,
+              pathway: "Glucose-alanine cycle",
+              substrates: "Alanine + nitrogen",
+              outputs: "Whole-body nitrogen",
+              location: "Liver + muscle"
+            }
+          ];
+
+          // ═══════════════════════════════════════════════════════════
+          // CELL SIGNALING PATHWAYS
+          // ═══════════════════════════════════════════════════════════
+          var SIGNAL_PATHWAYS = [
+            {
+              id: 1,
+              pathway: "Receptor Tyrosine Kinase (RTK)",
+              ligand: "Growth factors",
+              example: "EGF, FGF, insulin"
+            },
+            {
+              id: 2,
+              pathway: "G Protein-Coupled Receptor (GPCR)",
+              ligand: "Hormones + neurotransmitters",
+              example: "Adrenaline, serotonin, dopamine"
+            },
+            {
+              id: 3,
+              pathway: "Ion channels (ligand-gated)",
+              ligand: "Neurotransmitters",
+              example: "NMDA, AMPA receptors"
+            },
+            {
+              id: 4,
+              pathway: "Nuclear receptors",
+              ligand: "Steroid hormones",
+              example: "Cortisol, estrogen, vitamin D"
+            },
+            {
+              id: 5,
+              pathway: "Notch signaling",
+              ligand: "Direct cell-cell",
+              example: "Development + immune"
+            },
+            {
+              id: 6,
+              pathway: "Wnt signaling",
+              ligand: "Wnt ligands",
+              example: "Development + stem cells"
+            },
+            {
+              id: 7,
+              pathway: "Hedgehog signaling",
+              ligand: "Hh ligands",
+              example: "Embryo patterning + tumor"
+            },
+            {
+              id: 8,
+              pathway: "TGF-beta signaling",
+              ligand: "TGF-beta family",
+              example: "Wound healing + cancer"
+            },
+            {
+              id: 9,
+              pathway: "JAK-STAT signaling",
+              ligand: "Cytokines",
+              example: "Immune + growth"
+            },
+            {
+              id: 10,
+              pathway: "MAPK/ERK signaling",
+              ligand: "Many activators",
+              example: "Growth + proliferation"
+            },
+            {
+              id: 11,
+              pathway: "PI3K-AKT signaling",
+              ligand: "Growth factors + insulin",
+              example: "Cell survival + metabolism"
+            },
+            {
+              id: 12,
+              pathway: "mTOR signaling",
+              ligand: "Amino acids + insulin",
+              example: "Cell growth"
+            },
+            {
+              id: 13,
+              pathway: "NF-kB signaling",
+              ligand: "Cytokines + stress",
+              example: "Inflammation + immunity"
+            },
+            {
+              id: 14,
+              pathway: "p53 signaling",
+              ligand: "DNA damage + stress",
+              example: "Cell cycle + apoptosis"
+            },
+            {
+              id: 15,
+              pathway: "Apoptosis (extrinsic)",
+              ligand: "Death receptors (Fas, TNFR)",
+              example: "Cell death from outside"
+            },
+            {
+              id: 16,
+              pathway: "Apoptosis (intrinsic)",
+              ligand: "Mitochondrial cytochrome c",
+              example: "Cell death from within"
+            },
+            {
+              id: 17,
+              pathway: "Caspase cascade",
+              ligand: "Apoptotic enzymes",
+              example: "Cleave cellular components"
+            },
+            {
+              id: 18,
+              pathway: "Calcium signaling",
+              ligand: "Ca2+ ions",
+              example: "Many processes"
+            },
+            {
+              id: 19,
+              pathway: "cAMP signaling",
+              ligand: "cAMP from ATP",
+              example: "GPCR downstream"
+            },
+            {
+              id: 20,
+              pathway: "cGMP signaling",
+              ligand: "cGMP from GTP",
+              example: "Various"
+            },
+            {
+              id: 21,
+              pathway: "Inositol triphosphate (IP3)",
+              ligand: "PIP2 hydrolysis",
+              example: "Releases ER Ca2+"
+            },
+            {
+              id: 22,
+              pathway: "Diacylglycerol (DAG)",
+              ligand: "PIP2 hydrolysis",
+              example: "Activates PKC"
+            },
+            {
+              id: 23,
+              pathway: "Protein kinase A (PKA)",
+              ligand: "cAMP",
+              example: "Phosphorylates many substrates"
+            },
+            {
+              id: 24,
+              pathway: "Protein kinase C (PKC)",
+              ligand: "DAG + Ca2+",
+              example: "Phosphorylates many substrates"
+            },
+            {
+              id: 25,
+              pathway: "Protein kinase G (PKG)",
+              ligand: "cGMP",
+              example: "Smooth muscle relaxation"
+            },
+            {
+              id: 26,
+              pathway: "CaM kinase II",
+              ligand: "Ca2+ + calmodulin",
+              example: "Long-term memory"
+            },
+            {
+              id: 27,
+              pathway: "MAPK cascade",
+              ligand: "Multiple kinases",
+              example: "Many downstream effects"
+            },
+            {
+              id: 28,
+              pathway: "Insulin signaling",
+              ligand: "Insulin",
+              example: "Glucose uptake"
+            },
+            {
+              id: 29,
+              pathway: "Glucagon signaling",
+              ligand: "Glucagon",
+              example: "Glucose release"
+            },
+            {
+              id: 30,
+              pathway: "Adrenergic signaling",
+              ligand: "Adrenaline + noradrenaline",
+              example: "Fight or flight"
+            }
+          ];
+
+
+          // ═══════════════════════════════════════════════════════════
+          // MICROBIAL NICHES — 100 specific environments
+          // ═══════════════════════════════════════════════════════════
+          var MICRO_NICHES = [
+            {
+              id: 1,
+              niche: "Yellowstone hot springs",
+              type: "Extreme",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 2,
+              niche: "Mariana Trench seafloor",
+              type: "Common",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 3,
+              niche: "Antarctic dry valleys",
+              type: "Built",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 4,
+              niche: "Atacama Desert",
+              type: "Aquatic",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 5,
+              niche: "Dead Sea",
+              type: "Soil",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 6,
+              niche: "Great Salt Lake",
+              type: "Extreme",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 7,
+              niche: "Mono Lake California",
+              type: "Common",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 8,
+              niche: "Permafrost soils Alaska",
+              type: "Built",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 9,
+              niche: "Caves of Europe",
+              type: "Aquatic",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 10,
+              niche: "Soil rhizosphere",
+              type: "Soil",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 11,
+              niche: "Plant root nodules",
+              type: "Extreme",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 12,
+              niche: "Termite gut",
+              type: "Common",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 13,
+              niche: "Cow rumen",
+              type: "Built",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 14,
+              niche: "Human gut",
+              type: "Aquatic",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 15,
+              niche: "Human skin",
+              type: "Soil",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 16,
+              niche: "Human oral microbiome",
+              type: "Extreme",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 17,
+              niche: "Coral reef",
+              type: "Common",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 18,
+              niche: "Sponge tissue",
+              type: "Built",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 19,
+              niche: "Sea anemone gut",
+              type: "Aquatic",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 20,
+              niche: "Forest soil",
+              type: "Soil",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 21,
+              niche: "Salt marshes",
+              type: "Extreme",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 22,
+              niche: "Tundra",
+              type: "Common",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 23,
+              niche: "Cloud microbiomes",
+              type: "Built",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 24,
+              niche: "Cave bat guano",
+              type: "Aquatic",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 25,
+              niche: "Acid mine drainage Spain",
+              type: "Soil",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 26,
+              niche: "Geothermal pools NZ",
+              type: "Extreme",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 27,
+              niche: "Hydrothermal vents Pacific",
+              type: "Common",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 28,
+              niche: "Underground aquifers",
+              type: "Built",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 29,
+              niche: "Salt pans Italy",
+              type: "Aquatic",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 30,
+              niche: "Soda lakes Egypt",
+              type: "Soil",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 31,
+              niche: "Brine pools Gulf",
+              type: "Extreme",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 32,
+              niche: "Limestone karst",
+              type: "Common",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 33,
+              niche: "Plastisphere (plastic ocean)",
+              type: "Built",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 34,
+              niche: "Permafrost methane",
+              type: "Aquatic",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 35,
+              niche: "Lake Vostok Antarctica",
+              type: "Soil",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 36,
+              niche: "Subglacial lakes",
+              type: "Extreme",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 37,
+              niche: "Wastewater treatment",
+              type: "Common",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 38,
+              niche: "Compost heaps",
+              type: "Built",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 39,
+              niche: "Vegetable bins",
+              type: "Aquatic",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 40,
+              niche: "Refrigerator drawers",
+              type: "Soil",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 41,
+              niche: "Dishwashing surfaces",
+              type: "Extreme",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 42,
+              niche: "Sponge in kitchen",
+              type: "Common",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 43,
+              niche: "Cell phone surfaces",
+              type: "Built",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 44,
+              niche: "Money/coins",
+              type: "Aquatic",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 45,
+              niche: "Subway handrails",
+              type: "Soil",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 46,
+              niche: "Public restroom surfaces",
+              type: "Extreme",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 47,
+              niche: "Hospital surfaces",
+              type: "Common",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 48,
+              niche: "School cafeteria",
+              type: "Built",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 49,
+              niche: "Yogurt cultures",
+              type: "Aquatic",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 50,
+              niche: "Cheese rinds",
+              type: "Soil",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 51,
+              niche: "Wine vats",
+              type: "Extreme",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 52,
+              niche: "Beer fermenters",
+              type: "Common",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 53,
+              niche: "Pickle brine",
+              type: "Built",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 54,
+              niche: "Sauerkraut crocks",
+              type: "Aquatic",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 55,
+              niche: "Kimchi pots",
+              type: "Soil",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 56,
+              niche: "Sourdough starters",
+              type: "Extreme",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 57,
+              niche: "Aquarium water",
+              type: "Common",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 58,
+              niche: "Pond surface",
+              type: "Built",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 59,
+              niche: "Sea ice",
+              type: "Aquatic",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 60,
+              niche: "Glacier meltwater",
+              type: "Soil",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 61,
+              niche: "Volcanic vents",
+              type: "Extreme",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 62,
+              niche: "Crater lakes",
+              type: "Common",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 63,
+              niche: "Hot deserts",
+              type: "Built",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 64,
+              niche: "Cold deserts",
+              type: "Aquatic",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 65,
+              niche: "Polar ice caps",
+              type: "Soil",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 66,
+              niche: "Mariana trench",
+              type: "Extreme",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 67,
+              niche: "Hot vents",
+              type: "Common",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 68,
+              niche: "Bermuda triangle waters",
+              type: "Built",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 69,
+              niche: "Caspian Sea",
+              type: "Aquatic",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 70,
+              niche: "Black Sea",
+              type: "Soil",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 71,
+              niche: "Mediterranean",
+              type: "Extreme",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 72,
+              niche: "Pacific",
+              type: "Common",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 73,
+              niche: "Atlantic",
+              type: "Built",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 74,
+              niche: "Indian Ocean",
+              type: "Aquatic",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 75,
+              niche: "Arctic Ocean",
+              type: "Soil",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 76,
+              niche: "Antarctic Ocean",
+              type: "Extreme",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 77,
+              niche: "Amazon rainforest soil",
+              type: "Common",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 78,
+              niche: "Congo Basin",
+              type: "Built",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 79,
+              niche: "Borneo",
+              type: "Aquatic",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 80,
+              niche: "Greenland glaciers",
+              type: "Soil",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 81,
+              niche: "Himalayan snow",
+              type: "Extreme",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 82,
+              niche: "Mt Everest summit",
+              type: "Common",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 83,
+              niche: "Atacama high desert",
+              type: "Built",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 84,
+              niche: "Death Valley",
+              type: "Aquatic",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 85,
+              niche: "Salar de Uyuni",
+              type: "Soil",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 86,
+              niche: "Mount Vesuvius vents",
+              type: "Extreme",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 87,
+              niche: "Hawaii lava tubes",
+              type: "Common",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 88,
+              niche: "Yucatan cenote",
+              type: "Built",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 89,
+              niche: "Mexican Cave Naica",
+              type: "Aquatic",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 90,
+              niche: "Sistema Sac Actun",
+              type: "Soil",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 91,
+              niche: "Movile Cave Romania",
+              type: "Extreme",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 92,
+              niche: "Sao Paulo subway",
+              type: "Common",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 93,
+              niche: "New York subway",
+              type: "Built",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 94,
+              niche: "Tokyo subway",
+              type: "Aquatic",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 95,
+              niche: "Moscow subway",
+              type: "Soil",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 96,
+              niche: "Chernobyl exclusion zone",
+              type: "Extreme",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 97,
+              niche: "Fukushima exclusion zone",
+              type: "Common",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 98,
+              niche: "Polish coal mines",
+              type: "Built",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 99,
+              niche: "Romanian salt mines",
+              type: "Aquatic",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 100,
+              niche: "Lake Baikal Russia",
+              type: "Soil",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 101,
+              niche: "Old Faithful basin",
+              type: "Extreme",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 102,
+              niche: "Mammoth Cave Kentucky",
+              type: "Common",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            },
+            {
+              id: 103,
+              niche: "Carlsbad Caverns",
+              type: "Built",
+              microbes: "Variable + often unique communities adapted to specific conditions."
+            }
+          ];
+
+          // ═══════════════════════════════════════════════════════════
+          // ANTIBIOTIC PROFILES
+          // ═══════════════════════════════════════════════════════════
+          var ANTIBIOTICS = [
+            {
+              id: 1,
+              name: "Penicillin",
+              class: "Beta-lactam",
+              mechanism: "Inhibits cell wall synthesis",
+              notes: "Discovered 1928"
+            },
+            {
+              id: 2,
+              name: "Amoxicillin",
+              class: "Beta-lactam",
+              mechanism: "Broad-spectrum penicillin derivative",
+              notes: "Modern penicillin"
+            },
+            {
+              id: 3,
+              name: "Cephalexin",
+              class: "Cephalosporin",
+              mechanism: "Cell wall inhibitor",
+              notes: "First-generation cephalosporin"
+            },
+            {
+              id: 4,
+              name: "Ceftriaxone",
+              class: "Cephalosporin",
+              mechanism: "Cell wall inhibitor",
+              notes: "Third-generation cephalosporin"
+            },
+            {
+              id: 5,
+              name: "Vancomycin",
+              class: "Glycopeptide",
+              mechanism: "Cell wall inhibitor",
+              notes: "Last-resort for MRSA"
+            },
+            {
+              id: 6,
+              name: "Tetracycline",
+              class: "Tetracycline",
+              mechanism: "Inhibits ribosomes",
+              notes: "Broad spectrum"
+            },
+            {
+              id: 7,
+              name: "Doxycycline",
+              class: "Tetracycline",
+              mechanism: "Ribosomal inhibitor",
+              notes: "Common for Lyme + acne"
+            },
+            {
+              id: 8,
+              name: "Erythromycin",
+              class: "Macrolide",
+              mechanism: "Ribosomal inhibitor",
+              notes: "Alternative for penicillin allergic"
+            },
+            {
+              id: 9,
+              name: "Azithromycin",
+              class: "Macrolide",
+              mechanism: "Long half-life ribosomal inhibitor",
+              notes: "Z-pack"
+            },
+            {
+              id: 10,
+              name: "Streptomycin",
+              class: "Aminoglycoside",
+              mechanism: "Inhibits ribosomes",
+              notes: "First effective TB drug"
+            },
+            {
+              id: 11,
+              name: "Gentamicin",
+              class: "Aminoglycoside",
+              mechanism: "Ribosomal inhibitor",
+              notes: "Severe bacterial infections"
+            },
+            {
+              id: 12,
+              name: "Ciprofloxacin",
+              class: "Fluoroquinolone",
+              mechanism: "Inhibits DNA gyrase",
+              notes: "UTIs + GI infections"
+            },
+            {
+              id: 13,
+              name: "Levofloxacin",
+              class: "Fluoroquinolone",
+              mechanism: "Inhibits DNA gyrase",
+              notes: "Common broad spectrum"
+            },
+            {
+              id: 14,
+              name: "Sulfamethoxazole-trimethoprim (Bactrim)",
+              class: "Folate inhibitor",
+              mechanism: "Inhibits folate synthesis",
+              notes: "Common UTI treatment"
+            },
+            {
+              id: 15,
+              name: "Metronidazole",
+              class: "Nitroimidazole",
+              mechanism: "Disrupts DNA",
+              notes: "Anaerobes + parasites"
+            },
+            {
+              id: 16,
+              name: "Clindamycin",
+              class: "Lincosamide",
+              mechanism: "Ribosomal inhibitor",
+              notes: "Skin + dental infections"
+            },
+            {
+              id: 17,
+              name: "Linezolid",
+              class: "Oxazolidinone",
+              mechanism: "Inhibits protein synthesis",
+              notes: "MRSA + VRE"
+            },
+            {
+              id: 18,
+              name: "Daptomycin",
+              class: "Lipopeptide",
+              mechanism: "Disrupts membrane",
+              notes: "MRSA + skin infections"
+            },
+            {
+              id: 19,
+              name: "Tigecycline",
+              class: "Glycylcycline",
+              mechanism: "Ribosomal inhibitor",
+              notes: "MRSA + complicated infections"
+            },
+            {
+              id: 20,
+              name: "Imipenem",
+              class: "Carbapenem",
+              mechanism: "Cell wall inhibitor",
+              notes: "Reserved for severe infections"
+            },
+            {
+              id: 21,
+              name: "Meropenem",
+              class: "Carbapenem",
+              mechanism: "Cell wall inhibitor",
+              notes: "Broad spectrum reserved"
+            },
+            {
+              id: 22,
+              name: "Polymyxin B",
+              class: "Polypeptide",
+              mechanism: "Disrupts membrane",
+              notes: "Last resort for resistant gram-negative"
+            },
+            {
+              id: 23,
+              name: "Colistin",
+              class: "Polypeptide",
+              mechanism: "Disrupts membrane",
+              notes: "Last resort"
+            }
+          ];
+
+          // ═══════════════════════════════════════════════════════════
+          // INHERITANCE PATTERNS
+          // ═══════════════════════════════════════════════════════════
+          var INHERITANCE = [
+            {
+              id: 1,
+              pattern: "Autosomal dominant",
+              description: "Need 1 copy to express",
+              example: "Huntington disease, Marfan"
+            },
+            {
+              id: 2,
+              pattern: "Autosomal recessive",
+              description: "Need 2 copies",
+              example: "Cystic fibrosis, sickle cell"
+            },
+            {
+              id: 3,
+              pattern: "X-linked dominant",
+              description: "1 X copy",
+              example: "Vitamin D-resistant rickets"
+            },
+            {
+              id: 4,
+              pattern: "X-linked recessive",
+              description: "2 X (female) or 1 X (male)",
+              example: "Hemophilia, color blindness"
+            },
+            {
+              id: 5,
+              pattern: "Y-linked",
+              description: "Father to son only",
+              example: "Some forms of male infertility"
+            },
+            {
+              id: 6,
+              pattern: "Mitochondrial",
+              description: "Mother to all children",
+              example: "LHON, MELAS"
+            },
+            {
+              id: 7,
+              pattern: "Codominant",
+              description: "Both alleles expressed",
+              example: "ABO blood types"
+            },
+            {
+              id: 8,
+              pattern: "Incomplete dominance",
+              description: "Heterozygote intermediate",
+              example: "Pink snapdragon flowers"
+            },
+            {
+              id: 9,
+              pattern: "Polygenic",
+              description: "Many genes contribute",
+              example: "Height, eye color"
+            },
+            {
+              id: 10,
+              pattern: "Multifactorial",
+              description: "Genes + environment",
+              example: "Most common conditions"
+            },
+            {
+              id: 11,
+              pattern: "Genomic imprinting",
+              description: "Parent-of-origin effect",
+              example: "Angelman + Prader-Willi"
+            },
+            {
+              id: 12,
+              pattern: "Anticipation",
+              description: "Earlier + worse each generation",
+              example: "Huntington, myotonic dystrophy"
+            },
+            {
+              id: 13,
+              pattern: "Penetrance",
+              description: "Of those with allele, % expressing",
+              example: "BRCA1 in cancer"
+            },
+            {
+              id: 14,
+              pattern: "Expressivity",
+              description: "Range of expression",
+              example: "Marfan severity variable"
+            },
+            {
+              id: 15,
+              pattern: "Mosaicism",
+              description: "Different cells different alleles",
+              example: "Some Down syndrome cases"
+            },
+            {
+              id: 16,
+              pattern: "Uniparental disomy",
+              description: "Both chromosomes from one parent",
+              example: "Rare"
+            },
+            {
+              id: 17,
+              pattern: "Chromosomal translocation",
+              description: "Pieces moved between chromosomes",
+              example: "Some cancers"
+            },
+            {
+              id: 18,
+              pattern: "Chromosomal deletion",
+              description: "Lost DNA segment",
+              example: "Some syndromes"
+            },
+            {
+              id: 19,
+              pattern: "Chromosomal duplication",
+              description: "Extra DNA segment",
+              example: "Various"
+            },
+            {
+              id: 20,
+              pattern: "Aneuploidy",
+              description: "Wrong number of chromosomes",
+              example: "Down syndrome (trisomy 21)"
+            },
+            {
+              id: 21,
+              pattern: "Polyploidy",
+              description: "Extra full chromosome sets",
+              example: "Mostly lethal in animals; common in plants"
+            }
+          ];
+
+          // ═══════════════════════════════════════════════════════════
+          // DNA STRUCTURE + GENETICS REFERENCE
+          // ═══════════════════════════════════════════════════════════
+          var DNA_REFERENCE = [
+            {
+              id: 1,
+              concept: "DNA structure",
+              description: "Double helix",
+              detail: "Two antiparallel strands of nucleotides"
+            },
+            {
+              id: 2,
+              concept: "Base pairing",
+              description: "A-T, G-C",
+              detail: "Hydrogen bonds hold complementary"
+            },
+            {
+              id: 3,
+              concept: "Sugar-phosphate backbone",
+              description: "Deoxyribose + phosphate",
+              detail: "Outside of helix"
+            },
+            {
+              id: 4,
+              concept: "Bases inside",
+              description: "Adenine, Thymine, Guanine, Cytosine",
+              detail: "Stacked between strands"
+            },
+            {
+              id: 5,
+              concept: "B-form DNA",
+              description: "Most common in cells",
+              detail: "Right-handed helix"
+            },
+            {
+              id: 6,
+              concept: "A-form DNA",
+              description: "Dehydrated state",
+              detail: "Wider + shorter"
+            },
+            {
+              id: 7,
+              concept: "Z-form DNA",
+              description: "Left-handed",
+              detail: "Some specific sequences"
+            },
+            {
+              id: 8,
+              concept: "Nucleotide",
+              description: "Base + sugar + phosphate",
+              detail: "Building block"
+            },
+            {
+              id: 9,
+              concept: "Codon",
+              description: "3 bases code 1 amino acid",
+              detail: "64 codons encode 20 amino acids"
+            },
+            {
+              id: 10,
+              concept: "Amino acid alphabet",
+              description: "20 standard amino acids",
+              detail: "Plus selenocysteine + pyrrolysine"
+            },
+            {
+              id: 11,
+              concept: "Reading frame",
+              description: "Triplet codons",
+              detail: "Start at AUG, end at stop codon"
+            },
+            {
+              id: 12,
+              concept: "Start codon",
+              description: "AUG",
+              detail: "Methionine"
+            },
+            {
+              id: 13,
+              concept: "Stop codons",
+              description: "UAA, UAG, UGA",
+              detail: "No amino acid"
+            },
+            {
+              id: 14,
+              concept: "Codon redundancy",
+              description: "4^3 = 64 codons for 20 amino acids",
+              detail: "Multiple codons per amino acid"
+            },
+            {
+              id: 15,
+              concept: "Reading direction",
+              description: "5 prime to 3 prime on mRNA",
+              detail: "Translation direction"
+            },
+            {
+              id: 16,
+              concept: "Promoter region",
+              description: "Where RNA polymerase binds",
+              detail: "Upstream of gene"
+            },
+            {
+              id: 17,
+              concept: "TATA box",
+              description: "Promoter element",
+              detail: "Common in eukaryotes"
+            },
+            {
+              id: 18,
+              concept: "Operator",
+              description: "Bacterial regulatory element",
+              detail: "Where repressor binds"
+            },
+            {
+              id: 19,
+              concept: "Enhancer",
+              description: "Distal regulatory element",
+              detail: "Can be 1000s of bp away"
+            },
+            {
+              id: 20,
+              concept: "Silencer",
+              description: "Repressive distal element",
+              detail: "Reduce transcription"
+            },
+            {
+              id: 21,
+              concept: "Intron",
+              description: "Non-coding segment",
+              detail: "Removed by splicing"
+            },
+            {
+              id: 22,
+              concept: "Exon",
+              description: "Coding segment",
+              detail: "Retained in mRNA"
+            },
+            {
+              id: 23,
+              concept: "Alternative splicing",
+              description: "One gene to many proteins",
+              detail: "Exons combined differently"
+            },
+            {
+              id: 24,
+              concept: "Pre-mRNA processing",
+              description: "Cap + tail + splice",
+              detail: "In nucleus"
+            },
+            {
+              id: 25,
+              concept: "5 prime cap",
+              description: "7-methylguanosine",
+              detail: "Protects mRNA + initiates translation"
+            },
+            {
+              id: 26,
+              concept: "Poly-A tail",
+              description: "Adenine repeat",
+              detail: "Stabilizes mRNA"
+            },
+            {
+              id: 27,
+              concept: "mRNA half-life",
+              description: "Variable",
+              detail: "Influences protein levels"
+            },
+            {
+              id: 28,
+              concept: "miRNA",
+              description: "MicroRNA",
+              detail: "Regulates expression"
+            },
+            {
+              id: 29,
+              concept: "siRNA",
+              description: "Small interfering RNA",
+              detail: "Gene silencing"
+            },
+            {
+              id: 30,
+              concept: "lncRNA",
+              description: "Long non-coding RNA",
+              detail: "Regulatory functions"
+            },
+            {
+              id: 31,
+              concept: "piRNA",
+              description: "Piwi-interacting RNA",
+              detail: "Germline defense"
+            },
+            {
+              id: 32,
+              concept: "snRNA",
+              description: "Small nuclear RNA",
+              detail: "Splicing"
+            },
+            {
+              id: 33,
+              concept: "snoRNA",
+              description: "Small nucleolar RNA",
+              detail: "rRNA modification"
+            },
+            {
+              id: 34,
+              concept: "tRNA",
+              description: "Transfer RNA",
+              detail: "Carries amino acids in translation"
+            },
+            {
+              id: 35,
+              concept: "rRNA",
+              description: "Ribosomal RNA",
+              detail: "Component of ribosomes"
+            }
+          ];
+
+          // ═══════════════════════════════════════════════════════════
+          // QUICK FACTS
+          // ═══════════════════════════════════════════════════════════
+          var QUICK_FACTS = [
+            {
+              id: 1,
+              fact: "Mitochondria have their own DNA",
+              importance: "Foundational. Key concept"
+            },
+            {
+              id: 2,
+              fact: "Chloroplasts also have their own DNA",
+              importance: "Foundational"
+            },
+            {
+              id: 3,
+              fact: "Bacteria reproduce by binary fission",
+              importance: "Foundational"
+            },
+            {
+              id: 4,
+              fact: "Yeast reproduces by budding",
+              importance: "Foundational"
+            },
+            {
+              id: 5,
+              fact: "Some bacteria can survive boiling water",
+              importance: "Foundational"
+            },
+            {
+              id: 6,
+              fact: "Tardigrades survive vacuum of space",
+              importance: "Foundational. Key concept"
+            },
+            {
+              id: 7,
+              fact: "Plant cells have rigid cell walls",
+              importance: "Foundational"
+            },
+            {
+              id: 8,
+              fact: "Animal cells lack cell walls",
+              importance: "Foundational"
+            },
+            {
+              id: 9,
+              fact: "Red blood cells have no nucleus in mammals",
+              importance: "Foundational"
+            },
+            {
+              id: 10,
+              fact: "Some cells live entire organism lifetime",
+              importance: "Foundational"
+            },
+            {
+              id: 11,
+              fact: "Cell membrane is selectively permeable",
+              importance: "Foundational. Key concept"
+            },
+            {
+              id: 12,
+              fact: "Ribosomes make all proteins",
+              importance: "Foundational"
+            },
+            {
+              id: 13,
+              fact: "Mitochondria are the powerhouse of the cell",
+              importance: "Foundational"
+            },
+            {
+              id: 14,
+              fact: "ATP is universal energy currency",
+              importance: "Foundational"
+            },
+            {
+              id: 15,
+              fact: "Photosynthesis converts CO2 + water + light to glucose",
+              importance: "Foundational"
+            },
+            {
+              id: 16,
+              fact: "Cellular respiration reverses photosynthesis",
+              importance: "Foundational. Key concept"
+            },
+            {
+              id: 17,
+              fact: "DNA replication is semi-conservative",
+              importance: "Foundational"
+            },
+            {
+              id: 18,
+              fact: "Transcription happens in nucleus (eukaryotes)",
+              importance: "Foundational"
+            },
+            {
+              id: 19,
+              fact: "Translation happens at ribosomes",
+              importance: "Foundational"
+            },
+            {
+              id: 20,
+              fact: "Lysosomes digest cellular waste",
+              importance: "Foundational"
+            },
+            {
+              id: 21,
+              fact: "Endoplasmic reticulum makes proteins + lipids",
+              importance: "Foundational. Key concept"
+            },
+            {
+              id: 22,
+              fact: "Golgi packages + ships proteins",
+              importance: "Foundational"
+            },
+            {
+              id: 23,
+              fact: "Centrioles organize cell division",
+              importance: "Foundational"
+            },
+            {
+              id: 24,
+              fact: "Cytoskeleton gives shape to cell",
+              importance: "Foundational"
+            },
+            {
+              id: 25,
+              fact: "Microtubules transport vesicles",
+              importance: "Foundational"
+            },
+            {
+              id: 26,
+              fact: "Microfilaments enable movement",
+              importance: "Foundational. Key concept"
+            },
+            {
+              id: 27,
+              fact: "Tight junctions seal cells together",
+              importance: "Foundational"
+            },
+            {
+              id: 28,
+              fact: "Gap junctions allow direct communication",
+              importance: "Foundational"
+            },
+            {
+              id: 29,
+              fact: "Receptors detect external signals",
+              importance: "Foundational"
+            },
+            {
+              id: 30,
+              fact: "Ion channels regulate ion flow",
+              importance: "Foundational"
+            },
+            {
+              id: 31,
+              fact: "Pumps actively transport ions",
+              importance: "Foundational. Key concept"
+            },
+            {
+              id: 32,
+              fact: "Mitosis produces 2 identical daughter cells",
+              importance: "Foundational"
+            },
+            {
+              id: 33,
+              fact: "Meiosis produces 4 genetically diverse cells",
+              importance: "Foundational"
+            },
+            {
+              id: 34,
+              fact: "Stem cells can differentiate",
+              importance: "Foundational"
+            },
+            {
+              id: 35,
+              fact: "Cancer cells lose growth control",
+              importance: "Foundational"
+            },
+            {
+              id: 36,
+              fact: "Apoptosis is programmed cell death",
+              importance: "Foundational. Key concept"
+            },
+            {
+              id: 37,
+              fact: "Bacteria can transfer genes via plasmids",
+              importance: "Foundational"
+            },
+            {
+              id: 38,
+              fact: "Antibiotic resistance spreads through populations",
+              importance: "Foundational"
+            },
+            {
+              id: 39,
+              fact: "CRISPR enables precise genome editing",
+              importance: "Foundational"
+            },
+            {
+              id: 40,
+              fact: "mRNA vaccines train immune response",
+              importance: "Foundational"
+            },
+            {
+              id: 41,
+              fact: "Microbes shape ecosystems",
+              importance: "Foundational. Key concept"
+            },
+            {
+              id: 42,
+              fact: "Without microbes, life on Earth would not exist",
+              importance: "Foundational"
+            },
+            {
+              id: 43,
+              fact: "Soil microbes recycle nutrients",
+              importance: "Foundational"
+            },
+            {
+              id: 44,
+              fact: "Marine microbes produce most atmospheric O2",
+              importance: "Foundational"
+            },
+            {
+              id: 45,
+              fact: "Gut microbiome affects mood and behavior",
+              importance: "Foundational"
+            },
+            {
+              id: 46,
+              fact: "Antibiotics disrupt gut microbiome",
+              importance: "Foundational. Key concept"
+            },
+            {
+              id: 47,
+              fact: "Probiotics support beneficial bacteria",
+              importance: "Foundational"
+            },
+            {
+              id: 48,
+              fact: "Hygiene hypothesis links cleanliness to allergies",
+              importance: "Foundational"
+            },
+            {
+              id: 49,
+              fact: "Some bacteria are predators of others",
+              importance: "Foundational"
+            },
+            {
+              id: 50,
+              fact: "Bacteria communicate via chemical signals",
+              importance: "Foundational"
+            },
+            {
+              id: 51,
+              fact: "Quorum sensing coordinates biofilm formation",
+              importance: "Foundational. Key concept"
+            },
+            {
+              id: 52,
+              fact: "Biofilms are difficult to treat",
+              importance: "Foundational"
+            },
+            {
+              id: 53,
+              fact: "Mitochondria have their own DNA",
+              importance: "Foundational"
+            },
+            {
+              id: 54,
+              fact: "Chloroplasts also have their own DNA",
+              importance: "Foundational"
+            },
+            {
+              id: 55,
+              fact: "Bacteria reproduce by binary fission",
+              importance: "Foundational"
+            },
+            {
+              id: 56,
+              fact: "Yeast reproduces by budding",
+              importance: "Foundational. Key concept"
+            },
+            {
+              id: 57,
+              fact: "Some bacteria can survive boiling water",
+              importance: "Foundational"
+            },
+            {
+              id: 58,
+              fact: "Tardigrades survive vacuum of space",
+              importance: "Foundational"
+            },
+            {
+              id: 59,
+              fact: "Plant cells have rigid cell walls",
+              importance: "Foundational"
+            },
+            {
+              id: 60,
+              fact: "Animal cells lack cell walls",
+              importance: "Foundational"
+            },
+            {
+              id: 61,
+              fact: "Red blood cells have no nucleus in mammals",
+              importance: "Foundational. Key concept"
+            },
+            {
+              id: 62,
+              fact: "Some cells live entire organism lifetime",
+              importance: "Foundational"
+            },
+            {
+              id: 63,
+              fact: "Cell membrane is selectively permeable",
+              importance: "Foundational"
+            },
+            {
+              id: 64,
+              fact: "Ribosomes make all proteins",
+              importance: "Foundational"
+            },
+            {
+              id: 65,
+              fact: "Mitochondria are the powerhouse of the cell",
+              importance: "Foundational"
+            },
+            {
+              id: 66,
+              fact: "ATP is universal energy currency",
+              importance: "Foundational. Key concept"
+            },
+            {
+              id: 67,
+              fact: "Photosynthesis converts CO2 + water + light to glucose",
+              importance: "Foundational"
+            },
+            {
+              id: 68,
+              fact: "Cellular respiration reverses photosynthesis",
+              importance: "Foundational"
+            },
+            {
+              id: 69,
+              fact: "DNA replication is semi-conservative",
+              importance: "Foundational"
+            },
+            {
+              id: 70,
+              fact: "Transcription happens in nucleus (eukaryotes)",
+              importance: "Foundational"
+            },
+            {
+              id: 71,
+              fact: "Translation happens at ribosomes",
+              importance: "Foundational. Key concept"
+            },
+            {
+              id: 72,
+              fact: "Lysosomes digest cellular waste",
+              importance: "Foundational"
+            },
+            {
+              id: 73,
+              fact: "Endoplasmic reticulum makes proteins + lipids",
+              importance: "Foundational"
+            },
+            {
+              id: 74,
+              fact: "Golgi packages + ships proteins",
+              importance: "Foundational"
+            },
+            {
+              id: 75,
+              fact: "Centrioles organize cell division",
+              importance: "Foundational"
+            },
+            {
+              id: 76,
+              fact: "Cytoskeleton gives shape to cell",
+              importance: "Foundational. Key concept"
+            },
+            {
+              id: 77,
+              fact: "Microtubules transport vesicles",
+              importance: "Foundational"
+            },
+            {
+              id: 78,
+              fact: "Microfilaments enable movement",
+              importance: "Foundational"
+            },
+            {
+              id: 79,
+              fact: "Tight junctions seal cells together",
+              importance: "Foundational"
+            },
+            {
+              id: 80,
+              fact: "Gap junctions allow direct communication",
+              importance: "Foundational"
+            },
+            {
+              id: 81,
+              fact: "Receptors detect external signals",
+              importance: "Foundational. Key concept"
+            },
+            {
+              id: 82,
+              fact: "Ion channels regulate ion flow",
+              importance: "Foundational"
+            },
+            {
+              id: 83,
+              fact: "Pumps actively transport ions",
+              importance: "Foundational"
+            },
+            {
+              id: 84,
+              fact: "Mitosis produces 2 identical daughter cells",
+              importance: "Foundational"
+            },
+            {
+              id: 85,
+              fact: "Meiosis produces 4 genetically diverse cells",
+              importance: "Foundational"
+            },
+            {
+              id: 86,
+              fact: "Stem cells can differentiate",
+              importance: "Foundational. Key concept"
+            },
+            {
+              id: 87,
+              fact: "Cancer cells lose growth control",
+              importance: "Foundational"
+            },
+            {
+              id: 88,
+              fact: "Apoptosis is programmed cell death",
+              importance: "Foundational"
+            },
+            {
+              id: 89,
+              fact: "Bacteria can transfer genes via plasmids",
+              importance: "Foundational"
+            },
+            {
+              id: 90,
+              fact: "Antibiotic resistance spreads through populations",
+              importance: "Foundational"
+            },
+            {
+              id: 91,
+              fact: "CRISPR enables precise genome editing",
+              importance: "Foundational. Key concept"
+            },
+            {
+              id: 92,
+              fact: "mRNA vaccines train immune response",
+              importance: "Foundational"
+            },
+            {
+              id: 93,
+              fact: "Microbes shape ecosystems",
+              importance: "Foundational"
+            },
+            {
+              id: 94,
+              fact: "Without microbes, life on Earth would not exist",
+              importance: "Foundational"
+            },
+            {
+              id: 95,
+              fact: "Soil microbes recycle nutrients",
+              importance: "Foundational"
+            },
+            {
+              id: 96,
+              fact: "Marine microbes produce most atmospheric O2",
+              importance: "Foundational. Key concept"
+            },
+            {
+              id: 97,
+              fact: "Gut microbiome affects mood and behavior",
+              importance: "Foundational"
+            },
+            {
+              id: 98,
+              fact: "Antibiotics disrupt gut microbiome",
+              importance: "Foundational"
+            },
+            {
+              id: 99,
+              fact: "Probiotics support beneficial bacteria",
+              importance: "Foundational"
+            },
+            {
+              id: 100,
+              fact: "Hygiene hypothesis links cleanliness to allergies",
+              importance: "Foundational"
+            }
+          ];
+
+
+          // ═══════════════════════════════════════════════════════════
+          // MICROBIOME STUDIES
+          // ═══════════════════════════════════════════════════════════
+          var MICROBIOME_STUDIES = [
+            {
+              id: 1,
+              microbiome: "Human gut microbiome",
+              description: "Contains ~100 trillion microbes representing 1000+ species"
+            },
+            {
+              id: 2,
+              microbiome: "Skin microbiome",
+              description: "Variable across body sites; 1B microbes per cm2"
+            },
+            {
+              id: 3,
+              microbiome: "Oral microbiome",
+              description: "700+ species in mouth; plaque biofilm"
+            },
+            {
+              id: 4,
+              microbiome: "Vaginal microbiome",
+              description: "Lactobacillus-dominated typically"
+            },
+            {
+              id: 5,
+              microbiome: "Respiratory microbiome",
+              description: "Includes nose + lungs; varies by smoker/non-smoker"
+            },
+            {
+              id: 6,
+              microbiome: "Soil microbiome",
+              description: "10,000+ species per teaspoon of soil"
+            },
+            {
+              id: 7,
+              microbiome: "Marine microbiome",
+              description: "50%+ Earth oxygen from marine microbes"
+            },
+            {
+              id: 8,
+              microbiome: "Coral microbiome",
+              description: "Symbiotic algae + bacteria"
+            },
+            {
+              id: 9,
+              microbiome: "Plant root microbiome",
+              description: "Rhizobia + mycorrhizae"
+            },
+            {
+              id: 10,
+              microbiome: "Cow rumen microbiome",
+              description: "Digests cellulose for cattle"
+            },
+            {
+              id: 11,
+              microbiome: "Termite gut microbiome",
+              description: "Digests wood for termites"
+            },
+            {
+              id: 12,
+              microbiome: "Built environment microbiome",
+              description: "Indoor surfaces; subway; offices"
+            },
+            {
+              id: 13,
+              microbiome: "Hospital microbiome",
+              description: "Often includes drug-resistant strains"
+            },
+            {
+              id: 14,
+              microbiome: "Wastewater microbiome",
+              description: "Treats sewage"
+            },
+            {
+              id: 15,
+              microbiome: "Yogurt microbiome",
+              description: "Lactobacillus + Streptococcus thermophilus"
+            },
+            {
+              id: 16,
+              microbiome: "Sauerkraut microbiome",
+              description: "Lactic acid bacteria"
+            },
+            {
+              id: 17,
+              microbiome: "Kombucha SCOBY",
+              description: "Yeast + acetic acid bacteria symbiosis"
+            },
+            {
+              id: 18,
+              microbiome: "Sourdough microbiome",
+              description: "Wild yeast + lactic acid bacteria"
+            },
+            {
+              id: 19,
+              microbiome: "Beer fermentation microbiome",
+              description: "Saccharomyces + bacteria"
+            },
+            {
+              id: 20,
+              microbiome: "Wine microbiome",
+              description: "Vineyard-specific yeast strains"
+            },
+            {
+              id: 21,
+              microbiome: "Cheese microbiome",
+              description: "Various bacteria + molds for flavor"
+            },
+            {
+              id: 22,
+              microbiome: "Compost microbiome",
+              description: "Decomposers in active heap"
+            },
+            {
+              id: 23,
+              microbiome: "Septic tank microbiome",
+              description: "Anaerobic digestion"
+            },
+            {
+              id: 24,
+              microbiome: "Permafrost microbiome",
+              description: "Cold-active microbes that may be released by warming"
+            },
+            {
+              id: 25,
+              microbiome: "Cave microbiome",
+              description: "Unique extremophiles + chemoautotrophs"
+            },
+            {
+              id: 26,
+              microbiome: "Lake microbiome",
+              description: "Stratified by light + temperature"
+            },
+            {
+              id: 27,
+              microbiome: "Ocean microbiome",
+              description: "Different bands in water column"
+            },
+            {
+              id: 28,
+              microbiome: "Atmospheric microbiome",
+              description: "Microbes in clouds + aerosols"
+            },
+            {
+              id: 29,
+              microbiome: "Salt lake microbiome",
+              description: "Halophilic archaea dominant"
+            },
+            {
+              id: 30,
+              microbiome: "Hot spring microbiome",
+              description: "Thermophiles; varies with temperature"
+            },
+            {
+              id: 31,
+              microbiome: "Insect gut microbiome",
+              description: "Symbionts essential for digestion"
+            },
+            {
+              id: 32,
+              microbiome: "Fish gut microbiome",
+              description: "Variable by diet + environment"
+            },
+            {
+              id: 33,
+              microbiome: "Honey microbiome",
+              description: "Bee + bacterial origin"
+            },
+            {
+              id: 34,
+              microbiome: "Soil rhizosphere",
+              description: "Microbes around plant roots"
+            },
+            {
+              id: 35,
+              microbiome: "Mycorrhizae",
+              description: "Fungi-plant symbiosis"
+            },
+            {
+              id: 36,
+              microbiome: "Lichen",
+              description: "Fungal-algal symbiosis"
+            },
+            {
+              id: 37,
+              microbiome: "Sponges",
+              description: "Many symbiotic bacteria"
+            },
+            {
+              id: 38,
+              microbiome: "Coral reef",
+              description: "Diverse algal + bacterial symbionts"
+            },
+            {
+              id: 39,
+              microbiome: "Glow worm symbionts",
+              description: "Photobacterium bioluminescence"
+            }
+          ];
+
+          // ═══════════════════════════════════════════════════════════
+          // KEY CELLULAR PROCESSES
+          // ═══════════════════════════════════════════════════════════
+          var CELL_PROCESSES = [
+            {
+              id: 1,
+              process: "Mitosis (cell division - 5 phases)",
+              importance: "Essential",
+              cellTypes: "All cells"
+            },
+            {
+              id: 2,
+              process: "Meiosis (gamete formation - 2 divisions)",
+              importance: "Important",
+              cellTypes: "Eukaryotic"
+            },
+            {
+              id: 3,
+              process: "DNA replication (semiconservative)",
+              importance: "Specialized",
+              cellTypes: "Specialized"
+            },
+            {
+              id: 4,
+              process: "Transcription (DNA to mRNA)",
+              importance: "Essential",
+              cellTypes: "Immune"
+            },
+            {
+              id: 5,
+              process: "Translation (mRNA to protein)",
+              importance: "Important",
+              cellTypes: "Embryonic"
+            },
+            {
+              id: 6,
+              process: "Protein folding",
+              importance: "Specialized",
+              cellTypes: "All cells"
+            },
+            {
+              id: 7,
+              process: "Protein degradation (proteasome)",
+              importance: "Essential",
+              cellTypes: "Eukaryotic"
+            },
+            {
+              id: 8,
+              process: "Membrane transport (passive + active)",
+              importance: "Important",
+              cellTypes: "Specialized"
+            },
+            {
+              id: 9,
+              process: "Cell signaling cascades",
+              importance: "Specialized",
+              cellTypes: "Immune"
+            },
+            {
+              id: 10,
+              process: "Apoptosis (programmed death)",
+              importance: "Essential",
+              cellTypes: "Embryonic"
+            },
+            {
+              id: 11,
+              process: "Autophagy (cell recycling)",
+              importance: "Important",
+              cellTypes: "All cells"
+            },
+            {
+              id: 12,
+              process: "Endocytosis (taking in materials)",
+              importance: "Specialized",
+              cellTypes: "Eukaryotic"
+            },
+            {
+              id: 13,
+              process: "Exocytosis (releasing materials)",
+              importance: "Essential",
+              cellTypes: "Specialized"
+            },
+            {
+              id: 14,
+              process: "Phagocytosis (eating particles)",
+              importance: "Important",
+              cellTypes: "Immune"
+            },
+            {
+              id: 15,
+              process: "Pinocytosis (drinking liquids)",
+              importance: "Specialized",
+              cellTypes: "Embryonic"
+            },
+            {
+              id: 16,
+              process: "Glycolysis (glucose breakdown)",
+              importance: "Essential",
+              cellTypes: "All cells"
+            },
+            {
+              id: 17,
+              process: "Krebs cycle (TCA)",
+              importance: "Important",
+              cellTypes: "Eukaryotic"
+            },
+            {
+              id: 18,
+              process: "Electron transport chain",
+              importance: "Specialized",
+              cellTypes: "Specialized"
+            },
+            {
+              id: 19,
+              process: "Oxidative phosphorylation",
+              importance: "Essential",
+              cellTypes: "Immune"
+            },
+            {
+              id: 20,
+              process: "Photosynthesis (light reactions)",
+              importance: "Important",
+              cellTypes: "Embryonic"
+            },
+            {
+              id: 21,
+              process: "Photosynthesis (Calvin cycle)",
+              importance: "Specialized",
+              cellTypes: "All cells"
+            },
+            {
+              id: 22,
+              process: "Cellular respiration",
+              importance: "Essential",
+              cellTypes: "Eukaryotic"
+            },
+            {
+              id: 23,
+              process: "Fermentation (anaerobic)",
+              importance: "Important",
+              cellTypes: "Specialized"
+            },
+            {
+              id: 24,
+              process: "Beta-oxidation (fat catabolism)",
+              importance: "Specialized",
+              cellTypes: "Immune"
+            },
+            {
+              id: 25,
+              process: "Gluconeogenesis",
+              importance: "Essential",
+              cellTypes: "Embryonic"
+            },
+            {
+              id: 26,
+              process: "Amino acid metabolism",
+              importance: "Important",
+              cellTypes: "All cells"
+            },
+            {
+              id: 27,
+              process: "Nucleotide metabolism",
+              importance: "Specialized",
+              cellTypes: "Eukaryotic"
+            },
+            {
+              id: 28,
+              process: "Lipid synthesis",
+              importance: "Essential",
+              cellTypes: "Specialized"
+            },
+            {
+              id: 29,
+              process: "Cholesterol synthesis",
+              importance: "Important",
+              cellTypes: "Immune"
+            },
+            {
+              id: 30,
+              process: "Pentose phosphate pathway",
+              importance: "Specialized",
+              cellTypes: "Embryonic"
+            },
+            {
+              id: 31,
+              process: "Urea cycle",
+              importance: "Essential",
+              cellTypes: "All cells"
+            },
+            {
+              id: 32,
+              process: "Heme biosynthesis",
+              importance: "Important",
+              cellTypes: "Eukaryotic"
+            },
+            {
+              id: 33,
+              process: "Glycoprotein synthesis",
+              importance: "Specialized",
+              cellTypes: "Specialized"
+            },
+            {
+              id: 34,
+              process: "Vesicle trafficking",
+              importance: "Essential",
+              cellTypes: "Immune"
+            },
+            {
+              id: 35,
+              process: "ER stress response",
+              importance: "Important",
+              cellTypes: "Embryonic"
+            },
+            {
+              id: 36,
+              process: "Heat shock response",
+              importance: "Specialized",
+              cellTypes: "All cells"
+            },
+            {
+              id: 37,
+              process: "Cell cycle checkpoints",
+              importance: "Essential",
+              cellTypes: "Eukaryotic"
+            },
+            {
+              id: 38,
+              process: "DNA damage response",
+              importance: "Important",
+              cellTypes: "Specialized"
+            },
+            {
+              id: 39,
+              process: "DNA repair (mismatch, excision, etc.)",
+              importance: "Specialized",
+              cellTypes: "Immune"
+            },
+            {
+              id: 40,
+              process: "Telomere maintenance",
+              importance: "Essential",
+              cellTypes: "Embryonic"
+            },
+            {
+              id: 41,
+              process: "Chromosome segregation",
+              importance: "Important",
+              cellTypes: "All cells"
+            },
+            {
+              id: 42,
+              process: "Cytokinesis",
+              importance: "Specialized",
+              cellTypes: "Eukaryotic"
+            },
+            {
+              id: 43,
+              process: "Differentiation programs",
+              importance: "Essential",
+              cellTypes: "Specialized"
+            },
+            {
+              id: 44,
+              process: "Stem cell self-renewal",
+              importance: "Important",
+              cellTypes: "Immune"
+            },
+            {
+              id: 45,
+              process: "Cellular reprogramming (iPSC)",
+              importance: "Specialized",
+              cellTypes: "Embryonic"
+            },
+            {
+              id: 46,
+              process: "Senescence",
+              importance: "Essential",
+              cellTypes: "All cells"
+            },
+            {
+              id: 47,
+              process: "Mitochondrial fission/fusion",
+              importance: "Important",
+              cellTypes: "Eukaryotic"
+            },
+            {
+              id: 48,
+              process: "Peroxisome biogenesis",
+              importance: "Specialized",
+              cellTypes: "Specialized"
+            },
+            {
+              id: 49,
+              process: "Nuclear import/export",
+              importance: "Essential",
+              cellTypes: "Immune"
+            },
+            {
+              id: 50,
+              process: "Centrosome duplication",
+              importance: "Important",
+              cellTypes: "Embryonic"
+            },
+            {
+              id: 51,
+              process: "Cilium assembly",
+              importance: "Specialized",
+              cellTypes: "All cells"
+            },
+            {
+              id: 52,
+              process: "Cell-cell adhesion",
+              importance: "Essential",
+              cellTypes: "Eukaryotic"
+            },
+            {
+              id: 53,
+              process: "Cell migration",
+              importance: "Important",
+              cellTypes: "Specialized"
+            },
+            {
+              id: 54,
+              process: "Chemotaxis",
+              importance: "Specialized",
+              cellTypes: "Immune"
+            },
+            {
+              id: 55,
+              process: "Cytoskeletal remodeling",
+              importance: "Essential",
+              cellTypes: "Embryonic"
+            },
+            {
+              id: 56,
+              process: "Signaling endocytosis",
+              importance: "Important",
+              cellTypes: "All cells"
+            },
+            {
+              id: 57,
+              process: "Inflammation response",
+              importance: "Specialized",
+              cellTypes: "Eukaryotic"
+            },
+            {
+              id: 58,
+              process: "Innate immune response",
+              importance: "Essential",
+              cellTypes: "Specialized"
+            },
+            {
+              id: 59,
+              process: "Adaptive immune response",
+              importance: "Important",
+              cellTypes: "Immune"
+            },
+            {
+              id: 60,
+              process: "Antibody production",
+              importance: "Specialized",
+              cellTypes: "Embryonic"
+            },
+            {
+              id: 61,
+              process: "T-cell activation",
+              importance: "Essential",
+              cellTypes: "All cells"
+            },
+            {
+              id: 62,
+              process: "B-cell activation",
+              importance: "Important",
+              cellTypes: "Eukaryotic"
+            },
+            {
+              id: 63,
+              process: "NK cell killing",
+              importance: "Specialized",
+              cellTypes: "Specialized"
+            },
+            {
+              id: 64,
+              process: "Complement activation",
+              importance: "Essential",
+              cellTypes: "Immune"
+            },
+            {
+              id: 65,
+              process: "Cytokine signaling",
+              importance: "Important",
+              cellTypes: "Embryonic"
+            },
+            {
+              id: 66,
+              process: "Phagocytosis (immune)",
+              importance: "Specialized",
+              cellTypes: "All cells"
+            },
+            {
+              id: 67,
+              process: "NET formation (neutrophil)",
+              importance: "Essential",
+              cellTypes: "Eukaryotic"
+            },
+            {
+              id: 68,
+              process: "Cytotoxicity (T-cell)",
+              importance: "Important",
+              cellTypes: "Specialized"
+            },
+            {
+              id: 69,
+              process: "MHC presentation",
+              importance: "Specialized",
+              cellTypes: "Immune"
+            },
+            {
+              id: 70,
+              process: "B-cell affinity maturation",
+              importance: "Essential",
+              cellTypes: "Embryonic"
+            },
+            {
+              id: 71,
+              process: "Class switching",
+              importance: "Important",
+              cellTypes: "All cells"
+            },
+            {
+              id: 72,
+              process: "Hypermutation",
+              importance: "Specialized",
+              cellTypes: "Eukaryotic"
+            },
+            {
+              id: 73,
+              process: "Tolerance development",
+              importance: "Essential",
+              cellTypes: "Specialized"
+            },
+            {
+              id: 74,
+              process: "Allergic response",
+              importance: "Important",
+              cellTypes: "Immune"
+            },
+            {
+              id: 75,
+              process: "Autoimmunity",
+              importance: "Specialized",
+              cellTypes: "Embryonic"
+            },
+            {
+              id: 76,
+              process: "Inflammation resolution",
+              importance: "Essential",
+              cellTypes: "All cells"
+            },
+            {
+              id: 77,
+              process: "Wound healing",
+              importance: "Important",
+              cellTypes: "Eukaryotic"
+            },
+            {
+              id: 78,
+              process: "Tissue regeneration",
+              importance: "Specialized",
+              cellTypes: "Specialized"
+            },
+            {
+              id: 79,
+              process: "Angiogenesis",
+              importance: "Essential",
+              cellTypes: "Immune"
+            },
+            {
+              id: 80,
+              process: "Bone remodeling",
+              importance: "Important",
+              cellTypes: "Embryonic"
+            }
+          ];
+
+          // ═══════════════════════════════════════════════════════════
+          // LAB EQUIPMENT REFERENCE
+          // ═══════════════════════════════════════════════════════════
+          var LAB_EQUIPMENT = [
+            {
+              id: 1,
+              item: "Compound microscope",
+              category: "Microscope",
+              priceRange: "$50-500"
+            },
+            {
+              id: 2,
+              item: "Stereoscopic microscope",
+              category: "Centrifuge",
+              priceRange: "$500-5K"
+            },
+            {
+              id: 3,
+              item: "Phase contrast microscope",
+              category: "PCR/Sequencing",
+              priceRange: "$5K-50K"
+            },
+            {
+              id: 4,
+              item: "Fluorescence microscope",
+              category: "Heating",
+              priceRange: "$50K+"
+            },
+            {
+              id: 5,
+              item: "Confocal microscope",
+              category: "Cooling",
+              priceRange: "$50-500"
+            },
+            {
+              id: 6,
+              item: "Electron microscope (TEM)",
+              category: "Cell Culture",
+              priceRange: "$500-5K"
+            },
+            {
+              id: 7,
+              item: "Electron microscope (SEM)",
+              category: "General",
+              priceRange: "$5K-50K"
+            },
+            {
+              id: 8,
+              item: "Cryo-electron microscope",
+              category: "Microscope",
+              priceRange: "$50K+"
+            },
+            {
+              id: 9,
+              item: "Centrifuge",
+              category: "Centrifuge",
+              priceRange: "$50-500"
+            },
+            {
+              id: 10,
+              item: "Ultracentrifuge",
+              category: "PCR/Sequencing",
+              priceRange: "$500-5K"
+            },
+            {
+              id: 11,
+              item: "Microcentrifuge",
+              category: "Heating",
+              priceRange: "$5K-50K"
+            },
+            {
+              id: 12,
+              item: "PCR thermocycler",
+              category: "Cooling",
+              priceRange: "$50K+"
+            },
+            {
+              id: 13,
+              item: "qPCR machine",
+              category: "Cell Culture",
+              priceRange: "$50-500"
+            },
+            {
+              id: 14,
+              item: "Plate reader",
+              category: "General",
+              priceRange: "$500-5K"
+            },
+            {
+              id: 15,
+              item: "Spectrophotometer",
+              category: "Microscope",
+              priceRange: "$5K-50K"
+            },
+            {
+              id: 16,
+              item: "Fluorometer",
+              category: "Centrifuge",
+              priceRange: "$50K+"
+            },
+            {
+              id: 17,
+              item: "Gel electrophoresis box",
+              category: "PCR/Sequencing",
+              priceRange: "$50-500"
+            },
+            {
+              id: 18,
+              item: "Western blot apparatus",
+              category: "Heating",
+              priceRange: "$500-5K"
+            },
+            {
+              id: 19,
+              item: "Flow cytometer",
+              category: "Cooling",
+              priceRange: "$5K-50K"
+            },
+            {
+              id: 20,
+              item: "Cell sorter (FACS)",
+              category: "Cell Culture",
+              priceRange: "$50K+"
+            },
+            {
+              id: 21,
+              item: "Hemocytometer",
+              category: "General",
+              priceRange: "$50-500"
+            },
+            {
+              id: 22,
+              item: "Coulter counter",
+              category: "Microscope",
+              priceRange: "$500-5K"
+            },
+            {
+              id: 23,
+              item: "Biosafety cabinet (BSC)",
+              category: "Centrifuge",
+              priceRange: "$5K-50K"
+            },
+            {
+              id: 24,
+              item: "Laminar flow hood",
+              category: "PCR/Sequencing",
+              priceRange: "$50K+"
+            },
+            {
+              id: 25,
+              item: "Incubator (CO2)",
+              category: "Heating",
+              priceRange: "$50-500"
+            },
+            {
+              id: 26,
+              item: "Shaking incubator",
+              category: "Cooling",
+              priceRange: "$500-5K"
+            },
+            {
+              id: 27,
+              item: "Anaerobic chamber",
+              category: "Cell Culture",
+              priceRange: "$5K-50K"
+            },
+            {
+              id: 28,
+              item: "Autoclave",
+              category: "General",
+              priceRange: "$50K+"
+            },
+            {
+              id: 29,
+              item: "Pipettes (single, multi)",
+              category: "Microscope",
+              priceRange: "$50-500"
+            },
+            {
+              id: 30,
+              item: "Burette",
+              category: "Centrifuge",
+              priceRange: "$500-5K"
+            },
+            {
+              id: 31,
+              item: "Volumetric flask",
+              category: "PCR/Sequencing",
+              priceRange: "$5K-50K"
+            },
+            {
+              id: 32,
+              item: "Beaker",
+              category: "Heating",
+              priceRange: "$50K+"
+            },
+            {
+              id: 33,
+              item: "Erlenmeyer flask",
+              category: "Cooling",
+              priceRange: "$50-500"
+            },
+            {
+              id: 34,
+              item: "Petri dish (sterile + non)",
+              category: "Cell Culture",
+              priceRange: "$500-5K"
+            },
+            {
+              id: 35,
+              item: "Culture tube + rack",
+              category: "General",
+              priceRange: "$5K-50K"
+            },
+            {
+              id: 36,
+              item: "Falcon tube",
+              category: "Microscope",
+              priceRange: "$50K+"
+            },
+            {
+              id: 37,
+              item: "Eppendorf tube",
+              category: "Centrifuge",
+              priceRange: "$50-500"
+            },
+            {
+              id: 38,
+              item: "PCR tube",
+              category: "PCR/Sequencing",
+              priceRange: "$500-5K"
+            },
+            {
+              id: 39,
+              item: "Microscope slide",
+              category: "Heating",
+              priceRange: "$5K-50K"
+            },
+            {
+              id: 40,
+              item: "Coverslip",
+              category: "Cooling",
+              priceRange: "$50K+"
+            },
+            {
+              id: 41,
+              item: "Cell scraper",
+              category: "Cell Culture",
+              priceRange: "$50-500"
+            },
+            {
+              id: 42,
+              item: "Cell counting chamber",
+              category: "General",
+              priceRange: "$500-5K"
+            },
+            {
+              id: 43,
+              item: "Vortex mixer",
+              category: "Microscope",
+              priceRange: "$5K-50K"
+            },
+            {
+              id: 44,
+              item: "Magnetic stirrer",
+              category: "Centrifuge",
+              priceRange: "$50K+"
+            },
+            {
+              id: 45,
+              item: "Hot plate",
+              category: "PCR/Sequencing",
+              priceRange: "$50-500"
+            },
+            {
+              id: 46,
+              item: "Water bath",
+              category: "Heating",
+              priceRange: "$500-5K"
+            },
+            {
+              id: 47,
+              item: "Refrigerator (lab grade)",
+              category: "Cooling",
+              priceRange: "$5K-50K"
+            },
+            {
+              id: 48,
+              item: "Minus 20 freezer",
+              category: "Cell Culture",
+              priceRange: "$50K+"
+            },
+            {
+              id: 49,
+              item: "Minus 80 freezer",
+              category: "General",
+              priceRange: "$50-500"
+            },
+            {
+              id: 50,
+              item: "Liquid nitrogen tank",
+              category: "Microscope",
+              priceRange: "$500-5K"
+            },
+            {
+              id: 51,
+              item: "Microbalance",
+              category: "Centrifuge",
+              priceRange: "$5K-50K"
+            },
+            {
+              id: 52,
+              item: "Analytical balance",
+              category: "PCR/Sequencing",
+              priceRange: "$50K+"
+            },
+            {
+              id: 53,
+              item: "pH meter",
+              category: "Heating",
+              priceRange: "$50-500"
+            },
+            {
+              id: 54,
+              item: "Conductivity meter",
+              category: "Cooling",
+              priceRange: "$500-5K"
+            },
+            {
+              id: 55,
+              item: "Dissolved oxygen meter",
+              category: "Cell Culture",
+              priceRange: "$5K-50K"
+            },
+            {
+              id: 56,
+              item: "Refractometer",
+              category: "General",
+              priceRange: "$50K+"
+            },
+            {
+              id: 57,
+              item: "Spectrofluorimeter",
+              category: "Microscope",
+              priceRange: "$50-500"
+            },
+            {
+              id: 58,
+              item: "Plate centrifuge",
+              category: "Centrifuge",
+              priceRange: "$500-5K"
+            },
+            {
+              id: 59,
+              item: "Lyophilizer (freeze dryer)",
+              category: "PCR/Sequencing",
+              priceRange: "$5K-50K"
+            },
+            {
+              id: 60,
+              item: "Heat block",
+              category: "Heating",
+              priceRange: "$50K+"
+            },
+            {
+              id: 61,
+              item: "Sonicator",
+              category: "Cooling",
+              priceRange: "$50-500"
+            },
+            {
+              id: 62,
+              item: "Cryotube + storage",
+              category: "Cell Culture",
+              priceRange: "$500-5K"
+            },
+            {
+              id: 63,
+              item: "Slide warmer",
+              category: "General",
+              priceRange: "$5K-50K"
+            },
+            {
+              id: 64,
+              item: "Tissue homogenizer",
+              category: "Microscope",
+              priceRange: "$50K+"
+            },
+            {
+              id: 65,
+              item: "Bead beater",
+              category: "Centrifuge",
+              priceRange: "$50-500"
+            },
+            {
+              id: 66,
+              item: "Vortex",
+              category: "PCR/Sequencing",
+              priceRange: "$500-5K"
+            },
+            {
+              id: 67,
+              item: "Magnetic rack",
+              category: "Heating",
+              priceRange: "$5K-50K"
+            },
+            {
+              id: 68,
+              item: "Gradient maker",
+              category: "Cooling",
+              priceRange: "$50K+"
+            },
+            {
+              id: 69,
+              item: "Imaging system",
+              category: "Cell Culture",
+              priceRange: "$50-500"
+            },
+            {
+              id: 70,
+              item: "Densitometer",
+              category: "General",
+              priceRange: "$500-5K"
+            },
+            {
+              id: 71,
+              item: "Microplate reader",
+              category: "Microscope",
+              priceRange: "$5K-50K"
+            },
+            {
+              id: 72,
+              item: "PCR cycler",
+              category: "Centrifuge",
+              priceRange: "$50K+"
+            },
+            {
+              id: 73,
+              item: "Real-time PCR cycler",
+              category: "PCR/Sequencing",
+              priceRange: "$50-500"
+            },
+            {
+              id: 74,
+              item: "Gel doc system",
+              category: "Heating",
+              priceRange: "$500-5K"
+            },
+            {
+              id: 75,
+              item: "Western blot imager",
+              category: "Cooling",
+              priceRange: "$5K-50K"
+            },
+            {
+              id: 76,
+              item: "Live cell imaging system",
+              category: "Cell Culture",
+              priceRange: "$50K+"
+            },
+            {
+              id: 77,
+              item: "Stage incubator",
+              category: "General",
+              priceRange: "$50-500"
+            },
+            {
+              id: 78,
+              item: "Auto-pipettor",
+              category: "Microscope",
+              priceRange: "$500-5K"
+            },
+            {
+              id: 79,
+              item: "Liquid handler",
+              category: "Centrifuge",
+              priceRange: "$5K-50K"
+            },
+            {
+              id: 80,
+              item: "Dispensing robot",
+              category: "PCR/Sequencing",
+              priceRange: "$50K+"
+            },
+            {
+              id: 81,
+              item: "High-throughput screen",
+              category: "Heating",
+              priceRange: "$50-500"
+            },
+            {
+              id: 82,
+              item: "Compound microscope objectives (4x, 10x, 40x, 100x oil)",
+              category: "Cooling",
+              priceRange: "$500-5K"
+            },
+            {
+              id: 83,
+              item: "Microtome",
+              category: "Cell Culture",
+              priceRange: "$5K-50K"
+            },
+            {
+              id: 84,
+              item: "Cryostat",
+              category: "General",
+              priceRange: "$50K+"
+            },
+            {
+              id: 85,
+              item: "Embedding station",
+              category: "Microscope",
+              priceRange: "$50-500"
+            },
+            {
+              id: 86,
+              item: "Staining station",
+              category: "Centrifuge",
+              priceRange: "$500-5K"
+            },
+            {
+              id: 87,
+              item: "Histology equipment",
+              category: "PCR/Sequencing",
+              priceRange: "$5K-50K"
+            },
+            {
+              id: 88,
+              item: "Tissue processor",
+              category: "Heating",
+              priceRange: "$50K+"
+            },
+            {
+              id: 89,
+              item: "Wax embedder",
+              category: "Cooling",
+              priceRange: "$50-500"
+            },
+            {
+              id: 90,
+              item: "Microscope camera",
+              category: "Cell Culture",
+              priceRange: "$500-5K"
+            },
+            {
+              id: 91,
+              item: "Image analysis software",
+              category: "General",
+              priceRange: "$5K-50K"
+            },
+            {
+              id: 92,
+              item: "Cell culture flask",
+              category: "Microscope",
+              priceRange: "$50K+"
+            },
+            {
+              id: 93,
+              item: "Multiwell plate",
+              category: "Centrifuge",
+              priceRange: "$50-500"
+            },
+            {
+              id: 94,
+              item: "Tissue culture-treated",
+              category: "PCR/Sequencing",
+              priceRange: "$500-5K"
+            },
+            {
+              id: 95,
+              item: "Spinner flask",
+              category: "Heating",
+              priceRange: "$5K-50K"
+            },
+            {
+              id: 96,
+              item: "Roller bottle",
+              category: "Cooling",
+              priceRange: "$50K+"
+            },
+            {
+              id: 97,
+              item: "Bioreactor",
+              category: "Cell Culture",
+              priceRange: "$50-500"
+            },
+            {
+              id: 98,
+              item: "Hollow fiber bioreactor",
+              category: "General",
+              priceRange: "$500-5K"
+            },
+            {
+              id: 99,
+              item: "Wave bioreactor",
+              category: "Microscope",
+              priceRange: "$5K-50K"
+            },
+            {
+              id: 100,
+              item: "Fermenter",
+              category: "Centrifuge",
+              priceRange: "$50K+"
+            },
+            {
+              id: 101,
+              item: "CO2 cylinder + regulator",
+              category: "PCR/Sequencing",
+              priceRange: "$50-500"
+            },
+            {
+              id: 102,
+              item: "N2 cylinder",
+              category: "Heating",
+              priceRange: "$500-5K"
+            },
+            {
+              id: 103,
+              item: "O2 cylinder",
+              category: "Cooling",
+              priceRange: "$5K-50K"
+            },
+            {
+              id: 104,
+              item: "Inverter for power backup",
+              category: "Cell Culture",
+              priceRange: "$50K+"
+            },
+            {
+              id: 105,
+              item: "Generator",
+              category: "General",
+              priceRange: "$50-500"
+            },
+            {
+              id: 106,
+              item: "UPS battery",
+              category: "Microscope",
+              priceRange: "$500-5K"
+            }
+          ];
+
+
           var ORGANISMS = [
 
             {
