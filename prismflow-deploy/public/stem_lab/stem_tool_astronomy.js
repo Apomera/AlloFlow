@@ -3401,6 +3401,75 @@
               );
             })(),
             '#dc2626'
+          ),
+
+          // ─── Comets in detail ───────────────────────────────────
+          sectionCard('☄️ Comets — visitors from the deep freeze',
+            (function() {
+              var COMET_TOPICS = [
+                { id: 'what', name: 'What a comet actually is', emoji: '🧊',
+                  body: 'A comet is a small body of ICE + ROCK + DUST + ORGANIC MOLECULES — leftover from the Solar System\'s formation, preserved in the deep cold of the outer Solar System for 4.5 billion years. Typical nucleus: 1-20 km across (Halley\'s nucleus is ~ 15×8×8 km, peanut-shaped). As a comet approaches the Sun (typically inside ~ 4 AU), the surface ice sublimes (turns directly from solid to gas) — forming the COMA (a fuzzy cloud around the nucleus, often 10-100x larger than the nucleus itself) + the TAIL (a long stream of gas + dust pushed away from the Sun by solar wind + radiation pressure). Comets actually have TWO tails: an ION TAIL (gas, blue, points DIRECTLY away from the Sun) + a DUST TAIL (curved + yellowish, lags behind because heavier dust grains follow their own orbits).',
+                  caveat: 'The "dirty snowball" model (Fred Whipple, 1950) was a fundamental insight + remains roughly correct. Modern comet science (post-Giotto 1986 + post-Rosetta 2014-2016) shows comets are MORE complex than simple ice balls: a porous + heterogeneous mix of crystalline + amorphous ice, organic molecules, refractory dust, with active regions on the surface that change between orbits.'
+                },
+                { id: 'orbits', name: 'Where comets come from', emoji: '🌌',
+                  body: 'Two main populations: (1) SHORT-PERIOD COMETS (orbits < 200 years) come from the KUIPER BELT + the scattered disk beyond Neptune. They orbit close to the ecliptic + are mostly captured + redirected by Jupiter\'s gravity. Examples: Halley (~ 76 years, technically a Halley-type "intermediate"), Encke (3.3 years, the shortest period known), Tempel 1 (~ 5.5 years, target of Deep Impact 2005). (2) LONG-PERIOD COMETS (orbits > 200 years, sometimes thousands of years) come from the OORT CLOUD, the spherical halo of icy bodies at ~ 2,000-200,000 AU. They can approach from any direction (random orbital inclinations). Examples: Hale-Bopp (~ 2,500 year orbit, naked-eye visible 1996-1997), McNaught (~ 92,000 years, brightest comet in 40 years, January 2007).',
+                  caveat: 'The Oort Cloud has never been directly observed; we infer its existence from the orbital distribution of long-period comets. A few long-period comets have hyperbolic orbits (i.e., they would never return) — but those may also be Oort Cloud objects perturbed by a passing star\'s gravity onto an exit trajectory rather than truly interstellar.'
+                },
+                { id: 'famous', name: 'Famous comets through history', emoji: '⭐',
+                  body: '(1) HALLEY\'S COMET (1P/Halley, ~ 76 year period) — observed every appearance since at least 240 BCE in Chinese + later Babylonian records. Edmund Halley (1705) was the first to predict its return. Most recent: 1986 (poor showing from Earth, but the GIOTTO spacecraft flew through the coma + sent back the first images of a comet nucleus). Next predicted: July 2061. (2) COMET HALE-BOPP (1995-1997) — naked-eye visible for 18 months, one of the brightest of the 20th century. (3) COMET NEOWISE (July 2020) — best naked-eye comet for the Northern Hemisphere in 25 years; widely photographed during the COVID pandemic. (4) GREAT COMET OF 1577 — observed by Tycho Brahe, who showed it was further than the Moon (refuting Aristotle\'s claim that comets were atmospheric phenomena). (5) SHOEMAKER-LEVY 9 (1994) — broke into ~ 21 fragments + impacted Jupiter, the first directly-observed planetary impact.',
+                  caveat: 'Predicting comet brightness is notoriously unreliable. Comet ISON (2013) was hyped as the "comet of the century" + then disintegrated near perihelion. Comet 17P/Holmes (2007) was expected to be faint + unexpectedly brightened 500,000x in a few days, briefly becoming visible to the naked eye. Comets are intrinsically variable; one of the joys + frustrations of comet observing.'
+                },
+                { id: 'rosetta', name: 'Rosetta + 67P/Churyumov-Gerasimenko', emoji: '🚀',
+                  body: 'The European Space Agency\'s ROSETTA mission (launched 2004, arrived 2014) was the first to ORBIT a comet + the first to LAND on one (the Philae probe, November 2014). For 2 years, Rosetta accompanied comet 67P/Churyumov-Gerasimenko through its perihelion + back outward, observing every aspect of cometary activity in unprecedented detail. Discoveries: (1) The "rubber-duck" two-lobed shape suggests 67P formed from the gentle collision of two smaller bodies in the early Solar System. (2) The D/H ratio of 67P\'s water is ~ 3x Earth\'s — suggesting most Earth water did NOT come from this type of comet. (3) Complex organic molecules (glycine, phosphorus compounds) were detected directly — supporting the idea that comets may have delivered prebiotic chemistry to early Earth. (4) Surface features include cliffs, dunes, sinkholes, jets, fractures.',
+                  caveat: 'Philae\'s landing was not perfect — the harpoons failed, the probe bounced twice, and ended up in deep shadow where it could not recharge. After 60 hours of operation Philae went dormant; it was briefly re-contacted in mid-2015 but soon lost again. The mission still returned a treasure of data + remains the most-detailed comet exploration ever achieved.'
+                },
+                { id: 'oumuamua', name: 'Interstellar visitors: 1I/ʻOumuamua + 2I/Borisov', emoji: '👽',
+                  body: 'In October 2017, astronomers detected an object on a HYPERBOLIC trajectory (an orbit that came from outside the Solar System + would leave again, never to return). It was named 1I/ʻOumuamua ("scout" in Hawaiian, observed from Pan-STARRS in Hawaii). The first known interstellar visitor. ʻOumuamua was strange: highly elongated (~ 230×35 m by some estimates), no visible coma or tail despite passing closer to the Sun than Mercury, accelerated slightly faster than gravity alone would predict (the "non-gravitational acceleration"). Astrophysicist Avi Loeb (Harvard) controversially proposed it could be an alien probe. Most natural explanations involve a "hydrogen iceberg" (frozen H₂ subliming on the warm side, providing thrust) or a nitrogen-ice fragment from a Pluto-like exo-planet, or a "fluffy" porous body, or a long-period comet remnant. In 2019, 2I/Borisov (a much more typical-looking comet on a hyperbolic orbit) became the SECOND known interstellar object — closing the question of whether interstellar visitors are rare.',
+                  caveat: 'The ʻOumuamua "alien probe" interpretation is a minority view among professional astronomers but it generated significant media attention. The Vera C. Rubin Observatory (first light 2025) is expected to detect interstellar objects routinely — perhaps several per year. The next decade will reshape our understanding of what passes through our solar system.'
+                },
+                { id: 'tails', name: 'How comet tails actually work', emoji: '💫',
+                  body: 'Both comet tails are pushed AWAY from the Sun, but by different mechanisms. The ION TAIL (also called plasma tail, gas tail, or Type I tail) consists of ionized gas molecules — carbon monoxide, water, hydrogen — that have been EJECTED from the nucleus + IONIZED by solar UV radiation. The solar wind (a stream of charged particles flowing outward from the Sun at ~ 400-800 km/s) carries them away. Ion tails are typically BLUE (CO+ emission) or sometimes PINK + can be 10-100 million km long. The DUST TAIL (or Type II tail) is solid dust grains released from the nucleus. They are not ionized + are pushed away from the Sun more weakly, by RADIATION PRESSURE — sunlight\'s photons exerting tiny push on the grains. Dust tails are typically YELLOW-WHITE (reflecting sunlight) + appear CURVED because individual grains follow their own slightly-different orbits.',
+                  caveat: 'Comet tails always point AWAY from the Sun, regardless of which direction the comet is traveling. As a comet moves away from the Sun after perihelion, its tail PRECEDES it on the orbital path. Some comets show ANTI-TAILS that appear to point TOWARD the Sun — these are dust grains that lag the comet on the far side, viewed in projection. The geometry can be visually striking.'
+                },
+                { id: 'water', name: 'Comets + Earth water + life', emoji: '🧬',
+                  body: 'For decades, comets were the leading candidates for delivering Earth\'s water + organic molecules. The narrative was simple: outer-Solar-System bodies have lots of water ice; they bombarded early Earth; that\'s where the oceans + amino acids + RNA precursors came from. Recent data has REVISED this picture. Most comets have D/H ratios of ~ 200-800 ppm (some Jupiter-family comets) — much higher than Earth\'s ocean water (156 ppm). Carbonaceous chondrite asteroids match Earth water much better (140-170 ppm D/H). The current consensus: most of Earth\'s water came from ASTEROIDS, not comets. BUT comets are not irrelevant — they likely delivered some water + many of the organic precursor molecules (amino acids, sugars, phosphates) that are observed directly in cometary materials (Rosetta, Stardust, recent samples).',
+                  caveat: 'The "comets delivered Earth\'s water" idea was a major hypothesis until the 2010s. Updating to the new evidence (mostly asteroidal water, with cometary organic delivery) is an example of science self-correcting through better data. The full role of comets in delivering pre-biotic chemistry is still being worked out + may turn out to be one of their more important legacies for life.'
+                },
+                { id: 'observe', name: 'Observing comets', emoji: '🔭',
+                  body: 'When a bright comet is in the sky, observation is one of the more accessible astronomical activities. Bright comets visible to the unaided eye occur every few years on average; truly spectacular ones (magnitude < 0) occur every 5-15 years. To find them: check Sky & Telescope, Cometographer, AAVSO Comet Observers Section, or Twitter accounts of comet experts. To observe: a binocular (7×50 or 10×50) reveals the COMA + nucleus + sometimes the tail; a small telescope shows internal structure; long-exposure photography reveals tail detail invisible to the eye. For astrophotographers: comets are challenging because they MOVE against the stars; tracking on the comet leaves stars trailed; tracking on stars leaves the comet trailed. Skilled imagers blend both.',
+                  caveat: 'For Maine observers in 2025-2030: comet predictions are uncertain enough that real-time alerts (Twitter/Bluesky, AAVSO, Comets Application by Frank Reddy) are essential. Reliable upcoming events: comet C/2023 A3 Tsuchinshan-ATLAS was visible in October 2024 (now departed); comet 12P/Pons-Brooks returned 2024 perihelion; the next big-comet anticipation is C/2025 G1 SWAN if visible. The biggest comet event of the past decade was NEOWISE in July 2020 — a once-in-a-decade naked-eye event that was widely photographed.'
+                }
+              ];
+              var sel = d.selectedComet || 'what';
+              var topic = COMET_TOPICS.find(function(t) { return t.id === sel; }) || COMET_TOPICS[0];
+              return h('div', null,
+                h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
+                  'Comets are pristine messengers from the Solar System\'s formation — chunks of ice + rock + organic chemistry preserved in the deep cold for 4.5 billion years, occasionally falling sunward + briefly burning bright. Modern missions (Rosetta, Deep Impact, Stardust) have transformed our understanding from "dirty snowball" to "complex porous heterogeneous body with active chemistry." And since 2017, interstellar visitors (ʻOumuamua, 2I/Borisov) have opened a new chapter.'
+                ),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+                  COMET_TOPICS.map(function(t) {
+                    var on = t.id === sel;
+                    return h('button', {
+                      key: t.id,
+                      onClick: function() { upd({ selectedComet: t.id }); },
+                      style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#06b6d4' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #06b6d4' : '1px solid #334155' }
+                    }, t.emoji + ' ' + t.name);
+                  })
+                ),
+                h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(6,182,212,0.08)', border: '1px solid rgba(6,182,212,0.35)' } },
+                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#67e8f9', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+                  h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+                  h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
+                    h('strong', null, 'Honest framing: '), topic.caveat
+                  )
+                ),
+                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 11.5, color: '#dcfce7', lineHeight: 1.65 } },
+                  h('strong', null, 'Track upcoming comets: '),
+                  'IAU Minor Planet Center (minorplanetcenter.net), Sky & Telescope monthly columns, the AAVSO Comet Observers Database, Seiichi Yoshida\'s Comet List (aerith.net), + Twitter / Bluesky accounts like @JOhnsonOttawa + @astrofrog. For King Middle students: when a bright comet appears, schedule an outdoor observation session — comets bring an immediacy that planets + stars rarely do, because they are fundamentally transient + each appearance may not repeat in your lifetime.'
+                )
+              );
+            })(),
+            '#06b6d4'
           )
         );
       }
