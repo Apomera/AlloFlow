@@ -9967,6 +9967,575 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     );
   }
 
+  // ── KK. PERSONAL MINDFULNESS PRACTICE (Wave 8) ──
+  // 6 guided mindfulness practices with timers and instructions.
+  // Body scan, mindful breathing, RAIN (body-focused), open awareness,
+  // walking meditation, mindful eating. Each with research citations.
+  function PersonalMindfulness(props) {
+    if (!R) return null;
+    var data = props.data || { sessions: [] };
+    var setData = props.setData;
+    var as = R.useState(null);                       var activeId = as[0]; var setActiveId = as[1];
+    var ts = R.useState(0);                          var seconds = ts[0]; var setSeconds = ts[1];
+    var ps = R.useState(false);                      var playing = ps[0]; var setPlaying = ps[1];
+
+    var PRACTICES = [
+      { id: 'body',     label: 'Body scan',                icon: '🧘', color: '#a855f7', duration: 600,
+        instructions: 'Lie down or sit comfortably. Close your eyes. Starting at your toes, slowly bring awareness to each part of your body. Notice sensations without judgment. Move up: feet, calves, thighs, hips, belly, chest, arms, hands, neck, face, top of head. Take your time. If your mind wanders, gently return to the body.',
+        research: 'Kabat-Zinn 1990 MBSR. Reduces anxiety + chronic pain. Activates parasympathetic nervous system (rest-and-digest).'
+      },
+      { id: 'breath',   label: 'Mindful breathing (5 min)', icon: '🌬', color: '#06b6d4', duration: 300,
+        instructions: 'Sit upright. Close your eyes or soften your gaze. Notice your natural breath. Don\'t change it. Feel the breath at the nostrils, or chest, or belly — whichever is easiest. When your mind wanders (it will), gently bring attention back to the breath. The noticing-and-returning IS the practice.',
+        research: 'Anchoring practice. Reduces rumination + builds attention control (Tang et al. 2007).'
+      },
+      { id: 'rain',     label: 'RAIN for difficult emotions', icon: '🌧', color: '#3b82f6', duration: 480,
+        instructions: 'Recognize the emotion — name it. Allow it to be present without resistance. Investigate where you feel it in the body. Nurture yourself — hand on heart, kind word. Sit with all four for 1-2 minutes each. Tara Brach\'s framework, integrating mindfulness + self-compassion.',
+        research: 'Brach 2013. Combines mindfulness (recognize/allow/investigate) + self-compassion (nurture). Strong evidence for emotion regulation.'
+      },
+      { id: 'open',     label: 'Open awareness (3 min)',     icon: '🌌', color: '#fbbf24', duration: 180,
+        instructions: 'Sit quietly. Instead of focusing on one thing, let your attention rest in open awareness. Notice whatever arises — sounds, sensations, thoughts — without grabbing onto anything. Like the sky watching weather pass through. If you find yourself caught up, return to open awareness.',
+        research: 'Advanced practice. Builds cognitive flexibility + reduces self-referential rumination.'
+      },
+      { id: 'walking',  label: 'Mindful walking (10 min)',   icon: '🚶', color: '#10b981', duration: 600,
+        instructions: 'Walk slowly outside or indoors. Feel each foot leaving and meeting the ground. Notice the rhythm of breath. Notice sights, sounds, sensations around you. When the mind wanders, return to the soles of your feet. Walking meditation accommodates restlessness — good when sitting is hard.',
+        research: 'Kabat-Zinn MBSR. Helpful for those who find still meditation difficult. Combines movement + attention.'
+      },
+      { id: 'eating',   label: 'Mindful eating (1 raisin)',  icon: '🍇', color: '#ec4899', duration: 300,
+        instructions: 'Pick one small piece of food (traditionally a raisin). Look at it for 30 seconds. Notice color, texture, shape. Smell it. Place it in your mouth without chewing — feel the texture on your tongue. Slowly bite — notice taste, texture changes. Swallow — feel it leave your mouth. Total ~5 min.',
+        research: 'Classic MBSR exercise. Trains attention + interrupts mindless eating patterns. Surprisingly profound in practice.'
+      }
+    ];
+
+    R.useEffect(function() {
+      if (!playing) return;
+      if (seconds <= 0) { setPlaying(false); return; }
+      var t = setTimeout(function() { setSeconds(seconds - 1); }, 1000);
+      return function() { clearTimeout(t); };
+    }, [playing, seconds]);
+
+    function start(p) {
+      setActiveId(p.id);
+      setSeconds(p.duration);
+      setPlaying(true);
+    }
+    function done(p) {
+      setData({ sessions: [{ id: tkId(), date: todayISO(), practiceId: p.id, duration: p.duration - seconds }].concat(data.sessions || []) });
+      setActiveId(null);
+      setPlaying(false);
+    }
+
+    var sessions = data.sessions || [];
+    var totalMin = Math.round(sessions.reduce(function(s, x) { return s + (x.duration || 0); }, 0) / 60);
+
+    if (activeId) {
+      var p = PRACTICES.filter(function(x) { return x.id === activeId; })[0];
+      if (!p) { setActiveId(null); return null; }
+      var mm = Math.floor(seconds / 60);
+      var ss = seconds % 60;
+      var elapsedPct = ((p.duration - seconds) / p.duration) * 100;
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader(p.icon, p.label, 'Quiet space + this voice in your head.', p.color),
+
+        hh('div', { style: { padding: 24, borderRadius: 14, background: 'linear-gradient(135deg, ' + p.color + '25, rgba(15,23,42,0.7))', border: '2px solid ' + p.color, marginBottom: 14, textAlign: 'center' } },
+          hh('div', { style: { fontSize: 12, color: p.color, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 14 } }, playing ? '🧘 In practice' : '⏸ Paused'),
+          hh('div', { style: { fontSize: 64, fontWeight: 900, color: p.color, fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1, marginBottom: 8 } }, String(mm).padStart(2, '0') + ':' + String(ss).padStart(2, '0')),
+          hh('div', { style: { height: 6, background: 'rgba(15,23,42,0.5)', borderRadius: 3, overflow: 'hidden', marginBottom: 12 } },
+            hh('div', { style: { width: elapsedPct + '%', height: '100%', background: p.color, transition: 'width 1000ms linear' } })
+          )
+        ),
+
+        hh('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + p.color, marginBottom: 14, fontSize: 12, color: '#cbd5e1', lineHeight: 1.7 } },
+          p.instructions
+        ),
+
+        hh('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' } },
+          tkBtn(playing ? '⏸ Pause' : '▶ Resume', function() { setPlaying(!playing); }, 'primary'),
+          tkBtn('✓ Finished', function() { done(p); }, 'good'),
+          tkBtn('Cancel', function() { setActiveId(null); setPlaying(false); }, 'ghost')
+        )
+      );
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🧘', 'Mindfulness Practice', '6 guided practices from MBSR + RAIN traditions. 3-10 min each. No prior experience needed.', '#a855f7'),
+
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+        hh('strong', { style: { color: '#a855f7' } }, '🧘 You\'ve practiced: '), totalMin, ' min total · ', sessions.length, ' session', sessions.length !== 1 ? 's' : ''
+      ),
+
+      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
+        PRACTICES.map(function(p) {
+          return hh('button', { key: 'pr-' + p.id,
+            onClick: function() { start(p); },
+            style: { display: 'block', textAlign: 'left', padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, ' + p.color + '15, rgba(15,23,42,0.7))', border: '1px solid ' + p.color + '40', borderLeft: '4px solid ' + p.color, cursor: 'pointer' }
+          },
+            hh('div', { style: { fontSize: 22, marginBottom: 4 } }, p.icon),
+            hh('div', { style: { fontSize: 13, fontWeight: 800, color: p.color } }, p.label),
+            hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4 } }, Math.round(p.duration / 60) + ' min · ' + p.research.split('.')[0])
+          );
+        })
+      )
+    );
+  }
+
+  // ── LL. PERSONAL ANXIETY TOOLKIT (Wave 8) ──
+  // Quick-access tools when anxiety hits. Grounding, breathing, cognitive
+  // reframes, body release. Linked to crisis resources when severe.
+  function PersonalAnxietyToolkit(props) {
+    if (!R) return null;
+    var data = props.data || { logs: [] };
+    var setData = props.setData;
+    var as = R.useState(null);                       var active = as[0]; var setActive = as[1];
+
+    var TOOLS = [
+      { id: 'name',     label: 'Name it', icon: '🏷', color: '#3b82f6',
+        steps: ['"Anxiety is here right now."', 'Just naming activates regulation circuits (Lieberman 2007).', 'Notice: where do you feel it in your body?', 'Right now you are safe in this moment. The anxiety is information, not danger.']
+      },
+      { id: 'breath',   label: 'Slow exhale breath', icon: '🌬', color: '#06b6d4',
+        steps: ['Inhale for 4 counts.', 'Hold for 2.', 'Exhale slowly for 8 counts. (Longer exhale than inhale = parasympathetic activation.)', 'Repeat 4-6 times.', 'Notice: heart rate slowing, body softening slightly.']
+      },
+      { id: 'cold',     label: 'Cold water on face/wrists', icon: '🥶', color: '#a855f7',
+        steps: ['Hold ice cube to face or run cold water on wrists.', 'The mammalian dive reflex slows heart rate within 30 seconds.', 'Linehan DBT — a "TIPP" skill for distress tolerance.', 'Not a fix — buys regulation time so you can think.']
+      },
+      { id: 'thought',  label: 'Cognitive defusion', icon: '🪂', color: '#fbbf24',
+        steps: ['Notice the anxious thought.', 'Say: "I\'m having the thought that ___" (instead of "___ is true").', 'Or: imagine the thought as a leaf floating down a river.', 'You are not your thoughts. You\'re the observer noticing them.', 'ACT (Hayes) approach. Reduces fusion with anxious content.']
+      },
+      { id: 'sense',    label: '5-4-3-2-1 grounding', icon: '🌱', color: '#10b981',
+        steps: ['5 things you can SEE right now.', '4 things you can FEEL (clothes, chair, air).', '3 things you can HEAR.', '2 things you can SMELL.', '1 thing you can TASTE.', 'Sensory awareness shifts attention OUT of anxious thoughts.']
+      },
+      { id: 'evidence', label: 'Evidence-for / evidence-against', icon: '⚖️', color: '#ef4444',
+        steps: ['What\'s the anxious thought?', 'Evidence FOR it being true:', 'Evidence AGAINST it being true:', 'A more balanced thought might be: ___', 'CBT skill. Not "positive thinking" — accurate thinking.']
+      }
+    ];
+
+    function logTool(t) {
+      setData({ logs: [{ id: tkId(), date: todayISO(), time: Date.now(), toolId: t.id }].concat(data.logs || []) });
+    }
+
+    var logs = data.logs || [];
+
+    if (active) {
+      var t = TOOLS.filter(function(x) { return x.id === active; })[0];
+      if (!t) { setActive(null); return null; }
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader(t.icon, t.label, 'Step through these slowly. There\'s no rush.', t.color),
+        hh('div', { style: { padding: 18, borderRadius: 12, background: 'linear-gradient(135deg, ' + t.color + '20, rgba(15,23,42,0.7))', border: '2px solid ' + t.color, marginBottom: 14 } },
+          hh('ol', { style: { margin: 0, paddingLeft: 22, fontSize: 14, color: '#e2e8f0', lineHeight: 2.0 } },
+            t.steps.map(function(s, i) {
+              return hh('li', { key: 'st-' + i, style: { marginBottom: 8 } }, s);
+            })
+          )
+        ),
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+          tkBtn('← Back', function() { setActive(null); }, 'ghost'),
+          tkBtn('✓ Logged use of this tool', function() { logTool(t); setActive(null); }, 'good')
+        )
+      );
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🧰', 'Anxiety Toolkit', 'Quick-access tools when anxiety hits. Pick what fits the moment.', '#ef4444'),
+
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+        hh('strong', { style: { color: '#ef4444' } }, '🚨 If you\'re in crisis: '),
+        'Call or text 988 (US Suicide + Crisis Lifeline). Maine Mobile Crisis: 1-888-568-1112. These tools are for everyday anxiety; reach out for human help if you\'re unsafe.'
+      ),
+
+      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10 } },
+        TOOLS.map(function(t) {
+          var count = logs.filter(function(l) { return l.toolId === t.id; }).length;
+          return hh('button', { key: 'at-' + t.id,
+            onClick: function() { setActive(t.id); },
+            style: { display: 'block', textAlign: 'left', padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, ' + t.color + '15, rgba(15,23,42,0.7))', border: '1px solid ' + t.color + '40', borderLeft: '4px solid ' + t.color, cursor: 'pointer' }
+          },
+            hh('div', { style: { fontSize: 22, marginBottom: 4 } }, t.icon),
+            hh('div', { style: { fontSize: 13, fontWeight: 800, color: t.color } }, t.label),
+            hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4 } }, t.steps.length + ' steps' + (count > 0 ? ' · used ' + count + 'x' : ''))
+          );
+        })
+      ),
+
+      logs.length > 0 ? hh('div', { style: { marginTop: 14 } },
+        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, '📊 Most-used tools'),
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+          TOOLS.map(function(t) {
+            var c = logs.filter(function(l) { return l.toolId === t.id; }).length;
+            if (c === 0) return null;
+            return hh('div', { key: 'l-' + t.id, style: { display: 'flex', justifyContent: 'space-between', padding: 6, borderRadius: 4, background: 'rgba(15,23,42,0.5)', borderLeft: '2px solid ' + t.color } },
+              hh('span', { style: { fontSize: 11, color: t.color } }, t.icon + ' ' + t.label),
+              hh('strong', { style: { fontSize: 11, color: t.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, c)
+            );
+          }).filter(Boolean)
+        )
+      ) : null
+    );
+  }
+
+  // ── MM. PERSONAL DECISION MAKER (Wave 8) ──
+  // Structured decision-making tool. Define options, criteria, weights.
+  // Score each option. Surfaces the implicit choice. Useful for big
+  // decisions students often default-pick out of overwhelm.
+  function PersonalDecisionMaker(props) {
+    if (!R) return null;
+    var data = props.data || { decisions: [] };
+    var setData = props.setData;
+    var vs = R.useState('list');                  var view = vs[0]; var setView = vs[1];
+    var as = R.useState(null);                    var activeId = as[0]; var setActiveId = as[1];
+    var ts = R.useState('');                      var newTitle = ts[0]; var setNewTitle = ts[1];
+
+    function createDecision() {
+      if (!newTitle.trim()) return;
+      var d = {
+        id: tkId(), title: newTitle.trim(),
+        options: [{ id: tkId(), name: '' }, { id: tkId(), name: '' }],
+        criteria: [{ id: tkId(), name: 'Important to me', weight: 5 }],
+        scores: {},
+        createdAt: todayISO()
+      };
+      setData({ decisions: [d].concat(data.decisions || []) });
+      setActiveId(d.id);
+      setNewTitle('');
+      setView('edit');
+    }
+    function getDecision() { return (data.decisions || []).filter(function(x) { return x.id === activeId; })[0]; }
+    function updateDecision(patch) {
+      setData({ decisions: (data.decisions || []).map(function(d) { return d.id === activeId ? Object.assign({}, d, patch) : d; }) });
+    }
+    function removeDecision(id) {
+      if (!confirm('Delete this decision?')) return;
+      setData({ decisions: (data.decisions || []).filter(function(d) { return d.id !== id; }) });
+    }
+    function addOption() {
+      var d = getDecision();
+      updateDecision({ options: d.options.concat([{ id: tkId(), name: '' }]) });
+    }
+    function addCriterion() {
+      var d = getDecision();
+      updateDecision({ criteria: d.criteria.concat([{ id: tkId(), name: '', weight: 5 }]) });
+    }
+    function updateOption(i, patch) {
+      var d = getDecision();
+      var opts = d.options.slice();
+      opts[i] = Object.assign({}, opts[i], patch);
+      updateDecision({ options: opts });
+    }
+    function updateCriterion(i, patch) {
+      var d = getDecision();
+      var cs = d.criteria.slice();
+      cs[i] = Object.assign({}, cs[i], patch);
+      updateDecision({ criteria: cs });
+    }
+    function removeOption(i) {
+      var d = getDecision();
+      updateDecision({ options: d.options.filter(function(_, j) { return j !== i; }) });
+    }
+    function removeCriterion(i) {
+      var d = getDecision();
+      updateDecision({ criteria: d.criteria.filter(function(_, j) { return j !== i; }) });
+    }
+    function setScore(optId, critId, val) {
+      var d = getDecision();
+      var scores = Object.assign({}, d.scores || {});
+      scores[optId + '|' + critId] = val;
+      updateDecision({ scores: scores });
+    }
+    function getScore(optId, critId) {
+      var d = getDecision();
+      return (d.scores || {})[optId + '|' + critId] || 0;
+    }
+    function totalForOption(opt) {
+      var d = getDecision();
+      return d.criteria.reduce(function(sum, c) {
+        return sum + (getScore(opt.id, c.id) * (c.weight || 1));
+      }, 0);
+    }
+
+    if (view === 'edit') {
+      var d = getDecision();
+      if (!d) { setView('list'); return null; }
+      var winner = d.options.reduce(function(best, opt) {
+        return totalForOption(opt) > totalForOption(best) ? opt : best;
+      }, d.options[0]);
+
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader('⚖️', d.title, d.options.length + ' options · ' + d.criteria.length + ' criteria', '#9333ea'),
+
+        // Options
+        tkCard('#9333ea',
+          hh('div', null,
+            hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 8 } }, '🔢 Options I\'m considering'),
+            hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+              d.options.map(function(o, i) {
+                return hh('div', { key: 'op-' + o.id, style: { display: 'flex', gap: 6, alignItems: 'center' } },
+                  hh('span', { style: { color: '#c084fc', fontWeight: 800, minWidth: 16, fontFamily: 'ui-monospace, Menlo, monospace' } }, (i + 1) + '.'),
+                  tkInput(o.name, function(v) { updateOption(i, { name: v }); }, 'option name', { flex: 1 }),
+                  hh('button', { onClick: function() { removeOption(i); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                );
+              })
+            ),
+            tkBtn('+ Add option', addOption, 'secondary', { marginTop: 8, fontSize: 10, padding: '6px 12px' })
+          )
+        ),
+
+        // Criteria
+        tkCard('#a855f7',
+          hh('div', null,
+            hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 8 } }, '⚖ Criteria (what matters in this decision)'),
+            hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+              d.criteria.map(function(c, i) {
+                return hh('div', { key: 'cr-' + c.id, style: { display: 'flex', gap: 6, alignItems: 'center' } },
+                  tkInput(c.name, function(v) { updateCriterion(i, { name: v }); }, 'criterion name', { flex: 2 }),
+                  hh('span', { style: { fontSize: 10, color: '#94a3b8' } }, 'weight:'),
+                  hh('input', { type: 'number', min: 1, max: 10, value: c.weight,
+                    onChange: function(e) { updateCriterion(i, { weight: parseInt(e.target.value, 10) }); },
+                    style: { width: 50, padding: '6px 8px', fontSize: 11, color: '#c084fc', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(168,85,247,0.40)', borderRadius: 4, textAlign: 'center', fontWeight: 800 }
+                  }),
+                  hh('button', { onClick: function() { removeCriterion(i); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                );
+              })
+            ),
+            tkBtn('+ Add criterion', addCriterion, 'secondary', { marginTop: 8, fontSize: 10, padding: '6px 12px' })
+          )
+        ),
+
+        // Scoring grid
+        d.options.some(function(o) { return o.name; }) && d.criteria.some(function(c) { return c.name; }) ? tkCard('#9333ea',
+          hh('div', null,
+            hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 8 } }, '📊 Score each option (1-10) on each criterion'),
+            hh('div', { style: { overflowX: 'auto' } },
+              hh('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11 } },
+                hh('thead', null,
+                  hh('tr', null,
+                    hh('th', { style: { padding: 6, textAlign: 'left', color: '#94a3b8', fontWeight: 700, fontSize: 10 } }, 'Criterion'),
+                    d.options.filter(function(o) { return o.name; }).map(function(o) {
+                      return hh('th', { key: 'th-' + o.id, style: { padding: 6, textAlign: 'center', color: '#c084fc', fontWeight: 800, fontSize: 11 } }, o.name);
+                    })
+                  )
+                ),
+                hh('tbody', null,
+                  d.criteria.filter(function(c) { return c.name; }).map(function(c) {
+                    return hh('tr', { key: 'tr-' + c.id },
+                      hh('td', { style: { padding: 6, fontSize: 11, color: '#cbd5e1', fontWeight: 700 } }, c.name, hh('span', { style: { color: '#94a3b8', marginLeft: 4 } }, '(w' + c.weight + ')')),
+                      d.options.filter(function(o) { return o.name; }).map(function(o) {
+                        return hh('td', { key: 'td-' + o.id, style: { padding: 4, textAlign: 'center' } },
+                          hh('input', { type: 'number', min: 0, max: 10, value: getScore(o.id, c.id),
+                            onChange: function(e) { setScore(o.id, c.id, parseInt(e.target.value, 10) || 0); },
+                            style: { width: 50, padding: '4px 6px', fontSize: 11, color: '#c084fc', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(168,85,247,0.40)', borderRadius: 4, textAlign: 'center', fontWeight: 800 }
+                          })
+                        );
+                      })
+                    );
+                  }),
+                  hh('tr', { style: { borderTop: '2px solid #9333ea' } },
+                    hh('td', { style: { padding: 8, fontSize: 11, color: '#10b981', fontWeight: 800 } }, '★ Total score'),
+                    d.options.filter(function(o) { return o.name; }).map(function(o) {
+                      var total = totalForOption(o);
+                      var isWinner = o.id === winner.id && total > 0;
+                      return hh('td', { key: 'tot-' + o.id, style: { padding: 8, textAlign: 'center', fontSize: 14, color: isWinner ? '#10b981' : '#cbd5e1', fontWeight: 900, fontFamily: 'ui-monospace, Menlo, monospace' } },
+                        total, isWinner && total > 0 ? ' 🏆' : ''
+                      );
+                    })
+                  )
+                )
+              )
+            ),
+            winner && totalForOption(winner) > 0 ? hh('div', { style: { marginTop: 12, padding: 12, borderRadius: 10, background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.30)', fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 } },
+              hh('strong', { style: { color: '#10b981' } }, '🏆 Highest-scoring: '), winner.name,
+              hh('div', { style: { marginTop: 4, fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, 'Trust your gut too — if this doesn\'t feel right, your criteria or weights may need adjustment.')
+            ) : null
+          )
+        ) : null,
+
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+          tkBtn('← All decisions', function() { setView('list'); setActiveId(null); }, 'ghost'),
+          tkBtn('🗑 Delete', function() { removeDecision(d.id); setView('list'); setActiveId(null); }, 'bad')
+        )
+      );
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('⚖️', 'Decision Maker', 'Structured choice tool. Options × criteria × weights × scores = clarity.', '#9333ea'),
+
+      tkCard('#9333ea',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 8 } }, '+ New decision'),
+          hh('div', { style: { display: 'flex', gap: 6 } },
+            tkInput(newTitle, setNewTitle, 'What are you deciding? (e.g., "Which college to apply to")', { flex: 1 }),
+            tkBtn('Create', createDecision, 'primary')
+          )
+        )
+      ),
+
+      (data.decisions || []).length === 0 ? tkEmptyState('⚖', 'No decisions tracked yet. Use this for big choices that overwhelm you.', null, null)
+      : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+          (data.decisions || []).map(function(d) {
+            return hh('button', { key: 'dec-' + d.id,
+              onClick: function() { setActiveId(d.id); setView('edit'); },
+              style: { display: 'block', textAlign: 'left', padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(147,51,234,0.30)', borderLeft: '4px solid #9333ea', cursor: 'pointer' }
+            },
+              hh('strong', { style: { fontSize: 13, color: '#c084fc' } }, '⚖️ ' + d.title),
+              hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4 } }, d.options.length + ' options · ' + d.criteria.length + ' criteria · ' + relDate(d.createdAt))
+            );
+          })
+        )
+    );
+  }
+
+  // ── NN. PERSONAL VOCABULARY BUILDER (Wave 8) ──
+  // Personal vocab list per subject. Add word + definition + sentence.
+  // Review with self-quiz. Tracks mastery similar to flashcards but
+  // optimized for vocabulary specifically.
+  function PersonalVocabBuilder(props) {
+    if (!R) return null;
+    var data = props.data || { lists: [] };
+    var setData = props.setData;
+    var vs = R.useState('lists');                  var view = vs[0]; var setView = vs[1];
+    var as = R.useState(null);                     var activeId = as[0]; var setActiveId = as[1];
+    var fs = R.useState({ word: '', definition: '', sentence: '' });
+    var form = fs[0]; var setForm = fs[1];
+    var ts = R.useState('');                        var newListName = ts[0]; var setNewListName = ts[1];
+    var qs = R.useState(null);                      var quizState = qs[0]; var setQuizState = qs[1];
+
+    function createList() {
+      if (!newListName.trim()) return;
+      var list = { id: tkId(), name: newListName.trim(), words: [], createdAt: todayISO() };
+      setData({ lists: [list].concat(data.lists || []) });
+      setActiveId(list.id);
+      setNewListName('');
+      setView('words');
+    }
+    function getList() { return (data.lists || []).filter(function(l) { return l.id === activeId; })[0]; }
+    function updateList(patch) {
+      setData({ lists: (data.lists || []).map(function(l) { return l.id === activeId ? Object.assign({}, l, patch) : l; }) });
+    }
+    function removeList(id) {
+      if (!confirm('Delete this vocab list?')) return;
+      setData({ lists: (data.lists || []).filter(function(l) { return l.id !== id; }) });
+    }
+    function addWord() {
+      if (!form.word.trim()) { alert('Need a word.'); return; }
+      var l = getList();
+      updateList({ words: (l.words || []).concat([{ id: tkId(), word: form.word.trim(), definition: form.definition.trim(), sentence: form.sentence.trim(), mastery: 0 }]) });
+      setForm({ word: '', definition: '', sentence: '' });
+    }
+    function removeWord(wordId) {
+      var l = getList();
+      updateList({ words: l.words.filter(function(w) { return w.id !== wordId; }) });
+    }
+    function setMastery(wordId, val) {
+      var l = getList();
+      updateList({ words: l.words.map(function(w) { return w.id === wordId ? Object.assign({}, w, { mastery: val }) : w; }) });
+    }
+
+    function startQuiz() {
+      var l = getList();
+      if (!l || (l.words || []).length === 0) return;
+      var shuffled = l.words.slice().sort(function() { return Math.random() - 0.5; });
+      setQuizState({ words: shuffled, idx: 0, score: 0, showAns: false });
+      setView('quiz');
+    }
+    function quizAnswer(correct) {
+      var q = quizState;
+      var w = q.words[q.idx];
+      setMastery(w.id, Math.min(5, (w.mastery || 0) + (correct ? 1 : -1)));
+      if (q.idx + 1 >= q.words.length) {
+        setQuizState(null);
+        setView('words');
+      } else {
+        setQuizState({ words: q.words, idx: q.idx + 1, score: q.score + (correct ? 1 : 0), showAns: false });
+      }
+    }
+
+    var lists = data.lists || [];
+
+    if (view === 'quiz' && quizState) {
+      var w = quizState.words[quizState.idx];
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader('🔤', 'Vocab quiz', 'Word ' + (quizState.idx + 1) + ' of ' + quizState.words.length + ' · score ' + quizState.score, '#3b82f6'),
+        hh('div', { style: { padding: 24, borderRadius: 14, background: 'linear-gradient(135deg, rgba(59,130,246,0.20), rgba(15,23,42,0.7))', border: '2px solid #3b82f6', marginBottom: 14, textAlign: 'center', minHeight: 160 } },
+          hh('div', { style: { fontSize: 28, fontWeight: 900, color: '#60a5fa', marginBottom: 12 } }, w.word),
+          quizState.showAns ? hh('div', null,
+            hh('div', { style: { fontSize: 14, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 8 } }, w.definition),
+            w.sentence ? hh('div', { style: { fontSize: 12, color: '#94a3b8', fontStyle: 'italic' } }, '"' + w.sentence + '"') : null
+          ) : null
+        ),
+        quizState.showAns ? hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
+          tkBtn('✗ Didn\'t know', function() { quizAnswer(false); }, 'bad'),
+          tkBtn('✓ Knew it', function() { quizAnswer(true); }, 'good')
+        ) : hh('div', { style: { textAlign: 'center' } },
+          tkBtn('👁 Show definition', function() { setQuizState(Object.assign({}, quizState, { showAns: true })); }, 'primary')
+        ),
+        hh('div', { style: { textAlign: 'center', marginTop: 8 } },
+          tkBtn('End quiz', function() { setQuizState(null); setView('words'); }, 'ghost')
+        )
+      );
+    }
+
+    if (view === 'words' && activeId) {
+      var l = getList();
+      if (!l) { setView('lists'); return null; }
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader('🔤', l.name, (l.words || []).length + ' words', '#3b82f6'),
+        hh('div', { style: { display: 'flex', gap: 6, marginBottom: 10 } },
+          tkBtn('← All lists', function() { setView('lists'); setActiveId(null); }, 'ghost'),
+          (l.words || []).length > 0 ? tkBtn('🎯 Quiz me', startQuiz, 'primary') : null
+        ),
+        tkCard('#3b82f6',
+          hh('div', null,
+            hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#60a5fa', marginBottom: 8 } }, '+ Add word'),
+            tkInput(form.word, function(v) { setForm(Object.assign({}, form, { word: v })); }, 'Word', { marginBottom: 6 }),
+            tkInput(form.definition, function(v) { setForm(Object.assign({}, form, { definition: v })); }, 'Definition', { marginBottom: 6 }),
+            tkInput(form.sentence, function(v) { setForm(Object.assign({}, form, { sentence: v })); }, 'Example sentence (optional)', { marginBottom: 8 }),
+            tkBtn('+ Add', addWord, 'primary')
+          )
+        ),
+        (l.words || []).length === 0 ? tkEmptyState('🔤', 'No words yet.', null, null)
+        : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+            (l.words || []).map(function(w) {
+              var stars = '';
+              for (var i = 0; i < (w.mastery || 0); i++) stars += '⭐';
+              return hh('div', { key: 'w-' + w.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid #3b82f6' } },
+                hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
+                  hh('strong', { style: { fontSize: 13, color: '#60a5fa' } }, w.word, hh('span', { style: { marginLeft: 8, fontSize: 11 } }, stars)),
+                  hh('button', { onClick: function() { removeWord(w.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                ),
+                hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } }, w.definition),
+                w.sentence ? hh('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic', marginTop: 4 } }, '"' + w.sentence + '"') : null
+              );
+            })
+          )
+      );
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🔤', 'Vocab Builder', 'Subject-specific vocab lists with self-quiz. Mastery via retrieval practice.', '#3b82f6'),
+      tkCard('#3b82f6',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#60a5fa', marginBottom: 8 } }, '+ New vocab list'),
+          hh('div', { style: { display: 'flex', gap: 6 } },
+            tkInput(newListName, setNewListName, 'List name (e.g., "AP Bio Unit 3")', { flex: 1 }),
+            tkBtn('Create', createList, 'primary')
+          )
+        )
+      ),
+      lists.length === 0 ? tkEmptyState('🔤', 'No vocab lists yet.', null, null)
+      : hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10 } },
+          lists.map(function(l) {
+            return hh('button', { key: 'vl-' + l.id,
+              onClick: function() { setActiveId(l.id); setView('words'); },
+              style: { display: 'block', textAlign: 'left', padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(59,130,246,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(59,130,246,0.40)', borderLeft: '4px solid #3b82f6', cursor: 'pointer' }
+            },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+                hh('strong', { style: { fontSize: 13, color: '#60a5fa' } }, '🔤 ' + l.name),
+                hh('span', { onClick: function(e) { e.stopPropagation(); removeList(l.id); }, style: { color: '#64748b', cursor: 'pointer', fontSize: 12 } }, '✕')
+              ),
+              hh('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 4 } }, (l.words || []).length + ' words')
+            );
+          })
+        )
+    );
+  }
+
   // ── F. MY TOOLKIT HUB (landing page) ──
   // Single entry point that shows status of all toolkit tools + quick
   // actions. Today's date, current streak, # active goals, etc.
@@ -10082,7 +10651,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'mytkCheats',   icon: '📋', label: 'Cheat Sheet Builder',  color: '#fbbf24', desc: 'Build 1-page cheat sheets per topic',
         stat: ((data.mytkCheats || {}).sheets || []).length + ' sheets', cta: 'Build a sheet' },
       { id: 'mytkAsk',      icon: '🙋', label: 'Ask-for-Help Tracker', color: '#10b981', desc: 'Log every help-ask. Destigmatize the skill.',
-        stat: ((data.mytkAsk || {}).asks || []).length + ' asks', cta: 'Log an ask' }
+        stat: ((data.mytkAsk || {}).asks || []).length + ' asks', cta: 'Log an ask' },
+      { id: 'mytkMind',     icon: '🧘', label: 'Mindfulness',          color: '#a855f7', desc: '6 guided practices (MBSR + RAIN)',
+        stat: ((data.mytkMind || {}).sessions || []).length + ' sessions', cta: 'Practice now' },
+      { id: 'mytkAnxiety',  icon: '🧰', label: 'Anxiety Toolkit',      color: '#ef4444', desc: '6 quick-access tools for anxious moments',
+        stat: 'tools ready', cta: 'Open toolkit' },
+      { id: 'mytkDec',      icon: '⚖️', label: 'Decision Maker',       color: '#9333ea', desc: 'Structured options × criteria × weights',
+        stat: ((data.mytkDec || {}).decisions || []).length + ' decisions', cta: 'Make a decision' },
+      { id: 'mytkVocab',    icon: '🔤', label: 'Vocab Builder',        color: '#3b82f6', desc: 'Subject vocab lists with self-quiz',
+        stat: ((data.mytkVocab || {}).lists || []).length + ' lists', cta: 'Build vocab' }
     ];
 
     var dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][new Date().getDay()];
@@ -10305,7 +10882,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'mytkDist',   icon: '🚨', label: 'Distraction Log',      desc: 'Log distractions across 8 sources. Surfaces YOUR pattern, not generic advice.' },
               { id: 'mytkSearch', icon: '🔎', label: 'Search My Toolkit',    desc: 'Instant full-text search across notes, journal, reflections, prompts, goals, brain dumps.' },
               { id: 'mytkCheats', icon: '📋', label: 'Cheat Sheet Builder',  desc: 'Build 1-page cheat sheets per topic. Building IS the studying.' },
-              { id: 'mytkAsk',    icon: '🙋', label: 'Ask-for-Help Tracker', desc: 'Log every help-ask. Normalize the most underused academic skill.' }
+              { id: 'mytkAsk',    icon: '🙋', label: 'Ask-for-Help Tracker', desc: 'Log every help-ask. Normalize the most underused academic skill.' },
+              { id: 'mytkMind',   icon: '🧘', label: 'Mindfulness',          desc: '6 guided practices (body scan, breath, RAIN, walking, eating, open). MBSR-aligned.' },
+              { id: 'mytkAnxiety',icon: '🧰', label: 'Anxiety Toolkit',      desc: '6 quick-access tools when anxiety hits: naming, slow-exhale breath, cold water, defusion, grounding, evidence-check.' },
+              { id: 'mytkDec',    icon: '⚖️', label: 'Decision Maker',       desc: 'Structured choice tool: options × weighted criteria × scores → clarity for big decisions.' },
+              { id: 'mytkVocab',  icon: '🔤', label: 'Vocab Builder',        desc: 'Subject-specific vocab lists with self-quiz + mastery tracking.' }
             ]
           },
           { id: 'foundation', icon: '🧠', name: 'How learning works (foundation)',
@@ -13621,6 +14202,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           h(PersonalAskTracker, { data: dak, setData: setDak })
         );
       }
+      function renderMytkMind() {
+        var dmd = d.mytkMind || { sessions: [] };
+        var setDmd = function(newData) { upd('mytkMind', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalMindfulness, { data: dmd, setData: setDmd })
+        );
+      }
+      function renderMytkAnxiety() {
+        var dax = d.mytkAnxiety || { logs: [] };
+        var setDax = function(newData) { upd('mytkAnxiety', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalAnxietyToolkit, { data: dax, setData: setDax })
+        );
+      }
+      function renderMytkDec() {
+        var ddc = d.mytkDec || { decisions: [] };
+        var setDdc = function(newData) { upd('mytkDec', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalDecisionMaker, { data: ddc, setData: setDdc })
+        );
+      }
+      function renderMytkVocab() {
+        var dvb = d.mytkVocab || { lists: [] };
+        var setDvb = function(newData) { upd('mytkVocab', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalVocabBuilder, { data: dvb, setData: setDvb })
+        );
+      }
 
       // ─────────────────────────────────────────
       // VIEW ROUTER
@@ -13663,6 +14276,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         case 'mytkSearch':    return renderMytkSearch();
         case 'mytkCheats':    return renderMytkCheats();
         case 'mytkAsk':       return renderMytkAsk();
+        case 'mytkMind':      return renderMytkMind();
+        case 'mytkAnxiety':   return renderMytkAnxiety();
+        case 'mytkDec':       return renderMytkDec();
+        case 'mytkVocab':     return renderMytkVocab();
         case 'bloom':         return renderBloom();
         case 'cogload':       return renderCogLoad();
         case 'metacog':       return renderMetacog();
