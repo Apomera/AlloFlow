@@ -708,7 +708,9 @@ const PictionaryHostView = React.memo((props) => {
       const trimmed = (sourceText || "").slice(0, 3e3);
       const prompt = `Suggest 8 short concepts students could draw to demonstrate their understanding of this lesson. Each concept should be a single noun or 2-3 word phrase that's drawable (visualizable as a sketch). No abstract feelings. Source: "${trimmed}". Return ONLY a JSON object: { "concepts": ["concept 1", "concept 2", ...] }`;
       const result = await callGemini(prompt, true);
-      const parsed = JSON.parse(typeof window !== "undefined" && window.cleanJson ? window.cleanJson(result) : result);
+      const _stripFences = (s) => String(s || "").replace(/^```(?:json)?\s*|\s*```$/g, "").trim();
+      const _cleaner = typeof window !== "undefined" && window.__alloUtils && window.__alloUtils.cleanJson || _stripFences;
+      const parsed = JSON.parse(_cleaner(result));
       if (Array.isArray(parsed.concepts)) setConceptIdeas(parsed.concepts.slice(0, 8).map(String));
     } catch (err) {
       console.warn("[Pictionary] concept suggest failed:", err && err.message);
@@ -731,7 +733,9 @@ const PictionaryHostView = React.memo((props) => {
     setRoundActive(true);
     setRoundResolved(null);
     if (writeToSession && sessionRef) {
-      const updates = {};
+      const updates = {
+        pictionaryRound: { active: true, roundId: _pic_genId("round"), startedAt: Date.now() }
+      };
       Object.keys(roster).forEach((uid) => {
         updates[`roster.${uid}.role`] = drawerUids.includes(uid) ? "drawer" : "guesser";
       });
@@ -742,37 +746,30 @@ const PictionaryHostView = React.memo((props) => {
       }
     }
   };
+  const _clearRolesAndRound = async () => {
+    if (!writeToSession || !sessionRef) return;
+    const updates = { pictionaryRound: { active: false } };
+    Object.keys(roster).forEach((uid) => {
+      updates[`roster.${uid}.role`] = null;
+    });
+    try {
+      await writeToSession(sessionRef, updates);
+    } catch (_) {
+    }
+  };
   const handleMarkCorrect = async (guessId) => {
     setGuessFeed((prev) => prev.map((g) => g.id === guessId ? { ...g, marked: "correct" } : g));
     const correctGuess = guessFeed.find((g) => g.id === guessId);
     if (hostRef.current) hostRef.current.resolveRound({ winnerUid: correctGuess && correctGuess.uid });
     setRoundResolved({ concept, winnerUid: correctGuess && correctGuess.uid });
     setRoundActive(false);
-    if (writeToSession && sessionRef) {
-      const updates = {};
-      Object.keys(roster).forEach((uid) => {
-        updates[`roster.${uid}.role`] = null;
-      });
-      try {
-        await writeToSession(sessionRef, updates);
-      } catch (_) {
-      }
-    }
+    await _clearRolesAndRound();
   };
   const handleEndRound = async () => {
     if (hostRef.current) hostRef.current.resolveRound({ winnerUid: null });
     setRoundResolved({ concept, winnerUid: null });
     setRoundActive(false);
-    if (writeToSession && sessionRef) {
-      const updates = {};
-      Object.keys(roster).forEach((uid) => {
-        updates[`roster.${uid}.role`] = null;
-      });
-      try {
-        await writeToSession(sessionRef, updates);
-      } catch (_) {
-      }
-    }
+    await _clearRolesAndRound();
   };
   const handleResetForNextRound = () => {
     setConcept("");

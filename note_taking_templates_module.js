@@ -390,19 +390,33 @@ const NoteTakingView = React.memo((props) => {
 const NOTEBOOK_TEMPLATE_META = {
   "cornell-notes": { label: "Cornell Notes", accent: "indigo", short: "Cornell", icon: "\u{1F4D3}" },
   "lab-report": { label: "Lab Report", accent: "sky", short: "Lab", icon: "\u{1F9EA}" },
-  "reading-response": { label: "Reading Response", accent: "violet", short: "Reading", icon: "\u{1F4D6}" }
+  "reading-response": { label: "Reading Response", accent: "violet", short: "Reading", icon: "\u{1F4D6}" },
+  "anchor-chart": { label: "Anchor Chart", accent: "amber", short: "Chart", icon: "\u{1F4CB}" }
+};
+const _entryKind = (entry) => {
+  if (!entry) return null;
+  if (entry.type === "anchor-chart") return "anchor-chart";
+  if (entry.type === "note-taking") return entry.data && entry.data.templateType || "cornell-notes";
+  return null;
 };
 const _accentClasses = (accent, kind) => {
   const map = {
     indigo: { chip: "bg-indigo-600 text-white border-indigo-700", chipOff: "bg-white text-indigo-700 border-indigo-300 hover:bg-indigo-50", badge: "bg-indigo-100 text-indigo-800 border-indigo-300", bar: "bg-indigo-500" },
     sky: { chip: "bg-sky-600 text-white border-sky-700", chipOff: "bg-white text-sky-700 border-sky-300 hover:bg-sky-50", badge: "bg-sky-100 text-sky-800 border-sky-300", bar: "bg-sky-500" },
     violet: { chip: "bg-violet-600 text-white border-violet-700", chipOff: "bg-white text-violet-700 border-violet-300 hover:bg-violet-50", badge: "bg-violet-100 text-violet-800 border-violet-300", bar: "bg-violet-500" },
+    amber: { chip: "bg-amber-600 text-white border-amber-700", chipOff: "bg-white text-amber-800 border-amber-300 hover:bg-amber-50", badge: "bg-amber-100 text-amber-900 border-amber-300", bar: "bg-amber-500" },
     slate: { chip: "bg-slate-700 text-white border-slate-800", chipOff: "bg-white text-slate-700 border-slate-300 hover:bg-slate-50", badge: "bg-slate-100 text-slate-700 border-slate-300", bar: "bg-slate-500" }
   };
   return (map[accent] || map.slate)[kind] || "";
 };
 const _entryPreview = (entry) => {
   const data = entry && entry.data || {};
+  if (entry && entry.type === "anchor-chart") {
+    const sections = Array.isArray(data.sections) ? data.sections : [];
+    if (sections.length === 0) return "";
+    const labels = sections.slice(0, 4).map((s) => s && s.label).filter(Boolean).join(" \xB7 ");
+    return labels || sections[0] && Array.isArray(sections[0].bullets) && sections[0].bullets[0] || "";
+  }
   const tt = data.templateType;
   if (tt === "cornell-notes") {
     const firstNote = (Array.isArray(data.notes) ? data.notes : []).find((n) => n && (n.text || "").trim());
@@ -423,7 +437,8 @@ const _entryPreview = (entry) => {
 const _entryTitle = (entry) => {
   const data = entry && entry.data || {};
   if (data.title && data.title.trim()) return data.title.trim();
-  const meta = NOTEBOOK_TEMPLATE_META[data.templateType];
+  const kind = _entryKind(entry);
+  const meta = NOTEBOOK_TEMPLATE_META[kind];
   return meta ? `Untitled ${meta.label}` : "Untitled entry";
 };
 const NotebookOverlay = React.memo((props) => {
@@ -444,18 +459,19 @@ const NotebookOverlay = React.memo((props) => {
     return () => window.removeEventListener("keydown", handleKey);
   }, [isOpen, onClose]);
   if (!isOpen) return null;
-  const noteTakingEntries = history.filter((h) => h && h.type === "note-taking");
-  const sortedEntries = noteTakingEntries.slice().sort((a, b) => {
+  const notebookEntries = history.filter((h) => h && (h.type === "note-taking" || h.type === "anchor-chart"));
+  const sortedEntries = notebookEntries.slice().sort((a, b) => {
     const aTime = a.id || 0;
     const bTime = b.id || 0;
     return bTime - aTime;
   });
-  const filtered = activeFilter === "all" ? sortedEntries : sortedEntries.filter((e) => (e.data && e.data.templateType || "cornell-notes") === activeFilter);
+  const filtered = activeFilter === "all" ? sortedEntries : sortedEntries.filter((e) => _entryKind(e) === activeFilter);
   const counts = {
     all: sortedEntries.length,
-    "cornell-notes": sortedEntries.filter((e) => (e.data && e.data.templateType) === "cornell-notes").length,
-    "lab-report": sortedEntries.filter((e) => (e.data && e.data.templateType) === "lab-report").length,
-    "reading-response": sortedEntries.filter((e) => (e.data && e.data.templateType) === "reading-response").length
+    "cornell-notes": sortedEntries.filter((e) => _entryKind(e) === "cornell-notes").length,
+    "lab-report": sortedEntries.filter((e) => _entryKind(e) === "lab-report").length,
+    "reading-response": sortedEntries.filter((e) => _entryKind(e) === "reading-response").length,
+    "anchor-chart": sortedEntries.filter((e) => _entryKind(e) === "anchor-chart").length
   };
   const handlePrintAll = () => {
     try {
@@ -467,7 +483,8 @@ const NotebookOverlay = React.memo((props) => {
     { id: "all", label: "All", accent: "slate" },
     { id: "cornell-notes", label: "Cornell Notes", accent: "indigo" },
     { id: "lab-report", label: "Lab Reports", accent: "sky" },
-    { id: "reading-response", label: "Reading", accent: "violet" }
+    { id: "reading-response", label: "Reading", accent: "violet" },
+    { id: "anchor-chart", label: "Anchor Charts", accent: "amber" }
   ];
   return /* @__PURE__ */ React.createElement(
     "div",
@@ -475,7 +492,7 @@ const NotebookOverlay = React.memo((props) => {
       className: "fixed inset-0 z-[100] flex items-center justify-center p-4 nt-no-print",
       role: "dialog",
       "aria-modal": "true",
-      "aria-label": "Notebook \u2014 all note-taking entries"
+      "aria-label": "Notebook \u2014 all your saved entries"
     },
     /* @__PURE__ */ React.createElement(
       "div",
@@ -485,7 +502,7 @@ const NotebookOverlay = React.memo((props) => {
         "aria-hidden": "true"
       }
     ),
-    /* @__PURE__ */ React.createElement("div", { className: "relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden border border-slate-200" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between p-5 border-b border-slate-200 bg-gradient-to-r from-indigo-50 via-sky-50 to-violet-50" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-indigo-700 uppercase tracking-wider" }, "My Notebook"), /* @__PURE__ */ React.createElement("h2", { className: "text-2xl font-black text-slate-800 mt-0.5" }, "\u{1F4D3} Notebook"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1 leading-snug" }, "All your note-taking entries across sessions \u2014 Cornell Notes, Lab Reports, Reading Responses.")), /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { className: "relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden border border-slate-200" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between p-5 border-b border-slate-200 bg-gradient-to-r from-indigo-50 via-sky-50 to-violet-50" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-indigo-700 uppercase tracking-wider" }, "My Notebook"), /* @__PURE__ */ React.createElement("h2", { className: "text-2xl font-black text-slate-800 mt-0.5" }, "\u{1F4D3} Notebook"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1 leading-snug" }, "Everything you've saved across sessions \u2014 Cornell Notes, Lab Reports, Reading Responses, and Anchor Charts.")), /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: onClose,
@@ -518,9 +535,9 @@ const NotebookOverlay = React.memo((props) => {
         title: "Print or save as PDF"
       },
       "\u{1F5A8}\uFE0F Print / PDF"
-    ))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto px-5 py-4 bg-slate-50" }, filtered.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-12" }, /* @__PURE__ */ React.createElement("div", { className: "text-5xl mb-3 opacity-50" }, "\u{1F4D3}"), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 font-bold mb-1" }, sortedEntries.length === 0 ? "Your notebook is empty." : "No entries match this filter."), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 max-w-sm mx-auto leading-relaxed" }, sortedEntries.length === 0 ? "Open Note-Taking from the sidebar to start a Cornell Notes page, Lab Report, or Reading Response. Each one you finish lands here." : "Switch filters above to see other entry types.")) : /* @__PURE__ */ React.createElement("ul", { className: "space-y-2" }, filtered.map((entry) => {
-      const tt = entry.data && entry.data.templateType || "cornell-notes";
-      const meta = NOTEBOOK_TEMPLATE_META[tt] || NOTEBOOK_TEMPLATE_META["cornell-notes"];
+    ))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto px-5 py-4 bg-slate-50" }, filtered.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-12" }, /* @__PURE__ */ React.createElement("div", { className: "text-5xl mb-3 opacity-50" }, "\u{1F4D3}"), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 font-bold mb-1" }, sortedEntries.length === 0 ? "Your notebook is empty." : "No entries match this filter."), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 max-w-sm mx-auto leading-relaxed" }, sortedEntries.length === 0 ? "Open Note-Taking or Anchor Chart from the sidebar to start saving. Each finished entry lands here." : "Switch filters above to see other entry types.")) : /* @__PURE__ */ React.createElement("ul", { className: "space-y-2" }, filtered.map((entry) => {
+      const kind = _entryKind(entry) || "cornell-notes";
+      const meta = NOTEBOOK_TEMPLATE_META[kind] || NOTEBOOK_TEMPLATE_META["cornell-notes"];
       const title = _entryTitle(entry);
       const preview = _entryPreview(entry);
       const previewTruncated = preview && preview.length > 140 ? preview.slice(0, 137) + "\u2026" : preview;

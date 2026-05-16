@@ -412,14 +412,25 @@ const NoteTakingView = React.memo((props) => {
 });
 
 // ── Notebook Overlay ─────────────────────────────────────────────────────
-// Header-button-launched overlay listing all note-taking entries across history,
-// with filter chips per template type. Clicking an entry loads it into the
-// main view. Matches the precedent of the teacher-mode "jump to lesson plan"
-// header button — first-class concept, dedicated surface, easy discovery.
+// Header-button-launched overlay listing all the student's saved instructional
+// resources (note-taking entries + anchor charts) across history, with filter
+// chips per resource kind. Clicking an entry loads it into the main view.
+// Matches the teacher-mode "jump to lesson plan" header-button precedent —
+// first-class concept, dedicated surface, easy discovery.
 const NOTEBOOK_TEMPLATE_META = {
   'cornell-notes':    { label: 'Cornell Notes',     accent: 'indigo',  short: 'Cornell',  icon: '📓' },
   'lab-report':       { label: 'Lab Report',        accent: 'sky',     short: 'Lab',      icon: '🧪' },
   'reading-response': { label: 'Reading Response',  accent: 'violet',  short: 'Reading',  icon: '📖' },
+  'anchor-chart':     { label: 'Anchor Chart',      accent: 'amber',   short: 'Chart',    icon: '📋' },
+};
+
+// Normalize an entry to a single "kind" key. Note-taking entries discriminate
+// by data.templateType; anchor-chart entries identify by entry.type directly.
+const _entryKind = (entry) => {
+  if (!entry) return null;
+  if (entry.type === 'anchor-chart') return 'anchor-chart';
+  if (entry.type === 'note-taking') return (entry.data && entry.data.templateType) || 'cornell-notes';
+  return null;
 };
 
 const _accentClasses = (accent, kind) => {
@@ -427,6 +438,7 @@ const _accentClasses = (accent, kind) => {
     indigo: { chip: 'bg-indigo-600 text-white border-indigo-700', chipOff: 'bg-white text-indigo-700 border-indigo-300 hover:bg-indigo-50', badge: 'bg-indigo-100 text-indigo-800 border-indigo-300', bar: 'bg-indigo-500' },
     sky:    { chip: 'bg-sky-600 text-white border-sky-700',       chipOff: 'bg-white text-sky-700 border-sky-300 hover:bg-sky-50',         badge: 'bg-sky-100 text-sky-800 border-sky-300',         bar: 'bg-sky-500' },
     violet: { chip: 'bg-violet-600 text-white border-violet-700', chipOff: 'bg-white text-violet-700 border-violet-300 hover:bg-violet-50', badge: 'bg-violet-100 text-violet-800 border-violet-300', bar: 'bg-violet-500' },
+    amber:  { chip: 'bg-amber-600 text-white border-amber-700',   chipOff: 'bg-white text-amber-800 border-amber-300 hover:bg-amber-50',   badge: 'bg-amber-100 text-amber-900 border-amber-300',   bar: 'bg-amber-500' },
     slate:  { chip: 'bg-slate-700 text-white border-slate-800',   chipOff: 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50',   badge: 'bg-slate-100 text-slate-700 border-slate-300',   bar: 'bg-slate-500' },
   };
   return (map[accent] || map.slate)[kind] || '';
@@ -434,6 +446,12 @@ const _accentClasses = (accent, kind) => {
 
 const _entryPreview = (entry) => {
   const data = (entry && entry.data) || {};
+  if (entry && entry.type === 'anchor-chart') {
+    const sections = Array.isArray(data.sections) ? data.sections : [];
+    if (sections.length === 0) return '';
+    const labels = sections.slice(0, 4).map(s => s && s.label).filter(Boolean).join(' · ');
+    return labels || (sections[0] && Array.isArray(sections[0].bullets) && sections[0].bullets[0]) || '';
+  }
   const tt = data.templateType;
   if (tt === 'cornell-notes') {
     const firstNote = (Array.isArray(data.notes) ? data.notes : []).find(n => n && (n.text || '').trim());
@@ -455,7 +473,8 @@ const _entryPreview = (entry) => {
 const _entryTitle = (entry) => {
   const data = (entry && entry.data) || {};
   if (data.title && data.title.trim()) return data.title.trim();
-  const meta = NOTEBOOK_TEMPLATE_META[data.templateType];
+  const kind = _entryKind(entry);
+  const meta = NOTEBOOK_TEMPLATE_META[kind];
   return meta ? `Untitled ${meta.label}` : 'Untitled entry';
 };
 
@@ -476,20 +495,21 @@ const NotebookOverlay = React.memo((props) => {
 
   if (!isOpen) return null;
 
-  const noteTakingEntries = history.filter(h => h && h.type === 'note-taking');
-  const sortedEntries = noteTakingEntries.slice().sort((a, b) => {
+  const notebookEntries = history.filter(h => h && (h.type === 'note-taking' || h.type === 'anchor-chart'));
+  const sortedEntries = notebookEntries.slice().sort((a, b) => {
     const aTime = a.id || 0;
     const bTime = b.id || 0;
     return bTime - aTime;
   });
   const filtered = activeFilter === 'all'
     ? sortedEntries
-    : sortedEntries.filter(e => ((e.data && e.data.templateType) || 'cornell-notes') === activeFilter);
+    : sortedEntries.filter(e => _entryKind(e) === activeFilter);
   const counts = {
     all: sortedEntries.length,
-    'cornell-notes': sortedEntries.filter(e => (e.data && e.data.templateType) === 'cornell-notes').length,
-    'lab-report': sortedEntries.filter(e => (e.data && e.data.templateType) === 'lab-report').length,
-    'reading-response': sortedEntries.filter(e => (e.data && e.data.templateType) === 'reading-response').length,
+    'cornell-notes':    sortedEntries.filter(e => _entryKind(e) === 'cornell-notes').length,
+    'lab-report':       sortedEntries.filter(e => _entryKind(e) === 'lab-report').length,
+    'reading-response': sortedEntries.filter(e => _entryKind(e) === 'reading-response').length,
+    'anchor-chart':     sortedEntries.filter(e => _entryKind(e) === 'anchor-chart').length,
   };
   const handlePrintAll = () => {
     try { window.print(); } catch (_) {}
@@ -499,13 +519,14 @@ const NotebookOverlay = React.memo((props) => {
     { id: 'cornell-notes',    label: 'Cornell Notes',   accent: 'indigo' },
     { id: 'lab-report',       label: 'Lab Reports',     accent: 'sky' },
     { id: 'reading-response', label: 'Reading',         accent: 'violet' },
+    { id: 'anchor-chart',     label: 'Anchor Charts',   accent: 'amber' },
   ];
   return (
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center p-4 nt-no-print"
       role="dialog"
       aria-modal="true"
-      aria-label="Notebook — all note-taking entries"
+      aria-label="Notebook — all your saved entries"
     >
       <div
         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
@@ -517,7 +538,7 @@ const NotebookOverlay = React.memo((props) => {
           <div>
             <div className="text-[11px] font-bold text-indigo-700 uppercase tracking-wider">My Notebook</div>
             <h2 className="text-2xl font-black text-slate-800 mt-0.5">📓 Notebook</h2>
-            <p className="text-xs text-slate-600 mt-1 leading-snug">All your note-taking entries across sessions — Cornell Notes, Lab Reports, Reading Responses.</p>
+            <p className="text-xs text-slate-600 mt-1 leading-snug">Everything you've saved across sessions — Cornell Notes, Lab Reports, Reading Responses, and Anchor Charts.</p>
           </div>
           <button
             onClick={onClose}
@@ -559,15 +580,15 @@ const NotebookOverlay = React.memo((props) => {
               </p>
               <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
                 {sortedEntries.length === 0
-                  ? 'Open Note-Taking from the sidebar to start a Cornell Notes page, Lab Report, or Reading Response. Each one you finish lands here.'
+                  ? 'Open Note-Taking or Anchor Chart from the sidebar to start saving. Each finished entry lands here.'
                   : 'Switch filters above to see other entry types.'}
               </p>
             </div>
           ) : (
             <ul className="space-y-2">
               {filtered.map((entry) => {
-                const tt = (entry.data && entry.data.templateType) || 'cornell-notes';
-                const meta = NOTEBOOK_TEMPLATE_META[tt] || NOTEBOOK_TEMPLATE_META['cornell-notes'];
+                const kind = _entryKind(entry) || 'cornell-notes';
+                const meta = NOTEBOOK_TEMPLATE_META[kind] || NOTEBOOK_TEMPLATE_META['cornell-notes'];
                 const title = _entryTitle(entry);
                 const preview = _entryPreview(entry);
                 const previewTruncated = preview && preview.length > 140 ? preview.slice(0, 137) + '…' : preview;
