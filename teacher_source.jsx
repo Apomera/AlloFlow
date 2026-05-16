@@ -5152,10 +5152,10 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                         </div>
                      )}
                      {activeTab === 'behavior' && (
-                         <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-right-4">
-                             <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-400 text-center">
-                                 <div className="text-5xl mb-4">🔍</div>
-                                 <h3 className="text-2xl font-black text-slate-800 mb-2">{t('behavior_lens.hub.title') || 'BehaviorLens'}</h3>
+                         <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-right-4 px-3 sm:px-0">
+                             <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-400 text-center">
+                                 <div className="text-4xl sm:text-5xl mb-4">🔍</div>
+                                 <h3 className="text-xl sm:text-2xl font-black text-slate-800 mb-2">{t('behavior_lens.hub.title') || 'BehaviorLens'}</h3>
                                  <p className="text-sm text-slate-600 mb-6 max-w-md mx-auto">{t('behavior_lens.hub.subtitle') || 'Functional Behavior Assessment, ABC data collection, and Behavior Intervention Plan tools.'}</p>
                                  <button
                                      onClick={() => { if (onOpenBehaviorLens) onOpenBehaviorLens(); }}
@@ -5167,9 +5167,9 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                          </div>
                      )}
                      {activeTab === 'stems' && (
-                         <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-right-4">
-                             <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-400">
-                                 <h3 className="text-lg font-black text-slate-800 flex items-center gap-2 mb-4">
+                         <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-right-4 px-3 sm:px-0">
+                             <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-400">
+                                 <h3 className="text-base sm:text-lg font-black text-slate-800 flex items-center gap-2 mb-4">
                                      {t('teacher.stem_stations.section_title') || '🔬 STEM Station Activity'}
                                  </h3>
                                  {(() => {
@@ -5186,39 +5186,39 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                      }
                                      return (
                                          <div className="space-y-4">
-                                             <div className="grid grid-cols-3 gap-4 mb-4">
-                                                 <div className="bg-emerald-50 rounded-xl p-4 text-center border border-emerald-100">
-                                                     <div className="text-2xl font-black text-emerald-700">{stations.length}</div>
-                                                     <div className="text-xs text-emerald-600 font-bold mt-1">{t('teacher.stem_stations.stations_created') || 'Stations Created'}</div>
+                                             <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-4">
+                                                 <div className="bg-emerald-50 rounded-xl p-3 sm:p-4 text-center border border-emerald-100">
+                                                     <div className="text-xl sm:text-2xl font-black text-emerald-700">{stations.length}</div>
+                                                     <div className="text-[10px] sm:text-xs text-emerald-600 font-bold mt-1 leading-tight">{t('teacher.stem_stations.stations_created') || 'Stations Created'}</div>
                                                  </div>
-                                                 <div className="bg-teal-50 rounded-xl p-4 text-center border border-teal-100">
-                                                     <div className="text-2xl font-black text-teal-700">
+                                                 <div className="bg-teal-50 rounded-xl p-3 sm:p-4 text-center border border-teal-100">
+                                                     <div className="text-xl sm:text-2xl font-black text-teal-700">
                                                          {new Set(stations.flatMap(s => s.tools)).size}
                                                      </div>
-                                                     <div className="text-xs text-teal-600 font-bold mt-1">{t('teacher.stem_stations.unique_tools_used') || 'Unique Tools Used'}</div>
+                                                     <div className="text-[10px] sm:text-xs text-teal-600 font-bold mt-1 leading-tight">{t('teacher.stem_stations.unique_tools_used') || 'Unique Tools Used'}</div>
                                                  </div>
-                                                 <div className="bg-indigo-50 rounded-xl p-4 text-center border border-indigo-100">
-                                                     <div className="text-2xl font-black text-indigo-700">
+                                                 <div className="bg-indigo-50 rounded-xl p-3 sm:p-4 text-center border border-indigo-100">
+                                                     <div className="text-xl sm:text-2xl font-black text-indigo-700">
                                                          {xpLog.filter(e => e.stationId).length}
                                                      </div>
-                                                     <div className="text-xs text-indigo-600 font-bold mt-1">{t('teacher.stem_stations.station_xp_events') || 'Station XP Events'}</div>
+                                                     <div className="text-[10px] sm:text-xs text-indigo-600 font-bold mt-1 leading-tight">{t('teacher.stem_stations.station_xp_events') || 'Station XP Events'}</div>
                                                  </div>
                                              </div>
                                              {stations.map((st) => {
                                                  const stationXP = xpLog.filter(e => e.stationId === st.id);
                                                  const totalXP = stationXP.reduce((s, e) => s + (e.xp || 0), 0);
                                                  return (
-                                                     <div key={st.id} className="bg-slate-50 rounded-xl p-4 border border-slate-400 hover:border-emerald-300 transition-all">
-                                                         <div className="flex items-center justify-between mb-2">
-                                                             <div className="flex items-center gap-2">
-                                                                 <span className="text-lg">📌</span>
-                                                                 <h4 className="font-bold text-sm text-slate-800">{st.name}</h4>
-                                                                 <span className="bg-emerald-100 text-emerald-700 text-[11px] font-bold px-2 py-0.5 rounded-full">
+                                                     <div key={st.id} className="bg-slate-50 rounded-xl p-3 sm:p-4 border border-slate-400 hover:border-emerald-300 transition-all">
+                                                         <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                                                             <div className="flex items-center gap-2 flex-wrap min-w-0">
+                                                                 <span className="text-lg shrink-0">📌</span>
+                                                                 <h4 className="font-bold text-sm text-slate-800 truncate">{st.name}</h4>
+                                                                 <span className="bg-emerald-100 text-emerald-700 text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0">
                                                                      {st.tools.length} tool{st.tools.length !== 1 ? 's' : ''}
                                                                  </span>
                                                              </div>
-                                                             <div className="flex items-center gap-3">
-                                                                 <span className="text-xs text-slate-600">
+                                                             <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                                                                 <span className="text-xs text-slate-600 hidden sm:inline">
                                                                      {new Date(st.createdAt).toLocaleDateString()}
                                                                  </span>
                                                                  <span className="bg-indigo-100 text-indigo-700 text-[11px] font-bold px-2 py-0.5 rounded-full">
