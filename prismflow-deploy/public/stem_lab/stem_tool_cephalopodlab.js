@@ -760,6 +760,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // lives in the Field Guide tab — this section is about feeling
       // the real-time hunting + escape biology in your hands.
 
+      // ─── Playable species for the 3D sim ───
+      // Three octopuses with genuinely distinct play feel. The Species Field
+      // Guide tab has 10 species with biology depth; THIS list is the subset
+      // playable as a 3D hunter, with sim-relevant mechanical params.
+      var SIM_SPECIES = [
+        { id: 'commonOcto', name: 'Common Octopus', scientific: 'Octopus vulgaris', emoji: '🐙',
+          tagline: 'The generalist', accent: '#a78bfa',
+          description: 'Balanced stats, strong continuous camouflage, no special trick. Best for learning the sim.',
+          bodyColor: 0xc26d5e, armColor: 0xa84e3e,
+          maxHealth: 100, maxHunger: 100,
+          camoQualityMul: 1.0,    // multiplier on camoEff in predator detection
+          jetSpeedMul: 1.0,
+          specialAbility: null
+        },
+        { id: 'blueRinged', name: 'Blue-Ringed Octopus', scientific: 'Hapalochlaena lunulata', emoji: '💍',
+          tagline: 'Tiny, deadly bite', accent: '#22d3ee',
+          description: 'Half the size — weaker stats + weaker camo — but a venomous bite drives off attacking predators in one hit. Aposematic rings flash when threatened.',
+          bodyColor: 0xd4a857, armColor: 0xb38c3e,
+          maxHealth: 65, maxHunger: 70,
+          camoQualityMul: 0.55,
+          jetSpeedMul: 1.1,       // smaller = slightly faster
+          specialAbility: 'venomousBite'
+        },
+        { id: 'mimicOcto', name: 'Mimic Octopus', scientific: 'Thaumoctopus mimicus', emoji: '🎭',
+          tagline: 'Hold M to impersonate', accent: '#fbbf24',
+          description: 'Mid-size, decent camo. Hold M to extend arms into a lionfish-spiky shape — grouper and shark detection range halves. Costs stamina while held.',
+          bodyColor: 0xdfc193, armColor: 0xb89968,
+          maxHealth: 75, maxHunger: 80,
+          camoQualityMul: 0.75,
+          jetSpeedMul: 1.0,
+          specialAbility: 'mimicry'
+        }
+      ];
+
       // ─── Three.js loader (lazy CDN) ───
       function ensureThreeJSCL(onReady, onError) {
         if (window.THREE) { onReady(); return; }
@@ -832,9 +866,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('b', { style: { color: '#a78bfa' } }, 'Ink is finite and panicked.'),
                 ' Drop a black cloud that breaks every predator\'s visual lock for 3 seconds. Real octopus biology: a chemical resource, not a recharge.'))) : null,
 
-          // Launch / cleanup buttons
-          !active ? h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 16 } },
-            !threeLoaded && !threeError ? h('button', {
+          // Three.js loader (only visible until loaded)
+          !active && !threeLoaded && !threeError ? h('div', { style: { textAlign: 'center', marginBottom: 16 } },
+            h('button', {
               onClick: function() {
                 setCL({ _threeLoading: true });
                 ensureThreeJSCL(
@@ -846,16 +880,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               style: { padding: '14px 28px', background: '#a78bfa', color: '#1c1410',
                 border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 800, cursor: 'pointer',
                 opacity: d._threeLoading ? 0.6 : 1 } },
-              d._threeLoading ? '⏳ Loading 3D engine…' : '▶ Load 3D engine') : null,
-            threeLoaded ? h('button', {
-              onClick: function() { setCL({ hunt3DActive: true, huntsAttempted: (d.huntsAttempted || 0) + 1 }); awardXP(3); clAnnounce('Diving into the reef'); },
-              style: { padding: '14px 28px', background: '#22c55e', color: '#0f1419',
-                border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 900, cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(34,197,94,0.4)' } },
-              '🌊 Dive into the reef') : null,
-            threeError ? h('div', { style: { color: '#fca5a5', fontSize: 12, padding: '12px 18px', background: 'rgba(220,38,38,0.15)', borderRadius: 8, border: '1px solid rgba(220,38,38,0.3)' } },
-              '⚠ Couldn\'t load Three.js. Check your network and try again.') : null
-          ) : null,
+              d._threeLoading ? '⏳ Loading 3D engine…' : '▶ Load 3D engine')) : null,
+
+          // Species picker (3 cards) — appears once Three.js is loaded
+          !active && threeLoaded ? h('div', { style: cardStyle() },
+            h('div', { style: subheaderStyle() }, 'Pick your octopus + dive'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 } },
+              SIM_SPECIES.map(function(sp) {
+                return h('button', { key: sp.id,
+                  onClick: function() {
+                    setCL({
+                      hunt3DActive: true,
+                      huntSpeciesId: sp.id,
+                      huntsAttempted: (d.huntsAttempted || 0) + 1
+                    });
+                    awardXP(3);
+                    clAnnounce('Diving as ' + sp.name);
+                  },
+                  style: { textAlign: 'left', cursor: 'pointer',
+                    padding: '14px 16px',
+                    background: 'linear-gradient(135deg, rgba(15,23,42,0.85), rgba(15,23,42,0.55))',
+                    color: '#e2e8f0',
+                    borderTop: '1px solid rgba(100,116,139,0.35)',
+                    borderRight: '1px solid rgba(100,116,139,0.35)',
+                    borderBottom: '1px solid rgba(100,116,139,0.35)',
+                    borderLeft: '4px solid ' + sp.accent,
+                    borderRadius: 10 } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
+                    h('span', { 'aria-hidden': 'true', style: { fontSize: 28, lineHeight: 1 } }, sp.emoji),
+                    h('div', { style: { flex: 1 } },
+                      h('div', { style: { fontSize: 14, fontWeight: 900, color: sp.accent } }, sp.name),
+                      h('div', { style: { fontSize: 10, fontStyle: 'italic', color: '#94a3b8', marginTop: 2 } }, sp.scientific))),
+                  h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fde68a', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' } }, sp.tagline),
+                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 8 } }, sp.description),
+                  h('div', { style: { display: 'flex', gap: 8, fontSize: 10, color: '#94a3b8', flexWrap: 'wrap' } },
+                    h('span', null, '❤️ ' + sp.maxHealth),
+                    h('span', null, '🍽 ' + sp.maxHunger),
+                    h('span', null, '🎨 ' + (sp.camoQualityMul * 100).toFixed(0) + '%'),
+                    sp.specialAbility === 'venomousBite' ? h('span', { style: { color: '#22d3ee' } }, '💀 venom bite') : null,
+                    sp.specialAbility === 'mimicry' ? h('span', { style: { color: '#fbbf24' } }, '🎭 mimicry (hold M)') : null
+                  ));
+              }))) : null,
+
+          // Error state
+          !active && threeError ? h('div', { style: { textAlign: 'center', marginBottom: 16 } },
+            h('div', { style: { color: '#fca5a5', fontSize: 12, padding: '12px 18px', background: 'rgba(220,38,38,0.15)', borderRadius: 8, border: '1px solid rgba(220,38,38,0.3)', display: 'inline-block' } },
+              '⚠ Couldn\'t load Three.js. Check your network and try again.')) : null,
 
           // 3D canvas
           active && threeLoaded ? h('div', null,
@@ -892,6 +962,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       function initHuntSim3D(canvasEl) {
         var THREE = window.THREE;
         if (!THREE) return;
+        // Resolve selected species (defaults to common octopus).
+        var speciesId = d.huntSpeciesId || 'commonOcto';
+        var species = SIM_SPECIES.find(function(s) { return s.id === speciesId; }) || SIM_SPECIES[0];
         var W = canvasEl.clientWidth || 800;
         var H = canvasEl.clientHeight || 500;
 
@@ -1035,39 +1108,96 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         scene.add(caustics);
 
         // ─── Octopus mesh (body + 8 arms) ───
+        // Size scales with species (blue-ringed + mimic are smaller).
+        var bodyScale = species.id === 'blueRinged' ? 0.7 : species.id === 'mimicOcto' ? 0.85 : 1.0;
         var octopus = new THREE.Group();
-        var mantleGeo = new THREE.SphereGeometry(0.55, 14, 10);
+        var mantleGeo = new THREE.SphereGeometry(0.55 * bodyScale, 14, 10);
         mantleGeo.scale(1, 1.3, 1);
-        var mantleMat = new THREE.MeshStandardMaterial({ color: 0xc26d5e, roughness: 0.5, metalness: 0.05 });
+        // Cache the resting vertex positions so the papillae animation
+        // (substrate-texture matching) has a base to displace from.
+        var mantleBasePositions = new Float32Array(mantleGeo.attributes.position.array);
+        var mantleMat = new THREE.MeshStandardMaterial({ color: species.bodyColor, roughness: 0.5, metalness: 0.05 });
         var mantle = new THREE.Mesh(mantleGeo, mantleMat);
         mantle.position.y = 0.2;
         octopus.add(mantle);
+
+        // ─── Blue-ringed warning rings (visible only when threatened) ───
+        var warningRings = [];
+        if (species.specialAbility === 'venomousBite') {
+          for (var wri = 0; wri < 8; wri++) {
+            var ringAngle = (wri / 8) * Math.PI * 2;
+            var ringGeo = new THREE.TorusGeometry(0.07, 0.025, 4, 12);
+            var ringMat = new THREE.MeshBasicMaterial({ color: 0x22d3ee, transparent: true, opacity: 0 });
+            var ring = new THREE.Mesh(ringGeo, ringMat);
+            ring.position.set(
+              Math.cos(ringAngle) * 0.32 * bodyScale,
+              0.15 + Math.sin(ringAngle * 1.7) * 0.18,
+              Math.sin(ringAngle) * 0.32 * bodyScale + 0.08
+            );
+            ring.rotation.x = Math.PI / 2;
+            ring.rotation.z = ringAngle;
+            octopus.add(ring);
+            warningRings.push(ring);
+          }
+        }
         // Eyes
         for (var ei = 0; ei < 2; ei++) {
-          var eyeWhite = new THREE.Mesh(new THREE.SphereGeometry(0.13, 8, 6),
+          var eyeWhite = new THREE.Mesh(new THREE.SphereGeometry(0.13 * bodyScale, 8, 6),
             new THREE.MeshStandardMaterial({ color: 0xfff8e8, roughness: 0.3 }));
-          eyeWhite.position.set(ei === 0 ? -0.28 : 0.28, 0.35, 0.42);
+          eyeWhite.position.set(ei === 0 ? -0.28 * bodyScale : 0.28 * bodyScale, 0.35 * bodyScale, 0.42 * bodyScale);
           octopus.add(eyeWhite);
-          var pupil = new THREE.Mesh(new THREE.SphereGeometry(0.07, 6, 5),
+          var pupil = new THREE.Mesh(new THREE.SphereGeometry(0.07 * bodyScale, 6, 5),
             new THREE.MeshBasicMaterial({ color: 0x141414 }));
-          pupil.position.set(ei === 0 ? -0.28 : 0.28, 0.35, 0.5);
+          pupil.position.set(ei === 0 ? -0.28 * bodyScale : 0.28 * bodyScale, 0.35 * bodyScale, 0.5 * bodyScale);
           octopus.add(pupil);
         }
         // 8 arms
         var arms = [];
         for (var ai = 0; ai < 8; ai++) {
           var armAngle = (ai / 8) * Math.PI * 2;
-          var armGeo = new THREE.CylinderGeometry(0.09, 0.04, 1.0, 6);
-          var armMat = new THREE.MeshStandardMaterial({ color: 0xa84e3e, roughness: 0.55 });
+          var armGeo = new THREE.CylinderGeometry(0.09 * bodyScale, 0.04 * bodyScale, 1.0 * bodyScale, 6);
+          var armMat = new THREE.MeshStandardMaterial({ color: species.armColor, roughness: 0.55 });
           var arm = new THREE.Mesh(armGeo, armMat);
           arm.position.set(Math.cos(armAngle) * 0.42, -0.15, Math.sin(armAngle) * 0.42);
           arm.rotation.z = Math.cos(armAngle) * 0.4;
           arm.rotation.x = Math.sin(armAngle) * 0.4 + Math.PI / 2 - 0.2;
           octopus.add(arm);
-          arms.push({ mesh: arm, baseRotX: arm.rotation.x, baseRotZ: arm.rotation.z, phase: ai * (Math.PI / 4) });
+          arms.push({
+            mesh: arm,
+            baseRotX: arm.rotation.x,
+            baseRotZ: arm.rotation.z,
+            basePosX: arm.position.x,
+            basePosZ: arm.position.z,
+            angle: armAngle,
+            phase: ai * (Math.PI / 4),
+            compressTarget: 1.0,   // 1 = relaxed, 0.55 = squeezing through a gap
+            compressCurrent: 1.0,
+          });
         }
         octopus.position.set(0, 0.6, 0);
         scene.add(octopus);
+
+        // ─── Mimic-octopus impersonation visual (spike-tendril overlay) ───
+        // Only created for the mimic; spike cones extending outward from the
+        // mantle, fade in while M is held. Visually halos the body like a
+        // venomous lionfish — predators read it as toxic + back off.
+        var mimicSpikes = [];
+        if (species.specialAbility === 'mimicry') {
+          for (var msi = 0; msi < 14; msi++) {
+            var spikeAngle = (msi / 14) * Math.PI * 2;
+            var spikeGeo = new THREE.ConeGeometry(0.05, 0.7, 5);
+            var spikeMat = new THREE.MeshStandardMaterial({ color: 0xc9302c, roughness: 0.5, transparent: true, opacity: 0 });
+            var spike = new THREE.Mesh(spikeGeo, spikeMat);
+            spike.position.set(
+              Math.cos(spikeAngle) * 0.55 * bodyScale,
+              0.4 + Math.sin(msi * 0.7) * 0.15,
+              Math.sin(spikeAngle) * 0.55 * bodyScale
+            );
+            spike.lookAt(spike.position.x * 2, spike.position.y * 2, spike.position.z * 2);
+            octopus.add(spike);
+            mimicSpikes.push(spike);
+          }
+        }
 
         // ─── Crab prey ───
         var crabs = [];
@@ -1203,6 +1333,76 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           cooldownUntil: 0,
         };
         scene.add(grouper);
+
+        // ─── Reef shark (rare, edge-spawned, electroreception-resistant) ───
+        // Unlike the moray (visual ambush) and grouper (visual roam), the
+        // shark hunts by electroreception + chemosense. Camouflage barely
+        // helps (30% reduction vs 70% for the other two), and ink masks
+        // chemo-detection but doesn't fully block — half effect duration.
+        // Spawns once every ~70-90s during a run, comes from a random map
+        // edge, makes 2-3 attack attempts, then leaves.
+        var shark = null;
+        var SHARK_SPAWN_INTERVAL_MS_MIN = 70000;
+        var SHARK_SPAWN_INTERVAL_MS_MAX = 95000;
+        var nextSharkSpawnAt = Date.now() + SHARK_SPAWN_INTERVAL_MS_MIN + Math.random() * (SHARK_SPAWN_INTERVAL_MS_MAX - SHARK_SPAWN_INTERVAL_MS_MIN);
+        function spawnShark() {
+          if (shark) return;
+          var sg = new THREE.Group();
+          var sBodyGeo = new THREE.SphereGeometry(0.8, 12, 8);
+          sBodyGeo.scale(2.4, 0.7, 0.85);
+          var sBody = new THREE.Mesh(sBodyGeo,
+            new THREE.MeshStandardMaterial({ color: 0x6a7480, roughness: 0.55 }));
+          sg.add(sBody);
+          // Dorsal fin
+          var dorsalGeo = new THREE.ConeGeometry(0.25, 0.65, 4);
+          dorsalGeo.scale(1, 1, 0.6);
+          var dorsal = new THREE.Mesh(dorsalGeo,
+            new THREE.MeshStandardMaterial({ color: 0x4a525e, roughness: 0.6 }));
+          dorsal.position.set(-0.2, 0.6, 0);
+          sg.add(dorsal);
+          // Caudal fin (vertical tail)
+          var tailGeo = new THREE.ConeGeometry(0.45, 0.8, 4);
+          tailGeo.scale(0.5, 1, 1);
+          var stail = new THREE.Mesh(tailGeo,
+            new THREE.MeshStandardMaterial({ color: 0x4a525e, roughness: 0.6 }));
+          stail.position.set(-2.2, 0, 0);
+          stail.rotation.z = Math.PI / 2;
+          sg.add(stail);
+          // Eyes
+          for (var sei = 0; sei < 2; sei++) {
+            var seye = new THREE.Mesh(new THREE.SphereGeometry(0.07, 6, 5),
+              new THREE.MeshBasicMaterial({ color: 0x080808 }));
+            seye.position.set(1.5, 0.18 * (sei === 0 ? 1 : -1), 0.4);
+            sg.add(seye);
+          }
+          // Pale underbelly stripe (visual differentiation)
+          var bellyGeo = new THREE.SphereGeometry(0.78, 12, 8);
+          bellyGeo.scale(2.35, 0.35, 0.85);
+          var belly = new THREE.Mesh(bellyGeo,
+            new THREE.MeshStandardMaterial({ color: 0xcdd5dc, roughness: 0.5 }));
+          belly.position.y = -0.35;
+          sg.add(belly);
+          // Edge-spawn: pick a random map edge and aim toward center
+          var edgeSide = Math.floor(Math.random() * 4);
+          var sx, sz;
+          if (edgeSide === 0) { sx = -60; sz = (Math.random() - 0.5) * 60; }
+          else if (edgeSide === 1) { sx = 60; sz = (Math.random() - 0.5) * 60; }
+          else if (edgeSide === 2) { sx = (Math.random() - 0.5) * 60; sz = -60; }
+          else { sx = (Math.random() - 0.5) * 60; sz = 60; }
+          sg.position.set(sx, 3.2, sz);
+          sg.userData = {
+            state: 'arriving',          // arriving | hunting | charging | leaving
+            stateTimer: 0,
+            attacksRemaining: 2 + Math.floor(Math.random() * 2),
+            aggroRange: 13,
+            speed: 5.5,
+            cooldownUntil: 0,
+            spawnedAt: Date.now(),
+          };
+          scene.add(sg);
+          shark = sg;
+          clAnnounce('Reef shark approaching');
+        }
 
         // ─── Dens (4 rock arches scattered as safe-hide points) ───
         // Inside a den (within DEN_RADIUS): health regens, both predators
@@ -1438,7 +1638,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         var inkRequested = false;
         function onKeyDown(e) {
           keys[e.code] = true;
-          if (['Space','KeyW','KeyA','KeyS','KeyD','KeyE','KeyI'].indexOf(e.code) !== -1) e.preventDefault();
+          if (['Space','KeyW','KeyA','KeyS','KeyD','KeyE','KeyI','KeyM'].indexOf(e.code) !== -1) e.preventDefault();
           if (e.code === 'KeyI') inkRequested = true;
           if (e.code === 'KeyE') clickRequested = true;
         }
@@ -1465,11 +1665,63 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         damageFlash.style.cssText = 'position:absolute;inset:0;background:radial-gradient(circle at center, rgba(220,38,38,0) 30%, rgba(220,38,38,0.6) 100%);opacity:0;pointer-events:none;transition:opacity 0.2s;';
         canvasEl.parentElement.appendChild(damageFlash);
 
+        // End-of-run stats overlay (hidden until gameOver flips true)
+        var statsOverlay = document.createElement('div');
+        statsOverlay.style.cssText = 'position:absolute;inset:0;background:rgba(5,12,24,0.92);display:none;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-family:Inter,system-ui,sans-serif;padding:24px;text-align:center;backdrop-filter:blur(4px);';
+        canvasEl.parentElement.appendChild(statsOverlay);
+        function renderStatsOverlay() {
+          var rs = gameState.runStats;
+          var elapsedSec = Math.floor((Date.now() - gameState.startTime) / 1000);
+          var maxStillSec = (rs.maxStationaryMs / 1000).toFixed(1);
+          var maxCamoPct = (rs.maxCamoEff * 100).toFixed(0);
+          var maxSqueezeSec = (rs.longestSqueezeMs / 1000).toFixed(1);
+          var mimicSec = (rs.mimicTimeMs / 1000).toFixed(1);
+          // Compute a verdict tier
+          var tier = 'Forager';
+          var tierColor = '#94a3b8';
+          if (gameState.score >= 25) { tier = 'Apex Cephalopod'; tierColor = '#a78bfa'; }
+          else if (gameState.score >= 15) { tier = 'Reef Master'; tierColor = '#22d3ee'; }
+          else if (gameState.score >= 8) { tier = 'Capable Hunter'; tierColor = '#86efac'; }
+          else if (gameState.score >= 3) { tier = 'Surviving'; tierColor = '#fbbf24'; }
+          // Build the stats cards
+          function statCard(label, value, color) {
+            return '<div style="background:rgba(15,23,42,0.7);padding:10px 14px;border-radius:8px;border-left:3px solid ' + (color || '#a78bfa') + ';min-width:120px"><div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px">' + label + '</div><div style="font-size:20px;font-weight:900;font-family:ui-monospace,Menlo,monospace;color:' + (color || '#fff') + '">' + value + '</div></div>';
+          }
+          var speciesEmoji = species.emoji;
+          statsOverlay.innerHTML =
+            '<div style="font-size:42px;line-height:1;margin-bottom:6px">💀</div>' +
+            '<div style="font-size:22px;font-weight:900;color:#fca5a5;margin-bottom:2px">End of dive</div>' +
+            '<div style="font-size:11px;color:#94a3b8;margin-bottom:14px">' + speciesEmoji + ' ' + species.name + ' · ' + elapsedSec + 's survived</div>' +
+            '<div style="font-size:13px;font-weight:800;color:' + tierColor + ';letter-spacing:0.05em;text-transform:uppercase;margin-bottom:14px;padding:6px 14px;background:rgba(15,23,42,0.7);border-radius:20px">' + tier + '</div>' +
+            '<div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(120px, 1fr));gap:8px;width:100%;max-width:560px;margin-bottom:10px">' +
+              statCard('Crabs', rs.crabs, '#86efac') +
+              statCard('Fish', rs.fish, '#60a5fa') +
+              statCard('Clams', rs.clams, '#fbbf24') +
+              statCard('Score', gameState.score, '#a78bfa') +
+            '</div>' +
+            '<div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));gap:8px;width:100%;max-width:560px;margin-bottom:14px">' +
+              statCard('Max camo', maxCamoPct + '%', '#22d3ee') +
+              statCard('Longest still', maxStillSec + 's', '#22d3ee') +
+              statCard('Longest squeeze', maxSqueezeSec + 's', '#fbbf24') +
+              statCard('Dens used', rs.densVisited, '#22c55e') +
+              statCard('Ink uses', rs.inkUsed, '#a78bfa') +
+              statCard('Bites taken', rs.bites, '#fca5a5') +
+              (species.specialAbility === 'venomousBite' ? statCard('Venom bites', rs.venomBitesDelivered, '#22d3ee') : '') +
+              (species.specialAbility === 'mimicry' ? statCard('Mimic time', mimicSec + 's', '#fbbf24') : '') +
+            '</div>' +
+            '<div style="font-size:11px;color:#94a3b8;font-style:italic;max-width:520px;line-height:1.5">Click "End run + surface" below to return to the species picker for another dive.</div>';
+          statsOverlay.style.display = 'flex';
+        }
+
         // ─── Game state ───
+        // Initial mantle RGB matches species bodyColor so the camo lerp
+        // starts from the species's resting tint, not the default rust.
+        var initRGB = new THREE.Color(species.bodyColor);
         var gameState = {
-          health: 100, maxHealth: 100,
+          species: species,
+          health: species.maxHealth, maxHealth: species.maxHealth,
           stamina: 100, maxStamina: 100,
-          hunger: 100, maxHunger: 100,
+          hunger: species.maxHunger, maxHunger: species.maxHunger,
           score: 0,
           startTime: Date.now(),
           facingAngle: 0,
@@ -1480,7 +1732,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           tookHitAt: 0,
           // Camouflage state — current skin RGB lerps toward substrate target.
           // camoEff is 0..1 effectiveness (used to scale predator detection).
-          camoCurrent: { r: 0.76, g: 0.43, b: 0.37 },   // matches initial mantle tint
+          camoCurrent: { r: initRGB.r, g: initRGB.g, b: initRGB.b },
           camoEff: 0,
           stationaryTime: 0,
           currentSubstrate: 'sand',
@@ -1490,13 +1742,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           // Den state — inside DEN_RADIUS of any den
           inDen: false,
           nearestDenIdx: -1,
+          previousInDen: false,    // for per-run stats den-entry counter
           // Day/night cycle: 0..1 along a ~3-minute period. 0.0 = noon,
           // 0.5 = midnight. Cycle is paused if needed for testing.
           dayTime: 0.0,
           dayPeriodMs: 180000,
-          // Track when player gave a movement input so camouflage knows
-          // to ramp up when stationary.
           lastInputAt: Date.now(),
+          // Species-ability state
+          warningRingOpacity: 0,        // blue-ringed aposematic flash
+          venomBiteCooldown: 0,         // ms remaining
+          isMimicking: false,           // mimic-octopus M-hold
+          mimicSpikeOpacity: 0,
+          // Squeeze detection (between rocks)
+          isSqueezing: false,
+          // Per-run scoring breakdown (shown on death)
+          runStats: {
+            crabs: 0, fish: 0, clams: 0,
+            densVisited: 0,
+            inkUsed: 0,
+            bites: 0,
+            venomBitesDelivered: 0,
+            mimicTimeMs: 0,
+            maxCamoEff: 0,
+            maxStationaryMs: 0,
+            longestSqueezeMs: 0,
+            currentSqueezeStart: 0,
+          },
         };
 
         var clock = new THREE.Clock();
@@ -1592,7 +1863,211 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             var matchScore = Math.max(0, 1 - colorDelta * 2.5);
             gameState.stationaryTime = isMoving ? 0 : Math.min(3, gameState.stationaryTime + dt);
             var stillnessBonus = Math.min(1, gameState.stationaryTime / 2.0);
-            gameState.camoEff = matchScore * stillnessBonus;
+            gameState.camoEff = matchScore * stillnessBonus * species.camoQualityMul;
+            // Update run-stats max-camo
+            if (gameState.camoEff > gameState.runStats.maxCamoEff) gameState.runStats.maxCamoEff = gameState.camoEff;
+            if (gameState.stationaryTime * 1000 > gameState.runStats.maxStationaryMs) gameState.runStats.maxStationaryMs = gameState.stationaryTime * 1000;
+
+            // ─── Papillae texture (mantle vertex displacement) ──
+            // Real octopuses have skin bumps (papillae) that pop up to match
+            // textured substrates. As camoEff climbs, we displace mantle
+            // vertices outward by a noise function — the body actually
+            // ripples to mimic rock or coral. Subtle but very alive.
+            (function() {
+              var papillaeStrength = gameState.camoEff * 0.18;
+              if (papillaeStrength < 0.005) {
+                // Snap back to base when no camo
+                mantleGeo.attributes.position.array.set(mantleBasePositions);
+                mantleGeo.attributes.position.needsUpdate = true;
+                mantleGeo.computeVertexNormals();
+                return;
+              }
+              var posArr = mantleGeo.attributes.position.array;
+              var nowPhase = now * 0.002;
+              for (var pvi = 0; pvi < posArr.length; pvi += 3) {
+                var bx = mantleBasePositions[pvi];
+                var by = mantleBasePositions[pvi + 1];
+                var bz = mantleBasePositions[pvi + 2];
+                var len = Math.sqrt(bx * bx + by * by + bz * bz);
+                if (len < 0.001) continue;
+                var bumpPhase = bx * 7.3 + by * 9.1 + bz * 8.7;
+                var bump = Math.sin(bumpPhase + nowPhase) * papillaeStrength;
+                posArr[pvi] = bx + (bx / len) * bump;
+                posArr[pvi + 1] = by + (by / len) * bump;
+                posArr[pvi + 2] = bz + (bz / len) * bump;
+              }
+              mantleGeo.attributes.position.needsUpdate = true;
+              mantleGeo.computeVertexNormals();
+            })();
+
+            // ─── Squeeze-through-gap detection ───────────────────
+            // If the octopus is pinched between 2+ rocks within 2.5u, lerp
+            // arm scale.x down so the arms appear to fold inward — the real
+            // anatomical capability that lets octopuses squeeze through gaps
+            // smaller than their mantle. Updates runStats.longestSqueezeMs.
+            (function() {
+              var rocksNear = 0;
+              for (var rni = 0; rni < rocks.length && rocksNear < 2; rni++) {
+                var rdx2 = rocks[rni].position.x - octopus.position.x;
+                var rdz2 = rocks[rni].position.z - octopus.position.z;
+                if (rdx2 * rdx2 + rdz2 * rdz2 < 2.5 * 2.5) rocksNear++;
+              }
+              var wasSqueezing = gameState.isSqueezing;
+              gameState.isSqueezing = rocksNear >= 2;
+              if (gameState.isSqueezing && !wasSqueezing) {
+                gameState.runStats.currentSqueezeStart = now;
+              } else if (!gameState.isSqueezing && wasSqueezing) {
+                var sqDur = now - gameState.runStats.currentSqueezeStart;
+                if (sqDur > gameState.runStats.longestSqueezeMs) gameState.runStats.longestSqueezeMs = sqDur;
+              }
+              var compressTarget = gameState.isSqueezing ? 0.55 : 1.0;
+              arms.forEach(function(arm) {
+                arm.compressTarget = compressTarget;
+                arm.compressCurrent += (arm.compressTarget - arm.compressCurrent) * 4 * dt;
+                arm.mesh.scale.x = arm.compressCurrent;
+                arm.mesh.scale.z = arm.compressCurrent;
+                // Also tuck arms inward radially when squeezing
+                var tuck = 1 - (1 - arm.compressCurrent) * 0.4;
+                arm.mesh.position.x = arm.basePosX * tuck;
+                arm.mesh.position.z = arm.basePosZ * tuck;
+              });
+            })();
+
+            // ─── Mimic-octopus impersonation (hold M) ───────────
+            // Costs stamina while held. Visually fades in red spike-tendrils
+            // that halo the body like a venomous lionfish. Grouper + shark
+            // detection range halves while active.
+            if (species.specialAbility === 'mimicry') {
+              var holdMimic = !!keys.KeyM && gameState.stamina > 0;
+              gameState.isMimicking = holdMimic;
+              if (holdMimic) {
+                gameState.stamina = Math.max(0, gameState.stamina - 28 * dt);
+                gameState.mimicSpikeOpacity = Math.min(0.95, gameState.mimicSpikeOpacity + 4 * dt);
+                gameState.runStats.mimicTimeMs += dt * 1000;
+              } else {
+                gameState.mimicSpikeOpacity = Math.max(0, gameState.mimicSpikeOpacity - 3 * dt);
+              }
+              mimicSpikes.forEach(function(s) { s.material.opacity = gameState.mimicSpikeOpacity; });
+            }
+
+            // ─── Blue-ringed warning rings + auto venom-bite ────
+            // Rings fade in any time a predator is attacking within 4u.
+            // When predator within 1.5u, deliver one venom-bite that drives
+            // it off (35 dmg + immediate return-to-home + long cooldown).
+            // Pure-reflex defense — pedagogically accurate for blue-ringed.
+            if (species.specialAbility === 'venomousBite') {
+              var threatNear = false;
+              var threatRef = null;
+              [moray, grouper, shark].forEach(function(p) {
+                if (!p || !p.userData) return;
+                if (p.userData.state !== 'attacking' && p.userData.state !== 'charging') return;
+                var pdx = p.position.x - octopus.position.x;
+                var pdz = p.position.z - octopus.position.z;
+                var pd = Math.sqrt(pdx * pdx + pdz * pdz);
+                if (pd < 4) {
+                  threatNear = true;
+                  if (pd < 1.5 && !threatRef) threatRef = p;
+                }
+              });
+              gameState.warningRingOpacity += ((threatNear ? 0.85 : 0) - gameState.warningRingOpacity) * 6 * dt;
+              warningRings.forEach(function(r) {
+                r.material.opacity = gameState.warningRingOpacity;
+              });
+              if (threatRef && gameState.venomBiteCooldown <= 0) {
+                // Set the right "give-up" state per predator (their state
+                // machines aren't shared). All respect cooldownUntil.
+                if (threatRef === shark) {
+                  threatRef.userData.state = 'leaving';
+                } else if (threatRef === grouper) {
+                  threatRef.userData.state = 'patrol';
+                } else {
+                  threatRef.userData.state = 'returning';  // moray
+                }
+                threatRef.userData.stateTimer = 0;
+                threatRef.userData.cooldownUntil = now + 8000;
+                gameState.venomBiteCooldown = 6000;
+                gameState.runStats.venomBitesDelivered++;
+                clAnnounce('Venom bite drove off ' + (threatRef === moray ? 'the moray' : threatRef === grouper ? 'the grouper' : 'the shark'));
+              }
+              if (gameState.venomBiteCooldown > 0) gameState.venomBiteCooldown = Math.max(0, gameState.venomBiteCooldown - dt * 1000);
+            }
+
+            // ─── Reef shark spawn timer + AI ────────────────────
+            // Spawns periodically during a run; arrives from a map edge,
+            // makes attempts, then leaves. Camo helps only 30% (vs 70% for
+            // other predators) because sharks use electroreception in
+            // addition to vision. Ink half-blocks (vs full-block for others).
+            if (!shark && now > nextSharkSpawnAt && !gameState.gameOver) {
+              spawnShark();
+              nextSharkSpawnAt = now + SHARK_SPAWN_INTERVAL_MS_MIN + Math.random() * (SHARK_SPAWN_INTERVAL_MS_MAX - SHARK_SPAWN_INTERVAL_MS_MIN);
+            }
+            if (shark) {
+              var sk = shark.userData;
+              var sdx = octopus.position.x - shark.position.x;
+              var sdz = octopus.position.z - shark.position.z;
+              var skDist = Math.sqrt(sdx * sdx + sdz * sdz);
+              // Camo helps 30% (vs 70%); ink half-blocks
+              var skCamo = 1 - 0.3 * gameState.camoEff;
+              var skInkBlock = gameState.isInked ? 0.5 : 1.0;
+              // Mimic further halves shark's perceived range
+              var skMimicBlock = gameState.isMimicking ? 0.5 : 1.0;
+              var skEffectiveRange = sk.aggroRange * skCamo * skInkBlock * skMimicBlock;
+              if (sk.state === 'arriving') {
+                // Cruise toward center until close enough to hunt
+                shark.position.x += (-shark.position.x * 0.02);
+                shark.position.z += (-shark.position.z * 0.02);
+                shark.rotation.y = Math.atan2(-shark.position.x, -shark.position.z);
+                shark.position.y = 3 + Math.sin(now * 0.0015) * 0.3;
+                if (Math.abs(shark.position.x) < 40 && Math.abs(shark.position.z) < 40) {
+                  sk.state = 'hunting';
+                }
+              } else if (sk.state === 'hunting') {
+                // Patrol slowly until lock-on
+                shark.position.x += Math.sin(now * 0.0008) * 0.5 * dt + sdx / Math.max(skDist, 0.1) * 1.2 * dt;
+                shark.position.z += Math.cos(now * 0.0008) * 0.5 * dt + sdz / Math.max(skDist, 0.1) * 1.2 * dt;
+                shark.position.y = 3 + Math.sin(now * 0.0015) * 0.3;
+                shark.lookAt(octopus.position.x, shark.position.y, octopus.position.z);
+                if (skDist < skEffectiveRange && !gameState.inDen && now > sk.cooldownUntil) {
+                  sk.state = 'charging';
+                  sk.stateTimer = 0;
+                  clAnnounce('Shark charging');
+                }
+              } else if (sk.state === 'charging') {
+                sk.stateTimer += dt;
+                shark.position.x += (sdx / Math.max(skDist, 0.1)) * sk.speed * dt;
+                shark.position.z += (sdz / Math.max(skDist, 0.1)) * sk.speed * dt;
+                shark.position.y += (octopus.position.y + 1.5 - shark.position.y) * 2 * dt;
+                shark.lookAt(octopus.position.x, shark.position.y, octopus.position.z);
+                if (skDist < 1.8 && now - gameState.tookHitAt > 800) {
+                  gameState.health = Math.max(0, gameState.health - 45);
+                  gameState.tookHitAt = now;
+                  damageFlash.style.opacity = '1';
+                  setTimeout(function() { damageFlash.style.opacity = '0'; }, 220);
+                  gameState.runStats.bites++;
+                  sk.attacksRemaining--;
+                  sk.state = sk.attacksRemaining > 0 ? 'hunting' : 'leaving';
+                  sk.cooldownUntil = now + 4000;
+                }
+                if (gameState.inDen || sk.stateTimer > 4) {
+                  sk.state = 'hunting';
+                  sk.cooldownUntil = now + 4000;
+                }
+              } else if (sk.state === 'leaving') {
+                // Cruise out to the same edge it came from
+                var awayX = shark.position.x > 0 ? 1 : -1;
+                shark.position.x += awayX * 3 * dt;
+                shark.position.y = 4 + Math.sin(now * 0.001) * 0.3;
+                shark.lookAt(shark.position.x + awayX * 10, shark.position.y, shark.position.z);
+                if (Math.abs(shark.position.x) > 65) {
+                  scene.remove(shark);
+                  shark.traverse(function(o) {
+                    if (o.geometry) o.geometry.dispose();
+                    if (o.material) { if (Array.isArray(o.material)) o.material.forEach(function(m){m.dispose();}); else o.material.dispose(); }
+                  });
+                  shark = null;
+                }
+              }
+            }
 
             // ─── Arm wiggle ───
             arms.forEach(function(arm) {
@@ -1662,6 +2137,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             if (gameState.inDen) {
               gameState.health = Math.min(gameState.maxHealth, gameState.health + 12 * dt);
             }
+            if (gameState.inDen && !gameState.previousInDen) {
+              gameState.runStats.densVisited++;
+            }
+            gameState.previousInDen = gameState.inDen;
 
             // ─── Fish school AI (flocking-lite) ──────────────────
             // Each school's center drifts; individual fish target
@@ -1725,11 +2204,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               if (grouper.position.x > 55 || grouper.position.x < -55) gr.patrolAngle += Math.PI;
               if (grouper.position.z > 55 || grouper.position.z < -55) gr.patrolAngle += Math.PI;
               grouper.rotation.y = gr.patrolAngle + Math.PI / 2;
-              // Detection: aggro range scales with camouflage
+              // Detection: aggro range scales with camouflage. Mimic
+              // impersonation halves perceived range (lionfish-spike halo).
               var grDx = octopus.position.x - grouper.position.x;
               var grDz = octopus.position.z - grouper.position.z;
               var grDist = Math.sqrt(grDx * grDx + grDz * grDz);
-              var grEffectiveRange = gr.aggroRange * (1 - 0.7 * gameState.camoEff);
+              var grEffectiveRange = gr.aggroRange * (1 - 0.7 * gameState.camoEff) * (gameState.isMimicking ? 0.5 : 1);
               if (grDist < grEffectiveRange && !gameState.isInked && !gameState.inDen && now > gr.cooldownUntil) {
                 gr.state = 'attacking';
                 gr.stateTimer = 0;
@@ -1747,6 +2227,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               if (chDist2 < 1.5 && now - gameState.tookHitAt > 800) {
                 gameState.health = Math.max(0, gameState.health - 35);
                 gameState.tookHitAt = now;
+                gameState.runStats.bites++;
                 damageFlash.style.opacity = '1';
                 setTimeout(function() { damageFlash.style.opacity = '0'; }, 180);
                 gr.state = 'patrol';
@@ -1786,6 +2267,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 clams = clams.filter(function(c) { return c !== nearestClam; });
                 gameState.score += 3;
                 gameState.hunger = Math.min(gameState.maxHunger, gameState.hunger + 50);
+                gameState.runStats.clams++;
                 gameState.drillingClam = null;
                 gameState.drillProgress = 0;
                 try {
@@ -1844,6 +2326,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               var gTd = Math.sqrt(gTdx * gTdx + gTdz * gTdz);
               if (gTd < threatD) { threat = grouper; threatD = gTd; }
             }
+            if (shark && shark.userData.state === 'charging') {
+              var sTdx = shark.position.x - octopus.position.x;
+              var sTdz = shark.position.z - octopus.position.z;
+              var sTd = Math.sqrt(sTdx * sTdx + sTdz * sTdz);
+              if (sTd < threatD) { threat = shark; threatD = sTd; }
+            }
             if (threat) {
               // Subtle mantle tilt toward threat (max ±0.18 rad)
               var threatAngle = Math.atan2(threat.position.x - octopus.position.x, threat.position.z - octopus.position.z);
@@ -1894,6 +2382,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 crabs = crabs.filter(function(c) { return c !== nearest; });
                 gameState.score += 1;
                 gameState.hunger = Math.min(gameState.maxHunger, gameState.hunger + 22);
+                gameState.runStats.crabs++;
                 try {
                   setCL({
                     huntsSuccessful: (d.huntsSuccessful || 0) + 1,
@@ -1911,6 +2400,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 });
                 gameState.score += 2;
                 gameState.hunger = Math.min(gameState.maxHunger, gameState.hunger + 32);
+                gameState.runStats.fish++;
                 try {
                   setCL({
                     huntsSuccessful: (d.huntsSuccessful || 0) + 1,
@@ -1926,6 +2416,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               inkRequested = false;
               gameState.isInked = true;
               gameState.inkUntil = now + 3200;
+              gameState.runStats.inkUsed++;
               var inkGeo = new THREE.SphereGeometry(2.6, 16, 12);
               var inkMat = new THREE.MeshBasicMaterial({ color: 0x080812, transparent: true, opacity: 0.72 });
               var inkCloud = new THREE.Mesh(inkGeo, inkMat);
@@ -1987,6 +2478,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               if (chDist < 1.2 && now - gameState.tookHitAt > 800) {
                 gameState.health = Math.max(0, gameState.health - 30);
                 gameState.tookHitAt = now;
+                gameState.runStats.bites++;
                 damageFlash.style.opacity = '1';
                 setTimeout(function() { damageFlash.style.opacity = '0'; }, 180);
                 me.state = 'returning';
@@ -2024,6 +2516,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
 
             if (gameState.health <= 0) {
               gameState.gameOver = true;
+              renderStatsOverlay();
               clAnnounce('Game over — health depleted');
             }
           }
@@ -2064,9 +2557,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             (gameState.isInked ? '<div style="color:#a78bfa;font-weight:bold;margin-top:5px;font-size:11px">⚫ INKED — predators can\'t see you</div>' : '') +
             (gameState.drillProgress > 0 && gameState.drillProgress < 1 ? '<div style="color:#fbbf24;font-weight:bold;margin-top:5px;font-size:11px">🔧 Drilling clam ' + (gameState.drillProgress * 100).toFixed(0) + '%</div>' : '') +
             (gameState.hunger <= 0 ? '<div style="color:#fca5a5;font-weight:bold;margin-top:5px;font-size:11px">⚠ STARVING — eat soon</div>' : '') +
-            (gameState.gameOver
-              ? '<div style="color:#fca5a5;font-weight:bold;font-size:14px;margin-top:8px;text-align:center">💀 GAME OVER</div><div style="font-size:11px;margin-top:4px;color:#fbbf24;text-align:center">"End run" then dive again</div>'
-              : '');
+            (gameState.gameOver ? '<div style="color:#fca5a5;font-weight:bold;font-size:11px;margin-top:8px;text-align:center">💀 End-of-dive stats →</div>' : '') +
+            (gameState.isSqueezing ? '<div style="color:#fbbf24;font-weight:bold;margin-top:5px;font-size:11px">🪨 SQUEEZING — arms tucked</div>' : '') +
+            (gameState.isMimicking ? '<div style="color:#fbbf24;font-weight:bold;margin-top:5px;font-size:11px">🎭 MIMICKING lionfish — predators wary</div>' : '');
 
           renderer.render(scene, camera);
           animId = requestAnimationFrame(loop);
@@ -2093,6 +2586,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           if (hud.parentElement) hud.parentElement.removeChild(hud);
           if (tutorial.parentElement) tutorial.parentElement.removeChild(tutorial);
           if (damageFlash.parentElement) damageFlash.parentElement.removeChild(damageFlash);
+          if (statsOverlay.parentElement) statsOverlay.parentElement.removeChild(statsOverlay);
           scene.traverse(function(obj) {
             if (obj.geometry) obj.geometry.dispose();
             if (obj.material) {
