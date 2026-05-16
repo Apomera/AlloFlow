@@ -2122,7 +2122,119 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, kp.text)
               );
             })
-          )
+          ),
+
+          // ── NEW v0.8: Talon vs Prey Calculator ──
+          (function() {
+            var tvp = rh.talonVsPrey || { predatorId: 'peregrine', preyId: 'pigeon' };
+            function setTVP(patch) { setRH({ talonVsPrey: Object.assign({}, tvp, patch) }); }
+            // Prey toughness data — approximate crush resistance + skull/spine breaking psi + size factor
+            var PREY_TOUGHNESS = {
+              pigeon:       { name: 'Pigeon', massKg: 0.35, skullPsi: 50, vitalDepthMm: 8, type: 'bird' },
+              songbird:     { name: 'Songbird (sparrow)', massKg: 0.03, skullPsi: 35, vitalDepthMm: 5, type: 'bird' },
+              duck:         { name: 'Duck (mallard)', massKg: 1.1, skullPsi: 65, vitalDepthMm: 10, type: 'bird' },
+              fish:         { name: 'Fish (trout)', massKg: 0.8, skullPsi: 40, vitalDepthMm: 15, type: 'fish' },
+              rodent:       { name: 'Field Mouse / Rodent', massKg: 0.025, skullPsi: 25, vitalDepthMm: 4, type: 'mammal-small' },
+              rabbit:       { name: 'Cottontail Rabbit', massKg: 1.0, skullPsi: 80, vitalDepthMm: 12, type: 'mammal-med' },
+              snake:        { name: 'Snake', massKg: 0.3, skullPsi: 30, vitalDepthMm: 6, type: 'reptile' },
+              skunk:        { name: 'Skunk', massKg: 2.5, skullPsi: 120, vitalDepthMm: 18, type: 'mammal-med' },
+              sloth:        { name: 'Three-toed Sloth', massKg: 4.0, skullPsi: 200, vitalDepthMm: 22, type: 'mammal-med' },
+              monkey:       { name: 'Howler Monkey', massKg: 7.0, skullPsi: 280, vitalDepthMm: 28, type: 'mammal-large' },
+              fawn:         { name: 'White-tailed Fawn', massKg: 4.5, skullPsi: 250, vitalDepthMm: 25, type: 'mammal-med' },
+              fox:          { name: 'Red Fox', massKg: 5.0, skullPsi: 300, vitalDepthMm: 24, type: 'mammal-med' },
+              grouse:       { name: 'Ruffed Grouse', massKg: 0.6, skullPsi: 55, vitalDepthMm: 9, type: 'bird' }
+            };
+            var prey = PREY_TOUGHNESS[tvp.preyId] || PREY_TOUGHNESS.pigeon;
+            var predator = findSpecies(tvp.predatorId);
+            // Verdict logic
+            var gripRatio = predator.talonForcePsi / prey.skullPsi;
+            var reachRatio = predator.talonLengthMm / prey.vitalDepthMm;
+            var verdict, verdictColor, verdictEmoji, verdictDetail;
+            if (gripRatio >= 2 && reachRatio >= 1) {
+              verdict = 'CLEAN KILL'; verdictEmoji = '⚡'; verdictColor = 'emerald';
+              verdictDetail = 'Grip force ' + gripRatio.toFixed(1) + '× crush threshold + talon reach exceeds vital depth. Prey is dispatched instantly via crushed cranium or severed spine.';
+            } else if (gripRatio >= 1 && reachRatio >= 0.8) {
+              verdict = 'LETHAL (slower)'; verdictEmoji = '✓'; verdictColor = 'amber';
+              verdictDetail = 'Talons can puncture + immobilize prey but lack the force or reach for instant kill. Death from blood loss + organ damage within 1-3 minutes.';
+            } else if (gripRatio >= 0.5 || reachRatio >= 0.6) {
+              verdict = 'STRUGGLE / RISK INJURY'; verdictEmoji = '⚠'; verdictColor = 'orange';
+              verdictDetail = 'Predator can engage but talons may not penetrate to vital organs. Prey can escape or counterattack — high risk of raptor injury (broken talon, cracked beak, sprained leg).';
+            } else {
+              verdict = 'PREY TOO LARGE / TOUGH'; verdictEmoji = '✗'; verdictColor = 'red';
+              verdictDetail = 'Mismatch: grip force ' + gripRatio.toFixed(1) + '× crush threshold (need ≥1.0) + talon reach ' + reachRatio.toFixed(1) + '× vital depth (need ≥0.8). This predator would not pursue this prey — energy cost + injury risk exceed reward.';
+            }
+
+            return h('div', { className: 'bg-gradient-to-br from-red-900/20 to-orange-900/20 border border-red-700/40 rounded-xl p-5 space-y-3 mt-3' },
+              h('div', { className: 'text-base font-bold text-red-300' }, '🎯 Talon vs Prey: Can the Grip Actually Kill?'),
+              h('div', { className: 'text-xs text-red-100/90 leading-relaxed' },
+                'Grip force PSI alone doesn\'t determine lethality — it has to be matched against the specific prey\'s skull/spine crush threshold AND the talon has to be long enough to reach vital organs. Try different predator-prey pairings to see which combinations actually work.'
+              ),
+              // Selector row
+              h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
+                h('div', null,
+                  h('label', { className: 'text-xs text-amber-300 font-bold block mb-1' }, '🦅 Predator'),
+                  h('select', {
+                    value: tvp.predatorId,
+                    onChange: function(e) { setTVP({ predatorId: e.target.value }); },
+                    className: 'w-full px-3 py-2 rounded-lg bg-slate-800 text-amber-100 border border-slate-700 text-sm',
+                    'aria-label': 'Choose predator'
+                  },
+                    SPECIES.map(function(s) {
+                      return h('option', { key: s.id, value: s.id }, s.emoji + ' ' + s.name + ' (' + s.talonForcePsi + ' psi, ' + s.talonLengthMm + ' mm talon)');
+                    })
+                  )
+                ),
+                h('div', null,
+                  h('label', { className: 'text-xs text-amber-300 font-bold block mb-1' }, '🐭 Prey'),
+                  h('select', {
+                    value: tvp.preyId,
+                    onChange: function(e) { setTVP({ preyId: e.target.value }); },
+                    className: 'w-full px-3 py-2 rounded-lg bg-slate-800 text-amber-100 border border-slate-700 text-sm',
+                    'aria-label': 'Choose prey'
+                  },
+                    Object.keys(PREY_TOUGHNESS).map(function(k) {
+                      var p = PREY_TOUGHNESS[k];
+                      return h('option', { key: k, value: k }, p.name + ' (' + p.massKg + ' kg)');
+                    })
+                  )
+                )
+              ),
+              // Computation table
+              h('div', { className: 'bg-slate-900/60 rounded-lg p-3' },
+                h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-2 text-xs' },
+                  h('div', { className: 'bg-slate-800/40 rounded p-2 text-center' },
+                    h('div', { className: 'text-[10px] text-slate-400 uppercase' }, 'Grip Force'),
+                    h('div', { className: 'font-mono font-bold text-amber-300' }, predator.talonForcePsi + ' psi')
+                  ),
+                  h('div', { className: 'bg-slate-800/40 rounded p-2 text-center' },
+                    h('div', { className: 'text-[10px] text-slate-400 uppercase' }, 'Prey Crush Threshold'),
+                    h('div', { className: 'font-mono font-bold text-amber-300' }, prey.skullPsi + ' psi')
+                  ),
+                  h('div', { className: 'bg-slate-800/40 rounded p-2 text-center' },
+                    h('div', { className: 'text-[10px] text-slate-400 uppercase' }, 'Talon Length'),
+                    h('div', { className: 'font-mono font-bold text-amber-300' }, predator.talonLengthMm + ' mm')
+                  ),
+                  h('div', { className: 'bg-slate-800/40 rounded p-2 text-center' },
+                    h('div', { className: 'text-[10px] text-slate-400 uppercase' }, 'Prey Vital Depth'),
+                    h('div', { className: 'font-mono font-bold text-amber-300' }, prey.vitalDepthMm + ' mm')
+                  )
+                ),
+                h('div', { className: 'mt-2 text-[10px] text-slate-400 text-center font-mono' },
+                  'Grip ratio: ' + gripRatio.toFixed(2) + '× · Reach ratio: ' + reachRatio.toFixed(2) + '× (need both ≥ ~1.0 for clean kill)'
+                )
+              ),
+              // Verdict
+              h('div', { className: 'bg-' + verdictColor + '-900/40 border-2 border-' + verdictColor + '-500 rounded-xl p-4 text-center' },
+                h('div', { className: 'text-4xl mb-1' }, verdictEmoji),
+                h('div', { className: 'text-lg font-bold text-' + verdictColor + '-300 mb-2' }, verdict),
+                h('div', { className: 'text-xs text-' + verdictColor + '-100/90 leading-relaxed' }, verdictDetail)
+              ),
+              // Pedagogical note
+              h('div', { className: 'text-[10px] text-slate-500 italic' },
+                'Note: real predator-prey relationships are also shaped by encounter rate, prey availability, learned hunting skill, energetic balance, + group dynamics. This calculator captures one factor (mechanical kill feasibility) — not the full ecology.'
+              )
+            );
+          })()
         );
       }
 
@@ -2170,6 +2282,90 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   'American kestrels (Falco sparverius) can see ultraviolet light. Vole urine + dung trails reflect UV strongly. To a kestrel scanning a meadow, the rodents\' travel routes look like glowing highways painted across the grass. The bird perches near the brightest "trail" and ambushes — no wonder kestrels hunt successfully from telephone wires year-round. Discovered by Viitala, Korpimäki, Palokangas, Koivula (1995) Nature 373:425-427.'
                 )
               )
+            )
+          ),
+
+          // ── NEW v0.8: Visual-field SVG diagram ──
+          h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-sm font-bold text-indigo-300 mb-2' }, '🎯 Visual Field — Top-Down View'),
+            h('div', { className: 'text-xs text-slate-400 mb-3 italic' }, 'Each diagram shows the bird/human looking up at the page (head viewed from above). Yellow = binocular zone (depth perception). Orange = monocular zones (peripheral, no depth). Gray = blind spot behind head.'),
+            h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
+              // Helper to draw a head-from-above with field cones
+              [
+                { label: 'Human', acuity: '1×', totalField: 180, binocular: 120, eyePosition: 'forward', color: 'slate' },
+                { label: 'Hawk / Eagle', acuity: '4-5×', totalField: 220, binocular: 35, eyePosition: 'lateral-forward', color: 'amber' },
+                { label: 'Owl', acuity: '2×', totalField: 110, binocular: 70, eyePosition: 'forward-flat', color: 'indigo' }
+              ].map(function(v, i) {
+                // Compute SVG: head at (100,100) viewBox 200x180; bird is "looking up the screen" (north)
+                var headR = 30;
+                var fov = v.totalField; // degrees
+                var bin = v.binocular;
+                // Convert to SVG angles (forward = -90° in SVG which is -y axis)
+                // Monocular zones extend symmetrically
+                var halfFov = fov / 2; // each side
+                var halfBin = bin / 2;
+                // Render arcs as paths
+                // Forward direction in SVG: angle = -90 (pointing up the screen)
+                function polarToSvg(angleDeg, r) {
+                  var a = (angleDeg - 90) * Math.PI / 180;
+                  return [100 + r * Math.cos(a), 100 + r * Math.sin(a)];
+                }
+                var rField = 80;
+                // Left side total field: from (-halfFov) to (-halfBin) is monocular left
+                // Center (-halfBin to +halfBin) is binocular
+                // Right (+halfBin to +halfFov) is monocular right
+                function arcPath(startDeg, endDeg) {
+                  var s = polarToSvg(startDeg, rField);
+                  var e = polarToSvg(endDeg, rField);
+                  var largeArc = Math.abs(endDeg - startDeg) > 180 ? 1 : 0;
+                  return 'M 100 100 L ' + s[0].toFixed(1) + ' ' + s[1].toFixed(1) +
+                         ' A ' + rField + ' ' + rField + ' 0 ' + largeArc + ' 1 ' + e[0].toFixed(1) + ' ' + e[1].toFixed(1) + ' Z';
+                }
+                return h('div', { key: i, className: 'bg-slate-800/40 rounded-lg p-3 text-center' },
+                  h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, v.label),
+                  h('div', { className: 'text-[10px] text-slate-400 mb-2 font-mono' }, 'Total: ' + v.totalField + '° · Binocular: ' + v.binocular + '° · Acuity: ' + v.acuity),
+                  h('svg', { viewBox: '0 0 200 180', style: { width: '100%', height: '140px' }, role: 'img', 'aria-label': v.label + ' visual field' },
+                    // Backdrop circle (blind spot zone)
+                    h('circle', { cx: 100, cy: 100, r: rField + 4, fill: '#1e293b', opacity: 0.4 }),
+                    // Monocular left
+                    h('path', { d: arcPath(-halfFov, -halfBin), fill: '#fb923c', opacity: 0.55 }),
+                    // Monocular right
+                    h('path', { d: arcPath(halfBin, halfFov), fill: '#fb923c', opacity: 0.55 }),
+                    // Binocular center
+                    h('path', { d: arcPath(-halfBin, halfBin), fill: '#fde047', opacity: 0.7 }),
+                    // Head circle
+                    h('circle', { cx: 100, cy: 100, r: headR, fill: '#78350f', stroke: '#fbbf24', strokeWidth: 2 }),
+                    // Eyes - placement depends on type
+                    (function() {
+                      if (v.eyePosition === 'forward') {
+                        return [h('circle', { key: 'le', cx: 90, cy: 78, r: 5, fill: '#fefce8' }),
+                                h('circle', { key: 're', cx: 110, cy: 78, r: 5, fill: '#fefce8' }),
+                                h('circle', { key: 'lp', cx: 90, cy: 78, r: 2.5, fill: '#1c1917' }),
+                                h('circle', { key: 'rp', cx: 110, cy: 78, r: 2.5, fill: '#1c1917' })];
+                      }
+                      if (v.eyePosition === 'forward-flat') {
+                        return [h('circle', { key: 'le', cx: 85, cy: 80, r: 8, fill: '#fefce8' }),
+                                h('circle', { key: 're', cx: 115, cy: 80, r: 8, fill: '#fefce8' }),
+                                h('circle', { key: 'lp', cx: 85, cy: 80, r: 5, fill: '#1c1917' }),
+                                h('circle', { key: 'rp', cx: 115, cy: 80, r: 5, fill: '#1c1917' })];
+                      }
+                      // lateral-forward (hawk/eagle) — eyes set wider
+                      return [h('circle', { key: 'le', cx: 78, cy: 85, r: 5, fill: '#fefce8' }),
+                              h('circle', { key: 're', cx: 122, cy: 85, r: 5, fill: '#fefce8' }),
+                              h('circle', { key: 'lp', cx: 78, cy: 85, r: 2.5, fill: '#1c1917' }),
+                              h('circle', { key: 'rp', cx: 122, cy: 85, r: 2.5, fill: '#1c1917' })];
+                    })(),
+                    // Beak
+                    h('path', { d: 'M 100 70 L 95 60 L 105 60 Z', fill: '#fbbf24' }),
+                    // Forward direction indicator
+                    h('path', { d: 'M 100 30 L 96 40 L 104 40 Z', fill: '#fde047', opacity: 0.6 }),
+                    h('text', { x: 100, y: 22, fontSize: 8, fill: '#94a3b8', textAnchor: 'middle' }, '↑ forward')
+                  )
+                );
+              })
+            ),
+            h('div', { className: 'text-[10px] text-slate-500 italic mt-2' },
+              'Hawk eyes are set on the sides — total field 220°, but binocular zone is just 35° (narrow forward overlap). Owls have eyes on the front of the face — total field only 110° but binocular zone 70° (twice that of hawks). Humans are intermediate. Tradeoff: wide field of view (hawk) vs deep binocular depth perception (owl).'
             )
           )
         );
@@ -2395,6 +2591,77 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               'Owl wing noise peaks at ~16 kHz. Hawk wing noise peaks at ~2-4 kHz. The owl achieves silence not by reducing total noise — that\'s a small effect — but by shifting the dominant frequency range out of where prey ears are most sensitive. A mouse hears 2-4 kHz acutely (rustling, footsteps) but is much less sensitive at 16 kHz.'
             )
           ),
+
+          // ── NEW v0.8: Frequency Spectrum Visualization ──
+          h('div', { className: 'bg-slate-900/60 border border-violet-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-sm font-bold text-violet-300 mb-2' }, '📈 Wing Noise Spectrum — Hawk vs Owl vs Mouse Hearing'),
+            h('div', { className: 'text-xs text-slate-400 italic mb-3' }, 'X-axis: frequency (kHz). Y-axis: relative intensity / sensitivity. Hawk wing noise (red) peaks right in the mouse\'s most-sensitive range. Owl wing noise (violet) is shifted up out of that range. The frequency shift IS the silence mechanism.'),
+            (function() {
+              // SVG plot of three curves
+              var pw = 600, ph = 220, pad = 40;
+              // Frequency range: 0.5 to 30 kHz, log scale
+              var fmin = 0.5, fmax = 30;
+              function fToX(f) { return pad + (Math.log(f) - Math.log(fmin)) / (Math.log(fmax) - Math.log(fmin)) * (pw - 2 * pad); }
+              function intensityToY(v) { return ph - pad - v * (ph - 2 * pad); } // v 0..1
+              // Define curves as samples
+              // Hawk: Gaussian centered at 3 kHz, sigma factor ~0.5 (log space)
+              function gaussian(f, center, width, peak) {
+                var lf = Math.log(f), lc = Math.log(center);
+                return peak * Math.exp(-Math.pow(lf - lc, 2) / (2 * width * width));
+              }
+              var samples = [];
+              for (var i = 0; i <= 100; i++) {
+                var f = fmin * Math.pow(fmax / fmin, i / 100);
+                samples.push(f);
+              }
+              function curvePath(centerF, width, peak, samples) {
+                return samples.map(function(f, i) {
+                  var x = fToX(f);
+                  var y = intensityToY(gaussian(f, centerF, width, peak));
+                  return (i === 0 ? 'M ' : 'L ') + x.toFixed(1) + ' ' + y.toFixed(1);
+                }).join(' ');
+              }
+              var hawkPath = curvePath(3, 0.6, 0.9, samples);   // peak 3 kHz
+              var owlPath = curvePath(16, 0.5, 0.7, samples);   // peak 16 kHz
+              var mousePath = curvePath(4, 0.7, 0.95, samples); // peak 4 kHz hearing
+              return h('svg', { viewBox: '0 0 ' + pw + ' ' + ph, style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': 'Frequency spectrum chart' },
+                // Background
+                h('rect', { x: 0, y: 0, width: pw, height: ph, fill: '#0f172a' }),
+                // Grid lines (log scale frequencies)
+                [1, 2, 4, 8, 16, 30].map(function(f, i) {
+                  var x = fToX(f);
+                  return h('g', { key: 'grid' + i },
+                    h('line', { x1: x, y1: pad, x2: x, y2: ph - pad, stroke: '#1e293b', strokeWidth: 1 }),
+                    h('text', { x: x, y: ph - 8, fontSize: 10, fill: '#64748b', textAnchor: 'middle' }, f + ' kHz')
+                  );
+                }),
+                // Mouse hearing sensitivity (gray, dashed)
+                h('path', { d: mousePath, fill: 'none', stroke: '#94a3b8', strokeWidth: 2, strokeDasharray: '4,3', opacity: 0.7 }),
+                // Hawk wing noise (red)
+                h('path', { d: hawkPath, fill: '#dc2626', stroke: '#dc2626', strokeWidth: 2.5, opacity: 0.45 }),
+                // Owl wing noise (violet)
+                h('path', { d: owlPath, fill: '#8b5cf6', stroke: '#8b5cf6', strokeWidth: 2.5, opacity: 0.45 }),
+                // Peak markers
+                h('line', { x1: fToX(3), y1: pad, x2: fToX(3), y2: ph - pad, stroke: '#dc2626', strokeWidth: 1, opacity: 0.6 }),
+                h('line', { x1: fToX(16), y1: pad, x2: fToX(16), y2: ph - pad, stroke: '#8b5cf6', strokeWidth: 1, opacity: 0.6 }),
+                // Labels
+                h('text', { x: fToX(3), y: pad - 5, fontSize: 11, fill: '#fca5a5', textAnchor: 'middle', fontWeight: 'bold' }, 'Hawk wing peak'),
+                h('text', { x: fToX(16), y: pad - 5, fontSize: 11, fill: '#c4b5fd', textAnchor: 'middle', fontWeight: 'bold' }, 'Owl wing peak'),
+                // Axis labels
+                h('text', { x: pad - 25, y: ph / 2, fontSize: 10, fill: '#94a3b8', transform: 'rotate(-90 ' + (pad - 25) + ' ' + (ph / 2) + ')' }, 'Intensity / Sensitivity'),
+                // Legend
+                h('rect', { x: pw - 175, y: 10, width: 170, height: 55, fill: 'rgba(15,23,42,0.85)', stroke: '#475569', strokeWidth: 1, rx: 4 }),
+                h('line', { x1: pw - 165, y1: 22, x2: pw - 150, y2: 22, stroke: '#dc2626', strokeWidth: 3 }),
+                h('text', { x: pw - 145, y: 25, fontSize: 10, fill: '#fca5a5' }, 'Hawk wing noise'),
+                h('line', { x1: pw - 165, y1: 38, x2: pw - 150, y2: 38, stroke: '#8b5cf6', strokeWidth: 3 }),
+                h('text', { x: pw - 145, y: 41, fontSize: 10, fill: '#c4b5fd' }, 'Owl wing noise'),
+                h('line', { x1: pw - 165, y1: 54, x2: pw - 150, y2: 54, stroke: '#94a3b8', strokeWidth: 2, strokeDasharray: '3,2' }),
+                h('text', { x: pw - 145, y: 57, fontSize: 10, fill: '#94a3b8' }, 'Mouse hearing')
+              );
+            })(),
+            h('div', { className: 'text-[10px] text-slate-400 italic mt-3' }, 'The owl\'s noise peak at 16 kHz sits past the mouse\'s sharp drop-off in hearing sensitivity. The hawk\'s noise peak at 3 kHz sits exactly where the mouse hears best. This is what "silent flight" really means in physics: not zero amplitude — frequency shifted out of the prey\'s perceptual band.')
+          ),
+
           // Key points
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
             SILENT_FACTS.keyPoints.map(function(kp, i) {
@@ -4337,6 +4604,97 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // RENDER: RECOVERY CASE STUDIES
       // ────────────────────────────────────────────────────────
       function renderRecoveries() {
+        // Per-case-study log-population trajectory data
+        // Each: array of { year, pop } anchor points
+        var trajectories = {
+          peregrine: [
+            { y: 1940, p: 3875, lbl: 'Pre-DDT' },
+            { y: 1960, p: 500 },
+            { y: 1972, p: 50, lbl: 'DDT ban' },
+            { y: 1980, p: 200 },
+            { y: 1990, p: 1000 },
+            { y: 1999, p: 1700, lbl: 'Delisted' },
+            { y: 2020, p: 3200 }
+          ],
+          baldEagle: [
+            { y: 1800, p: 100000, lbl: '~baseline' },
+            { y: 1940, p: 50000 },
+            { y: 1963, p: 417, lbl: 'Crisis low' },
+            { y: 1972, p: 800, lbl: 'DDT ban' },
+            { y: 1995, p: 9000, lbl: 'Downlisted' },
+            { y: 2007, p: 50000, lbl: 'Delisted' },
+            { y: 2020, p: 316000 }
+          ],
+          condor: [
+            { y: 1980, p: 25 },
+            { y: 1987, p: 22, lbl: 'All captive' },
+            { y: 1992, p: 60, lbl: 'Re-release' },
+            { y: 2000, p: 160 },
+            { y: 2010, p: 380 },
+            { y: 2020, p: 500 },
+            { y: 2024, p: 530 }
+          ],
+          mauritius: [
+            { y: 1974, p: 4, lbl: 'Founder' },
+            { y: 1985, p: 50, lbl: 'Captive release' },
+            { y: 1994, p: 200 },
+            { y: 2000, p: 500 },
+            { y: 2005, p: 800, lbl: 'Peak' },
+            { y: 2020, p: 450 }
+          ],
+          philippine: [
+            { y: 1960, p: 800 },
+            { y: 1980, p: 600 },
+            { y: 1990, p: 500 },
+            { y: 2000, p: 450 },
+            { y: 2010, p: 420 },
+            { y: 2023, p: 400, lbl: 'Critical' }
+          ]
+        };
+        function trajectorySvg(caseId) {
+          var pts = trajectories[caseId];
+          if (!pts) return null;
+          var pw = 600, ph = 130, pad = 30;
+          // Year range
+          var yMin = Math.min.apply(null, pts.map(function(p) { return p.y; }));
+          var yMax = Math.max.apply(null, pts.map(function(p) { return p.y; }));
+          // Log-pop range
+          var popMin = Math.min.apply(null, pts.map(function(p) { return p.p; }));
+          var popMax = Math.max.apply(null, pts.map(function(p) { return p.p; }));
+          var lMin = Math.log10(Math.max(1, popMin));
+          var lMax = Math.log10(popMax);
+          function xAt(y) { return pad + (y - yMin) / (yMax - yMin) * (pw - 2 * pad); }
+          function yAt(p) { return ph - pad - (Math.log10(Math.max(1, p)) - lMin) / Math.max(0.1, (lMax - lMin)) * (ph - 2 * pad); }
+          var pathD = pts.map(function(pt, i) { return (i === 0 ? 'M ' : 'L ') + xAt(pt.y).toFixed(1) + ' ' + yAt(pt.p).toFixed(1); }).join(' ');
+          return h('svg', { viewBox: '0 0 ' + pw + ' ' + ph, style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': 'Population trajectory plot' },
+            h('rect', { x: 0, y: 0, width: pw, height: ph, fill: '#0f172a' }),
+            // Axes
+            h('line', { x1: pad, y1: ph - pad, x2: pw - pad, y2: ph - pad, stroke: '#475569', strokeWidth: 1 }),
+            h('line', { x1: pad, y1: pad, x2: pad, y2: ph - pad, stroke: '#475569', strokeWidth: 1 }),
+            // Year ticks
+            pts.map(function(pt, i) {
+              return h('text', { key: 'yt' + i, x: xAt(pt.y), y: ph - pad + 12, fontSize: 9, fill: '#94a3b8', textAnchor: 'middle' }, pt.y);
+            }),
+            // Population trajectory (gradient stroke from red to green)
+            h('path', { d: pathD, fill: 'none', stroke: '#fbbf24', strokeWidth: 2.5 }),
+            // Points + labels
+            pts.map(function(pt, i) {
+              var cx = xAt(pt.y), cy = yAt(pt.p);
+              var lowest = pt.p === popMin;
+              var fill = lowest ? '#ef4444' : (i === pts.length - 1 ? '#10b981' : '#fde047');
+              return h('g', { key: 'pt' + i },
+                h('circle', { cx: cx, cy: cy, r: 4, fill: fill, stroke: '#1c1917', strokeWidth: 1.5 }),
+                h('text', { x: cx, y: cy - 8, fontSize: 9, fill: '#fde047', textAnchor: 'middle', fontWeight: 'bold' },
+                  pt.p >= 1000 ? (pt.p / 1000).toFixed(pt.p >= 10000 ? 0 : 1) + 'K' : pt.p
+                ),
+                pt.lbl && h('text', { x: cx, y: cy + 14, fontSize: 8, fill: '#fbbf24', textAnchor: 'middle' }, pt.lbl)
+              );
+            }),
+            // Y-axis label
+            h('text', { x: 4, y: ph / 2, fontSize: 9, fill: '#94a3b8', transform: 'rotate(-90 4 ' + (ph / 2) + ')' }, 'Population (log)')
+          );
+        }
+
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-emerald-900/40 to-cyan-900/40 border border-emerald-700/40 rounded-xl p-4' },
             h('div', { className: 'text-lg font-bold text-emerald-200 mb-2' }, '🏆 Recovery Case Studies'),
@@ -4354,6 +4712,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 h('div', { className: 'flex items-baseline gap-3 mb-3' },
                   h('div', { className: 'text-3xl' }, c.emoji),
                   h('div', { className: 'text-lg font-bold text-amber-200' }, c.title)
+                ),
+                // ── NEW v0.8: Population trajectory plot ──
+                trajectories[c.id] && h('div', { className: 'bg-slate-950/60 border border-amber-700/30 rounded-lg p-2 mb-3' },
+                  h('div', { className: 'text-[10px] text-amber-300 mb-1 font-bold uppercase tracking-wider' }, '📈 Population trajectory (log scale)'),
+                  trajectorySvg(c.id)
                 ),
                 // Crisis
                 h('div', { className: 'bg-red-900/20 border border-red-700/40 rounded-lg p-3 mb-3' },
