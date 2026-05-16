@@ -571,7 +571,18 @@ const NotebookOverlay = React.memo((props) => {
   window.AlloModules.ReadingResponseView = ReadingResponseView;
   window.AlloModules.NoteTakingView = NoteTakingView;
   window.AlloModules.NotebookOverlay = NotebookOverlay;
+  // Internal notebook helpers exposed for unit-test access (kind discrimination,
+  // preview/title derivation across both note-taking + anchor-chart entries).
+  // Not part of the public contract.
+  window.AlloModules.NoteTakingTemplates = {
+    _testing: {
+      _entryKind: _entryKind,
+      _entryPreview: _entryPreview,
+      _entryTitle: _entryTitle,
+      NOTEBOOK_TEMPLATE_META: NOTEBOOK_TEMPLATE_META,
+    },
+  };
   window.AlloModules.NoteTakingTemplatesModule = true;
 
-  console.log('[NoteTakingTemplatesModule] 5 components registered');
+  console.log('[NoteTakingTemplatesModule] 5 components + testing helpers registered');
 })();

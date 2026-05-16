@@ -85,6 +85,17 @@ const _loadHtml2Canvas = /* @__PURE__ */ (() => {
   };
 })();
 const _slugify = (s) => String(s || "anchor-chart").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 50) || "anchor-chart";
+const _reorderSections = (sections, fromIdx, toIdx) => {
+  if (!Array.isArray(sections)) return sections;
+  if (fromIdx === toIdx) return sections;
+  if (fromIdx < 0 || fromIdx >= sections.length) return sections;
+  if (toIdx < 0 || toIdx > sections.length) return sections;
+  const next = sections.slice();
+  const [moved] = next.splice(fromIdx, 1);
+  const adjustedTo = toIdx > fromIdx ? toIdx - 1 : toIdx;
+  next.splice(adjustedTo, 0, moved);
+  return next;
+};
 const MARKER_PALETTE = [
   { name: "red", hex: "#c53030", soft: "rgba(197,48,48,0.08)", ink: "#7b1d1d" },
   { name: "blue", hex: "#2b6cb0", soft: "rgba(43,108,176,0.08)", ink: "#1a3f6b" },
@@ -98,7 +109,8 @@ const _jitterFor = (sectionId, sectionLabel) => {
   const key = String(sectionId || sectionLabel || "x");
   let h = 0;
   for (let i = 0; i < key.length; i++) h = h * 31 + key.charCodeAt(i) | 0;
-  const rot = (h % 21 - 10) / 10;
+  const absMod = Math.abs(h) % 21;
+  const rot = (absMod - 10) / 10;
   return rot * 0.9;
 };
 const _iconPromptBiased = (basePrompt, markerName) => {
@@ -365,13 +377,8 @@ const AnchorChartView = React.memo((props) => {
     }
   };
   const handleReorderSection = (fromIdx, toIdx) => {
-    if (fromIdx === toIdx) return;
-    if (fromIdx < 0 || fromIdx >= sections.length) return;
-    if (toIdx < 0 || toIdx > sections.length) return;
-    const next = sections.slice();
-    const [moved] = next.splice(fromIdx, 1);
-    const adjustedTo = toIdx > fromIdx ? toIdx - 1 : toIdx;
-    next.splice(adjustedTo, 0, moved);
+    const next = _reorderSections(sections, fromIdx, toIdx);
+    if (next === sections) return;
     handleNoteUpdate("sections", next);
   };
   return /* @__PURE__ */ React.createElement("div", { className: "ac-root max-w-5xl mx-auto px-4 py-6" }, /* @__PURE__ */ React.createElement("style", null, `
@@ -564,7 +571,19 @@ const AnchorChartView = React.memo((props) => {
   window.AlloModules.AnchorChartView = AnchorChartView;
   window.AlloModules.AnchorChartSection = AnchorChartSection;
   window.AlloModules.AnchorChartCritiqueOverlay = AnchorChartCritiqueOverlay;
+  // Internal helpers exposed for unit-test access. Not part of the public
+  // contract — callers in production code should NOT depend on this namespace.
+  window.AlloModules.AnchorCharts = {
+    _testing: {
+      _reorderSections: _reorderSections,
+      _markerFor: _markerFor,
+      _jitterFor: _jitterFor,
+      _iconPromptBiased: _iconPromptBiased,
+      _slugify: _slugify,
+      MARKER_PALETTE: MARKER_PALETTE,
+    },
+  };
   window.AlloModules.AnchorChartsModule = true;
 
-  console.log('[AnchorChartsModule] 3 components registered');
+  console.log('[AnchorChartsModule] 3 components + testing helpers registered');
 })();

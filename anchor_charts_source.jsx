@@ -41,6 +41,27 @@ const _loadHtml2Canvas = (() => {
 
 const _slugify = (s) => String(s || 'anchor-chart').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 50) || 'anchor-chart';
 
+// Move section at fromIdx to position toIdx (insert-before semantics). Pure
+// function so the reorder math can be unit-tested without React. Returns a
+// new array; returns the input unchanged for no-op cases (same index, out of
+// bounds, etc.). `toIdx` of sections.length means "append to end."
+//
+// The adjustedTo dance handles the array shift after splice: moving from
+// idx 1 to idx 4 in [A,B,C,D,E] should yield [A,C,D,B,E] — after removing
+// B from idx 1, idx 4 in the SHORTENED array (length 4) is past the end,
+// so we insert at length-1 = 3.
+const _reorderSections = (sections, fromIdx, toIdx) => {
+  if (!Array.isArray(sections)) return sections;
+  if (fromIdx === toIdx) return sections;
+  if (fromIdx < 0 || fromIdx >= sections.length) return sections;
+  if (toIdx < 0 || toIdx > sections.length) return sections;
+  const next = sections.slice();
+  const [moved] = next.splice(fromIdx, 1);
+  const adjustedTo = toIdx > fromIdx ? toIdx - 1 : toIdx;
+  next.splice(adjustedTo, 0, moved);
+  return next;
+};
+
 // Marker palette — warm classroom colors. Index by section position.
 const MARKER_PALETTE = [
   { name: 'red',    hex: '#c53030', soft: 'rgba(197,48,48,0.08)',  ink: '#7b1d1d' },
@@ -54,12 +75,17 @@ const MARKER_PALETTE = [
 const _markerFor = (idx) => MARKER_PALETTE[idx % MARKER_PALETTE.length];
 
 // Stable pseudo-random jitter per section so sections don't twitch on every render.
+// Returns a value in [-0.9, 0.9] degrees. Uses Math.abs on the hash first because
+// JS's % operator preserves the sign of the dividend (e.g. -7 % 21 === -7), so
+// without Math.abs a negative hash yields rotation up to -2.7° — way past the
+// intended jitter range. Caught by the anchor_charts.test.js smoke test.
 const _jitterFor = (sectionId, sectionLabel) => {
   const key = String(sectionId || sectionLabel || 'x');
   let h = 0;
   for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) | 0;
-  const rot = ((h % 21) - 10) / 10;
-  return rot * 0.9;
+  const absMod = Math.abs(h) % 21;     // always in [0, 20]
+  const rot = (absMod - 10) / 10;       // [-1, 1]
+  return rot * 0.9;                     // [-0.9, 0.9]
 };
 
 // Bias the icon prompt toward the hand-drawn marker look so generated icons
@@ -391,17 +417,11 @@ const AnchorChartView = React.memo((props) => {
       setTimeout(() => setExportState('idle'), 2500);
     }
   };
-  // Reorder: move section at fromIdx to position toIdx (insert-before semantics).
-  // No-op if either index is out of range or moving to the same effective slot.
+  // Reorder: delegate to the module-level pure helper so the math is unit-
+  // testable. Skip the write if nothing actually moved.
   const handleReorderSection = (fromIdx, toIdx) => {
-    if (fromIdx === toIdx) return;
-    if (fromIdx < 0 || fromIdx >= sections.length) return;
-    if (toIdx < 0 || toIdx > sections.length) return;
-    const next = sections.slice();
-    const [moved] = next.splice(fromIdx, 1);
-    // After splice, indices >= fromIdx shifted by -1; adjust insertion point.
-    const adjustedTo = toIdx > fromIdx ? toIdx - 1 : toIdx;
-    next.splice(adjustedTo, 0, moved);
+    const next = _reorderSections(sections, fromIdx, toIdx);
+    if (next === sections) return;
     handleNoteUpdate('sections', next);
   };
 

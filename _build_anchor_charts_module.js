@@ -34,7 +34,7 @@ const entry = `
 
 ${source}
 
-window.__anchorChartExports = { AnchorChartView, AnchorChartSection, AnchorChartCritiqueOverlay };
+window.__anchorChartExports = { AnchorChartView, AnchorChartSection, AnchorChartCritiqueOverlay, _reorderSections, _markerFor, _jitterFor, _iconPromptBiased, _slugify, MARKER_PALETTE };
 `;
 
 fs.writeFileSync(TMP, entry, 'utf-8');
@@ -130,9 +130,21 @@ ${compiled}
   window.AlloModules.AnchorChartView = AnchorChartView;
   window.AlloModules.AnchorChartSection = AnchorChartSection;
   window.AlloModules.AnchorChartCritiqueOverlay = AnchorChartCritiqueOverlay;
+  // Internal helpers exposed for unit-test access. Not part of the public
+  // contract — callers in production code should NOT depend on this namespace.
+  window.AlloModules.AnchorCharts = {
+    _testing: {
+      _reorderSections: _reorderSections,
+      _markerFor: _markerFor,
+      _jitterFor: _jitterFor,
+      _iconPromptBiased: _iconPromptBiased,
+      _slugify: _slugify,
+      MARKER_PALETTE: MARKER_PALETTE,
+    },
+  };
   window.AlloModules.AnchorChartsModule = true;
 
-  console.log('[AnchorChartsModule] 3 components registered');
+  console.log('[AnchorChartsModule] 3 components + testing helpers registered');
 })();
 `;
 
