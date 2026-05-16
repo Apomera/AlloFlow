@@ -14235,6 +14235,4412 @@ getResource();`,
     },
   ];
 
+  // ─── HTTP status codes (verbose) ────────────────────────────────
+  var HTTP_STATUS_CODES = [
+    { code: '100 Continue', category: '1xx Informational', meaning: 'Initial request received, client should continue', when: 'Rare — used for large uploads to confirm server accepts the body' },
+    { code: '101 Switching Protocols', category: '1xx Informational', meaning: 'Server agrees to switch protocols (e.g., to WebSocket)', when: 'WebSocket handshake' },
+    { code: '200 OK', category: '2xx Success', meaning: 'Request succeeded', when: 'Default success response for GET, PUT, DELETE' },
+    { code: '201 Created', category: '2xx Success', meaning: 'New resource created', when: 'POST that creates something (return Location header)' },
+    { code: '202 Accepted', category: '2xx Success', meaning: 'Request accepted but processing not complete', when: 'Async operations like email sending or file processing' },
+    { code: '204 No Content', category: '2xx Success', meaning: 'Success but no body to return', when: 'DELETE that succeeded; PUT that updated' },
+    { code: '301 Moved Permanently', category: '3xx Redirection', meaning: 'Resource permanently moved', when: 'Old URL redirected to new URL (browser caches)' },
+    { code: '302 Found', category: '3xx Redirection', meaning: 'Temporary redirect', when: 'Temporary moves; do not cache' },
+    { code: '304 Not Modified', category: '3xx Redirection', meaning: 'Cached version is still valid', when: 'Conditional GET with If-Modified-Since or ETag' },
+    { code: '307 Temporary Redirect', category: '3xx Redirection', meaning: 'Like 302 but keeps original method', when: 'POST → POST redirect (302 changes to GET)' },
+    { code: '308 Permanent Redirect', category: '3xx Redirection', meaning: 'Like 301 but keeps original method', when: 'Permanent POST → POST redirects' },
+    { code: '400 Bad Request', category: '4xx Client Error', meaning: 'Malformed request', when: 'Missing fields, invalid JSON, validation errors' },
+    { code: '401 Unauthorized', category: '4xx Client Error', meaning: 'Authentication required (not really "unauthorized")', when: 'Missing or invalid auth token' },
+    { code: '403 Forbidden', category: '4xx Client Error', meaning: 'Authenticated but lacks permission', when: 'User is logged in but cannot access this resource' },
+    { code: '404 Not Found', category: '4xx Client Error', meaning: 'Resource does not exist', when: 'Bad URL, deleted item' },
+    { code: '405 Method Not Allowed', category: '4xx Client Error', meaning: 'HTTP method not supported for this endpoint', when: 'POST to GET-only endpoint' },
+    { code: '408 Request Timeout', category: '4xx Client Error', meaning: 'Client took too long', when: 'Slow client or connection' },
+    { code: '409 Conflict', category: '4xx Client Error', meaning: 'Conflict with current state', when: 'Concurrent edit conflicts; duplicate creation' },
+    { code: '410 Gone', category: '4xx Client Error', meaning: 'Resource permanently removed', when: 'Stronger than 404 — says it existed and is gone' },
+    { code: '413 Payload Too Large', category: '4xx Client Error', meaning: 'Request body exceeds limit', when: 'Upload too big' },
+    { code: '418 I\'m a teapot', category: '4xx Client Error', meaning: 'Joke status from RFC 2324', when: 'Never seriously; some Google services return it' },
+    { code: '422 Unprocessable Entity', category: '4xx Client Error', meaning: 'Valid JSON but semantic errors', when: 'Form validation failures (preferred over 400 by some APIs)' },
+    { code: '429 Too Many Requests', category: '4xx Client Error', meaning: 'Rate limited', when: 'Client made too many requests; check Retry-After header' },
+    { code: '500 Internal Server Error', category: '5xx Server Error', meaning: 'Generic server error', when: 'Unhandled exception on server' },
+    { code: '501 Not Implemented', category: '5xx Server Error', meaning: 'Server does not support the requested feature', when: 'Method not supported globally' },
+    { code: '502 Bad Gateway', category: '5xx Server Error', meaning: 'Server got bad response from upstream', when: 'Reverse proxy couldn\'t reach backend' },
+    { code: '503 Service Unavailable', category: '5xx Server Error', meaning: 'Server temporarily unavailable', when: 'Maintenance or overload; retry later' },
+    { code: '504 Gateway Timeout', category: '5xx Server Error', meaning: 'Upstream server took too long', when: 'Backend slow; reverse proxy timed out' },
+    { code: '507 Insufficient Storage', category: '5xx Server Error', meaning: 'Server is out of disk', when: 'WebDAV; rare in REST APIs' },
+    { code: '511 Network Authentication Required', category: '5xx Server Error', meaning: 'Client must authenticate to use the network', when: 'Captive portals (coffee shop wifi)' },
+  ];
+
+  // ─── HTTP methods reference (verbose) ───────────────────────────
+  var HTTP_METHODS = [
+    {
+      method: 'GET',
+      safe: 'Yes (no side effects)',
+      idempotent: 'Yes (same result every time)',
+      cacheable: 'Yes (browsers cache GETs)',
+      purpose: 'Retrieve a resource',
+      body: 'No (some implementations allow it; most do not)',
+      example: 'GET /api/users/42',
+      example2: 'GET /api/users?role=admin',
+      notes: 'Default browser request. Query string for parameters. Should never modify server state.',
+      gotchas: 'Query string length limited (~2KB by most browsers). Sensitive data leaks in logs.',
+    },
+    {
+      method: 'POST',
+      safe: 'No',
+      idempotent: 'No (multiple POSTs may create multiple resources)',
+      cacheable: 'No',
+      purpose: 'Create a resource or submit data',
+      body: 'Yes (most common with JSON or form-data)',
+      example: 'POST /api/users { "name": "Aaron" }',
+      notes: 'Used for creating, but also for any non-idempotent action (login, send email).',
+      gotchas: 'Re-submit on browser back button can duplicate. Use POST-redirect-GET pattern.',
+    },
+    {
+      method: 'PUT',
+      safe: 'No',
+      idempotent: 'Yes (same PUT = same final state)',
+      cacheable: 'No',
+      purpose: 'Replace an entire resource',
+      body: 'Yes',
+      example: 'PUT /api/users/42 { "name": "Aaron", "email": "..." }',
+      notes: 'Sends complete resource representation. Missing fields = nulled.',
+      gotchas: 'Often confused with PATCH. Use PATCH for partial updates.',
+    },
+    {
+      method: 'PATCH',
+      safe: 'No',
+      idempotent: 'Depends on operation',
+      cacheable: 'No',
+      purpose: 'Partial update of a resource',
+      body: 'Yes',
+      example: 'PATCH /api/users/42 { "name": "New name" }',
+      notes: 'Only sends fields being changed. RFC 7396 (merge patch) or RFC 6902 (JSON Patch).',
+      gotchas: 'Less universally supported than PUT. Server must define semantics.',
+    },
+    {
+      method: 'DELETE',
+      safe: 'No',
+      idempotent: 'Yes',
+      cacheable: 'No',
+      purpose: 'Remove a resource',
+      body: 'Usually no',
+      example: 'DELETE /api/users/42',
+      notes: 'Returns 204 No Content typically. Or 200 with deletion details.',
+      gotchas: 'No undo. Confirm before sending.',
+    },
+    {
+      method: 'HEAD',
+      safe: 'Yes',
+      idempotent: 'Yes',
+      cacheable: 'Yes',
+      purpose: 'Get headers only (no body)',
+      body: 'Server returns no body',
+      example: 'HEAD /api/users/42',
+      notes: 'Check if resource exists; get size before downloading.',
+    },
+    {
+      method: 'OPTIONS',
+      safe: 'Yes',
+      idempotent: 'Yes',
+      cacheable: 'No',
+      purpose: 'Discover supported methods',
+      body: 'No',
+      example: 'OPTIONS /api/users',
+      notes: 'Used in CORS preflight; rarely called manually.',
+    },
+    {
+      method: 'CONNECT',
+      safe: 'No',
+      purpose: 'Establish tunnel (HTTPS proxy)',
+      notes: 'Used by HTTPS proxies. Almost never written manually.',
+    },
+    {
+      method: 'TRACE',
+      safe: 'Yes',
+      idempotent: 'Yes',
+      purpose: 'Echo request for diagnosis',
+      notes: 'Disabled on most servers (security risk: XST attacks).',
+    },
+  ];
+
+  // ─── MIME types reference (verbose) ─────────────────────────────
+  var MIME_TYPES = [
+    { type: 'text/html', extension: '.html', description: 'HyperText Markup Language', usage: 'Web pages' },
+    { type: 'text/css', extension: '.css', description: 'Cascading Style Sheets', usage: 'Styling' },
+    { type: 'text/javascript', extension: '.js', description: 'JavaScript code', usage: 'Scripts (also application/javascript)' },
+    { type: 'application/json', extension: '.json', description: 'JSON data', usage: 'APIs, config files' },
+    { type: 'application/xml', extension: '.xml', description: 'XML data', usage: 'Older APIs, RSS' },
+    { type: 'application/pdf', extension: '.pdf', description: 'Portable Document Format', usage: 'Documents' },
+    { type: 'application/zip', extension: '.zip', description: 'ZIP archive', usage: 'Compressed files' },
+    { type: 'application/octet-stream', extension: 'various', description: 'Binary data (generic)', usage: 'Unknown file types; downloads' },
+    { type: 'application/x-www-form-urlencoded', extension: 'n/a', description: 'Form data', usage: 'HTML form POST default' },
+    { type: 'multipart/form-data', extension: 'n/a', description: 'Form with files', usage: 'File uploads' },
+    { type: 'image/png', extension: '.png', description: 'PNG image', usage: 'Lossless images, transparency' },
+    { type: 'image/jpeg', extension: '.jpg/.jpeg', description: 'JPEG image', usage: 'Photos' },
+    { type: 'image/gif', extension: '.gif', description: 'GIF image', usage: 'Animated images (mostly replaced by video)' },
+    { type: 'image/svg+xml', extension: '.svg', description: 'Scalable Vector Graphics', usage: 'Icons, illustrations' },
+    { type: 'image/webp', extension: '.webp', description: 'WebP image', usage: 'Modern format, smaller than PNG/JPEG' },
+    { type: 'image/avif', extension: '.avif', description: 'AVIF image', usage: 'Newest format, smallest size' },
+    { type: 'image/x-icon', extension: '.ico', description: 'Favicon', usage: 'Browser tab icon' },
+    { type: 'audio/mpeg', extension: '.mp3', description: 'MP3 audio', usage: 'Music, podcasts' },
+    { type: 'audio/wav', extension: '.wav', description: 'WAV audio', usage: 'Uncompressed audio' },
+    { type: 'audio/ogg', extension: '.ogg', description: 'OGG Vorbis audio', usage: 'Open-source alternative to MP3' },
+    { type: 'audio/webm', extension: '.weba', description: 'WebM audio', usage: 'Modern web audio' },
+    { type: 'video/mp4', extension: '.mp4', description: 'MP4 video', usage: 'Most common web video' },
+    { type: 'video/webm', extension: '.webm', description: 'WebM video', usage: 'Open-source web video' },
+    { type: 'video/ogg', extension: '.ogv', description: 'OGG video', usage: 'Open-source video' },
+    { type: 'text/plain', extension: '.txt', description: 'Plain text', usage: 'Logs, README' },
+    { type: 'text/csv', extension: '.csv', description: 'Comma-separated values', usage: 'Spreadsheet exports' },
+    { type: 'text/markdown', extension: '.md', description: 'Markdown', usage: 'Documentation, README' },
+    { type: 'font/woff', extension: '.woff', description: 'Web Open Font Format', usage: 'Web fonts' },
+    { type: 'font/woff2', extension: '.woff2', description: 'WOFF2 (better compression)', usage: 'Modern web fonts' },
+    { type: 'font/ttf', extension: '.ttf', description: 'TrueType font', usage: 'Older format' },
+    { type: 'font/otf', extension: '.otf', description: 'OpenType font', usage: 'Professional fonts' },
+    { type: 'application/wasm', extension: '.wasm', description: 'WebAssembly', usage: 'Compiled code for web' },
+    { type: 'application/manifest+json', extension: '.webmanifest', description: 'Web App Manifest', usage: 'PWA metadata' },
+    { type: 'application/x-sh', extension: '.sh', description: 'Shell script', usage: 'Unix shell scripts' },
+    { type: 'text/x-python', extension: '.py', description: 'Python source', usage: 'Python files' },
+  ];
+
+  // ─── Color palette guide (verbose) ──────────────────────────────
+  var COLOR_PALETTES = [
+    {
+      name: 'Tailwind defaults',
+      mood: 'Modern, professional, balanced',
+      colors: ['Slate', 'Gray', 'Zinc', 'Neutral', 'Stone', 'Red', 'Orange', 'Amber', 'Yellow', 'Lime', 'Green', 'Emerald', 'Teal', 'Cyan', 'Sky', 'Blue', 'Indigo', 'Violet', 'Purple', 'Fuchsia', 'Pink', 'Rose'],
+      tip: 'Each color has 50-950 shades. Use 500 for default, 600 for hover, 700 for active.',
+      example: 'bg-blue-500 hover:bg-blue-600 active:bg-blue-700',
+    },
+    {
+      name: 'Material Design',
+      mood: 'Bold, opinionated',
+      primary: '#1976D2 (Blue 700)',
+      accent: '#FF4081 (Pink A200)',
+      principle: 'Pick ONE primary and ONE accent. Use accent sparingly for emphasis.',
+    },
+    {
+      name: 'Catppuccin (popular dev theme)',
+      mood: 'Warm pastels',
+      variants: ['Latte (light)', 'Frappé', 'Macchiato', 'Mocha (darkest)'],
+      colors: 'Rosewater, Flamingo, Pink, Mauve, Red, Maroon, Peach, Yellow, Green, Teal, Sky, Sapphire, Blue, Lavender',
+      tip: 'Each color is carefully balanced for terminal + UI use',
+    },
+    {
+      name: 'Nord',
+      mood: 'Cool, Scandinavian, minimal',
+      colors: ['#2E3440 polar night (darkest)', '#3B4252', '#434C5E', '#4C566A polar night (lightest)', '#D8DEE9 snow storm', '#E5E9F0', '#ECEFF4', '#8FBCBB frost', '#88C0D0', '#81A1C1', '#5E81AC', '#BF616A aurora red', '#D08770 orange', '#EBCB8B yellow', '#A3BE8C green', '#B48EAD purple'],
+      use: 'Editors, terminals; very easy on eyes for long coding',
+    },
+    {
+      name: 'Dracula',
+      mood: 'Dark, vivid',
+      colors: ['#282A36 bg', '#44475A current', '#F8F8F2 fg', '#6272A4 comment', '#8BE9FD cyan', '#50FA7B green', '#FFB86C orange', '#FF79C6 pink', '#BD93F9 purple', '#FF5555 red', '#F1FA8C yellow'],
+      use: 'Themes for 200+ apps; popular for night-time coding',
+    },
+    {
+      name: 'Solarized',
+      mood: 'Scientifically tuned, easy on eyes',
+      variants: ['Light', 'Dark'],
+      tip: 'Designed by Ethan Schoonover after extensive eye-comfort research',
+      colors: 'base03 base02 base01 base00 base0 base1 base2 base3 yellow orange red magenta violet blue cyan green',
+    },
+    {
+      name: 'GitHub',
+      mood: 'Clean, professional',
+      primary: '#0969DA (blue)',
+      accent: '#1A7F37 (green for success)',
+      bg: '#FFFFFF (light) / #0D1117 (dark)',
+      tip: 'Excellent reference for accessible web UI colors',
+    },
+    {
+      name: 'Stripe',
+      mood: 'Premium, financial',
+      primary: '#635BFF (signature purple)',
+      use: 'Modern fintech and SaaS landing pages',
+    },
+    {
+      name: 'iOS system',
+      mood: 'Native Apple feel',
+      primary: '#007AFF (system blue)',
+      semantics: '#34C759 green success, #FF3B30 red error, #FF9500 orange warning',
+      tip: 'These adapt automatically to dark mode on Apple devices',
+    },
+    {
+      name: 'Color theory: 60-30-10 rule',
+      principle: 'Use 60% dominant, 30% secondary, 10% accent',
+      example: '60% neutral background, 30% primary brand, 10% accent for CTAs',
+      why: 'Creates visual balance; avoids overwhelming the eye',
+    },
+    {
+      name: 'Color theory: Triadic',
+      principle: 'Three colors equidistant on color wheel',
+      example: 'Red, Yellow, Blue (primary triad)',
+      use: 'Vibrant designs; pick one as dominant, use others sparingly',
+    },
+    {
+      name: 'Color theory: Complementary',
+      principle: 'Two colors opposite on color wheel',
+      example: 'Blue & Orange, Red & Green, Purple & Yellow',
+      use: 'High contrast; pop of accent against dominant',
+      caution: 'Used at equal intensity can vibrate uncomfortably',
+    },
+    {
+      name: 'Color theory: Analogous',
+      principle: 'Three adjacent colors on wheel',
+      example: 'Blue, Blue-Green, Green',
+      use: 'Harmonious, calm; less contrast than complementary',
+    },
+    {
+      name: 'Accessibility: WCAG contrast minimums',
+      AA: 'Normal text: 4.5:1, large text (18pt+ or 14pt bold): 3:1',
+      AAA: 'Normal text: 7:1, large text: 4.5:1',
+      test: 'Use webaim.org/resources/contrastchecker — paste FG + BG colors',
+      common: 'Black on white: 21:1 (passes everything). Gray-500 on white: 4.6:1 (just passes AA).',
+    },
+    {
+      name: 'Color blindness considerations',
+      types: ['Red-green (most common, ~8% males)', 'Blue-yellow (rare)', 'Total (very rare)'],
+      avoid: 'Red + green ONLY to convey status (e.g., red text for errors). Add icons or text labels too.',
+      test: 'Chrome DevTools → Rendering → Emulate vision deficiencies',
+    },
+    {
+      name: 'Tools for picking palettes',
+      list: ['coolors.co — generate palettes by spacebar', 'colorhunt.co — curated trending palettes', 'paletton.com — color theory builder', 'realtimecolors.com — preview on real UI', 'huemint.com — AI-generated palettes', 'tailwindcolor.com — Tailwind exact values'],
+    },
+  ];
+
+  // ─── Font pairings guide (verbose) ──────────────────────────────
+  var FONT_PAIRINGS = [
+    {
+      pairing: 'Inter + JetBrains Mono',
+      headingBody: 'Inter (UI font, by Rasmus Andersson)',
+      mono: 'JetBrains Mono (with ligatures)',
+      mood: 'Modern, technical, clean',
+      bestFor: 'Developer-focused sites, dashboards, SaaS',
+      free: 'Yes (both Google Fonts)',
+    },
+    {
+      pairing: 'Playfair Display + Source Sans Pro',
+      heading: 'Playfair Display (serif, dramatic)',
+      body: 'Source Sans Pro (humanist sans)',
+      mood: 'Editorial, elegant',
+      bestFor: 'Blogs, magazines, premium brands',
+      free: 'Yes',
+    },
+    {
+      pairing: 'Merriweather + Open Sans',
+      heading: 'Merriweather (serif, very readable on screens)',
+      body: 'Open Sans (workhorse sans)',
+      mood: 'Readable, friendly',
+      bestFor: 'Long-form reading, news, blogs',
+      free: 'Yes',
+    },
+    {
+      pairing: 'Montserrat + Open Sans',
+      heading: 'Montserrat (geometric sans, strong personality)',
+      body: 'Open Sans',
+      mood: 'Modern, friendly',
+      bestFor: 'Marketing pages, landing sites',
+      free: 'Yes',
+    },
+    {
+      pairing: 'Poppins + Roboto',
+      heading: 'Poppins (geometric, popular)',
+      body: 'Roboto (Android default)',
+      mood: 'Familiar, mobile-friendly',
+      bestFor: 'Mobile-first apps, modern SaaS',
+      free: 'Yes',
+    },
+    {
+      pairing: 'IBM Plex Sans + IBM Plex Mono',
+      heading: 'IBM Plex Sans',
+      mono: 'IBM Plex Mono',
+      mood: 'Technical, IBM-flavored',
+      bestFor: 'Technical writing, B2B',
+      free: 'Yes',
+    },
+    {
+      pairing: 'Bricolage Grotesque + Inter',
+      heading: 'Bricolage Grotesque (modern grotesque, variable)',
+      body: 'Inter',
+      mood: '2024+ trendy, condensed',
+      bestFor: 'Design portfolios, modern brands',
+      free: 'Yes',
+    },
+    {
+      pairing: 'Caveat + Open Sans',
+      heading: 'Caveat (handwritten)',
+      body: 'Open Sans',
+      mood: 'Friendly, personal, classroom',
+      bestFor: 'Education, kid-friendly content',
+      free: 'Yes',
+    },
+    {
+      pairing: 'Lora + Source Sans 3',
+      heading: 'Lora (calligraphic serif)',
+      body: 'Source Sans 3',
+      mood: 'Sophisticated, traditional',
+      bestFor: 'Literary, journalism',
+      free: 'Yes',
+    },
+    {
+      pairing: 'System font stack',
+      heading: 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+      mono: 'ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace',
+      mood: 'Native to OS',
+      bestFor: 'Performance-first sites (no font download)',
+      tip: 'Fastest. Matches user\'s OS exactly.',
+    },
+    {
+      principles: [
+        'Pair contrasting fonts (serif + sans, or different weights)',
+        'Limit to 2-3 fonts max per design',
+        'Heading font should be more "characterful"; body more neutral',
+        'Test on real devices, not just designer screens',
+        'Use variable fonts when possible (one file, all weights)',
+        'Subset fonts to only needed characters (reduces file size 80%)',
+        'Use font-display: swap to avoid invisible text during font load',
+      ],
+    },
+    {
+      tools: [
+        'fonts.google.com — free, vast selection, CDN',
+        'fontpair.co — curated pairings',
+        'typewolf.com — font inspiration daily',
+        'fontsquirrel.com — commercial-use free fonts',
+        'usewebfont.com — paste site, see what fonts it uses',
+      ],
+    },
+  ];
+
+  // ─── Icon libraries guide (verbose) ─────────────────────────────
+  var ICON_LIBRARIES = [
+    {
+      name: 'Lucide',
+      url: 'lucide.dev',
+      count: '~1500 icons',
+      style: 'Outline, consistent stroke, modern',
+      license: 'ISC (free, no attribution needed)',
+      use: 'AlloFlow uses Lucide. React: import { Heart } from "lucide-react"',
+      tip: 'Fork of Feather Icons, more actively maintained',
+    },
+    {
+      name: 'Heroicons',
+      url: 'heroicons.com',
+      count: '~300 icons',
+      style: 'Outline + Solid + Mini sizes; by Tailwind team',
+      license: 'MIT',
+      use: 'Pair with Tailwind CSS naturally',
+    },
+    {
+      name: 'Phosphor',
+      url: 'phosphoricons.com',
+      count: '~9000 icons across 6 weights (thin, light, regular, bold, fill, duotone)',
+      style: 'Flexible, family-style',
+      license: 'MIT',
+      tip: 'Same icon in 6 weights — pick based on design density',
+    },
+    {
+      name: 'Tabler Icons',
+      url: 'tabler-icons.io',
+      count: '~4500 icons',
+      style: 'Outline, consistent 24x24',
+      license: 'MIT',
+    },
+    {
+      name: 'Font Awesome',
+      url: 'fontawesome.com',
+      count: '~30000 icons (paid Pro has way more than free)',
+      style: 'Wide variety',
+      license: 'Free version: CC BY 4.0; Pro: paid',
+      caution: 'Heavy if you load whole library; subset to what you use',
+    },
+    {
+      name: 'Material Icons (Google)',
+      url: 'fonts.google.com/icons',
+      count: '~2500 icons',
+      style: 'Material Design system',
+      license: 'Apache 2.0',
+      use: 'Best fit for Material-style UIs',
+    },
+    {
+      name: 'Bootstrap Icons',
+      url: 'icons.getbootstrap.com',
+      count: '~2000 icons',
+      style: 'Clean, geometric',
+      license: 'MIT',
+    },
+    {
+      name: 'Iconify',
+      url: 'iconify.design',
+      count: '200,000+ icons (aggregates many libraries)',
+      style: 'All styles available',
+      license: 'Varies by library',
+      tip: 'One API for all icon libraries — pick any icon, get it loaded on demand',
+    },
+    {
+      name: 'Iconoir',
+      url: 'iconoir.com',
+      count: '~1500 icons',
+      style: 'Outline, hand-drawn feel',
+      license: 'MIT',
+    },
+    {
+      name: 'Remix Icon',
+      url: 'remixicon.com',
+      count: '~2500 icons',
+      style: 'Neutral, system style',
+      license: 'Apache 2.0',
+    },
+    {
+      name: 'Custom SVG icons',
+      use: 'When library icons don\'t fit your brand',
+      tips: ['Design at 24x24 grid', 'Use stroke for outline icons', 'Keep stroke width consistent across all your icons', 'Export as SVG, optimize with SVGO', 'For React: convert to JSX components for tree-shaking'],
+    },
+    {
+      principles: [
+        'Pick ONE library and stick with it (mixing looks chaotic)',
+        'Icons need labels for accessibility — aria-label or sr-only text',
+        'Don\'t use icons alone for important actions — pair with text',
+        'Consistent size: e.g., always 16px in buttons, 24px in cards',
+        'Use stroke-width consistently within a library',
+      ],
+    },
+  ];
+
+  // ─── Browser keyboard shortcuts (verbose) ───────────────────────
+  var KEYBOARD_SHORTCUTS = [
+    {
+      category: 'Universal browser',
+      shortcuts: [
+        { keys: 'Ctrl/Cmd+T', does: 'New tab' },
+        { keys: 'Ctrl/Cmd+W', does: 'Close tab' },
+        { keys: 'Ctrl/Cmd+Shift+T', does: 'Reopen last closed tab' },
+        { keys: 'Ctrl/Cmd+L', does: 'Focus address bar' },
+        { keys: 'Ctrl/Cmd+R', does: 'Reload page' },
+        { keys: 'Ctrl/Cmd+Shift+R', does: 'Hard reload (ignore cache)' },
+        { keys: 'Ctrl/Cmd+F', does: 'Find on page' },
+        { keys: 'Ctrl/Cmd+P', does: 'Print' },
+        { keys: 'Ctrl/Cmd++/=', does: 'Zoom in' },
+        { keys: 'Ctrl/Cmd+-', does: 'Zoom out' },
+        { keys: 'Ctrl/Cmd+0', does: 'Reset zoom' },
+        { keys: 'F11', does: 'Fullscreen' },
+        { keys: 'Ctrl/Cmd+1-9', does: 'Switch to tab 1-9' },
+        { keys: 'Ctrl/Cmd+Shift+N', does: 'New incognito window' },
+      ],
+    },
+    {
+      category: 'Chrome DevTools',
+      shortcuts: [
+        { keys: 'F12 / Ctrl+Shift+I / Cmd+Opt+I', does: 'Open DevTools' },
+        { keys: 'Ctrl+Shift+C / Cmd+Shift+C', does: 'Pick element on page' },
+        { keys: 'Ctrl+Shift+P / Cmd+Shift+P', does: 'Command palette' },
+        { keys: 'Ctrl+Shift+M / Cmd+Shift+M', does: 'Toggle device emulation' },
+        { keys: 'Ctrl+[ / ]', does: 'Switch tabs in DevTools' },
+        { keys: 'F8', does: 'Resume execution (debugger)' },
+        { keys: 'F10', does: 'Step over (debugger)' },
+        { keys: 'F11', does: 'Step into (debugger)' },
+        { keys: 'Shift+F11', does: 'Step out (debugger)' },
+      ],
+    },
+    {
+      category: 'VS Code',
+      shortcuts: [
+        { keys: 'Ctrl/Cmd+P', does: 'Quick open file by name' },
+        { keys: 'Ctrl/Cmd+Shift+P', does: 'Command palette' },
+        { keys: 'Ctrl/Cmd+D', does: 'Select next occurrence' },
+        { keys: 'Ctrl/Cmd+Shift+L', does: 'Select all occurrences' },
+        { keys: 'Ctrl/Cmd+/', does: 'Toggle line comment' },
+        { keys: 'Alt+Up/Down', does: 'Move line up/down' },
+        { keys: 'Shift+Alt+Up/Down', does: 'Duplicate line up/down' },
+        { keys: 'Ctrl/Cmd+B', does: 'Toggle sidebar' },
+        { keys: 'Ctrl/Cmd+`', does: 'Toggle terminal' },
+        { keys: 'Ctrl/Cmd+J', does: 'Toggle panel' },
+        { keys: 'Ctrl/Cmd+K Z', does: 'Zen mode (distraction-free)' },
+        { keys: 'F2', does: 'Rename symbol (everywhere)' },
+        { keys: 'F12', does: 'Go to definition' },
+        { keys: 'Shift+F12', does: 'Find all references' },
+        { keys: 'Ctrl/Cmd+Click', does: 'Go to definition (mouse)' },
+      ],
+    },
+    {
+      category: 'Terminal / shell',
+      shortcuts: [
+        { keys: 'Ctrl+C', does: 'Cancel current command' },
+        { keys: 'Ctrl+D', does: 'Exit / end of file' },
+        { keys: 'Ctrl+L', does: 'Clear screen' },
+        { keys: 'Ctrl+R', does: 'Reverse search history' },
+        { keys: 'Ctrl+A', does: 'Move to start of line' },
+        { keys: 'Ctrl+E', does: 'Move to end of line' },
+        { keys: 'Ctrl+W', does: 'Delete previous word' },
+        { keys: 'Ctrl+U', does: 'Clear line before cursor' },
+        { keys: 'Ctrl+K', does: 'Clear line after cursor' },
+        { keys: 'Up/Down', does: 'Browse history' },
+        { keys: 'Tab', does: 'Autocomplete' },
+        { keys: 'Tab Tab', does: 'Show all completions' },
+      ],
+    },
+    {
+      category: 'Git commands (memorize)',
+      shortcuts: [
+        { keys: 'git status', does: 'See what changed' },
+        { keys: 'git diff', does: 'See line-by-line changes' },
+        { keys: 'git add .', does: 'Stage all changes' },
+        { keys: 'git commit -m "msg"', does: 'Commit staged changes' },
+        { keys: 'git push', does: 'Send commits to remote' },
+        { keys: 'git pull', does: 'Get and merge remote changes' },
+        { keys: 'git log --oneline', does: 'Compact history' },
+        { keys: 'git checkout -b branch', does: 'Create + switch to branch' },
+        { keys: 'git merge branch', does: 'Merge branch into current' },
+        { keys: 'git stash', does: 'Save changes temporarily' },
+        { keys: 'git stash pop', does: 'Restore stashed changes' },
+        { keys: 'git reset --soft HEAD~1', does: 'Undo last commit, keep changes' },
+        { keys: 'git revert <hash>', does: 'Undo commit by creating new commit' },
+      ],
+    },
+  ];
+
+  // ─── Unicode useful symbols (verbose) ───────────────────────────
+  var UNICODE_SYMBOLS = [
+    { symbol: '✓', code: 'U+2713', name: 'Check mark', use: 'Success, complete, OK' },
+    { symbol: '✗', code: 'U+2717', name: 'Ballot X', use: 'Failure, wrong, missing' },
+    { symbol: '★', code: 'U+2605', name: 'Black star', use: 'Favorite, rating' },
+    { symbol: '☆', code: 'U+2606', name: 'White star', use: 'Rating placeholder' },
+    { symbol: '♥', code: 'U+2665', name: 'Black heart', use: 'Like, love, favorite' },
+    { symbol: '→', code: 'U+2192', name: 'Right arrow', use: 'Direction, navigation' },
+    { symbol: '←', code: 'U+2190', name: 'Left arrow', use: 'Back, previous' },
+    { symbol: '↑', code: 'U+2191', name: 'Up arrow', use: 'Increase, ascending' },
+    { symbol: '↓', code: 'U+2193', name: 'Down arrow', use: 'Decrease, descending' },
+    { symbol: '⇒', code: 'U+21D2', name: 'Double right arrow', use: 'Implies, leads to' },
+    { symbol: '∞', code: 'U+221E', name: 'Infinity', use: 'Unlimited' },
+    { symbol: '≈', code: 'U+2248', name: 'Almost equal', use: 'Approximation' },
+    { symbol: '≠', code: 'U+2260', name: 'Not equal', use: 'Inequality' },
+    { symbol: '≤', code: 'U+2264', name: 'Less than or equal', use: 'Range bounds' },
+    { symbol: '≥', code: 'U+2265', name: 'Greater than or equal', use: 'Range bounds' },
+    { symbol: '±', code: 'U+00B1', name: 'Plus-minus', use: 'Tolerance, error' },
+    { symbol: '×', code: 'U+00D7', name: 'Multiplication sign', use: 'Times, dimensions (1920×1080)' },
+    { symbol: '÷', code: 'U+00F7', name: 'Division sign', use: 'Divided by' },
+    { symbol: '°', code: 'U+00B0', name: 'Degree sign', use: 'Temperature, angles' },
+    { symbol: '©', code: 'U+00A9', name: 'Copyright', use: 'Legal notice' },
+    { symbol: '®', code: 'U+00AE', name: 'Registered trademark', use: 'Legal notice' },
+    { symbol: '™', code: 'U+2122', name: 'Trademark', use: 'Legal notice' },
+    { symbol: '§', code: 'U+00A7', name: 'Section sign', use: 'Reference legal sections' },
+    { symbol: '¶', code: 'U+00B6', name: 'Pilcrow', use: 'Paragraph marker' },
+    { symbol: '…', code: 'U+2026', name: 'Horizontal ellipsis', use: 'Truncation, pause' },
+    { symbol: '—', code: 'U+2014', name: 'Em dash', use: 'Sentence breaks (but not in AlloFlow per Aaron)' },
+    { symbol: '–', code: 'U+2013', name: 'En dash', use: 'Number ranges (1990–2000)' },
+    { symbol: '•', code: 'U+2022', name: 'Bullet', use: 'List items' },
+    { symbol: '·', code: 'U+00B7', name: 'Middle dot', use: 'Separator (e.g., A · B)' },
+    { symbol: '◀', code: 'U+25C0', name: 'Black left-pointing triangle', use: 'Previous button' },
+    { symbol: '▶', code: 'U+25B6', name: 'Black right-pointing triangle', use: 'Next/play button' },
+    { symbol: '⏸', code: 'U+23F8', name: 'Pause symbol', use: 'Pause button' },
+    { symbol: '⏹', code: 'U+23F9', name: 'Stop symbol', use: 'Stop button' },
+    { symbol: '⏯', code: 'U+23EF', name: 'Play/pause', use: 'Toggle button' },
+    { symbol: '⏮', code: 'U+23EE', name: 'Skip back', use: 'Previous track' },
+    { symbol: '⏭', code: 'U+23ED', name: 'Skip forward', use: 'Next track' },
+    { symbol: '🔍', code: 'U+1F50D', name: 'Magnifying glass', use: 'Search' },
+    { symbol: '⚙', code: 'U+2699', name: 'Gear', use: 'Settings' },
+    { symbol: '⚠', code: 'U+26A0', name: 'Warning', use: 'Warning state' },
+    { symbol: '⚡', code: 'U+26A1', name: 'High voltage', use: 'Fast, electric' },
+    { symbol: '☂', code: 'U+2602', name: 'Umbrella', use: 'Rain icon' },
+    { symbol: '☁', code: 'U+2601', name: 'Cloud', use: 'Cloud storage' },
+    { symbol: '☼', code: 'U+263C', name: 'Sun (with rays)', use: 'Sunny weather' },
+    { symbol: '♂', code: 'U+2642', name: 'Male sign', use: 'Gender (use sparingly)' },
+    { symbol: '♀', code: 'U+2640', name: 'Female sign', use: 'Gender (use sparingly)' },
+    { symbol: 'π', code: 'U+03C0', name: 'Greek pi', use: 'Math (3.14159)' },
+    { symbol: 'Σ', code: 'U+03A3', name: 'Greek sigma', use: 'Sum in math' },
+    { symbol: '∑', code: 'U+2211', name: 'N-ary summation', use: 'Sum operator' },
+    { symbol: '∫', code: 'U+222B', name: 'Integral', use: 'Calculus integration' },
+    { symbol: '√', code: 'U+221A', name: 'Square root', use: 'Math operations' },
+    { symbol: '∆', code: 'U+2206', name: 'Delta', use: 'Change, difference' },
+    { symbol: '✨', code: 'U+2728', name: 'Sparkles', use: 'New, AI, magic' },
+    { symbol: '🔥', code: 'U+1F525', name: 'Fire', use: 'Trending, hot' },
+    { symbol: '🚀', code: 'U+1F680', name: 'Rocket', use: 'Launch, fast' },
+    { symbol: '🎯', code: 'U+1F3AF', name: 'Bullseye', use: 'Goal, target' },
+    { symbol: '✅', code: 'U+2705', name: 'Check mark button', use: 'Verified, done' },
+    { symbol: '❌', code: 'U+274C', name: 'Cross mark', use: 'Error, not allowed' },
+    { symbol: '⚠️', code: 'U+26A0', name: 'Warning sign', use: 'Alert' },
+    { symbol: 'ℹ️', code: 'U+2139', name: 'Information', use: 'Info tip' },
+    { symbol: '❓', code: 'U+2753', name: 'Question mark', use: 'Help, unknown' },
+  ];
+
+  // ─── DNS records reference (verbose) ────────────────────────────
+  var DNS_RECORDS = [
+    {
+      type: 'A',
+      meaning: 'Address — maps domain to IPv4 address',
+      example: 'example.com → 192.0.2.1',
+      use: 'The fundamental record. Without it, domain points nowhere.',
+      ttl: 'Typical: 1 hour to 24 hours',
+    },
+    {
+      type: 'AAAA',
+      meaning: 'Address — maps domain to IPv6 address',
+      example: 'example.com → 2001:db8::1',
+      use: 'Modern alternative for IPv6 support',
+    },
+    {
+      type: 'CNAME',
+      meaning: 'Canonical name — alias to another domain',
+      example: 'www.example.com → example.com',
+      use: 'Subdomain pointing to apex; cannot be used at apex',
+      gotcha: 'Cannot coexist with other records on the same name',
+    },
+    {
+      type: 'MX',
+      meaning: 'Mail exchange — server that handles email',
+      example: 'example.com → priority 10, mail.example.com',
+      use: 'Required to receive email at the domain',
+      tip: 'Lower priority number = preferred server',
+    },
+    {
+      type: 'TXT',
+      meaning: 'Text — arbitrary text data',
+      example: 'v=spf1 include:_spf.google.com ~all',
+      use: 'SPF (email auth), DKIM, domain verification, DMARC',
+    },
+    {
+      type: 'NS',
+      meaning: 'Name server — which servers are authoritative',
+      example: 'example.com → ns1.cloudflare.com, ns2.cloudflare.com',
+      use: 'Set at registrar; determines who runs DNS for the domain',
+    },
+    {
+      type: 'SOA',
+      meaning: 'Start of authority — admin info for the zone',
+      example: 'Auto-created by DNS host',
+      use: 'Contains primary NS, admin email, refresh intervals',
+    },
+    {
+      type: 'PTR',
+      meaning: 'Reverse DNS — IP to domain',
+      example: '192.0.2.1 → example.com',
+      use: 'Email servers check this for spam prevention',
+    },
+    {
+      type: 'SRV',
+      meaning: 'Service — port + host for a service',
+      example: '_xmpp._tcp.example.com → 5222 chat.example.com',
+      use: 'XMPP, Matrix, Minecraft, other services',
+    },
+    {
+      type: 'CAA',
+      meaning: 'Certificate Authority Authorization',
+      example: '0 issue "letsencrypt.org"',
+      use: 'Restricts which CAs can issue SSL certs for your domain',
+    },
+    {
+      type: 'ALIAS / ANAME',
+      meaning: 'CNAME-like at the apex (DNS-host-specific)',
+      example: 'example.com (apex) → myapp.vercel.app',
+      use: 'Allows apex domain pointing to a CNAME-target',
+      note: 'Not standard DNS — provider-specific (Cloudflare, AWS Route53, etc.)',
+    },
+    {
+      principle: 'Verifying DNS',
+      tools: [
+        'dig example.com → query a record',
+        'dig +trace example.com → trace from root',
+        'nslookup example.com → simpler tool',
+        'mxtoolbox.com — web-based DNS testing',
+        'whatsmydns.net — check propagation globally',
+      ],
+    },
+  ];
+
+  // ─── Lighthouse audit categories (verbose) ──────────────────────
+  var LIGHTHOUSE_CATEGORIES = [
+    {
+      category: 'Performance',
+      weight: '~50% in overall score',
+      metrics: [
+        { metric: 'First Contentful Paint (FCP)', good: '< 1.8s', meh: '< 3.0s', poor: '> 3.0s', what: 'When user sees first text/image' },
+        { metric: 'Largest Contentful Paint (LCP)', good: '< 2.5s', meh: '< 4.0s', poor: '> 4.0s', what: 'When main content is visible' },
+        { metric: 'Total Blocking Time (TBT)', good: '< 200ms', meh: '< 600ms', poor: '> 600ms', what: 'Time JS blocks the main thread' },
+        { metric: 'Cumulative Layout Shift (CLS)', good: '< 0.1', meh: '< 0.25', poor: '> 0.25', what: 'How much content jumps around' },
+        { metric: 'Speed Index', good: '< 3.4s', meh: '< 5.8s', poor: '> 5.8s', what: 'How quickly content visually fills in' },
+      ],
+      improve: [
+        'Reduce JavaScript bundle size (code splitting, tree shaking)',
+        'Optimize images (compress, modern formats, srcset)',
+        'Lazy load below-the-fold content',
+        'Defer non-critical CSS',
+        'Use CDN for static assets',
+        'Set explicit width/height on images and ads to prevent CLS',
+      ],
+    },
+    {
+      category: 'Accessibility',
+      audits: [
+        'Color contrast meets WCAG AA',
+        'Images have alt text',
+        'Form inputs have labels',
+        'Buttons have accessible names',
+        'Page has lang attribute',
+        'No duplicate IDs',
+        'Headings in order (h1, h2, h3)',
+        'Tap targets are at least 48×48',
+        'Focus is visible',
+      ],
+      score: 'Often easier to fix than performance',
+    },
+    {
+      category: 'Best Practices',
+      audits: [
+        'HTTPS used',
+        'No console errors',
+        'Images displayed at correct aspect ratio',
+        'No deprecated APIs',
+        'Source maps available for production',
+        'Doesn\'t use document.write()',
+        'Notification API used only with user gesture',
+      ],
+    },
+    {
+      category: 'SEO',
+      audits: [
+        'Page has <title>',
+        'Page has meta description',
+        'Page has lang attribute',
+        'Links have descriptive text',
+        'Images have alt text',
+        'Page is mobile-friendly',
+        'Content sized correctly for viewport',
+        'No render-blocking resources',
+        'robots.txt is valid',
+        'rel="canonical" set correctly',
+      ],
+    },
+    {
+      category: 'Progressive Web App',
+      audits: [
+        'Has a manifest.json',
+        'Service worker registered',
+        'Works offline',
+        'Installable on home screen',
+        'Themed splash screen',
+        'Loads fast even on 3G',
+      ],
+      note: 'Optional category — only if building a PWA',
+    },
+    {
+      tip: 'How to run Lighthouse',
+      methods: [
+        'Chrome DevTools → Lighthouse tab → Generate report',
+        'pagespeed.web.dev — web-based, no extension needed',
+        'npm install -g lighthouse → CLI for CI/CD',
+        'lighthouse-ci for GitHub Actions integration',
+      ],
+    },
+    {
+      tip: 'Performance budgets',
+      what: 'Set thresholds that fail the build if exceeded',
+      example: '{ "performance": 90, "accessibility": 100, "best-practices": 90, "seo": 90 }',
+      where: 'lighthouse-ci config, web.dev/measure, custom CI scripts',
+    },
+  ];
+
+  // ─── Common error messages decoded (verbose) ────────────────────
+  var ERROR_DICTIONARY = [
+    {
+      error: 'Uncaught TypeError: Cannot read properties of undefined (reading \'X\')',
+      meaning: 'You tried to access .X on something that doesn\'t exist',
+      example: 'const name = user.profile.name; // but user.profile is undefined',
+      fix: 'Use optional chaining: user?.profile?.name. Or check first: if (user && user.profile) { ... }',
+      common: 'API data not yet loaded; nested object missing; typo in property name',
+    },
+    {
+      error: 'Uncaught TypeError: X is not a function',
+      meaning: 'You tried to call X() but X is something else (or undefined)',
+      example: 'const fn = obj.doSomething; fn(); // but obj.doSomething is null',
+      fix: 'Check that you imported/spelled correctly. console.log(typeof X) to see what it actually is.',
+    },
+    {
+      error: 'Uncaught SyntaxError: Unexpected token',
+      meaning: 'JS parser found something it didn\'t expect',
+      common: 'Missing comma, bracket, paren. Mismatched quotes. Trailing comma in JSON.',
+      fix: 'Look at the line and the line above. Most often missing or extra bracket.',
+    },
+    {
+      error: 'Uncaught ReferenceError: X is not defined',
+      meaning: 'You used X but JS doesn\'t know what it is',
+      common: 'Variable typo, missing import, script not loaded yet, scope issue',
+      fix: 'Check spelling. Check import statement. Check load order.',
+    },
+    {
+      error: 'CORS error: blocked by CORS policy',
+      meaning: 'Browser blocked a cross-origin request',
+      explanation: 'For security, browsers only allow JS to call same-origin URLs unless the server explicitly opts in via CORS headers.',
+      fix: [
+        'In dev: use a proxy in your dev server config',
+        'On the API server: add Access-Control-Allow-Origin: yourdomain.com',
+        'For static APIs: use a different one that supports CORS, or call from your backend',
+      ],
+    },
+    {
+      error: 'Network request failed / NS_ERROR_DOM_BAD_URI',
+      meaning: 'Browser couldn\'t reach the URL',
+      common: 'URL typo; offline; HTTPS site calling HTTP API (mixed content); ad blocker',
+      fix: 'Check URL in browser directly. Check DevTools Network tab.',
+    },
+    {
+      error: 'Failed to fetch',
+      meaning: 'Network request failed at lowest level',
+      common: 'CORS, mixed content, ad blocker, offline, DNS issue',
+      fix: 'Check Network tab. Check console for CORS message just above.',
+    },
+    {
+      error: 'Maximum call stack size exceeded',
+      meaning: 'Infinite recursion',
+      example: 'function f() { f(); } f();',
+      fix: 'Find the recursive function. Add a base case. Use iteration instead.',
+    },
+    {
+      error: 'Module not found / Cannot find module \'X\'',
+      meaning: 'Import path is wrong, or package not installed',
+      fix: [
+        'npm install X (if it\'s a package)',
+        'Check the relative path: ./file.js vs ../file.js',
+        'Check file extension in import (some setups require .js)',
+        'Restart dev server after installing',
+      ],
+    },
+    {
+      error: 'Hydration failed because the initial UI does not match',
+      meaning: 'In SSR (Next.js, etc.), server-rendered HTML differs from client-rendered',
+      common: 'Date/random values that differ between renders; conditional UI based on window',
+      fix: 'Use useEffect for browser-only logic. Use suppressHydrationWarning if intentional.',
+    },
+    {
+      error: '404 Not Found',
+      meaning: 'URL does not exist on the server',
+      common: 'Wrong path, deleted resource, deploy missing file, routing config wrong',
+      fix: 'Verify URL spelling. Check server routing.',
+    },
+    {
+      error: '500 Internal Server Error',
+      meaning: 'Server crashed handling the request',
+      fix: 'Check server logs. Add error logging. Catch exceptions in handlers.',
+    },
+    {
+      error: 'CERT_HAS_EXPIRED / SSL error',
+      meaning: 'SSL certificate is invalid or expired',
+      fix: [
+        'Renew certificate (Let\'s Encrypt auto-renews)',
+        'Check certificate at ssllabs.com/ssltest',
+        'In dev only: NODE_TLS_REJECT_UNAUTHORIZED=0 (NEVER in prod)',
+      ],
+    },
+    {
+      error: 'EADDRINUSE: address already in use',
+      meaning: 'Port is occupied by another process',
+      fix: [
+        'lsof -i :3000 (find what\'s on port 3000)',
+        'kill PID',
+        'Or change port: PORT=3001 npm start',
+      ],
+    },
+    {
+      error: 'EACCES: permission denied',
+      meaning: 'File system permission error',
+      fix: [
+        'Don\'t use sudo with npm (creates permission issues)',
+        'Fix npm prefix: npm config set prefix ~/.npm-global',
+        'chmod permissions on files',
+      ],
+    },
+    {
+      error: 'JavaScript heap out of memory',
+      meaning: 'Node ran out of RAM',
+      fix: [
+        'Increase memory: node --max-old-space-size=4096 script.js',
+        'Find memory leaks (DevTools Memory tab)',
+        'Process data in chunks instead of all at once',
+      ],
+    },
+    {
+      error: 'GitHub: Repository not found',
+      meaning: 'URL is wrong, repo is private, or auth failed',
+      fix: [
+        'Check URL spelling',
+        'Make sure you have access (collaborator)',
+        'Update credentials: git config --global credential.helper',
+      ],
+    },
+    {
+      error: 'Merge conflict',
+      meaning: 'Git can\'t auto-merge two changes to the same line',
+      fix: [
+        'Open conflicted file',
+        'Find <<<<<<< markers',
+        'Pick which version to keep (or combine)',
+        'Remove markers',
+        'git add file → git commit',
+      ],
+    },
+  ];
+
+  // ─── Web security checklist (verbose) ───────────────────────────
+  var SECURITY_CHECKLIST = [
+    {
+      category: 'Input handling',
+      checks: [
+        'Validate all input on the server (client validation is for UX, not security)',
+        'Sanitize HTML before rendering (DOMPurify)',
+        'Use parameterized queries for SQL (never concatenate)',
+        'Use prepared statements or ORMs',
+        'Validate file uploads (type, size, scan for malware)',
+        'Limit input length to reasonable maximums',
+        'Reject unexpected fields in API payloads',
+      ],
+    },
+    {
+      category: 'Authentication',
+      checks: [
+        'Hash passwords with bcrypt/argon2 (NEVER store plain or MD5)',
+        'Require strong passwords (length over complexity per NIST)',
+        'Implement rate limiting on login (prevent brute force)',
+        'Use HTTPS only for login pages',
+        'Implement password reset securely (time-limited tokens)',
+        'Offer 2FA / MFA',
+        'Lock account after N failed attempts',
+        'Use session timeouts',
+        'Don\'t reveal whether email exists ("invalid email or password")',
+      ],
+    },
+    {
+      category: 'Sessions / cookies',
+      checks: [
+        'Cookie HttpOnly flag (prevents JS access)',
+        'Cookie Secure flag (HTTPS only)',
+        'Cookie SameSite=Lax or Strict',
+        'Rotate session ID after login',
+        'Invalidate sessions on logout',
+        'Use short access tokens + refresh tokens',
+        'Store JWTs carefully (XSS-resistant; not in localStorage if you can avoid)',
+      ],
+    },
+    {
+      category: 'Authorization',
+      checks: [
+        'Check permissions on EVERY endpoint, not just UI',
+        'Don\'t trust IDs from the client (e.g., /users/me, not /users/?id=X)',
+        'Use least-privilege principle for DB users',
+        'Audit log who did what',
+        'Test with a normal-user account, not just admin',
+      ],
+    },
+    {
+      category: 'HTTPS / TLS',
+      checks: [
+        'HTTPS on EVERYTHING, not just login',
+        'HSTS header (Strict-Transport-Security)',
+        'Modern TLS only (1.2+)',
+        'Strong cipher suites',
+        'Valid certificate (Let\'s Encrypt auto-renews)',
+        'Redirect HTTP → HTTPS',
+      ],
+    },
+    {
+      category: 'Headers',
+      checks: [
+        'Content-Security-Policy (CSP) — prevents XSS',
+        'X-Content-Type-Options: nosniff',
+        'X-Frame-Options: DENY (or use CSP frame-ancestors)',
+        'Referrer-Policy: strict-origin-when-cross-origin',
+        'Permissions-Policy (formerly Feature-Policy)',
+      ],
+      tool: 'securityheaders.com — scan your site',
+    },
+    {
+      category: 'API security',
+      checks: [
+        'Rate limit by user / IP',
+        'Use API keys with rotation',
+        'Authenticate with JWT or OAuth (not basic auth in URL)',
+        'Validate Content-Type matches body',
+        'CORS allowlist specific origins (not *)',
+        'Pagination limits (don\'t return 100,000 records)',
+        'Don\'t expose internal IDs in URLs (use UUIDs or slugs)',
+      ],
+    },
+    {
+      category: 'Dependencies',
+      checks: [
+        'npm audit / pip audit — check for known CVEs',
+        'Use lockfiles (package-lock.json, pnpm-lock.yaml)',
+        'Update regularly (but test before updating major versions)',
+        'Don\'t install random packages — vet popularity, maintainer',
+        'Avoid leftpad-style mini-dependencies',
+        'Use Dependabot or Renovate for automated updates',
+      ],
+    },
+    {
+      category: 'Secrets',
+      checks: [
+        'NEVER commit .env, credentials, API keys',
+        '.gitignore should include .env, *.pem, etc.',
+        'Use environment variables for secrets',
+        'Use a secrets manager for production (Vault, AWS Secrets Manager)',
+        'Rotate secrets periodically',
+        'Don\'t print secrets in logs',
+        'If you accidentally commit a secret: revoke it immediately, then remove from history',
+      ],
+    },
+    {
+      category: 'Database',
+      checks: [
+        'Use a DB user with minimum required permissions',
+        'Encrypt sensitive columns at rest',
+        'Regular backups (test restoring them!)',
+        'Don\'t expose DB to public internet',
+        'Use connection pooling',
+        'Set query timeouts',
+      ],
+    },
+    {
+      category: 'Logging',
+      checks: [
+        'Log authentication events',
+        'Log authorization failures',
+        'NEVER log passwords, tokens, or full credit cards',
+        'Use structured logs (JSON) for searching',
+        'Centralize logs (Datadog, Logtail, Sentry)',
+        'Set retention policies',
+      ],
+    },
+    {
+      category: 'Common attacks to defend against',
+      attacks: [
+        { name: 'XSS', defense: 'Sanitize HTML, use CSP, escape output' },
+        { name: 'SQL injection', defense: 'Parameterized queries, ORMs' },
+        { name: 'CSRF', defense: 'CSRF tokens, SameSite cookies' },
+        { name: 'Clickjacking', defense: 'X-Frame-Options or CSP frame-ancestors' },
+        { name: 'Open redirect', defense: 'Validate redirect URLs against allowlist' },
+        { name: 'IDOR (insecure direct object ref)', defense: 'Check ownership on every access' },
+        { name: 'Mass assignment', defense: 'Allowlist updatable fields' },
+        { name: 'Server-side request forgery (SSRF)', defense: 'Validate URLs server fetches' },
+        { name: 'Path traversal', defense: 'Sanitize file paths (no ../../)' },
+        { name: 'Timing attacks', defense: 'Constant-time comparison for tokens' },
+      ],
+    },
+  ];
+
+  // ─── Build tools landscape (verbose) ────────────────────────────
+  var BUILD_TOOLS = [
+    {
+      tool: 'Vite',
+      type: 'Dev server + build tool',
+      strengths: ['Super fast dev (ES modules natively)', 'Built-in TypeScript, JSX, CSS', 'Plugin ecosystem', 'Defaults are great'],
+      use: 'Most modern projects. Replacing Create React App for new React projects.',
+      install: 'npm create vite@latest',
+      verdict: 'BEST choice for new React/Vue/Svelte projects in 2024+',
+    },
+    {
+      tool: 'esbuild',
+      type: 'Bundler (in Go)',
+      strengths: ['Extremely fast (10-100x faster than webpack)', 'Simple config', 'TypeScript built-in'],
+      weaknesses: ['Less plugin ecosystem than webpack', 'Less mature for very complex apps'],
+      use: 'When you want speed and don\'t need fancy webpack-only features. Used internally by Vite.',
+    },
+    {
+      tool: 'webpack',
+      type: 'Bundler',
+      strengths: ['Massive ecosystem', 'Configurable for any scenario', 'Used by huge codebases'],
+      weaknesses: ['Slow', 'Complex configuration', 'Steep learning curve'],
+      use: 'Legacy projects, very specific needs. Most new projects use Vite or Turbopack instead.',
+    },
+    {
+      tool: 'Rollup',
+      type: 'Bundler (ESM-focused)',
+      strengths: ['Excellent tree shaking', 'Clean output', 'Library-friendly'],
+      weaknesses: ['Less good for apps', 'Smaller plugin ecosystem'],
+      use: 'Authoring JavaScript libraries. Used inside Vite for production builds.',
+    },
+    {
+      tool: 'Turbopack',
+      type: 'Bundler (in Rust, by Vercel)',
+      strengths: ['Faster than webpack', 'Built for Next.js'],
+      weaknesses: ['Still beta', 'Tied to Next.js ecosystem'],
+      use: 'Next.js 13+ projects with --turbo flag',
+    },
+    {
+      tool: 'Parcel',
+      type: 'Zero-config bundler',
+      strengths: ['Works out of the box (no config)', 'Auto-detects HTML/CSS/JS/images'],
+      weaknesses: ['Less flexible for advanced cases'],
+      use: 'Prototypes, simple sites, learning bundlers',
+    },
+    {
+      tool: 'Bun',
+      type: 'Runtime + bundler + package manager (all-in-one)',
+      strengths: ['Very fast', 'TypeScript built-in', 'Drop-in Node replacement', 'Includes test runner'],
+      weaknesses: ['Newer (potential bugs)', 'Some Node packages don\'t work yet'],
+      use: 'Greenfield projects looking for max speed',
+    },
+    {
+      tool: 'Deno',
+      type: 'Runtime',
+      strengths: ['Secure by default', 'TypeScript built-in', 'Web-standard APIs'],
+      weaknesses: ['Different package model (URL imports)', 'Smaller ecosystem'],
+      use: 'New projects valuing security and modern APIs',
+    },
+    {
+      tool: 'Babel',
+      type: 'JavaScript transpiler',
+      what: 'Converts modern JS to older JS for compatibility',
+      strengths: ['Highly configurable', 'Many plugins'],
+      weaknesses: ['Slow', 'Often replaced by esbuild/SWC'],
+      use: 'When you need very specific transformations or wide browser support',
+    },
+    {
+      tool: 'SWC',
+      type: 'JS/TS compiler (in Rust)',
+      what: 'Faster Babel alternative',
+      use: 'Built into Next.js and many modern build tools',
+    },
+    {
+      tool: 'PostCSS',
+      type: 'CSS transformer',
+      what: 'Modern CSS plugin pipeline',
+      plugins: ['Autoprefixer (vendor prefixes)', 'Tailwind CSS', 'cssnano (minify)', 'postcss-preset-env (future CSS today)'],
+    },
+    {
+      tool: 'Tailwind CSS',
+      type: 'Utility-first CSS framework',
+      what: 'Build UIs from utility classes (bg-blue-500, p-4, etc.)',
+      pros: ['Fast to write', 'No CSS naming bikeshedding', 'Consistent design system', 'Small output (unused classes purged)'],
+      cons: ['HTML gets long', 'Learning curve', 'Some teams prefer semantic class names'],
+      use: 'Dominant choice for new projects in 2024+',
+    },
+  ];
+
+  // ─── Open source license guide (verbose) ────────────────────────
+  var OPEN_SOURCE_LICENSES = [
+    {
+      license: 'MIT',
+      summary: 'Do anything, but keep the copyright notice',
+      permissive: true,
+      commercial: 'Yes',
+      patentGrant: 'No (use Apache 2.0 if you need patent protection)',
+      use: 'Most popular for libraries. AlloFlow tools use this.',
+      length: '~10 lines',
+    },
+    {
+      license: 'Apache 2.0',
+      summary: 'Like MIT but with explicit patent grant',
+      permissive: true,
+      commercial: 'Yes',
+      patentGrant: 'Yes',
+      use: 'When patent issues matter (many big company projects)',
+      length: 'Longer than MIT, includes patent terms',
+    },
+    {
+      license: 'BSD 2-Clause / 3-Clause',
+      summary: 'Permissive, similar to MIT',
+      permissive: true,
+      commercial: 'Yes',
+      differences: '3-Clause adds "no endorsement" clause',
+      use: 'Common in academic / Unix-derived code',
+    },
+    {
+      license: 'GPL v3',
+      summary: 'Copyleft — anything that includes this must also be GPL',
+      permissive: false,
+      commercial: 'Yes, BUT must also release your code as GPL',
+      use: 'Tools where you want all derivatives to stay open',
+      example: 'Linux kernel, GIMP',
+      caution: 'Many commercial projects avoid GPL due to viral licensing',
+    },
+    {
+      license: 'LGPL v3',
+      summary: 'Lesser GPL — linking allowed without inheriting license',
+      permissive: false,
+      use: 'Libraries that should stay copyleft but be usable in proprietary apps',
+    },
+    {
+      license: 'AGPL v3',
+      summary: 'Affero GPL — extends GPL to network use',
+      permissive: false,
+      what: 'If you run the software as a service, you must offer source to users',
+      use: 'Server software that doesn\'t want to be exploited by closed SaaS competitors (MongoDB used this)',
+    },
+    {
+      license: 'MPL 2.0',
+      summary: 'Mozilla Public License — file-level copyleft',
+      use: 'Mozilla projects (Firefox)',
+      mood: 'Compromise between MIT and GPL',
+    },
+    {
+      license: 'ISC',
+      summary: 'Functionally equivalent to MIT, slightly shorter',
+      use: 'Some older projects, npm defaults',
+    },
+    {
+      license: 'Unlicense',
+      summary: 'Public domain dedication',
+      use: 'When you really want zero restrictions',
+      note: 'Public domain doesn\'t exist in all countries; Unlicense tries to handle that',
+    },
+    {
+      license: 'Creative Commons',
+      use: 'NOT for software — for content (images, text, video)',
+      variants: ['CC0 (public domain)', 'CC BY (attribution)', 'CC BY-SA (attribution + share-alike)', 'CC BY-NC (non-commercial)', 'CC BY-ND (no derivatives)'],
+    },
+    {
+      license: 'Proprietary / "All rights reserved"',
+      summary: 'No license = full copyright',
+      caution: 'A repo without a LICENSE file is NOT open source — even on GitHub',
+      fix: 'Add a LICENSE file to make it actually open source',
+    },
+    {
+      principles: [
+        'Always include a LICENSE file when publishing code',
+        'Check licenses of dependencies before commercial use',
+        'choosealicense.com walks you through picking one',
+        'GPL is "viral" — incorporating GPL code in your project makes your project GPL',
+        'MIT/Apache/BSD are safe for commercial use',
+        'Read the actual license, not just summaries',
+      ],
+    },
+  ];
+
+  // ─── CSS Animation reference (verbose) ──────────────────────────
+  var ANIMATION_REFERENCE = [
+    {
+      concept: 'CSS transitions',
+      description: 'Smoothly animate property changes',
+      example: `button {
+  background: blue;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+button:hover {
+  background: red;
+  transform: scale(1.05);
+}`,
+      properties: [
+        'transition-property: which property to animate (or "all")',
+        'transition-duration: how long (e.g., 0.2s, 200ms)',
+        'transition-timing-function: ease, linear, ease-in, ease-out, ease-in-out, cubic-bezier(...)',
+        'transition-delay: wait before starting',
+      ],
+      whenToUse: 'Hover effects, simple state changes, microinteractions',
+    },
+    {
+      concept: 'CSS @keyframes',
+      description: 'Multi-step animations',
+      example: `@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+.ball {
+  animation: bounce 0.5s ease infinite;
+}`,
+      properties: [
+        'animation-name: keyframes to use',
+        'animation-duration: total duration',
+        'animation-iteration-count: number or "infinite"',
+        'animation-direction: normal, reverse, alternate, alternate-reverse',
+        'animation-fill-mode: forwards, backwards, both',
+        'animation-play-state: running, paused',
+        'animation-delay: wait before starting',
+      ],
+    },
+    {
+      concept: 'Easing functions (timing functions)',
+      common: [
+        { fn: 'ease', describes: 'Slow start, fast middle, slow end (default)' },
+        { fn: 'linear', describes: 'Constant speed' },
+        { fn: 'ease-in', describes: 'Slow start, fast end' },
+        { fn: 'ease-out', describes: 'Fast start, slow end (RECOMMENDED for entries)' },
+        { fn: 'ease-in-out', describes: 'Slow start and end' },
+        { fn: 'cubic-bezier(0.4, 0, 0.2, 1)', describes: 'Material Design standard' },
+        { fn: 'cubic-bezier(0.68, -0.55, 0.27, 1.55)', describes: 'Bounce overshoot' },
+      ],
+      tools: ['easings.net — visual easing reference', 'cubic-bezier.com — design custom easings'],
+      principle: 'Use ease-out for entries (feels natural). Use ease-in for exits.',
+    },
+    {
+      concept: 'Properties that animate cheaply',
+      cheap: ['transform (translate, rotate, scale)', 'opacity'],
+      expensive: ['width, height (cause layout)', 'top, left (cause layout — use transform instead)', 'box-shadow (paint cost)', 'border-radius (paint cost)'],
+      why: 'transform and opacity can be GPU-accelerated. Layout-affecting properties recompute the entire page.',
+      tip: 'Animate transform: translate3d(0, -20px, 0) instead of top: -20px',
+    },
+    {
+      concept: 'Performance: will-change',
+      what: 'Hint to browser that property will change',
+      example: '.menu { will-change: transform; }',
+      caution: 'Use sparingly — promotes to GPU layer, costs memory',
+      remove: 'Remove the will-change after animation completes',
+    },
+    {
+      concept: 'prefers-reduced-motion',
+      why: 'Some users have vestibular disorders triggered by motion',
+      example: `.fancy { animation: bounce 1s infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fancy { animation: none; }
+}`,
+      principle: 'Always honor the user\'s OS-level reduced-motion setting',
+      AlloFlowNote: 'AlloFlow includes scoped reduced-motion CSS app-wide. Don\'t break it.',
+    },
+    {
+      concept: 'Web Animations API (JS)',
+      example: `element.animate([
+  { transform: 'translateY(0)', opacity: 0 },
+  { transform: 'translateY(20px)', opacity: 1 }
+], {
+  duration: 300,
+  easing: 'ease-out',
+  fill: 'forwards'
+});`,
+      benefits: ['Promise-based: animation.finished.then(...)', 'Pause/play/reverse programmatically', 'Better performance than setInterval'],
+    },
+    {
+      concept: 'Scroll-driven animations (modern)',
+      description: 'Animate based on scroll position',
+      example: `@keyframes appear {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: appear linear;
+  animation-timeline: view();
+  animation-range: entry 0% cover 30%;
+}`,
+      support: 'Chrome 115+, Firefox 110+ via flag',
+      alt: 'Use Intersection Observer + class toggle for wider support',
+    },
+    {
+      concept: 'Lottie animations',
+      what: 'After Effects animations exported as JSON',
+      use: 'Complex illustrated animations, marketing pages',
+      library: 'lottie-web (npm install lottie-web)',
+      sourcing: 'lottiefiles.com has thousands of free animations',
+      tradeoff: 'Bigger than CSS animations but unmatched for complex illustrations',
+    },
+    {
+      concept: 'GSAP (GreenSock)',
+      what: 'Professional animation library',
+      use: 'Complex sequencing, SVG morphing, scroll-triggered animations',
+      pros: ['Mature', 'Powerful', 'Works in all browsers'],
+      cons: ['Bigger than CSS', 'Learning curve'],
+      tip: 'For most needs, CSS + Web Animations API is enough',
+    },
+    {
+      concept: 'Framer Motion (React)',
+      what: 'Declarative animation library for React',
+      example: `<motion.div
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.3 }}
+>
+  Content
+</motion.div>`,
+      pros: ['Declarative', 'Layout animations automatic', 'Great defaults'],
+      cons: ['React only', 'Bundle size'],
+    },
+    {
+      concept: 'Animation principles (from Disney)',
+      list: [
+        'Squash and stretch — gives sense of weight',
+        'Anticipation — prepare the eye for action',
+        'Staging — direct attention to important part',
+        'Slow in / slow out — most things accelerate/decelerate',
+        'Follow through — secondary parts continue after main stops',
+        'Arcs — natural motion follows curves, not straight lines',
+        'Secondary action — small reactions add life',
+        'Timing — duration affects emotional feel',
+        'Exaggeration — push beyond reality (sparingly)',
+        'Appeal — make it interesting to look at',
+      ],
+      why: 'Even subtle UI animations benefit from understanding why some motions feel "right"',
+    },
+    {
+      concept: 'When NOT to animate',
+      list: [
+        'Don\'t animate critical UI (form errors, status messages)',
+        'Don\'t animate when motion would slow user (delays clicks)',
+        'Don\'t use parallax scrolling unless designed for it (can cause motion sickness)',
+        'Don\'t use spinning loaders for > 3 seconds — they amplify wait perception',
+        'Don\'t animate everything — sparingly is more effective',
+      ],
+    },
+  ];
+
+  // ─── Forms reference (verbose) ──────────────────────────────────
+  var FORMS_GUIDE = [
+    {
+      concept: 'Semantic form structure',
+      example: `<form action="/submit" method="POST">
+  <fieldset>
+    <legend>Personal Information</legend>
+
+    <div class="field">
+      <label for="name">Full name <abbr title="required">*</abbr></label>
+      <input id="name" name="name" type="text" required autocomplete="name">
+    </div>
+
+    <div class="field">
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" required autocomplete="email">
+    </div>
+  </fieldset>
+
+  <button type="submit">Submit</button>
+</form>`,
+      principles: [
+        'Always use <form> with action and method',
+        'Group related fields in <fieldset> with <legend>',
+        'Pair every input with a <label>',
+        'Use the right input type (email, tel, number, date)',
+        'Use autocomplete attributes',
+        'Mark required fields with required attribute (not just *)',
+      ],
+    },
+    {
+      concept: 'Input types',
+      list: [
+        { type: 'text', use: 'General text', features: 'No special validation' },
+        { type: 'email', use: 'Email addresses', features: 'Auto-validates format, mobile keyboard with @' },
+        { type: 'tel', use: 'Phone numbers', features: 'Mobile shows number pad' },
+        { type: 'url', use: 'URLs', features: 'Validates as URL' },
+        { type: 'number', use: 'Numbers', features: 'min, max, step attributes; up/down arrows' },
+        { type: 'date', use: 'Date picker', features: 'Native calendar widget' },
+        { type: 'time', use: 'Time picker', features: 'Native time widget' },
+        { type: 'datetime-local', use: 'Date + time', features: 'Combined picker' },
+        { type: 'password', use: 'Passwords', features: 'Hidden chars, mobile reveals briefly' },
+        { type: 'search', use: 'Search queries', features: 'Has clear-X button on some browsers' },
+        { type: 'color', use: 'Color picker', features: 'Native color picker' },
+        { type: 'file', use: 'File upload', features: 'accept attribute filters' },
+        { type: 'checkbox', use: 'Boolean toggle', features: 'Use with name + value' },
+        { type: 'radio', use: 'Single choice from set', features: 'Same name groups them' },
+        { type: 'range', use: 'Slider', features: 'min, max, step' },
+        { type: 'hidden', use: 'Pass data invisibly', features: 'Use for CSRF tokens, IDs' },
+      ],
+    },
+    {
+      concept: 'Autocomplete attributes',
+      why: 'Modern browsers can auto-fill from saved data. Always include these.',
+      common: [
+        'name (full name), given-name, family-name',
+        'email',
+        'username',
+        'new-password (for signups), current-password (for login)',
+        'tel',
+        'address-line1, address-line2, address-level1 (state), address-level2 (city)',
+        'postal-code, country',
+        'cc-number, cc-exp, cc-csc (credit card)',
+        'bday (birthday)',
+        'one-time-code (SMS codes — auto-fills!)',
+        'off (disable — for unique fields like a username search)',
+      ],
+    },
+    {
+      concept: 'Validation: HTML5 vs JavaScript',
+      html5: [
+        'required: field must be filled',
+        'minlength, maxlength: text length',
+        'min, max, step: number ranges',
+        'pattern: regex validation',
+        'type=email, type=url: format validation',
+      ],
+      js: [
+        'Custom messages: input.setCustomValidity("Names cannot have numbers")',
+        'Check validity: form.checkValidity() or input.validity object',
+        'Submit handler: form.addEventListener("submit", e => {...})',
+      ],
+      principle: 'Always validate on the SERVER too. Client validation is for UX, not security.',
+    },
+    {
+      concept: 'Error messages',
+      bad: 'Invalid input',
+      better: 'Please enter a valid email address (e.g., user@example.com)',
+      placement: [
+        'Inline (below the field) — most natural',
+        'Summary at top of form for screen readers',
+        'Use aria-live="polite" so screen readers announce',
+        'Mark field with aria-invalid="true"',
+        'Associate error message with aria-describedby',
+      ],
+      example: `<input aria-invalid="true" aria-describedby="email-error" id="email">
+<div id="email-error" role="alert">Please enter a valid email address</div>`,
+    },
+    {
+      concept: 'Accessibility (forms)',
+      checklist: [
+        'Every input has a visible <label>',
+        'For radio/checkbox groups, use <fieldset><legend>',
+        'Required fields marked with required attribute + visual indicator + aria-required',
+        'Error states use aria-invalid + aria-describedby',
+        'Form errors announced via role="alert"',
+        'Focus visible (don\'t remove outline)',
+        'Tab order matches visual order',
+        'Buttons say what they do ("Submit" not "Submit", "Save" not "Save")',
+        'Don\'t rely on color alone (icon + text)',
+      ],
+    },
+    {
+      concept: 'UX patterns',
+      list: [
+        'Show password reveal button (👁 icon)',
+        'Show password strength as user types',
+        'Auto-tab between segments (credit card)',
+        'Format as user types (phone numbers, dates)',
+        'Disable submit button while submitting',
+        'Show loading state on submit',
+        'Preserve input on validation error',
+        'Confirm before discarding unsaved changes',
+        'Save draft automatically (localStorage)',
+        'Show character counter for fields with limits',
+      ],
+    },
+    {
+      concept: 'Multi-step forms (wizards)',
+      principles: [
+        'Show progress (Step 2 of 4)',
+        'Allow going back to previous steps',
+        'Save state between steps (so back works)',
+        'Validate per step, not just at end',
+        'Show summary on final step before submit',
+        'Allow editing summary fields from final step',
+      ],
+    },
+    {
+      concept: 'Submit handling',
+      example: `form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const submitBtn = form.querySelector('button[type="submit"]');
+  const originalText = submitBtn.textContent;
+
+  try {
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Saving...';
+
+    const data = new FormData(form);
+    const res = await fetch('/api/submit', { method: 'POST', body: data });
+
+    if (!res.ok) throw new Error('Server error');
+
+    showToast('Saved!');
+    form.reset();
+  } catch (err) {
+    showError(err.message);
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = originalText;
+  }
+});`,
+    },
+    {
+      concept: 'FormData API',
+      example: `const data = new FormData(form);  // grab from <form>
+
+// Manually
+const data = new FormData();
+data.append('name', 'Aaron');
+data.append('photo', fileInput.files[0]);
+
+// Send via fetch
+await fetch('/api/upload', { method: 'POST', body: data });`,
+      benefit: 'Handles files automatically. No JSON.stringify needed.',
+      caution: 'Server must read multipart/form-data, not JSON',
+    },
+    {
+      concept: 'Form libraries (React)',
+      list: [
+        { name: 'react-hook-form', notes: 'Most popular. Uncontrolled inputs (fast). Built-in validation.' },
+        { name: 'Formik', notes: 'Older but mature. Controlled inputs. Good for complex forms.' },
+        { name: 'TanStack Form (Form)', notes: 'Newer. Framework-agnostic version available.' },
+        { name: 'Zod (with any form lib)', notes: 'Schema validation. Works great with TS.' },
+      ],
+    },
+    {
+      concept: 'Common pitfalls',
+      list: [
+        'Forgetting type="button" on non-submit buttons (default is type="submit"!)',
+        'Forgetting name attribute (form data won\'t include the field)',
+        'Using placeholder as label (disappears when typing)',
+        'Disabling browser autocomplete unnecessarily',
+        'Not handling slow networks (no loading state)',
+        'Not preserving entered data after error',
+        'Required marker only in red (color blind users miss it)',
+        'Submit button not focusable on mobile keyboard "next"',
+      ],
+    },
+  ];
+
+  // ─── Async patterns (verbose) ───────────────────────────────────
+  var ASYNC_PATTERNS = [
+    {
+      pattern: 'Async/await basics',
+      example: `async function loadUser(id) {
+  try {
+    const response = await fetch('/api/users/' + id);
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+    return await response.json();
+  } catch (err) {
+    console.error('Failed to load user:', err);
+    return null;
+  }
+}
+
+// Usage
+const user = await loadUser(42);
+console.log(user);`,
+      keypoints: [
+        'async function always returns a Promise',
+        'await unwraps a Promise (only works in async functions)',
+        'try/catch works for async errors',
+        'Top-level await works in ES modules (modern browsers / Node)',
+      ],
+    },
+    {
+      pattern: 'Sequential vs parallel',
+      sequential: `// Bad: 1500ms total
+const a = await fetchA();  // 500ms
+const b = await fetchB();  // 500ms
+const c = await fetchC();  // 500ms`,
+      parallel: `// Good: 500ms total
+const [a, b, c] = await Promise.all([
+  fetchA(),
+  fetchB(),
+  fetchC(),
+]);`,
+      principle: 'Use Promise.all when calls don\'t depend on each other. Use await sequentially when each needs the previous result.',
+    },
+    {
+      pattern: 'Promise.all',
+      use: 'All must succeed; fails fast on first error',
+      example: `const [users, posts, comments] = await Promise.all([
+  fetchUsers(),
+  fetchPosts(),
+  fetchComments(),
+]);`,
+      gotcha: 'If ANY call fails, Promise.all rejects immediately',
+    },
+    {
+      pattern: 'Promise.allSettled',
+      use: 'Wait for all, succeed or fail',
+      example: `const results = await Promise.allSettled([
+  fetchUsers(),
+  fetchPosts(),
+  fetchComments(),
+]);
+
+results.forEach((r, i) => {
+  if (r.status === 'fulfilled') {
+    console.log('Result:', r.value);
+  } else {
+    console.error('Error:', r.reason);
+  }
+});`,
+      benefit: 'Failure of one doesn\'t cancel others. Best for "best effort" parallel work.',
+    },
+    {
+      pattern: 'Promise.race',
+      use: 'Whoever finishes first wins',
+      example: `// Timeout pattern
+const result = await Promise.race([
+  fetch('/api/slow-endpoint'),
+  new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 5000))
+]);`,
+      uses: ['Timeouts', 'Multiple data sources (use whoever responds first)', 'Cancellation'],
+    },
+    {
+      pattern: 'Promise.any',
+      use: 'First success wins; only fails if ALL fail',
+      example: `// Try multiple servers
+const data = await Promise.any([
+  fetch('https://server1.com/data'),
+  fetch('https://server2.com/data'),
+  fetch('https://server3.com/data'),
+]);`,
+    },
+    {
+      pattern: 'Async iteration',
+      example: `// Async generator
+async function* loadPages() {
+  let page = 1;
+  while (true) {
+    const data = await fetch('/api/items?page=' + page).then(r => r.json());
+    if (data.items.length === 0) return;
+    yield data;
+    page++;
+  }
+}
+
+// Consume
+for await (const page of loadPages()) {
+  console.log('Got page:', page);
+}`,
+      use: 'Pagination, streaming data, infinite scroll',
+    },
+    {
+      pattern: 'AbortController (cancellation)',
+      example: `const controller = new AbortController();
+
+fetch('/api/slow', { signal: controller.signal })
+  .then(r => r.json())
+  .then(data => console.log(data))
+  .catch(err => {
+    if (err.name === 'AbortError') {
+      console.log('Cancelled');
+    }
+  });
+
+// Cancel later
+setTimeout(() => controller.abort(), 5000);`,
+      use: 'Cancel slow fetches when user navigates away',
+    },
+    {
+      pattern: 'Retry with exponential backoff',
+      example: `async function retry(fn, maxAttempts = 3) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      if (attempt === maxAttempts) throw err;
+      const delay = Math.pow(2, attempt) * 100; // 200ms, 400ms, 800ms
+      await new Promise(r => setTimeout(r, delay));
+    }
+  }
+}
+
+// Use
+const data = await retry(() => fetch('/api/flaky').then(r => r.json()));`,
+      use: 'Handling transient network errors',
+    },
+    {
+      pattern: 'Debounced async',
+      example: `function debounce(fn, ms) {
+  let timer;
+  let lastResolver;
+
+  return (...args) => {
+    clearTimeout(timer);
+    return new Promise(resolve => {
+      lastResolver = resolve;
+      timer = setTimeout(async () => {
+        const result = await fn(...args);
+        if (lastResolver === resolve) resolve(result);
+      }, ms);
+    });
+  };
+}
+
+const search = debounce(async (q) => {
+  const r = await fetch('/search?q=' + q);
+  return r.json();
+}, 300);
+
+// Usage in input handler
+input.addEventListener('input', async (e) => {
+  const results = await search(e.target.value);
+  render(results);
+});`,
+    },
+    {
+      pattern: 'Concurrent limit (pool)',
+      use: 'Process N things at a time, not all at once',
+      example: `async function pool(items, fn, limit = 5) {
+  const results = [];
+  const executing = new Set();
+  for (const item of items) {
+    const p = Promise.resolve(fn(item)).then(r => {
+      executing.delete(p);
+      return r;
+    });
+    executing.add(p);
+    results.push(p);
+    if (executing.size >= limit) await Promise.race(executing);
+  }
+  return Promise.all(results);
+}
+
+// Process 1000 URLs, 5 at a time
+const data = await pool(urls, url => fetch(url).then(r => r.json()), 5);`,
+    },
+    {
+      pattern: 'Memoize async',
+      example: `function memoize(fn) {
+  const cache = new Map();
+  return async (...args) => {
+    const key = JSON.stringify(args);
+    if (!cache.has(key)) {
+      cache.set(key, fn(...args));
+    }
+    return cache.get(key);
+  };
+}
+
+const cachedFetch = memoize(url => fetch(url).then(r => r.json()));
+await cachedFetch('/api/users');  // network call
+await cachedFetch('/api/users');  // cached`,
+      caution: 'Cache returns the Promise itself, so concurrent identical calls dedupe naturally',
+    },
+    {
+      pattern: 'Top-level await',
+      example: `// ES modules only
+import { loadData } from './loader.js';
+
+const data = await loadData();  // Top-level await
+
+export { data };`,
+      requirements: 'Must be in an ES module ("type": "module" in package.json, or <script type="module">)',
+    },
+    {
+      pattern: 'Common async pitfalls',
+      list: [
+        'Forgetting await — function returns Promise, not value',
+        'await in forEach — forEach is sync; use for...of or Promise.all(map)',
+        'Unhandled promise rejection — always .catch or try/catch',
+        'Race conditions — calling state updates with stale data',
+        'Sequential when parallel is possible',
+        'Calling async functions in useEffect without cleanup',
+      ],
+    },
+  ];
+
+  // ─── State management guide (verbose) ───────────────────────────
+  var STATE_MANAGEMENT = [
+    {
+      level: 'Component state',
+      tool: 'useState (React)',
+      example: 'const [count, setCount] = useState(0);',
+      when: 'State only matters to ONE component',
+      examples: ['Form input values', 'Toggle states', 'Local UI state (open/closed)'],
+    },
+    {
+      level: 'Lifted state',
+      tool: 'useState in parent, passed as props',
+      when: 'A few siblings need the same state',
+      example: `function Parent() {
+  const [shared, setShared] = useState('');
+  return <>
+    <ChildA value={shared} onChange={setShared} />
+    <ChildB value={shared} />
+  </>;
+}`,
+      principle: 'Lift state to lowest common ancestor that needs it',
+    },
+    {
+      level: 'Context',
+      tool: 'React.createContext + useContext',
+      when: 'Many components deep in the tree need the same value',
+      example: `const Theme = createContext('light');
+
+function App() {
+  const [theme, setTheme] = useState('light');
+  return (
+    <Theme.Provider value={{ theme, setTheme }}>
+      <DeepNestedComponents />
+    </Theme.Provider>
+  );
+}
+
+function Deep() {
+  const { theme } = useContext(Theme);
+  return <div className={theme}>...</div>;
+}`,
+      caution: 'Context re-renders ALL consumers when value changes. Don\'t put rapidly-changing data in context.',
+    },
+    {
+      level: 'External stores',
+      tool: 'Zustand, Jotai, Redux, etc.',
+      when: 'Complex global state, optimized re-renders, persistence',
+      tools: [
+        { name: 'Zustand', size: '~1KB', notes: 'Simplest. Hook-based. Selector-based subscriptions.' },
+        { name: 'Jotai', size: '~3KB', notes: 'Atomic. Bottom-up. Great for derived state.' },
+        { name: 'Redux Toolkit', size: '~30KB', notes: 'Battle-tested. Best for large apps with complex flows.' },
+        { name: 'MobX', size: '~15KB', notes: 'Reactive. Observable-based.' },
+        { name: 'Valtio', size: '~3KB', notes: 'Proxy-based. Closest to "just mutate it".' },
+        { name: 'Recoil', size: '~25KB', notes: 'By Facebook. Atom-based like Jotai.' },
+      ],
+    },
+    {
+      level: 'Server state',
+      tool: 'React Query (TanStack Query), SWR',
+      when: 'Data fetched from APIs',
+      example: `const { data, isLoading, error } = useQuery({
+  queryKey: ['users'],
+  queryFn: () => fetch('/api/users').then(r => r.json()),
+});
+
+if (isLoading) return <Spinner />;
+if (error) return <Error />;
+return <UserList users={data} />;`,
+      features: [
+        'Automatic caching',
+        'Refetch on focus',
+        'Background refetching',
+        'Optimistic updates',
+        'Pagination + infinite scroll',
+        'Mutation handling',
+      ],
+      principle: 'Server state is fundamentally different from UI state. Don\'t mix them.',
+    },
+    {
+      level: 'URL state',
+      tool: 'Query params, router state',
+      when: 'State should be shareable/bookmarkable',
+      examples: ['Search filters', 'Pagination', 'Selected tab', 'Sort order'],
+      example: `// React Router
+const [searchParams, setSearchParams] = useSearchParams();
+const filter = searchParams.get('filter') || 'all';
+
+// Update
+setSearchParams({ filter: 'recent' });`,
+      benefit: 'User can share URL, browser back button works, refresh keeps state',
+    },
+    {
+      level: 'Persistent state',
+      tool: 'localStorage, IndexedDB',
+      when: 'State should survive page reloads',
+      example: `function useLocalState(key, initial) {
+  const [v, setV] = useState(() => {
+    const stored = localStorage.getItem(key);
+    return stored ? JSON.parse(stored) : initial;
+  });
+
+  useEffect(() => {
+    localStorage.setItem(key, JSON.stringify(v));
+  }, [key, v]);
+
+  return [v, setV];
+}`,
+      caution: 'Wrap in try/catch — localStorage can fail in private mode',
+    },
+    {
+      principle: 'State management decision tree',
+      tree: [
+        '1. One component? → useState',
+        '2. Few components? → Lift state',
+        '3. Many components, infrequent change? → Context',
+        '4. Many components, frequent change? → Zustand/Jotai',
+        '5. Server data? → React Query',
+        '6. Shareable? → URL params',
+        '7. Persistent? → localStorage',
+        '8. Complex flows, large team? → Redux Toolkit',
+      ],
+    },
+    {
+      principle: 'Common state mistakes',
+      list: [
+        'Storing derived state instead of computing it',
+        'Mutating state directly (React won\'t re-render)',
+        'Putting too much in global state (most state is local)',
+        'Using context for rapidly-changing values',
+        'Not separating server state from UI state',
+        'Storing the wrong thing in URL (e.g., tokens)',
+      ],
+    },
+  ];
+
+  // ─── PWA guide (verbose) ────────────────────────────────────────
+  var PWA_GUIDE = [
+    {
+      concept: 'What is a PWA?',
+      summary: 'Progressive Web App — a web app that behaves like a native app',
+      features: [
+        'Installable on home screen',
+        'Works offline (via service worker)',
+        'Push notifications',
+        'Background sync',
+        'Full-screen mode',
+        'Hardware access (camera, mic, sensors)',
+      ],
+      benefit: 'One codebase. No app store. Auto-updates.',
+    },
+    {
+      concept: 'Web App Manifest',
+      file: 'manifest.webmanifest',
+      example: `{
+  "name": "AlloFlow",
+  "short_name": "AlloFlow",
+  "description": "AI-powered classroom toolkit",
+  "start_url": "/?source=pwa",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#7c3aed",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Dashboard", "url": "/dashboard", "icons": [...] }
+  ]
+}`,
+      link: '<link rel="manifest" href="/manifest.webmanifest">',
+    },
+    {
+      concept: 'Service Workers',
+      what: 'A script that runs in the background, separate from the page',
+      capabilities: [
+        'Cache resources for offline',
+        'Intercept network requests',
+        'Push notifications',
+        'Background sync',
+      ],
+      lifecycle: ['install (cache static assets)', 'activate (clean up old caches)', 'fetch (intercept requests)'],
+      register: `if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js');
+}`,
+    },
+    {
+      concept: 'Caching strategies',
+      strategies: [
+        { name: 'Cache First', use: 'Static assets (CSS, JS, fonts)', behavior: 'Cache → network if cache miss' },
+        { name: 'Network First', use: 'API calls, fresh data', behavior: 'Network → cache if offline' },
+        { name: 'Stale While Revalidate', use: 'Good balance', behavior: 'Return cache, update in background' },
+        { name: 'Cache Only', use: 'Truly static', behavior: 'Cache only, no network attempt' },
+        { name: 'Network Only', use: 'Sensitive data', behavior: 'Network only, never cache' },
+      ],
+    },
+    {
+      concept: 'Workbox',
+      what: 'Google library for service workers',
+      benefit: 'Battle-tested. Handles caching strategies declaratively.',
+      example: `import { registerRoute } from 'workbox-routing';
+import { CacheFirst, StaleWhileRevalidate } from 'workbox-strategies';
+
+registerRoute(
+  ({ request }) => request.destination === 'image',
+  new CacheFirst({ cacheName: 'images' })
+);
+
+registerRoute(
+  ({ url }) => url.pathname.startsWith('/api/'),
+  new StaleWhileRevalidate({ cacheName: 'api' })
+);`,
+    },
+    {
+      concept: 'Push notifications',
+      example: `// Request permission
+const perm = await Notification.requestPermission();
+
+// Subscribe
+const sub = await registration.pushManager.subscribe({
+  userVisibleOnly: true,
+  applicationServerKey: VAPID_PUBLIC_KEY,
+});
+
+// Send to your server, server uses Web Push API to push later
+
+// In service worker
+self.addEventListener('push', (event) => {
+  const data = event.data.json();
+  self.registration.showNotification(data.title, {
+    body: data.body,
+    icon: '/icon-192.png',
+    badge: '/badge.png',
+  });
+});`,
+      etiquette: [
+        'Ask permission ONLY when user does something that requires it',
+        'Explain WHY you want to notify before showing the permission prompt',
+        'Don\'t spam',
+        'Provide unsubscribe',
+      ],
+    },
+    {
+      concept: 'Background sync',
+      what: 'Queue actions for when network returns',
+      example: `// Page
+navigator.serviceWorker.ready.then(reg => reg.sync.register('send-message'));
+
+// Service worker
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'send-message') {
+    event.waitUntil(sendQueuedMessages());
+  }
+});`,
+      uses: ['Chat messages', 'Form submissions', 'Analytics events'],
+    },
+    {
+      concept: 'Install prompt',
+      example: `let deferredPrompt;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  showInstallButton();
+});
+
+installBtn.addEventListener('click', async () => {
+  deferredPrompt.prompt();
+  const choice = await deferredPrompt.userChoice;
+  if (choice.outcome === 'accepted') {
+    console.log('Installed!');
+  }
+  deferredPrompt = null;
+});`,
+      tip: 'Don\'t show install prompt too early — let user use the app first',
+    },
+    {
+      concept: 'PWA on iOS',
+      reality: 'iOS Safari has limited PWA support',
+      missing: ['No push notifications until iOS 16.4+', 'Limited service worker support', 'No background sync', 'Storage limits stricter'],
+      tip: 'Test on real iPhone, not just simulator',
+    },
+    {
+      concept: 'Testing PWAs',
+      tools: [
+        'Chrome DevTools → Application → Manifest, Service Workers, Storage',
+        'Lighthouse → PWA audit',
+        'PWABuilder.com — generates PWA wrappers',
+        'Real device installation',
+      ],
+    },
+    {
+      concept: 'Common PWA mistakes',
+      list: [
+        'Caching everything (uses too much disk)',
+        'Not handling service worker updates (users stuck on old version)',
+        'Aggressive push notifications',
+        'Showing install prompt immediately on first visit',
+        'Forgetting offline fallback page',
+        'Caching POST requests (don\'t)',
+        'Not testing in airplane mode',
+      ],
+    },
+  ];
+
+  // ─── Dark mode guide (verbose) ──────────────────────────────────
+  var DARK_MODE_GUIDE = [
+    {
+      approach: 'CSS variables',
+      example: `:root {
+  --bg: #ffffff;
+  --text: #1f2937;
+  --primary: #7c3aed;
+}
+
+[data-theme="dark"] {
+  --bg: #1f2937;
+  --text: #f3f4f6;
+  --primary: #a78bfa;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+}`,
+      benefit: 'Toggle by setting data-theme on <html>. All components inherit.',
+    },
+    {
+      approach: 'prefers-color-scheme',
+      example: `@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1f2937;
+    --text: #f3f4f6;
+  }
+}`,
+      use: 'Respect user\'s OS-level preference',
+      caution: 'Doesn\'t work if user wants manual override',
+    },
+    {
+      approach: 'Both: OS default + manual override',
+      example: `// Default: follow OS
+let theme = localStorage.getItem('theme') || 'system';
+
+function applyTheme() {
+  const dark = theme === 'dark' ||
+    (theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+  document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+}
+
+applyTheme();
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);`,
+      modes: '"light", "dark", "system" (default)',
+      principle: 'Save preference in localStorage. Apply on every page load BEFORE first paint (no flash).',
+    },
+    {
+      pitfall: 'Flash of incorrect theme (FOIT)',
+      problem: 'Page loads light, then JS switches to dark — jarring flash',
+      fix: `<head>
+  <script>
+    // Run before any rendering
+    (function() {
+      const theme = localStorage.getItem('theme') || 'system';
+      const dark = theme === 'dark' ||
+        (theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+      document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    })();
+  </script>
+  <link rel="stylesheet" href="/style.css">
+</head>`,
+      principle: 'Inline this script in <head> to run before any HTML renders',
+    },
+    {
+      colors: 'Designing dark mode colors',
+      principles: [
+        'Don\'t just invert. Pure black on pure white is too high contrast.',
+        'Use a slightly lighter dark background (#1a1a1a, not #000)',
+        'Use a slightly dimmer text (#e0e0e0, not #fff)',
+        'Saturated colors look harsher in dark mode — desaturate',
+        'Test with real dark mode users — feedback often surprising',
+      ],
+      colorAdjustments: [
+        'Primary brand: keep, but check contrast on dark bg',
+        'Errors: pure red can vibrate; use slightly desaturated red',
+        'Success: pure green can vibrate; tone down',
+        'Borders: use rgba(255,255,255,0.1) instead of solid gray',
+      ],
+    },
+    {
+      images: 'Images in dark mode',
+      tip: 'Logos may need separate dark version (transparent backgrounds usually work)',
+      example: `<picture>
+  <source srcset="logo-dark.png" media="(prefers-color-scheme: dark)">
+  <img src="logo-light.png" alt="Company">
+</picture>`,
+      illustrations: 'Brightly colored illustrations may need a darker color treatment',
+    },
+    {
+      gotchas: 'Things that break in dark mode',
+      list: [
+        'Hardcoded white backgrounds in components',
+        'Shadow colors (black shadows invisible on dark)',
+        'Border colors',
+        'Form input backgrounds',
+        'iframe content (you can\'t style cross-origin iframes)',
+        'Map tiles, charts, images without alt themes',
+      ],
+    },
+    {
+      a11y: 'Accessibility considerations',
+      list: [
+        'Some users prefer light mode regardless of OS — provide toggle',
+        'Some users have sensitivity to dark themes — always offer light',
+        'Contrast must still meet WCAG AA in BOTH modes',
+        'Test color blindness in both modes',
+      ],
+    },
+    {
+      tools: [
+        'Tailwind dark: variants (class-based or media-based)',
+        'CSS color-mix() for blending themes',
+        'CSS color-scheme: dark; — sets default UI color scheme',
+        'Adobe Color → check contrast',
+      ],
+    },
+  ];
+
+  // ─── Docker basics (verbose) ────────────────────────────────────
+  var DOCKER_BASICS = [
+    {
+      concept: 'What is Docker?',
+      summary: 'Tool for packaging apps with their dependencies into "containers"',
+      benefit: '"Works on my machine" → works everywhere. Same environment dev to prod.',
+      core: 'Container = isolated process with its own filesystem, network, processes',
+    },
+    {
+      concept: 'Image vs container',
+      image: 'Blueprint / template (read-only)',
+      container: 'Running instance of an image (mutable)',
+      analogy: 'Image = class, container = object',
+    },
+    {
+      concept: 'Dockerfile',
+      what: 'Recipe for building an image',
+      example: `# Start from a base image
+FROM node:20-alpine
+
+# Set working directory inside container
+WORKDIR /app
+
+# Copy dependency manifests
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy rest of source
+COPY . .
+
+# Build
+RUN npm run build
+
+# Expose port
+EXPOSE 3000
+
+# Command to run on start
+CMD ["node", "server.js"]`,
+      tips: [
+        'Order matters for caching: less-changing layers first',
+        'Use alpine variants for smaller images',
+        'Use multi-stage builds for production',
+        '.dockerignore prevents copying node_modules, .git',
+      ],
+    },
+    {
+      concept: 'Essential commands',
+      list: [
+        { cmd: 'docker build -t myapp .', does: 'Build image from current dir' },
+        { cmd: 'docker run -p 3000:3000 myapp', does: 'Run container, map port 3000' },
+        { cmd: 'docker ps', does: 'List running containers' },
+        { cmd: 'docker ps -a', does: 'List all containers (including stopped)' },
+        { cmd: 'docker images', does: 'List images on machine' },
+        { cmd: 'docker stop <container>', does: 'Stop a running container' },
+        { cmd: 'docker rm <container>', does: 'Remove a stopped container' },
+        { cmd: 'docker rmi <image>', does: 'Remove an image' },
+        { cmd: 'docker logs <container>', does: 'View container logs' },
+        { cmd: 'docker exec -it <container> sh', does: 'Get a shell inside container' },
+        { cmd: 'docker system prune', does: 'Clean up unused stuff' },
+      ],
+    },
+    {
+      concept: 'docker-compose',
+      what: 'Define multi-container apps in YAML',
+      example: `version: '3.8'
+services:
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgres://user:pass@db:5432/mydb
+    depends_on:
+      - db
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_PASSWORD: pass
+      POSTGRES_USER: user
+      POSTGRES_DB: mydb
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+volumes:
+  pgdata:`,
+      commands: [
+        'docker-compose up → start everything',
+        'docker-compose up -d → start in background',
+        'docker-compose down → stop everything',
+        'docker-compose logs -f → tail logs',
+      ],
+    },
+    {
+      concept: 'Volumes',
+      what: 'Persistent storage outside containers',
+      types: [
+        { name: 'Named volume', use: 'Managed by Docker. Best for DBs.', example: '-v mydata:/var/lib/postgresql/data' },
+        { name: 'Bind mount', use: 'Map host folder. Best for dev.', example: '-v ./src:/app/src' },
+        { name: 'tmpfs', use: 'In-memory, not persisted', example: '--tmpfs /tmp' },
+      ],
+    },
+    {
+      concept: 'Multi-stage builds',
+      benefit: 'Smaller final images (no build tools in production)',
+      example: `# Build stage
+FROM node:20 AS build
+WORKDIR /app
+COPY . .
+RUN npm ci && npm run build
+
+# Runtime stage (much smaller)
+FROM nginx:alpine
+COPY --from=build /app/dist /usr/share/nginx/html
+EXPOSE 80`,
+      reduction: 'Often 10x smaller than single-stage builds',
+    },
+    {
+      concept: 'Networking',
+      list: [
+        'Containers in same compose project can reach each other by service name',
+        '-p HOST:CONTAINER maps ports',
+        'Use container_name DNS for internal networking',
+        'Default bridge network is isolated from host',
+      ],
+    },
+    {
+      concept: 'Environment variables',
+      ways: [
+        '-e KEY=value at run time',
+        '--env-file .env',
+        'In docker-compose under environment:',
+        'In Dockerfile with ENV KEY=value',
+      ],
+      caution: 'NEVER bake secrets into images. Pass at runtime.',
+    },
+    {
+      concept: 'Docker registries',
+      list: [
+        { name: 'Docker Hub', notes: 'Default, free tier with limits' },
+        { name: 'GitHub Container Registry', notes: 'ghcr.io — free for public' },
+        { name: 'AWS ECR / Azure ACR / Google GCR', notes: 'For their respective clouds' },
+        { name: 'Self-hosted', notes: 'Harbor, Distribution — for on-prem' },
+      ],
+      push: 'docker tag myapp username/myapp && docker push username/myapp',
+    },
+    {
+      concept: 'When to use Docker',
+      good: [
+        'Local dev that matches production',
+        'Apps with many dependencies',
+        'Multi-service architectures',
+        'CI/CD environments',
+        'Microservices',
+      ],
+      maybeNot: [
+        'Simple static sites (use Netlify/Vercel)',
+        'Very small projects',
+        'When learning the language for the first time',
+      ],
+    },
+    {
+      concept: 'Common mistakes',
+      list: [
+        'Running as root inside container (use USER directive)',
+        'Not using .dockerignore (huge build contexts)',
+        'Hardcoding secrets in images',
+        'Not pinning base image versions (use node:20.10, not node:latest)',
+        'Building images on every machine instead of registry',
+        'Volumes for code in production (use COPY)',
+      ],
+    },
+  ];
+
+  // ─── Debugging techniques (verbose) ─────────────────────────────
+  var DEBUGGING_TECHNIQUES = [
+    {
+      technique: 'console.log',
+      when: 'Quick checks during development',
+      tips: [
+        'Use console.log("var:", varName) to label values',
+        'console.table(arr) for arrays of objects',
+        'console.group()/groupEnd() to organize',
+        'console.time("label") / console.timeEnd("label") for timing',
+        'console.assert(condition, "message") for sanity checks',
+        'console.trace() for stack trace at this point',
+      ],
+      donts: ['Don\'t commit console.logs to production (use a logger)', 'Don\'t console.log sensitive data'],
+    },
+    {
+      technique: 'Browser DevTools breakpoints',
+      types: [
+        { type: 'Line breakpoint', how: 'Click line number in Sources tab' },
+        { type: 'Conditional', how: 'Right-click line → Add conditional breakpoint' },
+        { type: 'Logpoint', how: 'Like console.log, but no code change' },
+        { type: 'DOM breakpoint', how: 'Right-click element → Break on attribute change' },
+        { type: 'XHR breakpoint', how: 'Pause when URL matches pattern' },
+        { type: 'Event listener', how: 'Pause on click, scroll, keydown, etc.' },
+      ],
+      navigation: ['F8 — Resume', 'F10 — Step over', 'F11 — Step into', 'Shift+F11 — Step out'],
+    },
+    {
+      technique: 'Network tab',
+      what: 'See every request the page makes',
+      uses: [
+        'Check API response codes',
+        'See request/response headers',
+        'Inspect request body and response body',
+        'Check timing (DNS, TCP, TLS, server, transfer)',
+        'Filter by type (XHR, JS, CSS, Img, etc.)',
+        'Throttle to simulate slow network',
+        'Block requests to test offline',
+      ],
+      tip: 'Preserve log across navigations: checkbox at top',
+    },
+    {
+      technique: 'Elements / Inspector',
+      uses: [
+        'Inspect computed styles',
+        'See which CSS rule wins (specificity)',
+        'Edit HTML/CSS live to test fixes',
+        'See event listeners attached',
+        'Force element states (hover, focus, active)',
+        'Find element in DOM by clicking on page',
+      ],
+    },
+    {
+      technique: 'React DevTools',
+      install: 'Browser extension',
+      uses: [
+        'See component tree',
+        'Inspect props and state',
+        'Highlight re-renders (Profiler tab)',
+        'Find which component owns an element',
+        'Edit props/state to test',
+      ],
+    },
+    {
+      technique: 'Vue DevTools',
+      similar: 'Like React DevTools but for Vue',
+      uses: 'Inspect components, state, Vuex/Pinia stores',
+    },
+    {
+      technique: 'Performance tab',
+      uses: 'Record a session and see EVERYTHING (CPU, memory, paint, layout)',
+      what: 'Click record → do thing → stop → analyze',
+      reads: ['Long tasks (red bars) block UI', 'Frame rate drops below 60fps', 'Memory leaks (heap grows over time)'],
+    },
+    {
+      technique: 'Source maps',
+      what: 'Maps minified production code back to original source',
+      benefit: 'See error stack traces with original variable names',
+      build: 'Set sourceMap: true in build config',
+      caution: 'Publishing source maps publicly exposes your unminified code — choose deliberately',
+    },
+    {
+      technique: 'Remote debugging mobile',
+      ios: 'Safari → Develop menu → iPhone → page',
+      android: 'chrome://inspect → discover USB devices',
+      use: 'Debug actual phone, not just emulator',
+    },
+    {
+      technique: 'Rubber duck debugging',
+      what: 'Explain the problem out loud to an inanimate object',
+      why: 'Forcing yourself to articulate the issue often reveals the bug',
+      practiced: 'By every senior developer ever, seriously',
+    },
+    {
+      technique: 'Bisecting',
+      what: 'Disable half the code, see if bug persists, halve again',
+      formal: 'git bisect — automate this with version history',
+      example: 'git bisect start; git bisect bad HEAD; git bisect good v1.0; then test each suggested commit',
+      time: 'Finds the breaking commit in log(n) steps',
+    },
+    {
+      technique: 'Add logging',
+      what: 'When you can\'t reproduce locally, add logs and let users hit it',
+      tools: ['Sentry — error tracking', 'LogRocket — session replay', 'Datadog — distributed tracing'],
+    },
+    {
+      technique: 'Read the error message',
+      seriously: 'Most developers skim or ignore errors. Read all of it.',
+      includes: ['Error type (TypeError, ReferenceError)', 'Specific message', 'Stack trace (where it happened)', 'Source file and line number'],
+      ifConfusing: 'Search the EXACT error message in quotes — Stack Overflow probably has it',
+    },
+    {
+      technique: 'Reproduce reliably',
+      principle: 'You can\'t fix what you can\'t reproduce',
+      steps: [
+        'Get exact steps to reproduce',
+        'Isolate variables (turn off other things)',
+        'Find smallest reproduction case',
+        'Then debug',
+      ],
+    },
+    {
+      technique: 'Read the documentation',
+      seriously: 'Often the answer is in the docs you skipped',
+      tip: 'Find the official docs (e.g., MDN for web APIs). Tutorials lie. Docs don\'t.',
+    },
+  ];
+
+  // ─── Internationalization guide (verbose) ───────────────────────
+  var I18N_GUIDE = [
+    {
+      concept: 'What is i18n / l10n?',
+      i18n: 'Internationalization — making code ready to translate (18 letters between i and n)',
+      l10n: 'Localization — the actual translation + cultural adaptation',
+      principle: 'Plan for i18n from day one. Retrofitting is painful.',
+    },
+    {
+      concept: 'lang attribute',
+      example: '<html lang="en"> or <html lang="es-MX">',
+      why: 'Screen readers use correct pronunciation, browsers offer translation',
+    },
+    {
+      concept: 'String externalization',
+      bad: '<h1>Welcome</h1>',
+      good: '<h1>{t("welcome")}</h1>',
+      json: `{
+  "en": { "welcome": "Welcome", "goodbye": "Goodbye" },
+  "es": { "welcome": "Bienvenido", "goodbye": "Adiós" },
+  "fr": { "welcome": "Bienvenue", "goodbye": "Au revoir" }
+}`,
+      principle: 'Never hardcode user-facing strings in components',
+    },
+    {
+      concept: 'Date / time formatting',
+      tool: 'Intl.DateTimeFormat',
+      example: `const date = new Date();
+
+// US: "1/15/2024"
+new Intl.DateTimeFormat('en-US').format(date);
+
+// UK: "15/01/2024"
+new Intl.DateTimeFormat('en-GB').format(date);
+
+// Verbose: "Monday, January 15, 2024"
+new Intl.DateTimeFormat('en-US', {
+  weekday: 'long', year: 'numeric',
+  month: 'long', day: 'numeric'
+}).format(date);
+
+// Time: "2:30 PM"
+new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' }).format(date);
+
+// Relative: "2 days ago"
+new Intl.RelativeTimeFormat('en').format(-2, 'day');`,
+      gotcha: 'Different countries use M/D/Y vs D/M/Y vs Y-M-D. Never assume.',
+    },
+    {
+      concept: 'Number formatting',
+      tool: 'Intl.NumberFormat',
+      example: `// US: "1,234.56"
+new Intl.NumberFormat('en-US').format(1234.56);
+
+// German: "1.234,56"
+new Intl.NumberFormat('de-DE').format(1234.56);
+
+// Currency
+new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(99.99);
+// "$99.99"
+
+// Percentage
+new Intl.NumberFormat('en-US', { style: 'percent' }).format(0.42);
+// "42%"`,
+    },
+    {
+      concept: 'Currency display',
+      complexity: 'Currency formatting varies by locale (symbol position, decimal separator, etc.)',
+      example: `// USD in different locales
+new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(1234.56);  // $1,234.56
+new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'USD' }).format(1234.56);  // 1.234,56 $`,
+      tip: 'Show prices in user\'s preferred currency when possible. Use exchange rate API.',
+    },
+    {
+      concept: 'Pluralization',
+      problem: 'English has 2 plural forms (1 item / 0 or 2+ items). Other languages have 1-6.',
+      example: `const formatter = new Intl.PluralRules('en');
+formatter.select(0);   // "other"
+formatter.select(1);   // "one"
+formatter.select(2);   // "other"
+
+// Russian: 4 plural forms
+const ruFmt = new Intl.PluralRules('ru');
+ruFmt.select(1);   // "one"
+ruFmt.select(2);   // "few"
+ruFmt.select(5);   // "many"
+ruFmt.select(0);   // "many"`,
+      tool: 'Use a library like i18next that handles plurals for you',
+    },
+    {
+      concept: 'RTL languages (Right-to-Left)',
+      languages: ['Arabic', 'Hebrew', 'Persian', 'Urdu'],
+      challenges: ['Layout mirrors (sidebar on right not left)', 'Icons that point need flipping', 'Text alignment'],
+      css: `[dir="rtl"] {
+  text-align: right;
+}
+
+/* Use logical properties */
+.box {
+  padding-inline-start: 16px;  /* was padding-left */
+  margin-inline-end: 8px;       /* was margin-right */
+  border-inline-start: 1px solid; /* was border-left */
+}`,
+      html: '<html lang="ar" dir="rtl">',
+    },
+    {
+      concept: 'Logical CSS properties',
+      benefit: 'Auto-flip for RTL without media queries',
+      list: [
+        'padding-inline-start (was padding-left)',
+        'padding-inline-end (was padding-right)',
+        'margin-block-start (was margin-top)',
+        'margin-block-end (was margin-bottom)',
+        'border-inline (logical sides)',
+        'inset-inline-start (was left)',
+        'inset-inline-end (was right)',
+      ],
+    },
+    {
+      concept: 'Translation libraries',
+      list: [
+        { name: 'react-i18next', notes: 'Most popular for React. Plural, interpolation, namespaces' },
+        { name: 'next-i18next', notes: 'For Next.js' },
+        { name: 'FormatJS / react-intl', notes: 'ICU MessageFormat. Powerful but more complex.' },
+        { name: 'Lingui', notes: 'JS-based message catalog. Type-safe.' },
+        { name: 'Polyglot.js', notes: 'Lightweight, by Airbnb' },
+      ],
+    },
+    {
+      concept: 'Translation workflow',
+      stages: [
+        'Extract: tool scans code, builds list of translatable strings',
+        'Translate: send to translators / use translation service',
+        'Import: pull translated strings back into project',
+        'Test: review in each language for layout issues',
+        'Deploy: ship translations with code',
+      ],
+      services: ['Crowdin', 'Lokalise', 'Phrase', 'Smartling', 'POEditor'],
+    },
+    {
+      concept: 'Pitfalls',
+      list: [
+        'Concatenating strings: "Hello, " + name vs "Hello, {name}" — fragments don\'t translate',
+        'Date formats: 1/2/2024 means Jan 2 in US, Feb 1 in UK',
+        'Decimal separator: 1,234.56 vs 1.234,56',
+        'Plural rules differ by language',
+        'Text length varies (German often 30% longer than English)',
+        'Cultural sensitivity (icons, colors, holidays)',
+        'Numbers (Eastern Arabic uses different digit shapes)',
+        'Names (some cultures put family name first)',
+      ],
+    },
+  ];
+
+  // ─── SVG reference (verbose) ────────────────────────────────────
+  var SVG_REFERENCE = [
+    {
+      element: '<svg>',
+      purpose: 'Root element',
+      attributes: ['xmlns="http://www.w3.org/2000/svg"', 'viewBox="x y width height"', 'width', 'height', 'preserveAspectRatio'],
+      example: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="200">...</svg>',
+      tip: 'Use viewBox for responsive scaling, omit width/height for fluid sizing',
+    },
+    {
+      element: '<rect>',
+      purpose: 'Rectangle',
+      attributes: ['x', 'y', 'width', 'height', 'rx (corner radius)', 'fill', 'stroke'],
+      example: '<rect x="10" y="10" width="80" height="60" rx="8" fill="blue" />',
+    },
+    {
+      element: '<circle>',
+      purpose: 'Circle',
+      attributes: ['cx (center x)', 'cy (center y)', 'r (radius)'],
+      example: '<circle cx="50" cy="50" r="40" fill="red" stroke="black" />',
+    },
+    {
+      element: '<ellipse>',
+      purpose: 'Ellipse',
+      attributes: ['cx', 'cy', 'rx (horizontal radius)', 'ry (vertical radius)'],
+      example: '<ellipse cx="50" cy="50" rx="40" ry="20" fill="green" />',
+    },
+    {
+      element: '<line>',
+      purpose: 'Straight line',
+      attributes: ['x1', 'y1', 'x2', 'y2', 'stroke', 'stroke-width'],
+      example: '<line x1="0" y1="0" x2="100" y2="100" stroke="black" stroke-width="2" />',
+      gotcha: 'Lines need stroke (no fill by default)',
+    },
+    {
+      element: '<polyline>',
+      purpose: 'Open multi-point shape',
+      attributes: ['points', 'stroke', 'fill="none"'],
+      example: '<polyline points="0,0 50,25 100,0 50,50" stroke="purple" fill="none" />',
+    },
+    {
+      element: '<polygon>',
+      purpose: 'Closed multi-point shape',
+      attributes: ['points', 'fill', 'stroke'],
+      example: '<polygon points="50,5 95,95 5,95" fill="orange" />  <!-- Triangle -->',
+    },
+    {
+      element: '<path>',
+      purpose: 'Custom path (most powerful)',
+      attributes: ['d (path data)', 'fill', 'stroke'],
+      commands: [
+        { cmd: 'M x y', does: 'Move to (no draw)' },
+        { cmd: 'L x y', does: 'Line to' },
+        { cmd: 'H x', does: 'Horizontal line to' },
+        { cmd: 'V y', does: 'Vertical line to' },
+        { cmd: 'C x1 y1 x2 y2 x y', does: 'Cubic Bézier curve' },
+        { cmd: 'Q x1 y1 x y', does: 'Quadratic Bézier curve' },
+        { cmd: 'A rx ry x-rot large arc sweep x y', does: 'Arc' },
+        { cmd: 'Z', does: 'Close path' },
+        { cmd: 'Lowercase', does: 'Relative coordinates instead of absolute' },
+      ],
+      example: '<path d="M 10 80 Q 95 10 180 80" stroke="blue" fill="none" />',
+    },
+    {
+      element: '<text>',
+      purpose: 'Text content',
+      attributes: ['x', 'y', 'font-family', 'font-size', 'text-anchor (start|middle|end)', 'dominant-baseline'],
+      example: '<text x="50" y="50" text-anchor="middle" font-size="20">Hello</text>',
+    },
+    {
+      element: '<g>',
+      purpose: 'Group (apply transforms / styles to children)',
+      example: '<g transform="translate(50, 50) rotate(45)" fill="red"><rect ... /></g>',
+    },
+    {
+      element: '<defs>',
+      purpose: 'Define reusable elements (gradients, patterns, masks)',
+      example: `<defs>
+  <linearGradient id="myGrad" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0%" stop-color="red" />
+    <stop offset="100%" stop-color="blue" />
+  </linearGradient>
+</defs>
+<rect width="100" height="100" fill="url(#myGrad)" />`,
+    },
+    {
+      element: '<use>',
+      purpose: 'Reuse a defined element',
+      example: `<defs><circle id="dot" r="3" fill="red" /></defs>
+<use href="#dot" x="10" y="10" />
+<use href="#dot" x="30" y="30" />`,
+    },
+    {
+      element: '<animate>',
+      purpose: 'Animate an attribute (SMIL)',
+      example: `<rect width="50" height="50">
+  <animate attributeName="x" from="0" to="100" dur="2s" repeatCount="indefinite" />
+</rect>`,
+      caution: 'SMIL deprecated in Chrome. Use CSS or JS animation instead.',
+    },
+    {
+      concept: 'CSS for SVG',
+      example: `<style>
+  .icon { fill: currentColor; transition: fill 0.2s; }
+  .icon:hover { fill: blue; }
+</style>
+<svg class="icon">...</svg>`,
+      benefit: 'fill: currentColor inherits text color — icons match surrounding text',
+    },
+    {
+      concept: 'Inline vs external SVG',
+      inline: 'Stylable with CSS, accessible, but bloats HTML',
+      external: '<img src="icon.svg"> — cacheable, but cannot style internals',
+      sprite: '<use href="sprite.svg#icon"> — best of both for many icons',
+      recommend: 'Inline for individual icons that need styling; sprite for icon system',
+    },
+    {
+      concept: 'Optimization',
+      tool: 'SVGO (svgo.dev) — removes unused metadata, optimizes paths',
+      reduction: 'Often 50%+ smaller without visual change',
+      manual: 'Round coordinates to 1-2 decimals; remove invisible elements',
+    },
+    {
+      concept: 'Accessibility',
+      checklist: [
+        'Add role="img" to decorative SVGs in <img>',
+        'Add aria-label or <title> for meaningful SVGs',
+        'Use aria-hidden="true" for purely decorative',
+        'Don\'t put critical info ONLY in icons',
+      ],
+      example: `<svg role="img" aria-labelledby="title">
+  <title id="title">Search icon</title>
+  ...
+</svg>`,
+    },
+    {
+      concept: 'SVG vs other formats',
+      svg: 'Vector, scales without quality loss, small for icons/illustrations',
+      png: 'Raster, lossless, good for photos with transparency',
+      webp: 'Modern raster, smaller than PNG, photos',
+      whenSVG: 'Icons, illustrations, logos, charts, anything that scales',
+      whenNot: 'Photos (use WebP/AVIF), complex illustrations with many colors',
+    },
+  ];
+
+  // ─── Web Components (verbose) ───────────────────────────────────
+  var WEB_COMPONENTS = [
+    {
+      concept: 'What are Web Components?',
+      summary: 'Framework-free, native browser API for custom HTML elements',
+      pillars: ['Custom Elements', 'Shadow DOM', 'HTML Templates', 'ES Modules'],
+      benefit: 'Works in any framework. No framework needed. True encapsulation.',
+    },
+    {
+      concept: 'Custom Elements',
+      example: `class GreetingCard extends HTMLElement {
+  connectedCallback() {
+    this.innerHTML = \`<h1>Hello, \${this.getAttribute('name')}!</h1>\`;
+  }
+}
+
+customElements.define('greeting-card', GreetingCard);
+
+// Usage
+// <greeting-card name="Aaron"></greeting-card>`,
+      naming: 'Must contain hyphen (greeting-card, not greetingCard)',
+    },
+    {
+      concept: 'Lifecycle callbacks',
+      hooks: [
+        { name: 'connectedCallback', when: 'Added to DOM' },
+        { name: 'disconnectedCallback', when: 'Removed from DOM' },
+        { name: 'attributeChangedCallback', when: 'Observed attribute changed' },
+        { name: 'adoptedCallback', when: 'Moved to a different document' },
+      ],
+      observe: `static get observedAttributes() {
+  return ['name', 'color'];
+}
+
+attributeChangedCallback(attr, oldVal, newVal) {
+  if (oldVal !== newVal) this.render();
+}`,
+    },
+    {
+      concept: 'Shadow DOM',
+      what: 'Encapsulated DOM tree attached to an element',
+      benefit: 'Styles inside don\'t leak out; styles outside don\'t leak in',
+      example: `class MyCard extends HTMLElement {
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' });
+    this.shadowRoot.innerHTML = \`
+      <style>
+        :host { display: block; padding: 16px; border: 1px solid #ccc; }
+        p { color: blue; }  /* Doesn't affect outside <p> */
+      </style>
+      <p><slot></slot></p>
+    \`;
+  }
+}`,
+      slots: '<slot> renders children passed in (like {props.children} in React)',
+    },
+    {
+      concept: 'HTML Templates',
+      example: `<template id="card-template">
+  <style>p { color: blue; }</style>
+  <p><slot></slot></p>
+</template>
+
+<script>
+class MyCard extends HTMLElement {
+  constructor() {
+    super();
+    const template = document.getElementById('card-template');
+    this.attachShadow({ mode: 'open' }).appendChild(template.content.cloneNode(true));
+  }
+}
+customElements.define('my-card', MyCard);
+</script>`,
+      benefit: 'Define markup once, reuse without parsing',
+    },
+    {
+      concept: 'Events',
+      example: `class CounterButton extends HTMLElement {
+  connectedCallback() {
+    this.innerHTML = '<button>Click me</button>';
+    this.querySelector('button').addEventListener('click', () => {
+      this.dispatchEvent(new CustomEvent('clicked', {
+        detail: { count: ++this.count },
+        bubbles: true,
+        composed: true,  // crosses shadow boundary
+      }));
+    });
+  }
+}
+
+// Listen outside
+document.querySelector('counter-button').addEventListener('clicked', e => {
+  console.log(e.detail.count);
+});`,
+    },
+    {
+      concept: 'Libraries that simplify Web Components',
+      list: [
+        { name: 'Lit (Google)', notes: 'Lightweight, reactive, popular choice' },
+        { name: 'Stencil (Ionic)', notes: 'Compiles to vanilla web components' },
+        { name: 'FAST (Microsoft)', notes: 'Design system + components' },
+        { name: 'Hybrids', notes: 'Functional approach' },
+        { name: 'SkateJS', notes: 'Older, less active' },
+      ],
+    },
+    {
+      concept: 'Web Components vs React',
+      webComponents: ['No framework needed', 'True encapsulation (Shadow DOM)', 'Native browser API', 'Heavier per-component overhead', 'Less ergonomic (no JSX)'],
+      react: ['Better ecosystem', 'JSX', 'Concurrent rendering', 'Fine-grained reactivity', 'Heavier baseline but optimized for many components'],
+      verdict: 'Web Components shine for design systems used across multiple frameworks. React is better for apps written in one stack.',
+    },
+    {
+      concept: 'Common use cases',
+      list: [
+        'Design systems (used by Salesforce, Adobe, Microsoft)',
+        'Embed widgets (chat, payment, video)',
+        'Cross-framework reusable parts',
+        'Long-lived projects (no framework dependency)',
+      ],
+    },
+    {
+      concept: 'Limitations',
+      list: [
+        'No two-way binding (must manage yourself)',
+        'SEO considerations for shadow DOM content',
+        'Smaller ecosystem than React/Vue',
+        'Shadow DOM can complicate accessibility',
+      ],
+    },
+  ];
+
+  // ─── Refactoring patterns (verbose) ─────────────────────────────
+  var REFACTORING_PATTERNS = [
+    {
+      pattern: 'Extract function',
+      smell: 'A block of code is longer than one screen OR repeated',
+      before: `function order(items) {
+  // calculate subtotal
+  let subtotal = 0;
+  for (const item of items) subtotal += item.price * item.qty;
+  // calculate tax
+  const tax = subtotal * 0.07;
+  return subtotal + tax;
+}`,
+      after: `function order(items) {
+  const subtotal = calculateSubtotal(items);
+  return subtotal + calculateTax(subtotal);
+}
+
+function calculateSubtotal(items) {
+  return items.reduce((sum, item) => sum + item.price * item.qty, 0);
+}
+
+function calculateTax(amount, rate = 0.07) {
+  return amount * rate;
+}`,
+      benefit: 'Each function does one thing. Names document intent. Reusable.',
+    },
+    {
+      pattern: 'Replace nested conditionals with guard clauses',
+      smell: 'Deep nesting (3+ levels of if)',
+      before: `function getDiscount(user) {
+  if (user) {
+    if (user.active) {
+      if (user.premium) {
+        return 0.2;
+      }
+    }
+  }
+  return 0;
+}`,
+      after: `function getDiscount(user) {
+  if (!user) return 0;
+  if (!user.active) return 0;
+  if (!user.premium) return 0;
+  return 0.2;
+}`,
+      benefit: 'Linear flow. Easier to read. Each guard is independent.',
+    },
+    {
+      pattern: 'Replace magic numbers with named constants',
+      before: 'if (age >= 18) { /* adult logic */ }',
+      after: `const ADULT_AGE = 18;
+if (age >= ADULT_AGE) { /* adult logic */ }`,
+      benefit: 'Named constants are self-documenting and centralized for change',
+    },
+    {
+      pattern: 'Decompose conditional',
+      smell: 'Complex boolean expression in if statement',
+      before: 'if (date.before(SUMMER_START) || date.after(SUMMER_END)) { charge = quantity * winterRate; }',
+      after: `if (notSummer(date)) {
+  charge = winterCharge(quantity);
+}`,
+    },
+    {
+      pattern: 'Replace conditional with polymorphism',
+      smell: 'Switch statement based on type',
+      before: `function getSpeed(bird) {
+  switch (bird.type) {
+    case 'european': return baseSpeed;
+    case 'african': return baseSpeed - getLoadFactor() * bird.numberOfCoconuts;
+    case 'norwegian': return bird.isNailed ? 0 : baseSpeed;
+  }
+}`,
+      after: `class EuropeanBird { getSpeed() { return baseSpeed; } }
+class AfricanBird { getSpeed() { return baseSpeed - getLoadFactor() * this.numberOfCoconuts; } }
+class NorwegianBird { getSpeed() { return this.isNailed ? 0 : baseSpeed; } }`,
+      caveat: 'Classic OOP advice; modern functional code often uses lookup tables instead',
+    },
+    {
+      pattern: 'Introduce parameter object',
+      smell: 'Function takes 4+ related parameters',
+      before: 'createUser(firstName, lastName, email, phone, address, city, state, zip)',
+      after: 'createUser({ firstName, lastName, email, phone, address, city, state, zip })',
+      benefit: 'Order doesn\'t matter, easy to add fields, self-documenting',
+    },
+    {
+      pattern: 'Inline temp variable',
+      smell: 'Temp variable used once',
+      before: 'const basePrice = order.quantity * order.price; return basePrice > 1000;',
+      after: 'return order.quantity * order.price > 1000;',
+      caveat: 'Don\'t over-inline — sometimes named temps clarify intent',
+    },
+    {
+      pattern: 'Split phase',
+      smell: 'Function does two unrelated things in sequence',
+      example: 'A function that parses input and then processes it',
+      after: 'Split into parse() and process(). Each can be tested independently.',
+    },
+    {
+      pattern: 'Replace nested loop with map/filter',
+      before: `const result = [];
+for (const item of items) {
+  if (item.active) {
+    result.push(item.value * 2);
+  }
+}`,
+      after: `const result = items
+  .filter(item => item.active)
+  .map(item => item.value * 2);`,
+      benefit: 'Declarative. Each step does one thing.',
+    },
+    {
+      pattern: 'Replace mutable variable with pipeline',
+      before: `let total = 0;
+for (const order of orders) {
+  if (order.year === 2024) {
+    total += order.amount;
+  }
+}`,
+      after: `const total = orders
+  .filter(o => o.year === 2024)
+  .reduce((sum, o) => sum + o.amount, 0);`,
+    },
+    {
+      pattern: 'Move function',
+      smell: 'Function uses fields of another class more than its own',
+      action: 'Move function to that other class',
+      example: 'If account.calculateInterest() uses more bank fields than account fields, move it to bank',
+    },
+    {
+      pattern: 'Rename variable / function',
+      smell: 'Name doesn\'t reveal intent',
+      examples: [
+        '`d` → `daysSinceCreation`',
+        '`getData` → `fetchUserProfile`',
+        '`flag` → `isActive`',
+        '`temp` → whatever it actually represents',
+      ],
+      tool: 'IDE rename refactoring (F2 in VS Code) — safe across files',
+    },
+    {
+      pattern: 'Remove dead code',
+      smell: 'Code is unreachable, commented out, or never called',
+      action: 'Delete it. Git remembers if you need it back.',
+      principle: 'Dead code is technical debt — readers waste time understanding it',
+    },
+    {
+      principle: 'When to refactor',
+      list: [
+        'Before adding a feature (clean the area you\'ll work in)',
+        'After making it work (red, green, refactor)',
+        'When you can\'t understand existing code',
+        'When duplicating code (DRY principle)',
+        'When fixing a bug (often the bug is symptom of bad structure)',
+      ],
+      not: [
+        'Right before a deadline',
+        'For its own sake without tests',
+        'On code you don\'t understand',
+      ],
+    },
+    {
+      principle: 'Always test before and after',
+      why: 'Refactoring without tests = rewriting (and probably breaking)',
+      practice: 'Add tests first if missing, then refactor with confidence',
+    },
+  ];
+
+  // ─── Code smells (verbose) ──────────────────────────────────────
+  var CODE_SMELLS = [
+    {
+      smell: 'Long function',
+      symptom: 'Function is longer than what fits on one screen',
+      why: 'Likely doing more than one thing; hard to test; hard to name accurately',
+      fix: 'Extract function (break into smaller named pieces)',
+    },
+    {
+      smell: 'Long parameter list',
+      symptom: 'Function takes 4+ parameters',
+      why: 'Hard to remember order; usually means function does too much',
+      fix: 'Introduce parameter object; split function; pass an object',
+    },
+    {
+      smell: 'Large class',
+      symptom: 'Class has many fields and methods (>300 lines)',
+      why: 'Likely has more than one responsibility (violates SRP)',
+      fix: 'Extract class — split into smaller cohesive pieces',
+    },
+    {
+      smell: 'Duplicate code',
+      symptom: 'Same code in multiple places',
+      why: 'Changes require updating every copy; easy to miss one',
+      fix: 'Extract function; pull up common code; use a shared helper',
+    },
+    {
+      smell: 'Long parameter list / function-passing-everything',
+      symptom: 'Function passes data through many layers',
+      why: 'Coupling, hard to refactor',
+      fix: 'Context, dependency injection, or refactor data flow',
+    },
+    {
+      smell: 'Divergent change',
+      symptom: 'One class changes for many different reasons',
+      example: 'User class changes when address format changes AND when login flow changes',
+      fix: 'Split into User and Address / User and Auth',
+    },
+    {
+      smell: 'Shotgun surgery',
+      symptom: 'One change requires editing many places',
+      why: 'Concept is spread thin instead of centralized',
+      fix: 'Move related changes together; create a class for the concept',
+    },
+    {
+      smell: 'Feature envy',
+      symptom: 'Function uses other class\'s data more than its own',
+      fix: 'Move function to that other class',
+    },
+    {
+      smell: 'Data clumps',
+      symptom: 'Same group of parameters always passed together (x, y, width, height)',
+      fix: 'Combine into an object (Rectangle)',
+    },
+    {
+      smell: 'Primitive obsession',
+      symptom: 'Strings/numbers used everywhere instead of small types',
+      example: 'Currency stored as number; codes as strings without validation',
+      fix: 'Create types (Money, ZipCode) with validation',
+    },
+    {
+      smell: 'Switch statements (large)',
+      symptom: 'Long switch on type field',
+      why: 'New types require touching every switch',
+      fix: 'Polymorphism, lookup table, or strategy pattern',
+    },
+    {
+      smell: 'Lazy class',
+      symptom: 'Class barely does anything',
+      fix: 'Inline class into the one place that uses it',
+    },
+    {
+      smell: 'Speculative generality',
+      symptom: 'Abstractions for needs that haven\'t happened',
+      example: 'Interface with one implementation; complex factory with one product',
+      fix: 'Inline interface; simplify factory',
+      principle: 'YAGNI — You Aren\'t Gonna Need It',
+    },
+    {
+      smell: 'Temporary field',
+      symptom: 'Field used only in some methods',
+      fix: 'Extract class containing the field + methods that use it',
+    },
+    {
+      smell: 'Message chains',
+      symptom: 'a.b().c().d().e()',
+      why: 'Coupled to internal structure of every step',
+      fix: 'Hide delegate (move method up the chain)',
+    },
+    {
+      smell: 'Middleman',
+      symptom: 'Class only delegates to another',
+      fix: 'Remove middleman; call the real object directly',
+    },
+    {
+      smell: 'Inappropriate intimacy',
+      symptom: 'Classes know too much about each other\'s internals',
+      fix: 'Move methods/fields; make fields private',
+    },
+    {
+      smell: 'Comments explaining bad code',
+      symptom: 'Comment says "this hack works around..."',
+      better: 'Fix the underlying problem so the comment isn\'t needed',
+      principle: 'Code should be self-explanatory; comments explain WHY not WHAT',
+    },
+    {
+      smell: 'Commented-out code',
+      symptom: '// const x = oldThing(); ← left "just in case"',
+      fix: 'Delete. Git remembers. Dead code in source confuses readers.',
+    },
+    {
+      smell: 'Magic numbers',
+      symptom: 'if (status === 4) { ... }',
+      fix: 'const STATUS_COMPLETED = 4; if (status === STATUS_COMPLETED)',
+    },
+    {
+      smell: 'Boolean parameter',
+      symptom: 'doThing(true, false, true)',
+      why: 'Callers can\'t tell what booleans mean',
+      fix: 'Use enum/string; split into two functions; named parameters',
+    },
+    {
+      smell: 'Mysterious naming',
+      symptom: 'Single-letter or vague names (x, data, doStuff)',
+      fix: 'Rename to reveal intent (userCount, processOrder)',
+    },
+    {
+      smell: 'Nested ternaries',
+      symptom: 'a ? b : c ? d : e ? f : g',
+      fix: 'Use if/else or break into named variables',
+    },
+    {
+      smell: 'God object',
+      symptom: 'One class does everything',
+      fix: 'Break apart by responsibility',
+    },
+    {
+      smell: 'Refused bequest',
+      symptom: 'Subclass overrides parent method to do nothing',
+      fix: 'Composition over inheritance; or restructure hierarchy',
+    },
+  ];
+
+  // ─── Image optimization guide (verbose) ─────────────────────────
+  var IMAGE_OPTIMIZATION = [
+    {
+      concept: 'Why it matters',
+      stats: [
+        'Images are typically 50% of a page\'s weight',
+        'Large images delay Largest Contentful Paint (LCP)',
+        'Slow images = users bounce',
+        'Compressing well can reduce page weight by 60-80%',
+      ],
+    },
+    {
+      concept: 'Format selection',
+      formats: [
+        { format: 'AVIF', use: 'Best compression', support: 'All modern browsers', sizeVsJpeg: '~50% smaller' },
+        { format: 'WebP', use: 'Wide support, good compression', support: 'All modern browsers', sizeVsJpeg: '~30% smaller' },
+        { format: 'JPEG', use: 'Photos, fallback', support: 'Universal', notes: 'Use mozjpeg for best compression' },
+        { format: 'PNG', use: 'Transparency, small graphics', support: 'Universal', notes: 'Larger than WebP for photos' },
+        { format: 'SVG', use: 'Icons, illustrations, logos', support: 'Universal', notes: 'Scales infinitely' },
+        { format: 'GIF', use: 'AVOID for everything except simple animations', notes: 'Use video for complex animations' },
+      ],
+    },
+    {
+      concept: 'srcset and sizes',
+      example: `<img
+  src="photo-800.jpg"
+  srcset="photo-400.jpg 400w, photo-800.jpg 800w, photo-1200.jpg 1200w"
+  sizes="(max-width: 600px) 100vw, 50vw"
+  alt="Description"
+>`,
+      what: 'Browser picks optimal image for screen + viewport',
+      benefit: 'Mobile gets small image (saves data), desktop gets full quality',
+    },
+    {
+      concept: 'picture element',
+      example: `<picture>
+  <source type="image/avif" srcset="photo.avif">
+  <source type="image/webp" srcset="photo.webp">
+  <img src="photo.jpg" alt="Description">
+</picture>`,
+      benefit: 'Browser picks first format it supports',
+      tip: 'Always include <img> as fallback',
+    },
+    {
+      concept: 'Lazy loading',
+      example: '<img src="photo.jpg" loading="lazy" alt="...">',
+      effect: 'Browser delays loading until image is near viewport',
+      caution: 'Don\'t lazy-load above-the-fold images (delays LCP)',
+    },
+    {
+      concept: 'Preventing CLS',
+      problem: 'Images without dimensions cause layout shift when they load',
+      fix: `<img src="photo.jpg" width="800" height="600" alt="..." style="max-width:100%; height:auto">`,
+      why: 'width/height attributes tell browser the aspect ratio in advance',
+      modern: 'CSS aspect-ratio: 800 / 600 also works',
+    },
+    {
+      concept: 'Image CDN services',
+      list: [
+        { name: 'Cloudinary', notes: 'Most features, paid' },
+        { name: 'imgix', notes: 'Real-time transformation' },
+        { name: 'Cloudflare Images', notes: 'Cheap, on Cloudflare\'s CDN' },
+        { name: 'AWS CloudFront + Lambda@Edge', notes: 'DIY' },
+        { name: 'Vercel Image Optimization', notes: 'Built into Next.js' },
+        { name: 'Bunny CDN', notes: 'Cheap and fast' },
+      ],
+      benefit: 'Auto-format conversion, on-the-fly resizing, CDN delivery',
+    },
+    {
+      concept: 'Manual optimization tools',
+      list: [
+        { name: 'Squoosh.app', notes: 'Web tool by Google, side-by-side comparison' },
+        { name: 'ImageOptim (Mac)', notes: 'Drop files in, get smaller' },
+        { name: 'TinyPNG / TinyJPG', notes: 'Web tool, also has API' },
+        { name: 'sharp (Node)', notes: 'Programmatic resizing in build scripts' },
+        { name: 'mozjpeg', notes: 'Best JPEG compression' },
+        { name: 'cwebp / avifenc', notes: 'CLI tools for WebP / AVIF' },
+        { name: 'SVGO', notes: 'SVG optimization' },
+      ],
+    },
+    {
+      concept: 'Resolution / size guide',
+      desktop: 'Full-bleed: 1920px wide. Hero: 1200-1600px. Card thumbnail: 400-600px.',
+      mobile: 'Full-bleed: 750-900px (2x for retina). Smaller for thumbnails.',
+      principle: 'Never serve a larger image than the display size × pixel ratio',
+    },
+    {
+      concept: 'Quality settings',
+      jpeg: '80 is usually indistinguishable from 100, half the size',
+      webp: '75 is usually fine',
+      avif: '60 is usually fine (newer format compresses better)',
+      tip: 'Visually compare in squoosh.app; pick lowest acceptable quality',
+    },
+    {
+      concept: 'When to inline images',
+      tip: 'Tiny images (<1KB) can be data URLs to save HTTP requests',
+      example: '<img src="data:image/svg+xml;base64,PHN2Zy...">',
+      caveat: 'Doesn\'t cache; bloats HTML',
+    },
+    {
+      concept: 'Background images vs <img>',
+      img: 'Better for content (alt text, semantic, SEO)',
+      bg: 'Better for decoration (CSS-only, no markup pollution)',
+      principle: 'If the image conveys meaning, use <img>',
+    },
+    {
+      concept: 'Decoding hint',
+      example: '<img src="photo.jpg" decoding="async">',
+      effect: 'Browser decodes image off main thread',
+      modern: 'fetchpriority="high" for hero images',
+    },
+    {
+      concept: 'Animated images',
+      bad: 'Animated GIF — huge files, low quality',
+      good: 'MP4 or WebM video with loop muted autoplay playsinline',
+      example: '<video autoplay loop muted playsinline><source src="anim.mp4" type="video/mp4"></video>',
+      saving: '~50-90% smaller than equivalent GIF',
+    },
+    {
+      concept: 'Common mistakes',
+      list: [
+        'Serving 4000px image scaled to 400px on page',
+        'No lazy loading on below-fold images',
+        'Missing alt text',
+        'No srcset for mobile',
+        'No dimensions causing CLS',
+        'GIF for everything animated',
+        'JPEG with quality 100',
+        'No CDN (serving from origin)',
+      ],
+    },
+  ];
+
+  // ─── Progressive enhancement (verbose) ──────────────────────────
+  var PROGRESSIVE_ENHANCEMENT = [
+    {
+      concept: 'What is progressive enhancement?',
+      principle: 'Build core functionality with plain HTML, then layer CSS and JS on top',
+      analogy: 'Like a wedding cake — bottom layer (HTML) supports everything else',
+    },
+    {
+      concept: 'The three layers',
+      layers: [
+        { layer: 'Structure (HTML)', responsible: 'Semantic content; works in every browser; no JS required' },
+        { layer: 'Presentation (CSS)', responsible: 'Visual design; works without JS' },
+        { layer: 'Behavior (JS)', responsible: 'Enhancements; not required for core function' },
+      ],
+    },
+    {
+      concept: 'Why bother (in 2024+)?',
+      reasons: [
+        'JavaScript can fail to load (network errors, ad blockers)',
+        'Search engines need crawlable HTML',
+        'Accessibility tools depend on semantic HTML',
+        'Slow networks (rural areas, third world)',
+        'First load is fastest with HTML-first',
+        'Resilience — partial failures don\'t break everything',
+      ],
+    },
+    {
+      concept: 'Forms work without JS',
+      example: `<form action="/api/subscribe" method="POST">
+  <input name="email" type="email" required>
+  <button>Subscribe</button>
+</form>`,
+      then: 'Add JS to enhance: instant validation, AJAX submission, success messages — but the form still works if JS fails',
+    },
+    {
+      concept: 'Links work without JS',
+      bad: '<div onclick="navigate(...)">Click me</div>',
+      good: '<a href="/products">Products</a>',
+      why: 'Anchor tags work without JS, support right-click, work for screen readers, get crawled',
+    },
+    {
+      concept: 'Server-rendered HTML is OK',
+      modern: 'SSR (Next.js, Remix, SvelteKit) renders HTML on server',
+      benefit: 'First paint is HTML, JS hydrates after',
+      alternative: 'Static site generation (Astro, Gatsby) — even better, just HTML files',
+    },
+    {
+      concept: 'CSS feature queries',
+      example: `@supports (display: grid) {
+  .layout { display: grid; gap: 1rem; }
+}
+
+@supports not (display: grid) {
+  .layout { display: flex; flex-wrap: wrap; }
+}`,
+      benefit: 'Use modern features when available, fall back gracefully',
+    },
+    {
+      concept: 'JS feature detection',
+      example: `if ('IntersectionObserver' in window) {
+  // Use observer for lazy loading
+} else {
+  // Load all images immediately
+}
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js');
+}`,
+      principle: 'Check the feature, not the browser version',
+    },
+    {
+      concept: 'Hydration patterns',
+      problem: 'JS frameworks render HTML server-side, then attach event handlers client-side',
+      strategies: [
+        'Full hydration: re-render whole tree (heavy)',
+        'Partial hydration: only interactive parts (Astro, Marko)',
+        'Resumability: serialize state, resume on click (Qwik)',
+        'Islands: discrete interactive components in static page',
+      ],
+    },
+    {
+      concept: 'Graceful degradation vs progressive enhancement',
+      pe: 'Start with HTML floor, build up',
+      gd: 'Start with full feature, ensure floor still works',
+      verdict: 'PE is preferred — designs from constraints work better than designs that retreat',
+    },
+    {
+      concept: 'When PE doesn\'t apply',
+      list: [
+        'Interactive 3D tools',
+        'Real-time games',
+        'Apps that genuinely require JS (CAD, video editors)',
+        'Internal tools where JS is a guaranteed prerequisite',
+      ],
+      tip: 'Even then: show "JavaScript required" message in <noscript>',
+    },
+    {
+      concept: 'Modern recommendations',
+      list: [
+        'Choose SSR or SSG when possible',
+        'Use semantic HTML always',
+        'Test with JS disabled',
+        'Have a meaningful no-JS experience',
+        'Lazy-hydrate non-critical components',
+        'Use HTML attributes (loading="lazy", form validation) before JS solutions',
+      ],
+    },
+  ];
+
+  // ─── CSS Grid vs Flexbox (verbose) ──────────────────────────────
+  var GRID_VS_FLEXBOX = [
+    {
+      compare: 'Dimensionality',
+      flexbox: '1D — rows OR columns',
+      grid: '2D — rows AND columns simultaneously',
+      use: 'Flexbox for one-direction (nav bar). Grid for page layout.',
+    },
+    {
+      compare: 'Content-driven vs layout-driven',
+      flexbox: 'Items determine spacing (content-out)',
+      grid: 'Layout determines item placement (layout-in)',
+      use: 'Flexbox for unknown item sizes. Grid for designed structure.',
+    },
+    {
+      compare: 'Item alignment',
+      flexbox: 'justify-content (main axis) + align-items (cross axis)',
+      grid: 'justify + align with -content / -items / -self distinctions',
+      complexity: 'Grid has more alignment knobs',
+    },
+    {
+      compare: 'Gap',
+      flexbox: 'gap, row-gap, column-gap (modern)',
+      grid: 'gap, row-gap, column-gap',
+      same: 'Both support gap now (it was Grid-only originally)',
+    },
+    {
+      compare: 'Common patterns',
+      flexbox: ['Navigation bar', 'Card layout in one row', 'Vertical centering', 'Form rows', 'Footer with auto-spaced items'],
+      grid: ['Full page layout (header, sidebar, main, footer)', 'Photo gallery', 'Dashboard panels', 'Magazine-style layouts', 'Form with aligned labels'],
+    },
+    {
+      example: 'Horizontal centering both axes',
+      flexbox: `.parent {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}`,
+      grid: `.parent {
+  display: grid;
+  place-items: center;
+}`,
+      verdict: 'Grid is more concise for this',
+    },
+    {
+      example: 'Equal-width columns',
+      flexbox: `.row {
+  display: flex;
+  gap: 16px;
+}
+.row > * { flex: 1; }`,
+      grid: `.row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}`,
+      verdict: 'Grid clearer; Flexbox more dynamic (item count flexible)',
+    },
+    {
+      example: 'Responsive card grid (auto-flow)',
+      grid: `.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}`,
+      flexbox: `.cards { display: flex; flex-wrap: wrap; gap: 16px; }
+.cards > * { flex: 1 1 250px; }`,
+      verdict: 'Grid auto-fit is cleaner',
+    },
+    {
+      example: 'Sticky footer',
+      flexbox: `body { min-height: 100vh; display: flex; flex-direction: column; }
+main { flex: 1; }`,
+      grid: `body { min-height: 100vh; display: grid; grid-template-rows: auto 1fr auto; }`,
+      verdict: 'Both work; flexbox more familiar pattern',
+    },
+    {
+      property: 'Flexbox-only properties',
+      list: [
+        'flex-direction (row/column)',
+        'flex-wrap (wrap/nowrap)',
+        'flex: 1 (shorthand for grow/shrink/basis)',
+        'flex-grow, flex-shrink, flex-basis',
+        'order (reorder visually)',
+      ],
+    },
+    {
+      property: 'Grid-only properties',
+      list: [
+        'grid-template-columns / rows',
+        'grid-template-areas (named layout regions)',
+        'grid-column / grid-row (span across cells)',
+        'grid-auto-flow (how to place auto-placed items)',
+        'grid-auto-columns / rows (size of implicit tracks)',
+        'gap with separate row-gap and column-gap',
+      ],
+    },
+    {
+      principle: 'Combine them',
+      example: `/* Page: grid for overall layout */
+body { display: grid; grid-template-columns: 200px 1fr; }
+
+/* Nav: flexbox for items */
+nav ul { display: flex; gap: 8px; }`,
+      reality: 'Most real sites use BOTH. Grid for page, Flexbox for components.',
+    },
+    {
+      principle: 'When in doubt',
+      flexbox: 'Pick when you have a row OR column of items',
+      grid: 'Pick when you have a 2D layout or need precise placement',
+      neither: 'For very simple layouts, plain block + margins is fine',
+    },
+    {
+      principle: 'Browser support',
+      flexbox: 'IE 11 partial support (autoprefixer helps). All modern browsers full.',
+      grid: 'All modern browsers full. IE 11 partial.',
+      tip: 'Both safe to use in 2024+',
+    },
+  ];
+
+  // ─── Testing patterns (verbose) ─────────────────────────────────
+  var TESTING_PATTERNS = [
+    {
+      type: 'Unit test',
+      what: 'Tests one function in isolation',
+      example: `// math.js
+export function add(a, b) { return a + b; }
+
+// math.test.js
+import { add } from './math';
+test('adds two numbers', () => {
+  expect(add(1, 2)).toBe(3);
+});
+
+test('handles negatives', () => {
+  expect(add(-1, -2)).toBe(-3);
+});`,
+      tools: ['Jest', 'Vitest', 'Mocha + Chai', 'Node test runner (built-in)'],
+      speed: 'Very fast (<10ms each)',
+      whenToWrite: 'For pure functions, business logic, utilities',
+    },
+    {
+      type: 'Component test',
+      what: 'Tests a UI component renders + responds to interactions',
+      example: `import { render, screen, fireEvent } from '@testing-library/react';
+
+test('button responds to click', () => {
+  const onClick = jest.fn();
+  render(<Button onClick={onClick}>Click me</Button>);
+  fireEvent.click(screen.getByText('Click me'));
+  expect(onClick).toHaveBeenCalled();
+});`,
+      tools: ['Testing Library (React/Vue/etc.)', 'Storybook + interaction tests'],
+      principle: 'Test what user does, not implementation details',
+    },
+    {
+      type: 'Integration test',
+      what: 'Tests multiple units working together',
+      example: 'Submit a form → API receives correct data → success message shown',
+      tools: ['Same as component tests but exercise more pieces'],
+    },
+    {
+      type: 'End-to-end (E2E) test',
+      what: 'Drives a real browser through full user flows',
+      example: `test('login flow', async ({ page }) => {
+  await page.goto('/login');
+  await page.fill('[name=email]', 'user@example.com');
+  await page.fill('[name=password]', 'secret');
+  await page.click('button[type=submit]');
+  await expect(page).toHaveURL('/dashboard');
+  await expect(page.locator('h1')).toContainText('Welcome');
+});`,
+      tools: ['Playwright (recommended)', 'Cypress', 'Puppeteer'],
+      speed: 'Slow (seconds each)',
+      whenToWrite: 'Critical user flows (signup, checkout, login)',
+    },
+    {
+      type: 'Visual regression test',
+      what: 'Catches unintended visual changes',
+      how: 'Take screenshot, compare to baseline pixel-by-pixel',
+      tools: ['Percy', 'Chromatic (Storybook)', 'Playwright screenshot comparison', 'Backstop.js'],
+      use: 'Design systems, marketing pages, anywhere visual breakage matters',
+    },
+    {
+      type: 'Snapshot test',
+      what: 'Saves component output, fails if it changes',
+      example: 'expect(rendered).toMatchSnapshot()',
+      caution: 'Easy to overuse — failing snapshots get blindly updated',
+      tip: 'Best for stable structures, not rapidly-iterating UI',
+    },
+    {
+      type: 'Accessibility (a11y) test',
+      what: 'Catches a11y violations',
+      tools: ['axe-core', 'jest-axe', '@testing-library has built-in queries that fail on bad a11y'],
+      example: `import { axe } from 'jest-axe';
+
+test('no a11y violations', async () => {
+  const { container } = render(<App />);
+  const results = await axe(container);
+  expect(results).toHaveNoViolations();
+});`,
+    },
+    {
+      type: 'Performance test',
+      what: 'Catches regressions in speed',
+      tools: ['Lighthouse CI', 'WebPageTest', 'k6 (load testing)'],
+      thresholds: '90+ Lighthouse score; LCP < 2.5s; CLS < 0.1',
+    },
+    {
+      principle: 'Testing pyramid',
+      original: '70% unit, 20% integration, 10% E2E',
+      modern: 'Some teams prefer "testing trophy": more integration, less unit',
+      idea: 'Lots of fast tests, fewer slow tests. Catch most bugs cheaply.',
+    },
+    {
+      principle: 'What to test',
+      list: [
+        'Happy path (everything works)',
+        'Error paths (invalid input, network failure)',
+        'Edge cases (empty input, max length, null, 0, undefined)',
+        'Boundary conditions (just under, exactly, just over limit)',
+        'Race conditions (if async)',
+        'State transitions',
+      ],
+    },
+    {
+      principle: 'What NOT to test',
+      list: [
+        'Third-party libraries (assume they work)',
+        'Trivial getters / setters',
+        'Implementation details (private methods, internal state)',
+        'Display/layout (use visual regression instead)',
+        'Constants',
+      ],
+    },
+    {
+      principle: 'TDD (Test-Driven Development)',
+      cycle: 'Red → Green → Refactor',
+      steps: [
+        '1. Write a failing test for new feature',
+        '2. Write minimum code to pass',
+        '3. Refactor while keeping green',
+      ],
+      pros: 'Forces clear thinking; high coverage by default',
+      cons: 'Slower upfront; doesn\'t fit all workflows',
+    },
+    {
+      principle: 'Mocking',
+      what: 'Replace dependencies with controlled fakes',
+      example: `jest.mock('./api', () => ({
+  fetchUser: jest.fn().mockResolvedValue({ name: 'Aaron' })
+}));`,
+      caution: 'Over-mocking tests the mocks, not the code. Mock at boundaries only.',
+    },
+    {
+      principle: 'Test naming',
+      good: 'test("displays error when email is missing")',
+      bad: 'test("test1")',
+      pattern: 'should [behavior] when [condition]',
+    },
+    {
+      principle: 'Coverage',
+      myth: '100% coverage = bug-free (no)',
+      reality: 'Coverage shows what is RUN, not what is CORRECT',
+      target: '70-80% is usually enough; chase quality over quantity',
+    },
+    {
+      principle: 'Flaky tests',
+      what: 'Tests that pass sometimes, fail other times',
+      causes: ['Timing/race conditions', 'External dependencies', 'Shared state between tests'],
+      fix: 'Make tests deterministic. Use fake timers. Reset state between tests.',
+      worst: 'Worse than no test — teams stop trusting the suite',
+    },
+    {
+      principle: 'CI integration',
+      practices: [
+        'Run tests on every PR',
+        'Block merge if tests fail',
+        'Run E2E tests on staging before deploy',
+        'Send notifications on failures',
+        'Track flakiness over time',
+      ],
+    },
+  ];
+
+  // ─── API design guide (verbose) ─────────────────────────────────
+  var API_DESIGN = [
+    {
+      principle: 'REST naming conventions',
+      good: [
+        'Use nouns, not verbs: /users (not /getUsers)',
+        'Use plural: /users (not /user)',
+        'Hierarchies: /users/42/posts',
+        'Lowercase, kebab-case: /api/user-profiles',
+        'Use query params for filters: /users?role=admin&active=true',
+        'Use path params for IDs: /users/42',
+      ],
+      bad: [
+        '/getUserById?id=42',
+        '/createNewUser',
+        '/api/UserProfile/getAll',
+      ],
+    },
+    {
+      principle: 'HTTP methods semantics',
+      list: [
+        'GET — read (idempotent, cacheable)',
+        'POST — create OR action (not idempotent)',
+        'PUT — replace entirely (idempotent)',
+        'PATCH — partial update (often idempotent)',
+        'DELETE — remove (idempotent)',
+      ],
+    },
+    {
+      principle: 'Status codes used right',
+      list: [
+        '200 OK — GET succeeded; PUT/DELETE succeeded with body',
+        '201 Created — POST created new resource',
+        '204 No Content — DELETE/PUT succeeded, no body',
+        '400 Bad Request — Malformed body',
+        '401 Unauthorized — Auth missing/invalid',
+        '403 Forbidden — Authenticated but not allowed',
+        '404 Not Found — Resource doesn\'t exist',
+        '409 Conflict — State conflict (duplicate, version mismatch)',
+        '422 Unprocessable — Valid but semantically wrong',
+        '429 Too Many Requests — Rate limited',
+        '500 Internal — Server crash',
+        '503 Unavailable — Maintenance',
+      ],
+    },
+    {
+      principle: 'Versioning',
+      approaches: [
+        { method: 'URL path: /api/v1/users', notes: 'Most common, easiest to see' },
+        { method: 'Header: API-Version: 1', notes: 'Cleaner URLs but less visible' },
+        { method: 'Accept header: application/vnd.api.v1+json', notes: 'Most "correct" REST' },
+        { method: 'Query param: ?version=1', notes: 'Discouraged, mixes API contract with filters' },
+      ],
+      principle: 'Version when breaking changes. Don\'t version every release.',
+    },
+    {
+      principle: 'Pagination',
+      patterns: [
+        { name: 'Offset/Limit', example: '/users?offset=20&limit=10', pros: 'Simple', cons: 'Inconsistent if data changes' },
+        { name: 'Page/Size', example: '/users?page=3&size=10', pros: 'Familiar', cons: 'Same offset issues' },
+        { name: 'Cursor', example: '/users?cursor=eyJpZCI6MTAwfQ&limit=10', pros: 'Consistent, fast on large datasets', cons: 'No random access' },
+      ],
+      response: '{ data: [...], next_cursor: "...", total: 1500 }',
+    },
+    {
+      principle: 'Filtering and sorting',
+      filtering: '/users?role=admin&active=true&created_after=2024-01-01',
+      sorting: '/users?sort=name&order=asc OR /users?sort=-created_at (- prefix for desc)',
+      complex: 'For complex queries, consider GraphQL',
+    },
+    {
+      principle: 'Sparse fieldsets',
+      what: 'Let client request only fields they need',
+      example: '/users/42?fields=id,name,email',
+      benefit: 'Smaller responses, faster',
+    },
+    {
+      principle: 'Embedding / expanding',
+      example: '/users/42?include=posts,comments',
+      benefit: 'One request for related data',
+      caution: 'Don\'t make this required — keep base response simple',
+    },
+    {
+      principle: 'Error response format',
+      bad: '500 "ugh"',
+      good: `{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Email is required",
+    "field": "email",
+    "details": [...]
+  }
+}`,
+      consistent: 'Same shape for every error so clients can handle uniformly',
+    },
+    {
+      principle: 'Idempotency keys',
+      what: 'Client sends a key; server detects duplicate POSTs',
+      example: 'Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000',
+      use: 'Payments, retries on flaky networks',
+    },
+    {
+      principle: 'Rate limiting',
+      headers: 'X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset',
+      response: '429 with Retry-After header',
+      limits: 'Per user, per IP, per endpoint, or combinations',
+    },
+    {
+      principle: 'Authentication',
+      list: [
+        { method: 'JWT in Authorization header', use: 'Stateless APIs, modern default' },
+        { method: 'API keys', use: 'B2B / server-to-server' },
+        { method: 'OAuth 2.0', use: 'Third-party access (login with Google)' },
+        { method: 'Session cookies', use: 'Same-origin web apps' },
+        { method: 'Basic auth', use: 'Internal tools, simple cases (over HTTPS only)' },
+      ],
+    },
+    {
+      principle: 'CORS',
+      what: 'Cross-Origin Resource Sharing — who can call your API from browser',
+      headers: 'Access-Control-Allow-Origin, -Methods, -Headers, -Credentials',
+      tip: 'Allowlist origins; don\'t use * with credentials',
+    },
+    {
+      principle: 'Documentation',
+      tools: [
+        'OpenAPI / Swagger — industry standard',
+        'Stoplight Studio — visual OpenAPI editor',
+        'Redoc — beautiful API docs from OpenAPI',
+        'Postman — interactive API explorer',
+        'Hoppscotch — open-source Postman alternative',
+      ],
+      principle: 'Docs must show examples. Reading specs without examples is painful.',
+    },
+    {
+      principle: 'Common mistakes',
+      list: [
+        'Returning 200 with { "error": "..." } body — use 4xx/5xx',
+        'Hiding errors as 500 generic — be specific',
+        'Mixing HTTP semantics: GET /deleteUser',
+        'No pagination on large lists',
+        'No timeouts (slow endpoints hang clients)',
+        'No request ID for tracing',
+        'No deprecation warnings (clients break suddenly)',
+        'Versioning never (or versioning every change)',
+        'Different field naming (camelCase vs snake_case) inconsistently',
+      ],
+    },
+  ];
+
+  // ─── Quick wins for new developers ──────────────────────────────
+  var QUICK_WINS = [
+    {
+      win: 'Set up a portfolio',
+      steps: [
+        'Buy a domain (yourname.dev or yourname.com)',
+        'Create a GitHub Pages site or use Vercel free tier',
+        'Pin your 4 best repos on GitHub profile',
+        'Write README files that explain what each project does',
+        'Add screenshots and live links to README',
+      ],
+      time: 'One weekend',
+      impact: 'High — recruiters look here first',
+    },
+    {
+      win: 'Write 3 honest blog posts',
+      ideas: [
+        '"What I learned building [project]"',
+        '"How I debugged [hard bug] in [language]"',
+        '"Why I chose [tool] over [alternative]"',
+      ],
+      tip: 'Specific > generic. Showing your thinking > listing facts.',
+      platforms: 'dev.to (free, ranks well), your own site, Hashnode',
+    },
+    {
+      win: 'Contribute to open source',
+      easy: [
+        'Fix typos in documentation',
+        'Add missing TypeScript types',
+        'Update outdated package versions',
+        'Add missing tests',
+        'Improve error messages',
+      ],
+      sites: ['goodfirstissue.dev', 'up-for-grabs.net', 'firsttimersonly.com'],
+    },
+    {
+      win: 'Make GitHub profile shine',
+      add: [
+        'README at username/username repo (special — shows on profile)',
+        'Pinned repos',
+        'Contribution streak (green squares)',
+        'Profile picture (real face if comfortable)',
+        'Location and bio',
+      ],
+    },
+    {
+      win: 'Get on LinkedIn',
+      tips: [
+        'Real name and photo',
+        'Headline: what you do + what you\'re looking for',
+        'About: your story (couple paragraphs)',
+        'Experience: every relevant role',
+        'Featured: link to portfolio',
+        'Skills: tag relevant tech',
+      ],
+    },
+    {
+      win: 'Practice algorithms (a little)',
+      sites: ['leetcode.com (most companies use this style)', 'codewars.com (gamified)', 'exercism.org (with mentors)'],
+      cadence: '15 minutes a day beats 3 hours once a week',
+      caution: 'Don\'t become an algorithm robot — they\'re ONE input',
+    },
+    {
+      win: 'Learn git deeply',
+      level1: 'add, commit, push, pull',
+      level2: 'branch, merge, stash, log',
+      level3: 'rebase, cherry-pick, reset, reflog',
+      level4: 'submodules, hooks, bisect',
+      time: 'Lifetime; level 2 is enough for most jobs',
+    },
+    {
+      win: 'Master your editor',
+      vscode: 'Learn 10 keyboard shortcuts. Use multi-cursor. Use snippets.',
+      vim: 'Pays off long-term but steep curve. Start with vim plugin in VS Code.',
+      principle: 'Every minute you save in editor compounds for years',
+    },
+    {
+      win: 'Build something every month',
+      seed: 'Even tiny projects',
+      examples: [
+        'A timer for your hobby',
+        'A meal planner for one week',
+        'A flashcard app for one subject you\'re studying',
+        'A converter for something you use daily',
+      ],
+      principle: 'Most learning happens when building real things',
+    },
+    {
+      win: 'Read code from libraries you use',
+      how: 'Open the npm package on GitHub, browse src/',
+      benefit: 'You\'ll see real patterns from experienced devs',
+      starter: 'Pick a small utility library (lodash, date-fns)',
+    },
+    {
+      win: 'Join a community',
+      list: [
+        'r/learnprogramming, r/webdev',
+        'Local meetups (meetup.com)',
+        'Discord servers (Reactiflux, Python, etc.)',
+        'Twitter / X (still has dev community)',
+        'Mastodon (fosstodon.org, hachyderm.io)',
+      ],
+      principle: 'Programming is a team sport, even if you code alone',
+    },
+    {
+      win: 'Find a mentor (or be one)',
+      sources: ['Senior dev at work', 'adplist.org (free mentorship)', 'codementor.io (paid)', 'Twitter DMs (be respectful)'],
+      reciprocate: 'Mentor someone newer than you — teaches you faster than anything',
+    },
+    {
+      win: 'Take care of your body',
+      list: [
+        'Ergonomic keyboard / chair / monitor',
+        '20-20-20 rule for eyes (every 20 min, look 20 ft away for 20 sec)',
+        'Sleep is a debugging tool — your brain solves problems overnight',
+        'Walk daily — clarifies thinking',
+        'Hydrate — fixes more headaches than you\'d think',
+      ],
+      principle: 'Your career is a marathon; your body is the vehicle',
+    },
+    {
+      win: 'Learn to ask good questions',
+      template: [
+        'What I\'m trying to do',
+        'What I\'ve tried',
+        'What happened (with exact error)',
+        'What I expected',
+      ],
+      example: 'See "How to ask questions the smart way" by Eric Raymond',
+      principle: 'A good question saves 10 messages of clarification',
+    },
+    {
+      win: 'Document your learning',
+      methods: [
+        'Notion / Obsidian for personal notes',
+        'A "today I learned" repo on GitHub',
+        'A blog (even if no one reads it — it\'s for you)',
+        'Anki flashcards for things you keep forgetting',
+      ],
+      principle: 'External brain saves your real brain for thinking',
+    },
+  ];
+
+  // ─── Glossary supplement (verbose, expanding base glossary) ─────
+  var GLOSSARY_SUPPLEMENT = [
+    { term: 'Big O notation', definition: 'Describes how runtime or space requirements grow as input grows. O(1) constant; O(log n) logarithmic; O(n) linear; O(n²) quadratic; O(2^n) exponential.' },
+    { term: 'Race condition', definition: 'When the outcome depends on the timing of uncontrollable events. Common in concurrent code. Hard to reproduce.' },
+    { term: 'Deadlock', definition: 'Two or more processes each waiting on resources held by the others. Classic example: dining philosophers problem.' },
+    { term: 'Idempotent', definition: 'Operation that produces the same result no matter how many times it runs. GET, PUT, DELETE should be idempotent; POST is not.' },
+    { term: 'Memoization', definition: 'Caching function results so repeat calls with same arguments return instantly.' },
+    { term: 'Polymorphism', definition: 'Same interface, different implementations. A Shape can be drawn, but each Shape draws differently.' },
+    { term: 'Encapsulation', definition: 'Hiding internal state behind an interface. The outside only knows what the object can do, not how.' },
+    { term: 'Inheritance', definition: 'Class gets fields/methods from a parent class. Use sparingly; composition often better.' },
+    { term: 'Composition', definition: 'Combining smaller objects to make bigger ones. "Has-a" instead of "is-a".' },
+    { term: 'Currying', definition: 'Converting a function that takes many args into a chain of functions each taking one. add(a)(b)(c) instead of add(a, b, c).' },
+    { term: 'Closure', definition: 'A function that remembers variables from where it was defined, even when called elsewhere.' },
+    { term: 'Hoisting', definition: 'JS behavior where var declarations are moved to top of scope. Don\'t rely on it; use let/const.' },
+    { term: 'Event loop', definition: 'How JS handles async. Runs callbacks from task queue when call stack is empty. Microtasks > macrotasks.' },
+    { term: 'Pure function', definition: 'Returns same output for same input; no side effects. Easier to test and reason about.' },
+    { term: 'Side effect', definition: 'Anything a function does besides return a value: log, mutate, network, file IO.' },
+    { term: 'Functional programming', definition: 'Style emphasizing pure functions, immutability, composition.' },
+    { term: 'Object-oriented programming (OOP)', definition: 'Style organizing code into objects with state and behavior.' },
+    { term: 'Declarative', definition: 'Describes WHAT you want. SQL, React JSX, HTML.' },
+    { term: 'Imperative', definition: 'Describes HOW to do it step-by-step. for loops, manual DOM manipulation.' },
+    { term: 'DRY', definition: 'Don\'t Repeat Yourself. Extract duplicated logic.' },
+    { term: 'WET', definition: 'Write Everything Twice — when DRY is taken too far. Sometimes duplication is clearer than abstraction.' },
+    { term: 'KISS', definition: 'Keep It Simple, Stupid. Simple solutions usually win.' },
+    { term: 'YAGNI', definition: 'You Aren\'t Gonna Need It. Don\'t build for hypothetical futures.' },
+    { term: 'SOLID', definition: 'Five OOP design principles: Single responsibility, Open/closed, Liskov, Interface segregation, Dependency inversion.' },
+    { term: 'Single source of truth', definition: 'Data exists in one canonical place. Other places reference it, don\'t duplicate it.' },
+    { term: 'Eventual consistency', definition: 'Distributed systems converge to same state over time, but may differ briefly. Trade-off for availability.' },
+    { term: 'ACID', definition: 'Atomicity, Consistency, Isolation, Durability. Properties of reliable database transactions.' },
+    { term: 'BASE', definition: 'Basically Available, Soft state, Eventual consistency. Alternative to ACID for NoSQL/distributed.' },
+    { term: 'CAP theorem', definition: 'Distributed systems can guarantee at most 2 of: Consistency, Availability, Partition tolerance.' },
+    { term: 'Microservices', definition: 'Architecture pattern where app is many small services communicating over network. Trade complexity for scalability.' },
+    { term: 'Monolith', definition: 'Single deployable application. Simpler to start, can scale to surprisingly large.' },
+    { term: 'API gateway', definition: 'Single entry point in front of microservices. Handles auth, rate limiting, routing.' },
+    { term: 'Load balancer', definition: 'Distributes incoming requests across multiple servers.' },
+    { term: 'CDN', definition: 'Content Delivery Network. Cached copies of static files in many locations worldwide.' },
+    { term: 'DNS', definition: 'Domain Name System. Translates human-readable names (example.com) to IP addresses.' },
+    { term: 'TCP/IP', definition: 'Foundation of the internet. TCP guarantees delivery; IP routes packets.' },
+    { term: 'HTTPS', definition: 'HTTP over TLS. Encrypted communication between browser and server.' },
+    { term: 'SSL/TLS', definition: 'Encryption layer for network communication. TLS is the modern name; SSL is older.' },
+    { term: 'Certificate authority (CA)', definition: 'Organization that issues SSL certificates browsers trust. Let\'s Encrypt is the dominant free CA.' },
+    { term: 'GraphQL', definition: 'Query language for APIs. Client specifies exactly what fields to return.' },
+    { term: 'gRPC', definition: 'Google\'s high-performance RPC framework. Uses Protocol Buffers, HTTP/2.' },
+    { term: 'WebSocket', definition: 'Persistent two-way connection between browser and server. Used for real-time features.' },
+    { term: 'Server-sent events (SSE)', definition: 'One-way server-to-client streaming over HTTP. Simpler than WebSocket for read-only.' },
+    { term: 'Webhook', definition: 'HTTP callback. Service A calls URL on service B when event happens.' },
+    { term: 'Cron', definition: 'Time-based job scheduler. Run something at 2am every day.' },
+    { term: 'Queue', definition: 'List of work to be processed asynchronously. RabbitMQ, Redis, SQS.' },
+    { term: 'Pub/sub', definition: 'Publish/Subscribe. Senders broadcast events; receivers subscribe to topics.' },
+    { term: 'Containerization', definition: 'Packaging app with dependencies in isolated environment. Docker is the dominant tool.' },
+    { term: 'Orchestration', definition: 'Managing many containers. Kubernetes is the dominant tool.' },
+    { term: 'Infrastructure as code (IaC)', definition: 'Defining servers/networks in code (Terraform, CloudFormation). Versionable, reproducible.' },
+    { term: 'DevOps', definition: 'Practices combining development and operations. Continuous deployment, monitoring, automation.' },
+    { term: 'Observability', definition: 'Ability to understand internal system state from external outputs (logs, metrics, traces).' },
+    { term: 'Telemetry', definition: 'Data collected about system performance: response times, error rates, resource usage.' },
+    { term: 'Feature flag', definition: 'Toggle to enable/disable features without redeploying. Useful for gradual rollouts.' },
+    { term: 'Canary deploy', definition: 'Release to small subset first; if no issues, expand. Risk mitigation.' },
+    { term: 'Blue-green deploy', definition: 'Run new version (green) alongside old (blue). Switch traffic when ready.' },
+    { term: 'Rollback', definition: 'Reverting to previous version after a bad deploy. Should be one button.' },
+    { term: 'Sharding', definition: 'Splitting database across machines based on key (user ID, etc.). Scales beyond one machine.' },
+    { term: 'Replication', definition: 'Copies of database for read scaling, redundancy, geographic distribution.' },
+    { term: 'Cache invalidation', definition: 'Removing stale cache entries when underlying data changes. Famously hard.' },
+    { term: 'Bikeshedding', definition: 'Spending too much time on trivial decisions while ignoring important ones. From Parkinson\'s law.' },
+    { term: 'Foo / Bar / Baz', definition: 'Generic placeholder names in programming examples. Like Alice/Bob in cryptography.' },
+    { term: 'Snake case', definition: 'snake_case_naming. Common in Python, Ruby.' },
+    { term: 'Camel case', definition: 'camelCaseNaming. Common in JavaScript, Java.' },
+    { term: 'Pascal case', definition: 'PascalCaseNaming. Common for classes in many languages.' },
+    { term: 'Kebab case', definition: 'kebab-case-naming. Common in URLs, file names.' },
+    { term: 'Screaming snake case', definition: 'CONSTANT_NAMING. Convention for constants.' },
+    { term: 'Bus factor', definition: 'How many people on a team would need to be hit by a bus before the project fails. Higher is better.' },
+    { term: 'Greenfield project', definition: 'New project from scratch. Opposite of legacy.' },
+    { term: 'Brownfield project', definition: 'Existing project with constraints from existing code/users.' },
+    { term: 'Technical debt', definition: 'Code shortcuts that work now but will cost time later. Like financial debt with interest.' },
+    { term: 'YOLO commit', definition: 'Committing directly to main without review. Sometimes necessary; usually not.' },
+    { term: 'Push to prod on Friday', definition: 'Deploying right before the weekend. Generally a bad idea.' },
+    { term: 'Eat your own dog food', definition: 'Using your own product. Reveals problems quickly.' },
+    { term: 'Boil the ocean', definition: 'Trying to solve too much at once. Pick smaller scope.' },
+    { term: 'Cargo culting', definition: 'Copying practices without understanding why. Often produces empty rituals.' },
+    { term: 'Hacky', definition: 'Working code that lacks polish or correctness in edge cases.' },
+    { term: 'Wonky', definition: 'Not quite right. Often used about behavior that breaks under stress.' },
+    { term: 'Refactor', definition: 'Changing structure without changing behavior. Improving without breaking.' },
+    { term: 'Anti-pattern', definition: 'A common bad solution. Famous example: God objects.' },
+    { term: 'Abstraction leak', definition: 'When implementation details bubble up through what should be a clean interface.' },
+    { term: 'Boilerplate', definition: 'Repetitive code that doesn\'t express logic. Bad code generators reduce it; good frameworks eliminate it.' },
+    { term: 'Black box', definition: 'A system whose internals you don\'t see; only inputs and outputs.' },
+    { term: 'Glass box / white box', definition: 'A system whose internals you can see.' },
+    { term: 'Smoke test', definition: 'Quick sanity check after a change. Did it light up? Are basic features working?' },
+    { term: 'Regression', definition: 'A bug that breaks previously-working code. Catch with regression tests.' },
+    { term: 'Hotfix', definition: 'Urgent fix deployed outside normal release cycle. Should be rare.' },
+    { term: 'Postmortem', definition: 'Document analyzing an incident. Blameless culture focuses on systems, not people.' },
+    { term: 'Runbook', definition: 'Step-by-step instructions for handling known scenarios. Especially for on-call.' },
+    { term: 'On-call', definition: 'Being available to fix production issues outside business hours. Pays well; can burn out.' },
+    { term: 'SRE', definition: 'Site Reliability Engineering. Google-popularized blend of dev and ops focused on reliability.' },
+    { term: 'SLA / SLO / SLI', definition: 'Service Level Agreement (contract), Objective (internal target), Indicator (what you measure).' },
+    { term: 'Uptime', definition: 'Percentage of time service is available. 99.9% = ~9hrs downtime/year; 99.99% = ~52 min.' },
+    { term: 'MTTR', definition: 'Mean Time To Recovery. How long incidents last on average.' },
+    { term: 'P0 / P1 / P2', definition: 'Priority levels for bugs. P0 = production down; P1 = serious; P2 = soon; P3+ = whenever.' },
+    { term: 'Edge case', definition: 'Unusual input or condition (empty, max, 0, null). Often where bugs live.' },
+    { term: 'Happy path', definition: 'The expected normal flow when everything goes right.' },
+    { term: 'Sad path', definition: 'When things go wrong. Empty results, network errors, validation failures.' },
+    { term: 'A/B test', definition: 'Two versions shown to different users; measure which converts better.' },
+    { term: 'Multivariate test', definition: 'Like A/B but testing many combinations at once.' },
+    { term: 'Conversion rate', definition: 'Percentage of users who complete desired action (sign up, buy, etc.).' },
+    { term: 'Bounce rate', definition: 'Percentage of visitors who leave after viewing one page.' },
+    { term: 'Funnel', definition: 'Sequence of steps users go through. Each step typically loses some users.' },
+    { term: 'Cohort', definition: 'Group of users defined by shared characteristic (signup month, plan type).' },
+    { term: 'Churn', definition: 'Rate at which customers leave. Lower is better.' },
+    { term: 'NPS', definition: 'Net Promoter Score. "Would you recommend us?" 0-10 scale.' },
+    { term: 'CAC', definition: 'Customer Acquisition Cost. How much to acquire one customer.' },
+    { term: 'LTV', definition: 'Lifetime Value. Total revenue from a customer over their lifetime.' },
+    { term: 'Unicorn', definition: 'Private company valued over $1 billion.' },
+    { term: 'Pivot', definition: 'Major strategic change in a startup. Usually a sign of learning.' },
+    { term: 'MVP', definition: 'Minimum Viable Product. Smallest version that delivers value and validates learning.' },
+    { term: 'Iteration', definition: 'A cycle of build → measure → learn → repeat.' },
+    { term: 'Sprint', definition: 'Short fixed-length development cycle (typically 1-2 weeks). From Scrum.' },
+    { term: 'Standup', definition: 'Daily short team meeting. "What I did yesterday, what I\'m doing today, blockers."' },
+    { term: 'Retrospective', definition: 'End-of-sprint reflection. What went well? What didn\'t? What to change?' },
+    { term: 'Kanban', definition: 'Visual workflow board (To Do / Doing / Done). Limits work in progress.' },
+    { term: 'Agile', definition: 'Software methodology emphasizing iteration, customer feedback, working software. Manifesto from 2001.' },
+    { term: 'Waterfall', definition: 'Old methodology: plan everything, then build, then deliver. Often inflexible.' },
+    { term: 'Scrum', definition: 'Specific agile framework with sprints, standups, retros, defined roles.' },
+    { term: 'Product manager', definition: 'Decides what to build and why. Owns roadmap and priorities.' },
+    { term: 'Engineering manager', definition: 'Manages people and process. Often less hands-on coding.' },
+    { term: 'Staff engineer', definition: 'Senior IC role; technical leadership without managing people directly.' },
+    { term: 'Principal engineer', definition: 'Highest IC level; org-wide technical influence.' },
+    { term: 'L4 / L5 / L6', definition: 'Career level codes used at FAANG-style companies. L4 mid, L5 senior, L6 staff, etc.' },
+    { term: 'TPS report', definition: 'Office Space reference. Generic acronym for tedious paperwork.' },
+    { term: 'PR', definition: 'Pull Request. Proposed change to a codebase. Reviewed before merging.' },
+    { term: 'MR', definition: 'Merge Request. Same as PR but GitLab/Bitbucket terminology.' },
+    { term: 'CI', definition: 'Continuous Integration. Automatic tests on every commit.' },
+    { term: 'CD', definition: 'Continuous Deployment (or Delivery). Auto-deploy to production after CI passes.' },
+    { term: 'Feature branch', definition: 'Git branch created for working on a feature. Merged when done.' },
+    { term: 'Trunk-based development', definition: 'Everyone works on main/trunk with short-lived branches. Avoids long-lived branch hell.' },
+    { term: 'Git flow', definition: 'Branching model with develop, feature, release branches. Outdated for most teams.' },
+    { term: 'Mainline', definition: 'The primary branch (usually called main, formerly master).' },
+    { term: 'Force push', definition: 'Overwriting remote history. Dangerous on shared branches.' },
+    { term: 'Rebase', definition: 'Replaying commits on a new base. Keeps history linear but rewrites it.' },
+    { term: 'Squash', definition: 'Combining multiple commits into one. Cleaner history before merging.' },
+    { term: 'Pair programming', definition: 'Two devs at one keyboard. One drives, one navigates. Catches bugs early.' },
+    { term: 'Mob programming', definition: 'Whole team at one keyboard. Maximum knowledge sharing.' },
+    { term: 'Code review', definition: 'Another developer reviews proposed changes before merge. Catches issues; spreads knowledge.' },
+    { term: 'Rubber-stamping', definition: 'Approving PRs without really reading them. Defeats the purpose of review.' },
+    { term: 'LGTM', definition: 'Looks Good To Me. Common review approval.' },
+    { term: 'Drive-by review', definition: 'Quick review by someone not directly involved. Can be helpful or harmful.' },
+    { term: 'Two-week sprint', definition: 'Typical agile cycle. Long enough to ship something; short enough to adapt.' },
+    { term: 'Stakeholder', definition: 'Anyone affected by what you build. Includes users, business, support, etc.' },
+    { term: 'Bus factor of one', definition: 'When only one person knows critical info. Dangerous; spread knowledge.' },
+    { term: 'Tribal knowledge', definition: 'Information known by some team members but never written down. Document it.' },
+    { term: 'Yak shaving', definition: 'Doing increasingly tangential tasks to enable the original task. "I need to fix this bug, so first I need to install this tool, but first I need to update Node, but first..."' },
+    { term: 'Code review fatigue', definition: 'Quality drops on large or numerous reviews. Keep PRs small.' },
+    { term: 'Estimation', definition: 'Predicting how long work will take. Famously unreliable. Track and learn over time.' },
+    { term: 'Story points', definition: 'Relative effort estimation (1, 2, 3, 5, 8, 13). Not hours. Hours are misleading.' },
+    { term: 'Velocity', definition: 'Story points completed per sprint. Track to improve estimates over time.' },
+    { term: 'Definition of done', definition: 'Team agreement on what "complete" means. Tested? Deployed? Documented? Reviewed?' },
+    { term: 'Definition of ready', definition: 'When a task is ready to be worked on. Has acceptance criteria? Designs? Dependencies clear?' },
+    { term: 'Acceptance criteria', definition: 'Specific testable conditions for "done". Reduces ambiguity.' },
+    { term: 'User story', definition: 'Format: "As a [user], I want [feature] so that [benefit]." Keeps focus on value.' },
+    { term: 'Epic', definition: 'Large body of work that spans multiple sprints. Broken into stories.' },
+    { term: 'Backlog', definition: 'Prioritized list of upcoming work.' },
+    { term: 'Grooming / refinement', definition: 'Meeting to clarify and estimate backlog items before they\'re worked on.' },
+    { term: 'Spike', definition: 'Time-boxed research task to reduce uncertainty. Output is knowledge, not code.' },
+    { term: 'Carrying / WIP limit', definition: 'Maximum work in progress at once. Forces focus over multitasking.' },
+    { term: 'Big rock', definition: 'Major priority that gets time first. Smaller tasks fit around it.' },
+    { term: 'Goldilocks task', definition: 'Just-right difficulty — not boring, not impossible. Where flow happens.' },
+    { term: 'Tabs vs spaces', definition: 'Endless debate. Pick one per project and use a linter to enforce.' },
+    { term: 'CamelCase wars', definition: 'Like tabs vs spaces but for variable naming. JavaScript: camelCase. Python: snake_case.' },
+    { term: 'Hello World', definition: 'Traditional first program. If "Hello, World!" runs, your environment is set up.' },
+    { term: 'FizzBuzz', definition: 'Classic interview problem. Print 1-100, multiples of 3 say Fizz, multiples of 5 say Buzz, both say FizzBuzz.' },
+    { term: 'Fibonacci', definition: 'Sequence where each number is sum of previous two: 1, 1, 2, 3, 5, 8, 13. Common interview problem.' },
+    { term: 'Two sum', definition: 'Find two numbers in array that add to target. Classic LeetCode warmup.' },
+    { term: 'Inverted binary tree', definition: 'Famous tweet by Max Howell about being rejected by Google for not solving this on the whiteboard.' },
+    { term: 'Stackoverflow-driven development', definition: 'Programming by searching for snippets. Faster sometimes; teaches less.' },
+    { term: 'AI-assisted coding', definition: 'Using LLMs (like Claude, Copilot) to suggest code. Now standard tooling, not optional.' },
+    { term: 'Prompt engineering', definition: 'Crafting inputs to get good outputs from LLMs. Skill, not magic.' },
+    { term: 'Context window', definition: 'Maximum text an LLM can process at once. Grows over time; Claude Opus 4.7 has 1M tokens.' },
+    { term: 'Hallucination', definition: 'When LLM confidently invents wrong information. Verify before trusting.' },
+    { term: 'Fine-tuning', definition: 'Training a base LLM on specific data. Customizes for domain.' },
+    { term: 'RAG', definition: 'Retrieval-Augmented Generation. Look up relevant docs, give to LLM as context. Reduces hallucinations.' },
+    { term: 'Embedding', definition: 'Numeric vector representing meaning of text. Similar texts have similar vectors.' },
+    { term: 'Vector database', definition: 'Database optimized for similarity search on embeddings. Pinecone, Weaviate, pgvector.' },
+    { term: 'Agent', definition: 'AI system that takes actions, not just generates text. Can call tools, execute steps.' },
+    { term: 'Multi-agent', definition: 'Multiple AI agents collaborating. Each specialized. AppLab uses this pattern.' },
+    { term: 'Token', definition: 'Smallest unit an LLM processes. About 0.75 words for English. Costs scale with tokens.' },
+    { term: 'Streaming', definition: 'LLM returns tokens as they\'re generated, not all at once. Feels faster.' },
+    { term: 'System prompt', definition: 'Instructions given to LLM that persist throughout conversation. Sets persona, constraints.' },
+    { term: 'Few-shot prompting', definition: 'Including 1-5 examples in prompt to steer LLM output format.' },
+    { term: 'Zero-shot prompting', definition: 'Asking LLM to do something without examples. Works well for capable models.' },
+    { term: 'Chain of thought', definition: 'Prompting LLM to show reasoning step-by-step. Improves accuracy on complex problems.' },
+    { term: 'Function calling', definition: 'LLM outputs structured request to call a function. Server executes; result goes back.' },
+    { term: 'Tool use', definition: 'Same as function calling — LLM invoking external capabilities.' },
+    { term: 'Temperature', definition: 'LLM randomness setting. 0 = deterministic; higher = more creative.' },
+    { term: 'Top-p / top-k', definition: 'Other LLM sampling parameters that affect output randomness.' },
+    { term: 'Prompt injection', definition: 'Attacker hides instructions in input that LLM mistakes for system commands. Security concern.' },
+    { term: 'Jailbreak', definition: 'Convincing an LLM to bypass safety guardrails. Cat-and-mouse with model trainers.' },
+    { term: 'Guardrails', definition: 'Constraints on LLM behavior. Block harmful content, enforce structure, etc.' },
+    { term: 'Eval', definition: 'Automated test that measures LLM output quality. Critical for production LLM apps.' },
+    { term: 'Benchmark', definition: 'Standardized eval shared across the field. MMLU, HumanEval, BIG-bench, etc.' },
+    { term: 'Open weights', definition: 'LLM model weights published publicly. Llama, Mistral, Phi. You can run locally.' },
+    { term: 'Closed source LLM', definition: 'API-only model. Claude, GPT-4o. You don\'t see weights.' },
+    { term: 'Quantization', definition: 'Reducing precision of model weights to use less memory. 4-bit, 8-bit. Modest quality loss.' },
+    { term: 'Distillation', definition: 'Training a smaller model to imitate a larger one. Cheaper inference; some quality loss.' },
+    { term: 'MoE', definition: 'Mixture of Experts. Architecture with many specialized sub-networks; only some activate per query.' },
+    { term: 'Inference', definition: 'Running a trained model on new inputs to get outputs.' },
+    { term: 'Training', definition: 'Updating model weights based on data. Expensive, time-consuming, requires GPUs.' },
+    { term: 'GPU', definition: 'Graphics Processing Unit. Parallel processor; great for matrix math (and thus AI).' },
+    { term: 'TPU', definition: 'Tensor Processing Unit. Google\'s custom AI chips.' },
+    { term: 'CUDA', definition: 'NVIDIA\'s programming model for GPU computing. Most AI runs on it.' },
+    { term: 'PyTorch / TensorFlow', definition: 'Frameworks for building and training neural networks. PyTorch dominant for research.' },
+    { term: 'Transformer', definition: 'Neural network architecture behind modern LLMs. Self-attention mechanism. From "Attention is All You Need" (2017).' },
+    { term: 'Attention', definition: 'Mechanism where model weighs importance of different parts of input. Key to transformers.' },
+    { term: 'Pretraining', definition: 'Initial training of base model on massive corpus. Where most cost is.' },
+    { term: 'Posttraining', definition: 'Additional training (RLHF, SFT) to align base model with desired behavior.' },
+    { term: 'RLHF', definition: 'Reinforcement Learning from Human Feedback. How models learn to be helpful and harmless.' },
+    { term: 'Constitutional AI', definition: 'Anthropic\'s approach: model trained to follow principles, not just rated examples.' },
+    { term: 'Alignment', definition: 'Field of making AI systems do what humans actually want. Active research area.' },
+    { term: 'AGI', definition: 'Artificial General Intelligence. Hypothetical AI matching human-level capability across all domains.' },
+    { term: 'ASI', definition: 'Artificial Super Intelligence. Hypothetical AI exceeding human capability. Beyond current technology.' },
+    { term: 'Anthropic', definition: 'AI safety company that built Claude. Founded 2021. Focuses on interpretability and alignment.' },
+    { term: 'Claude', definition: 'Anthropic\'s AI assistant. Models include Opus (most capable), Sonnet (balanced), Haiku (fastest).' },
+    { term: 'AlloFlow', definition: 'Aaron Pomeranz\'s AI-powered classroom toolkit. Includes AppLab among 80+ tools. ~650K lines of code.' },
+    { term: 'UDL', definition: 'Universal Design for Learning. Framework for inclusive teaching that benefits all learners.' },
+    { term: 'IEP', definition: 'Individualized Education Program. Legal document for U.S. students receiving special education.' },
+    { term: '504 plan', definition: 'U.S. accommodation plan for students with disabilities under Section 504.' },
+    { term: 'EL Education', definition: 'Curriculum framework used in many U.S. schools, including King Middle in Portland, Maine.' },
+    { term: 'King Middle School', definition: 'Flagship EL Education school in Portland, Maine. Aaron Pomeranz is the school psychologist there.' },
+    { term: 'School psychologist', definition: 'Professional supporting student mental health, learning, and behavior in K-12 settings.' },
+    { term: 'PsyD', definition: 'Doctor of Psychology. Professional doctorate emphasizing clinical practice over research.' },
+    { term: 'PhD', definition: 'Doctor of Philosophy. Research-oriented doctorate.' },
+    { term: 'STEM', definition: 'Science, Technology, Engineering, Mathematics. Often expanded to STEAM to include Arts.' },
+    { term: 'CTE', definition: 'Career and Technical Education. Practical job-prep curriculum (vs. college-prep).' },
+    { term: 'NGSS', definition: 'Next Generation Science Standards. Multi-state US science curriculum framework.' },
+    { term: 'CSTA', definition: 'Computer Science Teachers Association. Provides K-12 CS standards.' },
+    { term: 'AP CSP', definition: 'Advanced Placement Computer Science Principles. College Board high school CS course.' },
+    { term: 'Hour of Code', definition: 'Annual global initiative introducing students to programming through 1-hour activities.' },
+    { term: 'code.org', definition: 'Nonprofit promoting CS education in schools. Free curriculum K-12.' },
+    { term: 'Scratch', definition: 'Visual block-based programming language for kids, by MIT Media Lab. Free.' },
+    { term: 'Replit', definition: 'Online IDE that runs in browser. Popular for students.' },
+    { term: 'CodePen', definition: 'Online HTML/CSS/JS playground. Used to share frontend snippets.' },
+    { term: 'JSFiddle', definition: 'Older online playground similar to CodePen.' },
+    { term: 'CodeSandbox', definition: 'Online IDE for full apps including React, Vue, etc.' },
+    { term: 'StackBlitz', definition: 'In-browser Node.js. Runs real npm packages without server.' },
+    { term: 'glitch.com', definition: 'Friendly platform for hosting and remixing small web apps. Educational vibe.' },
+    { term: 'Closing thought', definition: 'You\'ve scrolled through every glossary entry. That itself is a sign of curiosity, which is the most important developer trait. Now go build something.' },
+  ];
+
   var TEMPLATES = [
     { cat: 'Physics', items: [
       { title: 'Projectile Motion', prompt: 'Interactive projectile motion simulator with adjustable angle, velocity, and gravity. Show trajectory path, max height, and range. Include a launch button and real-time animation.' },
@@ -14678,15 +19084,578 @@ getResource();`,
       var btn = function(bg, fg, dis) { return { padding: '8px 16px', background: dis ? '#e5e7eb' : bg, color: dis ? '#9ca3af' : fg, border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '12px', cursor: dis ? 'not-allowed' : 'pointer', transition: 'all 0.15s' }; };
       var card = { background: '#fff', borderRadius: '14px', padding: '16px', border: '1px solid #e5e7eb', marginBottom: '12px' };
 
+      // ── Tab system state ──
+      var _activeTab = useState(function() {
+        try { return localStorage.getItem('alloAppLabTab') || 'build'; } catch(e) { return 'build'; }
+      });
+      var activeTab = _activeTab[0]; var setActiveTab = _activeTab[1];
+      var goToTab = function(id) {
+        setActiveTab(id);
+        try { localStorage.setItem('alloAppLabTab', id); } catch(e) {}
+        if (announceToSR) announceToSR('Switched to ' + id + ' tab');
+      };
+      var _activeTopic = useState({});
+      var activeTopic = _activeTopic[0]; var setActiveTopic = _activeTopic[1];
+      var setTopic = function(tab, topic) {
+        var next = Object.assign({}, activeTopic);
+        next[tab] = topic;
+        setActiveTopic(next);
+      };
+      var getTopic = function(tab, fallback) {
+        return (activeTopic && activeTopic[tab]) || fallback;
+      };
+
+      var TABS = [
+        { id: 'build', label: 'Build', icon: '🚀', desc: 'Generate, edit, and preview AI-built apps' },
+        { id: 'learn', label: 'Learn', icon: '📚', desc: 'HTML, CSS, JavaScript, frameworks, and APIs' },
+        { id: 'practice', label: 'Practice', icon: '✏️', desc: 'Projects, tutorials, lessons, and quizzes' },
+        { id: 'patterns', label: 'Patterns', icon: '🧩', desc: 'Algorithms, data structures, and design patterns' },
+        { id: 'quality', label: 'Quality', icon: '✅', desc: 'Accessibility, performance, security, and testing' },
+        { id: 'career', label: 'Career', icon: '🏆', desc: 'Careers, programmers, ethics, and growth' }
+      ];
+
+      // ── Reusable: split-pane (topic chooser + content) ──
+      var renderSplit = function(tab, topics, defaultId) {
+        var current = getTopic(tab, defaultId || (topics[0] && topics[0].id));
+        var active = topics.find(function(t) { return t.id === current; }) || topics[0];
+        return h('div', { style: { display: 'flex', gap: '12px', flex: 1, minHeight: 0 } },
+          // Sidebar
+          h('nav', { 'aria-label': tab + ' topics',
+            style: { width: '220px', flexShrink: 0, overflowY: 'auto', background: '#f9fafb', borderRadius: '12px', padding: '8px', border: '1px solid #e5e7eb' } },
+            topics.map(function(t) {
+              var isActive = t.id === active.id;
+              return h('button', { key: t.id, onClick: function() { setTopic(tab, t.id); },
+                'aria-current': isActive ? 'page' : undefined,
+                style: { display: 'flex', alignItems: 'center', gap: '6px', width: '100%', padding: '8px 10px', marginBottom: '2px',
+                  borderRadius: '8px', border: 'none', cursor: 'pointer', textAlign: 'left', fontSize: '12px', fontWeight: isActive ? 700 : 500,
+                  background: isActive ? PURPLE : 'transparent', color: isActive ? '#fff' : '#374151', transition: 'all 0.1s' } },
+                h('span', { style: { fontSize: '14px' } }, t.icon || '📄'),
+                h('span', { style: { flex: 1 } }, t.label)
+              );
+            })
+          ),
+          // Content
+          h('article', { 'aria-label': active.label,
+            style: { flex: 1, overflowY: 'auto', background: '#fff', borderRadius: '12px', padding: '20px', border: '1px solid #e5e7eb' } },
+            h('header', { style: { marginBottom: '16px', paddingBottom: '12px', borderBottom: '2px solid #f3f4f6' } },
+              h('h3', { style: { fontSize: '18px', fontWeight: 800, color: '#1e293b', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' } },
+                h('span', null, active.icon || '📄'),
+                h('span', null, active.label)
+              ),
+              active.subtitle && h('p', { style: { fontSize: '12px', color: '#6b7280', marginTop: '4px', marginBottom: 0 } }, active.subtitle)
+            ),
+            active.render ? active.render() : h('p', { style: { color: '#94a3b8' } }, 'No content yet.')
+          )
+        );
+      };
+
+      // ── Reusable: structured-entry card renderer ──
+      var renderEntries = function(entries, opts) {
+        opts = opts || {};
+        return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px' } },
+          entries.map(function(entry, i) {
+            var title = entry[opts.titleKey || 'name'] || entry.title || entry.concept || entry.command || entry.category || entry.api || entry.pattern || entry.topic || ('Entry ' + (i + 1));
+            return h('section', { key: i, style: { background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '10px', padding: '12px 14px' } },
+              h('h4', { style: { fontSize: '14px', fontWeight: 800, color: PURPLE, margin: '0 0 6px 0' } }, title),
+              Object.keys(entry).map(function(key) {
+                if (key === (opts.titleKey || 'name') || key === 'title' || key === 'concept' || key === 'command' || key === 'category' || key === 'api' || key === 'pattern' || key === 'topic') return null;
+                var val = entry[key];
+                if (val == null) return null;
+                var labelStr = key.replace(/([A-Z])/g, ' $1').replace(/^./, function(c) { return c.toUpperCase(); });
+                if (typeof val === 'string') {
+                  return h('div', { key: key, style: { marginBottom: '6px' } },
+                    h('strong', { style: { fontSize: '10px', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.5px' } }, labelStr + ': '),
+                    h('span', { style: { fontSize: '12px', color: '#1e293b', whiteSpace: 'pre-wrap', fontFamily: /example|code|query|syntax/i.test(key) ? 'ui-monospace, Menlo, monospace' : 'inherit' } }, val)
+                  );
+                }
+                if (Array.isArray(val)) {
+                  return h('div', { key: key, style: { marginBottom: '6px' } },
+                    h('div', { style: { fontSize: '10px', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 700, marginBottom: '4px' } }, labelStr),
+                    h('ul', { style: { margin: 0, paddingLeft: '20px' } },
+                      val.map(function(item, ii) {
+                        if (typeof item === 'string') return h('li', { key: ii, style: { fontSize: '12px', color: '#1e293b', marginBottom: '2px' } }, item);
+                        if (item && typeof item === 'object') {
+                          var summary = Object.keys(item).map(function(k) { return k + ': ' + String(item[k]).slice(0, 200); }).join(' • ');
+                          return h('li', { key: ii, style: { fontSize: '11px', color: '#374151', marginBottom: '4px' } }, summary);
+                        }
+                        return null;
+                      })
+                    )
+                  );
+                }
+                if (val && typeof val === 'object') {
+                  return h('div', { key: key, style: { marginBottom: '6px' } },
+                    h('div', { style: { fontSize: '10px', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 700, marginBottom: '4px' } }, labelStr),
+                    h('div', { style: { fontSize: '11px', color: '#374151', paddingLeft: '12px' } },
+                      Object.keys(val).map(function(subKey) {
+                        return h('div', { key: subKey, style: { marginBottom: '2px' } },
+                          h('strong', { style: { color: '#6b7280' } }, subKey + ': '),
+                          h('span', null, String(val[subKey]))
+                        );
+                      })
+                    )
+                  );
+                }
+                return null;
+              })
+            );
+          })
+        );
+      };
+
+      // ── Interactive Quiz Engine ──
+      var _quizIdx = useState(0); var quizIdx = _quizIdx[0]; var setQuizIdx = _quizIdx[1];
+      var _quizPicked = useState(null); var quizPicked = _quizPicked[0]; var setQuizPicked = _quizPicked[1];
+      var _quizScore = useState(function() {
+        try { return JSON.parse(localStorage.getItem('alloAppLabQuizScore') || '{"correct":0,"total":0,"streak":0,"best":0}'); }
+        catch(e) { return { correct: 0, total: 0, streak: 0, best: 0 }; }
+      });
+      var quizScore = _quizScore[0]; var setQuizScore = _quizScore[1];
+      var saveQuizScore = function(next) {
+        setQuizScore(next);
+        try { localStorage.setItem('alloAppLabQuizScore', JSON.stringify(next)); } catch(e) {}
+      };
+      var resetQuizScore = function() {
+        var blank = { correct: 0, total: 0, streak: 0, best: 0 };
+        saveQuizScore(blank);
+        setQuizIdx(0);
+        setQuizPicked(null);
+      };
+
+      var renderQuizEngine = function() {
+        var ALL_Q = [].concat(typeof QUIZ_QUESTIONS !== 'undefined' ? QUIZ_QUESTIONS : [], typeof QUIZ_QUESTIONS_EXTENDED !== 'undefined' ? QUIZ_QUESTIONS_EXTENDED : []);
+        if (ALL_Q.length === 0) return h('p', { style: { color: '#94a3b8' } }, 'No quiz questions loaded.');
+        var safeIdx = ((quizIdx % ALL_Q.length) + ALL_Q.length) % ALL_Q.length;
+        var q = ALL_Q[safeIdx];
+        var questionText = q.question || q.q || '';
+        var correctAnswer = q.answer || q.correct || '';
+        var options = Array.isArray(q.options) ? q.options : null;
+        var answered = quizPicked !== null;
+        var isCorrect = answered && options ? String(options[quizPicked]) === String(correctAnswer) : false;
+
+        var accuracy = quizScore.total > 0 ? Math.round((quizScore.correct / quizScore.total) * 100) : 0;
+
+        return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '14px' } },
+          // Scoreboard
+          h('div', { style: { display: 'flex', gap: '10px', flexWrap: 'wrap', padding: '12px', background: 'linear-gradient(135deg, #f5f3ff, #ede9fe)', borderRadius: '12px', border: '1px solid #ddd6fe' } },
+            h('div', { style: { flex: 1, minWidth: '100px' } },
+              h('div', { style: { fontSize: '10px', color: '#6b21a8', fontWeight: 700, textTransform: 'uppercase' } }, 'Question'),
+              h('div', { style: { fontSize: '20px', fontWeight: 900, color: '#581c87' } }, (safeIdx + 1) + ' / ' + ALL_Q.length)
+            ),
+            h('div', { style: { flex: 1, minWidth: '100px' } },
+              h('div', { style: { fontSize: '10px', color: '#6b21a8', fontWeight: 700, textTransform: 'uppercase' } }, 'Correct'),
+              h('div', { style: { fontSize: '20px', fontWeight: 900, color: '#16a34a' } }, quizScore.correct + ' / ' + quizScore.total)
+            ),
+            h('div', { style: { flex: 1, minWidth: '100px' } },
+              h('div', { style: { fontSize: '10px', color: '#6b21a8', fontWeight: 700, textTransform: 'uppercase' } }, 'Accuracy'),
+              h('div', { style: { fontSize: '20px', fontWeight: 900, color: '#581c87' } }, accuracy + '%')
+            ),
+            h('div', { style: { flex: 1, minWidth: '100px' } },
+              h('div', { style: { fontSize: '10px', color: '#6b21a8', fontWeight: 700, textTransform: 'uppercase' } }, 'Streak'),
+              h('div', { style: { fontSize: '20px', fontWeight: 900, color: '#dc2626' } }, '🔥 ' + quizScore.streak),
+              quizScore.best > 0 && h('div', { style: { fontSize: '10px', color: '#6b7280' } }, 'Best: ' + quizScore.best)
+            ),
+            h('button', { onClick: resetQuizScore, style: btn('#fef3c7', '#92400e', false), title: 'Reset score' }, '↻ Reset')
+          ),
+
+          // Question card
+          h('div', { style: { padding: '20px', background: '#fff', border: '2px solid #ddd6fe', borderRadius: '14px' } },
+            h('h4', { style: { fontSize: '15px', fontWeight: 800, color: '#1e293b', margin: '0 0 14px 0', lineHeight: 1.4 } }, questionText),
+            options && h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+              options.map(function(opt, oi) {
+                var thisCorrect = String(opt) === String(correctAnswer);
+                var bg = '#f9fafb', border = '#e5e7eb', color = '#1e293b';
+                if (answered) {
+                  if (thisCorrect) { bg = '#dcfce7'; border = '#16a34a'; color = '#166534'; }
+                  else if (oi === quizPicked) { bg = '#fee2e2'; border = '#dc2626'; color = '#991b1b'; }
+                }
+                return h('button', { key: oi, disabled: answered,
+                  onClick: function() {
+                    if (answered) return;
+                    setQuizPicked(oi);
+                    var correctNow = thisCorrect;
+                    var nextScore = {
+                      correct: quizScore.correct + (correctNow ? 1 : 0),
+                      total: quizScore.total + 1,
+                      streak: correctNow ? quizScore.streak + 1 : 0,
+                      best: Math.max(quizScore.best, correctNow ? quizScore.streak + 1 : quizScore.streak)
+                    };
+                    saveQuizScore(nextScore);
+                    if (correctNow && awardXP) awardXP(5, 'quiz');
+                    if (announceToSR) announceToSR(correctNow ? 'Correct!' : 'Incorrect. Correct answer was: ' + correctAnswer);
+                  },
+                  style: { padding: '12px 14px', borderRadius: '10px', border: '2px solid ' + border, background: bg,
+                    color: color, fontSize: '13px', fontWeight: 600, cursor: answered ? 'default' : 'pointer', textAlign: 'left',
+                    display: 'flex', alignItems: 'center', gap: '10px' } },
+                  h('span', { style: { fontSize: '14px', fontWeight: 800, minWidth: '20px' } }, String.fromCharCode(65 + oi) + '.'),
+                  h('span', { style: { flex: 1 } }, opt),
+                  answered && thisCorrect && h('span', { style: { fontSize: '16px' } }, '✓'),
+                  answered && oi === quizPicked && !thisCorrect && h('span', { style: { fontSize: '16px' } }, '✗')
+                );
+              })
+            ),
+
+            // Feedback
+            answered && h('div', { style: { marginTop: '14px', padding: '12px', background: isCorrect ? '#dcfce7' : '#fef3c7', borderRadius: '10px', border: '1px solid ' + (isCorrect ? '#86efac' : '#fde68a') } },
+              h('div', { style: { fontWeight: 800, fontSize: '13px', color: isCorrect ? '#166534' : '#92400e', marginBottom: q.explanation ? '6px' : 0 } },
+                isCorrect ? '✓ Correct!' : '✗ Not quite. Correct answer: ' + correctAnswer
+              ),
+              q.explanation && h('p', { style: { fontSize: '12px', color: '#374151', margin: 0, lineHeight: 1.5 } }, q.explanation)
+            ),
+
+            // Nav
+            h('div', { style: { display: 'flex', gap: '8px', marginTop: '14px', justifyContent: 'space-between' } },
+              h('button', { onClick: function() { setQuizIdx(safeIdx - 1); setQuizPicked(null); }, disabled: safeIdx === 0,
+                style: btn('#f1f5f9', '#374151', safeIdx === 0) }, '◀ Previous'),
+              h('div', { style: { display: 'flex', gap: '8px' } },
+                h('button', { onClick: function() {
+                  var rand = Math.floor(Math.random() * ALL_Q.length);
+                  setQuizIdx(rand); setQuizPicked(null);
+                }, style: btn('#f1f5f9', '#374151', false) }, '🎲 Random'),
+                h('button', { onClick: function() { setQuizIdx(safeIdx + 1); setQuizPicked(null); }, disabled: safeIdx === ALL_Q.length - 1,
+                  style: btn(PURPLE, '#fff', safeIdx === ALL_Q.length - 1) }, 'Next ▶')
+              )
+            )
+          )
+        );
+      };
+
+      // ── Flashcard mode for glossary terms ──
+      var _flashIdx = useState(0); var flashIdx = _flashIdx[0]; var setFlashIdx = _flashIdx[1];
+      var _flashFlipped = useState(false); var flashFlipped = _flashFlipped[0]; var setFlashFlipped = _flashFlipped[1];
+      var _flashShuffle = useState(false); var flashShuffle = _flashShuffle[0]; var setFlashShuffle = _flashShuffle[1];
+      var _flashOrder = useState(null); var flashOrder = _flashOrder[0]; var setFlashOrder = _flashOrder[1];
+
+      var renderFlashcards = function() {
+        var GLOSS = typeof COMPUTING_GLOSSARY !== 'undefined' ? COMPUTING_GLOSSARY : [];
+        if (GLOSS.length === 0) return h('p', { style: { color: '#94a3b8' } }, 'No glossary loaded.');
+        var order = flashOrder || GLOSS.map(function(_, i) { return i; });
+        var safeIdx = ((flashIdx % order.length) + order.length) % order.length;
+        var entry = GLOSS[order[safeIdx]];
+
+        var shuffle = function() {
+          var ord = GLOSS.map(function(_, i) { return i; });
+          for (var i = ord.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var tmp = ord[i]; ord[i] = ord[j]; ord[j] = tmp;
+          }
+          setFlashOrder(ord);
+          setFlashIdx(0);
+          setFlashFlipped(false);
+          setFlashShuffle(true);
+        };
+        var unshuffle = function() {
+          setFlashOrder(null);
+          setFlashIdx(0);
+          setFlashFlipped(false);
+          setFlashShuffle(false);
+        };
+
+        return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '14px', alignItems: 'center' } },
+          // Toolbar
+          h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', width: '100%', justifyContent: 'center' } },
+            h('span', { style: { fontSize: '12px', color: '#6b7280', fontWeight: 700 } }, 'Card ' + (safeIdx + 1) + ' of ' + GLOSS.length),
+            flashShuffle
+              ? h('button', { onClick: unshuffle, style: btn('#f1f5f9', '#374151', false) }, '↩ Unshuffle')
+              : h('button', { onClick: shuffle, style: btn('#f1f5f9', '#374151', false) }, '🔀 Shuffle')
+          ),
+
+          // Card
+          h('button', { onClick: function() { setFlashFlipped(!flashFlipped); },
+            'aria-label': flashFlipped ? 'Show term' : 'Show definition',
+            style: { width: '100%', maxWidth: '500px', minHeight: '240px',
+              background: flashFlipped ? 'linear-gradient(135deg, #fef3c7, #fde68a)' : 'linear-gradient(135deg, #ede9fe, #ddd6fe)',
+              border: '2px solid ' + (flashFlipped ? '#fbbf24' : '#a78bfa'),
+              borderRadius: '20px', padding: '32px', cursor: 'pointer', display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center', textAlign: 'center', transition: 'all 0.2s' } },
+            h('div', { style: { fontSize: '10px', textTransform: 'uppercase', letterSpacing: '2px', color: flashFlipped ? '#92400e' : '#5b21b6', fontWeight: 700, marginBottom: '12px' } },
+              flashFlipped ? 'Definition' : 'Term'),
+            h('div', { style: { fontSize: flashFlipped ? '15px' : '24px', fontWeight: 800, color: flashFlipped ? '#78350f' : '#4c1d95', lineHeight: 1.4 } },
+              flashFlipped ? (entry.definition || entry.def || '—') : (entry.term || entry.name || '—')),
+            h('div', { style: { fontSize: '11px', color: flashFlipped ? '#92400e' : '#5b21b6', marginTop: '20px', opacity: 0.7 } },
+              '👆 Tap to ' + (flashFlipped ? 'see term' : 'see definition'))
+          ),
+
+          // Nav
+          h('div', { style: { display: 'flex', gap: '8px' } },
+            h('button', { onClick: function() { setFlashIdx(safeIdx - 1); setFlashFlipped(false); },
+              style: btn('#f1f5f9', '#374151', false) }, '◀ Previous'),
+            h('button', { onClick: function() {
+              var rand = Math.floor(Math.random() * order.length);
+              setFlashIdx(rand); setFlashFlipped(false);
+            }, style: btn('#f1f5f9', '#374151', false) }, '🎲 Random'),
+            h('button', { onClick: function() { setFlashIdx(safeIdx + 1); setFlashFlipped(false); },
+              style: btn(PURPLE, '#fff', false) }, 'Next ▶')
+          )
+        );
+      };
+
+      // ── Live code playground (vanilla HTML/CSS/JS sandbox) ──
+      var _pgHtml = useState('<h1>Hello!</h1>\n<p>Edit me and click Run.</p>');
+      var pgHtml = _pgHtml[0]; var setPgHtml = _pgHtml[1];
+      var _pgCss = useState('h1 { color: purple; font-family: system-ui; }\np { color: #555; }');
+      var pgCss = _pgCss[0]; var setPgCss = _pgCss[1];
+      var _pgJs = useState('document.querySelector("h1").addEventListener("click", () => alert("Clicked!"));');
+      var pgJs = _pgJs[0]; var setPgJs = _pgJs[1];
+      var _pgRun = useState(0); var pgRun = _pgRun[0]; var setPgRun = _pgRun[1];
+      var _pgTab = useState('html'); var pgTab = _pgTab[0]; var setPgTab = _pgTab[1];
+
+      var renderPlayground = function() {
+        var combined = '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>' + pgCss + '</style></head><body>' + pgHtml + '<script>try{' + pgJs + '}catch(e){document.body.innerHTML += "<pre style=color:red>" + e.message + "</pre>";}<\/script></body></html>';
+        var blob = 'data:text/html;charset=utf-8,' + encodeURIComponent(combined);
+        var tabBtn = function(id, label) {
+          var act = pgTab === id;
+          return h('button', { onClick: function() { setPgTab(id); },
+            style: { padding: '6px 12px', border: 'none', background: act ? PURPLE : '#f1f5f9',
+              color: act ? '#fff' : '#374151', borderRadius: '8px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, label);
+        };
+        return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px', height: '100%' } },
+          // Editor + preview side-by-side
+          h('div', { style: { display: 'flex', gap: '10px', flex: 1, minHeight: '380px' } },
+            // Editor
+            h('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', gap: '6px', minWidth: 0 } },
+              h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
+                tabBtn('html', '📄 HTML'),
+                tabBtn('css', '🎨 CSS'),
+                tabBtn('js', '⚡ JS'),
+                h('button', { onClick: function() { setPgRun(pgRun + 1); }, style: Object.assign({}, btn(PURPLE, '#fff', false), { marginLeft: 'auto' }) }, '▶ Run')
+              ),
+              h('textarea', {
+                value: pgTab === 'html' ? pgHtml : pgTab === 'css' ? pgCss : pgJs,
+                onChange: function(e) {
+                  if (pgTab === 'html') setPgHtml(e.target.value);
+                  else if (pgTab === 'css') setPgCss(e.target.value);
+                  else setPgJs(e.target.value);
+                },
+                spellCheck: false,
+                'aria-label': pgTab + ' editor',
+                style: { flex: 1, padding: '12px', background: '#0f172a', color: '#e2e8f0',
+                  fontFamily: 'ui-monospace, Menlo, monospace', fontSize: '12px', border: '1px solid #334155',
+                  borderRadius: '10px', resize: 'none', tabSize: 2, lineHeight: 1.5 }
+              })
+            ),
+            // Preview
+            h('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', gap: '6px', minWidth: 0 } },
+              h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase' } }, 'Live Preview'),
+              h('iframe', { key: pgRun, src: blob, title: 'Playground preview', sandbox: 'allow-scripts',
+                style: { flex: 1, border: '1px solid #e5e7eb', borderRadius: '10px', background: '#fff' } })
+            )
+          ),
+          // Hint
+          h('p', { style: { fontSize: '11px', color: '#6b7280', margin: 0 } },
+            '💡 Edit the HTML, CSS, or JS tabs. Click Run to see your changes. The preview is sandboxed for safety.')
+        );
+      };
+
+      // ── Tab content renderers ──
+      var LEARN_TOPICS = [
+        { id: 'html_quick', label: 'HTML Quick Ref', icon: '🔹', subtitle: 'Common HTML elements at a glance', render: function() { return renderEntries(HTML_REFERENCE || [], { titleKey: 'tag' }); } },
+        { id: 'html_full', label: 'HTML5 Full Reference', icon: '📝', subtitle: 'Complete element-by-element documentation', render: function() { return renderEntries(typeof HTML5_FULL_REFERENCE !== 'undefined' ? HTML5_FULL_REFERENCE : [], { titleKey: 'element' }); } },
+        { id: 'css_quick', label: 'CSS Quick Ref', icon: '🎨', subtitle: 'Properties + selectors cheat sheet', render: function() { return renderEntries(CSS_REFERENCE || [], { titleKey: 'property' }); } },
+        { id: 'css_full', label: 'CSS Full Reference', icon: '🎭', subtitle: 'Verbose property documentation with examples', render: function() { return renderEntries(typeof CSS_FULL_REFERENCE !== 'undefined' ? CSS_FULL_REFERENCE : [], { titleKey: 'property' }); } },
+        { id: 'js_quick', label: 'JavaScript Quick Ref', icon: '⚡', subtitle: 'JS fundamentals in one screen', render: function() { return renderEntries(JS_REFERENCE || [], { titleKey: 'topic' }); } },
+        { id: 'js_methods', label: 'JS Methods Reference', icon: '🔧', subtitle: 'String/Array/Object/Math/Date methods', render: function() { return renderEntries(typeof JS_METHODS_REFERENCE !== 'undefined' ? JS_METHODS_REFERENCE : [], { titleKey: 'method' }); } },
+        { id: 'modern_js', label: 'Modern JS Features', icon: '✨', subtitle: 'ES6+ features used in production today', render: function() { return renderEntries(MODERN_JS || []); } },
+        { id: 'react', label: 'React Reference', icon: '⚛️', subtitle: 'Hooks, components, and patterns', render: function() { return renderEntries(REACT_REFERENCE || []); } },
+        { id: 'typescript', label: 'TypeScript', icon: '🔷', subtitle: 'Static typing for JavaScript', render: function() { return renderEntries(TYPESCRIPT_REFERENCE || []); } },
+        { id: 'node', label: 'Node.js + npm', icon: '🟢', subtitle: 'Server-side JS, packages, and tooling', render: function() { return renderEntries(NODE_REFERENCE || []); } },
+        { id: 'web_apis', label: 'Web APIs', icon: '🌐', subtitle: 'fetch, storage, observers, workers, media', render: function() { return renderEntries(WEB_APIS_REFERENCE || []); } },
+        { id: 'dom_api', label: 'DOM API', icon: '🌳', subtitle: 'Document manipulation and events', render: function() { return renderEntries(typeof DOM_API_REFERENCE !== 'undefined' ? DOM_API_REFERENCE : [], { titleKey: 'method' }); } },
+        { id: 'aria', label: 'ARIA Reference', icon: '👂', subtitle: 'Accessibility attributes by name', render: function() { return renderEntries(typeof ARIA_REFERENCE !== 'undefined' ? ARIA_REFERENCE : [], { titleKey: 'attribute' }); } },
+        { id: 'sql', label: 'SQL Reference', icon: '🗄️', subtitle: 'SELECT, JOIN, GROUP BY, and more', render: function() { return renderEntries(SQL_REFERENCE || []); } },
+        { id: 'regex', label: 'Regex Reference', icon: '🔍', subtitle: 'Patterns, flags, and pitfalls', render: function() { return renderEntries(REGEX_REFERENCE || [], { titleKey: 'pattern' }); } },
+        { id: 'shell', label: 'Shell + CLI', icon: '💻', subtitle: 'Terminal commands every dev needs', render: function() { return renderEntries(SHELL_REFERENCE || []); } },
+        { id: 'languages', label: 'Programming Languages', icon: '🌍', subtitle: '20 languages with strengths, weaknesses, future', render: function() { return renderEntries(PROGRAMMING_LANGUAGES || []); } },
+        { id: 'glossary', label: 'Computing Glossary', icon: '📖', subtitle: '50+ essential terms defined', render: function() { return renderEntries(typeof COMPUTING_GLOSSARY !== 'undefined' ? COMPUTING_GLOSSARY : [], { titleKey: 'term' }); } },
+        { id: 'svg', label: 'SVG Reference', icon: '🖌️', subtitle: 'Elements, paths, attributes, accessibility', render: function() { return renderEntries(typeof SVG_REFERENCE !== 'undefined' ? SVG_REFERENCE : [], { titleKey: 'element' }); } },
+        { id: 'web_components', label: 'Web Components', icon: '🧱', subtitle: 'Custom Elements, Shadow DOM, Templates', render: function() { return renderEntries(typeof WEB_COMPONENTS !== 'undefined' ? WEB_COMPONENTS : [], { titleKey: 'concept' }); } },
+        { id: 'gloss_advanced', label: 'Advanced Glossary', icon: '🧠', subtitle: '70+ deeper concepts (Big O, CAP, ACID, etc.)', render: function() { return renderEntries(typeof GLOSSARY_SUPPLEMENT !== 'undefined' ? GLOSSARY_SUPPLEMENT : [], { titleKey: 'term' }); } }
+      ];
+
+      var PRACTICE_TOPICS = [
+        { id: 'projects', label: 'Project Ideas', icon: '💡', subtitle: '25 detailed specs to build from scratch', render: function() {
+            return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
+              (PROJECT_IDEAS || []).map(function(p, i) {
+                return h('div', { key: i, style: { background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '10px', padding: '12px' } },
+                  h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' } },
+                    h('h4', { style: { fontSize: '14px', fontWeight: 800, color: '#1e293b', margin: 0 } }, p.title || p.name),
+                    p.difficulty && h('span', { style: { fontSize: '10px', background: p.difficulty === 'Beginner' ? '#dcfce7' : p.difficulty === 'Advanced' ? '#fee2e2' : '#fef3c7', color: p.difficulty === 'Beginner' ? '#166534' : p.difficulty === 'Advanced' ? '#991b1b' : '#92400e', padding: '2px 8px', borderRadius: '6px', fontWeight: 700 } }, p.difficulty)
+                  ),
+                  p.description && h('p', { style: { fontSize: '12px', color: '#374151', margin: '0 0 8px 0', lineHeight: 1.5 } }, p.description),
+                  p.prompt && h('button', { onClick: function() { setPrompt(p.prompt); goToTab('build'); if (addToast) addToast({ type: 'success', text: 'Loaded into Build tab' }); },
+                    style: btn(PURPLE, '#fff', false) }, '🚀 Build This'),
+                  p.skills && h('div', { style: { fontSize: '11px', color: '#6b7280', marginTop: '8px' } }, h('strong', null, 'Skills: '), Array.isArray(p.skills) ? p.skills.join(', ') : p.skills)
+                );
+              })
+            );
+          } },
+        { id: 'tutorials', label: 'Tutorials', icon: '📖', subtitle: 'Step-by-step walkthroughs', render: function() { return renderEntries(typeof TUTORIALS !== 'undefined' ? TUTORIALS : [], { titleKey: 'title' }); } },
+        { id: 'hour_of_code', label: 'Hour of Code', icon: '⏱️', subtitle: 'Quick guided activities (1 hour each)', render: function() { return renderEntries(typeof HOUR_OF_CODE_LESSONS !== 'undefined' ? HOUR_OF_CODE_LESSONS : [], { titleKey: 'title' }); } },
+        { id: 'lessons', label: 'Lesson Plans', icon: '👨‍🏫', subtitle: 'NGSS-aligned for K-12 educators', render: function() { return renderEntries(typeof LESSON_PLANS !== 'undefined' ? LESSON_PLANS : [], { titleKey: 'title' }); } },
+        { id: 'starters', label: 'Starter Templates', icon: '📄', subtitle: 'Ready-to-modify HTML/CSS/JS boilerplates', render: function() {
+            var STARTERS = typeof STARTER_TEMPLATES !== 'undefined' ? STARTER_TEMPLATES : [];
+            return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
+              STARTERS.map(function(s, i) {
+                return h('div', { key: i, style: { background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '10px', padding: '12px' } },
+                  h('h4', { style: { fontSize: '13px', fontWeight: 800, color: '#1e293b', margin: '0 0 6px 0' } }, s.name || s.title),
+                  s.description && h('p', { style: { fontSize: '12px', color: '#374151', margin: '0 0 8px 0' } }, s.description),
+                  s.code && h('pre', { style: { fontSize: '11px', background: '#0f172a', color: '#e2e8f0', padding: '10px', borderRadius: '8px', overflowX: 'auto', maxHeight: '240px' } }, s.code),
+                  s.code && h('button', { onClick: function() { setHtml(s.code); setEditHtml(s.code); setHistory([s.code]); setHistoryIdx(0); goToTab('build'); if (addToast) addToast({ type: 'success', text: 'Loaded ' + (s.name || 'template') }); },
+                    style: Object.assign({}, btn(PURPLE, '#fff', false), { marginTop: '8px' }) }, '📥 Load in Build')
+                );
+              })
+            );
+          } },
+        { id: 'exemplars', label: 'Student Exemplars', icon: '🌟', subtitle: 'Sample student work across grade levels', render: function() { return renderEntries(typeof STUDENT_EXEMPLARS !== 'undefined' ? STUDENT_EXEMPLARS : [], { titleKey: 'title' }); } },
+        { id: 'interview', label: 'Interview Problems', icon: '🧠', subtitle: '11 classic problems with full solutions', render: function() { return renderEntries(typeof INTERVIEW_PROBLEMS !== 'undefined' ? INTERVIEW_PROBLEMS : [], { titleKey: 'problem' }); } },
+        { id: 'quiz', label: 'Quiz Engine', icon: '❓', subtitle: 'Interactive quiz with scoring and streaks', render: renderQuizEngine },
+        { id: 'flashcards', label: 'Flashcards', icon: '🃏', subtitle: 'Flip-card study mode for the glossary', render: renderFlashcards },
+        { id: 'playground', label: 'Code Playground', icon: '🛝', subtitle: 'Live HTML/CSS/JS sandbox with preview', render: renderPlayground },
+        { id: 'deep_dives', label: 'Deep Dives', icon: '🌊', subtitle: 'In-depth essays on big concepts', render: function() { return renderEntries(typeof DEEP_DIVES !== 'undefined' ? DEEP_DIVES : [], { titleKey: 'title' }); } },
+        { id: 'pep_talk', label: 'Pep Talk', icon: '💪', subtitle: 'Encouragement when you hit a wall', render: function() { return renderEntries(typeof STUDENT_PEP_TALK !== 'undefined' ? STUDENT_PEP_TALK : [], { titleKey: 'message' }); } }
+      ];
+
+      var PATTERN_TOPICS = [
+        { id: 'algorithms', label: 'Algorithms', icon: '🧮', subtitle: '30 algorithms with code and complexity', render: function() { return renderEntries(typeof ALGORITHMS !== 'undefined' ? ALGORITHMS : []); } },
+        { id: 'data_structures', label: 'Data Structures', icon: '🏗️', subtitle: 'Arrays, lists, trees, graphs, and more', render: function() { return renderEntries(DATA_STRUCTURES || []); } },
+        { id: 'design_patterns', label: 'Design Patterns', icon: '🧩', subtitle: 'Reusable solutions to common problems', render: function() { return renderEntries(typeof DESIGN_PATTERNS !== 'undefined' ? DESIGN_PATTERNS : []); } },
+        { id: 'computational_thinking', label: 'Computational Thinking', icon: '🧠', subtitle: 'The 5 pillars: decomposition, pattern, abstraction, algorithms, debug', render: function() { return renderEntries(typeof COMPUTATIONAL_THINKING !== 'undefined' ? COMPUTATIONAL_THINKING : [], { titleKey: 'pillar' }); } },
+        { id: 'ap_csp', label: 'AP CSP Framework', icon: '🎓', subtitle: 'Big Ideas + Computational Thinking Practices', render: function() { return renderEntries(typeof AP_CSP_FRAMEWORK !== 'undefined' ? AP_CSP_FRAMEWORK : [], { titleKey: 'bigIdea' }); } },
+        { id: 'app_arch', label: 'App Architecture', icon: '🏛️', subtitle: '19 architectural patterns explained', render: function() { return renderEntries(typeof APP_ARCHITECTURE !== 'undefined' ? APP_ARCHITECTURE : []); } },
+        { id: 'idioms', label: 'Code Idioms', icon: '📜', subtitle: '25 common patterns every JS dev knows', render: function() { return renderEntries(typeof CODE_IDIOMS !== 'undefined' ? CODE_IDIOMS : []); } },
+        { id: 'gen_patterns', label: 'App Generation Patterns', icon: '🔄', subtitle: 'How to build different kinds of apps', render: function() { return renderEntries(APP_GENERATION_PATTERNS || []); } },
+        { id: 'programming_concepts', label: 'Programming Concepts', icon: '💭', subtitle: '17 core ideas every programmer learns', render: function() { return renderEntries(typeof PROGRAMMING_CONCEPTS !== 'undefined' ? PROGRAMMING_CONCEPTS : []); } },
+        { id: 'common_bugs', label: 'Common Bugs', icon: '🐛', subtitle: 'Bugs every dev hits, with fixes', render: function() { return renderEntries(typeof COMMON_BUGS !== 'undefined' ? COMMON_BUGS : []); } },
+        { id: 'errors', label: 'Error Recovery', icon: '⚠️', subtitle: 'How to read and fix error messages', render: function() { return renderEntries(typeof ERROR_RECOVERY !== 'undefined' ? ERROR_RECOVERY : [], { titleKey: 'error' }); } },
+        { id: 'famous_bugs', label: 'Famous Bugs', icon: '💻', subtitle: 'The 15 most expensive bugs in history', render: function() { return renderEntries(typeof FAMOUS_BUGS !== 'undefined' ? FAMOUS_BUGS : []); } },
+        { id: 'browser_internals', label: 'Browser Internals', icon: '🌐', subtitle: 'How the browser actually works', render: function() { return renderEntries(typeof BROWSER_INTERNALS !== 'undefined' ? BROWSER_INTERNALS : [], { titleKey: 'topic' }); } },
+        { id: 'tech_stacks', label: 'Tech Stacks', icon: '📚', subtitle: 'How real apps combine technologies', render: function() { return renderEntries(typeof TECH_STACKS !== 'undefined' ? TECH_STACKS : [], { titleKey: 'stack' }); } },
+        { id: 'apis', label: 'Popular APIs', icon: '🔌', subtitle: '25 APIs to integrate into your apps', render: function() { return renderEntries(typeof POPULAR_APIS !== 'undefined' ? POPULAR_APIS : []); } },
+        { id: 'database', label: 'Database Concepts', icon: '🗄️', subtitle: '15 essential DB concepts', render: function() { return renderEntries(typeof DATABASE_CONCEPTS !== 'undefined' ? DATABASE_CONCEPTS : []); } },
+        { id: 'build_tools', label: 'Build Tools', icon: '🔨', subtitle: 'Vite, esbuild, webpack, and friends', render: function() { return renderEntries(typeof BUILD_TOOLS !== 'undefined' ? BUILD_TOOLS : [], { titleKey: 'tool' }); } },
+        { id: 'http_status', label: 'HTTP Status Codes', icon: '🚦', subtitle: 'Every status code explained', render: function() { return renderEntries(typeof HTTP_STATUS_CODES !== 'undefined' ? HTTP_STATUS_CODES : [], { titleKey: 'code' }); } },
+        { id: 'http_methods', label: 'HTTP Methods', icon: '🔁', subtitle: 'GET, POST, PUT, DELETE, and the rest', render: function() { return renderEntries(typeof HTTP_METHODS !== 'undefined' ? HTTP_METHODS : [], { titleKey: 'method' }); } },
+        { id: 'mime_types', label: 'MIME Types', icon: '📦', subtitle: 'Content types every dev encounters', render: function() { return renderEntries(typeof MIME_TYPES !== 'undefined' ? MIME_TYPES : [], { titleKey: 'type' }); } },
+        { id: 'dns', label: 'DNS Records', icon: '🌍', subtitle: 'A, CNAME, MX, TXT, and more', render: function() { return renderEntries(typeof DNS_RECORDS !== 'undefined' ? DNS_RECORDS : [], { titleKey: 'type' }); } },
+        { id: 'errors_dict', label: 'Error Dictionary', icon: '🚨', subtitle: 'Decode common JS / web error messages', render: function() { return renderEntries(typeof ERROR_DICTIONARY !== 'undefined' ? ERROR_DICTIONARY : [], { titleKey: 'error' }); } },
+        { id: 'api_design', label: 'API Design Guide', icon: '🛠️', subtitle: 'REST conventions, versioning, pagination', render: function() { return renderEntries(typeof API_DESIGN !== 'undefined' ? API_DESIGN : [], { titleKey: 'principle' }); } },
+        { id: 'async', label: 'Async Patterns', icon: '🔁', subtitle: 'Promises, await, retries, cancellation', render: function() { return renderEntries(typeof ASYNC_PATTERNS !== 'undefined' ? ASYNC_PATTERNS : [], { titleKey: 'pattern' }); } },
+        { id: 'state_mgmt', label: 'State Management', icon: '🗂️', subtitle: 'When to use what (Context, Zustand, Redux, etc.)', render: function() { return renderEntries(typeof STATE_MANAGEMENT !== 'undefined' ? STATE_MANAGEMENT : [], { titleKey: 'level' }); } },
+        { id: 'debugging', label: 'Debugging Techniques', icon: '🔬', subtitle: '15 techniques every dev should master', render: function() { return renderEntries(typeof DEBUGGING_TECHNIQUES !== 'undefined' ? DEBUGGING_TECHNIQUES : [], { titleKey: 'technique' }); } },
+        { id: 'refactoring', label: 'Refactoring Patterns', icon: '🔧', subtitle: 'Classic Fowler-style refactorings with code', render: function() { return renderEntries(typeof REFACTORING_PATTERNS !== 'undefined' ? REFACTORING_PATTERNS : [], { titleKey: 'pattern' }); } },
+        { id: 'code_smells', label: 'Code Smells', icon: '👃', subtitle: '25 signs that code needs refactoring', render: function() { return renderEntries(typeof CODE_SMELLS !== 'undefined' ? CODE_SMELLS : [], { titleKey: 'smell' }); } }
+      ];
+
+      var QUALITY_TOPICS = [
+        { id: 'wcag', label: 'WCAG Patterns', icon: '♿', subtitle: '15 accessibility patterns with code', render: function() { return renderEntries(typeof WCAG_PATTERNS !== 'undefined' ? WCAG_PATTERNS : []); } },
+        { id: 'a11y_checklist', label: 'A11y Testing Checklist', icon: '✅', subtitle: '9 categories of accessibility checks', render: function() { return renderEntries(typeof A11Y_TESTING_CHECKLIST !== 'undefined' ? A11Y_TESTING_CHECKLIST : []); } },
+        { id: 'performance', label: 'Performance Patterns', icon: '⚡', subtitle: 'How to make apps fast', render: function() { return renderEntries(typeof PERFORMANCE_PATTERNS !== 'undefined' ? PERFORMANCE_PATTERNS : []); } },
+        { id: 'security', label: 'Security Patterns', icon: '🔒', subtitle: 'XSS, SQL injection, and other risks', render: function() { return renderEntries(typeof SECURITY_PATTERNS !== 'undefined' ? SECURITY_PATTERNS : []); } },
+        { id: 'testing', label: 'Testing Guide', icon: '🧪', subtitle: 'Unit, integration, end-to-end', render: function() { return renderEntries(typeof TESTING_GUIDE !== 'undefined' ? TESTING_GUIDE : []); } },
+        { id: 'responsive', label: 'Responsive Design', icon: '📱', subtitle: 'Mobile-first, fluid layouts', render: function() { return renderEntries(RESPONSIVE_DESIGN || []); } },
+        { id: 'uiux', label: 'UI/UX Principles', icon: '🎨', subtitle: 'Make apps that feel right', render: function() { return renderEntries(typeof UI_UX_PRINCIPLES !== 'undefined' ? UI_UX_PRINCIPLES : []); } },
+        { id: 'real_practices', label: 'Real World Practices', icon: '🏢', subtitle: '20+ practices used in production teams', render: function() { return renderEntries(typeof REAL_WORLD_PRACTICES !== 'undefined' ? REAL_WORLD_PRACTICES : []); } },
+        { id: 'devtools', label: 'DevTools Guide', icon: '🔍', subtitle: 'Browser DevTools mastery', render: function() { return renderEntries(typeof DEVTOOLS_GUIDE !== 'undefined' ? DEVTOOLS_GUIDE : [], { titleKey: 'panel' }); } },
+        { id: 'git', label: 'Git Reference', icon: '🌿', subtitle: 'Commands and scenarios', render: function() {
+            var GIT_REF = typeof GIT_REFERENCE !== 'undefined' ? GIT_REFERENCE : [];
+            var GIT_SC = typeof GIT_SCENARIOS !== 'undefined' ? GIT_SCENARIOS : [];
+            return h('div', null,
+              h('h5', { style: { fontSize: '13px', fontWeight: 700, color: '#374151', marginBottom: '8px', marginTop: 0 } }, 'Commands'),
+              renderEntries(GIT_REF, { titleKey: 'command' }),
+              h('h5', { style: { fontSize: '13px', fontWeight: 700, color: '#374151', margin: '16px 0 8px 0' } }, 'Scenarios'),
+              renderEntries(GIT_SC, { titleKey: 'scenario' })
+            );
+          } },
+        { id: 'deployment', label: 'Deployment Guide', icon: '🚀', subtitle: 'Hosting platforms compared', render: function() { return renderEntries(DEPLOYMENT_GUIDE || [], { titleKey: 'platform' }); } },
+        { id: 'teaching', label: 'Teaching Principles', icon: '🎓', subtitle: 'For teachers and tutors', render: function() { return renderEntries(typeof TEACHING_PRINCIPLES !== 'undefined' ? TEACHING_PRINCIPLES : [], { titleKey: 'principle' }); } },
+        { id: 'security_checklist', label: 'Security Checklist', icon: '🛡️', subtitle: '11 categories of security audits', render: function() { return renderEntries(typeof SECURITY_CHECKLIST !== 'undefined' ? SECURITY_CHECKLIST : []); } },
+        { id: 'lighthouse', label: 'Lighthouse Audits', icon: '🏮', subtitle: 'Performance / a11y / SEO / PWA scoring', render: function() { return renderEntries(typeof LIGHTHOUSE_CATEGORIES !== 'undefined' ? LIGHTHOUSE_CATEGORIES : []); } },
+        { id: 'colors', label: 'Color Palettes', icon: '🎨', subtitle: 'Curated palettes + color theory + a11y', render: function() { return renderEntries(typeof COLOR_PALETTES !== 'undefined' ? COLOR_PALETTES : []); } },
+        { id: 'fonts', label: 'Font Pairings', icon: '🔠', subtitle: 'Tested font combinations for the web', render: function() { return renderEntries(typeof FONT_PAIRINGS !== 'undefined' ? FONT_PAIRINGS : [], { titleKey: 'pairing' }); } },
+        { id: 'icons', label: 'Icon Libraries', icon: '🔣', subtitle: 'Lucide, Heroicons, Phosphor, and more', render: function() { return renderEntries(typeof ICON_LIBRARIES !== 'undefined' ? ICON_LIBRARIES : []); } },
+        { id: 'keyboard', label: 'Keyboard Shortcuts', icon: '⌨️', subtitle: 'DevTools, VS Code, terminal, git', render: function() { return renderEntries(typeof KEYBOARD_SHORTCUTS !== 'undefined' ? KEYBOARD_SHORTCUTS : []); } },
+        { id: 'unicode', label: 'Unicode Symbols', icon: '✨', subtitle: 'Useful symbols beyond emoji', render: function() { return renderEntries(typeof UNICODE_SYMBOLS !== 'undefined' ? UNICODE_SYMBOLS : [], { titleKey: 'symbol' }); } },
+        { id: 'animation', label: 'CSS Animation', icon: '🎬', subtitle: 'Transitions, keyframes, easings, reduced-motion', render: function() { return renderEntries(typeof ANIMATION_REFERENCE !== 'undefined' ? ANIMATION_REFERENCE : [], { titleKey: 'concept' }); } },
+        { id: 'forms', label: 'Forms Guide', icon: '📝', subtitle: 'Inputs, validation, a11y, multi-step', render: function() { return renderEntries(typeof FORMS_GUIDE !== 'undefined' ? FORMS_GUIDE : [], { titleKey: 'concept' }); } },
+        { id: 'pwa', label: 'PWA Guide', icon: '📲', subtitle: 'Service workers, install, push, offline', render: function() { return renderEntries(typeof PWA_GUIDE !== 'undefined' ? PWA_GUIDE : [], { titleKey: 'concept' }); } },
+        { id: 'dark_mode', label: 'Dark Mode', icon: '🌙', subtitle: 'Implementation, FOIT, colors, a11y', render: function() { return renderEntries(typeof DARK_MODE_GUIDE !== 'undefined' ? DARK_MODE_GUIDE : [], { titleKey: 'approach' }); } },
+        { id: 'docker', label: 'Docker Basics', icon: '🐳', subtitle: 'Images, containers, compose, deployment', render: function() { return renderEntries(typeof DOCKER_BASICS !== 'undefined' ? DOCKER_BASICS : [], { titleKey: 'concept' }); } },
+        { id: 'i18n', label: 'Internationalization', icon: '🌐', subtitle: 'i18n / l10n, RTL, plurals, dates', render: function() { return renderEntries(typeof I18N_GUIDE !== 'undefined' ? I18N_GUIDE : [], { titleKey: 'concept' }); } },
+        { id: 'image_opt', label: 'Image Optimization', icon: '🖼️', subtitle: 'Format selection, srcset, lazy load, CDNs', render: function() { return renderEntries(typeof IMAGE_OPTIMIZATION !== 'undefined' ? IMAGE_OPTIMIZATION : [], { titleKey: 'concept' }); } },
+        { id: 'progressive', label: 'Progressive Enhancement', icon: '🎂', subtitle: 'HTML-first, layer in CSS + JS', render: function() { return renderEntries(typeof PROGRESSIVE_ENHANCEMENT !== 'undefined' ? PROGRESSIVE_ENHANCEMENT : [], { titleKey: 'concept' }); } },
+        { id: 'grid_vs_flex', label: 'Grid vs Flexbox', icon: '🆚', subtitle: 'When to use which, side-by-side examples', render: function() { return renderEntries(typeof GRID_VS_FLEXBOX !== 'undefined' ? GRID_VS_FLEXBOX : [], { titleKey: 'compare' }); } },
+        { id: 'testing_patterns', label: 'Testing Patterns', icon: '🧪', subtitle: 'Unit / integration / E2E / a11y testing', render: function() { return renderEntries(typeof TESTING_PATTERNS !== 'undefined' ? TESTING_PATTERNS : [], { titleKey: 'type' }); } }
+      ];
+
+      var CAREER_TOPICS = [
+        { id: 'careers', label: 'Coding Careers', icon: '💼', subtitle: 'Roles, salaries, and paths', render: function() { return renderEntries(typeof CODING_CAREERS !== 'undefined' ? CODING_CAREERS : [], { titleKey: 'role' }); } },
+        { id: 'career_dev', label: 'Career Development', icon: '📈', subtitle: 'How to grow from junior to senior', render: function() { return renderEntries(typeof CAREER_DEVELOPMENT !== 'undefined' ? CAREER_DEVELOPMENT : [], { titleKey: 'stage' }); } },
+        { id: 'bootcamps', label: 'Bootcamp Guide', icon: '🎯', subtitle: 'Choosing a bootcamp, surviving it', render: function() { return renderEntries(typeof BOOTCAMP_GUIDE !== 'undefined' ? BOOTCAMP_GUIDE : [], { titleKey: 'topic' }); } },
+        { id: 'programmers', label: 'Famous Programmers', icon: '👥', subtitle: 'People who built the field', render: function() { return renderEntries(typeof FAMOUS_PROGRAMMERS !== 'undefined' ? FAMOUS_PROGRAMMERS : []); } },
+        { id: 'open_source', label: 'Open Source Projects', icon: '✨', subtitle: 'Projects to study and contribute to', render: function() { return renderEntries(typeof OPEN_SOURCE_PROJECTS !== 'undefined' ? OPEN_SOURCE_PROJECTS : [], { titleKey: 'project' }); } },
+        { id: 'interview_faq', label: 'Interview FAQ', icon: '💬', subtitle: 'Common interview questions', render: function() { return renderEntries(typeof INTERVIEW_FAQ !== 'undefined' ? INTERVIEW_FAQ : [], { titleKey: 'question' }); } },
+        { id: 'ai_ethics', label: 'AI Ethics', icon: '⚖️', subtitle: 'Building AI responsibly', render: function() { return renderEntries(typeof AI_ETHICS !== 'undefined' ? AI_ETHICS : [], { titleKey: 'topic' }); } },
+        { id: 'prompts', label: 'AI Prompt Patterns', icon: '💬', subtitle: 'How to prompt AI well', render: function() {
+            var PP = typeof PROMPT_PATTERNS !== 'undefined' ? PROMPT_PATTERNS : [];
+            var PE = typeof AI_PROMPT_EXAMPLES !== 'undefined' ? AI_PROMPT_EXAMPLES : [];
+            return h('div', null,
+              h('h5', { style: { fontSize: '13px', fontWeight: 700, color: '#374151', marginBottom: '8px', marginTop: 0 } }, 'Prompt Patterns'),
+              renderEntries(PP, { titleKey: 'pattern' }),
+              h('h5', { style: { fontSize: '13px', fontWeight: 700, color: '#374151', margin: '16px 0 8px 0' } }, 'Example Prompts'),
+              renderEntries(PE, { titleKey: 'use' })
+            );
+          } },
+        { id: 'case_studies', label: 'Case Studies', icon: '🔬', subtitle: 'How real apps came to be', render: function() {
+            var CS = typeof CASE_STUDIES !== 'undefined' ? CASE_STUDIES : [];
+            var EX = typeof EXTRA_CASE_STUDIES !== 'undefined' ? EXTRA_CASE_STUDIES : [];
+            var SP = typeof SHOWCASE_PROJECTS !== 'undefined' ? SHOWCASE_PROJECTS : [];
+            return h('div', null,
+              CS.length > 0 && h('div', null,
+                h('h5', { style: { fontSize: '13px', fontWeight: 700, color: '#374151', marginBottom: '8px', marginTop: 0 } }, 'Core Case Studies'),
+                renderEntries(CS, { titleKey: 'title' })
+              ),
+              EX.length > 0 && h('div', null,
+                h('h5', { style: { fontSize: '13px', fontWeight: 700, color: '#374151', margin: '16px 0 8px 0' } }, 'Extra Case Studies'),
+                renderEntries(EX, { titleKey: 'title' })
+              ),
+              SP.length > 0 && h('div', null,
+                h('h5', { style: { fontSize: '13px', fontWeight: 700, color: '#374151', margin: '16px 0 8px 0' } }, 'Showcase Projects'),
+                renderEntries(SP, { titleKey: 'title' })
+              )
+            );
+          } },
+        { id: 'resources', label: 'Free Resources', icon: '🎁', subtitle: 'Best free learning resources', render: function() { return renderEntries(typeof FREE_RESOURCES !== 'undefined' ? FREE_RESOURCES : [], { titleKey: 'name' }); } },
+        { id: 'final_refs', label: 'Where to Get Help', icon: '🆘', subtitle: 'Communities, habits, anti-patterns', render: function() { return renderEntries(typeof FINAL_REFERENCES !== 'undefined' ? FINAL_REFERENCES : [], { titleKey: 'topic' }); } },
+        { id: 'licenses', label: 'Open Source Licenses', icon: '📜', subtitle: 'MIT vs Apache vs GPL vs more', render: function() { return renderEntries(typeof OPEN_SOURCE_LICENSES !== 'undefined' ? OPEN_SOURCE_LICENSES : [], { titleKey: 'license' }); } },
+        { id: 'quick_wins', label: 'Quick Wins', icon: '🎯', subtitle: '15 high-impact actions for new developers', render: function() { return renderEntries(typeof QUICK_WINS !== 'undefined' ? QUICK_WINS : [], { titleKey: 'win' }); } }
+      ];
+
       // ═══ RENDER ═══
-      return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%', gap: '12px' } },
+      // Tab bar
+      var tabBar = h('div', { role: 'tablist', 'aria-label': 'AppLab sections',
+        style: { display: 'flex', gap: '4px', flexShrink: 0, borderBottom: '2px solid #e5e7eb', paddingBottom: '6px', overflowX: 'auto' } },
+        TABS.map(function(t) {
+          var isActive = t.id === activeTab;
+          return h('button', { key: t.id, role: 'tab', 'aria-selected': isActive ? 'true' : 'false',
+            'aria-controls': 'applab-panel-' + t.id, title: t.desc,
+            onClick: function() { goToTab(t.id); },
+            style: { padding: '8px 14px', border: 'none', background: isActive ? PURPLE : 'transparent',
+              color: isActive ? '#fff' : '#6b7280', borderRadius: '10px', fontSize: '12px', fontWeight: isActive ? 800 : 600,
+              cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0, transition: 'all 0.1s' } },
+            h('span', { style: { fontSize: '14px' } }, t.icon),
+            h('span', null, t.label)
+          );
+        })
+      );
+
+      return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%', gap: '10px' } },
 
         // ── Header / Back ──
         h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 } },
           h('button', { onClick: function() { ctx.setStemLabTool(null); }, 'aria-label': 'Back to STEM Lab', style: btn('#f1f5f9', '#374151', false) }, h(ArrowLeft, { size: 14 })),
           h('h2', { style: { fontSize: '18px', fontWeight: 900, color: '#1e293b', margin: 0 } }, '\uD83D\uDCA1 AppLab'),
-          h('span', { style: { fontSize: '11px', color: '#94a3b8' } }, 'AI Mini-App Generator'),
-          html && h('div', { style: { marginLeft: 'auto', display: 'flex', gap: '4px' } },
+          h('span', { style: { fontSize: '11px', color: '#94a3b8' } }, 'AI Mini-App Generator + Coding Curriculum'),
+          activeTab === 'build' && html && h('div', { style: { marginLeft: 'auto', display: 'flex', gap: '4px' } },
             h('button', { onClick: undo, disabled: !canUndo, style: btn('#f1f5f9', '#374151', !canUndo), title: 'Undo' }, '↩'),
             h('button', { onClick: redo, disabled: !canRedo, style: btn('#f1f5f9', '#374151', !canRedo), title: 'Redo' }, '↪'),
             h('button', { onClick: function() { setShowCode(!showCode); }, style: btn(showCode ? PURPLE : '#f1f5f9', showCode ? '#fff' : '#374151', false), 'aria-label': 'Toggle code view' }, showCode ? '</> Hide Code' : '</> View Code'),
@@ -14700,8 +19669,31 @@ getResource();`,
           )
         ),
 
-        // ── No app yet: show prompt input ──
-        !html && h('div', { style: { maxWidth: '700px', margin: '0 auto', width: '100%' } },
+        // ── Tab bar ──
+        tabBar,
+
+        // ── LEARN tab ──
+        activeTab === 'learn' && h('div', { id: 'applab-panel-learn', role: 'tabpanel', 'aria-labelledby': 'tab-learn',
+          style: { flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 } }, renderSplit('learn', LEARN_TOPICS)),
+
+        // ── PRACTICE tab ──
+        activeTab === 'practice' && h('div', { id: 'applab-panel-practice', role: 'tabpanel',
+          style: { flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 } }, renderSplit('practice', PRACTICE_TOPICS)),
+
+        // ── PATTERNS tab ──
+        activeTab === 'patterns' && h('div', { id: 'applab-panel-patterns', role: 'tabpanel',
+          style: { flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 } }, renderSplit('patterns', PATTERN_TOPICS)),
+
+        // ── QUALITY tab ──
+        activeTab === 'quality' && h('div', { id: 'applab-panel-quality', role: 'tabpanel',
+          style: { flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 } }, renderSplit('quality', QUALITY_TOPICS)),
+
+        // ── CAREER tab ──
+        activeTab === 'career' && h('div', { id: 'applab-panel-career', role: 'tabpanel',
+          style: { flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 } }, renderSplit('career', CAREER_TOPICS)),
+
+        // ── BUILD tab: No app yet — show prompt input ──
+        activeTab === 'build' && !html && h('div', { style: { maxWidth: '700px', margin: '0 auto', width: '100%' } },
 
           // ── Visual Pipeline Configurator ──
           h('details', { open: showPipelineConfig, style: { marginBottom: '12px', background: 'linear-gradient(135deg, #0f172a, #1e1b4b)', borderRadius: '12px', border: '1px solid #334155', overflow: 'hidden' } },
@@ -14888,7 +19880,7 @@ getResource();`,
         ),
 
         // ── Behind the Scenes: Agent Pipeline Visualizer ──
-        d.lastPipelineLog && d.lastPipelineLog.length > 0 && h('details', { style: { background: 'linear-gradient(135deg, #1e1b4b, #312e81)', borderRadius: '12px', border: '1px solid #4338ca', overflow: 'hidden' } },
+        activeTab === 'build' && d.lastPipelineLog && d.lastPipelineLog.length > 0 && h('details', { style: { background: 'linear-gradient(135deg, #1e1b4b, #312e81)', borderRadius: '12px', border: '1px solid #4338ca', overflow: 'hidden' } },
           h('summary', { style: { padding: '10px 14px', color: '#c4b5fd', fontSize: '11px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' } },
             '\uD83E\uDD16 Behind the Scenes — How AI Built This App'
           ),
@@ -14932,8 +19924,8 @@ getResource();`,
           )
         ),
 
-        // ── App loaded: show preview + controls ──
-        html && h('div', { style: { flex: 1, display: 'flex', flexDirection: showCode ? 'row' : 'column', gap: '8px', minHeight: 0 } },
+        // ── App loaded: show preview + controls (Build tab only) ──
+        activeTab === 'build' && html && h('div', { style: { flex: 1, display: 'flex', flexDirection: showCode ? 'row' : 'column', gap: '8px', minHeight: 0 } },
 
           // Code editor (left panel when visible)
           showCode && h('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 } },
