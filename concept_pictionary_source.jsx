@@ -18,6 +18,42 @@
 // ── Helpers ─────────────────────────────────────────────────────────────
 const _pic_genId = (prefix) => `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
 
+// Fullscreen helper hook — works against the standard Fullscreen API with
+// the webkit-prefixed fallback for older Safari. Returns [isFullscreen, toggle].
+// Pass a ref to the element you want fullscreened. Cleans up the listener on
+// unmount; gracefully no-ops if the API isn't available (e.g. iframed contexts).
+const useFullscreen = (elementRef) => {
+  const [isFullscreen, setIsFullscreen] = React.useState(false);
+  React.useEffect(() => {
+    const handler = () => {
+      const fsEl = (typeof document !== 'undefined') && (document.fullscreenElement || document.webkitFullscreenElement || null);
+      setIsFullscreen(!!fsEl && elementRef && elementRef.current === fsEl);
+    };
+    document.addEventListener('fullscreenchange', handler);
+    document.addEventListener('webkitfullscreenchange', handler);
+    return () => {
+      document.removeEventListener('fullscreenchange', handler);
+      document.removeEventListener('webkitfullscreenchange', handler);
+    };
+  }, [elementRef]);
+  const toggle = React.useCallback(() => {
+    if (typeof document === 'undefined') return;
+    const el = elementRef && elementRef.current;
+    if (!el) return;
+    const inFs = document.fullscreenElement || document.webkitFullscreenElement;
+    try {
+      if (inFs) {
+        if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+        else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+      } else {
+        if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
+        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+      }
+    } catch (_) {}
+  }, [elementRef]);
+  return [isFullscreen, toggle];
+};
+
 const PEN_COLORS = [
   { name: 'black',  hex: '#1a202c' },
   { name: 'red',    hex: '#c53030' },
@@ -459,6 +495,10 @@ const PictionaryCanvas = React.memo((props) => {
   const onStrokeBatch = props.onStrokeBatch || (() => {});  // (stroke) => void
   const onLiveStrokeStart = props.onLiveStrokeStart;        // optional: live partial broadcast hook
   const liveOpacity = props.liveOpacity == null ? 1 : props.liveOpacity;
+  // When true, the canvas wrapper lifts the 720px max-width cap so the canvas
+  // can fill an OS-level fullscreen viewport. Aspect ratio is still preserved
+  // by the canvas's intrinsic dimensions.
+  const fullscreenMode = !!props.fullscreenMode;
   const canvasRef = React.useRef(null);
   const drawingRef = React.useRef({
     isDrawing: false,
@@ -567,20 +607,30 @@ const PictionaryCanvas = React.memo((props) => {
   };
 
   return (
-    <div className="pic-canvas-wrap" style={{ position: 'relative', width: '100%', maxWidth: CANVAS_WIDTH, margin: '0 auto' }}>
+    <div
+      className="pic-canvas-wrap"
+      style={{
+        position: 'relative',
+        width: '100%',
+        maxWidth: fullscreenMode ? '100%' : CANVAS_WIDTH,
+        margin: '0 auto',
+      }}
+    >
       <canvas
         ref={canvasRef}
         width={CANVAS_WIDTH}
         height={CANVAS_HEIGHT}
         style={{
           width: '100%',
-          height: 'auto',
+          height: fullscreenMode ? 'auto' : 'auto',
+          maxHeight: fullscreenMode ? 'calc(100vh - 160px)' : 'none',
           background: '#fffefb',
           border: '2px solid #cbd5e0',
           borderRadius: '12px',
           touchAction: 'none',
           cursor: drawingEnabled ? (mode === 'eraser' ? 'cell' : 'crosshair') : 'default',
           boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+          display: 'block',
         }}
         onMouseDown={handlePointerDown}
         onMouseMove={handlePointerMove}
@@ -699,6 +749,11 @@ const PictionaryHostView = React.memo((props) => {
   // flips to true with a non-empty list, we seed `conceptIdeas` so the teacher
   // sees the chart's section labels as one-click options.
   const initialConceptIdeas = Array.isArray(props.initialConceptIdeas) ? props.initialConceptIdeas : null;
+  // Fullscreen support: the entire modal card can go fullscreen. Useful on
+  // small screens (iPad portrait / phone) where the room for the canvas is
+  // otherwise constrained by the modal chrome.
+  const containerRef = React.useRef(null);
+  const [isFullscreen, toggleFullscreen] = useFullscreen(containerRef);
 
   // WebRTC host instance
   const hostRef = React.useRef(null);
@@ -883,16 +938,31 @@ const PictionaryHostView = React.memo((props) => {
   if (!isOpen) return null;
   const rosterEntries = Object.keys(roster).map((uid) => ({ uid, name: (roster[uid] && roster[uid].name) || 'Student', connected: !!connectedGuests[uid] }));
   return (
-    <div className="fixed inset-0 z-[80] flex items-start justify-center p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-label="Concept Pictionary host dashboard">
+    <div className="fixed inset-0 z-[80] flex items-start justify-center p-2 sm:p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-label="Concept Pictionary host dashboard">
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-5xl my-8 overflow-hidden border border-slate-200">
-        <div className="flex items-start justify-between p-5 border-b border-slate-200 bg-gradient-to-r from-rose-50 via-orange-50 to-amber-50">
-          <div>
+      <div
+        ref={containerRef}
+        className="relative bg-white shadow-2xl w-full max-w-5xl overflow-y-auto border border-slate-200"
+        style={isFullscreen
+          ? { width: '100vw', height: '100vh', maxWidth: 'none', margin: 0, borderRadius: 0, marginTop: 0 }
+          : { borderRadius: '1rem', marginTop: '2rem', marginBottom: '2rem' }
+        }
+      >
+        <div className="flex items-start justify-between p-4 sm:p-5 border-b border-slate-200 bg-gradient-to-r from-rose-50 via-orange-50 to-amber-50 gap-3">
+          <div className="flex-1 min-w-0">
             <div className="text-[11px] font-bold text-rose-700 uppercase tracking-wider">Live Game</div>
-            <h2 className="text-2xl font-black text-slate-800 mt-0.5">🎨 Concept Pictionary</h2>
-            <p className="text-xs text-slate-600 mt-1 leading-snug">Multi-drawer collaborative comprehension probe. Strokes + guesses peer-to-peer, never stored.</p>
+            <h2 className="text-xl sm:text-2xl font-black text-slate-800 mt-0.5">🎨 Concept Pictionary</h2>
+            <p className="text-xs text-slate-600 mt-1 leading-snug hidden sm:block">Multi-drawer collaborative comprehension probe. Strokes + guesses peer-to-peer, never stored.</p>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-700 text-2xl leading-none p-1 -mt-1 -mr-1 rounded hover:bg-slate-100" aria-label="Close">✕</button>
+          <div className="flex items-start gap-1 flex-shrink-0">
+            <button
+              onClick={toggleFullscreen}
+              className="text-slate-500 hover:text-slate-800 text-lg leading-none p-1.5 rounded hover:bg-slate-100"
+              aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+              title={isFullscreen ? 'Exit fullscreen (Esc)' : 'Fullscreen the dashboard'}
+            >{isFullscreen ? '↙' : '⛶'}</button>
+            <button onClick={onClose} className="text-slate-400 hover:text-slate-700 text-2xl leading-none p-1 rounded hover:bg-slate-100" aria-label="Close">✕</button>
+          </div>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 p-5">
           <div>
@@ -915,7 +985,7 @@ const PictionaryHostView = React.memo((props) => {
                   ) : null}
                 </div>
               </div>
-              <PictionaryCanvas strokes={strokes} drawingEnabled={false} />
+              <PictionaryCanvas strokes={strokes} drawingEnabled={false} fullscreenMode={isFullscreen} />
               {roundResolved ? (
                 <div className="mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-sm text-emerald-900">
                   <strong>Concept:</strong> {roundResolved.concept || '(none)'}{' '}
@@ -1154,6 +1224,8 @@ const PictionaryGuestOverlay = React.memo((props) => {
   const onClose = props.onClose || (() => {});
 
   const guestRef = React.useRef(null);
+  const guestContainerRef = React.useRef(null);
+  const [isGuestFullscreen, toggleGuestFullscreen] = useFullscreen(guestContainerRef);
   const [connected, setConnected] = React.useState(false);
   const [strokes, setStrokes] = React.useState([]);
   const [activeRound, setActiveRound] = React.useState(null);  // { roundId, status, concept?, isDrawer }
@@ -1230,23 +1302,36 @@ const PictionaryGuestOverlay = React.memo((props) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-start justify-center p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-label="Concept Pictionary">
+    <div className="fixed inset-0 z-[80] flex items-start justify-center p-2 sm:p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-label="Concept Pictionary">
       <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-sm" aria-hidden="true" />
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl my-8 overflow-hidden border border-slate-200">
-        <div className="flex items-start justify-between p-4 border-b border-slate-200 bg-gradient-to-r from-rose-50 to-amber-50 gap-3">
+      <div
+        ref={guestContainerRef}
+        className="relative bg-white shadow-2xl w-full max-w-3xl overflow-y-auto border border-slate-200"
+        style={isGuestFullscreen
+          ? { width: '100vw', height: '100vh', maxWidth: 'none', margin: 0, borderRadius: 0 }
+          : { borderRadius: '1rem', marginTop: '2rem', marginBottom: '2rem' }
+        }
+      >
+        <div className="flex items-start justify-between p-3 sm:p-4 border-b border-slate-200 bg-gradient-to-r from-rose-50 to-amber-50 gap-3">
           <div className="flex-1 min-w-0">
             <div className="text-[11px] font-bold text-rose-700 uppercase tracking-wider">{isDrawer ? '🎨 You are a drawer' : '👀 You are a guesser'}</div>
-            <h2 className="text-xl font-black text-slate-800 mt-0.5">Concept Pictionary</h2>
+            <h2 className="text-lg sm:text-xl font-black text-slate-800 mt-0.5">Concept Pictionary</h2>
             {!connected ? <div className="text-[11px] text-amber-700 mt-1">Connecting…</div> : null}
           </div>
-          <div className="flex items-center gap-3 flex-shrink-0">
+          <div className="flex items-center gap-1 sm:gap-3 flex-shrink-0">
             {activeRound && activeRound.durationMs && activeRound.startedAt ? (
               <RoundCountdown startedAt={activeRound.startedAt} durationMs={activeRound.durationMs} />
             ) : null}
+            <button
+              onClick={toggleGuestFullscreen}
+              className="text-slate-500 hover:text-slate-800 text-lg leading-none p-1.5 rounded hover:bg-slate-100"
+              aria-label={isGuestFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+              title={isGuestFullscreen ? 'Exit fullscreen (Esc)' : 'Fullscreen'}
+            >{isGuestFullscreen ? '↙' : '⛶'}</button>
             <button onClick={onClose} className="text-slate-400 hover:text-slate-700 text-2xl leading-none p-1 rounded hover:bg-slate-100" aria-label="Close">✕</button>
           </div>
         </div>
-        <div className="p-4">
+        <div className="p-3 sm:p-4">
           {activeRound && isDrawer ? (
             <div className="bg-rose-50 border border-rose-200 rounded-lg p-3 mb-3">
               <div className="text-[10px] font-bold uppercase tracking-wider text-rose-700">Concept to draw together</div>
@@ -1276,6 +1361,7 @@ const PictionaryGuestOverlay = React.memo((props) => {
             color={color}
             mode={mode}
             onStrokeBatch={handleStrokeBatch}
+            fullscreenMode={isGuestFullscreen}
           />
           {activeRound && isDrawer ? (
             <DrawerToolbox
