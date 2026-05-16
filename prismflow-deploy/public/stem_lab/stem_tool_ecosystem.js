@@ -1068,7 +1068,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           predEntities.push({
             x: Math.random() * cw, y: groundY + Math.random() * (groundBottom - groundY),
             vx: (Math.random() - 0.5) * 0.8, vy: (Math.random() - 0.5) * 0.5,
-            alive: fi < pred0, facing: Math.random() > 0.5 ? 1 : -1, hunting: false
+            alive: fi < pred0, facing: Math.random() > 0.5 ? 1 : -1, hunting: false,
+            // Lotka-Volterra realism: predators that don't catch prey eventually
+            // starve. hunger ticks up per frame, resets to 0 on a kill. When it
+            // crosses STARVE_THRESHOLD the predator dies. huntCooldown gates
+            // back-to-back kills so a single fox can't sprint through 5 rabbits
+            // in 1 second. Both fields needed so the live canvas matches the
+            // analytical Lotka-Volterra chart (boom-bust oscillation rather
+            // than instant extinction).
+            hunger: 0, huntCooldown: 0
           });
         }
 
@@ -1382,9 +1390,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             }
 
             // ── Predator movement & hunting ──
+            // Lotka-Volterra realism added here: predators have hunger that
+            // ticks up each frame; a kill resets hunger to 0. Crossing
+            // STARVE_THRESHOLD = death. A huntCooldown after each kill stops
+            // a single fox from chain-killing several rabbits in one second.
+            // Together with prey reproduction (below), the live canvas now
+            // produces the boom-bust oscillation the analytical chart shows.
+            var STARVE_THRESHOLD = 720;  // ~12 seconds at 60fps without a kill
+            var HUNT_COOLDOWN = 90;       // ~1.5 seconds before another kill
             for (var fxi = 0; fxi < predEntities.length; fxi++) {
               var f = predEntities[fxi];
               if (!f.alive) continue;
+              // Hunger + cooldown tick
+              f.hunger = (f.hunger || 0) + 1;
+              if (f.huntCooldown > 0) f.huntCooldown--;
+              // Starvation
+              if (f.hunger >= STARVE_THRESHOLD) {
+                f.alive = false;
+                playSound('death');
+                for (var cps = 0; cps < 4; cps++) {
+                  catchParticles.push({
+                    x: f.x, y: f.y,
+                    vx: (Math.random() - 0.5) * 1.5,
+                    vy: -Math.random() * 1.5,
+                    life: 1.0,
+                    color: '#94a3b8'  // gray puff = starved, distinct from kill puff
+                  });
+                }
+                continue;
+              }
               f.x += f.vx;
               f.y += f.vy;
               if (f.x < 15) { f.x = 15; f.vx = Math.abs(f.vx); f.facing = 1; }
@@ -1417,8 +1451,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 }
                 f.facing = chDx > 0 ? 1 : -1;
 
-                if (chDist < 6) {
+                // Kill only if cooldown has expired AND within strike range
+                if (chDist < 6 && f.huntCooldown <= 0) {
                   nearPrey.alive = false;
+                  f.hunger = 0;                 // satiated
+                  f.huntCooldown = HUNT_COOLDOWN; // post-kill cooldown
                   playSound('predation');
                   for (var cp = 0; cp < 5; cp++) {
                     catchParticles.push({
@@ -1435,6 +1472,66 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                   f.vx = (Math.random() - 0.5) * 1.0;
                   f.vy = (Math.random() - 0.5) * 0.6;
                   f.facing = f.vx > 0 ? 1 : -1;
+                }
+              }
+            }
+
+            // ── Prey reproduction ──
+            // Lotka-Volterra births: when two living prey are near each other
+            // AND we're below carrying capacity, occasionally respawn a dead
+            // prey slot. Tuned so per-frame probability * average pairings
+            // roughly matches the analytical preyBirth rate, producing
+            // recoverable populations after predator pressure eases.
+            var CARRYING_K = preyEntities.length;  // pool size IS the cap
+            var aliveCount = 0;
+            var firstDeadIdx = -1;
+            for (var pcnt = 0; pcnt < preyEntities.length; pcnt++) {
+              if (preyEntities[pcnt].alive) aliveCount++;
+              else if (firstDeadIdx < 0) firstDeadIdx = pcnt;
+            }
+            // Only attempt reproduction if there's room + at least one dead slot
+            if (firstDeadIdx >= 0 && aliveCount < CARRYING_K && aliveCount >= 2) {
+              // Logistic damping — birth rate falls as we approach K
+              var roomFactor = 1 - (aliveCount / CARRYING_K);
+              // Sample a few pairs randomly per frame rather than O(n²).
+              // 3 pair-checks per frame keeps cost low; if any are close, roll
+              // the birth die (4% × roomFactor). Net effect: a healthy
+              // population at 30% capacity births ~0.4 prey per second.
+              for (var pairTry = 0; pairTry < 3; pairTry++) {
+                var a = preyEntities[Math.floor(Math.random() * preyEntities.length)];
+                var b = preyEntities[Math.floor(Math.random() * preyEntities.length)];
+                if (a === b || !a.alive || !b.alive) continue;
+                var pdx = a.x - b.x, pdy = a.y - b.y;
+                if (pdx * pdx + pdy * pdy < 625) {  // within ~25px
+                  if (Math.random() < 0.04 * roomFactor) {
+                    // Find next dead slot fresh (state may have changed mid-loop)
+                    var spawnIdx = -1;
+                    for (var sps = 0; sps < preyEntities.length; sps++) {
+                      if (!preyEntities[sps].alive) { spawnIdx = sps; break; }
+                    }
+                    if (spawnIdx >= 0) {
+                      var born = preyEntities[spawnIdx];
+                      born.alive = true;
+                      born.x = (a.x + b.x) / 2 + (Math.random() - 0.5) * 8;
+                      born.y = (a.y + b.y) / 2 + (Math.random() - 0.5) * 4;
+                      born.vx = (Math.random() - 0.5) * 1.2;
+                      born.vy = (Math.random() - 0.5) * 0.8;
+                      born.hop = Math.random() * Math.PI * 2;
+                      born.facing = Math.random() > 0.5 ? 1 : -1;
+                      // Tiny green sparkle so the birth is visible (uses
+                      // existing particle system, no new infrastructure).
+                      for (var bps = 0; bps < 3; bps++) {
+                        catchParticles.push({
+                          x: born.x, y: born.y,
+                          vx: (Math.random() - 0.5) * 1.5,
+                          vy: -Math.random() * 1.5,
+                          life: 1.0,
+                          color: '#86efac'  // soft green = birth
+                        });
+                      }
+                      break;  // one birth per frame max
+                    }
+                  }
                 }
               }
             }
@@ -1705,10 +1802,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           ctxC.fill();
 
           // ── Vegetation rendering ──
+          // Snap each plant's Y to the rolling-hill ground curve at the
+          // plant's X. Previously plants used a random Y assigned at
+          // creation, which made them visibly float above (or sink below)
+          // the wavy ground line. Now they sit on the hill.
+          // Ground curve formula MUST match the one above at line ~1699
+          // (gy = ch * 0.48 + sin(gx*0.015)*8 + sin(gx*0.007+1)*12).
           for (var vgi2 = 0; vgi2 < vegetation.length; vgi2++) {
             var veg2 = vegetation[vgi2];
+            var groundYHere = ch * 0.48 + Math.sin(veg2.x * 0.015) * 8 + Math.sin(veg2.x * 0.007 + 1) * 12;
             ctxC.save();
-            ctxC.translate(veg2.x, veg2.y);
+            ctxC.translate(veg2.x, groundYHere);
 
             if (veg2.type === 'tree') {
               var barkGrad = ctxC.createLinearGradient(-2, 0, 2, 0);
@@ -2560,7 +2664,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             style: {
               padding: '10px 14px', borderRadius: 12, marginBottom: 4,
               background: 'linear-gradient(135deg, rgba(22,163,74,0.14) 0%, rgba(22,163,74,0.04) 100%)',
-              border: '1px solid rgba(22,163,74,0.5)', borderLeft: '3px solid #16a34a',
+              borderTop: '1px solid rgba(22,163,74,0.5)', borderRight: '1px solid rgba(22,163,74,0.5)', borderBottom: '1px solid rgba(22,163,74,0.5)', borderLeft: '3px solid #16a34a',
               color: '#bbf7d0', fontSize: 13, lineHeight: 1.55
             }
           },
@@ -3091,7 +3195,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             style: {
               padding: '10px 14px', borderRadius: 12, marginBottom: 4,
               background: 'linear-gradient(135deg, rgba(14,165,233,0.14) 0%, rgba(14,165,233,0.04) 100%)',
-              border: '1px solid rgba(14,165,233,0.5)', borderLeft: '3px solid #0ea5e9',
+              borderTop: '1px solid rgba(14,165,233,0.5)', borderRight: '1px solid rgba(14,165,233,0.5)', borderBottom: '1px solid rgba(14,165,233,0.5)', borderLeft: '3px solid #0ea5e9',
               color: '#bae6fd', fontSize: 13, lineHeight: 1.55
             }
           },
@@ -3475,12 +3579,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           function renderConservAIPanel() {
             if (conserve.aiReadLoading) {
               return h('div', { role: 'status', 'aria-live': 'polite',
-                style: { padding: '12px 14px', borderRadius: 12, marginBottom: 12, background: 'rgba(56,189,248,0.10)', border: '1px solid rgba(56,189,248,0.4)', borderLeft: '3px solid #38bdf8', color: '#bae6fd', fontSize: 13 } },
+                style: { padding: '12px 14px', borderRadius: 12, marginBottom: 12, background: 'rgba(56,189,248,0.10)', borderTop: '1px solid rgba(56,189,248,0.4)', borderRight: '1px solid rgba(56,189,248,0.4)', borderBottom: '1px solid rgba(56,189,248,0.4)', borderLeft: '3px solid #38bdf8', color: '#bae6fd', fontSize: 13 } },
                 '⏳ AI conservation biologist is reading your ecosystem...');
             }
             if (!conserve.aiReadResponse) return null;
             return h('div', { role: 'region', 'aria-label': 'AI Conservation Reading',
-              style: { padding: 14, borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(56,189,248,0.10) 0%, rgba(15,23,42,0.4) 100%)', border: '1px solid rgba(56,189,248,0.5)', borderLeft: '3px solid #38bdf8' } },
+              style: { padding: 14, borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(56,189,248,0.10) 0%, rgba(15,23,42,0.4) 100%)', borderTop: '1px solid rgba(56,189,248,0.5)', borderRight: '1px solid rgba(56,189,248,0.5)', borderBottom: '1px solid rgba(56,189,248,0.5)', borderLeft: '3px solid #38bdf8' } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
                 h('span', { style: { fontSize: 20 } }, '🔍'),
                 h('strong', { style: { color: '#38bdf8', fontSize: 14 } }, 'AI Conservation Reading'),
@@ -3665,7 +3769,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                   h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } }, dd.modernContext)
                 )
               ),
-              applicable.length > 0 ? h('div', { style: { marginTop: 12, padding: 12, background: 'rgba(21,128,61,0.10)', border: '1px solid rgba(21,128,61,0.4)', borderLeft: '3px solid #15803d', borderRadius: 10 } },
+              applicable.length > 0 ? h('div', { style: { marginTop: 12, padding: 12, background: 'rgba(21,128,61,0.10)', borderTop: '1px solid rgba(21,128,61,0.4)', borderRight: '1px solid rgba(21,128,61,0.4)', borderBottom: '1px solid rgba(21,128,61,0.4)', borderLeft: '3px solid #15803d', borderRadius: 10 } },
                 h('div', { style: { fontSize: 11, fontWeight: 700, color: '#86efac', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '🛠 What you can do for this species in the sim'),
                 applicable.map(function(t, i) {
                   return h('div', { key: i, style: { margin: '4px 0', fontSize: 12.5, color: '#d1fae5', lineHeight: 1.5 } },
@@ -4038,7 +4142,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           var coachingTip = (conserve.year === 1 && !conserve.firstTipDismissed && conserve.yearActions.length === 0) ? conserveCoachingTip() : null;
           return h('div', { className: 'space-y-3' },
             conservDeepDive,
-            coachingTip ? h('div', { role: 'note', style: { padding: '10px 14px', borderRadius: 12, background: 'linear-gradient(135deg, rgba(168,85,247,0.16) 0%, rgba(168,85,247,0.04) 100%)', border: '1px solid rgba(168,85,247,0.6)', borderLeft: '3px solid #a855f7', color: '#e9d5ff', fontSize: 13, lineHeight: 1.55, display: 'flex', alignItems: 'flex-start', gap: 10 } },
+            coachingTip ? h('div', { role: 'note', style: { padding: '10px 14px', borderRadius: 12, background: 'linear-gradient(135deg, rgba(168,85,247,0.16) 0%, rgba(168,85,247,0.04) 100%)', borderTop: '1px solid rgba(168,85,247,0.6)', borderRight: '1px solid rgba(168,85,247,0.6)', borderBottom: '1px solid rgba(168,85,247,0.6)', borderLeft: '3px solid #a855f7', color: '#e9d5ff', fontSize: 13, lineHeight: 1.55, display: 'flex', alignItems: 'flex-start', gap: 10 } },
               h('span', { style: { fontSize: 20, flexShrink: 0 } }, '🪶'),
               h('div', { style: { flex: 1 } },
                 h('strong', { style: { color: '#a855f7' } }, 'Year 1 priority: '),
@@ -4146,7 +4250,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             style: {
               padding: '10px 14px', borderRadius: 12,
               background: 'linear-gradient(135deg, rgba(168,85,247,0.14) 0%, rgba(168,85,247,0.04) 100%)',
-              border: '1px solid rgba(168,85,247,0.5)', borderLeft: '3px solid #a855f7',
+              borderTop: '1px solid rgba(168,85,247,0.5)', borderRight: '1px solid rgba(168,85,247,0.5)', borderBottom: '1px solid rgba(168,85,247,0.5)', borderLeft: '3px solid #a855f7',
               color: '#e9d5ff', fontSize: 13, lineHeight: 1.55
             }
           },

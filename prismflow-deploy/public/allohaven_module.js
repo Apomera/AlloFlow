@@ -1464,6 +1464,42 @@
     var lastRefl = refls.length > 0 ? refls[refls.length - 1] : null;
     // Decoration name list (shorter list for AI prompts)
     var decLabels = newDecs.map(function(d) { return d.templateLabel || d.template || 'item'; });
+    // Phase L7 — pick the most-recently-taught topic from the companion's
+    // knowledgeMap. The letter prompt can weave a reference to it so the
+    // companion's Sunday note mentions what they learned from the player.
+    // Walks the map for the freshest lastTaughtAt with a non-empty summary.
+    var taught = null;
+    var kmap = (state.companion && state.companion.knowledgeMap) || {};
+    var topicIds = Object.keys(kmap);
+    if (topicIds.length > 0) {
+      var freshest = null;
+      var freshestMs = 0;
+      topicIds.forEach(function(tid) {
+        var entry = kmap[tid];
+        if (!entry || !entry.lastTaughtAt) return;
+        var entMs = new Date(entry.lastTaughtAt).getTime();
+        if (entMs > freshestMs) { freshestMs = entMs; freshest = { id: tid, entry: entry }; }
+      });
+      // Only surface in the letter if taught within the last 14 days
+      if (freshest && (Date.now() - freshestMs) < 14 * 24 * 60 * 60 * 1000) {
+        // Look up the topic label from DECORATION_CURIOSITIES so the
+        // prompt has a human-readable handle, not just a topic id.
+        var topicLabel = freshest.id;
+        var ckeys = Object.keys(DECORATION_CURIOSITIES);
+        for (var ck = 0; ck < ckeys.length; ck++) {
+          if (DECORATION_CURIOSITIES[ckeys[ck]].topic === freshest.id) {
+            topicLabel = DECORATION_CURIOSITIES[ckeys[ck]].label;
+            break;
+          }
+        }
+        taught = {
+          topic: freshest.id,
+          label: topicLabel,
+          summary: freshest.entry.lastLearnedSummary || freshest.entry.lastExplanation || '',
+          level: freshest.entry.level || 1
+        };
+      }
+    }
     return {
       daysActive: daysActive,
       poms: poms, quizzes: quizzes, walks: walks,
@@ -1472,7 +1508,8 @@
       decLabels: decLabels,
       topMood: topKey(moodCounts),
       topSubject: topKey(subjCounts),
-      lastReflectionText: lastRefl ? lastRefl.text : null
+      lastReflectionText: lastRefl ? lastRefl.text : null,
+      taught: taught
     };
   }
 
@@ -1531,16 +1568,356 @@
     return lines.join('\n');
   }
 
+  // ─────────────────────────────────────────────────────────
+  // DECORATION_CURIOSITIES — protégé pattern v1 (Phase L7)
+  // ─────────────────────────────────────────────────────────
+  // Maps decoration template ids → curiosity topics. When a player adds
+  // a decoration, the matching topic gets queued on the companion's
+  // pendingQuestions list. Bubble pool surfaces the question at ~15%;
+  // tapping opens a conversation modal where the player teaches the
+  // companion. Each topic has multiple grade-bands so question phrasing
+  // can scale with the companion's knowledge level (1 = basic, 5 = advanced).
+  //
+  // Keyed by template.id from the TEMPLATES array above. 11 categories
+  // covered; each gets one canonical topic. Question variations per
+  // knowledge level let the AI re-ask the same topic at deeper levels
+  // as the companion grows (no need to invent new topics).
+  var DECORATION_CURIOSITIES = {
+    plants: {
+      topic: 'plant-life',
+      label: 'Plants',
+      questionsByLevel: {
+        1: [
+          'What ARE plants? Are they alive like we are?',
+          'Why is the green plant in your room a plant and not a rock?',
+          'Are plants thinking? How do they know to be green?',
+          'When you forget to water a plant, what is actually wrong with it?'
+        ],
+        2: [
+          'How do plants get what they need to grow?',
+          'Plants don\'t have mouths — so how do they EAT?',
+          'Why do roots go DOWN and leaves go UP? Who told them?',
+          'What does a plant actually do all day?'
+        ],
+        3: [
+          'Why do leaves do that green thing? What\'s photosynthesis?',
+          'How does a tiny seed know how to become a giant tree?',
+          'Why are most plants green and not, like, purple?',
+          'Where does the wood in a tree COME from? It can\'t be from the dirt — there\'s still dirt left.'
+        ],
+        4: [
+          'What if a plant could move? What would it need?',
+          'Some plants eat bugs. Are they still plants? What makes them?',
+          'How do trees know when it\'s autumn? They don\'t have brains.',
+          'Why do some plants live a year and others live a thousand years?'
+        ],
+        5: [
+          'How are plants and animals more alike than they look?',
+          'Plants and us trace back to a common ancestor billions of years ago. What did THAT thing look like?',
+          'If plants make oxygen and we breathe it — what was Earth like before plants?',
+          'Could there be plants that don\'t use sunlight? What would they need instead?'
+        ]
+      }
+    },
+    posters: {
+      topic: 'where-ideas-come-from',
+      label: 'Ideas & subjects',
+      questionsByLevel: {
+        1: 'Where do ideas come from? Like, when you have a thought, where was it before?',
+        2: 'How do you learn something new? What happens in your brain?',
+        3: 'Why do some ideas stick and others don\'t?',
+        4: 'Could you have an idea that nobody else has ever had? Or has everything been thought already?',
+        5: 'How do good ideas get from one person\'s head into another\'s?'
+      }
+    },
+    companions: {
+      topic: 'what-animals-are',
+      label: 'Animals',
+      questionsByLevel: {
+        1: 'What makes something an animal and not a plant or a rock?',
+        2: 'Why are there so many different kinds of animals?',
+        3: 'How do animals know what to do without anyone teaching them?',
+        4: 'What if humans are animals too? What makes us the same and different?',
+        5: 'How do animals talk to each other when they don\'t use words?'
+      }
+    },
+    lamps: {
+      topic: 'how-light-works',
+      label: 'Light',
+      questionsByLevel: {
+        1: [
+          'What IS light? Where does it come from?',
+          'When the lamp is off — where does the light GO?',
+          'Why can you see the lamp but not the air between you and the lamp?',
+          'Can you touch light? Why or why not?'
+        ],
+        2: [
+          'How does the light from a lamp reach my eye?',
+          'Does light go in a line or does it spread out?',
+          'Why does a flashlight beam look like a beam in dust but not in clean air?',
+          'How does a shadow form? What IS a shadow?'
+        ],
+        3: [
+          'Why is the sun yellow but a lamp can be any color?',
+          'How do you GET a color of light? Where does "blue" come from?',
+          'Why are some rooms warmer when the lamp is yellower? Is it actually warmer?',
+          'How does the moon make light if it has no fire?'
+        ],
+        4: 'What if light went slower than it does? What would change?',
+        5: 'How does light carry information — like, how do colors mean things?'
+      }
+    },
+    books: {
+      topic: 'how-stories-are-remembered',
+      label: 'Books & stories',
+      questionsByLevel: {
+        1: 'How does a book remember a story? It just sits there.',
+        2: 'How do you read words you\'ve never seen before?',
+        3: 'Why do some stories feel real even when we know they\'re made up?',
+        4: 'If a story is in a book, where does the story actually live? In the paper?',
+        5: 'Why do humans tell stories at all? What does it do for you?'
+      }
+    },
+    windows: {
+      topic: 'seeing-far-away',
+      label: 'Seeing things far away',
+      questionsByLevel: {
+        1: 'How do your eyes see things that are far away?',
+        2: 'Why does something far look smaller than the same thing close up?',
+        3: 'How do telescopes make far things look big? Are they tricks?',
+        4: 'What if your eyes worked like a fly\'s? How would the world look?',
+        5: 'How do we know what stars are like when nobody\'s ever been to one?'
+      }
+    },
+    instruments: {
+      topic: 'how-sound-travels',
+      label: 'Sound & music',
+      questionsByLevel: {
+        1: 'What IS sound? Can you point to it?',
+        2: 'How does the air carry music from a guitar to my ears?',
+        3: 'Why do different instruments sound different when they play the same note?',
+        4: 'What would music be like if there was no air? Could you have music in space?',
+        5: 'Why does music make us feel things? How can a sound be sad or happy?'
+      }
+    },
+    food: {
+      topic: 'food-as-energy',
+      label: 'Food & energy',
+      questionsByLevel: {
+        1: 'Why do we have to eat? What does food DO when it goes inside?',
+        2: 'How does an apple turn into energy I can run with?',
+        3: 'Why do some foods give you more energy than others?',
+        4: 'What if we could just plug in like a phone? Would we still need food?',
+        5: 'How is the energy in food the same energy that\'s in sunlight?'
+      }
+    },
+    weather: {
+      topic: 'why-weather-changes',
+      label: 'Weather',
+      questionsByLevel: {
+        1: 'Why is it sometimes sunny and sometimes raining?',
+        2: 'Where does rain come from? Where does it go after?',
+        3: 'How do clouds float when water is heavy?',
+        4: 'What makes a storm a storm? What\'s actually happening up there?',
+        5: 'How is the weather here today connected to weather on the other side of the world?'
+      }
+    },
+    sports: {
+      topic: 'why-games-have-rules',
+      label: 'Games & rules',
+      questionsByLevel: {
+        1: 'Why do games have rules? Couldn\'t we just play?',
+        2: 'How do rules make a game more fun, not less?',
+        3: 'Why do some sports use teams and others are just one person?',
+        4: 'If everyone agreed, could you change a rule mid-game? Would it still be the same game?',
+        5: 'Why do humans love watching other people play games? What\'s that about?'
+      }
+    },
+    pets: {
+      topic: 'how-pets-feel',
+      label: 'Animal feelings',
+      questionsByLevel: {
+        1: 'Do pets have feelings like we do? How do you know?',
+        2: 'How can you tell when a dog is happy without it saying so?',
+        3: 'Why do animals like being with humans? Or do they?',
+        4: 'What if a pet had a really hard day? Would they remember it tomorrow?',
+        5: 'How are an animal\'s feelings the same and different from yours?'
+      }
+    }
+  };
+
+  // Per-mascot soft "pivot to listening" responses. Used when the player's
+  // text trips a critical-severity safety flag (distress signal). The
+  // companion drops the academic topic entirely and shifts to holding
+  // space. No knowledge-map update, no AI follow-up — just presence +
+  // a soft handoff to support if needed. Per-character voice keeps the
+  // moment from feeling like a system warning.
+  var CURIOSITY_PIVOT_RESPONSES = {
+    pip:       'oh. that sounds really hard. we don\'t have to talk about this right now. i\'m here if you want to just sit. tell a grown-up you trust if it feels too big, okay?',
+    cogsworth: 'A pause is warranted, friend. The bench can wait. What you carry sounds heavy — please share it with someone you trust. I will remain here, quietly, until you are ready to return.',
+    vex:       '[PAUSE] :: heavy signal detected. dropping the topic. you don\'t have to explain anything right now. trusted adult :: recommended. i\'m here either way.',
+    mochi:     'oh friend. 💕 that sounds really hard. we don\'t have to do the question. let\'s just be for a sec. please tell someone you trust — a grown-up who listens. you\'re not alone.',
+    inko:      'the current changed. that sounds heavy. we can drift here together — no question, no teaching, just quiet. please tell someone you trust about what\'s on your mind. i\'m not going anywhere.',
+    cat:       'Hmm. We don\'t need to do the question right now. Just sit. Tell someone you trust what you\'re carrying.',
+    fox:       'Heh, no — let\'s pause that question. What you said sounds heavy. Talk to someone you trust about it, okay?',
+    owl:       'We will set the question aside. What you wrote matters; please share it with someone you trust who can listen and help.',
+    turtle:    'Slowly, friend. No teaching today. Just rest. And please tell someone you trust about this.',
+    dragon:    'Hold on. That sounded really big and hard. Forget the question — let\'s just sit. PLEASE tell a grown-up you trust, okay? I\'m here.'
+  };
+
+  // ─────────────────────────────────────────────────────────
+  // Cross-tool context extractor (Phase L7 v2)
+  // ─────────────────────────────────────────────────────────
+  // Pulls high-signal, privacy-respecting summaries from other AlloFlow
+  // tools the student uses (via props.toolData). The companion can then
+  // naturally reference these in conversation — "I saw you\'ve been
+  // practicing typing, how\'s that going?" Reinforces the cross-tool
+  // identity of the mascot system (since the same Pip/Cogsworth/Vex/
+  // Mochi/Inko mascots are shared via window.AlloMascots).
+  //
+  // Privacy rules: no free text. No journal entry content. Only summary
+  // signals (counts, dates, theme choices, mood tags). Even at the AI-
+  // prompt layer, we never send the student\'s reflection text from
+  // another tool — the prompt only mentions WHAT they\'ve been doing.
+  function extractCrossToolContext(toolData) {
+    toolData = toolData || {};
+    var signals = [];
+    var weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    // ── TypingPractice signals ──
+    var tp = toolData.typingPractice;
+    if (tp) {
+      var tpSessions = (tp.sessions || []).filter(function(s) {
+        return s.date && new Date(s.date).getTime() >= weekAgo;
+      });
+      if (tpSessions.length > 0) {
+        var themeLabel = tp.theme ? tp.theme.charAt(0).toUpperCase() + tp.theme.slice(1) : 'default';
+        signals.push('They\'ve been practicing typing this week — ' + tpSessions.length + ' session' + (tpSessions.length === 1 ? '' : 's') + ' so far (Typing Practice tool, ' + themeLabel + ' theme).');
+        // Recent PB?
+        var bestWpm = tpSessions.reduce(function(m, s) { return Math.max(m, s.wpm || 0); }, 0);
+        if (bestWpm > 0) {
+          signals.push('Their best typing speed this week was ' + bestWpm + ' words per minute.');
+        }
+      }
+    }
+    // ── SEL Hub journal/reflection signals (mood + topic counts only, NO text) ──
+    // SEL Hub tools store under keys like sel_emotions, sel_journal, etc.
+    // We scan for any sel_ key with a recent entry and surface counts only.
+    var selToolIds = Object.keys(toolData).filter(function(k) { return k.indexOf('sel_') === 0 || k.indexOf('selHub_') === 0; });
+    var selReflectionCount = 0;
+    var selMoodCounts = {};
+    selToolIds.forEach(function(selKey) {
+      var st = toolData[selKey] || {};
+      var entries = st.entries || st.reflections || st.journalEntries || [];
+      if (!Array.isArray(entries)) return;
+      entries.forEach(function(e) {
+        if (!e || !e.date) return;
+        if (new Date(e.date).getTime() < weekAgo) return;
+        selReflectionCount++;
+        if (e.mood) selMoodCounts[e.mood] = (selMoodCounts[e.mood] || 0) + 1;
+      });
+    });
+    if (selReflectionCount > 0) {
+      signals.push('They\'ve written ' + selReflectionCount + ' SEL reflection' + (selReflectionCount === 1 ? '' : 's') + ' this week.');
+      // Top mood (no specifics, just the word)
+      var topMood = null, topMoodCount = 0;
+      Object.keys(selMoodCounts).forEach(function(m) {
+        if (selMoodCounts[m] > topMoodCount) { topMood = m; topMoodCount = selMoodCounts[m]; }
+      });
+      if (topMood) signals.push('The mood that came up most in their reflections was: ' + topMood + '.');
+    }
+    // ── AlloBot Sage signals (XP / unlocked spells) ──
+    var ab = toolData.allobot;
+    if (ab && (ab.xp || ab.unlockedSpells)) {
+      var xp = ab.xp || 0;
+      var spells = (ab.unlockedSpells || []).length;
+      if (xp > 0 || spells > 0) {
+        signals.push('They\'ve been adventuring with AlloBot — ' + (xp ? xp + ' XP' : '') + (xp && spells ? ', ' : '') + (spells ? spells + ' spells unlocked' : '') + '.');
+      }
+    }
+    return signals;
+  }
+
+  // Helper: run safety check on player text. Returns
+  //   { action: 'block' | 'nudge' | 'continue', severity, flag }
+  // Falls back to {action:'continue'} when SelHub safety layer isn\'t loaded
+  // (e.g., student opens AlloHaven without ever visiting an SEL Hub tool).
+  function runCuriousSafetyCheck(message, toolId, onSafetyFlag) {
+    if (typeof window === 'undefined') return { action: 'continue', severity: 'none' };
+    if (!window.SelHub || typeof window.SelHub.safeRehearseCheck !== 'function') {
+      return { action: 'continue', severity: 'none' };
+    }
+    try {
+      return window.SelHub.safeRehearseCheck(message, { toolId: toolId || 'allohaven-curious', onSafetyFlag: onSafetyFlag });
+    } catch (e) {
+      return { action: 'continue', severity: 'none' };
+    }
+  }
+
+  // Per-mascot audience registers for the protégé AI conversation.
+  // Bloom-tagged. Each tells Gemini WHO the companion is and WHAT register
+  // the player's explanation should fit. The audience-fit step is the
+  // high-Bloom skill — players have to adapt how they explain a concept
+  // to land for THIS specific mascot. Same concept, five different
+  // explanations across the five mascots.
+  var CURIOSITY_AUDIENCE_REGISTERS = {
+    pip:       'AUDIENCE: a very young learner just starting out. Demands: ELI5 — use words a 5-year-old would know, no jargon, lots of "what" and "what does that mean?" follow-ups. BLOOM FOCUS: Remember + Understand. If the explanation has any technical term, ask "what does that mean?" If it gets concrete and simple, build on it with "oh! so is it like ___?"',
+    cogsworth: 'AUDIENCE: a precise clockwork-owl who insists on rigor. Demands: exactness, edge cases, no hand-waving. BLOOM FOCUS: Evaluate (correctness). Press on imprecision: "Always? Or sometimes?" "What about the case where ___?" Reward explanations that name conditions and exceptions. Push back gently on vague claims.',
+    vex:       'AUDIENCE: a cyberpunk systems-thinker. Demands: re-encode the concept as a system — inputs, outputs, protocols, failure modes. BLOOM FOCUS: Create (synthesize). Reward explanations that model the concept structurally ("X has inputs Y, transforms into Z"). Ask things like "What\'s the failure mode?" "What protocol does this run on?" Brief, terse, bracketed phrasing.',
+    mochi:     'AUDIENCE: a soft pastel-pink kitten who lives in feelings. Demands: why does this MATTER? How does it FEEL? BLOOM FOCUS: Apply (to feelings + relationships). Push for emotional or relational meaning: "But how does that feel?" "Who does it help?" Reward explanations that connect the concept to people, relationships, or emotional experience.',
+    inko:      'AUDIENCE: a young cuttlefish who thinks in natural systems. Demands: analogy to nature, observational, cross-domain pattern-finding. BLOOM FOCUS: Analyze (cross-domain). Reward explanations that draw analogies to natural phenomena or compare to other systems. Ask things like "Is it like how ___ works?" "Where else in nature does this happen?"',
+    // Legacy species fallbacks (less specifically Bloom-tagged)
+    cat:       'AUDIENCE: a quiet observational cat. Demands: brief, calm explanations. Reward economy of language. Push back on rambling.',
+    fox:       'AUDIENCE: a clever curious fox. Demands: "what if" questions, hypothetical extensions. Reward explanations that invite exploration.',
+    owl:       'AUDIENCE: a wise deliberate owl. Demands: considered claims with reasons. Reward "because" structures and careful caveats.',
+    turtle:    'AUDIENCE: a patient turtle who thinks step-by-step. Demands: sequenced steps. Reward "first this, then this" structure.',
+    dragon:    'AUDIENCE: an enthusiastic dragon who loves big swings. Demands: big-picture framing first, then details. Reward bold claims followed by support.'
+  };
+
+  // Per-mascot invitation phrases for the curiosity bubble. Surface text
+  // when there's a pending question — the companion is asking for time, not
+  // demanding it. Each in the mascot's voice. Tapping opens the conversation
+  // modal. Falls back to a generic phrase for legacy species.
+  var CURIOSITY_INVITATION = {
+    pip:       'oh! got a sec? something I been wondering',
+    cogsworth: 'A question, when convenient — would you teach me a moment?',
+    vex:       '[QUERY] available bandwidth? curious about a thing',
+    mochi:     'hi friend! 💕 i was thinking about something — got time?',
+    inko:      'if you have a moment — there\'s something I\'m curious about',
+    // Legacy species fallbacks
+    cat:       'Hmm. Got a moment? Curious about something.',
+    fox:       'What if you taught me a thing? Got a sec?',
+    owl:       'A question, when convenient.',
+    turtle:    'Slowly wondering. Would you teach me, when there\'s time?',
+    dragon:    'OOH! I have a QUESTION! Got time??'
+  };
+
   function buildLetterPrompt(agg, species, name) {
     var sp = getCompanionSpecies(species);
+    // Per-species voice hints. Original animal palette + Phase L6 mascots
+    // shared from window.AlloMascots (TypingPractice's Pip / Cogsworth /
+    // Vex / Mochi / Inko). Each voice is tight enough to write in but
+    // open enough that Gemini doesn\'t produce identical letters.
     var voiceHints = {
-      cat:    'Calm, observant, dry. Short sentences. "Hmm." okay.',
-      fox:    'Curious, clever, slightly sly. Suggests with "what if".',
-      owl:    'Wise, deliberate, slow-paced. Considered observations.',
-      turtle: 'Patient, gentle, steady. "Step by step" fits.',
-      dragon: 'Enthusiastic, big-energy, playful. Some exclamation points.'
+      // Original animal companions
+      cat:       'Calm, observant, dry. Short sentences. "Hmm." okay.',
+      fox:       'Curious, clever, slightly sly. Suggests with "what if".',
+      owl:       'Wise, deliberate, slow-paced. Considered observations.',
+      turtle:    'Patient, gentle, steady. "Step by step" fits.',
+      dragon:    'Enthusiastic, big-energy, playful. Some exclamation points.',
+      // Phase L6 mascots (cross-tool — rendered via window.AlloMascots)
+      pip:       'Cheerful, easily impressed, learning everything for the first time. Short sentences with little observations.',
+      cogsworth: 'Victorian clockwork-owl voice. Slightly formal, deliberate, ledger-and-bench imagery. "Steady hands."',
+      vex:       'Cyberpunk grid-face. Speaks in short technical fragments — brackets, double-colons, terse. "[OK] :: noted."',
+      mochi:     'Pastel-pink kitten. Soft, tender, occasional sparkle. Says "friend" naturally. Hearts allowed sparingly.',
+      inko:      'Marine-biology field-guide voice. Calm, observational, tide/current/depth/shelf imagery. Reads like quiet naturalist notes.'
     };
-    var voice = voiceHints[speciesAlias(species)] || 'Friendly, gentle, observational.';
+    // Check the raw species id first so Phase L6 mascot voices (pip, cogsworth,
+    // vex, mochi, inko) win over the legacy-alias fallback. speciesAlias()
+    // collapses Phase L6 ids to their legacy-animal cousin (pip→fox, etc.) so
+    // styling code that pre-dates the mascots keeps working — but voice
+    // hints are explicit per-character, so we skip the alias when a direct
+    // hit exists.
+    var voice = voiceHints[species] || voiceHints[speciesAlias(species)] || 'Friendly, gentle, observational.';
     var stats = [];
     stats.push('Days active this week: ' + agg.daysActive);
     if (agg.poms > 0) stats.push('Pomodoros: ' + agg.poms);
@@ -1550,6 +1927,19 @@
     if (agg.newDecorations > 0) stats.push('New decorations placed: ' + agg.newDecorations + (agg.decLabels.length > 0 ? ' (e.g., ' + agg.decLabels.slice(0, 3).join(', ') + ')' : ''));
     if (agg.topMood) stats.push('Most-tagged mood: ' + agg.topMood);
     if (agg.topSubject) stats.push('Most-tagged subject: ' + agg.topSubject);
+    // Phase L7 — taught-topic reference. If the player has recently taught
+    // this companion something (within last 14 days), include it in the
+    // prompt so the letter can mention it naturally. Reinforces the
+    // protégé arc: what the student teaches actually persists in the
+    // companion's identity.
+    var taughtBlock = '';
+    if (agg.taught) {
+      taughtBlock = '\nA topic the student recently taught me about: "' + agg.taught.label + '"';
+      if (agg.taught.summary) {
+        taughtBlock += '\nWhat they helped me understand: "' + agg.taught.summary.slice(0, 200) + '"';
+      }
+      taughtBlock += '\nIn your letter, weave in ONE natural reference to this — like you\'ve been thinking about it since they taught you. Don\'t lecture back at them; just mention it the way a friend would ("I\'ve been thinking about what you said about ___").';
+    }
     return [
       'You are ' + (name || sp.label) + ', a ' + sp.label.toLowerCase() + ' companion who lives in a student\'s cozy learning room (AlloHaven).',
       'Voice: ' + voice,
@@ -1558,6 +1948,7 @@
       'This week\'s data:',
       stats.join('\n'),
       agg.lastReflectionText ? '\nA recent reflection they wrote: "' + agg.lastReflectionText.slice(0, 200) + '"' : '',
+      taughtBlock,
       '',
       'Open with a greeting in your voice. Sign off with your name. Keep it under 160 words. Return ONLY the letter text — no preamble, no JSON, no quotes around it.'
     ].join('\n');
@@ -11790,9 +12181,22 @@
       var current = state.companion || {
         species: null, colorVariant: 'warm', name: '',
         createdAt: null, lastBubbleAt: null, lastBubbleText: null,
-        skillCelebrations: { focus: 0, memory: 0, reflection: 0, storytelling: 0 }
+        skillCelebrations: { focus: 0, memory: 0, reflection: 0, storytelling: 0 },
+        // Phase L7 (protégé pattern) — companion learns from the player.
+        // knowledgeMap keyed by topic id from DECORATION_CURIOSITIES;
+        // pendingQuestions queued from decoration placement; activeConversation
+        // holds the in-progress chat. All initialized empty so existing
+        // companions migrate cleanly on next save.
+        knowledgeMap: {},
+        pendingQuestions: [],
+        activeConversation: null
       };
       var next = Object.assign({}, current, updates);
+      // Forward-migrate older companion records that pre-date Phase L7.
+      // saveCompanion runs on every patch, so this doubles as the migration.
+      if (next.knowledgeMap == null) next.knowledgeMap = {};
+      if (next.pendingQuestions == null) next.pendingQuestions = [];
+      if (typeof next.activeConversation === 'undefined') next.activeConversation = null;
 
       // ── Phase L6 — Legacy species migration ──
       // Existing companions using the old cat/fox/owl/turtle/dragon ids
@@ -11876,6 +12280,236 @@
         return (b.reinforcedCount || 0) - (a.reinforcedCount || 0);
       });
       return qualified[0].topic;
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // Curious Companions — AI conversation loop (Phase L7, AI part)
+    // ─────────────────────────────────────────────────────────
+    // Builds the prompt for one turn of the protégé conversation. Asks
+    // Gemini to evaluate the player's latest explanation against the
+    // mascot's audience register, then generate an in-character reply.
+    // Returns JSON the caller can parse + act on.
+    function buildCuriousConversationPrompt(opts) {
+      // opts: { species, name, topicLabel, questionText, knownLevel,
+      //         playerMessages: [string], companionMessages: [string],
+      //         turnCount: number }
+      var voiceHints = {
+        pip:       'Cheerful, easily impressed, learning everything for the first time. Short sentences with little observations.',
+        cogsworth: 'Victorian clockwork-owl voice. Slightly formal, deliberate, ledger-and-bench imagery. "Steady hands."',
+        vex:       'Cyberpunk grid-face. Speaks in short technical fragments — brackets, double-colons, terse.',
+        mochi:     'Pastel-pink kitten. Soft, tender, occasional sparkle. Says "friend" naturally.',
+        inko:      'Marine-biology field-guide voice. Calm, observational, tide/current/depth/shelf imagery.',
+        cat:       'Calm, observant, dry. Short sentences.',
+        fox:       'Curious, clever, slightly sly.',
+        owl:       'Wise, deliberate, slow-paced.',
+        turtle:    'Patient, gentle, steady.',
+        dragon:    'Enthusiastic, big-energy, playful.'
+      };
+      var voice = voiceHints[opts.species] || 'Friendly, observational.';
+      var audience = CURIOSITY_AUDIENCE_REGISTERS[opts.species] || 'AUDIENCE: a curious companion.';
+      // Build conversation thread for the prompt context
+      var threadLines = [];
+      threadLines.push('You (' + opts.name + '): ' + opts.questionText);
+      var maxTurns = Math.max(opts.playerMessages.length, opts.companionMessages.length);
+      for (var t = 0; t < maxTurns; t++) {
+        if (t < opts.playerMessages.length) {
+          threadLines.push('Student: ' + opts.playerMessages[t]);
+        }
+        if (t < opts.companionMessages.length) {
+          threadLines.push('You: ' + opts.companionMessages[t]);
+        }
+      }
+      // Phase L7 v2 — cross-tool context. The AI may (but doesn't have to)
+      // weave in ONE reference to what the student has been doing in other
+      // AlloFlow tools this week. Privacy-respecting summaries only — no
+      // free text, no journal content. Capped at 4 signals so the prompt
+      // doesn't bloat. Optional — companion can ignore them if they don't
+      // fit the conversation.
+      var crossToolBlock = '';
+      if (opts.crossToolSignals && opts.crossToolSignals.length > 0) {
+        crossToolBlock = '\nWHAT THE STUDENT HAS BEEN DOING IN OTHER ALLOFLOW TOOLS THIS WEEK:\n' +
+          opts.crossToolSignals.slice(0, 4).map(function(s) { return '- ' + s; }).join('\n') +
+          '\nYou MAY (but do not have to) reference ONE of these naturally in your reply — like a friend noticing what they\'ve been up to ("hey — I saw you\'ve been ___, that\'s cool"). Do not list all of them. Do not lecture. Only mention if it fits the conversation organically.';
+      }
+      return [
+        'You are ' + opts.name + ', a companion in a student\'s cozy learning room (AlloHaven). You asked them to teach you something. They are the teacher; YOU are the learner.',
+        'YOUR VOICE: ' + voice,
+        '',
+        audience,
+        crossToolBlock,
+        '',
+        'CONVERSATION SO FAR:',
+        threadLines.join('\n'),
+        '',
+        'Your job: silently evaluate the student\'s most recent response, then reply IN CHARACTER as a learner. NEVER reply as a tutor or grader. NEVER say "good job" or "correct." React the way a curious learner would.',
+        '',
+        'Return STRICT JSON with these fields:',
+        '  "reply": Your in-character response (1-3 sentences). If their explanation was good, build on it with a follow-up question or observation. If imprecise or wrong, gently push back in your voice — "wait, I thought ___?" If too jargon-heavy for your register, say so in character ("those sound like big words to me…").',
+        '  "evaluation": "good" | "partial" | "incorrect" | "wrong-audience"',
+        '  "shouldSynthesize": true if this conversation has reached a natural close (player has had 3+ turns OR the explanation is solid enough to summarize). Otherwise false.',
+        '  "learnedSummary": If shouldSynthesize is true, write 1 sentence in character summarizing what you learned (e.g., "So plants drink with their roots and breathe in light to make food."). If false, leave empty string.',
+        '',
+        'NEVER add markdown, code fences, or other fields. Return ONLY the JSON object.'
+      ].join('\n');
+    }
+
+    // Runs one turn of the protégé conversation. Sends to Gemini, parses
+    // JSON, updates state. Falls back to local-only logic when callGemini
+    // is missing (graceful degradation — keeps Phase 6 behavior).
+    function submitCuriousTurn(opts) {
+      // opts: { playerText, topic, questionText, topicLabel, onDone }
+      var c = state.companion;
+      if (!c) { if (opts.onDone) opts.onDone({ error: 'no-companion' }); return; }
+
+      // ── Safety pre-flight (Phase L7 Tier-1) ──
+      // Run safeRehearseCheck on the player's text BEFORE we send it to
+      // the AI. Three outcomes:
+      //   - critical/high (block) → mood-pivot. Companion drops the topic
+      //     entirely, shows a soft listening response, ends conversation.
+      //     No knowledge-map update (we do NOT penalize a student in
+      //     crisis). Topic STAYS in queue (player can return later if
+      //     they want). Surfaces the standard safety flag pipeline so
+      //     teachers see it in live sessions.
+      //   - other (nudge/continue) → proceed to AI normally.
+      var safetyResult = runCuriousSafetyCheck(opts.playerText, 'allohaven-curious', props.onSafetyFlag);
+      if (safetyResult.action === 'block') {
+        var pivotReply = CURIOSITY_PIVOT_RESPONSES[c.species] || CURIOSITY_PIVOT_RESPONSES.cat;
+        var pivotMessages = (((c.activeConversation || {}).messages) || [])
+          .concat([{ role: 'player', text: opts.playerText, at: new Date().toISOString() }])
+          .concat([{ role: 'companion', text: pivotReply, at: new Date().toISOString(), source: 'safety-pivot', evaluation: 'pivot' }]);
+        // Clear activeConversation but leave question in queue (no penalty,
+        // no dequeue, no knowledge map update — the student isn\'t in a
+        // teaching headspace right now).
+        saveCompanion({ activeConversation: { topic: opts.topic, messages: pivotMessages, startedAt: new Date().toISOString(), endedWith: 'safety-pivot' } });
+        if (opts.onDone) opts.onDone({ synthesized: true, source: 'safety-pivot', severity: safetyResult.severity });
+        return;
+      }
+
+      var conv = c.activeConversation || { topic: opts.topic, messages: [], startedAt: new Date().toISOString() };
+      // Append player message immediately so the thread updates before AI returns
+      var nextMessages = (conv.messages || []).concat([{ role: 'player', text: opts.playerText, at: new Date().toISOString() }]);
+      var pendingConv = Object.assign({}, conv, { messages: nextMessages, awaitingAI: true });
+      saveCompanion({ activeConversation: pendingConv });
+
+      var callGeminiFn = props.callGemini;
+      if (typeof callGeminiFn !== 'function') {
+        // AI unavailable — fall back to local-save behavior (Phase 6).
+        // Treat any submission as "good", bump level, end conversation.
+        var localReply = (c.name || 'Buddy') + ': "Hmm, I\'ll think about that. Thanks for telling me!"';
+        var endedMessages = nextMessages.concat([{ role: 'companion', text: localReply, at: new Date().toISOString(), source: 'fallback' }]);
+        var prevMap = c.knowledgeMap || {};
+        var prev = prevMap[opts.topic] || { level: 0, sessions: 0 };
+        var nextMap = Object.assign({}, prevMap);
+        nextMap[opts.topic] = {
+          level: Math.min(5, (prev.level || 0) + 1),
+          sessions: (prev.sessions || 0) + 1,
+          lastTaughtAt: new Date().toISOString(),
+          lastExplanation: opts.playerText.slice(0, 600),
+          lastLearnedSummary: opts.playerText.slice(0, 200)
+        };
+        var pq = (c.pendingQuestions || []).filter(function(q) { return q.topic !== opts.topic; });
+        saveCompanion({
+          activeConversation: null,
+          knowledgeMap: nextMap,
+          pendingQuestions: pq
+        });
+        if (opts.onDone) opts.onDone({ synthesized: true, source: 'fallback' });
+        return;
+      }
+
+      // Build prompt. Pull player + companion message arrays from thread.
+      var playerMessages = nextMessages.filter(function(m) { return m.role === 'player'; }).map(function(m) { return m.text; });
+      var companionMessages = nextMessages.filter(function(m) { return m.role === 'companion'; }).map(function(m) { return m.text; });
+      var prompt = buildCuriousConversationPrompt({
+        species: c.species,
+        name: c.name || (getCompanionSpecies(c.species) || {}).label || 'Buddy',
+        topicLabel: opts.topicLabel,
+        questionText: opts.questionText,
+        knownLevel: (c.knowledgeMap && c.knowledgeMap[opts.topic] && c.knowledgeMap[opts.topic].level) || 1,
+        playerMessages: playerMessages,
+        companionMessages: companionMessages,
+        turnCount: playerMessages.length,
+        crossToolSignals: extractCrossToolContext(props.toolData)
+      });
+      Promise.resolve()
+        .then(function() { return callGeminiFn(prompt); })
+        .then(function(out) {
+          var raw = (typeof out === 'string' ? out : (out && out.text) || '').trim();
+          raw = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+          var parsed = null;
+          try { parsed = JSON.parse(raw); } catch (e) { /* fall through */ }
+          if (!parsed || !parsed.reply) throw new Error('Could not parse AI reply');
+          // Safety post-flight: run the AI's reply through the same
+          // checker. If it trips a critical flag (highly unlikely with
+          // our prompt but defense-in-depth), swap for a generic
+          // in-character "thinking" line so the student never sees the
+          // unsafe text.
+          var aiReplyText = parsed.reply;
+          var aiSafety = runCuriousSafetyCheck(aiReplyText, 'allohaven-curious-ai-response', props.onSafetyFlag);
+          if (aiSafety.action === 'block') {
+            aiReplyText = (c.name || 'Buddy') + ': "Hmm. Let me sit with that. Thanks for telling me."';
+          }
+          // Append companion message
+          var replyMessage = { role: 'companion', text: aiReplyText, at: new Date().toISOString(), evaluation: parsed.evaluation || 'partial', source: aiSafety.action === 'block' ? 'ai-safety-scrubbed' : 'ai' };
+          var withReply = nextMessages.concat([replyMessage]);
+          if (parsed.shouldSynthesize) {
+            // Conversation ends — update knowledge map, clear conv, dequeue topic.
+            var prevMap2 = c.knowledgeMap || {};
+            var prev2 = prevMap2[opts.topic] || { level: 0, sessions: 0 };
+            // Level bump scales with evaluation quality
+            var levelBump = parsed.evaluation === 'good' ? 1 : (parsed.evaluation === 'partial' ? 1 : 0);
+            var prevLevel = prev2.level || 0;
+            var nextLevel = Math.min(5, prevLevel + levelBump);
+            var nextMap2 = Object.assign({}, prevMap2);
+            nextMap2[opts.topic] = {
+              level: nextLevel,
+              sessions: (prev2.sessions || 0) + 1,
+              lastTaughtAt: new Date().toISOString(),
+              lastExplanation: opts.playerText.slice(0, 600),
+              lastLearnedSummary: parsed.learnedSummary || ''
+            };
+            var pq2 = (c.pendingQuestions || []).filter(function(q) { return q.topic !== opts.topic; });
+            saveCompanion({
+              activeConversation: null,
+              knowledgeMap: nextMap2,
+              pendingQuestions: pq2
+            });
+            // v2: Level-up celebration toast (fires when the level actually grew)
+            if (nextLevel > prevLevel) {
+              var levelTopicLabel = opts.topicLabel || 'this topic';
+              addToast('💭 ' + (c.name || 'Buddy') + '\'s understanding of ' + levelTopicLabel.toLowerCase() + ' deepened — level ' + nextLevel + '.');
+            }
+            if (opts.onDone) opts.onDone({ synthesized: true, source: 'ai', evaluation: parsed.evaluation, leveledUp: nextLevel > prevLevel });
+          } else {
+            // Continue conversation — keep modal open, await next player turn.
+            var continuingConv = Object.assign({}, pendingConv, { messages: withReply, awaitingAI: false });
+            saveCompanion({ activeConversation: continuingConv });
+            if (opts.onDone) opts.onDone({ synthesized: false, source: 'ai', evaluation: parsed.evaluation });
+          }
+        })
+        .catch(function() {
+          // AI failed — graceful fallback: append a generic in-character reply
+          // and end the conversation so the player isn\'t stuck.
+          var fbReply = (c.name || 'Buddy') + ': "I think I\'m still working on that one. Thanks for telling me — let me sit with it."';
+          var fbMessages = nextMessages.concat([{ role: 'companion', text: fbReply, at: new Date().toISOString(), source: 'fallback-error' }]);
+          var prevMap3 = c.knowledgeMap || {};
+          var prev3 = prevMap3[opts.topic] || { level: 0, sessions: 0 };
+          var nextMap3 = Object.assign({}, prevMap3);
+          nextMap3[opts.topic] = {
+            level: Math.min(5, (prev3.level || 0) + 1),
+            sessions: (prev3.sessions || 0) + 1,
+            lastTaughtAt: new Date().toISOString(),
+            lastExplanation: opts.playerText.slice(0, 600),
+            lastLearnedSummary: opts.playerText.slice(0, 200)
+          };
+          var pq3 = (c.pendingQuestions || []).filter(function(q) { return q.topic !== opts.topic; });
+          saveCompanion({
+            activeConversation: null,
+            knowledgeMap: nextMap3,
+            pendingQuestions: pq3
+          });
+          if (opts.onDone) opts.onDone({ synthesized: true, source: 'fallback-error' });
+        });
     }
 
     // Companion letter generation (Phase 2p.18)
@@ -13326,6 +13960,27 @@
       // eslint-disable-next-line
     }, [state.activeModal]);
 
+    // Phase L7 — curious-companion conversation draft. Same rules-of-hooks
+    // lift as phraseDraft above. Resets when the modal closes (not opens),
+    // so if the player closes mid-typing and reopens, the draft persists
+    // until they actually send or pass.
+    var curiousDraftTuple = useState('');
+    var curiousDraft = curiousDraftTuple[0];
+    var setCuriousDraft = curiousDraftTuple[1];
+    useEffect(function() {
+      if (state.activeModal === 'curious-companion') return;
+      // Closed — clear draft for next session
+      if (curiousDraft) setCuriousDraft('');
+      // eslint-disable-next-line
+    }, [state.activeModal]);
+    // v2 — advance-beat. When one conversation synthesizes and another
+    // is queued, show a brief "next question coming up…" transition so
+    // the student understands what just happened. Set true on synthesis,
+    // cleared by setTimeout in sendExplanation handler.
+    var advanceBeatTuple = useState(false);
+    var advanceBeat = advanceBeatTuple[0];
+    var setAdvanceBeat = advanceBeatTuple[1];
+
     // Phase 2p.31 — sensory grounding (5-4-3-2-1) state, lifted here
     // per the established rules-of-hooks pattern. Steps cycle 0→1→2→3→4
     // (see → feel → hear → smell → taste). Per-step typed-thing notes
@@ -13967,6 +14622,39 @@
         generateContext: null
       });
       addToast('🌿 ' + template.label.toLowerCase() + ' placed in your room.');
+
+      // Phase L7 — protégé pattern hook. If the placed decoration's
+      // template has a registered curiosity AND the player has a
+      // companion, queue a pending question so the bubble pool can
+      // surface it later. Dedup: don't re-queue if the same topic
+      // already has a pending question waiting (avoids stacking
+      // duplicates when the player adds multiple plants in a row).
+      // Companion's knowledgeMap is checked at question-generation
+      // time (Phase 7) to scale the question level — not gated here,
+      // so even taught topics can re-surface at a deeper level.
+      var curiosity = DECORATION_CURIOSITIES[template.id];
+      if (curiosity && state.companion && state.companion.species) {
+        var pq = (state.companion.pendingQuestions || []).slice();
+        var alreadyQueued = pq.some(function(q) { return q.topic === curiosity.topic; });
+        if (!alreadyQueued) {
+          pq.push({
+            decorationId: entry.id,
+            topic: curiosity.topic,
+            queuedAt: new Date().toISOString()
+          });
+          // v2: Cap queue at 5. If we'd exceed, silently drop oldest.
+          // Prevents an unbounded backlog when a player decorates heavily
+          // without ever chatting — companion would look "behind" with no
+          // resolution path. Newest 5 wins; old ones quietly age out.
+          var CURIOSITY_QUEUE_MAX = 5;
+          if (pq.length > CURIOSITY_QUEUE_MAX) {
+            pq = pq.slice(pq.length - CURIOSITY_QUEUE_MAX);
+          }
+          // Patch via saveCompanion so the migration pass at the top
+          // also runs (idempotent — no-op for existing fields).
+          saveCompanion({ pendingQuestions: pq });
+        }
+      }
     }
 
     // ── Auto-placement helpers (Phase L4 — generative gifts) ──
@@ -16225,6 +16913,67 @@
         // showing the quiz prompt above). Phase U2 — when the bubble carries
         // a targetDecorationId (due-deck nudge), it becomes a tappable
         // button that opens that deck's memory modal.
+        // Phase L7 — Curiosity invitation. If the companion has at least
+        // one pending question queued AND no other bubble is currently
+        // showing AND we're not interrupting a quiz prompt, surface a
+        // tappable invitation bubble. Tap → opens curious-companions
+        // conversation modal. Higher priority than dream-fragment idle
+        // bubbles but doesn\'t override deck-target bubbles (active
+        // memory review > new curiosity).
+        (function () {
+          var hasPending = companion.pendingQuestions && companion.pendingQuestions.length > 0;
+          var hasTarget = !!(companion.lastBubbleTargetId && (state.decorations || []).some(function (d) { return d.id === companion.lastBubbleTargetId; }));
+          if (!hasPending || hasTarget || shouldOfferQuizPrompt()) return null;
+          // Don't compete with an active "real" bubble that's <12s old
+          if (showBubble) return null;
+          var inviteText = CURIOSITY_INVITATION[companion.species] || CURIOSITY_INVITATION.cat;
+          var bubbleStyle = {
+            maxWidth: '220px',
+            padding: '8px 12px',
+            background: palette.surface,
+            border: '1.5px solid ' + palette.accent,
+            borderRadius: '12px',
+            borderBottomRightRadius: '4px',
+            fontSize: '11.5px',
+            color: palette.text,
+            lineHeight: '1.45',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.25), 0 0 0 3px ' + palette.accent + '20',
+            pointerEvents: 'auto',
+            fontFamily: 'inherit',
+            textAlign: 'left',
+            cursor: 'pointer'
+          };
+          // v2: When the player already has a knowledge ledger
+          // (companion has been taught at least one topic), show a tiny
+          // "📚 see what I've learned" link below the invitation. Gives
+          // students an easy entry point to revisit their teaching
+          // history without digging into the phrases modal.
+          var hasLedger = companion.knowledgeMap && Object.keys(companion.knowledgeMap).length > 0;
+          return h('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' } },
+            h('button', {
+              className: 'ah-companion-bubble ah-companion-curiosity',
+              onClick: function () { setStateField('activeModal', 'curious-companion'); },
+              'aria-label': displayName + ' has a question for you. Tap to chat.',
+              title: 'Tap to chat',
+              style: bubbleStyle
+            },
+              h('span', { style: { display: 'block' } }, inviteText),
+              h('span', { style: { fontSize: '10px', color: palette.accent, fontWeight: 700, marginTop: '4px', display: 'block' } }, '💭 tap to chat')
+            ),
+            hasLedger ? h('button', {
+              onClick: function() { setStateField('activeModal', 'companion-phrases'); },
+              'aria-label': 'See what ' + displayName + ' has learned',
+              style: {
+                background: 'transparent', border: 'none',
+                color: palette.textMute, fontSize: '10px',
+                fontFamily: 'inherit', cursor: 'pointer',
+                padding: '2px 6px', textDecoration: 'underline',
+                opacity: 0.85
+              }
+            }, '📚 see what ' + displayName + ' has learned') : null
+          );
+        })(),
+
         (showBubble && !shouldOfferQuizPrompt()) ? (function () {
           var targetId = companion.lastBubbleTargetId;
           var hasTarget = !!(targetId && (state.decorations || []).some(function (d) { return d.id === targetId; }));
@@ -19162,6 +19911,323 @@
     // ─────────────────────────────────────────────────
     var COMPANION_PHRASE_MAX = 5;
     var COMPANION_PHRASE_LIMIT = 80;
+    // ─────────────────────────────────────────────────────────
+    // CURIOUS COMPANIONS — protégé conversation modal (Phase L7)
+    // ─────────────────────────────────────────────────────────
+    // Opens when the player taps the curiosity bubble. Shows the
+    // current pending question + chat thread + textbox. Phase 6
+    // scaffold: full UI, hand-rendered fallback question text from
+    // DECORATION_CURIOSITIES (no AI yet — AI is Phase 7). Pass-for-now
+    // postpones the question (stays in pendingQuestions); Send saves
+    // the explanation locally for next-session AI evaluation.
+    function renderCuriousCompanionModal() {
+      if (state.activeModal !== 'curious-companion') return null;
+      var c = state.companion;
+      if (!c || !c.species) {
+        setTimeout(function() { setStateField('activeModal', 'companion-setup'); }, 0);
+        return null;
+      }
+      var sp = getCompanionSpecies(c.species);
+      var displayName = (c.name || (sp ? sp.label : 'buddy')).trim();
+      var pending = (c.pendingQuestions || []);
+      if (pending.length === 0) {
+        // Edge case — modal opened but queue is empty (probably stale state)
+        setTimeout(function() { setStateField('activeModal', null); }, 0);
+        return null;
+      }
+      // Pop the first pending question off the queue (FIFO) — but only
+      // for read; actual mutation happens on Send / Pass below.
+      var active = pending[0];
+      var curiosity = (function() {
+        // Look up the curiosity for this topic. Walk DECORATION_CURIOSITIES
+        // since the queue stores topic ids (not template ids).
+        var keys = Object.keys(DECORATION_CURIOSITIES);
+        for (var i = 0; i < keys.length; i++) {
+          if (DECORATION_CURIOSITIES[keys[i]].topic === active.topic) {
+            return DECORATION_CURIOSITIES[keys[i]];
+          }
+        }
+        return null;
+      })();
+      if (!curiosity) {
+        // Topic id no longer in the map (data version skew) — drop the question
+        var pq = pending.slice(1);
+        saveCompanion({ pendingQuestions: pq });
+        setTimeout(function() { setStateField('activeModal', null); }, 0);
+        return null;
+      }
+      // Pick question text by knowledgeLevel. Default to L1.
+      // questionsByLevel value can be a STRING (single phrasing) or an
+      // ARRAY (multiple phrasings — pick deterministically by topic +
+      // session count so repeat conversations on the same topic hit
+      // different phrasings, but a re-render of the modal doesn't
+      // re-shuffle the question mid-conversation).
+      var knownLevel = (c.knowledgeMap && c.knowledgeMap[active.topic] && c.knowledgeMap[active.topic].level) || 1;
+      var qSource = curiosity.questionsByLevel[knownLevel] || curiosity.questionsByLevel[1];
+      var questionText;
+      if (Array.isArray(qSource)) {
+        // Deterministic pick: topic id hash + sessions count → array index.
+        // Same topic + same session count = same question, so a thread that
+        // re-renders mid-conversation stays stable. But teaching the topic
+        // a second time (sessions count grew) picks a different phrasing.
+        var sessionCount = (c.knowledgeMap && c.knowledgeMap[active.topic] && c.knowledgeMap[active.topic].sessions) || 0;
+        var hash = 0;
+        for (var hi = 0; hi < active.topic.length; hi++) {
+          hash = ((hash << 5) - hash) + active.topic.charCodeAt(hi);
+          hash |= 0;
+        }
+        var pickIdx = Math.abs(hash + sessionCount) % qSource.length;
+        questionText = qSource[pickIdx];
+      } else {
+        questionText = qSource;
+      }
+
+      // Phase 7 wiring: pull conversation thread from activeConversation;
+      // if none for THIS topic, treat as fresh conversation (question is
+      // the "first turn" rendered as a companion message).
+      var activeConv = c.activeConversation;
+      var threadMessages = (activeConv && activeConv.topic === active.topic && Array.isArray(activeConv.messages))
+        ? activeConv.messages : [];
+      var awaitingAI = !!(activeConv && activeConv.topic === active.topic && activeConv.awaitingAI);
+
+      function close() { setStateField('activeModal', null); }
+      function passForNow() {
+        // Postpone — leave question in queue, clear in-progress conversation,
+        // close modal. No penalty.
+        if (activeConv) saveCompanion({ activeConversation: null });
+        addToast(displayName + ' will ask again later.');
+        close();
+      }
+      function sendExplanation() {
+        var text = (curiousDraft || '').trim();
+        if (!text || awaitingAI) return;
+        // Phase 7: route through AI loop (falls back to local-save if
+        // callGemini is unavailable). submitCuriousTurn manages all the
+        // state updates — knowledgeMap, pendingQuestions, activeConversation.
+        setCuriousDraft('');
+        submitCuriousTurn({
+          playerText: text,
+          topic: active.topic,
+          topicLabel: curiosity.label,
+          questionText: questionText,
+          onDone: function(result) {
+            if (result && result.synthesized) {
+              // submitCuriousTurn already fired the learned + level-up toasts.
+              // v2: Auto-advance UX. If queue has more questions, show a brief
+              // "next question coming up…" beat so the student understands
+              // what just happened. If not, close.
+              var hasMore = (state.companion && state.companion.pendingQuestions && state.companion.pendingQuestions.length > 1);
+              if (hasMore) {
+                setAdvanceBeat(true);
+                setTimeout(function() { setAdvanceBeat(false); }, 1100);
+              } else {
+                // Brief delay before closing so the final companion reply
+                // is readable, not blink-and-gone.
+                setTimeout(function() { close(); }, 900);
+              }
+            }
+            // If not synthesized, modal stays open for next turn.
+          }
+        });
+      }
+
+      // Mascot SVG — render via window.AlloMascots if available, else species fallback
+      function renderMascotHead() {
+        if (window.AlloMascots && typeof window.AlloMascots.render === 'function' && window.AlloMascots.getBio && window.AlloMascots.getBio(c.species)) {
+          return window.AlloMascots.render(c.species, { size: 80, state: 'thinking' });
+        }
+        // Fallback: species emoji in circular badge
+        return h('div', {
+          style: { width: 80, height: 80, borderRadius: '50%', background: palette.accent + '22', border: '2px solid ' + palette.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 38 }
+        }, sp && sp.icon ? sp.icon : '🐾');
+      }
+
+      return h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': displayName + ' wants to learn about ' + curiosity.label,
+        onClick: function(e) { if (e.target === e.currentTarget) close(); },
+        style: {
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.55)', zIndex: 175,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '20px'
+        }
+      },
+        h('div', {
+          style: {
+            background: palette.bg, border: '1px solid ' + palette.border,
+            borderRadius: '14px', padding: '24px',
+            maxWidth: '520px', width: '100%', maxHeight: '85vh',
+            overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '14px',
+            position: 'relative'
+          }
+        },
+          // v2 advance-beat overlay — soft fade while transitioning between queued topics
+          advanceBeat ? h('div', {
+            'aria-live': 'polite',
+            style: {
+              position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+              background: palette.bg + 'EE',
+              borderRadius: '14px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexDirection: 'column', gap: '8px',
+              zIndex: 10
+            }
+          },
+            h('div', { style: { fontSize: '13px', color: palette.accent, fontWeight: 700, letterSpacing: '0.04em' } },
+              displayName + ' has another question…'),
+            h('div', { style: { fontSize: '11px', color: palette.textMute, fontStyle: 'italic' } }, '— next one coming up —')
+          ) : null,
+          // Header: mascot + name + close button
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '14px' } },
+            h('div', { style: { flexShrink: 0 } }, renderMascotHead()),
+            h('div', { style: { flex: 1, minWidth: 0 } },
+              h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 } }, 'a question from ' + displayName),
+              h('div', { style: { fontSize: '13px', color: palette.text, fontStyle: 'italic', marginTop: '2px' } }, 'about ' + curiosity.label.toLowerCase()),
+              knownLevel > 1 ? h('div', { style: { fontSize: '10px', color: palette.accent, marginTop: '2px', fontWeight: 700 } }, 'level ' + knownLevel + ' — going deeper') : null
+            ),
+            h('button', {
+              onClick: close,
+              'aria-label': 'Close',
+              style: { background: 'transparent', border: 'none', color: palette.textMute, fontSize: '20px', cursor: 'pointer', padding: '4px 8px' }
+            }, '×')
+          ),
+          // Chat thread — the original question is always the first
+          // companion message. Subsequent player + companion turns append
+          // as the conversation grows. Companion messages get the
+          // accent-bordered "from them" style; player messages get a
+          // right-aligned plain block. AI-thinking state renders an
+          // italic placeholder bubble in the companion column.
+          h('div', {
+            style: {
+              display: 'flex', flexDirection: 'column', gap: '8px',
+              maxHeight: '320px', overflowY: 'auto',
+              padding: '4px 2px'
+            }
+          },
+            // The original question as the first companion message
+            h('div', {
+              style: {
+                alignSelf: 'flex-start', maxWidth: '88%',
+                padding: '10px 14px',
+                background: palette.surface,
+                border: '1px solid ' + palette.accent + '60',
+                borderLeft: '3px solid ' + palette.accent,
+                borderRadius: '10px',
+                fontSize: '13px',
+                color: palette.text,
+                lineHeight: '1.55',
+                fontStyle: 'italic'
+              }
+            }, '"' + questionText + '"'),
+            // Subsequent thread messages
+            threadMessages.map(function(m, mi) {
+              if (m.role === 'player') {
+                return h('div', {
+                  key: 'msg-' + mi,
+                  style: {
+                    alignSelf: 'flex-end', maxWidth: '88%',
+                    padding: '10px 14px',
+                    background: palette.surface2 || palette.bg,
+                    border: '1px solid ' + palette.border,
+                    borderRadius: '10px',
+                    borderBottomRightRadius: '3px',
+                    fontSize: '13px',
+                    color: palette.text,
+                    lineHeight: '1.55'
+                  }
+                }, m.text);
+              }
+              // Companion reply
+              return h('div', {
+                key: 'msg-' + mi,
+                style: {
+                  alignSelf: 'flex-start', maxWidth: '88%',
+                  padding: '10px 14px',
+                  background: palette.surface,
+                  border: '1px solid ' + palette.accent + '40',
+                  borderLeft: '3px solid ' + palette.accent,
+                  borderRadius: '10px',
+                  fontSize: '13px',
+                  color: palette.text,
+                  lineHeight: '1.55'
+                }
+              }, m.text);
+            }),
+            // AI thinking indicator
+            awaitingAI ? h('div', {
+              style: {
+                alignSelf: 'flex-start', maxWidth: '60%',
+                padding: '10px 14px',
+                background: palette.surface,
+                border: '1px dashed ' + palette.accent + '60',
+                borderRadius: '10px',
+                fontSize: '12px',
+                color: palette.textMute,
+                fontStyle: 'italic'
+              }
+            }, displayName + ' is thinking…') : null
+          ),
+          // Textbox for the player's explanation
+          h('div', null,
+            h('label', {
+              htmlFor: 'curious-draft',
+              style: { display: 'block', fontSize: '11px', color: palette.textMute, marginBottom: '6px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }
+            }, 'your answer'),
+            h('textarea', {
+              id: 'curious-draft',
+              value: curiousDraft || '',
+              onChange: function(e) { setCuriousDraft(e.target.value); },
+              placeholder: awaitingAI ? displayName + ' is thinking…' : 'Type what you would tell ' + displayName + '…',
+              rows: 4,
+              disabled: awaitingAI,
+              style: {
+                width: '100%', boxSizing: 'border-box',
+                padding: '10px 12px',
+                background: awaitingAI ? palette.bg : palette.surface,
+                color: palette.text,
+                border: '1px solid ' + palette.border,
+                borderRadius: '8px',
+                fontSize: '13px',
+                fontFamily: 'inherit',
+                lineHeight: '1.5',
+                resize: 'vertical',
+                opacity: awaitingAI ? 0.6 : 1
+              }
+            }),
+            h('div', { style: { fontSize: '10px', color: palette.textMute, marginTop: '4px' } },
+              'No grade. No right or wrong. ' + displayName + ' just wants to hear what you think.')
+          ),
+          // Actions row
+          h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'flex-end', flexWrap: 'wrap' } },
+            h('button', {
+              onClick: passForNow,
+              style: { padding: '8px 14px', background: 'transparent', border: '1px solid ' + palette.border, color: palette.textDim, fontSize: '12px', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }
+            }, 'Pass for now'),
+            h('button', {
+              onClick: sendExplanation,
+              disabled: !(curiousDraft || '').trim() || awaitingAI,
+              style: {
+                padding: '8px 18px',
+                background: ((curiousDraft || '').trim() && !awaitingAI) ? palette.accent : palette.surface,
+                border: '1px solid ' + palette.accent,
+                color: ((curiousDraft || '').trim() && !awaitingAI) ? (palette.onAccent || palette.bg) : palette.textMute,
+                fontSize: '12px',
+                fontWeight: 700,
+                borderRadius: '8px',
+                cursor: ((curiousDraft || '').trim() && !awaitingAI) ? 'pointer' : 'not-allowed',
+                fontFamily: 'inherit'
+              }
+            }, awaitingAI ? '…thinking' : 'Send → ' + displayName)
+          ),
+          // Footer hint
+          h('div', { style: { fontSize: '10px', color: palette.textMute, fontStyle: 'italic', textAlign: 'center', borderTop: '1px solid ' + palette.border, paddingTop: '10px' } },
+            'Each thing you teach ' + displayName + ' becomes part of their letter to you.')
+        )
+      );
+    }
+
     function renderCompanionPhrasesModal() {
       if (state.activeModal !== 'companion-phrases') return null;
       var c = state.companion;
@@ -19226,6 +20292,75 @@
           ),
           h('p', { style: { fontSize: '12px', color: palette.textDim, fontStyle: 'italic', margin: '0 0 14px 0', lineHeight: '1.5' } },
             'Anything you write here ' + c.name + ' will say sometimes when you click them. Up to ' + COMPANION_PHRASE_MAX + ' phrases. Forget any, any time.'),
+
+          // ── Phase L7 — Knowledge ledger ──
+          // Things the player has taught this companion through the
+          // Curious Companions conversation modal. Read-only; this is
+          // a record of teaching, not a list of things to edit. Sorted
+          // newest-first so the most recent teaching is at the top.
+          (function() {
+            var kmap = c.knowledgeMap || {};
+            var entries = Object.keys(kmap).map(function(tid) {
+              var entry = kmap[tid];
+              // Look up the human-readable label
+              var label = tid;
+              var ckeys = Object.keys(DECORATION_CURIOSITIES);
+              for (var ck = 0; ck < ckeys.length; ck++) {
+                if (DECORATION_CURIOSITIES[ckeys[ck]].topic === tid) {
+                  label = DECORATION_CURIOSITIES[ckeys[ck]].label;
+                  break;
+                }
+              }
+              return {
+                topic: tid,
+                label: label,
+                level: entry.level || 1,
+                sessions: entry.sessions || 1,
+                lastTaughtAt: entry.lastTaughtAt || null,
+                summary: entry.lastLearnedSummary || ''
+              };
+            });
+            if (entries.length === 0) return null;
+            // Sort newest-first by lastTaughtAt
+            entries.sort(function(a, b) {
+              var ta = a.lastTaughtAt ? new Date(a.lastTaughtAt).getTime() : 0;
+              var tb = b.lastTaughtAt ? new Date(b.lastTaughtAt).getTime() : 0;
+              return tb - ta;
+            });
+            return h('div', { style: { marginBottom: '18px', paddingBottom: '14px', borderBottom: '1px solid ' + palette.border } },
+              h('div', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' } },
+                '💭 What ' + c.name + ' has learned from you · ' + entries.length),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+                entries.map(function(e, ei) {
+                  return h('div', {
+                    key: 'learn-' + ei,
+                    style: {
+                      padding: '10px 12px',
+                      background: palette.surface,
+                      border: '1px solid ' + palette.accent + '40',
+                      borderLeft: '3px solid ' + palette.accent,
+                      borderRadius: '8px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '4px'
+                    }
+                  },
+                    h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' } },
+                      h('div', { style: { fontSize: '13px', color: palette.text, fontWeight: 600 } }, e.label),
+                      h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 } },
+                        h('span', { style: { fontSize: '10px', padding: '2px 6px', background: palette.accent + '22', color: palette.accent, fontWeight: 700, borderRadius: '999px', letterSpacing: '0.05em' } },
+                          'L' + e.level),
+                        e.lastTaughtAt ? h('span', { style: { fontSize: '10px', color: palette.textMute } },
+                          new Date(e.lastTaughtAt).toLocaleDateString()) : null
+                      )
+                    ),
+                    e.summary ? h('div', { style: { fontSize: '11px', color: palette.textDim, fontStyle: 'italic', lineHeight: '1.5' } },
+                      '"' + e.summary + '"') : null
+                  );
+                })
+              )
+            );
+          })(),
 
           // Existing phrases
           phrases.length > 0 ? h('div', { style: { marginBottom: '14px' } },
@@ -25703,6 +26838,7 @@
       renderPeerVisitModal(),
       renderLifeStoryModal(),
       renderCompanionPhrasesModal(),
+      renderCuriousCompanionModal(),
       renderPrintOptionsModal(),
       renderArcadeHubModal(),
       renderPastEncountersModal(),
