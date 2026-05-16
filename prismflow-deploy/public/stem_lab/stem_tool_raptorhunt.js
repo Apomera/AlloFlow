@@ -1329,9 +1329,109 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // RENDER: ROSTER
       // ────────────────────────────────────────────────────────
       function renderRoster() {
+        var rosterView = rh.rosterView || 'cards';
+        var rosterSort = rh.rosterSort || 'name';
+        var rosterDir = rh.rosterDir || 'asc';
+        function setRosterView(v) { setRH({ rosterView: v }); }
+        function setRosterSort(s) {
+          // Toggle direction if same column
+          if (rosterSort === s) {
+            setRH({ rosterDir: rosterDir === 'asc' ? 'desc' : 'asc' });
+          } else {
+            setRH({ rosterSort: s, rosterDir: 'asc' });
+          }
+        }
+        // Sort SPECIES for the table view
+        var sortedSpecies = SPECIES.slice().sort(function(a, b) {
+          var va = a[rosterSort], vb = b[rosterSort];
+          if (typeof va === 'string') {
+            return rosterDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+          }
+          return rosterDir === 'asc' ? va - vb : vb - va;
+        });
+        function sortHeader(key, label) {
+          var active = rosterSort === key;
+          var arrow = active ? (rosterDir === 'asc' ? ' ↑' : ' ↓') : '';
+          return h('th', {
+            onClick: function() { setRosterSort(key); },
+            className: 'pb-2 px-2 text-left cursor-pointer ' + (active ? 'text-amber-300 font-bold' : 'text-slate-400 hover:text-slate-200'),
+            scope: 'col',
+            'aria-sort': active ? (rosterDir === 'asc' ? 'ascending' : 'descending') : 'none',
+            'aria-label': label + (active ? ' (sorted ' + (rosterDir === 'asc' ? 'ascending' : 'descending') + ')' : '')
+          }, label + arrow);
+        }
         return h('div', { className: 'space-y-4' },
-          h('div', { className: 'text-sm text-amber-200/80' }, 'Tap a species card to make it the active raptor for the Hunt Sim + science modules.'),
-          h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
+          h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+            h('div', { className: 'text-sm text-amber-200/80' }, 'Tap a species card or row to make it the active raptor for the Hunt Sim + science modules.'),
+            // View toggle
+            h('div', { className: 'flex gap-1 bg-slate-800/60 rounded-lg p-1' },
+              ['cards', 'table'].map(function(v) {
+                var active = rosterView === v;
+                return h('button', {
+                  key: v,
+                  onClick: function() { setRosterView(v); },
+                  className: 'px-3 py-1 rounded text-xs font-bold transition-all ' + (active
+                    ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white'
+                    : 'text-slate-300 hover:text-amber-200'),
+                  'aria-label': v === 'cards' ? 'Show as cards' : 'Show as comparison table',
+                  'aria-pressed': active
+                }, v === 'cards' ? '🎴 Cards' : '📊 Compare');
+              })
+            )
+          ),
+
+          // ── NEW v0.10: Comparison Table View ──
+          rosterView === 'table' && h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-xs text-slate-400 italic mb-2' }, 'Click any column header to sort by that field. Click any row to make that species active.'),
+            h('div', { className: 'overflow-x-auto' },
+              h('table', { className: 'w-full text-xs', 'aria-label': 'Raptor species comparison table' },
+                h('thead', null,
+                  h('tr', { className: 'border-b border-slate-700' },
+                    sortHeader('name', 'Species'),
+                    sortHeader('massKg', 'Mass (kg)'),
+                    sortHeader('wingspanM', 'Wingspan (m)'),
+                    sortHeader('wingLoading', 'Wing loading'),
+                    sortHeader('aspectRatio', 'AR'),
+                    sortHeader('maxLevelMph', 'Level (mph)'),
+                    sortHeader('stoopMph', 'Stoop (mph)'),
+                    sortHeader('talonForcePsi', 'Talon (psi)'),
+                    sortHeader('talonLengthMm', 'Talon (mm)'),
+                    sortHeader('visualAcuityX', 'Acuity ×'),
+                    sortHeader('visualFieldDeg', 'FOV°')
+                  )
+                ),
+                h('tbody', null,
+                  sortedSpecies.map(function(s, i) {
+                    var isActive = s.id === selectedSpecies;
+                    return h('tr', {
+                      key: s.id,
+                      onClick: function() { setRH({ selectedSpecies: s.id }); rhAnnounce(s.name + ' selected'); },
+                      className: 'border-b border-slate-800/50 cursor-pointer hover:bg-slate-800/40 ' + (isActive ? 'bg-amber-900/20 ring-1 ring-amber-500/50' : ''),
+                      'aria-label': 'Select ' + s.name + (isActive ? ' (currently active)' : '')
+                    },
+                      h('td', { className: 'py-1.5 px-2' },
+                        h('span', { className: 'mr-1' }, s.emoji),
+                        h('span', { className: 'text-amber-200 font-bold' }, s.name)
+                      ),
+                      h('td', { className: 'py-1.5 px-2 font-mono text-amber-300' }, s.massKg),
+                      h('td', { className: 'py-1.5 px-2 font-mono text-amber-300' }, s.wingspanM),
+                      h('td', { className: 'py-1.5 px-2 font-mono text-amber-300' }, s.wingLoading),
+                      h('td', { className: 'py-1.5 px-2 font-mono text-amber-300' }, s.aspectRatio),
+                      h('td', { className: 'py-1.5 px-2 font-mono text-amber-300' }, s.maxLevelMph),
+                      h('td', { className: 'py-1.5 px-2 font-mono text-amber-300' }, s.stoopMph),
+                      h('td', { className: 'py-1.5 px-2 font-mono text-amber-300' }, s.talonForcePsi),
+                      h('td', { className: 'py-1.5 px-2 font-mono text-amber-300' }, s.talonLengthMm),
+                      h('td', { className: 'py-1.5 px-2 font-mono text-amber-300' }, s.visualAcuityX),
+                      h('td', { className: 'py-1.5 px-2 font-mono text-amber-300' }, s.visualFieldDeg)
+                    );
+                  })
+                )
+              )
+            ),
+            h('div', { className: 'text-[10px] text-slate-500 italic mt-2' }, 'Try sorting by Talon (psi) to see who has the strongest grip (golden eagle), or by Wing loading to see who\'s built for speed (peregrine vs harpy).')
+          ),
+
+          rosterView === 'cards' && h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
             SPECIES.map(function(s) {
               var isActive = s.id === selectedSpecies;
               return h('button', {
@@ -4137,9 +4237,88 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'text-sm text-orange-100/90 leading-relaxed' }, FALCONRY_DATA.overview)
           ),
 
-          // Timeline of eras
+          // ── NEW v0.10: Horizontal era timeline SVG ──
+          (function() {
+            // Map each era to a date midpoint + color
+            var eraDates = [
+              { y: -2000, label: 'Bronze Age', color: '#fbbf24', shortLabel: 'Mongolian Berkutchi' },
+              { y: -300, label: 'Persian/Arabian', color: '#f59e0b', shortLabel: 'Royal sport' },
+              { y: 1350, label: 'Medieval Europe', color: '#dc2626', shortLabel: 'Frederick II 1240' },
+              { y: 1800, label: 'Decline / Persecution', color: '#737373', shortLabel: 'Industrial era' },
+              { y: 1995, label: 'Conservation', color: '#10b981', shortLabel: '1970-present' }
+            ];
+            // Timeline spans 2200 BCE to 2030 CE
+            var yMin = -2200, yMax = 2030;
+            var pw = 700, ph = 130;
+            var pad = 25;
+            function xAt(y) { return pad + (y - yMin) / (yMax - yMin) * (pw - 2 * pad); }
+            // Reference event markers
+            var events = [
+              { y: -2000, lbl: 'Berkutchi tradition begins' },
+              { y: -3000, lbl: 'Horus falcon cult', tiny: true },
+              { y: -104, lbl: 'Roman Aquila legions' },
+              { y: 1240, lbl: "De Arte Venandi (Frederick II)" },
+              { y: 1486, lbl: "Boke of Saint Albans" },
+              { y: 1782, lbl: 'US adopts bald eagle' },
+              { y: 1934, lbl: 'Hawk Mtn founded' },
+              { y: 1970, lbl: 'Peregrine Fund' },
+              { y: 1972, lbl: 'US DDT ban' },
+              { y: 2010, lbl: 'UNESCO falconry listing' }
+            ];
+            return h('div', { className: 'bg-slate-900/40 border border-orange-700/40 rounded-xl p-4' },
+              h('div', { className: 'text-sm font-bold text-orange-300 mb-1' }, '🕰 4,000-Year Timeline of Falconry'),
+              h('div', { className: 'text-xs text-slate-400 italic mb-3' }, 'Visual sweep from Bronze Age Mongolian steppe through medieval Europe to today\'s UNESCO-protected practice.'),
+              h('svg', { viewBox: '0 0 ' + pw + ' ' + ph, style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': '4,000-year falconry timeline' },
+                h('rect', { x: 0, y: 0, width: pw, height: ph, fill: '#0f172a' }),
+                // Main timeline bar
+                h('line', { x1: pad, y1: 70, x2: pw - pad, y2: 70, stroke: '#475569', strokeWidth: 2 }),
+                // Era zone bands
+                eraDates.map(function(era, i) {
+                  var next = eraDates[i + 1];
+                  var startY = era.y - (i === 0 ? 400 : (era.y - eraDates[i-1].y) / 2);
+                  var endY = next ? era.y + (next.y - era.y) / 2 : yMax;
+                  if (i === 0) startY = yMin;
+                  var x0 = xAt(startY);
+                  var x1 = xAt(endY);
+                  return h('g', { key: i },
+                    h('rect', { x: x0, y: 60, width: x1 - x0, height: 20, fill: era.color, opacity: 0.35 }),
+                    h('rect', { x: x0, y: 60, width: x1 - x0, height: 20, fill: 'none', stroke: era.color, strokeWidth: 1 })
+                  );
+                }),
+                // Era labels (above the band)
+                eraDates.map(function(era, i) {
+                  return h('g', { key: 'el' + i },
+                    h('text', { x: xAt(era.y), y: 50, fontSize: 11, fill: era.color, fontWeight: 'bold', textAnchor: 'middle' }, era.label),
+                    h('text', { x: xAt(era.y), y: 95, fontSize: 9, fill: '#cbd5e1', textAnchor: 'middle' }, era.shortLabel)
+                  );
+                }),
+                // Time tick marks
+                [-2000, -1000, 0, 1000, 1500, 1800, 1900, 2000].map(function(yk, i) {
+                  return h('g', { key: 'tk' + i },
+                    h('line', { x1: xAt(yk), y1: 68, x2: xAt(yk), y2: 72, stroke: '#94a3b8', strokeWidth: 1 }),
+                    h('text', { x: xAt(yk), y: 115, fontSize: 9, fill: '#94a3b8', textAnchor: 'middle' }, yk < 0 ? Math.abs(yk) + ' BCE' : yk + ' CE')
+                  );
+                }),
+                // Event markers
+                events.map(function(ev, i) {
+                  var dotR = ev.tiny ? 3 : 5;
+                  // Alternate above/below
+                  var above = i % 2 === 0;
+                  var ly = above ? 18 : 22;
+                  var lx = xAt(ev.y);
+                  return h('g', { key: 'ev' + i },
+                    h('line', { x1: lx, y1: above ? 32 : 80, x2: lx, y2: 70, stroke: '#fde047', strokeWidth: 0.8, opacity: 0.6 }),
+                    h('circle', { cx: lx, cy: 70, r: dotR, fill: '#fde047', stroke: '#1c1917', strokeWidth: 1 })
+                  );
+                })
+              ),
+              h('div', { className: 'text-[10px] text-slate-500 italic mt-1' }, 'Falconry is one of the oldest continuously-practiced human cultural traditions — UNESCO Intangible Cultural Heritage 2010 (now 24 nations).')
+            );
+          })(),
+
+          // Timeline of eras (textual cards)
           h('div', { className: 'space-y-3' },
-            h('div', { className: 'text-sm font-bold text-amber-300' }, '🕰 The 5 eras of falconry'),
+            h('div', { className: 'text-sm font-bold text-amber-300' }, '📜 The 5 eras in detail'),
             FALCONRY_DATA.eras.map(function(e, i) {
               return h('div', { key: i, className: 'bg-slate-800/40 border border-slate-700/50 rounded-lg p-4' },
                 h('div', { className: 'flex items-baseline justify-between gap-2 mb-2' },
@@ -5245,10 +5424,92 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // RENDER: FAMOUS BIRDS + CULTURAL SYMBOLS
       // ────────────────────────────────────────────────────────
       function renderFamous() {
+        // 5000-year sweep timeline visualization
+        // Events split into 2 lanes: SYMBOLS (top) + INDIVIDUALS (bottom)
+        // Use a log-ish compressed time scale so old ancient events get visible space
+        // We'll use a hybrid: -3000 BCE → 1700 CE on one half, 1700-2030 on the other half
+        var symbolEvents = [
+          { y: -3000, lbl: 'Horus (Egypt)', sym: 'peregrine' },
+          { y: -104, lbl: 'Roman Aquila', sym: 'eagle' },
+          { y: 1325, lbl: 'Aztec Tenochtitlan', sym: 'golden' },
+          { y: 1782, lbl: 'US adopts bald eagle', sym: 'baldEagle' },
+          { y: 1821, lbl: 'Mexican flag', sym: 'golden' },
+          { y: 1947, lbl: 'Brazilian AF harpy', sym: 'harpy' },
+          { y: 2002, lbl: 'Panama nat\'l bird', sym: 'harpy' }
+        ];
+        var individualEvents = [
+          { y: -1400, lbl: "Haast's Eagle in Maori myth", sym: 'haast' },
+          { y: 1240, lbl: 'Frederick II treatise', sym: 'falconry' },
+          { y: 1861, lbl: 'Old Abe enlisted', sym: 'baldEagle' },
+          { y: 1881, lbl: 'Old Abe dies', sym: 'baldEagle' },
+          { y: 1974, lbl: 'Frodo, last Mauritius kestrel', sym: 'kestrel' },
+          { y: 1987, lbl: 'AC9, last wild condor captured', sym: 'condor' },
+          { y: 1989, lbl: 'Challenger eaglet rescued', sym: 'baldEagle' },
+          { y: 1991, lbl: 'Pale Male arrives in Manhattan', sym: 'redTail' },
+          { y: 2002, lbl: 'AC9 first re-released', sym: 'condor' },
+          { y: 2023, lbl: 'Pale Male dies age 32+', sym: 'redTail' }
+        ];
+        // Compressed time scale
+        function compressedX(y) {
+          var pw = 700, pad = 30;
+          // Map -3500 to 1700 to first 60% of width, 1700-2030 to last 40%
+          if (y < 1700) {
+            return pad + (y - (-3500)) / (1700 - (-3500)) * (pw - 2 * pad) * 0.6;
+          }
+          return pad + (pw - 2 * pad) * 0.6 + (y - 1700) / (2030 - 1700) * (pw - 2 * pad) * 0.4;
+        }
+        var pw = 700, ph = 240;
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-purple-900/40 to-fuchsia-900/40 border border-purple-700/40 rounded-xl p-4' },
             h('div', { className: 'text-lg font-bold text-purple-200 mb-2' }, '⭐ Famous Birds & Cultural Symbols'),
             h('div', { className: 'text-sm text-purple-100/90 leading-relaxed' }, FAMOUS.intro)
+          ),
+
+          // ── NEW v0.10: 5000-year historical timeline SVG ──
+          h('div', { className: 'bg-slate-900/40 border border-purple-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-sm font-bold text-purple-300 mb-1' }, '📜 5,000-Year Timeline — Cultural Symbols + Famous Individuals'),
+            h('div', { className: 'text-xs text-slate-400 italic mb-3' }, 'Compressed time axis: ancient era (left 60%) + modern era (right 40%). Top lane = cultural-symbol adoptions. Bottom lane = famous individual birds.'),
+            h('svg', { viewBox: '0 0 ' + pw + ' ' + ph, style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': '5000-year raptor history timeline' },
+              h('rect', { x: 0, y: 0, width: pw, height: ph, fill: '#0f172a' }),
+              // Central timeline bar
+              h('line', { x1: 30, y1: 120, x2: pw - 30, y2: 120, stroke: '#475569', strokeWidth: 2 }),
+              // Time scale change marker
+              h('line', { x1: compressedX(1700), y1: 30, x2: compressedX(1700), y2: ph - 30, stroke: '#64748b', strokeWidth: 1, strokeDasharray: '4,4' }),
+              h('text', { x: compressedX(1700), y: 22, fontSize: 9, fill: '#94a3b8', textAnchor: 'middle' }, '— scale change —'),
+              // Time ticks
+              [-3000, -2000, -1000, 0, 1000, 1700, 1800, 1900, 2000].map(function(yk, i) {
+                return h('g', { key: 'tk' + i },
+                  h('line', { x1: compressedX(yk), y1: 117, x2: compressedX(yk), y2: 123, stroke: '#94a3b8', strokeWidth: 1 }),
+                  h('text', { x: compressedX(yk), y: 135, fontSize: 9, fill: '#94a3b8', textAnchor: 'middle' }, yk < 0 ? Math.abs(yk) + ' BCE' : (yk === 0 ? '0' : yk + ''))
+                );
+              }),
+              // Lane labels
+              h('text', { x: 10, y: 50, fontSize: 10, fill: '#fde047', fontWeight: 'bold' }, 'SYMBOLS'),
+              h('text', { x: 10, y: 200, fontSize: 10, fill: '#a78bfa', fontWeight: 'bold' }, 'INDIVIDUALS'),
+              // Symbol events (top lane, above main bar)
+              symbolEvents.map(function(ev, i) {
+                var lx = compressedX(ev.y);
+                var ly = 60 + (i % 3) * 18;
+                return h('g', { key: 'se' + i },
+                  h('line', { x1: lx, y1: ly + 12, x2: lx, y2: 120, stroke: '#fbbf24', strokeWidth: 1, opacity: 0.5 }),
+                  h('circle', { cx: lx, cy: 120, r: 4, fill: '#fbbf24', stroke: '#1c1917', strokeWidth: 1 }),
+                  h('rect', { x: lx - 60, y: ly, width: 120, height: 14, fill: 'rgba(15,23,42,0.85)', stroke: '#fbbf24', strokeWidth: 0.5, rx: 2 }),
+                  h('text', { x: lx, y: ly + 10, fontSize: 9, fill: '#fde047', textAnchor: 'middle' }, ev.lbl)
+                );
+              }),
+              // Individual events (bottom lane, below main bar)
+              individualEvents.map(function(ev, i) {
+                var lx = compressedX(ev.y);
+                var ly = 155 + (i % 3) * 18;
+                return h('g', { key: 'ie' + i },
+                  h('line', { x1: lx, y1: 120, x2: lx, y2: ly, stroke: '#a78bfa', strokeWidth: 1, opacity: 0.5 }),
+                  h('circle', { cx: lx, cy: 120, r: 4, fill: '#a78bfa', stroke: '#1c1917', strokeWidth: 1 }),
+                  h('rect', { x: lx - 65, y: ly, width: 130, height: 14, fill: 'rgba(15,23,42,0.85)', stroke: '#a78bfa', strokeWidth: 0.5, rx: 2 }),
+                  h('text', { x: lx, y: ly + 10, fontSize: 9, fill: '#c4b5fd', textAnchor: 'middle' }, ev.lbl)
+                );
+              })
+            ),
+            h('div', { className: 'text-[10px] text-slate-500 italic mt-2' }, 'No other animal group has been a continuous human cultural symbol for 5,000+ years. From Horus to Pale Male, raptors keep showing up in our flags, legions, myths, and front-page headlines.')
           ),
 
           // Famous individuals
