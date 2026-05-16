@@ -1359,6 +1359,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 h('div', { className: 'text-sm text-amber-100/80 mt-1' }, 'Hunt as a peregrine at 240 mph. Crush bones at 530 psi as a harpy. See vole urine trails in UV like a kestrel. Glide silently on owl feathers. Then study the biology that makes it all possible.'),
                 h('div', { className: 'text-xs text-amber-300/70 mt-2 italic' }, '25 sections · 13 species · 6 interactive labs · anatomy + acuity demo · case studies · 42-term glossary · 23-question quiz')
               )
+            ),
+            // ── NEW v0.20: "Surprise me" random-section button ──
+            h('div', { className: 'mt-3 pt-3 border-t border-amber-700/30 flex items-center justify-between gap-2 flex-wrap' },
+              h('div', { className: 'text-xs text-amber-200/70' }, '🎲 Not sure where to start?'),
+              h('button', {
+                onClick: function() {
+                  // Pick a random section that isn't 'hub' or 'resources' (the bookend sections)
+                  var pickable = SECTIONS.filter(function(s) { return s.id !== 'hub' && s.id !== 'resources'; });
+                  var pick = pickable[Math.floor(Math.random() * pickable.length)];
+                  setRH(function(cur) {
+                    var visited = Object.assign({}, cur.visited || {});
+                    visited[pick.id] = (visited[pick.id] || 0) + 1;
+                    return Object.assign({}, cur, { activeSection: pick.id, visited: visited });
+                  });
+                  rhAnnounce('Surprise section: ' + pick.label);
+                },
+                className: 'px-4 py-2 rounded-lg text-sm font-bold bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 transition-all',
+                'aria-label': 'Jump to a random section'
+              }, '🎰 Surprise me — random section')
             )
           ),
           // Quick CTA cards
@@ -3729,6 +3748,87 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               )
             )
           ),
+
+          // ── NEW v0.20: Sexual Dimorphism deep-dive ──
+          (function() {
+            // Per-species female:male size ratio (rough averages)
+            var ssdData = [
+              { id: 'kestrel', name: 'American Kestrel', ratio: 1.10, family: 'Falconidae' },
+              { id: 'peregrine', name: 'Peregrine Falcon', ratio: 1.27, family: 'Falconidae' },
+              { id: 'gyrfalcon', name: 'Gyrfalcon', ratio: 1.30, family: 'Falconidae' },
+              { id: 'coopersHawk', name: "Cooper's Hawk", ratio: 1.42, family: 'Accipitridae' },
+              { id: 'northernGoshawk', name: 'Northern Goshawk', ratio: 1.50, family: 'Accipitridae' },
+              { id: 'redTail', name: 'Red-tailed Hawk', ratio: 1.20, family: 'Accipitridae' },
+              { id: 'baldEagle', name: 'Bald Eagle', ratio: 1.20, family: 'Accipitridae' },
+              { id: 'goldenEagle', name: 'Golden Eagle', ratio: 1.25, family: 'Accipitridae' },
+              { id: 'harpyEagle', name: 'Harpy Eagle', ratio: 1.50, family: 'Accipitridae' },
+              { id: 'osprey', name: 'Osprey', ratio: 1.15, family: 'Pandionidae' },
+              { id: 'snowyOwl', name: 'Snowy Owl', ratio: 1.20, family: 'Strigidae' },
+              { id: 'greatHorned', name: 'Great Horned Owl', ratio: 1.15, family: 'Strigidae' },
+              { id: 'missKite', name: 'Mississippi Kite', ratio: 1.08, family: 'Accipitridae' }
+            ].sort(function(a, b) { return b.ratio - a.ratio; });
+            return h('div', { className: 'bg-slate-900/40 border border-pink-700/40 rounded-xl p-4' },
+              h('div', { className: 'text-base font-bold text-pink-300 mb-2' }, '⚥ Sexual Dimorphism: The Reverse SSD Mystery'),
+              h('div', { className: 'text-sm text-pink-100/90 leading-relaxed mb-3' },
+                'Raptors are the ',
+                h('span', { className: 'font-bold text-amber-300' }, 'only major bird group'),
+                ' in which females are consistently LARGER than males. In peacocks, deer, lions, gorillas — the male is the bigger sex. In raptors it\'s reversed. The phenomenon is called ',
+                h('span', { className: 'font-bold text-amber-300' }, 'reverse sexual size dimorphism (RSD)'),
+                ', and despite a century of study, biologists still don\'t fully agree why it exists.'
+              ),
+              // Size-ratio bar chart
+              h('div', { className: 'bg-slate-950/60 rounded-lg p-3' },
+                h('div', { className: 'text-xs font-bold text-amber-300 mb-2' }, '📊 Female:Male body-mass ratio (sorted by magnitude)'),
+                h('div', { className: 'space-y-1' },
+                  ssdData.map(function(d, i) {
+                    var pct = ((d.ratio - 1.0) / 0.6) * 100;
+                    var col = d.family === 'Falconidae' ? '#dc2626' : d.family === 'Strigidae' ? '#a78bfa' : d.family === 'Pandionidae' ? '#06b6d4' : '#fbbf24';
+                    return h('div', { key: d.id, className: 'flex items-center gap-3' },
+                      h('div', { className: 'text-xs text-slate-300 w-44 flex-shrink-0' }, d.name),
+                      h('div', { className: 'flex-1 bg-slate-800/60 rounded h-5 relative overflow-hidden' },
+                        h('div', { style: { width: pct + '%', backgroundColor: col, opacity: 0.85 }, className: 'h-full rounded' })
+                      ),
+                      h('div', { className: 'text-xs font-mono text-amber-300 w-16 text-right' }, '×' + d.ratio.toFixed(2))
+                    );
+                  })
+                ),
+                h('div', { className: 'text-[10px] text-slate-500 italic mt-2' }, 'Bar length = degree females exceed males in mass. Goshawks + harpies are the extremes (50% larger). Mississippi kites + falcons in general show less dimorphism.')
+              ),
+              // 3 hypotheses
+              h('div', { className: 'mt-3 grid grid-cols-1 md:grid-cols-3 gap-2' },
+                [
+                  {
+                    name: '1. Small-male hypothesis',
+                    short: 'Males got SMALLER',
+                    detail: 'Smaller males may be more agile + better at hunting fast-moving small prey to feed the nesting female. In accipiters + kestrels, males hunt smaller faster prey than females. Selected for male agility, not female size.'
+                  },
+                  {
+                    name: '2. Big-female hypothesis',
+                    short: 'Females got LARGER',
+                    detail: 'Larger females are more dominant over males in food disputes + better defenders of the nest against predators + intruders. Mother-defense + clutch protection drove female size up.'
+                  },
+                  {
+                    name: '3. Niche-divergence hypothesis',
+                    short: 'BOTH diverged into different niches',
+                    detail: 'Male + female evolve to hunt different prey size classes, reducing competition between mates. Each gender exploits a different ecological niche during breeding when both must hunt simultaneously. The synthesis of #1 + #2.'
+                  }
+                ].map(function(hyp, i) {
+                  return h('div', { key: i, className: 'bg-slate-800/40 rounded-lg p-3 border border-pink-700/30' },
+                    h('div', { className: 'text-xs font-bold text-pink-300 mb-1' }, hyp.name),
+                    h('div', { className: 'text-[10px] text-amber-300 italic mb-2' }, hyp.short),
+                    h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, hyp.detail)
+                  );
+                })
+              ),
+              h('div', { className: 'mt-3 bg-amber-900/20 border border-amber-700/40 rounded p-3 text-xs text-amber-100/90' },
+                h('span', { className: 'font-bold text-amber-300' }, '🔬 Current scientific consensus: '),
+                'Most biologists now favor the ',
+                h('span', { className: 'font-bold' }, 'niche-divergence hypothesis (#3)'),
+                ' — observations confirm that mated pairs hunt different prey size classes, and this niche partitioning allows the pair to harvest more total biomass than either could alone. The dimorphism is most extreme in accipiters (forest specialists) + falcons that specialize in agile prey — exactly where prey-size divergence matters most.'
+              )
+            );
+          })(),
+
           // Key points
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
             SENSES_FACTS.keyPoints.map(function(kp, i) {
@@ -3745,11 +3845,128 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // RENDER: CONSERVATION
       // ────────────────────────────────────────────────────────
       function renderConservation() {
+        // ── NEW v0.20: Per-species conservation status data ──
+        var SPECIES_STATUS = {
+          peregrine:       { iucn: 'LC', trend: 'stable', pop: '~30,000 pairs globally', esa: 'Delisted 1999' },
+          baldEagle:       { iucn: 'LC', trend: 'increasing', pop: '~316,000 (US lower 48)', esa: 'Delisted 2007' },
+          redTail:         { iucn: 'LC', trend: 'increasing', pop: '~2 million (continent-wide)', esa: 'Not listed' },
+          harpyEagle:      { iucn: 'VU', trend: 'decreasing', pop: '~50,000 estimated', esa: 'Foreign endangered' },
+          greatHorned:     { iucn: 'LC', trend: 'stable', pop: '~5.7 million (continent)', esa: 'Not listed' },
+          goldenEagle:     { iucn: 'LC', trend: 'stable/declining', pop: '~30,000 (US west)', esa: 'BGEPA-protected' },
+          northernGoshawk: { iucn: 'LC', trend: 'declining', pop: '~150,000 globally', esa: 'Not listed (declining EU)' },
+          osprey:          { iucn: 'LC', trend: 'increasing', pop: '~30,000 pairs (US)', esa: 'Delisted (DDT-era)' },
+          kestrel:         { iucn: 'LC', trend: 'DECLINING', pop: '~1.4 million (NA, down 50% since 1970)', esa: 'State concern (multiple)' },
+          coopersHawk:     { iucn: 'LC', trend: 'increasing', pop: '~700,000 (continent)', esa: 'Not listed' },
+          snowyOwl:        { iucn: 'VU', trend: 'decreasing', pop: '~28,000 (Arctic, declining)', esa: 'Not listed (foreign)' },
+          gyrfalcon:       { iucn: 'LC', trend: 'stable', pop: '~21,000 (circumpolar)', esa: 'Not listed' },
+          missKite:        { iucn: 'LC', trend: 'increasing', pop: '~520,000 (US)', esa: 'Not listed (expanding range)' }
+        };
+        var sortBy = rh.statusSort || 'iucn';
+        var sortDir = rh.statusDir || 'asc';
+        function setStatusSort(key) {
+          if (sortBy === key) setRH({ statusDir: sortDir === 'asc' ? 'desc' : 'asc' });
+          else setRH({ statusSort: key, statusDir: 'asc' });
+        }
+        var iucnRank = { 'LC': 1, 'NT': 2, 'VU': 3, 'EN': 4, 'CR': 5 };
+        var trendRank = { 'increasing': 1, 'stable': 2, 'stable/declining': 3, 'declining': 4, 'decreasing': 4, 'DECLINING': 4 };
+        function sortValue(species, key) {
+          if (key === 'name') return species.name;
+          var st = SPECIES_STATUS[species.id] || {};
+          if (key === 'iucn') return iucnRank[st.iucn] || 0;
+          if (key === 'trend') return trendRank[st.trend] || 0;
+          if (key === 'pop') return st.pop || '';
+          return st[key] || '';
+        }
+        var sortedSpecies = SPECIES.slice().sort(function(a, b) {
+          var va = sortValue(a, sortBy), vb = sortValue(b, sortBy);
+          if (typeof va === 'string') return sortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+          return sortDir === 'asc' ? va - vb : vb - va;
+        });
+        function statusHeader(key, label) {
+          var active = sortBy === key;
+          var arrow = active ? (sortDir === 'asc' ? ' ↑' : ' ↓') : '';
+          return h('th', { onClick: function() { setStatusSort(key); }, className: 'pb-2 px-2 text-left cursor-pointer ' + (active ? 'text-amber-300 font-bold' : 'text-slate-400 hover:text-slate-200') }, label + arrow);
+        }
+        function iucnColor(code) {
+          return code === 'LC' ? 'emerald' : code === 'NT' ? 'cyan' : code === 'VU' ? 'amber' : code === 'EN' ? 'orange' : code === 'CR' ? 'red' : 'slate';
+        }
+        function trendIcon(t) {
+          if (!t) return '–';
+          if (t.indexOf('increasing') !== -1) return '↑';
+          if (t.indexOf('DECLINING') !== -1 || t.indexOf('decreasing') !== -1) return '↓';
+          if (t.indexOf('declining') !== -1) return '↓';
+          if (t.indexOf('stable/declining') !== -1) return '→↓';
+          return '→';
+        }
+        function trendColor(t) {
+          if (!t) return 'slate';
+          if (t.indexOf('increasing') !== -1) return 'emerald';
+          if (t.indexOf('DECLINING') !== -1) return 'red';
+          if (t.indexOf('decreasing') !== -1 || t.indexOf('declining') !== -1) return 'orange';
+          if (t.indexOf('stable/declining') !== -1) return 'amber';
+          return 'cyan';
+        }
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-emerald-900/40 to-teal-900/40 border border-emerald-700/40 rounded-xl p-4' },
             h('div', { className: 'text-lg font-bold text-emerald-200 mb-2' }, '🌍 Conservation: From DDT to today'),
             h('div', { className: 'text-sm text-emerald-100/90 leading-relaxed' }, CONSERVATION.overview)
           ),
+
+          // ── NEW v0.20: Population Status Comparison Table ──
+          h('div', { className: 'bg-slate-900/40 border border-emerald-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-sm font-bold text-emerald-300 mb-2' }, '📊 Population Status — All 13 Species (sortable)'),
+            h('div', { className: 'text-xs text-slate-400 italic mb-3' }, 'IUCN codes: LC = Least Concern · NT = Near Threatened · VU = Vulnerable · EN = Endangered · CR = Critically Endangered. Click column headers to sort.'),
+            h('div', { className: 'overflow-x-auto' },
+              h('table', { className: 'w-full text-xs', 'aria-label': 'Conservation status table' },
+                h('thead', null,
+                  h('tr', { className: 'border-b border-slate-700' },
+                    statusHeader('name', 'Species'),
+                    statusHeader('iucn', 'IUCN'),
+                    statusHeader('trend', 'Trend'),
+                    statusHeader('pop', 'Population'),
+                    statusHeader('esa', 'ESA Status')
+                  )
+                ),
+                h('tbody', null,
+                  sortedSpecies.map(function(s, i) {
+                    var st = SPECIES_STATUS[s.id] || {};
+                    var ic = iucnColor(st.iucn);
+                    var tc = trendColor(st.trend);
+                    return h('tr', { key: s.id, className: 'border-b border-slate-800/50' },
+                      h('td', { className: 'py-1.5 px-2' },
+                        h('span', { className: 'mr-1' }, s.emoji),
+                        h('span', { className: 'text-amber-200 font-bold' }, s.name)
+                      ),
+                      h('td', { className: 'py-1.5 px-2' },
+                        h('span', { className: 'inline-block px-2 py-0.5 rounded font-mono font-bold text-xs bg-' + ic + '-900/40 text-' + ic + '-300 border border-' + ic + '-700/40' }, st.iucn || '?')
+                      ),
+                      h('td', { className: 'py-1.5 px-2 text-' + tc + '-300 font-bold' }, trendIcon(st.trend) + ' ' + (st.trend || '–')),
+                      h('td', { className: 'py-1.5 px-2 text-slate-200' }, st.pop || '–'),
+                      h('td', { className: 'py-1.5 px-2 text-slate-300 text-xs' }, st.esa || '–')
+                    );
+                  })
+                )
+              )
+            ),
+            // Status summary
+            (function() {
+              var counts = { LC: 0, NT: 0, VU: 0, EN: 0, CR: 0 };
+              SPECIES.forEach(function(s) { var c = (SPECIES_STATUS[s.id] || {}).iucn; if (counts[c] !== undefined) counts[c]++; });
+              return h('div', { className: 'mt-3 grid grid-cols-2 md:grid-cols-5 gap-2 text-center' },
+                Object.keys(counts).map(function(code) {
+                  var col = iucnColor(code);
+                  return h('div', { key: code, className: 'bg-' + col + '-900/30 border border-' + col + '-700/40 rounded p-2' },
+                    h('div', { className: 'text-lg font-bold text-' + col + '-300' }, counts[code]),
+                    h('div', { className: 'text-[10px] text-' + col + '-200 uppercase tracking-wider' }, code)
+                  );
+                })
+              );
+            })(),
+            h('div', { className: 'text-[10px] text-slate-500 italic mt-2' },
+              'Trend insight: kestrels declining 50% since 1970 (cause unknown — pesticide-driven insect crash + mesopredator release suspected). Cooper\'s hawks + Mississippi kites are SUCCESS stories of urban adaptation. Snowy owls + harpy eagles are the conservation worries — climate change + habitat loss.'
+            )
+          ),
+
           // Success stories
           h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4' },
             h('div', { className: 'text-sm font-bold text-emerald-300 mb-3' }, '✅ Recovery Success Stories'),
