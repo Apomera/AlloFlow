@@ -800,6 +800,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           camoQualityMul: 1.10,
           jetSpeedMul: 0.95,
           specialAbility: 'passingCloud'
+        },
+        { id: 'giantPacific', name: 'Giant Pacific Octopus', scientific: 'Enteroctopus dofleini', emoji: '🐙',
+          tagline: 'Massive + powerful', accent: '#dc2626',
+          description: 'The biggest octopus on the reef — twice the size of common. 150 HP, 120 hunger. Slow but tanky. Carries shelters with no speed penalty. Predators see you from farther, but every bite back from you hits harder. Real biology: largest octopus species, can reach 7m arm-to-arm span + 15kg.',
+          bodyColor: 0x8b3a2a, armColor: 0x6b2818,
+          maxHealth: 150, maxHunger: 120,
+          camoQualityMul: 0.85,
+          jetSpeedMul: 0.75,
+          specialAbility: 'massiveStrike'   // Pounces deal extra damage to small predators
+        },
+        { id: 'dumboOcto', name: 'Dumbo Octopus', scientific: 'Grimpoteuthis sp.', emoji: '🪼',
+          tagline: 'Deep-sea fin-flapper', accent: '#60a5fa',
+          description: 'Lives at 2000-7000m depth normally. Translucent body, two ear-like fins that flap continuously to swim. No ink (no need at depth — predators are rare). Faster swimming via fin propulsion. Smallest hunger reserve but lowest energy cost per movement.',
+          bodyColor: 0xd8a8c8, armColor: 0xa07898,
+          maxHealth: 70, maxHunger: 65,
+          camoQualityMul: 0.55,    // pale skin, weak chromatophores in deep sea
+          jetSpeedMul: 1.25,        // fin-propulsion is efficient
+          specialAbility: 'finPropulsion'   // No stamina drain on jet, no ink
+        },
+        { id: 'vampireSquid', name: 'Vampire Squid', scientific: 'Vampyroteuthis infernalis', emoji: '🧛',
+          tagline: 'Bioluminescent panic-flash', accent: '#a78bfa',
+          description: 'Living fossil — not a true squid or octopus. Webbed mantle, 8 arms with light-producing photophores. Press B for "burglar alarm" bioluminescent flash that startles predators away for 4 seconds. No ink (replaced by mucus + bioluminescence in real biology). Slow but unique.',
+          bodyColor: 0x4a1838, armColor: 0x2a0e20,
+          maxHealth: 80, maxHunger: 75,
+          camoQualityMul: 0.70,
+          jetSpeedMul: 0.85,
+          specialAbility: 'burglarAlarm'    // B key fires a flash that scares predators
+        },
+        { id: 'bobtailSquid', name: 'Hawaiian Bobtail Squid', scientific: 'Euprymna scolopes', emoji: '✨',
+          tagline: 'Symbiotic counter-illumination', accent: '#fbbf24',
+          description: 'Tiny squid (3-5cm). Symbiotic Vibrio fischeri bacteria glow on its ventral side to match downwelling moonlight, hiding its silhouette from below. At night, automatic counter-illumination boosts camo 50%. Tiny + fragile but invisible to night predators.',
+          bodyColor: 0x9a8a52, armColor: 0x6a5a38,
+          maxHealth: 55, maxHunger: 60,
+          camoQualityMul: 0.90,
+          jetSpeedMul: 1.05,
+          specialAbility: 'counterIllumination'   // Auto-activates at night, +50% camo
+        },
+        { id: 'nautilus', name: 'Chambered Nautilus', scientific: 'Nautilus pompilius', emoji: '🐚',
+          tagline: 'Ancient shelled survivor', accent: '#e8c4a8',
+          description: '500-million-year-old lineage. Lives inside a spiral chambered shell — natural permanent shelter. ~90 arms, no suckers. Buoyancy controlled by gas in shell chambers. No camo (shell prevents it), but predators bounce off the shell — 70% damage reduction. Slowest species.',
+          bodyColor: 0xe8c4a8, armColor: 0xc89580,
+          maxHealth: 110, maxHunger: 100,
+          camoQualityMul: 0,         // shell prevents chromatophore camo
+          jetSpeedMul: 0.65,
+          specialAbility: 'shellDefense'   // 70% damage reduction passive
         }
       ];
 
@@ -1027,7 +1072,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     h('span', null, '🎨 ' + (sp.camoQualityMul * 100).toFixed(0) + '%'),
                     sp.specialAbility === 'venomousBite' ? h('span', { style: { color: '#22d3ee' } }, '💀 venom bite') : null,
                     sp.specialAbility === 'mimicry' ? h('span', { style: { color: '#fbbf24' } }, '🎭 mimicry (hold M)') : null,
-                    sp.specialAbility === 'passingCloud' ? h('span', { style: { color: '#34d399' } }, '🌀 hypnotic cloud (hold H)') : null
+                    sp.specialAbility === 'passingCloud' ? h('span', { style: { color: '#34d399' } }, '🌀 hypnotic cloud (hold H)') : null,
+                    sp.specialAbility === 'massiveStrike' ? h('span', { style: { color: '#dc2626' } }, '💪 massive strike') : null,
+                    sp.specialAbility === 'finPropulsion' ? h('span', { style: { color: '#60a5fa' } }, '🪼 fin propulsion (free jet)') : null,
+                    sp.specialAbility === 'burglarAlarm' ? h('span', { style: { color: '#a78bfa' } }, '⚡ burglar alarm (B)') : null,
+                    sp.specialAbility === 'counterIllumination' ? h('span', { style: { color: '#fbbf24' } }, '✨ counter-illum (auto at night)') : null,
+                    sp.specialAbility === 'shellDefense' ? h('span', { style: { color: '#e8c4a8' } }, '🛡 shell -70% damage') : null
                   ),
                   // Per-species personal best (only if any dives recorded)
                   rec && rec.totalDives > 0 ? h('div', { style: { marginTop: 10, paddingTop: 8, borderTop: '1px solid rgba(100,116,139,0.25)', display: 'flex', gap: 10, fontSize: 10, color: '#cbd5e1', flexWrap: 'wrap' } },
@@ -1265,7 +1315,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         // ─── Octopus / Cuttlefish mesh (body + arms) ───
         // Size scales with species (blue-ringed + mimic are smaller).
         // Cuttlefish gets a flatter, wider mantle to match real anatomy.
-        var bodyScale = species.id === 'blueRinged' ? 0.7 : species.id === 'mimicOcto' ? 0.85 : 1.0;
+        var bodyScale = species.id === 'blueRinged' ? 0.7 :
+                        species.id === 'mimicOcto'  ? 0.85 :
+                        species.id === 'bobtailSquid' ? 0.55 :
+                        species.id === 'giantPacific' ? 1.55 :
+                        species.id === 'nautilus'   ? 1.10 :
+                        species.id === 'dumboOcto'  ? 0.85 :
+                        species.id === 'vampireSquid' ? 0.95 :
+                        1.0;
         var isCuttlefish = species.id === 'cuttlefish';
         var octopus = new THREE.Group();
         var mantleGeo = new THREE.SphereGeometry(0.55 * bodyScale, 14, 10);
@@ -1337,6 +1394,95 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         }
         octopus.position.set(0, 0.6, 0);
         scene.add(octopus);
+
+        // ─── Nautilus-specific anatomy (spiral shell wraps the body) ───
+        var nautilusShell = null;
+        if (species.id === 'nautilus') {
+          var shellGroup = new THREE.Group();
+          // Spiral chambered shell — approximate as 5 nested torus segments
+          var shellMat = new THREE.MeshStandardMaterial({
+            color: 0xe8c4a8, roughness: 0.4, metalness: 0.15
+          });
+          var stripeMat = new THREE.MeshStandardMaterial({
+            color: 0x9a5530, roughness: 0.5
+          });
+          for (var nsi = 0; nsi < 6; nsi++) {
+            var nsr = 0.55 - nsi * 0.07;
+            var seg = new THREE.Mesh(
+              new THREE.TorusGeometry(nsr, 0.18, 8, 16, Math.PI * 1.4),
+              nsi % 2 === 0 ? shellMat : stripeMat
+            );
+            seg.rotation.x = Math.PI / 2;
+            seg.rotation.z = nsi * 0.7;
+            seg.position.set(Math.cos(nsi * 0.6) * 0.04, 0.15 - nsi * 0.02, Math.sin(nsi * 0.6) * 0.04);
+            shellGroup.add(seg);
+          }
+          octopus.add(shellGroup);
+          nautilusShell = shellGroup;
+        }
+
+        // ─── Dumbo octopus fins (translucent ear-flaps, continuous flap) ───
+        var dumboFins = [];
+        if (species.id === 'dumboOcto') {
+          for (var dfi = 0; dfi < 2; dfi++) {
+            var dfSide = dfi === 0 ? -1 : 1;
+            var dfGeo = new THREE.PlaneGeometry(0.7, 0.55);
+            var dfMat = new THREE.MeshBasicMaterial({
+              color: 0xd8a8c8, side: THREE.DoubleSide,
+              transparent: true, opacity: 0.55,
+            });
+            var df = new THREE.Mesh(dfGeo, dfMat);
+            df.position.set(dfSide * 0.7, 0.4, 0);
+            df.rotation.y = dfSide * Math.PI / 2;
+            octopus.add(df);
+            dumboFins.push({ mesh: df, side: dfSide, phase: dfi });
+          }
+        }
+
+        // ─── Vampire squid photophores (light-producing dots on arms) ───
+        var vampirePhotophores = [];
+        if (species.id === 'vampireSquid') {
+          for (var vpi = 0; vpi < 16; vpi++) {
+            var vpAng = (vpi / 16) * Math.PI * 2;
+            var vpr = 0.3 + Math.random() * 0.25;
+            var vpGeo = new THREE.SphereGeometry(0.04, 5, 4);
+            var vpMat = new THREE.MeshBasicMaterial({
+              color: 0xa78bfa, transparent: true, opacity: 0.2,
+              blending: THREE.AdditiveBlending,
+            });
+            var vp = new THREE.Mesh(vpGeo, vpMat);
+            vp.position.set(
+              Math.cos(vpAng) * vpr,
+              -0.1 - Math.random() * 0.3,
+              Math.sin(vpAng) * vpr
+            );
+            octopus.add(vp);
+            vampirePhotophores.push(vp);
+          }
+          // Webbed mantle (subtle disc between arms)
+          var webbingGeo = new THREE.CircleGeometry(0.45 * bodyScale, 16);
+          var webbingMat = new THREE.MeshBasicMaterial({
+            color: 0x4a1838, side: THREE.DoubleSide, transparent: true, opacity: 0.45,
+          });
+          var webbing = new THREE.Mesh(webbingGeo, webbingMat);
+          webbing.rotation.x = Math.PI / 2;
+          webbing.position.y = -0.05;
+          octopus.add(webbing);
+        }
+
+        // ─── Bobtail squid ventral photophore (counter-illumination glow) ───
+        var bobtailGlow = null;
+        if (species.id === 'bobtailSquid') {
+          var bgGeo = new THREE.SphereGeometry(0.35 * bodyScale, 12, 8);
+          bgGeo.scale(1, 0.3, 1);
+          var bgMat = new THREE.MeshBasicMaterial({
+            color: 0xfbeec5, transparent: true, opacity: 0.4,
+            blending: THREE.AdditiveBlending,
+          });
+          bobtailGlow = new THREE.Mesh(bgGeo, bgMat);
+          bobtailGlow.position.y = -0.15;
+          octopus.add(bobtailGlow);
+        }
 
         // ─── Cuttlefish-specific anatomy (2 long tentacles + lateral fins) ───
         var cuttleTentacles = [];
@@ -2478,7 +2624,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         var inkRequested = false;
         function onKeyDown(e) {
           keys[e.code] = true;
-          if (['Space','KeyW','KeyA','KeyS','KeyD','KeyE','KeyI','KeyM','KeyG','KeyH','Escape'].indexOf(e.code) !== -1) e.preventDefault();
+          if (['Space','KeyW','KeyA','KeyS','KeyD','KeyE','KeyI','KeyM','KeyG','KeyH','KeyB','Escape'].indexOf(e.code) !== -1) e.preventDefault();
           // Esc toggles pause. Cuttlefish ability key H is also captured below.
           if (e.code === 'Escape') {
             gameState.paused = !gameState.paused;
@@ -2777,6 +2923,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           mimicSpikeOpacity: 0,
           isDisplaying: false,          // cuttlefish H-hold (passing cloud)
           displayPulse: 0,              // 0..1 phase for the cloud animation
+          // Vampire squid burglar-alarm cooldown (B key)
+          burglarAlarmCooldown: 0,
+          burglarAlarmActive: 0,        // ms of active flash remaining
+          // Bobtail squid counter-illumination intensity (0..1, scales with night)
+          counterIlluminationActive: 0,
           // Squeeze detection (between rocks)
           isSqueezing: false,
           // Per-run scoring breakdown (shown on death)
@@ -2828,8 +2979,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             octopus.position.y = 0.55 + (isJetting ? 0.15 : 0) + Math.sin(now * 0.004) * 0.05;
             octopus.rotation.y = gameState.facingAngle;
 
-            // Stamina drain (jet) / regen (idle)
-            if (isJetting) {
+            // Stamina drain (jet) / regen (idle). Dumbo octopus uses fin
+            // propulsion, which is metabolically cheaper: no drain.
+            if (isJetting && species.specialAbility !== 'finPropulsion') {
               gameState.stamina = Math.max(0, gameState.stamina - 45 * dt);
             } else {
               gameState.stamina = Math.min(gameState.maxStamina, gameState.stamina + 18 * dt);
@@ -2899,6 +3051,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             if (carriedShelter) {
               var ccBonus = SHELTER_TYPES[carriedShelter.userData.shelterType].camoBonus;
               gameState.camoEff = Math.min(1, gameState.camoEff + ccBonus);
+            }
+            // Bobtail counter-illumination boosts camo by up to +50% at full night
+            if (species.specialAbility === 'counterIllumination' && gameState.counterIlluminationActive > 0) {
+              gameState.camoEff = Math.min(1, gameState.camoEff + 0.5 * gameState.counterIlluminationActive);
             }
             // Standing within SHELTER_DEN_RADIUS of a static sponge or dropped
             // shelter also boosts camo by that type's bonus. Predator AI
@@ -3174,6 +3330,85 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               });
             }
 
+            // ─── Vampire squid burglar-alarm (B) ───────────────────
+            // Real biology: V. infernalis releases bioluminescent mucus +
+            // pulses its arm-tip photophores as a "burglar alarm" startle
+            // display. In game: press B (12s cooldown) to flash all
+            // photophores bright for 1.5s, scaring any predator within 8u.
+            if (species.specialAbility === 'burglarAlarm') {
+              if (keys.KeyB && gameState.burglarAlarmCooldown <= 0 && gameState.burglarAlarmActive <= 0) {
+                gameState.burglarAlarmActive = 1500;
+                gameState.burglarAlarmCooldown = 12000;
+                // Scare predators within 8u
+                [moray, grouper, shark].forEach(function(p) {
+                  if (!p || !p.userData) return;
+                  var dxBA = p.position.x - octopus.position.x;
+                  var dzBA = p.position.z - octopus.position.z;
+                  if (dxBA * dxBA + dzBA * dzBA < 8 * 8) {
+                    if (p === shark) p.userData.state = 'leaving';
+                    else if (p === grouper) p.userData.state = 'patrol';
+                    else p.userData.state = 'returning';
+                    p.userData.cooldownUntil = now + 6000;
+                  }
+                });
+                clAnnounce('Burglar alarm fired — predators startled');
+                sfxPredatorAlert();
+              }
+              if (gameState.burglarAlarmActive > 0) {
+                gameState.burglarAlarmActive -= dt * 1000;
+                var flashIntensity = Math.sin((1500 - gameState.burglarAlarmActive) / 1500 * Math.PI * 8) * 0.5 + 0.5;
+                vampirePhotophores.forEach(function(vp) {
+                  vp.material.opacity = 0.2 + flashIntensity * 0.8;
+                });
+              } else {
+                vampirePhotophores.forEach(function(vp) {
+                  vp.material.opacity = Math.max(0.15, vp.material.opacity - dt);
+                });
+              }
+              if (gameState.burglarAlarmCooldown > 0) gameState.burglarAlarmCooldown = Math.max(0, gameState.burglarAlarmCooldown - dt * 1000);
+            }
+
+            // ─── Bobtail counter-illumination (auto, night-only) ──
+            // Real biology: V. fischeri symbionts glow on the ventral
+            // photophore to match downwelling moonlight. We model it as
+            // automatic: nightFactor scales the bobtailGlow opacity and
+            // adds bonus camo proportional to it.
+            if (species.specialAbility === 'counterIllumination') {
+              var nightStrength = 1 - dayMix;
+              gameState.counterIlluminationActive = nightStrength;
+              if (bobtailGlow) {
+                bobtailGlow.material.opacity = 0.15 + nightStrength * 0.5;
+              }
+            }
+
+            // ─── Giant Pacific massive-strike (passive — applied at catch) ─
+            // No tick logic needed; applied as score/hunger multiplier in catch block.
+
+            // ─── Dumbo fin propulsion (passive — no stamina drain on jet) ──
+            // Handled in stamina update by overriding drain to 0 below.
+
+            // ─── Nautilus shell defense (passive — applied at damage taken) ─
+            // No tick logic; damage multipliers applied in predator-bite paths.
+
+            // ─── Dumbo fin animation ──────────────────────────────
+            if (species.id === 'dumboOcto') {
+              dumboFins.forEach(function(df, fi) {
+                df.mesh.rotation.x = Math.sin(now * 0.008 + fi * Math.PI) * 0.35;
+              });
+            }
+
+            // ─── Vampire squid arm photophore subtle base glow ────
+            if (species.id === 'vampireSquid' && gameState.burglarAlarmActive <= 0) {
+              vampirePhotophores.forEach(function(vp, vpi) {
+                vp.material.opacity = 0.18 + Math.sin(now * 0.003 + vpi * 0.5) * 0.08;
+              });
+            }
+
+            // ─── Nautilus shell rotation (subtle) ─────────────────
+            if (species.id === 'nautilus' && nautilusShell) {
+              nautilusShell.rotation.z = Math.sin(now * 0.0008) * 0.04;
+            }
+
             // ─── Blue-ringed warning rings + auto venom-bite ────
             // Rings fade in any time a predator is attacking within 4u.
             // When predator within 1.5u, deliver one venom-bite that drives
@@ -3264,7 +3499,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 shark.position.y += (octopus.position.y + 1.5 - shark.position.y) * 2 * dt;
                 shark.lookAt(octopus.position.x, shark.position.y, octopus.position.z);
                 if (skDist < 1.8 && now - gameState.tookHitAt > 800) {
-                  gameState.health = Math.max(0, gameState.health - 45);
+                  var sharkDmg = 45;
+                  if (species.specialAbility === 'shellDefense') sharkDmg *= 0.3;
+                  gameState.health = Math.max(0, gameState.health - sharkDmg);
                   gameState.tookHitAt = now;
                   damageFlash.style.opacity = '1';
                   setTimeout(function() { damageFlash.style.opacity = '0'; }, 220);
@@ -3615,7 +3852,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 grouper.lookAt(octopus.position.x, grouper.position.y, octopus.position.z);
               }
               if (chDist2 < 1.5 && now - gameState.tookHitAt > 800) {
-                gameState.health = Math.max(0, gameState.health - 35);
+                var grouperDmg = 35;
+                if (species.specialAbility === 'shellDefense') grouperDmg *= 0.3;
+                gameState.health = Math.max(0, gameState.health - grouperDmg);
                 gameState.tookHitAt = now;
                 gameState.runStats.bites++;
                 damageFlash.style.opacity = '1';
@@ -3856,7 +4095,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   if (o.material) { if (Array.isArray(o.material)) o.material.forEach(function(m){m.dispose();}); else o.material.dispose(); }
                 });
                 crabs = crabs.filter(function(c) { return c !== nearest; });
-                gameState.score += caughtCfg.score;
+                // Giant Pacific massive-strike: 1.5x score per catch
+                var catchScoreMul = species.specialAbility === 'massiveStrike' ? 1.5 : 1.0;
+                gameState.score += Math.round(caughtCfg.score * catchScoreMul);
                 gameState.hunger = Math.min(gameState.maxHunger, gameState.hunger + caughtCfg.hunger);
                 gameState.runStats.crabs++;
                 // Hermit crabs leave their shell behind — drop a usable shelter.
@@ -3896,7 +4137,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             }
 
             // ─── Ink defense ───
-            if (inkRequested && !gameState.isInked && gameState.inkReserves > 0 && now > gameState.inkCooldownUntil) {
+            // Dumbo + vampire squid don't ink (real biology — deep-sea
+            // species evolved away from ink; vampire squid uses biolum mucus).
+            var canInk = species.id !== 'dumboOcto' && species.id !== 'vampireSquid';
+            if (inkRequested && canInk && !gameState.isInked && gameState.inkReserves > 0 && now > gameState.inkCooldownUntil) {
               inkRequested = false;
               gameState.isInked = true;
               gameState.inkUntil = now + 3200;
@@ -3972,7 +4216,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 moray.lookAt(octopus.position.x, 0.25, octopus.position.z);
               }
               if (chDist < 1.2 && now - gameState.tookHitAt > 800) {
-                gameState.health = Math.max(0, gameState.health - 30);
+                var morayDmg = 30;
+                if (species.specialAbility === 'shellDefense') morayDmg *= 0.3;
+                gameState.health = Math.max(0, gameState.health - morayDmg);
                 gameState.tookHitAt = now;
                 gameState.runStats.bites++;
                 damageFlash.style.opacity = '1';
