@@ -2395,6 +2395,528 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   // ─────────────────────────────────────────────────────────
   // SECTION 14: TOOL REGISTRATION + RENDER
   // ─────────────────────────────────────────────────────────
+  // ──────────────────────────────────────────────────────────────────
+  // INTERACTIVE WIDGETS (module scope)
+  // Three React components hoisted out of render(ctx) so their useState
+  // persists across re-renders. Components: ForgettingCurveSim (Ebbinghaus
+  // + spaced reviews), CognitiveLoadBuilder (Sweller bucket overflow demo),
+  // NeuromythSwiper (Tinder-style myth-vs-research card game).
+  // ──────────────────────────────────────────────────────────────────
+  var R = (typeof window !== 'undefined' && window.React) ? window.React : null;
+  var hh = R ? R.createElement : null;
+
+  // ── 1. FORGETTING CURVE SIMULATOR (Ebbinghaus + spaced reviews) ──
+  // Two overlaid retention curves over 30 days: CRAM (one study session,
+  // exponential decay) vs SPACED (review boosts at user-selected days).
+  // Lesson: 3-4 reviews over 30 days keep retention above ~70%; without,
+  // it drops to ~20% in a week.
+  function ForgettingCurveSim(props) {
+    if (!R) return null;
+    var rs = R.useState([]);   var reviews = rs[0];   var setReviews = rs[1]; // array of day numbers
+    var ds = R.useState(30);   var totalDays = ds[0]; var setTotalDays = ds[1];
+    var ts = R.useState(0);    var dragDay = ts[0];   var setDragDay = ts[1];
+    var as = R.useState(false);var awarded = as[0];   var setAwarded = as[1];
+    var awardXP = props.awardXP;
+
+    // Ebbinghaus exponential decay: R = e^(-t / S) where S = "memory strength"
+    // Each review BOOSTS S by factor ~2.5 (consolidation effect)
+    function retentionAt(day, reviewDays) {
+      var S = 1.4; // initial memory strength (days)
+      var lastReview = 0;
+      var t = day - lastReview;
+      var sortedReviews = reviewDays.slice().sort(function(a, b) { return a - b; });
+      for (var i = 0; i < sortedReviews.length; i++) {
+        if (sortedReviews[i] <= day) {
+          // Review happens — but only "succeeds" if retention was at least 30% (otherwise it's relearning)
+          var atReview = Math.exp(-(sortedReviews[i] - lastReview) / S);
+          if (atReview > 0.10) {
+            S *= 2.4; // boost memory strength
+          } else {
+            S = 1.4 * Math.pow(2.0, i + 1); // failed-then-relearned, modest boost
+          }
+          lastReview = sortedReviews[i];
+        }
+      }
+      t = day - lastReview;
+      return Math.max(0, Math.min(1, Math.exp(-t / S)));
+    }
+
+    function curvePoints(reviewDays, n) {
+      var pts = [];
+      for (var i = 0; i <= n; i++) {
+        var day = (i / n) * totalDays;
+        var r = retentionAt(day, reviewDays);
+        pts.push({ x: day, y: r });
+      }
+      return pts;
+    }
+
+    var cramPts   = curvePoints([], 60);
+    var spacedPts = curvePoints(reviews, 60);
+    var nowDay    = totalDays;
+    var cramFinal   = Math.round(retentionAt(nowDay, []) * 100);
+    var spacedFinal = Math.round(retentionAt(nowDay, reviews) * 100);
+
+    function addReview(day) {
+      // Don't allow duplicate within 0.5 days
+      var clean = reviews.filter(function(r) { return Math.abs(r - day) > 0.5; });
+      var next = clean.concat([day]).slice(0, 8);
+      setReviews(next);
+      if (!awarded && next.length >= 4 && spacedFinal >= 60) {
+        setAwarded(true);
+        if (awardXP) awardXP(2);
+      }
+    }
+    function clearReviews() { setReviews([]); }
+    function applyPreset(name) {
+      if (name === 'cram')        setReviews([]);
+      else if (name === 'twice')  setReviews([1, 7]);
+      else if (name === 'optimal')setReviews([1, 3, 7, 14]);
+      else if (name === 'extreme')setReviews([1, 2, 4, 8, 16, 24]);
+    }
+
+    function pathFromPoints(pts, w, h, marginX, marginY) {
+      return pts.map(function(p, i) {
+        var x = marginX + (p.x / totalDays) * (w - marginX * 2);
+        var y = (h - marginY) - p.y * (h - marginY * 2);
+        return (i === 0 ? 'M ' : 'L ') + x.toFixed(1) + ' ' + y.toFixed(1);
+      }).join(' ');
+    }
+    function fillFromPoints(pts, w, h, marginX, marginY) {
+      var first = marginX;
+      var last = marginX + (pts[pts.length - 1].x / totalDays) * (w - marginX * 2);
+      return 'M ' + first + ' ' + (h - marginY) + ' ' + pathFromPoints(pts, w, h, marginX, marginY).replace(/^M /, 'L ') + ' L ' + last + ' ' + (h - marginY) + ' Z';
+    }
+
+    var W = 100, H = 60, mx = 6, my = 6;
+
+    function svgClick(e) {
+      var svg = e.currentTarget;
+      var rect = svg.getBoundingClientRect();
+      var px = (e.clientX - rect.left) / rect.width * W;
+      var fracX = (px - mx) / (W - mx * 2);
+      if (fracX < 0 || fracX > 1) return;
+      var day = Math.round(fracX * totalDays * 10) / 10;
+      addReview(day);
+    }
+
+    return hh('div', {
+      style: { background: 'rgba(15,23,42,0.7)', borderRadius: 12, padding: 16, marginBottom: 14,
+        borderTop: '1px solid rgba(147,51,234,0.30)', borderRight: '1px solid rgba(147,51,234,0.30)',
+        borderBottom: '1px solid rgba(147,51,234,0.30)', borderLeft: '4px solid #9333ea',
+        boxShadow: '0 4px 20px rgba(147,51,234,0.10)' }
+    },
+      hh('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
+        hh('div', { 'aria-hidden': 'true', style: { width: 36, height: 36, borderRadius: '50%', background: 'rgba(147,51,234,0.18)', border: '1.5px solid #9333ea', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 } }, '📉'),
+        hh('div', { style: { flex: 1, minWidth: 200 } },
+          hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#c084fc' } }, 'Forgetting curve simulator'),
+          hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, 'Click anywhere on the chart to add a spaced review. Watch the green curve hold up.')
+        )
+      ),
+
+      // The chart
+      hh('div', { style: { background: 'rgba(2,6,23,0.7)', borderRadius: 10, padding: 8, marginBottom: 10 } },
+        hh('svg', {
+          viewBox: '0 0 ' + W + ' ' + H,
+          preserveAspectRatio: 'none',
+          'aria-label': 'Memory retention curves over ' + totalDays + ' days',
+          onClick: svgClick,
+          style: { width: '100%', height: 220, display: 'block', cursor: 'crosshair' }
+        },
+          // axes
+          hh('line', { x1: mx, y1: H - my, x2: W - mx, y2: H - my, stroke: 'rgba(148,163,184,0.30)', strokeWidth: 0.4 }),
+          hh('line', { x1: mx, y1: my, x2: mx, y2: H - my, stroke: 'rgba(148,163,184,0.30)', strokeWidth: 0.4 }),
+          // 70% reference line
+          hh('line', { x1: mx, y1: H - my - 0.7 * (H - my * 2), x2: W - mx, y2: H - my - 0.7 * (H - my * 2), stroke: 'rgba(34,197,94,0.30)', strokeWidth: 0.3, strokeDasharray: '1,1.5' }),
+          hh('text', { x: W - mx - 1, y: H - my - 0.7 * (H - my * 2) - 0.5, fontSize: 2.5, fill: '#22c55e', textAnchor: 'end' }, '70% target'),
+          // Cram curve (red)
+          hh('path', { d: fillFromPoints(cramPts, W, H, mx, my), fill: 'rgba(239,68,68,0.12)', stroke: 'none' }),
+          hh('path', { d: pathFromPoints(cramPts, W, H, mx, my), fill: 'none', stroke: '#ef4444', strokeWidth: 0.7, strokeDasharray: '1.5,1' }),
+          // Spaced curve (purple)
+          hh('path', { d: fillFromPoints(spacedPts, W, H, mx, my), fill: 'rgba(147,51,234,0.18)', stroke: 'none' }),
+          hh('path', { d: pathFromPoints(spacedPts, W, H, mx, my), fill: 'none', stroke: '#c084fc', strokeWidth: 1 }),
+          // Review markers (vertical lines + chips)
+          reviews.map(function(d, i) {
+            var x = mx + (d / totalDays) * (W - mx * 2);
+            return hh('g', { key: 'rv-' + i },
+              hh('line', { x1: x, y1: my, x2: x, y2: H - my, stroke: '#10b981', strokeWidth: 0.4, opacity: 0.7 }),
+              hh('circle', { cx: x, cy: my + 1, r: 1.4, fill: '#10b981', stroke: '#0f172a', strokeWidth: 0.3 })
+            );
+          }),
+          // Y-axis labels
+          hh('text', { x: mx - 1, y: my + 1, fontSize: 2.5, fill: '#94a3b8', textAnchor: 'end' }, '100%'),
+          hh('text', { x: mx - 1, y: H - my, fontSize: 2.5, fill: '#94a3b8', textAnchor: 'end' }, '0%'),
+          // X-axis labels
+          hh('text', { x: mx, y: H - 1, fontSize: 2.5, fill: '#94a3b8' }, 'today'),
+          hh('text', { x: W - mx, y: H - 1, fontSize: 2.5, fill: '#94a3b8', textAnchor: 'end' }, 'day ' + totalDays)
+        ),
+        // Legend
+        hh('div', { style: { display: 'flex', justifyContent: 'center', gap: 12, marginTop: 6, fontSize: 10, color: '#cbd5e1', flexWrap: 'wrap' } },
+          hh('span', null, hh('span', { style: { display: 'inline-block', width: 12, height: 2, background: '#ef4444', marginRight: 4, verticalAlign: 'middle' } }), 'Cram (no reviews)'),
+          hh('span', null, hh('span', { style: { display: 'inline-block', width: 12, height: 3, background: '#c084fc', marginRight: 4, verticalAlign: 'middle' } }), 'Spaced (with reviews)'),
+          hh('span', null, hh('span', { style: { display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: '#10b981', marginRight: 4, verticalAlign: 'middle' } }), 'Review point')
+        )
+      ),
+
+      // Final retention chips
+      hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 } },
+        hh('div', { style: { padding: 8, borderRadius: 8, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.30)' } },
+          hh('div', { style: { fontSize: 9, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase' } }, 'Cram retention at day ' + totalDays),
+          hh('div', { style: { fontSize: 22, fontWeight: 900, color: '#ef4444' } }, cramFinal + '%')
+        ),
+        hh('div', { style: { padding: 8, borderRadius: 8, background: 'rgba(147,51,234,0.10)', border: '1px solid rgba(147,51,234,0.30)' } },
+          hh('div', { style: { fontSize: 9, fontWeight: 800, color: '#c4b5fd', textTransform: 'uppercase' } }, 'Spaced retention (' + reviews.length + ' reviews)'),
+          hh('div', { style: { fontSize: 22, fontWeight: 900, color: '#c084fc' } }, spacedFinal + '%')
+        )
+      ),
+
+      // Preset buttons
+      hh('div', { style: { display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 8 } },
+        [
+          { label: '😴 Cram only', preset: 'cram', desc: 'No reviews' },
+          { label: '🤏 Twice (1d, 7d)', preset: 'twice' },
+          { label: '🎯 Spaced (1, 3, 7, 14)', preset: 'optimal' },
+          { label: '🔥 Aggressive (6 reviews)', preset: 'extreme' }
+        ].map(function(p) {
+          return hh('button', {
+            key: 'p-' + p.preset,
+            onClick: function() { applyPreset(p.preset); },
+            style: {
+              padding: '6px 12px', borderRadius: 8,
+              background: 'rgba(147,51,234,0.10)', color: '#c084fc',
+              border: '1px solid rgba(147,51,234,0.40)',
+              fontSize: 10, fontWeight: 700, cursor: 'pointer'
+            }
+          }, p.label);
+        }),
+        hh('button', {
+          onClick: clearReviews,
+          style: {
+            padding: '6px 12px', borderRadius: 8,
+            background: 'rgba(148,163,184,0.10)', color: '#94a3b8',
+            border: '1px solid rgba(148,163,184,0.30)',
+            fontSize: 10, fontWeight: 700, cursor: 'pointer'
+          }
+        }, '↺ Clear')
+      ),
+
+      // Lesson card
+      reviews.length > 0
+        ? hh('div', { style: {
+            padding: 10, borderRadius: 8,
+            background: spacedFinal >= 70 ? 'rgba(34,197,94,0.10)' : spacedFinal >= 40 ? 'rgba(251,191,36,0.10)' : 'rgba(239,68,68,0.10)',
+            border: '1px solid ' + (spacedFinal >= 70 ? 'rgba(34,197,94,0.30)' : spacedFinal >= 40 ? 'rgba(251,191,36,0.30)' : 'rgba(239,68,68,0.30)'),
+            fontSize: 11, color: '#cbd5e1', lineHeight: 1.6
+          } },
+            hh('strong', { style: { color: spacedFinal >= 70 ? '#22c55e' : spacedFinal >= 40 ? '#fbbf24' : '#ef4444' } }, '🎓 '),
+            spacedFinal >= 70
+              ? 'You held retention above the 70% target with ' + reviews.length + ' review(s). The spacing gives the brain time to forget enough that the review counts as RETRIEVAL practice — which is what consolidates memory. 4 spaced reviews over a month beats 4 hours of cramming the night before.'
+              : spacedFinal >= 40
+                ? 'Modest spacing helped — ' + spacedFinal + '% retention vs ' + cramFinal + '% from cramming alone. To clear 70%, try a review on day 1 (closes the steepest part of the curve), then days 3, 7, 14.'
+                : 'Reviews placed but retention still low. Two diagnoses: (a) reviews stacked too early (no forgetting yet = no consolidation benefit), or (b) too few reviews. The optimal preset works because each review is timed AFTER notable forgetting.'
+          )
+        : hh('div', { style: { fontSize: 10, color: '#64748b', textAlign: 'center', fontStyle: 'italic' } }, 'Click a preset, or click directly on the chart to add a review point.')
+    );
+  }
+
+  // ── 2. COGNITIVE LOAD BUILDER (Sweller bucket overflow) ──
+  // A working-memory "bucket" with capacity 7 chunks. Three chunk colors:
+  // intrinsic (blue, must be held), extraneous (red, wasted), germane
+  // (green, schema-building). Click to add. When total >7, chunks visibly
+  // overflow + the OLDEST chunks get pushed out (working memory eviction).
+  function CognitiveLoadBuilder(props) {
+    if (!R) return null;
+    var awardXP = props.awardXP;
+    var cs = R.useState([]);   var chunks = cs[0];   var setChunks = cs[1]; // [{type, id}]
+    var sn = R.useState(0);    var seq = sn[0];      var setSeq = sn[1];
+    var ws = R.useState(false);var hasOver = ws[0];  var setHasOver = ws[1];
+
+    var CAPACITY = 7; // Miller (1956): 7±2; Cowan (2001): 4. We use 7 as the visualizable limit.
+
+    var TYPES = [
+      { id: 'intrinsic',  label: 'Intrinsic',  short: 'INT', color: '#3b82f6', icon: '🧮',
+        what: 'The actual difficulty of the material. Cannot be removed — only managed. Example: holding 4 algebra terms in mind to combine like terms.' },
+      { id: 'extraneous', label: 'Extraneous', short: 'EXT', color: '#ef4444', icon: '⚡',
+        what: 'WASTED load from poor instruction or distractions. Should be eliminated. Examples: split-attention (text on one side, diagram on another); confusing notation; classroom noise; muddled directions.' },
+      { id: 'germane',    label: 'Germane',    short: 'GER', color: '#10b981', icon: '🏗️',
+        what: 'Effort that BUILDS the mental model (schema). The good kind. Examples: explaining a concept aloud; making predictions; comparing examples; self-testing.' }
+    ];
+
+    function addChunk(type) {
+      var newChunks = chunks.concat([{ type: type, id: seq }]);
+      setSeq(seq + 1);
+      // Working memory eviction: if over capacity, drop oldest chunks
+      while (newChunks.length > CAPACITY) {
+        newChunks.shift();
+        if (!hasOver) {
+          setHasOver(true);
+          if (awardXP) awardXP(1);
+        }
+      }
+      setChunks(newChunks);
+    }
+    function clearAll() { setChunks([]); setHasOver(false); }
+
+    var byType = {
+      intrinsic: chunks.filter(function(c) { return c.type === 'intrinsic'; }).length,
+      extraneous: chunks.filter(function(c) { return c.type === 'extraneous'; }).length,
+      germane: chunks.filter(function(c) { return c.type === 'germane'; }).length
+    };
+    var fillPct = Math.min(100, (chunks.length / CAPACITY) * 100);
+
+    return hh('div', {
+      style: { background: 'rgba(15,23,42,0.7)', borderRadius: 12, padding: 16, marginBottom: 14,
+        borderTop: '1px solid rgba(147,51,234,0.30)', borderRight: '1px solid rgba(147,51,234,0.30)',
+        borderBottom: '1px solid rgba(147,51,234,0.30)', borderLeft: '4px solid #9333ea' }
+    },
+      hh('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
+        hh('div', { 'aria-hidden': 'true', style: { width: 36, height: 36, borderRadius: '50%', background: 'rgba(147,51,234,0.18)', border: '1.5px solid #9333ea', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 } }, '⚖️'),
+        hh('div', { style: { flex: 1, minWidth: 200 } },
+          hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#c084fc' } }, 'Working memory bucket'),
+          hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, 'Add chunks to working memory. Capacity ~7 (Miller). Over capacity, chunks fall out — that is the limit you cannot read past.')
+        ),
+        hh('div', { style: { padding: '4px 10px', borderRadius: 999, background: chunks.length > CAPACITY ? 'rgba(239,68,68,0.20)' : chunks.length === CAPACITY ? 'rgba(251,191,36,0.20)' : 'rgba(16,185,129,0.20)', color: chunks.length > CAPACITY ? '#ef4444' : chunks.length === CAPACITY ? '#fbbf24' : '#10b981', fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', border: '1px solid currentColor' } }, chunks.length + ' / ' + CAPACITY)
+      ),
+
+      // The bucket SVG
+      hh('div', { style: { background: 'rgba(2,6,23,0.7)', borderRadius: 10, padding: 12, marginBottom: 10 } },
+        hh('svg', {
+          viewBox: '0 0 200 140',
+          preserveAspectRatio: 'xMidYMid meet',
+          'aria-label': 'Working memory bucket with ' + chunks.length + ' of ' + CAPACITY + ' chunks',
+          style: { width: '100%', maxWidth: 360, height: 220, display: 'block', margin: '0 auto' }
+        },
+          // Bucket outline (trapezoid)
+          hh('path', {
+            d: 'M 40 30 L 160 30 L 175 130 L 25 130 Z',
+            fill: 'rgba(15,23,42,0.6)', stroke: '#475569', strokeWidth: 1.5
+          }),
+          // Capacity line (mark the 7-chunk threshold visibly inside the bucket)
+          hh('line', { x1: 35, y1: 35, x2: 165, y2: 35, stroke: '#fbbf24', strokeWidth: 0.8, strokeDasharray: '2,2' }),
+          hh('text', { x: 100, y: 28, fontSize: 5, fill: '#fbbf24', textAnchor: 'middle' }, 'capacity = ' + CAPACITY),
+          // Chunks — each as colored circle, stacked from the bottom
+          chunks.map(function(c, i) {
+            var perRow = 5;
+            var row = Math.floor(i / perRow);
+            var col = i % perRow;
+            var rowsTotal = Math.ceil(chunks.length / perRow);
+            var startY = 120 - (rowsTotal - 1) * 16;
+            var yPos = startY - (rowsTotal - 1 - row) * 16;
+            var widthAtRow = 150 - row * 4;
+            var startX = 100 - widthAtRow / 2;
+            var spacing = widthAtRow / (Math.min(perRow, chunks.length - row * perRow));
+            var xPos = startX + (col + 0.5) * spacing;
+            var t = TYPES.filter(function(tt) { return tt.id === c.type; })[0];
+            return hh('g', { key: 'ch-' + c.id },
+              hh('circle', { cx: xPos, cy: yPos, r: 7.5, fill: t.color, opacity: 0.85, stroke: '#0f172a', strokeWidth: 0.6 }),
+              hh('text', { x: xPos, y: yPos + 1.5, fontSize: 4.5, fill: '#fff', textAnchor: 'middle', fontWeight: 800 }, t.short)
+            );
+          }),
+          // Empty state
+          chunks.length === 0
+            ? hh('text', { x: 100, y: 90, fontSize: 6, fill: '#475569', textAnchor: 'middle', fontStyle: 'italic' }, 'add chunks below ↓')
+            : null
+        ),
+        // Fill progress bar at bottom
+        hh('div', { style: { marginTop: 8, height: 8, background: 'rgba(15,23,42,0.6)', borderRadius: 4, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
+          hh('div', { style: {
+            width: fillPct + '%', height: '100%',
+            background: chunks.length > CAPACITY ? 'linear-gradient(90deg, #10b981, #fbbf24, #ef4444)' : chunks.length === CAPACITY ? '#fbbf24' : '#10b981',
+            transition: 'width 200ms ease'
+          } })
+        )
+      ),
+
+      // Chunk-add buttons
+      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 10 } },
+        TYPES.map(function(t) {
+          return hh('button', {
+            key: 'add-' + t.id,
+            onClick: function() { addChunk(t.id); },
+            'aria-label': 'Add ' + t.label + ' load chunk',
+            style: {
+              padding: '10px 6px', borderRadius: 8,
+              background: t.color + '12', color: t.color,
+              border: '1.5px solid ' + t.color + '60',
+              fontSize: 11, fontWeight: 800, cursor: 'pointer',
+              transition: 'all 160ms ease'
+            }
+          },
+            hh('div', { style: { fontSize: 18, marginBottom: 2 } }, t.icon),
+            hh('div', null, '+ ' + t.label),
+            hh('div', { style: { fontSize: 8, opacity: 0.75, marginTop: 2 } }, byType[t.id] + ' added')
+          );
+        })
+      ),
+      hh('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: 10 } },
+        hh('button', {
+          onClick: clearAll,
+          style: {
+            padding: '6px 14px', borderRadius: 8,
+            background: 'rgba(148,163,184,0.10)', color: '#94a3b8',
+            border: '1px solid rgba(148,163,184,0.30)',
+            fontSize: 10, fontWeight: 700, cursor: 'pointer'
+          }
+        }, '↺ Clear bucket')
+      ),
+
+      // Lesson card — adapts to current state
+      hh('div', { style: {
+        padding: 10, borderRadius: 8,
+        background: hasOver ? 'rgba(239,68,68,0.10)' : chunks.length === CAPACITY ? 'rgba(251,191,36,0.10)' : 'rgba(16,185,129,0.10)',
+        border: '1px solid ' + (hasOver ? 'rgba(239,68,68,0.30)' : chunks.length === CAPACITY ? 'rgba(251,191,36,0.30)' : 'rgba(16,185,129,0.30)'),
+        fontSize: 11, color: '#cbd5e1', lineHeight: 1.6
+      } },
+        hh('strong', { style: { color: hasOver ? '#ef4444' : chunks.length === CAPACITY ? '#fbbf24' : '#10b981' } }, '🎓 '),
+        hasOver
+          ? 'You overflowed the bucket. The OLDEST chunks were evicted. This is what happens to a student receiving a confusing 5-step direction with classroom noise — by the time you finish step 4, step 1 is gone. The instructional fix: reduce ' + (byType.extraneous > 0 ? 'extraneous (red)' : 'load by chunking') + ' first, then add germane (green).'
+          : chunks.length === CAPACITY
+            ? 'At capacity. ANY additional chunk pushes the oldest out. Skilled instruction sits one chunk BELOW capacity to leave room for unexpected interruptions (a peer question, a noise, a forgotten step).'
+            : byType.extraneous > 0 && byType.germane === 0
+              ? 'Lots of extraneous load (red), no germane (green). This is the most common bad-instruction pattern: students working hard but not building schema. The fix: redirect that effort toward retrieval, explanation, or comparison.'
+              : 'Capacity is the absolute hard limit. Sweller showed working memory cannot be expanded — only managed. The instructional designer\'s job is to minimize EXTRANEOUS load and maximize GERMANE load while respecting INTRINSIC. Add some chunks above to see what happens at the threshold.'
+      )
+    );
+  }
+
+  // ── 3. NEUROMYTH SWIPER (Tinder-style myth-vs-research game) ──
+  // 8 popular education / brain claims. Student rates "I believe it" or
+  // "I doubt it"; reveal explains the actual research consensus.
+  // Score and badge tracking. Designed to be played in 2 minutes.
+  function NeuromythSwiper(props) {
+    if (!R) return null;
+    var awardXP = props.awardXP;
+    var is = R.useState(0);    var idx = is[0];     var setIdx = is[1];
+    var ps = R.useState(null); var pick = ps[0];    var setPick = ps[1];
+    var ss = R.useState(0);    var score = ss[0];   var setScore = ss[1];
+    var as = R.useState(false);var awarded = as[0]; var setAwarded = as[1];
+
+    var MYTHS = [
+      { claim: 'We only use 10% of our brains.', truth: false, color: '#ef4444',
+        why: 'False. Brain imaging shows essentially the entire brain is active over a single day. Even at rest, large networks (the default mode network) consume metabolic energy. The "10%" myth was never grounded in actual research — it likely traces to a 1936 self-help book preface.' },
+      { claim: 'You\'re either left-brained (logical) or right-brained (creative).', truth: false, color: '#ef4444',
+        why: 'False. There ARE hemispheric specializations (language tends to be left-lateralized; spatial processing right), but everyone uses both halves for almost every task. A 2013 Nielsen study with 1,000 brain scans found no evidence of "dominant hemisphere" personality types.' },
+      { claim: 'Teaching to a student\'s "learning style" (visual / auditory / kinesthetic) improves outcomes.', truth: false, color: '#ef4444',
+        why: 'False. Pashler et al. (2008) reviewed the entire learning-styles literature for the journal Psychological Science in the Public Interest. They found NO well-designed study showed a meaningful benefit. Teaching the SAME content multiple ways (dual-coding) does help — but matching to a stable "style" does not.' },
+      { claim: 'Practicing retrieval (e.g., flashcards) is more effective than re-reading notes.', truth: true, color: '#10b981',
+        why: 'True. Karpicke + Roediger (2006, 2011) showed in repeated experiments that retrieval practice produces MUCH better long-term retention than passive review, even when students rate retrieval as harder and feel less confident. The "feels harder = is harder" intuition is wrong.' },
+      { claim: 'Brain-training apps (Lumosity, etc.) make you generally smarter.', truth: false, color: '#ef4444',
+        why: 'False. Lumosity paid a $2 million FTC fine in 2016 for unsupported claims. The Stanford Center on Longevity and the Max Planck Institute issued a joint consensus statement: brain games improve performance on the games themselves but do NOT transfer to general cognition or daily-life function.' },
+      { claim: 'Sleep affects memory consolidation as much as the original learning session.', truth: true, color: '#10b981',
+        why: 'True. During sleep, especially slow-wave sleep, the brain replays daytime patterns and consolidates them into long-term memory. Sleep-deprived students show measurably worse retention even when total study hours are equal. Skipping sleep to study is a net loss.' },
+      { claim: 'Listening to Mozart makes babies smarter (the "Mozart effect").', truth: false, color: '#ef4444',
+        why: 'False. The original 1993 Rauscher study showed adult college students did marginally better on a spatial task IMMEDIATELY after listening to Mozart — for about 15 minutes. The "babies get smarter" extension was a marketing leap with no support. Replications have been mixed; effect (if real) is small and short.' },
+      { claim: 'You can multitask effectively if you practice (e.g., texting while studying).', truth: false, color: '#ef4444',
+        why: 'False. What feels like multitasking is rapid task-switching, and each switch incurs a cognitive cost (~25% slower, more errors). A 2009 Stanford study found that frequent multitaskers performed WORSE on attention-control tests than infrequent ones. Practice does not eliminate the switching cost.' }
+    ];
+
+    if (idx >= MYTHS.length) {
+      var pct = Math.round((score / MYTHS.length) * 100);
+      var grade = pct >= 88 ? '🏆 Myth-buster — informed reader' : pct >= 75 ? '🎯 Solid critical-thinking foundation' : pct >= 60 ? '📖 Some myths got past — good practice for a teacher-prep program' : '🔄 Replay — the cards in education-research literature are full of these';
+      if (!awarded && pct >= 60) {
+        // schedule award outside render
+        setTimeout(function() { setAwarded(true); if (awardXP) awardXP(2); }, 0);
+      }
+      return hh('div', {
+        style: { background: 'rgba(15,23,42,0.7)', borderRadius: 12, padding: 16, marginBottom: 14,
+          borderTop: '1px solid rgba(147,51,234,0.30)', borderRight: '1px solid rgba(147,51,234,0.30)',
+          borderBottom: '1px solid rgba(147,51,234,0.30)', borderLeft: '4px solid #9333ea' }
+      },
+        hh('div', { style: { textAlign: 'center', padding: 16 } },
+          hh('div', { style: { fontSize: 32, marginBottom: 8 } }, '🧠'),
+          hh('div', { style: { fontSize: 16, fontWeight: 900, color: '#c084fc', marginBottom: 6 } }, 'Myth-spotter complete'),
+          hh('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 10 } }, 'Score: ' + score + ' / ' + MYTHS.length + ' (' + pct + '%)'),
+          hh('div', { style: { fontSize: 12, color: '#c084fc', fontWeight: 700, marginBottom: 14 } }, grade),
+          hh('button', {
+            onClick: function() { setIdx(0); setPick(null); setScore(0); setAwarded(false); },
+            style: { padding: '10px 18px', borderRadius: 8, background: '#9333ea', color: '#fff', border: 'none', fontSize: 12, fontWeight: 800, cursor: 'pointer' }
+          }, '↺ Run again')
+        )
+      );
+    }
+
+    var card = MYTHS[idx];
+    var picked = pick !== null;
+    var correct = picked && (pick === card.truth);
+
+    function vote(believe) {
+      if (picked) return;
+      setPick(believe);
+      if (believe === card.truth) setScore(score + 1);
+    }
+    function next() { setIdx(idx + 1); setPick(null); }
+
+    return hh('div', {
+      style: { background: 'rgba(15,23,42,0.7)', borderRadius: 12, padding: 16, marginBottom: 14,
+        borderTop: '1px solid rgba(147,51,234,0.30)', borderRight: '1px solid rgba(147,51,234,0.30)',
+        borderBottom: '1px solid rgba(147,51,234,0.30)', borderLeft: '4px solid #9333ea' }
+    },
+      hh('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
+        hh('div', { 'aria-hidden': 'true', style: { width: 36, height: 36, borderRadius: '50%', background: 'rgba(147,51,234,0.18)', border: '1.5px solid #9333ea', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 } }, '🧠'),
+        hh('div', { style: { flex: 1, minWidth: 200 } },
+          hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#c084fc' } }, 'Neuromyth swiper'),
+          hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, 'Believe it, or doubt it. Then see what the research says.')
+        ),
+        hh('div', { style: { padding: '4px 10px', borderRadius: 999, background: 'rgba(147,51,234,0.12)', color: '#c084fc', fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', border: '1px solid rgba(147,51,234,0.40)' } }, 'Card ' + (idx + 1) + ' / ' + MYTHS.length + ' · ' + score + ' right')
+      ),
+
+      // The card
+      hh('div', {
+        style: {
+          background: picked ? (correct ? 'linear-gradient(135deg, rgba(34,197,94,0.15), rgba(15,23,42,0.7))' : 'linear-gradient(135deg, rgba(239,68,68,0.15), rgba(15,23,42,0.7))') : 'rgba(15,23,42,0.6)',
+          borderRadius: 12, padding: '20px 18px', marginBottom: 12,
+          border: picked ? '2px solid ' + (correct ? '#22c55e' : '#ef4444') : '1px solid rgba(100,116,139,0.40)',
+          minHeight: 110, transition: 'all 240ms ease'
+        }
+      },
+        hh('div', { style: { fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 } }, 'Claim'),
+        hh('div', { style: { fontSize: 14, fontWeight: 700, color: '#e2e8f0', lineHeight: 1.5, marginBottom: picked ? 12 : 0 } }, '"' + card.claim + '"'),
+        picked ? hh('div', null,
+          hh('div', { style: { padding: 8, borderRadius: 6, background: card.truth ? 'rgba(16,185,129,0.10)' : 'rgba(239,68,68,0.10)', borderLeft: '3px solid ' + (card.truth ? '#10b981' : '#ef4444'), marginBottom: 8 } },
+            hh('span', { style: { fontSize: 10, fontWeight: 800, color: card.truth ? '#10b981' : '#ef4444', marginRight: 6 } }, card.truth ? '✓ TRUE' : '✗ MYTH'),
+            hh('span', { style: { fontSize: 10, color: correct ? '#22c55e' : '#ef4444', fontWeight: 700 } }, correct ? '— you got it right' : '— you swiped the wrong way')
+          ),
+          hh('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 } }, card.why)
+        ) : null
+      ),
+
+      // Vote buttons
+      !picked ? hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
+        hh('button', {
+          onClick: function() { vote(false); },
+          'aria-label': 'I doubt it',
+          style: {
+            padding: '14px 8px', borderRadius: 10,
+            background: 'rgba(239,68,68,0.10)', color: '#fca5a5',
+            border: '1.5px solid rgba(239,68,68,0.40)',
+            fontSize: 13, fontWeight: 800, cursor: 'pointer',
+            transition: 'all 160ms ease'
+          }
+        }, hh('div', { style: { fontSize: 22, marginBottom: 4 } }, '👎'), 'I doubt it'),
+        hh('button', {
+          onClick: function() { vote(true); },
+          'aria-label': 'I believe it',
+          style: {
+            padding: '14px 8px', borderRadius: 10,
+            background: 'rgba(34,197,94,0.10)', color: '#86efac',
+            border: '1.5px solid rgba(34,197,94,0.40)',
+            fontSize: 13, fontWeight: 800, cursor: 'pointer',
+            transition: 'all 160ms ease'
+          }
+        }, hh('div', { style: { fontSize: 22, marginBottom: 4 } }, '👍'), 'I believe it')
+      ) : hh('div', { style: { textAlign: 'right' } },
+        hh('button', {
+          onClick: next,
+          style: {
+            padding: '10px 18px', borderRadius: 8,
+            background: '#9333ea', color: '#fff',
+            border: 'none', fontSize: 12, fontWeight: 800, cursor: 'pointer'
+          }
+        }, idx + 1 >= MYTHS.length ? 'See score →' : 'Next claim →')
+      )
+    );
+  }
+
   window.StemLab.registerTool('learningLab', {
     name: 'Learning Lab',
     icon: '🧠',
@@ -2703,6 +3225,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         var pickedLoad = picked ? COGNITIVE_LOAD_TYPES.find(function(c) { return c.id === picked; }) : null;
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('⚖️ Cognitive Load Theory'),
+          h(CognitiveLoadBuilder, { awardXP: ctx.awardXP }),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '⚖️ Sweller\'s Cognitive Load Theory'),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
@@ -2957,6 +3480,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       function renderSpaced() {
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('⏰ Spaced repetition + retrieval'),
+          h(ForgettingCurveSim, { awardXP: ctx.awardXP }),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '⏰ ' + FORGETTING_CURVE.title),
             h('p', { style: { margin: '0 0 10px', color: T.text, fontSize: 13, lineHeight: 1.55, fontWeight: 700 } }, FORGETTING_CURVE.summary),
@@ -3109,6 +3633,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         var pickedMyth = picked ? NEUROMYTHS.find(function(m) { return m.id === picked; }) : null;
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🚫 Neuromyth debunker'),
+          h(NeuromythSwiper, { awardXP: ctx.awardXP }),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🚫 8 popular beliefs that research rejects'),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
