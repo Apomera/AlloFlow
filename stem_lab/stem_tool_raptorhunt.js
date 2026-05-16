@@ -5576,6 +5576,227 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
   };
 
   // ───────────────────────────────────────────────────────────
+  // NEW v0.46: RESCUE DECISION TREE — what to do when you find...
+  // ───────────────────────────────────────────────────────────
+  var RESCUE_TREE = {
+    intro: 'Decision tree for what to do when you encounter an injured, sick, or distressed raptor. Step through the questions to get the right action.',
+    scenarios: [
+      { situation: 'Adult raptor — appears injured + on ground', steps: ['Don\'t approach within 2m', 'Call licensed rehabber NOW (state wildlife agency for directory)', 'Don\'t feed or water', 'Do NOT pick up unless instructed', 'Mark location + photograph from distance'], legal: 'Federal protection: do NOT transport without specific permission from rehabber.' },
+      { situation: 'Adult raptor — appears stunned (likely window strike)', steps: ['Place cardboard box with towel + ventilation holes nearby', 'Carefully transfer with gloves IF instructed by rehabber', 'Keep in dark + quiet location 30+ min', 'Watch for signs of recovery (perked head, alertness)', 'If recovered: release outside near where found'], legal: 'Brief possession to recover is generally acceptable.' },
+      { situation: 'Baby raptor on ground in May-July', steps: ['Look for nest in nearby tree', 'If parents present: leave alone, parents continue care', 'If on roadway/in pet area: place on low branch out of immediate danger', 'If clearly injured: call rehab', 'If far from nest + no parents: rehab'], legal: 'Brief move to safety is acceptable.' },
+      { situation: 'Dead raptor (cause unclear)', steps: ['Don\'t touch (feathers federally protected)', 'Photograph for state wildlife', 'Note GPS + exact location', 'Call state wildlife agency or USFWS', 'Federal Law violation to possess'], legal: 'Federal felony to possess any eagle or migratory bird parts.' },
+      { situation: 'Raptor entangled in fishing line', steps: ['Call rehab immediately', 'Do NOT cut line yourself', 'Keep dogs/people away', 'Document with photos'], legal: 'Don\'t move; transport may injure further.' },
+      { situation: 'Raptor caught in trap', steps: ['Call rehab + state wildlife', 'Document trap location', 'If you can safely + slowly release: do it with two people, gloved + at distance', 'Most state laws require trap-line monitoring'], legal: 'State trap laws vary. Call wildlife to assist.' },
+      { situation: 'Raptor with bird/fishline impalement', steps: ['Don\'t remove hook/line', 'Call rehab immediately for triage', 'Transport in dark box', 'Veterinary care required'], legal: 'Don\'t self-treat.' },
+      { situation: 'Raptor exposed to oil spill', steps: ['Call International Bird Rescue 1-866-767-2473 OR local rehab', 'DO NOT attempt to clean yourself', 'Transport in box', 'Specialized cleaning protocols required'], legal: 'Oil spill response is highly regulated.' },
+      { situation: 'Raptor caught indoors', steps: ['Close interior doors + windows; open exterior windows', 'Turn off ceiling fans + bright lights', 'Wait — most birds calm down + fly out', 'If exhausted: contact wildlife agency'], legal: 'No issue with helping a temporarily trapped bird.' },
+      { situation: 'Raptor stuck in window grates/AC units', steps: ['Don\'t pull bird', 'Call rehab immediately', 'May need to disassemble surrounding structure', 'Document location'], legal: 'Patient extraction required.' },
+      { situation: 'Active nest will be disturbed by construction', steps: ['Halt construction immediately', 'Contact USFWS (Migratory Bird Treaty Act applies)', 'For eagles: Bald + Golden Eagle Act adds protection', 'Federal permit required to proceed', 'Resume after fledging'], legal: 'Federal law strict on this. Major fines.' },
+      { situation: 'Found a raptor in trouble at night', steps: ['Most rehabs have 24-hour emergency lines', 'Or use overnight contact: keep bird safely contained until morning', 'Don\'t feed', 'Keep warm + dark'], legal: 'Brief containment for transport is acceptable.' }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.46: AGE & PLUMAGE GUIDE
+  // ───────────────────────────────────────────────────────────
+  var AGE_PLUMAGE = {
+    intro: 'Distinguishing immature from adult raptors is one of the hardest ID challenges. Here is a per-species guide.',
+    species: [
+      { species: 'Bald eagle', maturity: '4-5 years', juvPattern: 'All dark body + head with light marks', subadultPattern: '2-3 years: irregular white speckles + brown', adultPattern: '4-5+ years: white head + tail, dark body', timing: 'Plumage transitions over 4-5 years' },
+      { species: 'Golden eagle', maturity: '4-5 years', juvPattern: 'White tail base + wing patches; dark body', subadultPattern: '2-3 years: less white markings', adultPattern: '4-5+ years: solid dark, golden nape', timing: 'Gradual loss of juvenile markings' },
+      { species: 'Red-tailed hawk', maturity: '2 years', juvPattern: 'Banded tail (not rufous); brown body', subadultPattern: 'Mix of red + banded tail feathers', adultPattern: 'Solid rufous tail; pale chest with belly band', timing: '1 year for tail transition' },
+      { species: 'Cooper\'s hawk', maturity: '2 years', juvPattern: 'Vertical streaking on chest; brown back', subadultPattern: 'Mostly adult-like by 2nd year', adultPattern: 'Horizontal barring on chest; gray-blue back', timing: '1-2 years' },
+      { species: 'Sharp-shinned hawk', maturity: '1-2 years', juvPattern: 'Vertical streaking on chest; brown', subadultPattern: 'Mostly adult-like by 2nd year', adultPattern: 'Horizontal barring; blue-gray back', timing: 'Similar to Cooper\'s' },
+      { species: 'Peregrine falcon', maturity: '2-3 years', juvPattern: 'Brown overall; vertically streaked chest', subadultPattern: '2nd year: more adult-like', adultPattern: 'Slate-blue back + horizontally barred chest; black mustache mark', timing: '2-3 years' },
+      { species: 'Merlin', maturity: '1-2 years', juvPattern: 'Brown; rusty tinge', subadultPattern: 'Similar to adult by 2nd year', adultPattern: 'Bluer back; faint moustache', timing: '1-2 years' },
+      { species: 'American kestrel', maturity: '1 year', juvPattern: 'Adult plumage already', subadultPattern: 'N/A', adultPattern: 'Two black mustache marks + male/female color differences', timing: 'Adult plumage at 1 year' },
+      { species: 'Great horned owl', maturity: '2 years', juvPattern: 'Fluffy + downy until 4 months', subadultPattern: 'Adult-like by 1 year', adultPattern: 'Distinctive ear tufts + horizontal barring', timing: '1-2 years' },
+      { species: 'Barred owl', maturity: '2 years', juvPattern: 'Downy + fluffy', subadultPattern: 'Adult-like by 1 year', adultPattern: 'Streaked + barred pattern', timing: 'Similar timeline' },
+      { species: 'Snowy owl', maturity: '2 years', juvPattern: 'Heavily marked with dark bars', subadultPattern: 'Pale; female still marked', adultPattern: 'Male: pure white. Female: partially barred (lifetime)', timing: 'Variable; sex-specific' },
+      { species: 'Northern goshawk', maturity: '2 years', juvPattern: 'Brown + heavily streaked', subadultPattern: 'Mostly adult-like by 2nd year', adultPattern: 'Slate-blue back; pale gray belly with fine barring', timing: '1-2 years' },
+      { species: 'Osprey', maturity: '3 years', juvPattern: 'Less white marks; less defined head pattern', subadultPattern: 'Year 2: more adult-like', adultPattern: 'White below, black wing pattern, dark head stripe', timing: '2-3 years' },
+      { species: 'Harpy eagle', maturity: '4-5 years', juvPattern: 'Mostly white with light gray', subadultPattern: '2-3 years: developing adult colors', adultPattern: '4-5+ years: gray + white with crest', timing: '4-5 years' }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.46: MOLT ATLAS — annual feather replacement
+  // ───────────────────────────────────────────────────────────
+  var MOLT_ATLAS = {
+    intro: 'Molt is the annual replacement of feathers. Critical event for flight performance + thermal regulation. Patterns vary by species + sex.',
+    info: {
+      moltPurpose: 'Worn feathers reduce flight efficiency. Annual replacement maintains performance + plumage.',
+      energyCost: 'High — birds may consume 25% more food during molt. Reproduction often suppressed.',
+      timing: 'Most raptors molt in non-breeding season. Variable by species.',
+      bodyOrder: 'Body feathers (covering) molt first. Flight feathers (primaries + secondaries) last.',
+      sequentialMolt: 'Primaries molt sequentially (P1 first → P10 last) to maintain flight ability. Both wings symmetric.',
+      duration: 'Body molt: 1-2 months. Full molt including wings: 3-4 months. Some large species (eagles) take multiple years for complete renewal.'
+    },
+    timetable: [
+      { species: 'Peregrine falcon', timing: 'June-October', specifics: 'Body molt first, primaries sequentially, by end of October complete' },
+      { species: 'Bald eagle', timing: 'Year-round but mostly Apr-Sep', specifics: 'Long molt; some feathers replaced over multiple years' },
+      { species: 'Red-tailed hawk', timing: 'May-October', specifics: 'Body molt May, wing molt June-Aug, tail molt by Oct' },
+      { species: 'Cooper\'s hawk', timing: 'May-September', specifics: 'Females molt earlier (during nest building)' },
+      { species: 'Great horned owl', timing: 'May-September', specifics: 'Mostly during breeding; chicks fledged by molt start' },
+      { species: 'American kestrel', timing: 'June-September', specifics: 'Fast molt; small size means less feather mass to replace' },
+      { species: 'Snowy owl', timing: 'June-October', specifics: 'Body molt; juvenile-to-adult transition (sex-specific) ongoing' },
+      { species: 'Osprey', timing: 'May-September (after breeding)', specifics: 'Sequential primary molt; minimal flight disruption' }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.46: WING FORMULA + AERODYNAMIC DATA
+  // ───────────────────────────────────────────────────────────
+  var WING_FORMULA = {
+    intro: 'Wing formula is the ratio of primary feather lengths. Diagnostic for species ID + reveals flight performance. Most raptors have 10 primaries (P1-P10).',
+    info: {
+      whatIsIt: 'Wing formula = the order in which primaries extend beyond the secondary feathers when wing folded.',
+      diagnostic: 'Each species has characteristic pattern.',
+      example: 'Cooper\'s hawk: P3 longest, P4 next, then P5 + P2. Long P2 separates Cooper\'s from sharp-shin.'
+    },
+    species: [
+      { species: 'Peregrine falcon', formula: 'P10 > P9 > P8 > P7 > P6...', highAspect: 'Yes (~8)', notes: 'Long pointed wing. P10 (outermost) longest.' },
+      { species: 'Cooper\'s hawk', formula: 'P3 > P4 > P5 > P2 > P6...', highAspect: 'No (~5)', notes: 'P3 longest; P2 longer than P6. Diagnostic for Cooper\'s vs sharp-shin.' },
+      { species: 'Sharp-shinned hawk', formula: 'P3 > P4 > P5 > P2 > P6...', highAspect: 'No (~5)', notes: 'Very similar to Cooper\'s. P3 longest. P2 shorter than P6 — diagnostic.' },
+      { species: 'Red-tailed hawk', formula: 'P3 > P4 > P5 > P6 > P2...', highAspect: 'Moderate (~6)', notes: 'P3 longest; broad pattern' },
+      { species: 'Bald eagle', formula: 'P4 > P3 > P5 > P6 > P2...', highAspect: 'Moderate (~6)', notes: 'P4 longest; slotted tips characteristic' },
+      { species: 'Vulture (Turkey)', formula: 'P3 > P4 > P5 > P6 > P7...', highAspect: 'Low (~5.5)', notes: 'Long P5-P7 for slotted lift' },
+      { species: 'American kestrel', formula: 'P9 > P10 > P8 > P7...', highAspect: 'Moderate (~6)', notes: 'P9 longest; pointed tip' },
+      { species: 'Great horned owl', formula: 'P7 > P6 > P5 > P4 > P8...', highAspect: 'Low (~4-5)', notes: 'Broad short wings; lower aspect ratio for forest hunting' }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.46: DATA REFERENCE TABLES
+  // ───────────────────────────────────────────────────────────
+  var DATA_TABLES = {
+    intro: 'Quick-reference data tables for raptor researchers + educators + bird-watchers.',
+    tables: [
+      {
+        title: 'Mass + Wingspan by Species',
+        columns: ['Species', 'Mass (kg)', 'Wingspan (cm)', 'Body Length (cm)'],
+        rows: [
+          ['Andean condor', '11-15', '275-310', '100-130'],
+          ['California condor', '8-11', '275-300', '95-135'],
+          ['Bald eagle', '3-6.3', '180-230', '70-95'],
+          ['Golden eagle', '3-6.7', '180-230', '75-100'],
+          ['Steller\'s sea eagle', '6-9', '195-230', '85-105'],
+          ['Harpy eagle', '4-9', '180-220', '90-105'],
+          ['Eurasian buzzard', '0.6-1.4', '110-140', '50-58'],
+          ['Red-tailed hawk', '0.7-1.5', '105-145', '45-65'],
+          ['Cooper\'s hawk', '0.2-0.7', '70-90', '40-50'],
+          ['Sharp-shinned hawk', '0.1-0.2', '50-70', '25-35'],
+          ['Peregrine falcon', '0.5-1.5', '74-120', '36-58'],
+          ['Gyrfalcon', '0.8-2.1', '110-160', '50-66'],
+          ['Saker falcon', '0.7-1.3', '115-130', '45-58'],
+          ['Merlin', '0.15-0.3', '50-70', '24-32'],
+          ['American kestrel', '0.1-0.15', '50-60', '22-31'],
+          ['Mississippi kite', '0.2-0.4', '85-95', '32-37'],
+          ['Osprey', '1.4-2', '150-180', '50-65'],
+          ['Northern harrier', '0.3-0.6', '100-122', '40-52'],
+          ['Great horned owl', '0.9-2', '90-150', '46-64'],
+          ['Snowy owl', '1.6-3', '130-170', '50-70'],
+          ['Barred owl', '0.4-1', '95-130', '40-60'],
+          ['Eastern screech owl', '0.1-0.25', '45-60', '16-25'],
+          ['Barn owl', '0.4-0.7', '85-110', '32-46']
+        ]
+      },
+      {
+        title: 'Conservation Status (IUCN) — Common N. American Raptors',
+        columns: ['Species', 'IUCN Status', 'US Population Trend', 'Key Concerns'],
+        rows: [
+          ['Bald eagle', 'Least Concern', 'Increasing', 'DDT recovery, climate'],
+          ['Peregrine falcon', 'Least Concern', 'Stable', 'Habitat'],
+          ['American kestrel', 'Least Concern', 'Declining', 'Habitat + pesticides'],
+          ['Cooper\'s hawk', 'Least Concern', 'Increasing', 'Window strikes'],
+          ['Red-tailed hawk', 'Least Concern', 'Stable', 'Rodenticides'],
+          ['Northern goshawk', 'Least Concern', 'Slight decline', 'Forest management'],
+          ['Ferruginous hawk', 'Least Concern', 'Declining', 'Prairie loss'],
+          ['Swainson\'s hawk', 'Least Concern', 'Stable', 'Argentina pesticides'],
+          ['Snowy owl', 'Vulnerable', 'Declining', 'Climate change'],
+          ['Northern spotted owl', 'Near Threatened', 'Declining', 'Logging + barred owl'],
+          ['California condor', 'Critically Endangered', 'Recovering', 'Lead, habitat'],
+          ['White-rumped vulture (Asia)', 'Critically Endangered', 'Crashed (~99%)', 'Diclofenac'],
+          ['Mauritius kestrel', 'Endangered', 'Recovering', 'Genetic + habitat']
+        ]
+      },
+      {
+        title: 'Visual Acuity Comparison',
+        columns: ['Species', 'Acuity (cycles/deg)', 'vs Human', 'Foveas/eye'],
+        rows: [
+          ['Human', '1.5', '1×', '1'],
+          ['Cat', '5', '3.3×', '1'],
+          ['Dog', '4', '2.7×', '1'],
+          ['Most diurnal raptors', '3-4', '2-2.7×', '2'],
+          ['Wedge-tailed eagle', '8', '5.3×', '2'],
+          ['Peregrine falcon', '~7', '4.7×', '2'],
+          ['American kestrel', '~5', '3.3×', '1 (UV sensitive)']
+        ]
+      },
+      {
+        title: 'Flight Performance — Hovering + Diving',
+        columns: ['Species', 'Hovering?', 'Stoop speed (mph)', 'Habitat'],
+        rows: [
+          ['Peregrine falcon', 'No', '~242 (Cornell 2005)', 'Open + urban'],
+          ['Gyrfalcon', 'No', '~150-180', 'Arctic + boreal'],
+          ['Prairie falcon', 'No', '~150-170', 'Plains'],
+          ['Saker falcon', 'No', '~150-170', 'Eurasian steppe'],
+          ['American kestrel', 'Yes (active flap)', 'N/A', 'Open country'],
+          ['Rough-legged hawk', 'Yes', '~80', 'Open winter habitat'],
+          ['White-tailed kite', 'Yes', 'Soft glide', 'Western US'],
+          ['Bald eagle', 'No', '~60-80', 'Coastal + lake'],
+          ['Red-tailed hawk', 'Kites', '~50-70', 'Wide habitat']
+        ]
+      },
+      {
+        title: 'Caloric Needs Estimate (daily)',
+        columns: ['Species', 'Body mass (kg)', 'Daily kcal need', 'Vole equivalent'],
+        rows: [
+          ['American kestrel', '0.12', '~14', '~1'],
+          ['Cooper\'s hawk', '0.4', '~48', '~3'],
+          ['Red-tailed hawk', '1.1', '~132', '~8-9'],
+          ['Peregrine falcon', '0.9', '~108', '~7'],
+          ['Bald eagle', '5', '~600', '~40 (or 1 duck)'],
+          ['Golden eagle', '4', '~480', '~32 (or 1 rabbit)'],
+          ['Great horned owl', '1.5', '~180', '~12'],
+          ['Snowy owl', '2', '~240', '~16 lemmings'],
+          ['Harpy eagle', '8', '~960', '~64 (or 1 sloth/week)']
+        ]
+      },
+      {
+        title: 'Migration Distances (typical)',
+        columns: ['Species', 'One-way distance (km)', 'Months', 'Notes'],
+        rows: [
+          ['Broad-winged hawk', '4,000-8,000', 'Aug-Nov / Mar-May', 'Kettling specialist'],
+          ['Swainson\'s hawk', '10,000+', 'Sep-Nov / Mar-May', 'Argentina destination'],
+          ['Peregrine falcon (Arctic)', '15,000+', 'Aug-Oct / Mar-May', 'Among longest land migrations'],
+          ['Steppe eagle', '6,000+', 'Sep-Oct / Mar-May', 'Mongolia to E. Africa'],
+          ['Honey buzzard', '8,000+', 'Sep-Oct', 'Europe to S. Africa'],
+          ['Sharp-shinned hawk', '500-3,000', 'Sep-Nov', 'Many short migrants'],
+          ['American kestrel', '500-2,000', 'Sep-Oct', 'Partial migrant'],
+          ['Snowy owl', 'Irruptive', 'Variable', 'Triggered by prey crashes']
+        ]
+      },
+      {
+        title: 'Lifespan Records',
+        columns: ['Species', 'Wild record', 'Captive record', 'Average wild'],
+        rows: [
+          ['Bald eagle', '38 years', '50+', '20-30'],
+          ['Golden eagle', '31 years', '50+', '20-30'],
+          ['Peregrine falcon', '20 years', '25+', '15-20'],
+          ['Red-tailed hawk', '29 years', '40+', '10-20'],
+          ['Cooper\'s hawk', '15 years', '20+', '8-12'],
+          ['Great horned owl', '22 years', '30+', '10-20'],
+          ['American kestrel', '11 years', '17+', '5-10'],
+          ['California condor', '60+', '80+', '40-60'],
+          ['Harpy eagle', '30+', '40+', '25-35'],
+          ['Andean condor', '50+', '70+', '50-60']
+        ]
+      }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
   // GLOSSARY DATA — A-Z reference of raptor terminology
   // ───────────────────────────────────────────────────────────
   var GLOSSARY = [
@@ -5791,6 +6012,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         { id: 'engagement', label: 'Public Engagement', icon: '📢' },
         { id: 'glossary2', label: 'Deep Glossary B', icon: '🅱' },
         { id: 'finale', label: 'Closing Reflection', icon: '🌅' },
+        { id: 'rescue', label: 'Rescue Decision Tree', icon: '🚑' },
+        { id: 'agecoloration', label: 'Age & Plumage Guide', icon: '🎨' },
+        { id: 'molt', label: 'Molt Atlas', icon: '🪶' },
+        { id: 'wingformula', label: 'Wing Formula Calculator', icon: '📐' },
+        { id: 'datatables', label: 'Data Reference Tables', icon: '📋' },
         { id: 'glossary', label: 'Glossary', icon: '📖' },
         { id: 'quiz', label: 'Field ID Quiz', icon: '🎓' },
         { id: 'resources', label: 'Resources', icon: '📚' }
@@ -16313,6 +16539,245 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       }
 
       // ────────────────────────────────────────────────────────
+      // RENDER: RESCUE DECISION TREE (v0.46)
+      // ────────────────────────────────────────────────────────
+      function renderRescue() {
+        var rescueIdx = rh.rescueIdx == null ? 0 : rh.rescueIdx;
+        function setRescueIdx(i) { setRH({ rescueIdx: i }); }
+        var s = RESCUE_TREE.scenarios[rescueIdx];
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-red-900/40 to-rose-900/40 border border-red-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '🚑'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-red-200' }, 'Rescue Decision Tree'),
+                h('div', { className: 'text-sm text-red-100/85 mt-1' }, RESCUE_TREE.intro)
+              )
+            )
+          ),
+          h('div', { className: 'flex flex-wrap gap-1' },
+            RESCUE_TREE.scenarios.map(function(sc, i) {
+              var sel = rescueIdx === i;
+              return h('button', {
+                key: i,
+                onClick: function() { setRescueIdx(i); },
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-red-600 text-white font-bold' : 'bg-slate-800/60 text-red-200 hover:bg-slate-700/60'),
+                'aria-pressed': sel
+              }, '#' + (i + 1));
+            })
+          ),
+          h('div', { className: 'bg-slate-800/40 border border-red-700/40 rounded-xl p-4 space-y-3' },
+            h('div', { className: 'text-base font-bold text-red-300' }, '⚠ ' + s.situation),
+            h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
+              h('div', { className: 'text-xs font-bold text-cyan-300 mb-2' }, '📋 Action Steps'),
+              h('ol', { className: 'space-y-1 list-decimal list-inside text-sm text-slate-100' },
+                s.steps.map(function(step, i) {
+                  return h('li', { key: i, className: 'leading-relaxed' }, step);
+                })
+              )
+            ),
+            h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-3' },
+              h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, '⚖ Legal'),
+              h('div', { className: 'text-sm text-amber-100/90 leading-relaxed' }, s.legal)
+            )
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: AGE & PLUMAGE GUIDE (v0.46)
+      // ────────────────────────────────────────────────────────
+      function renderAgeColoration() {
+        var apIdx = rh.agePlumageIdx == null ? 0 : rh.agePlumageIdx;
+        function setApIdx(i) { setRH({ agePlumageIdx: i }); }
+        var s = AGE_PLUMAGE.species[apIdx];
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-fuchsia-900/40 to-pink-900/40 border border-fuchsia-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '🎨'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-fuchsia-200' }, 'Age & Plumage Guide'),
+                h('div', { className: 'text-sm text-fuchsia-100/85 mt-1' }, AGE_PLUMAGE.intro)
+              )
+            )
+          ),
+          h('div', { className: 'flex flex-wrap gap-1' },
+            AGE_PLUMAGE.species.map(function(sp, i) {
+              var sel = apIdx === i;
+              return h('button', {
+                key: i,
+                onClick: function() { setApIdx(i); },
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-fuchsia-600 text-white font-bold' : 'bg-slate-800/60 text-fuchsia-200 hover:bg-slate-700/60'),
+                'aria-pressed': sel
+              }, sp.species);
+            })
+          ),
+          h('div', { className: 'bg-slate-800/40 border border-fuchsia-700/40 rounded-xl p-4 space-y-2' },
+            h('div', { className: 'flex items-baseline justify-between' },
+              h('div', { className: 'text-lg font-bold text-fuchsia-300' }, '🦅 ' + s.species),
+              h('div', { className: 'text-xs text-amber-300 font-mono' }, 'Mature at ' + s.maturity)
+            ),
+            h('div', { className: 'grid md:grid-cols-3 gap-2' },
+              h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-2 text-xs' },
+                h('div', { className: 'font-bold text-emerald-300 mb-1' }, '🐣 Juvenile (Year 1)'),
+                h('div', { className: 'text-emerald-100/90' }, s.juvPattern)
+              ),
+              h('div', { className: 'bg-yellow-900/20 border border-yellow-700/40 rounded p-2 text-xs' },
+                h('div', { className: 'font-bold text-yellow-300 mb-1' }, '🌱 Sub-adult (Year 2-3)'),
+                h('div', { className: 'text-yellow-100/90' }, s.subadultPattern)
+              ),
+              h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-2 text-xs' },
+                h('div', { className: 'font-bold text-amber-300 mb-1' }, '🦅 Adult'),
+                h('div', { className: 'text-amber-100/90' }, s.adultPattern)
+              )
+            ),
+            h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
+              h('div', { className: 'font-bold text-cyan-300 mb-1' }, '⏰ Timing'),
+              h('div', { className: 'text-cyan-100/90' }, s.timing)
+            )
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: MOLT ATLAS (v0.46)
+      // ────────────────────────────────────────────────────────
+      function renderMolt() {
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-slate-700/40 to-stone-700/40 border border-slate-600/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '🪶'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-stone-200' }, 'Molt Atlas'),
+                h('div', { className: 'text-sm text-stone-300 mt-1' }, MOLT_ATLAS.intro)
+              )
+            )
+          ),
+          h('div', { className: 'grid md:grid-cols-2 gap-3' },
+            Object.keys(MOLT_ATLAS.info).map(function(k, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-slate-700/40 rounded-lg p-3' },
+                h('div', { className: 'text-sm font-bold text-stone-300 mb-1 capitalize' }, k.replace(/([A-Z])/g, ' $1')),
+                h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, MOLT_ATLAS.info[k])
+              );
+            })
+          ),
+          h('div', { className: 'bg-slate-800/40 border border-slate-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-sm font-bold text-stone-300 mb-2' }, '📅 Molt Timetable by Species'),
+            h('div', { className: 'space-y-2' },
+              MOLT_ATLAS.timetable.map(function(t, i) {
+                return h('div', { key: i, className: 'bg-slate-900/40 border-l-4 border-amber-600 rounded-r p-2' },
+                  h('div', { className: 'flex items-baseline justify-between mb-1' },
+                    h('div', { className: 'text-sm font-bold text-amber-300' }, t.species),
+                    h('div', { className: 'text-xs text-cyan-300 font-mono' }, t.timing)
+                  ),
+                  h('div', { className: 'text-xs text-slate-200 italic' }, t.specifics)
+                );
+              })
+            )
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: WING FORMULA (v0.46)
+      // ────────────────────────────────────────────────────────
+      function renderWingFormula() {
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-blue-900/40 to-sky-900/40 border border-blue-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '📐'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-blue-200' }, 'Wing Formula Calculator'),
+                h('div', { className: 'text-sm text-blue-100/85 mt-1' }, WING_FORMULA.intro)
+              )
+            )
+          ),
+          h('div', { className: 'grid md:grid-cols-3 gap-3' },
+            Object.keys(WING_FORMULA.info).map(function(k, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-blue-700/30 rounded-lg p-3' },
+                h('div', { className: 'text-sm font-bold text-blue-300 mb-1 capitalize' }, k.replace(/([A-Z])/g, ' $1')),
+                h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, WING_FORMULA.info[k])
+              );
+            })
+          ),
+          h('div', { className: 'bg-slate-800/40 border border-blue-700/40 rounded-xl p-4 overflow-x-auto' },
+            h('table', { className: 'w-full text-xs' },
+              h('thead', null,
+                h('tr', { className: 'border-b border-blue-700/40' },
+                  h('th', { className: 'p-2 text-left text-blue-300' }, 'Species'),
+                  h('th', { className: 'p-2 text-left text-blue-300' }, 'Formula'),
+                  h('th', { className: 'p-2 text-left text-blue-300' }, 'High Aspect Ratio?'),
+                  h('th', { className: 'p-2 text-left text-blue-300' }, 'Notes')
+                )
+              ),
+              h('tbody', null,
+                WING_FORMULA.species.map(function(s, i) {
+                  return h('tr', { key: i, className: 'border-b border-slate-700/40 ' + (i % 2 === 0 ? 'bg-slate-800/30' : 'bg-slate-900/30') },
+                    h('td', { className: 'p-2 font-bold text-amber-300' }, s.species),
+                    h('td', { className: 'p-2 text-cyan-200 font-mono' }, s.formula),
+                    h('td', { className: 'p-2 text-emerald-200' }, s.highAspect),
+                    h('td', { className: 'p-2 text-slate-200 italic' }, s.notes)
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: DATA TABLES (v0.46)
+      // ────────────────────────────────────────────────────────
+      function renderDataTables() {
+        var tableIdx = rh.tableIdx == null ? 0 : rh.tableIdx;
+        function setTableIdx(i) { setRH({ tableIdx: i }); }
+        var t = DATA_TABLES.tables[tableIdx];
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-slate-700/40 to-gray-700/40 border border-slate-600/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '📋'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-slate-200' }, 'Data Reference Tables'),
+                h('div', { className: 'text-sm text-slate-300 mt-1' }, DATA_TABLES.intro)
+              )
+            )
+          ),
+          h('div', { className: 'flex flex-wrap gap-1' },
+            DATA_TABLES.tables.map(function(table, i) {
+              var sel = tableIdx === i;
+              return h('button', {
+                key: i,
+                onClick: function() { setTableIdx(i); },
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-slate-600 text-white font-bold' : 'bg-slate-800/60 text-slate-200 hover:bg-slate-700/60'),
+                'aria-pressed': sel
+              }, '📊 ' + table.title.split(' ')[0]);
+            })
+          ),
+          h('div', { className: 'bg-slate-800/40 border border-slate-600/40 rounded-xl p-4 overflow-x-auto' },
+            h('div', { className: 'text-base font-bold text-slate-200 mb-3' }, '📋 ' + t.title),
+            h('table', { className: 'w-full text-xs' },
+              h('thead', null,
+                h('tr', { className: 'border-b border-slate-600/40' },
+                  t.columns.map(function(c, i) {
+                    return h('th', { key: i, className: 'p-2 text-left text-amber-300 font-bold' }, c);
+                  })
+                )
+              ),
+              h('tbody', null,
+                t.rows.map(function(row, i) {
+                  return h('tr', { key: i, className: 'border-b border-slate-700/40 ' + (i % 2 === 0 ? 'bg-slate-800/30' : 'bg-slate-900/30') },
+                    row.map(function(cell, j) {
+                      return h('td', { key: j, className: 'p-2 text-slate-100' + (j === 0 ? ' font-bold text-emerald-300' : '') }, cell);
+                    })
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
       // RENDER: GLOSSARY (A-Z reference)
       // ────────────────────────────────────────────────────────
       function renderGlossary() {
@@ -17511,6 +17976,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           activeSection === 'engagement' && renderEngagement(),
           activeSection === 'glossary2' && renderGlossary2(),
           activeSection === 'finale' && renderFinale(),
+          activeSection === 'rescue' && renderRescue(),
+          activeSection === 'agecoloration' && renderAgeColoration(),
+          activeSection === 'molt' && renderMolt(),
+          activeSection === 'wingformula' && renderWingFormula(),
+          activeSection === 'datatables' && renderDataTables(),
           activeSection === 'glossary' && renderGlossary(),
           activeSection === 'quiz' && renderQuiz(),
           activeSection === 'resources' && renderResources()
