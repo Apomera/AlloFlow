@@ -4486,6 +4486,79 @@
               );
             })(),
             '#facc15'
+          ),
+
+          // ─── Telescope buying guide ─────────────────────────────
+          sectionCard('🔭 Buying a telescope — the honest student/family guide',
+            (function() {
+              var SCOPE_TOPICS = [
+                { id: 'first', name: 'Start with binoculars + your eyes', emoji: '👀',
+                  body: 'BEFORE buying ANY telescope, spend ~ 3 months with your unaided eye + a binocular. NAKED-EYE skills (finding constellations, dark adaptation, knowing what is in the sky tonight) are the foundation that telescopes BUILD ON. A 7×50 or 10×50 BINOCULAR ($50-150) shows: Moon craters + maria, Jupiter\'s 4 Galilean moons, Venus phases, the Pleiades resolved into ~ 30 stars, the Andromeda Galaxy as a smudge, the Orion Nebula as a fuzzy patch, many double stars, comets when they appear. Binoculars also stay GIVING after you move on to a telescope — for survey work, finding objects, casual viewing, no setup time, no transport hassle.',
+                  caveat: 'Many telescopes get bought, used 3 times, + abandoned because the buyer never developed the basic skills. Binocular practice avoids this: you learn the sky, you find out if you actually enjoy the hobby, you build observing muscle memory. A $100 binocular that you USE FOR YEARS is a better purchase than a $500 telescope that sits in a closet.'
+                },
+                { id: 'aperture', name: 'Aperture is everything', emoji: '🔵',
+                  body: 'The single MOST important number on any telescope spec sheet is APERTURE — the diameter of the main lens or mirror. Aperture determines light-gathering (how dim an object you can see) + resolution (how fine a detail). EVERYTHING else is secondary. A 6-inch telescope gathers ~ 4x more light than a 3-inch + reveals 4x more stars; an 8-inch gathers ~ 7x more. Most "beginner telescopes" sold at department stores have 60-70 mm (~ 3 inch) apertures + are too small to see most exciting targets. Magnification is overrated — useful max magnification = ~ 50x per inch of aperture, beyond which the image just gets dimmer + blurrier. A telescope sold mostly on its 600x maximum-magnification claim is a telescope made for marketing, not astronomy.',
+                  caveat: 'The advertising line "magnify 600x!" on entry-level telescopes is the single biggest red flag in amateur astronomy buying. ANY scope can technically reach 600x with a small eyepiece — but the image quality is unusable. Reject any scope sold on magnification claims. Insist on aperture as the headline number.'
+                },
+                { id: 'types', name: 'Telescope types — refractor / Newtonian / SCT', emoji: '⚙️',
+                  body: 'Three main families. (1) REFRACTOR — uses a lens at the front. Sealed tube, almost zero maintenance, sharp views of Moon + planets + bright stars. Quality requires expensive ED-glass or fluorite optics; cheap refractors show purple-fringed images (chromatic aberration). Practical sizes: 60-150 mm. (2) NEWTONIAN REFLECTOR — uses a mirror at the back + a small secondary mirror to reflect the light to a side-mounted eyepiece. Best aperture-per-dollar of any design. The DOBSONIAN mount (a simple wooden cradle, John Dobson 1965) made big Newtonian reflectors affordable to amateurs. Quality 6-12 inch Dobsonians are the modern standard for visual observing. (3) SCHMIDT-CASSEGRAIN (SCT) — uses a corrector plate + a mirror system folded into a short tube. Compact, versatile, more expensive per inch than Newtonian. Celestron + Meade are the major brands. Best for combined visual + imaging use.',
+                  caveat: 'The HONEST advice for most beginners: a 6-inch or 8-inch DOBSONIAN reflector ($300-500 new, often available used). It gives you the largest aperture for the lowest price + is the most usable + the easiest to setup. The downsides (no GoTo motors, alt-az manual aiming) are also the best LEARNING tools — finding things yourself + tracking them by hand IS the skill set you need.'
+                },
+                { id: 'mount', name: 'Mount + tripod matter more than you think', emoji: '🦿',
+                  body: 'A wobbly mount makes any telescope unusable. The MOUNT + TRIPOD often cost as much as the optical tube. Two main types: ALT-AZ (altitude + azimuth, two simple axes, like a camera tripod) — easiest to learn, what Dobsonians use, fine for visual observing but NOT for photography of dim things. EQUATORIAL (one axis aligned with Earth\'s rotation axis) — required for long-exposure imaging, but harder to set up + understand. GoTo mounts (motorized + computer-controlled) make finding objects easier, especially in light-polluted skies. BUDGET RULE: spend at least as much on the mount as on the optical tube. A $500 tube on a $50 mount is worse than a $300 tube on a $300 mount.',
+                  caveat: 'The cheap "entry telescope" market has DREADFUL mounts — wobbly aluminum tripods, plastic gears, no fine-adjustment controls. A telescope on a bad mount is a telescope you cannot aim, cannot track, cannot enjoy. Read mount reviews specifically. The mount-quality issue is what makes the Dobsonian rocker-box design so good: simple, stable, easy to make right.'
+                },
+                { id: 'budgets', name: 'Recommendations by budget', emoji: '💰',
+                  body: 'For 2025-2026, honest recommendations: UNDER $100 — get a Celestron Cometron 7×50 binocular + a planisphere + a copy of Turn Left at Orion. UNDER $250 — Celestron StarSense Explorer LT 80AZ (smartphone-assisted refractor) OR an 80mm tabletop reflector. $300-500 — 6-inch Sky-Watcher or Orion Dobsonian (the workhorse). $500-900 — 8-inch Dobsonian (the classic intermediate; my recommendation for most committed students). $1000-1500 — 8-inch Dobsonian + GoTo, or an 8-inch SCT. $1500+ — depends on goals: astrophotography needs different gear than visual. ALWAYS look at used markets: AstroMart, Cloudy Nights classifieds, eBay (cautiously), local astronomy clubs. Quality optical tubes often resell at 50-70% of new price; mounts depreciate slower.',
+                  caveat: 'The "AVOID list": almost any "telescope" sold at Target / Walmart / Costco / Toys R Us is a department-store toy with terrible optics + worse mount. The brand names that matter: Orion, Sky-Watcher, Celestron, Meade, Explore Scientific, Astro-Tech, Vixen, Tele Vue (premium), Stellarvue (premium). Read reviews on Cloudy Nights forum + Astronomy magazine reviews before any purchase over $200.'
+                },
+                { id: 'eyepieces', name: 'Eyepieces — the other half of the system', emoji: '🔍',
+                  body: 'A telescope is its optical tube PLUS its eyepieces. The eyepiece determines magnification + field of view + image quality. Most scopes come with one or two CHEAP eyepieces (often plastic Plossl 25mm + 10mm); investing in better eyepieces is one of the best upgrades. Categories: PLOSSL (52° field, decent for the price), KOENIG / HYPERION (60-68° wider field), wide-field designs (TeleVue Ethos / Explore Scientific 82°+ provide spectacular immersion, $200-700 each). A "kit" of 3-5 eyepieces covers your range (low-power for nebulae, medium-power for galaxies + clusters, high-power for Moon + planets). Filters (Moon filter for brightness, OIII for emission nebulae, light-pollution reduction) are useful additions but not essential.',
+                  caveat: 'Eyepieces last forever + are interchangeable across telescopes. A $200 eyepiece used for 20 years is $10/year. The same logic does not apply to mounts (often outgrown) or telescopes (often upgraded). For beginners: start with the stock eyepieces, learn what you LIKE observing, then buy eyepieces optimized for that. A casual planetary observer needs different eyepieces than a deep-sky imager.'
+                },
+                { id: 'observatories', name: 'Plus / instead — local club + observatory', emoji: '🏛️',
+                  body: 'Before buying ANY telescope, find a local astronomy club + visit an observatory. ASTRONOMY CLUBS welcome new members, run "star parties" where you can look through dozens of telescopes ($0 cost to you), share equipment + knowledge. The Maine Astronomy Retreat (Bryant Pond), Astronomical Society of Northern New England, Aroostook Sky-Watchers, all hold regular events. PUBLIC OBSERVATORIES: Acadia National Park hosts summer night sky programs; Mount Washington has observation events; the Harvard-Smithsonian Center for Astrophysics in Cambridge MA has free public nights. Many colleges + universities run free public observatory nights — UMaine, College of the Atlantic, USM Lewiston.',
+                  caveat: 'Visiting a star party with experienced observers BEFORE buying solves multiple problems at once. You see what different scopes can actually show. You discover what you actually enjoy looking at. You get unbiased buying advice from people who don\'t profit from your purchase. You make friends who share the hobby. For most students + families: this is the single most valuable preparation step.'
+                },
+                { id: 'maintenance', name: 'Maintenance + the long view', emoji: '🛠️',
+                  body: 'A good telescope can last 50+ years. Maintenance is minimal: mirror surfaces should be RECOATED roughly every 15-25 years (~ $200-500 from Spectrum Coatings or Optical Materials Research); lenses need occasional cleaning with proper materials (NEVER paper towels — use lens-cleaning solution + microfiber). Store in a clean dry place — humidity damages coatings. Avoid handling optical surfaces. The biggest care issue is COLLIMATION (alignment of the optical elements) for reflectors + SCTs — every Newtonian or SCT needs occasional collimation adjustment using a Cheshire eyepiece or laser collimator. Refractors stay collimated for years; Dobsonians may need adjustment after travel.',
+                  caveat: 'Modern telescopes are remarkably reliable. The mounts wear out before the optics. A 1980s-vintage Celestron C8 with original optics + properly maintained can outperform many new budget scopes. The community supports old telescopes well: Cloudy Nights + AstroMart provide ongoing knowledge + spare parts. A used telescope from a careful owner is often a better buy than a new entry-level scope.'
+                },
+                { id: 'maine', name: 'Maine-specific telescope advice', emoji: '🌲',
+                  body: 'Maine\'s winters are LONG (Oct-April) + COLD (-10°F to 20°F common on observing nights), with frequent clear-sky periods between snowstorms. Cold-weather telescope considerations: (1) Refractors handle cold reasonably well (sealed tubes). Newtonians cool down slowly + need ~ 30-45 minutes to acclimate to outside temperature before optics work properly. (2) Lithium batteries fail in cold; bring TWO battery packs + keep one inside your jacket. (3) DEW is the worst Maine observing enemy — invest in a dew heater or anti-dew rings. (4) Your fingers get cold faster than your scope; invest in mittens with flip-tops + a Thermos. Best Maine observing months: November-March for crisp transparent skies; June-August for Milky Way at high altitude. Worst months: April-May (mud, dampness, persistent overcast).',
+                  caveat: 'For King Middle / Portland-area students: get connected with the Astronomical Society of Northern New England (asnne.org). They have free star parties at various sites (Curtis Memorial Library Brunswick, Bigelow Lab Boothbay, USM Portland campus). Bringing your scope or observing through others\' is the same activity socially. Cold-weather observing builds character + skills no warm-weather club can replicate.'
+                }
+              ];
+              var sel = d.selectedScope || 'first';
+              var topic = SCOPE_TOPICS.find(function(t) { return t.id === sel; }) || SCOPE_TOPICS[0];
+              return h('div', null,
+                h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
+                  'The honest student/family guide to buying a telescope: start with binoculars, learn the sky, visit a star party, then if you still want a scope, pick aperture over magnification + invest in a real mount. Avoid the department-store traps. A 6-inch or 8-inch Dobsonian is the workhorse most committed beginners should buy. The right purchase will give you decades of enjoyment; the wrong purchase ends up in a closet.'
+                ),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+                  SCOPE_TOPICS.map(function(t) {
+                    var on = t.id === sel;
+                    return h('button', {
+                      key: t.id,
+                      onClick: function() { upd({ selectedScope: t.id }); },
+                      style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#f97316' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #f97316' : '1px solid #334155' }
+                    }, t.emoji + ' ' + t.name);
+                  })
+                ),
+                h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(249,115,22,0.08)', border: '1px solid rgba(249,115,22,0.35)' } },
+                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#fdba74', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+                  h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+                  h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
+                    h('strong', null, 'Honest framing: '), topic.caveat
+                  )
+                ),
+                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 11.5, color: '#dcfce7', lineHeight: 1.65 } },
+                  h('strong', null, 'My one-paragraph recommendation: '),
+                  'Most students + families should not buy a telescope as a first purchase. Buy a 10×50 binocular ($80-100) + a copy of Turn Left at Orion ($25). Use them for at least 6 months. Visit a star party + try other scopes. Find an astronomy club. THEN if you still want a telescope, buy a 6 or 8 inch Sky-Watcher or Orion Dobsonian ($400-800 new or $200-500 used) + maybe an 18mm + 7mm eyepiece upgrade. That setup will serve you for decades + show you essentially everything the famous deep-sky targets have to offer.'
+                )
+              );
+            })(),
+            '#f97316'
           )
         );
       }
