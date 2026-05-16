@@ -803,6 +803,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         }
       ];
 
+      // ─── Persistent audio settings ───
+      // Volume 0..1 + mute toggle. Persists across runs. Applied to the
+      // master audio gain inside initHuntSim3D and surfaced as a slider on
+      // the launch screen + mute button in the pause overlay.
+      var AUDIO_KEY = 'allo.cephalopodlab.audio.v1';
+      function loadAudioSettings() {
+        try {
+          var raw = window.localStorage.getItem(AUDIO_KEY);
+          return raw ? JSON.parse(raw) : { volume: 0.5, muted: false };
+        } catch (_) { return { volume: 0.5, muted: false }; }
+      }
+      function saveAudioSettings(s) {
+        try { window.localStorage.setItem(AUDIO_KEY, JSON.stringify(s)); } catch (_) {}
+      }
+
+      // ─── Persistent pearl-treasure inventory ───
+      // Pearls spawn at each landmark and persist across runs once collected.
+      // Stored as { commonOcto: 1, blueRinged: 0, ... } so each species has
+      // its own collection. localStorage-only.
+      var PEARL_KEY = 'allo.cephalopodlab.pearls.v1';
+      function loadPearls() {
+        try {
+          var raw = window.localStorage.getItem(PEARL_KEY);
+          return raw ? JSON.parse(raw) : { total: 0, byLandmark: {} };
+        } catch (_) { return { total: 0, byLandmark: {} }; }
+      }
+      function savePearls(p) {
+        try { window.localStorage.setItem(PEARL_KEY, JSON.stringify(p)); } catch (_) {}
+      }
+
       // ─── Persistent leaderboard helpers ───
       // localStorage-backed per-species best-run record. Keyed by species id.
       // Updated on game-over with the run's score / survival / max camo.
@@ -856,19 +886,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             'Play a common Pacific octopus on a reef. Hunt crabs, evade a moray eel, use ink to escape. WASD to crawl, Space to jet (drains stamina), click to grab nearby prey, I for ink defense.'),
 
           // Run stats card
-          h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, 'Run stats'),
-            h('div', { style: { display: 'flex', gap: 24, flexWrap: 'wrap' } },
-              h('div', null,
-                h('div', { style: { fontSize: 28, fontWeight: 900, color: '#86efac', fontFamily: 'ui-monospace, Menlo, monospace' } }, (d.huntsSuccessful || 0)),
-                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Crabs caught')),
-              h('div', null,
-                h('div', { style: { fontSize: 28, fontWeight: 900, color: '#fb923c', fontFamily: 'ui-monospace, Menlo, monospace' } }, (d.huntsAttempted || 0)),
-                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Dives'),
-              ),
-              h('div', null,
-                h('div', { style: { fontSize: 28, fontWeight: 900, color: '#a78bfa', fontFamily: 'ui-monospace, Menlo, monospace' } }, (d.huntBestRun || 0)),
-                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Best run')))),
+          (function() {
+            var pearlSt = (function() {
+              try {
+                var raw = window.localStorage.getItem('allo.cephalopodlab.pearls.v1');
+                return raw ? JSON.parse(raw) : { total: 0, byLandmark: {} };
+              } catch (_) { return { total: 0, byLandmark: {} }; }
+            })();
+            return h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, 'Run stats'),
+              h('div', { style: { display: 'flex', gap: 24, flexWrap: 'wrap' } },
+                h('div', null,
+                  h('div', { style: { fontSize: 28, fontWeight: 900, color: '#86efac', fontFamily: 'ui-monospace, Menlo, monospace' } }, (d.huntsSuccessful || 0)),
+                  h('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Crabs caught')),
+                h('div', null,
+                  h('div', { style: { fontSize: 28, fontWeight: 900, color: '#fb923c', fontFamily: 'ui-monospace, Menlo, monospace' } }, (d.huntsAttempted || 0)),
+                  h('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Dives'),
+                ),
+                h('div', null,
+                  h('div', { style: { fontSize: 28, fontWeight: 900, color: '#a78bfa', fontFamily: 'ui-monospace, Menlo, monospace' } }, (d.huntBestRun || 0)),
+                  h('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Best run')),
+                h('div', null,
+                  h('div', { style: { fontSize: 28, fontWeight: 900, color: '#fff0aa', fontFamily: 'ui-monospace, Menlo, monospace' } }, (pearlSt.total || 0) + '/3'),
+                  h('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Pearls'))));
+          })(),
 
           // Controls card
           !active ? h('div', { style: cardStyle() },
@@ -996,6 +1037,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     h('span', null, h('span', { style: { color: '#94a3b8', fontWeight: 700 } }, rec.totalDives), ' dives')
                   ) : h('div', { style: { marginTop: 10, paddingTop: 8, borderTop: '1px solid rgba(100,116,139,0.25)', fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, 'No dives yet — be the first.'));
               })));
+          })() : null,
+
+          // Audio settings — persisted volume + mute (only useful pre-dive)
+          !active && threeLoaded ? (function() {
+            var as = loadAudioSettings();
+            return h('div', { style: Object.assign({}, cardStyle(), { display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }) },
+              h('div', { style: { fontSize: 12, fontWeight: 700, color: '#cbd5e1', minWidth: 60 } }, '🔊 Audio'),
+              h('label', { style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: '#94a3b8', cursor: 'pointer' } },
+                h('input', {
+                  type: 'checkbox',
+                  checked: as.muted,
+                  onChange: function(e) {
+                    saveAudioSettings({ volume: as.volume, muted: e.target.checked });
+                    setCL({ _audioSettingsBump: Date.now() });
+                  }
+                }),
+                'Mute'),
+              h('input', {
+                type: 'range', min: 0, max: 1, step: 0.05,
+                value: as.volume,
+                disabled: as.muted,
+                onChange: function(e) {
+                  saveAudioSettings({ volume: parseFloat(e.target.value), muted: as.muted });
+                  setCL({ _audioSettingsBump: Date.now() });
+                },
+                style: { flex: 1, maxWidth: 240, opacity: as.muted ? 0.4 : 1 },
+                'aria-label': 'Audio volume',
+              }),
+              h('span', { style: { fontSize: 10, color: '#94a3b8', minWidth: 32 } }, (as.volume * 100).toFixed(0) + '%')
+            );
           })() : null,
 
           // Error state
@@ -1744,7 +1815,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             if (!AC) return;
             audioCtx = new AC();
             masterGain = audioCtx.createGain();
-            masterGain.gain.value = 0.35;
+            // Master volume reads persisted setting (default 0.5 × 0.7 cap = 0.35)
+            var as0 = loadAudioSettings();
+            masterGain.gain.value = as0.muted ? 0 : (as0.volume * 0.7);
             masterGain.connect(audioCtx.destination);
             // Ambient drone: low-pass filtered pink-ish noise loop
             var bufferSize = audioCtx.sampleRate * 4;
@@ -1975,19 +2048,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           }
           return g;
         }
-        // Place landmarks at non-recycled fixed world positions
+        // Place landmarks at non-recycled fixed world positions. Each gets
+        // a pearl spawn point (slightly offset so the pearl sits where the
+        // octopus can reach it). Pearls are skipped if already collected
+        // (persistent state via localStorage).
         var LANDMARK_DEFS = [
-          { type: 'wreck',  x:  45, z:  35, mkr: '#cbd5e1', icon: 'W', mesh: makeShipwreck },
-          { type: 'anchor', x: -50, z:  25, mkr: '#94a3b8', icon: 'A', mesh: makeAnchor },
-          { type: 'statue', x:  20, z: -55, mkr: '#a8e6a8', icon: 'S', mesh: makeStatue },
+          { type: 'wreck',  x:  45, z:  35, mkr: '#cbd5e1', icon: 'W', mesh: makeShipwreck, pearlOffset: { x: 0.5, y: 0.4, z: 1.0 } },
+          { type: 'anchor', x: -50, z:  25, mkr: '#94a3b8', icon: 'A', mesh: makeAnchor,    pearlOffset: { x: 0, y: 0.3, z: 0.8 } },
+          { type: 'statue', x:  20, z: -55, mkr: '#a8e6a8', icon: 'S', mesh: makeStatue,    pearlOffset: { x: 0, y: 0.6, z: 0.95 } },
         ];
+        var pearlState = loadPearls();
+        var pearls = [];
+        function makePearlMesh() {
+          var g = new THREE.Group();
+          var pearlMat = new THREE.MeshStandardMaterial({
+            color: 0xfaf5e0, roughness: 0.15, metalness: 0.65, emissive: 0xfff8dc, emissiveIntensity: 0.2,
+          });
+          var pearl = new THREE.Mesh(new THREE.SphereGeometry(0.15, 14, 10), pearlMat);
+          g.add(pearl);
+          // Outer glow ring (additive, slow rotation)
+          var glow = new THREE.Mesh(
+            new THREE.TorusGeometry(0.27, 0.025, 6, 16),
+            new THREE.MeshBasicMaterial({ color: 0xfff0aa, transparent: true, opacity: 0.45, blending: THREE.AdditiveBlending })
+          );
+          g.add(glow);
+          g.userData = { glow: glow, bobPhase: Math.random() * Math.PI * 2 };
+          return g;
+        }
         LANDMARK_DEFS.forEach(function(def) {
           var m = def.mesh();
           m.position.set(def.x, 0, def.z);
           m.rotation.y = Math.random() * Math.PI;
           scene.add(m);
           landmarks.push({ mesh: m, type: def.type, x: def.x, z: def.z, mkr: def.mkr, icon: def.icon });
+          // Only spawn pearl if uncollected
+          if (!pearlState.byLandmark[def.type]) {
+            var p = makePearlMesh();
+            p.position.set(def.x + def.pearlOffset.x, def.pearlOffset.y, def.z + def.pearlOffset.z);
+            p.userData.landmarkType = def.type;
+            scene.add(p);
+            pearls.push(p);
+          }
         });
+        var PEARL_PICKUP_RANGE = 1.4;
 
         // ─── Reef shark (rare, edge-spawned, electroreception-resistant) ───
         // Unlike the moray (visual ambush) and grouper (visual roam), the
@@ -2208,6 +2311,88 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         var bubbles = new THREE.Points(bubbleGeo, bubbleMat);
         scene.add(bubbles);
 
+        // ─── Plankton particles (suspended dots, drift gently) ─────
+        // 200 tiny points distributed through the water column. Each one
+        // drifts slowly in 3D — adds underwater "stuff in the water" texture
+        // that makes the column feel alive. Cheap (single Points draw call).
+        var PLANKTON_COUNT = 200;
+        var planktonGeo = new THREE.BufferGeometry();
+        var planktonPositions = new Float32Array(PLANKTON_COUNT * 3);
+        var planktonVel = new Float32Array(PLANKTON_COUNT * 3);
+        for (var pp = 0; pp < PLANKTON_COUNT; pp++) {
+          planktonPositions[pp * 3]     = (Math.random() - 0.5) * 120;
+          planktonPositions[pp * 3 + 1] = 1 + Math.random() * 8;
+          planktonPositions[pp * 3 + 2] = (Math.random() - 0.5) * 120;
+          planktonVel[pp * 3]     = (Math.random() - 0.5) * 0.15;
+          planktonVel[pp * 3 + 1] = (Math.random() - 0.5) * 0.05;
+          planktonVel[pp * 3 + 2] = (Math.random() - 0.5) * 0.15;
+        }
+        planktonGeo.setAttribute('position', new THREE.BufferAttribute(planktonPositions, 3));
+        var planktonMat = new THREE.PointsMaterial({
+          color: 0xe6f3ff, size: 0.08, transparent: true, opacity: 0.55,
+          sizeAttenuation: true,
+        });
+        var plankton = new THREE.Points(planktonGeo, planktonMat);
+        scene.add(plankton);
+
+        // ─── Jellyfish (ambient drifting bells) ─────────────────────
+        // 5 moon-jellies pulse and drift through mid-water. Pure ambient
+        // visual life — they don't interact with the player or predators.
+        // Bell pulses via radial vertex displacement on a sphere geometry.
+        // Translucent material reads as semi-gelatinous.
+        var jellyfish = [];
+        function makeJellyfish() {
+          var g = new THREE.Group();
+          var bellGeo = new THREE.SphereGeometry(0.45, 14, 9, 0, Math.PI * 2, 0, Math.PI * 0.55);
+          var bellBasePos = new Float32Array(bellGeo.attributes.position.array);
+          var bellMat = new THREE.MeshStandardMaterial({
+            color: 0xc9b8ff, roughness: 0.25, metalness: 0.05,
+            transparent: true, opacity: 0.42, side: THREE.DoubleSide,
+          });
+          var bell = new THREE.Mesh(bellGeo, bellMat);
+          bell.rotation.x = Math.PI;     // opening faces down
+          g.add(bell);
+          // Inner glow ring (subtle, reads as gonad ring on real moon jelly)
+          var ringMat = new THREE.MeshBasicMaterial({
+            color: 0xddc8ff, transparent: true, opacity: 0.4,
+            blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+          });
+          var ring = new THREE.Mesh(new THREE.TorusGeometry(0.22, 0.04, 6, 14), ringMat);
+          ring.rotation.x = Math.PI / 2;
+          ring.position.y = -0.08;
+          g.add(ring);
+          // 6 short trailing tentacles (slender lines)
+          var tents = [];
+          for (var ji = 0; ji < 6; ji++) {
+            var jangle = (ji / 6) * Math.PI * 2;
+            var tGeo = new THREE.CylinderGeometry(0.012, 0.004, 0.85, 4);
+            var tMat = new THREE.MeshBasicMaterial({ color: 0xb8a8e8, transparent: true, opacity: 0.55 });
+            var t = new THREE.Mesh(tGeo, tMat);
+            t.position.set(Math.cos(jangle) * 0.18, -0.4, Math.sin(jangle) * 0.18);
+            t.rotation.x = Math.PI;
+            g.add(t);
+            tents.push({ mesh: t, basePhase: Math.random() * Math.PI * 2 });
+          }
+          // Random spawn near player, mid-water
+          var jx = (Math.random() - 0.5) * 100;
+          var jz = (Math.random() - 0.5) * 100;
+          var jy = 4 + Math.random() * 3;
+          g.position.set(jx, jy, jz);
+          g.userData = {
+            bellGeo: bellGeo,
+            bellBasePos: bellBasePos,
+            tents: tents,
+            pulsePhase: Math.random() * Math.PI * 2,
+            driftAngle: Math.random() * Math.PI * 2,
+            driftSpeed: 0.4 + Math.random() * 0.3,
+            verticalPhase: Math.random() * Math.PI * 2,
+          };
+          scene.add(g);
+          jellyfish.push(g);
+          return g;
+        }
+        for (var jellyI = 0; jellyI < 5; jellyI++) makeJellyfish();
+
         // ─── Surface light rays (vertical god-rays from above) ───
         var lightRays = [];
         for (var lr = 0; lr < 6; lr++) {
@@ -2387,6 +2572,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             mmCtx.arc(rx, rz, size, 0, Math.PI * 2);
             mmCtx.fill();
           }
+          // Pearls (uncollected — gold, prominent glow)
+          pearls.forEach(function(p) { plot(p.position.x, p.position.z, '#fff0aa', 4.5, true); });
           // Landmarks (fixed; show icon letter inside)
           landmarks.forEach(function(lm) {
             var lmRx = (lm.x - octopus.position.x) * scale + cx;
@@ -2813,6 +3000,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             // sponge shelters both act as mini-dens (predators give up,
             // health regens) when octopus is within SHELTER_DEN_RADIUS.
             var gKeyNow = !!keys.KeyG;
+            // Pearl collection (G near a pearl, takes priority over shelter
+            // pickup so the player can grab pearls embedded in landmarks)
+            if (gKeyNow && !gKeyDownPrev && !carriedShelter) {
+              var bestP = null, bestPd = PEARL_PICKUP_RANGE;
+              for (var pgi = 0; pgi < pearls.length; pgi++) {
+                var pgdx = pearls[pgi].position.x - octopus.position.x;
+                var pgdz = pearls[pgi].position.z - octopus.position.z;
+                var pgd = Math.sqrt(pgdx * pgdx + pgdz * pgdz);
+                if (pgd < bestPd) { bestP = pearls[pgi]; bestPd = pgd; }
+              }
+              if (bestP) {
+                var lmType = bestP.userData.landmarkType;
+                pearlState.byLandmark[lmType] = true;
+                pearlState.total = (pearlState.total || 0) + 1;
+                savePearls(pearlState);
+                scene.remove(bestP);
+                bestP.traverse(function(o) {
+                  if (o.geometry) o.geometry.dispose();
+                  if (o.material) { if (Array.isArray(o.material)) o.material.forEach(function(m){m.dispose();}); else o.material.dispose(); }
+                });
+                pearls = pearls.filter(function(x) { return x !== bestP; });
+                gameState.runStats.pearlsCollected = (gameState.runStats.pearlsCollected || 0) + 1;
+                clAnnounce('Pearl collected — ' + pearlState.total + ' total');
+                sfxCatch();
+                gKeyDownPrev = true;  // consume this G press
+                gKeyNow = false;       // and prevent shelter pickup this frame
+              }
+            }
             if (gKeyNow && !gKeyDownPrev) {
               if (carriedShelter) {
                 // Drop
@@ -2855,6 +3070,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               carriedShelter.userData.wobble += dt * 2;
               carriedShelter.rotation.z = Math.sin(carriedShelter.userData.wobble) * 0.12;
             }
+            // Pearl idle animation — gentle bob + glow rotation
+            pearls.forEach(function(p) {
+              p.userData.bobPhase += dt * 1.4;
+              p.position.y += Math.sin(p.userData.bobPhase) * 0.005;
+              if (p.userData.glow) p.userData.glow.rotation.z += dt * 0.8;
+            });
             // Age dropped shelters (sponges never age — life=0)
             for (var ai2 = shelters.length - 1; ai2 >= 0; ai2--) {
               var sh2 = shelters[ai2];
@@ -3474,6 +3695,81 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             bpAttr.needsUpdate = true;
             // Bubbles dim at night
             bubbleMat.opacity = 0.25 + dayMix * 0.4;
+
+            // ─── Plankton drift (gentle 3D wander) ────────────────
+            var planktonAttr = plankton.geometry.attributes.position;
+            for (var pli = 0; pli < PLANKTON_COUNT; pli++) {
+              planktonAttr.array[pli * 3]     += planktonVel[pli * 3]     * dt;
+              planktonAttr.array[pli * 3 + 1] += planktonVel[pli * 3 + 1] * dt;
+              planktonAttr.array[pli * 3 + 2] += planktonVel[pli * 3 + 2] * dt;
+              // Wrap into a moving radius around the player so plankton
+              // always surrounds you even as you wander.
+              var pldx = planktonAttr.array[pli * 3]     - octopus.position.x;
+              var pldz = planktonAttr.array[pli * 3 + 2] - octopus.position.z;
+              if (pldx * pldx + pldz * pldz > 70 * 70) {
+                planktonAttr.array[pli * 3]     = octopus.position.x + (Math.random() - 0.5) * 80;
+                planktonAttr.array[pli * 3 + 1] = 1 + Math.random() * 8;
+                planktonAttr.array[pli * 3 + 2] = octopus.position.z + (Math.random() - 0.5) * 80;
+              }
+              // Vertical clamp
+              if (planktonAttr.array[pli * 3 + 1] < 0.5) planktonVel[pli * 3 + 1] = Math.abs(planktonVel[pli * 3 + 1]);
+              if (planktonAttr.array[pli * 3 + 1] > 9) planktonVel[pli * 3 + 1] = -Math.abs(planktonVel[pli * 3 + 1]);
+            }
+            planktonAttr.needsUpdate = true;
+            // Plankton fades at night (smaller bioluminescent visibility)
+            planktonMat.opacity = 0.35 + dayMix * 0.3;
+
+            // ─── Jellyfish pulse + drift ──────────────────────────
+            // Each bell radially expands + contracts via vertex displacement
+            // along the surface normal direction. Body drifts in a slow
+            // wander + gentle vertical bob. Trailing tentacles wave with a
+            // sine offset. Wraps into a 70u radius around the player.
+            jellyfish.forEach(function(jf) {
+              var ud = jf.userData;
+              ud.pulsePhase += dt * 1.6;       // bell pulses ~0.25Hz
+              var pulse = (Math.sin(ud.pulsePhase) + 1) * 0.5;  // 0..1
+              // Apply pulse to bell vertices: displace along radial direction
+              var bgPos = ud.bellGeo.attributes.position.array;
+              var basePos = ud.bellBasePos;
+              for (var bvi = 0; bvi < bgPos.length; bvi += 3) {
+                var bx = basePos[bvi];
+                var by = basePos[bvi + 1];
+                var bz = basePos[bvi + 2];
+                var bl = Math.sqrt(bx * bx + by * by + bz * bz);
+                if (bl < 0.001) continue;
+                // Squash on contract, expand on relax — slightly higher amplitude
+                // on the rim than at the top
+                var rimWeight = Math.max(0, by / 0.5);   // top of bell has higher by
+                var bumpAmt = (1 - rimWeight * 0.4) * (pulse - 0.5) * 0.18;
+                bgPos[bvi]     = bx + (bx / bl) * bumpAmt;
+                bgPos[bvi + 1] = by + (by / bl) * bumpAmt;
+                bgPos[bvi + 2] = bz + (bz / bl) * bumpAmt;
+              }
+              ud.bellGeo.attributes.position.needsUpdate = true;
+
+              // Drift horizontally (slow curve) + vertical bob
+              ud.driftAngle += (Math.random() - 0.5) * 0.05 * dt;
+              jf.position.x += Math.sin(ud.driftAngle) * ud.driftSpeed * dt;
+              jf.position.z += Math.cos(ud.driftAngle) * ud.driftSpeed * dt;
+              ud.verticalPhase += dt * 0.6;
+              jf.position.y = 4 + Math.sin(ud.verticalPhase) * 1.2;
+              // Jet upward on each pulse contraction (subtle vertical thrust)
+              if (Math.sin(ud.pulsePhase) > 0.85) {
+                jf.position.y += 0.04;
+              }
+              // Wrap if too far from player (keep ambient density constant)
+              var jdx = jf.position.x - octopus.position.x;
+              var jdz = jf.position.z - octopus.position.z;
+              if (jdx * jdx + jdz * jdz > 90 * 90) {
+                jf.position.x = octopus.position.x + (Math.random() - 0.5) * 100;
+                jf.position.z = octopus.position.z + (Math.random() - 0.5) * 100;
+              }
+              // Tentacles trail and wave
+              ud.tents.forEach(function(t) {
+                t.mesh.rotation.x = Math.PI + Math.sin(now * 0.003 + t.basePhase) * 0.18;
+                t.mesh.position.y = -0.4 - pulse * 0.05;
+              });
+            });
             // Random bubble SFX every 0.4-0.9s while playing
             if (audioEnabled && now > nextBubbleSfxAt) {
               sfxBubble();
@@ -3799,6 +4095,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               prompt = '<span style="color:#fbbf24">[G]</span> drop ' + SHELTER_TYPES[carriedShelter.userData.shelterType].label;
               pColor = 'rgba(160,120,64,0.7)';
             } else {
+              // Pearl pickup hint takes priority over shelter/clam/crab
+              var pPearlD = PEARL_PICKUP_RANGE;
+              var pNearestPearl = null;
+              for (var ppi = 0; ppi < pearls.length; ppi++) {
+                var ppdx = pearls[ppi].position.x - octopus.position.x;
+                var ppdz = pearls[ppi].position.z - octopus.position.z;
+                var ppd = Math.sqrt(ppdx * ppdx + ppdz * ppdz);
+                if (ppd < pPearlD) { pNearestPearl = pearls[ppi]; pPearlD = ppd; }
+              }
+              if (pNearestPearl) {
+                prompt = '<span style="color:#fff0aa">[G]</span> collect pearl <span style="color:#94a3b8;font-weight:400">(treasure)</span>';
+                pColor = 'rgba(255,240,170,0.7)';
+              } else {
               // Nearest carriable shelter
               var pNearestSh = null, pNearestShD = SHELTER_PICKUP_RANGE;
               for (var psi = 0; psi < shelters.length; psi++) {
@@ -3838,6 +4147,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 prompt = '<span style="color:#fbbf24">[CLICK]</span> pounce crab';
                 pColor = 'rgba(252,146,60,0.6)';
               }
+              }   // close pearl-fallback else
             }
             setActionPrompt(prompt, pColor);
           } else {
@@ -3847,9 +4157,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           // ─── Mini-map (every frame; cheap 2D canvas redraw) ───
           drawMinimap();
 
-          // Audio mute when paused or game over
+          // Audio mute when paused or game over; otherwise honor persisted vol
           if (masterGain) {
-            var targetMaster = (gameState.paused || gameState.gameOver) ? 0.0 : 0.35;
+            var as = loadAudioSettings();
+            var liveVol = as.muted ? 0 : (as.volume * 0.7);
+            var targetMaster = (gameState.paused || gameState.gameOver) ? 0.0 : liveVol;
             masterGain.gain.value += (targetMaster - masterGain.gain.value) * 0.2;
           }
 
