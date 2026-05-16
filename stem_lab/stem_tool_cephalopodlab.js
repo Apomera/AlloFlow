@@ -848,6 +848,114 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         }
       ];
 
+      // ─── Achievement system + biology fact popups ───────────────────
+      // Achievements fire on first-time triggers during a dive. Each one
+      // unlocks a real-biology fact popup ("Did You Know?") that overlays
+      // the canvas for ~7 seconds with a cited fact. Pedagogically: the
+      // achievement is the reward for engaging with a mechanic, and the
+      // fact is the educational payload. Real research citations included.
+      var ACHIEVEMENT_KEY = 'allo.cephalopodlab.achievements.v1';
+      function loadAchievements() {
+        try {
+          var raw = window.localStorage.getItem(ACHIEVEMENT_KEY);
+          return raw ? JSON.parse(raw) : {};
+        } catch (_) { return {}; }
+      }
+      function saveAchievements(a) {
+        try { window.localStorage.setItem(ACHIEVEMENT_KEY, JSON.stringify(a)); } catch (_) {}
+      }
+      // Full achievement catalog: id → { title, condition desc, fact, citation }
+      var ACHIEVEMENTS = {
+        firstDive:           { title: 'First Dive', icon: '🌊', desc: 'Begin your first underwater run.',
+          fact: 'Octopuses, squid, cuttlefish, and nautilus together form the class Cephalopoda — "head-foot" in Greek. They are the most intelligent invertebrates known.',
+          citation: 'Mather & Anderson, 1993; Godfrey-Smith, Other Minds (2016).' },
+        firstCrab:           { title: 'First Catch', icon: '🦀', desc: 'Catch your first crab.',
+          fact: 'Octopuses use a paralyzing saliva injected through their beak to subdue crab prey. The saliva contains tetrodotoxin in some species and a cocktail of cephalotoxins in most.',
+          citation: 'Ghiretti, 1959; Lapota & Walter, 2008.' },
+        firstFish:           { title: 'Mid-Water Hunter', icon: '🐟', desc: 'Catch your first fish.',
+          fact: 'Cuttlefish and squid catch fish using a "tentacle strike" — two specialized feeding tentacles fire forward in <40ms, faster than the fish\'s startle response.',
+          citation: 'Nixon & Young, The Brains and Lives of Cephalopods (2003).' },
+        firstClam:           { title: 'Driller', icon: '🐚', desc: 'Drill and consume your first clam.',
+          fact: 'Octopuses drill clam shells with their radula (toothed tongue) and inject toxic saliva through the hole. A single drill takes 30-60 minutes in real biology.',
+          citation: 'Wodinsky, 1969 — Drilling behavior in Octopus vulgaris.' },
+        firstInk:            { title: 'Smokescreen', icon: '⚫', desc: 'Release your first ink cloud.',
+          fact: 'Octopus ink contains melanin + tyrosinase + a cocktail of chemicals that disrupt predator chemoreception, not just visual lock. The cloud blinds AND smells.',
+          citation: 'Derby, 2007 — Cephalopod ink as a chemical defense.' },
+        firstDen:            { title: 'Safe Harbor', icon: '🏠', desc: 'Take refuge inside a den.',
+          fact: 'Wild octopuses spend 60-80% of their time in dens, emerging primarily to hunt. They often decorate the entrance with shells and rocks they\'ve gathered.',
+          citation: 'Mather, 1994 — Site fidelity and den use in Octopus vulgaris.' },
+        firstShelter:        { title: 'Tool User', icon: '🥥', desc: 'Pick up your first shelter.',
+          fact: 'Coconut octopuses (Amphioctopus marginatus) carry coconut halves across the seafloor — the only documented invertebrate tool use involving DELAYED object use.',
+          citation: 'Finn, Tregenza & Norman, 2009 — Current Biology.' },
+        firstCamo90:         { title: 'Disappearing Act', icon: '🎨', desc: 'Reach 90% camouflage effectiveness.',
+          fact: 'Octopus chromatophores number 1-2 million per individual, controlled by individual nerve endings. They can change pattern in <500ms — faster than your blink.',
+          citation: 'Hanlon & Messenger, Cephalopod Behaviour (2018).' },
+        firstSqueeze:        { title: 'Squeeze Play', icon: '🪨', desc: 'Squeeze between two rocks.',
+          fact: 'An octopus the size of a grapefruit can squeeze through a hole the diameter of its eye (~2cm). The only rigid structure in the body is the chitinous beak.',
+          citation: 'Anderson et al., 1999 — Gap-passing experiments.' },
+        survived1Min:        { title: 'Persistent', icon: '⏱', desc: 'Survive one minute.',
+          fact: 'Wild octopuses live only 1-2 years — the entire lifespan you simulate here is a few minutes per "year" of octopus time.',
+          citation: 'Boyle, 1983 — Cephalopod Life Cycles.' },
+        survived5Min:        { title: 'Veteran Cephalopod', icon: '🎖', desc: 'Survive five minutes.',
+          fact: 'Female octopuses guard their eggs for 1-10 months without eating, dying shortly after the hatch. This terminal investment is called semelparity.',
+          citation: 'Wang & Ragsdale, 2018 — Cell.' },
+        evadedShark:         { title: 'Shark Survivor', icon: '🦈', desc: 'Survive a reef shark encounter.',
+          fact: 'Sharks find octopuses using electroreception via the ampullae of Lorenzini — they can detect the bioelectric field from an octopus heart beating, even when fully camouflaged visually.',
+          citation: 'Kalmijn, 1971 — Nature; Bedore & Kajiura, 2013.' },
+        venomBite:           { title: 'Deadly Defense', icon: '💀', desc: 'Deliver a venomous bite (blue-ringed).',
+          fact: 'Blue-ringed octopuses carry tetrodotoxin — the same toxin in pufferfish — 1000x more potent than cyanide. The bite is painless but causes paralysis in minutes; there is no antivenom.',
+          citation: 'Williamson et al., 1996; ANZIM Toxinology data.' },
+        hypnotizedPrey:      { title: 'Hypnotist', icon: '🌀', desc: 'Hypnotize prey with passing-cloud display (cuttlefish).',
+          fact: 'The cuttlefish "passing cloud" display is a wave of dark pigment that rolls down the mantle in <2 seconds. It is thought to startle or mesmerize prey by mimicking moving shadows.',
+          citation: 'Hanlon, 2007 — Current Biology.' },
+        mimicLionfish:       { title: 'Imitation Game', icon: '🎭', desc: 'Impersonate a lionfish (mimic octopus).',
+          fact: 'The mimic octopus (Thaumoctopus mimicus) impersonates 12+ species — sea snake, lionfish, jellyfish, flatfish. The behavior is learned through exposure, not innate.',
+          citation: 'Norman, Finn & Tregenza, 2001 — Proc. Royal Society B.' },
+        burglarAlarm:        { title: 'Flash Defense', icon: '⚡', desc: 'Fire the burglar-alarm flash (vampire squid).',
+          fact: 'Vampire squid release bioluminescent mucus from their arm tips when threatened. The glow lasts up to 9 minutes — long enough to swim away while the predator chases the false trail.',
+          citation: 'Robison, Reisenbichler, Hunt & Haddock, 2003 — Biol. Bulletin.' },
+        nautilusBounce:      { title: 'Hard Shell', icon: '🛡', desc: 'Survive a bite while inside a nautilus shell.',
+          fact: 'The nautilus shell is divided into gas-filled chambers connected by a tube (siphuncle). The animal controls buoyancy by adjusting fluid in the chambers — the same principle as a submarine.',
+          citation: 'Greenwald & Ward, 1982 — Nautilus: The Biology and Paleobiology.' },
+        finPropulsion:       { title: 'Deep Drift', icon: '🪼', desc: 'Use fin propulsion (dumbo octopus).',
+          fact: 'Dumbo octopuses live at 2000-7000m depth — the deepest octopus genus. Their "ears" (fins) provide efficient swimming in low-current deep-water environments.',
+          citation: 'Collins & Villanueva, 2006 — Oceanography & Marine Biology.' },
+        counterIllumination: { title: 'Hidden by Light', icon: '✨', desc: 'Use bobtail symbiont counter-illumination at night.',
+          fact: 'Hawaiian bobtail squid (Euprymna scolopes) recruit Vibrio fischeri bacteria from seawater hours after hatching. The bacteria glow on demand to camouflage the squid against moonlight.',
+          citation: 'McFall-Ngai & Ruby, 1991 — Science (foundational symbiosis paper).' },
+        coconutBuilder:      { title: 'Architect', icon: '🏗', desc: 'Drop a coconut as a temporary den.',
+          fact: 'Coconut octopuses sometimes stack TWO coconut halves with one inside the other to form a complete spherical shelter. They climb inside and pull the upper half closed.',
+          citation: 'Finn et al., 2009 — Current Biology.' },
+        threePearls:         { title: 'Pearl Hunter', icon: '🏆', desc: 'Collect all three sunken-landmark pearls.',
+          fact: 'Real pearl-bearing oysters (Pinctada) form pearls as a defense against irritants. The nacre composition is the same calcium carbonate + protein matrix as their shell interior.',
+          citation: 'Webster, 1994 — Gems: Their Sources, Descriptions and Identification.' },
+        nightSurvived:       { title: 'Night Owl', icon: '🌙', desc: 'Survive a full night cycle.',
+          fact: 'Most octopuses are nocturnal or crepuscular. Their eyes have W-shaped pupils that allow them to see in low light and discriminate polarized light (though they may be color-blind).',
+          citation: 'Stubbs & Stubbs, 2016 — PNAS, chromatic aberration vision hypothesis.' },
+        landmarkVisited:     { title: 'Reef Cartographer', icon: '🗺', desc: 'Get close to a sunken landmark.',
+          fact: 'Modern reefs are saturated with anthropogenic objects — from intentional artificial reefs to lost gear and shipwrecks. Octopuses readily adopt these as den sites; some studies find more octopuses on wrecks than natural reef.',
+          citation: 'Anderson et al., 2007 — Bull. Marine Science.' },
+        depthDescent:        { title: 'Deep Dweller', icon: '🌊', desc: 'Descend into deep-water depth zone.',
+          fact: 'Pressure increases 1 atmosphere every 10 meters of depth. Cephalopods at abyssal depths (>4000m) must use trimethylamine N-oxide (TMAO) to keep proteins functional under crushing pressure.',
+          citation: 'Yancey et al., 2014 — PNAS.' },
+      };
+      // The currently-displayed fact (overlays the canvas for ~7s). Reset
+      // on each loop iteration if popupExpiresAt < now.
+      var biologyPopupQueue = [];
+      function queueBiologyPopup(achievementId) {
+        var ach = ACHIEVEMENTS[achievementId];
+        if (!ach) return;
+        biologyPopupQueue.push({ id: achievementId, expiresAt: 0 });
+      }
+      function unlockAchievement(id) {
+        var a = loadAchievements();
+        if (a[id]) return false;
+        a[id] = { unlockedAt: Date.now() };
+        saveAchievements(a);
+        queueBiologyPopup(id);
+        return true;
+      }
+
       // ─── Persistent audio settings ───
       // Volume 0..1 + mute toggle. Persists across runs. Applied to the
       // master audio gain inside initHuntSim3D and surfaced as a slider on
@@ -2083,6 +2191,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         // Auto-bubble every 0.4-0.9s during play
         var nextBubbleSfxAt = Date.now() + 800;
 
+        // First-dive achievement fires immediately
+        unlockAchievement('firstDive');
+        // Species-specific abilities also fire their achievement on use.
+        // Survival-time milestones tracked below in the loop.
+
         // ─── Sunken landmarks (fixed worldspace, don't recycle) ─────
         // Three permanent reference points the player can navigate by in
         // the endless world. Each has small coral / barnacle growth so they
@@ -2791,6 +2904,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         statsOverlay.style.cssText = 'position:absolute;inset:0;background:rgba(5,12,24,0.92);display:none;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-family:Inter,system-ui,sans-serif;padding:24px;text-align:center;backdrop-filter:blur(4px);';
         canvasEl.parentElement.appendChild(statsOverlay);
 
+        // Biology fact popup overlay (top-center). Slides in when an
+        // achievement unlocks; auto-dismisses after 7 seconds. The educational
+        // payload — every achievement is a real-biology citation.
+        var bioPopup = document.createElement('div');
+        bioPopup.style.cssText = 'position:absolute;top:14px;left:50%;transform:translateX(-50%) translateY(-30px);color:#fff;font-family:Inter,system-ui,sans-serif;background:linear-gradient(135deg, rgba(15,23,42,0.95), rgba(30,41,59,0.95));padding:14px 18px;border-radius:12px;border:1px solid rgba(167,139,250,0.5);box-shadow:0 8px 24px rgba(0,0,0,0.5);pointer-events:none;max-width:540px;opacity:0;transition:opacity 0.35s, transform 0.35s;z-index:5;';
+        canvasEl.parentElement.appendChild(bioPopup);
+
         // Pause overlay (toggled by Esc)
         var pauseOverlay = document.createElement('div');
         pauseOverlay.style.cssText = 'position:absolute;inset:0;background:rgba(5,12,24,0.78);display:none;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-family:Inter,system-ui,sans-serif;backdrop-filter:blur(3px);pointer-events:none;';
@@ -3197,6 +3317,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 carriedShelter.userData.state = 'dropped';
                 carriedShelter.userData.createdAt = now;
                 clAnnounce(SHELTER_TYPES[carriedShelter.userData.shelterType].label + ' placed — temporary den');
+                if (carriedShelter.userData.shelterType === 'coconut') unlockAchievement('coconutBuilder');
                 carriedShelter = null;
               } else {
                 // Pickup: nearest free CARRIABLE shelter in range
@@ -3217,6 +3338,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   bestS.userData.state = 'carried';
                   carriedShelter = bestS;
                   clAnnounce(SHELTER_TYPES[bestS.userData.shelterType].label + ' picked up');
+                  unlockAchievement('firstShelter');
                 }
               }
             }
@@ -3275,6 +3397,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 gameState.stamina = Math.max(0, gameState.stamina - 28 * dt);
                 gameState.mimicSpikeOpacity = Math.min(0.95, gameState.mimicSpikeOpacity + 4 * dt);
                 gameState.runStats.mimicTimeMs += dt * 1000;
+                if (gameState.runStats.mimicTimeMs > 1500) unlockAchievement('mimicLionfish');
               } else {
                 gameState.mimicSpikeOpacity = Math.max(0, gameState.mimicSpikeOpacity - 3 * dt);
               }
@@ -3304,6 +3427,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   var hdz = crab.position.z - octopus.position.z;
                   if (hdx * hdx + hdz * hdz < HYPNOTIZE_RANGE * HYPNOTIZE_RANGE) {
                     crab.userData.hypnotized = 2000;
+                    unlockAchievement('hypnotizedPrey');
                   }
                 });
                 // Also freezes fish briefly (drift toward octopus instead of fleeing)
@@ -3353,6 +3477,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 });
                 clAnnounce('Burglar alarm fired — predators startled');
                 sfxPredatorAlert();
+                unlockAchievement('burglarAlarm');
               }
               if (gameState.burglarAlarmActive > 0) {
                 gameState.burglarAlarmActive -= dt * 1000;
@@ -3379,7 +3504,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               if (bobtailGlow) {
                 bobtailGlow.material.opacity = 0.15 + nightStrength * 0.5;
               }
+              if (nightStrength > 0.5) unlockAchievement('counterIllumination');
             }
+            // Dumbo + Nautilus passive-ability triggers (one frame is enough)
+            if (species.specialAbility === 'finPropulsion' && isJetting) unlockAchievement('finPropulsion');
 
             // ─── Giant Pacific massive-strike (passive — applied at catch) ─
             // No tick logic needed; applied as score/hunger multiplier in catch block.
@@ -3447,6 +3575,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 gameState.venomBiteCooldown = 6000;
                 gameState.runStats.venomBitesDelivered++;
                 clAnnounce('Venom bite drove off ' + (threatRef === moray ? 'the moray' : threatRef === grouper ? 'the grouper' : 'the shark'));
+                unlockAchievement('venomBite');
               }
               if (gameState.venomBiteCooldown > 0) gameState.venomBiteCooldown = Math.max(0, gameState.venomBiteCooldown - dt * 1000);
             }
@@ -3765,8 +3894,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             }
             if (gameState.inDen && !gameState.previousInDen) {
               gameState.runStats.densVisited++;
+              unlockAchievement('firstDen');
             }
             gameState.previousInDen = gameState.inDen;
+            // Camo + squeeze + survival milestone achievements
+            if (gameState.camoEff > 0.9) unlockAchievement('firstCamo90');
+            if (gameState.isSqueezing) unlockAchievement('firstSqueeze');
+            var elapsedMs = now - gameState.startTime;
+            if (elapsedMs > 60000) unlockAchievement('survived1Min');
+            if (elapsedMs > 300000) unlockAchievement('survived5Min');
+            // Night-survival: cleared if we cross dayTime from 0.4→0.6 (mid-night)
+            if (gameState.dayTime > 0.4 && gameState.dayTime < 0.6) unlockAchievement('nightSurvived');
+            // Landmark-near achievement
+            for (var lai = 0; lai < landmarks.length; lai++) {
+              var ldx2 = landmarks[lai].x - octopus.position.x;
+              var ldz2 = landmarks[lai].z - octopus.position.z;
+              if (ldx2 * ldx2 + ldz2 * ldz2 < 6 * 6) { unlockAchievement('landmarkVisited'); break; }
+            }
+            // Pearl-collection achievement (all 3)
+            var pst = loadPearls();
+            if (pst.total >= 3) unlockAchievement('threePearls');
 
             // ─── Fish school AI (flocking-lite) ──────────────────
             // Each school's center drifts; individual fish target
@@ -3898,6 +4045,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 gameState.score += 3;
                 gameState.hunger = Math.min(gameState.maxHunger, gameState.hunger + 50);
                 gameState.runStats.clams++;
+                unlockAchievement('firstClam');
                 gameState.drillingClam = null;
                 gameState.drillProgress = 0;
                 try {
@@ -4100,6 +4248,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 gameState.score += Math.round(caughtCfg.score * catchScoreMul);
                 gameState.hunger = Math.min(gameState.maxHunger, gameState.hunger + caughtCfg.hunger);
                 gameState.runStats.crabs++;
+                unlockAchievement('firstCrab');
                 // Hermit crabs leave their shell behind — drop a usable shelter.
                 if (caughtCfg.dropShelter) {
                   spawnShelter(catchX, catchZ, caughtCfg.dropShelter);
@@ -4125,6 +4274,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 gameState.score += 2;
                 gameState.hunger = Math.min(gameState.maxHunger, gameState.hunger + 32);
                 gameState.runStats.fish++;
+                unlockAchievement('firstFish');
                 try {
                   setCL({
                     huntsSuccessful: (d.huntsSuccessful || 0) + 1,
@@ -4147,6 +4297,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               gameState.inkReserves--;
               gameState.inkCooldownUntil = now + gameState.inkCooldownMs;
               gameState.runStats.inkUsed++;
+              unlockAchievement('firstInk');
               var inkGeo = new THREE.SphereGeometry(2.6, 16, 12);
               var inkMat = new THREE.MeshBasicMaterial({ color: 0x080812, transparent: true, opacity: 0.72 });
               var inkCloud = new THREE.Mesh(inkGeo, inkMat);
@@ -4217,7 +4368,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               }
               if (chDist < 1.2 && now - gameState.tookHitAt > 800) {
                 var morayDmg = 30;
-                if (species.specialAbility === 'shellDefense') morayDmg *= 0.3;
+                if (species.specialAbility === 'shellDefense') { morayDmg *= 0.3; unlockAchievement('nautilusBounce'); }
                 gameState.health = Math.max(0, gameState.health - morayDmg);
                 gameState.tookHitAt = now;
                 gameState.runStats.bites++;
@@ -4403,6 +4554,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           // ─── Mini-map (every frame; cheap 2D canvas redraw) ───
           drawMinimap();
 
+          // ─── Biology fact popup management ───────────────────
+          // Display the next queued popup if none is active. Auto-dismiss
+          // after 7s. Renders the title + icon + fact + citation.
+          if (biologyPopupQueue.length > 0 && biologyPopupQueue[0].expiresAt === 0) {
+            var top = biologyPopupQueue[0];
+            var ach = ACHIEVEMENTS[top.id];
+            top.expiresAt = now + 7000;
+            bioPopup.innerHTML =
+              '<div style="display:flex;align-items:start;gap:12px">' +
+                '<div style="font-size:32px;line-height:1;flex-shrink:0">' + ach.icon + '</div>' +
+                '<div style="flex:1">' +
+                  '<div style="font-size:10px;font-weight:800;color:#a78bfa;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:3px">🏆 Achievement unlocked</div>' +
+                  '<div style="font-size:14px;font-weight:900;color:#fde68a;margin-bottom:6px">' + ach.title + '</div>' +
+                  '<div style="font-size:11px;color:#cbd5e1;line-height:1.55;margin-bottom:6px">' + ach.fact + '</div>' +
+                  '<div style="font-size:9px;color:#94a3b8;font-style:italic">Source: ' + ach.citation + '</div>' +
+                '</div>' +
+              '</div>';
+            bioPopup.style.opacity = '1';
+            bioPopup.style.transform = 'translateX(-50%) translateY(0)';
+          }
+          if (biologyPopupQueue.length > 0 && biologyPopupQueue[0].expiresAt > 0 && now > biologyPopupQueue[0].expiresAt) {
+            biologyPopupQueue.shift();
+            bioPopup.style.opacity = '0';
+            bioPopup.style.transform = 'translateX(-50%) translateY(-30px)';
+          }
+
           // Audio mute when paused or game over; otherwise honor persisted vol
           if (masterGain) {
             var as = loadAudioSettings();
@@ -4440,6 +4617,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           if (actionPrompt.parentElement) actionPrompt.parentElement.removeChild(actionPrompt);
           if (minimap.parentElement) minimap.parentElement.removeChild(minimap);
           if (pauseOverlay.parentElement) pauseOverlay.parentElement.removeChild(pauseOverlay);
+          if (bioPopup.parentElement) bioPopup.parentElement.removeChild(bioPopup);
           // Stop + dispose audio
           try {
             if (ambientSource) { ambientSource.stop(); }
