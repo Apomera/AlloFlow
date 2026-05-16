@@ -1229,7 +1229,12 @@ const useTranslation = (targetLanguage, apiKey) => {
       let result = getVal(languagePack, keys);
       if (!result) result = getVal(UI_STRINGS, keys);
       if (!result) result = WORD_SOUNDS_STRINGS[keyString];
-      if (!result) return keyString;
+      if (!result) {
+          if (typeof window !== 'undefined' && (window.location?.hostname === 'localhost' || window.location?.hostname === '127.0.0.1')) {
+              console.warn('[i18n] missing key:', keyString);
+          }
+          return undefined;
+      }
       if (params && typeof result === 'string') {
           Object.keys(params).forEach(key => {
               result = result.replace(`{${key}}`, params[key]);
