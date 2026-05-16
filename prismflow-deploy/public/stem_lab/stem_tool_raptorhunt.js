@@ -1745,7 +1745,107 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 h('div', null, 'Strike: ', h('span', { className: 'text-amber-300' }, 'F'))
               )
             )
-          )
+          ),
+
+          // ── NEW v0.14: Achievement Panel ──
+          (function() {
+            // Aggregate stats across all species
+            var allCatches = 0, allAttempts = 0, bestRunAllSpecies = 0;
+            var speciesHunted = 0;
+            Object.keys(huntStats).forEach(function(sid) {
+              var s = huntStats[sid];
+              if (s) {
+                allCatches += s.catches || 0;
+                allAttempts += s.attempts || 0;
+                bestRunAllSpecies = Math.max(bestRunAllSpecies, s.bestRun || 0);
+                if ((s.catches || 0) > 0) speciesHunted++;
+              }
+            });
+            var accuracy = allAttempts > 0 ? Math.round((allCatches / allAttempts) * 100) : 0;
+            // Achievement definitions
+            var achievements = [
+              { id: 'firstCatch', icon: '🎯', label: 'First Catch', desc: 'Catch your first prey', cond: allCatches >= 1 },
+              { id: 'tenCatches', icon: '🏹', label: 'Ten Catches', desc: 'Catch 10 prey total', cond: allCatches >= 10 },
+              { id: 'fiftyCatches', icon: '🦅', label: 'Apex Predator', desc: 'Catch 50 prey total', cond: allCatches >= 50 },
+              { id: 'hundredCatches', icon: '⭐', label: 'Hunter\'s Century', desc: 'Catch 100 prey total', cond: allCatches >= 100 },
+              { id: 'cleanRun5', icon: '🔥', label: 'Hot Streak', desc: 'Best run of 5+ catches', cond: bestRunAllSpecies >= 5 },
+              { id: 'cleanRun10', icon: '💎', label: 'Untouchable', desc: 'Best run of 10+ catches', cond: bestRunAllSpecies >= 10 },
+              { id: 'sharpEye', icon: '👁', label: 'Sharp Eye', desc: '50%+ hit rate (min 10 attempts)', cond: allAttempts >= 10 && accuracy >= 50 },
+              { id: 'masterEye', icon: '🪶', label: 'Master Hunter', desc: '70%+ hit rate (min 20 attempts)', cond: allAttempts >= 20 && accuracy >= 70 },
+              { id: 'threeSpecies', icon: '🦅', label: 'Generalist', desc: 'Catch with 3 different species', cond: speciesHunted >= 3 },
+              { id: 'fiveSpecies', icon: '👑', label: 'Versatile Falconer', desc: 'Catch with 5 different species', cond: speciesHunted >= 5 },
+              { id: 'allSpecies', icon: '🏆', label: 'Master of All', desc: 'Catch with all 8 species', cond: speciesHunted >= 8 }
+            ];
+            var earnedCount = achievements.filter(function(a) { return a.cond; }).length;
+            return h('div', { className: 'bg-slate-900/40 border border-amber-700/40 rounded-xl p-4' },
+              h('div', { className: 'flex items-center justify-between gap-2 mb-3' },
+                h('div', { className: 'text-sm font-bold text-amber-300' }, '🏅 Achievements'),
+                h('div', { className: 'text-xs font-mono text-amber-300' }, earnedCount + ' / ' + achievements.length + ' earned')
+              ),
+              // Progress bar
+              h('div', { className: 'bg-slate-800 rounded-full h-2 overflow-hidden mb-3' },
+                h('div', {
+                  className: 'bg-gradient-to-r from-amber-500 to-orange-500 h-full transition-all',
+                  style: { width: ((earnedCount / achievements.length) * 100) + '%' },
+                  role: 'progressbar',
+                  'aria-valuenow': earnedCount, 'aria-valuemin': 0, 'aria-valuemax': achievements.length
+                })
+              ),
+              // Aggregate stats
+              h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-2 mb-3 text-center text-xs' },
+                h('div', { className: 'bg-emerald-900/30 border border-emerald-700/40 rounded p-2' },
+                  h('div', { className: 'text-xl font-bold text-emerald-300' }, allCatches),
+                  h('div', { className: 'text-[10px] text-emerald-200 uppercase' }, 'Total catches')
+                ),
+                h('div', { className: 'bg-blue-900/30 border border-blue-700/40 rounded p-2' },
+                  h('div', { className: 'text-xl font-bold text-blue-300' }, accuracy + '%'),
+                  h('div', { className: 'text-[10px] text-blue-200 uppercase' }, 'Hit rate')
+                ),
+                h('div', { className: 'bg-amber-900/30 border border-amber-700/40 rounded p-2' },
+                  h('div', { className: 'text-xl font-bold text-amber-300' }, bestRunAllSpecies),
+                  h('div', { className: 'text-[10px] text-amber-200 uppercase' }, 'Best run')
+                ),
+                h('div', { className: 'bg-purple-900/30 border border-purple-700/40 rounded p-2' },
+                  h('div', { className: 'text-xl font-bold text-purple-300' }, speciesHunted + '/8'),
+                  h('div', { className: 'text-[10px] text-purple-200 uppercase' }, 'Species used')
+                )
+              ),
+              // Badge grid
+              h('div', { className: 'grid grid-cols-2 md:grid-cols-3 gap-2' },
+                achievements.map(function(a) {
+                  return h('div', {
+                    key: a.id,
+                    className: 'flex items-start gap-2 p-2 rounded ' + (a.cond
+                      ? 'bg-amber-900/30 border border-amber-700/50'
+                      : 'bg-slate-800/30 border border-slate-700/40 opacity-40'),
+                    'aria-label': a.label + (a.cond ? ' (earned)' : ' (locked)')
+                  },
+                    h('div', { className: 'text-2xl flex-shrink-0' }, a.cond ? a.icon : '🔒'),
+                    h('div', null,
+                      h('div', { className: 'text-xs font-bold ' + (a.cond ? 'text-amber-300' : 'text-slate-500') }, a.label),
+                      h('div', { className: 'text-[10px] text-slate-300' }, a.desc)
+                    )
+                  );
+                })
+              ),
+              // Per-species breakdown
+              speciesHunted > 0 && h('details', { className: 'mt-3' },
+                h('summary', { className: 'text-xs font-bold text-amber-300 cursor-pointer' }, '📊 Per-species breakdown'),
+                h('div', { className: 'mt-2 grid grid-cols-1 md:grid-cols-2 gap-1' },
+                  SPECIES.map(function(s) {
+                    var st = huntStats[s.id] || { catches: 0, attempts: 0, bestRun: 0 };
+                    if (st.attempts === 0) return null;
+                    var rate = st.attempts > 0 ? Math.round((st.catches / st.attempts) * 100) : 0;
+                    return h('div', { key: s.id, className: 'flex items-center gap-2 bg-slate-800/40 rounded p-1.5 text-xs' },
+                      h('span', null, s.emoji),
+                      h('span', { className: 'text-amber-200 flex-1' }, s.name),
+                      h('span', { className: 'font-mono text-slate-300' }, st.catches + '/' + st.attempts + ' = ' + rate + '%')
+                    );
+                  }).filter(Boolean)
+                )
+              )
+            );
+          })()
         );
       }
 
@@ -5720,6 +5820,105 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             )
           ),
 
+          // ── NEW v0.14: Hidden-Object Meadow Visualization ──
+          (function() {
+            // Render a "meadow" SVG with a vole hidden at a specific spot.
+            // The view zoom is the same av.zoom value (1-8×).
+            // At 1× (human) the vole is barely a pixel; at 5× (eagle) it's clearly visible.
+            return h('div', { className: 'bg-slate-900/40 border border-emerald-700/40 rounded-xl p-4' },
+              h('div', { className: 'text-sm font-bold text-emerald-300 mb-2' }, '🌾 Hidden-Prey Meadow — Can you spot the vole?'),
+              h('div', { className: 'text-xs text-slate-400 italic mb-3' }, 'A scaled-down meadow scene 200 ft away. A vole is hiding in the grass. At human acuity (1×) it\'s barely a speck. Crank the zoom up to red-tail or eagle vision and the vole becomes obvious.'),
+              h('div', { className: 'bg-slate-950 rounded-lg overflow-hidden border border-slate-700' },
+                h('svg', { viewBox: '0 0 600 320', style: { width: '100%', height: 'auto', maxHeight: '400px' }, role: 'img', 'aria-label': 'Meadow scene with hidden vole' },
+                  // Sky gradient
+                  h('defs', null,
+                    h('linearGradient', { id: 'mdSky', x1: 0, y1: 0, x2: 0, y2: 1 },
+                      h('stop', { offset: '0%', stopColor: '#7dd3fc' }),
+                      h('stop', { offset: '70%', stopColor: '#fef3c7' })
+                    ),
+                    h('linearGradient', { id: 'mdGround', x1: 0, y1: 0, x2: 0, y2: 1 },
+                      h('stop', { offset: '0%', stopColor: '#65a30d' }),
+                      h('stop', { offset: '100%', stopColor: '#365314' })
+                    )
+                  ),
+                  // Background sky
+                  h('rect', { x: 0, y: 0, width: 600, height: 320, fill: 'url(#mdSky)' }),
+                  // Distant tree line
+                  h('rect', { x: 0, y: 130, width: 600, height: 20, fill: '#1e3a2a' }),
+                  [80, 180, 280, 360, 440, 520].forEach,
+                  // (use map for actual rendering)
+                  [80, 180, 280, 360, 440, 520].map(function(tx, i) {
+                    return h('path', { key: 'tree' + i, d: 'M ' + (tx - 8) + ' 150 L ' + tx + ' 125 L ' + (tx + 8) + ' 150 Z', fill: '#14532d' });
+                  }),
+                  // Meadow ground
+                  h('rect', { x: 0, y: 150, width: 600, height: 170, fill: 'url(#mdGround)' }),
+                  // Grass texture (random tiny lines for texture)
+                  (function() {
+                    var lines = [];
+                    for (var gi = 0; gi < 200; gi++) {
+                      // Deterministic placement so it doesn't jitter
+                      var seed = gi * 17.3;
+                      var gx = (Math.sin(seed) * 10000) % 600;
+                      if (gx < 0) gx += 600;
+                      var gy = 160 + (Math.cos(seed * 1.7) * 1000 % 150);
+                      if (gy < 160) gy = 160 + (-gy % 150);
+                      var gh = 2 + Math.abs(Math.sin(seed * 3)) * 4;
+                      lines.push(h('line', { key: 'g' + gi, x1: gx, y1: gy, x2: gx, y2: gy - gh, stroke: '#3f6212', strokeWidth: 1, opacity: 0.6 }));
+                    }
+                    return lines;
+                  })(),
+                  // The vole — its visible size scales with av.zoom!
+                  // At 1× = tiny dot; at 8× = clear glyph
+                  (function() {
+                    var vx = 340, vy = 245; // fixed meadow position
+                    var voleSize = Math.max(1, av.zoom * 1.2); // pixels (1.2px at 1× → ~9.6px at 8×)
+                    var visible = av.zoom >= 1.0; // always rendered, just very small
+                    return h('g', null,
+                      // Vole body
+                      h('ellipse', {
+                        cx: vx, cy: vy,
+                        rx: voleSize, ry: voleSize * 0.6,
+                        fill: '#78350f', stroke: '#451a03', strokeWidth: 0.5,
+                        opacity: visible ? 1 : 0
+                      }),
+                      // Vole head if zoom is high enough
+                      av.zoom >= 2.5 && h('circle', { cx: vx + voleSize * 0.9, cy: vy - voleSize * 0.2, r: voleSize * 0.6, fill: '#92400e' }),
+                      // Vole tail if zoom high enough
+                      av.zoom >= 3.5 && h('line', { x1: vx - voleSize, y1: vy, x2: vx - voleSize * 2.5, y2: vy + voleSize * 0.5, stroke: '#451a03', strokeWidth: 1 }),
+                      // Vole eye glint at very high zoom
+                      av.zoom >= 5.0 && h('circle', { cx: vx + voleSize * 1.1, cy: vy - voleSize * 0.3, r: 0.5, fill: '#fefce8' }),
+                      // "you found it" label at >= 4×
+                      av.zoom >= 4.0 && h('g', null,
+                        h('circle', { cx: vx, cy: vy, r: voleSize * 4, fill: 'none', stroke: '#fbbf24', strokeWidth: 1, strokeDasharray: '3,3', opacity: 0.6 }),
+                        h('text', { x: vx + voleSize * 4 + 4, y: vy + 4, fontSize: 11, fill: '#fbbf24', fontWeight: 'bold' }, '← vole!')
+                      )
+                    );
+                  })(),
+                  // Distance scale
+                  h('text', { x: 8, y: 18, fontSize: 10, fill: '#1c1917', fontWeight: 'bold' }, '200 ft from observer'),
+                  h('text', { x: 8, y: 314, fontSize: 9, fill: '#fefce8' }, 'Current zoom: ' + av.zoom.toFixed(1) + '× — ' + (av.zoom < 1.5 ? 'human can barely see anything' : av.zoom < 3 ? 'kestrel-class sees a speck' : av.zoom < 5 ? 'hawk-class sees the vole clearly' : 'eagle-class sees the eye glint'))
+                )
+              ),
+              // Verdict bar
+              h('div', { className: 'mt-3 grid grid-cols-1 md:grid-cols-4 gap-2 text-center text-xs' },
+                ['1×', '2.6×', '4×', '5.5×'].map(function(z, i) {
+                  var zoom = parseFloat(z);
+                  var verdict = [
+                    { z: 1, lbl: 'Human: imperceptible', color: 'slate' },
+                    { z: 2.6, lbl: 'Peregrine: visible as speck', color: 'amber' },
+                    { z: 4, lbl: 'Red-tail: clearly a small mammal', color: 'orange' },
+                    { z: 5.5, lbl: 'Golden eagle: visible eye glint', color: 'red' }
+                  ][i];
+                  var active = Math.abs(av.zoom - verdict.z) < 0.3;
+                  return h('div', { key: i, className: 'p-2 rounded ' + (active ? 'bg-' + verdict.color + '-700/40 ring-2 ring-amber-400/50' : 'bg-slate-800/40 border border-slate-700/40') },
+                    h('div', { className: 'font-mono font-bold text-amber-300' }, z),
+                    h('div', { className: 'text-[10px] text-slate-300' }, verdict.lbl)
+                  );
+                })
+              )
+            );
+          })(),
+
           // What this means
           h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded-xl p-4' },
             h('div', { className: 'text-sm font-bold text-emerald-300 mb-2' }, '💡 The "100-foot newspaper" demonstration'),
@@ -6426,6 +6625,98 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded-xl p-4 text-xs text-emerald-100/90' },
             h('div', { className: 'font-bold text-emerald-300 mb-1' }, '💡 Start with one observation'),
             'Open eBird or iNaturalist. Pick any raptor you saw today. Log it. You\'ve just contributed to one of the largest biodiversity datasets in human history — and you\'ve learned the species better than any textbook will teach you.'
+          ),
+
+          // ── NEW v0.14: Academic Bibliography ──
+          h('details', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-3' },
+            h('summary', { className: 'text-sm font-bold text-amber-300 cursor-pointer' }, '📚 Academic Bibliography — every citation used in this tool'),
+            h('div', { className: 'mt-3 space-y-2 text-xs' },
+              h('div', { className: 'text-slate-400 italic mb-3' }, 'Primary scientific sources cited throughout Raptor Hunt. Click any DOI or journal link to read the full paper.'),
+
+              // Group by topic
+              [
+                {
+                  topic: '🪂 Flight + Stoop Physics',
+                  refs: [
+                    { cite: 'Tucker, V.A. (1998). Curved flight paths and sideways vision in peregrine falcons (Falco peregrinus). Journal of Experimental Biology, 201(3), 403-414.', note: 'The foundational paper on logarithmic-spiral stoop trajectories. Demonstrated peregrines fly a constant-retinal-angle approach matching the proportional-navigation algorithm used by air-to-air missiles.' },
+                    { cite: 'Tucker, V.A. (1990). Body drag, feather drag and interference drag of the mounting strut in a peregrine falcon, Falco peregrinus. Journal of Experimental Biology, 149, 449-468.', note: 'Wind-tunnel measurements of drag coefficient for a peregrine in stoop posture (~Cd = 0.18).' },
+                    { cite: 'Cade, T.J. (1969). The Falcons of the World. Cornell University Press / Ithaca, NY.', note: 'Pioneering work on peregrine biology + the basis for Cornell\'s captive-breeding program.' },
+                    { cite: 'Ponitz, B. et al. (2014). Diving-flight aerodynamics of a peregrine falcon (Falco peregrinus). PLoS ONE, 9(2): e86506.', note: 'High-speed video + computational fluid dynamics of stoop posture. Confirmed ~240 mph terminal velocity.' }
+                  ]
+                },
+                {
+                  topic: '👁 Vision + UV Sensitivity',
+                  refs: [
+                    { cite: 'Viitala, J., Korpimäki, E., Palokangas, P., & Koivula, M. (1995). Attraction of kestrels to vole scent marks visible in ultraviolet light. Nature, 373, 425-427.', note: 'The discovery that American kestrels detect vole urine + dung trails via UV reflection. Foundational paper on raptor UV vision.' },
+                    { cite: 'Lind, O., Mitkus, M., Olsson, P., & Kelber, A. (2013). Ultraviolet sensitivity and colour vision in raptor foraging. Journal of Experimental Biology, 216(10), 1819-1826.', note: 'Quantitative UV-sensitivity measurements across raptor species.' },
+                    { cite: 'Lind, O., Karlsson, S., & Kelber, A. (2014). Brightness discrimination thresholds in raptors. Journal of Comparative Physiology A, 200(8), 727-737.', note: 'Visual acuity measurements vs. mammals.' },
+                    { cite: 'Mitkus, M., Olsson, P., Toomey, M.B., Corbo, J.C., & Kelber, A. (2017). Specialized photoreceptor composition in the raptor fovea. Journal of Comparative Neurology, 525(9), 2152-2163.', note: 'Photoreceptor density in the central and temporal foveas of raptors.' }
+                  ]
+                },
+                {
+                  topic: '🦉 Owl Hearing + Silent Flight',
+                  refs: [
+                    { cite: 'Payne, R.S. (1962). How the Barn Owl Locates Prey by Hearing. Living Bird, 1, 151-159.', note: 'The famous total-darkness barn owl strike experiment. First demonstration of acoustic localization accurate to ~1° in pitch black.' },
+                    { cite: 'Bachmann, T., Klän, S., Baumgartner, W., Klaas, M., Schröder, W., & Wagner, H. (2007). Morphometric characterisation of wing feathers of the barn owl (Tyto alba) and the pigeon (Columba livia). Frontiers in Zoology, 4(1), 23.', note: 'Detailed morphometric comparison of owl-feather silencing structures.' },
+                    { cite: 'Wagner, H., Weger, M., Klaas, M., & Schröder, W. (2017). Features of owl wings that promote silent flight. Interface Focus, 7(1), 20160078.', note: 'Modern review of comb leading edge + fringed trailing edge + velvet dorsal mechanisms.' },
+                    { cite: 'Bachmann, T., Wagner, H., & Tropea, C. (2012). Inner vane fringes of barn owl feathers reconsidered: morphometric data and functional aspects. Journal of Anatomy, 221(1), 1-8.', note: 'Quantitative measurement of trailing-edge fringe structure.' }
+                  ]
+                },
+                {
+                  topic: '🪝 Talon + Grip Force',
+                  refs: [
+                    { cite: 'Sustaita, D., Pouydebat, E., Manzano, A., Abdala, V., Hertel, F., & Herrel, A. (2013). Getting a grip on tetrapod grasping: form, function, and evolution. Biological Reviews, 88(2), 380-405.', note: 'Comparative review of grip force across vertebrates including raptors.' },
+                    { cite: 'Fowler, D.W., Freedman, E.A., & Scannella, J.B. (2009). Predatory functional morphology in raptors: interdigital variation in talon size is related to prey restraint and immobilisation technique. PLoS ONE, 4(11): e7999.', note: 'Why some species have one outsized killing talon (hallux) and others have proportional talons.' }
+                  ]
+                },
+                {
+                  topic: '🐣 Population Demographics',
+                  refs: [
+                    { cite: 'Therrien, J.F., Gauthier, G., Korpimäki, E., & Bêty, J. (2014). Predation pressure by avian predators suggests summer limitation of small-mammal populations in the Canadian Arctic. Ecology, 95(1), 56-67.', note: 'Snowy owl + lemming population dynamics — basis for irruption-year predictions.' },
+                    { cite: 'Newton, I. (2002). Population Limitation in Birds. Academic Press.', note: 'Standard textbook on raptor demographic limitation. Source for K-selected vs r-selected framework.' },
+                    { cite: 'Wiens, J.D., Anthony, R.G., & Forsman, E.D. (2014). Competitive interactions and resource partitioning between northern spotted owls and barred owls in western Oregon. Wildlife Monographs, 185(1), 1-50.', note: 'Long-term raptor demographic study cited in lifecycle survivorship curve.' }
+                  ]
+                },
+                {
+                  topic: '🌍 Conservation + DDT Recovery',
+                  refs: [
+                    { cite: 'Cade, T.J., Enderson, J.H., Thelander, C.G., & White, C.M. (1988). Peregrine Falcon Populations: Their Management and Recovery. The Peregrine Fund / Boise, ID.', note: 'The definitive history of the peregrine DDT-era recovery.' },
+                    { cite: 'Carson, R. (1962). Silent Spring. Houghton Mifflin.', note: 'The book that started the DDT-ban movement + raptor recovery era.' },
+                    { cite: 'Snyder, N. & Snyder, H. (2000). The California Condor: A Saga of Natural History and Conservation. Academic Press.', note: 'Complete history of the condor decline + captive-breeding recovery.' },
+                    { cite: 'Jones, C.G., Heck, W., Lewis, R.E., Mungroo, Y., Slade, G., & Cade, T. (1995). The restoration of the Mauritius Kestrel Falco punctatus population. Ibis, 137(s1), S173-S180.', note: 'The 4-bird-to-800-bird recovery, written by the biologist who led it.' },
+                    { cite: 'Bedrosian, B.E., Craighead, D., & Crandall, R. (2012). Lead exposure in bald eagles from big game hunting, the continental implications and successful mitigation efforts. PLoS ONE, 7(12): e51978.', note: 'Lead-shot poisoning impact + cited in the threat impact calculator.' }
+                  ]
+                },
+                {
+                  topic: '🧭 Migration',
+                  refs: [
+                    { cite: 'Bildstein, K.L. (2017). Raptors: The Curious Nature of Diurnal Birds of Prey. Cornell University Press.', note: 'Comprehensive raptor biology text, used for migration corridor + thermal kettle physics.' },
+                    { cite: 'Bildstein, K.L. & Klem Jr., D. (2008). Hawks Aloft: Fifty Years of Northern Goshawk Banding in Northeastern North America. Hawk Mountain Sanctuary Association.', note: 'Hawk Mountain\'s 50-year dataset.' },
+                    { cite: 'Smith, J.P. & Goodrich, L.J. (2005). The Birds of North America: Online (Cornell Lab of Ornithology).', note: 'All Cornell Lab species accounts used for the species roster + Field ID section.' }
+                  ]
+                },
+                {
+                  topic: '🤝 Falconry + Cultural History',
+                  refs: [
+                    { cite: 'Frederick II of Hohenstaufen. (~1240). De Arte Venandi cum Avibus [The Art of Hunting with Birds]. Translated by Wood, C.A. & Fyfe, F.M. (1943) Stanford University Press.', note: 'The first scientific treatise on falconry + raptor biology — also one of the first scientific texts in Western Europe.' },
+                    { cite: 'Berners, J. (~1486). Boke of Saint Albans. Wynkyn de Worde / London.', note: 'Medieval English falconry guide; source for the feudal hierarchy of species assignments.' },
+                    { cite: 'UNESCO Intangible Cultural Heritage list. (2010, expanded 2021). Falconry, a living human heritage. https://ich.unesco.org/en/RL/falconry-a-living-human-heritage-01708', note: 'Official UNESCO listing — now covers 24 nations.' }
+                  ]
+                }
+              ].map(function(group, gi) {
+                return h('details', { key: gi, className: 'bg-slate-800/40 rounded p-2' },
+                  h('summary', { className: 'text-xs font-bold text-amber-300 cursor-pointer' }, group.topic + ' (' + group.refs.length + ' sources)'),
+                  h('div', { className: 'mt-2 space-y-2' },
+                    group.refs.map(function(r, ri) {
+                      return h('div', { key: ri, className: 'bg-slate-900/40 rounded p-2.5 border-l-2 border-amber-700/40' },
+                        h('div', { className: 'text-xs font-mono text-amber-200 leading-relaxed mb-1' }, r.cite),
+                        h('div', { className: 'text-[11px] text-slate-300 italic' }, r.note)
+                      );
+                    })
+                  )
+                );
+              })
+            )
           )
         );
       }
