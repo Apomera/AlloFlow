@@ -800,10 +800,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             h('div', { style: subheaderStyle() }, 'Controls'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10, marginBottom: 14 } },
               [
-                { k: 'W A S D', d: 'Crawl — slow, stealthy, cheap', color: '#86efac' },
+                { k: 'W A S D', d: 'Crawl — slow, stealthy, oxygen-cheap', color: '#86efac' },
                 { k: 'SPACE', d: 'Jet propulsion — burst speed, drains stamina', color: '#60a5fa' },
-                { k: 'CLICK / E', d: 'Pounce + grab nearby prey', color: '#fbbf24' },
-                { k: 'I', d: 'Ink defense — break predator visual lock', color: '#a78bfa' }
+                { k: 'CLICK', d: 'Pounce nearest crab or fish in range', color: '#fbbf24' },
+                { k: 'HOLD E', d: 'Drill open a clam (1.8s, big calorie payoff)', color: '#fb923c' },
+                { k: 'I', d: 'Ink defense — breaks predator visual lock', color: '#a78bfa' },
+                { k: '(passive)', d: 'Camouflage — settle on a substrate to blend', color: '#22d3ee' }
               ].map(function(c, i) {
                 return h('div', { key: i, style: { background: 'rgba(15,23,42,0.5)', padding: 10, borderRadius: 8, borderLeft: '3px solid ' + c.color } },
                   h('div', { style: { fontSize: 13, fontWeight: 900, color: c.color, fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 4 } }, c.k),
@@ -812,9 +814,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
 
           // Real biology note
           !active ? h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, 'What you\'re feeling'),
+            h('div', { style: subheaderStyle() }, 'What you\'re feeling — all integrated, no minigames'),
             h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.7 } },
-              'Crawling is the octopus default — efficient, stealthy, oxygen-cheap. Jet propulsion is the panic button: fast in burst, but each jet pulse costs ATP and dumps lactate. Real octopuses jet briefly and recover. Ink isn\'t magic — it\'s a chemical resource (melanin + mucus) that breaks the predator\'s visual lock long enough to crawl into a den. The moray eel hunts you the same way you hunt crabs — by waiting in a hole and lunging.')) : null,
+              h('p', { style: { margin: '0 0 8px' } },
+                h('b', { style: { color: '#22d3ee' } }, 'Camouflage is passive.'),
+                ' Your skin continuously lerps toward whatever substrate you\'re resting on — sand, rock, coral, sea grass. The longer you stay still, the better the match. Predator detection radius shrinks with your camo effectiveness. There\'s no "press F to blend" — it just happens.'),
+              h('p', { style: { margin: '0 0 8px' } },
+                h('b', { style: { color: '#86efac' } }, 'Hunger creates rhythm.'),
+                ' Hunger drains slowly. Eating refills it: crab +22, fish +32 (jet-pounce them), clam +50 (hold E to drill). Starvation eats your health.'),
+              h('p', { style: { margin: '0 0 8px' } },
+                h('b', { style: { color: '#22c55e' } }, 'Dens are your safety net.'),
+                ' Four rock arches around the reef. Inside one, predators give up the chase and your health regens. You\'ll see a green ring light up when you\'re close.'),
+              h('p', { style: { margin: '0 0 8px' } },
+                h('b', { style: { color: '#fbbf24' } }, 'Two predators with different rhythms.'),
+                ' The moray eel ambushes from a fixed hole (marked by a torus ring) and is more aggressive at night. The grouper roams the open water during the day with a longer detection range but slower charge — and sleeps at night.'),
+              h('p', { style: { margin: 0 } },
+                h('b', { style: { color: '#a78bfa' } }, 'Ink is finite and panicked.'),
+                ' Drop a black cloud that breaks every predator\'s visual lock for 3 seconds. Real octopus biology: a chemical resource, not a recharge.'))) : null,
 
           // Launch / cleanup buttons
           !active ? h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 16 } },
@@ -945,28 +961,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           var rockTint = 0x504030 + Math.floor(Math.random() * 0x080808);
           var rockMesh = new THREE.Mesh(rockGeo, new THREE.MeshStandardMaterial({ color: rockTint, roughness: 0.93 }));
           rockMesh.position.set(rx, rs * 0.35, rz);
+          // Tag for the camouflage substrate-detector. Octopus skin will lerp
+          // toward this color when stationary on/near this rock.
+          rockMesh.userData.substrate = 'rock';
+          rockMesh.userData.substrateRadius = rs * 1.2;
           scene.add(rockMesh);
           rocks.push(rockMesh);
         }
 
         // ─── Coral (cylinders, warm colors) ───
         var coralColors = [0xc94e6d, 0xff6b35, 0xd4af37, 0x8e5572, 0xb8345c];
+        var corals = [];
         for (var ci = 0; ci < 18; ci++) {
           var cx = (Math.random() - 0.5) * 90;
           var cz = (Math.random() - 0.5) * 90;
           if (Math.abs(cx) < 8 && Math.abs(cz) < 8) continue;
           var ch = 1 + Math.random() * 1.5;
+          var coralHex = coralColors[Math.floor(Math.random() * coralColors.length)];
           var coralGeo = new THREE.CylinderGeometry(0.15, 0.32, ch, 8);
           var coral = new THREE.Mesh(coralGeo,
-            new THREE.MeshStandardMaterial({ color: coralColors[Math.floor(Math.random() * coralColors.length)], roughness: 0.7 }));
+            new THREE.MeshStandardMaterial({ color: coralHex, roughness: 0.7 }));
           coral.position.set(cx, ch / 2, cz);
           coral.rotation.y = Math.random() * Math.PI;
           coral.rotation.z = (Math.random() - 0.5) * 0.3;
+          // Tag for camouflage. Coral lets the octopus turn warm hues.
+          coral.userData.substrate = 'coral';
+          coral.userData.coralHex = coralHex;
+          coral.userData.substrateRadius = 1.1;
           scene.add(coral);
+          corals.push(coral);
         }
 
-        // ─── Sea grass (planes that sway) ───
+        // ─── Sea grass (planes that sway) — tagged for camouflage ───
         var grass = [];
+        var grassClusters = [];  // for substrate detection (cluster of N nearby grass blades)
         for (var gi = 0; gi < 80; gi++) {
           var gx = (Math.random() - 0.5) * 120;
           var gz = (Math.random() - 0.5) * 120;
@@ -976,6 +1004,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           var gmesh = new THREE.Mesh(grassGeo, grassMat);
           gmesh.position.set(gx, gH / 2 + 0.05, gz);
           gmesh.rotation.y = Math.random() * Math.PI;
+          gmesh.userData.substrate = 'grass';
+          gmesh.userData.substrateRadius = 0.6;
           scene.add(gmesh);
           grass.push({ mesh: gmesh, phase: Math.random() * Math.PI * 2 });
         }
@@ -1137,6 +1167,271 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         dornRing.rotation.x = Math.PI / 2;
         scene.add(dornRing);
 
+        // ─── Grouper (roaming predator, day-active) ───
+        // Unlike moray (fixed-hole ambush), grouper patrols open water.
+        // Longer detection radius but slower charge; pauses at night when
+        // it tucks into a far reef edge.
+        var grouper = new THREE.Group();
+        var gBodyGeo = new THREE.SphereGeometry(0.9, 12, 8);
+        gBodyGeo.scale(1.6, 0.85, 0.85);
+        var gBody = new THREE.Mesh(gBodyGeo,
+          new THREE.MeshStandardMaterial({ color: 0x6b6244, roughness: 0.55 }));
+        grouper.add(gBody);
+        // Tail
+        var gTail = new THREE.Mesh(
+          new THREE.ConeGeometry(0.5, 0.7, 6),
+          new THREE.MeshStandardMaterial({ color: 0x554a32, roughness: 0.6 })
+        );
+        gTail.position.x = -1.5;
+        gTail.rotation.z = -Math.PI / 2;
+        grouper.add(gTail);
+        // Eyes
+        for (var gei = 0; gei < 2; gei++) {
+          var geye = new THREE.Mesh(new THREE.SphereGeometry(0.08, 6, 5),
+            new THREE.MeshBasicMaterial({ color: 0xffd400 }));
+          geye.position.set(0.9, 0.25 * (gei === 0 ? 1 : -1), 0.35);
+          grouper.add(geye);
+        }
+        grouper.position.set(-25, 1.8, -20);
+        grouper.userData = {
+          state: 'patrol',
+          patrolAngle: 0,
+          patrolTimer: 0,
+          stateTimer: 0,
+          aggroRange: 10,
+          speed: 3.2,
+          cooldownUntil: 0,
+        };
+        scene.add(grouper);
+
+        // ─── Dens (4 rock arches scattered as safe-hide points) ───
+        // Inside a den (within DEN_RADIUS): health regens, both predators
+        // lose interest and break attack. Dens are visible reef landmarks
+        // so the player learns where to retreat to.
+        var DEN_RADIUS = 2.0;
+        var DEN_POSITIONS = [
+          { x: -28, z: 5 },
+          { x: 32, z: -18 },
+          { x: 8, z: -35 },
+          { x: -20, z: -28 },
+        ];
+        var dens = [];
+        DEN_POSITIONS.forEach(function(pos) {
+          var den = new THREE.Group();
+          // Arch: two pillars + a lintel
+          var pmat = new THREE.MeshStandardMaterial({ color: 0x3d342a, roughness: 0.9 });
+          var p1 = new THREE.Mesh(new THREE.BoxGeometry(0.7, 1.4, 0.7), pmat);
+          p1.position.set(-0.9, 0.7, 0);
+          den.add(p1);
+          var p2 = new THREE.Mesh(new THREE.BoxGeometry(0.7, 1.4, 0.7), pmat);
+          p2.position.set(0.9, 0.7, 0);
+          den.add(p2);
+          var lintel = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.4, 0.7), pmat);
+          lintel.position.set(0, 1.6, 0);
+          den.add(lintel);
+          // Interior shadow patch (so the den looks like a hideable cavity)
+          var shadow = new THREE.Mesh(
+            new THREE.PlaneGeometry(2.0, 1.5),
+            new THREE.MeshBasicMaterial({ color: 0x080608, transparent: true, opacity: 0.85 })
+          );
+          shadow.position.set(0, 0.75, 0.01);
+          den.add(shadow);
+          // Den-glow ring (subtle indicator on the ground when octopus is nearby)
+          var denGlow = new THREE.Mesh(
+            new THREE.RingGeometry(DEN_RADIUS - 0.3, DEN_RADIUS, 24),
+            new THREE.MeshBasicMaterial({ color: 0x22c55e, transparent: true, opacity: 0, side: THREE.DoubleSide })
+          );
+          denGlow.position.set(0, 0.06, 0);
+          denGlow.rotation.x = -Math.PI / 2;
+          den.add(denGlow);
+          den.position.set(pos.x, 0, pos.z);
+          den.rotation.y = Math.random() * Math.PI;
+          scene.add(den);
+          dens.push({ group: den, x: pos.x, z: pos.z, glow: denGlow });
+        });
+
+        // ─── Clams (half-buried, drill mechanic) ───
+        // Hold E within DRILL_RANGE for DRILL_DURATION seconds to drill open.
+        // Cancellable: if octopus moves away or takes damage, drill resets.
+        // Pays out big calorie reward (large hunger refill + score boost).
+        var DRILL_RANGE = 1.2;
+        var DRILL_DURATION = 1.8;   // seconds
+        var clams = [];
+        var CLAM_POSITIONS = [
+          { x: -10, z: 8 }, { x: 18, z: -5 }, { x: -22, z: -10 },
+          { x: 6, z: 22 }, { x: -5, z: -18 }, { x: 35, z: 15 },
+          { x: 12, z: 28 }, { x: -38, z: 18 }
+        ];
+        CLAM_POSITIONS.forEach(function(pos) {
+          var clam = new THREE.Group();
+          // Lower shell (half-buried)
+          var lowerGeo = new THREE.SphereGeometry(0.4, 8, 6, 0, Math.PI * 2, 0, Math.PI / 2);
+          var clamMat = new THREE.MeshStandardMaterial({ color: 0xe6dcc6, roughness: 0.5 });
+          var lower = new THREE.Mesh(lowerGeo, clamMat);
+          lower.rotation.x = Math.PI;
+          lower.position.y = 0;
+          clam.add(lower);
+          // Upper shell (slightly open at top)
+          var upperGeo = new THREE.SphereGeometry(0.4, 8, 6, 0, Math.PI * 2, 0, Math.PI / 2);
+          var upper = new THREE.Mesh(upperGeo, clamMat);
+          upper.position.y = 0.05;
+          clam.add(upper);
+          // Ridges (small lines)
+          for (var crg = 0; crg < 3; crg++) {
+            var ridgeGeo = new THREE.TorusGeometry(0.3 - crg * 0.08, 0.02, 4, 12, Math.PI);
+            var ridge = new THREE.Mesh(ridgeGeo, new THREE.MeshStandardMaterial({ color: 0xc4b89c }));
+            ridge.position.y = 0.02 + crg * 0.06;
+            ridge.rotation.x = Math.PI / 2;
+            clam.add(ridge);
+          }
+          clam.position.set(pos.x, 0.1, pos.z);
+          clam.userData = {
+            alive: true,
+            drillProgress: 0,
+          };
+          scene.add(clam);
+          clams.push(clam);
+        });
+
+        // ─── Fish schools (2 schools of 8 silversides) ───
+        // Each school has a moving center; fish target school center +
+        // small random offset (flocking-lite). Catchable via jet-pounce
+        // within FISH_CATCH_RANGE. Schools regenerate from far edge.
+        var FISH_CATCH_RANGE = 2.2;
+        var fishSchools = [];
+        function spawnSchool() {
+          var school = {
+            center: new THREE.Vector3(
+              (Math.random() - 0.5) * 100,
+              4 + Math.random() * 2,   // mid-water
+              (Math.random() - 0.5) * 100
+            ),
+            heading: Math.random() * Math.PI * 2,
+            fish: [],
+            wanderTimer: 0,
+          };
+          for (var fi = 0; fi < 8; fi++) {
+            var fishGeo = new THREE.ConeGeometry(0.08, 0.32, 5);
+            var fishMat = new THREE.MeshStandardMaterial({ color: 0xc8d8e8, roughness: 0.3, metalness: 0.4 });
+            var fishMesh = new THREE.Mesh(fishGeo, fishMat);
+            fishMesh.rotation.z = -Math.PI / 2;  // point forward
+            var fish = new THREE.Group();
+            fish.add(fishMesh);
+            fish.userData = {
+              offset: new THREE.Vector3(
+                (Math.random() - 0.5) * 2.5,
+                (Math.random() - 0.5) * 1.2,
+                (Math.random() - 0.5) * 2.5
+              ),
+              alive: true,
+            };
+            fish.position.copy(school.center).add(fish.userData.offset);
+            scene.add(fish);
+            school.fish.push(fish);
+          }
+          fishSchools.push(school);
+        }
+        spawnSchool();
+        spawnSchool();
+
+        // ─── Bubble particles (rising from seafloor) ───
+        var BUBBLE_COUNT = 50;
+        var bubbleGeo = new THREE.BufferGeometry();
+        var bubblePositions = new Float32Array(BUBBLE_COUNT * 3);
+        var bubbleVelocities = new Float32Array(BUBBLE_COUNT);
+        for (var bb = 0; bb < BUBBLE_COUNT; bb++) {
+          bubblePositions[bb * 3] = (Math.random() - 0.5) * 100;
+          bubblePositions[bb * 3 + 1] = Math.random() * 10;
+          bubblePositions[bb * 3 + 2] = (Math.random() - 0.5) * 100;
+          bubbleVelocities[bb] = 0.3 + Math.random() * 0.4;
+        }
+        bubbleGeo.setAttribute('position', new THREE.BufferAttribute(bubblePositions, 3));
+        var bubbleMat = new THREE.PointsMaterial({
+          color: 0xddeefa, size: 0.18, transparent: true, opacity: 0.65,
+          sizeAttenuation: true,
+        });
+        var bubbles = new THREE.Points(bubbleGeo, bubbleMat);
+        scene.add(bubbles);
+
+        // ─── Surface light rays (vertical god-rays from above) ───
+        var lightRays = [];
+        for (var lr = 0; lr < 6; lr++) {
+          var rayGeo = new THREE.PlaneGeometry(1 + Math.random() * 1.5, 16);
+          var rayMat = new THREE.MeshBasicMaterial({
+            color: 0xbfe6ff, transparent: true, opacity: 0.08,
+            blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+          });
+          var ray = new THREE.Mesh(rayGeo, rayMat);
+          ray.position.set(
+            (Math.random() - 0.5) * 80,
+            8,
+            (Math.random() - 0.5) * 80
+          );
+          ray.rotation.y = Math.random() * Math.PI;
+          scene.add(ray);
+          lightRays.push({ mesh: ray, basePhase: Math.random() * Math.PI * 2 });
+        }
+
+        // ─── Substrate detection helper ───
+        // Reference RGB for each substrate kind. Used by the camouflage
+        // system to decide what color the octopus skin lerps toward.
+        var SUBSTRATE_COLORS = {
+          sand:        { r: 0.79, g: 0.63, b: 0.42 },
+          rock:        { r: 0.31, g: 0.25, b: 0.19 },
+          grass:       { r: 0.16, g: 0.55, b: 0.29 },
+          'coral_red':    { r: 0.79, g: 0.30, b: 0.43 },
+          'coral_orange': { r: 1.00, g: 0.42, b: 0.21 },
+          'coral_yellow': { r: 0.83, g: 0.69, b: 0.22 },
+          'coral_pink':   { r: 0.72, g: 0.27, b: 0.51 },
+          'coral_purple': { r: 0.56, g: 0.33, b: 0.45 },
+        };
+        // Pre-compute coral hex → reference color name mapping
+        var CORAL_HEX_TO_NAME = {
+          0xc94e6d: 'coral_pink',
+          0xff6b35: 'coral_orange',
+          0xd4af37: 'coral_yellow',
+          0x8e5572: 'coral_purple',
+          0xb8345c: 'coral_red',
+        };
+        // Iterate nearby substrate-tagged meshes; pick the closest hit. Falls
+        // back to sand when nothing is in range. Returns { substrate, color }.
+        function detectSubstrate(pos) {
+          var nearest = null;
+          var nearestD = 1e9;
+          // Walk rocks + corals + grass arrays for efficiency
+          for (var i = 0; i < rocks.length; i++) {
+            var dx = rocks[i].position.x - pos.x;
+            var dz = rocks[i].position.z - pos.z;
+            var d2 = dx * dx + dz * dz;
+            var rad = rocks[i].userData.substrateRadius || 1;
+            if (d2 < rad * rad && d2 < nearestD) { nearestD = d2; nearest = rocks[i]; }
+          }
+          for (var j = 0; j < corals.length; j++) {
+            var ddx = corals[j].position.x - pos.x;
+            var ddz = corals[j].position.z - pos.z;
+            var dd2 = ddx * ddx + ddz * ddz;
+            var rrad = corals[j].userData.substrateRadius || 1;
+            if (dd2 < rrad * rrad && dd2 < nearestD) { nearestD = dd2; nearest = corals[j]; }
+          }
+          // Grass: clusters of grass within 1.5u count as a grass substrate
+          var grassCount = 0;
+          for (var k = 0; k < grass.length; k++) {
+            var gdx = grass[k].mesh.position.x - pos.x;
+            var gdz = grass[k].mesh.position.z - pos.z;
+            if (gdx * gdx + gdz * gdz < 1.5 * 1.5) grassCount++;
+            if (grassCount >= 3) break;
+          }
+          if (grassCount >= 3 && (!nearest || nearestD > 1)) {
+            return { substrate: 'grass', color: SUBSTRATE_COLORS.grass };
+          }
+          if (!nearest) return { substrate: 'sand', color: SUBSTRATE_COLORS.sand };
+          if (nearest.userData.substrate === 'coral') {
+            var key = CORAL_HEX_TO_NAME[nearest.userData.coralHex] || 'coral_red';
+            return { substrate: key, color: SUBSTRATE_COLORS[key] };
+          }
+          return { substrate: nearest.userData.substrate, color: SUBSTRATE_COLORS[nearest.userData.substrate] || SUBSTRATE_COLORS.sand };
+        }
+
         // ─── Input state ───
         var keys = {};
         var clickRequested = false;
@@ -1162,9 +1457,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
 
         var tutorial = document.createElement('div');
         tutorial.style.cssText = 'position:absolute;bottom:14px;left:50%;transform:translateX(-50%);color:#fff;font-family:ui-monospace,Menlo,monospace;font-size:12px;background:rgba(10,20,40,0.78);padding:8px 16px;border-radius:8px;pointer-events:none;text-align:center;max-width:90%;';
-        tutorial.textContent = 'WASD crawl · SPACE jet · CLICK hunt · I ink · click canvas to focus first';
+        tutorial.textContent = 'WASD crawl · SPACE jet · CLICK pounce · HOLD E drill clam · I ink · stay still to camouflage · enter a den for safety';
         canvasEl.parentElement.appendChild(tutorial);
-        setTimeout(function() { if (tutorial.parentElement) tutorial.parentElement.removeChild(tutorial); }, 9000);
+        setTimeout(function() { if (tutorial.parentElement) tutorial.parentElement.removeChild(tutorial); }, 12000);
 
         var damageFlash = document.createElement('div');
         damageFlash.style.cssText = 'position:absolute;inset:0;background:radial-gradient(circle at center, rgba(220,38,38,0) 30%, rgba(220,38,38,0.6) 100%);opacity:0;pointer-events:none;transition:opacity 0.2s;';
@@ -1174,6 +1469,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         var gameState = {
           health: 100, maxHealth: 100,
           stamina: 100, maxStamina: 100,
+          hunger: 100, maxHunger: 100,
           score: 0,
           startTime: Date.now(),
           facingAngle: 0,
@@ -1182,6 +1478,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           inkUntil: 0,
           gameOver: false,
           tookHitAt: 0,
+          // Camouflage state — current skin RGB lerps toward substrate target.
+          // camoEff is 0..1 effectiveness (used to scale predator detection).
+          camoCurrent: { r: 0.76, g: 0.43, b: 0.37 },   // matches initial mantle tint
+          camoEff: 0,
+          stationaryTime: 0,
+          currentSubstrate: 'sand',
+          // Drill mechanic on clams (hold E within 1.2u to consume).
+          drillingClam: null,
+          drillProgress: 0,
+          // Den state — inside DEN_RADIUS of any den
+          inDen: false,
+          nearestDenIdx: -1,
+          // Day/night cycle: 0..1 along a ~3-minute period. 0.0 = noon,
+          // 0.5 = midnight. Cycle is paused if needed for testing.
+          dayTime: 0.0,
+          dayPeriodMs: 180000,
+          // Track when player gave a movement input so camouflage knows
+          // to ramp up when stationary.
+          lastInputAt: Date.now(),
         };
 
         var clock = new THREE.Clock();
@@ -1197,6 +1512,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             var moveFwd = (keys.KeyW ? 1 : 0) - (keys.KeyS ? 1 : 0);
             var turn = (keys.KeyA ? 1 : 0) - (keys.KeyD ? 1 : 0);
             var isJetting = !!keys.Space && gameState.stamina > 0 && moveFwd > 0;
+            var isMoving = moveFwd !== 0 || turn !== 0;
+            if (isMoving) gameState.lastInputAt = now;
 
             gameState.facingAngle += turn * 2.0 * dt;
 
@@ -1215,6 +1532,67 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             } else {
               gameState.stamina = Math.min(gameState.maxStamina, gameState.stamina + 18 * dt);
             }
+
+            // ─── Day/night cycle ─────────────────────────────────
+            // Advance dayTime; 0 = noon, 0.5 = midnight, 1.0 = noon again.
+            // Lighting and fog tint shift smoothly across the cycle. Sun
+            // intensity also flexes so the seafloor really does darken at
+            // night, and the fog far-distance shrinks to feel constrained.
+            gameState.dayTime = ((gameState.dayTime + dt * 1000 / gameState.dayPeriodMs) % 1);
+            var dayPhase = Math.cos(gameState.dayTime * Math.PI * 2); // 1=noon, -1=midnight
+            var dayMix = (dayPhase + 1) / 2;                            // 0 night, 1 day
+            // Mix between day (0a4a6b) and night (030d1a) fog/bg
+            var bgR = 0x03 / 255 + (0x0e - 0x03) / 255 * dayMix;
+            var bgG = 0x0d / 255 + (0x3d - 0x0d) / 255 * dayMix;
+            var bgB = 0x1a / 255 + (0x5c - 0x1a) / 255 * dayMix;
+            scene.background.setRGB(bgR, bgG, bgB);
+            scene.fog.color.setRGB(bgR + 0.05, bgG + 0.07, bgB + 0.09);
+            scene.fog.far = 35 + dayMix * 35;
+            sun.intensity = 0.25 + dayMix * 0.7;
+            ambient.intensity = 0.35 + dayMix * 0.35;
+
+            // ─── Hunger drain + starvation damage ────────────────
+            // Hunger drains slowly while alive; auto-damage kicks in once
+            // it hits zero. Eating crabs/clams/fish refills it in their
+            // respective hunt blocks below.
+            gameState.hunger = Math.max(0, gameState.hunger - 1.6 * dt);
+            if (gameState.hunger <= 0) {
+              gameState.health = Math.max(0, gameState.health - 5 * dt);
+            }
+
+            // ─── Camouflage system (continuous, integrated) ──────
+            // Sample substrate under the octopus + smoothly lerp the mantle
+            // color toward that substrate's reference color. Camo effective-
+            // ness scales with how close the match is and how long we've
+            // been stationary. Movement (especially jetting) sets the
+            // stationaryTime back, so you genuinely have to settle in.
+            var substrateBelow = detectSubstrate(octopus.position);
+            gameState.currentSubstrate = substrateBelow.substrate;
+            var target = substrateBelow.color;
+            // Color lerp speed: faster lerp when stationary, slower while moving
+            var colorLerpRate = isMoving ? 0.5 * dt : 1.4 * dt;
+            if (isJetting) colorLerpRate = 0.15 * dt;
+            gameState.camoCurrent.r += (target.r - gameState.camoCurrent.r) * colorLerpRate;
+            gameState.camoCurrent.g += (target.g - gameState.camoCurrent.g) * colorLerpRate;
+            gameState.camoCurrent.b += (target.b - gameState.camoCurrent.b) * colorLerpRate;
+            mantleMat.color.setRGB(gameState.camoCurrent.r, gameState.camoCurrent.g, gameState.camoCurrent.b);
+            // Arms slightly darker than mantle for natural shading
+            arms.forEach(function(arm) {
+              arm.mesh.material.color.setRGB(
+                gameState.camoCurrent.r * 0.78,
+                gameState.camoCurrent.g * 0.78,
+                gameState.camoCurrent.b * 0.78
+              );
+            });
+            // Compute camo effectiveness: color match × stationary time bonus
+            var dR = gameState.camoCurrent.r - target.r;
+            var dG = gameState.camoCurrent.g - target.g;
+            var dB = gameState.camoCurrent.b - target.b;
+            var colorDelta = Math.sqrt(dR * dR + dG * dG + dB * dB);
+            var matchScore = Math.max(0, 1 - colorDelta * 2.5);
+            gameState.stationaryTime = isMoving ? 0 : Math.min(3, gameState.stationaryTime + dt);
+            var stillnessBonus = Math.min(1, gameState.stationaryTime / 2.0);
+            gameState.camoEff = matchScore * stillnessBonus;
 
             // ─── Arm wiggle ───
             arms.forEach(function(arm) {
@@ -1263,18 +1641,250 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               });
             });
 
+            // ─── Den check (regen + predator block) ──────────────
+            // If octopus is inside DEN_RADIUS of any den, health regens
+            // and both predators give up active attacks (return-to-home).
+            // Visual: the den's ring lights up green.
+            gameState.inDen = false;
+            gameState.nearestDenIdx = -1;
+            for (var di = 0; di < dens.length; di++) {
+              var ddx = dens[di].x - octopus.position.x;
+              var ddz = dens[di].z - octopus.position.z;
+              var dDist = Math.sqrt(ddx * ddx + ddz * ddz);
+              if (dDist < DEN_RADIUS) {
+                gameState.inDen = true;
+                gameState.nearestDenIdx = di;
+              }
+              // Glow opacity: lights up when octopus is near (within 1.5x radius)
+              var glowT = Math.max(0, Math.min(1, (DEN_RADIUS * 1.6 - dDist) / DEN_RADIUS));
+              dens[di].glow.material.opacity = glowT * 0.55;
+            }
+            if (gameState.inDen) {
+              gameState.health = Math.min(gameState.maxHealth, gameState.health + 12 * dt);
+            }
+
+            // ─── Fish school AI (flocking-lite) ──────────────────
+            // Each school's center drifts; individual fish target
+            // (center + offset) with gentle steering. Catchable via
+            // jet-pounce within FISH_CATCH_RANGE. School regenerates
+            // from far edge when wholly consumed.
+            fishSchools.forEach(function(school) {
+              school.wanderTimer -= dt;
+              if (school.wanderTimer <= 0) {
+                school.heading += (Math.random() - 0.5) * 0.8;
+                school.wanderTimer = 3 + Math.random() * 4;
+              }
+              school.center.x += Math.sin(school.heading) * 1.5 * dt;
+              school.center.z += Math.cos(school.heading) * 1.5 * dt;
+              // Bounce off map edges
+              if (school.center.x > 60 || school.center.x < -60) school.heading += Math.PI;
+              if (school.center.z > 60 || school.center.z < -60) school.heading += Math.PI;
+              school.fish.forEach(function(fish) {
+                if (!fish.userData.alive) return;
+                var tgt = school.center.clone().add(fish.userData.offset);
+                fish.position.x += (tgt.x - fish.position.x) * 1.5 * dt;
+                fish.position.y += (tgt.y - fish.position.y) * 1.5 * dt;
+                fish.position.z += (tgt.z - fish.position.z) * 1.5 * dt;
+                // Face direction of travel
+                fish.rotation.y = school.heading;
+              });
+            });
+            // Respawn empty schools
+            for (var fsi = fishSchools.length - 1; fsi >= 0; fsi--) {
+              var alive = fishSchools[fsi].fish.filter(function(f) { return f.userData.alive; }).length;
+              if (alive === 0) {
+                fishSchools.splice(fsi, 1);
+                setTimeout(function() { if (!gameState.gameOver) spawnSchool(); }, 6000);
+              }
+            }
+
+            // ─── Grouper AI (roaming predator, day-active) ───────
+            var gr = grouper.userData;
+            var nightFactor = 1 - dayMix;  // 0 day, 1 night
+            // At night, grouper retreats to a fixed corner + becomes passive
+            if (nightFactor > 0.6 && gr.state !== 'sleeping') {
+              gr.state = 'sleeping';
+            }
+            if (nightFactor < 0.3 && gr.state === 'sleeping') {
+              gr.state = 'patrol';
+            }
+            if (gr.state === 'sleeping') {
+              // Drift toward a far corner; very slow
+              var corner = new THREE.Vector3(-55, 1.5, -50);
+              grouper.position.x += (corner.x - grouper.position.x) * 0.3 * dt;
+              grouper.position.z += (corner.z - grouper.position.z) * 0.3 * dt;
+            } else if (gr.state === 'patrol') {
+              gr.patrolTimer -= dt;
+              if (gr.patrolTimer <= 0) {
+                gr.patrolAngle += (Math.random() - 0.5) * 1.2;
+                gr.patrolTimer = 4 + Math.random() * 4;
+              }
+              grouper.position.x += Math.sin(gr.patrolAngle) * 1.6 * dt;
+              grouper.position.z += Math.cos(gr.patrolAngle) * 1.6 * dt;
+              grouper.position.y = 1.8 + Math.sin(now * 0.0015) * 0.2;
+              if (grouper.position.x > 55 || grouper.position.x < -55) gr.patrolAngle += Math.PI;
+              if (grouper.position.z > 55 || grouper.position.z < -55) gr.patrolAngle += Math.PI;
+              grouper.rotation.y = gr.patrolAngle + Math.PI / 2;
+              // Detection: aggro range scales with camouflage
+              var grDx = octopus.position.x - grouper.position.x;
+              var grDz = octopus.position.z - grouper.position.z;
+              var grDist = Math.sqrt(grDx * grDx + grDz * grDz);
+              var grEffectiveRange = gr.aggroRange * (1 - 0.7 * gameState.camoEff);
+              if (grDist < grEffectiveRange && !gameState.isInked && !gameState.inDen && now > gr.cooldownUntil) {
+                gr.state = 'attacking';
+                gr.stateTimer = 0;
+              }
+            } else if (gr.state === 'attacking') {
+              gr.stateTimer += dt;
+              var chx2 = octopus.position.x - grouper.position.x;
+              var chz2 = octopus.position.z - grouper.position.z;
+              var chDist2 = Math.sqrt(chx2 * chx2 + chz2 * chz2);
+              if (chDist2 > 0.1) {
+                grouper.position.x += (chx2 / chDist2) * gr.speed * dt;
+                grouper.position.z += (chz2 / chDist2) * gr.speed * dt;
+                grouper.lookAt(octopus.position.x, grouper.position.y, octopus.position.z);
+              }
+              if (chDist2 < 1.5 && now - gameState.tookHitAt > 800) {
+                gameState.health = Math.max(0, gameState.health - 35);
+                gameState.tookHitAt = now;
+                damageFlash.style.opacity = '1';
+                setTimeout(function() { damageFlash.style.opacity = '0'; }, 180);
+                gr.state = 'patrol';
+                gr.cooldownUntil = now + 5000;
+              }
+              if (gameState.isInked || gameState.inDen || gr.stateTimer > 5) {
+                gr.state = 'patrol';
+                gr.cooldownUntil = now + 4000;
+              }
+            }
+
+            // ─── Clam drill mechanic (hold E within 1.2u) ────────
+            // Re-uses E (which also fires clickRequested for crabs). If
+            // E is held + a clam is in range + no crab nearby, drill.
+            // Movement or damage cancels.
+            var heldE = !!keys.KeyE;
+            var nearestClam = null;
+            var nearestClamD = DRILL_RANGE;
+            for (var clci = 0; clci < clams.length; clci++) {
+              if (!clams[clci].userData.alive) continue;
+              var cldx = clams[clci].position.x - octopus.position.x;
+              var cldz = clams[clci].position.z - octopus.position.z;
+              var cld = Math.sqrt(cldx * cldx + cldz * cldz);
+              if (cld < nearestClamD) { nearestClam = clams[clci]; nearestClamD = cld; }
+            }
+            if (heldE && nearestClam && !isMoving) {
+              gameState.drillingClam = nearestClam;
+              gameState.drillProgress = Math.min(1, gameState.drillProgress + dt / DRILL_DURATION);
+              nearestClam.children[1].rotation.x = -gameState.drillProgress * Math.PI / 6;
+              if (gameState.drillProgress >= 1) {
+                nearestClam.userData.alive = false;
+                scene.remove(nearestClam);
+                nearestClam.traverse(function(o) {
+                  if (o.geometry) o.geometry.dispose();
+                  if (o.material) { if (Array.isArray(o.material)) o.material.forEach(function(m){m.dispose();}); else o.material.dispose(); }
+                });
+                clams = clams.filter(function(c) { return c !== nearestClam; });
+                gameState.score += 3;
+                gameState.hunger = Math.min(gameState.maxHunger, gameState.hunger + 50);
+                gameState.drillingClam = null;
+                gameState.drillProgress = 0;
+                try {
+                  setCL({
+                    huntsSuccessful: (d.huntsSuccessful || 0) + 1,
+                    huntBestRun: Math.max(d.huntBestRun || 0, gameState.score),
+                  });
+                } catch(_) {}
+                clAnnounce('Clam cracked — +3 score, hunger refilled');
+              }
+            } else {
+              // Cancel drill if user lets go or moves
+              if (gameState.drillProgress > 0) {
+                gameState.drillProgress = Math.max(0, gameState.drillProgress - dt * 0.8);
+                if (gameState.drillingClam) {
+                  gameState.drillingClam.children[1].rotation.x = -gameState.drillProgress * Math.PI / 6;
+                }
+                if (gameState.drillProgress <= 0) gameState.drillingClam = null;
+              }
+            }
+
+            // ─── Bubble particle animation ───────────────────────
+            var bpAttr = bubbles.geometry.attributes.position;
+            for (var bpi = 0; bpi < BUBBLE_COUNT; bpi++) {
+              bpAttr.array[bpi * 3 + 1] += bubbleVelocities[bpi] * dt;
+              if (bpAttr.array[bpi * 3 + 1] > 12) {
+                // Reset to seafloor at random new x/z
+                bpAttr.array[bpi * 3] = (Math.random() - 0.5) * 100;
+                bpAttr.array[bpi * 3 + 1] = 0.1;
+                bpAttr.array[bpi * 3 + 2] = (Math.random() - 0.5) * 100;
+              }
+            }
+            bpAttr.needsUpdate = true;
+            // Bubbles dim at night
+            bubbleMat.opacity = 0.25 + dayMix * 0.4;
+
+            // ─── Light ray shimmer ───────────────────────────────
+            lightRays.forEach(function(r) {
+              r.mesh.material.opacity = (0.04 + Math.sin(now * 0.0008 + r.basePhase) * 0.04) * dayMix;
+              r.mesh.rotation.y += dt * 0.05;
+            });
+
+            // ─── Eye glance toward nearest threat ────────────────
+            // Find nearest active predator. Tilt the octopus's eye-bearing
+            // forward vector slightly toward it — a small but lively detail.
+            var threat = null, threatD = 12;
+            if (moray.userData.state === 'attacking') {
+              var mTdx = moray.position.x - octopus.position.x;
+              var mTdz = moray.position.z - octopus.position.z;
+              var mTd = Math.sqrt(mTdx * mTdx + mTdz * mTdz);
+              if (mTd < threatD) { threat = moray; threatD = mTd; }
+            }
+            if (grouper.userData.state === 'attacking') {
+              var gTdx = grouper.position.x - octopus.position.x;
+              var gTdz = grouper.position.z - octopus.position.z;
+              var gTd = Math.sqrt(gTdx * gTdx + gTdz * gTdz);
+              if (gTd < threatD) { threat = grouper; threatD = gTd; }
+            }
+            if (threat) {
+              // Subtle mantle tilt toward threat (max ±0.18 rad)
+              var threatAngle = Math.atan2(threat.position.x - octopus.position.x, threat.position.z - octopus.position.z);
+              var angleDelta = threatAngle - gameState.facingAngle;
+              while (angleDelta > Math.PI) angleDelta -= Math.PI * 2;
+              while (angleDelta < -Math.PI) angleDelta += Math.PI * 2;
+              mantle.rotation.y = Math.max(-0.25, Math.min(0.25, angleDelta * 0.4));
+            } else {
+              mantle.rotation.y *= 0.9;  // relax back to forward
+            }
+
             // ─── Hunt: click or E ───
+            // Pounces nearest valid prey in range. Priority: crab (substrate)
+            // > fish (mid-water, requires you to be close). Clams use the
+            // hold-E drill mechanic above instead. Each catch refills hunger
+            // proportional to the prey's size.
             if (clickRequested) {
               clickRequested = false;
-              var nearest = null, nearestDist = 2.6;
+              var nearest = null, nearestDist = 2.6, prey = null;
               crabs.forEach(function(crab) {
                 if (!crab.userData.alive) return;
                 var dx = crab.position.x - octopus.position.x;
                 var dz = crab.position.z - octopus.position.z;
                 var d2 = Math.sqrt(dx * dx + dz * dz);
-                if (d2 < nearestDist) { nearest = crab; nearestDist = d2; }
+                if (d2 < nearestDist) { nearest = crab; nearestDist = d2; prey = 'crab'; }
               });
-              if (nearest) {
+              // Fish: only catchable if octopus is mid-water enough (within
+              // 3y of fish elevation), and within FISH_CATCH_RANGE
+              fishSchools.forEach(function(school) {
+                school.fish.forEach(function(fish) {
+                  if (!fish.userData.alive) return;
+                  var dx = fish.position.x - octopus.position.x;
+                  var dy = fish.position.y - octopus.position.y;
+                  var dz = fish.position.z - octopus.position.z;
+                  var d3 = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                  if (d3 < FISH_CATCH_RANGE && d3 < nearestDist) {
+                    nearest = fish; nearestDist = d3; prey = 'fish';
+                  }
+                });
+              });
+              if (nearest && prey === 'crab') {
                 nearest.userData.alive = false;
                 scene.remove(nearest);
                 nearest.traverse(function(o) {
@@ -1283,7 +1893,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 });
                 crabs = crabs.filter(function(c) { return c !== nearest; });
                 gameState.score += 1;
-                // Track persistent + best run
+                gameState.hunger = Math.min(gameState.maxHunger, gameState.hunger + 22);
                 try {
                   setCL({
                     huntsSuccessful: (d.huntsSuccessful || 0) + 1,
@@ -1292,6 +1902,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 } catch(_) {}
                 clAnnounce('Caught a crab — ' + gameState.score + ' total');
                 setTimeout(function() { if (!gameState.gameOver) spawnCrab(); }, 4500);
+              } else if (nearest && prey === 'fish') {
+                nearest.userData.alive = false;
+                scene.remove(nearest);
+                nearest.traverse(function(o) {
+                  if (o.geometry) o.geometry.dispose();
+                  if (o.material) { if (Array.isArray(o.material)) o.material.forEach(function(m){m.dispose();}); else o.material.dispose(); }
+                });
+                gameState.score += 2;
+                gameState.hunger = Math.min(gameState.maxHunger, gameState.hunger + 32);
+                try {
+                  setCL({
+                    huntsSuccessful: (d.huntsSuccessful || 0) + 1,
+                    huntBestRun: Math.max(d.huntBestRun || 0, gameState.score),
+                  });
+                } catch(_) {}
+                clAnnounce('Pounced a fish — ' + gameState.score + ' total');
               }
             }
 
@@ -1333,12 +1959,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             if (me.state === 'idle') {
               moray.position.set(me.homeX, 0.25 + Math.sin(now * 0.002) * 0.05, me.homeZ);
               moray.lookAt(octopus.position.x, 0.25, octopus.position.z);
-              if (mDistHome < me.aggroRange && !gameState.isInked && now > me.cooldownUntil) {
+              // Eel is more aggressive at night (longer effective range).
+              // Camouflage shrinks effective range; den blocks aggression.
+              var nightBoost = 1 + nightFactor * 0.5;
+              var morayEffectiveRange = me.aggroRange * nightBoost * (1 - 0.7 * gameState.camoEff);
+              if (mDistHome < morayEffectiveRange && !gameState.isInked && !gameState.inDen && now > me.cooldownUntil) {
                 me.state = 'attacking';
                 me.stateTimer = 0;
                 clAnnounce('Moray eel attacking');
               }
             } else if (me.state === 'attacking') {
+              // Den escape: if octopus reaches a den, eel breaks attack
+              if (gameState.inDen) {
+                me.state = 'returning';
+                me.stateTimer = 0;
+                me.cooldownUntil = now + 3000;
+              }
               me.stateTimer += dt;
               var chx = octopus.position.x - moray.position.x;
               var chz = octopus.position.z - moray.position.z;
@@ -1396,15 +2032,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           var elapsed = Math.floor((now - gameState.startTime) / 1000);
           var hp = gameState.health / gameState.maxHealth * 100;
           var sp = gameState.stamina / gameState.maxStamina * 100;
+          var hg = gameState.hunger / gameState.maxHunger * 100;
+          var camo = gameState.camoEff * 100;
           var hpColor = hp > 60 ? '#86efac' : hp > 30 ? '#fbbf24' : '#fca5a5';
+          var hgColor = hg > 50 ? '#fbbf24' : hg > 20 ? '#fb923c' : '#fca5a5';
+          var camoColor = camo > 70 ? '#a78bfa' : camo > 35 ? '#cbd5e1' : '#94a3b8';
           var barBg = 'rgba(255,255,255,0.18)';
+          // Day/night phase emoji + label
+          var phaseEmoji, phaseLabel;
+          if (dayMix > 0.7) { phaseEmoji = '☀️'; phaseLabel = 'Day'; }
+          else if (dayMix > 0.3) { phaseEmoji = '🌅'; phaseLabel = (gameState.dayTime > 0.5 ? 'Dawn' : 'Dusk'); }
+          else { phaseEmoji = '🌙'; phaseLabel = 'Night'; }
+          // Substrate icon for camo readout
+          var subIcon = '';
+          if (gameState.currentSubstrate === 'sand') subIcon = '🏖';
+          else if (gameState.currentSubstrate === 'rock') subIcon = '🪨';
+          else if (gameState.currentSubstrate === 'grass') subIcon = '🌿';
+          else if (gameState.currentSubstrate.indexOf('coral_') === 0) subIcon = '🪸';
+          function bar(val, color) {
+            return '<span style="display:inline-block;width:78px;height:8px;background:' + barBg + ';border-radius:4px;overflow:hidden;vertical-align:middle"><span style="display:block;width:' + val.toFixed(0) + '%;height:100%;background:' + color + '"></span></span>';
+          }
           hud.innerHTML =
-            '<div style="font-weight:bold;border-bottom:1px solid rgba(180,140,40,0.4);padding-bottom:4px;margin-bottom:6px">🐙 Pacific Octopus</div>' +
-            '<div style="display:flex;align-items:center;gap:6px">HEALTH<span style="display:inline-block;width:80px;height:8px;background:' + barBg + ';border-radius:4px;overflow:hidden;vertical-align:middle"><span style="display:block;width:' + hp.toFixed(0) + '%;height:100%;background:' + hpColor + '"></span></span><span style="color:' + hpColor + ';min-width:30px">' + gameState.health.toFixed(0) + '</span></div>' +
-            '<div style="display:flex;align-items:center;gap:6px">STAMINA<span style="display:inline-block;width:80px;height:8px;background:' + barBg + ';border-radius:4px;overflow:hidden;vertical-align:middle"><span style="display:block;width:' + sp.toFixed(0) + '%;height:100%;background:#60a5fa"></span></span><span style="color:#60a5fa;min-width:30px">' + gameState.stamina.toFixed(0) + '</span></div>' +
-            '<div>SCORE &nbsp; <span style="color:#86efac;font-weight:bold">' + gameState.score + ' 🦀</span></div>' +
-            '<div>TIME &nbsp; &nbsp; <span style="color:#fff">' + elapsed + 's</span></div>' +
-            (gameState.isInked ? '<div style="color:#a78bfa;font-weight:bold;margin-top:5px;font-size:11px">⚫ INKED — eel can\'t see you</div>' : '') +
+            '<div style="font-weight:bold;border-bottom:1px solid rgba(180,140,40,0.4);padding-bottom:4px;margin-bottom:6px;display:flex;justify-content:space-between">🐙 Pacific Octopus<span style="font-weight:400;font-size:11px;color:#cbd5e1">' + phaseEmoji + ' ' + phaseLabel + '</span></div>' +
+            '<div style="display:flex;align-items:center;gap:6px">HEALTH&nbsp;' + bar(hp, hpColor) + '<span style="color:' + hpColor + ';min-width:30px;text-align:right">' + gameState.health.toFixed(0) + '</span></div>' +
+            '<div style="display:flex;align-items:center;gap:6px">STAMINA ' + bar(sp, '#60a5fa') + '<span style="color:#60a5fa;min-width:30px;text-align:right">' + gameState.stamina.toFixed(0) + '</span></div>' +
+            '<div style="display:flex;align-items:center;gap:6px">HUNGER&nbsp; ' + bar(hg, hgColor) + '<span style="color:' + hgColor + ';min-width:30px;text-align:right">' + gameState.hunger.toFixed(0) + '</span></div>' +
+            '<div style="display:flex;align-items:center;gap:6px;border-top:1px solid rgba(255,255,255,0.1);margin-top:4px;padding-top:4px">CAMO&nbsp;&nbsp;&nbsp;' + bar(camo, camoColor) + '<span style="color:' + camoColor + ';min-width:30px;text-align:right">' + camo.toFixed(0) + '%</span></div>' +
+            '<div style="font-size:10px;color:#94a3b8;margin-left:54px;margin-top:-2px">' + subIcon + ' on ' + gameState.currentSubstrate.replace('_', ' ') + (gameState.stationaryTime > 0.5 ? ' · still' : ' · moving') + '</div>' +
+            '<div style="border-top:1px solid rgba(255,255,255,0.1);margin-top:4px;padding-top:4px;display:flex;justify-content:space-between"><span>SCORE <span style="color:#86efac;font-weight:bold">' + gameState.score + '</span></span><span>TIME <span style="color:#fff">' + elapsed + 's</span></span></div>' +
+            (gameState.inDen ? '<div style="color:#22c55e;font-weight:bold;margin-top:5px;font-size:11px">🏠 IN DEN — safe, regenerating</div>' : '') +
+            (gameState.isInked ? '<div style="color:#a78bfa;font-weight:bold;margin-top:5px;font-size:11px">⚫ INKED — predators can\'t see you</div>' : '') +
+            (gameState.drillProgress > 0 && gameState.drillProgress < 1 ? '<div style="color:#fbbf24;font-weight:bold;margin-top:5px;font-size:11px">🔧 Drilling clam ' + (gameState.drillProgress * 100).toFixed(0) + '%</div>' : '') +
+            (gameState.hunger <= 0 ? '<div style="color:#fca5a5;font-weight:bold;margin-top:5px;font-size:11px">⚠ STARVING — eat soon</div>' : '') +
             (gameState.gameOver
               ? '<div style="color:#fca5a5;font-weight:bold;font-size:14px;margin-top:8px;text-align:center">💀 GAME OVER</div><div style="font-size:11px;margin-top:4px;color:#fbbf24;text-align:center">"End run" then dive again</div>'
               : '');
