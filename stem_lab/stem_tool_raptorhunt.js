@@ -8796,7 +8796,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               var sc = 80 / rd2;
               px = px * sc; pz = pz * sc;
             }
-            py = species.biome === 'lake' ? -1.4 : py;
+            // Fish swim UNDER the water in lake biome — eagles/ospreys spot them
+            // from above as dark shapes near the surface. Waterfowl + duck stay on top.
+            if (pd.id === 'fish' && species.biome === 'lake') {
+              py = -3.5 - Math.random() * 2.5;  // 3.5-6m below water surface
+            } else {
+              py = species.biome === 'lake' ? -1.4 : py;
+            }
           }
           // Larger visual scale — minimum size + size boost for tiny insects
           var sizeBoost = (pd.sizeM < 0.10) ? 12 : 8;  // insects/rodents get extra boost to be visible
@@ -8978,6 +8984,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
         // ─── Input ───
         var keys = {};
+        // ── NEW: Camera + targeting state ──
+        // Player-toggleable via V (view), Z (zoom), T (target lock display).
+        // Target-lock + reticle simulate eagle vision (2 foveae, ~8x acuity vs human).
+        var camMode = 'chase';   // 'chase' or 'fp' (first-person from head)
+        var zoomActive = false;  // toggle 3x zoom (FOV 70° → 25°)
+        var targetLockOn = true; // show reticle on nearest forward prey
         function onKeyDown(e) {
           var raw = e.key.toLowerCase();
           // Arrow keys → WASD aliases so left/right turn the BIRD (not scroll the page)
@@ -8991,6 +9003,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (k === ' ' || k === 'shift') e.preventDefault();
           if (['w','a','s','d','q','e'].indexOf(k) !== -1) e.preventDefault();
           if (['arrowleft','arrowright','arrowup','arrowdown'].indexOf(raw) !== -1) e.preventDefault();
+          // V / Z / T are one-shot toggles (ignore key-repeat)
+          if ((raw === 'v' || raw === 'z' || raw === 't') && !e.repeat) {
+            e.preventDefault();
+            if (raw === 'v') {
+              camMode = (camMode === 'chase') ? 'fp' : 'chase';
+              rhAnnounce(camMode === 'fp' ? 'First-person eagle vision' : 'Chase camera');
+            } else if (raw === 'z') {
+              zoomActive = !zoomActive;
+              rhAnnounce(zoomActive ? 'Zoomed in (3x acuity)' : 'Zoom off');
+            } else if (raw === 't') {
+              targetLockOn = !targetLockOn;
+              rhAnnounce(targetLockOn ? 'Target lock on' : 'Target lock off');
+            }
+          }
         }
         function onKeyUp(e) {
           var raw = e.key.toLowerCase();
@@ -9077,7 +9103,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var btnDive = makeBtn('🚀 DIVE', '#fca5a5', 'shift');
         var btnPull = makeBtn('🪂 PULL', '#67e8f9', ' ');
         var btnStrike = makeBtn('🎯 STRIKE', '#fde047', null, true);
-        [btnDown, btnUp, btnDive, btnPull, btnStrike].forEach(function(b) { btnDock.appendChild(b); });
+        // NEW: tap-style toggle buttons for view / zoom / target-lock (synthesize a keydown)
+        function makeToggleBtn(label, color, rawKey) {
+          var b = document.createElement('button');
+          b.textContent = label;
+          b.style.cssText = 'background:rgba(15,23,42,0.85);border:2px solid ' + color + ';border-radius:10px;padding:10px 14px;color:' + color + ';font-weight:bold;font-size:13px;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none;min-width:54px;font-family:ui-monospace,Menlo,monospace;';
+          b.setAttribute('aria-label', label);
+          var doToggle = function(e) {
+            e && e.preventDefault && e.preventDefault();
+            // Synthesize a one-shot key event into the same handler
+            onKeyDown({ key: rawKey, repeat: false, preventDefault: function(){} });
+          };
+          b.addEventListener('click', doToggle);
+          b.addEventListener('touchstart', doToggle, { passive: false });
+          return b;
+        }
+        var btnView = makeToggleBtn('👁 VIEW', '#a78bfa', 'v');
+        var btnZoom = makeToggleBtn('🔍 ZOOM', '#a78bfa', 'z');
+        var btnLock = makeToggleBtn('🎯 LOCK', '#fbbf24', 't');
+        [btnDown, btnUp, btnDive, btnPull, btnStrike, btnView, btnZoom, btnLock].forEach(function(b) { btnDock.appendChild(b); });
         // Touch hint
         var touchHint = document.createElement('div');
         touchHint.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(15,23,42,0.7);border:1px solid rgba(251,191,36,0.4);border-radius:8px;padding:8px 12px;color:#fbbf24;font-size:11px;pointer-events:none;font-family:ui-sans-serif,system-ui;text-align:center;opacity:0.9';
@@ -9179,6 +9223,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         crossHairDot.setAttribute('aria-hidden', 'true');
         crossHairDot.style.cssText = 'position:absolute;top:50%;left:50%;width:4px;height:4px;margin:-2px 0 0 -2px;background:#fde047;border-radius:50%;pointer-events:none;box-shadow:0 0 4px rgba(0,0,0,0.8)';
         hudParent.appendChild(crossHairDot);
+        // ── NEW: Target-lock reticle (red square that snaps to nearest forward prey) ──
+        var reticle = document.createElement('div');
+        reticle.setAttribute('aria-hidden', 'true');
+        reticle.style.cssText = 'position:absolute;width:54px;height:54px;margin:-27px 0 0 -27px;border:2px solid #ef4444;border-radius:6px;pointer-events:none;box-shadow:0 0 12px rgba(239,68,68,0.55);display:none;will-change:left,top';
+        var reticleLabel = document.createElement('div');
+        reticleLabel.setAttribute('aria-hidden', 'true');
+        reticleLabel.style.cssText = 'position:absolute;top:58px;left:50%;transform:translateX(-50%);color:#fee2e2;font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:700;text-shadow:0 0 4px black,0 0 4px black;white-space:nowrap;background:rgba(15,23,42,0.7);padding:2px 6px;border-radius:4px';
+        reticle.appendChild(reticleLabel);
+        // Corner brackets for that "targeting computer" feel
+        var brackets = ['top:-2px;left:-2px;border-right:none;border-bottom:none',
+                        'top:-2px;right:-2px;border-left:none;border-bottom:none',
+                        'bottom:-2px;left:-2px;border-right:none;border-top:none',
+                        'bottom:-2px;right:-2px;border-left:none;border-top:none'];
+        brackets.forEach(function(corner) {
+          var c = document.createElement('div');
+          c.setAttribute('aria-hidden', 'true');
+          c.style.cssText = 'position:absolute;width:12px;height:12px;border:2px solid #ef4444;' + corner;
+          reticle.appendChild(c);
+        });
+        hudParent.appendChild(reticle);
         // Status panel (top-right)
         var status = document.createElement('div');
         status.setAttribute('role', 'status');
@@ -9481,31 +9545,113 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             rightWingGroup.rotation.y = 0;
           }
 
-          // ── Camera follow (third-person, behind + above) ──
-          var camDist = diveKey ? 3.5 : 6;
-          var camHeight = diveKey ? 1.0 : 2.2;
-          var camTargetX = raptor.x - Math.sin(raptor.yaw) * camDist;
-          var camTargetY = raptor.y + camHeight + Math.sin(raptor.pitch) * camDist;
-          var camTargetZ = raptor.z + Math.cos(raptor.yaw) * camDist;
-          camera.position.x += (camTargetX - camera.position.x) * 0.18;
-          camera.position.y += (camTargetY - camera.position.y) * 0.18;
-          camera.position.z += (camTargetZ - camera.position.z) * 0.18;
-          camera.lookAt(raptor.x, raptor.y + 0.3, raptor.z);
-          // ── NEW v0.28: Camera banking roll (tilts when turning fast) ──
-          if (raptor.lastYaw === undefined) raptor.lastYaw = raptor.yaw;
-          var yawDelta = raptor.yaw - raptor.lastYaw;
-          // Wrap to [-π, π]
-          while (yawDelta > Math.PI) yawDelta -= Math.PI * 2;
-          while (yawDelta < -Math.PI) yawDelta += Math.PI * 2;
-          raptor.lastYaw = raptor.yaw;
-          // Map yaw rate to camera roll (cap at ±0.3 rad ~ 17°)
-          var rollTarget = Math.max(-0.3, Math.min(0.3, -yawDelta * 12));
-          raptor.cameraRoll = (raptor.cameraRoll || 0);
-          raptor.cameraRoll += (rollTarget - raptor.cameraRoll) * 0.12;
-          // Apply roll via camera.up vector tilt
-          var rollSin = Math.sin(raptor.cameraRoll), rollCos = Math.cos(raptor.cameraRoll);
-          camera.up.set(rollSin, rollCos, 0);
-          camera.lookAt(raptor.x, raptor.y + 0.3, raptor.z);  // re-lookAt with new up vector
+          // ── Zoom FOV smoothing (3x zoom simulates eagle ~8x acuity) ──
+          var targetFov = zoomActive ? 25 : 70;
+          if (Math.abs(camera.fov - targetFov) > 0.1) {
+            camera.fov += (targetFov - camera.fov) * 0.18;
+            camera.updateProjectionMatrix();
+          }
+          // ── Camera follow: chase (3rd person) OR first-person (from head) ──
+          if (camMode === 'fp') {
+            // First-person view from the bird's head
+            raptorGroup.visible = false;  // hide own body so it doesn't block view
+            var fpOffset = 0.6;
+            var fpHeight = 0.45;
+            camera.position.x = raptor.x + Math.sin(raptor.yaw) * fpOffset;
+            camera.position.y = raptor.y + fpHeight;
+            camera.position.z = raptor.z - Math.cos(raptor.yaw) * fpOffset;
+            // Look 30m ahead along the bird's heading + pitch
+            var lookAhead = 30;
+            var lookX = raptor.x + Math.sin(raptor.yaw) * lookAhead;
+            var lookY = raptor.y + Math.sin(raptor.pitch) * lookAhead;
+            var lookZ = raptor.z - Math.cos(raptor.yaw) * lookAhead;
+            camera.up.set(0, 1, 0);
+            camera.lookAt(lookX, lookY, lookZ);
+            // No banking roll in FP (would make student airsick)
+            raptor.lastYaw = raptor.yaw;
+            raptor.cameraRoll = 0;
+          } else {
+            // Third-person chase camera (behind + above)
+            raptorGroup.visible = true;
+            var camDist = diveKey ? 3.5 : 6;
+            var camHeight = diveKey ? 1.0 : 2.2;
+            var camTargetX = raptor.x - Math.sin(raptor.yaw) * camDist;
+            var camTargetY = raptor.y + camHeight + Math.sin(raptor.pitch) * camDist;
+            var camTargetZ = raptor.z + Math.cos(raptor.yaw) * camDist;
+            camera.position.x += (camTargetX - camera.position.x) * 0.18;
+            camera.position.y += (camTargetY - camera.position.y) * 0.18;
+            camera.position.z += (camTargetZ - camera.position.z) * 0.18;
+            camera.lookAt(raptor.x, raptor.y + 0.3, raptor.z);
+            // ── NEW v0.28: Camera banking roll (tilts when turning fast) ──
+            if (raptor.lastYaw === undefined) raptor.lastYaw = raptor.yaw;
+            var yawDelta = raptor.yaw - raptor.lastYaw;
+            // Wrap to [-π, π]
+            while (yawDelta > Math.PI) yawDelta -= Math.PI * 2;
+            while (yawDelta < -Math.PI) yawDelta += Math.PI * 2;
+            raptor.lastYaw = raptor.yaw;
+            // Map yaw rate to camera roll (cap at ±0.3 rad ~ 17°)
+            var rollTarget = Math.max(-0.3, Math.min(0.3, -yawDelta * 12));
+            raptor.cameraRoll = (raptor.cameraRoll || 0);
+            raptor.cameraRoll += (rollTarget - raptor.cameraRoll) * 0.12;
+            // Apply roll via camera.up vector tilt
+            var rollSin = Math.sin(raptor.cameraRoll), rollCos = Math.cos(raptor.cameraRoll);
+            camera.up.set(rollSin, rollCos, 0);
+            camera.lookAt(raptor.x, raptor.y + 0.3, raptor.z);  // re-lookAt with new up vector
+          }
+
+          // ── NEW: Target-lock reticle projection ──
+          // Pick nearest prey in the forward 120° cone (covers what the bird can see)
+          var lockTarget = null, lockDist = Infinity;
+          if (targetLockOn) {
+            for (var lki = 0; lki < preyMeshes.length; lki++) {
+              var lkm = preyMeshes[lki];
+              var lkdx = lkm.mesh.position.x - raptor.x;
+              var lkdz = lkm.mesh.position.z - raptor.z;
+              var lkAngle = Math.atan2(lkdx, -lkdz);
+              var lkRel = lkAngle - raptor.yaw;
+              while (lkRel > Math.PI) lkRel -= Math.PI * 2;
+              while (lkRel < -Math.PI) lkRel += Math.PI * 2;
+              // Within ±60° of heading + within 300m
+              if (Math.abs(lkRel) > 1.05) continue;
+              var lkd2 = lkdx * lkdx + lkdz * lkdz;
+              if (lkd2 > 90000) continue;
+              if (lkd2 < lockDist) { lockDist = lkd2; lockTarget = lkm; }
+            }
+          }
+          if (lockTarget) {
+            // Project target world position onto screen
+            var _tv = new THREE.Vector3(
+              lockTarget.mesh.position.x,
+              lockTarget.mesh.position.y + 1.2,
+              lockTarget.mesh.position.z
+            );
+            _tv.project(camera);
+            if (_tv.z < 1 && _tv.z > -1) {
+              var screenW = canvasEl.clientWidth, screenH = canvasEl.clientHeight;
+              var sx = (_tv.x * 0.5 + 0.5) * screenW;
+              var sy = (-_tv.y * 0.5 + 0.5) * screenH;
+              var distM = Math.sqrt(lockDist);
+              var inStrikeRange = distM < 8;
+              reticle.style.display = 'block';
+              reticle.style.left = sx + 'px';
+              reticle.style.top = sy + 'px';
+              reticle.style.borderColor = inStrikeRange ? '#22c55e' : '#ef4444';
+              reticle.style.boxShadow = '0 0 12px ' + (inStrikeRange ? 'rgba(34,197,94,0.7)' : 'rgba(239,68,68,0.55)');
+              // Reticle corner brackets also need to recolor
+              for (var rcI = 0; rcI < reticle.children.length; rcI++) {
+                if (reticle.children[rcI] !== reticleLabel) {
+                  reticle.children[rcI].style.borderColor = inStrikeRange ? '#22c55e' : '#ef4444';
+                }
+              }
+              var lkName = lockTarget.data ? lockTarget.data.label : 'prey';
+              reticleLabel.textContent = (inStrikeRange ? '🎯 STRIKE · ' : '') + lkName + ' · ' + distM.toFixed(0) + 'm';
+              reticleLabel.style.color = inStrikeRange ? '#bbf7d0' : '#fee2e2';
+            } else {
+              reticle.style.display = 'none';
+            }
+          } else {
+            reticle.style.display = 'none';
+          }
 
           // ── NEW v0.28: Distant flock silhouettes drift ──
           for (var fbi = 0; fbi < flockBirds.length; fbi++) {
