@@ -3956,6 +3956,328 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     );
   }
 
+  // ──────────────────────────────────────────────────────────────────
+  // INTERACTIVE WIDGETS — wave 4
+  // (1) PhoneProximitySlider — Ward et al. 2017 "brain drain" effect
+  //     visualized as a 5-position phone-distance slider with live
+  //     working-memory + fluid-intelligence bars.
+  // (2) LonghandVsLaptopDemo — Mueller + Oppenheimer 2014 encoding
+  //     mechanism shown as side-by-side note capture (verbatim laptop
+  //     vs compressed hand) on cycling lecture excerpts.
+  // ──────────────────────────────────────────────────────────────────
+
+  // ── 10. PHONE PROXIMITY SLIDER (Ward et al. 2017, JACR "Brain Drain") ──
+  // 5 positions from "in another room" (baseline 100%) to "in your hand"
+  // (~80%). Effect sizes are illustrative + research-direction-faithful;
+  // Ward 2017 found highest WM + fluid IQ with phone in another room,
+  // significant decrement at desk-level proximity even when silenced
+  // and face-down. Effect was largest for users most phone-dependent.
+  function PhoneProximitySlider(props) {
+    if (!R) return null;
+    var awardXP = props.awardXP;
+    var ps = R.useState(0);   var pos = ps[0];   var setPos = ps[1];   // index into POSITIONS
+    var as = R.useState(false); var awarded = as[0]; var setAwarded = as[1];
+
+    // Position 0 = best (other room), Position 4 = worst (in hand)
+    var POSITIONS = [
+      { id: 'room',      label: 'In another room',         icon: '🏠', wm: 100, fl: 100, color: '#10b981',
+        desc: 'Out of sight, out of mind. The Ward 2017 control condition. Full cognitive resources available.' },
+      { id: 'pocket',    label: 'In bag or pocket',        icon: '👖', wm: 96,  fl: 95,  color: '#22c55e',
+        desc: 'Slight cost — your brain still tracks "phone is somewhere on me," but the visual/proximity cue is gone. Reasonable middle ground.' },
+      { id: 'facedown',  label: 'Face-down on the desk',   icon: '📵', wm: 90,  fl: 92,  color: '#fbbf24',
+        desc: 'Notable cost — even with screen hidden + sound off, you KNOW it is there. Your brain spends resources NOT looking at it. This is the headline Ward et al. finding.' },
+      { id: 'faceup',    label: 'Face-up, screen visible', icon: '📱', wm: 86,  fl: 88,  color: '#f97316',
+        desc: 'Larger cost — every notification icon, lock-screen wallpaper, time check is a micro-attention drain. Meaningful working-memory + fluid-IQ decrement.' },
+      { id: 'inhand',    label: 'In your hand',            icon: '🤳', wm: 78,  fl: 82,  color: '#ef4444',
+        desc: 'Maximum cost — you are now actively task-switching between phone and study. This is no longer "studying with a phone nearby" — it is "studying interleaved with phone use." See task-switch widget above.' }
+    ];
+    var p = POSITIONS[pos];
+
+    R.useEffect(function() {
+      if (!awarded && pos === 0 && awardXP) { setAwarded(true); awardXP(1); }
+    }, [pos]);
+
+    return hh('div', {
+      style: { background: 'rgba(15,23,42,0.7)', borderRadius: 12, padding: 16, marginBottom: 14,
+        borderTop: '1px solid rgba(147,51,234,0.30)', borderRight: '1px solid rgba(147,51,234,0.30)',
+        borderBottom: '1px solid rgba(147,51,234,0.30)', borderLeft: '4px solid #9333ea' }
+    },
+      hh('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
+        hh('div', { 'aria-hidden': 'true', style: { width: 36, height: 36, borderRadius: '50%', background: 'rgba(147,51,234,0.18)', border: '1.5px solid #9333ea', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 } }, '📱'),
+        hh('div', { style: { flex: 1, minWidth: 200 } },
+          hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#c084fc' } }, 'Phone-proximity cognitive cost (Ward et al. 2017)'),
+          hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, 'Move the phone closer or farther. Watch working-memory + fluid intelligence drop. Effects are illustrative + faithful to Ward 2017 study direction.')
+        )
+      ),
+
+      // Desk visualization
+      hh('div', { style: { background: 'rgba(2,6,23,0.7)', borderRadius: 10, padding: 12, marginBottom: 10 } },
+        hh('svg', {
+          viewBox: '0 0 360 140', preserveAspectRatio: 'xMidYMid meet',
+          'aria-label': 'Desk view showing phone at position: ' + p.label,
+          style: { width: '100%', maxHeight: 180, display: 'block' }
+        },
+          // Background: room outline (right side wall)
+          hh('rect', { x: 0, y: 0, width: 360, height: 140, fill: '#0f172a' }),
+          hh('line', { x1: 320, y1: 10, x2: 320, y2: 130, stroke: '#475569', strokeWidth: 1, strokeDasharray: '3,2' }),
+          hh('text', { x: 340, y: 75, fontSize: 8, fill: '#64748b', textAnchor: 'middle', writingMode: 'vertical-rl' }, 'door'),
+          // Desk
+          hh('rect', { x: 30, y: 80, width: 270, height: 50, fill: '#1e293b', stroke: '#475569', strokeWidth: 1, rx: 4 }),
+          hh('text', { x: 165, y: 108, fontSize: 6, fill: '#475569', textAnchor: 'middle', fontStyle: 'italic' }, 'study desk'),
+          // You (head outline)
+          hh('circle', { cx: 90, cy: 50, r: 14, fill: '#9333ea', opacity: 0.3, stroke: '#c084fc', strokeWidth: 1 }),
+          hh('circle', { cx: 87, cy: 47, r: 1.5, fill: '#c084fc' }),
+          hh('circle', { cx: 93, cy: 47, r: 1.5, fill: '#c084fc' }),
+          hh('text', { x: 90, y: 75, fontSize: 6, fill: '#c084fc', textAnchor: 'middle', fontWeight: 700 }, 'you'),
+          // Notebook on desk in front of you
+          hh('rect', { x: 60, y: 90, width: 50, height: 32, fill: '#fbbf24', opacity: 0.4, stroke: '#fbbf24', strokeWidth: 0.6 }),
+          hh('text', { x: 85, y: 108, fontSize: 5, fill: '#fbbf24', textAnchor: 'middle' }, 'notes'),
+          // Phone position — varies based on slider
+          (function() {
+            // x positions for each: room=350 (off-screen), pocket=92 (under "you"), facedown=180, faceup=220, inhand=120
+            var phoneX, phoneY, phoneW = 14, phoneH = 22, fill, label, faceUp;
+            if (p.id === 'room')      { phoneX = 348; phoneY = 30;  fill = '#475569'; label = 'in OTHER ROOM →'; faceUp = false; }
+            else if (p.id === 'pocket') { phoneX = 80; phoneY = 60; fill = '#475569'; label = 'in pocket'; faceUp = false; }
+            else if (p.id === 'facedown') { phoneX = 175; phoneY = 90; fill = '#1e293b'; label = 'face-down'; faceUp = false; }
+            else if (p.id === 'faceup')   { phoneX = 175; phoneY = 90; fill = '#0f172a'; label = 'screen up'; faceUp = true; }
+            else                          { phoneX = 130; phoneY = 60; fill = '#0f172a'; label = 'in hand'; faceUp = true; }
+            return hh('g', null,
+              p.id === 'room' ? hh('text', { x: 320, y: 25, fontSize: 7, fill: '#10b981', textAnchor: 'end', fontWeight: 700 }, 'in OTHER ROOM →') : null,
+              p.id !== 'room' ? hh('rect', { x: phoneX, y: phoneY, width: phoneW, height: phoneH, fill: fill, stroke: '#1f2937', strokeWidth: 0.8, rx: 2 }) : null,
+              p.id !== 'room' && faceUp ? hh('rect', { x: phoneX + 1.5, y: phoneY + 3, width: phoneW - 3, height: phoneH - 6, fill: '#1e40af', opacity: 0.5 }) : null,
+              p.id !== 'room' && faceUp ? hh('circle', { cx: phoneX + phoneW / 2, cy: phoneY + phoneH - 2.5, r: 0.8, fill: '#94a3b8' }) : null,
+              p.id !== 'room' ? hh('text', { x: phoneX + phoneW / 2, y: phoneY - 2, fontSize: 5, fill: p.color, textAnchor: 'middle', fontWeight: 700 }, label) : null,
+              // Cognitive aura — radius proportional to cost
+              p.id !== 'room' ? hh('circle', { cx: phoneX + phoneW / 2, cy: phoneY + phoneH / 2, r: 6 + (100 - p.wm), fill: p.color, opacity: 0.10 }) : null
+            );
+          })()
+        )
+      ),
+
+      // The slider
+      hh('div', { style: { padding: '0 4px', marginBottom: 12 } },
+        hh('input', {
+          type: 'range', min: 0, max: POSITIONS.length - 1, step: 1, value: pos,
+          'aria-label': 'Phone position',
+          onChange: function(e) { setPos(parseInt(e.target.value, 10)); },
+          style: { width: '100%', accentColor: '#9333ea', direction: 'rtl' }
+        }),
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#64748b', marginTop: 4 } },
+          hh('span', { style: { color: pos === 0 ? '#10b981' : '#475569' } }, '🏠 Other room'),
+          hh('span', { style: { color: pos === 4 ? '#ef4444' : '#475569' } }, '🤳 In hand')
+        )
+      ),
+
+      // Cognitive bars
+      hh('div', { style: { background: 'rgba(2,6,23,0.5)', borderRadius: 10, padding: 12, marginBottom: 10 } },
+        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#c084fc', marginBottom: 8, textAlign: 'center' } }, p.icon + ' ' + p.label),
+        // WM bar
+        hh('div', { style: { marginBottom: 10 } },
+          hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#cbd5e1', marginBottom: 4 } },
+            hh('span', null, 'Working memory'),
+            hh('strong', { style: { color: p.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, p.wm + '%')
+          ),
+          hh('div', { style: { height: 14, background: 'rgba(15,23,42,0.7)', borderRadius: 4, overflow: 'hidden' } },
+            hh('div', { style: { width: p.wm + '%', height: '100%', background: p.color, transition: 'all 320ms ease' } })
+          )
+        ),
+        // FL bar
+        hh('div', null,
+          hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#cbd5e1', marginBottom: 4 } },
+            hh('span', null, 'Fluid intelligence'),
+            hh('strong', { style: { color: p.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, p.fl + '%')
+          ),
+          hh('div', { style: { height: 14, background: 'rgba(15,23,42,0.7)', borderRadius: 4, overflow: 'hidden' } },
+            hh('div', { style: { width: p.fl + '%', height: '100%', background: p.color, transition: 'all 320ms ease' } })
+          )
+        )
+      ),
+
+      // Position-specific explanation
+      hh('div', { style: { padding: 10, borderRadius: 8, background: p.color + '12', border: '1px solid ' + p.color + '40', borderLeft: '3px solid ' + p.color, fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 10 } },
+        hh('strong', { style: { color: p.color } }, p.icon + ' ' + p.label + ': '),
+        p.desc
+      ),
+
+      // Citation card
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(147,51,234,0.08)', border: '1px solid rgba(147,51,234,0.30)', fontSize: 10, color: '#cbd5e1', lineHeight: 1.6 } },
+        hh('strong', { style: { color: '#c084fc' } }, '📚 Source: '),
+        'Ward, Duke, Gneezy + Bos (2017). "Brain Drain: The Mere Presence of One\'s Own Smartphone Reduces Available Cognitive Capacity." ', hh('em', null, 'Journal of the Association for Consumer Research'), ', 2(2), 140-154. Three experiments, ~800 participants. Phone in another room produced highest WM + fluid IQ scores; bag/pocket intermediate; on-desk lowest — with the effect strongest for the most phone-dependent users. The phone\'s mere PRESENCE drained capacity even when participants ignored it and had it silenced face-down.'
+      )
+    );
+  }
+
+  // ── 11. LONGHAND vs LAPTOP NOTE-TAKING DEMO (Mueller + Oppenheimer 2014) ──
+  // Cycle through 4 lecture sentences. For each, two side-by-side panels
+  // show what the verbatim LAPTOP note vs the compressed HAND note would
+  // capture. Word-count comparison + processing-depth gauge make the
+  // encoding-hypothesis mechanism visceral. Final card cites Mueller +
+  // Oppenheimer 2014 with honest replication-concerns note.
+  function LonghandVsLaptopDemo(props) {
+    if (!R) return null;
+    var awardXP = props.awardXP;
+    var is = R.useState(0);    var idx = is[0];    var setIdx = is[1];
+    var rs = R.useState('hide'); var reveal = rs[0]; var setReveal = rs[1]; // hide | laptop | hand | both
+    var as = R.useState(false); var awarded = as[0]; var setAwarded = as[1];
+
+    var EXAMPLES = [
+      {
+        topic: 'Photosynthesis',
+        spoken: 'During photosynthesis, plants use chlorophyll in their leaves to absorb sunlight. The light energy splits water molecules, releasing oxygen as a byproduct. The hydrogen combines with carbon dioxide from the air to form glucose, which the plant uses for energy and growth.',
+        laptop: 'During photosynthesis, plants use chlorophyll in their leaves to absorb sunlight. The light energy splits water molecules, releasing oxygen as a byproduct. The hydrogen combines with carbon dioxide from the air to form glucose, which the plant uses for energy and growth.',
+        hand: '• Photo = light + sugar making\n• Chlorophyll catches sunlight in leaves\n• Light splits H2O → O2 (waste) + H\n• H + CO2 → glucose (plant food)\n• Whole flow: light energy → chemical energy'
+      },
+      {
+        topic: 'Working memory limits',
+        spoken: 'In 1956, George Miller published a paper called "The Magical Number Seven, Plus or Minus Two," proposing that the human working memory can hold roughly seven distinct items at any one time. Later research by Nelson Cowan in 2001 revised this estimate downward — without chunking strategies, pure working memory holds closer to four items. This explains why long phone numbers feel hard but seven-digit ones feel manageable.',
+        laptop: 'In 1956, George Miller published a paper called "The Magical Number Seven, Plus or Minus Two," proposing that the human working memory can hold roughly seven distinct items at any one time. Later research by Nelson Cowan in 2001 revised this estimate downward — without chunking strategies, pure working memory holds closer to four items. This explains why long phone numbers feel hard but seven-digit ones feel manageable.',
+        hand: '• Miller 1956: WM ~7 items ("Magical 7±2")\n• Cowan 2001: revised → ~4 items (pure WM, no chunking)\n• Why phone numbers ≤7 feel easy\n• Chunking expands what fits'
+      },
+      {
+        topic: 'French Revolution causes',
+        spoken: 'The French Revolution of 1789 had multiple intersecting causes. Economic crisis from years of war and crop failures meant that ordinary people faced bread prices they could not pay. The aristocracy and clergy were exempt from most taxes, while the Third Estate — basically everyone else — bore the tax burden. Enlightenment ideas about natural rights and citizen sovereignty had circulated for decades. When Louis XVI called the Estates-General in May 1789, this combination ignited.',
+        laptop: 'The French Revolution of 1789 had multiple intersecting causes. Economic crisis from years of war and crop failures meant that ordinary people faced bread prices they could not pay. The aristocracy and clergy were exempt from most taxes, while the Third Estate — basically everyone else — bore the tax burden. Enlightenment ideas about natural rights and citizen sovereignty had circulated for decades. When Louis XVI called the Estates-General in May 1789, this combination ignited.',
+        hand: '• 1789: not one cause — STACK of causes\n• Economic: war debts + bad harvests = bread riots\n• Tax unfairness: 3rd Estate paid ALL\n• Ideas: Enlightenment "natural rights" already in air\n• Trigger: Louis XVI calls Estates-General May 1789'
+      },
+      {
+        topic: 'Cognitive load theory',
+        spoken: 'John Sweller proposed that working memory is severely limited and that effective instruction should minimize wasted cognitive effort. He identified three types of load: intrinsic load is the actual difficulty of the material, extraneous load is wasted effort from poor design, and germane load is the productive effort that builds mental schemas.',
+        laptop: 'John Sweller proposed that working memory is severely limited and that effective instruction should minimize wasted cognitive effort. He identified three types of load: intrinsic load is the actual difficulty of the material, extraneous load is wasted effort from poor design, and germane load is the productive effort that builds mental schemas.',
+        hand: '• Sweller: WM is HARD limit, design around it\n• 3 load types:\n  - Intrinsic = real difficulty (manage)\n  - Extraneous = wasted effort (eliminate)\n  - Germane = builds schema (maximize)'
+      }
+    ];
+    var ex = EXAMPLES[idx % EXAMPLES.length];
+    var wcLaptop = ex.laptop.split(/\s+/).filter(Boolean).length;
+    var wcHand = ex.hand.split(/\s+/).filter(Boolean).length;
+    var depthLaptop = 25; // verbatim = shallow encoding
+    var depthHand = 85;   // compressed = deep encoding (forces synthesis)
+
+    function next() {
+      var nextIdx = idx + 1;
+      if (nextIdx >= EXAMPLES.length && !awarded) {
+        setAwarded(true);
+        if (awardXP) awardXP(1);
+      }
+      setIdx(nextIdx % EXAMPLES.length);
+      setReveal('hide');
+    }
+
+    return hh('div', {
+      style: { background: 'rgba(15,23,42,0.7)', borderRadius: 12, padding: 16, marginBottom: 14,
+        borderTop: '1px solid rgba(147,51,234,0.30)', borderRight: '1px solid rgba(147,51,234,0.30)',
+        borderBottom: '1px solid rgba(147,51,234,0.30)', borderLeft: '4px solid #9333ea' }
+    },
+      hh('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
+        hh('div', { 'aria-hidden': 'true', style: { width: 36, height: 36, borderRadius: '50%', background: 'rgba(147,51,234,0.18)', border: '1.5px solid #9333ea', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 } }, '✍️'),
+        hh('div', { style: { flex: 1, minWidth: 200 } },
+          hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#c084fc' } }, 'Longhand vs laptop notes — what each captures'),
+          hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, 'See the actual difference in what fast typing vs slower handwriting can produce. The compression IS the learning (Mueller + Oppenheimer 2014).')
+        )
+      ),
+
+      // Topic chip + cycle
+      hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, flexWrap: 'wrap', gap: 8 } },
+        hh('div', { style: { padding: '4px 12px', borderRadius: 999, background: 'rgba(147,51,234,0.12)', color: '#c084fc', fontSize: 11, fontWeight: 700, border: '1px solid rgba(147,51,234,0.40)' } }, 'Lecture topic: ' + ex.topic),
+        hh('div', { style: { fontSize: 10, color: '#64748b', fontFamily: 'ui-monospace, Menlo, monospace' } }, 'Example ' + (idx + 1) + ' / ' + EXAMPLES.length)
+      ),
+
+      // The "spoken" lecture
+      hh('div', { style: { background: 'rgba(2,6,23,0.6)', borderRadius: 10, padding: 12, marginBottom: 12, borderLeft: '3px solid #94a3b8' } },
+        hh('div', { style: { fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 } }, '🎙 What the lecturer says'),
+        hh('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.65, fontStyle: 'italic' } }, '"' + ex.spoken + '"')
+      ),
+
+      // Side-by-side reveal
+      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, marginBottom: 12 } },
+        // Laptop column
+        hh('div', { style: { background: 'rgba(2,6,23,0.5)', borderRadius: 10, padding: 12, border: '1px solid rgba(96,165,250,0.30)', borderLeft: '3px solid #60a5fa' } },
+          hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 } },
+            hh('span', { style: { fontSize: 11, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: '0.06em' } }, '💻 Laptop note'),
+            (reveal === 'laptop' || reveal === 'both') ? hh('span', { style: { fontSize: 9, color: '#60a5fa', fontFamily: 'ui-monospace, Menlo, monospace' } }, wcLaptop + ' words') : null
+          ),
+          (reveal === 'laptop' || reveal === 'both')
+            ? hh('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.6, fontFamily: 'ui-monospace, Menlo, monospace', whiteSpace: 'pre-wrap' } }, ex.laptop)
+            : hh('button', { onClick: function() { setReveal(reveal === 'hand' ? 'both' : 'laptop'); },
+                style: { width: '100%', padding: '20px 8px', borderRadius: 8, background: 'rgba(96,165,250,0.06)', color: '#60a5fa', border: '1px dashed rgba(96,165,250,0.40)', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+              }, '👁 Show what laptop captures')
+        ),
+        // Hand column
+        hh('div', { style: { background: 'rgba(2,6,23,0.5)', borderRadius: 10, padding: 12, border: '1px solid rgba(251,191,36,0.30)', borderLeft: '3px solid #fbbf24' } },
+          hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 } },
+            hh('span', { style: { fontSize: 11, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.06em' } }, '✍️ Handwritten note'),
+            (reveal === 'hand' || reveal === 'both') ? hh('span', { style: { fontSize: 9, color: '#fbbf24', fontFamily: 'ui-monospace, Menlo, monospace' } }, wcHand + ' words') : null
+          ),
+          (reveal === 'hand' || reveal === 'both')
+            ? hh('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.7, fontFamily: 'Georgia, serif', whiteSpace: 'pre-wrap' } }, ex.hand)
+            : hh('button', { onClick: function() { setReveal(reveal === 'laptop' ? 'both' : 'hand'); },
+                style: { width: '100%', padding: '20px 8px', borderRadius: 8, background: 'rgba(251,191,36,0.06)', color: '#fbbf24', border: '1px dashed rgba(251,191,36,0.40)', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+              }, '👁 Show what handwriting captures')
+        )
+      ),
+
+      // Comparison gauges (only after both revealed)
+      reveal === 'both' ? hh('div', { style: { background: 'rgba(2,6,23,0.6)', borderRadius: 10, padding: 12, marginBottom: 10 } },
+        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#c084fc', marginBottom: 8, textAlign: 'center' } }, '📊 What each format produced'),
+        // Word count comparison
+        hh('div', { style: { marginBottom: 10 } },
+          hh('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4, textAlign: 'center' } }, 'Word count'),
+          hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
+            hh('div', { style: { padding: 6, borderRadius: 6, background: 'rgba(96,165,250,0.10)', textAlign: 'center' } },
+              hh('div', { style: { fontSize: 9, color: '#60a5fa' } }, '💻 Laptop'),
+              hh('div', { style: { fontSize: 22, fontWeight: 900, color: '#60a5fa', fontFamily: 'ui-monospace, Menlo, monospace' } }, wcLaptop)
+            ),
+            hh('div', { style: { padding: 6, borderRadius: 6, background: 'rgba(251,191,36,0.10)', textAlign: 'center' } },
+              hh('div', { style: { fontSize: 9, color: '#fbbf24' } }, '✍️ Hand'),
+              hh('div', { style: { fontSize: 22, fontWeight: 900, color: '#fbbf24', fontFamily: 'ui-monospace, Menlo, monospace' } }, wcHand)
+            )
+          ),
+          hh('div', { style: { fontSize: 9, color: '#94a3b8', textAlign: 'center', marginTop: 4, fontStyle: 'italic' } },
+            'Hand captured ' + Math.round((wcHand / wcLaptop) * 100) + '% of the words. Mueller + Oppenheimer found verbatim laptop transcription correlated with WORSE conceptual recall — the compression IS the encoding.')
+        ),
+        // Depth-of-processing gauge
+        hh('div', null,
+          hh('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4, textAlign: 'center' } }, 'Depth-of-processing (Craik + Lockhart 1972 framework — illustrative)'),
+          hh('div', { style: { marginBottom: 6 } },
+            hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#cbd5e1', marginBottom: 2 } },
+              hh('span', null, '💻 Laptop (verbatim)'), hh('span', { style: { fontFamily: 'ui-monospace, Menlo, monospace' } }, depthLaptop + '%')
+            ),
+            hh('div', { style: { height: 10, background: 'rgba(15,23,42,0.7)', borderRadius: 4, overflow: 'hidden' } },
+              hh('div', { style: { width: depthLaptop + '%', height: '100%', background: '#60a5fa', transition: 'width 400ms ease' } })
+            )
+          ),
+          hh('div', null,
+            hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#cbd5e1', marginBottom: 2 } },
+              hh('span', null, '✍️ Hand (compressed)'), hh('span', { style: { fontFamily: 'ui-monospace, Menlo, monospace' } }, depthHand + '%')
+            ),
+            hh('div', { style: { height: 10, background: 'rgba(15,23,42,0.7)', borderRadius: 4, overflow: 'hidden' } },
+              hh('div', { style: { width: depthHand + '%', height: '100%', background: '#fbbf24', transition: 'width 400ms ease' } })
+            )
+          )
+        )
+      ) : null,
+
+      // Reveal-both shortcut + next-example
+      hh('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 10, flexWrap: 'wrap' } },
+        reveal !== 'both' ? hh('button', { onClick: function() { setReveal('both'); },
+          style: { padding: '8px 14px', borderRadius: 8, background: 'rgba(147,51,234,0.18)', color: '#c084fc', border: '1.5px solid rgba(147,51,234,0.50)', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+        }, '👁 Show both') : null,
+        hh('button', { onClick: next,
+          style: { padding: '8px 14px', borderRadius: 8, background: '#9333ea', color: '#fff', border: 'none', fontSize: 11, fontWeight: 800, cursor: 'pointer' }
+        }, '↻ Next lecture topic →')
+      ),
+
+      // Citation card with replication caveat
+      reveal === 'both' ? hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(147,51,234,0.08)', border: '1px solid rgba(147,51,234,0.30)', fontSize: 10, color: '#cbd5e1', lineHeight: 1.6 } },
+        hh('strong', { style: { color: '#c084fc' } }, '📚 Source: '),
+        'Mueller + Oppenheimer (2014). "The Pen is Mightier than the Keyboard: Advantages of Longhand Over Laptop Note Taking." ', hh('em', null, 'Psychological Science'), ', 25(6), 1159-1168. Three studies, ~300 students. Laptop note-takers transcribed verbatim and performed WORSE on conceptual questions than longhand-takers, even when comparable in factual recall. Proposed mechanism: handwriting forces summarization → forces synthesis → encodes meaning, not just words. ',
+        hh('br'), hh('br'),
+        hh('strong', { style: { color: '#fbbf24' } }, '⚠ Honest caveat: '),
+        'Urry et al. 2021 (Pre-registered direct replication, ', hh('em', null, 'Psychological Science'), ') found smaller effects + did not replicate the warning-against-verbatim manipulation. The longhand-encoding hypothesis still has theoretical support, but the headline effect size is contested. Practical takeaway is unchanged: ', hh('strong', null, 'whatever format you use, do not transcribe verbatim — compress.'),
+        ' Format matters less than what your hands force you to do with the content.'
+      ) : null
+    );
+  }
+
   window.StemLab.registerTool('learningLab', {
     name: 'Learning Lab',
     icon: '🧠',
@@ -6296,6 +6618,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         var pickedSys = picked ? NOTE_SYSTEMS.find(function(s) { return s.id === picked; }) : null;
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('📓 Note-taking systems'),
+          h(LonghandVsLaptopDemo, { awardXP: ctx.awardXP }),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '📓 5 note-taking systems + 4 universal principles'),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
@@ -6526,6 +6849,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('📵 Multitasking myth + attention'),
           h(TaskSwitchDemo, { awardXP: ctx.awardXP }),
+          h(PhoneProximitySlider, { awardXP: ctx.awardXP }),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '📵 The brain doesn\'t multitask — it task-switches'),
             h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } }, MULTITASKING_FACTS.coreReality),
