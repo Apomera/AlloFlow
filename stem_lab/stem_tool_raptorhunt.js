@@ -2645,6 +2645,73 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           }
         }
 
+        // ─── NEW v0.28: Distant horizon mountains (silhouette ring beyond playable terrain) ───
+        // 5-8 mountain peaks at radius ~720m on far edge of fog
+        var mountainCount = species.biome === 'rainforest' || species.biome === 'cliff' || species.biome === 'mountain' || species.biome === 'tundra' ? 8 : 5;
+        var mountainColor = species.biome === 'tundra' ? 0x94a3b8 :
+                            species.biome === 'rainforest' ? 0x166534 :
+                            species.biome === 'forest-night' ? 0x1e1b4b :
+                            0x475569;
+        for (var mti = 0; mti < mountainCount; mti++) {
+          var mtTheta = (mti / mountainCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.3;
+          var mtRadius = 700 + Math.random() * 100;
+          var mtHeight = 40 + Math.random() * 80;
+          var mtWidth = 80 + Math.random() * 60;
+          var mtX = Math.cos(mtTheta) * mtRadius;
+          var mtZ = Math.sin(mtTheta) * mtRadius;
+          // Cone for mountain peak
+          var mtGeo = new THREE.ConeGeometry(mtWidth, mtHeight, 5);  // pentagonal for jagged look
+          var mtMat = new THREE.MeshBasicMaterial({ color: mountainColor, fog: true });
+          var mt = new THREE.Mesh(mtGeo, mtMat);
+          mt.position.set(mtX, mtHeight * 0.4, mtZ);
+          mt.rotation.y = Math.random() * Math.PI * 2;
+          scene.add(mt);
+          // Snow cap (lighter cone on top) for tundra + mountain biomes
+          if (species.biome === 'tundra' || species.biome === 'mountain' || species.biome === 'cliff') {
+            var snowCap = new THREE.Mesh(
+              new THREE.ConeGeometry(mtWidth * 0.4, mtHeight * 0.4, 5),
+              new THREE.MeshBasicMaterial({ color: 0xf1f5f9, fog: true })
+            );
+            snowCap.position.set(mtX, mtHeight * 0.75, mtZ);
+            snowCap.rotation.y = mt.rotation.y;
+            scene.add(snowCap);
+          }
+        }
+
+        // ─── NEW v0.28: Distant flock silhouettes (3-5 dark V-shapes drifting across the sky) ───
+        var flockCanvas = document.createElement('canvas');
+        flockCanvas.width = 32; flockCanvas.height = 16;
+        var flCtx = flockCanvas.getContext('2d');
+        flCtx.fillStyle = '#1c1917';
+        // Draw a V-shape bird silhouette
+        flCtx.beginPath();
+        flCtx.moveTo(2, 12);
+        flCtx.lineTo(16, 4);
+        flCtx.lineTo(30, 12);
+        flCtx.lineTo(16, 8);
+        flCtx.closePath();
+        flCtx.fill();
+        var flockTex = new THREE.CanvasTexture(flockCanvas);
+        var flockBirds = [];
+        var flockSize = 4;
+        for (var fbI = 0; fbI < flockSize; fbI++) {
+          var fb = new THREE.Sprite(new THREE.SpriteMaterial({ map: flockTex, transparent: true, depthWrite: false, opacity: 0.7 }));
+          var fbTheta = Math.random() * Math.PI * 2;
+          var fbRadius = 200 + Math.random() * 250;
+          fb.position.set(
+            Math.cos(fbTheta) * fbRadius,
+            80 + Math.random() * 80,
+            Math.sin(fbTheta) * fbRadius
+          );
+          fb.scale.set(8 + Math.random() * 4, 4 + Math.random() * 2, 1);
+          scene.add(fb);
+          flockBirds.push({
+            sprite: fb,
+            heading: Math.random() * Math.PI * 2,  // direction of travel
+            speed: 4 + Math.random() * 3
+          });
+        }
+
         // ─── Player raptor mesh (procedural bird) ───
         // ─── NEW v0.24: Detailed raptor mesh (replaces simple boxes) ───
         var raptorGroup = new THREE.Group();
@@ -3333,6 +3400,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           camera.position.y += (camTargetY - camera.position.y) * 0.18;
           camera.position.z += (camTargetZ - camera.position.z) * 0.18;
           camera.lookAt(raptor.x, raptor.y + 0.3, raptor.z);
+          // ── NEW v0.28: Camera banking roll (tilts when turning fast) ──
+          if (raptor.lastYaw === undefined) raptor.lastYaw = raptor.yaw;
+          var yawDelta = raptor.yaw - raptor.lastYaw;
+          // Wrap to [-π, π]
+          while (yawDelta > Math.PI) yawDelta -= Math.PI * 2;
+          while (yawDelta < -Math.PI) yawDelta += Math.PI * 2;
+          raptor.lastYaw = raptor.yaw;
+          // Map yaw rate to camera roll (cap at ±0.3 rad ~ 17°)
+          var rollTarget = Math.max(-0.3, Math.min(0.3, -yawDelta * 12));
+          raptor.cameraRoll = (raptor.cameraRoll || 0);
+          raptor.cameraRoll += (rollTarget - raptor.cameraRoll) * 0.12;
+          // Apply roll via camera.up vector tilt
+          var rollSin = Math.sin(raptor.cameraRoll), rollCos = Math.cos(raptor.cameraRoll);
+          camera.up.set(rollSin, rollCos, 0);
+          camera.lookAt(raptor.x, raptor.y + 0.3, raptor.z);  // re-lookAt with new up vector
+
+          // ── NEW v0.28: Distant flock silhouettes drift ──
+          for (var fbi = 0; fbi < flockBirds.length; fbi++) {
+            var fbird = flockBirds[fbi];
+            fbird.sprite.position.x += Math.sin(fbird.heading) * fbird.speed * dt;
+            fbird.sprite.position.z += Math.cos(fbird.heading) * fbird.speed * dt;
+            // Recenter when far from raptor (keep flock in view)
+            var fbdx = fbird.sprite.position.x - raptor.x;
+            var fbdz = fbird.sprite.position.z - raptor.z;
+            if (fbdx * fbdx + fbdz * fbdz > 500 * 500) {
+              var newTheta = Math.random() * Math.PI * 2;
+              var newRad = 250 + Math.random() * 200;
+              fbird.sprite.position.x = raptor.x + Math.cos(newTheta) * newRad;
+              fbird.sprite.position.z = raptor.z + Math.sin(newTheta) * newRad;
+              fbird.heading = Math.random() * Math.PI * 2;
+            }
+          }
 
           // ── NEW v0.25: Bird ground shadow follows bird position + scales with altitude ──
           var groundBelowBird = terrainHeightAt(raptor.x, raptor.z);
