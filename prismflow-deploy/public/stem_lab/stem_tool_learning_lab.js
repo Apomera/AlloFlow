@@ -12554,6 +12554,486 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     );
   }
 
+  // ── KKK. PERSONAL ROUTINE BUILDER (Wave 13) ──
+  // Morning + evening + study routine builders. Checklist of steps with
+  // estimated time. Practice the routine for 30 days to lock in.
+  function PersonalRoutineBuilder(props) {
+    if (!R) return null;
+    var data = props.data || { routines: [] };
+    var setData = props.setData;
+    var vs = R.useState('list');                       var view = vs[0]; var setView = vs[1];
+    var as = R.useState(null);                         var activeId = as[0]; var setActiveId = as[1];
+    var ts = R.useState('');                            var newTitle = ts[0]; var setNewTitle = ts[1];
+    var nt = R.useState('morning');                    var newType = nt[0]; var setNewType = nt[1];
+    var sf = R.useState({ text: '', mins: 5 });
+    var stepForm = sf[0]; var setStepForm = sf[1];
+
+    var TYPES = [
+      { id: 'morning',  label: 'Morning',  icon: '🌅', color: '#fbbf24' },
+      { id: 'evening',  label: 'Evening',  icon: '🌙', color: '#a855f7' },
+      { id: 'study',    label: 'Study session', icon: '📚', color: '#3b82f6' },
+      { id: 'transition', label: 'Transition (between tasks)', icon: '🔄', color: '#10b981' },
+      { id: 'pre-test', label: 'Pre-test prep', icon: '📝', color: '#ec4899' }
+    ];
+
+    function createRoutine() {
+      if (!newTitle.trim()) return;
+      var r = { id: tkId(), title: newTitle.trim(), type: newType, steps: [], completions: [], createdAt: todayISO() };
+      setData({ routines: [r].concat(data.routines || []) });
+      setActiveId(r.id);
+      setNewTitle('');
+      setView('edit');
+    }
+    function getRoutine() { return (data.routines || []).filter(function(r) { return r.id === activeId; })[0]; }
+    function updateRoutine(patch) {
+      setData({ routines: (data.routines || []).map(function(r) { return r.id === activeId ? Object.assign({}, r, patch) : r; }) });
+    }
+    function removeRoutine(id) {
+      if (!confirm('Delete this routine?')) return;
+      setData({ routines: (data.routines || []).filter(function(r) { return r.id !== id; }) });
+    }
+    function addStep() {
+      if (!stepForm.text.trim()) return;
+      var r = getRoutine();
+      updateRoutine({ steps: (r.steps || []).concat([Object.assign({ id: tkId() }, stepForm)]) });
+      setStepForm({ text: '', mins: 5 });
+    }
+    function removeStep(id) {
+      var r = getRoutine();
+      updateRoutine({ steps: r.steps.filter(function(s) { return s.id !== id; }) });
+    }
+    function logCompletion() {
+      var r = getRoutine();
+      var today = todayISO();
+      var comps = r.completions || [];
+      if (comps.indexOf(today) >= 0) comps = comps.filter(function(d) { return d !== today; });
+      else comps = comps.concat([today]);
+      updateRoutine({ completions: comps });
+    }
+
+    if (view === 'edit') {
+      var r = getRoutine();
+      if (!r) { setView('list'); return null; }
+      var type = TYPES.filter(function(t) { return t.id === r.type; })[0] || TYPES[0];
+      var totalMin = (r.steps || []).reduce(function(s, st) { return s + (st.mins || 0); }, 0);
+      var streak = (function() {
+        var comps = r.completions || [];
+        var s = 0;
+        for (var i = 0; i < 365; i++) {
+          var dt = new Date(); dt.setDate(dt.getDate() - i);
+          var iso = dt.toISOString().slice(0, 10);
+          if (comps.indexOf(iso) >= 0) s++;
+          else if (i > 0) break;
+        }
+        return s;
+      })();
+      var todayDone = (r.completions || []).indexOf(todayISO()) >= 0;
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader(type.icon, r.title, type.label + ' routine · ' + (r.steps || []).length + ' steps · ~' + totalMin + ' min · 🔥 ' + streak + 'd streak', type.color),
+
+        // Today's completion
+        hh('div', { style: { padding: 10, borderRadius: 8, background: todayDone ? type.color + '20' : 'rgba(15,23,42,0.5)', border: '1px solid ' + type.color + '40', marginBottom: 14, textAlign: 'center' } },
+          tkBtn(todayDone ? '✓ Done today — undo' : '+ Mark done today', logCompletion, todayDone ? 'good' : 'primary', { padding: '10px 22px' })
+        ),
+
+        tkCard(type.color,
+          hh('div', null,
+            hh('div', { style: { fontSize: 12, fontWeight: 800, color: type.color, marginBottom: 8 } }, '+ Add a step'),
+            hh('div', { style: { display: 'flex', gap: 6 } },
+              tkInput(stepForm.text, function(v) { setStepForm(Object.assign({}, stepForm, { text: v })); }, 'Step description', { flex: 1 }),
+              hh('input', { type: 'number', min: 1, max: 60, value: stepForm.mins,
+                onChange: function(e) { setStepForm(Object.assign({}, stepForm, { mins: parseInt(e.target.value, 10) })); },
+                style: { width: 70, padding: '8px 10px', fontSize: 12, color: type.color, background: 'rgba(2,6,23,0.7)', border: '1px solid ' + type.color + '60', borderRadius: 6, textAlign: 'center' }
+              }),
+              tkBtn('+', addStep, 'primary', { padding: '8px 14px' })
+            )
+          )
+        ),
+
+        (r.steps || []).length === 0 ? tkEmptyState(type.icon, 'No steps yet. Build out your routine.', null, null)
+        : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+            (r.steps || []).map(function(s, i) {
+              return hh('div', { key: 'rs-' + s.id, style: { display: 'flex', gap: 8, alignItems: 'center', padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + type.color } },
+                hh('span', { style: { color: type.color, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', minWidth: 20 } }, (i + 1) + '.'),
+                hh('div', { style: { flex: 1, fontSize: 12, color: '#cbd5e1' } }, s.text),
+                hh('span', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } }, s.mins + 'm'),
+                hh('button', { onClick: function() { removeStep(s.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+              );
+            })
+          ),
+
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginTop: 12 } },
+          tkBtn('← All routines', function() { setView('list'); setActiveId(null); }, 'ghost'),
+          tkBtn('🗑 Delete', function() { removeRoutine(r.id); setView('list'); }, 'bad')
+        )
+      );
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🔁', 'Routine Builder', 'Morning + evening + study + transition + pre-test routines. Steps + estimated time. Streak per routine.', '#10b981'),
+
+      tkCard('#10b981',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#10b981', marginBottom: 8 } }, '+ New routine'),
+          tkInput(newTitle, setNewTitle, 'Routine name (e.g., "My morning")', { marginBottom: 8 }),
+          hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 } },
+            TYPES.map(function(t) {
+              var on = newType === t.id;
+              return hh('button', { key: 'rt-' + t.id,
+                onClick: function() { setNewType(t.id); },
+                style: { padding: '6px 10px', borderRadius: 6, background: on ? t.color + '30' : 'rgba(15,23,42,0.5)', color: on ? t.color : '#94a3b8', border: '1px solid ' + (on ? t.color : 'rgba(100,116,139,0.30)'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+              }, t.icon + ' ' + t.label);
+            })
+          ),
+          tkBtn('Create', createRoutine, 'primary')
+        )
+      ),
+
+      (data.routines || []).length === 0 ? tkEmptyState('🔁', 'No routines built yet.', null, null)
+      : hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
+          (data.routines || []).map(function(r) {
+            var t = TYPES.filter(function(x) { return x.id === r.type; })[0] || TYPES[0];
+            return hh('button', { key: 'ru-' + r.id,
+              onClick: function() { setActiveId(r.id); setView('edit'); },
+              style: { display: 'block', textAlign: 'left', padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, ' + t.color + '15, rgba(15,23,42,0.7))', border: '1px solid ' + t.color + '40', borderLeft: '4px solid ' + t.color, cursor: 'pointer' }
+            },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+                hh('strong', { style: { fontSize: 13, color: t.color } }, t.icon + ' ' + r.title),
+                hh('span', { onClick: function(e) { e.stopPropagation(); removeRoutine(r.id); }, style: { color: '#64748b', cursor: 'pointer', fontSize: 12 } }, '✕')
+              ),
+              hh('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 4 } }, (r.steps || []).length + ' steps · ' + (r.completions || []).length + ' done')
+            );
+          })
+        )
+    );
+  }
+
+  // ── LLL. PERSONAL PRIORITIES MATRIX (Wave 13) ──
+  // Eisenhower decision matrix. 4 quadrants: urgent/important.
+  // Move tasks between quadrants. Visualize where time goes.
+  function PersonalPriorities(props) {
+    if (!R) return null;
+    var data = props.data || { tasks: [] };
+    var setData = props.setData;
+    var fs = R.useState({ text: '', quadrant: 'q2' });
+    var form = fs[0]; var setForm = fs[1];
+
+    var QUADRANTS = [
+      { id: 'q1', label: 'Q1: Urgent + Important', icon: '🔥', color: '#ef4444', advice: 'DO NOW. Crisis mode. Goal: stop living here.' },
+      { id: 'q2', label: 'Q2: Important, Not Urgent', icon: '⭐', color: '#10b981', advice: 'INVEST. The "live here" zone. Studying ahead, exercise, deep relationships, growth.' },
+      { id: 'q3', label: 'Q3: Urgent, Not Important', icon: '📞', color: '#fbbf24', advice: 'DELEGATE or batch. Most interruptions. Other people\'s urgencies.' },
+      { id: 'q4', label: 'Q4: Not Urgent, Not Important', icon: '📺', color: '#94a3b8', advice: 'AVOID. Mindless scrolling, busywork, time-wasters. Conscious choice only.' }
+    ];
+
+    function add() {
+      if (!form.text.trim()) return;
+      var t = Object.assign({ id: tkId(), createdAt: todayISO() }, form);
+      setData({ tasks: [t].concat(data.tasks || []) });
+      setForm({ text: '', quadrant: 'q2' });
+    }
+    function moveTask(id, quadrant) {
+      setData({ tasks: (data.tasks || []).map(function(t) { return t.id === id ? Object.assign({}, t, { quadrant: quadrant }) : t; }) });
+    }
+    function remove(id) { setData({ tasks: (data.tasks || []).filter(function(t) { return t.id !== id; }) }); }
+
+    var tasks = data.tasks || [];
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('📊', 'Priorities Matrix', 'Eisenhower matrix. 4 quadrants. Goal: spend more time in Q2 (Important, Not Urgent).', '#a855f7'),
+
+      tkCard('#a855f7',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 8 } }, '+ Add a task'),
+          hh('div', { style: { display: 'flex', gap: 6 } },
+            tkInput(form.text, function(v) { setForm(Object.assign({}, form, { text: v })); }, 'Task name', { flex: 1 }),
+            hh('select', { value: form.quadrant,
+              onChange: function(e) { setForm(Object.assign({}, form, { quadrant: e.target.value })); },
+              style: { padding: '8px 10px', fontSize: 11, color: '#c084fc', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(168,85,247,0.40)', borderRadius: 6 }
+            }, QUADRANTS.map(function(q) { return hh('option', { key: 'op-' + q.id, value: q.id }, q.label); })),
+            tkBtn('+', add, 'primary', { padding: '8px 14px' })
+          )
+        )
+      ),
+
+      // 2x2 grid
+      hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
+        QUADRANTS.map(function(q) {
+          var qTasks = tasks.filter(function(t) { return t.quadrant === q.id; });
+          return hh('div', { key: 'qd-' + q.id, style: { padding: 12, borderRadius: 10, background: 'linear-gradient(135deg, ' + q.color + '15, rgba(15,23,42,0.7))', border: '1px solid ' + q.color + '40', minHeight: 200 } },
+            hh('div', { style: { fontSize: 13, fontWeight: 800, color: q.color, marginBottom: 4 } }, q.icon + ' ' + q.label),
+            hh('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic', marginBottom: 8, lineHeight: 1.5 } }, q.advice),
+            qTasks.length === 0 ? hh('div', { style: { fontSize: 11, color: '#475569', textAlign: 'center', fontStyle: 'italic', padding: 12 } }, 'empty')
+            : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+                qTasks.map(function(t) {
+                  return hh('div', { key: 't-' + t.id, style: { padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.5)', borderLeft: '2px solid ' + q.color } },
+                    hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 4 } }, t.text),
+                    hh('div', { style: { display: 'flex', gap: 2, flexWrap: 'wrap' } },
+                      QUADRANTS.filter(function(qq) { return qq.id !== q.id; }).map(function(other) {
+                        return hh('button', { key: 'mv-' + other.id,
+                          onClick: function() { moveTask(t.id, other.id); },
+                          title: 'Move to ' + other.label,
+                          style: { padding: '2px 6px', borderRadius: 3, background: other.color + '20', color: other.color, border: '1px solid ' + other.color + '40', fontSize: 9, cursor: 'pointer', fontWeight: 700 }
+                        }, '→' + other.id.toUpperCase());
+                      }),
+                      hh('button', { onClick: function() { remove(t.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 10, cursor: 'pointer' } }, '✕')
+                    )
+                  );
+                })
+              )
+          );
+        })
+      ),
+
+      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+        hh('strong', { style: { color: '#a855f7' } }, '🎓 The Q2 life: '),
+        'Covey 1989. Most people live in Q1 (firefighting). The high-leverage shift is to spend MORE time in Q2 (important, not urgent) — exercise, deep work, relationships, planning. Q2 work BECOMES Q1 when neglected long enough. Investing in Q2 prevents Q1 crises.'
+      )
+    );
+  }
+
+  // ── MMM. PERSONAL PARENT MESSAGE BUILDER (Wave 13) ──
+  // Templates for hard conversations with parents/guardians about
+  // school, mental health, accommodations, future plans.
+  function PersonalParentMessage(props) {
+    if (!R) return null;
+    var data = props.data || { drafts: [] };
+    var setData = props.setData;
+    var ts = R.useState(null);                       var activeType = ts[0]; var setActiveType = ts[1];
+    var fs = R.useState({ to: 'Mom', body: '' });
+    var form = fs[0]; var setForm = fs[1];
+
+    var TEMPLATES = [
+      { id: 'struggling', label: 'I\'m struggling at school', icon: '🆘',
+        prompt: 'Tell them what\'s hard without minimizing or catastrophizing.',
+        body: 'Hi [Parent],\n\nI\'ve been having a hard time with [SPECIFIC: a class, friendships, focus, mood, sleep, etc.] and I wanted you to know.\n\nWhat\'s going on: [BRIEF]\n\nWhat I\'ve tried: [SHORT LIST]\n\nWhat I think might help: [IF YOU HAVE IDEAS] OR I don\'t know what to try next — that\'s why I\'m telling you.\n\nI\'m not in crisis. I just don\'t want to figure this out alone.\n\nLove,\n[Me]'
+      },
+      { id: 'mh',         label: 'I want mental health support', icon: '💭',
+        prompt: 'Ask for therapy, a psychiatrist, or a check-up.',
+        body: 'Hi [Parent],\n\nI\'ve been thinking about this for a while and I want to ask you about it.\n\nI think I would benefit from [therapy / a psychiatrist appointment / talking to my doctor about how I\'m feeling].\n\nWhat I\'ve been noticing in myself: [BRIEF]\n\nI know this might feel surprising, or you might have questions. I\'m open to talking about it. Could we set aside 15 minutes this week?\n\nLove,\n[Me]'
+      },
+      { id: 'iep',        label: 'I want to talk about my IEP/504', icon: '🎓',
+        prompt: 'Speaking up about what\'s working + what isn\'t in your plan.',
+        body: 'Hi [Parent],\n\nMy next IEP/504 meeting is coming up + I want to be more involved this time.\n\nWhat I think is working in my plan: [LIST]\n\nWhat I think isn\'t working: [LIST]\n\nWhat I want to ask for: [LIST]\n\nCan we talk before the meeting so I can practice saying these things out loud?\n\nLove,\n[Me]'
+      },
+      { id: 'future',     label: 'I\'m thinking about my future', icon: '🌅',
+        prompt: 'Career, college, gap year, trade school — share where your head is.',
+        body: 'Hi [Parent],\n\nI\'ve been thinking about what I want to do after high school + I wanted to share where my head is.\n\nWhat I\'m considering: [LIST]\n\nWhat I\'m most drawn to: [SOMETHING]\n\nWhat scares me about it: [BE HONEST]\n\nI know I don\'t have to decide yet. But I want you to know what I\'m thinking + I want to hear what you think too.\n\nLove,\n[Me]'
+      },
+      { id: 'boundary',   label: 'I need a boundary respected', icon: '🛡',
+        prompt: 'Hard but important.',
+        body: 'Hi [Parent],\n\nThere\'s something I\'ve been wanting to ask for + I\'m going to try to say it directly.\n\nWhat I need: [SPECIFIC — privacy, less hovering, more sleep, room to make my own choices about X, less commentary about Y]\n\nWhy: [EXPLAIN — without attacking them]\n\nWhat I\'m offering in return: [IF APPROPRIATE — communication, follow-through, etc.]\n\nI\'m not trying to be difficult. I\'m trying to grow into more independence in a way that still keeps us close.\n\nLove,\n[Me]'
+      },
+      { id: 'thanks',     label: 'Thank you (no agenda)', icon: '💛',
+        prompt: 'For when you want to acknowledge them.',
+        body: 'Hi [Parent],\n\nI don\'t say this enough, so:\n\nThank you for [SPECIFIC — being there last week, helping me figure out X, just being you].\n\nIt mattered.\n\nLove,\n[Me]'
+      }
+    ];
+
+    function generate(t) {
+      return t.body.replace(/\[Parent\]/g, form.to || '[Parent]').replace(/\[Me\]/g, '[Your name]');
+    }
+    function save(t) {
+      var d = { id: tkId(), date: todayISO(), type: t.id, body: form.body || generate(t) };
+      setData({ drafts: [d].concat(data.drafts || []) });
+      setForm({ to: 'Mom', body: '' });
+      setActiveType(null);
+    }
+
+    if (activeType) {
+      var t = TEMPLATES.filter(function(x) { return x.id === activeType; })[0];
+      if (!t) { setActiveType(null); return null; }
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader('💌', t.label, t.prompt, '#a855f7'),
+        tkCard('#a855f7',
+          hh('div', null,
+            tkInput(form.to, function(v) { setForm(Object.assign({}, form, { to: v })); }, 'To (Mom, Dad, Parent, Grandma...)', { marginBottom: 10 }),
+            tkTextarea(form.body || generate(t), function(v) { setForm(Object.assign({}, form, { body: v })); }, '', 16, { fontFamily: 'Georgia, serif', fontSize: 12 })
+          )
+        ),
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+          tkBtn('← Back', function() { setActiveType(null); setForm({ to: 'Mom', body: '' }); }, 'ghost'),
+          hh('div', { style: { display: 'flex', gap: 6 } },
+            tkBtn('📋 Copy', function() { try { navigator.clipboard.writeText(form.body || generate(t)); alert('Copied.'); } catch (e) {} }, 'secondary'),
+            tkBtn('💾 Save draft', function() { save(t); }, 'primary')
+          )
+        )
+      );
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('💌', 'Parent Message Builder', '6 templates for hard conversations with parents/guardians. Practice the words first.', '#a855f7'),
+
+      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
+        TEMPLATES.map(function(t) {
+          return hh('button', { key: 'pm-' + t.id,
+            onClick: function() { setActiveType(t.id); },
+            style: { display: 'block', textAlign: 'left', padding: 12, borderRadius: 10, background: 'linear-gradient(135deg, rgba(168,85,247,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(168,85,247,0.40)', borderLeft: '4px solid #a855f7', cursor: 'pointer' }
+          },
+            hh('div', { style: { fontSize: 22, marginBottom: 4 } }, t.icon),
+            hh('strong', { style: { fontSize: 13, color: '#c084fc' } }, t.label),
+            hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4, fontStyle: 'italic' } }, t.prompt)
+          );
+        })
+      )
+    );
+  }
+
+  // ── NNN. PERSONAL RECOVERY KIT (Wave 13) ──
+  // Post-hard-day reset checklist. The 8-step "I survived today, now what"
+  // recovery protocol.
+  function PersonalRecoveryKit(props) {
+    if (!R) return null;
+    var data = props.data || { recoveries: [] };
+    var setData = props.setData;
+    var as = R.useState({});                          var checks = as[0]; var setChecks = as[1];
+
+    var STEPS = [
+      { id: 'hydrate',   label: 'Water + something to eat',     icon: '💧', why: 'Your nervous system needs fuel. Don\'t skip.' },
+      { id: 'breathe',   label: 'Box breathing (4-4-4-4) × 4',  icon: '🌬', why: 'Reset the parasympathetic system.' },
+      { id: 'move',      label: 'Move the body for 5 min',      icon: '🚶', why: 'Walk, stretch, shake it out. Discharge stress hormones.' },
+      { id: 'shower',    label: 'Shower / wash face',           icon: '🚿', why: 'Symbolic reset + sensory regulation.' },
+      { id: 'comfort',   label: 'One small comfort',            icon: '🫖', why: 'Tea, music, fuzzy blanket, soft clothes, comfort food (real food, not stress food).' },
+      { id: 'connect',   label: 'Text one safe person',         icon: '💬', why: 'Even just "today was rough." You don\'t need to explain.' },
+      { id: 'note',      label: 'Write 1 line about today',     icon: '📝', why: 'Process — even briefly. "Today was hard because X."' },
+      { id: 'sleep',     label: 'Sleep — don\'t push through',  icon: '😴', why: 'Memory consolidation. Mood regulation. Recovery happens here.' }
+    ];
+
+    function toggle(id) { setChecks(Object.assign({}, checks, (function() { var o = {}; o[id] = !checks[id]; return o; })())); }
+    function logSession() {
+      var done = Object.keys(checks).filter(function(k) { return checks[k]; });
+      var entry = { id: tkId(), date: todayISO(), time: Date.now(), completed: done };
+      setData({ recoveries: [entry].concat(data.recoveries || []) });
+      setChecks({});
+    }
+
+    var recoveries = data.recoveries || [];
+    var doneCount = Object.keys(checks).filter(function(k) { return checks[k]; }).length;
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🌧', 'Recovery Kit', 'Post-hard-day reset checklist. You don\'t need to do all 8. Even 2 helps.', '#06b6d4'),
+
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(6,182,212,0.10)', border: '1px solid rgba(6,182,212,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+        hh('strong', { style: { color: '#06b6d4' } }, '🌧 If today was hard: '),
+        'You\'re not alone. Hard days are part of life — they don\'t mean you\'re broken. Walk through the kit. Even partial credit counts.'
+      ),
+
+      tkCard('#06b6d4',
+        hh('div', null,
+          hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 } },
+            hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#67e8f9' } }, '✓ Walk the kit'),
+            hh('span', { style: { padding: '4px 10px', borderRadius: 999, background: 'rgba(6,182,212,0.20)', color: '#06b6d4', fontSize: 11, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace' } }, doneCount + '/' + STEPS.length)
+          ),
+          hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+            STEPS.map(function(s) {
+              var on = checks[s.id];
+              return hh('button', { key: 'rk-' + s.id,
+                onClick: function() { toggle(s.id); },
+                style: { display: 'block', textAlign: 'left', padding: 10, borderRadius: 8, background: on ? 'rgba(6,182,212,0.20)' : 'rgba(15,23,42,0.5)', border: '1.5px solid ' + (on ? '#06b6d4' : 'rgba(100,116,139,0.30)'), borderLeft: '3px solid #06b6d4', cursor: 'pointer', opacity: on ? 1 : 0.85 }
+              },
+                hh('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                  hh('div', { style: { width: 22, height: 22, borderRadius: 4, background: on ? '#06b6d4' : 'rgba(15,23,42,0.7)', color: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 900, border: '1px solid #06b6d4', flexShrink: 0 } }, on ? '✓' : ''),
+                  hh('div', { style: { flex: 1 } },
+                    hh('div', { style: { fontSize: 12, fontWeight: 700, color: on ? '#06b6d4' : '#e2e8f0' } }, s.icon + ' ' + s.label),
+                    hh('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic', marginTop: 2 } }, s.why)
+                  )
+                )
+              );
+            })
+          ),
+          doneCount > 0 ? hh('div', { style: { marginTop: 12, textAlign: 'center' } },
+            tkBtn('💾 Log this recovery', logSession, 'primary')
+          ) : null
+        )
+      ),
+
+      recoveries.length > 0 ? hh('div', null,
+        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#06b6d4', textTransform: 'uppercase', marginBottom: 8 } }, '📚 Past recoveries'),
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+          recoveries.slice(0, 10).map(function(r) {
+            return hh('div', { key: 're-' + r.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #06b6d4' } },
+              hh('div', { style: { fontSize: 10, color: '#67e8f9', fontFamily: 'ui-monospace, Menlo, monospace' } }, r.date + ' · ' + new Date(r.time).toLocaleTimeString() + ' · ' + r.completed.length + '/' + STEPS.length + ' steps')
+            );
+          })
+        )
+      ) : null
+    );
+  }
+
+  // ── OOO. PERSONAL READING TRACKER (Wave 13) ──
+  // Track current reading position across multiple books.
+  function PersonalCurrentReading(props) {
+    if (!R) return null;
+    var data = props.data || { books: [] };
+    var setData = props.setData;
+    var fs = R.useState({ title: '', author: '', currentPage: 0, totalPages: 0 });
+    var form = fs[0]; var setForm = fs[1];
+
+    function add() {
+      if (!form.title.trim()) { alert('Need a title.'); return; }
+      var b = Object.assign({ id: tkId(), startedAt: todayISO() }, form);
+      setData({ books: [b].concat(data.books || []) });
+      setForm({ title: '', author: '', currentPage: 0, totalPages: 0 });
+    }
+    function updatePage(id, p) {
+      setData({ books: (data.books || []).map(function(b) { return b.id === id ? Object.assign({}, b, { currentPage: p, lastRead: todayISO() }) : b; }) });
+    }
+    function remove(id) { setData({ books: (data.books || []).filter(function(b) { return b.id !== id; }) }); }
+
+    var books = data.books || [];
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('📖', 'Currently Reading', 'Track multiple books in progress. Update page when you sit down + when you stop.', '#fbbf24'),
+
+      tkCard('#fbbf24',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, '+ Start a book'),
+          hh('div', { style: { display: 'grid', gridTemplateColumns: '2fr 2fr 1fr 1fr', gap: 6, marginBottom: 8 } },
+            tkInput(form.title, function(v) { setForm(Object.assign({}, form, { title: v })); }, 'Title'),
+            tkInput(form.author, function(v) { setForm(Object.assign({}, form, { author: v })); }, 'Author'),
+            hh('input', { type: 'number', value: form.currentPage,
+              onChange: function(e) { setForm(Object.assign({}, form, { currentPage: parseInt(e.target.value, 10) || 0 })); },
+              placeholder: 'Page',
+              style: { padding: '10px', fontSize: 12, color: '#fbbf24', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(251,191,36,0.40)', borderRadius: 6, boxSizing: 'border-box', textAlign: 'center', fontWeight: 800 }
+            }),
+            hh('input', { type: 'number', value: form.totalPages,
+              onChange: function(e) { setForm(Object.assign({}, form, { totalPages: parseInt(e.target.value, 10) || 0 })); },
+              placeholder: 'Total',
+              style: { padding: '10px', fontSize: 12, color: '#fbbf24', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(251,191,36,0.40)', borderRadius: 6, boxSizing: 'border-box', textAlign: 'center', fontWeight: 800 }
+            })
+          ),
+          tkBtn('+ Add', add, 'primary')
+        )
+      ),
+
+      books.length === 0 ? tkEmptyState('📖', 'No books in progress.', null, null)
+      : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+          books.map(function(b) {
+            var pct = b.totalPages > 0 ? (b.currentPage / b.totalPages) * 100 : 0;
+            return hh('div', { key: 'cb-' + b.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid #fbbf24' } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
+                hh('div', null,
+                  hh('strong', { style: { fontSize: 13, color: '#fbbf24' } }, '📖 ' + b.title),
+                  hh('span', { style: { fontSize: 11, color: '#94a3b8', marginLeft: 6 } }, b.author ? '— ' + b.author : '')
+                ),
+                hh('button', { onClick: function() { remove(b.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 12, cursor: 'pointer' } }, '✕')
+              ),
+              hh('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 } },
+                hh('span', { style: { fontSize: 10, color: '#94a3b8' } }, 'p.'),
+                hh('input', { type: 'number', value: b.currentPage,
+                  onChange: function(e) { updatePage(b.id, parseInt(e.target.value, 10) || 0); },
+                  style: { width: 70, padding: '6px 8px', fontSize: 12, color: '#fbbf24', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(251,191,36,0.40)', borderRadius: 4, textAlign: 'center', fontWeight: 800 }
+                }),
+                hh('span', { style: { fontSize: 10, color: '#94a3b8' } }, '/ ' + b.totalPages + ' · ' + Math.round(pct) + '%')
+              ),
+              hh('div', { style: { height: 6, background: 'rgba(15,23,42,0.6)', borderRadius: 3, overflow: 'hidden' } },
+                hh('div', { style: { width: pct + '%', height: '100%', background: '#fbbf24' } })
+              )
+            );
+          })
+        )
+    );
+  }
+
   // ── F. MY TOOLKIT HUB (landing page) ──
   // Single entry point that shows status of all toolkit tools + quick
   // actions. Today's date, current streak, # active goals, etc.
@@ -12721,7 +13201,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'mytkContract', icon: '📜', label: 'Learning Contract',    color: '#06b6d4', desc: 'Self-agreement: commitments + rewards + accountability',
         stat: ((data.mytkContract || {}).contracts || []).length + ' contracts', cta: 'Make a contract' },
       { id: 'mytkCircle',   icon: '🤝', label: 'Circle of Support',    color: '#10b981', desc: 'Map your real support network',
-        stat: ((data.mytkCircle || {}).people || []).length + ' people', cta: 'Map your circle' }
+        stat: ((data.mytkCircle || {}).people || []).length + ' people', cta: 'Map your circle' },
+      { id: 'mytkRoutine',  icon: '🔁', label: 'Routine Builder',      color: '#10b981', desc: 'Morning/evening/study routines + streak per routine',
+        stat: ((data.mytkRoutine || {}).routines || []).length + ' routines', cta: 'Build a routine' },
+      { id: 'mytkPrio',     icon: '📊', label: 'Priorities Matrix',    color: '#a855f7', desc: 'Eisenhower 4-quadrant decision matrix',
+        stat: ((data.mytkPrio || {}).tasks || []).length + ' tasks', cta: 'Sort tasks' },
+      { id: 'mytkParent',   icon: '💌', label: 'Parent Message Builder', color: '#a855f7', desc: '6 templates for hard parent conversations',
+        stat: ((data.mytkParent || {}).drafts || []).length + ' drafts', cta: 'Pick a template' },
+      { id: 'mytkRecovery', icon: '🌧', label: 'Recovery Kit',         color: '#06b6d4', desc: '8-step post-hard-day reset checklist',
+        stat: ((data.mytkRecovery || {}).recoveries || []).length + ' recoveries', cta: 'Walk the kit' },
+      { id: 'mytkCurrentRead',icon: '📖',label: 'Currently Reading',   color: '#fbbf24', desc: 'Track multiple books in progress with page count',
+        stat: ((data.mytkCurrentRead || {}).books || []).length + ' in progress', cta: 'Update reading' }
     ];
 
     var dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][new Date().getDay()];
@@ -12970,7 +13460,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'mytkRole',   icon: '🌟', label: 'Role Models',          desc: 'People (real/fictional/historical) whose qualities you admire + want to grow.' },
               { id: 'mytkAssess', icon: '🔍', label: 'Self-Assessment',      desc: '12-question quiz on how YOU learn. Saves snapshots over time.' },
               { id: 'mytkContract',icon: '📜',label: 'Learning Contract',    desc: 'Formal self-agreement with commitments + rewards + accountability (behavioral contracting).' },
-              { id: 'mytkCircle', icon: '🤝', label: 'Circle of Support',    desc: 'Map your support network in 5 levels of closeness.' }
+              { id: 'mytkCircle', icon: '🤝', label: 'Circle of Support',    desc: 'Map your support network in 5 levels of closeness.' },
+              { id: 'mytkRoutine',icon: '🔁', label: 'Routine Builder',      desc: 'Morning/evening/study/transition/pre-test routines with streak tracking.' },
+              { id: 'mytkPrio',   icon: '📊', label: 'Priorities Matrix',    desc: 'Eisenhower 4-quadrant matrix. Goal: live more in Q2 (important, not urgent).' },
+              { id: 'mytkParent', icon: '💌', label: 'Parent Message Builder',desc: '6 templates for hard parent conversations (struggling, MH, IEP, future, boundary, thanks).' },
+              { id: 'mytkRecovery',icon: '🌧',label: 'Recovery Kit',         desc: '8-step post-hard-day reset checklist. Even 2 steps helps.' },
+              { id: 'mytkCurrentRead',icon: '📖',label: 'Currently Reading', desc: 'Track multiple books in progress with current/total pages + percent.' }
             ]
           },
           { id: 'foundation', icon: '🧠', name: 'How learning works (foundation)',
@@ -16494,6 +16989,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           h(PersonalCircleSupport, { data: dcs, setData: setDcs })
         );
       }
+      function renderMytkRoutine() {
+        var dro = d.mytkRoutine || { routines: [] };
+        var setDro = function(newData) { upd('mytkRoutine', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalRoutineBuilder, { data: dro, setData: setDro })
+        );
+      }
+      function renderMytkPrio() {
+        var dpr = d.mytkPrio || { tasks: [] };
+        var setDpr = function(newData) { upd('mytkPrio', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalPriorities, { data: dpr, setData: setDpr })
+        );
+      }
+      function renderMytkParent() {
+        var dpm = d.mytkParent || { drafts: [] };
+        var setDpm = function(newData) { upd('mytkParent', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalParentMessage, { data: dpm, setData: setDpm })
+        );
+      }
+      function renderMytkRecovery() {
+        var drk = d.mytkRecovery || { recoveries: [] };
+        var setDrk = function(newData) { upd('mytkRecovery', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalRecoveryKit, { data: drk, setData: setDrk })
+        );
+      }
+      function renderMytkCurrentRead() {
+        var dcr = d.mytkCurrentRead || { books: [] };
+        var setDcr = function(newData) { upd('mytkCurrentRead', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalCurrentReading, { data: dcr, setData: setDcr })
+        );
+      }
 
       // ─────────────────────────────────────────
       // VIEW ROUTER
@@ -16562,6 +17097,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         case 'mytkAssess':    return renderMytkAssess();
         case 'mytkContract':  return renderMytkContract();
         case 'mytkCircle':    return renderMytkCircle();
+        case 'mytkRoutine':   return renderMytkRoutine();
+        case 'mytkPrio':      return renderMytkPrio();
+        case 'mytkParent':    return renderMytkParent();
+        case 'mytkRecovery':  return renderMytkRecovery();
+        case 'mytkCurrentRead': return renderMytkCurrentRead();
         case 'bloom':         return renderBloom();
         case 'cogload':       return renderCogLoad();
         case 'metacog':       return renderMetacog();
