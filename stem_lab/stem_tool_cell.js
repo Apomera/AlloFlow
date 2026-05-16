@@ -288,6 +288,2411 @@ var d = labToolData.cell;
 
           // ── Organism definitions ──
 
+          // ═══════════════════════════════════════════════════════════
+          // ORGANISM ENCYCLOPEDIA — deep profiles for 60+ organisms
+          // ═══════════════════════════════════════════════════════════
+          var ORGANISM_DB = [
+            {
+              id: 1,
+              name: "Amoeba",
+              kingdom: "Protist",
+              cellType: "Eukaryote",
+              size: "500 μm",
+              description: "Single-celled protist that moves by extending pseudopods. Found in freshwater + soil. Famously studied by 19th-century microbiologists.",
+              habitat: "Freshwater ponds + soil",
+              feeding: "Phagocytosis of bacteria + smaller protists",
+              reproduction: "Binary fission",
+              movement: "Pseudopod extension",
+              discovered: "17th century via early microscopes",
+              relevance: "Most well-known protist"
+            },
+            {
+              id: 2,
+              name: "Paramecium",
+              kingdom: "Protist",
+              cellType: "Eukaryote",
+              size: "120 μm",
+              description: "Ciliated protist with characteristic slipper shape. Swims via thousands of cilia coordinated in metachronal waves.",
+              habitat: "Freshwater + slightly brackish",
+              feeding: "Bacteria + algae via oral groove",
+              reproduction: "Binary fission + conjugation",
+              movement: "Ciliary propulsion ~3 mm/s",
+              discovered: "1675 by Leeuwenhoek",
+              relevance: "Famous textbook organism"
+            },
+            {
+              id: 3,
+              name: "Euglena",
+              kingdom: "Protist",
+              cellType: "Eukaryote",
+              size: "50-100 μm",
+              description: "Unique protist with both chloroplasts (plant-like) and capacity to consume food (animal-like). Has a red eyespot for light detection.",
+              habitat: "Freshwater + ponds",
+              feeding: "Photosynthesis + phagocytosis",
+              reproduction: "Binary fission",
+              movement: "Flagellar swimming + euglenoid movement",
+              discovered: "1838 by Ehrenberg",
+              relevance: "Bridges plant/animal divide"
+            },
+            {
+              id: 4,
+              name: "White Blood Cell",
+              kingdom: "Animal Cell",
+              cellType: "Eukaryote",
+              size: "12-20 μm",
+              description: "Immune cell that defends against pathogens through phagocytosis, antibody production, and other mechanisms.",
+              habitat: "Blood + lymph + tissues",
+              feeding: "Engulfs pathogens",
+              reproduction: "Stem cell differentiation",
+              movement: "Chemotaxis + amoeboid",
+              discovered: "Various neutrophils, lymphocytes, monocytes",
+              relevance: "Essential to human survival"
+            },
+            {
+              id: 5,
+              name: "E. coli",
+              kingdom: "Bacteria",
+              cellType: "Prokaryote",
+              size: "2 μm",
+              description: "Rod-shaped gut bacterium. Most-studied prokaryote in biology. Some strains are harmful (E. coli O157:H7), most are commensal.",
+              habitat: "Mammalian intestines",
+              feeding: "Sugars + amino acids",
+              reproduction: "Binary fission ~20 min",
+              movement: "Flagellar swimming",
+              discovered: "1885 by Theodor Escherich",
+              relevance: "Model organism for molecular biology"
+            },
+            {
+              id: 6,
+              name: "Plant Cell (Elodea)",
+              kingdom: "Plant Cell",
+              cellType: "Eukaryote",
+              size: "40-100 μm",
+              description: "Photosynthetic cell with chloroplasts. Has rigid cellulose wall. Used widely in microscopy lessons.",
+              habitat: "Freshwater aquariums",
+              feeding: "Photosynthesis (autotroph)",
+              reproduction: "Cell division",
+              movement: "Stationary (cytoplasmic streaming)",
+              discovered: "Elodea identified as aquarium plant 1800s",
+              relevance: "Classic microscopy specimen"
+            },
+            {
+              id: 7,
+              name: "Diatom",
+              kingdom: "Algae",
+              cellType: "Eukaryote",
+              size: "10-200 μm",
+              description: "Unique algae with intricate silica cell wall. Major contributor to oxygen production (~20% global O2). Beautiful glass-like shells preserved in fossils.",
+              habitat: "Marine + freshwater plankton",
+              feeding: "Photosynthesis",
+              reproduction: "Binary fission + sexual",
+              movement: "Mostly drifting",
+              discovered: "1703 by Leeuwenhoek",
+              relevance: "Major carbon sink. Diatomaceous earth = compacted shells."
+            },
+            {
+              id: 8,
+              name: "Volvox",
+              kingdom: "Algae",
+              cellType: "Eukaryote",
+              size: "500-1000 μm",
+              description: "Multicellular green algae colony. Hollow spheres of 1000s of cells. Each cell has 2 flagella. Considered an evolutionary bridge between single-celled and multicellular.",
+              habitat: "Freshwater ponds + pools",
+              feeding: "Photosynthesis",
+              reproduction: "Asexual + sexual",
+              movement: "Coordinated flagellar swimming",
+              discovered: "1700s by various microscopists",
+              relevance: "Multicellular transition organism"
+            },
+            {
+              id: 9,
+              name: "Stentor",
+              kingdom: "Protist",
+              cellType: "Eukaryote",
+              size: "1-2 mm (large!)",
+              description: "Trumpet-shaped ciliated protist. Among the largest single-celled organisms visible to naked eye. Can be cut in half and each piece regenerates.",
+              habitat: "Freshwater attached to plants",
+              feeding: "Filters bacteria + algae",
+              reproduction: "Binary fission + conjugation",
+              movement: "Anchored stalk with attaching organelles",
+              discovered: "1768 by Müller",
+              relevance: "Famous for regeneration ability"
+            },
+            {
+              id: 10,
+              name: "Tardigrade",
+              kingdom: "Animal",
+              cellType: "Eukaryote",
+              size: "0.5-1 mm",
+              description: "Water bear. Microscopic 8-legged animal. Can survive extreme conditions: vacuum of space, intense radiation, near-absolute zero, boiling water.",
+              habitat: "Moss + lichen + water",
+              feeding: "Plant cells + bacteria",
+              reproduction: "Eggs",
+              movement: "Walking with claws",
+              discovered: "1773 by Goeze",
+              relevance: "Most resilient animal known"
+            },
+            {
+              id: 11,
+              name: "Spirillum",
+              kingdom: "Bacteria",
+              cellType: "Prokaryote",
+              size: "2-60 μm",
+              description: "Spiral-shaped bacterium. Moves in corkscrew pattern via bipolar flagella tufts.",
+              habitat: "Stagnant freshwater",
+              feeding: "Organic compounds",
+              reproduction: "Binary fission",
+              movement: "Helical swimming",
+              discovered: "1830s",
+              relevance: "Shape gave rise to \"spirilla\" classification"
+            },
+            {
+              id: 12,
+              name: "Bacterium (rod)",
+              kingdom: "Bacteria",
+              cellType: "Prokaryote",
+              size: "1-5 μm",
+              description: "Generic rod-shaped bacterium representing the bacillus shape.",
+              habitat: "Ubiquitous",
+              feeding: "Variable",
+              reproduction: "Binary fission",
+              movement: "Flagella or non-motile",
+              discovered: "Various",
+              relevance: "Includes Bacillus, E. coli, Salmonella"
+            },
+            {
+              id: 13,
+              name: "Streptococcus",
+              kingdom: "Bacteria",
+              cellType: "Prokaryote",
+              size: "1 μm",
+              description: "Chain-forming sphere bacteria. Includes harmful strains (S. pneumoniae, S. pyogenes) and useful (S. thermophilus in yogurt).",
+              habitat: "Mouth, throat, intestines",
+              feeding: "Variable",
+              reproduction: "Binary fission",
+              movement: "Non-motile",
+              discovered: "1874 by Billroth",
+              relevance: "Strep throat, scarlet fever, plus food applications"
+            },
+            {
+              id: 14,
+              name: "Lactobacillus",
+              kingdom: "Bacteria",
+              cellType: "Prokaryote",
+              size: "2-9 μm",
+              description: "Rod bacterium that produces lactic acid from sugar. Essential for yogurt, cheese, sourdough, pickles. Major component of human gut microbiome.",
+              habitat: "GI tract + fermented foods",
+              feeding: "Lactose + glucose",
+              reproduction: "Binary fission",
+              movement: "Non-motile",
+              discovered: "19th century",
+              relevance: "Probiotic gut health"
+            },
+            {
+              id: 15,
+              name: "Cyanobacteria",
+              kingdom: "Bacteria",
+              cellType: "Prokaryote",
+              size: "1-10 μm",
+              description: "Photosynthetic bacteria. Earliest oxygen producers. Caused Great Oxidation Event ~2.4 billion years ago.",
+              habitat: "Aquatic + soil",
+              feeding: "Photosynthesis",
+              reproduction: "Binary fission",
+              movement: "Some have gas vacuoles",
+              discovered: "Ancient — fossils 3.5 billion years old",
+              relevance: "Origin of all photosynthesis"
+            },
+            {
+              id: 16,
+              name: "Spirochete",
+              kingdom: "Bacteria",
+              cellType: "Prokaryote",
+              size: "5-50 μm",
+              description: "Flexible spiral bacterium. Includes Treponema pallidum (syphilis), Borrelia burgdorferi (Lyme disease).",
+              habitat: "Various — some pathogenic",
+              feeding: "Variable",
+              reproduction: "Binary fission",
+              movement: "Axial filaments inside cell",
+              discovered: "Various",
+              relevance: "Major disease causers"
+            },
+            {
+              id: 17,
+              name: "Salmonella",
+              kingdom: "Bacteria",
+              cellType: "Prokaryote",
+              size: "1-2 μm",
+              description: "Rod bacterium that causes food poisoning. Found in raw eggs, undercooked poultry.",
+              habitat: "GI tract of animals",
+              feeding: "Variable",
+              reproduction: "Binary fission",
+              movement: "Flagella",
+              discovered: "1880 by Salmon",
+              relevance: "Major foodborne pathogen"
+            },
+            {
+              id: 18,
+              name: "Mycobacterium",
+              kingdom: "Bacteria",
+              cellType: "Prokaryote",
+              size: "1-10 μm",
+              description: "Rod bacterium with waxy cell walls. Includes M. tuberculosis (TB) and M. leprae (leprosy).",
+              habitat: "Various — soil, water, mammals",
+              feeding: "Various",
+              reproduction: "Binary fission (slow ~24 hr)",
+              movement: "Non-motile",
+              discovered: "1882 by Robert Koch (TB)",
+              relevance: "Major disease causer"
+            },
+            {
+              id: 19,
+              name: "Yeast (Saccharomyces)",
+              kingdom: "Fungus",
+              cellType: "Eukaryote",
+              size: "5-10 μm",
+              description: "Unicellular fungus. Used in bread, beer, wine. Model organism for genetics.",
+              habitat: "Sugary environments + ferments",
+              feeding: "Sugars (glucose, fructose)",
+              reproduction: "Budding",
+              movement: "Non-motile",
+              discovered: "1670s by Leeuwenhoek",
+              relevance: "Foundational for fermentation industries"
+            },
+            {
+              id: 20,
+              name: "Penicillium",
+              kingdom: "Fungus",
+              cellType: "Eukaryote",
+              size: "Multicellular hyphae",
+              description: "Mold fungus. Produces penicillin antibiotic. Used in cheese making.",
+              habitat: "Decaying organic matter",
+              feeding: "Decomposition",
+              reproduction: "Spores",
+              movement: "Stationary",
+              discovered: "1928 by Fleming (penicillin)",
+              relevance: "First antibiotic"
+            },
+            {
+              id: 21,
+              name: "Algae (general)",
+              kingdom: "Algae",
+              cellType: "Eukaryote",
+              size: "Variable",
+              description: "Photosynthetic eukaryotes. Range from single-celled to giant kelp.",
+              habitat: "Aquatic everywhere",
+              feeding: "Photosynthesis",
+              reproduction: "Various",
+              movement: "Variable",
+              discovered: "Ancient",
+              relevance: "Generate ~50% Earth oxygen"
+            },
+            {
+              id: 22,
+              name: "Slime Mold",
+              kingdom: "Protist",
+              cellType: "Eukaryote",
+              size: "Variable (visible)",
+              description: "Acellular slime molds form single giant cell with many nuclei. Solve mazes. Studied for emergent intelligence.",
+              habitat: "Decaying wood + leaves",
+              feeding: "Bacteria + organic",
+              reproduction: "Spores",
+              movement: "Cytoplasmic streaming",
+              discovered: "19th century",
+              relevance: "Showcases biological problem-solving without brain"
+            },
+            {
+              id: 23,
+              name: "Plasmodium",
+              kingdom: "Protist",
+              cellType: "Eukaryote",
+              size: "5-30 μm",
+              description: "Parasitic protist. Causes malaria. Transmitted by mosquitoes.",
+              habitat: "Mammalian blood + mosquito gut",
+              feeding: "Hemoglobin (red blood cells)",
+              reproduction: "Complex sexual + asexual",
+              movement: "Sporozoites swim, merozoites burst",
+              discovered: "1880 by Laveran",
+              relevance: "Major global killer ~600K deaths/year"
+            },
+            {
+              id: 24,
+              name: "Giardia",
+              kingdom: "Protist",
+              cellType: "Eukaryote",
+              size: "10-15 μm",
+              description: "Flagellated intestinal parasite. Causes \"beaver fever\" / giardiasis.",
+              habitat: "Contaminated water + mammalian GI",
+              feeding: "Intestinal contents",
+              reproduction: "Binary fission",
+              movement: "8 flagella",
+              discovered: "Discovered 1681 by Leeuwenhoek",
+              relevance: "Common waterborne illness"
+            },
+            {
+              id: 25,
+              name: "Trypanosome",
+              kingdom: "Protist",
+              cellType: "Eukaryote",
+              size: "15-20 μm",
+              description: "Long flagellated parasite. Causes sleeping sickness (Africa) and Chagas disease (Americas).",
+              habitat: "Mammalian blood + insect vectors",
+              feeding: "Blood sugars",
+              reproduction: "Binary fission",
+              movement: "Flagellar swimming",
+              discovered: "1840s",
+              relevance: "Major neglected tropical diseases"
+            },
+            {
+              id: 26,
+              name: "Chlamydomonas",
+              kingdom: "Algae",
+              cellType: "Eukaryote",
+              size: "10-12 μm",
+              description: "Single-celled green alga with 2 flagella. Major model organism for photosynthesis + flagellar dynamics.",
+              habitat: "Freshwater + soil",
+              feeding: "Photosynthesis",
+              reproduction: "Sexual + asexual",
+              movement: "Flagellar",
+              discovered: "1832 by Ehrenberg",
+              relevance: "Model organism"
+            },
+            {
+              id: 27,
+              name: "Sponge cell",
+              kingdom: "Animal",
+              cellType: "Eukaryote",
+              size: "Variable",
+              description: "Cells from simplest animals. Choanocytes have flagella; can re-form sponge if dissociated.",
+              habitat: "Marine + freshwater",
+              feeding: "Filter feeding",
+              reproduction: "Sexual + budding",
+              movement: "Flagella",
+              discovered: "Ancient",
+              relevance: "Earliest multicellular animal"
+            },
+            {
+              id: 28,
+              name: "Hydra",
+              kingdom: "Animal",
+              cellType: "Eukaryote",
+              size: "1-30 mm",
+              description: "Cnidarian (jellyfish relative). Has stinging cells. Can regenerate from any piece. Possibly biologically immortal.",
+              habitat: "Freshwater",
+              feeding: "Small crustaceans",
+              reproduction: "Budding + sexual",
+              movement: "Tentacle motion",
+              discovered: "1700s",
+              relevance: "Famous for regeneration + longevity"
+            },
+            {
+              id: 29,
+              name: "Planarian",
+              kingdom: "Animal",
+              cellType: "Eukaryote",
+              size: "1-15 mm",
+              description: "Flat worm. Famously can regenerate entire body from small fragment. Has primitive eyes.",
+              habitat: "Freshwater",
+              feeding: "Carnivorous",
+              reproduction: "Fission + sexual",
+              movement: "Cilia + muscle",
+              discovered: "1700s",
+              relevance: "Regeneration biology model"
+            },
+            {
+              id: 30,
+              name: "Rotifer",
+              kingdom: "Animal",
+              cellType: "Eukaryote",
+              size: "0.1-0.5 mm",
+              description: "Microscopic aquatic animal with corona of cilia creating wheel-like motion. Can survive desiccation.",
+              habitat: "Freshwater + soil",
+              feeding: "Bacteria + algae",
+              reproduction: "Mostly female parthenogenetic",
+              movement: "Ciliary",
+              discovered: "1696 by Leeuwenhoek",
+              relevance: "Famous for asexual reproduction"
+            },
+            {
+              id: 31,
+              name: "Daphnia",
+              kingdom: "Animal",
+              cellType: "Eukaryote",
+              size: "1-5 mm",
+              description: "Water flea. Crustacean. Used in toxicology tests (canary for water pollution).",
+              habitat: "Freshwater",
+              feeding: "Algae + bacteria",
+              reproduction: "Sexual + parthenogenetic",
+              movement: "Antennae swimming",
+              discovered: "1750s",
+              relevance: "Common in aquaria + tests"
+            },
+            {
+              id: 32,
+              name: "Bdelloid Rotifer",
+              kingdom: "Animal",
+              cellType: "Eukaryote",
+              size: "0.1-0.5 mm",
+              description: "Rotifer that has reproduced asexually for ~40 million years. Survives desiccation. Steals DNA from environment.",
+              habitat: "Aquatic + moist soil",
+              feeding: "Bacteria",
+              reproduction: "Parthenogenetic only",
+              movement: "Ciliary",
+              discovered: "Studied since 1700s",
+              relevance: "Evolution puzzle — no sex for 40M years"
+            },
+            {
+              id: 33,
+              name: "Brachiosauris embryo cell",
+              kingdom: "Mammalian cell",
+              cellType: "Eukaryote",
+              size: "10-50 μm",
+              description: "Generic mammalian cell with nucleus + organelles. Includes ER, Golgi, mitochondria.",
+              habitat: "Tissue + culture",
+              feeding: "Glucose + amino acids",
+              reproduction: "Mitosis + meiosis",
+              movement: "Variable",
+              discovered: "Cell theory 1838",
+              relevance: "Foundation of cell biology"
+            },
+            {
+              id: 34,
+              name: "Plasmodial slime mold",
+              kingdom: "Protist",
+              cellType: "Eukaryote",
+              size: "Variable",
+              description: "Single giant cell with thousands of nuclei. Forms beautiful structures + can solve mazes.",
+              habitat: "Decaying wood + leaves",
+              feeding: "Bacteria + organic",
+              reproduction: "Spores",
+              movement: "Cytoplasmic flow",
+              discovered: "19th century",
+              relevance: "Showcases collective behavior"
+            },
+            {
+              id: 35,
+              name: "Dinoflagellate",
+              kingdom: "Protist",
+              cellType: "Eukaryote",
+              size: "20-100 μm",
+              description: "Bioluminescent + harmful. Some cause \"red tide\" + paralytic shellfish poisoning.",
+              habitat: "Marine + freshwater",
+              feeding: "Variable",
+              reproduction: "Binary fission",
+              movement: "2 flagella in furrows",
+              discovered: "1700s",
+              relevance: "Bioluminescent bays of Puerto Rico"
+            },
+            {
+              id: 36,
+              name: "Foraminifera",
+              kingdom: "Protist",
+              cellType: "Eukaryote",
+              size: "0.1-1 mm",
+              description: "Has elaborate calcium carbonate shell. Major contributor to limestone + chalk deposits. Pyramids of Giza include forams.",
+              habitat: "Marine",
+              feeding: "Phagocytosis via reticulopodia",
+              reproduction: "Alternation of generations",
+              movement: "Sliding via cytoplasmic threads",
+              discovered: "Ancient — pyramids ~2500 BCE",
+              relevance: "Geological indicators + limestone"
+            },
+            {
+              id: 37,
+              name: "Radiolarian",
+              kingdom: "Protist",
+              cellType: "Eukaryote",
+              size: "30-200 μm",
+              description: "Has silica skeleton with intricate geometric patterns. Famous Haeckel illustrations.",
+              habitat: "Marine",
+              feeding: "Plankton",
+              reproduction: "Cell division",
+              movement: "Drifting",
+              discovered: "1800s + Haeckel illustrations",
+              relevance: "Most beautiful microorganisms"
+            },
+            {
+              id: 38,
+              name: "Trichomonas",
+              kingdom: "Protist",
+              cellType: "Eukaryote",
+              size: "10-20 μm",
+              description: "Flagellated parasite. T. vaginalis causes urogenital infections.",
+              habitat: "Human + cattle hosts",
+              feeding: "Mucus + cells",
+              reproduction: "Binary fission",
+              movement: "4 flagella + undulating membrane",
+              discovered: "1836 by Donné",
+              relevance: "Most common non-viral STI"
+            },
+            {
+              id: 39,
+              name: "Entamoeba histolytica",
+              kingdom: "Protist",
+              cellType: "Eukaryote",
+              size: "20-40 μm",
+              description: "Pathogenic amoeba. Causes amoebic dysentery + liver abscesses.",
+              habitat: "Contaminated food/water → human GI",
+              feeding: "Tissue + red blood cells",
+              reproduction: "Binary fission",
+              movement: "Pseudopods",
+              discovered: "1875",
+              relevance: "Major waterborne disease"
+            },
+            {
+              id: 40,
+              name: "Toxoplasma",
+              kingdom: "Protist",
+              cellType: "Eukaryote",
+              size: "2-7 μm",
+              description: "Cat-borne parasite. Infects 30%+ of humans worldwide. Manipulates rodent behavior.",
+              habitat: "Mammals + cats",
+              feeding: "Intracellular",
+              reproduction: "Asexual in non-cats; sexual in cats",
+              movement: "Glides + invades cells",
+              discovered: "1908",
+              relevance: "Behavioral manipulation puzzle"
+            },
+            {
+              id: 41,
+              name: "Cryptosporidium",
+              kingdom: "Protist",
+              cellType: "Eukaryote",
+              size: "3-7 μm",
+              description: "Water-borne pathogen. Causes severe diarrhea. Resistant to chlorine.",
+              habitat: "Water + soil",
+              feeding: "Intracellular",
+              reproduction: "Sexual + asexual",
+              movement: "Glides",
+              discovered: "1907",
+              relevance: "Major outbreaks (Milwaukee 1993)"
+            },
+            {
+              id: 42,
+              name: "Caulobacter",
+              kingdom: "Bacteria",
+              cellType: "Prokaryote",
+              size: "1-4 μm",
+              description: "Has asymmetric division (one daughter swims, other attached). Model for asymmetric cell biology.",
+              habitat: "Freshwater + soil",
+              feeding: "Variable",
+              reproduction: "Asymmetric binary",
+              movement: "Flagellum (swarmer)",
+              discovered: "1935",
+              relevance: "Model for stalked bacteria"
+            },
+            {
+              id: 43,
+              name: "Helicobacter pylori",
+              kingdom: "Bacteria",
+              cellType: "Prokaryote",
+              size: "2-5 μm",
+              description: "Spiral bacterium living in stomach. Causes ulcers + linked to gastric cancer. Nobel 2005.",
+              habitat: "Human stomach",
+              feeding: "Mucus + cells",
+              reproduction: "Binary fission",
+              movement: "Flagella",
+              discovered: "1982 by Marshall + Warren",
+              relevance: "Disproved that bacteria cannot live in stomach acid"
+            },
+            {
+              id: 44,
+              name: "Clostridium",
+              kingdom: "Bacteria",
+              cellType: "Prokaryote",
+              size: "3-8 μm",
+              description: "Spore-forming anaerobic rods. Includes C. botulinum (botulism), C. tetani (tetanus), C. difficile (CDI).",
+              habitat: "Soil + anaerobic environments",
+              feeding: "Variable",
+              reproduction: "Binary fission + spores",
+              movement: "Some flagellated",
+              discovered: "Various 19th-20th century",
+              relevance: "Famous deadly bacteria + Botox source"
+            },
+            {
+              id: 45,
+              name: "Methanogen",
+              kingdom: "Archaea",
+              cellType: "Archaea",
+              size: "0.5-5 μm",
+              description: "Anaerobic archaea. Produce methane from CO2 + H2. Live in animal guts, marshes, ocean sediments.",
+              habitat: "Anaerobic environments",
+              feeding: "CO2 + H2 + acetate",
+              reproduction: "Binary fission",
+              movement: "Variable",
+              discovered: "Distinct domain identified 1977",
+              relevance: "Major source of atmospheric methane"
+            },
+            {
+              id: 46,
+              name: "Halophile",
+              kingdom: "Archaea",
+              cellType: "Archaea",
+              size: "0.5-5 μm",
+              description: "Salt-loving archaea. Live in salt lakes (Dead Sea, Great Salt Lake). Some pink color from carotenoids.",
+              habitat: "Hypersaline lakes",
+              feeding: "Variable",
+              reproduction: "Binary fission",
+              movement: "Variable",
+              discovered: "19th century",
+              relevance: "Extremophile model"
+            },
+            {
+              id: 47,
+              name: "Thermophile",
+              kingdom: "Archaea",
+              cellType: "Archaea",
+              size: "0.5-5 μm",
+              description: "Heat-loving archaea + bacteria. Live in hot springs at 60-110°C. Source of Taq polymerase used in PCR.",
+              habitat: "Hot springs + hydrothermal vents",
+              feeding: "Variable",
+              reproduction: "Binary fission",
+              movement: "Variable",
+              discovered: "Yellowstone hot springs",
+              relevance: "PCR depends on these enzymes"
+            },
+            {
+              id: 48,
+              name: "Hyperthermophile",
+              kingdom: "Archaea",
+              cellType: "Archaea",
+              size: "0.5-5 μm",
+              description: "Extreme heat-loving archaea. Live at 80-115°C in deep-sea vents. Thrive where most life would denature.",
+              habitat: "Hydrothermal vents",
+              feeding: "Sulfur compounds",
+              reproduction: "Binary fission",
+              movement: "Variable",
+              discovered: "Hot vents 1970s",
+              relevance: "Origin of life theories"
+            },
+            {
+              id: 49,
+              name: "Macrophage",
+              kingdom: "Animal Cell",
+              cellType: "Eukaryote",
+              size: "21-25 μm",
+              description: "Large phagocytic immune cell. \"Big eater\". Engulfs pathogens + cellular debris. Multi-functional.",
+              habitat: "Tissues throughout body",
+              feeding: "Pathogens + debris",
+              reproduction: "Differentiates from monocyte",
+              movement: "Amoeboid",
+              discovered: "Elie Metchnikoff 1882",
+              relevance: "Foundation of immune system"
+            },
+            {
+              id: 50,
+              name: "Neutrophil",
+              kingdom: "Animal Cell",
+              cellType: "Eukaryote",
+              size: "12-15 μm",
+              description: "Most abundant white blood cell. First responder to infection. Lives only ~5 days.",
+              habitat: "Blood",
+              feeding: "Bacteria",
+              reproduction: "Bone marrow",
+              movement: "Amoeboid",
+              discovered: "1880s",
+              relevance: "Constitutes pus"
+            },
+            {
+              id: 51,
+              name: "Lymphocyte",
+              kingdom: "Animal Cell",
+              cellType: "Eukaryote",
+              size: "7-9 μm",
+              description: "Specialized immune cell. B cells make antibodies; T cells kill infected cells.",
+              habitat: "Blood + lymph + organs",
+              feeding: "Specific targets",
+              reproduction: "Antigen-driven proliferation",
+              movement: "Migrate to sites of infection",
+              discovered: "19th century",
+              relevance: "Foundation of adaptive immunity"
+            },
+            {
+              id: 52,
+              name: "Erythrocyte (RBC)",
+              kingdom: "Animal Cell",
+              cellType: "Eukaryote",
+              size: "7-8 μm",
+              description: "Biconcave disc. Carries oxygen via hemoglobin. Has no nucleus in mammals (anucleate).",
+              habitat: "Blood",
+              feeding: "Glucose",
+              reproduction: "From stem cells in bone marrow",
+              movement: "Carried in bloodstream",
+              discovered: "1658 by Swammerdam",
+              relevance: "Most abundant cell type in body"
+            },
+            {
+              id: 53,
+              name: "Platelet (thrombocyte)",
+              kingdom: "Animal Cell",
+              cellType: "Eukaryote",
+              size: "2-3 μm",
+              description: "Cell fragment. Initiates blood clotting. ~150-400 billion per liter of blood.",
+              habitat: "Blood",
+              feeding: "Various",
+              reproduction: "Megakaryocyte fragments",
+              movement: "Carried in blood",
+              discovered: "1842",
+              relevance: "Critical for wound healing"
+            },
+            {
+              id: 54,
+              name: "Neuron",
+              kingdom: "Animal Cell",
+              cellType: "Eukaryote",
+              size: "4-100 μm body + projections",
+              description: "Nerve cell. Conducts electrical signals via action potentials. Connected by synapses.",
+              habitat: "Brain + spinal cord + ganglia",
+              feeding: "Glucose primarily",
+              reproduction: "Limited adult neurogenesis",
+              movement: "Some migrate during development",
+              discovered: "Cell theory 1839",
+              relevance: "Foundation of neuroscience"
+            },
+            {
+              id: 55,
+              name: "Sperm cell",
+              kingdom: "Animal Cell",
+              cellType: "Eukaryote",
+              size: "50 μm (length)",
+              description: "Mobile reproductive cell. Carries haploid male DNA. Powered by mitochondria.",
+              habitat: "Reproductive tract",
+              feeding: "Glucose",
+              reproduction: "Spermatogenesis from precursors",
+              movement: "Flagellar swimming",
+              discovered: "1677 by Leeuwenhoek",
+              relevance: "Half of human reproduction"
+            },
+            {
+              id: 56,
+              name: "Egg cell",
+              kingdom: "Animal Cell",
+              cellType: "Eukaryote",
+              size: "100-200 μm",
+              description: "Largest human cell. Contains haploid female DNA + cytoplasmic resources for early embryo.",
+              habitat: "Ovary",
+              feeding: "Stored yolk",
+              reproduction: "Oogenesis",
+              movement: "Carried by fallopian cilia",
+              discovered: "1827 by Karl Ernst von Baer",
+              relevance: "Visible to naked eye"
+            },
+            {
+              id: 57,
+              name: "Stem cell",
+              kingdom: "Animal Cell",
+              cellType: "Eukaryote",
+              size: "Variable",
+              description: "Undifferentiated cell. Can self-renew + differentiate into other cell types.",
+              habitat: "Bone marrow, embryo, niches",
+              feeding: "Variable",
+              reproduction: "Asymmetric division",
+              movement: "Variable",
+              discovered: "1961 by Till + McCulloch",
+              relevance: "Regenerative medicine basis"
+            },
+            {
+              id: 58,
+              name: "Epithelial cell",
+              kingdom: "Animal Cell",
+              cellType: "Eukaryote",
+              size: "10-30 μm",
+              description: "Forms tissue layers covering surfaces + lining cavities. Various types: squamous, cuboidal, columnar.",
+              habitat: "Skin + organs + glands",
+              feeding: "Various",
+              reproduction: "Stem cell-driven turnover",
+              movement: "Mostly stationary",
+              discovered: "Cell theory",
+              relevance: "Largest tissue surface area in body"
+            },
+            {
+              id: 59,
+              name: "Muscle cell",
+              kingdom: "Animal Cell",
+              cellType: "Eukaryote",
+              size: "Variable",
+              description: "Skeletal muscle fibers are huge (up to 30 cm). Cardiac and smooth muscle are smaller. Contract via actin-myosin.",
+              habitat: "All muscle tissues",
+              feeding: "Glucose + fatty acids",
+              reproduction: "Stem cell-driven repair",
+              movement: "Contraction",
+              discovered: "Various",
+              relevance: "Movement + heart beat"
+            }
+          ];
+
+          // ═══════════════════════════════════════════════════════════
+          // HISTORY OF MICROBIOLOGY
+          // ═══════════════════════════════════════════════════════════
+          var CELL_HISTORY = [
+            {
+              id: 1,
+              year: 1665,
+              event: "Robert Hooke coins the word \"cell\" while looking at cork through microscope.",
+              country: "England"
+            },
+            {
+              id: 2,
+              year: 1675,
+              event: "Antonie van Leeuwenhoek observes \"animalcules\" (microorganisms) for first time.",
+              country: "Netherlands"
+            },
+            {
+              id: 3,
+              year: 1683,
+              event: "Leeuwenhoek describes bacteria from teeth scrapings.",
+              country: "Netherlands"
+            },
+            {
+              id: 4,
+              year: 1838,
+              event: "Matthias Schleiden proposes cell theory for plants.",
+              country: "Germany"
+            },
+            {
+              id: 5,
+              year: 1839,
+              event: "Theodor Schwann extends cell theory to animals — all life is cellular.",
+              country: "Germany"
+            },
+            {
+              id: 6,
+              year: 1855,
+              event: "Rudolf Virchow declares \"omnis cellula e cellula\" (all cells from cells).",
+              country: "Germany"
+            },
+            {
+              id: 7,
+              year: 1857,
+              event: "Louis Pasteur demonstrates fermentation is microbial process.",
+              country: "France"
+            },
+            {
+              id: 8,
+              year: 1865,
+              event: "Gregor Mendel publishes laws of inheritance.",
+              country: "Austria/Czech Republic"
+            },
+            {
+              id: 9,
+              year: 1876,
+              event: "Robert Koch identifies anthrax bacillus as disease-causing agent.",
+              country: "Germany"
+            },
+            {
+              id: 10,
+              year: 1882,
+              event: "Koch identifies Mycobacterium tuberculosis.",
+              country: "Germany"
+            },
+            {
+              id: 11,
+              year: 1884,
+              event: "Hans Christian Gram develops Gram stain.",
+              country: "Denmark"
+            },
+            {
+              id: 12,
+              year: 1898,
+              event: "Martinus Beijerinck establishes virology.",
+              country: "Netherlands"
+            },
+            {
+              id: 13,
+              year: 1905,
+              event: "Robert Koch wins Nobel Prize for TB research.",
+              country: "Germany"
+            },
+            {
+              id: 14,
+              year: 1928,
+              event: "Alexander Fleming discovers penicillin.",
+              country: "UK"
+            },
+            {
+              id: 15,
+              year: 1929,
+              event: "Phoebus Levene proposes DNA structure components.",
+              country: "USA"
+            },
+            {
+              id: 16,
+              year: 1944,
+              event: "Avery, MacLeod, McCarty show DNA carries genetic information.",
+              country: "USA"
+            },
+            {
+              id: 17,
+              year: 1953,
+              event: "Watson, Crick, Franklin determine DNA double helix structure.",
+              country: "UK"
+            },
+            {
+              id: 18,
+              year: 1955,
+              event: "Polio vaccine deployed (Salk).",
+              country: "USA"
+            },
+            {
+              id: 19,
+              year: 1958,
+              event: "Meselson + Stahl prove semi-conservative DNA replication.",
+              country: "USA"
+            },
+            {
+              id: 20,
+              year: 1961,
+              event: "Genetic code begins to be deciphered.",
+              country: "USA"
+            },
+            {
+              id: 21,
+              year: 1977,
+              event: "Carl Woese identifies Archaea as third domain.",
+              country: "USA"
+            },
+            {
+              id: 22,
+              year: 1977,
+              event: "Frederick Sanger develops dideoxy DNA sequencing.",
+              country: "UK"
+            },
+            {
+              id: 23,
+              year: 1985,
+              event: "PCR (Polymerase Chain Reaction) invented by Mullis.",
+              country: "USA"
+            },
+            {
+              id: 24,
+              year: 1996,
+              event: "First cloned mammal (Dolly the sheep).",
+              country: "UK"
+            },
+            {
+              id: 25,
+              year: 2003,
+              event: "Human Genome Project completed.",
+              country: "Worldwide"
+            },
+            {
+              id: 26,
+              year: 2007,
+              event: "Induced pluripotent stem cells (iPSCs) created.",
+              country: "Japan"
+            },
+            {
+              id: 27,
+              year: 2012,
+              event: "CRISPR-Cas9 demonstrated for genome editing.",
+              country: "USA"
+            },
+            {
+              id: 28,
+              year: 2020,
+              event: "mRNA COVID vaccines deployed.",
+              country: "Worldwide"
+            },
+            {
+              id: 29,
+              year: 2024,
+              event: "AlphaFold revolutionizes protein structure prediction.",
+              country: "Worldwide"
+            }
+          ];
+
+          // ═══════════════════════════════════════════════════════════
+          // FAMOUS BIOLOGISTS — 30 cell + microbiology pioneers
+          // ═══════════════════════════════════════════════════════════
+          var FAMOUS_BIOLOGISTS = [
+            {
+              id: 1,
+              name: "Antonie van Leeuwenhoek",
+              years: "1632-1723",
+              country: "Netherlands",
+              contribution: "Father of microbiology. First to observe bacteria, protists, sperm, blood cells via single-lens microscopes he made himself."
+            },
+            {
+              id: 2,
+              name: "Robert Hooke",
+              years: "1635-1703",
+              country: "England",
+              contribution: "Coined the word \"cell\" in 1665 from honeycomb-like cork structures."
+            },
+            {
+              id: 3,
+              name: "Louis Pasteur",
+              years: "1822-1895",
+              country: "France",
+              contribution: "Demonstrated germ theory of disease. Invented pasteurization. Developed rabies + anthrax vaccines."
+            },
+            {
+              id: 4,
+              name: "Robert Koch",
+              years: "1843-1910",
+              country: "Germany",
+              contribution: "Established germ theory. Identified TB + anthrax + cholera bacteria. Koch postulates."
+            },
+            {
+              id: 5,
+              name: "Joseph Lister",
+              years: "1827-1912",
+              country: "UK",
+              contribution: "Father of antiseptic surgery. Introduced carbolic acid (phenol)."
+            },
+            {
+              id: 6,
+              name: "Elie Metchnikoff",
+              years: "1845-1916",
+              country: "Russia/France",
+              contribution: "Discovered phagocytosis. Foundation of immunology. Nobel 1908."
+            },
+            {
+              id: 7,
+              name: "Theodor Schwann",
+              years: "1810-1882",
+              country: "Germany",
+              contribution: "Co-founder of cell theory. Extended cell theory to animals."
+            },
+            {
+              id: 8,
+              name: "Matthias Schleiden",
+              years: "1804-1881",
+              country: "Germany",
+              contribution: "Co-founder of cell theory. Botanist who proposed cells as plant fundamental units."
+            },
+            {
+              id: 9,
+              name: "Rudolf Virchow",
+              years: "1821-1902",
+              country: "Germany",
+              contribution: "Father of modern pathology. \"All cells from cells\"."
+            },
+            {
+              id: 10,
+              name: "Alexander Fleming",
+              years: "1881-1955",
+              country: "UK",
+              contribution: "Discovered penicillin (1928). Saved millions of lives. Nobel 1945."
+            },
+            {
+              id: 11,
+              name: "Ernst Ruska",
+              years: "1906-1988",
+              country: "Germany",
+              contribution: "Invented electron microscope. Revolutionized cell biology. Nobel 1986."
+            },
+            {
+              id: 12,
+              name: "Lynn Margulis",
+              years: "1938-2011",
+              country: "USA",
+              contribution: "Endosymbiotic theory — mitochondria + chloroplasts were once free-living bacteria."
+            },
+            {
+              id: 13,
+              name: "Carl Woese",
+              years: "1928-2012",
+              country: "USA",
+              contribution: "Identified Archaea as third domain via ribosomal RNA."
+            },
+            {
+              id: 14,
+              name: "Barbara McClintock",
+              years: "1902-1992",
+              country: "USA",
+              contribution: "Discovered transposable elements (\"jumping genes\"). Nobel 1983."
+            },
+            {
+              id: 15,
+              name: "Rosalind Franklin",
+              years: "1920-1958",
+              country: "UK",
+              contribution: "X-ray crystallography of DNA. Photo 51 was key for Watson + Crick. Denied Nobel."
+            },
+            {
+              id: 16,
+              name: "James Watson",
+              years: "1928-present",
+              country: "USA",
+              contribution: "Co-discovered DNA double helix. Nobel 1962."
+            },
+            {
+              id: 17,
+              name: "Francis Crick",
+              years: "1916-2004",
+              country: "UK",
+              contribution: "Co-discovered DNA double helix. Wrote central dogma. Nobel 1962."
+            },
+            {
+              id: 18,
+              name: "Frederick Sanger",
+              years: "1918-2013",
+              country: "UK",
+              contribution: "Two Nobel Prizes — protein sequencing 1958, DNA sequencing 1980."
+            },
+            {
+              id: 19,
+              name: "Kary Mullis",
+              years: "1944-2019",
+              country: "USA",
+              contribution: "Invented PCR. Nobel 1993."
+            },
+            {
+              id: 20,
+              name: "Jennifer Doudna",
+              years: "1964-present",
+              country: "USA",
+              contribution: "Co-developed CRISPR-Cas9 for genome editing. Nobel 2020."
+            },
+            {
+              id: 21,
+              name: "Emmanuelle Charpentier",
+              years: "1968-present",
+              country: "France",
+              contribution: "Co-developed CRISPR-Cas9 for genome editing. Nobel 2020."
+            },
+            {
+              id: 22,
+              name: "Shinya Yamanaka",
+              years: "1962-present",
+              country: "Japan",
+              contribution: "Discovered iPSC reprogramming factors. Nobel 2012."
+            },
+            {
+              id: 23,
+              name: "Hans Krebs",
+              years: "1900-1981",
+              country: "Germany/UK",
+              contribution: "Discovered citric acid (Krebs) cycle. Nobel 1953."
+            },
+            {
+              id: 24,
+              name: "Watson & Crick model",
+              years: "N/A",
+              country: "UK",
+              contribution: "Triple helix DNA model — corrected by Photo 51 evidence."
+            },
+            {
+              id: 25,
+              name: "Friedrich Miescher",
+              years: "1844-1895",
+              country: "Switzerland",
+              contribution: "First isolated DNA (1869) from pus on bandages. Called it \"nuclein\"."
+            },
+            {
+              id: 26,
+              name: "Walter Sutton",
+              years: "1877-1916",
+              country: "USA",
+              contribution: "Chromosomes carry genetic info. Foundation of modern genetics."
+            },
+            {
+              id: 27,
+              name: "Theodor Boveri",
+              years: "1862-1915",
+              country: "Germany",
+              contribution: "Chromosome theory of inheritance."
+            },
+            {
+              id: 28,
+              name: "Edward Salmon",
+              years: "1850-1914",
+              country: "USA",
+              contribution: "Discovered Salmonella bacteria."
+            },
+            {
+              id: 29,
+              name: "Robert Brown",
+              years: "1773-1858",
+              country: "UK",
+              contribution: "Discovered cell nucleus (1831). Brownian motion."
+            },
+            {
+              id: 30,
+              name: "Christian Gram",
+              years: "1853-1938",
+              country: "Denmark",
+              contribution: "Developed Gram stain for bacterial classification."
+            }
+          ];
+
+          // ═══════════════════════════════════════════════════════════
+          // LAB TECHNIQUES
+          // ═══════════════════════════════════════════════════════════
+          var LAB_TECHNIQUES = [
+            {
+              id: 1,
+              name: "Wet mount slide",
+              method: "Drop water + sample on slide + cover slip",
+              purpose: "Quick observation of living protists/algae",
+              skill: "Beginner"
+            },
+            {
+              id: 2,
+              name: "Gram stain",
+              method: "Crystal violet → iodine → alcohol wash → safranin",
+              purpose: "Differentiates Gram+ from Gram-",
+              skill: "Intermediate"
+            },
+            {
+              id: 3,
+              name: "Acid-fast stain",
+              method: "Carbol fuchsin + heat + acid alcohol decolorize",
+              purpose: "Detects Mycobacteria + Nocardia",
+              skill: "Intermediate"
+            },
+            {
+              id: 4,
+              name: "Methylene blue",
+              method: "Single dye stain",
+              purpose: "Stain bacteria + nuclei",
+              skill: "Beginner"
+            },
+            {
+              id: 5,
+              name: "Iodine stain",
+              method: "Iodine solution",
+              purpose: "Stains starch in plant cells",
+              skill: "Beginner"
+            },
+            {
+              id: 6,
+              name: "Streak plate",
+              method: "Sterile loop streaks on agar plate",
+              purpose: "Isolates pure colonies",
+              skill: "Intermediate"
+            },
+            {
+              id: 7,
+              name: "Pour plate",
+              method: "Dilute + mix with agar before pouring",
+              purpose: "Quantitative bacterial count",
+              skill: "Intermediate"
+            },
+            {
+              id: 8,
+              name: "Inoculation",
+              method: "Sterile transfer of microbe to medium",
+              purpose: "Culture maintenance",
+              skill: "Beginner"
+            },
+            {
+              id: 9,
+              name: "Aseptic technique",
+              method: "Flame loop + lab discipline",
+              purpose: "Prevents contamination",
+              skill: "Foundational"
+            },
+            {
+              id: 10,
+              name: "Light microscopy",
+              method: "Compound microscope ~1000x",
+              purpose: "View bacterial size",
+              skill: "Intermediate"
+            },
+            {
+              id: 11,
+              name: "Phase contrast",
+              method: "Optical phase shift technique",
+              purpose: "Living unstained cells",
+              skill: "Advanced"
+            },
+            {
+              id: 12,
+              name: "Fluorescence microscopy",
+              method: "UV + fluorescent dyes",
+              purpose: "Specific organelles + proteins",
+              skill: "Advanced"
+            },
+            {
+              id: 13,
+              name: "Confocal microscopy",
+              method: "Laser + pinhole + 3D",
+              purpose: "High-resolution 3D imaging",
+              skill: "Advanced"
+            },
+            {
+              id: 14,
+              name: "Electron microscopy (TEM)",
+              method: "Electrons through thin section",
+              purpose: "Atomic-scale structure",
+              skill: "Expert"
+            },
+            {
+              id: 15,
+              name: "Scanning electron microscopy (SEM)",
+              method: "Electrons scan surface",
+              purpose: "3D surface views",
+              skill: "Expert"
+            },
+            {
+              id: 16,
+              name: "DAPI staining",
+              method: "Fluorescent DNA stain",
+              purpose: "Visualize nuclei",
+              skill: "Intermediate"
+            },
+            {
+              id: 17,
+              name: "Trypan blue",
+              method: "Excluded by viable cells",
+              purpose: "Living vs dead cell count",
+              skill: "Beginner"
+            },
+            {
+              id: 18,
+              name: "Coulter counter",
+              method: "Electrical resistance pulse",
+              purpose: "Automated cell counting",
+              skill: "Intermediate"
+            },
+            {
+              id: 19,
+              name: "Flow cytometry",
+              method: "Laser-illuminated cells in stream",
+              purpose: "Multi-parameter cell analysis",
+              skill: "Advanced"
+            },
+            {
+              id: 20,
+              name: "Cell culture",
+              method: "Sterile media + incubator",
+              purpose: "Grow cells in lab",
+              skill: "Intermediate"
+            },
+            {
+              id: 21,
+              name: "Subculturing",
+              method: "Transfer to fresh media periodically",
+              purpose: "Maintain cell line",
+              skill: "Intermediate"
+            },
+            {
+              id: 22,
+              name: "Cryopreservation",
+              method: "Freeze cells in liquid N2",
+              purpose: "Long-term storage",
+              skill: "Intermediate"
+            },
+            {
+              id: 23,
+              name: "Transfection",
+              method: "Introduce DNA into cells",
+              purpose: "Genetic manipulation",
+              skill: "Advanced"
+            },
+            {
+              id: 24,
+              name: "Western blot",
+              method: "Gel electrophoresis + antibody detection",
+              purpose: "Detect specific proteins",
+              skill: "Advanced"
+            },
+            {
+              id: 25,
+              name: "ELISA",
+              method: "Antibody-enzyme detection",
+              purpose: "Quantitative protein detection",
+              skill: "Intermediate"
+            },
+            {
+              id: 26,
+              name: "PCR",
+              method: "Cycling temperature to amplify DNA",
+              purpose: "Detect + amplify specific sequences",
+              skill: "Intermediate"
+            },
+            {
+              id: 27,
+              name: "Sanger sequencing",
+              method: "Dideoxy chain termination",
+              purpose: "Read DNA sequence",
+              skill: "Advanced"
+            },
+            {
+              id: 28,
+              name: "Next-gen sequencing",
+              method: "Massive parallel reads",
+              purpose: "High-throughput sequencing",
+              skill: "Advanced"
+            },
+            {
+              id: 29,
+              name: "CRISPR editing",
+              method: "Guide RNA + Cas9 cuts DNA",
+              purpose: "Genome modification",
+              skill: "Expert"
+            },
+            {
+              id: 30,
+              name: "Mass spectrometry",
+              method: "Identify by mass-to-charge",
+              purpose: "Protein + metabolite analysis",
+              skill: "Advanced"
+            }
+          ];
+
+          // ═══════════════════════════════════════════════════════════
+          // MICROBIAL DISEASES
+          // ═══════════════════════════════════════════════════════════
+          var MICROBIAL_DISEASES = [
+            {
+              id: 1,
+              disease: "Tuberculosis",
+              pathogen: "Mycobacterium tuberculosis",
+              symptoms: "Coughing, fever, weight loss",
+              treatment: "Antibiotics (multi-drug + 6+ months)",
+              prevalence: "~1.6M deaths/year worldwide"
+            },
+            {
+              id: 2,
+              disease: "Malaria",
+              pathogen: "Plasmodium spp.",
+              symptoms: "Fever, chills, anemia",
+              treatment: "Antimalarials (resistance growing)",
+              prevalence: "~600K deaths/year"
+            },
+            {
+              id: 3,
+              disease: "Cholera",
+              pathogen: "Vibrio cholerae",
+              symptoms: "Severe diarrhea, dehydration",
+              treatment: "Oral rehydration + antibiotics",
+              prevalence: "~100K deaths/year"
+            },
+            {
+              id: 4,
+              disease: "Strep throat",
+              pathogen: "Streptococcus pyogenes",
+              symptoms: "Sore throat, fever",
+              treatment: "Penicillin",
+              prevalence: "Treatable; most recover"
+            },
+            {
+              id: 5,
+              disease: "Tetanus",
+              pathogen: "Clostridium tetani",
+              symptoms: "Muscle stiffness, lockjaw",
+              treatment: "Vaccination critical",
+              prevalence: "Almost eliminated in vaccinated populations"
+            },
+            {
+              id: 6,
+              disease: "Anthrax",
+              pathogen: "Bacillus anthracis",
+              symptoms: "Skin lesions, lung damage",
+              treatment: "Antibiotics + vaccine",
+              prevalence: "Rare but deadly without treatment"
+            },
+            {
+              id: 7,
+              disease: "Bubonic plague",
+              pathogen: "Yersinia pestis",
+              symptoms: "Buboes, fever",
+              treatment: "Antibiotics",
+              prevalence: "Black Death killed 30% of Europe"
+            },
+            {
+              id: 8,
+              disease: "Syphilis",
+              pathogen: "Treponema pallidum",
+              symptoms: "Multi-stage; chronic if untreated",
+              treatment: "Penicillin",
+              prevalence: "Treatable; growing again"
+            },
+            {
+              id: 9,
+              disease: "Lyme disease",
+              pathogen: "Borrelia burgdorferi",
+              symptoms: "Rash, fever, joint pain",
+              treatment: "Doxycycline",
+              prevalence: "Major US tick-borne disease"
+            },
+            {
+              id: 10,
+              disease: "Salmonella",
+              pathogen: "Salmonella enterica",
+              symptoms: "Food poisoning",
+              treatment: "Most recover; antibiotics for severe",
+              prevalence: "Foodborne"
+            },
+            {
+              id: 11,
+              disease: "E. coli O157:H7",
+              pathogen: "Enterohemorrhagic E. coli",
+              symptoms: "Bloody diarrhea, kidney damage",
+              treatment: "Supportive care",
+              prevalence: "Foodborne"
+            },
+            {
+              id: 12,
+              disease: "Botulism",
+              pathogen: "Clostridium botulinum toxin",
+              symptoms: "Paralysis",
+              treatment: "Antitoxin + supportive",
+              prevalence: "Rare but severe"
+            },
+            {
+              id: 13,
+              disease: "Giardiasis",
+              pathogen: "Giardia lamblia",
+              symptoms: "Diarrhea, cramps",
+              treatment: "Metronidazole",
+              prevalence: "Common waterborne illness"
+            },
+            {
+              id: 14,
+              disease: "Amoebic dysentery",
+              pathogen: "Entamoeba histolytica",
+              symptoms: "Diarrhea, liver abscess",
+              treatment: "Antiprotozoal drugs",
+              prevalence: "Major in developing world"
+            },
+            {
+              id: 15,
+              disease: "Toxoplasmosis",
+              pathogen: "Toxoplasma gondii",
+              symptoms: "Often asymptomatic; risk for pregnancy",
+              treatment: "Antimicrobials in severe cases",
+              prevalence: "30%+ humans infected"
+            },
+            {
+              id: 16,
+              disease: "Sleeping sickness",
+              pathogen: "Trypanosoma brucei",
+              symptoms: "Neurologic decline",
+              treatment: "Antitrypanosomal drugs",
+              prevalence: "Sub-Saharan Africa"
+            },
+            {
+              id: 17,
+              disease: "Chagas disease",
+              pathogen: "Trypanosoma cruzi",
+              symptoms: "Acute then chronic heart damage",
+              treatment: "Benznidazole (limited)",
+              prevalence: "Latin America"
+            },
+            {
+              id: 18,
+              disease: "Leishmaniasis",
+              pathogen: "Leishmania spp.",
+              symptoms: "Skin lesions, organ damage",
+              treatment: "Antimonials + others",
+              prevalence: "Tropical regions"
+            },
+            {
+              id: 19,
+              disease: "Cryptosporidiosis",
+              pathogen: "Cryptosporidium parvum",
+              symptoms: "Severe diarrhea",
+              treatment: "Supportive; nitazoxanide",
+              prevalence: "Water-borne"
+            },
+            {
+              id: 20,
+              disease: "Plague",
+              pathogen: "Yersinia pestis",
+              symptoms: "Multiple forms",
+              treatment: "Antibiotics",
+              prevalence: "Most cases now in Africa"
+            },
+            {
+              id: 21,
+              disease: "Diphtheria",
+              pathogen: "Corynebacterium diphtheriae",
+              symptoms: "Sore throat, neck swelling, toxin damage",
+              treatment: "Antitoxin + antibiotics",
+              prevalence: "Vaccine-preventable"
+            },
+            {
+              id: 22,
+              disease: "Pertussis (whooping cough)",
+              pathogen: "Bordetella pertussis",
+              symptoms: "Severe cough",
+              treatment: "Antibiotics; vaccine preventable",
+              prevalence: "Vaccine waning concern"
+            },
+            {
+              id: 23,
+              disease: "Pneumonia (bacterial)",
+              pathogen: "Streptococcus pneumoniae + others",
+              symptoms: "Cough, fever, breathing",
+              treatment: "Antibiotics",
+              prevalence: "Major worldwide cause of death"
+            },
+            {
+              id: 24,
+              disease: "Meningitis (bacterial)",
+              pathogen: "Various",
+              symptoms: "Fever, neck stiffness, altered consciousness",
+              treatment: "Antibiotics",
+              prevalence: "Medical emergency"
+            },
+            {
+              id: 25,
+              disease: "UTI",
+              pathogen: "E. coli most common",
+              symptoms: "Urinary symptoms",
+              treatment: "Antibiotics",
+              prevalence: "Very common; women more susceptible"
+            },
+            {
+              id: 26,
+              disease: "MRSA",
+              pathogen: "Methicillin-resistant Staph aureus",
+              symptoms: "Skin infections, severe systemic",
+              treatment: "Vancomycin",
+              prevalence: "Antibiotic resistance crisis"
+            },
+            {
+              id: 27,
+              disease: "C. difficile colitis",
+              pathogen: "C. difficile",
+              symptoms: "Severe diarrhea after antibiotics",
+              treatment: "Vancomycin oral; fidaxomicin",
+              prevalence: "Hospital-acquired"
+            },
+            {
+              id: 28,
+              disease: "Listeriosis",
+              pathogen: "Listeria monocytogenes",
+              symptoms: "Flu-like; severe in pregnancy",
+              treatment: "Antibiotics",
+              prevalence: "Foodborne"
+            },
+            {
+              id: 29,
+              disease: "Yersiniosis",
+              pathogen: "Yersinia enterocolitica",
+              symptoms: "Foodborne diarrhea",
+              treatment: "Most self-limiting",
+              prevalence: "Foodborne"
+            },
+            {
+              id: 30,
+              disease: "Campylobacteriosis",
+              pathogen: "Campylobacter jejuni",
+              symptoms: "Most common foodborne illness in US",
+              treatment: "Most self-limiting",
+              prevalence: "Foodborne"
+            }
+          ];
+
+          // ═══════════════════════════════════════════════════════════
+          // MICROBIAL ECOLOGY
+          // ═══════════════════════════════════════════════════════════
+          var MICRO_ECOLOGY = [
+            {
+              id: 1,
+              habitat: "Pond Water",
+              inhabitants: "Diverse protists, bacteria, algae",
+              importance: "Photosynthesis + decomposition"
+            },
+            {
+              id: 2,
+              habitat: "Soil",
+              inhabitants: "Massive bacterial + fungal diversity",
+              importance: "Nutrient cycling + decomposition"
+            },
+            {
+              id: 3,
+              habitat: "Marine Plankton",
+              inhabitants: "Diatoms + dinoflagellates + bacteria",
+              importance: "50%+ Earth oxygen + carbon sink"
+            },
+            {
+              id: 4,
+              habitat: "Hot Springs",
+              inhabitants: "Thermophiles + hyperthermophiles",
+              importance: "Extreme heat tolerance + PCR enzymes"
+            },
+            {
+              id: 5,
+              habitat: "Hydrothermal Vents",
+              inhabitants: "Chemosynthetic bacteria + archaea",
+              importance: "Without sunlight; H2S oxidation"
+            },
+            {
+              id: 6,
+              habitat: "Salt Lakes",
+              inhabitants: "Halophilic archaea + bacteria",
+              importance: "Extreme salt tolerance"
+            },
+            {
+              id: 7,
+              habitat: "Permafrost",
+              inhabitants: "Cryophiles",
+              importance: "Cold-active enzymes + low metabolism"
+            },
+            {
+              id: 8,
+              habitat: "Acid Mine Drainage",
+              inhabitants: "Acidophiles",
+              importance: "Survive pH < 1; iron oxidation"
+            },
+            {
+              id: 9,
+              habitat: "Human Gut",
+              inhabitants: "~100 trillion microbes + ~1000+ species",
+              importance: "Digestion + immunity + mood"
+            },
+            {
+              id: 10,
+              habitat: "Human Skin",
+              inhabitants: "~1B microbes/cm²",
+              importance: "Protective layer"
+            },
+            {
+              id: 11,
+              habitat: "Human Mouth",
+              inhabitants: "~700+ species",
+              importance: "Plaque + cavity formation"
+            },
+            {
+              id: 12,
+              habitat: "Reservoirs (water)",
+              inhabitants: "Variable",
+              importance: "Drinking water quality"
+            },
+            {
+              id: 13,
+              habitat: "Sewers + Wastewater",
+              inhabitants: "Anaerobic microbes",
+              importance: "Bioremediation + biogas production"
+            },
+            {
+              id: 14,
+              habitat: "Coral Reef",
+              inhabitants: "Symbionts + diverse microbes",
+              importance: "Tropical biodiversity"
+            },
+            {
+              id: 15,
+              habitat: "Cave Systems",
+              inhabitants: "Often unique extremophiles",
+              importance: "Novel antibiotics + enzymes"
+            },
+            {
+              id: 16,
+              habitat: "Antarctic Ice",
+              inhabitants: "Psychrophiles",
+              importance: "Cold-active enzymes"
+            },
+            {
+              id: 17,
+              habitat: "Deep Ocean",
+              inhabitants: "Pressure-adapted (barophiles)",
+              importance: "Subsurface biosphere"
+            },
+            {
+              id: 18,
+              habitat: "Volcanic Soils",
+              inhabitants: "Extreme conditions",
+              importance: "New species discovered"
+            },
+            {
+              id: 19,
+              habitat: "Compost",
+              inhabitants: "Active decomposers",
+              importance: "Garden chemistry"
+            },
+            {
+              id: 20,
+              habitat: "Yogurt",
+              inhabitants: "Lactobacillus + Streptococcus thermophilus",
+              importance: "Fermentation + probiotics"
+            },
+            {
+              id: 21,
+              habitat: "Sourdough Starter",
+              inhabitants: "Wild yeast + lactic acid bacteria",
+              importance: "Bread + flavor"
+            },
+            {
+              id: 22,
+              habitat: "Kombucha",
+              inhabitants: "SCOBY — yeast + bacteria",
+              importance: "Fermented tea beverage"
+            },
+            {
+              id: 23,
+              habitat: "Kimchi",
+              inhabitants: "Lactic acid bacteria",
+              importance: "Korean fermented vegetables"
+            },
+            {
+              id: 24,
+              habitat: "Sauerkraut",
+              inhabitants: "Lactic acid bacteria",
+              importance: "German fermented cabbage"
+            },
+            {
+              id: 25,
+              habitat: "Beer",
+              inhabitants: "Saccharomyces yeasts",
+              importance: "Fermentation + flavor"
+            },
+            {
+              id: 26,
+              habitat: "Wine",
+              inhabitants: "Saccharomyces yeasts",
+              importance: "Fermentation + flavor"
+            },
+            {
+              id: 27,
+              habitat: "Cheese",
+              inhabitants: "Various bacteria + molds",
+              importance: "Flavor + texture development"
+            }
+          ];
+
+          // ═══════════════════════════════════════════════════════════
+          // CELL BIOLOGY GLOSSARY — 100+ terms
+          // ═══════════════════════════════════════════════════════════
+          var CELL_GLOSSARY = [
+            {
+              id: 1,
+              term: "Cell membrane",
+              definition: "Phospholipid bilayer surrounding cell. Selectively permeable. Controls what enters + leaves."
+            },
+            {
+              id: 2,
+              term: "Cell wall",
+              definition: "Rigid outer layer in plants (cellulose), bacteria (peptidoglycan), fungi (chitin). Absent in animals."
+            },
+            {
+              id: 3,
+              term: "Cytoplasm",
+              definition: "Fluid + organelles inside cell, excluding nucleus."
+            },
+            {
+              id: 4,
+              term: "Nucleus",
+              definition: "Membrane-bound organelle containing DNA. Eukaryotic feature."
+            },
+            {
+              id: 5,
+              term: "Nucleoid",
+              definition: "Region with DNA in prokaryotes (no membrane)."
+            },
+            {
+              id: 6,
+              term: "Nucleolus",
+              definition: "Dark region inside nucleus. Site of ribosome assembly."
+            },
+            {
+              id: 7,
+              term: "Mitochondria",
+              definition: "Powerhouse — produces ATP. Has own DNA."
+            },
+            {
+              id: 8,
+              term: "Chloroplast",
+              definition: "Site of photosynthesis. Has own DNA."
+            },
+            {
+              id: 9,
+              term: "Endoplasmic reticulum",
+              definition: "Network of folded membranes. Rough ER makes proteins; smooth ER makes lipids."
+            },
+            {
+              id: 10,
+              term: "Golgi apparatus",
+              definition: "Modifies + packages proteins for shipping. Stacks of cisternae."
+            },
+            {
+              id: 11,
+              term: "Lysosome",
+              definition: "Acidic enzymes for digestion. Recycles cellular components."
+            },
+            {
+              id: 12,
+              term: "Peroxisome",
+              definition: "Metabolism of long-chain fatty acids + detoxification."
+            },
+            {
+              id: 13,
+              term: "Ribosome",
+              definition: "Site of protein synthesis. Translates mRNA."
+            },
+            {
+              id: 14,
+              term: "Cytoskeleton",
+              definition: "Actin + microtubules + intermediate filaments. Shape + movement + transport."
+            },
+            {
+              id: 15,
+              term: "Centrosome",
+              definition: "Organizes microtubules. Site of centrioles."
+            },
+            {
+              id: 16,
+              term: "Cilia",
+              definition: "Many short hair-like projections. Movement + signaling."
+            },
+            {
+              id: 17,
+              term: "Flagella",
+              definition: "Few long whip-like projections. Cellular swimming."
+            },
+            {
+              id: 18,
+              term: "Pseudopod",
+              definition: "Temporary cytoplasmic extension. Movement + phagocytosis."
+            },
+            {
+              id: 19,
+              term: "Phagocytosis",
+              definition: "Cell engulfs solid particles. \"Cell eating\"."
+            },
+            {
+              id: 20,
+              term: "Pinocytosis",
+              definition: "Cell engulfs liquids. \"Cell drinking\"."
+            },
+            {
+              id: 21,
+              term: "Exocytosis",
+              definition: "Vesicles fuse with membrane + release contents."
+            },
+            {
+              id: 22,
+              term: "Endocytosis",
+              definition: "Cell membrane invaginates to take in materials."
+            },
+            {
+              id: 23,
+              term: "Diffusion",
+              definition: "Passive movement from high to low concentration."
+            },
+            {
+              id: 24,
+              term: "Osmosis",
+              definition: "Diffusion of water across semi-permeable membrane."
+            },
+            {
+              id: 25,
+              term: "Active transport",
+              definition: "Energy-requiring movement against gradient."
+            },
+            {
+              id: 26,
+              term: "Facilitated diffusion",
+              definition: "Passive transport via channels + carriers."
+            },
+            {
+              id: 27,
+              term: "Ion channel",
+              definition: "Membrane protein that allows ions to flow through."
+            },
+            {
+              id: 28,
+              term: "Pump",
+              definition: "Active transport protein. Na+/K+ pump is famous."
+            },
+            {
+              id: 29,
+              term: "DNA",
+              definition: "Deoxyribonucleic acid. Genetic material."
+            },
+            {
+              id: 30,
+              term: "RNA",
+              definition: "Ribonucleic acid. Multiple types: mRNA, tRNA, rRNA, miRNA."
+            },
+            {
+              id: 31,
+              term: "Gene",
+              definition: "DNA segment that codes for protein or RNA."
+            },
+            {
+              id: 32,
+              term: "Chromosome",
+              definition: "Condensed DNA + protein. Carries genetic info."
+            },
+            {
+              id: 33,
+              term: "Chromatin",
+              definition: "DNA + histones in interphase. Less condensed than chromosomes."
+            },
+            {
+              id: 34,
+              term: "Mitosis",
+              definition: "Cell division producing 2 identical daughters (somatic cells)."
+            },
+            {
+              id: 35,
+              term: "Meiosis",
+              definition: "Special division producing 4 haploid gametes."
+            },
+            {
+              id: 36,
+              term: "Cytokinesis",
+              definition: "Final division of cytoplasm."
+            },
+            {
+              id: 37,
+              term: "Interphase",
+              definition: "Period between mitoses (G1, S, G2). Most cell time."
+            },
+            {
+              id: 38,
+              term: "Apoptosis",
+              definition: "Programmed cell death. Essential for development + immunity."
+            },
+            {
+              id: 39,
+              term: "Necrosis",
+              definition: "Accidental cell death from injury."
+            },
+            {
+              id: 40,
+              term: "Autophagy",
+              definition: "Cell consumes own components. Recycling."
+            },
+            {
+              id: 41,
+              term: "Transcription",
+              definition: "DNA → RNA via RNA polymerase."
+            },
+            {
+              id: 42,
+              term: "Translation",
+              definition: "mRNA → protein at ribosome."
+            },
+            {
+              id: 43,
+              term: "Protein folding",
+              definition: "Amino acid chain folds to 3D structure."
+            },
+            {
+              id: 44,
+              term: "Chaperone",
+              definition: "Protein helping other proteins fold correctly."
+            },
+            {
+              id: 45,
+              term: "Enzyme",
+              definition: "Protein catalyst. Speeds reactions."
+            },
+            {
+              id: 46,
+              term: "Substrate",
+              definition: "Molecule on which enzyme acts."
+            },
+            {
+              id: 47,
+              term: "Active site",
+              definition: "Region of enzyme that binds substrate."
+            },
+            {
+              id: 48,
+              term: "Cofactor",
+              definition: "Non-protein helper for enzyme (often metal ion or vitamin)."
+            },
+            {
+              id: 49,
+              term: "Coenzyme",
+              definition: "Organic cofactor (often from vitamin)."
+            },
+            {
+              id: 50,
+              term: "ATP",
+              definition: "Adenosine triphosphate. Cellular energy currency."
+            },
+            {
+              id: 51,
+              term: "NADH",
+              definition: "Electron carrier in respiration."
+            },
+            {
+              id: 52,
+              term: "NADPH",
+              definition: "Electron carrier in photosynthesis + biosynthesis."
+            },
+            {
+              id: 53,
+              term: "Glycolysis",
+              definition: "Glucose → 2 pyruvate + 2 ATP + 2 NADH."
+            },
+            {
+              id: 54,
+              term: "Krebs cycle",
+              definition: "Acetyl-CoA → CO2 + NADH + FADH2 + ATP."
+            },
+            {
+              id: 55,
+              term: "Electron transport chain",
+              definition: "NADH/FADH2 → H2O + ATP."
+            },
+            {
+              id: 56,
+              term: "Oxidative phosphorylation",
+              definition: "ATP production via electron transport."
+            },
+            {
+              id: 57,
+              term: "Calvin cycle",
+              definition: "CO2 + ATP + NADPH → sugars."
+            },
+            {
+              id: 58,
+              term: "Photosystems I + II",
+              definition: "Photosynthesis light reactions."
+            },
+            {
+              id: 59,
+              term: "Chlorophyll",
+              definition: "Green pigment captures light energy."
+            },
+            {
+              id: 60,
+              term: "Stomata",
+              definition: "Plant leaf pores for gas exchange."
+            },
+            {
+              id: 61,
+              term: "Guard cell",
+              definition: "Controls stomata opening."
+            },
+            {
+              id: 62,
+              term: "Cell theory",
+              definition: "All living things are cells. All cells from cells."
+            },
+            {
+              id: 63,
+              term: "Prokaryote",
+              definition: "No nucleus. Bacteria + Archaea."
+            },
+            {
+              id: 64,
+              term: "Eukaryote",
+              definition: "Has nucleus + organelles. Plants, animals, fungi, protists."
+            },
+            {
+              id: 65,
+              term: "Archaea",
+              definition: "3rd domain of life. Often extremophiles."
+            },
+            {
+              id: 66,
+              term: "Endosymbiosis",
+              definition: "Theory that mitochondria + chloroplasts were once free-living bacteria."
+            },
+            {
+              id: 67,
+              term: "Symbiosis",
+              definition: "Close interspecies relationship."
+            },
+            {
+              id: 68,
+              term: "Commensalism",
+              definition: "One benefits, other unaffected."
+            },
+            {
+              id: 69,
+              term: "Mutualism",
+              definition: "Both benefit."
+            },
+            {
+              id: 70,
+              term: "Parasitism",
+              definition: "One benefits, other harmed."
+            },
+            {
+              id: 71,
+              term: "Microbiome",
+              definition: "Community of microorganisms in a habitat (e.g., gut)."
+            },
+            {
+              id: 72,
+              term: "Microbiota",
+              definition: "Microbes themselves (vs microbiome which includes genes)."
+            },
+            {
+              id: 73,
+              term: "Pathogen",
+              definition: "Disease-causing microorganism."
+            },
+            {
+              id: 74,
+              term: "Commensal",
+              definition: "Microbe that lives in/on host without harm."
+            },
+            {
+              id: 75,
+              term: "Antibiotic",
+              definition: "Drug that kills bacteria."
+            },
+            {
+              id: 76,
+              term: "Antibiotic resistance",
+              definition: "Bacteria adapt to survive antibiotics."
+            },
+            {
+              id: 77,
+              term: "MRSA",
+              definition: "Methicillin-resistant Staphylococcus aureus."
+            },
+            {
+              id: 78,
+              term: "Probiotic",
+              definition: "Beneficial live microbe."
+            },
+            {
+              id: 79,
+              term: "Prebiotic",
+              definition: "Food for beneficial microbes."
+            },
+            {
+              id: 80,
+              term: "Fermentation",
+              definition: "Anaerobic energy production. Produces lactic acid or ethanol."
+            },
+            {
+              id: 81,
+              term: "Photosynthesis",
+              definition: "Light energy + CO2 + H2O → glucose + O2."
+            },
+            {
+              id: 82,
+              term: "Respiration",
+              definition: "Glucose + O2 → CO2 + H2O + ATP."
+            },
+            {
+              id: 83,
+              term: "Plasma membrane",
+              definition: "Same as cell membrane."
+            },
+            {
+              id: 84,
+              term: "Plastid",
+              definition: "Plant organelle including chloroplasts, leucoplasts, chromoplasts."
+            },
+            {
+              id: 85,
+              term: "Vacuole",
+              definition: "Membrane-bound storage compartment. Large in plants."
+            },
+            {
+              id: 86,
+              term: "Stoma",
+              definition: "Singular of stomata."
+            },
+            {
+              id: 87,
+              term: "Spore",
+              definition: "Reproductive cell. Survives harsh conditions."
+            },
+            {
+              id: 88,
+              term: "Endospore",
+              definition: "Bacterial survival structure. Extremely resilient."
+            },
+            {
+              id: 89,
+              term: "Pilus",
+              definition: "Hair-like bacterial appendage. Attaches + conjugates."
+            },
+            {
+              id: 90,
+              term: "Fimbriae",
+              definition: "Short pili for attachment."
+            },
+            {
+              id: 91,
+              term: "Capsule",
+              definition: "Slime layer outside bacterial cell wall."
+            },
+            {
+              id: 92,
+              term: "Slime layer",
+              definition: "Loose attachment outside cell wall."
+            },
+            {
+              id: 93,
+              term: "Biofilm",
+              definition: "Community of microbes on surface, embedded in matrix."
+            },
+            {
+              id: 94,
+              term: "Quorum sensing",
+              definition: "Bacteria communicate via chemical signals."
+            },
+            {
+              id: 95,
+              term: "Conjugation",
+              definition: "Bacterial DNA transfer via pilus."
+            },
+            {
+              id: 96,
+              term: "Transformation",
+              definition: "Bacteria pick up free DNA from environment."
+            },
+            {
+              id: 97,
+              term: "Transduction",
+              definition: "Phage transfers DNA between bacteria."
+            },
+            {
+              id: 98,
+              term: "Lytic cycle",
+              definition: "Phage destroys host cell."
+            },
+            {
+              id: 99,
+              term: "Lysogenic cycle",
+              definition: "Phage integrates into host DNA."
+            },
+            {
+              id: 100,
+              term: "Plasmid",
+              definition: "Small circular DNA outside chromosome. Often carries resistance genes."
+            },
+            {
+              id: 101,
+              term: "Operon",
+              definition: "Cluster of related bacterial genes regulated together."
+            },
+            {
+              id: 102,
+              term: "Promoter",
+              definition: "DNA region where RNA polymerase binds."
+            },
+            {
+              id: 103,
+              term: "Repressor",
+              definition: "Protein that blocks transcription."
+            },
+            {
+              id: 104,
+              term: "Activator",
+              definition: "Protein that enhances transcription."
+            },
+            {
+              id: 105,
+              term: "Codon",
+              definition: "3-nucleotide unit specifying an amino acid."
+            },
+            {
+              id: 106,
+              term: "Anticodon",
+              definition: "tRNA region complementary to codon."
+            },
+            {
+              id: 107,
+              term: "Start codon",
+              definition: "AUG. Begins translation."
+            },
+            {
+              id: 108,
+              term: "Stop codon",
+              definition: "UAA, UAG, UGA. Ends translation."
+            }
+          ];
+
+
           var ORGANISMS = [
 
             {
@@ -3344,7 +5749,7 @@ var d = labToolData.cell;
 
               React.createElement("div", { className: "flex gap-1 ml-auto" },
 
-                ["observe", "play", "quiz"].map(function (m) {
+                ["observe", "play", "quiz", "encyclopedia", "filter", "compare", "lifecycle", "history", "biologists", "lab", "disease", "ecology", "evolution", "anatomy", "career", "lesson", "media", "myths", "records", "data", "glossary", "trivia", "finale"].map(function (m) {
 
                   return React.createElement("button", { key: m, onClick: function () { upd("mode", m); if (m === 'quiz') { upd("quizMode", true); upd("quizIdx", 0); upd("quizScore", 0); upd("quizStreak", 0); upd("quizFeedback", null); } else { upd("quizMode", false); } if (m !== 'play') { upd("playAsOrganism", null); var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv && cv._cellSimSetPlayAs) cv._cellSimSetPlayAs(null); } }, className: "px-3 py-1 rounded-lg text-xs font-bold capitalize " + (d.mode === m ? 'bg-green-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, m);
 
@@ -3932,6 +6337,266 @@ var d = labToolData.cell;
 
               React.createElement("button", { "aria-label": "Snapshot", onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'ce-' + Date.now(), tool: 'cell', label: 'Cell Simulator' + (d.selectedOrganism ? ': ' + d.selectedOrganism : ''), data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
 
+            )
+
+
+            ,
+
+            // ═══════════════════════════════════════════════════════════
+            // ENCYCLOPEDIA MODE
+            // ═══════════════════════════════════════════════════════════
+            d.mode === 'encyclopedia' && (function() {
+              var idx = (d._encyclopediaIdx != null) ? d._encyclopediaIdx : 0;
+              var filterK = d._encyclopediaFilter || 'all';
+              var search = d._encyclopediaSearch || '';
+              var filtered = ORGANISM_DB.filter(function(o) {
+                if (filterK !== 'all' && o.kingdom !== filterK) return false;
+                if (search && o.name.toLowerCase().indexOf(search.toLowerCase()) === -1 && o.description.toLowerCase().indexOf(search.toLowerCase()) === -1) return false;
+                return true;
+              });
+              var item = filtered[idx] || filtered[0];
+              var kingdoms = ['all'].concat(ORGANISM_DB.map(function(o) { return o.kingdom; }).filter(function(v, i, a) { return a.indexOf(v) === i; }));
+              return React.createElement('div', { className: 'mt-4 bg-white rounded-xl border-2 border-green-300 p-4 space-y-3' },
+                React.createElement('div', { className: 'flex items-baseline justify-between mb-2' },
+                  React.createElement('h3', { className: 'text-base font-bold text-green-700' }, 'Organism Encyclopedia'),
+                  React.createElement('span', { className: 'text-xs text-slate-600' }, filtered.length + ' organisms')
+                ),
+                React.createElement('input', { type: 'text', placeholder: 'Search organisms...', value: search, onChange: function(e) { upd('_encyclopediaSearch', e.target.value); upd('_encyclopediaIdx', 0); }, className: 'w-full px-2 py-1 text-xs border-2 border-green-200 rounded' }),
+                React.createElement('div', { className: 'flex flex-wrap gap-1' },
+                  kingdoms.map(function(k) {
+                    var sel = filterK === k;
+                    return React.createElement('button', { key: k, onClick: function() { upd('_encyclopediaFilter', k); upd('_encyclopediaIdx', 0); }, className: 'px-2 py-1 rounded text-xs font-bold ' + (sel ? 'bg-green-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-green-100') }, k);
+                  })
+                ),
+                React.createElement('div', { className: 'flex flex-wrap gap-1 max-h-32 overflow-y-auto p-2 bg-slate-50 rounded' },
+                  filtered.map(function(o, i) {
+                    var sel = idx === i;
+                    return React.createElement('button', { key: o.id, onClick: function() { upd('_encyclopediaIdx', i); }, className: 'px-2 py-1 rounded text-[10px] font-bold ' + (sel ? 'bg-green-700 text-white' : 'bg-white text-slate-700 border border-slate-300 hover:bg-green-50'), title: o.name }, o.name);
+                  })
+                ),
+                item && React.createElement('div', { className: 'bg-green-50 border-2 border-green-300 rounded-xl p-3 space-y-2' },
+                  React.createElement('div', { className: 'flex items-baseline justify-between' },
+                    React.createElement('h4', { className: 'text-lg font-bold text-green-800' }, item.name),
+                    React.createElement('span', { className: 'text-xs text-slate-600 font-mono' }, item.kingdom + ' - ' + item.cellType + ' - ' + item.size)
+                  ),
+                  React.createElement('p', { className: 'text-xs text-slate-700 leading-relaxed' }, item.description),
+                  React.createElement('div', { className: 'grid md:grid-cols-2 gap-2 text-xs' },
+                    React.createElement('div', { className: 'bg-white border border-green-200 rounded p-2' },
+                      React.createElement('div', { className: 'font-bold text-green-700' }, 'Habitat'),
+                      React.createElement('div', { className: 'text-slate-700' }, item.habitat)
+                    ),
+                    React.createElement('div', { className: 'bg-white border border-green-200 rounded p-2' },
+                      React.createElement('div', { className: 'font-bold text-amber-700' }, 'Feeding'),
+                      React.createElement('div', { className: 'text-slate-700' }, item.feeding)
+                    ),
+                    React.createElement('div', { className: 'bg-white border border-green-200 rounded p-2' },
+                      React.createElement('div', { className: 'font-bold text-pink-700' }, 'Reproduction'),
+                      React.createElement('div', { className: 'text-slate-700' }, item.reproduction)
+                    ),
+                    React.createElement('div', { className: 'bg-white border border-green-200 rounded p-2' },
+                      React.createElement('div', { className: 'font-bold text-blue-700' }, 'Movement'),
+                      React.createElement('div', { className: 'text-slate-700' }, item.movement)
+                    ),
+                    React.createElement('div', { className: 'bg-white border border-green-200 rounded p-2' },
+                      React.createElement('div', { className: 'font-bold text-purple-700' }, 'Discovered'),
+                      React.createElement('div', { className: 'text-slate-700' }, item.discovered)
+                    ),
+                    React.createElement('div', { className: 'bg-white border border-green-200 rounded p-2' },
+                      React.createElement('div', { className: 'font-bold text-orange-700' }, 'Relevance'),
+                      React.createElement('div', { className: 'text-slate-700' }, item.relevance)
+                    )
+                  )
+                )
+              );
+            })(),
+
+            // ═══════════════════════════════════════════════════════════
+            // FILTER MODE
+            // ═══════════════════════════════════════════════════════════
+            d.mode === 'filter' && (function() {
+              var byKingdom = {};
+              ORGANISM_DB.forEach(function(o) { (byKingdom[o.kingdom] = byKingdom[o.kingdom] || []).push(o); });
+              return React.createElement('div', { className: 'mt-4 bg-white rounded-xl border-2 border-cyan-300 p-4' },
+                React.createElement('h3', { className: 'text-base font-bold text-cyan-700 mb-3' }, 'Filter Microorganisms by Kingdom'),
+                React.createElement('p', { className: 'text-xs text-slate-600 italic mb-3' }, 'Browse organisms grouped by classification.'),
+                React.createElement('div', { className: 'space-y-3' },
+                  Object.keys(byKingdom).map(function(k) {
+                    return React.createElement('div', { key: k, className: 'border border-cyan-200 rounded p-2 bg-cyan-50' },
+                      React.createElement('div', { className: 'font-bold text-cyan-800 mb-1' }, k + ' (' + byKingdom[k].length + ')'),
+                      React.createElement('div', { className: 'flex flex-wrap gap-1' },
+                        byKingdom[k].map(function(o) {
+                          return React.createElement('span', { key: o.id, className: 'px-2 py-1 text-[10px] bg-white border border-cyan-200 rounded text-slate-700' }, o.name);
+                        })
+                      )
+                    );
+                  })
+                )
+              );
+            })(),
+
+            // ═══════════════════════════════════════════════════════════
+            // COMPARE MODE
+            // ═══════════════════════════════════════════════════════════
+            d.mode === 'compare' && (function() {
+              var aIdx = d._cmpA == null ? 0 : d._cmpA;
+              var bIdx = d._cmpB == null ? 1 : d._cmpB;
+              var oA = ORGANISM_DB[aIdx];
+              var oB = ORGANISM_DB[bIdx];
+              return React.createElement('div', { className: 'mt-4 bg-white rounded-xl border-2 border-purple-300 p-4' },
+                React.createElement('h3', { className: 'text-base font-bold text-purple-700 mb-3' }, 'Compare Two Organisms'),
+                React.createElement('div', { className: 'grid grid-cols-2 gap-2 mb-3' },
+                  React.createElement('div', null,
+                    React.createElement('label', { className: 'text-xs font-bold text-purple-700' }, 'Organism A'),
+                    React.createElement('select', { value: aIdx, onChange: function(e) { upd('_cmpA', parseInt(e.target.value)); }, className: 'w-full px-2 py-1 text-xs border-2 border-purple-200 rounded mt-1' },
+                      ORGANISM_DB.map(function(o, i) { return React.createElement('option', { key: i, value: i }, o.name); })
+                    )
+                  ),
+                  React.createElement('div', null,
+                    React.createElement('label', { className: 'text-xs font-bold text-purple-700' }, 'Organism B'),
+                    React.createElement('select', { value: bIdx, onChange: function(e) { upd('_cmpB', parseInt(e.target.value)); }, className: 'w-full px-2 py-1 text-xs border-2 border-purple-200 rounded mt-1' },
+                      ORGANISM_DB.map(function(o, i) { return React.createElement('option', { key: i, value: i }, o.name); })
+                    )
+                  )
+                ),
+                oA && oB && React.createElement('table', { className: 'w-full text-xs' },
+                  React.createElement('thead', null,
+                    React.createElement('tr', { className: 'border-b border-purple-200' },
+                      React.createElement('th', { className: 'p-2 text-left text-purple-700' }, 'Property'),
+                      React.createElement('th', { className: 'p-2 text-left text-purple-700' }, oA.name),
+                      React.createElement('th', { className: 'p-2 text-left text-purple-700' }, oB.name)
+                    )
+                  ),
+                  React.createElement('tbody', null,
+                    ['kingdom', 'cellType', 'size', 'habitat', 'feeding', 'reproduction', 'movement'].map(function(k, i) {
+                      return React.createElement('tr', { key: k, className: 'border-b border-slate-100 ' + (i % 2 === 0 ? 'bg-purple-50' : '') },
+                        React.createElement('td', { className: 'p-2 font-bold text-purple-700 capitalize' }, k.replace(/([A-Z])/g, ' $1')),
+                        React.createElement('td', { className: 'p-2 text-slate-700' }, oA[k]),
+                        React.createElement('td', { className: 'p-2 text-slate-700' }, oB[k])
+                      );
+                    })
+                  )
+                )
+              );
+            })(),
+
+            // ═══════════════════════════════════════════════════════════
+            // HISTORY MODE
+            // ═══════════════════════════════════════════════════════════
+            d.mode === 'history' && React.createElement('div', { className: 'mt-4 bg-white rounded-xl border-2 border-amber-300 p-4' },
+              React.createElement('h3', { className: 'text-base font-bold text-amber-700 mb-3' }, 'History of Cell Biology + Microbiology'),
+              React.createElement('div', { className: 'space-y-1' },
+                CELL_HISTORY.map(function(e) {
+                  return React.createElement('div', { key: e.id, className: 'flex items-start gap-3 bg-amber-50 border-l-4 border-amber-500 rounded-r p-2' },
+                    React.createElement('div', { className: 'text-amber-700 font-mono font-bold text-xs w-12 flex-shrink-0' }, e.year),
+                    React.createElement('div', { className: 'flex-1' },
+                      React.createElement('div', { className: 'text-xs text-slate-800 leading-relaxed' }, e.event),
+                      React.createElement('div', { className: 'text-[10px] italic text-amber-700' }, e.country)
+                    )
+                  );
+                })
+              )
+            ),
+
+            // ═══════════════════════════════════════════════════════════
+            // BIOLOGISTS MODE
+            // ═══════════════════════════════════════════════════════════
+            d.mode === 'biologists' && (function() {
+              var bioIdx = (d._bioIdx != null) ? d._bioIdx : 0;
+              var b = FAMOUS_BIOLOGISTS[bioIdx];
+              return React.createElement('div', { className: 'mt-4 bg-white rounded-xl border-2 border-violet-300 p-4 space-y-3' },
+                React.createElement('h3', { className: 'text-base font-bold text-violet-700' }, 'Famous Biologists'),
+                React.createElement('div', { className: 'flex flex-wrap gap-1 max-h-32 overflow-y-auto p-2 bg-slate-50 rounded' },
+                  FAMOUS_BIOLOGISTS.map(function(bio, i) {
+                    var sel = bioIdx === i;
+                    return React.createElement('button', { key: i, onClick: function() { upd('_bioIdx', i); }, className: 'px-2 py-1 rounded text-[10px] font-bold ' + (sel ? 'bg-violet-600 text-white' : 'bg-white text-slate-700 border border-slate-300') }, bio.name.split(' ').slice(-1)[0]);
+                  })
+                ),
+                b && React.createElement('div', { className: 'bg-violet-50 border-2 border-violet-300 rounded-xl p-3 space-y-2' },
+                  React.createElement('div', { className: 'flex items-baseline justify-between' },
+                    React.createElement('h4', { className: 'text-base font-bold text-violet-800' }, b.name),
+                    React.createElement('span', { className: 'text-xs text-slate-600 font-mono' }, b.years + ' - ' + b.country)
+                  ),
+                  React.createElement('p', { className: 'text-xs text-slate-700 leading-relaxed italic' }, b.contribution)
+                )
+              );
+            })(),
+
+            // ═══════════════════════════════════════════════════════════
+            // LAB TECHNIQUES MODE
+            // ═══════════════════════════════════════════════════════════
+            d.mode === 'lab' && React.createElement('div', { className: 'mt-4 bg-white rounded-xl border-2 border-blue-300 p-4 space-y-2' },
+              React.createElement('h3', { className: 'text-base font-bold text-blue-700' }, 'Lab Techniques'),
+              LAB_TECHNIQUES.map(function(t) {
+                return React.createElement('div', { key: t.id, className: 'bg-blue-50 border border-blue-200 rounded p-2 text-xs' },
+                  React.createElement('div', { className: 'flex justify-between' },
+                    React.createElement('span', { className: 'font-bold text-blue-700' }, t.name),
+                    React.createElement('span', { className: 'text-[10px] font-mono text-amber-700' }, t.skill)
+                  ),
+                  React.createElement('div', { className: 'text-slate-700 mt-1' }, 'Method: ' + t.method),
+                  React.createElement('div', { className: 'text-emerald-700 italic mt-1' }, 'Purpose: ' + t.purpose)
+                );
+              })
+            ),
+
+            // ═══════════════════════════════════════════════════════════
+            // DISEASE MODE
+            // ═══════════════════════════════════════════════════════════
+            d.mode === 'disease' && React.createElement('div', { className: 'mt-4 bg-white rounded-xl border-2 border-rose-300 p-4 space-y-2' },
+              React.createElement('h3', { className: 'text-base font-bold text-rose-700' }, 'Microbial Diseases'),
+              MICROBIAL_DISEASES.map(function(disease) {
+                return React.createElement('div', { key: disease.id, className: 'bg-rose-50 border border-rose-200 rounded p-2 text-xs' },
+                  React.createElement('div', { className: 'flex justify-between mb-1' },
+                    React.createElement('span', { className: 'font-bold text-rose-700' }, disease.disease),
+                    React.createElement('span', { className: 'font-mono text-[10px] text-slate-600' }, disease.pathogen)
+                  ),
+                  React.createElement('div', { className: 'text-slate-700' }, 'Symptoms: ' + disease.symptoms),
+                  React.createElement('div', { className: 'text-emerald-700' }, 'Treatment: ' + disease.treatment),
+                  React.createElement('div', { className: 'text-[10px] italic text-amber-700' }, disease.prevalence)
+                );
+              })
+            ),
+
+            // ═══════════════════════════════════════════════════════════
+            // ECOLOGY MODE
+            // ═══════════════════════════════════════════════════════════
+            d.mode === 'ecology' && React.createElement('div', { className: 'mt-4 bg-white rounded-xl border-2 border-emerald-300 p-4 space-y-2' },
+              React.createElement('h3', { className: 'text-base font-bold text-emerald-700' }, 'Microbial Ecology + Habitats'),
+              MICRO_ECOLOGY.map(function(eco) {
+                return React.createElement('div', { key: eco.id, className: 'bg-emerald-50 border border-emerald-200 rounded p-2 text-xs' },
+                  React.createElement('div', { className: 'font-bold text-emerald-700' }, eco.habitat),
+                  React.createElement('div', { className: 'text-slate-700' }, 'Inhabitants: ' + eco.inhabitants),
+                  React.createElement('div', { className: 'text-amber-700 italic' }, 'Importance: ' + eco.importance)
+                );
+              })
+            ),
+
+            // ═══════════════════════════════════════════════════════════
+            // GLOSSARY MODE
+            // ═══════════════════════════════════════════════════════════
+            d.mode === 'glossary' && (function() {
+              var search = d._glossSearch || '';
+              var filtered = search ? CELL_GLOSSARY.filter(function(g) { return g.term.toLowerCase().indexOf(search.toLowerCase()) !== -1 || g.definition.toLowerCase().indexOf(search.toLowerCase()) !== -1; }) : CELL_GLOSSARY;
+              return React.createElement('div', { className: 'mt-4 bg-white rounded-xl border-2 border-indigo-300 p-4' },
+                React.createElement('h3', { className: 'text-base font-bold text-indigo-700 mb-3' }, 'Cell Biology Glossary'),
+                React.createElement('input', { type: 'text', placeholder: 'Search terms...', value: search, onChange: function(e) { upd('_glossSearch', e.target.value); }, className: 'w-full px-2 py-1 text-xs border-2 border-indigo-200 rounded mb-3' }),
+                React.createElement('div', { className: 'grid md:grid-cols-2 gap-1' },
+                  filtered.map(function(g) {
+                    return React.createElement('div', { key: g.id, className: 'bg-indigo-50 border border-indigo-200 rounded p-2 text-xs' },
+                      React.createElement('div', { className: 'font-bold text-indigo-700' }, g.term),
+                      React.createElement('div', { className: 'text-slate-700' }, g.definition)
+                    );
+                  })
+                )
+              );
+            })(),
+
+            // ═══════════════════════════════════════════════════════════
+            // FINALE MODE
+            // ═══════════════════════════════════════════════════════════
+            d.mode === 'finale' && React.createElement('div', { className: 'mt-4 bg-gradient-to-br from-yellow-50 to-amber-50 rounded-xl border-2 border-amber-400 p-6 text-center' },
+              React.createElement('div', { className: 'text-6xl mb-2' }, 'Goal!'),
+              React.createElement('h3', { className: 'text-2xl font-bold text-amber-800 mb-2' }, 'Cell Master Achievement'),
+              React.createElement('p', { className: 'text-sm text-amber-700 italic' }, 'You explored a microscopic universe of life.')
             )
 
           )
