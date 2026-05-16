@@ -2132,7 +2132,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           'forest-night':  { sky: 0x1e1b4b, fog: 0x312e81, ground: 0x1c1917 },
           'mountain':      { sky: 0x93c5fd, fog: 0xdbeafe, ground: 0x78716c },
           'boreal-forest': { sky: 0x6ee7b7, fog: 0xa7f3d0, ground: 0x1f3a1d },
-          'urban-cliff':   { sky: 0xbfdbfe, fog: 0xe0e7ff, ground: 0x6b7280 }
+          'urban-cliff':   { sky: 0xbfdbfe, fog: 0xe0e7ff, ground: 0x6b7280 },
+          // NEW v0.19 biomes
+          'tundra':        { sky: 0xc7d2fe, fog: 0xe2e8f0, ground: 0xf1f5f9 },  // pale blue sky, white-ish ground (snow)
+          'forest':        { sky: 0x9bc7f2, fog: 0xd9f99d, ground: 0x166534 }   // temperate forest, green ground
         };
         var bc = biomeColors[species.biome] || biomeColors.grassland;
         scene.background = new THREE.Color(bc.sky);
@@ -2218,6 +2221,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var treeCount = species.biome === 'rainforest' ? 180 :
                         species.biome === 'forest-night' ? 120 :
                         species.biome === 'boreal-forest' ? 140 :
+                        species.biome === 'forest' ? 110 :
+                        species.biome === 'tundra' ? 4 :
                         species.biome === 'mountain' ? 30 :
                         species.biome === 'grassland' ? 25 : 50;
         for (var ti2 = 0; ti2 < treeCount; ti2++) {
@@ -2244,6 +2249,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var folColor = species.biome === 'rainforest' ? 0x14532d :
                          species.biome === 'forest-night' ? 0x14532d :
                          species.biome === 'boreal-forest' ? 0x064e3b :
+                         species.biome === 'forest' ? 0x166534 :
+                         species.biome === 'tundra' ? 0xe2e8f0 :
                          species.biome === 'mountain' ? 0x166534 : 0x166534;
           var folMat = new THREE.MeshStandardMaterial({ color: folColor, roughness: 0.95 });
           var foliage = new THREE.Mesh(folGeo, folMat);
@@ -2412,8 +2419,87 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         function onKeyUp(e) { keys[e.key.toLowerCase()] = false; }
         canvasEl.addEventListener('keydown', onKeyDown);
         canvasEl.addEventListener('keyup', onKeyUp);
-        canvasEl.addEventListener('mousedown', function() { canvasEl.focus(); });
         canvasEl.focus();
+
+        // ─── NEW v0.19: Touch + Mouse drag controls ───
+        // Drag-to-steer (touch + mouse). Horizontal drag = yaw delta; vertical drag = pitch delta.
+        var dragState = { active: false, lastX: 0, lastY: 0, pointerId: null };
+        var touchYawSensitivity = 0.005;   // radians per pixel
+        var touchPitchSensitivity = 0.003;
+        function onPointerDown(e) {
+          canvasEl.focus();
+          var p = e.touches ? e.touches[0] : e;
+          dragState.active = true;
+          dragState.lastX = p.clientX;
+          dragState.lastY = p.clientY;
+          if (e.pointerId !== undefined) dragState.pointerId = e.pointerId;
+          if (e.cancelable && e.touches) e.preventDefault();
+        }
+        function onPointerMove(e) {
+          if (!dragState.active) return;
+          var p = e.touches ? e.touches[0] : e;
+          var dx = p.clientX - dragState.lastX;
+          var dy = p.clientY - dragState.lastY;
+          dragState.lastX = p.clientX;
+          dragState.lastY = p.clientY;
+          // Apply directly to raptor (need access to raptor — it's in scope here)
+          raptor.yaw -= dx * touchYawSensitivity;
+          raptor.pitch = Math.max(-0.8, Math.min(0.8, raptor.pitch - dy * touchPitchSensitivity));
+          if (e.cancelable && e.touches) e.preventDefault();
+        }
+        function onPointerUp(e) {
+          dragState.active = false;
+          dragState.pointerId = null;
+        }
+        canvasEl.addEventListener('mousedown', onPointerDown);
+        canvasEl.addEventListener('mousemove', onPointerMove);
+        canvasEl.addEventListener('mouseup', onPointerUp);
+        canvasEl.addEventListener('mouseleave', onPointerUp);
+        canvasEl.addEventListener('touchstart', onPointerDown, { passive: false });
+        canvasEl.addEventListener('touchmove', onPointerMove, { passive: false });
+        canvasEl.addEventListener('touchend', onPointerUp);
+        canvasEl.addEventListener('touchcancel', onPointerUp);
+
+        // ─── NEW v0.19: On-screen action buttons (touch-friendly) ───
+        // Floating button cluster at the bottom of the canvas parent.
+        // Buttons: ↑ altitude, ↓ altitude, DIVE (hold), PULL (hold), STRIKE (tap)
+        var hudParent2 = canvasEl.parentElement;
+        var btnDock = document.createElement('div');
+        btnDock.style.cssText = 'position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:6px;pointer-events:auto;flex-wrap:wrap;justify-content:center;max-width:95%';
+        hudParent2.appendChild(btnDock);
+        function makeBtn(label, color, holdKey, isStrike) {
+          var b = document.createElement('button');
+          b.textContent = label;
+          b.style.cssText = 'background:rgba(15,23,42,0.85);border:2px solid ' + color + ';border-radius:10px;padding:10px 14px;color:' + color + ';font-weight:bold;font-size:13px;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none;min-width:54px;font-family:ui-monospace,Menlo,monospace;';
+          b.setAttribute('aria-label', label);
+          if (isStrike) {
+            var doStrike = function(e) { e && e.preventDefault && e.preventDefault(); strike(); };
+            b.addEventListener('click', doStrike);
+            b.addEventListener('touchstart', doStrike, { passive: false });
+          } else if (holdKey) {
+            var press = function(e) { e && e.preventDefault && e.preventDefault(); keys[holdKey] = true; b.style.background = color; b.style.color = '#0f172a'; };
+            var release = function(e) { e && e.preventDefault && e.preventDefault(); keys[holdKey] = false; b.style.background = 'rgba(15,23,42,0.85)'; b.style.color = color; };
+            b.addEventListener('mousedown', press);
+            b.addEventListener('mouseup', release);
+            b.addEventListener('mouseleave', release);
+            b.addEventListener('touchstart', press, { passive: false });
+            b.addEventListener('touchend', release);
+            b.addEventListener('touchcancel', release);
+          }
+          return b;
+        }
+        var btnDown = makeBtn('⬇ Alt', '#60a5fa', 'q');
+        var btnUp = makeBtn('⬆ Alt', '#60a5fa', 'e');
+        var btnDive = makeBtn('🚀 DIVE', '#fca5a5', 'shift');
+        var btnPull = makeBtn('🪂 PULL', '#67e8f9', ' ');
+        var btnStrike = makeBtn('🎯 STRIKE', '#fde047', null, true);
+        [btnDown, btnUp, btnDive, btnPull, btnStrike].forEach(function(b) { btnDock.appendChild(b); });
+        // Touch hint
+        var touchHint = document.createElement('div');
+        touchHint.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(15,23,42,0.7);border:1px solid rgba(251,191,36,0.4);border-radius:8px;padding:8px 12px;color:#fbbf24;font-size:11px;pointer-events:none;font-family:ui-sans-serif,system-ui;text-align:center;opacity:0.9';
+        touchHint.innerHTML = '✋ Drag canvas to steer · Tap buttons below to dive/strike';
+        hudParent2.appendChild(touchHint);
+        setTimeout(function() { if (touchHint.parentElement) touchHint.style.transition = 'opacity 1s'; touchHint.style.opacity = '0'; setTimeout(function() { if (touchHint.parentElement) touchHint.parentElement.removeChild(touchHint); }, 1000); }, 4000);
 
         // ─── Strike ───
         function strike() {
@@ -6206,7 +6292,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               ),
               h('div', { className: 'grid grid-cols-3 gap-2 mt-2 text-xs' },
                 specs.map(function(spec, i) {
-                  return h('div', { key: spec.id, className: 'bg-slate-800/40 rounded p-2 border-l-4', style: { borderColor: spec.color } },
+                  return h('div', { key: spec.id, className: 'bg-slate-800/40 rounded p-2', style: { borderLeftWidth: '4px', borderLeftStyle: 'solid', borderLeftColor: spec.color } },
                     h('div', { className: 'font-bold text-amber-200' }, spec.name),
                     h('div', { className: 'text-[10px] text-slate-400 mt-1' }, 'Stoop speed: ', h('span', { className: 'font-mono text-amber-300' }, spec.stoopMph + ' mph')),
                     h('div', { className: 'text-[10px] text-slate-400' }, 'Tuck Cd: ', h('span', { className: 'font-mono text-amber-300' }, spec.cdCurve))
