@@ -69,7 +69,7 @@ const CornellNotesView = React.memo((props) => {
   const handleSummaryChange = (e) => handleNoteUpdate('summary', e.target.value);
   const handleTitleChange = (e) => handleNoteUpdate('title', e.target.value);
   return (
-    <div className="max-w-5xl mx-auto px-4 py-6 space-y-4">
+    <div className="max-w-5xl mx-auto px-4 py-6 space-y-4" data-help-key="cornell_notes_panel">
       <div className="bg-slate-50 border-l-4 border-indigo-600 p-3 rounded">
         <div className="text-xs font-bold text-indigo-700 uppercase tracking-wider mb-1">Cornell Notes</div>
         <input
@@ -79,15 +79,16 @@ const CornellNotesView = React.memo((props) => {
           placeholder="Today's lesson title"
           className="w-full text-xl font-black text-slate-800 bg-transparent border-b border-slate-300 focus:border-indigo-500 outline-none py-1"
           aria-label="Cornell Notes title"
+          data-help-key="cornell_notes_title_field"
         />
         {lessonRef.generatedAt ? (
           <div className="text-[11px] text-slate-500 mt-1">Started: {new Date(lessonRef.generatedAt).toLocaleString()}</div>
         ) : null}
       </div>
-      <div className="border-2 border-slate-300 rounded-xl overflow-hidden bg-white">
+      <div className="border-2 border-slate-300 rounded-xl overflow-hidden bg-white" data-help-key="cornell_notes_two_column_grid">
         <div className="grid grid-cols-[35%_65%] bg-slate-100 border-b border-slate-300">
-          <div className="px-4 py-2 font-black text-xs uppercase tracking-wider text-slate-700 border-r border-slate-300">Cues / Questions</div>
-          <div className="px-4 py-2 font-black text-xs uppercase tracking-wider text-slate-700">Notes</div>
+          <div className="px-4 py-2 font-black text-xs uppercase tracking-wider text-slate-700 border-r border-slate-300" data-help-key="cornell_notes_cue_column">Cues / Questions</div>
+          <div className="px-4 py-2 font-black text-xs uppercase tracking-wider text-slate-700" data-help-key="cornell_notes_notes_column">Notes</div>
         </div>
         {Array.from({ length: rowCount }).map((_, idx) => {
           const cueText = (cues[idx] && cues[idx].text) || '';
@@ -129,6 +130,7 @@ const CornellNotesView = React.memo((props) => {
           onClick={handleAddRow}
           className="px-4 py-1.5 text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-300 rounded-full hover:bg-indigo-100"
           aria-label="Add a row to Cornell Notes"
+          data-help-key="cornell_notes_add_row_button"
         >+ Add row</button>
       </div>
       <_CardSection title="Summary" hint="Write a short summary after the lesson. The act of summarizing in your own words consolidates the learning." color="emerald">
@@ -139,6 +141,7 @@ const CornellNotesView = React.memo((props) => {
           className="w-full text-sm text-slate-700 bg-white border border-slate-200 rounded-md p-3 outline-none focus:ring-2 focus:ring-emerald-300 resize-y min-h-[100px]"
           rows={4}
           aria-label="Cornell Notes summary"
+          data-help-key="cornell_notes_summary_section"
         />
       </_CardSection>
       <div className="text-[11px] text-slate-500 italic text-center">Cornell Notes: cues on the left, notes on the right, summary below. Saved to your history so this entry stays with you across lessons.</div>
@@ -178,7 +181,7 @@ const LabReportView = React.memo((props) => {
   const addProcedureStep = () => handleNoteUpdate('procedure', procedure.concat([{ id: _genId('step'), text: '' }]));
   const removeProcedureStepAt = (idx) => handleNoteUpdate('procedure', procedure.filter((_, i) => i !== idx));
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6 space-y-4">
+    <div className="max-w-4xl mx-auto px-4 py-6 space-y-4" data-help-key="lab_report_panel">
       <div className="bg-slate-50 border-l-4 border-sky-600 p-3 rounded">
         <div className="text-xs font-bold text-sky-700 uppercase tracking-wider mb-1">Lab Report</div>
         <input
@@ -188,6 +191,7 @@ const LabReportView = React.memo((props) => {
           placeholder="Experiment title"
           className="w-full text-xl font-black text-slate-800 bg-transparent border-b border-slate-300 focus:border-sky-500 outline-none py-1"
           aria-label="Lab Report title"
+          data-help-key="lab_report_title_field"
         />
         {lessonRef.generatedAt ? (
           <div className="text-[11px] text-slate-500 mt-1">Started: {new Date(lessonRef.generatedAt).toLocaleString()}</div>
@@ -211,6 +215,7 @@ const LabReportView = React.memo((props) => {
           className="w-full text-sm bg-white border border-slate-200 rounded p-2 outline-none focus:ring-2 focus:ring-violet-300 resize-y min-h-[60px]"
           rows={2}
           aria-label="Hypothesis"
+          data-help-key="lab_report_hypothesis_field"
         />
       </_CardSection>
       <_CardSection title="Materials" hint="List everything you need to run the experiment." color="amber">
@@ -251,7 +256,7 @@ const LabReportView = React.memo((props) => {
             </li>
           ))}
         </ol>
-        <button onClick={addProcedureStep} className="mt-2 px-3 py-1 text-xs font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 rounded hover:bg-emerald-200">+ Add step</button>
+        <button onClick={addProcedureStep} className="mt-2 px-3 py-1 text-xs font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 rounded hover:bg-emerald-200" data-help-key="lab_report_add_step_button">+ Add step</button>
       </_CardSection>
       <_CardSection title="Data / Observations" hint="Record what you see, measure, or count. Use specific numbers and units when possible." color="indigo">
         <textarea
@@ -261,6 +266,7 @@ const LabReportView = React.memo((props) => {
           className="w-full text-sm bg-white border border-slate-200 rounded p-2 outline-none focus:ring-2 focus:ring-indigo-300 resize-y min-h-[100px] font-mono"
           rows={5}
           aria-label="Data and observations"
+          data-help-key="lab_report_data_observations_field"
         />
       </_CardSection>
       <_CardSection title="Analysis (Claim / Evidence / Reasoning)" hint="State your claim. List the evidence from your data. Explain the reasoning that connects them." color="rose">
@@ -271,6 +277,7 @@ const LabReportView = React.memo((props) => {
           className="w-full text-sm bg-white border border-slate-200 rounded p-2 outline-none focus:ring-2 focus:ring-rose-300 resize-y min-h-[100px]"
           rows={5}
           aria-label="Analysis (Claim, Evidence, Reasoning)"
+          data-help-key="lab_report_cer_section"
         />
       </_CardSection>
       <_CardSection title="Conclusion" hint="Did your data support your hypothesis? What did you learn? What new questions came up?" color="slate">
@@ -281,6 +288,7 @@ const LabReportView = React.memo((props) => {
           className="w-full text-sm bg-white border border-slate-200 rounded p-2 outline-none focus:ring-2 focus:ring-slate-400 resize-y min-h-[80px]"
           rows={4}
           aria-label="Conclusion"
+          data-help-key="lab_report_conclusion_field"
         />
       </_CardSection>
       <div className="text-[11px] text-slate-500 italic text-center">Lab Report saved to your history. Open it later to keep adding observations across days.</div>
@@ -310,7 +318,7 @@ const ReadingResponseView = React.memo((props) => {
   ];
   const activeConnType = connTypes.find(ct => ct.id === connection.type) || connTypes[0];
   return (
-    <div className="max-w-3xl mx-auto px-4 py-6 space-y-4">
+    <div className="max-w-3xl mx-auto px-4 py-6 space-y-4" data-help-key="reading_response_panel">
       <div className="bg-slate-50 border-l-4 border-violet-600 p-3 rounded">
         <div className="text-xs font-bold text-violet-700 uppercase tracking-wider mb-1">Reading Response</div>
         <input
@@ -320,6 +328,7 @@ const ReadingResponseView = React.memo((props) => {
           placeholder="Title of what you read"
           className="w-full text-xl font-black text-slate-800 bg-transparent border-b border-slate-300 focus:border-violet-500 outline-none py-1"
           aria-label="Reading title"
+          data-help-key="reading_response_title_field"
         />
         <div className="flex flex-col sm:flex-row gap-2 mt-2">
           <input
@@ -351,6 +360,7 @@ const ReadingResponseView = React.memo((props) => {
           className="w-full text-sm italic bg-white border border-slate-200 rounded p-2 outline-none focus:ring-2 focus:ring-amber-300 resize-y min-h-[60px]"
           rows={2}
           aria-label="Favorite line or passage"
+          data-help-key="reading_response_evidence_field"
         />
       </_CardSection>
       <_CardSection title="What This Made Me Think About" hint="Free-write what came up for you as you read." color="violet">
@@ -364,7 +374,7 @@ const ReadingResponseView = React.memo((props) => {
         />
       </_CardSection>
       <_CardSection title="Connection" hint={activeConnType.hint} color="sky">
-        <div className="flex flex-wrap gap-2 mb-3">
+        <div className="flex flex-wrap gap-2 mb-3" data-help-key="reading_response_connection_type_toggle">
           {connTypes.map((ct) => (
             <button
               key={ct.id}
@@ -383,6 +393,7 @@ const ReadingResponseView = React.memo((props) => {
           className="w-full text-sm bg-white border border-slate-200 rounded p-2 outline-none focus:ring-2 focus:ring-sky-300 resize-y min-h-[80px]"
           rows={4}
           aria-label="Connection text"
+          data-help-key="reading_response_connection_field"
         />
       </_CardSection>
       <_CardSection title="One Question I Have" hint="What did this reading leave you wondering about?" color="emerald">
@@ -393,6 +404,7 @@ const ReadingResponseView = React.memo((props) => {
           className="w-full text-sm bg-white border border-slate-200 rounded p-2 outline-none focus:ring-2 focus:ring-emerald-300 resize-y min-h-[60px]"
           rows={2}
           aria-label="Question"
+          data-help-key="reading_response_open_question_field"
         />
       </_CardSection>
       <div className="text-[11px] text-slate-500 italic text-center">Reading Response saved to your history. Browse all your responses to build a record of your reading life.</div>

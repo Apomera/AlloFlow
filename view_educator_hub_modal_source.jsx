@@ -22,7 +22,7 @@ function EducatorHubModal(props) {
 
   return (
         <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4" onClick={() => setShowEducatorHub(false)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') setShowEducatorHub(false); }}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8" role="dialog" aria-modal="true" aria-label={t('educator_hub.dialog_aria') || 'Educator Tools'} onClick={(e) => e.stopPropagation()}>
+          <div data-help-key="educator_hub_modal_panel" className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8" role="dialog" aria-modal="true" aria-label={t('educator_hub.dialog_aria') || 'Educator Tools'} onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">🛠️ {t('educator_hub.title') || 'Educator Tools'}</h2>
@@ -31,35 +31,35 @@ function EducatorHubModal(props) {
               <button onClick={() => setShowEducatorHub(false)} className="text-slate-600 hover:text-slate-600 text-xl" aria-label={t('educator_hub.close_aria') || 'Close educator tools'}>✕</button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <button onClick={() => { setShowEducatorHub(false); setShowBehaviorLens(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
+              <button data-help-key="educator_hub_behavior_lens_card" onClick={() => { setShowEducatorHub(false); setShowBehaviorLens(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
                 <span className="text-3xl mt-1">🧠</span>
                 <div>
                   <h3 className="font-bold text-indigo-800">{t('educator_hub.behavior_lens_title') || 'BehaviorLens'}</h3>
                   <p className="text-xs text-indigo-600 mt-1">{t('educator_hub.behavior_lens_desc') || 'FBA/BIP behavioral observation, ABC data collection, and 60+ clinical tools'}</p>
                 </div>
               </button>
-              <button onClick={() => { setShowEducatorHub(false); setShowReportWriter(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
+              <button data-help-key="educator_hub_report_writer_card" onClick={() => { setShowEducatorHub(false); setShowReportWriter(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
                 <span className="text-3xl mt-1">📝</span>
                 <div>
                   <h3 className="font-bold text-violet-800">{t('educator_hub.report_writer_title') || 'Report Writer'}</h3>
                   <p className="text-xs text-violet-600 mt-1">{t('educator_hub.report_writer_desc') || 'AI-powered clinical report generation with fact-chunks, accuracy audit, and developmental norms'}</p>
                 </div>
               </button>
-              <button onClick={() => { setShowEducatorHub(false); setIsSymbolStudioOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
+              <button data-help-key="educator_hub_symbol_studio_card" onClick={() => { setShowEducatorHub(false); setIsSymbolStudioOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
                 <span className="text-3xl mt-1">🎨</span>
                 <div>
                   <h3 className="font-bold text-purple-800">{t('educator_hub.symbol_studio_title') || 'Symbol Studio'}</h3>
                   <p className="text-xs text-purple-600 mt-1">{t('educator_hub.symbol_studio_desc') || 'AI-generated PCS-style icons for visual supports, AAC boards, and schedules — powered by image-to-image editing'}</p>
                 </div>
               </button>
-              <button onClick={() => { setShowEducatorHub(false); openExportPreview('print'); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
+              <button data-help-key="educator_hub_document_hub_card" onClick={() => { setShowEducatorHub(false); openExportPreview('print'); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
                 <span className="text-3xl mt-1">📄</span>
                 <div>
                   <h3 className="font-bold text-emerald-800">{t('educator_hub.document_hub_title') || 'Document Hub'}</h3>
                   <p className="text-xs text-emerald-600 mt-1">{t('educator_hub.document_hub_desc') || 'Document builder with themes, WYSIWYG editing, accessibility audit, and multi-format export (PDF, HTML, worksheet, slides)'}</p>
                 </div>
               </button>
-              <button onClick={() => {
+              <button data-help-key="educator_hub_pdf_accessibility_card" onClick={() => {
                   setShowEducatorHub(false);
                   const input = document.createElement('input');
                   input.type = 'file';
@@ -117,14 +117,14 @@ function EducatorHubModal(props) {
                   {pdfFixResult._userEditedAt && <span className="opacity-70 text-[10px]">· edited</span>}
                 </button>
               )}
-              <button onClick={() => { setShowEducatorHub(false); setIsCommunityCatalogOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
+              <button data-help-key="educator_hub_community_catalog_card" onClick={() => { setShowEducatorHub(false); setIsCommunityCatalogOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
                 <span className="text-3xl mt-1" role="img" aria-label={t('educator_hub.books_emoji_aria') || 'books'}>📚</span>
                 <div>
                   <h3 className="font-bold text-amber-800">{t('educator_hub.community_catalog_title') || 'Community Catalog'}</h3>
                   <p className="text-xs text-amber-700 mt-1">{t('educator_hub.community_catalog_desc') || 'Browse open-licensed lessons from the AlloFlow community, or submit your own for review'}</p>
                 </div>
               </button>
-              <button onClick={() => { setShowEducatorHub(false); setIsAccessibilityLabOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-rose-50 to-amber-50 border border-rose-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
+              <button data-help-key="educator_hub_accessibility_lab_card" onClick={() => { setShowEducatorHub(false); setIsAccessibilityLabOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-rose-50 to-amber-50 border border-rose-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
                 <span className="text-3xl mt-1" role="img" aria-label={t('educator_hub.magnifying_glass_emoji_aria') || 'magnifying glass'}>🔍</span>
                 <div>
                   <h3 className="font-bold text-rose-800">{t('educator_hub.accessibility_lab_title') || 'Accessibility Lab'}</h3>

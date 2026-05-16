@@ -133,7 +133,7 @@ const AnchorChartCritiqueOverlay = React.memo((props) => {
   return (
     <div className="fixed inset-0 z-[60] pointer-events-none">
       <div className="absolute inset-0 pointer-events-auto">
-        <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-amber-50 to-transparent p-3 border-b border-amber-200 shadow-sm flex items-center justify-between">
+        <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-amber-50 to-transparent p-3 border-b border-amber-200 shadow-sm flex items-center justify-between" data-help-key="anchor_chart_critique_panel">
           <div className="flex items-center gap-2">
             <span className="text-2xl">📌</span>
             <div>
@@ -426,7 +426,7 @@ const AnchorChartView = React.memo((props) => {
   };
 
   return (
-    <div className="ac-root max-w-5xl mx-auto px-4 py-6">
+    <div className="ac-root max-w-5xl mx-auto px-4 py-6" data-help-key="anchor_chart_view_panel">
       <style>{`
         .ac-paper {
           background-color: #fdfaf2;
@@ -460,11 +460,13 @@ const AnchorChartView = React.memo((props) => {
             className={`px-3 py-1.5 text-xs font-bold rounded-full border ${isEditing ? 'bg-amber-600 text-white border-amber-700' : 'bg-white text-amber-800 border-amber-300 hover:bg-amber-50'}`}
             aria-pressed={isEditing}
             aria-label={isEditing ? 'Finish editing' : 'Edit chart'}
+            data-help-key="anchor_chart_edit_toggle"
           >{isEditing ? '✓ Done editing' : '✎ Edit'}</button>
           <button
             onClick={() => setShowCritique(true)}
             className="px-3 py-1.5 text-xs font-bold rounded-full border bg-white text-sky-800 border-sky-300 hover:bg-sky-50"
             aria-label="Open critique mode"
+            data-help-key="anchor_chart_critique_mode_toggle"
           >📌 Critique mode</button>
           {isTeacherMode && activeSessionCode && onPlayPictionary && sections.length > 0 ? (
             <button
@@ -481,6 +483,7 @@ const AnchorChartView = React.memo((props) => {
             aria-label="Download chart as PNG image"
             aria-busy={exportState === 'rendering'}
             title="Download as PNG (poster-quality)"
+            data-help-key="anchor_chart_download_png"
           >
             {exportState === 'rendering' ? '⏳ Rendering…' : exportState === 'error' ? '⚠ Try again' : '💾 Download PNG'}
           </button>
@@ -488,10 +491,12 @@ const AnchorChartView = React.memo((props) => {
             onClick={() => { try { window.print(); } catch (_) {} }}
             className="px-3 py-1.5 text-xs font-bold rounded-full border bg-white text-slate-700 border-slate-300 hover:bg-slate-100"
             aria-label="Print or save as PDF"
+            data-help-key="anchor_chart_print_button"
           >🖨️ Print</button>
         </div>
       </div>
-      <div ref={paperRef} className="ac-paper p-6 sm:p-8">
+      <div ref={paperRef} className="ac-paper p-6 sm:p-8" data-help-key="anchor_chart_paper">
+
         <div className="text-center mb-4">
           {isEditing ? (
             <input
@@ -584,6 +589,7 @@ const AnchorChartView = React.memo((props) => {
               <button
                 onClick={handleAddSection}
                 className="px-4 py-1.5 text-sm font-bold rounded-full bg-white border-2 border-dashed border-amber-400 text-amber-800 hover:bg-amber-50"
+                data-help-key="anchor_chart_add_section"
               >+ Add section</button>
               {sections.length > 1 ? (
                 <div className="text-[11px] text-amber-700/70 italic">Tip: drag the ⋮⋮ handle on any section to reorder.</div>

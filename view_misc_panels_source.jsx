@@ -741,6 +741,7 @@ function FluencyModePanel(props) {
                 aria-modal="true"
                 aria-label={t('fluency.tool_label')}
                 className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl relative border-4 border-rose-200 overflow-hidden flex flex-col h-[80vh]"
+                data-help-key="fluency_mode_panel"
             >
                 <div className="bg-rose-50 p-4 border-b border-rose-100 flex justify-between items-center shrink-0">
                     <div className="flex items-center gap-3">
@@ -760,6 +761,7 @@ function FluencyModePanel(props) {
                                     value={fluencyTimeLimit}
                                     onChange={(e) => { setFluencyTimeLimit(parseInt(e.target.value)); setFluencyTimeRemaining(parseInt(e.target.value)); }}
                                     className="text-xs font-bold border border-slate-400 rounded-lg px-2 py-1 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-300"
+                                    data-help-key="fluency_mode_time_limit"
                                 >
                                     <option value={0}>{t('fluency.time_limit_none')}</option>
                                     <option value={30}>30 sec</option>
@@ -940,7 +942,7 @@ function FluencyModePanel(props) {
                                     </div>
                                 </div>
                             )}
-                            <div className="text-xl md:text-2xl font-serif leading-loose text-center flex flex-wrap justify-center gap-1.5">
+                            <div className="text-xl md:text-2xl font-serif leading-loose text-center flex flex-wrap justify-center gap-1.5" data-help-key="fluency_mode_word_analysis">
                                 {fluencyResult.wordData.map((w, i) => (
                                     <span
                                         key={i}
@@ -1005,6 +1007,7 @@ function FluencyModePanel(props) {
                                     onClick={() => generateFluencyScoreSheet(fluencyResult, typeof generatedContent?.data === 'string' ? generatedContent.data : '')}
                                     className="flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition-colors"
                                     aria-label={t('common.print_score_sheet')}
+                                    data-help-key="fluency_mode_print_score_sheet_btn"
                                 >
                                     <FileText size={15} /> Print Score Sheet
                                 </button>
@@ -1012,6 +1015,7 @@ function FluencyModePanel(props) {
                                     onClick={exportFluencyCSV}
                                     className="flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-colors"
                                     aria-label={t('common.export_fluency_csv')}
+                                    data-help-key="fluency_mode_export_csv_btn"
                                 >
                                     <Download size={15} /> Export Fluency CSV
                                 </button>
@@ -1025,7 +1029,7 @@ function FluencyModePanel(props) {
                                     "{fluencyTranscript}"
                                 </div>
                              )}
-                             <div className="text-xl md:text-3xl font-serif text-slate-800 leading-loose text-center">
+                             <div className="text-xl md:text-3xl font-serif text-slate-800 leading-loose text-center" data-help-key="fluency_mode_passage_display">
                                 {typeof generatedContent?.data === 'string' ? (
                                     generatedContent?.data
                                         .split('--- ENGLISH TRANSLATION ---')[0]
@@ -1081,6 +1085,7 @@ function FluencyModePanel(props) {
                         <button
                             onClick={toggleFluencyRecording}
                             disabled={fluencyStatus === 'processing'}
+                            data-help-key="fluency_mode_record_btn"
                             className={`w-20 h-20 rounded-full flex items-center justify-center shadow-xl transition-all transform border-4 ${
                                 fluencyStatus === 'listening'
                                 ? 'bg-red-700 text-white animate-pulse border-red-200 shadow-red-500/30 hover:scale-105 active:scale-95'
@@ -1717,7 +1722,7 @@ function VolumeBuilderView(props) {
                                         ));
                                     }
                             return (
-                            <div className="space-y-3 p-3 bg-emerald-50 rounded-xl border border-emerald-200 animate-in fade-in slide-in-from-top-1">
+                            <div className="space-y-3 p-3 bg-emerald-50 rounded-xl border border-emerald-200 animate-in fade-in slide-in-from-top-1" data-help-key="volume_builder_panel">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2 text-emerald-800 font-bold text-sm">
                                         📦 3D Volume Explorer
@@ -1733,7 +1738,7 @@ function VolumeBuilderView(props) {
                                 {/* Shape selector — toggle between a solid rectangular prism
                                     and an L-block (rectangular base with a corner notch carved
                                     out so volume becomes additive: V = L*W*H − notch_l*notch_w*notch_h). */}
-                                <div className="flex gap-2 justify-center" role="radiogroup" aria-label={t('volume_builder.shape_radiogroup_aria') || 'Volume Builder shape'}>
+                                <div className="flex gap-2 justify-center" role="radiogroup" aria-label={t('volume_builder.shape_radiogroup_aria') || 'Volume Builder shape'} data-help-key="volume_builder_shape_selector">
                                     {[
                                         { id: 'rect',   label: '🧊 Rectangular' },
                                         { id: 'lblock', label: '📐 L-Block' },
@@ -1752,7 +1757,7 @@ function VolumeBuilderView(props) {
                                         );
                                     })}
                                 </div>
-                                <div className="grid grid-cols-3 gap-2">
+                                <div className="grid grid-cols-3 gap-2" data-help-key="volume_builder_dimensions_input">
                                     {['l','w','h'].map(dim => (
                                         <div key={dim}>
                                             <label className="block text-xs text-slate-600 mb-1 font-bold uppercase">{dim === 'l' ? 'Length' : dim === 'w' ? 'Width' : 'Height'}</label>
@@ -1810,7 +1815,7 @@ function VolumeBuilderView(props) {
                                     <span className="text-xs font-mono text-emerald-600 w-12 text-center">{cubeShowLayers !== null ? cubeShowLayers : cubeDims.h} / {cubeDims.h}</span>
                                     {cubeShowLayers !== null && cubeShowLayers < cubeDims.h && <button onClick={() => setCubeShowLayers(null)} className="text-xs text-emerald-500 hover:text-emerald-700 font-bold">All</button>}
                                 </div>
-                                <div className="bg-white/80 rounded-lg p-3 border border-emerald-100">
+                                <div className="bg-white/80 rounded-lg p-3 border border-emerald-100" data-help-key="volume_builder_volume_readout">
                                     <div className="grid grid-cols-2 gap-3">
                                         <div className="text-center">
                                             <div className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1">{t('stem.volume')}</div>
@@ -1858,11 +1863,11 @@ function VolumeBuilderView(props) {
                                         setCubeAnswer('');
                                         setCubeFeedback(null);
                                         setCubeShowLayers(null);
-                                    }} className="flex-1 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-lg text-sm hover:from-emerald-600 hover:to-teal-600 transition-all shadow-md">
+                                    }} className="flex-1 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-lg text-sm hover:from-emerald-600 hover:to-teal-600 transition-all shadow-md" data-help-key="volume_builder_random_challenge_btn">
                                         🎲 Random Challenge
                                     </button>
                                     <button onClick={() => { setCubeDims({ l: 3, w: 2, h: 2 }); setCubeChallenge(null); setCubeFeedback(null); setCubeShowLayers(null); setCubeRotation({ x: -25, y: -35 }); setCubeScale(1.0); }}
-                                        className="px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">
+                                        className="px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all" data-help-key="volume_builder_reset_btn">
                                         ↺ Reset
                                     </button>
                                 </div>
@@ -1875,10 +1880,12 @@ function VolumeBuilderView(props) {
                                                 onKeyDown={(e) => { if (e.key === 'Enter' && cubeAnswer) { const ans = parseInt(cubeAnswer); const isLB = cubeChallenge.shape === 'lblock'; const correctMsg = isLB ? ('✅ Correct! (' + cubeChallenge.l + '×' + cubeChallenge.w + '×' + cubeChallenge.h + ') − (' + cubeChallenge.notch.l + '×' + cubeChallenge.notch.w + '×' + cubeChallenge.notch.h + ') = ' + cubeChallenge.answer + ' cubic units') : ('✅ Correct! ' + cubeChallenge.l + ' × ' + cubeChallenge.w + ' × ' + cubeChallenge.h + ' = ' + cubeChallenge.answer + ' cubic units'); const wrongMsg = isLB ? '❌ Not quite. Try V = (L × W × H) − notch' : '❌ Not quite. Try V = L × W × H'; setCubeFeedback(ans === cubeChallenge.answer ? { correct: true, msg: correctMsg } : { correct: false, msg: wrongMsg }); } }}
                                                 placeholder={t('volume_builder.answer_placeholder') || 'Enter volume...'}
                                                 className="flex-1 px-3 py-2 border border-amber-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-amber-400 outline-none"
-                                                aria-label={t('volume_builder.answer_aria') || 'Volume answer'} />
+                                                aria-label={t('volume_builder.answer_aria') || 'Volume answer'}
+                                                data-help-key="volume_builder_answer_field" />
                                             <button onClick={() => { const ans = parseInt(cubeAnswer); const isLB = cubeChallenge.shape === 'lblock'; const correctMsg = isLB ? ('✅ Correct! (' + cubeChallenge.l + '×' + cubeChallenge.w + '×' + cubeChallenge.h + ') − (' + cubeChallenge.notch.l + '×' + cubeChallenge.notch.w + '×' + cubeChallenge.notch.h + ') = ' + cubeChallenge.answer + ' cubic units') : ('✅ Correct! ' + cubeChallenge.l + ' × ' + cubeChallenge.w + ' × ' + cubeChallenge.h + ' = ' + cubeChallenge.answer + ' cubic units'); const wrongMsg = isLB ? '❌ Not quite. Try V = (L × W × H) − notch' : '❌ Not quite. Try V = L × W × H'; setCubeFeedback(ans === cubeChallenge.answer ? { correct: true, msg: correctMsg } : { correct: false, msg: wrongMsg }); }}
                                                 disabled={!cubeAnswer}
-                                                className="px-4 py-2 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-600 disabled:opacity-40 transition-all">
+                                                className="px-4 py-2 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-600 disabled:opacity-40 transition-all"
+                                                data-help-key="volume_builder_check_btn">
                                                 Check
                                             </button>
                                         </div>

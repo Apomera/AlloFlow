@@ -222,7 +222,7 @@ const InteractiveBlueprintCard = React.memo(({ config, onUpdate, onConfirm, onCa
       return opt ? opt.label : type;
   };
   return (
-    <div className="bg-white border-2 border-indigo-100 rounded-xl p-4 my-2 shadow-lg animate-in zoom-in duration-300 w-full max-w-2xl">
+    <div data-help-key="blueprint_card_panel" className="bg-white border-2 border-indigo-100 rounded-xl p-4 my-2 shadow-lg animate-in zoom-in duration-300 w-full max-w-2xl">
       <div className="flex items-center justify-between mb-4 pb-3 border-b border-indigo-50">
         <div className="flex items-center gap-3">
             <div className="bg-indigo-100 p-2 rounded-lg text-indigo-600">
@@ -238,6 +238,7 @@ const InteractiveBlueprintCard = React.memo(({ config, onUpdate, onConfirm, onCa
             </div>
         </div>
         <button
+            data-help-key="blueprint_edit_toggle_btn"
             aria-label={t('common.check')}
             onClick={() => setIsEditing(prev => !prev)}
             className={`p-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-2 border ${isEditing ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
@@ -249,7 +250,7 @@ const InteractiveBlueprintCard = React.memo(({ config, onUpdate, onConfirm, onCa
       <GoldenThreadPanel config={config} isEditing={isEditing} onUpdate={onUpdate} />
       {isEditing ? (
           <>
-            <div className="space-y-2 mb-4 max-h-[300px] overflow-y-auto custom-scrollbar pr-1">
+            <div data-help-key="blueprint_resource_list" className="space-y-2 mb-4 max-h-[300px] overflow-y-auto custom-scrollbar pr-1">
                 {items.map((item, idx) => (
                     <div
                         key={item.id}
@@ -295,7 +296,7 @@ const InteractiveBlueprintCard = React.memo(({ config, onUpdate, onConfirm, onCa
                     </div>
                 ))}
             </div>
-            <button aria-label={t('common.add')}
+            <button data-help-key="blueprint_add_step_btn" aria-label={t('common.add')}
                 onClick={handleAddStep}
                 className="w-full py-2 border-2 border-dashed border-slate-300 rounded-lg text-slate-600 text-xs font-bold hover:bg-slate-50 hover:text-indigo-600 hover:border-indigo-300 transition-all flex items-center justify-center gap-2 mb-4"
             >
@@ -303,7 +304,7 @@ const InteractiveBlueprintCard = React.memo(({ config, onUpdate, onConfirm, onCa
             </button>
           </>
       ) : (
-          <div className="space-y-3 mb-6">
+          <div data-help-key="blueprint_resource_list_review" className="space-y-3 mb-6">
               {items.map((item, idx) => (
                   <div key={item.id} className="flex gap-3 items-start p-3 bg-slate-50 rounded-lg border border-slate-100">
                       <div className="bg-white border border-slate-400 text-slate-600 font-bold w-6 h-6 flex items-center justify-center rounded-full text-xs shrink-0 mt-0.5">
@@ -326,6 +327,7 @@ const InteractiveBlueprintCard = React.memo(({ config, onUpdate, onConfirm, onCa
       )}
       <div className="flex gap-3 pt-3 border-t border-slate-100">
           <button
+              data-help-key="blueprint_cancel_btn"
               aria-label={t('common.cancel')}
             onClick={onCancel}
             className="flex-1 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
@@ -333,6 +335,7 @@ const InteractiveBlueprintCard = React.memo(({ config, onUpdate, onConfirm, onCa
             {t('blueprint.cancel')}
           </button>
           <button
+              data-help-key="blueprint_generate_pack_btn"
               aria-label={t('common.generate')}
             onClick={onConfirm}
             className="flex-[2] py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow-md transition-transform active:scale-95 flex items-center justify-center gap-2"

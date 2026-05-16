@@ -56,6 +56,7 @@ function PdfAuditView(props) {
 
   return (
         <div
+          data-help-key="pdf_audit_view_panel"
           className="fixed inset-0 z-[200] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
           role="dialog" aria-modal="true" aria-label={t('pdf_audit.modal_aria') || 'PDF Accessibility Audit'}
           tabIndex={-1}
@@ -76,6 +77,7 @@ function PdfAuditView(props) {
                 Disabled while remediation is mid-flight so users don't kill a running pipeline by accident. */}
             <div className="sticky top-0 z-20 flex justify-end p-2 bg-gradient-to-b from-white via-white/95 to-transparent pointer-events-none">
               <button
+                data-help-key="pdf_audit_view_close_btn"
                 type="button"
                 onClick={() => { safeCloseAudit(); }}
                 disabled={pdfFixLoading || pdfAutoContinueRunning}
@@ -91,9 +93,9 @@ function PdfAuditView(props) {
                 {/* ── Batch Mode Toggle ── */}
                 <div className="flex justify-center mb-4">
                   <div className="inline-flex bg-slate-100 rounded-xl p-1 gap-1">
-                    <button onClick={() => { setPdfBatchMode(false); setPdfWebMode && setPdfWebMode(false); }} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${!pdfBatchMode && !pdfWebMode ? 'bg-white shadow text-indigo-700' : 'text-slate-600 hover:text-slate-700'}`}>📄 Single PDF</button>
-                    <button onClick={() => { setPdfBatchMode(true); setPdfWebMode && setPdfWebMode(false); }} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${pdfBatchMode ? 'bg-white shadow text-indigo-700' : 'text-slate-600 hover:text-slate-700'}`}>📂 Batch</button>
-                    <button onClick={() => { setPdfBatchMode(false); setPdfWebMode && setPdfWebMode(true); }} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${pdfWebMode ? 'bg-white shadow text-indigo-700' : 'text-slate-600 hover:text-slate-700'}`}>🌐 Website / HTML</button>
+                    <button data-help-key="pdf_audit_view_mode_single_btn" onClick={() => { setPdfBatchMode(false); setPdfWebMode && setPdfWebMode(false); }} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${!pdfBatchMode && !pdfWebMode ? 'bg-white shadow text-indigo-700' : 'text-slate-600 hover:text-slate-700'}`}>📄 Single PDF</button>
+                    <button data-help-key="pdf_audit_view_mode_batch_btn" onClick={() => { setPdfBatchMode(true); setPdfWebMode && setPdfWebMode(false); }} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${pdfBatchMode ? 'bg-white shadow text-indigo-700' : 'text-slate-600 hover:text-slate-700'}`}>📂 Batch</button>
+                    <button data-help-key="pdf_audit_view_mode_web_btn" onClick={() => { setPdfBatchMode(false); setPdfWebMode && setPdfWebMode(true); }} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${pdfWebMode ? 'bg-white shadow text-indigo-700' : 'text-slate-600 hover:text-slate-700'}`}>🌐 Website / HTML</button>
                   </div>
                 </div>
                 {pdfWebMode ? (
@@ -709,10 +711,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   </div>
                 </details>
                 <div className="flex gap-3 justify-center">
-                  <button onClick={async () => { setPdfAuditResult(null); addToast('Auditing & remediating PDF...', 'info'); await runPdfAccessibilityAudit(pendingPdfBase64); setTimeout(() => { const r = pdfFixResultRef.current; const needsLoop = pdfAutoContinue && r && r.axeAudit && r.axeAudit.totalViolations > 0 && (r.afterScore || 0) < pdfTargetScore; if (needsLoop) { runAutoFixLoop(3); } else if (pdfAutoSaveProject) { saveProjectToFile(true); } }, 150); }} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2">
+                  <button data-help-key="pdf_audit_view_start_btn" onClick={async () => { setPdfAuditResult(null); addToast('Auditing & remediating PDF...', 'info'); await runPdfAccessibilityAudit(pendingPdfBase64); setTimeout(() => { const r = pdfFixResultRef.current; const needsLoop = pdfAutoContinue && r && r.axeAudit && r.axeAudit.totalViolations > 0 && (r.afterScore || 0) < pdfTargetScore; if (needsLoop) { runAutoFixLoop(3); } else if (pdfAutoSaveProject) { saveProjectToFile(true); } }, 150); }} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2">
                     ♿ Audit & Remediate
                   </button>
-                  <button onClick={() => { setPdfAuditResult(null); proceedWithPdfTransform(); }} className="px-6 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all shadow-sm flex items-center gap-2 border border-slate-400">
+                  <button data-help-key="pdf_audit_view_skip_to_extract_btn" onClick={() => { setPdfAuditResult(null); proceedWithPdfTransform(); }} className="px-6 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all shadow-sm flex items-center gap-2 border border-slate-400">
                     <Sparkles size={16} /> Skip to Text Extraction
                   </button>
                 </div>

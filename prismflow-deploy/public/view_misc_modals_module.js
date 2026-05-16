@@ -327,9 +327,10 @@ function AIBackendModal(props) {
   if (!(showAIBackendModal && !_isCanvasEnv)) return null;
   return /* @__PURE__ */ React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: (e) => {
     if (e.key === "Escape") e.currentTarget.click();
-  }, className: "fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300", onClick: () => setShowAIBackendModal(false) }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto", role: "dialog", "aria-modal": "true", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("button", { onClick: () => setShowAIBackendModal(false), className: "absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10", "aria-label": t("common.close") || "Close" }, /* @__PURE__ */ React.createElement(X, { size: 20 })), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-6 text-violet-900" }, /* @__PURE__ */ React.createElement("div", { className: "bg-violet-100 p-2 rounded-full" }, /* @__PURE__ */ React.createElement(Unplug, { size: 20, className: "text-violet-600" })), /* @__PURE__ */ React.createElement("h3", { className: "font-black text-lg" }, t("ai_backend.title") || "AI Backend Settings")), /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("ai_backend.provider_label") || "Provider"), /* @__PURE__ */ React.createElement(
+  }, className: "fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300", onClick: () => setShowAIBackendModal(false) }, /* @__PURE__ */ React.createElement("div", { "data-help-key": "ai_backend_modal_panel", className: "bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto", role: "dialog", "aria-modal": "true", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("button", { onClick: () => setShowAIBackendModal(false), className: "absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10", "aria-label": t("common.close") || "Close" }, /* @__PURE__ */ React.createElement(X, { size: 20 })), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-6 text-violet-900" }, /* @__PURE__ */ React.createElement("div", { className: "bg-violet-100 p-2 rounded-full" }, /* @__PURE__ */ React.createElement(Unplug, { size: 20, className: "text-violet-600" })), /* @__PURE__ */ React.createElement("h3", { className: "font-black text-lg" }, t("ai_backend.title") || "AI Backend Settings")), /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("ai_backend.provider_label") || "Provider"), /* @__PURE__ */ React.createElement(
     "select",
     {
+      "data-help-key": "ai_backend_provider_select",
       "aria-label": t("ai_backend.provider_aria") || "AI Backend Provider",
       id: "ai-backend-provider",
       defaultValue: (() => {
@@ -359,6 +360,7 @@ function AIBackendModal(props) {
   )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("ai_backend.server_url_label") || "Server URL"), /* @__PURE__ */ React.createElement(
     "input",
     {
+      "data-help-key": "ai_backend_custom_url_input",
       id: "ai-backend-url",
       "aria-label": t("ai_backend.server_url_aria") || "Custom AI backend URL",
       type: "text",
@@ -379,6 +381,7 @@ function AIBackendModal(props) {
   )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("ai_backend.api_key_label") || "API Key", " ", /* @__PURE__ */ React.createElement("span", { className: "normal-case font-normal text-slate-600" }, t("ai_backend.api_key_hint") || "(cloud providers only)")), /* @__PURE__ */ React.createElement(
     "input",
     {
+      "data-help-key": "ai_backend_api_key_input",
       id: "ai-backend-apikey",
       "aria-label": t("ai_backend.api_key_aria") || "Custom AI backend API key",
       type: "password",
@@ -399,6 +402,7 @@ function AIBackendModal(props) {
   )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("ai_backend.wolfram_label") || "Wolfram Alpha App ID", " ", /* @__PURE__ */ React.createElement("span", { className: "normal-case font-normal text-slate-600" }, t("ai_backend.wolfram_hint") || "(optional \u2014 enhances math)")), /* @__PURE__ */ React.createElement(
     "input",
     {
+      "data-help-key": "ai_backend_wolfram_input",
       id: "ai-backend-wolfram",
       "aria-label": t("ai_backend.wolfram_aria") || "Custom backend Wolfram App ID",
       type: "text",
@@ -419,6 +423,7 @@ function AIBackendModal(props) {
   ), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mt-1" }, t("ai_backend.wolfram_free_note") || "Free: 2,000 queries/month \u2022 Adds exact math solving & step-by-step verification")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 pt-1" }, /* @__PURE__ */ React.createElement(
     "button",
     {
+      "data-help-key": "ai_backend_test_connection_btn",
       id: "ai-backend-test",
       onClick: async () => {
         const btn = document.getElementById("ai-backend-test");
@@ -499,6 +504,7 @@ function AIBackendModal(props) {
   )), /* @__PURE__ */ React.createElement("div", { id: "ai-backend-status" }), /* @__PURE__ */ React.createElement("div", { className: "pt-3 border-t-2 border-violet-50" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-blue-100 p-1.5 rounded-lg" }, /* @__PURE__ */ React.createElement(Cpu, { size: 14, className: "text-blue-600" })), /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-black text-slate-700 uppercase tracking-wider" }, t("ai_backend.model_selection_header") || "Model Selection")), /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1" }, t("ai_backend.default_model_label") || "Default Model", " ", /* @__PURE__ */ React.createElement("span", { className: "normal-case font-normal text-slate-600" }, t("ai_backend.default_model_hint") || "(text generation)")), /* @__PURE__ */ React.createElement(
     "select",
     {
+      "data-help-key": "ai_backend_model_select",
       "aria-label": t("ai_backend.default_model_aria") || "Default AI model",
       id: "ai-backend-model-default",
       defaultValue: (() => {
@@ -541,6 +547,7 @@ function AIBackendModal(props) {
   )), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 italic" }, '\u{1F4A1} Click "Test Connection" above to auto-populate available models from your backend.'))), /* @__PURE__ */ React.createElement("div", { className: "pt-3 border-t-2 border-violet-50" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-100 p-1.5 rounded-lg" }, /* @__PURE__ */ React.createElement(Headphones, { size: 14, className: "text-emerald-600" })), /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-black text-slate-700 uppercase tracking-wider" }, "Text-to-Speech")), /* @__PURE__ */ React.createElement(
     "select",
     {
+      "data-help-key": "ai_backend_tts_provider_select",
       "aria-label": t("ai_backend.tts_provider_aria") || "Text-to-speech provider",
       id: "ai-backend-tts-provider",
       defaultValue: (() => {

@@ -2400,7 +2400,7 @@ const LearnerProgressView = React.memo(({
         ? (selectedChild ? selectedChild + "'s Learning Journey" : "Your Child's Learning Journey")
         : "My Learning Progress";
     return (
-        <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+        <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500" data-help-key="learner_progress_panel">
             <div className="flex items-center justify-between">
                 <div>
                     <h2 className="text-2xl md:text-3xl font-black text-slate-800 flex items-center gap-3">
@@ -2422,6 +2422,7 @@ const LearnerProgressView = React.memo(({
                                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                         }`}
                         title={showDiagnostics ? "Hide detailed metrics" : "Show detailed metrics"}
+                        data-help-key="learner_progress_details_toggle"
                     >
                         <BarChart3 size={14} />
                         {showDiagnostics ? 'Details On' : 'Details'}
@@ -2434,7 +2435,7 @@ const LearnerProgressView = React.memo(({
                 </div>
             </div>
             {isParentMode && childProfiles.length > 0 && (
-                <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-2xl p-4 border border-purple-100">
+                <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-2xl p-4 border border-purple-100" data-help-key="learner_progress_family_filter">
                     <h3 className="text-xs font-bold text-purple-600 uppercase tracking-wider mb-3 flex items-center gap-1.5">
                         <Users size={14} /> Family Members
                     </h3>
@@ -2547,7 +2548,7 @@ const LearnerProgressView = React.memo(({
                         </div>
                     </div>
                 </div>
-                <div className="bg-white rounded-2xl border border-slate-400 shadow-sm p-5 hover:shadow-md transition-shadow">
+                <div className="bg-white rounded-2xl border border-slate-400 shadow-sm p-5 hover:shadow-md transition-shadow" data-help-key="learner_progress_activities_card">
                     <h3 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 flex items-center gap-1.5">
                         <Activity size={14} /> Activities Completed
                     </h3>
@@ -2566,7 +2567,7 @@ const LearnerProgressView = React.memo(({
                         ))}
                     </div>
                 </div>
-                <div className="bg-white rounded-2xl border border-slate-400 shadow-sm p-5 hover:shadow-md transition-shadow">
+                <div className="bg-white rounded-2xl border border-slate-400 shadow-sm p-5 hover:shadow-md transition-shadow" data-help-key="learner_progress_skills_chart">
                     <h3 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-1.5">
                         <Target size={14} /> Skills Progress
                     </h3>
@@ -2770,7 +2771,7 @@ const LearnerProgressView = React.memo(({
                 );
             })()}
             {studentProgressLog.length >= 2 && (
-                <div className="bg-white rounded-2xl border border-slate-400 shadow-sm p-5 hover:shadow-md transition-shadow">
+                <div className="bg-white rounded-2xl border border-slate-400 shadow-sm p-5 hover:shadow-md transition-shadow" data-help-key="learner_progress_growth_chart">
                     <h3 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                         <TrendingUp size={14} /> Growth Over Time
                     </h3>
@@ -2778,7 +2779,7 @@ const LearnerProgressView = React.memo(({
                 </div>
             )}
             {showDiagnostics && (
-                <div className="bg-slate-50 rounded-2xl border border-slate-400 p-5 space-y-4 animate-in slide-in-from-top-2 duration-300">
+                <div className="bg-slate-50 rounded-2xl border border-slate-400 p-5 space-y-4 animate-in slide-in-from-top-2 duration-300" data-help-key="learner_progress_diagnostics_panel">
                     <h3 className="text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
                         <BarChart3 size={14} /> Detailed Metrics
                     </h3>
@@ -2886,6 +2887,7 @@ const LearnerProgressView = React.memo(({
                         if (w) { w.document.write(html); w.document.close(); }
                     }}
                     className="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] flex items-center gap-2 text-sm"
+                    data-help-key="learner_progress_print_report_btn"
                 >
                     <Printer size={16} /> Print Progress Report
                 </button>
@@ -2893,6 +2895,7 @@ const LearnerProgressView = React.memo(({
                     <button
                         onClick={onShareWithTeacher}
                         className="px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] flex items-center gap-2 text-sm"
+                        data-help-key="learner_progress_share_teacher_btn"
                     >
                         <Share2 size={16} /> Share Progress with Teacher
                     </button>

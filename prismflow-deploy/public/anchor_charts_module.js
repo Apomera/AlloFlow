@@ -137,7 +137,7 @@ const AnchorChartCritiqueOverlay = React.memo((props) => {
   ];
   const Overlay = annoApi.Overlay;
   const Toolbar = annoApi.Toolbar;
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[60] pointer-events-none" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 pointer-events-auto" }, /* @__PURE__ */ React.createElement("div", { className: "absolute top-0 left-0 right-0 bg-gradient-to-b from-amber-50 to-transparent p-3 border-b border-amber-200 shadow-sm flex items-center justify-between" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-2xl" }, "\u{1F4CC}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "font-black text-sm text-amber-900" }, "Critique Mode"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-amber-700" }, "Drop sticky notes anywhere on the chart. Use the I notice / I wonder protocol."))), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[60] pointer-events-none" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 pointer-events-auto" }, /* @__PURE__ */ React.createElement("div", { className: "absolute top-0 left-0 right-0 bg-gradient-to-b from-amber-50 to-transparent p-3 border-b border-amber-200 shadow-sm flex items-center justify-between", "data-help-key": "anchor_chart_critique_panel" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-2xl" }, "\u{1F4CC}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "font-black text-sm text-amber-900" }, "Critique Mode"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-amber-700" }, "Drop sticky notes anywhere on the chart. Use the I notice / I wonder protocol."))), /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: onClose,
@@ -381,7 +381,7 @@ const AnchorChartView = React.memo((props) => {
     if (next === sections) return;
     handleNoteUpdate("sections", next);
   };
-  return /* @__PURE__ */ React.createElement("div", { className: "ac-root max-w-5xl mx-auto px-4 py-6" }, /* @__PURE__ */ React.createElement("style", null, `
+  return /* @__PURE__ */ React.createElement("div", { className: "ac-root max-w-5xl mx-auto px-4 py-6", "data-help-key": "anchor_chart_view_panel" }, /* @__PURE__ */ React.createElement("style", null, `
         .ac-paper {
           background-color: #fdfaf2;
           background-image:
@@ -406,7 +406,8 @@ const AnchorChartView = React.memo((props) => {
       onClick: () => setIsEditing((v) => !v),
       className: `px-3 py-1.5 text-xs font-bold rounded-full border ${isEditing ? "bg-amber-600 text-white border-amber-700" : "bg-white text-amber-800 border-amber-300 hover:bg-amber-50"}`,
       "aria-pressed": isEditing,
-      "aria-label": isEditing ? "Finish editing" : "Edit chart"
+      "aria-label": isEditing ? "Finish editing" : "Edit chart",
+      "data-help-key": "anchor_chart_edit_toggle"
     },
     isEditing ? "\u2713 Done editing" : "\u270E Edit"
   ), /* @__PURE__ */ React.createElement(
@@ -414,7 +415,8 @@ const AnchorChartView = React.memo((props) => {
     {
       onClick: () => setShowCritique(true),
       className: "px-3 py-1.5 text-xs font-bold rounded-full border bg-white text-sky-800 border-sky-300 hover:bg-sky-50",
-      "aria-label": "Open critique mode"
+      "aria-label": "Open critique mode",
+      "data-help-key": "anchor_chart_critique_mode_toggle"
     },
     "\u{1F4CC} Critique mode"
   ), isTeacherMode && activeSessionCode && onPlayPictionary && sections.length > 0 ? /* @__PURE__ */ React.createElement(
@@ -434,7 +436,8 @@ const AnchorChartView = React.memo((props) => {
       className: `px-3 py-1.5 text-xs font-bold rounded-full border ${exportState === "error" ? "bg-red-50 text-red-800 border-red-300" : "bg-white text-emerald-800 border-emerald-300 hover:bg-emerald-50"} disabled:opacity-60`,
       "aria-label": "Download chart as PNG image",
       "aria-busy": exportState === "rendering",
-      title: "Download as PNG (poster-quality)"
+      title: "Download as PNG (poster-quality)",
+      "data-help-key": "anchor_chart_download_png"
     },
     exportState === "rendering" ? "\u23F3 Rendering\u2026" : exportState === "error" ? "\u26A0 Try again" : "\u{1F4BE} Download PNG"
   ), /* @__PURE__ */ React.createElement(
@@ -447,10 +450,11 @@ const AnchorChartView = React.memo((props) => {
         }
       },
       className: "px-3 py-1.5 text-xs font-bold rounded-full border bg-white text-slate-700 border-slate-300 hover:bg-slate-100",
-      "aria-label": "Print or save as PDF"
+      "aria-label": "Print or save as PDF",
+      "data-help-key": "anchor_chart_print_button"
     },
     "\u{1F5A8}\uFE0F Print"
-  ))), /* @__PURE__ */ React.createElement("div", { ref: paperRef, className: "ac-paper p-6 sm:p-8" }, /* @__PURE__ */ React.createElement("div", { className: "text-center mb-4" }, isEditing ? /* @__PURE__ */ React.createElement(
+  ))), /* @__PURE__ */ React.createElement("div", { ref: paperRef, className: "ac-paper p-6 sm:p-8", "data-help-key": "anchor_chart_paper" }, /* @__PURE__ */ React.createElement("div", { className: "text-center mb-4" }, isEditing ? /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "text",
@@ -547,7 +551,8 @@ const AnchorChartView = React.memo((props) => {
     "button",
     {
       onClick: handleAddSection,
-      className: "px-4 py-1.5 text-sm font-bold rounded-full bg-white border-2 border-dashed border-amber-400 text-amber-800 hover:bg-amber-50"
+      className: "px-4 py-1.5 text-sm font-bold rounded-full bg-white border-2 border-dashed border-amber-400 text-amber-800 hover:bg-amber-50",
+      "data-help-key": "anchor_chart_add_section"
     },
     "+ Add section"
   ), sections.length > 1 ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-amber-700/70 italic" }, "Tip: drag the \u22EE\u22EE handle on any section to reorder.") : null) : null), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-amber-700/70 italic text-center mt-4 ac-no-print" }, "Saved to your history. Open Critique mode to leave I notice / I wonder notes for peers.")), /* @__PURE__ */ React.createElement(

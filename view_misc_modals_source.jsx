@@ -299,7 +299,7 @@ function AIBackendModal(props) {
   if (!(showAIBackendModal && !_isCanvasEnv)) return null;
   return (
         <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowAIBackendModal(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
+          <div data-help-key="ai_backend_modal_panel" className="bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
             <button onClick={() => setShowAIBackendModal(false)} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10" aria-label={t('common.close') || "Close"}><X size={20}/></button>
             <div className="flex items-center gap-2 mb-6 text-violet-900">
                 <div className="bg-violet-100 p-2 rounded-full"><Unplug size={20} className="text-violet-600"/></div>
@@ -310,6 +310,7 @@ function AIBackendModal(props) {
                 <div>
                     <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('ai_backend.provider_label') || 'Provider'}</label>
                     <select
+                        data-help-key="ai_backend_provider_select"
                         aria-label={t('ai_backend.provider_aria') || 'AI Backend Provider'}
                         id="ai-backend-provider"
                         defaultValue={(() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').backend || 'gemini'; } catch { return 'gemini'; } })()}
@@ -335,6 +336,7 @@ function AIBackendModal(props) {
                 <div>
                     <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('ai_backend.server_url_label') || 'Server URL'}</label>
                     <input
+                        data-help-key="ai_backend_custom_url_input"
                         id="ai-backend-url" aria-label={t('ai_backend.server_url_aria') || 'Custom AI backend URL'}
                         type="text"
                         placeholder="http://localhost:8080"
@@ -349,6 +351,7 @@ function AIBackendModal(props) {
                 <div>
                     <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('ai_backend.api_key_label') || 'API Key'} <span className="normal-case font-normal text-slate-600">{t('ai_backend.api_key_hint') || '(cloud providers only)'}</span></label>
                     <input
+                        data-help-key="ai_backend_api_key_input"
                         id="ai-backend-apikey" aria-label={t('ai_backend.api_key_aria') || 'Custom AI backend API key'}
                         type="password"
                         placeholder={t('ai_backend.api_key_placeholder') || 'Your API key...'}
@@ -363,6 +366,7 @@ function AIBackendModal(props) {
                 <div>
                     <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('ai_backend.wolfram_label') || 'Wolfram Alpha App ID'} <span className="normal-case font-normal text-slate-600">{t('ai_backend.wolfram_hint') || '(optional — enhances math)'}</span></label>
                     <input
+                        data-help-key="ai_backend_wolfram_input"
                         id="ai-backend-wolfram" aria-label={t('ai_backend.wolfram_aria') || 'Custom backend Wolfram App ID'}
                         type="text"
                         placeholder={t('ai_backend.wolfram_placeholder') || 'XXXXX-XXXXXXXXXX (from developer.wolframalpha.com)'}
@@ -377,6 +381,7 @@ function AIBackendModal(props) {
                 </div>
                 <div className="flex gap-2 pt-1">
                     <button
+                        data-help-key="ai_backend_test_connection_btn"
                         id="ai-backend-test"
                         onClick={async () => {
                             const btn = document.getElementById('ai-backend-test');
@@ -452,6 +457,7 @@ function AIBackendModal(props) {
                         <div>
                             <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">{t('ai_backend.default_model_label') || 'Default Model'} <span className="normal-case font-normal text-slate-600">{t('ai_backend.default_model_hint') || '(text generation)'}</span></label>
                             <select
+                                data-help-key="ai_backend_model_select"
                                 aria-label={t('ai_backend.default_model_aria') || 'Default AI model'}
                                 id="ai-backend-model-default"
                                 defaultValue={(() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').models?.default || ''; } catch { return ''; } })()}
@@ -494,6 +500,7 @@ function AIBackendModal(props) {
                         <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider">Text-to-Speech</h4>
                     </div>
                     <select
+                        data-help-key="ai_backend_tts_provider_select"
                         aria-label={t('ai_backend.tts_provider_aria') || 'Text-to-speech provider'}
                         id="ai-backend-tts-provider"
                         defaultValue={(() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').ttsProvider || 'auto'; } catch { return 'auto'; } })()}

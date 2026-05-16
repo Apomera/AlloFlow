@@ -180,6 +180,7 @@ function PdfAuditView(props) {
   return /* @__PURE__ */ React.createElement(
     "div",
     {
+      "data-help-key": "pdf_audit_view_panel",
       className: "fixed inset-0 z-[200] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4",
       role: "dialog",
       "aria-modal": "true",
@@ -208,6 +209,7 @@ function PdfAuditView(props) {
     /* @__PURE__ */ React.createElement("div", { className: "relative bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[92vh] overflow-y-auto border-2 border-indigo-200" }, /* @__PURE__ */ React.createElement("div", { className: "sticky top-0 z-20 flex justify-end p-2 bg-gradient-to-b from-white via-white/95 to-transparent pointer-events-none" }, /* @__PURE__ */ React.createElement(
       "button",
       {
+        "data-help-key": "pdf_audit_view_close_btn",
         type: "button",
         onClick: () => {
           safeCloseAudit();
@@ -218,13 +220,13 @@ function PdfAuditView(props) {
         className: "pointer-events-auto w-9 h-9 bg-white hover:bg-red-50 text-slate-600 hover:text-red-600 rounded-full shadow-md border border-slate-400 flex items-center justify-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-slate-600"
       },
       /* @__PURE__ */ React.createElement(X, { size: 18, "aria-hidden": "true" })
-    )), pdfAuditResult?._choosing ? /* @__PURE__ */ React.createElement("div", { className: "p-8 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "inline-flex bg-slate-100 rounded-xl p-1 gap-1" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
+    )), pdfAuditResult?._choosing ? /* @__PURE__ */ React.createElement("div", { className: "p-8 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "inline-flex bg-slate-100 rounded-xl p-1 gap-1" }, /* @__PURE__ */ React.createElement("button", { "data-help-key": "pdf_audit_view_mode_single_btn", onClick: () => {
       setPdfBatchMode(false);
       setPdfWebMode && setPdfWebMode(false);
-    }, className: `px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${!pdfBatchMode && !pdfWebMode ? "bg-white shadow text-indigo-700" : "text-slate-600 hover:text-slate-700"}` }, "\u{1F4C4} Single PDF"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+    }, className: `px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${!pdfBatchMode && !pdfWebMode ? "bg-white shadow text-indigo-700" : "text-slate-600 hover:text-slate-700"}` }, "\u{1F4C4} Single PDF"), /* @__PURE__ */ React.createElement("button", { "data-help-key": "pdf_audit_view_mode_batch_btn", onClick: () => {
       setPdfBatchMode(true);
       setPdfWebMode && setPdfWebMode(false);
-    }, className: `px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${pdfBatchMode ? "bg-white shadow text-indigo-700" : "text-slate-600 hover:text-slate-700"}` }, "\u{1F4C2} Batch"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+    }, className: `px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${pdfBatchMode ? "bg-white shadow text-indigo-700" : "text-slate-600 hover:text-slate-700"}` }, "\u{1F4C2} Batch"), /* @__PURE__ */ React.createElement("button", { "data-help-key": "pdf_audit_view_mode_web_btn", onClick: () => {
       setPdfBatchMode(false);
       setPdfWebMode && setPdfWebMode(true);
     }, className: `px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${pdfWebMode ? "bg-white shadow text-indigo-700" : "text-slate-600 hover:text-slate-700"}` }, "\u{1F310} Website / HTML"))), pdfWebMode ? /* @__PURE__ */ React.createElement("div", { className: "text-left space-y-4" }, /* @__PURE__ */ React.createElement("h3", { className: "text-lg font-black text-slate-800 mb-1 text-center" }, t("pdf_audit.web.heading") || "\u{1F310} Website & HTML Accessibility"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 text-center" }, t("pdf_audit.web.subheading") || "Audit a website URL or paste HTML for full WCAG 2.1 AA audit + remediation"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "text-[11px] font-bold text-slate-600 uppercase", htmlFor: "web-audit-url" }, t("pdf_audit.web.url_label") || "Website URL"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mt-1" }, /* @__PURE__ */ React.createElement(
@@ -690,7 +692,7 @@ Return ONLY JSON:
         window.__pdfCustomStyle = style;
         addToast && addToast('\u{1F3A8} Custom style "' + name + '" saved & applied!', "success");
       }, className: "w-full py-1.5 bg-indigo-600 text-white rounded text-[11px] font-bold hover:bg-indigo-700 transition-colors" }, "Save & Apply Style"))));
-    })()))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 justify-center" }, /* @__PURE__ */ React.createElement("button", { onClick: async () => {
+    })()))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 justify-center" }, /* @__PURE__ */ React.createElement("button", { "data-help-key": "pdf_audit_view_start_btn", onClick: async () => {
       setPdfAuditResult(null);
       addToast("Auditing & remediating PDF...", "info");
       await runPdfAccessibilityAudit(pendingPdfBase64);
@@ -703,7 +705,7 @@ Return ONLY JSON:
           saveProjectToFile(true);
         }
       }, 150);
-    }, className: "px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2" }, "\u267F Audit & Remediate"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+    }, className: "px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2" }, "\u267F Audit & Remediate"), /* @__PURE__ */ React.createElement("button", { "data-help-key": "pdf_audit_view_skip_to_extract_btn", onClick: () => {
       setPdfAuditResult(null);
       proceedWithPdfTransform();
     }, className: "px-6 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all shadow-sm flex items-center gap-2 border border-slate-400" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 16 }), " Skip to Text Extraction")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 text-center mt-2" }, '"Audit & Remediate" analyzes accessibility, fixes issues, and verifies with axe-core. "Text Extraction" extracts raw text for content generation.'), pdfAuditResult?.pageCount > 0 && !pdfFixResult && (() => {

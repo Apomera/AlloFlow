@@ -117,6 +117,7 @@ function BridgeSendModal(props) {
     /* @__PURE__ */ React.createElement(
       "div",
       {
+        "data-help-key": "bridge_send_modal_panel",
         onClick: (e) => e.stopPropagation(),
         style: {
           background: _bt.panelBg,
@@ -142,7 +143,7 @@ function BridgeSendModal(props) {
         },
         "\u2715"
       )),
-      /* @__PURE__ */ React.createElement("div", { style: { padding: "24px 28px" } }, /* @__PURE__ */ React.createElement("div", { style: { marginBottom: "14px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "12px", fontWeight: 700, color: _bt.textSecondary, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "8px" } }, t("resource_builder.quick_templates")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "8px", flexWrap: "wrap" } }, [
+      /* @__PURE__ */ React.createElement("div", { style: { padding: "24px 28px" } }, /* @__PURE__ */ React.createElement("div", { "data-help-key": "bridge_send_quick_templates", style: { marginBottom: "14px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "12px", fontWeight: 700, color: _bt.textSecondary, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "8px" } }, t("resource_builder.quick_templates")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "8px", flexWrap: "wrap" } }, [
         { icon: "\u{1F4D6}", label: "Vocabulary", prompt: "Introduce and explain the following vocabulary word to students: " },
         { icon: "\u{1F3AF}", label: "Objective", prompt: "Today's learning objective is: " },
         { icon: "\u{1F4CB}", label: "Instructions", prompt: "Instructions for this activity: " },
@@ -182,6 +183,7 @@ function BridgeSendModal(props) {
       )))), !activeSessionCode && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "10px", padding: "12px 16px", marginBottom: "14px", background: "rgba(234,179,8,0.08)", border: "1px solid rgba(234,179,8,0.2)", borderRadius: "12px", fontSize: "13px", color: "#ca8a04" } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "18px" } }, "\u{1F4E1}"), /* @__PURE__ */ React.createElement("span", null, t("roster.bridge_offline_info") || "No live session \u2014 content will preview on this device only")), /* @__PURE__ */ React.createElement("div", { style: { position: "relative", marginBottom: "12px" } }, /* @__PURE__ */ React.createElement(
         "textarea",
         {
+          "data-help-key": "bridge_send_compose_area",
           id: "bridge-send-textarea",
           "aria-label": t("roster.bridge_send_placeholder") || "Type content to send to students",
           defaultValue: "",
@@ -281,6 +283,7 @@ function BridgeSendModal(props) {
       ), /* @__PURE__ */ React.createElement(
         "button",
         {
+          "data-help-key": "bridge_send_attach_image_btn",
           id: "bridge-attach-image-btn",
           onClick: () => document.getElementById("bridge-image-file-input")?.click(),
           "aria-label": t("common.upload_and_attach_an_image"),
@@ -321,7 +324,7 @@ function BridgeSendModal(props) {
         /* @__PURE__ */ React.createElement("span", null, "\u{1F3A8}"),
         " ",
         t("bridge.use_generated_button") || "Use Generated"
-      )), /* @__PURE__ */ React.createElement("div", { style: { marginBottom: "20px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "12px", fontWeight: 700, color: _bt.textSecondary, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "10px" } }, t("resource_builder.generation_mode")), /* @__PURE__ */ React.createElement("div", { id: "bridge-mode-selector", "data-card-bg": _bt.cardBg, "data-card-border": _bt.cardBorder, "data-card-active-bg": _bt.cardActiveBg, "data-card-active-border": _bt.cardActiveBorder, "data-text-secondary": _bt.textSecondary, "data-text-accent": _bt.textAccent, "data-dot-active": _bt.dotActive, "data-dot-inactive": _bt.dotInactive, style: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))", gap: "8px" } }, [
+      )), /* @__PURE__ */ React.createElement("div", { style: { marginBottom: "20px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "12px", fontWeight: 700, color: _bt.textSecondary, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "10px" } }, t("resource_builder.generation_mode")), /* @__PURE__ */ React.createElement("div", { "data-help-key": "bridge_send_mode_selector", id: "bridge-mode-selector", "data-card-bg": _bt.cardBg, "data-card-border": _bt.cardBorder, "data-card-active-bg": _bt.cardActiveBg, "data-card-active-border": _bt.cardActiveBorder, "data-text-secondary": _bt.textSecondary, "data-text-accent": _bt.textAccent, "data-dot-active": _bt.dotActive, "data-dot-inactive": _bt.dotInactive, style: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))", gap: "8px" } }, [
         { id: "explain", icon: "\u{1F4DD}", title: "Explain", desc: "AI explains the concept bilingually" },
         { id: "translate", icon: "\u{1F310}", title: "Translate", desc: "Direct translation to target language" },
         { id: "visual", icon: "\u{1F5BC}\uFE0F", title: "Visual + Explain", desc: "Explanation with AI-generated visual" },
@@ -385,6 +388,7 @@ function BridgeSendModal(props) {
       ), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "13px", fontWeight: 700, color: bridgeOverrideGroups ? "#fbbf24" : _bt.textSecondary } }, bridgeOverrideGroups ? "\u{1F512} Override group settings" : "\u{1F513} Use group settings (default)")), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "11px", color: _bt.textMuted, maxWidth: "280px" } }, bridgeOverrideGroups ? "All students will receive this exact language & reading level" : "Each group auto-translates to its own language & level")), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px", marginBottom: "20px" } }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "12px", fontWeight: 700, color: _bt.textSecondary, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "8px" } }, t("resource_builder.target_group")), /* @__PURE__ */ React.createElement(
         "select",
         {
+          "data-help-key": "bridge_send_target_select",
           id: "bridge-target-selector",
           "aria-label": t("common.target_group_selector"),
           defaultValue: "all",
@@ -398,6 +402,7 @@ function BridgeSendModal(props) {
       )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "12px", fontWeight: 700, color: _bt.textSecondary, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "8px" } }, t("bridge.target_language_label") || "Target Language", " ", /* @__PURE__ */ React.createElement("span", { style: { fontSize: "9px", fontWeight: 400, color: bridgeOverrideGroups ? "#f59e0b" : "#64748b", textTransform: "none" } }, bridgeOverrideGroups ? "(all students)" : "(your preview)")), /* @__PURE__ */ React.createElement(
         "select",
         {
+          "data-help-key": "bridge_send_language_select",
           id: "bridge-language-selector",
           "aria-label": t("common.target_language_selector"),
           defaultValue: leveledTextLanguage || "English",
@@ -450,6 +455,7 @@ function BridgeSendModal(props) {
       )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "12px", fontWeight: 700, color: _bt.textSecondary, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "8px" } }, t("bridge.reading_level_label") || "Reading Level", " ", /* @__PURE__ */ React.createElement("span", { style: { fontSize: "9px", fontWeight: 400, color: bridgeOverrideGroups ? "#f59e0b" : "#64748b", textTransform: "none" } }, bridgeOverrideGroups ? "(all students)" : "(your preview)")), /* @__PURE__ */ React.createElement(
         "select",
         {
+          "data-help-key": "bridge_send_grade_select",
           id: "bridge-grade-selector",
           "aria-label": t("common.grade_level_selector"),
           defaultValue: gradeLevel || "5th Grade",
@@ -493,6 +499,7 @@ function BridgeSendModal(props) {
       }))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "12px", marginBottom: "20px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("label", { style: { display: "flex", alignItems: "center", gap: "8px", background: _bt.cardBg, border: _bt.cardBorder, borderRadius: "10px", padding: "10px 14px", cursor: "pointer", flex: 1, minWidth: "200px" } }, /* @__PURE__ */ React.createElement(
         "input",
         {
+          "data-help-key": "bridge_send_autoplay_toggle",
           type: "checkbox",
           id: "bridge-autoplay-toggle",
           "aria-label": t("bridge.autoplay_toggle_aria") || "Auto-play bridge narration",
@@ -504,6 +511,7 @@ function BridgeSendModal(props) {
       ), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "13px", fontWeight: 700, color: _bt.textPrimary } }, "\u{1F50A} Audio-First Delivery"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: _bt.textMuted } }, t("bridge.autoplay_toggle_desc") || "Auto-play TTS when students receive")))), bridgeHistory.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { marginBottom: "20px" } }, /* @__PURE__ */ React.createElement(
         "button",
         {
+          "data-help-key": "bridge_send_history_toggle",
           onClick: () => setBridgeHistoryOpen((h) => !h),
           style: {
             width: "100%",
@@ -613,6 +621,7 @@ function BridgeSendModal(props) {
       } }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "14px", fontWeight: 700, color: "#a5b4fc" } }, "\u2728 Generating your Bridge message..."), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "#64748b", marginTop: "2px" } }, t("bridge.generating_progress_desc") || "Creating explanation, translation, and visual content"))), /* @__PURE__ */ React.createElement(
         "button",
         {
+          "data-help-key": "bridge_send_button",
           id: "bridge-send-button",
           "aria-label": bridgeSending ? "Generating content..." : "Generate and send bridge message",
           disabled: bridgeSending,
@@ -1276,6 +1285,7 @@ function BridgeMessageModal(props) {
     /* @__PURE__ */ React.createElement(
       "div",
       {
+        "data-help-key": "bridge_message_modal_panel",
         onClick: (e) => e.stopPropagation(),
         style: {
           background: _dt.panelBg,
@@ -1296,6 +1306,7 @@ function BridgeMessageModal(props) {
       /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "24px 28px 20px", borderBottom: "1px solid rgba(99,102,241,0.15)" } }, /* @__PURE__ */ React.createElement("h2", { style: { fontSize: bridgeProjectionMode ? "28px" : "20px", fontWeight: 800, margin: 0, color: "#a5b4fc", display: "flex", alignItems: "center", gap: "10px", letterSpacing: "-0.02em" } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: bridgeProjectionMode ? "32px" : "24px" } }, "\u{1F4E9}"), " ", t("roster.bridge_title") || "Message from your teacher"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "8px" } }, /* @__PURE__ */ React.createElement(
         "button",
         {
+          "data-help-key": "bridge_message_projection_toggle",
           onClick: () => setBridgeProjectionMode((p) => !p),
           "aria-label": bridgeProjectionMode ? "Exit projection mode" : "Enter projection mode",
           title: bridgeProjectionMode ? "Exit Projection" : "Projection Mode",
@@ -1331,6 +1342,7 @@ function BridgeMessageModal(props) {
       })), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "10px", marginTop: "12px" } }, /* @__PURE__ */ React.createElement(
         "button",
         {
+          "data-help-key": "bridge_message_play_english_btn",
           disabled: bridgeTtsPlaying,
           onClick: async () => {
             const text = bridgeMessage.english;
@@ -1489,6 +1501,7 @@ function BridgeMessageModal(props) {
       }))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "10px", flexWrap: "wrap" } }, bridgeMessage.terms && bridgeMessage.terms.length > 0 && /* @__PURE__ */ React.createElement(
         "button",
         {
+          "data-help-key": "bridge_message_save_terms_btn",
           disabled: !bridgeMessage.terms || bridgeMessage.terms.every((t2) => bridgeTermsSaved.includes(typeof t2 === "object" ? t2.word : t2)),
           onClick: async () => {
             const unsaved = bridgeMessage.terms.filter((t2) => !bridgeTermsSaved.includes(typeof t2 === "object" ? t2.word : t2));
@@ -1511,6 +1524,7 @@ function BridgeMessageModal(props) {
       ), /* @__PURE__ */ React.createElement(
         "button",
         {
+          "data-help-key": "bridge_message_read_again_btn",
           onClick: async () => {
             setBridgeTtsPlaying(true);
             setBridgeActiveLanguage("en");
@@ -1546,6 +1560,7 @@ function BridgeMessageModal(props) {
       ), /* @__PURE__ */ React.createElement(
         "button",
         {
+          "data-help-key": "bridge_message_copy_btn",
           onClick: () => {
             const text = [
               "\u{1F1FA}\u{1F1F8} English:",
@@ -1564,6 +1579,7 @@ function BridgeMessageModal(props) {
       ), /* @__PURE__ */ React.createElement(
         "button",
         {
+          "data-help-key": "bridge_message_print_btn",
           onClick: () => {
             const printContent = `
                       <html><head><title>{t('bridge.bridge_message')}</title>

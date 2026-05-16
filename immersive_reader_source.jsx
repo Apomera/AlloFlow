@@ -827,10 +827,10 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
     };
 
     return (
-        <div className="fixed inset-0 z-[300] flex flex-col" style={{ backgroundColor: p.bg, color: p.text }}>
+        <div data-help-key="perspective_crawl_overlay_panel" className="fixed inset-0 z-[300] flex flex-col" style={{ backgroundColor: p.bg, color: p.text }}>
             <div className="p-4 flex justify-between items-center gap-3 flex-wrap backdrop-blur-sm" style={{ background: 'rgba(0,0,0,0.55)' }}>
                 <div className="flex items-center gap-3">
-                    <button onClick={onClose} aria-label={safeT(t, 'common.close', 'Close')} className="p-2 rounded-full" style={{ color: p.text }}>
+                    <button data-help-key="perspective_crawl_exit_btn" onClick={onClose} aria-label={safeT(t, 'common.close', 'Close')} className="p-2 rounded-full" style={{ color: p.text }}>
                         <ArrowLeft size={22} />
                     </button>
                     <span className="font-bold text-base">{safeT(t, 'immersive.cinematic_crawl', 'Cinematic Crawl')}</span>
@@ -838,18 +838,19 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
                 <div className="flex items-center gap-3 text-xs font-bold flex-wrap">
                     <label className="flex items-center gap-2">
                         <span style={{ opacity: 0.7 }}>SPEED</span>
-                        <input aria-label={t('immersive.crawl_speed_aria') || 'Crawl speed'} type="range" min="10" max="140" value={speedPxPerSec} onChange={e => setSpeedPxPerSec(parseInt(e.target.value))} className="w-24 accent-yellow-400" />
+                        <input data-help-key="perspective_crawl_speed_control" aria-label={t('immersive.crawl_speed_aria') || 'Crawl speed'} type="range" min="10" max="140" value={speedPxPerSec} onChange={e => setSpeedPxPerSec(parseInt(e.target.value))} className="w-24 accent-yellow-400" />
                         <span className="font-mono w-14 text-right">{speedPxPerSec}px/s</span>
                     </label>
                     <label className="flex items-center gap-2">
                         <span style={{ opacity: 0.7 }}>PALETTE</span>
-                        <select aria-label="Palette" value={palette} onChange={e => setPalette(e.target.value)} className="text-xs rounded px-2 py-1 border" style={{ borderColor: p.text, background: p.bg, color: p.text }}>
+                        <select data-help-key="perspective_crawl_palette_select" aria-label="Palette" value={palette} onChange={e => setPalette(e.target.value)} className="text-xs rounded px-2 py-1 border" style={{ borderColor: p.text, background: p.bg, color: p.text }}>
                             <option value="gold">Golden</option>
                             <option value="teal">Aqua</option>
                             <option value="paper">Paper</option>
                         </select>
                     </label>
                     <button
+                        data-help-key="perspective_crawl_ambient_toggle"
                         onClick={() => setAmbientOn(a => !a)}
                         aria-pressed={ambientOn}
                         aria-label={ambientOn ? 'Mute ambient pad' : 'Unmute ambient pad'}
@@ -859,10 +860,10 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
                     >
                         {ambientOn ? '♪' : '♪̸'}
                     </button>
-                    <button onClick={togglePlay} aria-label={isPlaying ? 'Pause' : 'Play'} className="px-3 py-1 rounded" style={{ background: p.text + '22', color: p.text }}>
+                    <button data-help-key="perspective_crawl_play_pause_btn" onClick={togglePlay} aria-label={isPlaying ? 'Pause' : 'Play'} className="px-3 py-1 rounded" style={{ background: p.text + '22', color: p.text }}>
                         {isPlaying ? <Pause size={14} /> : <Play size={14} />}
                     </button>
-                    <button onClick={() => { resetCrawl(); setIsPlaying(true); }} aria-label="Restart crawl from top" className="px-3 py-1 rounded text-xs" style={{ background: p.text + '22', color: p.text }}>
+                    <button data-help-key="perspective_crawl_restart_btn" onClick={() => { resetCrawl(); setIsPlaying(true); }} aria-label="Restart crawl from top" className="px-3 py-1 rounded text-xs" style={{ background: p.text + '22', color: p.text }}>
                         ↺ Restart
                     </button>
                 </div>
