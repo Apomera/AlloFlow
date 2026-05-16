@@ -1513,22 +1513,137 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
             h('div', { className: 'text-sm text-amber-200/80' }, 'Tap a species card or row to make it the active raptor for the Hunt Sim + science modules.'),
-            // View toggle
+            // View toggle (3 modes now)
             h('div', { className: 'flex gap-1 bg-slate-800/60 rounded-lg p-1' },
-              ['cards', 'table'].map(function(v) {
+              ['cards', 'table', 'duel'].map(function(v) {
                 var active = rosterView === v;
+                var labels = { cards: '🎴 Cards', table: '📊 Compare', duel: '🆚 Duel' };
                 return h('button', {
                   key: v,
                   onClick: function() { setRosterView(v); },
                   className: 'px-3 py-1 rounded text-xs font-bold transition-all ' + (active
                     ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white'
                     : 'text-slate-300 hover:text-amber-200'),
-                  'aria-label': v === 'cards' ? 'Show as cards' : 'Show as comparison table',
+                  'aria-label': v === 'cards' ? 'Show as cards' : v === 'table' ? 'Show as comparison table' : '2-species side-by-side duel',
                   'aria-pressed': active
-                }, v === 'cards' ? '🎴 Cards' : '📊 Compare');
+                }, labels[v]);
               })
             )
           ),
+
+          // ── NEW v0.15: Duel Mode ──
+          rosterView === 'duel' && (function() {
+            var duelA = rh.duelA || 'peregrine';
+            var duelB = rh.duelB || 'harpyEagle';
+            var spA = findSpecies(duelA);
+            var spB = findSpecies(duelB);
+            function setDuel(side, id) { setRH(side === 'A' ? { duelA: id } : { duelB: id }); }
+            // Stats to compare (with directional meaning)
+            var stats = [
+              { key: 'massKg', label: 'Mass (kg)', higher: 'heavier' },
+              { key: 'wingspanM', label: 'Wingspan (m)', higher: 'larger' },
+              { key: 'wingLoading', label: 'Wing loading (kg/m²)', higher: 'faster' },
+              { key: 'aspectRatio', label: 'Aspect ratio', higher: 'better soarer' },
+              { key: 'maxLevelMph', label: 'Max level speed (mph)', higher: 'faster' },
+              { key: 'stoopMph', label: 'Stoop speed (mph)', higher: 'faster dive' },
+              { key: 'talonForcePsi', label: 'Talon grip (psi)', higher: 'stronger' },
+              { key: 'talonLengthMm', label: 'Talon length (mm)', higher: 'longer reach' },
+              { key: 'visualAcuityX', label: 'Visual acuity (× human)', higher: 'sharper' },
+              { key: 'visualFieldDeg', label: 'Visual field (°)', higher: 'wider' },
+              { key: 'pullupG', label: 'Pull-up G tolerance', higher: 'tougher' }
+            ];
+            function rowColor(a, b) {
+              if (a > b) return 'aWins';
+              if (b > a) return 'bWins';
+              return 'tied';
+            }
+            return h('div', { className: 'space-y-4' },
+              h('div', { className: 'bg-gradient-to-br from-amber-900/30 to-orange-900/30 border border-amber-700/40 rounded-xl p-4' },
+                h('div', { className: 'text-sm font-bold text-amber-300 mb-2' }, '🆚 Pick Two Species'),
+                h('div', { className: 'grid grid-cols-2 gap-3' },
+                  // Side A selector
+                  h('div', { className: 'bg-slate-900/40 rounded-lg p-3 border border-amber-700/40' },
+                    h('div', { className: 'text-[10px] uppercase tracking-wider text-amber-300 mb-2 text-center' }, 'A'),
+                    h('select', {
+                      value: duelA, onChange: function(e) { setDuel('A', e.target.value); },
+                      className: 'w-full px-2 py-1.5 rounded bg-slate-800 text-amber-100 border border-slate-700 text-sm',
+                      'aria-label': 'Species A'
+                    },
+                      SPECIES.map(function(s) { return h('option', { key: s.id, value: s.id }, s.emoji + ' ' + s.name); })
+                    ),
+                    h('div', { className: 'text-center mt-2' },
+                      h('div', { className: 'text-3xl' }, spA.emoji),
+                      h('div', { className: 'text-xs text-amber-200 italic' }, spA.scientific)
+                    )
+                  ),
+                  // Side B selector
+                  h('div', { className: 'bg-slate-900/40 rounded-lg p-3 border border-orange-700/40' },
+                    h('div', { className: 'text-[10px] uppercase tracking-wider text-orange-300 mb-2 text-center' }, 'B'),
+                    h('select', {
+                      value: duelB, onChange: function(e) { setDuel('B', e.target.value); },
+                      className: 'w-full px-2 py-1.5 rounded bg-slate-800 text-orange-100 border border-slate-700 text-sm',
+                      'aria-label': 'Species B'
+                    },
+                      SPECIES.map(function(s) { return h('option', { key: s.id, value: s.id }, s.emoji + ' ' + s.name); })
+                    ),
+                    h('div', { className: 'text-center mt-2' },
+                      h('div', { className: 'text-3xl' }, spB.emoji),
+                      h('div', { className: 'text-xs text-orange-200 italic' }, spB.scientific)
+                    )
+                  )
+                )
+              ),
+              // Stat-by-stat duel
+              h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-3' },
+                h('div', { className: 'text-sm font-bold text-amber-300 mb-3' }, '📊 Head-to-head Stats'),
+                h('div', { className: 'space-y-1' },
+                  stats.map(function(stat, i) {
+                    var a = spA[stat.key], b = spB[stat.key];
+                    var winner = rowColor(a, b);
+                    var aWins = winner === 'aWins';
+                    var bWins = winner === 'bWins';
+                    return h('div', { key: i, className: 'grid grid-cols-7 gap-1 items-center bg-slate-800/40 rounded p-1.5' },
+                      h('div', { className: 'col-span-2 text-right text-xs font-mono ' + (aWins ? 'text-emerald-300 font-bold' : 'text-slate-400') }, a),
+                      h('div', { className: 'col-span-3 text-center text-[10px] text-slate-300' },
+                        h('div', { className: 'font-bold' }, stat.label),
+                        h('div', { className: 'text-slate-500' }, '(↑ = ' + stat.higher + ')')
+                      ),
+                      h('div', { className: 'col-span-2 text-left text-xs font-mono ' + (bWins ? 'text-emerald-300 font-bold' : 'text-slate-400') }, b)
+                    );
+                  })
+                )
+              ),
+              // Win summary
+              (function() {
+                var aWins = 0, bWins = 0;
+                stats.forEach(function(stat) {
+                  var c = rowColor(spA[stat.key], spB[stat.key]);
+                  if (c === 'aWins') aWins++;
+                  else if (c === 'bWins') bWins++;
+                });
+                var winner = aWins > bWins ? 'A' : (bWins > aWins ? 'B' : null);
+                return h('div', { className: 'bg-gradient-to-br from-' + (winner === 'A' ? 'emerald' : winner === 'B' ? 'amber' : 'slate') + '-900/30 to-slate-900/30 border border-amber-700/40 rounded-xl p-4 text-center' },
+                  h('div', { className: 'text-lg font-bold text-amber-300 mb-1' }, '🏆 Stat-Sheet Winner'),
+                  h('div', { className: 'text-2xl my-1' }, winner === 'A' ? spA.emoji + ' ' + spA.name : winner === 'B' ? spB.emoji + ' ' + spB.name : '⚖ Tied'),
+                  h('div', { className: 'text-xs text-slate-300' }, aWins + ' stats vs ' + bWins + ' stats out of ' + stats.length),
+                  h('div', { className: 'text-[10px] text-slate-500 italic mt-2' }, 'Note: "winning" on stats ≠ winning in nature. Each species evolved for its specific niche. A peregrine in a forest loses to a goshawk; a harpy in open desert loses to a golden eagle.')
+                );
+              })(),
+              // Activate buttons
+              h('div', { className: 'flex gap-2 justify-center' },
+                h('button', {
+                  onClick: function() { setRH({ selectedSpecies: duelA }); rhAnnounce(spA.name + ' selected for Hunt Sim'); },
+                  className: 'px-4 py-2 rounded-lg text-xs font-bold bg-slate-700 text-amber-300 hover:bg-slate-600',
+                  'aria-label': 'Select A for Hunt Sim'
+                }, '→ Use ' + spA.name + ' in Hunt Sim'),
+                h('button', {
+                  onClick: function() { setRH({ selectedSpecies: duelB }); rhAnnounce(spB.name + ' selected for Hunt Sim'); },
+                  className: 'px-4 py-2 rounded-lg text-xs font-bold bg-slate-700 text-orange-300 hover:bg-slate-600',
+                  'aria-label': 'Select B for Hunt Sim'
+                }, '→ Use ' + spB.name + ' in Hunt Sim')
+              )
+            );
+          })(),
 
           // ── NEW v0.10: Comparison Table View ──
           rosterView === 'table' && h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4' },
@@ -5051,6 +5166,174 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             'Hover or tap any label above to see the description here.'
           ),
 
+          // ── NEW v0.15: Cross-Species Comparison ──
+          (function() {
+            var compareKey = rh.anatomyCompare || 'talons';
+            function setCompareKey(k) { setRH({ anatomyCompare: k }); }
+            var compareTypes = [
+              { id: 'talons', label: '🪝 Talons', desc: 'Length + grip force across species' },
+              { id: 'wings', label: '🪶 Wings', desc: 'Wingspan + loading + aspect ratio' },
+              { id: 'eyes', label: '👁 Eyes', desc: 'Visual acuity + field of view' },
+              { id: 'mass', label: '⚖ Body Mass', desc: 'Body size + weight distribution' }
+            ];
+            // Per-comparison: SVG visualization showing all 8 species' values
+            function drawComparison(type) {
+              if (type === 'talons') {
+                // Sort by talon length, then by force
+                var sorted = SPECIES.slice().sort(function(a, b) { return b.talonLengthMm - a.talonLengthMm; });
+                var maxLen = Math.max.apply(null, sorted.map(function(s) { return s.talonLengthMm; }));
+                var maxForce = Math.max.apply(null, sorted.map(function(s) { return s.talonForcePsi; }));
+                return h('div', { className: 'space-y-2' },
+                  h('div', { className: 'text-xs text-slate-400 italic' }, 'Each row shows a species\' hallux (rear killing talon) drawn to scale. The amber bar is grip force (psi).'),
+                  sorted.map(function(s, i) {
+                    var lenPct = (s.talonLengthMm / maxLen) * 80;
+                    var forcePct = (s.talonForcePsi / maxForce) * 100;
+                    var color = s.talonForcePsi >= 600 ? '#dc2626' : s.talonForcePsi >= 400 ? '#f97316' : '#fbbf24';
+                    return h('div', { key: s.id, className: 'bg-slate-800/40 rounded p-2 flex items-center gap-3' },
+                      h('div', { className: 'flex-shrink-0 w-32 text-xs' },
+                        h('span', { className: 'mr-1' }, s.emoji),
+                        h('span', { className: 'text-amber-200 font-bold' }, s.name)
+                      ),
+                      // Talon SVG (curved hook)
+                      h('svg', { viewBox: '0 0 200 60', style: { width: '200px', height: '60px', flexShrink: 0 }, role: 'img', 'aria-label': s.name + ' talon' },
+                        // Curved talon path scaled
+                        h('path', {
+                          d: 'M 10 50 Q ' + (10 + lenPct * 0.7) + ' 5 ' + (10 + lenPct) + ' 30',
+                          fill: 'none', stroke: '#1c1917', strokeWidth: 4, strokeLinecap: 'round'
+                        }),
+                        h('text', { x: 10 + lenPct + 6, y: 33, fontSize: 10, fill: '#fbbf24', fontWeight: 'bold' }, s.talonLengthMm + ' mm')
+                      ),
+                      // Grip force bar
+                      h('div', { className: 'flex-1 flex items-center gap-2' },
+                        h('div', { className: 'flex-1 bg-slate-700/50 rounded h-4 overflow-hidden' },
+                          h('div', { style: { width: forcePct + '%', backgroundColor: color }, className: 'h-full' })
+                        ),
+                        h('div', { className: 'text-xs font-mono font-bold w-16 text-right', style: { color: color } }, s.talonForcePsi + ' psi')
+                      )
+                    );
+                  })
+                );
+              }
+              if (type === 'wings') {
+                var sorted = SPECIES.slice().sort(function(a, b) { return b.wingspanM - a.wingspanM; });
+                var maxSpan = Math.max.apply(null, sorted.map(function(s) { return s.wingspanM; }));
+                return h('div', { className: 'space-y-2' },
+                  h('div', { className: 'text-xs text-slate-400 italic' }, 'Each row shows wingspan to scale (gold bar) + wing loading (red dot — further right = faster) + aspect ratio (cyan dot — further right = more soaring-efficient).'),
+                  sorted.map(function(s, i) {
+                    var spanPct = (s.wingspanM / maxSpan) * 70;
+                    var loadingX = (s.wingLoading / 18) * 100;
+                    var arX = (s.aspectRatio / 12) * 100;
+                    return h('div', { key: s.id, className: 'bg-slate-800/40 rounded p-2 flex items-center gap-3' },
+                      h('div', { className: 'flex-shrink-0 w-32 text-xs' },
+                        h('span', { className: 'mr-1' }, s.emoji),
+                        h('span', { className: 'text-amber-200 font-bold' }, s.name)
+                      ),
+                      h('svg', { viewBox: '0 0 300 50', style: { width: '300px', height: '50px', flexShrink: 0 }, role: 'img', 'aria-label': s.name + ' wing stats' },
+                        // Wingspan bar
+                        h('rect', { x: 5, y: 20, width: spanPct * 2.8, height: 10, fill: '#fbbf24', rx: 2 }),
+                        h('text', { x: 5 + spanPct * 2.8 + 4, y: 28, fontSize: 9, fill: '#fcd34d', fontWeight: 'bold' }, s.wingspanM + ' m'),
+                        // Loading dot
+                        h('circle', { cx: 5 + loadingX * 2.7, cy: 42, r: 5, fill: '#dc2626' }),
+                        h('text', { x: 5 + loadingX * 2.7, y: 49, fontSize: 7, fill: '#fca5a5', textAnchor: 'middle' }, s.wingLoading),
+                        // AR dot
+                        h('circle', { cx: 5 + arX * 2.7, cy: 12, r: 5, fill: '#06b6d4' }),
+                        h('text', { x: 5 + arX * 2.7, y: 9, fontSize: 7, fill: '#67e8f9', textAnchor: 'middle' }, s.aspectRatio)
+                      )
+                    );
+                  })
+                );
+              }
+              if (type === 'eyes') {
+                var sorted = SPECIES.slice().sort(function(a, b) { return b.visualAcuityX - a.visualAcuityX; });
+                return h('div', { className: 'space-y-2' },
+                  h('div', { className: 'text-xs text-slate-400 italic' }, 'Each row shows eye size proportional to acuity (gold circle) + visual field arc.'),
+                  sorted.map(function(s, i) {
+                    var eyeR = 4 + s.visualAcuityX * 3;
+                    var fovDeg = s.visualFieldDeg;
+                    return h('div', { key: s.id, className: 'bg-slate-800/40 rounded p-2 flex items-center gap-3' },
+                      h('div', { className: 'flex-shrink-0 w-32 text-xs' },
+                        h('span', { className: 'mr-1' }, s.emoji),
+                        h('span', { className: 'text-amber-200 font-bold' }, s.name)
+                      ),
+                      h('svg', { viewBox: '0 0 200 60', style: { width: '200px', height: '60px', flexShrink: 0 }, role: 'img', 'aria-label': s.name + ' eye + field' },
+                        // FOV arc
+                        (function() {
+                          var halfFov = fovDeg / 2;
+                          var startA = (-halfFov - 90) * Math.PI / 180;
+                          var endA = (halfFov - 90) * Math.PI / 180;
+                          var arcR = 22;
+                          var cx = 30, cy = 35;
+                          var x0 = cx + arcR * Math.cos(startA);
+                          var y0 = cy + arcR * Math.sin(startA);
+                          var x1 = cx + arcR * Math.cos(endA);
+                          var y1 = cy + arcR * Math.sin(endA);
+                          var largeArc = fovDeg > 180 ? 1 : 0;
+                          return h('path', { d: 'M ' + cx + ' ' + cy + ' L ' + x0 + ' ' + y0 + ' A ' + arcR + ' ' + arcR + ' 0 ' + largeArc + ' 1 ' + x1 + ' ' + y1 + ' Z', fill: '#fde047', opacity: 0.3, stroke: '#fbbf24', strokeWidth: 1 });
+                        })(),
+                        // Eye circle (size = acuity)
+                        h('circle', { cx: 30, cy: 35, r: eyeR, fill: '#fbbf24', stroke: '#92400e', strokeWidth: 1.5 }),
+                        h('circle', { cx: 30, cy: 35, r: eyeR * 0.5, fill: '#1c1917' }),
+                        // Labels
+                        h('text', { x: 80, y: 25, fontSize: 10, fill: '#fbbf24', fontWeight: 'bold' }, s.visualAcuityX + '× acuity'),
+                        h('text', { x: 80, y: 40, fontSize: 10, fill: '#fde047' }, fovDeg + '° field'),
+                        h('text', { x: 80, y: 53, fontSize: 9, fill: '#cbd5e1' }, s.foveaCount + ' fovea/eye')
+                      )
+                    );
+                  })
+                );
+              }
+              if (type === 'mass') {
+                var sorted = SPECIES.slice().sort(function(a, b) { return b.massKg - a.massKg; });
+                var maxMass = Math.max.apply(null, sorted.map(function(s) { return s.massKg; }));
+                return h('div', { className: 'space-y-2' },
+                  h('div', { className: 'text-xs text-slate-400 italic' }, 'Each row shows body size to scale. The harpy eagle is 8× heavier than a peregrine.'),
+                  sorted.map(function(s, i) {
+                    var sizePct = (s.massKg / maxMass) * 60;
+                    return h('div', { key: s.id, className: 'bg-slate-800/40 rounded p-2 flex items-center gap-3' },
+                      h('div', { className: 'flex-shrink-0 w-32 text-xs' },
+                        h('span', { className: 'mr-1' }, s.emoji),
+                        h('span', { className: 'text-amber-200 font-bold' }, s.name)
+                      ),
+                      h('div', { className: 'flex-1 flex items-center gap-2' },
+                        // Body silhouette ellipse scaled
+                        h('svg', { viewBox: '0 0 280 40', style: { width: '280px', height: '40px' }, role: 'img', 'aria-label': s.name + ' body size' },
+                          h('ellipse', { cx: 10 + sizePct * 0.5, cy: 20, rx: Math.max(5, sizePct * 0.5), ry: Math.max(3, sizePct * 0.25), fill: '#92400e', stroke: '#fbbf24', strokeWidth: 1.5 }),
+                          // Head
+                          h('circle', { cx: 10 + sizePct, cy: 18, r: Math.max(3, sizePct * 0.15), fill: '#a16207' }),
+                          // Beak
+                          h('path', { d: 'M ' + (12 + sizePct) + ' 18 L ' + (16 + sizePct) + ' 18 L ' + (14 + sizePct) + ' 22 Z', fill: '#fbbf24' }),
+                          h('text', { x: 280 - 5, y: 24, fontSize: 11, fill: '#fde047', textAnchor: 'end', fontWeight: 'bold' }, s.massKg + ' kg')
+                        )
+                      )
+                    );
+                  })
+                );
+              }
+              return null;
+            }
+            return h('div', { className: 'bg-slate-900/40 border border-amber-700/40 rounded-xl p-4 space-y-3' },
+              h('div', { className: 'text-sm font-bold text-amber-300' }, '🔬 Cross-Species Comparison'),
+              h('div', { className: 'text-xs text-slate-400 italic' }, 'Compare the same body part across all 8 species. Reveals the dramatic scale differences hidden in single-species views.'),
+              // Body part selector
+              h('div', { className: 'flex flex-wrap gap-2' },
+                compareTypes.map(function(c) {
+                  var active = compareKey === c.id;
+                  return h('button', {
+                    key: c.id,
+                    onClick: function() { setCompareKey(c.id); },
+                    className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (active
+                      ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white'
+                      : 'bg-slate-800 text-amber-200 hover:bg-slate-700 border border-slate-700'),
+                    'aria-label': c.label + ': ' + c.desc,
+                    'aria-pressed': active
+                  }, c.label);
+                })
+              ),
+              // Visualization
+              drawComparison(compareKey)
+            );
+          })(),
+
           // Full list (for reading + accessibility)
           h('details', { className: 'bg-slate-900/30 border border-slate-700/40 rounded-xl p-3' },
             h('summary', { className: 'text-sm font-bold text-amber-300 cursor-pointer' }, '📖 All anatomy entries (read-through view)'),
@@ -6625,6 +6908,136 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded-xl p-4 text-xs text-emerald-100/90' },
             h('div', { className: 'font-bold text-emerald-300 mb-1' }, '💡 Start with one observation'),
             'Open eBird or iNaturalist. Pick any raptor you saw today. Log it. You\'ve just contributed to one of the largest biodiversity datasets in human history — and you\'ve learned the species better than any textbook will teach you.'
+          ),
+
+          // ── NEW v0.15: Printable Classroom Worksheets ──
+          h('details', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded-xl p-3' },
+            h('summary', { className: 'text-sm font-bold text-cyan-300 cursor-pointer' }, '🖨 Printable Classroom Worksheets — Field Journal · Pellet Lab · ID Quiz'),
+            h('div', { className: 'mt-3 space-y-3' },
+              h('div', { className: 'text-xs text-slate-400 italic' }, 'Three classroom-ready worksheets. Use your browser\'s Print function (Ctrl/Cmd+P) on each card to get a printable page. Each is designed to fit one US Letter page.'),
+
+              // Field Journal worksheet
+              h('div', { className: 'bg-white text-slate-900 rounded-lg p-4', style: { minHeight: '400px' } },
+                h('div', { className: 'flex items-center justify-between border-b-2 border-slate-800 pb-2 mb-3' },
+                  h('div', { className: 'text-base font-bold' }, '🦅 RAPTOR FIELD JOURNAL'),
+                  h('div', { className: 'text-xs italic' }, 'Page 1 of 1 · cut/copy or print')
+                ),
+                h('div', { className: 'grid grid-cols-3 gap-3 text-xs mb-3' },
+                  h('div', null, h('div', { className: 'font-bold' }, 'Date:'), h('div', { className: 'border-b border-slate-400 h-5' })),
+                  h('div', null, h('div', { className: 'font-bold' }, 'Time:'), h('div', { className: 'border-b border-slate-400 h-5' })),
+                  h('div', null, h('div', { className: 'font-bold' }, 'Observer:'), h('div', { className: 'border-b border-slate-400 h-5' }))
+                ),
+                h('div', { className: 'grid grid-cols-2 gap-3 text-xs mb-3' },
+                  h('div', null, h('div', { className: 'font-bold' }, 'Location:'), h('div', { className: 'border-b border-slate-400 h-5' })),
+                  h('div', null, h('div', { className: 'font-bold' }, 'Weather + wind:'), h('div', { className: 'border-b border-slate-400 h-5' }))
+                ),
+                h('div', { className: 'border border-slate-400 rounded p-2 mb-3' },
+                  h('div', { className: 'text-xs font-bold mb-1' }, '👁 Species (or closest guess) + count:'),
+                  h('div', { className: 'border-b border-slate-300 h-5 mb-1' }),
+                  h('div', { className: 'border-b border-slate-300 h-5' })
+                ),
+                h('div', { className: 'border border-slate-400 rounded p-2 mb-3' },
+                  h('div', { className: 'text-xs font-bold mb-1' }, '🪶 Wing shape + flight pattern:'),
+                  h('div', { className: 'border-b border-slate-300 h-5 mb-1' }),
+                  h('div', { className: 'border-b border-slate-300 h-5' })
+                ),
+                h('div', { className: 'border border-slate-400 rounded p-2 mb-3' },
+                  h('div', { className: 'text-xs font-bold mb-1' }, '🎯 Behavior (perched / soaring / kettling / kiting / stooping / mantling / other):'),
+                  h('div', { className: 'border-b border-slate-300 h-5 mb-1' }),
+                  h('div', { className: 'border-b border-slate-300 h-5' })
+                ),
+                h('div', { className: 'border border-slate-400 rounded p-2' },
+                  h('div', { className: 'text-xs font-bold mb-1' }, '✏ Sketch (silhouette, head pattern, tail markings, anything distinctive):'),
+                  h('div', { style: { height: '120px' }, className: 'bg-slate-50 border border-slate-200' })
+                ),
+                h('div', { className: 'text-[10px] text-slate-500 italic text-center mt-3' }, 'Submit observations to eBird (ebird.org) or iNaturalist (inaturalist.org) to contribute to real ornithology data.')
+              ),
+
+              // Pellet Dissection lab sheet
+              h('div', { className: 'bg-white text-slate-900 rounded-lg p-4', style: { minHeight: '400px' } },
+                h('div', { className: 'flex items-center justify-between border-b-2 border-slate-800 pb-2 mb-3' },
+                  h('div', { className: 'text-base font-bold' }, '🥚 PELLET DISSECTION LAB SHEET'),
+                  h('div', { className: 'text-xs italic' }, 'Use sterilized pellets only (Pellet.com, Carolina Biological)')
+                ),
+                h('div', { className: 'grid grid-cols-3 gap-3 text-xs mb-3' },
+                  h('div', null, h('div', { className: 'font-bold' }, 'Student name:'), h('div', { className: 'border-b border-slate-400 h-5' })),
+                  h('div', null, h('div', { className: 'font-bold' }, 'Date:'), h('div', { className: 'border-b border-slate-400 h-5' })),
+                  h('div', null, h('div', { className: 'font-bold' }, 'Lab partner:'), h('div', { className: 'border-b border-slate-400 h-5' }))
+                ),
+                h('div', { className: 'grid grid-cols-3 gap-3 text-xs mb-3' },
+                  h('div', null, h('div', { className: 'font-bold' }, 'Pellet ID#:'), h('div', { className: 'border-b border-slate-400 h-5' })),
+                  h('div', null, h('div', { className: 'font-bold' }, 'Length (cm):'), h('div', { className: 'border-b border-slate-400 h-5' })),
+                  h('div', null, h('div', { className: 'font-bold' }, 'Mass (g):'), h('div', { className: 'border-b border-slate-400 h-5' }))
+                ),
+                h('div', { className: 'mb-3' },
+                  h('div', { className: 'text-xs font-bold mb-1' }, 'Prey inventory — count each species identified by skull/teeth/long-bone fragments:'),
+                  h('table', { className: 'w-full text-xs border border-slate-400' },
+                    h('thead', null,
+                      h('tr', { className: 'bg-slate-100' },
+                        h('th', { className: 'border border-slate-400 p-1 text-left' }, 'Species'),
+                        h('th', { className: 'border border-slate-400 p-1 text-left' }, 'Count'),
+                        h('th', { className: 'border border-slate-400 p-1 text-left' }, 'Diagnostic features observed'),
+                        h('th', { className: 'border border-slate-400 p-1 text-left' }, 'Biomass est. (g)')
+                      )
+                    ),
+                    h('tbody', null,
+                      ['Meadow vole', 'Deer mouse', 'Short-tailed shrew', 'House sparrow', 'Bog lemming', 'Other / unknown'].map(function(species, i) {
+                        return h('tr', { key: i },
+                          h('td', { className: 'border border-slate-400 p-1 font-bold' }, species),
+                          h('td', { className: 'border border-slate-400 p-1' }, ' '),
+                          h('td', { className: 'border border-slate-400 p-1' }, ' '),
+                          h('td', { className: 'border border-slate-400 p-1' }, ' ')
+                        );
+                      })
+                    )
+                  )
+                ),
+                h('div', { className: 'border border-slate-400 rounded p-2 mb-2 text-xs' },
+                  h('div', { className: 'font-bold mb-1' }, '📊 Discussion (3+ sentences):'),
+                  h('div', null, '1. What does this pellet tell you about the owl\'s diet during this hunting period?'),
+                  h('div', { className: 'border-b border-slate-300 h-5 mt-1 mb-1' }),
+                  h('div', null, '2. If 50 pellets at this roost contained the same prey distribution, how much biomass per year would that represent?'),
+                  h('div', { className: 'border-b border-slate-300 h-5 mt-1 mb-1' }),
+                  h('div', null, '3. What does the most-common prey species tell you about the local ecosystem?'),
+                  h('div', { className: 'border-b border-slate-300 h-5 mt-1' })
+                )
+              ),
+
+              // Field ID Quiz Sheet
+              h('div', { className: 'bg-white text-slate-900 rounded-lg p-4', style: { minHeight: '400px' } },
+                h('div', { className: 'flex items-center justify-between border-b-2 border-slate-800 pb-2 mb-3' },
+                  h('div', { className: 'text-base font-bold' }, '🔍 RAPTOR FIELD ID QUIZ — Silhouette + Behavior'),
+                  h('div', { className: 'text-xs italic' }, 'Match silhouette/behavior to family. Circle one.')
+                ),
+                h('div', { className: 'grid grid-cols-3 gap-3 text-xs mb-3' },
+                  h('div', null, h('div', { className: 'font-bold' }, 'Student name:'), h('div', { className: 'border-b border-slate-400 h-5' })),
+                  h('div', null, h('div', { className: 'font-bold' }, 'Date:'), h('div', { className: 'border-b border-slate-400 h-5' })),
+                  h('div', null, h('div', { className: 'font-bold' }, 'Score: __ / 10'), h('div', { className: 'border-b border-slate-400 h-5' }))
+                ),
+                h('div', { className: 'space-y-2 text-xs' },
+                  [
+                    'Long pointed swept-back wings + rapid wingbeats. Family: __ Falcon __ Eagle __ Buteo __ Owl',
+                    'Long broad wings with finger-slotted primaries, soaring in tight thermal circles. Family: __ Falcon __ Eagle __ Accipiter __ Harrier',
+                    'Short broad wings + long banded tail, flap-flap-glide through forest interior. Family: __ Falcon __ Buteo __ Accipiter __ Eagle',
+                    'Broad rounded wings + wide fan tail, kiting in headwind over a field. Family: __ Falcon __ Buteo __ Owl __ Eagle',
+                    'Long narrow wings raised in dihedral V, tilting low over wetland. Family: __ Harrier __ Falcon __ Kite __ Osprey',
+                    'M-shaped silhouette in flight, plunges feet-first into water. Family: __ Eagle __ Osprey __ Falcon __ Kite',
+                    'Big round head + comb-edged primaries, silent flight at dusk. Family: __ Falcon __ Buteo __ Owl __ Accipiter',
+                    'Active hovering over a roadside field with rapid wingbeats. Most likely species: __ Red-tailed __ Kestrel __ Cooper\'s __ Bald eagle',
+                    'Heard at 3 AM in suburban yard, deep "hoo-hoo-hoooo". Species: __ Barred owl __ Great horned __ Barn owl __ Screech',
+                    'Vertical stoop from 1000+ ft altitude. Species (almost only): __ Peregrine __ Red-tail __ Cooper\'s __ Harrier'
+                  ].map(function(q, i) {
+                    return h('div', { key: i, className: 'p-1.5 border border-slate-200 rounded' },
+                      h('span', { className: 'font-bold mr-1' }, (i + 1) + '.'),
+                      q
+                    );
+                  })
+                ),
+                h('div', { className: 'mt-3 text-[10px] text-slate-500 italic' }, 'Answer key (teachers): 1F 2E 3A 4B 5H 6Osp 7Ow 8K 9GH 10P')
+              ),
+
+              h('div', { className: 'text-[10px] text-slate-500 italic text-center' }, 'Tip: Print the active section only via your browser\'s "Print > More Settings > Selection only" option.')
+            )
           ),
 
           // ── NEW v0.14: Academic Bibliography ──
