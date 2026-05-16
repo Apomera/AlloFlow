@@ -2917,6 +2917,503 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     );
   }
 
+  // ──────────────────────────────────────────────────────────────────
+  // INTERACTIVE WIDGETS — wave 2
+  // (1) TaskSwitchDemo — measure the user's own task-switching cost
+  // (2) BloomSorter — classify learning objectives into 6 Bloom levels
+  // (3) StrategyRanker — rank study strategies vs. Dunlosky 2013 evidence
+  // ──────────────────────────────────────────────────────────────────
+
+  // ── 4. TASK-SWITCH DEMO ──
+  // Two phases of 10 trials each. Single = 10 stimuli of one type
+  // (all numbers OR all letters). Switch = 10 alternating numbers
+  // and letters, requiring rule-switch each trial. Measures total
+  // time per phase. Cost = (Switch time) - (Single time average).
+  function TaskSwitchDemo(props) {
+    if (!R) return null;
+    var awardXP = props.awardXP;
+    // phase: 'idle' | 'singleN' | 'singleL' | 'switch' | 'done'
+    var ps = R.useState('idle');  var phase = ps[0];   var setPhase = ps[1];
+    var ts = R.useState(0);       var trial = ts[0];   var setTrial = ts[1];
+    var bs = R.useState([]);      var batch = bs[0];   var setBatch = bs[1];   // current 10 stimuli
+    var st = R.useState(0);       var startT = st[0];  var setStartT = st[1];
+    var rs = R.useState({});      var results = rs[0]; var setResults = rs[1]; // { singleN, singleL, switch }
+    var es = R.useState(0);       var errors = es[0];  var setErrors = es[1];
+    var awardedRef = R.useRef(false);
+
+    function makeBatch(mode) {
+      var arr = [];
+      for (var i = 0; i < 10; i++) {
+        var isNum;
+        if (mode === 'singleN') isNum = true;
+        else if (mode === 'singleL') isNum = false;
+        else isNum = (i % 2 === 0); // alternating in switch phase
+        if (isNum) {
+          var n = Math.floor(Math.random() * 9) + 1;
+          arr.push({ kind: 'num', value: n, correct: (n % 2 === 0) ? 'even' : 'odd' });
+        } else {
+          var letters = 'AEIOUBCDFGHJKLMNPQRSTVWXYZ';
+          var L = letters[Math.floor(Math.random() * letters.length)];
+          var vowels = 'AEIOU';
+          arr.push({ kind: 'let', value: L, correct: vowels.indexOf(L) >= 0 ? 'vowel' : 'consonant' });
+        }
+      }
+      return arr;
+    }
+
+    function startPhase(p) {
+      setBatch(makeBatch(p));
+      setTrial(0); setErrors(0); setStartT(Date.now());
+      setPhase(p);
+    }
+
+    function answer(choice) {
+      var stim = batch[trial];
+      var ok = choice === stim.correct;
+      if (!ok) setErrors(errors + 1);
+      var nextTrial = trial + 1;
+      if (nextTrial >= batch.length) {
+        var elapsed = (Date.now() - startT) / 1000;
+        var newResults = Object.assign({}, results);
+        newResults[phase] = { time: elapsed, errors: errors + (ok ? 0 : 1) };
+        setResults(newResults);
+        // advance phase
+        if (phase === 'singleN') setTimeout(function() { startPhase('singleL'); }, 600);
+        else if (phase === 'singleL') setTimeout(function() { startPhase('switch'); }, 600);
+        else { setPhase('done'); if (!awardedRef.current && awardXP) { awardedRef.current = true; awardXP(2); } }
+      } else {
+        setTrial(nextTrial);
+      }
+    }
+
+    function reset() {
+      setPhase('idle'); setTrial(0); setBatch([]); setResults({}); setErrors(0); awardedRef.current = false;
+    }
+
+    var phaseInfo = {
+      idle:    { label: 'Ready to begin', color: '#94a3b8' },
+      singleN: { label: 'Phase 1 of 3 · Numbers only', color: '#60a5fa', task: 'Tap ODD or EVEN' },
+      singleL: { label: 'Phase 2 of 3 · Letters only', color: '#a78bfa', task: 'Tap VOWEL or CONSONANT' },
+      'switch':{ label: 'Phase 3 of 3 · Mixed (the hard one)', color: '#ef4444', task: 'Switch rule each trial' },
+      done:    { label: 'Test complete', color: '#10b981' }
+    };
+    var info = phaseInfo[phase];
+
+    var stim = (phase === 'singleN' || phase === 'singleL' || phase === 'switch') && batch[trial] ? batch[trial] : null;
+
+    return hh('div', {
+      style: { background: 'rgba(15,23,42,0.7)', borderRadius: 12, padding: 16, marginBottom: 14,
+        borderTop: '1px solid rgba(147,51,234,0.30)', borderRight: '1px solid rgba(147,51,234,0.30)',
+        borderBottom: '1px solid rgba(147,51,234,0.30)', borderLeft: '4px solid #9333ea' }
+    },
+      hh('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
+        hh('div', { 'aria-hidden': 'true', style: { width: 36, height: 36, borderRadius: '50%', background: 'rgba(147,51,234,0.18)', border: '1.5px solid #9333ea', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 } }, '⏱️'),
+        hh('div', { style: { flex: 1, minWidth: 200 } },
+          hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#c084fc' } }, 'Measure your own task-switching cost'),
+          hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, 'Three short phases (10 trials each, ~30 seconds total). The third phase asks your brain to switch rules constantly — same kind of switching that texting-while-studying forces.')
+        )
+      ),
+
+      // Idle screen
+      phase === 'idle' ? hh('div', { style: { textAlign: 'center', padding: '20px 12px' } },
+        hh('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14, maxWidth: 460, margin: '0 auto 14px' } },
+          'You will see numbers and letters one at a time.', hh('br'),
+          'Phase 1: Numbers only — tap ODD or EVEN.', hh('br'),
+          'Phase 2: Letters only — tap VOWEL or CONSONANT.', hh('br'),
+          'Phase 3: Mixed — your brain has to switch rules each trial. ', hh('strong', { style: { color: '#ef4444' } }, 'This is the experiment.')
+        ),
+        hh('button', { onClick: function() { startPhase('singleN'); },
+          style: { padding: '12px 24px', borderRadius: 8, background: '#9333ea', color: '#fff', border: 'none', fontSize: 13, fontWeight: 800, cursor: 'pointer' }
+        }, '▶ Start the test')
+      ) : null,
+
+      // Active trial
+      phase !== 'idle' && phase !== 'done' && stim ? hh('div', null,
+        // Phase header
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, fontSize: 11 } },
+          hh('span', { style: { color: info.color, fontWeight: 800 } }, info.label),
+          hh('span', { style: { color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } }, 'Trial ' + (trial + 1) + ' / ' + batch.length)
+        ),
+        // Progress bar
+        hh('div', { style: { height: 4, background: 'rgba(15,23,42,0.6)', borderRadius: 2, marginBottom: 14, overflow: 'hidden' } },
+          hh('div', { style: { width: ((trial + 1) / batch.length * 100) + '%', height: '100%', background: info.color, transition: 'width 200ms ease' } })
+        ),
+        // Stimulus
+        hh('div', { style: { background: 'rgba(2,6,23,0.7)', borderRadius: 12, padding: '32px 12px', marginBottom: 12, textAlign: 'center', border: '2px solid ' + info.color } },
+          hh('div', { style: { fontSize: 9, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 } }, stim.kind === 'num' ? 'NUMBER' : 'LETTER'),
+          hh('div', { style: { fontSize: 72, fontWeight: 900, color: stim.kind === 'num' ? '#60a5fa' : '#a78bfa', lineHeight: 1, fontFamily: 'ui-monospace, Menlo, monospace' } }, stim.value),
+          hh('div', { style: { fontSize: 12, color: '#cbd5e1', marginTop: 8, fontStyle: 'italic' } }, stim.kind === 'num' ? 'Odd or even?' : 'Vowel or consonant?')
+        ),
+        // Answer buttons (always 2; labels switch by stim type)
+        hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
+          stim.kind === 'num' ? [
+            hh('button', { key: 'odd', onClick: function() { answer('odd'); },
+              style: { padding: '14px', borderRadius: 10, background: 'rgba(96,165,250,0.10)', color: '#60a5fa', border: '1.5px solid rgba(96,165,250,0.40)', fontSize: 14, fontWeight: 800, cursor: 'pointer' }
+            }, 'ODD'),
+            hh('button', { key: 'even', onClick: function() { answer('even'); },
+              style: { padding: '14px', borderRadius: 10, background: 'rgba(96,165,250,0.10)', color: '#60a5fa', border: '1.5px solid rgba(96,165,250,0.40)', fontSize: 14, fontWeight: 800, cursor: 'pointer' }
+            }, 'EVEN')
+          ] : [
+            hh('button', { key: 'vowel', onClick: function() { answer('vowel'); },
+              style: { padding: '14px', borderRadius: 10, background: 'rgba(167,139,250,0.10)', color: '#a78bfa', border: '1.5px solid rgba(167,139,250,0.40)', fontSize: 14, fontWeight: 800, cursor: 'pointer' }
+            }, 'VOWEL'),
+            hh('button', { key: 'cons', onClick: function() { answer('consonant'); },
+              style: { padding: '14px', borderRadius: 10, background: 'rgba(167,139,250,0.10)', color: '#a78bfa', border: '1.5px solid rgba(167,139,250,0.40)', fontSize: 14, fontWeight: 800, cursor: 'pointer' }
+            }, 'CONSONANT')
+          ]
+        )
+      ) : null,
+
+      // Results screen
+      phase === 'done' ? (function() {
+        var sN = results.singleN || { time: 0, errors: 0 };
+        var sL = results.singleL || { time: 0, errors: 0 };
+        var sw = results['switch'] || { time: 0, errors: 0 };
+        var singleAvg = (sN.time + sL.time) / 2;
+        var costMs = Math.round(((sw.time - singleAvg) / 10) * 1000); // per-trial
+        var costPct = singleAvg > 0 ? Math.round(((sw.time / singleAvg) - 1) * 100) : 0;
+        return hh('div', { style: { padding: '6px' } },
+          hh('div', { style: { fontSize: 14, fontWeight: 900, color: '#10b981', marginBottom: 12, textAlign: 'center' } }, '🎓 Your task-switch cost'),
+          // Bar comparison
+          hh('div', { style: { background: 'rgba(2,6,23,0.7)', borderRadius: 10, padding: 14, marginBottom: 12 } },
+            (function() {
+              var maxT = Math.max(sN.time, sL.time, sw.time, 1);
+              var bars = [
+                { label: 'Numbers only', time: sN.time, errs: sN.errors, color: '#60a5fa' },
+                { label: 'Letters only', time: sL.time, errs: sL.errors, color: '#a78bfa' },
+                { label: 'Mixed (switching)', time: sw.time, errs: sw.errors, color: '#ef4444' }
+              ];
+              return bars.map(function(b, i) {
+                return hh('div', { key: 'bar-' + i, style: { marginBottom: 8 } },
+                  hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#cbd5e1', marginBottom: 4 } },
+                    hh('span', { style: { fontWeight: 700, color: b.color } }, b.label),
+                    hh('span', { style: { fontFamily: 'ui-monospace, Menlo, monospace' } }, b.time.toFixed(1) + 's · ' + b.errs + ' err')
+                  ),
+                  hh('div', { style: { height: 14, background: 'rgba(15,23,42,0.6)', borderRadius: 4, overflow: 'hidden' } },
+                    hh('div', { style: { width: (b.time / maxT * 100) + '%', height: '100%', background: b.color, transition: 'width 400ms ease' } })
+                  )
+                );
+              });
+            })()
+          ),
+          // Summary card
+          hh('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.30)', marginBottom: 12 } },
+            hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+              hh('strong', { style: { color: '#fca5a5' } }, '💸 Switching cost: '),
+              costMs > 0 ? '+' + costMs + ' ms per trial · +' + costPct + '% slower overall.' : 'You appear to have no measurable cost (rare; usually means trials were too easy or you went very slow). Re-run for cleaner data.',
+              costPct >= 30 ? hh('div', { style: { marginTop: 6 } }, hh('strong', { style: { color: '#ef4444' } }, 'High cost. '), 'This is what your brain pays every time you task-switch — including every glance at a notification while studying. Multiply by 100 trials per study session and the cost is enormous.')
+                : costPct >= 10 ? hh('div', { style: { marginTop: 6 } }, hh('strong', { style: { color: '#fbbf24' } }, 'Moderate cost. '), 'Even modest switching costs accumulate. Texting-while-studying research shows ~25% throughput loss in real assignments.')
+                : hh('div', { style: { marginTop: 6 } }, hh('strong', { style: { color: '#94a3b8' } }, 'Low measured cost — '), 'but laboratory effects are typically 25-40% with stronger task differences. Your switching cost on real homework is likely larger than this micro-test reveals.')
+            )
+          ),
+          hh('div', { style: { textAlign: 'center' } },
+            hh('button', { onClick: reset,
+              style: { padding: '8px 18px', borderRadius: 8, background: '#9333ea', color: '#fff', border: 'none', fontSize: 12, fontWeight: 800, cursor: 'pointer' }
+            }, '↺ Run again')
+          )
+        );
+      })() : null
+    );
+  }
+
+  // ── 5. BLOOM'S TAXONOMY VERB SORTER ──
+  // 12 learning-objective sentences. Student picks a Bloom level
+  // for each. Instant feedback explains the verb-level mapping.
+  function BloomSorter(props) {
+    if (!R) return null;
+    var awardXP = props.awardXP;
+    var is = R.useState(0);     var idx = is[0];     var setIdx = is[1];
+    var ps = R.useState(null);  var pick = ps[0];    var setPick = ps[1];
+    var ss = R.useState(0);     var score = ss[0];   var setScore = ss[1];
+    var as = R.useState(false); var awarded = as[0]; var setAwarded = as[1];
+
+    var LEVELS = [
+      { id: 'remember',   n: 1, label: 'Remember',   color: '#ef4444', icon: '🧠' },
+      { id: 'understand', n: 2, label: 'Understand', color: '#f59e0b', icon: '💡' },
+      { id: 'apply',      n: 3, label: 'Apply',      color: '#10b981', icon: '🔧' },
+      { id: 'analyze',    n: 4, label: 'Analyze',    color: '#06b6d4', icon: '🔬' },
+      { id: 'evaluate',   n: 5, label: 'Evaluate',   color: '#8b5cf6', icon: '⚖️' },
+      { id: 'create',     n: 6, label: 'Create',     color: '#ec4899', icon: '🎨' }
+    ];
+
+    var ITEMS = [
+      { obj: 'Recite the planets in order from the sun.', answer: 'remember',
+        why: 'REMEMBER. The verb "recite" + memorized list = lowest cognitive level. No interpretation, no application — just retrieval from memory.' },
+      { obj: 'Explain in your own words why ice floats on water.', answer: 'understand',
+        why: 'UNDERSTAND. "Explain in your own words" = paraphrasing + showing comprehension, not just recall. The student has to construct the explanation, not retrieve it verbatim.' },
+      { obj: 'Use the Pythagorean theorem to find a missing triangle side.', answer: 'apply',
+        why: 'APPLY. Taking a known procedure (Pythagorean theorem) and using it on a new specific problem = textbook Apply. Verbs to watch: solve, use, demonstrate, calculate.' },
+      { obj: 'Compare the causes of WWI and WWII.', answer: 'analyze',
+        why: 'ANALYZE. "Compare" requires breaking each war into parts (causes), then identifying patterns + relationships across them. Higher than Understand because it requires structural decomposition.' },
+      { obj: 'Critique a published study\'s methodology and identify flaws.', answer: 'evaluate',
+        why: 'EVALUATE. "Critique" = making judgments based on criteria. Student must apply standards (research methods knowledge) to judge worth of an artifact. Verbs: judge, defend, justify, critique, validate.' },
+      { obj: 'Design an original experiment to test whether plants grow toward red light.', answer: 'create',
+        why: 'CREATE. "Design an original experiment" = synthesis. Student combines elements (variables, controls, measurement, methods) into a new whole that did not exist before.' },
+      { obj: 'List the seven layers of the OSI model.', answer: 'remember',
+        why: 'REMEMBER. "List" + memorized framework = retrieval. No deeper cognition required to satisfy the objective.' },
+      { obj: 'Summarize the plot of a novel in three sentences.', answer: 'understand',
+        why: 'UNDERSTAND. Summarizing requires processing meaning + extracting essence — that is comprehension, not memorization.' },
+      { obj: 'Diagram the energy flow through a forest ecosystem.', answer: 'analyze',
+        why: 'ANALYZE. "Diagram" of relationships = identifying components + showing how they connect. The student must decompose the system + map the structure.' },
+      { obj: 'Defend the claim that the printing press was the most important invention before 1900.', answer: 'evaluate',
+        why: 'EVALUATE. "Defend a claim" = applying criteria + making + justifying a judgment. The student weighs evidence and stakes a position with support.' },
+      { obj: 'Compose a 5-minute speech persuading peers to recycle.', answer: 'create',
+        why: 'CREATE. The student is producing a new artifact (a speech) that did not exist. Combines content knowledge + rhetorical skill + audience adaptation = synthesis.' },
+      { obj: 'Solve the equation 2x + 5 = 13 for x.', answer: 'apply',
+        why: 'APPLY. "Solve" + a known procedure (algebra steps) on a new specific problem = the canonical Apply objective. Differentiates from Remember (which would be reciting the steps).' }
+    ];
+
+    var item = ITEMS[idx % ITEMS.length];
+    var picked = pick !== null;
+    var correct = pick === item.answer;
+    var pickedLevel = LEVELS.filter(function(L) { return L.id === pick; })[0];
+    var correctLevel = LEVELS.filter(function(L) { return L.id === item.answer; })[0];
+
+    function choose(id) {
+      if (picked) return;
+      setPick(id);
+      if (id === item.answer) setScore(score + 1);
+    }
+    function next() {
+      var nextIdx = idx + 1;
+      if (nextIdx >= ITEMS.length && !awarded) {
+        setAwarded(true);
+        if (awardXP && score / ITEMS.length >= 0.6) awardXP(2);
+      }
+      setIdx(nextIdx); setPick(null);
+    }
+    function reset() { setIdx(0); setPick(null); setScore(0); setAwarded(false); }
+
+    var done = idx >= ITEMS.length;
+
+    if (done) {
+      var pct = Math.round((score / ITEMS.length) * 100);
+      var grade = pct >= 88 ? '🏆 Bloom\'s expert — write objectives with confidence' : pct >= 75 ? '🎯 Solid — good for most classroom planning' : pct >= 60 ? '📖 Practice — Apply vs Analyze + Evaluate vs Create are common mix-ups' : '🔄 Re-read the level cards — the verb lists are the fastest map';
+      return hh('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 12, padding: 16, marginBottom: 14, borderTop: '1px solid rgba(147,51,234,0.30)', borderRight: '1px solid rgba(147,51,234,0.30)', borderBottom: '1px solid rgba(147,51,234,0.30)', borderLeft: '4px solid #9333ea' } },
+        hh('div', { style: { textAlign: 'center', padding: 16 } },
+          hh('div', { style: { fontSize: 32, marginBottom: 8 } }, '📊'),
+          hh('div', { style: { fontSize: 16, fontWeight: 900, color: '#c084fc', marginBottom: 6 } }, 'Bloom\'s sorter complete'),
+          hh('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 10 } }, 'Score: ' + score + ' / ' + ITEMS.length + ' (' + pct + '%)'),
+          hh('div', { style: { fontSize: 12, color: '#c084fc', fontWeight: 700, marginBottom: 14 } }, grade),
+          hh('button', { onClick: reset,
+            style: { padding: '10px 18px', borderRadius: 8, background: '#9333ea', color: '#fff', border: 'none', fontSize: 12, fontWeight: 800, cursor: 'pointer' }
+          }, '↺ Run again')
+        )
+      );
+    }
+
+    return hh('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 12, padding: 16, marginBottom: 14, borderTop: '1px solid rgba(147,51,234,0.30)', borderRight: '1px solid rgba(147,51,234,0.30)', borderBottom: '1px solid rgba(147,51,234,0.30)', borderLeft: '4px solid #9333ea' } },
+      hh('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
+        hh('div', { 'aria-hidden': 'true', style: { width: 36, height: 36, borderRadius: '50%', background: 'rgba(147,51,234,0.18)', border: '1.5px solid #9333ea', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 } }, '📊'),
+        hh('div', { style: { flex: 1, minWidth: 200 } },
+          hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#c084fc' } }, 'Bloom\'s objective sorter'),
+          hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, 'Match each learning objective to a Bloom level. Twelve real classroom-ready objectives.')
+        ),
+        hh('div', { style: { padding: '4px 10px', borderRadius: 999, background: 'rgba(147,51,234,0.12)', color: '#c084fc', fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', border: '1px solid rgba(147,51,234,0.40)' } }, 'Item ' + (idx + 1) + ' / ' + ITEMS.length + ' · ' + score + ' right')
+      ),
+
+      // Objective card
+      hh('div', { style: { background: 'rgba(2,6,23,0.6)', borderRadius: 10, padding: '14px 16px', marginBottom: 12, borderLeft: '3px solid #c084fc' } },
+        hh('div', { style: { fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 } }, 'Learning objective'),
+        hh('div', { style: { fontSize: 13, fontWeight: 700, color: '#e2e8f0', lineHeight: 1.55, fontStyle: 'italic' } }, '"' + item.obj + '"')
+      ),
+
+      // 6 level buttons
+      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 6, marginBottom: 12 } },
+        LEVELS.map(function(L) {
+          var isPick = pick === L.id;
+          var isAns = item.answer === L.id;
+          var showCorrect = picked && isAns;
+          var showWrong = picked && isPick && !correct;
+          var bg, color, border;
+          if (showCorrect) { bg = 'rgba(34,197,94,0.18)'; color = '#22c55e'; border = '#22c55e'; }
+          else if (showWrong) { bg = 'rgba(239,68,68,0.18)'; color = '#ef4444'; border = '#ef4444'; }
+          else if (picked) { bg = 'rgba(15,23,42,0.5)'; color = '#64748b'; border = 'rgba(100,116,139,0.30)'; }
+          else { bg = L.color + '12'; color = L.color; border = L.color + '60'; }
+          return hh('button', { key: L.id, onClick: function() { choose(L.id); }, disabled: picked,
+            style: { padding: '10px 6px', borderRadius: 8, background: bg, color: color, border: '1.5px solid ' + border,
+              fontSize: 11, fontWeight: 800, cursor: picked ? 'default' : 'pointer', transition: 'all 180ms ease',
+              transform: showCorrect ? 'scale(1.04)' : 'none' }
+          },
+            hh('div', { style: { fontSize: 18, marginBottom: 2 } }, L.icon),
+            hh('div', { style: { fontSize: 9, opacity: 0.75 } }, 'L' + L.n),
+            hh('div', { style: { marginTop: 2 } }, L.label),
+            showCorrect ? hh('div', { style: { fontSize: 10, marginTop: 2 } }, '✓') : null,
+            showWrong ? hh('div', { style: { fontSize: 10, marginTop: 2 } }, '✗') : null
+          );
+        })
+      ),
+
+      // Feedback
+      picked ? hh('div', { role: 'status', style: { padding: '12px 14px', borderRadius: 8, background: correct ? 'rgba(34,197,94,0.10)' : 'rgba(239,68,68,0.10)', border: '1px solid ' + (correct ? 'rgba(34,197,94,0.30)' : 'rgba(239,68,68,0.30)'), marginBottom: 8 } },
+        hh('div', { style: { fontSize: 11, fontWeight: 800, color: correct ? '#22c55e' : '#ef4444', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' } }, correct ? '✓ Correct' : '✗ Actually ' + (correctLevel ? correctLevel.label : '?')),
+        hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } }, item.why),
+        hh('div', { style: { marginTop: 10, textAlign: 'right' } },
+          hh('button', { onClick: next,
+            style: { padding: '8px 16px', borderRadius: 8, background: '#9333ea', color: '#fff', border: 'none', fontSize: 11, fontWeight: 800, cursor: 'pointer' }
+          }, idx + 1 >= ITEMS.length ? 'See score →' : 'Next objective →')
+        )
+      ) : hh('div', { style: { fontSize: 10, color: '#64748b', textAlign: 'center', fontStyle: 'italic' } }, 'Pick a Bloom level for this objective.')
+    );
+  }
+
+  // ── 6. STUDY-STRATEGY RANKER (Dunlosky 2013) ──
+  // Show 8 study strategies in random order. Student reorders by
+  // perceived effectiveness using ↑/↓ buttons. Lock in & compare
+  // against Dunlosky 2013 ranking. Score = how close their order
+  // is to the research consensus (sum of absolute rank differences).
+  function StrategyRanker(props) {
+    if (!R) return null;
+    var awardXP = props.awardXP;
+    var lockedRef = R.useRef(false);
+
+    // Dunlosky 2013 ranking — index 0 = highest utility
+    var DUNLOSKY = [
+      { id: 'practiceTest',  label: 'Practice testing',    icon: '📝', utility: 'HIGH',
+        why: 'Self-quizzing, flashcards, retrieval practice. Strong evidence across age, content, format. The act of pulling info OUT of memory is what consolidates it.' },
+      { id: 'spaced',        label: 'Distributed practice', icon: '⏰', utility: 'HIGH',
+        why: 'Spreading study across days/weeks vs cramming. Strong evidence; relatively easy to teach + adopt; effects last for weeks/months.' },
+      { id: 'interleaved',   label: 'Interleaved practice', icon: '🔀', utility: 'MODERATE',
+        why: 'Mixing problem types within a study session vs blocking by topic. Strong for math + motor learning; less clear for prose. Feels harder than blocking but produces better transfer.' },
+      { id: 'elaborative',   label: 'Elaborative interrogation', icon: '❓', utility: 'MODERATE',
+        why: 'Asking "why is this true?" or "why does this make sense?" Forces connection to prior knowledge. Works for factual material; needs some baseline knowledge to be effective.' },
+      { id: 'selfExplain',   label: 'Self-explanation',     icon: '💬', utility: 'MODERATE',
+        why: 'Explaining what you\'re learning out loud or in writing as you go. Effective in math + science especially; takes time + effort relative to reading.' },
+      { id: 'summarize',     label: 'Summarization',        icon: '📋', utility: 'LOW',
+        why: 'Writing summaries. Helpful for skilled summarizers; but summarizing is itself a skill many students lack — without training, summaries become re-reading. Mixed evidence overall.' },
+      { id: 'highlight',     label: 'Highlighting / underlining', icon: '🖍️', utility: 'LOW',
+        why: 'The most-used study strategy. Almost no transfer to long-term retention. Creates an illusion of fluency. Students THINK it works because they recognize highlighted text later — recognition ≠ recall.' },
+      { id: 'reread',        label: 'Re-reading',           icon: '📖', utility: 'LOW',
+        why: 'Re-reading the textbook or notes. Familiar, comfortable, and feels productive. Almost no benefit beyond first reading. Practically: re-read once for clarity, then SWITCH to retrieval practice.' }
+    ];
+
+    // Persistent shuffled state
+    function shuffled() {
+      var arr = DUNLOSKY.slice();
+      for (var i = arr.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+      }
+      return arr.map(function(s) { return s.id; });
+    }
+
+    var os = R.useState(shuffled());  var order = os[0];   var setOrder = os[1];
+    var ls = R.useState(false);        var locked = ls[0];  var setLocked = ls[1];
+    var as = R.useState(false);        var awarded = as[0]; var setAwarded = as[1];
+
+    function move(idx, delta) {
+      if (locked) return;
+      var newOrder = order.slice();
+      var to = idx + delta;
+      if (to < 0 || to >= newOrder.length) return;
+      var t = newOrder[idx]; newOrder[idx] = newOrder[to]; newOrder[to] = t;
+      setOrder(newOrder);
+    }
+
+    function lockIn() {
+      setLocked(true);
+      // Compute distance: sum of abs(my rank - dunlosky rank) for each strategy
+      var dunloskyOrder = DUNLOSKY.map(function(s) { return s.id; });
+      var totalDist = 0;
+      order.forEach(function(id, myRank) {
+        var dunRank = dunloskyOrder.indexOf(id);
+        totalDist += Math.abs(myRank - dunRank);
+      });
+      // max possible distance for 8 items is 32 (perfectly reversed)
+      // good score is < 12 (avg < 1.5 positions off)
+      if (!awarded && awardXP && totalDist <= 16) {
+        setAwarded(true); awardXP(2);
+      }
+    }
+    function reset() { setOrder(shuffled()); setLocked(false); setAwarded(false); }
+
+    function utilityColor(u) { return u === 'HIGH' ? '#22c55e' : u === 'MODERATE' ? '#fbbf24' : '#ef4444'; }
+
+    var dunloskyOrder = DUNLOSKY.map(function(s) { return s.id; });
+    var totalDist = order.reduce(function(sum, id, myRank) {
+      return sum + Math.abs(myRank - dunloskyOrder.indexOf(id));
+    }, 0);
+    var perfectMatch = totalDist === 0;
+
+    return hh('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 12, padding: 16, marginBottom: 14, borderTop: '1px solid rgba(147,51,234,0.30)', borderRight: '1px solid rgba(147,51,234,0.30)', borderBottom: '1px solid rgba(147,51,234,0.30)', borderLeft: '4px solid #9333ea' } },
+      hh('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
+        hh('div', { 'aria-hidden': 'true', style: { width: 36, height: 36, borderRadius: '50%', background: 'rgba(147,51,234,0.18)', border: '1.5px solid #9333ea', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 } }, '🥇'),
+        hh('div', { style: { flex: 1, minWidth: 200 } },
+          hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#c084fc' } }, 'Rank study strategies — your gut vs. Dunlosky 2013'),
+          hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, 'Reorder using the ↑↓ buttons (most-effective at top). Lock in to compare with the meta-analysis ranking.')
+        )
+      ),
+
+      // Ranking list
+      hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 } },
+        order.map(function(id, i) {
+          var s = DUNLOSKY.filter(function(x) { return x.id === id; })[0];
+          var dunRank = dunloskyOrder.indexOf(id);
+          var dist = Math.abs(i - dunRank);
+          var distColor = locked ? (dist === 0 ? '#22c55e' : dist === 1 ? '#10b981' : dist === 2 ? '#fbbf24' : '#ef4444') : null;
+          return hh('div', { key: 'r-' + id, style: {
+            display: 'flex', alignItems: 'center', gap: 8,
+            padding: '10px 12px', borderRadius: 8,
+            background: locked ? distColor + '12' : 'rgba(2,6,23,0.5)',
+            border: '1px solid ' + (locked ? distColor + '50' : 'rgba(100,116,139,0.30)'),
+            transition: 'all 240ms ease'
+          } },
+            hh('div', { style: { width: 28, height: 28, borderRadius: '50%', background: '#9333ea', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 900, fontFamily: 'ui-monospace, Menlo, monospace', flexShrink: 0 } }, '#' + (i + 1)),
+            hh('div', { style: { fontSize: 18, lineHeight: 1, flexShrink: 0 } }, s.icon),
+            hh('div', { style: { flex: 1, minWidth: 0 } },
+              hh('div', { style: { fontSize: 12, fontWeight: 700, color: '#e2e8f0' } }, s.label),
+              locked ? hh('div', { style: { fontSize: 10, color: utilityColor(s.utility), fontWeight: 700, marginTop: 2 } },
+                'Dunlosky: ' + s.utility + ' utility · #' + (dunRank + 1) + ' (you placed it #' + (i + 1) + ')'
+              ) : null
+            ),
+            !locked ? hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 2 } },
+              hh('button', { onClick: function() { move(i, -1); }, disabled: i === 0, 'aria-label': 'Move up',
+                style: { padding: '2px 8px', borderRadius: 4, background: i === 0 ? 'transparent' : 'rgba(147,51,234,0.20)', color: i === 0 ? '#475569' : '#c084fc', border: '1px solid ' + (i === 0 ? 'transparent' : 'rgba(147,51,234,0.40)'), fontSize: 12, cursor: i === 0 ? 'default' : 'pointer' }
+              }, '▲'),
+              hh('button', { onClick: function() { move(i, 1); }, disabled: i === order.length - 1, 'aria-label': 'Move down',
+                style: { padding: '2px 8px', borderRadius: 4, background: i === order.length - 1 ? 'transparent' : 'rgba(147,51,234,0.20)', color: i === order.length - 1 ? '#475569' : '#c084fc', border: '1px solid ' + (i === order.length - 1 ? 'transparent' : 'rgba(147,51,234,0.40)'), fontSize: 12, cursor: i === order.length - 1 ? 'default' : 'pointer' }
+              }, '▼')
+            ) : null,
+            locked ? hh('div', { style: { padding: '4px 8px', borderRadius: 6, background: distColor + '22', color: distColor, border: '1px solid ' + distColor + '60', fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', flexShrink: 0 } },
+              dist === 0 ? '✓' : (i > dunRank ? '↑' : '↓') + dist
+            ) : null
+          );
+        })
+      ),
+
+      // Locked: show details + score
+      locked ? hh('div', null,
+        hh('div', { style: { padding: 12, borderRadius: 8, background: totalDist <= 8 ? 'rgba(34,197,94,0.10)' : totalDist <= 16 ? 'rgba(251,191,36,0.10)' : 'rgba(239,68,68,0.10)', border: '1px solid ' + (totalDist <= 8 ? 'rgba(34,197,94,0.30)' : totalDist <= 16 ? 'rgba(251,191,36,0.30)' : 'rgba(239,68,68,0.30)'), marginBottom: 10, fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+          hh('strong', { style: { color: totalDist <= 8 ? '#22c55e' : totalDist <= 16 ? '#fbbf24' : '#ef4444' } },
+            perfectMatch ? '🎯 Perfect match — research-aligned intuition. ' : totalDist <= 8 ? '🎯 Very close — good intuition. ' : totalDist <= 16 ? '📖 Some surprises. ' : '🔄 Big gap — most students show this. '
+          ),
+          'Total distance from Dunlosky: ', totalDist, ' positions. ',
+          'Most students rank highlighting + re-reading near the top because those FEEL effective (the text feels familiar). The research is consistent: practice testing + spaced practice are dramatically more effective for long-term retention. Your strategy choices are doing more cognitive work than your intuitions believe.'
+        ),
+        hh('details', { style: { background: 'rgba(2,6,23,0.5)', borderRadius: 8, padding: '8px 12px', marginBottom: 10 } },
+          hh('summary', { style: { fontSize: 11, color: '#c084fc', fontWeight: 700, cursor: 'pointer' } }, '🧠 Why each strategy ranks where it does'),
+          hh('div', { style: { marginTop: 8, display: 'flex', flexDirection: 'column', gap: 8 } },
+            DUNLOSKY.map(function(s, i) {
+              return hh('div', { key: 'd-' + s.id, style: { padding: 8, borderRadius: 6, background: utilityColor(s.utility) + '08', borderLeft: '2px solid ' + utilityColor(s.utility) } },
+                hh('div', { style: { fontSize: 11, fontWeight: 700, color: '#e2e8f0', marginBottom: 2 } }, '#' + (i + 1) + ' ' + s.icon + ' ' + s.label, hh('span', { style: { marginLeft: 8, fontSize: 9, color: utilityColor(s.utility), fontWeight: 800 } }, s.utility)),
+                hh('div', { style: { fontSize: 10, color: '#cbd5e1', lineHeight: 1.55 } }, s.why)
+              );
+            })
+          )
+        ),
+        hh('div', { style: { textAlign: 'center' } },
+          hh('button', { onClick: reset,
+            style: { padding: '8px 18px', borderRadius: 8, background: '#9333ea', color: '#fff', border: 'none', fontSize: 12, fontWeight: 800, cursor: 'pointer' }
+          }, '↺ Reshuffle + try again')
+        )
+      ) : hh('div', { style: { textAlign: 'center' } },
+        hh('button', { onClick: lockIn,
+          style: { padding: '10px 22px', borderRadius: 8, background: '#9333ea', color: '#fff', border: 'none', fontSize: 12, fontWeight: 800, cursor: 'pointer' }
+        }, '🔒 Lock in & compare with Dunlosky')
+      )
+    );
+  }
+
   window.StemLab.registerTool('learningLab', {
     name: 'Learning Lab',
     icon: '🧠',
@@ -3161,6 +3658,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         var pickedLevel = picked ? BLOOMS_LEVELS.find(function(l) { return l.id === picked; }) : null;
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('📊 Bloom\'s Taxonomy'),
+          h(BloomSorter, { awardXP: ctx.awardXP }),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '📊 Bloom\'s Taxonomy (revised 2001)'),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
@@ -3540,6 +4038,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         };
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('📝 Study strategies'),
+          h(StrategyRanker, { awardXP: ctx.awardXP }),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '📝 What works (per Dunlosky 2013)'),
             h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
@@ -5479,6 +5978,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         var pickedM = picked != null ? MULTITASKING_COSTS[picked] : null;
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('📵 Multitasking myth + attention'),
+          h(TaskSwitchDemo, { awardXP: ctx.awardXP }),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '📵 The brain doesn\'t multitask — it task-switches'),
             h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } }, MULTITASKING_FACTS.coreReality),
