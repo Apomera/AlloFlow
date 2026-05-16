@@ -11426,6 +11426,629 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     );
   }
 
+  // ── YY. PERSONAL WORRY TIME (Wave 11) ──
+  // Designated 15-min "worry time" instead of all-day anxiety. Borkovec
+  // 1983 stimulus-control approach to GAD. Save worries during day,
+  // process them at scheduled worry time.
+  function PersonalWorryTime(props) {
+    if (!R) return null;
+    var data = props.data || { worries: [], settings: { worryHour: 17 } };
+    var setData = props.setData;
+    var fs = R.useState('');                       var newWorry = fs[0]; var setNewWorry = fs[1];
+    var ws = R.useState(null);                     var working = ws[0]; var setWorking = ws[1];
+    var ts = R.useState(15 * 60);                  var secsLeft = ts[0]; var setSecsLeft = ts[1];
+    var rs = R.useState(false);                    var running = rs[0]; var setRunning = rs[1];
+    var ks = R.useState({});                       var thinking = ks[0]; var setThinking = ks[1];
+
+    function addWorry() {
+      if (!newWorry.trim()) return;
+      var w = { id: tkId(), text: newWorry.trim(), createdAt: Date.now(), resolved: false, action: '' };
+      setData(Object.assign({}, data, { worries: [w].concat(data.worries || []) }));
+      setNewWorry('');
+    }
+    function removeWorry(id) {
+      setData(Object.assign({}, data, { worries: (data.worries || []).filter(function(w) { return w.id !== id; }) }));
+    }
+    function processWorry(id, status, action) {
+      setData(Object.assign({}, data, {
+        worries: (data.worries || []).map(function(w) { return w.id === id ? Object.assign({}, w, { resolved: true, status: status, action: action, processedAt: Date.now() }) : w; })
+      }));
+    }
+
+    R.useEffect(function() {
+      if (!running) return;
+      if (secsLeft <= 0) { setRunning(false); return; }
+      var t = setTimeout(function() { setSecsLeft(secsLeft - 1); }, 1000);
+      return function() { clearTimeout(t); };
+    }, [running, secsLeft]);
+
+    var openWorries = (data.worries || []).filter(function(w) { return !w.resolved; });
+    var resolvedWorries = (data.worries || []).filter(function(w) { return w.resolved; });
+
+    var mm = Math.floor(secsLeft / 60);
+    var ss = secsLeft % 60;
+
+    if (working) {
+      var w = openWorries.filter(function(x) { return x.id === working; })[0];
+      if (!w) { setWorking(null); return null; }
+      var t = thinking[w.id] || { status: 'consider', action: '' };
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader('🤔', 'Worry processor', 'Process one worry at a time. Then move on.', '#3b82f6'),
+        hh('div', { style: { padding: 18, borderRadius: 12, background: 'linear-gradient(135deg, rgba(59,130,246,0.15), rgba(15,23,42,0.7))', border: '2px solid #3b82f6', marginBottom: 14 } },
+          hh('div', { style: { fontSize: 11, color: '#60a5fa', fontWeight: 800, textTransform: 'uppercase', marginBottom: 8 } }, 'The worry'),
+          hh('div', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 12 } }, '"' + w.text + '"')
+        ),
+        tkCard('#3b82f6',
+          hh('div', null,
+            hh('div', { style: { fontSize: 12, color: '#60a5fa', fontWeight: 800, marginBottom: 8 } }, '🤔 Process it'),
+            hh('div', { style: { display: 'flex', gap: 4, marginBottom: 10, flexWrap: 'wrap' } },
+              [
+                { id: 'inMyControl', label: '✓ In my control — I can act', color: '#10b981' },
+                { id: 'partlyControl', label: '~ Partly in my control', color: '#fbbf24' },
+                { id: 'notControl',   label: '✗ Not in my control', color: '#ef4444' }
+              ].map(function(o) {
+                var on = t.status === o.id;
+                return hh('button', { key: 'os-' + o.id,
+                  onClick: function() { setThinking(Object.assign({}, thinking, (function() { var x = {}; x[w.id] = Object.assign({}, t, { status: o.id }); return x; })())); },
+                  style: { padding: '8px 12px', borderRadius: 6, background: on ? o.color + '30' : 'rgba(15,23,42,0.5)', color: on ? o.color : '#94a3b8', border: '1px solid ' + (on ? o.color : 'rgba(100,116,139,0.30)'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                }, o.label);
+              })
+            ),
+            t.status === 'inMyControl' || t.status === 'partlyControl' ? hh('div', null,
+              hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#60a5fa', display: 'block', marginBottom: 4 } }, 'What\'s the smallest next action?'),
+              tkTextarea(t.action, function(v) { setThinking(Object.assign({}, thinking, (function() { var x = {}; x[w.id] = Object.assign({}, t, { action: v }); return x; })())); }, 'Specific. Doable. Small.', 2, { marginBottom: 8 })
+            ) : t.status === 'notControl' ? hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 8 } },
+              hh('strong', { style: { color: '#ef4444' } }, '✗ Not in your control. '),
+              'The worry is real, but you can\'t solve it through worrying about it. Acknowledge: "I notice my brain is asking me to control this. I cannot." Practice tolerating uncertainty. The Serenity Prayer was written for this exact category.'
+            ) : null
+          )
+        ),
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+          tkBtn('← Back', function() { setWorking(null); }, 'ghost'),
+          tkBtn('✓ Processed — move on', function() {
+            processWorry(w.id, t.status, t.action);
+            setWorking(null);
+          }, 'good')
+        )
+      );
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('⏰', 'Worry Time', 'Catch worries throughout the day. Process them at a scheduled "worry time." Borkovec 1983.', '#a855f7'),
+
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+        hh('strong', { style: { color: '#a855f7' } }, '🎓 Why scheduled worry time works: '),
+        'Borkovec 1983 — instead of worrying all day, designate 15 minutes daily for worry. When a worry pops up: write it down, tell yourself "I\'ll think about that at worry time," release it. At worry time: process the list. Most worries lose intensity when contained.'
+      ),
+
+      // Quick add
+      tkCard('#9333ea',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 8 } }, '+ Capture a worry'),
+          hh('div', { style: { display: 'flex', gap: 6 } },
+            tkInput(newWorry, setNewWorry, 'Type the worry — don\'t process it yet', { flex: 1 }),
+            tkBtn('Save for worry time', addWorry, 'primary')
+          )
+        )
+      ),
+
+      // Worry time timer
+      tkCard('#a855f7',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 8 } }, '⏰ Worry-time session (15 min)'),
+          running || secsLeft < 15 * 60 ? hh('div', { style: { textAlign: 'center', marginBottom: 10 } },
+            hh('div', { style: { fontSize: 32, fontWeight: 900, color: '#a855f7', fontFamily: 'ui-monospace, Menlo, monospace' } }, String(mm).padStart(2, '0') + ':' + String(ss).padStart(2, '0'))
+          ) : null,
+          hh('div', { style: { display: 'flex', gap: 8, justifyContent: 'center' } },
+            tkBtn(running ? '⏸ Pause' : '▶ Start worry time', function() { if (!running && secsLeft === 0) setSecsLeft(15 * 60); setRunning(!running); }, 'primary'),
+            secsLeft !== 15 * 60 ? tkBtn('↺ Reset', function() { setSecsLeft(15 * 60); setRunning(false); }, 'ghost') : null
+          )
+        )
+      ),
+
+      // Open worries
+      openWorries.length > 0 ? hh('div', null,
+        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', marginBottom: 8 } }, '🤔 Open worries to process'),
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+          openWorries.map(function(w) {
+            return hh('div', { key: 'ow-' + w.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid #a855f7', display: 'flex', justifyContent: 'space-between', gap: 8 } },
+              hh('div', { style: { flex: 1, fontSize: 12, color: '#cbd5e1', lineHeight: 1.55 } }, w.text),
+              hh('div', { style: { display: 'flex', gap: 4 } },
+                tkBtn('Process', function() { setWorking(w.id); }, 'primary', { padding: '4px 10px', fontSize: 10 }),
+                hh('button', { onClick: function() { removeWorry(w.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+              )
+            );
+          })
+        )
+      ) : tkEmptyState('🤔', 'No open worries right now.', null, null),
+
+      // Processed worries
+      resolvedWorries.length > 0 ? hh('div', { style: { marginTop: 14 } },
+        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#10b981', textTransform: 'uppercase', marginBottom: 8 } }, '✓ Processed worries'),
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+          resolvedWorries.slice(0, 10).map(function(w) {
+            return hh('div', { key: 'rw-' + w.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #10b981', opacity: 0.7 } },
+              hh('div', { style: { fontSize: 11, color: '#cbd5e1', textDecoration: 'line-through' } }, w.text),
+              w.action ? hh('div', { style: { fontSize: 10, color: '#10b981', marginTop: 4, fontStyle: 'italic' } }, '→ ' + w.action) : null
+            );
+          })
+        )
+      ) : null
+    );
+  }
+
+  // ── ZZ. PERSONAL ENERGY TRACKER (Wave 11) ──
+  // Track energy levels across the day. Reveals personal high-energy
+  // windows = best time for hard cognitive work.
+  function PersonalEnergyTracker(props) {
+    if (!R) return null;
+    var data = props.data || { logs: [] };
+    var setData = props.setData;
+    var fs = R.useState({ hour: new Date().getHours(), level: 5, what: '' });
+    var form = fs[0]; var setForm = fs[1];
+
+    function save() {
+      var entry = Object.assign({ id: tkId(), date: todayISO(), time: Date.now() }, form);
+      setData({ logs: [entry].concat(data.logs || []) });
+      setForm({ hour: new Date().getHours(), level: 5, what: '' });
+    }
+    function remove(id) { setData({ logs: (data.logs || []).filter(function(l) { return l.id !== id; }) }); }
+
+    var logs = data.logs || [];
+    // By hour of day, averaged
+    var byHour = {};
+    logs.forEach(function(l) {
+      byHour[l.hour] = byHour[l.hour] || [];
+      byHour[l.hour].push(l.level);
+    });
+    var hourlyAvg = [];
+    for (var h = 6; h <= 23; h++) {
+      var arr = byHour[h] || [];
+      hourlyAvg.push({ hour: h, avg: arr.length > 0 ? arr.reduce(function(s, x) { return s + x; }, 0) / arr.length : 0, count: arr.length });
+    }
+    var bestHour = hourlyAvg.reduce(function(b, h) { return h.avg > b.avg ? h : b; }, hourlyAvg[0]);
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('⚡', 'Energy Tracker', 'Log energy throughout the day. Reveals YOUR peak windows for hard cognitive work.', '#fbbf24'),
+
+      tkCard('#fbbf24',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, '⚡ Log energy right now'),
+          hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 } },
+            hh('div', null,
+              hh('label', { style: { fontSize: 10, fontWeight: 700, color: '#fbbf24', display: 'block', marginBottom: 4 } }, 'Hour (24h)'),
+              hh('input', { type: 'number', min: 0, max: 23, value: form.hour,
+                onChange: function(e) { setForm(Object.assign({}, form, { hour: parseInt(e.target.value, 10) })); },
+                style: { width: '100%', padding: '10px 12px', fontSize: 14, color: '#fbbf24', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(251,191,36,0.40)', borderRadius: 6, boxSizing: 'border-box', fontWeight: 800, textAlign: 'center' }
+              })
+            ),
+            hh('div', null,
+              hh('label', { style: { fontSize: 10, fontWeight: 700, color: '#fbbf24', display: 'block', marginBottom: 4 } }, 'Energy level'),
+              hh('div', { style: { textAlign: 'center', fontSize: 18, color: '#fbbf24', fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 800 } }, form.level + '/10'),
+              hh('input', { type: 'range', min: 1, max: 10, step: 1, value: form.level,
+                onChange: function(e) { setForm(Object.assign({}, form, { level: parseInt(e.target.value, 10) })); },
+                style: { width: '100%', accentColor: '#fbbf24' }
+              })
+            )
+          ),
+          tkInput(form.what, function(v) { setForm(Object.assign({}, form, { what: v })); }, 'Activity (optional, e.g., "studying", "after lunch")', { marginBottom: 8 }),
+          tkBtn('💾 Save', save, 'primary')
+        )
+      ),
+
+      // Hourly heatmap
+      logs.length > 0 ? hh('div', { style: { background: 'rgba(2,6,23,0.5)', borderRadius: 10, padding: 10, marginBottom: 12 } },
+        hh('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', textTransform: 'uppercase', marginBottom: 8 } }, '📊 Energy by hour of day (averaged across logs)'),
+        hh('div', { style: { display: 'flex', gap: 1, alignItems: 'flex-end', height: 80 } },
+          hourlyAvg.map(function(h) {
+            var pct = (h.avg / 10) * 100;
+            var col = h.avg >= 7 ? '#10b981' : h.avg >= 5 ? '#fbbf24' : h.avg > 0 ? '#ef4444' : 'rgba(100,116,139,0.20)';
+            return hh('div', { key: 'eh-' + h.hour, style: { flex: 1, textAlign: 'center' },
+              title: h.hour + ':00 — ' + (h.avg > 0 ? 'avg ' + h.avg.toFixed(1) + ' (' + h.count + ' logs)' : 'no data')
+            },
+              hh('div', { style: { height: 50, background: 'rgba(15,23,42,0.5)', borderRadius: 2, position: 'relative', overflow: 'hidden', marginBottom: 2 } },
+                hh('div', { style: { position: 'absolute', bottom: 0, left: 0, right: 0, height: pct + '%', background: col, transition: 'height 300ms ease' } })
+              ),
+              hh('div', { style: { fontSize: 8, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } }, h.hour)
+            );
+          })
+        ),
+        bestHour && bestHour.avg > 0 ? hh('div', { style: { marginTop: 10, padding: 8, borderRadius: 6, background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.30)', fontSize: 11, color: '#cbd5e1' } },
+          hh('strong', { style: { color: '#10b981' } }, '⭐ Your peak hour: '), bestHour.hour + ':00 (avg ' + bestHour.avg.toFixed(1) + '/10). ',
+          'Try scheduling hard cognitive work in this window.'
+        ) : null
+      ) : null,
+
+      logs.length > 0 ? hh('div', null,
+        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', marginBottom: 8 } }, '📚 Recent'),
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+          logs.slice(0, 20).map(function(l) {
+            var col = l.level >= 7 ? '#10b981' : l.level >= 5 ? '#fbbf24' : '#ef4444';
+            return hh('div', { key: 'el-' + l.id, style: { padding: 6, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + col, display: 'flex', justifyContent: 'space-between' } },
+              hh('span', { style: { fontSize: 11, color: '#cbd5e1', fontFamily: 'ui-monospace, Menlo, monospace' } },
+                l.date + ' @ ' + l.hour + ':00 — ', hh('strong', { style: { color: col } }, l.level + '/10'),
+                l.what ? hh('span', { style: { color: '#94a3b8', marginLeft: 6, fontStyle: 'italic' } }, l.what) : null
+              ),
+              hh('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+            );
+          })
+        )
+      ) : null
+    );
+  }
+
+  // ── AAA. PERSONAL QUESTION LOG (Wave 11) ──
+  // "Questions I want to ask but didn't" — capture mid-class wonders,
+  // process during study or in office hours. Builds the asking muscle.
+  function PersonalQuestionLog(props) {
+    if (!R) return null;
+    var data = props.data || { questions: [] };
+    var setData = props.setData;
+    var fs = R.useState({ text: '', subject: '', context: '' });
+    var form = fs[0]; var setForm = fs[1];
+    var ft = R.useState('open'); var filter = ft[0]; var setFilter = ft[1];
+
+    function save() {
+      if (!form.text.trim()) return;
+      var q = Object.assign({ id: tkId(), createdAt: todayISO(), answered: false, answer: '' }, form);
+      setData({ questions: [q].concat(data.questions || []) });
+      setForm({ text: '', subject: '', context: '' });
+    }
+    function answer(id, ans) {
+      setData({ questions: (data.questions || []).map(function(q) { return q.id === id ? Object.assign({}, q, { answered: true, answer: ans, answeredAt: todayISO() }) : q; }) });
+    }
+    function remove(id) { setData({ questions: (data.questions || []).filter(function(q) { return q.id !== id; }) }); }
+
+    var questions = data.questions || [];
+    var filtered = filter === 'open' ? questions.filter(function(q) { return !q.answered; })
+      : filter === 'answered' ? questions.filter(function(q) { return q.answered; })
+      : questions;
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('❓', 'Question Log', 'Questions you want to ask but didn\'t. Capture now, ask later.', '#06b6d4'),
+
+      tkCard('#06b6d4',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#67e8f9', marginBottom: 8 } }, '❓ Capture a question'),
+          tkInput(form.text, function(v) { setForm(Object.assign({}, form, { text: v })); }, 'Your question (specific)', { marginBottom: 6 }),
+          hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 8 } },
+            tkInput(form.subject, function(v) { setForm(Object.assign({}, form, { subject: v })); }, 'Subject / class'),
+            tkInput(form.context, function(v) { setForm(Object.assign({}, form, { context: v })); }, 'Context (where this came up)')
+          ),
+          tkBtn('💾 Save question', save, 'primary')
+        )
+      ),
+
+      hh('div', { style: { display: 'flex', gap: 4, marginBottom: 12 } },
+        [{ id: 'open', label: 'Open' }, { id: 'answered', label: 'Answered' }, { id: 'all', label: 'All' }].map(function(f) {
+          var active = filter === f.id;
+          return hh('button', { key: 'qf-' + f.id,
+            onClick: function() { setFilter(f.id); },
+            style: { padding: '6px 12px', borderRadius: 6, background: active ? 'rgba(6,182,212,0.20)' : 'transparent', color: active ? '#06b6d4' : '#94a3b8', border: '1px solid ' + (active ? 'rgba(6,182,212,0.50)' : 'rgba(100,116,139,0.30)'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+          }, f.label);
+        })
+      ),
+
+      filtered.length === 0 ? tkEmptyState('❓', 'No questions in this view.', null, null)
+      : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+          filtered.map(function(q) {
+            return hh('div', { key: 'q-' + q.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid ' + (q.answered ? '#10b981' : '#06b6d4') } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
+                hh('strong', { style: { fontSize: 12, color: q.answered ? '#10b981' : '#67e8f9' } }, (q.answered ? '✓ ' : '❓ ') + q.text),
+                hh('button', { onClick: function() { remove(q.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+              ),
+              hh('div', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 6 } },
+                (q.subject ? '📚 ' + q.subject + ' · ' : '') + (q.context ? q.context + ' · ' : '') + relDate(q.createdAt)
+              ),
+              q.answered ? hh('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+                hh('strong', { style: { color: '#10b981' } }, '✓ Answered: '), q.answer
+              ) : hh('div', null,
+                (function() {
+                  var fs2 = R.useState('');
+                  return tkInput(fs2[0], fs2[1], 'Answer (when you find out)', { marginBottom: 4, fontSize: 10 });
+                })(),
+                tkBtn('Mark answered', function() { var ans = prompt('Answer:'); if (ans) answer(q.id, ans); }, 'good', { padding: '4px 10px', fontSize: 10 })
+              )
+            );
+          })
+        )
+    );
+  }
+
+  // ── BBB. PERSONAL SUCCESS LOG (Wave 11) ──
+  // Track wins, big and small. Counters self-criticism + builds growth
+  // narrative. Goldman 2020 — explicitly recognizing daily wins predicts
+  // resilience after setbacks.
+  function PersonalSuccessLog(props) {
+    if (!R) return null;
+    var data = props.data || { successes: [] };
+    var setData = props.setData;
+    var fs = R.useState({ text: '', size: 'medium', category: 'academic' });
+    var form = fs[0]; var setForm = fs[1];
+
+    var SIZES = [
+      { id: 'tiny', label: 'Tiny', color: '#3b82f6' },
+      { id: 'medium', label: 'Medium', color: '#fbbf24' },
+      { id: 'big', label: 'Big', color: '#10b981' }
+    ];
+    var CATS = [
+      { id: 'academic', label: 'Academic', color: '#3b82f6', icon: '📚' },
+      { id: 'social',   label: 'Social',   color: '#ec4899', icon: '🤝' },
+      { id: 'personal', label: 'Personal', color: '#a855f7', icon: '💖' },
+      { id: 'health',   label: 'Health',   color: '#10b981', icon: '💪' },
+      { id: 'creative', label: 'Creative', color: '#fbbf24', icon: '🎨' }
+    ];
+
+    function save() {
+      if (!form.text.trim()) { alert('Need success text.'); return; }
+      var s = Object.assign({ id: tkId(), date: todayISO() }, form);
+      setData({ successes: [s].concat(data.successes || []) });
+      setForm({ text: '', size: 'medium', category: 'academic' });
+    }
+    function remove(id) { setData({ successes: (data.successes || []).filter(function(s) { return s.id !== id; }) }); }
+
+    var successes = data.successes || [];
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🏆', 'Success Log', 'Log wins, tiny + big. Counters the brain\'s negativity bias. Goldman 2020.', '#10b981'),
+
+      tkCard('#10b981',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#10b981', marginBottom: 8 } }, '🏆 Log a win'),
+          tkTextarea(form.text, function(v) { setForm(Object.assign({}, form, { text: v })); }, 'What did you do? Tiny counts. Bigger counts. All count.', 2, { marginBottom: 10 }),
+          hh('div', { style: { display: 'flex', gap: 6, marginBottom: 8, flexWrap: 'wrap' } },
+            hh('div', null,
+              hh('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, 'Size'),
+              hh('div', { style: { display: 'flex', gap: 4 } },
+                SIZES.map(function(s) {
+                  var on = form.size === s.id;
+                  return hh('button', { key: 'sz-' + s.id,
+                    onClick: function() { setForm(Object.assign({}, form, { size: s.id })); },
+                    style: { padding: '6px 10px', borderRadius: 4, background: on ? s.color + '30' : 'rgba(15,23,42,0.5)', color: on ? s.color : '#94a3b8', border: '1px solid ' + (on ? s.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
+                  }, s.label);
+                })
+              )
+            ),
+            hh('div', null,
+              hh('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, 'Category'),
+              hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
+                CATS.map(function(c) {
+                  var on = form.category === c.id;
+                  return hh('button', { key: 'ct-' + c.id,
+                    onClick: function() { setForm(Object.assign({}, form, { category: c.id })); },
+                    style: { padding: '6px 10px', borderRadius: 4, background: on ? c.color + '30' : 'rgba(15,23,42,0.5)', color: on ? c.color : '#94a3b8', border: '1px solid ' + (on ? c.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
+                  }, c.icon + ' ' + c.label);
+                })
+              )
+            )
+          ),
+          tkBtn('💾 Save', save, 'primary')
+        )
+      ),
+
+      hh('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(16,185,129,0.18), rgba(15,23,42,0.7))', border: '1px solid rgba(16,185,129,0.40)', marginBottom: 12, textAlign: 'center' } },
+        hh('div', { style: { fontSize: 32, fontWeight: 900, color: '#10b981', fontFamily: 'ui-monospace, Menlo, monospace' } }, successes.length),
+        hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 4 } }, 'wins logged total · ', hh('strong', { style: { color: '#10b981' } }, 'each one happened.'))
+      ),
+
+      successes.length > 0 ? hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+        successes.slice(0, 50).map(function(s) {
+          var cat = CATS.filter(function(c) { return c.id === s.category; })[0] || CATS[0];
+          var sz = SIZES.filter(function(z) { return z.id === s.size; })[0] || SIZES[1];
+          return hh('div', { key: 'sl-' + s.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid ' + cat.color } },
+            hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
+              hh('div', null,
+                hh('span', { style: { color: cat.color, marginRight: 6 } }, cat.icon),
+                hh('span', { style: { padding: '2px 6px', borderRadius: 4, background: sz.color + '20', color: sz.color, fontSize: 9, fontWeight: 800 } }, sz.label)
+              ),
+              hh('span', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } }, relDate(s.date), ' · ', hh('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕'))
+            ),
+            hh('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.55 } }, s.text)
+          );
+        })
+      ) : tkEmptyState('🏆', 'No wins logged yet. Tiny ones count.', null, null)
+    );
+  }
+
+  // ── CCC. PERSONAL TEACHER EMAIL BUILDER (Wave 11) ──
+  // Templates + script-builder for common student emails to teachers.
+  // Reduces the anxiety of "how do I write this?" while building the skill.
+  function PersonalTeacherEmail(props) {
+    if (!R) return null;
+    var data = props.data || { saved: [] };
+    var setData = props.setData;
+    var ts = R.useState(null);                         var activeType = ts[0]; var setActiveType = ts[1];
+    var fs = R.useState({ teacher: '', myName: '', class: '', body: '' });
+    var form = fs[0]; var setForm = fs[1];
+
+    var TEMPLATES = [
+      { id: 'missed',   label: 'Missed class', icon: '🤒',
+        prompt: 'I was absent from [DATE]. Could you let me know what I missed and how I can catch up?',
+        body: 'Hi [Teacher],\n\nI was out sick on [DATE] and missed your [CLASS] class. Could you let me know:\n- What we covered\n- Any assignments I missed\n- When you\'re available for me to come by + catch up\n\nThank you.\n\n[My name]'
+      },
+      { id: 'extension', label: 'Asking for extension', icon: '⏰',
+        prompt: 'I won\'t be able to turn in [ASSIGNMENT] on time because [REASON]. Could I have until [NEW DATE]?',
+        body: 'Hi [Teacher],\n\nI\'m writing about the [ASSIGNMENT] due [ORIGINAL DATE]. Because of [BRIEF, HONEST REASON — illness, family situation, conflicting deadlines, etc.] I\'m not going to be able to turn in my best work by then.\n\nCould I have until [NEW DATE] to finish it? I\'d still rather turn in good work late than rushed work on time.\n\nThank you for considering.\n\n[My name]'
+      },
+      { id: 'accom',    label: 'Asking about accommodation', icon: '🪪',
+        prompt: 'My IEP/504 includes [ACCOMMODATION]. Could we talk about how to use it in your class?',
+        body: 'Hi [Teacher],\n\nMy IEP/504 plan includes [ACCOMMODATION]. I\'d like to use it in your class for [SPECIFIC SITUATION — tests, in-class writing, etc.].\n\nWould you have 5 minutes to talk about how it would work? I\'m available [TIMES].\n\nThank you.\n\n[My name]'
+      },
+      { id: 'help',     label: 'Asking for help understanding', icon: '🙋',
+        prompt: 'I\'m struggling with [CONCEPT]. Could you point me to resources or have time to meet?',
+        body: 'Hi [Teacher],\n\nI\'ve been working on [CONCEPT/UNIT] and I\'m stuck. I\'ve tried [WHAT YOU TRIED — re-reading notes, looking it up, asking a friend] and still don\'t get [SPECIFIC PART].\n\nCould you:\n- Suggest a resource that explains it differently\n- OR find 10 minutes for me to come by\n\nThank you.\n\n[My name]'
+      },
+      { id: 'grade',    label: 'Questioning a grade', icon: '📝',
+        prompt: 'I have a question about my grade on [ASSIGNMENT]. Could we talk about it?',
+        body: 'Hi [Teacher],\n\nI got my [ASSIGNMENT] back with [GRADE]. Before I do anything else, I want to understand:\n- What were the strongest parts of my submission?\n- Where did I lose the most points + why?\n- Is there anything I could do to learn from this for next time?\n\nThank you for taking the time.\n\n[My name]'
+      },
+      { id: 'thanks',   label: 'Saying thank you', icon: '🙏',
+        prompt: 'Thank a teacher for something specific.',
+        body: 'Hi [Teacher],\n\nI wanted to say thank you for [SPECIFIC THING — the way you explained X, how you handled Y in class, the extra time on Z, etc.].\n\nIt meant a lot. I just thought you should know.\n\n[My name]'
+      }
+    ];
+
+    function generate(t) {
+      var body = t.body
+        .replace(/\[Teacher\]/g, form.teacher || '[Teacher]')
+        .replace(/\[CLASS\]/g, form.class || '[Class]')
+        .replace(/\[My name\]/g, form.myName || '[Your name]');
+      return body;
+    }
+    function save(t) {
+      var entry = { id: tkId(), date: todayISO(), type: t.id, body: form.body || generate(t) };
+      setData({ saved: [entry].concat(data.saved || []) });
+      setForm({ teacher: '', myName: '', class: '', body: '' });
+      setActiveType(null);
+    }
+
+    if (activeType) {
+      var t = TEMPLATES.filter(function(x) { return x.id === activeType; })[0];
+      if (!t) { setActiveType(null); return null; }
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader('📧', t.label, t.prompt, '#3b82f6'),
+        tkCard('#3b82f6',
+          hh('div', null,
+            hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6, marginBottom: 10 } },
+              tkInput(form.teacher, function(v) { setForm(Object.assign({}, form, { teacher: v })); }, 'Teacher name'),
+              tkInput(form.myName, function(v) { setForm(Object.assign({}, form, { myName: v })); }, 'Your name'),
+              tkInput(form.class, function(v) { setForm(Object.assign({}, form, { class: v })); }, 'Class')
+            ),
+            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#60a5fa', display: 'block', marginBottom: 4 } }, 'Email body (template + your edits)'),
+            tkTextarea(form.body || generate(t), function(v) { setForm(Object.assign({}, form, { body: v })); }, '', 14, { fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 11 })
+          )
+        ),
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+          tkBtn('← Back', function() { setActiveType(null); setForm({ teacher: '', myName: '', class: '', body: '' }); }, 'ghost'),
+          hh('div', { style: { display: 'flex', gap: 6 } },
+            tkBtn('📋 Copy to clipboard', function() { try { navigator.clipboard.writeText(form.body || generate(t)); alert('Copied — paste into your email.'); } catch (e) {} }, 'secondary'),
+            tkBtn('💾 Save draft', function() { save(t); }, 'primary')
+          )
+        )
+      );
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('📧', 'Teacher Email Builder', '6 templates for common student emails. Fill in your specifics, copy + send.', '#3b82f6'),
+
+      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, marginBottom: 14 } },
+        TEMPLATES.map(function(t) {
+          return hh('button', { key: 'te-' + t.id,
+            onClick: function() { setActiveType(t.id); setForm({ teacher: '', myName: '', class: '', body: '' }); },
+            style: { display: 'block', textAlign: 'left', padding: 12, borderRadius: 10, background: 'linear-gradient(135deg, rgba(59,130,246,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(59,130,246,0.40)', borderLeft: '4px solid #3b82f6', cursor: 'pointer' }
+          },
+            hh('div', { style: { fontSize: 22, marginBottom: 4 } }, t.icon),
+            hh('strong', { style: { fontSize: 13, color: '#60a5fa' } }, t.label),
+            hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4, fontStyle: 'italic', lineHeight: 1.55 } }, t.prompt.substring(0, 100))
+          );
+        })
+      ),
+
+      (data.saved || []).length > 0 ? hh('div', null,
+        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', marginBottom: 8 } }, '📚 Saved drafts'),
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+          (data.saved || []).slice(0, 10).map(function(d) {
+            return hh('div', { key: 'sd-' + d.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #3b82f6' } },
+              hh('div', { style: { fontSize: 10, color: '#60a5fa', marginBottom: 4 } }, d.type + ' · ' + relDate(d.date)),
+              hh('div', { style: { fontSize: 10, color: '#cbd5e1', fontFamily: 'ui-monospace, Menlo, monospace', whiteSpace: 'pre-wrap' } }, d.body.substring(0, 200) + '...')
+            );
+          })
+        )
+      ) : null
+    );
+  }
+
+  // ── DDD. PERSONAL BODY AWARENESS CHECK (Wave 11) ──
+  // Daily body-scan check-in. What's tense? What hurts? What needs care?
+  // Bessel van der Kolk-aligned somatic literacy.
+  function PersonalBodyCheck(props) {
+    if (!R) return null;
+    var data = props.data || { checks: [] };
+    var setData = props.setData;
+    var fs = R.useState({ areas: {}, overall: 5, note: '' });
+    var form = fs[0]; var setForm = fs[1];
+
+    var BODY_AREAS = [
+      { id: 'head',     label: 'Head',           icon: '🧠' },
+      { id: 'neck',     label: 'Neck + jaw',     icon: '😬' },
+      { id: 'shoulders',label: 'Shoulders',      icon: '🦴' },
+      { id: 'chest',    label: 'Chest + breath', icon: '🫁' },
+      { id: 'stomach',  label: 'Stomach',        icon: '🫃' },
+      { id: 'back',     label: 'Back',           icon: '🔙' },
+      { id: 'hands',    label: 'Hands + arms',   icon: '✋' },
+      { id: 'legs',     label: 'Legs + feet',    icon: '🦵' }
+    ];
+
+    function setArea(id, val) {
+      setForm(Object.assign({}, form, { areas: Object.assign({}, form.areas, (function() { var o = {}; o[id] = val; return o; })()) }));
+    }
+    function save() {
+      var entry = Object.assign({ id: tkId(), date: todayISO(), time: Date.now() }, form);
+      setData({ checks: [entry].concat(data.checks || []) });
+      setForm({ areas: {}, overall: 5, note: '' });
+    }
+
+    var checks = data.checks || [];
+    var today = todayISO();
+    var todayCheck = checks.filter(function(c) { return c.date === today; })[0];
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🫀', 'Body Awareness', 'Daily body scan. Notice without trying to fix. Builds interoception (van der Kolk).', '#ec4899'),
+
+      todayCheck ? hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.30)', marginBottom: 12, fontSize: 11, color: '#22c55e' } },
+        '✓ Today\'s body check logged · overall ' + todayCheck.overall + '/10'
+      ) : tkCard('#ec4899',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#f472b6', marginBottom: 8 } }, '🫀 How does each part feel? (1 = tight/painful, 10 = relaxed)'),
+          hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8, marginBottom: 12 } },
+            BODY_AREAS.map(function(a) {
+              var val = (form.areas || {})[a.id] || 5;
+              var col = val >= 7 ? '#10b981' : val >= 5 ? '#fbbf24' : '#ef4444';
+              return hh('div', { key: 'ba-' + a.id, style: { padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.4)', borderLeft: '2px solid ' + col } },
+                hh('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 } },
+                  hh('span', { style: { fontSize: 14 } }, a.icon),
+                  hh('span', { style: { fontSize: 11, color: '#cbd5e1', flex: 1 } }, a.label),
+                  hh('strong', { style: { color: col, fontSize: 12, fontFamily: 'ui-monospace, Menlo, monospace' } }, val + '/10')
+                ),
+                hh('input', { type: 'range', min: 1, max: 10, step: 1, value: val,
+                  onChange: function(e) { setArea(a.id, parseInt(e.target.value, 10)); },
+                  style: { width: '100%', accentColor: col }
+                })
+              );
+            })
+          ),
+          hh('div', { style: { marginBottom: 10 } },
+            hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 4 } }, 'Overall body feeling: ', hh('strong', { style: { color: '#f472b6', fontSize: 14, fontFamily: 'ui-monospace, Menlo, monospace' } }, form.overall + '/10')),
+            hh('input', { type: 'range', min: 1, max: 10, step: 1, value: form.overall,
+              onChange: function(e) { setForm(Object.assign({}, form, { overall: parseInt(e.target.value, 10) })); },
+              style: { width: '100%', accentColor: '#ec4899' }
+            })
+          ),
+          tkInput(form.note, function(v) { setForm(Object.assign({}, form, { note: v })); }, 'What is your body telling you?', { marginBottom: 10 }),
+          tkBtn('💾 Save check', save, 'primary')
+        )
+      ),
+
+      checks.length > 0 ? hh('div', null,
+        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#f472b6', textTransform: 'uppercase', marginBottom: 8 } }, '📚 Recent body checks'),
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+          checks.slice(0, 10).map(function(c) {
+            var col = c.overall >= 7 ? '#10b981' : c.overall >= 5 ? '#fbbf24' : '#ef4444';
+            return hh('div', { key: 'bc-' + c.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + col } },
+              hh('div', { style: { fontSize: 11, color: '#cbd5e1', fontFamily: 'ui-monospace, Menlo, monospace' } }, c.date + ' · overall ' + c.overall + '/10'),
+              c.note ? hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4, fontStyle: 'italic' } }, c.note) : null
+            );
+          })
+        )
+      ) : null,
+
+      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(236,72,153,0.08)', border: '1px solid rgba(236,72,153,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+        hh('strong', { style: { color: '#ec4899' } }, '🎓 Why body awareness: '),
+        'van der Kolk (The Body Keeps the Score, 2014) — trauma + chronic stress live in the body, often outside conscious awareness. Daily check-ins build interoception (noticing internal body state). Better interoception = better emotional regulation + earlier stress detection. Just notice. Don\'t need to fix.'
+      )
+    );
+  }
+
   // ── F. MY TOOLKIT HUB (landing page) ──
   // Single entry point that shows status of all toolkit tools + quick
   // actions. Today's date, current streak, # active goals, etc.
@@ -11569,7 +12192,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'mytkDisc',     icon: '🗝', label: 'Disclosure Wizard',    color: '#a855f7', desc: 'Should I tell them? Walk through the decision',
         stat: ((data.mytkDisc || {}).logs || []).length + ' decisions', cta: 'Walk through' },
       { id: 'mytkAudio',    icon: '🎧', label: 'Focus Audio',          color: '#a855f7', desc: '8 categories — rate what works for YOU',
-        stat: 'experiment', cta: 'Pick audio' }
+        stat: 'experiment', cta: 'Pick audio' },
+      { id: 'mytkWorry',    icon: '⏰', label: 'Worry Time',           color: '#a855f7', desc: '15-min scheduled worry vs all-day (Borkovec 1983)',
+        stat: ((data.mytkWorry || {}).worries || []).filter(function(w) { return !w.resolved; }).length + ' open', cta: 'Capture a worry' },
+      { id: 'mytkEnergy',   icon: '⚡', label: 'Energy Tracker',       color: '#fbbf24', desc: 'Log energy by hour, find your peak window',
+        stat: ((data.mytkEnergy || {}).logs || []).length + ' logs', cta: 'Log energy' },
+      { id: 'mytkQuest',    icon: '❓', label: 'Question Log',         color: '#06b6d4', desc: 'Capture wonders mid-class, process later',
+        stat: ((data.mytkQuest || {}).questions || []).filter(function(q) { return !q.answered; }).length + ' open', cta: 'Log a question' },
+      { id: 'mytkSuccess',  icon: '🏆', label: 'Success Log',          color: '#10b981', desc: 'Log wins, tiny + big (Goldman 2020)',
+        stat: ((data.mytkSuccess || {}).successes || []).length + ' wins', cta: 'Log a win' },
+      { id: 'mytkEmail',    icon: '📧', label: 'Teacher Email Builder',color: '#3b82f6', desc: '6 templates for common student emails',
+        stat: ((data.mytkEmail || {}).saved || []).length + ' drafts', cta: 'Pick a template' },
+      { id: 'mytkBody',     icon: '🫀', label: 'Body Awareness',       color: '#ec4899', desc: '8-area body scan, builds interoception',
+        stat: ((data.mytkBody || {}).checks || []).length + ' scans', cta: 'Scan now' }
     ];
 
     var dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][new Date().getDay()];
@@ -11806,7 +12441,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'mytkMood',   icon: '🌈', label: 'Mood Tracker',         desc: 'Daily mood + energy sliders + 14-day trend visualization.' },
               { id: 'mytkFut',    icon: '💌', label: 'Letters to Future Self', desc: 'Write a letter that opens on a chosen date. Hershfield 2011 future-self research.' },
               { id: 'mytkDisc',   icon: '🗝', label: 'Disclosure Wizard',    desc: 'Should I tell them about my IEP/disability/MH? Walk through the decision.' },
-              { id: 'mytkAudio',  icon: '🎧', label: 'Focus Audio',          desc: '8 categories (lo-fi, classical, nature, white noise, silence) with rating.' }
+              { id: 'mytkAudio',  icon: '🎧', label: 'Focus Audio',          desc: '8 categories (lo-fi, classical, nature, white noise, silence) with rating.' },
+              { id: 'mytkWorry',  icon: '⏰', label: 'Worry Time',           desc: '15-min scheduled worry-processing instead of all-day anxiety. Borkovec 1983.' },
+              { id: 'mytkEnergy', icon: '⚡', label: 'Energy Tracker',       desc: 'Log energy by hour. Find YOUR peak windows for hard cognitive work.' },
+              { id: 'mytkQuest',  icon: '❓', label: 'Question Log',         desc: 'Capture mid-class wonders. Process in study or office hours.' },
+              { id: 'mytkSuccess',icon: '🏆', label: 'Success Log',          desc: 'Log wins, tiny + big. Counter negativity bias (Goldman 2020).' },
+              { id: 'mytkEmail',  icon: '📧', label: 'Teacher Email Builder',desc: '6 templates (missed class, extension, accommodation, help, grade question, thanks).' },
+              { id: 'mytkBody',   icon: '🫀', label: 'Body Awareness',       desc: '8-area daily body scan. Builds interoception (van der Kolk).' }
             ]
           },
           { id: 'foundation', icon: '🧠', name: 'How learning works (foundation)',
@@ -15234,6 +15875,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           h(PersonalFocusPlaylist, { data: dau, setData: setDau })
         );
       }
+      function renderMytkWorry() {
+        var dwr = d.mytkWorry || { worries: [] };
+        var setDwr = function(newData) { upd('mytkWorry', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalWorryTime, { data: dwr, setData: setDwr })
+        );
+      }
+      function renderMytkEnergy() {
+        var den = d.mytkEnergy || { logs: [] };
+        var setDen = function(newData) { upd('mytkEnergy', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalEnergyTracker, { data: den, setData: setDen })
+        );
+      }
+      function renderMytkQuest() {
+        var dqu = d.mytkQuest || { questions: [] };
+        var setDqu = function(newData) { upd('mytkQuest', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalQuestionLog, { data: dqu, setData: setDqu })
+        );
+      }
+      function renderMytkSuccess() {
+        var dsu = d.mytkSuccess || { successes: [] };
+        var setDsu = function(newData) { upd('mytkSuccess', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalSuccessLog, { data: dsu, setData: setDsu })
+        );
+      }
+      function renderMytkEmail() {
+        var dem = d.mytkEmail || { saved: [] };
+        var setDem = function(newData) { upd('mytkEmail', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalTeacherEmail, { data: dem, setData: setDem })
+        );
+      }
+      function renderMytkBody() {
+        var dbo = d.mytkBody || { checks: [] };
+        var setDbo = function(newData) { upd('mytkBody', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalBodyCheck, { data: dbo, setData: setDbo })
+        );
+      }
 
       // ─────────────────────────────────────────
       // VIEW ROUTER
@@ -15290,6 +15979,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         case 'mytkFut':       return renderMytkFut();
         case 'mytkDisc':      return renderMytkDisc();
         case 'mytkAudio':     return renderMytkAudio();
+        case 'mytkWorry':     return renderMytkWorry();
+        case 'mytkEnergy':    return renderMytkEnergy();
+        case 'mytkQuest':     return renderMytkQuest();
+        case 'mytkSuccess':   return renderMytkSuccess();
+        case 'mytkEmail':     return renderMytkEmail();
+        case 'mytkBody':      return renderMytkBody();
         case 'bloom':         return renderBloom();
         case 'cogload':       return renderCogLoad();
         case 'metacog':       return renderMetacog();
