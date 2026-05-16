@@ -4714,7 +4714,8 @@
       "title": "Cross-Tool Pattern Detection",
       "subtitle": "Structural gaps in student work across non-quiz tools. Each pattern is a class-wide instructional opportunity.",
       "notebook_label": "Note-taking field gaps",
-      "frames_label": "Sentence-frame response gaps"
+      "frames_label": "Sentence-frame response gaps",
+      "concept_sort_label": "Concept Sort misplacement patterns"
     }
   },
   "tools": {

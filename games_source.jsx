@@ -1689,6 +1689,25 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
       );
     }
     if (onScoreUpdate && correctCount === total) onScoreUpdate(earnedPoints, "Concept Sort Complete");
+    // Capture per-item misplacement details so the teacher dashboard can
+    // aggregate misconceptions across the class ("item X was placed in
+    // category B by N students when it belongs in A"). Always fire — even
+    // on incorrect-but-not-yet-perfect runs — so partial-attempt data
+    // reaches the teacher dashboard, not just perfect-completion runs.
+    const incorrectPlacements = items
+      .filter(it => it.currentContainer !== 'deck' && it.currentContainer !== it.categoryId)
+      .map(it => {
+          const placedCat = (data.categories || []).find(c => c.id === it.currentContainer);
+          const correctCat = (data.categories || []).find(c => c.id === it.categoryId);
+          return {
+              itemId: it.id,
+              itemText: it.text || it.label || '',
+              placedCategoryId: it.currentContainer,
+              placedCategoryLabel: (placedCat && placedCat.label) || it.currentContainer,
+              correctCategoryId: it.categoryId,
+              correctCategoryLabel: (correctCat && correctCat.label) || it.categoryId,
+          };
+      });
     if (correctCount === total) {
         if(playSound) playSound('correct');
         if (onGameComplete) {
@@ -1698,11 +1717,26 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
             totalItems: total,
             isPerfect: incorrectCount === 0,
             attempts: attempts + 1,
-            bestScore: Math.max(bestScore, earnedPoints)
+            bestScore: Math.max(bestScore, earnedPoints),
+            incorrectPlacements: [], // empty on perfect runs
           });
         }
     } else {
         if(playSound) playSound('reveal');
+        // Partial-attempt result: fire onGameComplete with attempt data so the
+        // teacher dashboard can detect class-wide misconceptions even when no
+        // single student has reached perfection yet.
+        if (onGameComplete) {
+          onGameComplete('conceptSortAttempt', {
+            score: earnedPoints,
+            correctPlacements: correctCount,
+            totalItems: total,
+            isPerfect: false,
+            attempts: attempts + 1,
+            bestScore: Math.max(bestScore, earnedPoints),
+            incorrectPlacements,
+          });
+        }
     }
   };
   const handleExplainClick = async (item) => {

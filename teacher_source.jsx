@@ -2467,7 +2467,38 @@ function _computeCrossToolMisconceptions(dashboardData) {
   const out = {
     noteTaking: [],         // [{ template, field, missingCount, totalCount, missingPct }]
     sentenceFrames: [],     // [{ generationTitle, framesMissingPct, framesSampled }]
+    conceptSort: [],        // [{ itemText, placedCategoryLabel, correctCategoryLabel, count, totalAttempts }]
   };
+
+  // ── Concept-sort per-item misplacement aggregation ──────────────────
+  // Reads conceptSortAttempt entries from gameCompletions (added May 2026 —
+  // captured even on non-perfect runs so we have real misconception data).
+  // Aggregates per (itemText, placedCategory→correctCategory) pair.
+  const csKey = (p) => `${(p.itemText || '').toLowerCase().trim()}|${(p.placedCategoryLabel || '').toLowerCase().trim()}|${(p.correctCategoryLabel || '').toLowerCase().trim()}`;
+  const csAgg = new Map(); // key -> { itemText, placedLabel, correctLabel, count }
+  let csTotalAttempts = 0;
+  (dashboardData || []).forEach(s => {
+    const gc = s.gameCompletions || {};
+    const attempts = (gc.conceptSortAttempt || []).concat(gc.conceptSort || []);
+    attempts.forEach(att => {
+      csTotalAttempts++;
+      const incPlacements = Array.isArray(att.incorrectPlacements) ? att.incorrectPlacements : [];
+      incPlacements.forEach(p => {
+        if (!p.itemText) return;
+        const key = csKey(p);
+        if (!csAgg.has(key)) {
+          csAgg.set(key, { itemText: p.itemText, placedLabel: p.placedCategoryLabel, correctLabel: p.correctCategoryLabel, count: 0 });
+        }
+        csAgg.get(key).count++;
+      });
+    });
+  });
+  // Surface misplacements that occurred ≥3 times AND in ≥20% of attempts
+  // (signal of a systematic class misconception, not a one-off mistake).
+  out.conceptSort = Array.from(csAgg.values())
+    .filter(p => p.count >= 3 && csTotalAttempts > 0 && (p.count / csTotalAttempts) >= 0.20)
+    .sort((a, b) => b.count - a.count)
+    .map(p => ({ ...p, totalAttempts: csTotalAttempts, missPct: Math.round((p.count / csTotalAttempts) * 100) }));
 
   // ── Note-taking field-completion gaps ───────────────────────────────
   // For each template type, count how often each KEY field is missing or
@@ -2649,7 +2680,7 @@ const _NotebookQualityCard = ({ tone, label, value, suffix, denom, hint }) => {
 // Hidden when no signals trigger their thresholds (avoids noise).
 const CrossToolMisconceptionsSection = React.memo(({ dashboardData, t }) => {
   const signals = React.useMemo(() => _computeCrossToolMisconceptions(dashboardData), [dashboardData]);
-  if (signals.noteTaking.length === 0 && signals.sentenceFrames.length === 0) return null;
+  if (signals.noteTaking.length === 0 && signals.sentenceFrames.length === 0 && signals.conceptSort.length === 0) return null;
   return (
     <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-400" data-help-key="dashboard_cross_tool_misconceptions">
       <h3 className="text-lg font-bold text-slate-800 mb-1 flex items-center gap-2">
@@ -2674,7 +2705,7 @@ const CrossToolMisconceptionsSection = React.memo(({ dashboardData, t }) => {
         </div>
       )}
       {signals.sentenceFrames.length > 0 && (
-        <div>
+        <div className="mb-4">
           <h4 className="text-[11px] font-bold text-indigo-700 uppercase tracking-wider mb-2">✍️ {t('dashboard.cross_misconceptions.frames_label') || 'Sentence-frame response gaps'}</h4>
           <ul className="space-y-2">
             {signals.sentenceFrames.slice(0, 5).map((s, i) => (
@@ -2684,6 +2715,22 @@ const CrossToolMisconceptionsSection = React.memo(({ dashboardData, t }) => {
                   <span className="text-xs font-bold text-indigo-700 bg-white border border-indigo-300 px-2 py-0.5 rounded whitespace-nowrap">{s.missingPct}% blank</span>
                 </div>
                 <div className="text-xs text-slate-600 mt-1">{s.frameCount} frame{s.frameCount === 1 ? '' : 's'} · {s.studentsAttempted} student{s.studentsAttempted === 1 ? '' : 's'} attempted</div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {signals.conceptSort.length > 0 && (
+        <div>
+          <h4 className="text-[11px] font-bold text-rose-700 uppercase tracking-wider mb-2">🃏 {t('dashboard.cross_misconceptions.concept_sort_label') || 'Concept Sort misplacement patterns'}</h4>
+          <ul className="space-y-2">
+            {signals.conceptSort.slice(0, 6).map((s, i) => (
+              <li key={i} className="bg-rose-50 border-l-4 border-rose-400 rounded-r-md p-3">
+                <div className="flex justify-between items-baseline gap-2">
+                  <span className="text-sm font-bold text-rose-900 truncate">"{s.itemText}" → placed in "{s.placedLabel}"</span>
+                  <span className="text-xs font-bold text-rose-700 bg-white border border-rose-300 px-2 py-0.5 rounded whitespace-nowrap">{s.count}× ({s.missPct}%)</span>
+                </div>
+                <div className="text-xs text-slate-600 mt-1">Correct category: <span className="font-bold">"{s.correctLabel}"</span>. Likely conflation between these two concepts.</div>
               </li>
             ))}
           </ul>

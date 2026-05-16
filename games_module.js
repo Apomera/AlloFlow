@@ -1491,6 +1491,18 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
       );
     }
     if (onScoreUpdate && correctCount === total) onScoreUpdate(earnedPoints, "Concept Sort Complete");
+    const incorrectPlacements = items.filter((it) => it.currentContainer !== "deck" && it.currentContainer !== it.categoryId).map((it) => {
+      const placedCat = (data.categories || []).find((c) => c.id === it.currentContainer);
+      const correctCat = (data.categories || []).find((c) => c.id === it.categoryId);
+      return {
+        itemId: it.id,
+        itemText: it.text || it.label || "",
+        placedCategoryId: it.currentContainer,
+        placedCategoryLabel: placedCat && placedCat.label || it.currentContainer,
+        correctCategoryId: it.categoryId,
+        correctCategoryLabel: correctCat && correctCat.label || it.categoryId
+      };
+    });
     if (correctCount === total) {
       if (playSound) playSound("correct");
       if (onGameComplete) {
@@ -1500,11 +1512,24 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
           totalItems: total,
           isPerfect: incorrectCount === 0,
           attempts: attempts + 1,
-          bestScore: Math.max(bestScore, earnedPoints)
+          bestScore: Math.max(bestScore, earnedPoints),
+          incorrectPlacements: []
+          // empty on perfect runs
         });
       }
     } else {
       if (playSound) playSound("reveal");
+      if (onGameComplete) {
+        onGameComplete("conceptSortAttempt", {
+          score: earnedPoints,
+          correctPlacements: correctCount,
+          totalItems: total,
+          isPerfect: false,
+          attempts: attempts + 1,
+          bestScore: Math.max(bestScore, earnedPoints),
+          incorrectPlacements
+        });
+      }
     }
   };
   const handleExplainClick = async (item) => {
