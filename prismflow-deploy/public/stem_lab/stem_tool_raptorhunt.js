@@ -5109,6 +5109,187 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
   };
 
   // ───────────────────────────────────────────────────────────
+  // NEW v0.44: RESEARCH STATIONS — 20 active research sites
+  // ───────────────────────────────────────────────────────────
+  var RESEARCH_STATIONS = {
+    intro: 'Active research stations advance raptor science globally. These 20 sites are where careers happen + new discoveries emerge.',
+    stations: [
+      { name: 'Cornell Lab of Ornithology', state: 'NY', established: '1915', focus: 'Bird research + eBird + Macaulay Library', notable: 'World\'s leading bird research institution. Founded by Arthur Allen.', url: 'birds.cornell.edu' },
+      { name: 'Peregrine Fund World Center for Birds of Prey', state: 'ID', established: '1984', focus: 'Captive breeding + conservation + research', notable: 'Site of peregrine recovery captive breeding program.', url: 'peregrinefund.org' },
+      { name: 'Hawk Mountain Sanctuary', state: 'PA', established: '1934', focus: 'Migration monitoring + 80-year dataset', notable: 'World\'s first raptor refuge. Longest continuous raptor migration data.', url: 'hawkmountain.org' },
+      { name: 'Cape May Bird Observatory', state: 'NJ', established: '1976', focus: 'Migration banding + research', notable: 'Largest US east coast banding station.', url: 'birds.cornell.edu' },
+      { name: 'Snake River Birds of Prey NCA', state: 'ID', established: '1980 (BLM)', focus: 'Golden eagle research + monitoring', notable: 'World\'s largest golden eagle research site.', url: 'blm.gov/idaho/snake-river-birds-of-prey' },
+      { name: 'HawkWatch International', state: 'UT (HQ)', established: '1986', focus: 'Western US migration + research', notable: 'Operates 17+ migration sites across western US.', url: 'hawkwatch.org' },
+      { name: 'BC Wildlife Research Centre', state: 'BC, Canada', established: '1980', focus: 'PNW raptor research', notable: 'Goshawk + spotted owl studies.', url: 'bcwildliferesearch.com' },
+      { name: 'Cornell Univ. Genetic Diversity Research', state: 'NY', established: '2000', focus: 'Conservation genetics', notable: 'Phylogenetic studies of all major raptor groups.', url: 'cornell.edu' },
+      { name: 'Univ. of Minnesota Raptor Center', state: 'MN', established: '1972', focus: 'Veterinary medicine + rehab', notable: 'World\'s leading raptor vet teaching facility.', url: 'raptor.umn.edu' },
+      { name: 'BNHS (Bombay Natural History Soc.)', state: 'India', established: '1883', focus: 'Vulture conservation', notable: 'Center of Indian vulture crisis research.', url: 'bnhs.org' },
+      { name: 'Lammergeier Foundation', state: 'Spain', established: '1995', focus: 'Bearded vulture recovery', notable: 'Successful reintroduction of bearded vulture in Pyrenees.', url: 'gypaetus.org' },
+      { name: 'Mauritius Wildlife Foundation', state: 'Mauritius', established: '1984', focus: 'Mauritius kestrel + endemic species', notable: 'Carl Jones\' kestrel recovery base.', url: 'mauritian-wildlife.org' },
+      { name: 'Russian Raptor Research + Conservation Network', state: 'Russia', established: '2002', focus: 'Saker falcon + steppe eagle', notable: 'Critical Eurasian raptor research.', url: 'rrrcn.ru' },
+      { name: 'Raptor Conservation Group South Africa', state: 'S. Africa', established: '1992', focus: 'African vulture + raptor', notable: 'Continent-leading African raptor research.', url: 'wildlifesa.com' },
+      { name: 'Royal Society for Protection of Birds (RSPB)', state: 'UK', established: '1889', focus: 'European raptor monitoring + recovery', notable: 'World\'s largest bird conservation NGO.', url: 'rspb.org.uk' },
+      { name: 'Birdlife International', state: 'UK (HQ)', established: '1922', focus: 'Global bird conservation + IUCN status', notable: 'Worldwide partnership network.', url: 'birdlife.org' },
+      { name: 'Cornell Lab Multimedia Library', state: 'NY', established: '1923', focus: 'Sound + video archives', notable: 'World\'s largest natural sound + video archive.', url: 'macaulaylibrary.org' },
+      { name: 'San Diego Zoo Institute for Conservation Research', state: 'CA', established: '1980s', focus: 'California condor + frozen zoo', notable: 'Pioneering captive breeding + cryopreservation.', url: 'sandiegozoo.org' },
+      { name: 'Whitley Wildlife Foundation', state: 'UK', established: '1983', focus: 'Global wildlife awards', notable: 'Awards conservation pioneers worldwide.', url: 'whitleyaward.org' },
+      { name: 'Iowa State Univ. Raptor Research', state: 'IA', established: '1990s', focus: 'Bald eagle + Midwestern raptors', notable: 'Strong demographic + tracking research.', url: 'iastate.edu' }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.44: CONSERVATION ORGANIZATIONS — 25+ NGOs
+  // ───────────────────────────────────────────────────────────
+  var CONSERVATION_ORGS = {
+    intro: 'Conservation NGOs do the heavy lifting of raptor protection. These 25 organizations are where you should donate, volunteer, + follow.',
+    orgs: [
+      { name: 'Cornell Lab of Ornithology', founded: '1915', focus: 'Bird research, citizen science (eBird)', size: 'Large (~700 staff)', donate: 'birds.cornell.edu', volunteer: 'eBird participation' },
+      { name: 'Peregrine Fund', founded: '1970', focus: 'Captive breeding, research, conservation', size: 'Medium (~50 staff)', donate: 'peregrinefund.org', volunteer: 'Various programs' },
+      { name: 'Hawk Mountain Sanctuary', founded: '1934', focus: 'Migration count, education, research', size: 'Medium (~30 staff)', donate: 'hawkmountain.org', volunteer: 'Count team' },
+      { name: 'Audubon Society', founded: '1905', focus: 'Education, advocacy, sanctuaries', size: 'Very large (~1M members)', donate: 'audubon.org', volunteer: 'Local chapters' },
+      { name: 'HawkWatch International', founded: '1986', focus: 'Western US migration + research', size: 'Medium (~30 staff)', donate: 'hawkwatch.org', volunteer: 'Migration counts' },
+      { name: 'American Bird Conservancy', founded: '1994', focus: 'Policy + habitat conservation', size: 'Medium (~50 staff)', donate: 'abcbirds.org', volunteer: 'Various' },
+      { name: 'Raptor Resource Project', founded: '1988', focus: 'Decorah Eagles + other nest cams', size: 'Small (~10 staff)', donate: 'raptorresource.org', volunteer: 'Cam viewing' },
+      { name: 'BirdLife International', founded: '1922', focus: 'Global bird conservation', size: 'Very large (~120 partners)', donate: 'birdlife.org', volunteer: 'Various' },
+      { name: 'Wildlife Conservation Society', founded: '1895', focus: 'Global wildlife (incl. raptors)', size: 'Very large', donate: 'wcs.org', volunteer: 'Various' },
+      { name: 'World Wildlife Fund', founded: '1961', focus: 'Global conservation incl. raptors', size: 'Very large', donate: 'worldwildlife.org', volunteer: 'Various' },
+      { name: 'Defenders of Wildlife', founded: '1947', focus: 'US wildlife + policy', size: 'Large', donate: 'defenders.org', volunteer: 'Various' },
+      { name: 'The Nature Conservancy', founded: '1951', focus: 'Land protection', size: 'Very large', donate: 'nature.org', volunteer: 'Land management' },
+      { name: 'Royal Society for Protection of Birds (RSPB)', founded: '1889', focus: 'UK birds + reserves', size: 'Very large (~1.2M members)', donate: 'rspb.org.uk', volunteer: 'UK reserves' },
+      { name: 'Mauritius Wildlife Foundation', founded: '1984', focus: 'Mauritius endemics', size: 'Small', donate: 'mauritian-wildlife.org', volunteer: 'Field work' },
+      { name: 'Carbon Roots / Vulture conservation', founded: '2000s', focus: 'African + Asian vulture crisis', size: 'Various', donate: 'vulpro.com', volunteer: 'Africa fieldwork' },
+      { name: 'World Center for Birds of Prey (Peregrine Fund)', founded: '1984', focus: 'Captive breeding center', size: 'Medium', donate: 'peregrinefund.org', volunteer: 'Boise ID' },
+      { name: 'Ventana Wildlife Society', founded: '1977', focus: 'California condor reintroduction', size: 'Small', donate: 'ventanaws.org', volunteer: 'CA condor work' },
+      { name: 'San Diego Zoo Wildlife Alliance', founded: '1916', focus: 'California condor + frozen zoo', size: 'Large', donate: 'sdzwa.org', volunteer: 'San Diego' },
+      { name: 'Lammergeier Foundation', founded: '1995', focus: 'Bearded vulture recovery', size: 'Small', donate: 'gypaetus.org', volunteer: 'Europe fieldwork' },
+      { name: 'EAGLES (Eastern Africa)', founded: '2000', focus: 'African raptors', size: 'Small', donate: 'Various sites', volunteer: 'African fieldwork' },
+      { name: 'Whitley Fund for Nature', founded: '1983', focus: 'Wildlife conservation awards', size: 'Small', donate: 'whitleyaward.org', volunteer: 'Awards judging' },
+      { name: 'American Eagle Foundation', founded: '1985', focus: 'Bald + golden eagle', size: 'Medium', donate: 'eagles.org', volunteer: 'Various' },
+      { name: 'National Eagle Center', founded: '1989', focus: 'Eagle education + ambassadors', size: 'Small', donate: 'nationaleaglecenter.org', volunteer: 'MN' },
+      { name: 'International Owl Center', founded: '2015', focus: 'Owl education + research', size: 'Small', donate: 'internationalowlcenter.org', volunteer: 'MN' },
+      { name: 'TRAFFIC (Wildlife Trade Monitoring)', founded: '1976', focus: 'Illegal wildlife trade', size: 'Medium', donate: 'traffic.org', volunteer: 'Various' },
+      { name: 'IUCN Species Survival Commission', founded: '1948', focus: 'Red List status assessments', size: 'Network', donate: 'iucn.org', volunteer: 'Specialists' }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.44: RAPTOR MUSEUMS — 15 places to visit
+  // ───────────────────────────────────────────────────────────
+  var RAPTOR_MUSEUMS = {
+    intro: 'Museums + nature centers with significant raptor exhibits + ambassador birds. Plan a visit.',
+    museums: [
+      { name: 'Smithsonian National Museum of Natural History', state: 'DC', highlights: 'Comprehensive bird halls, dinosaur+bird evolution exhibit, condor specimens', cost: 'Free', url: 'nmnh.si.edu' },
+      { name: 'American Museum of Natural History', state: 'NY', highlights: 'Hall of Birds of the World, dinosaur evolution, raptor specimens', cost: '$28 adult', url: 'amnh.org' },
+      { name: 'World Center for Birds of Prey', state: 'ID', highlights: 'Live raptor exhibits, captive breeding tours, education', cost: '$10 adult', url: 'peregrinefund.org' },
+      { name: 'Carolina Raptor Center', state: 'NC', highlights: '150+ live raptors, education programs', cost: '$15 adult', url: 'carolinaraptorcenter.org' },
+      { name: 'National Eagle Center', state: 'MN', highlights: 'Live bald + golden eagle ambassadors', cost: '$10 adult', url: 'nationaleaglecenter.org' },
+      { name: 'Hawk Mountain Sanctuary Visitor Center', state: 'PA', highlights: 'Migration education, raptor displays, hawk count platform', cost: '$10 (count days)', url: 'hawkmountain.org' },
+      { name: 'International Owl Center', state: 'MN', highlights: 'Live owl ambassadors, owl-themed exhibits', cost: '$10', url: 'internationalowlcenter.org' },
+      { name: 'Audubon Center for Birds of Prey', state: 'FL', highlights: 'Florida\'s primary raptor center, 700 raptors/year', cost: 'Donations', url: 'audubon.org/cbop' },
+      { name: 'Cornell Lab Visitor Center', state: 'NY', highlights: 'Sapsucker Woods, exhibits, library', cost: 'Free', url: 'birds.cornell.edu' },
+      { name: 'Field Museum Chicago', state: 'IL', highlights: 'Bird hall, dinosaur evolution, scientific collections', cost: '$26 adult', url: 'fieldmuseum.org' },
+      { name: 'California Academy of Sciences', state: 'CA', highlights: 'Bird hall + planetarium + aquarium', cost: '$40 adult', url: 'calacademy.org' },
+      { name: 'Denver Museum of Nature + Science', state: 'CO', highlights: 'Bird dioramas, dinosaur + bird evolution', cost: '$25 adult', url: 'dmns.org' },
+      { name: 'Royal Ontario Museum', state: 'Canada', highlights: 'Comprehensive Canadian raptor exhibits', cost: '$23 adult', url: 'rom.on.ca' },
+      { name: 'Natural History Museum London', state: 'UK', highlights: 'World-class bird collection + dinosaur evolution', cost: 'Free', url: 'nhm.ac.uk' },
+      { name: 'La Brea Tar Pits + Museum', state: 'CA', highlights: 'Teratornis fossils, ice-age raptor extinction', cost: '$15 adult', url: 'tarpits.org' }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.44: BOOK LIBRARY — 30 recommended books
+  // ───────────────────────────────────────────────────────────
+  var BOOK_LIBRARY = {
+    intro: '30 essential books on raptors — from field guides to memoirs to scientific treatises.',
+    categories: [
+      {
+        category: 'Field guides',
+        books: [
+          { title: 'Sibley Birds (4th ed.)', author: 'David Allen Sibley', year: '2014', focus: 'US field guide', why: 'Modern US standard. Best illustrations.' },
+          { title: 'Peterson Field Guide to Hawks', author: 'William Clark + Brian Wheeler', year: '2017', focus: 'US raptors', why: 'Modern raptor field guide.' },
+          { title: 'Hawks in Flight (3rd ed.)', author: 'Pete Dunne + David Sibley', year: '2017', focus: 'In-flight ID', why: 'Best flight-ID resource for US raptors.' },
+          { title: 'Hawks at a Distance', author: 'Jerry Liguori', year: '2011', focus: 'Distant ID', why: 'Excellent for hawkwatch ID.' },
+          { title: 'Crossley ID Guide: Raptors', author: 'Richard Crossley', year: '2013', focus: 'Photo-quiz format', why: 'Photo-quiz tests + builds skills.' },
+          { title: 'Petersen Field Guide to Birds Of N. America', author: 'Roger Tory Peterson', year: '2008', focus: 'Historic field guide', why: 'The original — still excellent.' }
+        ]
+      },
+      {
+        category: 'Memoirs + biographies',
+        books: [
+          { title: 'Behind Closed Doors', author: 'Carl Jones', year: '2018', focus: 'Mauritius kestrel recovery memoir', why: 'First-hand account of 40-year recovery project.' },
+          { title: 'H Is for Hawk', author: 'Helen Macdonald', year: '2014', focus: 'Falconry + grief memoir', why: 'Pulitzer-winning meditation on training a goshawk.' },
+          { title: 'The Goshawk', author: 'T.H. White', year: '1951', focus: 'Falconry memoir', why: 'Classic. White (author of Once + Future King) trains a goshawk.' },
+          { title: 'My Side of the Mountain', author: 'Jean Craighead George', year: '1959', focus: 'Boy + falcon', why: 'Children\'s classic that inspired generations.' },
+          { title: 'Falcon Fever', author: 'Tim Gallagher', year: '2008', focus: 'Falconry experience', why: 'Modern memoir of obsession with falconry.' },
+          { title: 'Vacaville: A Stop on Raptor Highway', author: 'Various', year: '2010s', focus: 'Hawk Mountain history', why: 'History of Hawk Mountain.' },
+          { title: 'Eagle Dreams', author: 'Stephen Bodio', year: '2003', focus: 'Mongolia Berkutchi', why: 'Bodio\'s journey through Mongolian eagle-hunting tradition.' }
+        ]
+      },
+      {
+        category: 'Science + conservation',
+        books: [
+          { title: 'Silent Spring', author: 'Rachel Carson', year: '1962', focus: 'DDT + ecology', why: 'Most influential conservation book ever.' },
+          { title: 'The Peregrine', author: 'J.A. Baker', year: '1967', focus: 'Peregrine observation', why: 'Cult classic. Spare + intense observational nature writing.' },
+          { title: 'Hawks From Every Angle', author: 'Jerry Liguori', year: '2005', focus: 'Photo-ID', why: 'Pre-Crossley photo-based ID.' },
+          { title: 'Raptors of the World', author: 'Hawksbill Ventures', year: '2020', focus: 'All world raptors', why: 'Comprehensive species reference.' },
+          { title: 'Birds of Prey of the World', author: 'James Ferguson-Lees + David Christie', year: '2001', focus: 'All world raptors', why: 'Foundational world-raptor reference.' },
+          { title: 'Hawks, Eagles, and Falcons of N. America', author: 'Paul Johnsgard', year: '1990', focus: 'N. America raptors', why: 'Detailed biology of US raptors.' },
+          { title: 'The Birds of N. America', author: 'Various', year: 'Updated continuously', focus: 'Species accounts', why: 'Most complete US species reference.' },
+          { title: 'Raptors of California', author: 'Hans Peeters + Pam Peeters', year: '2005', focus: 'California raptors', why: 'Best regional raptor book in the world.' }
+        ]
+      },
+      {
+        category: 'Falconry',
+        books: [
+          { title: 'The Art of Falconry by Frederick II', author: 'Frederick II (translated)', year: '1240 / mod. transl.', focus: 'First scientific raptor treatise', why: 'Foundational + still relevant after 800 years.' },
+          { title: 'The Boke of Saint Albans', author: 'Juliana Berners', year: '1486', focus: 'English falconry history', why: 'Ranks species by social class. Historic interest.' },
+          { title: 'Practical Falconry to Make a Falconer', author: 'Tom J. Cade', year: '1968', focus: 'Modern falconry manual', why: 'Tom Cade — peregrine recovery hero — wrote this.' },
+          { title: 'Falconry for Beginners', author: 'Lee Harris', year: '1996', focus: 'Beginner falconry', why: 'Practical apprentice guide.' },
+          { title: 'A Falconer\'s Bible', author: 'Steve Layman', year: '2008', focus: 'Comprehensive falconry', why: 'Practical encyclopedia.' }
+        ]
+      },
+      {
+        category: 'History + culture',
+        books: [
+          { title: 'Mrs. Whitney\'s Hawk Mountain', author: 'Maurice Broun', year: '1947', focus: 'Hawk Mountain founding', why: 'First-hand account of Rosalie Edge\'s sanctuary.' },
+          { title: 'A Falconer in Mongolia', author: 'Stephen Bodio', year: '2003', focus: 'Berkutchi tradition', why: 'Best Western book on Berkutchi.' },
+          { title: 'When Eagles Roared', author: 'Various', year: '2010s', focus: 'WWII eagle symbolism', why: 'Historical raptor symbolism in 20th century.' },
+          { title: 'Eagles + Indians', author: 'Various', year: '2010s', focus: 'Indigenous raptor traditions', why: 'Eagle in Indigenous N. American culture.' }
+        ]
+      }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.44: DOCUMENTARIES + FILMS — 20 recommended
+  // ───────────────────────────────────────────────────────────
+  var DOCUMENTARIES = {
+    intro: '20 must-watch raptor documentaries + films, from classic 1950s nature shows to modern Netflix specials.',
+    films: [
+      { title: 'Eye of the Wild: Falcon', year: '2010s', platform: 'BBC', focus: 'Peregrine recovery', notes: 'Classic BBC nature documentary on peregrine.' },
+      { title: 'The Eagle Huntress', year: '2016', platform: 'Theaters + streaming', focus: 'Mongolian Berkutchi', notes: 'Award-winning film on 13-year-old Aisholpan Nurgaiv learning Berkutchi.' },
+      { title: 'Birders: The Central Park Effect', year: '2012', platform: 'HBO', focus: 'NYC birders', notes: 'Features Pale Male + Central Park bird-watching.' },
+      { title: 'The Falconer\'s Apprentice', year: '2015', platform: 'Documentary', focus: 'Apprentice falconry', notes: 'Modern falconry through one apprentice\'s eyes.' },
+      { title: 'Watership Down', year: '1978', platform: 'Various', focus: 'Animal fable (raptor as predator)', notes: 'Influential animation on rabbit-eye view of raptors.' },
+      { title: 'Winged Migration', year: '2001', platform: 'Theatrical + streaming', focus: 'Bird migration globally', notes: 'Spectacular aerial footage. Some raptor segments.' },
+      { title: 'Audubon\'s Animals', year: '1980s+', platform: 'PBS', focus: 'US wildlife', notes: 'Long-running PBS series with raptor episodes.' },
+      { title: 'Nature: My Life as a Turkey', year: '2011', platform: 'PBS', focus: 'Person raises wild turkeys', notes: 'Shows wild turkey-raptor interaction.' },
+      { title: 'Earthflight', year: '2011', platform: 'BBC', focus: 'Bird POV migration', notes: 'First-person flight perspective. Some raptor footage.' },
+      { title: 'Planet Earth + Planet Earth II', year: '2006 + 2016', platform: 'BBC', focus: 'Global ecology', notes: 'Multiple raptor sequences including peregrine stoop.' },
+      { title: 'Springwatch + Autumnwatch', year: 'Annual', platform: 'BBC', focus: 'UK wildlife', notes: 'British wildlife focus often includes raptors.' },
+      { title: 'Nature: An Original Duckling', year: '2010s', platform: 'PBS', focus: 'Duck ecology + raptor predation', notes: 'Documents predation pressure.' },
+      { title: 'David Attenborough\'s 70 Years Living the Wild Years', year: '2024', platform: 'Streaming', focus: 'Attenborough overview', notes: 'Lifetime of wildlife documentary featuring raptors.' },
+      { title: 'The Falcon\'s Eye', year: '2010s', platform: 'Various', focus: 'Falconry in Middle East', notes: 'Cultural focus on Arab falconry.' },
+      { title: 'Wild Animal Babies', year: '2010s', platform: 'PBS', focus: 'Young wildlife', notes: 'Raptor chick + fledging segments.' },
+      { title: 'Hostile Planet', year: '2019', platform: 'National Geographic', focus: 'Extreme environments', notes: 'Arctic + tropical raptor segments.' },
+      { title: 'Africa', year: '2013', platform: 'BBC', focus: 'African wildlife', notes: 'African raptor + vulture segments.' },
+      { title: 'Frozen Planet + Frozen Planet II', year: '2011 + 2022', platform: 'BBC', focus: 'Polar regions', notes: 'Snowy owl + gyrfalcon segments.' },
+      { title: 'The Hawk', year: '2010s short film', platform: 'Various', focus: 'Modern falconer story', notes: 'Personal falconry documentary.' },
+      { title: 'PBS Nature: Owls + Eagles', year: '2015', platform: 'PBS', focus: 'Owl + eagle biology', notes: 'Survey of N. American raptors.' }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
   // GLOSSARY DATA — A-Z reference of raptor terminology
   // ───────────────────────────────────────────────────────────
   var GLOSSARY = [
@@ -5314,6 +5495,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         { id: 'species20', label: 'Species 20-Deep Profiles', icon: '🐦' },
         { id: 'comparative', label: 'Comparative Anatomy', icon: '⚖' },
         { id: 'mythbusters', label: 'Raptor Mythbusters', icon: '💥' },
+        { id: 'pioneers', label: 'Research Stations', icon: '🔬' },
+        { id: 'organizations', label: 'Conservation Orgs', icon: '🏛' },
+        { id: 'museums', label: 'Raptor Museums', icon: '🏛' },
+        { id: 'books', label: 'Recommended Reading', icon: '📕' },
+        { id: 'films', label: 'Documentaries + Films', icon: '🎥' },
         { id: 'glossary', label: 'Glossary', icon: '📖' },
         { id: 'quiz', label: 'Field ID Quiz', icon: '🎓' },
         { id: 'resources', label: 'Resources', icon: '📚' }
@@ -15404,6 +15590,171 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       }
 
       // ────────────────────────────────────────────────────────
+      // RENDER: RESEARCH STATIONS (v0.44)
+      // ────────────────────────────────────────────────────────
+      function renderResearchStations() {
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-indigo-900/40 to-purple-900/40 border border-indigo-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '🔬'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-indigo-200' }, 'Active Research Stations'),
+                h('div', { className: 'text-sm text-indigo-100/85 mt-1' }, RESEARCH_STATIONS.intro)
+              )
+            )
+          ),
+          h('div', { className: 'grid md:grid-cols-2 gap-3' },
+            RESEARCH_STATIONS.stations.map(function(s, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-indigo-700/30 rounded-lg p-3' },
+                h('div', { className: 'flex items-baseline justify-between gap-2 mb-1' },
+                  h('div', { className: 'text-sm font-bold text-indigo-300' }, s.name),
+                  h('div', { className: 'text-xs text-amber-300/80 font-mono' }, s.state + ' · est ' + s.established)
+                ),
+                h('div', { className: 'text-xs text-cyan-200 mb-1' }, '🔍 ' + s.focus),
+                h('div', { className: 'text-xs text-slate-200 mb-1 leading-relaxed' }, '⭐ ' + s.notable),
+                h('div', { className: 'text-[10px] text-emerald-300 font-mono' }, '🌐 ' + s.url)
+              );
+            })
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: CONSERVATION ORGS (v0.44)
+      // ────────────────────────────────────────────────────────
+      function renderOrgs() {
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-emerald-900/40 to-teal-900/40 border border-emerald-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '🏛'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-emerald-200' }, 'Conservation Organizations'),
+                h('div', { className: 'text-sm text-emerald-100/85 mt-1' }, CONSERVATION_ORGS.intro)
+              )
+            )
+          ),
+          h('div', { className: 'grid md:grid-cols-2 gap-3' },
+            CONSERVATION_ORGS.orgs.map(function(o, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-emerald-700/30 rounded-lg p-3' },
+                h('div', { className: 'flex items-baseline justify-between gap-2 mb-1' },
+                  h('div', { className: 'text-sm font-bold text-emerald-300' }, o.name),
+                  h('div', { className: 'text-xs text-amber-300/80 font-mono' }, 'est ' + o.founded)
+                ),
+                h('div', { className: 'text-xs text-cyan-200 mb-1' }, '🎯 ' + o.focus),
+                h('div', { className: 'text-xs text-slate-300 mb-1' }, '👥 ' + o.size),
+                h('div', { className: 'text-[10px] text-emerald-300 font-mono mb-1' }, '💵 Donate: ' + o.donate),
+                h('div', { className: 'text-[10px] text-purple-300 italic' }, '🤝 Volunteer: ' + o.volunteer)
+              );
+            })
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: RAPTOR MUSEUMS (v0.44)
+      // ────────────────────────────────────────────────────────
+      function renderMuseums() {
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-amber-900/40 to-orange-900/40 border border-amber-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '🏛'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-amber-200' }, 'Raptor Museums'),
+                h('div', { className: 'text-sm text-amber-100/85 mt-1' }, RAPTOR_MUSEUMS.intro)
+              )
+            )
+          ),
+          h('div', { className: 'grid md:grid-cols-2 gap-3' },
+            RAPTOR_MUSEUMS.museums.map(function(m, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-amber-700/30 rounded-lg p-3' },
+                h('div', { className: 'flex items-baseline justify-between gap-2 mb-1' },
+                  h('div', { className: 'text-sm font-bold text-amber-300' }, m.name),
+                  h('div', { className: 'text-xs text-cyan-300 font-mono' }, m.state)
+                ),
+                h('div', { className: 'text-xs text-slate-200 mb-1' }, '⭐ ' + m.highlights),
+                h('div', { className: 'text-xs text-emerald-300 mb-1' }, '💰 ' + m.cost),
+                h('div', { className: 'text-[10px] text-purple-300 font-mono' }, '🌐 ' + m.url)
+              );
+            })
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: BOOK LIBRARY (v0.44)
+      // ────────────────────────────────────────────────────────
+      function renderBooks() {
+        var bookCat = rh.bookCat == null ? 0 : rh.bookCat;
+        function setBookCat(i) { setRH({ bookCat: i }); }
+        var cat = BOOK_LIBRARY.categories[bookCat];
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-purple-900/40 to-indigo-900/40 border border-purple-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '📕'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-purple-200' }, 'Recommended Reading'),
+                h('div', { className: 'text-sm text-purple-100/85 mt-1' }, BOOK_LIBRARY.intro)
+              )
+            )
+          ),
+          h('div', { className: 'flex flex-wrap gap-1' },
+            BOOK_LIBRARY.categories.map(function(c, i) {
+              var sel = bookCat === i;
+              return h('button', {
+                key: i,
+                onClick: function() { setBookCat(i); },
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-purple-600 text-white font-bold' : 'bg-slate-800/60 text-purple-200 hover:bg-slate-700/60'),
+                'aria-pressed': sel
+              }, c.category);
+            })
+          ),
+          h('div', { className: 'space-y-3' },
+            cat.books.map(function(b, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-purple-700/30 rounded-lg p-3' },
+                h('div', { className: 'flex items-baseline justify-between gap-2 mb-1' },
+                  h('div', { className: 'text-sm font-bold text-purple-300' }, '📕 ' + b.title),
+                  h('div', { className: 'text-xs text-amber-300/80 font-mono' }, b.year)
+                ),
+                h('div', { className: 'text-xs italic text-cyan-300 mb-1' }, 'by ' + b.author),
+                h('div', { className: 'text-xs text-slate-200 mb-1' }, '🎯 Focus: ' + b.focus),
+                h('div', { className: 'text-xs text-emerald-100/90 italic leading-relaxed' }, '💡 ' + b.why)
+              );
+            })
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: DOCUMENTARIES + FILMS (v0.44)
+      // ────────────────────────────────────────────────────────
+      function renderFilms() {
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-red-900/40 to-rose-900/40 border border-red-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '🎥'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-red-200' }, 'Documentaries & Films'),
+                h('div', { className: 'text-sm text-red-100/85 mt-1' }, DOCUMENTARIES.intro)
+              )
+            )
+          ),
+          h('div', { className: 'grid md:grid-cols-2 gap-3' },
+            DOCUMENTARIES.films.map(function(f, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-red-700/30 rounded-lg p-3' },
+                h('div', { className: 'flex items-baseline justify-between gap-2 mb-1' },
+                  h('div', { className: 'text-sm font-bold text-red-300' }, '🎥 ' + f.title),
+                  h('div', { className: 'text-xs text-amber-300/80 font-mono' }, f.year)
+                ),
+                h('div', { className: 'text-xs italic text-cyan-300 mb-1' }, 'Platform: ' + f.platform),
+                h('div', { className: 'text-xs text-emerald-200 mb-1' }, '🎯 ' + f.focus),
+                h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, '📝 ' + f.notes)
+              );
+            })
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
       // RENDER: GLOSSARY (A-Z reference)
       // ────────────────────────────────────────────────────────
       function renderGlossary() {
@@ -16592,6 +16943,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           activeSection === 'species20' && renderSpecies20(),
           activeSection === 'comparative' && renderComparative(),
           activeSection === 'mythbusters' && renderMythbusters(),
+          activeSection === 'pioneers' && renderResearchStations(),
+          activeSection === 'organizations' && renderOrgs(),
+          activeSection === 'museums' && renderMuseums(),
+          activeSection === 'books' && renderBooks(),
+          activeSection === 'films' && renderFilms(),
           activeSection === 'glossary' && renderGlossary(),
           activeSection === 'quiz' && renderQuiz(),
           activeSection === 'resources' && renderResources()
