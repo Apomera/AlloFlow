@@ -752,474 +752,698 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       }
 
       // ═══════════════════════════════════════════════════════
-      // SECTION 3 — HUNTER SIM (the headliner)
+      // SECTION 3 — HUNTER SIM (3D Three.js underwater game)
       // ═══════════════════════════════════════════════════════
-      function renderHuntSim() {
-        var phase = d.huntPhase || 'lobby';
-        if (phase === 'plan') return renderHuntPlan();
-        if (phase === 'approach') return renderHuntApproach();
-        if (phase === 'strike') return renderHuntStrike();
-        if (phase === 'result') return renderHuntResult();
-        return renderHuntLobby();
+      // Real-time 3D simulation: you play a common Pacific octopus on
+      // a reef. Crawl, jet, hunt crabs, evade a moray eel that ambushes
+      // from a reef hole, ink-defense when cornered. The species info
+      // lives in the Field Guide tab — this section is about feeling
+      // the real-time hunting + escape biology in your hands.
+
+      // ─── Three.js loader (lazy CDN) ───
+      function ensureThreeJSCL(onReady, onError) {
+        if (window.THREE) { onReady(); return; }
+        var s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+        s.async = true;
+        s.onload = function() { onReady(); };
+        s.onerror = function() { console.error('[CephalopodLab] Three.js failed to load'); if (onError) onError(); };
+        document.head.appendChild(s);
       }
 
-      // Hunt: choose species
-      function renderHuntLobby() {
-        return h('div', null,
-          panelHeader('🎯 Hunter Simulator',
-            'Play a cephalopod hunter. Pick a species, choose a habitat + prey, plan your tactic, run the camouflage minigame, time your strike. The judge checks whether your tactic was species-appropriate.'),
+      function renderHuntSim() {
+        var threeLoaded = !!window.THREE || (d._threeLoaded === true);
+        var threeError = !!d._threeError;
+        var active = !!d.hunt3DActive;
 
+        return h('div', null,
+          panelHeader('🎯 Hunter Sim — 3D Underwater',
+            'Play a common Pacific octopus on a reef. Hunt crabs, evade a moray eel, use ink to escape. WASD to crawl, Space to jet (drains stamina), click to grab nearby prey, I for ink defense.'),
+
+          // Run stats card
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, 'Stats so far'),
+            h('div', { style: subheaderStyle() }, 'Run stats'),
             h('div', { style: { display: 'flex', gap: 24, flexWrap: 'wrap' } },
               h('div', null,
                 h('div', { style: { fontSize: 28, fontWeight: 900, color: '#86efac', fontFamily: 'ui-monospace, Menlo, monospace' } }, (d.huntsSuccessful || 0)),
-                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Successful hunts')),
+                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Crabs caught')),
               h('div', null,
                 h('div', { style: { fontSize: 28, fontWeight: 900, color: '#fb923c', fontFamily: 'ui-monospace, Menlo, monospace' } }, (d.huntsAttempted || 0)),
-                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Attempts')),
+                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Dives'),
+              ),
               h('div', null,
-                h('div', { style: { fontSize: 28, fontWeight: 900, color: '#a78bfa', fontFamily: 'ui-monospace, Menlo, monospace' } }, (d.huntFieldNotesUnlocked || []).length),
-                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Field notes unlocked')))),
+                h('div', { style: { fontSize: 28, fontWeight: 900, color: '#a78bfa', fontFamily: 'ui-monospace, Menlo, monospace' } }, (d.huntBestRun || 0)),
+                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Best run')))),
 
-          h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, 'Choose your species'),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 12 } },
-              SPECIES.map(function(s) {
-                var groupColor = s.group === 'octopus' ? '#a78bfa' : s.group === 'squid' ? '#38bdf8' : s.group === 'cuttlefish' ? '#fbbf24' : '#86efac';
-                return h('button', { key: s.id,
-                  onClick: function() { setCL({ huntSpeciesId: s.id, huntPhase: 'plan', huntHabitatId: null, huntPreyId: null, huntTacticId: null }); awardXP(2); clAnnounce('Selected ' + s.name); },
-                  style: { padding: '14px 16px', textAlign: 'left',
-                    background: 'rgba(15,23,42,0.6)', color: '#fde68a',
-                    borderTop: '1px solid rgba(100,116,139,0.3)', borderRight: '1px solid rgba(100,116,139,0.3)', borderBottom: '1px solid rgba(100,116,139,0.3)', borderLeft: '4px solid ' + groupColor,
-                    borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer' } },
-                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
-                    h('span', { 'aria-hidden': 'true', style: { fontSize: 28, lineHeight: 1 } }, s.emoji),
-                    h('div', { style: { flex: 1 } },
-                      h('div', { style: { fontSize: 14, fontWeight: 800, color: '#c7d2fe' } }, s.name),
-                      h('div', { style: { fontSize: 10, fontStyle: 'italic', color: '#94a3b8', marginTop: 2 } }, s.scientific))),
-                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, s.weird));
-              })))
-        );
-      }
+          // Controls card
+          !active ? h('div', { style: cardStyle() },
+            h('div', { style: subheaderStyle() }, 'Controls'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10, marginBottom: 14 } },
+              [
+                { k: 'W A S D', d: 'Crawl — slow, stealthy, cheap', color: '#86efac' },
+                { k: 'SPACE', d: 'Jet propulsion — burst speed, drains stamina', color: '#60a5fa' },
+                { k: 'CLICK / E', d: 'Pounce + grab nearby prey', color: '#fbbf24' },
+                { k: 'I', d: 'Ink defense — break predator visual lock', color: '#a78bfa' }
+              ].map(function(c, i) {
+                return h('div', { key: i, style: { background: 'rgba(15,23,42,0.5)', padding: 10, borderRadius: 8, borderLeft: '3px solid ' + c.color } },
+                  h('div', { style: { fontSize: 13, fontWeight: 900, color: c.color, fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 4 } }, c.k),
+                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.4 } }, c.d));
+              }))) : null,
 
-      // Hunt: plan habitat + prey + tactic
-      function renderHuntPlan() {
-        var sp = SPECIES.find(function(x) { return x.id === d.huntSpeciesId; });
-        if (!sp) { setCL({ huntPhase: 'lobby' }); return null; }
-        var canProceed = !!(d.huntHabitatId && d.huntPreyId && d.huntTacticId);
-        return h('div', null,
-          panelHeader('🎯 Plan the hunt — ' + sp.emoji + ' ' + sp.name,
-            'Pick a habitat (where you hunt) + prey (what you\'re after) + tactic (how you\'ll do it). The judge will assess whether your choices fit your species.'),
+          // Real biology note
+          !active ? h('div', { style: cardStyle() },
+            h('div', { style: subheaderStyle() }, 'What you\'re feeling'),
+            h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.7 } },
+              'Crawling is the octopus default — efficient, stealthy, oxygen-cheap. Jet propulsion is the panic button: fast in burst, but each jet pulse costs ATP and dumps lactate. Real octopuses jet briefly and recover. Ink isn\'t magic — it\'s a chemical resource (melanin + mucus) that breaks the predator\'s visual lock long enough to crawl into a den. The moray eel hunts you the same way you hunt crabs — by waiting in a hole and lunging.')) : null,
 
-          // Habitat picker
-          h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, '🏠 Habitat'),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: 8 } },
-              HABITATS.map(function(hab) {
-                var active = d.huntHabitatId === hab.id;
-                var natural = sp.habitat.indexOf(hab.id) !== -1;
-                return h('button', { key: hab.id,
-                  onClick: function() { setCL({ huntHabitatId: hab.id }); awardXP(1); },
-                  'aria-pressed': active ? 'true' : 'false',
-                  title: hab.description,
-                  style: { padding: '8px 10px', textAlign: 'left',
-                    background: active ? 'rgba(99,102,241,0.3)' : 'rgba(15,23,42,0.5)',
-                    color: active ? '#c7d2fe' : '#cbd5e1',
-                    border: '1px solid ' + (active ? 'rgba(167,139,250,0.6)' : 'rgba(100,116,139,0.3)'),
-                    borderLeft: '3px solid ' + hab.color,
-                    borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: 'pointer',
-                    display: 'flex', alignItems: 'center', gap: 6 } },
-                  h('span', { 'aria-hidden': 'true' }, hab.emoji),
-                  h('span', null, hab.name),
-                  natural ? h('span', { style: { fontSize: 9, color: '#86efac', marginLeft: 'auto' } }, '✓ natural') : null);
-              }))),
-
-          // Prey picker
-          h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, '🍽️ Prey'),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 8 } },
-              PREY.map(function(p) {
-                var active = d.huntPreyId === p.id;
-                var natural = sp.prey.indexOf(p.id) !== -1;
-                return h('button', { key: p.id,
-                  onClick: function() { setCL({ huntPreyId: p.id }); awardXP(1); },
-                  'aria-pressed': active ? 'true' : 'false',
-                  title: p.description,
-                  style: { padding: '8px 10px', textAlign: 'left',
-                    background: active ? 'rgba(99,102,241,0.3)' : 'rgba(15,23,42,0.5)',
-                    color: active ? '#c7d2fe' : '#cbd5e1',
-                    border: '1px solid ' + (active ? 'rgba(167,139,250,0.6)' : 'rgba(100,116,139,0.3)'),
-                    borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: 'pointer',
-                    display: 'flex', alignItems: 'center', gap: 6 } },
-                  h('span', { 'aria-hidden': 'true', style: { fontSize: 16 } }, p.emoji),
-                  h('span', null, p.name),
-                  natural ? h('span', { style: { fontSize: 9, color: '#86efac', marginLeft: 'auto' } }, '✓') : null);
-              }))),
-
-          // Tactic picker
-          h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, '⚔️ Tactic'),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 8 } },
-              TACTICS.map(function(t) {
-                var active = d.huntTacticId === t.id;
-                var natural = sp.tactics.indexOf(t.id) !== -1;
-                return h('button', { key: t.id,
-                  onClick: function() { setCL({ huntTacticId: t.id }); awardXP(1); },
-                  'aria-pressed': active ? 'true' : 'false',
-                  title: t.description,
-                  style: { padding: '8px 10px', textAlign: 'left',
-                    background: active ? 'rgba(99,102,241,0.3)' : 'rgba(15,23,42,0.5)',
-                    color: active ? '#c7d2fe' : '#cbd5e1',
-                    border: '1px solid ' + (active ? 'rgba(167,139,250,0.6)' : 'rgba(100,116,139,0.3)'),
-                    borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: 'pointer',
-                    display: 'flex', alignItems: 'center', gap: 6 } },
-                  h('span', { 'aria-hidden': 'true' }, t.emoji),
-                  h('span', null, t.name),
-                  natural ? h('span', { style: { fontSize: 9, color: '#86efac', marginLeft: 'auto' } }, '✓') : null);
-              }))),
-
-          // Action buttons
-          h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' } },
-            h('button', { onClick: function() { if (canProceed) setCL({ huntPhase: 'approach' }); },
-              disabled: !canProceed,
-              style: { padding: '12px 26px',
-                background: canProceed ? '#a78bfa' : 'rgba(100,116,139,0.3)',
-                color: canProceed ? '#1c1410' : '#94a3b8',
-                border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800,
-                cursor: canProceed ? 'pointer' : 'not-allowed' } },
-              '→ Approach phase'),
-            h('button', { onClick: function() { setCL({ huntPhase: 'lobby' }); },
-              style: { padding: '12px 18px', background: 'transparent', color: '#cbd5e1',
-                border: '1px solid rgba(100,116,139,0.5)', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' } },
-              '← Different species'))
-        );
-      }
-
-      // Hunt: approach (camouflage minigame)
-      function renderHuntApproach() {
-        var sp = SPECIES.find(function(x) { return x.id === d.huntSpeciesId; });
-        var hab = HABITATS.find(function(x) { return x.id === d.huntHabitatId; });
-        if (!sp || !hab) { setCL({ huntPhase: 'lobby' }); return null; }
-        var target = hab.substrate;
-        var col = d.huntCamouflageColor || 128;
-        var pat = d.huntCamouflagePattern || 50;
-        var tex = d.huntCamouflageTexture || 50;
-        // Compute match score
-        // Color: distance from target red (using the substrate red channel as the target)
-        var colorMatch = 100 - Math.abs(col - target.red) / 2.55;
-        var targetPattern = target.pattern === 'mottled' ? 70 : target.pattern === 'striped' ? 85 : 20;
-        var patternMatch = 100 - Math.abs(pat - targetPattern);
-        var targetTexture = target.texture === 'rough' || target.texture === 'bumpy' ? 80 : target.texture === 'leafy' ? 65 : 20;
-        var textureMatch = 100 - Math.abs(tex - targetTexture);
-        var overall = Math.round((colorMatch + patternMatch + textureMatch) / 3);
-        // Cap with camouflage rank — high-cam species can hit 100, low-cam species cap out lower
-        var maxPossible = Math.min(100, 40 + sp.camouflageRank * 6);
-        overall = Math.min(overall, maxPossible);
-        var verdict = overall >= 85 ? { color: '#86efac', label: 'Indistinguishable from the substrate.' } :
-                      overall >= 70 ? { color: '#fbbf24', label: 'Close — prey might pass within range.' } :
-                      overall >= 50 ? { color: '#fb923c', label: 'Visible to a wary predator. Risky.' } :
-                                       { color: '#fca5a5', label: 'You stand out. Prey will see you coming.' };
-        return h('div', null,
-          panelHeader('🎯 Approach: match your skin to the substrate',
-            sp.name + ' in ' + hab.name + '. Adjust color, pattern, and texture sliders. The closer you match, the better your strike succeeds. Camouflage rank cap: ' + sp.camouflageRank + '/10.'),
-
-          // Side-by-side substrate + cephalopod
-          h('div', { style: cardStyle() },
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14, marginBottom: 16 } },
-              h('div', null,
-                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, '🏠 Target substrate'),
-                renderSubstratePatch(target.red, target.green, target.blue, target.texture, target.pattern),
-                h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 6, fontFamily: 'ui-monospace, Menlo, monospace' } },
-                  'RGB(' + target.red + ',' + target.green + ',' + target.blue + ') · ' + target.texture + ' · ' + target.pattern)),
-              h('div', null,
-                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, '🐙 Your skin'),
-                renderSubstratePatch(col,
-                  Math.round(target.green + (col - target.red) * 0.6),
-                  Math.round(target.blue + (col - target.red) * 0.4),
-                  tex >= 70 ? 'rough' : tex >= 50 ? 'bumpy' : tex >= 30 ? 'leafy' : 'smooth',
-                  pat >= 70 ? 'mottled' : pat >= 50 ? 'striped' : 'solid'),
-                h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 6, fontFamily: 'ui-monospace, Menlo, monospace' } },
-                  'Match: ' + overall + ' / ' + maxPossible))),
-
-            // Sliders
-            ['Color brightness (0=dark → 255=light)', 'Pattern (0=solid → 100=mottled)', 'Texture (0=smooth → 100=rough)'].map(function(lbl, i) {
-              var val = [col, pat, tex][i];
-              var max = [255, 100, 100][i];
-              var key = ['huntCamouflageColor', 'huntCamouflagePattern', 'huntCamouflageTexture'][i];
-              return h('div', { key: i, style: { marginBottom: 12 } },
-                h('label', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#94a3b8', marginBottom: 4, fontWeight: 700 } },
-                  h('span', null, lbl),
-                  h('span', { style: { fontFamily: 'ui-monospace, Menlo, monospace', color: '#fde68a' } }, val)),
-                h('input', { type: 'range', min: 0, max: max, step: 1, value: val,
-                  onChange: function(e) { var patch = {}; patch[key] = parseInt(e.target.value, 10); setCL(patch); },
-                  'aria-label': lbl,
-                  style: { width: '100%', accentColor: '#a78bfa' } }));
-            }),
-
-            // Verdict
-            h('div', { style: { background: verdict.color + '15', border: '1px solid ' + verdict.color + '55',
-              borderLeft: '4px solid ' + verdict.color, padding: '12px 14px', borderRadius: 10, marginTop: 8 } },
-              h('div', { style: { fontSize: 13, fontWeight: 800, color: verdict.color, marginBottom: 4 } },
-                'Camouflage: ' + overall + '%'),
-              h('div', { style: { fontSize: 12, color: '#e2e8f0' } }, verdict.label))),
-
-          // Action
-          h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' } },
-            h('button', { onClick: function() { setCL({ huntPhase: 'strike', huntStrikeTime: 0 }); },
-              style: { padding: '12px 26px', background: '#a78bfa', color: '#1c1410',
-                border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
-              '→ Strike phase'),
-            h('button', { onClick: function() { setCL({ huntPhase: 'plan' }); },
-              style: { padding: '12px 18px', background: 'transparent', color: '#cbd5e1',
-                border: '1px solid rgba(100,116,139,0.5)', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' } },
-              '← Replan'))
-        );
-      }
-
-      function renderSubstratePatch(r, g, b, texture, pattern) {
-        // Render a small SVG patch showing the color, texture, and pattern
-        var hexFill = '#' + [r, g, b].map(function(v) {
-          var hex = Math.max(0, Math.min(255, Math.round(v))).toString(16);
-          return hex.length === 1 ? '0' + hex : hex;
-        }).join('');
-        var texGrain = null;
-        if (texture === 'rough' || texture === 'bumpy') {
-          texGrain = h('g', null,
-            h('circle', { cx: 30, cy: 28, r: 3, fill: 'rgba(0,0,0,0.18)' }),
-            h('circle', { cx: 65, cy: 45, r: 4, fill: 'rgba(0,0,0,0.16)' }),
-            h('circle', { cx: 100, cy: 32, r: 3, fill: 'rgba(0,0,0,0.2)' }),
-            h('circle', { cx: 50, cy: 80, r: 2.5, fill: 'rgba(0,0,0,0.18)' }),
-            h('circle', { cx: 95, cy: 75, r: 3, fill: 'rgba(0,0,0,0.16)' }));
-        } else if (texture === 'leafy') {
-          texGrain = h('g', null,
-            h('ellipse', { cx: 30, cy: 40, rx: 12, ry: 4, fill: 'rgba(0,0,0,0.15)', transform: 'rotate(30 30 40)' }),
-            h('ellipse', { cx: 80, cy: 60, rx: 14, ry: 4, fill: 'rgba(0,0,0,0.15)', transform: 'rotate(-20 80 60)' }));
-        }
-        var patternOverlay = null;
-        if (pattern === 'mottled') {
-          patternOverlay = h('g', null,
-            h('circle', { cx: 40, cy: 40, r: 12, fill: 'rgba(0,0,0,0.13)' }),
-            h('circle', { cx: 80, cy: 70, r: 10, fill: 'rgba(0,0,0,0.13)' }),
-            h('circle', { cx: 110, cy: 50, r: 9, fill: 'rgba(0,0,0,0.13)' }));
-        } else if (pattern === 'striped') {
-          patternOverlay = h('g', null,
-            h('rect', { x: 0, y: 30, width: 140, height: 6, fill: 'rgba(0,0,0,0.15)' }),
-            h('rect', { x: 0, y: 60, width: 140, height: 6, fill: 'rgba(0,0,0,0.15)' }),
-            h('rect', { x: 0, y: 90, width: 140, height: 6, fill: 'rgba(0,0,0,0.15)' }));
-        }
-        return h('svg', { width: 140, height: 110, viewBox: '0 0 140 110', 'aria-hidden': 'true',
-          style: { borderRadius: 8, border: '1px solid rgba(100,116,139,0.3)' } },
-          h('rect', { x: 0, y: 0, width: 140, height: 110, fill: hexFill }),
-          texGrain,
-          patternOverlay);
-      }
-
-      // Hunt: strike (timing minigame)
-      function renderHuntStrike() {
-        // Timing bar: target zone in middle (40-60). Click button to capture position.
-        // Position is computed from elapsed sim time at this render.
-        var capturedAt = d.huntStrikeTime || 0;
-        var now = Date.now();
-        // We use the render timestamp modulo to get a sweep position 0-100
-        var sweepMs = 2000; // 2s sweep
-        var position = capturedAt > 0 ? capturedAt : (Math.floor(now / 30) % 100); // ~30ms tick visual
-        var inZone = capturedAt > 0 && capturedAt >= 40 && capturedAt <= 60;
-        return h('div', null,
-          panelHeader('🎯 Strike: time it right',
-            'Click when the marker hits the green zone. Too early = missed strike (prey escapes). Too late = prey saw you coming.'),
-
-          h('div', { style: cardStyle() },
-            // Timing bar visualization
-            h('div', { style: { position: 'relative', height: 60, background: 'rgba(15,23,42,0.7)', borderRadius: 8, marginBottom: 16, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.3)' } },
-              // Target zone (green)
-              h('div', { style: { position: 'absolute', top: 0, bottom: 0, left: '40%', width: '20%', background: 'rgba(34,197,94,0.25)', borderLeft: '2px solid #22c55e', borderRight: '2px solid #22c55e' } }),
-              // Marker
-              capturedAt === 0 ? h('div', { style: { position: 'absolute', top: 4, bottom: 4, left: position + '%', width: 4, background: '#fb923c', borderRadius: 2, transition: 'none' } }) :
-              h('div', { style: { position: 'absolute', top: 4, bottom: 4, left: capturedAt + '%', width: 4, background: inZone ? '#22c55e' : '#dc2626', borderRadius: 2 } }),
-              // Labels
-              h('div', { style: { position: 'absolute', bottom: 4, left: '50%', transform: 'translateX(-50%)', fontSize: 11, fontWeight: 800, color: '#86efac' } }, 'STRIKE ZONE'),
-              h('div', { style: { position: 'absolute', top: 4, left: 6, fontSize: 9, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } }, 'too early'),
-              h('div', { style: { position: 'absolute', top: 4, right: 6, fontSize: 9, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } }, 'too late')),
-
-            // Capture button or result
-            capturedAt === 0 ? h('button', {
+          // Launch / cleanup buttons
+          !active ? h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 16 } },
+            !threeLoaded && !threeError ? h('button', {
               onClick: function() {
-                var p = Math.floor(Date.now() / 30) % 100;
-                setCL({ huntStrikeTime: p });
-                awardXP(2);
+                setCL({ _threeLoading: true });
+                ensureThreeJSCL(
+                  function() { setCL({ _threeLoaded: true, _threeLoading: false }); clAnnounce('3D engine ready'); },
+                  function() { setCL({ _threeError: true, _threeLoading: false }); }
+                );
               },
-              style: { width: '100%', padding: '16px', background: '#dc2626', color: 'white',
-                border: 'none', borderRadius: 10, fontSize: 18, fontWeight: 900, cursor: 'pointer',
-                animation: 'pulse 0.8s infinite alternate' } },
-              '🎯 STRIKE NOW') :
-              h('div', null,
-                h('div', { style: { textAlign: 'center', padding: 16, background: inZone ? 'rgba(34,197,94,0.15)' : 'rgba(220,38,38,0.15)',
-                  border: '1px solid ' + (inZone ? 'rgba(34,197,94,0.4)' : 'rgba(220,38,38,0.4)'), borderRadius: 10, marginBottom: 12 } },
-                  h('div', { style: { fontSize: 16, fontWeight: 800, color: inZone ? '#86efac' : '#fca5a5', marginBottom: 4 } },
-                    inZone ? '✓ Clean strike (' + capturedAt + ')' : '✗ Mistimed (' + capturedAt + ')'),
-                  h('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.55 } },
-                    inZone ? 'Caught the prey at exactly the right window.' :
-                    capturedAt < 40 ? 'Released too early — prey wasn\'t in arm-reach yet.' :
-                    'Released too late — prey saw the motion and bolted.')),
-                h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' } },
-                  h('button', { onClick: function() { runHuntJudge(inZone); },
-                    style: { padding: '12px 26px', background: '#a78bfa', color: '#1c1410',
-                      border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
-                    '→ See result'))))
+              disabled: !!d._threeLoading,
+              style: { padding: '14px 28px', background: '#a78bfa', color: '#1c1410',
+                border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 800, cursor: 'pointer',
+                opacity: d._threeLoading ? 0.6 : 1 } },
+              d._threeLoading ? '⏳ Loading 3D engine…' : '▶ Load 3D engine') : null,
+            threeLoaded ? h('button', {
+              onClick: function() { setCL({ hunt3DActive: true, huntsAttempted: (d.huntsAttempted || 0) + 1 }); awardXP(3); clAnnounce('Diving into the reef'); },
+              style: { padding: '14px 28px', background: '#22c55e', color: '#0f1419',
+                border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 900, cursor: 'pointer',
+                boxShadow: '0 4px 12px rgba(34,197,94,0.4)' } },
+              '🌊 Dive into the reef') : null,
+            threeError ? h('div', { style: { color: '#fca5a5', fontSize: 12, padding: '12px 18px', background: 'rgba(220,38,38,0.15)', borderRadius: 8, border: '1px solid rgba(220,38,38,0.3)' } },
+              '⚠ Couldn\'t load Three.js. Check your network and try again.') : null
+          ) : null,
+
+          // 3D canvas
+          active && threeLoaded ? h('div', null,
+            h('div', { style: { position: 'relative', width: '100%', maxWidth: 960, margin: '0 auto', aspectRatio: '16 / 10', background: '#0a4a6b', borderRadius: 12, overflow: 'hidden' } },
+              h('canvas', {
+                tabIndex: 0,
+                role: 'application',
+                'aria-label': '3D octopus hunt simulator. WASD to crawl, A and D rotate. Space jets. Click hunts. I uses ink defense.',
+                style: { width: '100%', height: '100%', display: 'block', cursor: 'crosshair', outline: 'none' },
+                ref: function(canvasEl) {
+                  if (!canvasEl) return;
+                  if (canvasEl._clInit) return;
+                  if (canvasEl._clCleanup) { try { canvasEl._clCleanup(); } catch(e) {} canvasEl._clCleanup = null; }
+                  canvasEl._clInit = true;
+                  initHuntSim3D(canvasEl);
+                }
+              })),
+            h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', marginTop: 14, flexWrap: 'wrap' } },
+              h('button', { onClick: function() { setCL({ hunt3DActive: false }); clAnnounce('Surfaced. Ready to dive again.'); },
+                style: { padding: '10px 20px', background: 'transparent', color: '#c7d2fe',
+                  border: '1px solid rgba(167,139,250,0.4)', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' } },
+                '◀ End run + surface')),
+            h('div', { style: { textAlign: 'center', fontSize: 11, color: '#94a3b8', marginTop: 8, fontStyle: 'italic' } },
+              'Tip: click the canvas first so keyboard input is captured.')
+          ) : null
         );
       }
 
-      function runHuntJudge(strikeSuccess) {
-        var sp = SPECIES.find(function(x) { return x.id === d.huntSpeciesId; });
-        var hab = HABITATS.find(function(x) { return x.id === d.huntHabitatId; });
-        var pr = PREY.find(function(x) { return x.id === d.huntPreyId; });
-        var tac = TACTICS.find(function(x) { return x.id === d.huntTacticId; });
-        if (!sp || !hab || !pr || !tac) { setCL({ huntPhase: 'lobby' }); return; }
-        // Camouflage match
-        var target = hab.substrate;
-        var col = d.huntCamouflageColor || 128;
-        var pat = d.huntCamouflagePattern || 50;
-        var tex = d.huntCamouflageTexture || 50;
-        var colorMatch = 100 - Math.abs(col - target.red) / 2.55;
-        var targetPattern = target.pattern === 'mottled' ? 70 : target.pattern === 'striped' ? 85 : 20;
-        var patternMatch = 100 - Math.abs(pat - targetPattern);
-        var targetTexture = target.texture === 'rough' || target.texture === 'bumpy' ? 80 : target.texture === 'leafy' ? 65 : 20;
-        var textureMatch = 100 - Math.abs(tex - targetTexture);
-        var camo = Math.min(100, Math.round((colorMatch + patternMatch + textureMatch) / 3), 40 + sp.camouflageRank * 6);
-        // Judge logic
-        var notes = [];
-        var caught = false;
-        // 1. Habitat appropriateness
-        var habitatOK = sp.habitat.indexOf(hab.id) !== -1;
-        if (habitatOK) notes.push({ neg: false, label: '✓ Natural habitat', detail: sp.name + ' is comfortable in ' + hab.name + '.' });
-        else notes.push({ neg: true, label: '⚠️ Off-habitat', detail: sp.name + ' rarely or never lives in ' + hab.name + '. Real-world: instinct + camouflage are tuned for their natural substrate.' });
-        // 2. Prey appropriateness
-        var preyOK = sp.prey.indexOf(pr.id) !== -1;
-        if (preyOK) notes.push({ neg: false, label: '✓ Realistic prey', detail: pr.name + ' is on ' + sp.name + '\'s natural diet.' });
-        else if (pr.difficulty >= 8) notes.push({ neg: true, label: '⚠️ Wrong prey', detail: pr.name + ' is far above ' + sp.name + '\'s typical prey class. Real cephalopods don\'t pick fights they\'ll lose.' });
-        else notes.push({ neg: true, label: '⚠️ Atypical prey', detail: pr.name + ' isn\'t a regular item for ' + sp.name + '. Possible but uncommon.' });
-        // 3. Tactic appropriateness
-        var tacticOK = sp.tactics.indexOf(tac.id) !== -1;
-        if (tacticOK) notes.push({ neg: false, label: '✓ Species-appropriate tactic', detail: tac.name + ' fits ' + sp.name + '\'s adaptations.' });
-        else notes.push({ neg: true, label: '⚠️ Tactic mismatch', detail: tac.name + ' isn\'t typical for ' + sp.name + '. ' + (tac.requires || '') });
-        // 4. Camouflage score
-        if (camo >= 80) notes.push({ neg: false, label: '✓ Excellent camouflage', detail: 'Match score ' + camo + '% — prey wouldn\'t see you.' });
-        else if (camo >= 60) notes.push({ neg: false, label: '~ Adequate camouflage', detail: 'Match ' + camo + '%. Worked, barely.' });
-        else notes.push({ neg: true, label: '⚠️ Visible to prey', detail: 'Camouflage was only ' + camo + '%. Prey almost certainly saw you.' });
-        // 5. Strike timing
-        if (strikeSuccess) notes.push({ neg: false, label: '✓ Strike timing', detail: 'Clean release at the right moment.' });
-        else notes.push({ neg: true, label: '⚠️ Strike mistimed', detail: 'Released early or late.' });
-        // Overall catch determination
-        var difficulty = pr.difficulty + (habitatOK ? 0 : 3) + (preyOK ? 0 : 3) + (tacticOK ? 0 : 3);
-        var skillScore = (camo / 100 * 50) + (strikeSuccess ? 35 : 0) + (sp.intelligence * 1.5);
-        caught = skillScore > difficulty * 7;
-        // Calorie balance
-        var caloriesGained = caught ? pr.calories : 0;
-        var caloriesSpent = 30 + (tac.id === 'jet-strike' ? 40 : tac.id === 'group-hunt' ? 25 : 10);
-        var netCal = caloriesGained - caloriesSpent;
-        // Field note unlock
-        var newFieldNote = null;
-        var prevNotes = d.huntFieldNotesUnlocked || [];
-        var availableNotes = FIELD_NOTES.filter(function(n) { return prevNotes.indexOf(n.id) === -1; });
-        if (availableNotes.length > 0) {
-          newFieldNote = availableNotes[Math.floor(Math.random() * availableNotes.length)];
+      // ─── 3D underwater octopus simulation ───
+      // Builds a Three.js scene with seafloor + reef + sea grass, a player
+      // octopus with WASD/jet/ink controls, simple crab AI prey, and a
+      // moray eel predator with ambush AI. Mounted on the host canvasEl
+      // via a callback ref. Lifecycle managed via canvasEl._clCleanup.
+      function initHuntSim3D(canvasEl) {
+        var THREE = window.THREE;
+        if (!THREE) return;
+        var W = canvasEl.clientWidth || 800;
+        var H = canvasEl.clientHeight || 500;
+
+        var scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0e3d5c);
+        scene.fog = new THREE.Fog(0x0a4a6b, 18, 70);
+
+        var camera = new THREE.PerspectiveCamera(70, W / H, 0.1, 200);
+
+        var renderer = new THREE.WebGLRenderer({ canvas: canvasEl, antialias: true });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setSize(W, H);
+
+        // ─── Lighting (downwelling sunlight + cool ambient) ───
+        var ambient = new THREE.AmbientLight(0x3a5876, 0.6);
+        scene.add(ambient);
+        var sun = new THREE.DirectionalLight(0xb8e6f0, 0.85);
+        sun.position.set(20, 40, 10);
+        scene.add(sun);
+
+        // ─── Sandy seafloor with displacement ───
+        var floorGeo = new THREE.PlaneGeometry(140, 140, 80, 80);
+        var floorPos = floorGeo.attributes.position.array;
+        for (var fi = 0; fi < floorPos.length; fi += 3) {
+          var fx = floorPos[fi], fy = floorPos[fi + 1];
+          var hh = 0;
+          hh += Math.sin(fx * 0.12) * Math.cos(fy * 0.10) * 0.6;
+          hh += Math.sin(fx * 0.31 + 0.5) * Math.cos(fy * 0.27) * 0.25;
+          hh += Math.sin(fx * 0.55) * Math.cos(fy * 0.6) * 0.1;
+          floorPos[fi + 2] = hh;
         }
-        // Save result
-        setCL(function(prior) {
-          var newUnlocked = (prior.huntFieldNotesUnlocked || []).slice();
-          if (newFieldNote && newUnlocked.indexOf(newFieldNote.id) === -1) newUnlocked.push(newFieldNote.id);
-          return {
-            huntPhase: 'result',
-            huntResult: {
-              caught: caught, camo: camo, strikeSuccess: strikeSuccess,
-              calsGained: caloriesGained, calsSpent: caloriesSpent, netCal: netCal,
-              notes: notes, newFieldNote: newFieldNote,
-              speciesName: sp.name, preyName: pr.name, tacticName: tac.name, habitatName: hab.name
-            },
-            huntsAttempted: (prior.huntsAttempted || 0) + 1,
-            huntsSuccessful: (prior.huntsSuccessful || 0) + (caught ? 1 : 0),
-            huntFieldNotesUnlocked: newUnlocked
+        floorGeo.computeVertexNormals();
+        // Sand texture (procedural canvas)
+        var sandCv = document.createElement('canvas');
+        sandCv.width = 256; sandCv.height = 256;
+        var sandCx = sandCv.getContext('2d');
+        sandCx.fillStyle = '#c9a06a';
+        sandCx.fillRect(0, 0, 256, 256);
+        for (var sg = 0; sg < 1200; sg++) {
+          var sr = 180 + Math.random() * 40, gg = 140 + Math.random() * 40, sb = 90 + Math.random() * 40;
+          sandCx.fillStyle = 'rgba(' + sr.toFixed(0) + ',' + gg.toFixed(0) + ',' + sb.toFixed(0) + ',0.7)';
+          sandCx.fillRect(Math.random() * 256, Math.random() * 256, 1 + Math.random() * 2.5, 1 + Math.random() * 2.5);
+        }
+        var sandTex = new THREE.CanvasTexture(sandCv);
+        sandTex.wrapS = sandTex.wrapT = THREE.RepeatWrapping;
+        sandTex.repeat.set(10, 10);
+        var floor = new THREE.Mesh(floorGeo,
+          new THREE.MeshStandardMaterial({ map: sandTex, roughness: 0.97, metalness: 0.02 }));
+        floor.rotation.x = -Math.PI / 2;
+        scene.add(floor);
+
+        // ─── Reef rocks (scattered, irregular) ───
+        var rocks = [];
+        for (var ri = 0; ri < 45; ri++) {
+          var rx = (Math.random() - 0.5) * 110;
+          var rz = (Math.random() - 0.5) * 110;
+          if (Math.abs(rx) < 6 && Math.abs(rz) < 6) continue; // keep center clear
+          var rs = 0.6 + Math.random() * 1.4;
+          var rockGeo = new THREE.SphereGeometry(rs, 8, 6);
+          var rPos = rockGeo.attributes.position.array;
+          for (var rj = 0; rj < rPos.length; rj += 3) {
+            rPos[rj] += (Math.random() - 0.5) * 0.25;
+            rPos[rj + 1] += (Math.random() - 0.5) * 0.25;
+            rPos[rj + 2] += (Math.random() - 0.5) * 0.25;
+          }
+          rockGeo.computeVertexNormals();
+          var rockTint = 0x504030 + Math.floor(Math.random() * 0x080808);
+          var rockMesh = new THREE.Mesh(rockGeo, new THREE.MeshStandardMaterial({ color: rockTint, roughness: 0.93 }));
+          rockMesh.position.set(rx, rs * 0.35, rz);
+          scene.add(rockMesh);
+          rocks.push(rockMesh);
+        }
+
+        // ─── Coral (cylinders, warm colors) ───
+        var coralColors = [0xc94e6d, 0xff6b35, 0xd4af37, 0x8e5572, 0xb8345c];
+        for (var ci = 0; ci < 18; ci++) {
+          var cx = (Math.random() - 0.5) * 90;
+          var cz = (Math.random() - 0.5) * 90;
+          if (Math.abs(cx) < 8 && Math.abs(cz) < 8) continue;
+          var ch = 1 + Math.random() * 1.5;
+          var coralGeo = new THREE.CylinderGeometry(0.15, 0.32, ch, 8);
+          var coral = new THREE.Mesh(coralGeo,
+            new THREE.MeshStandardMaterial({ color: coralColors[Math.floor(Math.random() * coralColors.length)], roughness: 0.7 }));
+          coral.position.set(cx, ch / 2, cz);
+          coral.rotation.y = Math.random() * Math.PI;
+          coral.rotation.z = (Math.random() - 0.5) * 0.3;
+          scene.add(coral);
+        }
+
+        // ─── Sea grass (planes that sway) ───
+        var grass = [];
+        for (var gi = 0; gi < 80; gi++) {
+          var gx = (Math.random() - 0.5) * 120;
+          var gz = (Math.random() - 0.5) * 120;
+          var gH = 0.6 + Math.random() * 1.3;
+          var grassGeo = new THREE.PlaneGeometry(0.35, gH);
+          var grassMat = new THREE.MeshBasicMaterial({ color: 0x2a8c4a, side: THREE.DoubleSide, transparent: true, opacity: 0.78 });
+          var gmesh = new THREE.Mesh(grassGeo, grassMat);
+          gmesh.position.set(gx, gH / 2 + 0.05, gz);
+          gmesh.rotation.y = Math.random() * Math.PI;
+          scene.add(gmesh);
+          grass.push({ mesh: gmesh, phase: Math.random() * Math.PI * 2 });
+        }
+
+        // ─── Caustic light overlay (animated bright spots) ───
+        var causticsGeo = new THREE.PlaneGeometry(140, 140, 1, 1);
+        var causticsTex = (function() {
+          var cv = document.createElement('canvas'); cv.width = 256; cv.height = 256;
+          var cx = cv.getContext('2d');
+          cx.fillStyle = 'rgba(0,0,0,0)';
+          cx.fillRect(0, 0, 256, 256);
+          for (var cci = 0; cci < 30; cci++) {
+            var grd = cx.createRadialGradient(Math.random() * 256, Math.random() * 256, 4, Math.random() * 256, Math.random() * 256, 20 + Math.random() * 20);
+            grd.addColorStop(0, 'rgba(220,250,255,0.18)');
+            grd.addColorStop(1, 'rgba(220,250,255,0)');
+            cx.fillStyle = grd; cx.fillRect(0, 0, 256, 256);
+          }
+          var t = new THREE.CanvasTexture(cv);
+          t.wrapS = t.wrapT = THREE.RepeatWrapping;
+          return t;
+        })();
+        causticsTex.repeat.set(4, 4);
+        var causticsMat = new THREE.MeshBasicMaterial({ map: causticsTex, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending });
+        var caustics = new THREE.Mesh(causticsGeo, causticsMat);
+        caustics.rotation.x = -Math.PI / 2;
+        caustics.position.y = 0.05;
+        scene.add(caustics);
+
+        // ─── Octopus mesh (body + 8 arms) ───
+        var octopus = new THREE.Group();
+        var mantleGeo = new THREE.SphereGeometry(0.55, 14, 10);
+        mantleGeo.scale(1, 1.3, 1);
+        var mantleMat = new THREE.MeshStandardMaterial({ color: 0xc26d5e, roughness: 0.5, metalness: 0.05 });
+        var mantle = new THREE.Mesh(mantleGeo, mantleMat);
+        mantle.position.y = 0.2;
+        octopus.add(mantle);
+        // Eyes
+        for (var ei = 0; ei < 2; ei++) {
+          var eyeWhite = new THREE.Mesh(new THREE.SphereGeometry(0.13, 8, 6),
+            new THREE.MeshStandardMaterial({ color: 0xfff8e8, roughness: 0.3 }));
+          eyeWhite.position.set(ei === 0 ? -0.28 : 0.28, 0.35, 0.42);
+          octopus.add(eyeWhite);
+          var pupil = new THREE.Mesh(new THREE.SphereGeometry(0.07, 6, 5),
+            new THREE.MeshBasicMaterial({ color: 0x141414 }));
+          pupil.position.set(ei === 0 ? -0.28 : 0.28, 0.35, 0.5);
+          octopus.add(pupil);
+        }
+        // 8 arms
+        var arms = [];
+        for (var ai = 0; ai < 8; ai++) {
+          var armAngle = (ai / 8) * Math.PI * 2;
+          var armGeo = new THREE.CylinderGeometry(0.09, 0.04, 1.0, 6);
+          var armMat = new THREE.MeshStandardMaterial({ color: 0xa84e3e, roughness: 0.55 });
+          var arm = new THREE.Mesh(armGeo, armMat);
+          arm.position.set(Math.cos(armAngle) * 0.42, -0.15, Math.sin(armAngle) * 0.42);
+          arm.rotation.z = Math.cos(armAngle) * 0.4;
+          arm.rotation.x = Math.sin(armAngle) * 0.4 + Math.PI / 2 - 0.2;
+          octopus.add(arm);
+          arms.push({ mesh: arm, baseRotX: arm.rotation.x, baseRotZ: arm.rotation.z, phase: ai * (Math.PI / 4) });
+        }
+        octopus.position.set(0, 0.6, 0);
+        scene.add(octopus);
+
+        // ─── Crab prey ───
+        var crabs = [];
+        function spawnCrab() {
+          var crab = new THREE.Group();
+          var crabBodyGeo = new THREE.SphereGeometry(0.28, 8, 6);
+          crabBodyGeo.scale(1.1, 0.45, 0.85);
+          var crabBody = new THREE.Mesh(crabBodyGeo,
+            new THREE.MeshStandardMaterial({ color: 0xa54a30, roughness: 0.7 }));
+          crab.add(crabBody);
+          // Eyes
+          for (var cei = 0; cei < 2; cei++) {
+            var ceye = new THREE.Mesh(new THREE.SphereGeometry(0.05, 6, 5),
+              new THREE.MeshBasicMaterial({ color: 0x141414 }));
+            ceye.position.set(cei === 0 ? -0.12 : 0.12, 0.13, 0.18);
+            crab.add(ceye);
+          }
+          // 6 legs
+          for (var li = 0; li < 6; li++) {
+            var legSide = li % 2 === 0 ? -1 : 1;
+            var legRow = ((li / 2) | 0) - 1;
+            var legGeo = new THREE.CylinderGeometry(0.02, 0.02, 0.32, 4);
+            var leg = new THREE.Mesh(legGeo,
+              new THREE.MeshStandardMaterial({ color: 0x8a3520, roughness: 0.7 }));
+            leg.position.set(legSide * 0.28, -0.05, legRow * 0.16);
+            leg.rotation.z = legSide * 0.9;
+            crab.add(leg);
+          }
+          // 2 claws (front)
+          for (var clw = 0; clw < 2; clw++) {
+            var clawSide = clw === 0 ? -1 : 1;
+            var clawGeo = new THREE.SphereGeometry(0.11, 6, 5);
+            clawGeo.scale(1.4, 0.7, 0.7);
+            var claw = new THREE.Mesh(clawGeo,
+              new THREE.MeshStandardMaterial({ color: 0xc25a3e, roughness: 0.7 }));
+            claw.position.set(clawSide * 0.32, 0, 0.22);
+            crab.add(claw);
+          }
+          var cx, cz;
+          do {
+            cx = (Math.random() - 0.5) * 90;
+            cz = (Math.random() - 0.5) * 90;
+          } while (Math.abs(cx) < 8 && Math.abs(cz) < 8);
+          crab.position.set(cx, 0.18, cz);
+          crab.userData = {
+            wanderAngle: Math.random() * Math.PI * 2,
+            wanderTimer: 0,
+            speed: 0.6 + Math.random() * 0.4,
+            alive: true,
+            legPhase: 0,
           };
-        });
-        if (caught) awardXP(8);
-      }
+          scene.add(crab);
+          crabs.push(crab);
+          return crab;
+        }
+        for (var cb = 0; cb < 10; cb++) spawnCrab();
 
-      function renderHuntResult() {
-        var r = d.huntResult;
-        if (!r) { setCL({ huntPhase: 'lobby' }); return null; }
-        var caught = r.caught;
-        return h('div', null,
-          panelHeader('🎯 Hunt result',
-            (caught ? '✓ Caught the ' + r.preyName + '.' : '✗ ' + r.preyName + ' got away.') +
-            ' ' + r.speciesName + ' in ' + r.habitatName + ' with ' + r.tacticName + '.'),
-
-          // Hero result
-          h('div', { style: Object.assign({}, cardStyle(), { textAlign: 'center', padding: 32,
-            background: caught ? 'linear-gradient(135deg, rgba(34,197,94,0.18), rgba(15,23,42,0.6))'
-                               : 'linear-gradient(135deg, rgba(220,38,38,0.18), rgba(15,23,42,0.6))',
-            borderLeft: '4px solid ' + (caught ? '#22c55e' : '#dc2626')
-          }) },
-            h('div', { 'aria-hidden': 'true', style: { fontSize: 64, lineHeight: 1, marginBottom: 8 } },
-              caught ? '🏆' : '💨'),
-            h('div', { style: { fontSize: 24, fontWeight: 900, color: caught ? '#86efac' : '#fca5a5', letterSpacing: '-0.01em', marginBottom: 8 } },
-              caught ? 'Successful hunt' : 'Hunt failed'),
-            h('div', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.6, maxWidth: 480, marginLeft: 'auto', marginRight: 'auto' } },
-              caught
-                ? 'You caught the ' + r.preyName + '. Net calories: +' + r.netCal + '. Reproduction edges closer.'
-                : 'The ' + r.preyName + ' escaped. Net calories: ' + r.netCal + '. Energy spent without reward.')),
-
-          // Caloric balance
-          h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, '⚡ Energy balance'),
-            h('div', { style: { display: 'flex', gap: 14, flexWrap: 'wrap' } },
-              h('div', null,
-                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Gained'),
-                h('div', { style: { fontSize: 24, fontWeight: 900, color: '#86efac', fontFamily: 'ui-monospace, Menlo, monospace' } }, '+' + r.calsGained),
-                h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'kcal')),
-              h('div', null,
-                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Spent'),
-                h('div', { style: { fontSize: 24, fontWeight: 900, color: '#fca5a5', fontFamily: 'ui-monospace, Menlo, monospace' } }, '−' + r.calsSpent),
-                h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'kcal (hunt + camo + strike)')),
-              h('div', null,
-                h('div', { style: { fontSize: 11, fontWeight: 800, color: r.netCal >= 0 ? '#86efac' : '#fca5a5', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Net'),
-                h('div', { style: { fontSize: 24, fontWeight: 900, color: r.netCal >= 0 ? '#86efac' : '#fca5a5', fontFamily: 'ui-monospace, Menlo, monospace' } },
-                  (r.netCal >= 0 ? '+' : '') + r.netCal),
-                h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'kcal'))) ),
-
-          // Judge notes
-          h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, '📋 Judge\'s notes'),
-            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-              r.notes.map(function(n, i) {
-                return h('div', { key: i,
-                  style: { background: n.neg ? 'rgba(220,38,38,0.08)' : 'rgba(34,197,94,0.08)',
-                    border: '1px solid ' + (n.neg ? 'rgba(220,38,38,0.3)' : 'rgba(34,197,94,0.3)'),
-                    borderLeft: '4px solid ' + (n.neg ? '#dc2626' : '#22c55e'),
-                    padding: '10px 14px', borderRadius: 8 } },
-                  h('div', { style: { fontSize: 12, fontWeight: 700, color: n.neg ? '#fca5a5' : '#86efac', marginBottom: 4 } }, n.label),
-                  h('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.55 } }, n.detail));
-              }))),
-
-          // Field note unlock
-          r.newFieldNote ? h('div', { style: { background: 'linear-gradient(135deg, rgba(167,139,250,0.18), rgba(56,189,248,0.12))',
-            border: '2px solid rgba(167,139,250,0.5)', borderRadius: 12, padding: '14px 18px', marginBottom: 16 } },
-            h('div', { style: { fontSize: 11, fontWeight: 800, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 } },
-              '📔 Field note unlocked'),
-            h('div', { style: { fontSize: 13, color: '#e9d5ff', lineHeight: 1.7, fontStyle: 'italic' } },
-              '"' + r.newFieldNote.text + '"')) : null,
-
-          // Actions
-          h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' } },
-            h('button', { onClick: function() { setCL({ huntPhase: 'lobby', huntResult: null, huntStrikeTime: 0, huntCamouflageColor: 128, huntCamouflagePattern: 50, huntCamouflageTexture: 50 }); awardXP(3); },
-              style: { padding: '12px 24px', background: '#a78bfa', color: '#1c1410',
-                border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
-              '🔁 Hunt again'),
-            h('button', { onClick: function() { setSection('field'); awardXP(2); },
-              style: { padding: '12px 24px', background: 'transparent', color: '#c7d2fe',
-                border: '1px solid rgba(167,139,250,0.4)', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' } },
-              '📖 Browse field guide'))
+        // ─── Moray eel (ambush predator) ───
+        var moray = new THREE.Group();
+        var morayBody = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.32, 0.15, 3, 8),
+          new THREE.MeshStandardMaterial({ color: 0x3a5028, roughness: 0.7 })
         );
+        morayBody.rotation.x = Math.PI / 2;
+        moray.add(morayBody);
+        var morayHead = new THREE.Mesh(
+          new THREE.SphereGeometry(0.4, 8, 6),
+          new THREE.MeshStandardMaterial({ color: 0x4a6038, roughness: 0.65 })
+        );
+        morayHead.position.z = 1.55;
+        morayHead.scale.z = 1.3;
+        moray.add(morayHead);
+        // Eyes
+        for (var mei = 0; mei < 2; mei++) {
+          var meye = new THREE.Mesh(new THREE.SphereGeometry(0.06, 6, 5),
+            new THREE.MeshBasicMaterial({ color: 0xffd400 }));
+          meye.position.set(mei === 0 ? -0.18 : 0.18, 0.15, 1.7);
+          moray.add(meye);
+        }
+        // Pick a moray home near a rock
+        var morayHome = { x: 14, z: 11 };
+        moray.position.set(morayHome.x, 0.25, morayHome.z);
+        moray.userData = {
+          homeX: morayHome.x, homeZ: morayHome.z,
+          state: 'idle',       // idle | attacking | returning | cooldown
+          stateTimer: 0,
+          aggroRange: 7,
+          speed: 4.5,
+          cooldownUntil: 0,
+        };
+        scene.add(moray);
+        // Marker rock at moray's home (visual cue)
+        var dornGeo = new THREE.TorusGeometry(1.2, 0.3, 8, 16);
+        var dornMat = new THREE.MeshStandardMaterial({ color: 0x4a3a28, roughness: 0.9 });
+        var dornRing = new THREE.Mesh(dornGeo, dornMat);
+        dornRing.position.set(morayHome.x, 0.15, morayHome.z);
+        dornRing.rotation.x = Math.PI / 2;
+        scene.add(dornRing);
+
+        // ─── Input state ───
+        var keys = {};
+        var clickRequested = false;
+        var inkRequested = false;
+        function onKeyDown(e) {
+          keys[e.code] = true;
+          if (['Space','KeyW','KeyA','KeyS','KeyD','KeyE','KeyI'].indexOf(e.code) !== -1) e.preventDefault();
+          if (e.code === 'KeyI') inkRequested = true;
+          if (e.code === 'KeyE') clickRequested = true;
+        }
+        function onKeyUp(e) { keys[e.code] = false; }
+        function onClick() { clickRequested = true; }
+        canvasEl.addEventListener('keydown', onKeyDown);
+        canvasEl.addEventListener('keyup', onKeyUp);
+        canvasEl.addEventListener('mousedown', function() { canvasEl.focus(); });
+        canvasEl.addEventListener('click', onClick);
+        canvasEl.focus();
+
+        // ─── HUD overlay (DOM, positioned over canvas) ───
+        var hud = document.createElement('div');
+        hud.style.cssText = 'position:absolute;top:10px;left:10px;color:#fff;font-family:ui-monospace,Menlo,monospace;font-size:12px;background:rgba(10,20,40,0.78);padding:10px 14px;border-radius:8px;pointer-events:none;line-height:1.6;min-width:200px;';
+        canvasEl.parentElement.appendChild(hud);
+
+        var tutorial = document.createElement('div');
+        tutorial.style.cssText = 'position:absolute;bottom:14px;left:50%;transform:translateX(-50%);color:#fff;font-family:ui-monospace,Menlo,monospace;font-size:12px;background:rgba(10,20,40,0.78);padding:8px 16px;border-radius:8px;pointer-events:none;text-align:center;max-width:90%;';
+        tutorial.textContent = 'WASD crawl · SPACE jet · CLICK hunt · I ink · click canvas to focus first';
+        canvasEl.parentElement.appendChild(tutorial);
+        setTimeout(function() { if (tutorial.parentElement) tutorial.parentElement.removeChild(tutorial); }, 9000);
+
+        var damageFlash = document.createElement('div');
+        damageFlash.style.cssText = 'position:absolute;inset:0;background:radial-gradient(circle at center, rgba(220,38,38,0) 30%, rgba(220,38,38,0.6) 100%);opacity:0;pointer-events:none;transition:opacity 0.2s;';
+        canvasEl.parentElement.appendChild(damageFlash);
+
+        // ─── Game state ───
+        var gameState = {
+          health: 100, maxHealth: 100,
+          stamina: 100, maxStamina: 100,
+          score: 0,
+          startTime: Date.now(),
+          facingAngle: 0,
+          inkCloudsActive: [],
+          isInked: false,
+          inkUntil: 0,
+          gameOver: false,
+          tookHitAt: 0,
+        };
+
+        var clock = new THREE.Clock();
+        var animId;
+        var lastTime = performance.now();
+
+        function loop() {
+          var dt = Math.min(0.05, clock.getDelta());
+          var now = Date.now();
+
+          if (!gameState.gameOver) {
+            // ─── Input → movement ───
+            var moveFwd = (keys.KeyW ? 1 : 0) - (keys.KeyS ? 1 : 0);
+            var turn = (keys.KeyA ? 1 : 0) - (keys.KeyD ? 1 : 0);
+            var isJetting = !!keys.Space && gameState.stamina > 0 && moveFwd > 0;
+
+            gameState.facingAngle += turn * 2.0 * dt;
+
+            var moveSpeed = isJetting ? 8.5 : 2.6;
+            var moveDir = new THREE.Vector3(Math.sin(gameState.facingAngle), 0, Math.cos(gameState.facingAngle));
+            octopus.position.x += moveDir.x * moveFwd * moveSpeed * dt;
+            octopus.position.z += moveDir.z * moveFwd * moveSpeed * dt;
+            octopus.position.x = Math.max(-65, Math.min(65, octopus.position.x));
+            octopus.position.z = Math.max(-65, Math.min(65, octopus.position.z));
+            octopus.position.y = 0.55 + (isJetting ? 0.15 : 0) + Math.sin(now * 0.004) * 0.05;
+            octopus.rotation.y = gameState.facingAngle;
+
+            // Stamina drain (jet) / regen (idle)
+            if (isJetting) {
+              gameState.stamina = Math.max(0, gameState.stamina - 45 * dt);
+            } else {
+              gameState.stamina = Math.min(gameState.maxStamina, gameState.stamina + 18 * dt);
+            }
+
+            // ─── Arm wiggle ───
+            arms.forEach(function(arm) {
+              var s = Math.sin(now * 0.005 + arm.phase);
+              arm.mesh.rotation.x = arm.baseRotX + s * 0.18;
+              arm.mesh.rotation.z = arm.baseRotZ + Math.cos(now * 0.004 + arm.phase) * 0.1;
+            });
+
+            // ─── Sea grass swaying ───
+            grass.forEach(function(g) {
+              g.mesh.rotation.z = Math.sin(now * 0.001 + g.phase) * 0.18;
+            });
+
+            // ─── Caustics shimmer ───
+            caustics.material.opacity = 0.4 + Math.sin(now * 0.001) * 0.15;
+            caustics.position.x = Math.sin(now * 0.0003) * 4;
+            caustics.position.z = Math.cos(now * 0.00025) * 4;
+
+            // ─── Crab AI ───
+            crabs.forEach(function(crab) {
+              if (!crab.userData.alive) return;
+              crab.userData.wanderTimer -= dt;
+              if (crab.userData.wanderTimer <= 0) {
+                crab.userData.wanderAngle += (Math.random() - 0.5) * Math.PI * 0.6;
+                crab.userData.wanderTimer = 1 + Math.random() * 2.5;
+              }
+              var dx = crab.position.x - octopus.position.x;
+              var dz = crab.position.z - octopus.position.z;
+              var cd = Math.sqrt(dx * dx + dz * dz);
+              var cs = crab.userData.speed;
+              if (cd < 5 && !gameState.isInked) {
+                crab.userData.wanderAngle = Math.atan2(dx, dz);
+                cs = crab.userData.speed * 2.0;
+              }
+              crab.position.x += Math.sin(crab.userData.wanderAngle) * cs * dt;
+              crab.position.z += Math.cos(crab.userData.wanderAngle) * cs * dt;
+              crab.position.x = Math.max(-65, Math.min(65, crab.position.x));
+              crab.position.z = Math.max(-65, Math.min(65, crab.position.z));
+              crab.rotation.y = crab.userData.wanderAngle;
+              // Leg wiggle
+              crab.userData.legPhase += dt * 8;
+              crab.children.forEach(function(child, idx) {
+                if (idx >= 3 && idx <= 8) {
+                  child.position.y = -0.05 + Math.sin(crab.userData.legPhase + idx) * 0.04;
+                }
+              });
+            });
+
+            // ─── Hunt: click or E ───
+            if (clickRequested) {
+              clickRequested = false;
+              var nearest = null, nearestDist = 2.6;
+              crabs.forEach(function(crab) {
+                if (!crab.userData.alive) return;
+                var dx = crab.position.x - octopus.position.x;
+                var dz = crab.position.z - octopus.position.z;
+                var d2 = Math.sqrt(dx * dx + dz * dz);
+                if (d2 < nearestDist) { nearest = crab; nearestDist = d2; }
+              });
+              if (nearest) {
+                nearest.userData.alive = false;
+                scene.remove(nearest);
+                nearest.traverse(function(o) {
+                  if (o.geometry) o.geometry.dispose();
+                  if (o.material) { if (Array.isArray(o.material)) o.material.forEach(function(m){m.dispose();}); else o.material.dispose(); }
+                });
+                crabs = crabs.filter(function(c) { return c !== nearest; });
+                gameState.score += 1;
+                // Track persistent + best run
+                try {
+                  setCL({
+                    huntsSuccessful: (d.huntsSuccessful || 0) + 1,
+                    huntBestRun: Math.max(d.huntBestRun || 0, gameState.score),
+                  });
+                } catch(_) {}
+                clAnnounce('Caught a crab — ' + gameState.score + ' total');
+                setTimeout(function() { if (!gameState.gameOver) spawnCrab(); }, 4500);
+              }
+            }
+
+            // ─── Ink defense ───
+            if (inkRequested && !gameState.isInked) {
+              inkRequested = false;
+              gameState.isInked = true;
+              gameState.inkUntil = now + 3200;
+              var inkGeo = new THREE.SphereGeometry(2.6, 16, 12);
+              var inkMat = new THREE.MeshBasicMaterial({ color: 0x080812, transparent: true, opacity: 0.72 });
+              var inkCloud = new THREE.Mesh(inkGeo, inkMat);
+              inkCloud.position.set(octopus.position.x, 1.2, octopus.position.z);
+              scene.add(inkCloud);
+              gameState.inkCloudsActive.push({ mesh: inkCloud, expiresAt: now + 3200 });
+              clAnnounce('Ink released — predator visual lock broken');
+            } else {
+              inkRequested = false;
+            }
+            if (gameState.isInked && now > gameState.inkUntil) gameState.isInked = false;
+            gameState.inkCloudsActive = gameState.inkCloudsActive.filter(function(ink) {
+              var t = (ink.expiresAt - now) / 3200;
+              if (t <= 0) {
+                scene.remove(ink.mesh);
+                ink.mesh.geometry.dispose();
+                ink.mesh.material.dispose();
+                return false;
+              }
+              ink.mesh.material.opacity = t * 0.72;
+              ink.mesh.scale.setScalar(1 + (1 - t) * 0.7);
+              return true;
+            });
+
+            // ─── Moray eel AI ───
+            var me = moray.userData;
+            var mdx = octopus.position.x - me.homeX;
+            var mdz = octopus.position.z - me.homeZ;
+            var mDistHome = Math.sqrt(mdx * mdx + mdz * mdz);
+
+            if (me.state === 'idle') {
+              moray.position.set(me.homeX, 0.25 + Math.sin(now * 0.002) * 0.05, me.homeZ);
+              moray.lookAt(octopus.position.x, 0.25, octopus.position.z);
+              if (mDistHome < me.aggroRange && !gameState.isInked && now > me.cooldownUntil) {
+                me.state = 'attacking';
+                me.stateTimer = 0;
+                clAnnounce('Moray eel attacking');
+              }
+            } else if (me.state === 'attacking') {
+              me.stateTimer += dt;
+              var chx = octopus.position.x - moray.position.x;
+              var chz = octopus.position.z - moray.position.z;
+              var chDist = Math.sqrt(chx * chx + chz * chz);
+              if (chDist > 0.1) {
+                moray.position.x += (chx / chDist) * me.speed * dt;
+                moray.position.z += (chz / chDist) * me.speed * dt;
+                moray.lookAt(octopus.position.x, 0.25, octopus.position.z);
+              }
+              if (chDist < 1.2 && now - gameState.tookHitAt > 800) {
+                gameState.health = Math.max(0, gameState.health - 30);
+                gameState.tookHitAt = now;
+                damageFlash.style.opacity = '1';
+                setTimeout(function() { damageFlash.style.opacity = '0'; }, 180);
+                me.state = 'returning';
+                me.stateTimer = 0;
+                me.cooldownUntil = now + 4000;
+                clAnnounce('Bitten by moray');
+              }
+              if (gameState.isInked || me.stateTimer > 4.5) {
+                me.state = 'returning';
+                me.stateTimer = 0;
+                me.cooldownUntil = now + 3500;
+              }
+            } else if (me.state === 'returning') {
+              var rdx = me.homeX - moray.position.x;
+              var rdz = me.homeZ - moray.position.z;
+              var rDist = Math.sqrt(rdx * rdx + rdz * rdz);
+              if (rDist > 0.2) {
+                moray.position.x += (rdx / rDist) * me.speed * 0.6 * dt;
+                moray.position.z += (rdz / rDist) * me.speed * 0.6 * dt;
+                moray.lookAt(me.homeX, 0.25, me.homeZ);
+              } else {
+                me.state = 'idle';
+              }
+            }
+
+            // ─── Camera (third-person follow) ───
+            var camOff = new THREE.Vector3(
+              -Math.sin(gameState.facingAngle) * 5.5,
+              3.5,
+              -Math.cos(gameState.facingAngle) * 5.5
+            );
+            var camTarget = new THREE.Vector3().copy(octopus.position).add(camOff);
+            camera.position.lerp(camTarget, 0.12);
+            camera.lookAt(octopus.position.x, octopus.position.y + 0.6, octopus.position.z);
+
+            if (gameState.health <= 0) {
+              gameState.gameOver = true;
+              clAnnounce('Game over — health depleted');
+            }
+          }
+
+          // ─── HUD update ───
+          var elapsed = Math.floor((now - gameState.startTime) / 1000);
+          var hp = gameState.health / gameState.maxHealth * 100;
+          var sp = gameState.stamina / gameState.maxStamina * 100;
+          var hpColor = hp > 60 ? '#86efac' : hp > 30 ? '#fbbf24' : '#fca5a5';
+          var barBg = 'rgba(255,255,255,0.18)';
+          hud.innerHTML =
+            '<div style="font-weight:bold;border-bottom:1px solid rgba(180,140,40,0.4);padding-bottom:4px;margin-bottom:6px">🐙 Pacific Octopus</div>' +
+            '<div style="display:flex;align-items:center;gap:6px">HEALTH<span style="display:inline-block;width:80px;height:8px;background:' + barBg + ';border-radius:4px;overflow:hidden;vertical-align:middle"><span style="display:block;width:' + hp.toFixed(0) + '%;height:100%;background:' + hpColor + '"></span></span><span style="color:' + hpColor + ';min-width:30px">' + gameState.health.toFixed(0) + '</span></div>' +
+            '<div style="display:flex;align-items:center;gap:6px">STAMINA<span style="display:inline-block;width:80px;height:8px;background:' + barBg + ';border-radius:4px;overflow:hidden;vertical-align:middle"><span style="display:block;width:' + sp.toFixed(0) + '%;height:100%;background:#60a5fa"></span></span><span style="color:#60a5fa;min-width:30px">' + gameState.stamina.toFixed(0) + '</span></div>' +
+            '<div>SCORE &nbsp; <span style="color:#86efac;font-weight:bold">' + gameState.score + ' 🦀</span></div>' +
+            '<div>TIME &nbsp; &nbsp; <span style="color:#fff">' + elapsed + 's</span></div>' +
+            (gameState.isInked ? '<div style="color:#a78bfa;font-weight:bold;margin-top:5px;font-size:11px">⚫ INKED — eel can\'t see you</div>' : '') +
+            (gameState.gameOver
+              ? '<div style="color:#fca5a5;font-weight:bold;font-size:14px;margin-top:8px;text-align:center">💀 GAME OVER</div><div style="font-size:11px;margin-top:4px;color:#fbbf24;text-align:center">"End run" then dive again</div>'
+              : '');
+
+          renderer.render(scene, camera);
+          animId = requestAnimationFrame(loop);
+        }
+        loop();
+
+        // ─── Resize ───
+        function onResize() {
+          var nW = canvasEl.clientWidth || 800;
+          var nH = canvasEl.clientHeight || 500;
+          camera.aspect = nW / nH;
+          camera.updateProjectionMatrix();
+          renderer.setSize(nW, nH);
+        }
+        window.addEventListener('resize', onResize);
+
+        // ─── Cleanup ───
+        canvasEl._clCleanup = function() {
+          cancelAnimationFrame(animId);
+          canvasEl.removeEventListener('keydown', onKeyDown);
+          canvasEl.removeEventListener('keyup', onKeyUp);
+          canvasEl.removeEventListener('click', onClick);
+          window.removeEventListener('resize', onResize);
+          if (hud.parentElement) hud.parentElement.removeChild(hud);
+          if (tutorial.parentElement) tutorial.parentElement.removeChild(tutorial);
+          if (damageFlash.parentElement) damageFlash.parentElement.removeChild(damageFlash);
+          scene.traverse(function(obj) {
+            if (obj.geometry) obj.geometry.dispose();
+            if (obj.material) {
+              if (Array.isArray(obj.material)) obj.material.forEach(function(m) { m.dispose(); });
+              else obj.material.dispose();
+            }
+          });
+          renderer.dispose();
+          canvasEl._clInit = false;
+        };
       }
 
       // ═══════════════════════════════════════════════════════
