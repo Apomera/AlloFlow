@@ -3213,6 +3213,91 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (spawned) preyMeshes.push(spawned);
         }
 
+        // ─── NEW v0.30: Weather System ───
+        var weather = {
+          windDir: Math.random() * Math.PI * 2,   // wind direction in radians (world bearing)
+          windSpeed: 3 + Math.random() * 6,        // m/s base wind
+          gustPhase: 0,
+          cloudCover: 0.3 + Math.random() * 0.4,   // 0-1, affects thermal strength
+          thermalQuality: 0.5 + Math.random() * 0.4, // multiplier for free-lift from thermals
+          tempC: species.biome === 'tundra' ? -10 : species.biome === 'rainforest' ? 28 : 18,
+          changeTimer: 30 + Math.random() * 60     // seconds until next weather shift
+        };
+        // ─── NEW v0.30: Time-of-day cycle (visual + gameplay) ───
+        // dayPhase 0-1: 0 = midnight, 0.25 = dawn, 0.5 = noon, 0.75 = dusk
+        var dayPhase = species.biome === 'forest-night' ? 0.0 : (species.id === 'kestrel' || species.id === 'snowyOwl' ? 0.35 : 0.5);
+        var dayCycleSpeed = 0.0025;  // % per second — full day = ~400 seconds
+
+        // ─── NEW v0.30: Web Audio sound synthesis (no external files) ───
+        var audioCtx = null;
+        var windNode = null, windGain = null;
+        var soundEnabled = (rh.soundEnabled !== false);
+        function initAudio() {
+          if (audioCtx) return;
+          try {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            // Wind sound: filtered noise that intensifies with speed
+            var bufSize = 2 * audioCtx.sampleRate;
+            var buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+            var data = buf.getChannelData(0);
+            for (var bi = 0; bi < bufSize; bi++) data[bi] = (Math.random() * 2 - 1) * 0.5;
+            windNode = audioCtx.createBufferSource();
+            windNode.buffer = buf;
+            windNode.loop = true;
+            // Bandpass filter for wind tone
+            var filter = audioCtx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.value = 400;
+            filter.Q.value = 1;
+            windGain = audioCtx.createGain();
+            windGain.gain.value = 0;
+            windNode.connect(filter);
+            filter.connect(windGain);
+            windGain.connect(audioCtx.destination);
+            windNode.start();
+          } catch (e) {
+            console.warn('[RaptorHunt] Web Audio init failed:', e);
+            soundEnabled = false;
+          }
+        }
+        if (soundEnabled) initAudio();
+        // Play species call (synthesized)
+        function playSpeciesCall(callType) {
+          if (!soundEnabled || !audioCtx) return;
+          var now2 = audioCtx.currentTime;
+          var osc = audioCtx.createOscillator();
+          var g = audioCtx.createGain();
+          osc.connect(g);
+          g.connect(audioCtx.destination);
+          if (callType === 'strike') {
+            // Sharp impact: pitched-down noise burst
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(800, now2);
+            osc.frequency.exponentialRampToValueAtTime(120, now2 + 0.15);
+            g.gain.setValueAtTime(0.18, now2);
+            g.gain.exponentialRampToValueAtTime(0.001, now2 + 0.18);
+            osc.start(now2); osc.stop(now2 + 0.2);
+          } else if (callType === 'screech') {
+            // Species call: ~1.5s descending screech
+            osc.type = species.isOwl ? 'sine' : 'sawtooth';
+            var baseFreq = species.isOwl ? 320 : species.id === 'baldEagle' ? 600 : 1100;
+            osc.frequency.setValueAtTime(baseFreq, now2);
+            osc.frequency.linearRampToValueAtTime(baseFreq * 0.6, now2 + 0.8);
+            g.gain.setValueAtTime(0.0, now2);
+            g.gain.linearRampToValueAtTime(0.12, now2 + 0.05);
+            g.gain.linearRampToValueAtTime(0.0, now2 + 0.9);
+            osc.start(now2); osc.stop(now2 + 1.0);
+          } else if (callType === 'wingBeat') {
+            // Brief whoosh
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(80, now2);
+            osc.frequency.exponentialRampToValueAtTime(40, now2 + 0.08);
+            g.gain.setValueAtTime(0.06, now2);
+            g.gain.exponentialRampToValueAtTime(0.001, now2 + 0.10);
+            osc.start(now2); osc.stop(now2 + 0.12);
+          }
+        }
+
         // ─── State + Physics ───
         var startY = 30 + (species.biome === 'cliff' || species.biome === 'mountain' ? 30 : 0);
         // NEW v0.29: Daily energy budget per species. Real raptors need ~7-15% of body mass per day in calories.
@@ -3390,6 +3475,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             raptor.starving = false;
             energyEventLog.push({ msg: '+' + Math.round(caloriesGained) + ' kcal — ' + caught.data.label, t: now, color: '#10b981' });
             rhAnnounce('Strike! Caught ' + caught.data.label + ' for ' + Math.round(caloriesGained) + ' calories');
+            playSpeciesCall('strike');
+            // Plus a victory screech 100ms later
+            setTimeout(function() { playSpeciesCall('screech'); }, 200);
             if (ctx.awardXP) ctx.awardXP(caught.data.points, 'Raptor Hunt: caught ' + caught.data.label);
             // Update stats
             setRH(function(prev) {
@@ -3442,6 +3530,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         status.setAttribute('aria-label', 'Run statistics + nearest prey');
         status.style.cssText = 'position:absolute;top:10px;right:10px;background:rgba(15,23,42,0.92);border:2px solid #10b981;border-radius:10px;padding:10px 14px;color:#d1fae5;font-family:ui-monospace,Menlo,monospace;font-size:12px;pointer-events:none;line-height:1.5;text-shadow:0 0 4px rgba(0,0,0,0.85);min-width:180px;font-weight:500';
         hudParent.appendChild(status);
+        // ── NEW v0.30: Weather panel (top-center, below event log) ──
+        var weatherPanel = document.createElement('div');
+        weatherPanel.setAttribute('role', 'status');
+        weatherPanel.setAttribute('aria-label', 'Weather + time of day');
+        weatherPanel.style.cssText = 'position:absolute;top:80px;left:50%;transform:translateX(-50%);background:rgba(15,23,42,0.92);border:2px solid #67e8f9;border-radius:10px;padding:6px 12px;color:#cffafe;font-family:ui-monospace,Menlo,monospace;font-size:11px;pointer-events:none;line-height:1.4;text-shadow:0 0 4px rgba(0,0,0,0.85);font-weight:500;display:flex;gap:14px';
+        hudParent.appendChild(weatherPanel);
+
+        // ── NEW v0.30: Sound toggle button ──
+        var soundBtn = document.createElement('button');
+        soundBtn.setAttribute('aria-label', soundEnabled ? 'Mute sound' : 'Enable sound');
+        soundBtn.style.cssText = 'position:absolute;top:10px;right:200px;background:rgba(15,23,42,0.92);border:2px solid #a78bfa;border-radius:50%;width:38px;height:38px;color:#ddd6fe;font-size:16px;cursor:pointer;pointer-events:auto';
+        soundBtn.textContent = soundEnabled ? '🔊' : '🔇';
+        soundBtn.addEventListener('click', function() {
+          soundEnabled = !soundEnabled;
+          if (soundEnabled) {
+            if (!audioCtx) initAudio();
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+          } else if (windGain) {
+            windGain.gain.value = 0;
+          }
+          soundBtn.textContent = soundEnabled ? '🔊' : '🔇';
+          soundBtn.setAttribute('aria-label', soundEnabled ? 'Mute sound' : 'Enable sound');
+          setRH({ soundEnabled: soundEnabled });
+          rhAnnounce(soundEnabled ? 'Sound on' : 'Sound off');
+        });
+        hudParent.appendChild(soundBtn);
+
         // ── NEW v0.29: Energy + Stamina bars panel (bottom-left, above controls) ──
         var energyPanel = document.createElement('div');
         energyPanel.setAttribute('role', 'status');
@@ -3549,6 +3664,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           raptor.calories = Math.max(-100, raptor.calories);  // can go slightly negative before forced down
           // Prune old energy events
           energyEventLog = energyEventLog.filter(function(e) { return now - e.t < 3500; });
+
+          // ── NEW v0.30: Weather dynamics ──
+          weather.gustPhase += dt;
+          var gust = Math.sin(weather.gustPhase * 0.4) * weather.windSpeed * 0.4;
+          var effWindSpeed = weather.windSpeed + gust;
+          weather.changeTimer -= dt;
+          if (weather.changeTimer <= 0) {
+            // Slowly drift weather params
+            weather.windDir += (Math.random() - 0.5) * 0.4;
+            weather.windSpeed = Math.max(1, Math.min(15, weather.windSpeed + (Math.random() - 0.5) * 2));
+            weather.cloudCover = Math.max(0.05, Math.min(0.95, weather.cloudCover + (Math.random() - 0.5) * 0.15));
+            // Thermal quality strongest at midday with low cloud
+            weather.thermalQuality = (1 - weather.cloudCover) * (1 - Math.abs(dayPhase - 0.5) * 2);
+            weather.thermalQuality = Math.max(0.1, weather.thermalQuality);
+            weather.changeTimer = 40 + Math.random() * 60;
+            energyEventLog.push({ msg: '🌤 Weather shift — wind ' + weather.windSpeed.toFixed(1) + ' m/s, clouds ' + Math.round(weather.cloudCover * 100) + '%', t: now, color: '#67e8f9' });
+          }
+          // Apply wind drift to raptor position
+          var windPushX = Math.sin(weather.windDir) * effWindSpeed * 0.3 * dt;
+          var windPushZ = -Math.cos(weather.windDir) * effWindSpeed * 0.3 * dt;
+          raptor.x += windPushX;
+          raptor.z += windPushZ;
+          // Apply thermal lift if gliding low + over warm ground
+          if (!diveKey && !pullUpKey && raptor.y < 100 && raptor.y > 5) {
+            var thermalLift = weather.thermalQuality * 0.4 * dt;
+            raptor.y += thermalLift;
+          }
+
+          // ── NEW v0.30: Time of day advance ──
+          dayPhase = (dayPhase + dayCycleSpeed * dt) % 1;
+          // Apply lighting changes based on dayPhase
+          var dayBrightness = 0.55;
+          if (dayPhase < 0.2 || dayPhase > 0.85) dayBrightness = 0.18;  // night
+          else if (dayPhase < 0.3) dayBrightness = 0.18 + (dayPhase - 0.2) * 3.7;  // dawn
+          else if (dayPhase > 0.7) dayBrightness = 0.55 - (dayPhase - 0.7) * 2.5;  // dusk
+          ambient.intensity = dayBrightness;
+
+          // ── NEW v0.30: Wind sound modulation ──
+          if (windGain && audioCtx) {
+            // Wind volume scales with raptor speed + ambient wind
+            var targetVol = soundEnabled ? Math.min(0.35, raptor.speed * 0.004 + weather.windSpeed * 0.015) : 0;
+            windGain.gain.value += (targetVol - windGain.gain.value) * 0.05;
+          }
 
           // ── Position update (forward in yaw direction, vertical from pitch + gravity at dive) ──
           var horizSpeed = raptor.speed * Math.cos(raptor.pitch);
@@ -3918,6 +4076,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             '<div style="font-size:9px;color:#94a3b8;margin-top:6px;font-style:italic">' +
               'Glide regenerates. Flap burns 15× faster than glide.' +
             '</div>';
+          // ── NEW v0.30: Weather + time panel ──
+          var dayLabel = dayPhase < 0.18 ? '🌑 Night' :
+                         dayPhase < 0.30 ? '🌅 Dawn' :
+                         dayPhase < 0.62 ? '☀ Day' :
+                         dayPhase < 0.78 ? '🌇 Dusk' : '🌑 Night';
+          var windDirDeg = ((weather.windDir * 180 / Math.PI) % 360 + 360) % 360;
+          var windCompass = windDirDeg < 22 || windDirDeg >= 338 ? 'N' :
+                            windDirDeg < 67 ? 'NE' : windDirDeg < 112 ? 'E' :
+                            windDirDeg < 157 ? 'SE' : windDirDeg < 202 ? 'S' :
+                            windDirDeg < 247 ? 'SW' : windDirDeg < 292 ? 'W' : 'NW';
+          weatherPanel.innerHTML =
+            '<span aria-label="Time of day ' + dayLabel + '">' + dayLabel + '</span>' +
+            '<span aria-label="Wind speed ' + weather.windSpeed.toFixed(1) + ' meters per second from ' + windCompass + '">💨 ' + weather.windSpeed.toFixed(1) + ' m/s ' + windCompass + '</span>' +
+            '<span aria-label="Cloud cover ' + Math.round(weather.cloudCover * 100) + ' percent">☁ ' + Math.round(weather.cloudCover * 100) + '%</span>' +
+            '<span aria-label="Thermal quality ' + Math.round(weather.thermalQuality * 100) + ' percent">🌀 ' + Math.round(weather.thermalQuality * 100) + '%</span>';
+
           // ── Event log: render transient messages ──
           eventLogEl.innerHTML = '';
           energyEventLog.slice(-3).forEach(function(ev) {
@@ -3980,6 +4154,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (status.parentElement) status.parentElement.removeChild(status);
           if (energyPanel.parentElement) energyPanel.parentElement.removeChild(energyPanel);
           if (eventLogEl.parentElement) eventLogEl.parentElement.removeChild(eventLogEl);
+          if (weatherPanel.parentElement) weatherPanel.parentElement.removeChild(weatherPanel);
+          if (soundBtn.parentElement) soundBtn.parentElement.removeChild(soundBtn);
+          // Stop wind audio
+          if (windNode) { try { windNode.stop(); } catch (e) {} }
+          if (audioCtx) { try { audioCtx.close(); } catch (e) {} }
           // Dispose meshes
           scene.traverse(function(obj) {
             if (obj.geometry) obj.geometry.dispose();
