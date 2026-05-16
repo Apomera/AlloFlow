@@ -587,15 +587,23 @@ const PictionaryCanvas = React.memo((props) => {
     strokeId: null,
     lastFlush: 0
   });
+  const dpr = Math.min(3, Math.max(1, typeof window !== "undefined" && window.devicePixelRatio || 1));
   React.useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    const targetW = Math.round(CANVAS_WIDTH * dpr);
+    const targetH = Math.round(CANVAS_HEIGHT * dpr);
+    if (canvas.width !== targetW || canvas.height !== targetH) {
+      canvas.width = targetW;
+      canvas.height = targetH;
+    }
     const ctx = canvas.getContext("2d");
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     ctx.fillStyle = "#fffefb";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     strokes.forEach((s) => _renderStroke(ctx, s, 1));
-  }, [strokes]);
+  }, [strokes, dpr]);
   const _renderStroke = (ctx, stroke, opacity) => {
     if (!stroke || !Array.isArray(stroke.points) || stroke.points.length === 0) return;
     const isErase = stroke.color === ERASER_SENTINEL;
@@ -619,8 +627,8 @@ const PictionaryCanvas = React.memo((props) => {
     const canvas = canvasRef.current;
     if (!canvas) return [0, 0];
     const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
+    const scaleX = CANVAS_WIDTH / rect.width;
+    const scaleY = CANVAS_HEIGHT / rect.height;
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
     return [(clientX - rect.left) * scaleX, (clientY - rect.top) * scaleY];
@@ -840,6 +848,28 @@ const PictionaryHostView = React.memo((props) => {
       setConceptIdeas(initialConceptIdeas.slice(0, 12).map(String));
     }
   }, [isOpen, initialConceptIdeas]);
+  const cleanupStateRef = React.useRef({ roundActive: false });
+  React.useEffect(() => {
+    cleanupStateRef.current.roundActive = roundActive;
+  }, [roundActive]);
+  React.useEffect(() => {
+    return () => {
+      try {
+        if (hostRef.current) {
+          if (hostRef.current.activeRound) {
+            hostRef.current.resolveRound({ winnerUid: null, reason: "manual" });
+          }
+        }
+      } catch (_) {
+      }
+      if (cleanupStateRef.current.roundActive) {
+        try {
+          _clearRolesAndRound();
+        } catch (_) {
+        }
+      }
+    };
+  }, []);
   React.useEffect(() => {
     if (!isOpen || !sessionCode) return;
     if (hostRef.current) return;

@@ -506,19 +506,35 @@ const PictionaryCanvas = React.memo((props) => {
     strokeId: null,
     lastFlush: 0,
   });
+  // Cap DPR at 3× — beyond that, the bitmap memory cost dominates the visual
+  // gain and stutters touch drawing on iPad. Stroke coordinates stay in
+  // logical (CSS-pixel) space so the wire format is unaffected; we just
+  // render at higher fidelity locally.
+  const dpr = Math.min(3, Math.max(1, (typeof window !== 'undefined' && window.devicePixelRatio) || 1));
 
-  // Draw whenever strokes prop changes
+  // Draw whenever strokes prop changes. Bitmap is sized to CANVAS_W*dpr ×
+  // CANVAS_H*dpr; ctx is scaled by dpr so all drawing code can use logical
+  // coordinates (0..CANVAS_WIDTH, 0..CANVAS_HEIGHT).
   React.useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    // Re-size bitmap to match current DPR. Setting canvas.width/height resets
+    // the context to identity transform; we re-apply the dpr scale every render.
+    const targetW = Math.round(CANVAS_WIDTH * dpr);
+    const targetH = Math.round(CANVAS_HEIGHT * dpr);
+    if (canvas.width !== targetW || canvas.height !== targetH) {
+      canvas.width = targetW;
+      canvas.height = targetH;
+    }
     const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     // Paper background
     ctx.fillStyle = '#fffefb';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    // Replay all strokes
+    ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    // Replay all strokes (logical coords)
     strokes.forEach((s) => _renderStroke(ctx, s, 1));
-  }, [strokes]);
+  }, [strokes, dpr]);
 
   const _renderStroke = (ctx, stroke, opacity) => {
     if (!stroke || !Array.isArray(stroke.points) || stroke.points.length === 0) return;
@@ -544,8 +560,11 @@ const PictionaryCanvas = React.memo((props) => {
     const canvas = canvasRef.current;
     if (!canvas) return [0, 0];
     const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
+    // Use LOGICAL canvas size (not bitmap size) for the scale so stored
+    // stroke coords stay in 720×480 space regardless of DPR. The bitmap's
+    // dpr multiplier is applied via ctx.setTransform on render.
+    const scaleX = CANVAS_WIDTH / rect.width;
+    const scaleY = CANVAS_HEIGHT / rect.height;
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
     return [(clientX - rect.left) * scaleX, (clientY - rect.top) * scaleY];
@@ -555,6 +574,9 @@ const PictionaryCanvas = React.memo((props) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
+    // The render-effect set ctx.setTransform(dpr, ...) on the last full
+    // redraw, so the context already has the dpr scale applied. Drawing in
+    // logical coords below is rendered at full DPR.
     const isErase = mode === 'eraser';
     ctx.save();
     ctx.globalCompositeOperation = isErase ? 'destination-out' : 'source-over';
@@ -796,6 +818,33 @@ const PictionaryHostView = React.memo((props) => {
       setConceptIdeas(initialConceptIdeas.slice(0, 12).map(String));
     }
   }, [isOpen, initialConceptIdeas]);
+
+  // Defensive cleanup: when the host modal unmounts WITHOUT an explicit
+  // resolve, students would otherwise stay locked in their guest overlay
+  // because sessionData.pictionaryRound.active and their roster.{uid}.role
+  // were left dangling. Track the latest state in a ref so the cleanup can
+  // see whether a round was actually active at unmount time and only fire
+  // resolveRound + the session-doc clear in that case (idempotent regardless).
+  const cleanupStateRef = React.useRef({ roundActive: false });
+  React.useEffect(() => { cleanupStateRef.current.roundActive = roundActive; }, [roundActive]);
+  React.useEffect(() => {
+    return () => {
+      try {
+        if (hostRef.current) {
+          if (hostRef.current.activeRound) {
+            hostRef.current.resolveRound({ winnerUid: null, reason: 'manual' });
+          }
+        }
+      } catch (_) {}
+      if (cleanupStateRef.current.roundActive) {
+        // Best-effort clear of session-doc fields. The ref-captured
+        // _clearRolesAndRound closes over roster/writeToSession/sessionRef
+        // from the latest render, so it has fresh values.
+        try { _clearRolesAndRound(); } catch (_) {}
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   React.useEffect(() => {
     if (!isOpen || !sessionCode) return;
