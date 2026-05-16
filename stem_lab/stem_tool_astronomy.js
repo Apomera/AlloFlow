@@ -3940,6 +3940,75 @@
               )
             ),
             '#94a3b8'
+          ),
+
+          // ─── Astronomy + ethics ─────────────────────────────────
+          sectionCard('⚖️ Astronomy + ethics — who astronomy serves',
+            (function() {
+              var ETH_TOPICS = [
+                { id: 'overview', name: 'Astronomy is political + ethical', emoji: '🌍',
+                  body: 'Pure curiosity-driven knowledge is one part of astronomy. The OTHER parts: who funds research, where telescopes are built, who benefits from the resulting jobs + prestige, whose land is occupied by observatories, whose knowledge traditions are honored or erased, who gets access to telescope time + data, what languages publications appear in, who gets to study the stars + who is excluded. Astronomy looks cosmic + politically neutral — but the practices around it are deeply embedded in colonial, economic, + cultural histories. Honest astronomy education includes the ethics, not just the equations.',
+                  caveat: 'Some scientists resist the framing that astronomy has ethics + politics — "we just study the universe, that\'s above human conflict." But the history of where observatories get built, what student populations get trained, what knowledge traditions get cited (or aren\'t), tells a different story. Both narratives — science\'s real cosmic insight + the human + political context of how it gets done — are simultaneously true.'
+                },
+                { id: 'mauna', name: 'Mauna Kea + the Thirty Meter Telescope', emoji: '🏔️',
+                  body: 'Mauna Kea on the Big Island of Hawai\'i is one of the world\'s best observatory sites — high altitude (4,200 m), low humidity, stable atmosphere. Thirteen telescopes already operate near its summit, built since the 1960s. Mauna Kea is also one of Hawaiian Indigenous (Kānaka Maoli) culture\'s most sacred sites — the "wao akua" (realm of the gods) + the home of multiple Hawaiian deities. In 2015 + 2019, the planned THIRTY METER TELESCOPE (TMT, $2+ billion, ~ 30 m optical mirror, an order of magnitude bigger than current scopes) became a focal point of Native Hawaiian opposition. Thousands of protectors blocked the construction road in 2019; arrests were made; the project has been suspended on Mauna Kea but is exploring alternatives in the Canary Islands. The opposition was NOT anti-science but pro-respect: Kānaka Maoli scientists + astronomers were among the protectors.',
+                  caveat: 'The TMT controversy is one of the clearest contemporary examples of astronomy ethics in conflict. The TMT collaboration\'s 2019 statement promised improved consultation + economic benefits to Hawaiians; protectors responded that meaningful consent had been requested for 50+ years + repeatedly ignored. The University of Hawaii\'s management of the Mauna Kea Observatories has been independently critiqued + is now being reformed (the 2022 Mauna Kea Stewardship + Oversight Authority replaces UH management). The TMT decision is unresolved as of 2025.'
+                },
+                { id: 'decolonize', name: 'Decolonizing astronomy', emoji: '🌐',
+                  body: 'Western astronomy has been the dominant academic tradition globally since the 19th century, but it is ONE tradition among many (see the Sky Traditions tab). Decolonizing astronomy means: (1) ACKNOWLEDGING that observatory sites worldwide are often on Indigenous lands taken without consent (Mauna Kea, Maunakea, Cerro Pachón, Cerro Paranal in Chile on Diaguita territory, Maxwell Telescope at Mauna Kea, Karoo Square Kilometre Array in South Africa on Khoekhoe + San lands). (2) HONORING the astronomical traditions + sky knowledge of Indigenous peoples + non-Western cultures alongside modern Western science. (3) WORKING with descendant communities as PARTNERS not stakeholders, with veto power over development. (4) DIVERSIFYING the people who get to be astronomers — racial, gender, geographic, class diversity. (5) MAKING astronomy education + observation accessible to communities that have historically been excluded.',
+                  caveat: 'This work is well underway in academic astronomy but unfinished. The American Astronomical Society has produced anti-harassment + anti-bias guidelines; many universities now have decolonization committees in their astronomy departments. The progress is real + slow. Some scientists are uncomfortable with this framing; others find it essential. School psychologists + counselors can model how to engage these conversations productively in classroom settings.'
+                },
+                { id: 'pollution', name: 'Light pollution as environmental justice', emoji: '🌃',
+                  body: 'Light pollution is unevenly distributed. WEALTHIER neighborhoods can afford dark-sky-friendly lighting + private dark properties; POORER + working-class urban neighborhoods get harsh streetlighting from above + adjacent commercial development. INDIGENOUS reservations + rural communities often retain dark skies but lack resources to PROTECT them as development encroaches. The Mauna Kea Observatory complex has produced extensive ARTIFICIAL skyglow that affects Native Hawaiian sky observation; this is a documented additional grievance + an environmental-justice issue. Dark-sky advocacy is therefore not just an aesthetic preservation issue — it intersects with ECOLOGY, HEALTH (sleep, cancer), CULTURE (Indigenous astronomy), + EQUITY (whose ability to see the sky gets protected).',
+                  caveat: 'Environmental justice framing for dark-sky issues is relatively recent + still being developed. The DarkSky International organization (formerly IDA) has begun explicitly incorporating environmental-justice + equity work; some local chapters lead in this area. The conversation about WHO gets to enjoy a dark sky + WHO bears the cost of light pollution is genuinely contested + worth engaging.'
+                },
+                { id: 'access', name: 'Telescope access + scientific equity', emoji: '🔭',
+                  body: 'Premier telescope time is HEAVILY rationed. JWST receives ~ 1,800 proposals per cycle for ~ 200 awards; Hubble similarly oversubscribed; ALMA, VLT, Keck all 4-10x oversubscribed. Reviewer biases (gender, geography, institutional prestige) have been documented in time-allocation committees. Many studies have shown DOUBLE-BLIND review (reviewers don\'t see proposer identity) IMPROVES allocation equity. Hubble + several other major observatories now use double-blind review. Public archives (MAST, ESO, NASA, Vizier) make most observatory data eventually open to anyone — which has been a major equity gain (researchers in lower-resource institutions can do science with the same data as wealthy university researchers).',
+                  caveat: 'Even with reform, access remains uneven. INSTITUTIONS in low-income countries struggle with subscription costs for analysis software, compute access, conference travel. Telescope-time access reform is helpful + not sufficient; the broader pipeline (training, mentorship, language barriers, visa restrictions, child-care expectations) all narrow who actually gets to do astronomy. The work is real + ongoing.'
+                },
+                { id: 'students', name: 'Diversifying who does astronomy', emoji: '🎓',
+                  body: 'Astronomy has historically been one of the LESS diverse STEM fields. Women + people of color + first-generation college students + people with disabilities have been underrepresented. Specific data: the American Astronomical Society reports ~ 25% women PhD recipients in astronomy 2020 (rising slowly), ~ 4% Black, ~ 6% Hispanic/Latino, much lower at the senior-faculty level. Multiple programs work to change this: NASA Innovations in Climate Education, the Banneker Institute, the Indigenous Astronomy Society of Canada, the Society of Asian Astronomers + Astrophysicists, the Pueblo Indian Cultural Center astronomy programs, the Cool Stars Workshop dual-track (career + scientific) sessions. Astronomy education at K-12 + community college level is a major leverage point — diverse exposure to astronomy in childhood predicts diverse PhDs later.',
+                  caveat: 'Progress is real + insufficient + politicized. Some institutions face anti-DEI pressure that threatens these programs. The astronomy community has generally supported diversification efforts (American Astronomical Society has explicit anti-discrimination policies + DEI working groups) but the underlying social + economic structures change slowly. For King Middle students from underrepresented backgrounds: the AAS Astronomy Equity + Inclusion working group + the Society of Hispanic Professional Engineers maintain mentor networks.'
+                },
+                { id: 'space', name: 'Space resources + colonization framing', emoji: '🚀',
+                  body: 'A growing body of work questions the language + framing of space "exploration" + "colonization" + "settlement." When NASA + SpaceX + others talk about "human colonization of Mars," critics from Indigenous + postcolonial studies point out that COLONIZATION is a loaded term: terrestrial colonization caused enormous human suffering. Better language ("settlement," "habitation," "outpost") is being proposed but contested. The 2020 Outer Space Treaty governs no individual nation\'s claim to celestial bodies, but the legal framework is being tested by commercial mining proposals (asteroid mining, lunar mining). Who owns the Moon? Who owns Mars? Who benefits from + who pays for space exploration? These are real questions the field is starting to engage but has not resolved.',
+                  caveat: 'The space ethics conversation is generating multiple position papers + workshop discussions at major conferences (AGU, AAS, IAU). The Hawaiian Indigenous, Sami, First Nations, Aboriginal Australian astronomy communities have all contributed proposed ethical frameworks. The conversation is partial, contested, + worth following. Students who care about astronomy careers will encounter these debates in graduate-level discussions; engaging them earlier is helpful preparation.'
+                },
+                { id: 'practice', name: 'Ethical practice for amateurs + students', emoji: '✨',
+                  body: 'What does "ethical astronomy" look like at the AMATEUR + STUDENT level? Several concrete practices: (1) When visiting Indigenous-territory dark-sky sites (Mauna Kea, Tribal Lands, the Navajo Nation, etc.), RESPECT the cultural significance + the rules — many Indigenous communities ask visitors to stay below summit, avoid disturbing markers, contribute fees that support conservation. (2) Cite Indigenous + non-Western astronomical traditions when teaching constellations + sky stories (the Sky Traditions tab is your starting reference). (3) Support light-pollution advocacy in your own community — talk to your town\'s lighting committee, encourage dark-sky-friendly fixtures. (4) Mentor other students from underrepresented backgrounds — many astronomy careers start with one supportive teacher + one moment of access. (5) Be honest about what science knows + doesn\'t know — students respect honest "we don\'t know yet" far more than confident wrong claims.',
+                  caveat: 'Most "ethics" in astronomy is not dramatic. It is small daily choices: which book to recommend, whose name to mention, whether to invite a quiet student to look through your eyepiece, whether to push back on a colleague\'s sexist or racist joke, how you talk about Indigenous astronomy. The cumulative effect of many such choices is what builds (or fails to build) a better field. For school psychologists + counselors who support diverse student populations, these are exactly the kinds of choices you already make in your professional practice — astronomy is just one application.'
+                }
+              ];
+              var sel = d.selectedEthics || 'overview';
+              var topic = ETH_TOPICS.find(function(t) { return t.id === sel; }) || ETH_TOPICS[0];
+              return h('div', null,
+                h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
+                  'Astronomy looks like the most politically-neutral science — galaxies don\'t vote, dark matter doesn\'t have a nationality. But the PRACTICE of astronomy is deeply human + political: where telescopes get built, whose land that is, who gets to be an astronomer, who pays for the research, whose knowledge traditions get honored or erased, who can see a dark night sky. Honest astronomy education engages these questions rather than pretending they don\'t exist.'
+                ),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+                  ETH_TOPICS.map(function(t) {
+                    var on = t.id === sel;
+                    return h('button', {
+                      key: t.id,
+                      onClick: function() { upd({ selectedEthics: t.id }); },
+                      style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#10b981' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #10b981' : '1px solid #334155' }
+                    }, t.emoji + ' ' + t.name);
+                  })
+                ),
+                h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.35)' } },
+                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#6ee7b7', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+                  h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+                  h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
+                    h('strong', null, 'Honest framing: '), topic.caveat
+                  )
+                ),
+                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 11.5, color: '#e9d5ff', lineHeight: 1.65 } },
+                  h('strong', null, 'For students considering astronomy careers: '),
+                  'These questions will follow you. Senior astronomers + younger researchers disagree about how to engage them. Decide for yourself what you think, talk with mentors + peers, + recognize that astronomy ethics is its own intellectually-rich subfield. The American Astronomical Society Code of Ethics + the recent (2020+) work on astronomy equity are good starting reads. The decisions astronomers + funders make in the next decade about TMT, GMT, SKA, lunar + Mars exploration will shape the field for the rest of the century.'
+                )
+              );
+            })(),
+            '#10b981'
           )
         );
       }
