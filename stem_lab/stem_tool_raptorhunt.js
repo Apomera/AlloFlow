@@ -395,6 +395,215 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
   ];
 
   // ───────────────────────────────────────────────────────────
+  // NEW v0.33: SPECIES DEEP-DIVE DATA
+  // Per-species rigorous content — breeding, hunting strategy details,
+  // population history, ID tips, where + when to see, photographer tips,
+  // taxonomic notes, behavioral observations.
+  // ───────────────────────────────────────────────────────────
+  var SPECIES_DEEPDIVE = {
+    peregrine: {
+      breeding: 'Cliff-nesting species; pairs return to the same eyrie for life (some Manhattan rooftops have hosted continuous breeding pairs for 30+ years). 3-4 eggs incubated for 32-35 days. Chicks fledge at 35-42 days. Cooperative chick-feeding: male hunts during incubation + early chick phase, female brooods. Both feed once chicks are 4+ weeks old. Adolescents stay near nest for 60-90 days post-fledge as parents continue to feed + train them.',
+      huntStrategyDetail: 'STOOP — vertical dive from 1000-3000 ft altitude. Approach is logarithmic spiral (Tucker 1998) maintaining constant retinal angle on prey. Strike with clenched feet at 200+ mph. KE delivered ~5500 J. After strike: pull up + circle back as prey tumbles; retrieve in air or on ground. Hit rate per stoop ~25-40% under good conditions. Misses are biomechanically costly: drag during pull-out can reach 25+ G + may injure the bird.',
+      populationHistory: '1940 baseline US ~3,875 breeding pairs. 1965: zero east of the Rockies (eggshell thinning from DDT). 1972: US DDT ban + ESA listing. 1974: first hacked release at Cornell. 1999: delisted from US endangered list. 2020: ~3,200 pairs in lower 48 + ~30,000 globally. Recovery cost ~$5M in 1980s dollars — among the cheapest endangered-species recoveries in US history.',
+      idTips: 'Wing shape: long pointed swept-back primaries — like a paper airplane. Flight pattern: rapid steady wingbeats + short glides; rarely soars in thermal. Distinct from other raptors by the dark "moustache" mark below the eye. Adults uniformly slate-blue above + barred white below; juveniles brownish.',
+      whenToSee: 'Best at urban skyscraper nests (NYC, Chicago, Cleveland have famous pairs) Mar-Aug. Migration peak at Cape May NJ Oct-Nov. Coastal cliffs Pacific NW year-round.',
+      photoTips: 'Sit still at known nest site early AM or late PM when birds are most active. Need 500mm+ telephoto. Avoid disturbing — federal violation under MBTA. Use blind.',
+      taxonomyNotes: 'Falco peregrinus — 19 subspecies recognized globally. North American subspecies: F. p. anatum (continental). F. p. tundrius (Arctic). F. p. pealei (Pacific NW).',
+      culturalNotes: 'Sacred to Egyptian Horus (3000 BCE). Falconry symbol of Persian + Arab royalty for ~2500 years. Modern: world\'s most popular falconry bird. Featured on the obverse of the 2008 American Gold Eagle coin commemorative + on US Air Force Reserve insignia.'
+    },
+    baldEagle: {
+      breeding: 'Nests in tall trees or cliffs near water. Massive stick nest (up to 9.5 ft wide × 20 ft deep × 3 tons — largest tree nest of any bird). 1-3 eggs incubated 35 days. Chicks fledge at 10-12 weeks. Parents stay with juveniles 4-6 weeks post-fledge teaching to fish + steal kleptoparasitically from ospreys.',
+      huntStrategyDetail: 'Multiple strategies: (a) Low-altitude flap + glide over water + grab fish at surface. (b) Klepto-parasitize ospreys + other eagles. (c) Scavenge carcasses (50%+ of winter diet on lower Mississippi). (d) Hunt waterfowl in late winter when ducks are bunched on remaining open water. Surprisingly versatile feeder — not a specialist.',
+      populationHistory: '1800 estimate: 100,000 pairs in lower 48. 1940: 50,000 (declining). 1963: 417 pairs (DDT crisis low). 1972: DDT banned. 1978: ESA-listed. 1995: downlisted to Threatened. 2007: delisted entirely. 2020: 316,000 individuals (USFWS). One of conservation history\'s great success stories.',
+      idTips: 'Adult: uniquely white head + tail with dark brown body. Massive yellow beak. Juveniles: mottled brown with white wing-pit + tail patches; take 5 years for full adult plumage. Wing slot visible during soaring. Wingspan 6-8 feet.',
+      whenToSee: 'Open water with fish: Atlantic + Pacific coasts year-round; Mississippi River pools in winter (massive concentration Dec-Feb); Klamath Basin OR in winter; Skagit River WA Nov-Feb.',
+      photoTips: 'Conowingo Dam MD is the world\'s best bald eagle photography site Nov-Dec — birds congregate at the dam tailwater + take fish stunned by turbines. 600mm+ lens recommended.',
+      taxonomyNotes: 'Haliaeetus leucocephalus — Sea eagle in family Accipitridae. Closely related to Steller\'s + white-tailed eagles in Europe + Asia.',
+      culturalNotes: 'US national emblem adopted 1782 by Second Continental Congress (Charles Thomson design). Benjamin Franklin\'s 1784 letter critiquing the choice (preferring wild turkey) was a private joke + never a formal proposal. Featured on most US currency. Sacred to many Indigenous nations.'
+    },
+    redTail: {
+      breeding: 'Nests in tall trees + on cliffs + city skyscrapers (Pale Male at 927 Fifth Avenue Manhattan was the most famous urban red-tail). 2-3 eggs incubated 28-35 days. Chicks fledge at 6-7 weeks. Juveniles disperse late summer; some migrate, some don\'t (latitude-dependent).',
+      huntStrategyDetail: 'PERCH + POUNCE is the primary strategy — most common American raptor uses this. Sits on telephone pole, fence post, dead tree over open ground. Scans for prey via UV + visual cues (small mammals leave detectable trails). Drops on prey from above with brief flap-flap-glide attack. Also: kiting into headwinds over open fields; thermal soaring; rare stoop on bird prey.',
+      populationHistory: 'Population EXPLODING. From estimated 300-500K pairs in 1900 to 1.5-2 million today (continental US). Reason: red-tails benefit from roadside-edge habitat created by highway construction, agricultural clearing, urban edge expansion. Their territories are 4 km² each + lower-48 has enough edge to support nearly 2M pairs at carrying capacity.',
+      idTips: 'Distinctive rusty-red TAIL (the namesake — but only adults). Juveniles have brown banded tail. 14 named plumage subspecies (Harlan\'s, Krider\'s, Western, Eastern, Florida, Fuertes\', dark morph, etc) — all in the same species. Belly band darker than chest. White scapulars often visible.',
+      whenToSee: 'Year-round across N. America. Roadside telephone poles = guaranteed sightings (drive any highway through farmland Sept-May; spot a red-tail every 3-5 miles).',
+      photoTips: 'Most photographed raptor in North America because they\'re everywhere + don\'t flee humans. Telephoto helps but a 300mm at 50 yards gives sharp images. They\'ll hold on a pole as you drive slowly past.',
+      taxonomyNotes: 'Buteo jamaicensis — 14+ named subspecies/morphs. Most variable in plumage of any North American raptor.',
+      culturalNotes: 'THE iconic "raptor call" in American media — Hollywood dubs the red-tail\'s screaming "KEEEER-ee-er" over EVERY raptor scene (bald eagles, golden eagles, ospreys, even owls). The actual bald eagle call is a wimpy chitter that filmmakers find disappointing.'
+    },
+    harpyEagle: {
+      breeding: 'Nests on a single emergent rainforest canopy tree, often 100+ ft up. One egg every 2-3 years (lowest reproduction of any raptor). Chick fledges at 6 months + remains dependent on parents for 1-1.5 YEARS. Pair-bond is essentially lifelong.',
+      huntStrategyDetail: 'STILL-HUNT from a high canopy perch with extraordinary patience (sometimes for hours). Detection radius is enormous — ~5 km of canopy in good visibility. When prey is spotted (sloth, monkey, coati), the eagle launches a single crashing dive through the canopy at 50+ mph. Broad short wings let it weave between branches without slowing. Kill is by talon-grip + skull-crush (530 psi). Carcass is carried to a feeding perch + consumed over hours.',
+      populationHistory: 'Pre-Columbian: probably ~100,000+ across Neotropical rainforest. Post-deforestation (1500-present): ~50,000 estimated. Rainforest loss accelerating since 1970. Slow reproduction (1 chick/2-3 yrs) means cannot keep up with mortality.',
+      idTips: 'Distinct gray crest + facial disc. Massive talons (12.5 cm — longer than grizzly bear claws). Slate-gray back with white underside + dark breast band. Juveniles: grayer + paler than adults. Found ONLY in intact lowland rainforest.',
+      whenToSee: 'Wild observation extremely rare. Best access: captive-breeding centers in Panama (Center for the Reproduction of the Harpy Eagle), Brazil, Peru. Some ecotours in the Darién Gap, Tambopata, Manú.',
+      photoTips: 'Wild harpy photography is essentially impossible — silent canopy specialist that flushes at human sight. Captive birds at zoos are the realistic option. Mexico City Zoo + San Diego Zoo have ambassador birds.',
+      taxonomyNotes: 'Harpia harpyja — only living member of genus Harpia. Closest relatives are the Philippine eagle + crested eagle (also forest-canopy apex predators).',
+      culturalNotes: 'National bird of Panama (2002). Brazilian Air Force insignia (1947). The harpy is the largest + most powerful eagle in the Americas + symbol of intact Amazon rainforest conservation. Indigenous Yanomami + Wampís cultures consider them sacred.'
+    },
+    greatHorned: {
+      breeding: 'Co-opts other birds\' old nests (red-tails, herons, eagles). 1-3 eggs incubated for 30-37 days. Chicks fledge at 9-10 weeks. The first raptor to begin breeding each year — incubates eggs in JANUARY in much of the US, while most birds are still wintering.',
+      huntStrategyDetail: 'SILENT GLIDE ATTACK from a forest perch. Detection radius is extreme thanks to ear asymmetry (3D acoustic localization to ~1°). Most diverse diet of any North American raptor — small mammals (rabbits, rodents, skunks), birds (other owls!), reptiles (snakes), even house cats + small dogs. Only predator that routinely kills skunks (poor olfaction = unbothered).',
+      populationHistory: 'Stable + widespread. Estimated 5.7 million individuals across North America. Common in suburbs + urban parks. Range hasn\'t changed significantly in centuries.',
+      idTips: 'Large with prominent ear tufts. Yellow eyes (most owls have yellow; barred owls have brown). Mottled brown + gray plumage. Hooting call is iconic ("hoo-h\'HOO-hoo-hoo"). Often heard at dusk + dawn from suburban parks.',
+      whenToSee: 'Year-round, every U.S. state, most of S. Canada + Mexico. Listen at dusk for the 5-syllable hoot. Look at dawn at known territorial perches.',
+      photoTips: 'Patient stakeout at known roost works best. Owls are sensitive to disturbance during day-roost — flush easily. Use a 400mm+ lens + sit still. Best photographed at twilight when they emerge to hunt.',
+      taxonomyNotes: 'Bubo virginianus — same genus as Eurasian eagle owl + great gray owl. ~20 subspecies across the Americas, vary in color saturation (darker in PNW, paler in SW deserts).',
+      culturalNotes: 'Symbol of wisdom in many cultures (Greek Athena), of foreboding in others (Aztec + many European folklore traditions). Featured on the badge of the US Army\'s 101st Airborne Division (because of Civil War mascot "Old Abe" the bald eagle — but greats horned owl shares the "Screaming Eagles" lineage).'
+    },
+    goldenEagle: {
+      breeding: 'Cliff or large-tree nests in mountainous open country. 2 eggs incubated 41-45 days. Chicks fledge at 9-11 weeks. Asynchronous hatching = older chick often kills younger ("Cain + Abel" sibling rivalry — adaptive in years of food scarcity).',
+      huntStrategyDetail: 'HIGH-ALTITUDE STOOP or LOW-CONTOUR ridgeline hunting. Documented kills: adult mountain goats (pushed off cliffs), gray wolves (in Mongolia by Berkutchi hunters), red deer fawns, pronghorn calves. Talon force ~750 psi crushes vertebrae instantly. Only American eagle that routinely takes mammals as primary prey.',
+      populationHistory: '~30,000 in lower 48 US. Locally threatened by lead-shot poisoning + wind turbine collisions (Altamont Pass once killed ~67/year). Population stable to declining in some areas.',
+      idTips: 'Adults: rich brown with golden nape sheen. Juveniles: white patches at wing-base + tail-base (lost as they mature). Distinguishable from juvenile bald eagle by feathered tarsi all the way down to toes (balds have bare yellow tarsi). 7+ ft wingspan.',
+      whenToSee: 'Western mountains year-round — Wyoming Bighorns, Colorado Rockies, Utah Wasatch. Migrating along eastern flyway Oct-Nov but rare east of Mississippi.',
+      photoTips: 'Ridge-top thermal stakeout works. Need very long lens + patience — they\'re wary. Mid-day during thermal soaring is best.',
+      taxonomyNotes: 'Aquila chrysaetos — same genus as European golden eagle (same species). ~6 subspecies across Holarctic range.',
+      culturalNotes: 'Sacred to Plains Indigenous nations (especially Lakota + Cheyenne). Mongolian Berkutchi hunters\' bird for 4000 years. Mexican national symbol (Aztec founding myth → Tenochtitlan). On the Mexican flag.'
+    },
+    northernGoshawk: {
+      breeding: 'Mature-forest interior. Stick nest in conifer. 2-4 eggs incubated 28-33 days. Chicks fledge 6-7 weeks. Highly defensive — adults will dive-bomb humans approaching nests (one of the few raptors to actually injure humans).',
+      huntStrategyDetail: 'FOREST-INTERIOR CHASE. Bursts from cover at 35-40 mph through dense canopy. Threads between branches using broad short wings + long rudder tail. Prey is grouse, hares, squirrels, smaller forest birds. Higher prey diversity than its sharp-shinned + Cooper\'s cousins.',
+      populationHistory: '~150,000 globally. Declining in Europe + parts of N. America with mature-forest loss. Stable in boreal North America.',
+      idTips: 'Adults: gray-blue above with FINELY barred white-gray below (giving "vermiculated" pattern). White SUPER-eyebrow over red eye is diagnostic. Juveniles: brown with streaked underside, dark eye stripe. Long banded tail. Larger + bulkier than Cooper\'s.',
+      whenToSee: 'Mature boreal forest year-round. Pacific Northwest old-growth + N. Maine northwoods are best US habitats.',
+      photoTips: 'Extremely difficult — forest-interior + secretive. Best at known nest sites (be careful — birds dive-bomb). Long lens + camo blind required.',
+      taxonomyNotes: 'Accipiter gentilis — Eurasian + American populations sometimes considered separate species (A. atricapillus for American). 9+ subspecies.',
+      culturalNotes: 'The original "goshawk" of falconry — "goose-hawk," for its size + ability to take large prey. Featured prominently in T.H. White\'s 1951 book "The Goshawk" + Helen Macdonald\'s 2014 "H is for Hawk."'
+    },
+    osprey: {
+      breeding: 'Open-top stick nest on snags, utility poles, channel markers, dedicated nest platforms. 3 eggs incubated 36-42 days. Chicks fledge 7-8 weeks. Both parents fish; male delivers food to incubating female.',
+      huntStrategyDetail: 'PLUNGE-DIVE feet-first. Cruises 30-100 ft above water scanning for surface fish. When prey is spotted: brief hover, then folds wings into a V + plunges feet-first into water (sometimes fully submerging). Catches fish with both feet — barbed scales (spicules) lock onto wet scales. Nostril flap closes to keep water out.',
+      populationHistory: 'Catastrophic DDT-era decline 1950-72 (~90% loss on Atlantic Coast). Full recovery by 1990s helped enormously by nest-platform programs. Population still expanding into new territories. ~30,000 pairs in US.',
+      idTips: 'White underside with chocolate-brown wing barring. Distinct dark MASK through eye. Iconic M-shaped silhouette in flight (wings kinked at carpal joint). Yellow eye. Crested head. Plunges into water — no other raptor does this fully.',
+      whenToSee: 'Anywhere with fish + water. Coastlines, large lakes, rivers, reservoirs. Mar-Sep most active in N. America; some winter S. into S. America. Famous nest platforms: Chesapeake Bay, San Francisco Bay, Florida coast.',
+      photoTips: 'Catching action shots: shoot during fishing dive — 1/2000 shutter + continuous focus. Nest platforms allow predictable hovering + dive at familiar times. Bird is tolerant of humans at platforms.',
+      taxonomyNotes: 'Pandion haliaetus — ONLY living member of family Pandionidae. Split from other raptors ~30 mya. Closer relative to kites + eagles than to falcons.',
+      culturalNotes: 'Considered sacred by some Indigenous cultures of Pacific NW. Symbol of the city of Seattle. Featured in Aboriginal Australian Dreamtime stories. The medieval falconry term "ospreyish" meant "fish-hunting."'
+    },
+    kestrel: {
+      breeding: 'Cavity nester — uses old woodpecker holes, hollow trees, nest boxes. 4-5 eggs incubated 27-30 days. Chicks fledge 28-31 days. Often double-brooded — second clutch in late summer.',
+      huntStrategyDetail: 'ACTIVE HOVER-HUNT. Windmills wings to stay stationary 30-60 ft above an open field. Drops on prey when spotted. Detection enhanced by UV vision (sees vole urine trails as glowing "highways"). Diet: small rodents, large insects, snakes, occasional small bird.',
+      populationHistory: 'DECLINING ~50% since 1970. Cause unclear — suspected: (1) pesticide-driven insect-prey crash, (2) loss of nest cavities + open hunting habitat, (3) mesopredator release as Cooper\'s hawks recovered from DDT (Cooper\'s eats kestrels). Several US states list as Species of Special Concern.',
+      idTips: 'Smallest North American falcon (~115 g). Males: blue-gray wings + rusty back. Females: rusty all over. Two black "moustache" marks on cheek. Tail rusty + barred. Distinctive HOVERING behavior over open fields. Often perched on telephone wires.',
+      whenToSee: 'Open country year-round — farmland, prairie, golf courses, highway shoulders. Active dawn + dusk + during clear days. Telephone wires + fence posts are the predictable perches.',
+      photoTips: 'Roadside shooting from car window works well — kestrels accept moving vehicles + don\'t flush. Catch hovering at 1/1600+ shutter speed. Good entry-level raptor photography subject.',
+      taxonomyNotes: 'Falco sparverius — 17 subspecies across the Americas. Distinct from European kestrel (F. tinnunculus) genetically.',
+      culturalNotes: 'In medieval falconry: "the lady\'s falcon" — small enough for royal women to hunt with. The original UV-vision raptor discovery (Viitala et al 1995 Nature) used American kestrels in the lab. Population decline is one of the most-studied raptor crises in active research.'
+    },
+    coopersHawk: {
+      breeding: 'Forest-edge + suburban tree nester. 3-5 eggs incubated 30-35 days. Chicks fledge 32-35 days. Increasingly using urban trees + parks since 1970.',
+      huntStrategyDetail: 'AMBUSH from cover at bird feeders + edge habitat. Bursts from a perch at speed; threads between branches in pursuit. Kill mechanism: repeated grip-strikes on the prey\'s body (not single neck-snap like falcons). Prey is mostly birds — pigeons, mourning doves, songbirds.',
+      populationHistory: 'Exploded 1970-2020 with urban tree maturity + bird feeders. Recovered from DDT-era decline. Now the most common urban raptor in much of N. America.',
+      idTips: 'Medium-size accipiter — between sharp-shin + goshawk. Long banded TAIL with rounded tip (sharp-shin has square tail tip). Distinctive flap-flap-glide rhythm in flight. Adult: blue-gray back + barred reddish chest. Juvenile: brown back + streaked chest.',
+      whenToSee: 'Urban backyards near bird feeders. Sub-suburban parks. Forest edges. Year-round across most of US.',
+      photoTips: 'Stake out a bird feeder where Cooper\'s has been seen. Patient + still. They\'re bold enough to hunt with you 20 ft away if you don\'t move.',
+      taxonomyNotes: 'Accipiter cooperii — named after William Cooper, founding member of NY Lyceum of Natural History (1837). Closely related to sharp-shinned hawk + northern goshawk.',
+      culturalNotes: 'The "backyard predator" of modern America. Has become subject of public-engagement controversy when residents object to their songbird-feeder predation. Many wildlife rehabbers field hundreds of calls/year about Cooper\'s hawks at bird feeders.'
+    },
+    snowyOwl: {
+      breeding: 'Arctic tundra. Ground nest (no trees in habitat). 3-11 eggs (varies hugely with lemming abundance — boom years = big clutches). Incubated 32-33 days. Chicks fledge 25-30 days.',
+      huntStrategyDetail: 'STILL-HUNT from tundra mound or low post. Hunts in DAYLIGHT (unusual for owl — Arctic summer has 24-hr sun). Pure pounce on small mammal prey. Will also catch ducks + ptarmigan in flight. Catches lemmings primarily during breeding season; ducks + small mammals in winter.',
+      populationHistory: 'Recently uplisted to Vulnerable (IUCN) due to climate change. Estimated 28,000 birds, declining. Arctic warming disrupting lemming-cycle synchrony. Range constricting northward.',
+      idTips: 'Adult males: nearly pure WHITE (rare). Females + juveniles: white with dark brown barring. Yellow eyes. Heaviest North American owl (~1.8 kg). When perched on snow, looks like a tall white statue.',
+      whenToSee: 'Arctic summer (May-Sep, very hard for tourists). Winter IRRUPTIONS to S. Canada + N. US (Nov-Mar in big years). Famous 2013-14 irruption deposited birds on every East Coast beach.',
+      photoTips: 'Find via eBird alerts during irruption winters. Best access: open coastal beaches + airports (snowy owls love open habitat resembling tundra). Long lens + low approach.',
+      taxonomyNotes: 'Bubo scandiacus — same genus as great horned owl + Eurasian eagle owl. Circumpolar Arctic species. NO subspecies (single panmictic population).',
+      culturalNotes: 'Hedwig in Harry Potter is a snowy owl (causing some confusion: Hedwig is portrayed as female-only by Rowling but films use males because they\'re whiter + more "iconic" white). Sacred to Inuit + Sámi peoples. National bird of Quebec.'
+    },
+    gyrfalcon: {
+      breeding: 'Arctic cliff-nester. 2-4 eggs incubated 35 days. Chicks fledge 7-8 weeks. Often shared cliff sites with peregrines + ravens.',
+      huntStrategyDetail: 'LEVEL-PURSUIT specialist (not vertical stoop). Cruises low + level at 50-80 mph in tundra open country. Closes on ptarmigan + duck prey in long sustained chases. Endurance-based hunting — exhausts prey rather than ambushing.',
+      populationHistory: '~21,000 circumpolar. Population stable. Some local declines from wind farm strikes + climate-driven prey-base shifts.',
+      idTips: '3 color morphs: white (rare, Greenland), gray (most common), dark (also rare). Largest falcon — almost the size of a buteo hawk. Solid color all over (no facial mask like peregrine). Stocky, broad-chested.',
+      whenToSee: 'Arctic tundra year-round. Winter dispersal to S. Canada + N. US (rare). Iceland is the most-accessible breeding location for ecotourists.',
+      photoTips: 'Iceland in summer is the realistic option. Wild N. American gyrfalcons are essentially unphotographable for amateurs.',
+      taxonomyNotes: 'Falco rusticolus — same genus as peregrine but distinct species. Hybridizes occasionally with peregrines (gyr-peregrine hybrids).',
+      culturalNotes: 'The royal bird of medieval European falconry — exclusive to monarchs by law. Icelandic gyrfalcons were the most valuable trade good in early-medieval Europe (each was worth roughly 12 falcons of lesser species). Hedwig in Harry Potter is sometimes depicted in adaptations as a gyrfalcon rather than snowy owl.'
+    },
+    missKite: {
+      breeding: 'Colonial nester — often loose groups in cottonwoods. 1-2 eggs incubated 30 days. Chicks fledge ~32 days. Sociable around nest — multiple pairs share alarm calls.',
+      huntStrategyDetail: 'AERIAL INSECT-CATCHING. Catches dragonflies + cicadas in flight with talons, consumes while still airborne. Sometimes drinks while flying low over water. The "swift of raptors" — graceful, sustained aerial flight.',
+      populationHistory: 'Expanding northward into Great Plains since 1970. Population increasing. Benefits from cottonwood + urban tree nest sites + lawn-irrigation-boosted cicada populations.',
+      idTips: 'Pale gray head + white-gray body. Black tail. Long pointed wings (high AR). Graceful "swallow-like" flight pattern. Smaller than buteos but bigger than kestrels.',
+      whenToSee: 'Breeding range south-central + SE US Apr-Aug. Winter in Argentina. Mass migration through Texas + Mexico Sep + Mar-Apr.',
+      photoTips: 'Cottonwood riparian areas at dawn. Texas + Oklahoma have predictable nesting colonies often near university campuses.',
+      taxonomyNotes: 'Ictinia mississippiensis — one of ~25 kite species worldwide. Smaller cousin Mississippi-style kites in S. America.',
+      culturalNotes: 'A relatively recent arrival to many areas — first nesting records in some northern states are post-1970. Range expansion is one of the few raptor success stories of the climate-change era.'
+    },
+    sharpShin: {
+      breeding: 'Mature-forest interior. 4-5 eggs in stick nest. Incubated 30-32 days. Chicks fledge 24 days. Often close to clearings + edges.',
+      huntStrategyDetail: 'LIGHTNING-FAST ambush. Bursts from cover at songbird feeders + edge habitat. Prey is almost entirely small birds — chickadees, warblers, juncos. Females sometimes take larger prey (robins, jays). Males are tiny + agile, females are larger + bulkier.',
+      populationHistory: 'Recovered from DDT-era decline. Stable to increasing in suburban environments where bird feeders concentrate prey.',
+      idTips: 'Smaller than Cooper\'s. SQUARE tail tip (Cooper\'s has rounded). Smaller blockier head. Often confused with Cooper\'s but smaller + faster + more frantic flight.',
+      whenToSee: 'Year-round in much of N. America. Most visible at bird feeders + migration sites (Cape May NJ peak October).',
+      photoTips: 'Bird-feeder stakeout works. They\'ll attack feeders in front of you if you stand still.',
+      taxonomyNotes: 'Accipiter striatus — closely related to Cooper\'s hawk + northern goshawk.',
+      culturalNotes: 'The most common small raptor at North American bird feeders. Many birders\' "gateway accipiter" — the species that introduces them to raptor ID.'
+    },
+    merlin: {
+      breeding: 'Forest edges or old crow nests in conifers. 4-5 eggs incubated 28-30 days. Chicks fledge 25-30 days.',
+      huntStrategyDetail: 'LOW-LEVEL PURSUIT chase. Accelerates close to ground at 35+ mph + runs down small birds in open air. Will tail-chase prey for hundreds of meters until exhaustion.',
+      populationHistory: 'Stable to increasing. Three subspecies (Taiga, Prairie, Black) recognized.',
+      idTips: 'Compact falcon — bigger than kestrel, smaller than peregrine. Lacks the "moustache" mark of peregrine. Brown-streaked breast + barred underwing. Distinctive low-level fast flight.',
+      whenToSee: 'Open country, coastlines, urban parks. Coastal migration hotspots Sep-Oct.',
+      photoTips: 'Cape May NJ in October is excellent. Coastal flat habitat lets them be seen far away.',
+      taxonomyNotes: 'Falco columbarius — same genus as peregrine + kestrel. Hybridizes occasionally with peregrines in captivity.',
+      culturalNotes: 'Medieval "lady\'s falcon" — small enough for queens to hunt with. Sacred bird in some Welsh + Irish folklore.'
+    },
+    roughLeg: {
+      breeding: 'Arctic tundra. Cliff or ground nest. 3-5 eggs incubated 31 days. Chicks fledge 41 days. Clutch size scales with lemming abundance (like snowy owl).',
+      huntStrategyDetail: 'HOVERS like a kestrel (only large buteo to do this). Drops on small mammal prey. Winter diet: mice + voles + small birds.',
+      populationHistory: 'Stable; climate-vulnerable. Population fluctuates with Arctic lemming cycles.',
+      idTips: 'Light morph: pale belly + dark belly band. Dark morph: nearly black all over. Long wings for a buteo. Tail: pale base with dark terminal band. Feathered tarsi all the way to toes.',
+      whenToSee: 'Winter in central + N. US — open country, prairies, fields. Most visible Nov-Mar. Arctic breeding range inaccessible to most.',
+      photoTips: 'Snowy fields with fence posts. Hovers are 30 seconds + predictable. Approach slowly in vehicle.',
+      taxonomyNotes: 'Buteo lagopus — same genus as red-tailed hawk. Holarctic distribution.',
+      culturalNotes: 'The "winter buteo" of N. America. Birders look forward to first rough-leg sighting each November as a marker of winter arrival.'
+    },
+    swainsons: {
+      breeding: 'Open grassland. Stick nest in isolated tree. 2-3 eggs incubated 34 days. Chicks fledge 38-46 days.',
+      huntStrategyDetail: 'Perch-pounce + soaring + insect-catching. ON BREEDING GROUNDS (N America): vertebrate prey. ON WINTER GROUNDS (Argentine pampas): GRASSHOPPERS — switches to ~99% insect diet.',
+      populationHistory: '1990s organophosphate crisis killed ~35,000 on Argentinean pampas (insecticide spraying for grasshoppers). International agreement banned the chemical. Now recovering.',
+      idTips: 'Brown back + chest + white belly (light morph). Dark band across chest. Long pointed wings for a buteo. Migrating Swainson\'s form massive kettles.',
+      whenToSee: 'Spring + summer in W. North America. Massive migration through Texas + Mexico Sep + Mar. Veracruz River of Raptors counts include Swainson\'s peaks of 1+ million birds/day.',
+      photoTips: 'Spring migration peaks Apr in S. Texas. Stake out a known kettle site at midday.',
+      taxonomyNotes: 'Buteo swainsoni — same genus as red-tail. Named after British ornithologist William Swainson (1820s).',
+      culturalNotes: 'Longest-distance migrant of any N. American raptor (14,000+ mile round-trip). Sometimes called "the grasshopper hawk" in Argentina.'
+    },
+    barred: {
+      breeding: 'Forest cavity (large hollow tree). 2-4 eggs incubated 28-33 days. Chicks fledge 4-5 weeks. The "first to nest" alongside great horned owls — often early March in many areas.',
+      huntStrategyDetail: 'Still-hunt from perch. More active in daylight than other owls — often heard hooting mid-afternoon. Diet: rodents, small birds, frogs, crayfish, rabbits.',
+      populationHistory: 'Range EXPANDING westward into Pacific Northwest (formerly Eastern-only). Now competing with endangered northern spotted owl + driving local declines. Major conservation dilemma — culling barred owls to save spotted owls is ethically contentious.',
+      idTips: 'Brown horizontal bars across white chest. Dark brown eyes (most owls have yellow). Round head, no ear tufts. Iconic "Who cooks for you? Who cooks for you-ALL?" call.',
+      whenToSee: 'Eastern + Pacific NW forests year-round. Listen at dawn + dusk for the call. Also active mid-day in deep forest.',
+      photoTips: 'Stake out known calling perches at dawn. Forest interior + flash photography ethics important.',
+      taxonomyNotes: 'Strix varia — same genus as great gray owl + Eurasian tawny owl.',
+      culturalNotes: 'The "neighborhood owl" of much of suburban Eastern + Southern US. Often heard calling mid-day from suburbs. Currently center of a heated species-recovery debate over spotted-owl conservation.'
+    },
+    turkeyVulture: {
+      breeding: 'Cliff or ground nest in hollow logs, caves, or abandoned buildings. 2 eggs incubated 38-41 days. Chicks fledge 10-11 weeks. Long parental care period — chicks dependent for several months.',
+      huntStrategyDetail: 'NOT a hunter. Soars on thermals at 50-200 ft scanning + smelling for carrion. Will travel many miles a day in a relaxed thermal pattern. Sense of smell is the primary detection method (most birds have weak olfaction; turkey vultures are exception).',
+      populationHistory: 'Range expanding rapidly NORTHWARD. Now winters in places that had no turkey vultures 50 years ago. Climate change + roadkill abundance both contribute.',
+      idTips: 'Black body. Red bare head (adults — juveniles have black head). 6-foot wingspan. Distinctive dihedral V-shape soaring posture. Wobbles in flight.',
+      whenToSee: 'Year-round across most of US. Increasingly northward in winter. Easy to spot — large dark birds soaring without flapping over highways + dead-animal-rich areas.',
+      photoTips: 'Easy subject — common + close to roads. Capture them on thermals + landing at carrion.',
+      taxonomyNotes: 'Cathartes aura — in family Cathartidae (New World vultures), order Cathartiformes. NOT a true raptor taxonomically — closer to storks. Convergent evolution.',
+      culturalNotes: 'Sacred bird in some Indigenous cultures of S. America. Natural gas pipeline crews use turkey vultures to find leaks — the gas mercaptan smells like decay to the vultures, so they circle leaks.'
+    },
+    condor: {
+      breeding: 'Cliff or large-tree nest in remote mountainous habitat. 1 egg every 2 years (slowest reproduction of any North American raptor). Incubated 56-58 days. Chicks fledge 6 months but stay dependent on parents for 1+ year.',
+      huntStrategyDetail: 'Pure scavenger — never kills live prey. Soars on mountain thermals at 5-15 mph scanning for carrion. Eats deer, elk, large mammals at carcass sites.',
+      populationHistory: 'See Recovery Case Studies. 22 birds in 1987 (all captive) → 530 today via 40-year captive-breed-release program. Wild population NOT yet self-sustaining; permanent active management required due to lead-shot poisoning.',
+      idTips: 'Largest flying bird in N. America (9.5 ft wingspan). Black body with white triangular wing patches visible from below. Bare red head + neck. Often seen circling on mountain thermals.',
+      whenToSee: 'Restricted range — California (Big Sur, Hopper Mountain), Arizona/Utah (Vermilion Cliffs, Grand Canyon), Baja California. Best viewing: Pinnacles National Park CA + Vermilion Cliffs AZ.',
+      photoTips: 'Pinnacles National Park near campground. Vermilion Cliffs release-site overlook. Both have predictable presence + close approaches.',
+      taxonomyNotes: 'Gymnogyps californianus — only living species in its genus. New World vulture (Cathartidae). Lives 60+ years in captivity.',
+      culturalNotes: 'Most expensive endangered-species recovery in U.S. history (~$50M to date). Sacred bird to Yurok, Wiyot, + other Indigenous nations of California — actively involved in recovery as cultural partners.'
+    }
+  };
+
+  // ───────────────────────────────────────────────────────────
   // PREY DATA — per species defaults + sim spawn parameters
   // ───────────────────────────────────────────────────────────
   // Fields:
@@ -2181,6 +2390,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('div', { className: 'p-3 bg-orange-900/30 rounded border border-orange-700/40' },
                 h('div', { className: 'text-xs font-bold text-orange-300 mb-1' }, '⚡ Weird fact'),
                 h('div', { className: 'text-sm text-orange-100/90' }, sp.weird)
+              ),
+              // ── NEW v0.33: Species Deep Dive expandable section ──
+              SPECIES_DEEPDIVE[sp.id] && h('details', { className: 'mt-2 p-3 bg-slate-900/40 rounded border border-slate-700/40' },
+                h('summary', { className: 'text-xs font-bold text-amber-300 cursor-pointer' }, '📚 Deep dive: breeding · hunt strategy · history · ID · photography · taxonomy'),
+                h('div', { className: 'mt-3 space-y-3 text-xs' },
+                  h('div', null,
+                    h('div', { className: 'text-amber-300 font-bold mb-1' }, '🐣 Breeding'),
+                    h('div', { className: 'text-slate-200 leading-relaxed' }, SPECIES_DEEPDIVE[sp.id].breeding)
+                  ),
+                  h('div', null,
+                    h('div', { className: 'text-red-300 font-bold mb-1' }, '🎯 Hunt strategy in depth'),
+                    h('div', { className: 'text-slate-200 leading-relaxed' }, SPECIES_DEEPDIVE[sp.id].huntStrategyDetail)
+                  ),
+                  h('div', null,
+                    h('div', { className: 'text-emerald-300 font-bold mb-1' }, '📊 Population history'),
+                    h('div', { className: 'text-slate-200 leading-relaxed' }, SPECIES_DEEPDIVE[sp.id].populationHistory)
+                  ),
+                  h('div', null,
+                    h('div', { className: 'text-cyan-300 font-bold mb-1' }, '🔍 Field-ID tips'),
+                    h('div', { className: 'text-slate-200 leading-relaxed' }, SPECIES_DEEPDIVE[sp.id].idTips)
+                  ),
+                  h('div', null,
+                    h('div', { className: 'text-yellow-300 font-bold mb-1' }, '🗓 When + where to see'),
+                    h('div', { className: 'text-slate-200 leading-relaxed' }, SPECIES_DEEPDIVE[sp.id].whenToSee)
+                  ),
+                  h('div', null,
+                    h('div', { className: 'text-pink-300 font-bold mb-1' }, '📷 Photography tips'),
+                    h('div', { className: 'text-slate-200 leading-relaxed' }, SPECIES_DEEPDIVE[sp.id].photoTips)
+                  ),
+                  h('div', null,
+                    h('div', { className: 'text-purple-300 font-bold mb-1' }, '🧬 Taxonomy notes'),
+                    h('div', { className: 'text-slate-200 leading-relaxed' }, SPECIES_DEEPDIVE[sp.id].taxonomyNotes)
+                  ),
+                  h('div', null,
+                    h('div', { className: 'text-indigo-300 font-bold mb-1' }, '🌍 Cultural notes'),
+                    h('div', { className: 'text-slate-200 leading-relaxed' }, SPECIES_DEEPDIVE[sp.id].culturalNotes)
+                  )
+                )
               )
             ),
             h('div', { className: 'flex gap-2 pt-2' },
@@ -6082,6 +6329,79 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               })
             )
           ),
+
+          // ── NEW v0.33: Global Hawkwatch Atlas (30 sites) ──
+          (function() {
+            var globalAtlas = [
+              // North America
+              { region: 'Northeast US', name: 'Hawk Mountain Sanctuary', country: '🇺🇸 USA', state: 'PA', annual: '~17,000', founded: 1934, latLon: '40.6°N 75.9°W', species: '12 commonly counted; iconic for broadwings + golden eagles in Oct', tips: 'North Lookout open Sep-Nov daily. Free admission. NW wind days are best.' },
+              { region: 'Northeast US', name: 'Cape May Hawkwatch', country: '🇺🇸 USA', state: 'NJ', annual: '~40,000', founded: 1976, latLon: '38.9°N 74.9°W', species: 'Sharp-shins + American kestrels peak in October', tips: 'NW wind days produce massive concentrations. State Park lighthouse area is the count site.' },
+              { region: 'Northeast US', name: 'Quaker Ridge Hawkwatch', country: '🇺🇸 USA', state: 'CT', annual: '~15,000', founded: 1972, latLon: '41.0°N 73.6°W', species: 'Broadwings, sharps, kestrels', tips: 'Audubon-run; great accessible site near NYC. Sep-Nov.' },
+              { region: 'Northeast US', name: 'Lighthouse Point Park', country: '🇺🇸 USA', state: 'CT', annual: '~8,000', founded: 1970, latLon: '41.2°N 72.9°W', species: 'Sharp-shins, kestrels, merlins', tips: 'Free + accessible coastal site in New Haven.' },
+              { region: 'Mid-Atlantic US', name: 'Conowingo Dam', country: '🇺🇸 USA', state: 'MD', annual: '~5,000+ (eagles)', founded: 1990, latLon: '39.7°N 76.2°W', species: 'Bald eagles peak Nov-Dec at dam tailwater', tips: 'Photographers\' paradise. Eagles fish on stunned shad from the dam discharge.' },
+              { region: 'Southeast US', name: 'Curry Hammock State Park', country: '🇺🇸 USA', state: 'FL', annual: '~10,000', founded: 1999, latLon: '24.7°N 80.9°W', species: 'Peregrine + merlin peaks Oct; broadwings + sharpies', tips: 'FL Keys raptor count. Hot in summer but coastal breeze.' },
+              { region: 'Southeast US', name: 'Florida Keys Hawkwatch', country: '🇺🇸 USA', state: 'FL', annual: '~15,000+', founded: 1996, latLon: '24.6°N 81.4°W', species: 'Peregrine record days >500 birds in Oct', tips: 'October peregrine days are legendary among falcon enthusiasts.' },
+              { region: 'Midwest US', name: 'Hawk Ridge Bird Observatory', country: '🇺🇸 USA', state: 'MN', annual: '~60,000-90,000', founded: 1972, latLon: '46.8°N 92.0°W', species: 'Major site for sharps, broadwings, redtails', tips: 'Duluth area, Lake Superior shore concentrates birds. Aug-Nov peak season.' },
+              { region: 'Midwest US', name: 'Whitefish Point Bird Observatory', country: '🇺🇸 USA', state: 'MI', annual: '~14,000', founded: 1979, latLon: '46.8°N 84.9°W', species: 'Spring + fall counts. Lake Superior shore.', tips: 'Upper Peninsula migration corridor. Apr-May spring, Sep-Nov fall.' },
+              { region: 'Midwest US', name: 'Illinois Beach State Park', country: '🇺🇸 USA', state: 'IL', annual: '~5,000', founded: 1995, latLon: '42.5°N 87.8°W', species: 'Lake Michigan shore corridor', tips: 'Western shore concentrates birds.' },
+              { region: 'Southwest US', name: 'Smith Point Hawk Watch', country: '🇺🇸 USA', state: 'TX', annual: '~50,000', founded: 1996, latLon: '29.5°N 94.8°W', species: 'Gulf Coast funnel — Mississippi flyway + Veracruz-bound', tips: 'Major migration funnel. Mid-Sep + early Oct peak.' },
+              { region: 'Southwest US', name: 'Big Bend National Park', country: '🇺🇸 USA', state: 'TX', annual: '—', founded: 1944, latLon: '29.3°N 103.2°W', species: 'Year-round diversity — goldens, peregrines, harriers', tips: 'Not a count site but the most diverse raptor habitat in TX. Spring + fall best.' },
+              { region: 'Pacific NW', name: 'Bonney Butte Hawkwatch', country: '🇺🇸 USA', state: 'OR', annual: '~5,000', founded: 1994, latLon: '45.3°N 121.6°W', species: 'Pacific NW migration', tips: 'High elevation site. Cool weather + good views Sep-Oct.' },
+              { region: 'Pacific NW', name: 'Goshute Mountains Hawkwatch', country: '🇺🇸 USA', state: 'NV', annual: '~10,000', founded: 1980, latLon: '40.5°N 113.9°W', species: 'Major peregrine + goshawk count', tips: 'High-altitude desert site. Bring water + sunscreen.' },
+              { region: 'Pacific Coast', name: 'Golden Gate Raptor Observatory', country: '🇺🇸 USA', state: 'CA', annual: '~30,000', founded: 1985, latLon: '37.8°N 122.5°W', species: 'All Pacific flyway raptors', tips: 'Marin Headlands. Famous for accessibility + interpretive program. Aug-Dec.' },
+              { region: 'Pacific Coast', name: 'Cape Mendocino', country: '🇺🇸 USA', state: 'CA', annual: '—', founded: 1990, latLon: '40.4°N 124.4°W', species: 'Coastal migration concentration', tips: 'Coastal headland — Pacific flyway funnel.' },
+              { region: 'Pacific Coast', name: 'Big Sur Ornithology Lab', country: '🇺🇸 USA', state: 'CA', annual: 'Variable', founded: 1992, latLon: '36.2°N 121.7°W', species: 'California condor recovery site + raptor passage', tips: 'Hopper Mountain area. Active condor releases.' },
+              // International
+              { region: 'Central America', name: 'Veracruz River of Raptors', country: '🇲🇽 Mexico', state: 'Veracruz', annual: '~5,000,000', founded: 1991, latLon: '19.2°N 96.1°W', species: 'Broadwings, Swainson\'s, Mississippi kites — world\'s largest count', tips: 'Pronatura Veracruz. Mid-Sept peak. Million-bird days possible.' },
+              { region: 'Central America', name: 'Talamanca Mountains', country: '🇨🇷 Costa Rica', state: 'Cartago', annual: '~3,000,000', founded: 2002, latLon: '9.6°N 83.8°W', species: 'Mass kettles of Swainson\'s + broadwings funnel through here', tips: 'Migration "river" through Central America funnel.' },
+              { region: 'Middle East', name: 'International Birding Centre Eilat', country: '🇮🇱 Israel', state: 'Negev', annual: '~1,000,000 (spring)', founded: 1980, latLon: '29.6°N 34.9°E', species: 'Honey buzzards, eagles, harriers — Africa-Eurasia bridge', tips: 'Best in spring (Mar-May). Sinai-Negev land bridge funnel.' },
+              { region: 'Eurasia', name: 'Batumi Raptor Count', country: '🇬🇪 Georgia', state: 'Adjara', annual: '~1,000,000', founded: 2008, latLon: '41.7°N 41.6°E', species: 'Honey buzzards + steppe buzzards primarily', tips: 'Caucasus funnel. Active anti-illegal-shooting conservation work.' },
+              { region: 'Mediterranean', name: 'Strait of Gibraltar', country: '🇪🇸 Spain', state: 'Cádiz', annual: '~250,000', founded: 1971, latLon: '36.0°N 5.6°W', species: 'Honey buzzards, booted eagles, black kites', tips: 'Cazalla observation point near Tarifa. Mar-May + Aug-Oct.' },
+              { region: 'Mediterranean', name: 'Bosphorus Strait', country: '🇹🇷 Turkey', state: 'Istanbul', annual: '~300,000', founded: 1972, latLon: '41.1°N 29.1°E', species: 'Major Europe-to-Africa crossing', tips: 'Black Sea-to-Aegean concentration zone.' },
+              { region: 'Africa', name: 'Bab-el-Mandeb Strait', country: '🇩🇯 Djibouti', state: '—', annual: '~500,000', founded: 1980, latLon: '12.6°N 43.3°E', species: 'African migration', tips: 'Africa-Arabia bridge. Sep-Nov + Mar-May.' },
+              // Asia + Australasia
+              { region: 'South Asia', name: 'Khare Pass', country: '🇳🇵 Nepal', state: 'Himalaya', annual: '~120,000', founded: 1985, latLon: '27.6°N 84.7°E', species: 'Steppe eagles + buzzards over Himalayas', tips: 'Mid-altitude site. Oct-Nov peak.' },
+              { region: 'East Asia', name: 'Cape Sata', country: '🇯🇵 Japan', state: 'Kagoshima', annual: '~20,000', founded: 1995, latLon: '30.9°N 130.7°E', species: 'Eastern Asia migration', tips: 'Japan southernmost point. Spring + fall.' },
+              { region: 'Australasia', name: 'Hawk Mountain Australia', country: '🇦🇺 AU', state: 'NSW', annual: 'Variable', founded: 2010, latLon: '-31.6°S 152.9°E', species: 'Australian endemic raptors', tips: 'Few northern hemisphere counters here; bird community is dramatically different.' }
+            ];
+            var atlasView = rh.atlasView || 'all';
+            function setAtlasView(v) { setRH({ atlasView: v }); }
+            var regions = ['all', 'Northeast US', 'Southeast US', 'Mid-Atlantic US', 'Midwest US', 'Southwest US', 'Pacific NW', 'Pacific Coast', 'Central America', 'Middle East', 'Eurasia', 'Mediterranean', 'Africa', 'South Asia', 'East Asia', 'Australasia'];
+            var filteredAtlas = atlasView === 'all' ? globalAtlas : globalAtlas.filter(function(s) { return s.region === atlasView; });
+            return h('div', { className: 'bg-slate-900/40 border border-cyan-700/40 rounded-xl p-4 space-y-3' },
+              h('div', { className: 'flex items-baseline justify-between gap-2 mb-2' },
+                h('div', { className: 'text-sm font-bold text-cyan-300' }, '🗺 Global Hawkwatch Atlas — 28 sites worldwide'),
+                h('div', { className: 'text-[10px] text-slate-400 italic' }, atlasView === 'all' ? 'all regions' : atlasView)
+              ),
+              // Region filter
+              h('div', { className: 'flex gap-1 flex-wrap' },
+                regions.map(function(r) {
+                  var active = atlasView === r;
+                  return h('button', {
+                    key: r,
+                    onClick: function() { setAtlasView(r); },
+                    className: 'px-2 py-0.5 rounded text-[10px] font-bold transition-all ' + (active
+                      ? 'bg-cyan-600 text-white'
+                      : 'bg-slate-800 text-cyan-200 hover:bg-slate-700'),
+                    'aria-label': r + ' filter'
+                  }, r === 'all' ? '🌎 All' : r);
+                })
+              ),
+              h('div', { className: 'space-y-2 max-h-96 overflow-y-auto' },
+                filteredAtlas.map(function(site, i) {
+                  return h('div', { key: i, className: 'bg-slate-800/40 rounded-lg p-2.5 border border-slate-700/40' },
+                    h('div', { className: 'flex items-baseline justify-between gap-2 mb-1' },
+                      h('div', { className: 'text-xs font-bold text-cyan-300' }, site.country + ' ' + site.name),
+                      h('div', { className: 'text-[10px] text-amber-300 font-mono' }, site.annual + ' birds/yr')
+                    ),
+                    h('div', { className: 'text-[10px] text-slate-400 mb-1 font-mono' }, 'Est. ' + site.founded + ' · ' + site.latLon + ' · ' + site.region + (site.state ? ' · ' + site.state : '')),
+                    h('div', { className: 'text-xs text-slate-200 mb-1' }, h('span', { className: 'text-slate-500' }, 'Species: '), site.species),
+                    h('div', { className: 'text-xs text-amber-200 italic' }, h('span', { className: 'text-slate-500' }, 'Tips: '), site.tips)
+                  );
+                })
+              )
+            );
+          })(),
 
           // Kettle physics
           h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded-xl p-5' },
