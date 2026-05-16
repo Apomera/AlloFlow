@@ -56,7 +56,34 @@
         renderTool: function(id, ctx) {
           var tool = this._registry[id];
           if (!tool || !tool.render) return null;
-          try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; }
+          var rendered;
+          try { rendered = tool.render(ctx); }
+          catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; }
+          if (rendered == null) return null;
+          // ── WCAG dark-shell auto-wrap ──
+          // Every STEM tool's text palette was designed for a dark navy
+          // substrate (#86efac, #94a3b8, #cbd5e1, #e2e8f0 etc.). When the
+          // tool renders on a white host page, those colors fail WCAG AA
+          // (e.g., #86efac on white = 1.6:1, need 4.5:1).
+          //
+          // Wrap the tool's output in a self-contained dark shell at the
+          // host level so every tool inherits the proper contrast substrate
+          // automatically — no per-tool wrap needed.
+          //
+          // Opt out by setting `lightBackground: true` in the registerTool
+          // config (intended for tools that genuinely need a white surface,
+          // e.g., printable artifact tools).
+          if (tool.lightBackground === true) return rendered;
+          if (!ctx || !ctx.React) return rendered;
+          return ctx.React.createElement('div', {
+            style: {
+              background: '#0f172a',
+              color: '#e2e8f0',
+              borderRadius: 12,
+              minHeight: 'calc(100vh - 32px)'
+            },
+            'data-stem-tool-shell': id
+          }, rendered);
         },
         // Shared HiDPI canvas setup. Resizes the internal pixel buffer
         // to match the device pixel ratio while keeping CSS dims at the
@@ -2987,6 +3014,16 @@
                 color: 'amber', ready: true
               },
               {
+                id: 'fisherLab', icon: '🎣', label: 'FisherLab: Boating & Fishing Sim',
+                desc: 'Pilot a Maine skiff from Portland Harbor out to the fishing grounds. Learn IALA-B buoyage (red-right-returning), COLREGS rules of the road, charts, tides, and weather while fishing for cod, haddock, pollock, striper, and pulling lobster traps. Full 3D three.js sim with Maine-default DMR regs and a region toggle.',
+                color: 'cyan', ready: true
+              },
+              {
+                id: 'aquacultureLab', icon: '🦪', label: 'AquacultureLab: Mussel Farm Sim',
+                desc: 'Run a Maine shellfish farm. Pilot your skiff out to a Bagaduce River lease, deploy seeded longlines, monitor water quality (DO, salinity, pH, temp, chlorophyll-a), harvest mussels and oysters, navigate weather and tides. Full 3D three.js sim teaching boating navigation alongside aquaculture fundamentals.',
+                color: 'teal', ready: true
+              },
+              {
                 id: 'decomposer', icon: '🧫', label: t('stem.tools_menu.decomposer'), desc: t('stem.tools_menu.break_materials_into_elements'),
                 color: 'lime', ready: true
               },
@@ -3422,7 +3459,15 @@
               { id: 'assessmentLiteracy', icon: '🔍', label: 'Junk-Science',
                 color: '#c026d3', accent: 'rgba(192,38,211,0.15)',
                 slot: '__alloflowAssessmentLiteracy', lsKey: 'assessmentLiteracy.state.v1', total: 15,
-                count: function () { var s = _readSlot('__alloflowAssessmentLiteracy', 'assessmentLiteracy.state.v1'); return s && s.junkMastery ? Object.keys(s.junkMastery).length : 0; } }
+                count: function () { var s = _readSlot('__alloflowAssessmentLiteracy', 'assessmentLiteracy.state.v1'); return s && s.junkMastery ? Object.keys(s.junkMastery).length : 0; } },
+              { id: 'fisherLab', icon: '🎣', label: 'Fisher Life Log',
+                color: '#0ea5e9', accent: 'rgba(14,165,233,0.15)',
+                slot: '__alloflowFisherLab', lsKey: 'fisherLab.state.v1', total: 8,
+                count: function () { var s = _readSlot('__alloflowFisherLab', 'fisherLab.state.v1'); if (!s) return 0; var caught = s.speciesCaught || {}; return Object.keys(caught).length; } },
+              { id: 'aquacultureLab', icon: '🦪', label: 'Farm Log',
+                color: '#14b8a6', accent: 'rgba(20,184,166,0.15)',
+                slot: '__alloflowAquacultureLab', lsKey: 'aquacultureLab.state.v1', total: 5,
+                count: function () { var s = _readSlot('__alloflowAquacultureLab', 'aquacultureLab.state.v1'); return s && typeof s.droppersDeployed === 'number' ? s.droppersDeployed : 0; } }
             ];
             var _atlasActive = _atlasEntries.map(function (e) { return Object.assign({}, e, { current: e.count() }); }).filter(function (e) { return e.current > 0; });
             var _atlasTotal = _atlasActive.reduce(function (s, e) { return s + e.current; }, 0);
@@ -4423,8 +4468,8 @@
             math: true, moneyMath: true, multtable: true, numberline: true,
             probability: true, protractor: true, volume: true,
             // Science
-            anatomy: true, aquarium: true, brainAtlas: true, cell: true,
-            chemBalance: true, climateExplorer: true, companionPlanting: true, renewablesLab: true, petsLab: true,
+            anatomy: true, aquarium: true, aquacultureLab: true, brainAtlas: true, cell: true,
+            chemBalance: true, climateExplorer: true, companionPlanting: true, fisherLab: true, renewablesLab: true, petsLab: true,
             dataPlot: true, dissection: true, dnaLab: true, ecosystem: true,
             epidemicSim: true, fireEcology: true, microbiology: true, molecule: true, opticsLab: true, punnett: true,
             rocks: true, rockCycle: true, science: true, solarSystem: true,
