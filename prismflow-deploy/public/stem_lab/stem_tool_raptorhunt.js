@@ -883,6 +883,157 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
     }
   };
 
+  // ───────────────────────────────────────────────────────────
+  // ANATOMY DATA — labeled raptor body-part reference
+  // ───────────────────────────────────────────────────────────
+  // Each label has: id, x, y (SVG coords in 800x500 canvas),
+  // line endpoint (lx, ly) where the label sits, label text + description.
+  var ANATOMY = {
+    intro: 'Raptor anatomy is a study in optimization: every body part has been reshaped by tens of millions of years of selection for predatory life. The eye, larger than a human eye in a head the size of a tennis ball. The hooked beak with a tomial tooth that snips vertebrae cleanly. Talons curved to a specific arc, lengthened to penetrate, hardened with extra keratin. Wing primaries slotted to reduce induced drag. Every feature trackable to its functional pressure.',
+    parts: [
+      { id: 'eye', x: 615, y: 175, lx: 700, ly: 60, label: 'Eye', desc: 'Massive relative to body — golden eagle eye = human eye in a tennis-ball skull. 4-8× human visual acuity. Spherical (diurnal) or tubular (owls).' },
+      { id: 'beak', x: 685, y: 215, lx: 770, ly: 200, label: 'Beak (cere + maxilla)', desc: 'Sharp downward hook for tearing flesh. Cere = the soft skin patch at the base (often yellow). Beak grows continuously; raptors "feak" (wipe + sharpen) on perches.' },
+      { id: 'tomial', x: 670, y: 230, lx: 770, ly: 295, label: 'Tomial Tooth (falcons only)', desc: 'A pointed projection on the upper beak edge — fits into a notch on the lower beak. Falcons use this to sever the cervical vertebrae of prey in a single bite. Hawks + eagles + owls lack it.' },
+      { id: 'nare', x: 660, y: 195, lx: 770, ly: 110, label: 'Nare (nostril)', desc: 'Hole in the cere. In peregrines, contains a bony tubercle that disrupts airflow during a 240 mph stoop so high-pressure air doesn\'t collapse the lungs.' },
+      { id: 'crown', x: 540, y: 105, lx: 280, ly: 60, label: 'Crown / Crest', desc: 'Top of head feathers. Many raptors have erectile feather crests used in display. Harpy eagles have a distinctive divided black crest.' },
+      { id: 'nape', x: 480, y: 165, lx: 240, ly: 120, label: 'Nape', desc: 'Back of the neck. Many species have a distinctive nape patch (e.g. golden eagle\'s "golden" nape, white-headed peregrine subspecies).' },
+      { id: 'scapulars', x: 380, y: 200, lx: 200, ly: 200, label: 'Scapulars', desc: 'Shoulder feathers covering the shoulder joint. Many species have distinct scapular markings used in field ID.' },
+      { id: 'breast', x: 510, y: 280, lx: 270, ly: 320, label: 'Breast', desc: 'Often patterned with bars/streaks for species ID — barred (broadwing), spotted (peregrine juvenile), unmarked white (bald eagle adult).' },
+      { id: 'primaries', x: 195, y: 175, lx: 80, ly: 140, label: 'Primary Feathers (P1-P10)', desc: 'The outermost 10 wing feathers — the propulsion + steering surface. Slotted gaps in eagles + buteos reduce induced drag. Comb-edged in owls for silent flight.' },
+      { id: 'secondaries', x: 295, y: 210, lx: 120, ly: 320, label: 'Secondary Feathers', desc: 'Inner wing feathers attached to the ulna — provide lift, not propulsion. The "soft" inner wing.' },
+      { id: 'alula', x: 250, y: 175, lx: 110, ly: 80, label: 'Alula (bastard wing)', desc: 'Small set of feathers on the "thumb" — deployed at slow speed/high angle of attack to disrupt turbulence at the leading edge. Functions like a leading-edge slat on an airliner.' },
+      { id: 'rectrices', x: 145, y: 305, lx: 60, ly: 380, label: 'Tail Rectrices (R1-R6 pairs)', desc: 'Tail feathers — provide steering + braking. Red-tailed hawk\'s namesake rusty tail; long banded in accipiters; fan-shaped in buteos.' },
+      { id: 'thigh', x: 480, y: 385, lx: 280, ly: 430, label: 'Thigh + Tarsus', desc: 'Feathered thigh leads into a bare or feathered "leg" (tarsus). Eagles + rough-legged hawks have feathered tarsi for cold; most raptors have bare scaly tarsi.' },
+      { id: 'foot', x: 545, y: 450, lx: 660, ly: 470, label: 'Foot — anisodactyl', desc: 'Three forward toes + one back toe (hallux). Hallux is the killing weapon — drives the longest talon through vital organs.' },
+      { id: 'osprey-toe', x: 555, y: 460, lx: 720, ly: 410, label: 'Reversible Outer Toe (osprey only)', desc: 'Ospreys can rotate the 4th toe backward to grip wet fish in a 2-and-2 zygodactyl grip. Footpads have spicules (barbed scales) for additional traction on slippery scales.' },
+      { id: 'hallux', x: 530, y: 462, lx: 380, ly: 480, label: 'Hallux Talon', desc: 'Longest talon, on the rear toe. The kill weapon — penetrates vital organs. Harpy eagle hallux talon: 12.5 cm (longer than a grizzly bear\'s claw).' },
+      { id: 'gular', x: 575, y: 255, lx: 690, ly: 350, label: 'Crop (gular pouch)', desc: 'Bulging food storage under the throat skin. After a big kill, the bird may carry 200-400 g of food in the crop, slowly digesting it over hours. Owls lack a crop (food goes straight to gizzard).' }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // LIFECYCLE & DEMOGRAPHICS DATA
+  // ───────────────────────────────────────────────────────────
+  var LIFECYCLE = {
+    overview: 'Raptors live long + reproduce slowly. A bald eagle female lays 1-3 eggs once per year, starting at age 4-5, and may live 25+ years. Most songbirds lay 4-6 eggs 2-3 times per year starting at age 1. This life-history difference — "K-selected" vs "r-selected" in ecology textbooks — means raptors are exquisitely vulnerable to adult mortality. Lose 10% of breeding songbirds + the population bounces back in 2 years; lose 10% of breeding eagles + recovery takes 30+ years. This is why the DDT era was catastrophic, and why every lead-shot poisoning + wind-turbine strike + power-line electrocution matters.',
+    stages: [
+      { stage: '1. Pair bond', timing: 'Late winter (Jan-Mar in temperate)', duration: '2-4 weeks', detail: 'Adults court via aerial display (cartwheeling, talon-grappling, food transfer mid-air). Most raptors are seasonally or lifelong monogamous. Pair re-uses the same nest territory year after year.', mortality: 'Very low — adults are skilled survivors at this stage.' },
+      { stage: '2. Eggs', timing: 'Mar-May', duration: '28-45 days incubation depending on species', detail: 'Clutch size: 1 (harpy), 1-3 (eagles), 2-4 (hawks), 2-5 (owls), 3-7 (kestrels). Eggs are off-white to pale blue. Female does most incubation; male brings food.', mortality: 'High — ~30% egg failure (infertility, weather, predation by corvids/raccoons)' },
+      { stage: '3. Nestling', timing: 'Apr-Jul', duration: '5-12 weeks depending on species (longer in larger species)', detail: 'Hatching is asynchronous — first egg hatches a few days before later eggs, so the firstborn is bigger + outcompetes siblings. In food shortage years, the youngest is "fratricide insurance" — older sibling kills younger to ensure survival of at least one chick. This is normal raptor behavior, not anomaly.', mortality: '~40-50% (starvation, sibling aggression, predator visits to unattended nest)' },
+      { stage: '4. Fledgling', timing: 'Jul-Sep', duration: '3-8 weeks dependence after first flight', detail: 'First flight = "fledging." Parents continue to feed + train the young to hunt. Young are clumsy + obvious — exactly the period predators target them. Many human-window strikes happen in this period.', mortality: '~30% (predator kills, vehicle strikes, starvation as hunting skill is still poor)' },
+      { stage: '5. First winter', timing: 'Sep-Mar', duration: '~6 months', detail: 'Young birds disperse from natal territory + face their first hunting season alone. The hardest mortality window.', mortality: '~50-70% — most juvenile raptor deaths happen here' },
+      { stage: '6. Subadult', timing: 'Year 2-3 (most species) or 4-5 (eagles)', duration: '1-4 years', detail: 'Survives to year 2 = much better odds. Bird is hunting effectively + has territory experience but is not yet sexually mature. Often shows different plumage from adults (juvenile bald eagle is brown; doesn\'t get the white head until year 5).', mortality: '~15-25% per year' },
+      { stage: '7. Breeding adult', timing: 'Year 2-5+ depending on species', duration: 'Up to 30+ years for large species', detail: 'Mature, territorial, breeding. Annual survival ~85-95% for adult eagles. Causes of death: lead poisoning, electrocution, vehicle strike, wind turbine, gunshot, old age.', mortality: '~5-15% per year (the lowest mortality bracket)' }
+    ],
+    longevity: [
+      { species: 'American Kestrel', firstYearMort: '65%', adultAnnualSurv: '60%', meanLifespan: '~1.5 yr', recordWild: '~14 yr' },
+      { species: 'Red-tailed Hawk', firstYearMort: '70%', adultAnnualSurv: '78%', meanLifespan: '~6 yr', recordWild: '~30 yr' },
+      { species: 'Cooper\'s Hawk', firstYearMort: '~75%', adultAnnualSurv: '~80%', meanLifespan: '~3 yr', recordWild: '~20 yr' },
+      { species: 'Bald Eagle', firstYearMort: '~60%', adultAnnualSurv: '~90%', meanLifespan: '~12 yr', recordWild: '~38 yr' },
+      { species: 'Golden Eagle', firstYearMort: '~60%', adultAnnualSurv: '~94%', meanLifespan: '~14 yr', recordWild: '~38 yr' },
+      { species: 'Peregrine Falcon', firstYearMort: '~70%', adultAnnualSurv: '~85%', meanLifespan: '~5 yr', recordWild: '~25 yr' },
+      { species: 'Great Horned Owl', firstYearMort: '~50%', adultAnnualSurv: '~85%', meanLifespan: '~13 yr', recordWild: '~28 yr' },
+      { species: 'Harpy Eagle', firstYearMort: '~70%', adultAnnualSurv: '~95%', meanLifespan: '~25 yr', recordWild: '~35+ yr' }
+    ],
+    population: {
+      title: 'Why recovery is slow — the demographic math',
+      explanation: 'A simple population model: λ (lambda) = annual population growth rate. λ < 1 = declining. λ > 1 = growing. λ ≈ adult survival + (juvenile survival × fecundity). For a bald eagle: adult survival 0.90, juvenile survival 0.40, fecundity 0.8 chicks/female/year. λ ≈ 0.90 + (0.40 × 0.8) / 2 ≈ 1.06. That 6%/year growth — a healthy raptor population. Lose 5% of adults from lead poisoning and λ drops to 0.99 — population starts declining. THIS is the demographic logic of raptor conservation: protecting adult breeders is the highest-leverage action; even small adult-mortality increases can flip a population from growing to declining.',
+      keyInsight: 'Population biology insight: in K-selected long-lived species, adult survival is the single biggest driver of population trajectory. Every saved breeding adult is worth 5-10 juveniles in demographic terms.'
+    }
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // RECOVERY CASE STUDIES — deep stories of raptor recoveries
+  // ───────────────────────────────────────────────────────────
+  // Each is a full narrative — what was the crisis, how was it solved,
+  // who solved it, what the data look like now, what\'s next.
+  var RECOVERIES = {
+    intro: 'The peregrine\'s recovery from near-extinction is one of the great triumphs of conservation biology. So is the bald eagle\'s. So is the California condor\'s. So are the Mauritius kestrel + the Philippine eagle (still ongoing). Each story is different — different threats, different mechanisms, different heroes — but they share one feature: ',
+    introBold: 'every recovery required decades of patient, coordinated, expensive work by a small number of obsessed people, plus enough political will to enact protective regulations. Conservation does not happen by accident.',
+    cases: [
+      {
+        id: 'peregrine',
+        title: 'Peregrine Falcon — The DDT Comeback',
+        emoji: '🦅',
+        crisis: 'CRASH (1947-1975)',
+        crisisDetail: 'After WWII, DDT was sprayed across the US to kill mosquitoes + agricultural pests. Within 15 years, peregrine populations east of the Rockies had collapsed entirely. The chemical bioaccumulated up the food chain — peregrines hunting pigeons that had eaten DDT-laced grain ended up with massive DDE concentrations in their fat. DDE interfered with calcium metabolism, producing eggshells so thin they cracked under brooding parents. By 1965, NO peregrines were nesting east of the Mississippi. By 1972, breeding pairs in the lower 48 had dropped from ~3,875 (1940) to fewer than 50. The species was functionally extinct in most of its range.',
+        action: 'RECOVERY (1972-1999)',
+        actionDetail: 'The 1972 US DDT ban (driven by Rachel Carson\'s Silent Spring + EPA\'s Ruckelshaus) stopped the chemical input. Then came captive breeding. Cornell\'s Tom Cade founded The Peregrine Fund (1970) and began artificial breeding using surrogate parents, double-clutching (taking the first clutch + letting the female lay a second), and hand-rearing chicks. The first captive-bred peregrines were "hacked" (soft-released using falconry methods) into wild sites starting 1974. Over 25 years, ~7,000 captive-bred peregrines were released across North America. Falconers donated time + technique; Cornell ran the captive-breeding logistics; the US Fish + Wildlife Service ran the wild monitoring. Cities turned out to be excellent habitat — skyscrapers mimic cliff nest sites; urban pigeon populations provide unlimited prey. By 1999 the species was delisted from the US Endangered list.',
+        keyPerson: 'Tom Cade (1928-2019), Cornell ornithologist who founded The Peregrine Fund; Rachel Carson (1907-1964), author of Silent Spring; William Ruckelshaus, first EPA administrator who signed the DDT ban',
+        currentStatus: '~3,200 breeding pairs in the lower 48 US (2020); ~30,000+ worldwide. Globally Least Concern. Urban populations are now the densest peregrine populations on Earth.',
+        whatNext: 'Lead-shot poisoning + window strikes are the current minor mortality sources. Population is self-sustaining + no longer needs active intervention beyond habitat protection.',
+        lesson: 'Identify the chemical driver (DDT). Ban it at the source. Use accumulated falconry knowledge for breeding + release. 27 years from collapse to delisting. The recovery cost ~$5 million in 1980s dollars — among the cheapest endangered-species recoveries in US history.'
+      },
+      {
+        id: 'baldEagle',
+        title: 'Bald Eagle — The National Symbol Saved',
+        emoji: '🇺🇸',
+        crisis: 'CRASH (1947-1963)',
+        crisisDetail: 'Bald eagles faced TWO simultaneous threats. (1) DDT — same egg-thinning mechanism as the peregrine. (2) Active persecution — Alaska paid a bounty on bald eagles 1917-1953 ($1-2 per pair of talons, total ~150,000 birds killed). In the lower 48, the breeding population fell from ~100,000 pairs in 1800 to 417 known pairs in 1963.',
+        action: 'RECOVERY (1972-2007)',
+        actionDetail: 'DDT ban (1972). Bald + Golden Eagle Protection Act (1940; teeth added 1972). Endangered Species Act listing (1978). Captive-breeding programs at Patuxent Wildlife Research Center + Sutton Avian Research Center. Nest platform construction. Bald eagles benefited from a key advantage over peregrines: they tolerate human presence well + readily occupy artificial nest platforms on utility poles, buoys, and tree snags. Recovery was steady + remarkable. The species was downlisted to Threatened (1995) + delisted (2007).',
+        keyPerson: 'Patuxent Wildlife Research Center biologists; the legal coalition that drove the 1972 DDT ban; volunteer nest-platform builders across the Mississippi flyway',
+        currentStatus: '~316,000 individuals in lower 48 (2020 USFWS). Bald eagles are now common enough to be sighted regularly in suburban + even urban areas. Pittsburgh, Philadelphia, DC, Boston all have city-pair nests.',
+        whatNext: 'Lead-shot poisoning is the current crisis. Lead-shot ammunition leaves fragments in deer carcasses + gut piles, which eagles scavenge. California banned lead ammunition for hunting in 2019 to protect condors + eagles; other states have not. Estimated 120,000+ eagles killed by lead since 1990.',
+        lesson: 'Different recovery profile from peregrine: bald eagles needed habitat + nest sites + protection, not breeding centers. Tolerant species recover faster + cheaper than intolerant species — peregrine recovery hinged on hacking; bald-eagle recovery on simply giving the birds space + safety.'
+      },
+      {
+        id: 'condor',
+        title: 'California Condor — From 22 Birds to 500+',
+        emoji: '🦅',
+        crisis: 'EXTINCTION VORTEX (1980-1987)',
+        crisisDetail: 'California condors are New World vultures, the largest North American flying birds (9.5-ft wingspan). They eat carrion. Lead-shot fragments from hunter-killed deer + livestock gut piles enter the bloodstream, paralyze the digestive tract, and slowly starve the bird. By 1980, only 22 California condors remained in the wild. By 1987 the population was 22 birds total, ALL captured + placed in captive breeding programs at San Diego Zoo + Los Angeles Zoo. There were ZERO wild California condors for 5 years (1987-1992).',
+        action: 'CAPTIVE BREEDING + REINTRODUCTION (1987-present)',
+        actionDetail: 'Captive breeding used double-clutching + careful hand-rearing (with hand-puppet condor "parents" to prevent imprinting on humans). Reintroduction began at the Hopper Mountain National Wildlife Refuge (1992), Big Sur (1997), Arizona Vermilion Cliffs (1996), Baja California (2002). Each release bird is tagged with VHF telemetry + a numbered wing tag. Pre-release training includes aversive conditioning to human structures (mild electric shock on power poles) so they avoid electrocution.',
+        keyPerson: 'Mike Wallace (San Diego Zoo), Bill Toone, Lloyd Kiff, Noel Snyder. The decision to capture every wild condor in 1987 was deeply controversial — many biologists thought captive breeding would fail. It didn\'t.',
+        currentStatus: '~530 condors total (2024). ~340 wild + ~190 captive. Wild populations established in California, Arizona/Utah, Baja California, with a growing population. The first wild-hatched chick from captive-bred parents fledged in 2003. Annual wild releases continue.',
+        whatNext: 'LEAD POISONING IS STILL THE PRIMARY THREAT. Every condor in the wild is regularly recaptured + tested for blood lead; chelation therapy is given when needed. California\'s 2019 lead-ammo ban is helping. Until lead ammunition is banned across the condor range (Arizona, Utah, Mexico), the species cannot become self-sustaining.',
+        lesson: 'The hardest recovery in US history. ~$50 million spent. Required a permanent intensive-management program — every wild condor is essentially a "tagged research subject." Without active human intervention, the wild population would lead-poison itself back to extinction within 5-10 years. The species is alive only because we keep working at it.'
+      },
+      {
+        id: 'mauritius',
+        title: 'Mauritius Kestrel — From 4 Birds to 800',
+        emoji: '🦅',
+        crisis: 'COLLAPSE (1950-1974)',
+        crisisDetail: 'The Mauritius kestrel (Falco punctatus) is endemic to a small Indian Ocean island. By 1974, after centuries of habitat destruction (Mauritius was 98% deforested), DDT spraying for malaria control, + introduced macaques + mongooses eating eggs, the species was reduced to ',
+        crisisDetailBold: 'four known wild individuals — two breeding pairs',
+        crisisDetailRest: '. It was the rarest bird in the world for several years running.',
+        action: 'RECOVERY (1973-present)',
+        actionDetail: 'Carl Jones, a young Welsh biologist, arrived on Mauritius in 1979 to study the kestrel. He stayed for 40 years. Strategy: (1) Find ALL remaining wild nests + harvest eggs for captive breeding. (2) Double-clutch the wild birds (taking the first clutch + the female lays a second). (3) Hand-rear chicks + release them at predator-proof nest boxes. (4) Provide supplementary food to released birds. (5) Predator control on mongoose + macaque populations. The first captive-bred chicks were released in 1985. By 1994 there were 200+ wild birds. By 2005, ~800. The species was downlisted from Critically Endangered to Endangered to Vulnerable.',
+        keyPerson: 'Carl Jones, who also led recoveries for the Mauritius pink pigeon, echo parakeet, Rodrigues warbler, and round-island boa. Awarded the Indianapolis Prize (conservation\'s Nobel) in 2016.',
+        currentStatus: '~400-500 birds in 2020 (estimates vary). Population has declined from 2005 peak due to renewed habitat pressure + invasive plant competition. Still requires active management.',
+        whatNext: 'Habitat protection + invasive species control + nest box maintenance. The bird will likely never be fully self-sustaining without ongoing management, but a stable 500-bird population is achievable.',
+        lesson: 'The most extreme recovery in conservation history — 4 birds to 800 in 30 years. Required one biologist + small team dedicating their lives. Demonstrates that even the most apparently doomed species can be saved with patient + creative intervention. Jones\' methods (double-clutching, hand-rearing, nest boxes) became the playbook for hundreds of subsequent island-endemic recoveries worldwide.'
+      },
+      {
+        id: 'philippine',
+        title: 'Philippine Eagle — Still Critical',
+        emoji: '🇵🇭',
+        crisis: 'ONGOING (1960-present)',
+        crisisDetail: 'The Philippine eagle (Pithecophagus jefferyi, formerly "monkey-eating eagle") is the national bird of the Philippines and one of the largest eagles on Earth (~3.5 ft tall, 7.5-ft wingspan). It is critically endangered. ~400 wild adults estimated in 2023. Threats: (1) Rainforest loss — the species needs 50-100 km² of contiguous old-growth forest per breeding pair; the Philippines has lost ~70% of its primary forest. (2) Direct persecution + shooting + capture for the pet trade. (3) Very slow reproduction — one chick every 2-3 years, sexual maturity at 5-7 years.',
+        action: 'PARTIAL EFFORTS',
+        actionDetail: 'Philippine Eagle Foundation (1987 founded) runs captive breeding + reintroduction + community education + protected-forest management. First captive-bred chick fledged 1992. ~30 captive birds + ongoing wild monitoring. Penalty for killing a Philippine eagle was increased to 12 years prison + ₱1 million fine in 2001. Some protected areas (Mt. Apo, Mt. Kitanglad) have established Eagle Sanctuaries.',
+        keyPerson: 'Dennis Salvador (Executive Director, Philippine Eagle Foundation); Hector Miranda; local indigenous community members serving as forest patrols',
+        currentStatus: 'Critically Endangered (IUCN). ~400 wild adults declining. Habitat continues to be lost at ~2% per year. Climate change adds drought stress to remaining rainforest patches.',
+        whatNext: 'Without dramatic increases in protected-forest acreage + community livelihood programs to reduce pressure on remaining habitat, the species may continue declining. Some biologists rate the long-term outlook as 50/50.',
+        lesson: 'A recovery still being written. The Philippine eagle highlights that island-endemic + rainforest-canopy specialists are the hardest to save — they need huge intact habitat blocks that don\'t exist anymore. Without strong rule of law + sustained funding, "endangered species protection" remains words on paper.'
+      }
+    ],
+    metaLesson: {
+      title: 'What every recovery has in common',
+      points: [
+        '1. Identify the SPECIFIC threat (DDT, lead, habitat loss, shooting). Vague "threats" cannot be addressed.',
+        '2. Stop the threat at the source. Ban DDT. Ban lead shot. Stop deforestation.',
+        '3. Build captive-breeding capacity ONLY if wild populations are too small to recover unaided.',
+        '4. Use accumulated falconry + zoo + ornithology knowledge (hacking, double-clutching, hand-rearing).',
+        '5. Coordinate across many institutions: government, university, NGO, zoo, falconers, citizens.',
+        '6. Dedicate 20-40 years. Recovery is generational work, not a 5-year grant cycle.',
+        '7. Expect costs of $1M-$50M per species. Conservation is not free.',
+        '8. Plan for permanent management of some species. Not all populations become self-sustaining.'
+      ]
+    }
+  };
+
   // ═══════════════════════════════════════════════════════════
   // TOOL REGISTRATION
   // ═══════════════════════════════════════════════════════════
@@ -935,6 +1086,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         { id: 'hearing', label: 'Owl Hearing Lab', icon: '🦻' },
         { id: 'pellet', label: 'Pellet Lab', icon: '🥚' },
         { id: 'falconry', label: 'Falconry & Humans', icon: '🤝' },
+        { id: 'anatomy', label: 'Anatomy', icon: '🦴' },
+        { id: 'lifecycle', label: 'Lifecycle', icon: '🐣' },
+        { id: 'spiral', label: 'Stoop Trajectory', icon: '🌀' },
+        { id: 'acuity', label: 'Vision Acuity Demo', icon: '👁️‍🗨️' },
+        { id: 'recoveries', label: 'Recovery Case Studies', icon: '🏆' },
         { id: 'quiz', label: 'Field ID Quiz', icon: '🎓' },
         { id: 'resources', label: 'Resources', icon: '📚' }
       ];
@@ -950,7 +1106,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('div', { className: 'flex-1' },
                 h('div', { className: 'text-xl font-bold text-amber-200' }, 'Raptor Hunt: Predator Physics + Biology'),
                 h('div', { className: 'text-sm text-amber-100/80 mt-1' }, 'Hunt as a peregrine at 240 mph. Crush bones at 530 psi as a harpy. See vole urine trails in UV like a kestrel. Glide silently on owl feathers. Then study the biology that makes it all possible.'),
-                h('div', { className: 'text-xs text-amber-300/70 mt-2 italic' }, '17 sections · 8 species · 3D Three.js simulator · interactive owl-hearing lab · pellet dissection · 18-question quiz')
+                h('div', { className: 'text-xs text-amber-300/70 mt-2 italic' }, '22 sections · 8 species · 3D + 2D simulators · interactive labs · anatomy + acuity demo · recovery case studies · 18-question quiz')
               )
             )
           ),
@@ -2944,6 +3100,787 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       }
 
       // ────────────────────────────────────────────────────────
+      // RENDER: ANATOMY (interactive SVG with hover labels)
+      // ────────────────────────────────────────────────────────
+      function renderAnatomy() {
+        var hoveredId = rh.anatomyHover || null;
+        function setHover(id) {
+          setRH({ anatomyHover: id });
+        }
+        var hovered = hoveredId ? ANATOMY.parts.filter(function(p) { return p.id === hoveredId; })[0] : null;
+
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-amber-900/40 to-yellow-900/40 border border-amber-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-lg font-bold text-amber-200 mb-2' }, '🦴 Raptor Anatomy'),
+            h('div', { className: 'text-sm text-amber-100/90 leading-relaxed' }, ANATOMY.intro)
+          ),
+
+          // Interactive SVG
+          h('div', { className: 'bg-slate-900/60 border border-amber-700/40 rounded-xl p-3' },
+            h('div', { className: 'text-xs text-slate-400 mb-2 italic' }, '👆 Hover or tap a label to read about each body part'),
+            h('svg', {
+              viewBox: '0 0 800 500',
+              role: 'img',
+              'aria-label': 'Labeled raptor anatomy diagram with interactive hover labels',
+              style: { width: '100%', height: 'auto', maxHeight: '500px', display: 'block' }
+            },
+              // Background sky
+              h('rect', { x: 0, y: 0, width: 800, height: 500, fill: '#1e293b' }),
+              // Stylized bird silhouette (procedural raptor profile facing right)
+              // Body (ellipse)
+              h('ellipse', { cx: 450, cy: 280, rx: 180, ry: 100, fill: '#78350f', stroke: '#a16207', strokeWidth: 2 }),
+              // Head
+              h('circle', { cx: 615, cy: 195, r: 75, fill: '#a16207', stroke: '#c2410c', strokeWidth: 2 }),
+              // Beak
+              h('path', { d: 'M 680 200 L 720 215 L 685 232 Z', fill: '#fbbf24', stroke: '#92400e', strokeWidth: 2 }),
+              // Eye
+              h('circle', { cx: 625, cy: 175, r: 18, fill: '#fefce8', stroke: '#92400e', strokeWidth: 1.5 }),
+              h('circle', { cx: 628, cy: 178, r: 9, fill: '#1c1917' }),
+              // Wing (left, large, fanned)
+              h('path', { d: 'M 380 220 Q 250 140 110 180 Q 80 200 130 240 Q 220 260 360 290 Z', fill: '#92400e', stroke: '#78350f', strokeWidth: 2 }),
+              // Primary feather "fingers"
+              h('path', { d: 'M 180 175 L 80 165 L 120 195 Z', fill: '#78350f', stroke: '#451a03', strokeWidth: 1.5 }),
+              h('path', { d: 'M 195 170 L 100 145 L 130 188 Z', fill: '#78350f', stroke: '#451a03', strokeWidth: 1.5 }),
+              h('path', { d: 'M 215 168 L 130 130 L 145 178 Z', fill: '#78350f', stroke: '#451a03', strokeWidth: 1.5 }),
+              h('path', { d: 'M 240 170 L 165 122 L 165 175 Z', fill: '#78350f', stroke: '#451a03', strokeWidth: 1.5 }),
+              // Alula
+              h('path', { d: 'M 245 180 L 220 165 L 240 195 Z', fill: '#fcd34d', stroke: '#92400e', strokeWidth: 1 }),
+              // Tail
+              h('path', { d: 'M 290 320 Q 160 310 110 380 Q 180 360 295 360 Z', fill: '#9a3412', stroke: '#7c2d12', strokeWidth: 2 }),
+              // Tail bands
+              h('path', { d: 'M 130 365 L 285 350', stroke: '#451a03', strokeWidth: 2 }),
+              h('path', { d: 'M 160 372 L 280 360', stroke: '#451a03', strokeWidth: 2 }),
+              // Leg + foot
+              h('path', { d: 'M 480 370 Q 490 410 510 445', stroke: '#fbbf24', strokeWidth: 8, fill: 'none' }),
+              // Talons
+              h('path', { d: 'M 510 445 L 545 460 L 560 480', stroke: '#1c1917', strokeWidth: 3, fill: 'none' }),
+              h('path', { d: 'M 510 445 L 525 470 L 530 490', stroke: '#1c1917', strokeWidth: 3, fill: 'none' }),
+              h('path', { d: 'M 510 445 L 500 475 L 495 495', stroke: '#1c1917', strokeWidth: 3, fill: 'none' }),
+              h('path', { d: 'M 510 445 L 480 460 L 470 490', stroke: '#1c1917', strokeWidth: 3, fill: 'none' }), // hallux (back)
+              // Breast streaks
+              h('path', { d: 'M 470 260 Q 480 280 475 305', stroke: '#451a03', strokeWidth: 2, fill: 'none' }),
+              h('path', { d: 'M 500 265 Q 510 285 505 310', stroke: '#451a03', strokeWidth: 2, fill: 'none' }),
+              h('path', { d: 'M 530 265 Q 540 285 535 310', stroke: '#451a03', strokeWidth: 2, fill: 'none' }),
+
+              // Labels — draw lines from anchor to label position, then label
+              ANATOMY.parts.map(function(p, i) {
+                var isHovered = hoveredId === p.id;
+                return h('g', { key: p.id },
+                  // Connector line
+                  h('line', {
+                    x1: p.x, y1: p.y, x2: p.lx, y2: p.ly,
+                    stroke: isHovered ? '#fbbf24' : '#475569',
+                    strokeWidth: isHovered ? 2 : 1,
+                    strokeDasharray: '4,3'
+                  }),
+                  // Anchor dot
+                  h('circle', {
+                    cx: p.x, cy: p.y, r: isHovered ? 6 : 4,
+                    fill: isHovered ? '#fbbf24' : '#fde047',
+                    stroke: '#451a03', strokeWidth: 1.5
+                  }),
+                  // Label background
+                  h('rect', {
+                    x: p.lx < 400 ? p.lx - 130 : p.lx,
+                    y: p.ly - 10, width: 130, height: 22, rx: 4,
+                    fill: isHovered ? 'rgba(251,191,36,0.85)' : 'rgba(15,23,42,0.75)',
+                    stroke: '#92400e', strokeWidth: 1,
+                    style: { cursor: 'pointer' },
+                    onMouseEnter: function() { setHover(p.id); },
+                    onMouseLeave: function() { setHover(null); },
+                    onClick: function() { setHover(p.id); }
+                  }),
+                  // Label text
+                  h('text', {
+                    x: p.lx < 400 ? p.lx - 65 : p.lx + 65,
+                    y: p.ly + 5,
+                    fontSize: 11, fontWeight: 'bold',
+                    fill: isHovered ? '#1c1917' : '#fcd34d',
+                    textAnchor: 'middle',
+                    style: { pointerEvents: 'none', userSelect: 'none' }
+                  }, p.label)
+                );
+              })
+            )
+          ),
+
+          // Hovered description panel
+          hovered ? h('div', { className: 'bg-amber-900/30 border border-amber-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-sm font-bold text-amber-300 mb-1' }, '🔍 ' + hovered.label),
+            h('div', { className: 'text-sm text-amber-100/90 leading-relaxed' }, hovered.desc)
+          ) : h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4 text-center text-xs text-slate-400 italic' },
+            'Hover or tap any label above to see the description here.'
+          ),
+
+          // Full list (for reading + accessibility)
+          h('details', { className: 'bg-slate-900/30 border border-slate-700/40 rounded-xl p-3' },
+            h('summary', { className: 'text-sm font-bold text-amber-300 cursor-pointer' }, '📖 All anatomy entries (read-through view)'),
+            h('div', { className: 'mt-3 space-y-2' },
+              ANATOMY.parts.map(function(p, i) {
+                return h('div', { key: p.id, className: 'bg-slate-800/40 rounded p-2.5 text-xs' },
+                  h('div', { className: 'font-bold text-amber-300 mb-1' }, p.label),
+                  h('div', { className: 'text-slate-200' }, p.desc)
+                );
+              })
+            )
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: LIFECYCLE & DEMOGRAPHICS
+      // ────────────────────────────────────────────────────────
+      function renderLifecycle() {
+        var pop = rh.population || { adultSurv: 0.90, juvSurv: 0.40, fecundity: 0.8, years: 30, startSize: 100, adultMortBump: 0 };
+        function setPop(patch) {
+          setRH({ population: Object.assign({}, pop, patch) });
+        }
+        // Simulate population
+        var pts = [];
+        var current = pop.startSize;
+        var effAdultSurv = Math.max(0.01, Math.min(0.99, pop.adultSurv - pop.adultMortBump));
+        var lambda = effAdultSurv + (pop.juvSurv * pop.fecundity) / 2;
+        for (var y = 0; y <= pop.years; y++) {
+          pts.push({ year: y, pop: current });
+          current = current * lambda;
+        }
+        var finalPop = pts[pts.length - 1].pop;
+        var trend = lambda > 1.01 ? 'GROWING' : lambda < 0.99 ? 'DECLINING' : 'STABLE';
+        var trendColor = trend === 'GROWING' ? 'emerald' : trend === 'DECLINING' ? 'red' : 'amber';
+        // Plot dimensions
+        var pw = 600, ph = 200;
+        var maxPop = Math.max.apply(null, pts.map(function(p) { return p.pop; }));
+        var minPop = Math.min.apply(null, pts.map(function(p) { return p.pop; }));
+        var range = Math.max(1, maxPop - minPop);
+        var plotPath = pts.map(function(p, i) {
+          var x = (i / pop.years) * pw;
+          var py = ph - ((p.pop - minPop) / range) * (ph - 20) - 10;
+          return (i === 0 ? 'M ' : 'L ') + x.toFixed(1) + ' ' + py.toFixed(1);
+        }).join(' ');
+
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-emerald-900/40 to-teal-900/40 border border-emerald-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-lg font-bold text-emerald-200 mb-2' }, '🐣 Lifecycle & Demographics'),
+            h('div', { className: 'text-sm text-emerald-100/90 leading-relaxed' }, LIFECYCLE.overview)
+          ),
+
+          // Stages
+          h('div', { className: 'space-y-2' },
+            h('div', { className: 'text-sm font-bold text-amber-300' }, '🌱 The 7 lifecycle stages'),
+            LIFECYCLE.stages.map(function(s, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-slate-700/50 rounded-lg p-3' },
+                h('div', { className: 'flex items-baseline justify-between gap-2 mb-1' },
+                  h('div', { className: 'text-sm font-bold text-emerald-300' }, s.stage),
+                  h('div', { className: 'text-[10px] text-slate-500 font-mono' }, s.timing + ' · ' + s.duration)
+                ),
+                h('div', { className: 'text-xs text-slate-200 leading-relaxed mb-2' }, s.detail),
+                h('div', { className: 'text-[11px] text-red-300 font-mono' }, '⚠ Mortality: ' + s.mortality)
+              );
+            })
+          ),
+
+          // Longevity comparison
+          h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-sm font-bold text-amber-300 mb-3' }, '📊 Lifespan + survival across species'),
+            h('div', { className: 'overflow-x-auto' },
+              h('table', { className: 'w-full text-xs' },
+                h('thead', null,
+                  h('tr', { className: 'text-left text-slate-400 border-b border-slate-700' },
+                    h('th', { className: 'pb-2 pr-2' }, 'Species'),
+                    h('th', { className: 'pb-2 px-2' }, '1st-yr mort'),
+                    h('th', { className: 'pb-2 px-2' }, 'Adult ann. surv'),
+                    h('th', { className: 'pb-2 px-2' }, 'Mean wild lifespan'),
+                    h('th', { className: 'pb-2 px-2' }, 'Record (wild)')
+                  )
+                ),
+                h('tbody', null,
+                  LIFECYCLE.longevity.map(function(l, i) {
+                    return h('tr', { key: i, className: 'border-b border-slate-800/50' },
+                      h('td', { className: 'py-1.5 pr-2 text-amber-300 font-bold' }, l.species),
+                      h('td', { className: 'py-1.5 px-2 text-red-300 font-mono' }, l.firstYearMort),
+                      h('td', { className: 'py-1.5 px-2 text-emerald-300 font-mono' }, l.adultAnnualSurv),
+                      h('td', { className: 'py-1.5 px-2 text-slate-200' }, l.meanLifespan),
+                      h('td', { className: 'py-1.5 px-2 text-slate-200' }, l.recordWild)
+                    );
+                  })
+                )
+              )
+            )
+          ),
+
+          // Interactive population simulator
+          h('div', { className: 'bg-slate-900/40 border border-amber-700/40 rounded-xl p-4 space-y-3' },
+            h('div', { className: 'text-sm font-bold text-amber-300' }, '🧮 Interactive Population Simulator'),
+            h('div', { className: 'text-xs text-slate-400 italic' }, 'See why adult survival is the dominant lever in raptor population trajectories.'),
+
+            // Sliders
+            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
+              h('div', null,
+                h('label', { className: 'text-xs text-emerald-300 flex justify-between items-center' },
+                  h('span', null, 'Adult annual survival'),
+                  h('span', { className: 'font-mono text-amber-300' }, (pop.adultSurv * 100).toFixed(0) + '%')
+                ),
+                h('input', {
+                  type: 'range', min: 0.5, max: 0.99, step: 0.01, value: pop.adultSurv,
+                  onInput: function(e) { setPop({ adultSurv: parseFloat(e.target.value) }); },
+                  className: 'w-full',
+                  'aria-label': 'Adult annual survival rate'
+                }),
+                h('div', { className: 'text-[10px] text-slate-500' }, 'Bald/golden eagle ≈ 90-94% · kestrel ≈ 60%')
+              ),
+              h('div', null,
+                h('label', { className: 'text-xs text-emerald-300 flex justify-between items-center' },
+                  h('span', null, 'Juvenile 1st-yr survival'),
+                  h('span', { className: 'font-mono text-amber-300' }, (pop.juvSurv * 100).toFixed(0) + '%')
+                ),
+                h('input', {
+                  type: 'range', min: 0.1, max: 0.7, step: 0.01, value: pop.juvSurv,
+                  onInput: function(e) { setPop({ juvSurv: parseFloat(e.target.value) }); },
+                  className: 'w-full',
+                  'aria-label': 'Juvenile first-year survival'
+                }),
+                h('div', { className: 'text-[10px] text-slate-500' }, 'Typical raptor 1st-yr ≈ 30-40%')
+              ),
+              h('div', null,
+                h('label', { className: 'text-xs text-emerald-300 flex justify-between items-center' },
+                  h('span', null, 'Fecundity (fledged chicks per female per year)'),
+                  h('span', { className: 'font-mono text-amber-300' }, pop.fecundity.toFixed(2))
+                ),
+                h('input', {
+                  type: 'range', min: 0.1, max: 3.0, step: 0.05, value: pop.fecundity,
+                  onInput: function(e) { setPop({ fecundity: parseFloat(e.target.value) }); },
+                  className: 'w-full',
+                  'aria-label': 'Annual fecundity'
+                }),
+                h('div', { className: 'text-[10px] text-slate-500' }, 'Eagle ≈ 0.8 · kestrel ≈ 2.5')
+              ),
+              h('div', null,
+                h('label', { className: 'text-xs text-red-300 flex justify-between items-center' },
+                  h('span', null, 'Additional adult mortality bump (lead, turbines, etc)'),
+                  h('span', { className: 'font-mono text-amber-300' }, '+' + (pop.adultMortBump * 100).toFixed(0) + '%')
+                ),
+                h('input', {
+                  type: 'range', min: 0, max: 0.3, step: 0.01, value: pop.adultMortBump,
+                  onInput: function(e) { setPop({ adultMortBump: parseFloat(e.target.value) }); },
+                  className: 'w-full',
+                  'aria-label': 'Additional adult mortality'
+                }),
+                h('div', { className: 'text-[10px] text-slate-500' }, 'Add anthropogenic adult mortality (lead, turbines, etc)')
+              )
+            ),
+
+            // Plot SVG
+            h('div', { className: 'bg-slate-950/60 rounded-lg p-3 mt-3' },
+              h('svg', { viewBox: '0 0 ' + pw + ' ' + (ph + 30), style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': 'Population trajectory plot' },
+                // Grid
+                h('line', { x1: 0, y1: ph, x2: pw, y2: ph, stroke: '#475569', strokeWidth: 1 }),
+                h('line', { x1: 0, y1: 0, x2: 0, y2: ph, stroke: '#475569', strokeWidth: 1 }),
+                // Start size reference
+                h('line', { x1: 0, y1: ph - ((pop.startSize - minPop) / range) * (ph - 20) - 10, x2: pw, y2: ph - ((pop.startSize - minPop) / range) * (ph - 20) - 10, stroke: '#64748b', strokeWidth: 1, strokeDasharray: '3,5' }),
+                // Population line
+                h('path', { d: plotPath, fill: 'none', stroke: trend === 'GROWING' ? '#10b981' : trend === 'DECLINING' ? '#ef4444' : '#fbbf24', strokeWidth: 2.5 }),
+                // Axis labels
+                h('text', { x: 4, y: 14, fontSize: 11, fill: '#94a3b8' }, 'Pop'),
+                h('text', { x: pw - 40, y: ph + 18, fontSize: 11, fill: '#94a3b8' }, 'Year ' + pop.years),
+                h('text', { x: 4, y: ph + 18, fontSize: 11, fill: '#94a3b8' }, 'Year 0')
+              )
+            ),
+
+            // Results
+            h('div', { className: 'grid grid-cols-3 gap-2 text-center' },
+              h('div', { className: 'bg-' + trendColor + '-900/30 border border-' + trendColor + '-700/40 rounded p-3' },
+                h('div', { className: 'text-2xl font-bold text-' + trendColor + '-300' }, lambda.toFixed(3)),
+                h('div', { className: 'text-[10px] text-' + trendColor + '-200 uppercase tracking-wider' }, 'λ (lambda)')
+              ),
+              h('div', { className: 'bg-' + trendColor + '-900/30 border border-' + trendColor + '-700/40 rounded p-3' },
+                h('div', { className: 'text-2xl font-bold text-' + trendColor + '-300' }, trend),
+                h('div', { className: 'text-[10px] text-' + trendColor + '-200 uppercase tracking-wider' }, 'Trajectory')
+              ),
+              h('div', { className: 'bg-slate-800/60 border border-slate-700/40 rounded p-3' },
+                h('div', { className: 'text-2xl font-bold text-amber-300' }, Math.round(finalPop)),
+                h('div', { className: 'text-[10px] text-slate-300 uppercase tracking-wider' }, 'Pop @ year ' + pop.years)
+              )
+            )
+          ),
+
+          // Key insight
+          h('div', { className: 'bg-amber-900/30 border border-amber-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-base font-bold text-amber-300 mb-2' }, '💡 ' + LIFECYCLE.population.title),
+            h('div', { className: 'text-sm text-amber-100/90 leading-relaxed mb-3' }, LIFECYCLE.population.explanation),
+            h('div', { className: 'bg-slate-900/50 rounded p-3 text-sm text-emerald-300 italic' }, '✦ ' + LIFECYCLE.population.keyInsight)
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: STOOP TRAJECTORY VISUALIZER
+      // ────────────────────────────────────────────────────────
+      // Animates Tucker 1998 logarithmic-spiral stoop. The peregrine
+      // maintains a constant retinal-angle approach to moving prey.
+      function renderSpiral() {
+        var sv = rh.spiral || { startAlt: 600, preySpeed: 5, headTilt: 40, paused: false, playhead: 0 };
+        function setSV(patch) {
+          setRH({ spiral: Object.assign({}, sv, patch) });
+        }
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-orange-900/40 to-red-900/40 border border-orange-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-lg font-bold text-orange-200 mb-2' }, '🌀 Stoop Trajectory Visualizer'),
+            h('div', { className: 'text-sm text-orange-100/90 leading-relaxed' },
+              'Tucker (1998) modeled the falcon\'s stoop trajectory and showed that peregrines fly a ',
+              h('span', { className: 'font-bold text-amber-300' }, 'logarithmic spiral'),
+              ' — a curved approach that keeps the prey image at a ',
+              h('span', { className: 'font-bold text-amber-300' }, 'constant retinal angle'),
+              ' (the bird\'s head doesn\'t need to turn at terminal velocity, which would create drag). This is ',
+              h('em', null, 'exactly'),
+              ' the proportional-navigation algorithm used by air-to-air missiles. Adjust the parameters below + watch the falcon close on its prey.'
+            )
+          ),
+
+          // Controls
+          h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4 space-y-3' },
+            h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
+              h('div', null,
+                h('label', { className: 'text-xs text-orange-300 flex justify-between' },
+                  h('span', null, 'Stoop start altitude'),
+                  h('span', { className: 'font-mono text-amber-300' }, sv.startAlt + ' m')
+                ),
+                h('input', { type: 'range', min: 200, max: 1500, step: 50, value: sv.startAlt,
+                  onInput: function(e) { setSV({ startAlt: parseInt(e.target.value), playhead: 0 }); }, className: 'w-full',
+                  'aria-label': 'Stoop start altitude' }),
+                h('div', { className: 'text-[10px] text-slate-500' }, 'Real peregrine stoops: 200-3,000 m')
+              ),
+              h('div', null,
+                h('label', { className: 'text-xs text-orange-300 flex justify-between' },
+                  h('span', null, 'Prey speed (m/s)'),
+                  h('span', { className: 'font-mono text-amber-300' }, sv.preySpeed.toFixed(1))
+                ),
+                h('input', { type: 'range', min: 1, max: 15, step: 0.5, value: sv.preySpeed,
+                  onInput: function(e) { setSV({ preySpeed: parseFloat(e.target.value), playhead: 0 }); }, className: 'w-full',
+                  'aria-label': 'Prey forward speed' }),
+                h('div', { className: 'text-[10px] text-slate-500' }, 'Pigeon flapping ≈ 16 m/s · duck ≈ 22 m/s')
+              ),
+              h('div', null,
+                h('label', { className: 'text-xs text-orange-300 flex justify-between' },
+                  h('span', null, 'Head tilt angle (°)'),
+                  h('span', { className: 'font-mono text-amber-300' }, sv.headTilt + '°')
+                ),
+                h('input', { type: 'range', min: 20, max: 65, step: 1, value: sv.headTilt,
+                  onInput: function(e) { setSV({ headTilt: parseInt(e.target.value), playhead: 0 }); }, className: 'w-full',
+                  'aria-label': 'Head tilt angle' }),
+                h('div', { className: 'text-[10px] text-slate-500' }, 'Tucker 1998 measured ~40°')
+              )
+            ),
+            h('div', { className: 'flex gap-2 justify-center' },
+              h('button', {
+                onClick: function() { setSV({ playhead: 0, paused: false }); },
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-600 to-orange-600 text-white hover:from-amber-700 hover:to-orange-700',
+                'aria-label': 'Replay stoop'
+              }, '▶ Replay'),
+              h('button', {
+                onClick: function() { setSV({ paused: !sv.paused }); },
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-700 text-amber-300 hover:bg-slate-600',
+                'aria-label': sv.paused ? 'Resume' : 'Pause'
+              }, sv.paused ? '⏵ Resume' : '⏸ Pause')
+            )
+          ),
+
+          // Canvas
+          h('div', { className: 'bg-slate-950 border border-orange-700/40 rounded-xl overflow-hidden', style: { aspectRatio: '4 / 3', maxWidth: '720px', margin: '0 auto', position: 'relative' } },
+            h('canvas', {
+              'data-spiral-canvas': 'true',
+              role: 'img',
+              'aria-label': 'Animated stoop trajectory showing a peregrine falcon descending in a logarithmic spiral to intercept moving prey',
+              width: 720, height: 540,
+              style: { width: '100%', height: '100%', display: 'block' },
+              ref: function(canvasEl) {
+                if (!canvasEl) return;
+                if (canvasEl._spiralAnim) cancelAnimationFrame(canvasEl._spiralAnim);
+                var ctx2 = canvasEl.getContext('2d');
+                var W = canvasEl.width, H = canvasEl.height;
+                var startT = performance.now();
+                var headTiltRad = sv.headTilt * Math.PI / 180;
+                // Map start altitude (200-1500 m) to canvas y position
+                var altScale = (sv.startAlt - 200) / 1300; // 0..1
+                var falconStartY = 30 + altScale * 50;
+                var falconStartX = 80 + altScale * 30;
+                var preyStartX = 280, preyStartY = 380;
+                var preyV = sv.preySpeed * 8; // visual px/s
+
+                function animate(now) {
+                  var t = (now - startT) / 1000; // seconds
+                  if (sv.paused) t = sv.playhead;
+                  else sv.playhead = t;
+                  // Total animation 4 seconds
+                  var T = 4.0;
+                  if (t > T) t = T;
+                  var u = t / T; // 0..1
+
+                  // Background sky gradient
+                  var grad = ctx2.createLinearGradient(0, 0, 0, H);
+                  grad.addColorStop(0, '#bae6fd');
+                  grad.addColorStop(0.7, '#fbbf24');
+                  grad.addColorStop(1, '#92400e');
+                  ctx2.fillStyle = grad;
+                  ctx2.fillRect(0, 0, W, H);
+                  // Ground
+                  ctx2.fillStyle = '#365314';
+                  ctx2.fillRect(0, H - 60, W, 60);
+                  ctx2.fillStyle = '#1e293b';
+                  ctx2.fillRect(0, H - 60, W, 3);
+
+                  // Prey moves forward
+                  var preyX = preyStartX + preyV * t;
+                  var preyY = preyStartY;
+                  // Stop prey if reached edge
+                  if (preyX > W - 60) preyX = W - 60;
+
+                  // Falcon logarithmic spiral: parametrically, position smoothly curves
+                  // toward prey via Tucker's constant-retinal-angle approach.
+                  // We use a Bezier-like curve from (falconStartX, falconStartY)
+                  // toward final intercept point (preyX_at_T, preyY).
+                  var preyXend = preyStartX + preyV * T;
+                  if (preyXend > W - 60) preyXend = W - 60;
+                  // Bezier control point for log-spiral feel: offset based on head tilt
+                  var cp1x = falconStartX + 30;
+                  var cp1y = falconStartY + 80;
+                  var cp2x = preyXend - 200;
+                  var cp2y = preyY - Math.tan(headTiltRad) * 200;
+                  // Position at u
+                  function bez(t, p0, p1, p2, p3) {
+                    var ti = 1 - t;
+                    return ti*ti*ti*p0 + 3*ti*ti*t*p1 + 3*ti*t*t*p2 + t*t*t*p3;
+                  }
+                  var falconX = bez(u, falconStartX, cp1x, cp2x, preyXend);
+                  var falconY = bez(u, falconStartY, cp1y, cp2y, preyY - 8);
+
+                  // Draw trail (log spiral) up to current u
+                  ctx2.strokeStyle = 'rgba(220, 38, 38, 0.6)';
+                  ctx2.lineWidth = 2;
+                  ctx2.setLineDash([3, 3]);
+                  ctx2.beginPath();
+                  ctx2.moveTo(falconStartX, falconStartY);
+                  for (var i = 1; i <= 50; i++) {
+                    var ui = (i / 50) * u;
+                    var px = bez(ui, falconStartX, cp1x, cp2x, preyXend);
+                    var py = bez(ui, falconStartY, cp1y, cp2y, preyY - 8);
+                    ctx2.lineTo(px, py);
+                  }
+                  ctx2.stroke();
+                  ctx2.setLineDash([]);
+
+                  // Draw constant-angle sightline from falcon to prey (this is the key visual)
+                  ctx2.strokeStyle = 'rgba(251, 191, 36, 0.55)';
+                  ctx2.lineWidth = 1;
+                  ctx2.setLineDash([5, 4]);
+                  ctx2.beginPath();
+                  ctx2.moveTo(falconX, falconY);
+                  ctx2.lineTo(preyX, preyY);
+                  ctx2.stroke();
+                  ctx2.setLineDash([]);
+
+                  // Falcon glyph
+                  ctx2.save();
+                  ctx2.translate(falconX, falconY);
+                  // Rotate to direction of travel
+                  var dx = preyX - falconX, dy = preyY - falconY;
+                  var ang = Math.atan2(dy, dx);
+                  ctx2.rotate(ang);
+                  // Body
+                  ctx2.fillStyle = '#451a03';
+                  ctx2.beginPath();
+                  ctx2.ellipse(0, 0, 12, 5, 0, 0, Math.PI * 2);
+                  ctx2.fill();
+                  // Wings (tucked)
+                  ctx2.fillStyle = '#78350f';
+                  ctx2.beginPath();
+                  ctx2.moveTo(-2, -2);
+                  ctx2.lineTo(-10, -10);
+                  ctx2.lineTo(-6, 0);
+                  ctx2.closePath();
+                  ctx2.fill();
+                  ctx2.beginPath();
+                  ctx2.moveTo(-2, 2);
+                  ctx2.lineTo(-10, 10);
+                  ctx2.lineTo(-6, 0);
+                  ctx2.closePath();
+                  ctx2.fill();
+                  // Beak
+                  ctx2.fillStyle = '#fbbf24';
+                  ctx2.beginPath();
+                  ctx2.moveTo(12, 0);
+                  ctx2.lineTo(16, -2);
+                  ctx2.lineTo(16, 2);
+                  ctx2.closePath();
+                  ctx2.fill();
+                  ctx2.restore();
+
+                  // Prey
+                  ctx2.fillStyle = '#9ca3af';
+                  ctx2.beginPath();
+                  ctx2.ellipse(preyX, preyY, 8, 4, 0, 0, Math.PI * 2);
+                  ctx2.fill();
+                  // Prey wings
+                  ctx2.fillStyle = '#6b7280';
+                  ctx2.beginPath();
+                  ctx2.ellipse(preyX - 4, preyY - 1, 5, 2, -0.3, 0, Math.PI * 2);
+                  ctx2.ellipse(preyX - 4, preyY + 1, 5, 2, 0.3, 0, Math.PI * 2);
+                  ctx2.fill();
+
+                  // Speed readout (falcon speed via parametric derivative)
+                  var falconV = Math.sqrt(
+                    Math.pow(preyXend - falconStartX, 2) + Math.pow((preyY - 8) - falconStartY, 2)
+                  ) / T;
+                  // Project visual to physical: 100 px ≈ 30 m (approx)
+                  var falconMps = falconV * 0.3;
+                  var falconMph = falconMps * 2.237;
+                  // Overlay text
+                  ctx2.fillStyle = 'rgba(15, 23, 42, 0.85)';
+                  ctx2.fillRect(10, 10, 200, 65);
+                  ctx2.strokeStyle = '#fbbf24';
+                  ctx2.lineWidth = 1;
+                  ctx2.strokeRect(10, 10, 200, 65);
+                  ctx2.fillStyle = '#fbbf24';
+                  ctx2.font = 'bold 11px ui-monospace, Menlo, monospace';
+                  ctx2.fillText('STOOP TIME ' + t.toFixed(1) + 's / ' + T + 's', 18, 28);
+                  ctx2.fillStyle = '#fff';
+                  ctx2.fillText('Falcon ~ ' + falconMph.toFixed(0) + ' mph (avg)', 18, 46);
+                  ctx2.fillStyle = '#fde047';
+                  ctx2.fillText('Retinal angle: ' + sv.headTilt + '° (locked)', 18, 64);
+
+                  // Strike at end
+                  if (u >= 0.98) {
+                    ctx2.fillStyle = 'rgba(220, 38, 38, 0.4)';
+                    ctx2.beginPath();
+                    ctx2.arc(preyX, preyY, 25 + Math.sin(now * 0.02) * 8, 0, Math.PI * 2);
+                    ctx2.fill();
+                    ctx2.fillStyle = '#fbbf24';
+                    ctx2.font = 'bold 24px ui-sans-serif, system-ui';
+                    ctx2.textAlign = 'center';
+                    ctx2.fillText('STRIKE!', preyX, preyY - 35);
+                  }
+
+                  if (!sv.paused && t < T) {
+                    canvasEl._spiralAnim = requestAnimationFrame(animate);
+                  }
+                }
+                canvasEl._spiralAnim = requestAnimationFrame(animate);
+              }
+            })
+          ),
+
+          // Insight panel
+          h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded-xl p-4 text-sm space-y-2' },
+            h('div', { className: 'font-bold text-amber-300' }, '🎯 Why a spiral, not a straight line?'),
+            h('div', { className: 'text-amber-100/90 text-xs leading-relaxed' },
+              h('strong', null, 'Straight-line problem: '), 'If the falcon flies directly at the prey, the prey appears to move SIDEWAYS in its visual field as it travels — the bird would have to constantly rotate its head + body to track. At 200+ mph that head rotation creates drag, ruins the streamlining, AND requires the bird to angle its eye away from prey.'
+            ),
+            h('div', { className: 'text-amber-100/90 text-xs leading-relaxed' },
+              h('strong', null, 'Spiral solution: '), 'The logarithmic spiral approach keeps the prey at a CONSTANT angle to the falcon\'s body axis. The bird never needs to turn its head — eyes stay fixed forward through deep fovea, body stays streamlined, the prey appears motionless relative to the falcon. This is exactly the proportional-navigation algorithm used by AIM-9 Sidewinder + similar guided missiles, derived for the same reason: ',
+              h('strong', null, 'guidance without instability.')
+            ),
+            h('div', { className: 'text-xs text-slate-300 italic mt-2' }, 'Reference: Tucker, V.A. (1998) Curved flight paths and sideways vision in peregrine falcons. Journal of Experimental Biology 201(3):403-414.')
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: VISION ACUITY DEMO
+      // ────────────────────────────────────────────────────────
+      // Snellen-style chart at variable zoom showing what raptor vision
+      // actually feels like. Slider picks zoom: 1× (human) → 8× (theoretical).
+      function renderAcuity() {
+        var av = rh.acuity || { zoom: 1.0 };
+        function setAV(patch) { setRH({ acuity: Object.assign({}, av, patch) }); }
+        // Lines of a Snellen chart, sized so 1× is normal reading
+        var lines = [
+          { text: 'E F P', size: 90 },
+          { text: 'T O Z', size: 60 },
+          { text: 'L P E D', size: 40 },
+          { text: 'P E C F D', size: 27 },
+          { text: 'E D F C Z P', size: 19 },
+          { text: 'F E L O P Z D', size: 14 },
+          { text: 'D E F P O T E C', size: 10 },
+          { text: 'L E F O D P C T', size: 7 }
+        ];
+        // 6 species presets
+        var presets = [
+          { id: 'human', label: 'Human', zoom: 1.0, color: 'slate', desc: 'Baseline — 20/20 reads the bottom line at 20 ft.' },
+          { id: 'cat', label: 'Domestic Cat', zoom: 0.4, color: 'slate', desc: 'Cats are ~40% of human acuity. They\'re great at low-light + movement, but poor at sharpness.' },
+          { id: 'peregrine', label: 'Peregrine Falcon', zoom: 2.6, color: 'amber', desc: 'Peregrines see ~2.6× sharper than humans at fovea center.' },
+          { id: 'redTail', label: 'Red-tailed Hawk', zoom: 4.0, color: 'amber', desc: 'A red-tail can read the bottom line at 80 ft (vs human 20 ft).' },
+          { id: 'baldEagle', label: 'Bald Eagle', zoom: 5.0, color: 'orange', desc: 'A bald eagle sees fine detail at ~5× human acuity.' },
+          { id: 'goldenEagle', label: 'Golden Eagle', zoom: 5.5, color: 'red', desc: 'Spots a rabbit at 2 miles. Reads the bottom Snellen line at 110 ft.' },
+          { id: 'theoretical', label: 'Theoretical max', zoom: 8.0, color: 'red', desc: 'Some claims of 8× acuity in select raptor species. Likely overstated but plausible upper bound.' }
+        ];
+        var activePreset = presets.filter(function(p) { return Math.abs(p.zoom - av.zoom) < 0.05; })[0] || null;
+
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-violet-900/40 to-indigo-900/40 border border-violet-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-lg font-bold text-violet-200 mb-2' }, '👁️‍🗨️ Vision Acuity Demo'),
+            h('div', { className: 'text-sm text-violet-100/90 leading-relaxed' },
+              'Acuity multipliers are abstract until you ',
+              h('span', { className: 'font-bold text-amber-300' }, 'see'),
+              ' what they feel like. The Snellen-style chart below starts at human-scale (1×). Slide the zoom or click a species to scale the text up to raptor vision. A peregrine reads the bottom line at 52 ft instead of 20. A golden eagle reads it at 110 ft. The numbers don\'t mean much until you watch the text grow.'
+            )
+          ),
+
+          // Slider
+          h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4 space-y-3' },
+            h('div', null,
+              h('label', { className: 'text-xs text-violet-300 flex justify-between items-center' },
+                h('span', null, 'Zoom (acuity multiplier)'),
+                h('span', { className: 'font-mono text-amber-300' }, av.zoom.toFixed(2) + '×')
+              ),
+              h('input', {
+                type: 'range', min: 0.4, max: 8, step: 0.1, value: av.zoom,
+                onInput: function(e) { setAV({ zoom: parseFloat(e.target.value) }); },
+                className: 'w-full',
+                'aria-label': 'Visual acuity zoom multiplier'
+              }),
+              h('div', { className: 'flex justify-between text-[10px] text-slate-500' },
+                h('span', null, '0.4× (cat)'),
+                h('span', null, '1× (human)'),
+                h('span', null, '5× (eagle)'),
+                h('span', null, '8× (max)')
+              )
+            ),
+
+            // Species preset buttons
+            h('div', { className: 'flex flex-wrap gap-2' },
+              presets.map(function(p) {
+                var active = activePreset && activePreset.id === p.id;
+                var colorMap = { slate: 'amber', amber: 'amber', orange: 'orange', red: 'red' };
+                return h('button', {
+                  key: p.id,
+                  onClick: function() { setAV({ zoom: p.zoom }); rhAnnounce('Zoom set to ' + p.label + ': ' + p.zoom + 'x'); },
+                  className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (active
+                    ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-md ring-2 ring-amber-400/50'
+                    : 'bg-slate-800/50 text-amber-200 hover:bg-slate-700/50 hover:text-amber-100'),
+                  'aria-label': p.label + ' acuity ' + p.zoom + 'x',
+                  'aria-pressed': active
+                }, p.label + ' (' + p.zoom + '×)');
+              })
+            ),
+
+            activePreset && h('div', { className: 'p-3 rounded bg-amber-900/20 border border-amber-700/40 text-xs text-amber-100/90 italic' }, '🦅 ' + activePreset.desc)
+          ),
+
+          // The chart itself
+          h('div', { className: 'bg-white rounded-xl p-6 overflow-hidden', style: { minHeight: '500px', maxHeight: '70vh', overflowY: 'auto' } },
+            h('div', { className: 'text-center' },
+              h('div', { className: 'text-[10px] uppercase tracking-widest text-slate-400 mb-4' }, '— Acuity Demonstration Chart —'),
+              lines.map(function(line, i) {
+                var scaledSize = line.size * av.zoom;
+                return h('div', {
+                  key: i,
+                  style: {
+                    fontFamily: 'ui-monospace, Menlo, Consolas, monospace',
+                    fontSize: scaledSize + 'px',
+                    color: '#0f172a',
+                    fontWeight: 'bold',
+                    letterSpacing: '0.15em',
+                    lineHeight: 1.1,
+                    margin: (scaledSize * 0.15) + 'px 0',
+                    transition: 'font-size 0.2s ease'
+                  }
+                }, line.text);
+              }),
+              h('div', { className: 'text-[10px] text-slate-400 mt-6 italic' }, 'Larger text = closer-equivalent / sharper-equivalent vision. A bird that can see at this zoom level can read the same lines from much further away.')
+            )
+          ),
+
+          // What this means
+          h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-sm font-bold text-emerald-300 mb-2' }, '💡 The "100-foot newspaper" demonstration'),
+            h('div', { className: 'text-xs text-emerald-100/90 leading-relaxed space-y-2' },
+              h('p', null, 'A common claim: "a red-tailed hawk can read a newspaper headline at 100 feet." Where does that come from?'),
+              h('p', null,
+                'A 20/20 human reads a newspaper headline at ~25 feet under normal lighting. A red-tail with ~4× acuity should be able to read the same headline at ~4 × 25 = ',
+                h('span', { className: 'font-bold text-amber-300' }, '100 feet'),
+                '. A golden eagle at 5.5× should read it at ~140 feet. A peregrine at 2.6× should read it at ~65 feet.'
+              ),
+              h('p', null, 'These are simplifications — real raptor vision also has 2 foveas per eye, wider visual field, UV in falconids, and head-mounting that lets the bird scan with much less head motion than a human. The acuity number is just ONE axis of "better seeing."'),
+              h('p', { className: 'italic text-emerald-200/80' }, 'Try toggling between human, peregrine, and golden eagle on the slider above. The eagle-scale chart isn\'t just bigger text — it\'s the experiential equivalent of being 5× closer than you actually are.')
+            )
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: RECOVERY CASE STUDIES
+      // ────────────────────────────────────────────────────────
+      function renderRecoveries() {
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-emerald-900/40 to-cyan-900/40 border border-emerald-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-lg font-bold text-emerald-200 mb-2' }, '🏆 Recovery Case Studies'),
+            h('div', { className: 'text-sm text-emerald-100/90 leading-relaxed' },
+              RECOVERIES.intro,
+              h('span', { className: 'font-bold text-amber-300' }, RECOVERIES.introBold)
+            )
+          ),
+
+          // Case studies
+          h('div', { className: 'space-y-4' },
+            RECOVERIES.cases.map(function(c, i) {
+              return h('div', { key: c.id, className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-5' },
+                // Header
+                h('div', { className: 'flex items-baseline gap-3 mb-3' },
+                  h('div', { className: 'text-3xl' }, c.emoji),
+                  h('div', { className: 'text-lg font-bold text-amber-200' }, c.title)
+                ),
+                // Crisis
+                h('div', { className: 'bg-red-900/20 border border-red-700/40 rounded-lg p-3 mb-3' },
+                  h('div', { className: 'text-xs font-bold text-red-300 mb-1 uppercase tracking-wider' }, '⚠ ' + c.crisis),
+                  h('div', { className: 'text-xs text-red-100/90 leading-relaxed' },
+                    c.crisisDetail,
+                    c.crisisDetailBold && h('span', { className: 'font-bold text-red-200' }, c.crisisDetailBold),
+                    c.crisisDetailRest
+                  )
+                ),
+                // Action
+                h('div', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded-lg p-3 mb-3' },
+                  h('div', { className: 'text-xs font-bold text-cyan-300 mb-1 uppercase tracking-wider' }, '🔧 ' + c.action),
+                  h('div', { className: 'text-xs text-cyan-100/90 leading-relaxed' }, c.actionDetail)
+                ),
+                // Person + status grid
+                h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2 mb-3' },
+                  h('div', { className: 'bg-slate-800/40 rounded p-2.5' },
+                    h('div', { className: 'text-[10px] uppercase tracking-wider text-amber-300 mb-1' }, '👤 Key People'),
+                    h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, c.keyPerson)
+                  ),
+                  h('div', { className: 'bg-slate-800/40 rounded p-2.5' },
+                    h('div', { className: 'text-[10px] uppercase tracking-wider text-emerald-300 mb-1' }, '📊 Current Status'),
+                    h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, c.currentStatus)
+                  )
+                ),
+                // What next + lesson
+                h('div', { className: 'space-y-2' },
+                  h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-2.5' },
+                    h('div', { className: 'text-[10px] uppercase tracking-wider text-amber-300 mb-1' }, '🔮 What\'s next'),
+                    h('div', { className: 'text-xs text-amber-100/90 leading-relaxed' }, c.whatNext)
+                  ),
+                  h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-2.5' },
+                    h('div', { className: 'text-[10px] uppercase tracking-wider text-emerald-300 mb-1' }, '✦ Lesson'),
+                    h('div', { className: 'text-xs text-emerald-100/90 leading-relaxed italic' }, c.lesson)
+                  )
+                )
+              );
+            })
+          ),
+
+          // Meta lesson
+          h('div', { className: 'bg-gradient-to-br from-amber-900/30 to-orange-900/30 border border-amber-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-base font-bold text-amber-300 mb-3' }, '🧠 ' + RECOVERIES.metaLesson.title),
+            h('ul', { className: 'space-y-1.5 text-xs text-amber-100/90' },
+              RECOVERIES.metaLesson.points.map(function(p, i) {
+                return h('li', { key: i, className: 'leading-relaxed' }, p);
+              })
+            )
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
       // RENDER: RESOURCES
       // ────────────────────────────────────────────────────────
       function renderResources() {
@@ -2975,7 +3912,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // ────────────────────────────────────────────────────────
       return h('div', { className: 'space-y-4', role: 'region', 'aria-label': 'Raptor Hunt tool' },
         // Section count chip
-        h('div', { className: 'text-[11px] text-slate-500 uppercase tracking-wider' }, '17 sections · 8 species · 3D simulator · interactive labs · 18-question quiz'),
+        h('div', { className: 'text-[11px] text-slate-500 uppercase tracking-wider' }, '22 sections · 8 species · 3D + 2D simulators · acuity demo · 5 recovery case studies · 18-question quiz'),
         // Tab nav (scrollable horizontal)
         h('div', { className: 'flex gap-1.5 overflow-x-auto pb-1', role: 'tablist', 'aria-label': 'Raptor Hunt sections' },
           SECTIONS.map(function(s) {
@@ -3010,6 +3947,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           activeSection === 'hearing' && renderHearing(),
           activeSection === 'pellet' && renderPellet(),
           activeSection === 'falconry' && renderFalconry(),
+          activeSection === 'anatomy' && renderAnatomy(),
+          activeSection === 'lifecycle' && renderLifecycle(),
+          activeSection === 'spiral' && renderSpiral(),
+          activeSection === 'acuity' && renderAcuity(),
+          activeSection === 'recoveries' && renderRecoveries(),
           activeSection === 'quiz' && renderQuiz(),
           activeSection === 'resources' && renderResources()
         )

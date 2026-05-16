@@ -5808,6 +5808,15 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [showLivePollingPanel, setShowLivePollingPanel] = useState(false);
   const [showPictionaryHost, setShowPictionaryHost] = useState(false);
   const [showPictionaryGuest, setShowPictionaryGuest] = useState(false);
+  // Anchor Chart -> Pictionary bridge: when a teacher clicks "Play Pictionary"
+  // from an anchor chart, the chart's section labels land here and seed the
+  // Pictionary host's concept-idea chips on next open.
+  const [pictionaryIncomingConcepts, setPictionaryIncomingConcepts] = useState([]);
+  const handlePlayPictionaryFromAnchorChart = React.useCallback((payload) => {
+    const concepts = (payload && Array.isArray(payload.concepts)) ? payload.concepts.filter(c => c && c.trim()) : [];
+    if (concepts.length > 0) setPictionaryIncomingConcepts(concepts);
+    setShowPictionaryHost(true);
+  }, []);
   // Auto-open the Pictionary guest overlay on students once the teacher has
   // assigned them a role (drawer or guesser) in the live session. We watch the
   // Tier-1 roster.{uid}.role field via the existing sessionData snapshot.
@@ -22974,7 +22983,9 @@ Return ONLY valid JSON in this format:
                 })}
                 {activeView === 'anchor-chart' && window.AlloModules && window.AlloModules.AnchorChartView && React.createElement(window.AlloModules.AnchorChartView, {
                     t, generatedContent, isTeacherMode, isProcessing,
-                    handleNoteUpdate, callImagen
+                    handleNoteUpdate, callImagen,
+                    activeSessionCode,
+                    onPlayPictionary: handlePlayPictionaryFromAnchorChart,
                 })}
                 {activeView === 'image' && window.AlloModules && window.AlloModules.ImageView && React.createElement(window.AlloModules.ImageView, {
                     t, leveledTextLanguage, fillInTheBlank, generatedContent,
@@ -23614,13 +23625,14 @@ Return ONLY valid JSON in this format:
       {isTeacherMode && activeSessionCode && showPictionaryHost && window.AlloModules && window.AlloModules.ConceptPictionary && window.AlloModules.ConceptPictionary.HostView &&
         React.createElement(window.AlloModules.ConceptPictionary.HostView, {
           isOpen: showPictionaryHost,
-          onClose: () => setShowPictionaryHost(false),
+          onClose: () => { setShowPictionaryHost(false); setPictionaryIncomingConcepts([]); },
           sessionCode: activeSessionCode,
           sessionData,
           sessionRef: (typeof sessionUnsubscribeRef !== 'undefined' && sessionUnsubscribeRef && sessionUnsubscribeRef.current && sessionUnsubscribeRef.current.docRef) || (activeSessionCode ? doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode) : null),
           writeToSession,
           callGemini,
           sourceText: (generatedContent && (generatedContent.source || (generatedContent.data && generatedContent.data.sourceText))) || (typeof inputText !== 'undefined' ? inputText : ''),
+          initialConceptIdeas: pictionaryIncomingConcepts,
         })
       }
       {!isTeacherMode && activeSessionCode && user && user.uid && showPictionaryGuest && window.AlloModules && window.AlloModules.ConceptPictionary && window.AlloModules.ConceptPictionary.GuestOverlay &&
