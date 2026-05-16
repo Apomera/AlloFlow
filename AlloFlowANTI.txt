@@ -3736,6 +3736,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       document.head.appendChild(s);
     })();
     loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js');
+    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js');
     loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js');
     loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js');
     loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js');
@@ -18003,6 +18004,30 @@ Return ONLY valid JSON in this format:
      }
   };
   const modifyBlueprintWithAI = async (currentConfig, userInstruction) => {
+      // Pull tool catalog from the shared ToolCatalog module. Falls back to a
+      // minimal inline list if the catalog hasn't loaded (rare; loads at startup).
+      const _toolList = (typeof window !== 'undefined' && typeof window.formatToolCatalogInline === 'function')
+          ? window.formatToolCatalogInline()
+          : `        - analysis — Always recommended first.
+        - simplified — Adapt text to a reading level.
+        - glossary — Key vocabulary.
+        - outline — Visual organizer.
+        - image — AI-generated illustration.
+        - quiz — Assessment questions.
+        - sentence-frames — Scaffolded writing prompts.
+        - brainstorm — Open-ended idea generation.
+        - timeline — Chronological sequence.
+        - concept-sort — Categorization activity.
+        - adventure — Choose-your-own-adventure narrative.
+        - faq — FAQs from source text.
+        - persona — Interview historical figures.
+        - dbq — Document-Based Question activity.
+        - note-taking — Scaffolded note templates (Cornell / Lab Report / Reading Response).
+        - anchor-chart — EL-style class anchor chart.
+        - math — Opens STEM Lab.
+        - lesson-plan — Teacher synthesis. ALWAYS place LAST.
+        - gemini-bridge — Interactive sim/app generator.
+        - alignment-report — Post-hoc audit (only if explicit standards + audit requested).`;
       const prompt = `
       You are a Curriculum Designer adjusting a lesson plan blueprint based on teacher feedback.
       Current Blueprint JSON:
@@ -18015,26 +18040,7 @@ Return ONLY valid JSON in this format:
          - Update "globalSettings" (gradeLevel, tone) if requested.
          - Update "toolDirectives" to add specific instructions for tools if requested.
       Valid Tools (tool_id — when to use):
-        - analysis — Always recommended first; analyzes source text for key ideas, vocabulary, structure.
-        - simplified — Adapt text to a reading level (differentiation).
-        - glossary — Key vocabulary with definitions, examples, images.
-        - outline — Visual organizer (Venn, Flow Chart, Structured Outline, T-Chart, Fishbone, etc.).
-        - image — AI-generated illustration of a key concept.
-        - quiz — Assessment questions (MCQ, free response, Exit Ticket, Pre-Check, Formative, Spaced Review).
-        - sentence-frames — Scaffolded writing prompts (good for ELL or structured responses).
-        - brainstorm — Open-ended idea generation around a topic.
-        - timeline — Chronological sequence (historical or procedural content).
-        - concept-sort — Categorization activity; students sort terms into groups.
-        - adventure — Choose-your-own-adventure interactive narrative.
-        - faq — Frequently asked questions generated from source text.
-        - persona — Interview historical figures, scientists, or literary characters as if real.
-        - dbq — Document-Based Question activity with HAPP framework and rubric.
-        - note-taking — Scaffolded note-taking templates (Cornell / Lab Report / Reading Response) that persist across lessons.
-        - anchor-chart — EL-style class anchor chart (Reference / Process / Concept Map / Comparison) with AI-drafted structure and editable icons.
-        - math — Opens STEM Lab (interactive math/science exploration tools).
-        - lesson-plan — Teacher-facing synthesis of the whole pack. ALWAYS place LAST.
-        - gemini-bridge — Interactive simulation/app generator (React, Python, p5.js, chatbot).
-        - alignment-report — Post-hoc audit of generated resources against standards (only if explicit standards + user requests audit).
+${_toolList}
       Return ONLY the updated valid JSON.
       `;
       try {
