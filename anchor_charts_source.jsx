@@ -271,6 +271,12 @@ const AnchorChartView = React.memo((props) => {
   const [isEditing, setIsEditing] = React.useState(false);
   const [showCritique, setShowCritique] = React.useState(false);
   const [regenIdx, setRegenIdx] = React.useState(-1);
+  // Drag-and-drop reorder state. dragSrcIdx = the section being dragged;
+  // dragOverIdx = the section currently hovered as the drop target. Used to
+  // render visual feedback (opacity + drop-line). Touch devices work via the
+  // drag-drop-touch polyfill already loaded in prismflow-deploy/public/index.html.
+  const [dragSrcIdx, setDragSrcIdx] = React.useState(-1);
+  const [dragOverIdx, setDragOverIdx] = React.useState(-1);
 
   // First-mount: trigger Imagen calls for any section missing an iconUrl.
   // Each section's `iconPrompt` is biased toward the hand-drawn marker look.
@@ -318,6 +324,19 @@ const AnchorChartView = React.memo((props) => {
   };
   const handleAnnotationsChange = (nextAnnotations) => {
     handleNoteUpdate('annotations', Array.isArray(nextAnnotations) ? nextAnnotations : []);
+  };
+  // Reorder: move section at fromIdx to position toIdx (insert-before semantics).
+  // No-op if either index is out of range or moving to the same effective slot.
+  const handleReorderSection = (fromIdx, toIdx) => {
+    if (fromIdx === toIdx) return;
+    if (fromIdx < 0 || fromIdx >= sections.length) return;
+    if (toIdx < 0 || toIdx > sections.length) return;
+    const next = sections.slice();
+    const [moved] = next.splice(fromIdx, 1);
+    // After splice, indices >= fromIdx shifted by -1; adjust insertion point.
+    const adjustedTo = toIdx > fromIdx ? toIdx - 1 : toIdx;
+    next.splice(adjustedTo, 0, moved);
+    handleNoteUpdate('sections', next);
   };
 
   return (
@@ -398,31 +417,81 @@ const AnchorChartView = React.memo((props) => {
           ) : null}
         </div>
         <div className="ac-sections">
-          {sections.map((s, idx) => (
-            <div key={s.id || idx} className="relative group">
-              <AnchorChartSection
-                section={s}
-                sectionIndex={idx}
-                isEditing={isEditing}
-                onChange={(next) => updateSection(idx, next)}
-                onRegenIcon={handleRegenIcon}
-                isRegeneratingIcon={regenIdx === idx}
-              />
-              {isEditing ? (
-                <button
-                  onClick={() => handleRemoveSection(idx)}
-                  className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 text-xs px-1.5 py-0.5 bg-white/80 rounded-full border border-slate-200"
-                  aria-label={`Remove section ${idx + 1}`}
-                >✕ remove</button>
-              ) : null}
-            </div>
-          ))}
+          {sections.map((s, idx) => {
+            const isDraggingThis = dragSrcIdx === idx;
+            const isDropTarget = isEditing && dragSrcIdx >= 0 && dragSrcIdx !== idx && dragOverIdx === idx;
+            return (
+              <div
+                key={s.id || idx}
+                className="relative group"
+                onDragOver={(e) => {
+                  if (!isEditing || dragSrcIdx < 0) return;
+                  e.preventDefault();
+                  try { e.dataTransfer.dropEffect = 'move'; } catch (_) {}
+                  if (dragOverIdx !== idx) setDragOverIdx(idx);
+                }}
+                onDragLeave={() => {
+                  if (dragOverIdx === idx) setDragOverIdx(-1);
+                }}
+                onDrop={(e) => {
+                  if (!isEditing || dragSrcIdx < 0) return;
+                  e.preventDefault();
+                  handleReorderSection(dragSrcIdx, idx);
+                  setDragSrcIdx(-1);
+                  setDragOverIdx(-1);
+                }}
+                style={{
+                  opacity: isDraggingThis ? 0.4 : 1,
+                  transition: 'opacity 0.15s',
+                }}
+              >
+                {isDropTarget ? (
+                  <div className="absolute -top-1 left-2 right-2 h-1 bg-amber-500 rounded-full shadow-md pointer-events-none z-10" aria-hidden="true" />
+                ) : null}
+                {isEditing ? (
+                  <div
+                    className="absolute top-3 -left-1 text-amber-700 text-base opacity-30 group-hover:opacity-90 cursor-grab active:cursor-grabbing select-none ac-no-print"
+                    title="Drag to reorder"
+                    aria-label={`Drag handle for section ${idx + 1}`}
+                    role="button"
+                    tabIndex={-1}
+                    draggable={true}
+                    onDragStart={(e) => {
+                      setDragSrcIdx(idx);
+                      try { e.dataTransfer.effectAllowed = 'move'; } catch (_) {}
+                      try { e.dataTransfer.setData('text/plain', String(idx)); } catch (_) {}
+                    }}
+                    onDragEnd={() => { setDragSrcIdx(-1); setDragOverIdx(-1); }}
+                    style={{ userSelect: 'none' }}
+                  >⋮⋮</div>
+                ) : null}
+                <AnchorChartSection
+                  section={s}
+                  sectionIndex={idx}
+                  isEditing={isEditing}
+                  onChange={(next) => updateSection(idx, next)}
+                  onRegenIcon={handleRegenIcon}
+                  isRegeneratingIcon={regenIdx === idx}
+                />
+                {isEditing ? (
+                  <button
+                    onClick={() => handleRemoveSection(idx)}
+                    className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 text-xs px-1.5 py-0.5 bg-white/80 rounded-full border border-slate-200"
+                    aria-label={`Remove section ${idx + 1}`}
+                  >✕ remove</button>
+                ) : null}
+              </div>
+            );
+          })}
           {isEditing ? (
-            <div className="text-center mt-3">
+            <div className="text-center mt-3 space-y-2">
               <button
                 onClick={handleAddSection}
                 className="px-4 py-1.5 text-sm font-bold rounded-full bg-white border-2 border-dashed border-amber-400 text-amber-800 hover:bg-amber-50"
               >+ Add section</button>
+              {sections.length > 1 ? (
+                <div className="text-[11px] text-amber-700/70 italic">Tip: drag the ⋮⋮ handle on any section to reorder.</div>
+              ) : null}
             </div>
           ) : null}
         </div>

@@ -254,6 +254,8 @@ const AnchorChartView = React.memo((props) => {
   const [isEditing, setIsEditing] = React.useState(false);
   const [showCritique, setShowCritique] = React.useState(false);
   const [regenIdx, setRegenIdx] = React.useState(-1);
+  const [dragSrcIdx, setDragSrcIdx] = React.useState(-1);
+  const [dragOverIdx, setDragOverIdx] = React.useState(-1);
   const triedRef = React.useRef({});
   React.useEffect(() => {
     if (!callImagen) return;
@@ -300,6 +302,16 @@ const AnchorChartView = React.memo((props) => {
   };
   const handleAnnotationsChange = (nextAnnotations) => {
     handleNoteUpdate("annotations", Array.isArray(nextAnnotations) ? nextAnnotations : []);
+  };
+  const handleReorderSection = (fromIdx, toIdx) => {
+    if (fromIdx === toIdx) return;
+    if (fromIdx < 0 || fromIdx >= sections.length) return;
+    if (toIdx < 0 || toIdx > sections.length) return;
+    const next = sections.slice();
+    const [moved] = next.splice(fromIdx, 1);
+    const adjustedTo = toIdx > fromIdx ? toIdx - 1 : toIdx;
+    next.splice(adjustedTo, 0, moved);
+    handleNoteUpdate("sections", next);
   };
   return /* @__PURE__ */ React.createElement("div", { className: "ac-root max-w-5xl mx-auto px-4 py-6" }, /* @__PURE__ */ React.createElement("style", null, `
         .ac-paper {
@@ -370,32 +382,96 @@ const AnchorChartView = React.memo((props) => {
       style: { fontSize: "42px", color: "#7a4a1e" },
       "aria-label": "Chart title"
     }
-  ) : /* @__PURE__ */ React.createElement("h1", { className: "ac-title", style: { fontSize: "42px", color: "#7a4a1e", margin: 0 } }, title || "(untitled chart)"), lessonRef.generatedAt ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-amber-700/70 italic mt-1" }, "Created ", new Date(lessonRef.generatedAt).toLocaleDateString()) : null), /* @__PURE__ */ React.createElement("div", { className: "ac-sections" }, sections.map((s, idx) => /* @__PURE__ */ React.createElement("div", { key: s.id || idx, className: "relative group" }, /* @__PURE__ */ React.createElement(
-    AnchorChartSection,
-    {
-      section: s,
-      sectionIndex: idx,
-      isEditing,
-      onChange: (next) => updateSection(idx, next),
-      onRegenIcon: handleRegenIcon,
-      isRegeneratingIcon: regenIdx === idx
-    }
-  ), isEditing ? /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      onClick: () => handleRemoveSection(idx),
-      className: "absolute top-1 right-1 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 text-xs px-1.5 py-0.5 bg-white/80 rounded-full border border-slate-200",
-      "aria-label": `Remove section ${idx + 1}`
-    },
-    "\u2715 remove"
-  ) : null)), isEditing ? /* @__PURE__ */ React.createElement("div", { className: "text-center mt-3" }, /* @__PURE__ */ React.createElement(
+  ) : /* @__PURE__ */ React.createElement("h1", { className: "ac-title", style: { fontSize: "42px", color: "#7a4a1e", margin: 0 } }, title || "(untitled chart)"), lessonRef.generatedAt ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-amber-700/70 italic mt-1" }, "Created ", new Date(lessonRef.generatedAt).toLocaleDateString()) : null), /* @__PURE__ */ React.createElement("div", { className: "ac-sections" }, sections.map((s, idx) => {
+    const isDraggingThis = dragSrcIdx === idx;
+    const isDropTarget = isEditing && dragSrcIdx >= 0 && dragSrcIdx !== idx && dragOverIdx === idx;
+    return /* @__PURE__ */ React.createElement(
+      "div",
+      {
+        key: s.id || idx,
+        className: "relative group",
+        onDragOver: (e) => {
+          if (!isEditing || dragSrcIdx < 0) return;
+          e.preventDefault();
+          try {
+            e.dataTransfer.dropEffect = "move";
+          } catch (_) {
+          }
+          if (dragOverIdx !== idx) setDragOverIdx(idx);
+        },
+        onDragLeave: () => {
+          if (dragOverIdx === idx) setDragOverIdx(-1);
+        },
+        onDrop: (e) => {
+          if (!isEditing || dragSrcIdx < 0) return;
+          e.preventDefault();
+          handleReorderSection(dragSrcIdx, idx);
+          setDragSrcIdx(-1);
+          setDragOverIdx(-1);
+        },
+        style: {
+          opacity: isDraggingThis ? 0.4 : 1,
+          transition: "opacity 0.15s"
+        }
+      },
+      isDropTarget ? /* @__PURE__ */ React.createElement("div", { className: "absolute -top-1 left-2 right-2 h-1 bg-amber-500 rounded-full shadow-md pointer-events-none z-10", "aria-hidden": "true" }) : null,
+      isEditing ? /* @__PURE__ */ React.createElement(
+        "div",
+        {
+          className: "absolute top-3 -left-1 text-amber-700 text-base opacity-30 group-hover:opacity-90 cursor-grab active:cursor-grabbing select-none ac-no-print",
+          title: "Drag to reorder",
+          "aria-label": `Drag handle for section ${idx + 1}`,
+          role: "button",
+          tabIndex: -1,
+          draggable: true,
+          onDragStart: (e) => {
+            setDragSrcIdx(idx);
+            try {
+              e.dataTransfer.effectAllowed = "move";
+            } catch (_) {
+            }
+            try {
+              e.dataTransfer.setData("text/plain", String(idx));
+            } catch (_) {
+            }
+          },
+          onDragEnd: () => {
+            setDragSrcIdx(-1);
+            setDragOverIdx(-1);
+          },
+          style: { userSelect: "none" }
+        },
+        "\u22EE\u22EE"
+      ) : null,
+      /* @__PURE__ */ React.createElement(
+        AnchorChartSection,
+        {
+          section: s,
+          sectionIndex: idx,
+          isEditing,
+          onChange: (next) => updateSection(idx, next),
+          onRegenIcon: handleRegenIcon,
+          isRegeneratingIcon: regenIdx === idx
+        }
+      ),
+      isEditing ? /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          onClick: () => handleRemoveSection(idx),
+          className: "absolute top-1 right-1 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 text-xs px-1.5 py-0.5 bg-white/80 rounded-full border border-slate-200",
+          "aria-label": `Remove section ${idx + 1}`
+        },
+        "\u2715 remove"
+      ) : null
+    );
+  }), isEditing ? /* @__PURE__ */ React.createElement("div", { className: "text-center mt-3 space-y-2" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: handleAddSection,
       className: "px-4 py-1.5 text-sm font-bold rounded-full bg-white border-2 border-dashed border-amber-400 text-amber-800 hover:bg-amber-50"
     },
     "+ Add section"
-  )) : null), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-amber-700/70 italic text-center mt-4 ac-no-print" }, "Saved to your history. Open Critique mode to leave I notice / I wonder notes for peers.")), /* @__PURE__ */ React.createElement(
+  ), sections.length > 1 ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-amber-700/70 italic" }, "Tip: drag the \u22EE\u22EE handle on any section to reorder.") : null) : null), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-amber-700/70 italic text-center mt-4 ac-no-print" }, "Saved to your history. Open Critique mode to leave I notice / I wonder notes for peers.")), /* @__PURE__ */ React.createElement(
     AnchorChartCritiqueOverlay,
     {
       isOpen: showCritique,
