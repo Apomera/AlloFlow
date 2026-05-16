@@ -1235,7 +1235,83 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       explanation: 'Diurnal raptors have a deep central fovea (binocular forward, used for prey targeting) + a shallow temporal fovea (monocular sideways, used to scan for kleptoparasites + threats). Both have high cone density. Result: a peregrine in a stoop can simultaneously resolve fine detail on its forward target AND its 45° sideways periphery. No mammal can do this.' },
     { id: 'q45', difficulty: 'hard', q: 'The California condor population dropped to 22 individuals in 1987, ALL captured for captive breeding. What was the PRIMARY threat that pushed them to extinction?',
       options: ['DDT', 'Lead-shot fragments in carrion (gut piles from hunters using lead ammunition)', 'Habitat loss', 'Direct shooting'], correctIdx: 1,
-      explanation: 'Lead poisoning from scavenging gut piles + carcasses left by hunters using lead ammunition. Lead fragments enter the bloodstream + cause paralysis of the digestive tract → slow starvation. Recovery has been entirely captive-breed + reintroduce, but lead REMAINS the #1 ongoing threat. Every wild condor is regularly recaptured + tested. California\'s 2019 lead-ammo ban is critical for ongoing recovery.' }
+      explanation: 'Lead poisoning from scavenging gut piles + carcasses left by hunters using lead ammunition. Lead fragments enter the bloodstream + cause paralysis of the digestive tract → slow starvation. Recovery has been entirely captive-breed + reintroduce, but lead REMAINS the #1 ongoing threat. Every wild condor is regularly recaptured + tested. California\'s 2019 lead-ammo ban is critical for ongoing recovery.' },
+    // ── NEW v0.34: 25 more quiz questions ──
+    { id: 'q46', difficulty: 'easy', q: 'Which raptor is the LARGEST flying bird in North America?',
+      options: ['Bald eagle', 'Golden eagle', 'California condor', 'Great horned owl'], correctIdx: 2,
+      explanation: 'California condor — 9.5 ft (2.9 m) wingspan. 22 lbs (10 kg) body mass. Largest flying bird in North America. Goes extinct without intensive captive breeding + ongoing lead-shot poisoning mitigation.' },
+    { id: 'q47', difficulty: 'easy', q: 'A raptor hovers actively over a roadside field, windmilling its wings. Most likely species:',
+      options: ['Cooper\'s hawk', 'American kestrel', 'Northern harrier', 'Sharp-shinned hawk'], correctIdx: 1,
+      explanation: 'American kestrel. Active hover-hunting is rare among raptors — rough-legged hawk + kestrel are the two North American species that do it. Kestrels are the more common + more accessible hover-hunter; they\'re visible from highways year-round.' },
+    { id: 'q48', difficulty: 'easy', q: 'A red-tailed hawk\'s namesake is:',
+      options: ['Red back', 'Red belly', 'Rusty-red tail in adults', 'Red eye'], correctIdx: 2,
+      explanation: 'The rusty-red tail visible in adults. Juveniles have a brown banded tail. The species was named for this distinctive adult plumage. The 14 named subspecies/color morphs vary widely in body color but share the diagnostic red tail in adults.' },
+    { id: 'q49', difficulty: 'easy', q: 'Why do hawks and eagles have a 3rd eyelid?',
+      options: ['To blink faster', 'The nictitating membrane protects the eye from debris during high-speed flight without blocking vision', 'For sleeping', 'For thermoregulation'], correctIdx: 1,
+      explanation: 'The nictitating membrane is a transparent eyelid that slides horizontally across the eye. It protects the eye from debris during high-speed flight (peregrine stoop) + during dust + dive into water. All birds have one; raptors depend on it for high-speed predation.' },
+    { id: 'q50', difficulty: 'easy', q: 'A flock of black soaring birds circle a recent dead animal. The most likely species:',
+      options: ['Turkey vultures', 'Bald eagles', 'Black hawks', 'Crows'], correctIdx: 0,
+      explanation: 'Turkey vultures. They\'re the most common scavenging soaring bird in North America. Find carrion by smell (unique among most birds). When you see "vultures circling a carcass" in real life, those are almost always turkey vultures.' },
+    { id: 'q51', difficulty: 'medium', q: 'The medieval European falconry hierarchy assigned which species exclusively to monarchs?',
+      options: ['Peregrine falcon', 'Gyrfalcon', 'Sparrowhawk', 'Goshawk'], correctIdx: 1,
+      explanation: 'Gyrfalcon. The Iceland gyrfalcon was the most prized falconry bird — exclusive to monarchs by law. Iceland gyrfalcons were valuable trade goods to European royalty for centuries. The medieval hierarchy went: emperor=eagle, king=gyrfalcon, earl=peregrine, knight=sparrowhawk, lady=merlin, knave=kestrel.' },
+    { id: 'q52', difficulty: 'medium', q: 'A barn owl\'s heart-shaped facial disc serves what purpose?',
+      options: ['Just for cuteness', 'Funnels sound to the asymmetric ear openings — like a parabolic dish', 'Camouflage', 'Eye protection'], correctIdx: 1,
+      explanation: 'The flat facial disc is a parabolic sound collector. It funnels sound waves to the asymmetric ear openings — boosts effective ear sensitivity by ~10 dB. Combined with ear asymmetry (left higher than right), this allows owls to localize sound in 3D to ~1° accuracy in total darkness (Payne 1962).' },
+    { id: 'q53', difficulty: 'medium', q: 'Why do peregrines have a small bony tubercle inside their nostril (nare)?',
+      options: ['Smell enhancement', 'Disrupts airflow at 200+ mph stoop so high-pressure wind doesn\'t collapse the lungs', 'Salt excretion', 'Decoration'], correctIdx: 1,
+      explanation: 'The nasal tubercle disrupts airflow at high speed. At 200+ mph stoop, atmospheric pressure on the open nostril would literally collapse the bird\'s lungs. The tubercle creates turbulence that prevents direct pressurization. Similar tubercles exist in some swifts that also fly at extreme speeds.' },
+    { id: 'q54', difficulty: 'medium', q: 'A barred owl is expanding rapidly westward into spotted owl territory. The conservation dilemma is:',
+      options: ['Cull barred owls to save spotted owls (controversial)', 'Translocate spotted owls east', 'Hybridize them', 'Wait + see'], correctIdx: 0,
+      explanation: 'Active culling of barred owls in spotted-owl recovery areas. Highly contentious — barred owls are a native species expanding their natural range, not invaders. But spotted owls are critically endangered + barred owls aggressively displace them. This is one of the hardest ethical questions in modern wildlife conservation.' },
+    { id: 'q55', difficulty: 'medium', q: 'Aristotle wrote (~350 BCE) that vultures find food by what sense?',
+      options: ['Sight', 'Smell', 'Hearing', 'Telepathy'], correctIdx: 1,
+      explanation: 'Smell. Aristotle\'s claim was disputed for 2,000 years until Kenneth Stager\'s 1964 experiments confirmed turkey vultures DO use smell to find carrion. The discovery was made by tracking vulture behavior near natural gas pipelines (mercaptan in the gas smells like decay). Aristotle was right — for turkey vultures, at least. Old World vultures still find carrion by sight.' },
+    { id: 'q56', difficulty: 'medium', q: 'During peregrine recovery from DDT, what falconry technique was central to releasing captive-bred chicks?',
+      options: ['Wing clipping', '"Hacking" — soft-release using falconry hack-box methods', 'Force-feeding', 'Tracking collars'], correctIdx: 1,
+      explanation: 'Hacking. Captive-bred chicks were placed in elevated hack boxes (mock cliff nests) at release sites + fed remotely without seeing humans. They progressively gain flight skill + independence over weeks until they leave on their own. This falconry technique enabled the entire peregrine recovery — without it, captive-bred chicks couldn\'t make the transition to wild life.' },
+    { id: 'q57', difficulty: 'medium', q: 'The 1990s "Argentine pampas crisis" killed ~35,000 Swainson\'s hawks before international action. The cause was:',
+      options: ['DDT', 'Organophosphate insecticide spraying for grasshoppers', 'Habitat clearing', 'Direct hunting'], correctIdx: 1,
+      explanation: 'Organophosphate insecticide (monocrotophos) applied to Argentine pampas to control grasshoppers. Swainson\'s hawks winter in Argentina + switch to insect diet — they were eating poisoned grasshoppers + dying en masse. International agreement banned the chemical for raptor protection. One of the few cases where a single chemical was banned for raptor protection.' },
+    { id: 'q58', difficulty: 'medium', q: 'A bald eagle\'s 5-foot-wide stick nest weighs roughly:',
+      options: ['10-20 lbs', '100-200 lbs', '1-3 tons', '10+ tons'], correctIdx: 2,
+      explanation: 'Bald eagle nests average 1-3 tons! Pairs add to the same nest year after year. The world-record nest (in Vermilion, OH) was 9.5 ft wide × 20 ft deep + weighed 3 tons before it fell. Some nests host the same lineage of birds for 30+ years.' },
+    { id: 'q59', difficulty: 'medium', q: 'A raptor\'s "pecten oculi" is a unique anatomical feature in the eye. Its function:',
+      options: ['Color processing', 'Provides nutrients to the retina without blood vessels crossing the retina (keeps vision unobstructed)', 'Eye motion', 'Tear production'], correctIdx: 1,
+      explanation: 'Pecten oculi — a comb-shaped vascular structure in the bird eye. Provides nutrients to the retina WITHOUT requiring blood vessels to cross the retina itself (which would create shadow-spots in the visual field). No mammal has this. Result: birds have cleaner unobstructed vision than mammals.' },
+    { id: 'q60', difficulty: 'medium', q: 'Why are raptor eyes locked in their orbits (cannot rotate like mammal eyes)?',
+      options: ['Evolution mistake', 'The sclerotic ring (bone supporting the eye) makes eye-orbit rotation impossible — head turning compensates', 'Genetic defect', 'Saves energy'], correctIdx: 1,
+      explanation: 'The sclerotic ring — a ring of bony plates that maintains eye shape against wind pressure of high-speed flight — prevents the eye from rotating within the orbit. Raptors compensate by turning their entire head (owls famously 270°). Costs: slower gaze redirection. Benefits: stronger eye-orbit, no shape distortion at speed.' },
+    { id: 'q61', difficulty: 'medium', q: 'Pale Male, the famous Manhattan red-tail, nested at 927 Fifth Avenue for how long?',
+      options: ['5 years', '15 years', '32 years (until his death in 2023)', 'Just 1 year — single nest'], correctIdx: 2,
+      explanation: 'Pale Male nested at 927 Fifth Avenue from 1993-2023 — 30 years. He raised 26+ offspring on that single nest. In December 2004, the coop board removed his nest as a "safety hazard." The 12-day public outcry — including Mary Tyler Moore\'s public statement + NYT front-page coverage — forced the board to install a stainless-steel cradle which Pale Male promptly rebuilt on.' },
+    { id: 'q62', difficulty: 'hard', q: 'Tucker\'s 1998 model showed the peregrine stoop is mathematically identical to which engineering algorithm?',
+      options: ['Bezier spline', 'AIM-9 Sidewinder proportional-navigation guidance', 'PID control', 'Linear regression'], correctIdx: 1,
+      explanation: 'Tucker 1998 showed the logarithmic spiral stoop trajectory maintains a constant retinal angle on the prey. This is mathematically identical to proportional navigation — the guidance algorithm used by AIM-9 Sidewinder + most modern guided missiles. The bird (or missile) needs no continuous calculations — just maintain constant LOS angle + the geometry handles itself.' },
+    { id: 'q63', difficulty: 'hard', q: 'Why do diurnal raptors have TWO foveas per eye (one central, one temporal)?',
+      options: ['Genetic redundancy', 'Forward fovea for prey tracking + lateral fovea for kleptoparasite + threat watching — simultaneously', 'Color separation', 'Backup if one fails'], correctIdx: 1,
+      explanation: 'Two foveas per eye allow simultaneous high-acuity vision in 2 directions. Central fovea = forward gaze (prey targeting during stoop). Temporal fovea = lateral gaze (scan for kleptoparasites + threats while focused forward). A peregrine in stoop can resolve fine detail on its target AND on its 45° periphery simultaneously. No mammal can do this.' },
+    { id: 'q64', difficulty: 'hard', q: 'The "asymmetric ear" theory of owl hearing was confirmed by which experiment?',
+      options: ['Computer simulation', 'Payne 1962 — total-darkness barn owl strikes on leaf-litter mouse, recorded with infrared camera', 'Microscopy', 'Genetics'], correctIdx: 1,
+      explanation: 'Roger Payne (1962) placed a barn owl in a totally dark room with a mouse on a leaf-litter floor. With infrared camera, he recorded ~17 silent strikes — all were kills, accurate to ~1° elevation + azimuth. This proved that barn owls can localize sound in 3D in total darkness. Subsequent anatomy showed the asymmetric ear placement + the brain circuits that compute elevation from time-of-arrival differences.' },
+    { id: 'q65', difficulty: 'hard', q: 'The 1947-1972 DDT era killed millions of raptors. The specific mechanism was:',
+      options: ['DDT poisoned the birds directly', 'DDT bioaccumulated through the food chain + DDE (its breakdown product) interfered with calcium metabolism → eggshell thinning', 'DDT made birds sterile', 'DDT damaged organs'], correctIdx: 1,
+      explanation: 'DDT (and its persistent breakdown product DDE) bioaccumulated up the food chain. At the top, raptors had concentrations 100,000× the environmental levels. DDE interfered with calcium metabolism — the eggshells became so thin they cracked under brooding parents. Adults survived; eggs failed. By 1965, peregrine populations collapsed entirely east of the Rockies. The 1972 US DDT ban started the recovery.' },
+    { id: 'q66', difficulty: 'hard', q: 'The "1/3 rule" in raptor biology states what about predator-prey weight?',
+      options: ['Predators are 3× prey size', 'Raptors typically take prey < 1/3 of their own body mass', 'Energy ratio of 3:1 prey to predator', 'Reproduction limit'], correctIdx: 1,
+      explanation: 'The 1/3 rule: raptors typically catch prey weighing less than 1/3 of their own body mass. Larger prey requires more force + time + risks injury. Exceptions: peregrines on ducks, golden eagles on fawn deer — both push beyond 1/3 but represent specialized hunting. The rule explains why size + agility matter — smaller raptors take smaller prey because that\'s biomechanically feasible.' },
+    { id: 'q67', difficulty: 'hard', q: 'Mauritius kestrel recovery from 4 individuals (1974) to 800+ (peak 2005) used what conservation technique?',
+      options: ['Habitat restoration only', 'Carl Jones\' double-clutching + nest-box program + hand-rearing chicks', 'International trade ban', 'Translocation from Africa'], correctIdx: 1,
+      explanation: 'Carl Jones spent 40 years on Mauritius. He pioneered double-clutching (taking first clutch + letting females lay second), hand-rearing chicks in incubators, providing nest boxes, controlling introduced predators. The result was the most extreme raptor recovery in conservation history. Jones received the Indianapolis Prize 2016 (conservation\'s Nobel).' },
+    { id: 'q68', difficulty: 'hard', q: 'A bald eagle\'s screaming call in movies is almost always:',
+      options: ['Actually a bald eagle', 'Dubbed in from a red-tailed hawk recording', 'Synthesized in post-production', 'A different eagle species'], correctIdx: 1,
+      explanation: 'Hollywood dubs red-tailed hawk calls over bald eagle scenes. The actual bald eagle vocalization is a high-pitched chitter ("weak-eek-eek-eek") that filmmakers find unimpressive. The red-tail "KEEEER-ee-er" sounds majestic. Even American documentaries about bald eagles use dubbed red-tail calls. Watch any movie with an "eagle scream" — it\'s a red-tailed hawk.' },
+    { id: 'q69', difficulty: 'hard', q: 'A red-tailed hawk territory averages 4 km². The continental US is ~7.5 million km². What population could the lower 48 theoretically support?',
+      options: ['~100,000 pairs', '~500,000 pairs', '~1.5-2 million pairs (current actual)', '~10 million pairs'], correctIdx: 2,
+      explanation: '1.5-2 million pairs is both the theoretical maximum + the actual current population. Red-tails are at carrying capacity across most of their range. This is why they\'re NOT a conservation concern — they\'ve filled the available niche. Compare to peregrines at ~3,200 pairs (limited by cliff nest sites + urban skyscraper alternatives) or California condors at 530 (limited by habitat + lead-shot exposure).' },
+    { id: 'q70', difficulty: 'hard', q: 'The "raptor question" — are turkey vultures + black vultures actually raptors?',
+      options: ['Yes, they are', 'No — DNA evidence places them in Cathartiformes, separate from true raptors (Accipitriformes + Falconiformes). Convergent evolution of the raptor body plan from carrion-eating ancestors.', 'Sometimes', 'Depends on the country'], correctIdx: 1,
+      explanation: 'Strict taxonomy: New World vultures (turkey, black, condor) are NOT true raptors. DNA (early 2000s) placed them in Cathartiformes — they\'re closer to storks than to hawks/falcons. The hooked beak + talons + soaring lifestyle are CONVERGENT EVOLUTION from carrion-eating ancestors. But conventionally, hawkwatch sites count them as raptors because they share migration corridors + threats. Both perspectives valid — taxonomic vs ecological.' }
   ];
 
   // ───────────────────────────────────────────────────────────
@@ -1805,7 +1881,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('div', { className: 'flex-1' },
                 h('div', { className: 'text-xl font-bold text-amber-200' }, 'Raptor Hunt: Predator Physics + Biology'),
                 h('div', { className: 'text-sm text-amber-100/80 mt-1' }, 'Hunt as a peregrine at 240 mph. Crush bones at 530 psi as a harpy. See vole urine trails in UV like a kestrel. Glide silently on owl feathers. Then study the biology that makes it all possible.'),
-                h('div', { className: 'text-xs text-amber-300/70 mt-2 italic' }, '25 sections · 20 species · 6 interactive labs · anatomy + acuity demo · case studies · 42-term glossary · 45-question quiz')
+                h('div', { className: 'text-xs text-amber-300/70 mt-2 italic' }, '25 sections · 20 species · 6 interactive labs · anatomy + acuity demo · case studies · 42-term glossary · 70-question quiz')
               )
             ),
             // ── NEW v0.20: "Surprise me" random-section button ──
@@ -9846,10 +9922,91 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 id: 'mp30', topic: '🌀 Cumulative Wind Drift',
                 problem: 'A raptor migrating south experiences crosswind of 3 m/s for 6 hours of flying time. What is the total LATERAL drift?',
                 solution: 'Drift = wind speed × time = 3 m/s × 6 × 3600 s = 64,800 m = 64.8 km. Without wind correction, the bird drifts almost 65 km off its target azimuth. This is why migrating raptors actively compensate — they "crab" into the wind by pointing nose into wind + traveling diagonally to maintain ground track. Tracking studies show real birds correct nearly perfectly even with no visual landmarks.'
+              },
+              // ── NEW v0.34: 20 more math problems ──
+              { id: 'mp31', topic: '🦴 Pneumatic Bones',
+                problem: 'A bald eagle skeleton weighs 0.225 kg (5% of 4.5 kg body mass). If 30% of bone volume is air-filled chambers, what mass of "ghost bone" do those chambers represent (assuming bone density 1.85 g/cm³)?',
+                solution: 'Total bone volume = 225 g / 1.85 g/cm³ = 121.6 cm³. Air-filled fraction = 30% × 121.6 = 36.5 cm³ of bone replaced by air. If filled with solid bone instead: extra mass = 36.5 × 1.85 = 67.5 g. The pneumatic adaptation saves 67.5 g — equivalent to a small bird worth of mass. Across the entire skeleton, pneumatization is one of the key flight-enabling adaptations.'
+              },
+              { id: 'mp32', topic: '🧬 Allometric Scaling',
+                problem: 'Resting metabolic rate scales with body mass as: BMR (kcal/day) ≈ 73 × m^0.75 (Kleiber\'s law). Calculate BMR for: (a) kestrel 0.12 kg (b) peregrine 0.95 kg (c) bald eagle 4.5 kg. What is the kcal-per-gram ratio for each?',
+                solution: '(a) Kestrel: 73 × 0.12^0.75 = 73 × 0.204 = 14.9 kcal/day. Per gram: 14.9/120 = 0.124 kcal/g/day. (b) Peregrine: 73 × 0.95^0.75 = 73 × 0.962 = 70.2 kcal/day. Per gram: 70.2/950 = 0.074. (c) Bald eagle: 73 × 4.5^0.75 = 73 × 3.09 = 225 kcal/day. Per gram: 225/4500 = 0.050. SMALLER birds need MORE energy per gram (allometric scaling) — a kestrel "burns hotter" than an eagle relative to body mass. This is why small raptors must hunt more frequently.'
+              },
+              { id: 'mp33', topic: '🌍 Migration Energy Reserves',
+                problem: 'A Swainson\'s hawk before migration weighs 1.0 kg with ~20% body fat (200 g fat). 1 gram of fat = 9 kcal. How many calories of energy reserves? At a migration burn rate of 30 kcal/hr, how long can it fly without eating?',
+                solution: 'Energy reserves = 200 g × 9 kcal/g = 1,800 kcal. Flight time = 1,800/30 = 60 hours of pure flight. At 25 mph cruise + 8hr/day flying = 200 miles/day × 7-8 days continuous = ~1,500 miles. Migrating raptors plan their stopover-feeding schedule around exactly this kind of energy budget calculation.'
+              },
+              { id: 'mp34', topic: '🍖 Predator-Prey Mass',
+                problem: 'A "1/3 rule" in raptor biology: raptors typically catch prey weighing < 1/3 of their own body mass. List the maximum prey mass for (a) kestrel (0.12 kg), (b) peregrine (0.95 kg), (c) bald eagle (4.5 kg), (d) golden eagle (4.2 kg).',
+                solution: '(a) Kestrel: 0.12/3 = 0.04 kg = 40 g. (b) Peregrine: 0.317 kg = 317 g. (c) Bald eagle: 1.5 kg = 1500 g. (d) Golden eagle: 1.4 kg = 1400 g. EXCEPTIONS: peregrines occasionally take ducks (1+ kg). Golden eagles famously take fawn deer (4-5 kg) by tearing the back of the neck. The "1/3 rule" is a guideline, not a hard limit.'
+              },
+              { id: 'mp35', topic: '🌀 Stoop Drag Force',
+                problem: 'Drag force F = 0.5 × ρ × Cd × A × v². For peregrine in stoop: ρ = 1.225 kg/m³, Cd = 0.18, A = 0.018 m², v = 108 m/s. Calculate drag in Newtons. At what velocity does drag equal gravitational pull (m × g = 9.32 N) — terminal velocity?',
+                solution: 'F_drag at 108 m/s = 0.5 × 1.225 × 0.18 × 0.018 × 108² = 0.5 × 1.225 × 0.18 × 0.018 × 11664 = 23.1 N. Wait — this exceeds m×g, so we\'re past terminal. Solving F_drag = m×g for terminal: 9.32 = 0.5 × 1.225 × 0.18 × 0.018 × v². v² = 9.32 / 0.00198 = 4704. v = 68.6 m/s ≈ 153 mph. Real peregrines reach ~242 mph by reducing frontal area further mid-dive (deeper tuck).'
+              },
+              { id: 'mp36', topic: '👀 Field of View Math',
+                problem: 'A great horned owl has 110° total field of view + 70° binocular zone. What is the monocular-only field per eye (left + right combined)?',
+                solution: 'Monocular zones = total field − binocular zone = 110° − 70° = 40°. Per eye = 20°. So owls have just 20° of "side-only" vision per eye. By contrast, hawks have 220° total field + 35° binocular = ~92° monocular per eye. Owls trade peripheral coverage for deep stereo depth perception — useful for striking at moving prey at close range.'
+              },
+              { id: 'mp37', topic: '⚖ Pellet Composition',
+                problem: 'A barn owl pellet weighs 5 grams. If composition is 45% fur, 25% bone, 5% loose teeth, 15% feathers, 10% misc — calculate mass of each component.',
+                solution: 'Fur: 5 × 0.45 = 2.25 g. Bone: 5 × 0.25 = 1.25 g. Teeth: 5 × 0.05 = 0.25 g. Feathers: 5 × 0.15 = 0.75 g. Misc: 0.50 g. The dense bone fraction is what enables forensic identification — even microscopic skull fragments can be matched to species via dentary morphology.'
+              },
+              { id: 'mp38', topic: '🪶 Lift Coefficient',
+                problem: 'Lift = 0.5 × ρ × Cl × A × v². For an eagle to maintain altitude (lift = weight = m×g): m = 4.5 kg, A = 0.62 m², v = 10 m/s cruise. What lift coefficient (Cl) does the wing need to produce?',
+                solution: 'Lift required = 4.5 × 9.81 = 44.1 N. Cl = (44.1 × 2) / (1.225 × 0.62 × 10²) = 88.2 / 75.95 = 1.16. The eagle wing must produce Cl ≈ 1.16 for level flight at 10 m/s. Stalling typically occurs around Cl > 1.5 for most airfoils — so the eagle has some margin. As speed increases, Cl needed decreases (v² in denominator).'
+              },
+              { id: 'mp39', topic: '🐣 Brood Reduction',
+                problem: 'Bald eagle clutches: typically 2 eggs (sometimes 3). 65% of clutches successfully fledge 1 chick; 30% fledge 2; 5% fledge 0 or 3. Average chicks fledged per nest?',
+                solution: 'Average = (0.65 × 1) + (0.30 × 2) + (0.05 × 1.5) = 0.65 + 0.60 + 0.075 = 1.325 chicks/nest/year. Combined with population of 100,000 pairs in lower 48, that\'s 132,500 fledglings per year — but only ~60% survive to age 1, so ~80,000 enter the adult population annually. Sustains population given ~5% adult mortality.'
+              },
+              { id: 'mp40', topic: '🌡 Body Temperature',
+                problem: 'Bird body temperature is ~40-42°C (vs human 37°C). A 4.5 kg eagle losing heat at 100 W in a 10°C environment needs how much metabolism to maintain temperature? (Use 1 W = 1 J/s = 0.000239 kcal/s).',
+                solution: 'Heat loss = 100 W = 0.0239 kcal/s = 86.0 kcal/hr = 2,063 kcal/day if continuous. Combined with basal metabolism + activity = ~3,000 kcal/day. Birds maintain higher Tbody than mammals partly to enable continuous flight (no time to rest + cool). Cost: birds eat more per kg than equivalent mammals.'
+              },
+              { id: 'mp41', topic: '💨 Wing Beat Frequency',
+                problem: 'Wing beat frequency f scales roughly as f ≈ k × m^(-0.33). For a kestrel (m=0.12 kg) wing beat = 5 Hz, predict the wing beat for a bald eagle (m=4.5 kg).',
+                solution: 'Ratio = (4.5/0.12)^(-0.33) = 37.5^(-0.33) = 0.30. f_eagle = 5 × 0.30 = 1.5 Hz. Observed bald eagle: 1.5-2.5 Hz. Heavier birds flap slower — wing inertia scales with cubed length but available muscle scales with cross-sectional area (squared length). This is also why hummingbirds (60 Hz) + condors (~1 Hz) flap so differently.'
+              },
+              { id: 'mp42', topic: '🦴 Air-Sac Volume',
+                problem: 'Bird respiratory system includes air sacs ~15% of body volume. For a 4.5 kg eagle with body volume ~3.8 L, what air-sac volume does the eagle carry? How does this compare to mammals (no air sacs)?',
+                solution: 'Air sac volume = 0.15 × 3.8 = 0.57 L. So a 4.5 kg eagle carries 570 mL of air sacs inside its body cavity. This is roughly the lung capacity of a 4.5 kg cat — but the cat\'s lungs are the BULK of respiratory volume, while the eagle\'s air sacs are SEPARATE from its smaller lungs. Air sacs make breathing one-way (more efficient than mammal in-out flow).'
+              },
+              { id: 'mp43', topic: '🎯 Strike Success',
+                problem: 'A Cooper\'s hawk shows ~30% strike success rate. For 200 strikes per year, calculate: catches per year, missed strikes per year. If each catch yields 80 kcal + each miss costs 8 kcal, annual energy from hunting?',
+                solution: '200 × 0.30 = 60 catches. 200 × 0.70 = 140 misses. Energy: (60 × 80) − (140 × 8) = 4800 − 1120 = 3680 kcal annual NET. Daily need = ~140 kcal × 365 = 51,100 kcal. Hunting energy alone covers ~7% of annual need — the rest comes from carrion + scavenging + opportunistic catches. Real raptors are NEVER just one type of hunter.'
+              },
+              { id: 'mp44', topic: '📡 Telemetry Battery',
+                problem: 'A GPS telemetry tag weighs 12g (max safe is ~3% of bird mass) + transmits 4 fixes/day. Battery life = 2 years per cell. If a raptor weighs 0.5 kg, what fraction of body mass is the tag? Can it carry a heavier tag?',
+                solution: 'Tag fraction = 12/500 = 2.4% — under the 3% safe limit. Could carry a tag up to 15g safely. Smaller raptors (kestrels at 120g) are limited to 3.6g tags = ultra-miniature electronics. Modern GPS tags for small birds are bee-sized now.'
+              },
+              { id: 'mp45', topic: '🌬 Air Density at Altitude',
+                problem: 'Air density at altitude h follows ρ(h) = 1.225 × exp(-h/8000). For a peregrine stoop from 1000m vs sea-level: how much does drag decrease? Does this help or hurt the strike?',
+                solution: 'ρ(1000) = 1.225 × exp(-0.125) = 1.225 × 0.882 = 1.08 kg/m³. Drag scales linearly with ρ — drops 12%. SO the falcon goes FASTER at altitude than predicted by sea-level math. This is why high-altitude stoops generate the famous "240 mph" speeds. Drag-limited terminal velocity v_t scales as 1/√ρ, so at 1000m, v_t is √(1.225/1.08) = 1.065× higher than sea level. About 7% faster.'
+              },
+              { id: 'mp46', topic: '🌊 Plunge Dive Energy',
+                problem: 'An osprey weighs 1.6 kg + plunges feet-first from 30 ft (~9 m). Impact velocity v = √(2gh) = √(2×9.81×9) = 13.3 m/s. Calculate kinetic energy at impact + compare to peregrine stoop.',
+                solution: 'KE = 0.5 × 1.6 × 13.3² = 141 J. Compare to peregrine 5,540 J. Osprey impacts at ~40× LESS energy than peregrine — but enough to penetrate water surface + grasp fish with talons. Ospreys can\'t survive a peregrine-scale impact (no nictitating membrane to high-speed grade) — physics dictates a slower, gentler approach.'
+              },
+              { id: 'mp47', topic: '⏰ Daily Activity Budget',
+                problem: 'A red-tailed hawk daily activity: 6 hrs perched scanning, 4 hrs soaring, 2 hrs hunting strikes, 2 hrs eating + digesting, 10 hrs roosting. Calculate calories per hour for each phase if daily total = 138 kcal: (perched + roosting 0.5x baseline, soaring 1.0x, hunting 1.5x, eating 0.8x).',
+                solution: 'Let baseline = x kcal/hr. Total = 6×0.5x + 4×1x + 2×1.5x + 2×0.8x + 10×0.5x = 3x + 4x + 3x + 1.6x + 5x = 16.6x. Set equal to 138: x = 8.3 kcal/hr. So perched/roost = 4.2 kcal/hr; soaring = 8.3; hunting = 12.5; eating = 6.6. Hunting is 3× more expensive per hour than perching — why raptors are picky about when to commit to a hunt.'
+              },
+              { id: 'mp48', topic: '🎓 ID Quiz Probability',
+                problem: 'A 28-question raptor ID quiz with 4 options each. If a student answers randomly, what is the expected score? Standard deviation? Probability of scoring ≥ 14 (50%)?',
+                solution: 'Each question is Bernoulli with p = 0.25. Expected score = 28 × 0.25 = 7. Variance = 28 × 0.25 × 0.75 = 5.25. SD = √5.25 = 2.29. P(score ≥ 14) by normal approximation: z = (14 − 7) / 2.29 = 3.06. P(z > 3.06) ≈ 0.001 = 0.1%. Random guessing essentially never produces 14+/28. A student scoring 14+ has REAL knowledge.'
+              },
+              { id: 'mp49', topic: '🌅 Sunrise Hunting',
+                problem: 'A hawkwatch counter records: 40% of daily passage occurs in the morning rush (6-10 AM), 25% midday (10-2), 20% afternoon (2-6 PM), 15% other. Hours per slot: 4, 4, 4, 12. Rate (birds/hour) per slot?',
+                solution: 'Morning: 0.40/4 = 0.10 fraction/hr. Midday: 0.0625. Afternoon: 0.05. Other: 0.0125. Morning is 8× the night-rate. Why? Thermal lift kicks in as ground heats up. Most migrating raptors launch at sunrise + soar through midday on developing thermals. Hawkwatch counters concentrate effort during morning rush.'
+              },
+              { id: 'mp50', topic: '🌊 Wing-Tip Vortex Energy',
+                problem: 'Induced drag (from wingtip vortices) scales as Di = (W/b)² × q⁻¹ where W=weight, b=wingspan, q=dynamic pressure. For an eagle of 4.5kg weight = 44N + wingspan 2m + at 10 m/s (q = 0.5×1.225×100 = 61.25): calculate induced drag.',
+                solution: 'W/b = 44/2 = 22 N/m. Di = 22²/61.25 = 484/61.25 = 7.9 N. This 7.9 N of induced drag is what slotted wingtips MITIGATE — by spreading the wingtip vortex across multiple primary feathers, the eagle reduces this loss. Albatross-class AR (15) reduces induced drag dramatically. Why long-thin wings = efficient gliding.'
               }
             ];
             return h('details', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded-xl p-3' },
-              h('summary', { className: 'text-sm font-bold text-emerald-300 cursor-pointer' }, '🧮 Math Practice Problems — 30 numerical workouts'),
+              h('summary', { className: 'text-sm font-bold text-emerald-300 cursor-pointer' }, '🧮 Math Practice Problems — 50 numerical workouts'),
               h('div', { className: 'mt-3 space-y-2' },
                 h('div', { className: 'text-xs text-slate-400 italic mb-2' }, 'Real physics problems from this tool. Work them out on paper, then click Show Solution to check. Topics: wing loading, terminal velocity, KE, aspect ratio, acuity scaling, population λ, talon pressure, fall time, pellet biomass, glide ratio.'),
                 problems.map(function(p) {
@@ -9936,7 +10093,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 h('div', { className: 'font-bold mb-2' }, '📚 5. Pre-trip prep (1 week before)'),
                 h('div', { className: 'space-y-1 text-[11px]' },
                   h('div', null, '☐ Students complete Raptor Hunt Hub + Roster sections'),
-                  h('div', null, '☐ Students complete the Field ID section (silhouettes) + take the 45-question quiz'),
+                  h('div', null, '☐ Students complete the Field ID section (silhouettes) + take the 70-question quiz'),
                   h('div', null, '☐ Practice with binoculars in classroom or schoolyard'),
                   h('div', null, '☐ Review what to record: date / location / weather / species / behavior')
                 )
@@ -10344,7 +10501,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // ────────────────────────────────────────────────────────
       return h('div', { className: 'space-y-4', role: 'region', 'aria-label': 'Raptor Hunt tool' },
         // Section count chip
-        h('div', { className: 'text-[11px] text-slate-500 uppercase tracking-wider' }, '25 sections · 20 species · 6 interactive labs · acuity demo · 5 recoveries · famous birds · 42-term glossary · 45-question quiz'),
+        h('div', { className: 'text-[11px] text-slate-500 uppercase tracking-wider' }, '25 sections · 20 species · 6 interactive labs · acuity demo · 5 recoveries · famous birds · 42-term glossary · 70-question quiz'),
         // Tab nav (scrollable horizontal)
         h('div', { className: 'flex gap-1.5 overflow-x-auto pb-1', role: 'tablist', 'aria-label': 'Raptor Hunt sections' },
           SECTIONS.map(function(s) {
