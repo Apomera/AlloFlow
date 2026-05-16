@@ -7088,6 +7088,730 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     );
   }
 
+  // ── R. PERSONAL CONCEPT MAP MAKER (Wave 4) ──
+  // Interactive node+edge canvas for synthesis. Add nodes by clicking
+  // canvas. Drag nodes. Connect by clicking source then target. Color
+  // by category. Save multiple maps. Novak + Gowin 1984 concept mapping
+  // is strong for synthesis-heavy material.
+  function PersonalConceptMapMaker(props) {
+    if (!R) return null;
+    var data = props.data || { maps: [] };
+    var setData = props.setData;
+    var vs = R.useState('list');                  var view = vs[0];      var setView = vs[1];
+    var ms = R.useState(null);                    var activeMap = ms[0]; var setActiveMap = ms[1];
+    var es = R.useState(null);                    var connectFrom = es[0]; var setConnectFrom = es[1];
+    var sn = R.useState(null);                    var selectedNode = sn[0]; var setSelectedNode = sn[1];
+    var ts = R.useState('');                      var newTitle = ts[0];  var setNewTitle = ts[1];
+
+    var COLORS = ['#9333ea', '#10b981', '#ef4444', '#fbbf24', '#3b82f6', '#06b6d4', '#f97316', '#a855f7'];
+
+    function createMap() {
+      if (!newTitle.trim()) { alert('Need a map title.'); return; }
+      var m = { id: tkId(), title: newTitle.trim(), nodes: [], edges: [], createdAt: todayISO() };
+      setData({ maps: [m].concat(data.maps || []) });
+      setActiveMap(m.id);
+      setNewTitle('');
+      setView('edit');
+    }
+    function openMap(id) {
+      setActiveMap(id);
+      setView('edit');
+    }
+    function removeMap(id) {
+      if (!confirm('Delete this concept map?')) return;
+      setData({ maps: (data.maps || []).filter(function(m) { return m.id !== id; }) });
+    }
+    function getMap() {
+      return (data.maps || []).filter(function(m) { return m.id === activeMap; })[0];
+    }
+    function updateMap(patch) {
+      var maps = (data.maps || []).map(function(m) {
+        if (m.id !== activeMap) return m;
+        return Object.assign({}, m, patch);
+      });
+      setData({ maps: maps });
+    }
+    function addNode() {
+      var m = getMap(); if (!m) return;
+      var label = prompt('Concept name?'); if (!label) return;
+      var x = 100 + Math.random() * 400;
+      var y = 100 + Math.random() * 300;
+      var colorIdx = m.nodes.length % COLORS.length;
+      var node = { id: tkId(), label: label, x: x, y: y, color: COLORS[colorIdx] };
+      updateMap({ nodes: (m.nodes || []).concat([node]) });
+    }
+    function deleteNode(nodeId) {
+      var m = getMap(); if (!m) return;
+      updateMap({
+        nodes: m.nodes.filter(function(n) { return n.id !== nodeId; }),
+        edges: m.edges.filter(function(e) { return e.from !== nodeId && e.to !== nodeId; })
+      });
+      setSelectedNode(null);
+    }
+    function startConnect(nodeId) {
+      if (connectFrom === nodeId) { setConnectFrom(null); return; }
+      if (connectFrom) {
+        var m = getMap();
+        var label = prompt('Relationship label? (e.g., "causes", "is part of")') || '';
+        var edge = { id: tkId(), from: connectFrom, to: nodeId, label: label };
+        updateMap({ edges: (m.edges || []).concat([edge]) });
+        setConnectFrom(null);
+      } else {
+        setConnectFrom(nodeId);
+      }
+    }
+    function deleteEdge(edgeId) {
+      var m = getMap();
+      updateMap({ edges: m.edges.filter(function(e) { return e.id !== edgeId; }) });
+    }
+    function moveNode(nodeId, dx, dy) {
+      var m = getMap();
+      updateMap({
+        nodes: m.nodes.map(function(n) {
+          if (n.id !== nodeId) return n;
+          return Object.assign({}, n, { x: Math.max(40, Math.min(560, n.x + dx)), y: Math.max(40, Math.min(440, n.y + dy)) });
+        })
+      });
+    }
+    function recolorNode(nodeId) {
+      var m = getMap();
+      var n = m.nodes.filter(function(x) { return x.id === nodeId; })[0];
+      var idx = COLORS.indexOf(n.color);
+      var next = COLORS[(idx + 1) % COLORS.length];
+      updateMap({ nodes: m.nodes.map(function(x) { return x.id === nodeId ? Object.assign({}, x, { color: next }) : x; }) });
+    }
+
+    if (view === 'edit') {
+      var m = getMap();
+      if (!m) { setView('list'); return null; }
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader('🕸', m.title, m.nodes.length + ' concepts · ' + m.edges.length + ' connections · click canvas to add', '#a855f7'),
+        hh('div', { style: { display: 'flex', gap: 6, justifyContent: 'space-between', marginBottom: 10, flexWrap: 'wrap' } },
+          tkBtn('← All maps', function() { setView('list'); setActiveMap(null); setSelectedNode(null); setConnectFrom(null); }, 'ghost'),
+          hh('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+            tkBtn('+ Add concept', addNode, 'primary'),
+            selectedNode ? tkBtn(connectFrom ? '↻ Cancel connect' : '🔗 Connect from selected', function() { startConnect(selectedNode); }, 'secondary') : null,
+            selectedNode ? tkBtn('🎨 Recolor', function() { recolorNode(selectedNode); }, 'ghost') : null,
+            selectedNode ? tkBtn('🗑 Delete node', function() { deleteNode(selectedNode); }, 'bad') : null
+          )
+        ),
+        connectFrom ? hh('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(168,85,247,0.15)', border: '1px solid #a855f7', fontSize: 11, color: '#c084fc', textAlign: 'center', marginBottom: 8 } },
+          '🔗 Now click another node to connect them.'
+        ) : null,
+
+        // Canvas
+        hh('div', { style: { background: 'rgba(2,6,23,0.7)', borderRadius: 12, padding: 10, border: '2px solid rgba(168,85,247,0.30)' } },
+          hh('svg', {
+            viewBox: '0 0 600 480',
+            'aria-label': 'Concept map: ' + m.title,
+            style: { width: '100%', height: 480, display: 'block', cursor: 'crosshair' }
+          },
+            // Grid background
+            hh('defs', null,
+              hh('pattern', { id: 'cmgrid', width: 30, height: 30, patternUnits: 'userSpaceOnUse' },
+                hh('path', { d: 'M 30 0 L 0 0 0 30', fill: 'none', stroke: 'rgba(168,85,247,0.10)', strokeWidth: 0.5 })
+              )
+            ),
+            hh('rect', { x: 0, y: 0, width: 600, height: 480, fill: 'url(#cmgrid)' }),
+            // Edges
+            (m.edges || []).map(function(e) {
+              var from = m.nodes.filter(function(n) { return n.id === e.from; })[0];
+              var to = m.nodes.filter(function(n) { return n.id === e.to; })[0];
+              if (!from || !to) return null;
+              var mx = (from.x + to.x) / 2;
+              var my = (from.y + to.y) / 2;
+              return hh('g', { key: 'e-' + e.id },
+                hh('line', { x1: from.x, y1: from.y, x2: to.x, y2: to.y, stroke: '#94a3b8', strokeWidth: 1.5, opacity: 0.6, markerEnd: 'url(#arrowhead)' }),
+                e.label ? hh('g', null,
+                  hh('rect', { x: mx - (e.label.length * 3 + 4), y: my - 7, width: e.label.length * 6 + 8, height: 14, fill: '#1e293b', stroke: '#475569', strokeWidth: 0.5, rx: 3 }),
+                  hh('text', { x: mx, y: my + 3, fontSize: 9, fill: '#cbd5e1', textAnchor: 'middle' }, e.label)
+                ) : null,
+                hh('circle', { cx: mx, cy: my, r: 6, fill: 'transparent', style: { cursor: 'pointer' }, onClick: function() { if (confirm('Delete this connection?')) deleteEdge(e.id); } })
+              );
+            }),
+            // Arrowhead marker
+            hh('defs', null,
+              hh('marker', { id: 'arrowhead', markerWidth: 8, markerHeight: 8, refX: 7, refY: 4, orient: 'auto' },
+                hh('polygon', { points: '0 0, 8 4, 0 8', fill: '#94a3b8' })
+              )
+            ),
+            // Nodes
+            (m.nodes || []).map(function(n) {
+              var isSel = selectedNode === n.id;
+              var isConnFrom = connectFrom === n.id;
+              return hh('g', { key: 'n-' + n.id, style: { cursor: 'pointer' },
+                onClick: function() {
+                  if (connectFrom && connectFrom !== n.id) startConnect(n.id);
+                  else setSelectedNode(isSel ? null : n.id);
+                }
+              },
+                hh('ellipse', {
+                  cx: n.x, cy: n.y,
+                  rx: Math.max(40, n.label.length * 4 + 14), ry: 22,
+                  fill: n.color + '30', stroke: n.color, strokeWidth: isSel ? 3 : isConnFrom ? 3 : 1.5,
+                  opacity: 0.9, strokeDasharray: isConnFrom ? '4,2' : 'none'
+                }),
+                hh('text', { x: n.x, y: n.y + 4, fontSize: 11, fill: '#fff', textAnchor: 'middle', fontWeight: 700 }, n.label)
+              );
+            })
+          )
+        ),
+        // Node manipulation panel
+        selectedNode ? (function() {
+          var n = m.nodes.filter(function(x) { return x.id === selectedNode; })[0];
+          if (!n) return null;
+          return hh('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid #a855f7' } },
+            hh('div', { style: { fontSize: 11, color: '#c084fc', fontWeight: 800, marginBottom: 6 } }, '🎯 Selected: ' + n.label),
+            hh('div', { style: { display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' } },
+              ['◀ Left', '◀◀'].map(function(_, i) {
+                return hh('button', { key: 'mvl-' + i, onClick: function() { moveNode(n.id, i === 0 ? -20 : -60, 0); },
+                  style: { padding: '4px 10px', borderRadius: 4, background: 'rgba(168,85,247,0.20)', color: '#c084fc', border: '1px solid #a855f7', fontSize: 10, fontWeight: 700, cursor: 'pointer' }
+                }, i === 0 ? '◀ 20' : '◀ 60');
+              }),
+              ['▲ Up', '▲▲'].map(function(_, i) {
+                return hh('button', { key: 'mvu-' + i, onClick: function() { moveNode(n.id, 0, i === 0 ? -20 : -60); },
+                  style: { padding: '4px 10px', borderRadius: 4, background: 'rgba(168,85,247,0.20)', color: '#c084fc', border: '1px solid #a855f7', fontSize: 10, fontWeight: 700, cursor: 'pointer' }
+                }, i === 0 ? '▲ 20' : '▲ 60');
+              }),
+              ['▼ Down', '▼▼'].map(function(_, i) {
+                return hh('button', { key: 'mvd-' + i, onClick: function() { moveNode(n.id, 0, i === 0 ? 20 : 60); },
+                  style: { padding: '4px 10px', borderRadius: 4, background: 'rgba(168,85,247,0.20)', color: '#c084fc', border: '1px solid #a855f7', fontSize: 10, fontWeight: 700, cursor: 'pointer' }
+                }, i === 0 ? '▼ 20' : '▼ 60');
+              }),
+              ['▶ Right', '▶▶'].map(function(_, i) {
+                return hh('button', { key: 'mvr-' + i, onClick: function() { moveNode(n.id, i === 0 ? 20 : 60, 0); },
+                  style: { padding: '4px 10px', borderRadius: 4, background: 'rgba(168,85,247,0.20)', color: '#c084fc', border: '1px solid #a855f7', fontSize: 10, fontWeight: 700, cursor: 'pointer' }
+                }, i === 0 ? '20 ▶' : '60 ▶');
+              })
+            )
+          );
+        })() : null,
+
+        hh('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+          hh('strong', { style: { color: '#a855f7' } }, '🎓 Concept mapping: '),
+          'Novak + Gowin 1984. Strong evidence for synthesis-heavy material (Dunlosky 2013 MODERATE utility). The act of choosing which concepts to include + how they connect = active processing. Try mapping every chapter or unit.'
+        )
+      );
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🕸', 'My Concept Maps', 'Visual synthesis of how ideas connect. Click canvas to add nodes, click nodes to connect.', '#a855f7'),
+
+      // New map
+      tkCard('#a855f7',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 8 } }, '+ New concept map'),
+          hh('div', { style: { display: 'flex', gap: 6 } },
+            tkInput(newTitle, setNewTitle, 'Map title (e.g., "Photosynthesis flow", "Macbeth themes")', { flex: 1 }),
+            tkBtn('Create', createMap, 'primary')
+          )
+        )
+      ),
+
+      // Existing maps
+      (data.maps || []).length === 0
+        ? tkEmptyState('🕸', 'No concept maps yet. Create your first to start synthesizing.', null, null)
+        : hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
+            (data.maps || []).map(function(m) {
+              return hh('div', { key: 'm-' + m.id, style: { padding: 12, borderRadius: 10, background: 'linear-gradient(135deg, rgba(168,85,247,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(168,85,247,0.40)', borderLeft: '4px solid #a855f7' } },
+                hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
+                  hh('strong', { style: { fontSize: 13, color: '#c084fc' } }, '🕸 ' + m.title),
+                  hh('button', { onClick: function() { removeMap(m.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: 12 } }, '✕')
+                ),
+                hh('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 8 } }, (m.nodes || []).length + ' nodes · ' + (m.edges || []).length + ' edges · ' + relDate(m.createdAt)),
+                tkBtn('Open ↗', function() { openMap(m.id); }, 'primary', { width: '100%', textAlign: 'center' })
+              );
+            })
+          )
+    );
+  }
+
+  // ── S. PERSONAL NOTES WORKBENCH (Wave 4) ──
+  // In-tool Cornell-style note-taking. Notebook per subject. Each note has
+  // main column (notes), cue column (questions/key terms), summary at end.
+  // Auto-saves. Searchable. Print-friendly view.
+  function PersonalNotesWorkbench(props) {
+    if (!R) return null;
+    var data = props.data || { notebooks: [], notes: [] };
+    var setData = props.setData;
+    var vs = R.useState('list');                  var view = vs[0];   var setView = vs[1];
+    var nb = R.useState(null);                    var activeNb = nb[0]; var setActiveNb = nb[1];
+    var nn = R.useState(null);                    var activeNote = nn[0]; var setActiveNote = nn[1];
+    var fs = R.useState({ title: '', cue: '', main: '', summary: '' });
+    var form = fs[0];                              var setForm = fs[1];
+    var qs = R.useState('');                       var search = qs[0]; var setSearch = qs[1];
+
+    var notebooks = data.notebooks && data.notebooks.length ? data.notebooks : ['General'];
+    var notes = data.notes || [];
+
+    function addNotebook() {
+      var name = prompt('Notebook name? (e.g., "AP Biology")');
+      if (!name) return;
+      setData(Object.assign({}, data, { notebooks: notebooks.concat([name]) }));
+    }
+    function removeNotebook(name) {
+      if (name === 'General') { alert('Cannot delete General notebook.'); return; }
+      if (!confirm('Delete notebook "' + name + '" and all its notes?')) return;
+      setData({
+        notebooks: notebooks.filter(function(n) { return n !== name; }),
+        notes: notes.filter(function(n) { return n.notebook !== name; })
+      });
+    }
+    function saveNote() {
+      if (!form.title.trim()) { alert('Need a title.'); return; }
+      var id = activeNote || tkId();
+      var note = Object.assign({ id: id, notebook: activeNb || 'General', createdAt: todayISO(), updatedAt: todayISO() }, form);
+      var arr = notes.slice();
+      var i = arr.findIndex(function(n) { return n.id === id; });
+      if (i >= 0) arr[i] = Object.assign({}, arr[i], note);
+      else arr.unshift(note);
+      setData(Object.assign({}, data, { notes: arr }));
+      setActiveNote(null);
+      setForm({ title: '', cue: '', main: '', summary: '' });
+      setView('notebook');
+    }
+    function removeNote(id) {
+      if (!confirm('Delete this note?')) return;
+      setData(Object.assign({}, data, { notes: notes.filter(function(n) { return n.id !== id; }) }));
+    }
+    function openNote(n) {
+      setActiveNote(n.id);
+      setForm({ title: n.title, cue: n.cue || '', main: n.main || '', summary: n.summary || '' });
+      setView('edit');
+    }
+
+    if (view === 'edit') {
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader('📝', activeNote ? 'Edit note' : 'New Cornell note', 'Main column = your notes. Cue column = questions or key terms. Summary at end.', '#3b82f6'),
+        tkCard('#3b82f6',
+          hh('div', null,
+            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Note title'),
+            tkInput(form.title, function(v) { setForm(Object.assign({}, form, { title: v })); }, 'e.g., "Cell biology — Sept 12 lecture"', { marginBottom: 14 }),
+
+            hh('div', { style: { display: 'grid', gridTemplateColumns: '30% 70%', gap: 10, marginBottom: 12 } },
+              hh('div', null,
+                hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, '🔑 Cue column'),
+                hh('div', { style: { fontSize: 9, color: '#94a3b8', fontStyle: 'italic', marginBottom: 4 } }, 'Questions, key terms, prompts'),
+                tkTextarea(form.cue, function(v) { setForm(Object.assign({}, form, { cue: v })); }, 'What is photosynthesis?\nKey term: chlorophyll\n...', 12, { fontFamily: 'Georgia, serif', fontSize: 11 })
+              ),
+              hh('div', null,
+                hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, '📝 Main notes'),
+                hh('div', { style: { fontSize: 9, color: '#94a3b8', fontStyle: 'italic', marginBottom: 4 } }, 'Your detailed notes'),
+                tkTextarea(form.main, function(v) { setForm(Object.assign({}, form, { main: v })); }, 'Plants use sunlight + CO2 + H2O to make glucose...', 12, { fontFamily: 'inherit', fontSize: 11 })
+              )
+            ),
+
+            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, '🎓 Summary (2-3 sentences in your own words)'),
+            hh('div', { style: { fontSize: 9, color: '#94a3b8', fontStyle: 'italic', marginBottom: 4 } }, 'The most important part of Cornell. Compress this lecture into 2-3 sentences.'),
+            tkTextarea(form.summary, function(v) { setForm(Object.assign({}, form, { summary: v })); }, 'In your own words...', 3)
+          )
+        ),
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+          tkBtn('← Cancel', function() { setActiveNote(null); setForm({ title: '', cue: '', main: '', summary: '' }); setView('notebook'); }, 'ghost'),
+          tkBtn('💾 Save note', saveNote, 'primary')
+        )
+      );
+    }
+
+    if (view === 'notebook' && activeNb) {
+      var nbNotes = notes.filter(function(n) { return n.notebook === activeNb; });
+      var filtered = search ? nbNotes.filter(function(n) {
+        var q = search.toLowerCase();
+        return (n.title || '').toLowerCase().indexOf(q) >= 0 || (n.main || '').toLowerCase().indexOf(q) >= 0 || (n.cue || '').toLowerCase().indexOf(q) >= 0 || (n.summary || '').toLowerCase().indexOf(q) >= 0;
+      }) : nbNotes;
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader('📚', activeNb, nbNotes.length + ' notes', '#3b82f6'),
+        hh('div', { style: { display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' } },
+          tkBtn('← All notebooks', function() { setView('list'); setActiveNb(null); }, 'ghost'),
+          tkInput(search, setSearch, '🔎 Search notes', { flex: 1 }),
+          tkBtn('+ New note', function() { setForm({ title: '', cue: '', main: '', summary: '' }); setActiveNote(null); setView('edit'); }, 'primary')
+        ),
+        filtered.length === 0
+          ? tkEmptyState('📝', search ? 'No notes match your search.' : 'No notes in this notebook yet.', null, null)
+          : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+              filtered.map(function(n) {
+                return hh('div', { key: 'n-' + n.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(59,130,246,0.30)', borderLeft: '3px solid #3b82f6' } },
+                  hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 } },
+                    hh('strong', { style: { fontSize: 13, color: '#60a5fa' } }, n.title),
+                    hh('div', { style: { display: 'flex', gap: 6, alignItems: 'center' } },
+                      hh('span', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } }, relDate(n.createdAt)),
+                      hh('button', { onClick: function() { openNote(n); }, style: { background: 'transparent', border: 'none', color: '#60a5fa', fontSize: 11, cursor: 'pointer' } }, '✏'),
+                      hh('button', { onClick: function() { removeNote(n.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                    )
+                  ),
+                  n.summary ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', fontStyle: 'italic', lineHeight: 1.55, padding: 8, background: 'rgba(2,6,23,0.4)', borderRadius: 6, borderLeft: '2px solid #60a5fa', marginTop: 4 } },
+                    hh('span', { style: { color: '#60a5fa', fontWeight: 700, marginRight: 4 } }, '🎓'), n.summary
+                  ) : hh('div', { style: { fontSize: 10, color: '#64748b', fontStyle: 'italic', marginTop: 4 } }, 'No summary yet — open to add one.')
+                );
+              })
+            )
+      );
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('📝', 'My Notes Workbench', 'Cornell-style note-taking with auto-save. One notebook per subject.', '#3b82f6'),
+
+      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 14 } },
+        notebooks.map(function(nbName) {
+          var count = notes.filter(function(n) { return n.notebook === nbName; }).length;
+          return hh('button', { key: 'nb-' + nbName,
+            onClick: function() { setActiveNb(nbName); setView('notebook'); },
+            style: { display: 'block', textAlign: 'left', padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(59,130,246,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(59,130,246,0.40)', borderLeft: '4px solid #3b82f6', cursor: 'pointer' }
+          },
+            hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' } },
+              hh('div', { style: { fontSize: 14, fontWeight: 800, color: '#60a5fa' } }, '📚 ' + nbName),
+              nbName !== 'General' ? hh('span', { onClick: function(e) { e.stopPropagation(); removeNotebook(nbName); }, style: { color: '#64748b', cursor: 'pointer', fontSize: 12 } }, '✕') : null
+            ),
+            hh('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 4 } }, count + ' note' + (count !== 1 ? 's' : ''))
+          );
+        }),
+        hh('button', { onClick: addNotebook,
+          style: { display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 14, borderRadius: 12, background: 'rgba(2,6,23,0.4)', border: '1px dashed rgba(59,130,246,0.40)', color: '#60a5fa', fontSize: 12, fontWeight: 800, cursor: 'pointer', minHeight: 80 }
+        }, '+ New notebook')
+      ),
+
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+        hh('strong', { style: { color: '#3b82f6' } }, '📚 Cornell method: '),
+        'Pauk 1989. The cue column + summary = the active-processing magic. Without those, Cornell is just a fancy outline. Try summarizing at the end of every note session — even if you skip the cue column.'
+      )
+    );
+  }
+
+  // ── T. PERSONAL DAILY AGENDA (Wave 4) ──
+  // Today's plan — pulls from goals + tasks + habits + planner blocks.
+  // Lets student check off + add ad-hoc items. Daily score at end of day.
+  function PersonalDailyAgenda(props) {
+    if (!R) return null;
+    var data = props.data || { customToday: {} };
+    var allData = props.allData || {};
+    var setData = props.setData;
+
+    var today = todayISO();
+    var todayItems = (data.customToday || {})[today] || [];
+
+    var goals = ((allData.mytkGoals || {}).goals || []).filter(function(g) { return g.status === 'active'; });
+    var tasks = ((allData.mytkTasks || {}).tasks || []).filter(function(t) {
+      var done = (t.steps || []).filter(function(s) { return s.done; }).length;
+      return done < (t.steps || []).length;
+    });
+    var habits = ((allData.mytkHabits || {}).habits || []);
+    var habitLogs = ((allData.mytkHabits || {}).logs || {});
+    var plannerBlocks = ((allData.mytkPlanner || {}).blocks || []);
+    var dayOfWeek = new Date().getDay();
+    var todayBlocks = plannerBlocks.filter(function(b) { return b.day === dayOfWeek; });
+
+    function addCustom(text) {
+      if (!text.trim()) return;
+      var customToday = Object.assign({}, data.customToday || {});
+      customToday[today] = (customToday[today] || []).concat([{ id: tkId(), text: text.trim(), done: false }]);
+      setData({ customToday: customToday });
+    }
+    function toggleCustom(id) {
+      var customToday = Object.assign({}, data.customToday || {});
+      customToday[today] = (customToday[today] || []).map(function(it) {
+        if (it.id !== id) return it;
+        return Object.assign({}, it, { done: !it.done });
+      });
+      setData({ customToday: customToday });
+    }
+    function removeCustom(id) {
+      var customToday = Object.assign({}, data.customToday || {});
+      customToday[today] = (customToday[today] || []).filter(function(it) { return it.id !== id; });
+      setData({ customToday: customToday });
+    }
+
+    var ns = R.useState(''); var newText = ns[0]; var setNewText = ns[1];
+
+    function dailyScore() {
+      var total = 0; var done = 0;
+      // Habits done
+      habits.forEach(function(h) {
+        total++;
+        if ((habitLogs[h.id] || []).indexOf(today) >= 0) done++;
+      });
+      // Custom items
+      todayItems.forEach(function(it) {
+        total++;
+        if (it.done) done++;
+      });
+      // Tasks (counted as 1 each, doesn't require completion)
+      return { done: done, total: total, pct: total > 0 ? Math.round((done / total) * 100) : 0 };
+    }
+    var score = dailyScore();
+
+    function dayName() {
+      return new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('📋', 'Today — ' + dayName(), 'One screen view of what you set yourself up to do today. Pulled from your other toolkit tools.', '#10b981'),
+
+      // Score banner
+      hh('div', { style: {
+        padding: 18, borderRadius: 14, marginBottom: 14, textAlign: 'center',
+        background: 'linear-gradient(135deg, rgba(16,185,129,0.20), rgba(15,23,42,0.7))',
+        border: '1px solid rgba(16,185,129,0.40)'
+      } },
+        hh('div', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 } }, 'Today\'s done-rate'),
+        hh('div', { style: { fontSize: 40, fontWeight: 900, color: '#10b981', fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1 } }, score.pct + '%'),
+        hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 6 } }, score.done + ' of ' + score.total + ' planned items')
+      ),
+
+      // Scheduled study blocks
+      todayBlocks.length > 0 ? tkCard('#3b82f6',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#60a5fa', marginBottom: 8 } }, '📅 Scheduled study blocks'),
+          hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+            todayBlocks.sort(function(a, b) { return a.hour - b.hour; }).map(function(b) {
+              return hh('div', { key: 'tb-' + b.id, style: { padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.4)', borderLeft: '3px solid #3b82f6', display: 'flex', justifyContent: 'space-between' } },
+                hh('span', { style: { fontSize: 11, color: '#e2e8f0' } },
+                  hh('strong', { style: { color: '#60a5fa' } }, (b.hour % 12 || 12) + (b.hour < 12 ? 'a' : 'p') + ' · '),
+                  b.subject, b.task ? ' — ' + b.task : ''
+                ),
+                hh('span', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } }, b.duration + 'm')
+              );
+            })
+          )
+        )
+      ) : null,
+
+      // Habits today
+      habits.length > 0 ? tkCard('#10b981',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#10b981', marginBottom: 8 } }, '✅ Today\'s habits'),
+          hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+            habits.map(function(h) {
+              var done = (habitLogs[h.id] || []).indexOf(today) >= 0;
+              return hh('div', { key: 'th-' + h.id, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 6, background: 'rgba(2,6,23,0.4)' } },
+                hh('div', { style: { width: 18, height: 18, borderRadius: 4, border: '1.5px solid #10b981', background: done ? '#10b981' : 'transparent', color: '#0f172a', fontSize: 11, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, done ? '✓' : ''),
+                hh('span', { style: { fontSize: 11, color: done ? '#94a3b8' : '#e2e8f0', textDecoration: done ? 'line-through' : 'none' } }, h.icon + ' ' + h.name)
+              );
+            })
+          )
+        )
+      ) : null,
+
+      // Active goals (just status)
+      goals.length > 0 ? tkCard('#9333ea',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 8 } }, '🎯 Active goals'),
+          hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+            goals.slice(0, 5).map(function(g) {
+              return hh('div', { key: 'tg-' + g.id, style: { padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.4)', borderLeft: '3px solid #9333ea' } },
+                hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+                  hh('span', { style: { fontSize: 11, color: '#e2e8f0', fontWeight: 700 } }, g.title),
+                  hh('span', { style: { fontSize: 11, color: '#c084fc', fontFamily: 'ui-monospace, Menlo, monospace' } }, (g.progress || 0) + '%')
+                ),
+                hh('div', { style: { height: 4, background: 'rgba(15,23,42,0.6)', borderRadius: 2, marginTop: 4, overflow: 'hidden' } },
+                  hh('div', { style: { width: (g.progress || 0) + '%', height: '100%', background: '#9333ea' } })
+                )
+              );
+            })
+          )
+        )
+      ) : null,
+
+      // Open tasks (with next step focus)
+      tasks.length > 0 ? tkCard('#f97316',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fb923c', marginBottom: 8 } }, '✂ Tasks in progress — next step'),
+          hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+            tasks.slice(0, 5).map(function(t) {
+              var nextStep = (t.steps || []).filter(function(s) { return !s.done; })[0];
+              return hh('div', { key: 'tt-' + t.id, style: { padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.4)', borderLeft: '3px solid #f97316' } },
+                hh('div', { style: { fontSize: 11, color: '#fb923c', fontWeight: 700, marginBottom: 2 } }, t.title),
+                nextStep ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', fontStyle: 'italic' } }, '↳ next: ' + nextStep.text + ' (~' + nextStep.estMin + 'm)') : null
+              );
+            })
+          )
+        )
+      ) : null,
+
+      // Custom today items
+      tkCard('#fbbf24',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, '⭐ Today\'s extra items'),
+          hh('div', { style: { display: 'flex', gap: 6, marginBottom: 10 } },
+            tkInput(newText, setNewText, 'e.g., "Call Mom about appointment"', { flex: 1 }),
+            tkBtn('+', function() { addCustom(newText); setNewText(''); }, 'primary', { padding: '8px 14px' })
+          ),
+          todayItems.length === 0 ? hh('div', { style: { fontSize: 11, color: '#64748b', fontStyle: 'italic', textAlign: 'center', padding: 8 } }, 'No extra items added yet.')
+          : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+              todayItems.map(function(it) {
+                return hh('div', { key: 'tc-' + it.id, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 6, background: 'rgba(2,6,23,0.4)' } },
+                  hh('button', { onClick: function() { toggleCustom(it.id); },
+                    style: { width: 18, height: 18, borderRadius: 4, border: '1.5px solid #fbbf24', background: it.done ? '#fbbf24' : 'transparent', color: '#0f172a', fontSize: 11, fontWeight: 900, cursor: 'pointer', flexShrink: 0 }
+                  }, it.done ? '✓' : ''),
+                  hh('div', { style: { flex: 1, fontSize: 11, color: '#cbd5e1', textDecoration: it.done ? 'line-through' : 'none', opacity: it.done ? 0.5 : 1 } }, it.text),
+                  hh('button', { onClick: function() { removeCustom(it.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                );
+              })
+            )
+        )
+      )
+    );
+  }
+
+  // ── U. PERSONAL EMOTION CHECK + GROUNDING (Wave 4) ──
+  // Quick emotion check + 5-4-3-2-1 grounding exercise + box breathing
+  // + body scan. Tools for when overwhelm hits. Links to crisis if needed.
+  function PersonalEmotionRegulator(props) {
+    if (!R) return null;
+    var data = props.data || { checks: [] };
+    var setData = props.setData;
+    var vs = R.useState('check');                 var view = vs[0]; var setView = vs[1];
+    var fs = R.useState({ intensity: 5, label: '', what: '', need: '' });
+    var form = fs[0];                              var setForm = fs[1];
+    var bs = R.useState(0);                        var boxStep = bs[0]; var setBoxStep = bs[1];
+    var bp = R.useState(false);                    var boxPlaying = bp[0]; var setBoxPlaying = bp[1];
+    var gs = R.useState({ five: '', four: '', three: '', two: '', one: '' });
+    var ground = gs[0];                            var setGround = gs[1];
+
+    var EMOTION_LABELS = [
+      { id: 'sad',         icon: '😢', color: '#3b82f6' },
+      { id: 'angry',       icon: '😠', color: '#ef4444' },
+      { id: 'anxious',     icon: '😰', color: '#fbbf24' },
+      { id: 'overwhelmed', icon: '😵', color: '#a855f7' },
+      { id: 'frustrated',  icon: '😤', color: '#f97316' },
+      { id: 'lonely',      icon: '🥺', color: '#06b6d4' },
+      { id: 'numb',        icon: '😶', color: '#94a3b8' },
+      { id: 'hopeful',     icon: '🙂', color: '#10b981' },
+      { id: 'proud',       icon: '😌', color: '#a855f7' },
+      { id: 'happy',       icon: '😄', color: '#fbbf24' }
+    ];
+
+    function save() {
+      if (!form.label) { alert('Pick an emotion first.'); return; }
+      var entry = Object.assign({ id: tkId(), date: todayISO(), time: Date.now() }, form);
+      setData({ checks: [entry].concat(data.checks || []) });
+      setForm({ intensity: 5, label: '', what: '', need: '' });
+    }
+
+    R.useEffect(function() {
+      if (!boxPlaying) return;
+      var t = setTimeout(function() { setBoxStep((boxStep + 1) % 4); }, 4000);
+      return function() { clearTimeout(t); };
+    }, [boxPlaying, boxStep]);
+
+    var BOX_STEPS = ['Breathe in (4 sec)', 'Hold (4 sec)', 'Breathe out (4 sec)', 'Hold (4 sec)'];
+    var checks = data.checks || [];
+
+    if (view === 'breathing') {
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader('🌬', 'Box breathing', '4-4-4-4 pattern. Settles the nervous system in ~2 minutes.', '#06b6d4'),
+        hh('div', { style: { textAlign: 'center', padding: 30 } },
+          hh('div', { style: { fontSize: 60, marginBottom: 14, opacity: boxPlaying ? 1 : 0.4 } }, '🌬'),
+          hh('div', { style: { fontSize: 20, fontWeight: 900, color: '#06b6d4', marginBottom: 20 } }, boxPlaying ? BOX_STEPS[boxStep] : 'Press play to begin'),
+          // Visual box that pulses
+          hh('div', { style: { width: 120, height: 120, margin: '0 auto 24px', border: '4px solid #06b6d4', borderRadius: 12, position: 'relative', transition: 'transform 1500ms ease', transform: boxPlaying && boxStep === 0 ? 'scale(1.4)' : boxPlaying && boxStep === 2 ? 'scale(0.7)' : 'scale(1)' } }),
+          hh('button', { onClick: function() { setBoxPlaying(!boxPlaying); setBoxStep(0); },
+            style: { padding: '14px 36px', borderRadius: 10, background: boxPlaying ? '#ef4444' : '#06b6d4', color: '#fff', border: 'none', fontSize: 14, fontWeight: 900, cursor: 'pointer', marginRight: 8 }
+          }, boxPlaying ? '⏸ Pause' : '▶ Play')
+        ),
+        hh('div', { style: { textAlign: 'center' } },
+          tkBtn('← Back', function() { setView('check'); setBoxPlaying(false); }, 'ghost')
+        )
+      );
+    }
+
+    if (view === 'ground') {
+      var FIELDS = [
+        { id: 'five',  label: '5 things you can SEE',    icon: '👀', color: '#3b82f6' },
+        { id: 'four',  label: '4 things you can FEEL',   icon: '✋', color: '#10b981' },
+        { id: 'three', label: '3 things you can HEAR',   icon: '👂', color: '#fbbf24' },
+        { id: 'two',   label: '2 things you can SMELL',  icon: '👃', color: '#a855f7' },
+        { id: 'one',   label: '1 thing you can TASTE',   icon: '👅', color: '#ef4444' }
+      ];
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader('🌱', '5-4-3-2-1 grounding', 'Sensory awareness shifts attention out of overwhelm. ~3 minutes.', '#10b981'),
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14 } },
+          FIELDS.map(function(f) {
+            return hh('div', { key: 'g-' + f.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid ' + f.color } },
+              hh('label', { style: { display: 'block', fontSize: 12, fontWeight: 800, color: f.color, marginBottom: 6 } }, f.icon + ' ' + f.label),
+              tkTextarea(ground[f.id], function(v) { setGround(Object.assign({}, ground, (function() { var o = {}; o[f.id] = v; return o; })())); }, '', 2)
+            );
+          })
+        ),
+        hh('div', { style: { textAlign: 'center', padding: 12, borderRadius: 8, background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.30)', fontSize: 11, color: '#cbd5e1', marginBottom: 12, lineHeight: 1.6 } },
+          'Notice how you feel now compared to when you started. Even partial completion helps.'
+        ),
+        hh('div', { style: { textAlign: 'center' } },
+          tkBtn('← Back', function() { setView('check'); }, 'ghost')
+        )
+      );
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('💖', 'Emotion Check + Tools', 'Quick check + 3 tools for when feelings are intense.', '#ec4899'),
+
+      // Crisis safety footer (always visible)
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+        hh('strong', { style: { color: '#ef4444' } }, '🚨 If you\'re in crisis: '),
+        'Call or text 988 (Suicide + Crisis Lifeline, US). Maine Mobile Crisis: 1-888-568-1112. You can reach a real person 24/7. This app is a self-help tool, not crisis care.'
+      ),
+
+      // Quick check form
+      tkCard('#ec4899',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#f472b6', marginBottom: 10 } }, '💖 Quick emotion check'),
+          hh('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 8 } }, 'What\'s the strongest feeling right now?'),
+          hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 12 } },
+            EMOTION_LABELS.map(function(e) {
+              var on = form.label === e.id;
+              return hh('button', { key: 'el-' + e.id,
+                onClick: function() { setForm(Object.assign({}, form, { label: e.id })); },
+                style: { padding: '10px', borderRadius: 8, background: on ? e.color + '30' : 'rgba(15,23,42,0.5)', border: '2px solid ' + (on ? e.color : 'rgba(100,116,139,0.30)'), fontSize: 22, cursor: 'pointer', minWidth: 44 }
+              }, e.icon);
+            })
+          ),
+          hh('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 4 } }, 'How intense? ', hh('strong', { style: { color: '#f472b6', fontSize: 14, fontFamily: 'ui-monospace, Menlo, monospace' } }, form.intensity + '/10')),
+          hh('input', { type: 'range', min: 1, max: 10, step: 1, value: form.intensity,
+            onChange: function(e) { setForm(Object.assign({}, form, { intensity: parseInt(e.target.value, 10) })); },
+            style: { width: '100%', accentColor: '#ec4899', marginBottom: 10 }
+          }),
+          tkInput(form.what, function(v) { setForm(Object.assign({}, form, { what: v })); }, 'What\'s going on? (optional, 1 line)', { marginBottom: 8 }),
+          tkInput(form.need, function(v) { setForm(Object.assign({}, form, { need: v })); }, 'What do you need right now? (optional)', { marginBottom: 10 }),
+          tkBtn('💾 Save check-in', save, 'primary')
+        )
+      ),
+
+      // Tools
+      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8, marginBottom: 14 } },
+        [
+          { id: 'breathing', icon: '🌬', label: 'Box breathing', color: '#06b6d4', desc: '4-4-4-4 pattern, ~2 min' },
+          { id: 'ground',    icon: '🌱', label: '5-4-3-2-1 grounding', color: '#10b981', desc: 'Sensory anchor, ~3 min' }
+        ].map(function(t) {
+          return hh('button', { key: 'tool-' + t.id,
+            onClick: function() { setView(t.id); },
+            style: { display: 'block', textAlign: 'left', padding: 14, borderRadius: 10, background: 'linear-gradient(135deg, ' + t.color + '15, rgba(15,23,42,0.7))', border: '1px solid ' + t.color + '40', borderLeft: '4px solid ' + t.color, cursor: 'pointer' }
+          },
+            hh('div', { style: { fontSize: 22, marginBottom: 4 } }, t.icon),
+            hh('div', { style: { fontSize: 13, fontWeight: 800, color: t.color } }, t.label),
+            hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2 } }, t.desc)
+          );
+        })
+      ),
+
+      // Recent check-ins
+      checks.length > 0 ? hh('div', null,
+        hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#f472b6', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, '📚 Recent emotion check-ins'),
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+          checks.slice(0, 8).map(function(c) {
+            var e = EMOTION_LABELS.filter(function(x) { return x.id === c.label; })[0] || EMOTION_LABELS[0];
+            return hh('div', { key: 'ck-' + c.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + e.color, display: 'flex', alignItems: 'flex-start', gap: 8 } },
+              hh('div', { style: { fontSize: 20, lineHeight: 1, flexShrink: 0 } }, e.icon),
+              hh('div', { style: { flex: 1, minWidth: 0 } },
+                hh('div', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } }, new Date(c.time).toLocaleString() + ' · intensity ' + c.intensity + '/10'),
+                c.what ? hh('div', { style: { fontSize: 11, color: '#e2e8f0', marginTop: 2 } }, c.what) : null,
+                c.need ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 2, fontStyle: 'italic' } }, 'needed: ' + c.need) : null
+              )
+            );
+          })
+        )
+      ) : null
+    );
+  }
+
   // ── F. MY TOOLKIT HUB (landing page) ──
   // Single entry point that shows status of all toolkit tools + quick
   // actions. Today's date, current streak, # active goals, etc.
@@ -7165,7 +7889,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'mytkProfile',  icon: '🪞', label: 'My Learning Profile',  color: '#06b6d4', desc: 'One-page self-snapshot, printable',
         stat: Object.keys(((data.mytkProfile || {}).profile) || {}).length + ' fields filled', cta: 'Build my profile' },
       { id: 'mytkPrompts',  icon: '📓', label: 'Reflection Prompts',   color: '#a855f7', desc: '30+ metacognitive prompts + journal',
-        stat: ((data.mytkPrompts || {}).responses || []).length + ' responses', cta: 'Pick a prompt' }
+        stat: ((data.mytkPrompts || {}).responses || []).length + ' responses', cta: 'Pick a prompt' },
+      { id: 'mytkMap',      icon: '🕸', label: 'Concept Maps',         color: '#a855f7', desc: 'Visual synthesis canvas (Novak 1984)',
+        stat: ((data.mytkMap || {}).maps || []).length + ' maps', cta: 'Build a map' },
+      { id: 'mytkNotes',    icon: '📝', label: 'Cornell Notes',        color: '#3b82f6', desc: 'In-tool note-taking with summaries',
+        stat: ((data.mytkNotes || {}).notes || []).length + ' notes', cta: 'Open notebooks' },
+      { id: 'mytkAgenda',   icon: '📋', label: 'Today',                color: '#10b981', desc: 'Today\'s pulled-together agenda',
+        stat: 'today', cta: 'View today' },
+      { id: 'mytkEmotion',  icon: '💖', label: 'Emotion + Grounding',  color: '#ec4899', desc: 'Quick check + box breathing + 5-4-3-2-1',
+        stat: ((data.mytkEmotion || {}).checks || []).length + ' check-ins', cta: 'Check in' }
     ];
 
     var dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][new Date().getDay()];
@@ -7369,7 +8101,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'mytkLoad',   icon: '⚖️', label: 'Cog Load Monitor',     desc: 'Daily check-in on Sweller\'s 3 load types + overwhelm triggers.' },
               { id: 'mytkMotiv',  icon: '🌟', label: 'Motivation Audit',     desc: 'Self-Determination Theory check (autonomy / competence / relatedness).' },
               { id: 'mytkProfile',icon: '🪞', label: 'Learning Profile',     desc: 'One-page self-snapshot you control — printable for teachers / IEP.' },
-              { id: 'mytkPrompts',icon: '📓', label: 'Reflection Prompts',   desc: '30+ metacognitive prompts across 4 categories. Saves to journal history.' }
+              { id: 'mytkPrompts',icon: '📓', label: 'Reflection Prompts',   desc: '30+ metacognitive prompts across 4 categories. Saves to journal history.' },
+              { id: 'mytkMap',    icon: '🕸', label: 'Concept Maps',         desc: 'Interactive node + edge canvas for visual synthesis. Novak + Gowin 1984.' },
+              { id: 'mytkNotes',  icon: '📝', label: 'Cornell Notes',        desc: 'In-tool Cornell-style note-taking with cue column + summary + search.' },
+              { id: 'mytkAgenda', icon: '📋', label: 'Today',                desc: 'Today\'s pulled-together agenda — habits + tasks + scheduled blocks + extras.' },
+              { id: 'mytkEmotion',icon: '💖', label: 'Emotion + Grounding',  desc: 'Quick emotion check + box breathing + 5-4-3-2-1 grounding for tough moments.' }
             ]
           },
           { id: 'foundation', icon: '🧠', name: 'How learning works (foundation)',
@@ -10537,6 +11273,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           h(PersonalReflectionPrompts, { data: dpr, setData: setDpr })
         );
       }
+      function renderMytkMap() {
+        var dm = d.mytkMap || { maps: [] };
+        var setDm = function(newData) { upd('mytkMap', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalConceptMapMaker, { data: dm, setData: setDm })
+        );
+      }
+      function renderMytkNotes() {
+        var dn = d.mytkNotes || { notebooks: ['General'], notes: [] };
+        var setDn = function(newData) { upd('mytkNotes', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalNotesWorkbench, { data: dn, setData: setDn })
+        );
+      }
+      function renderMytkAgenda() {
+        var da = d.mytkAgenda || { customToday: {} };
+        var setDa = function(newData) { upd('mytkAgenda', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalDailyAgenda, { data: da, setData: setDa, allData: d })
+        );
+      }
+      function renderMytkEmotion() {
+        var de = d.mytkEmotion || { checks: [] };
+        var setDe = function(newData) { upd('mytkEmotion', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalEmotionRegulator, { data: de, setData: setDe })
+        );
+      }
 
       // ─────────────────────────────────────────
       // VIEW ROUTER
@@ -10560,6 +11328,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         case 'mytkMotiv':     return renderMytkMotiv();
         case 'mytkProfile':   return renderMytkProfile();
         case 'mytkPrompts':   return renderMytkPrompts();
+        case 'mytkMap':       return renderMytkMap();
+        case 'mytkNotes':     return renderMytkNotes();
+        case 'mytkAgenda':    return renderMytkAgenda();
+        case 'mytkEmotion':   return renderMytkEmotion();
         case 'bloom':         return renderBloom();
         case 'cogload':       return renderCogLoad();
         case 'metacog':       return renderMetacog();
