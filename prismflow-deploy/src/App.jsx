@@ -810,8 +810,8 @@ const VisualPanelGrid = React.memo((props) => {
     return (
         <div className="bg-slate-50 rounded-xl p-6 text-center border border-slate-400">
             <div className="text-3xl mb-2">🎨</div>
-            <p className="text-sm font-bold text-slate-600">Loading Visual Panel...</p>
-            <p className="text-xs text-slate-600 mt-1">Module loading from CDN.</p>
+            <p className="text-sm font-bold text-slate-600">{t('common.loading_module', { name: 'Visual Panel' }) || 'Loading Visual Panel...'}</p>
+            <p className="text-xs text-slate-600 mt-1">{t('common.cdn_loading_hint_short') || 'Module loading from CDN.'}</p>
         </div>
     );
 });
@@ -829,8 +829,8 @@ const WordSoundsGenerator = React.memo((props) => {
         <div className="fixed inset-0 z-[200] bg-black/60 flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl p-8 text-center max-w-md shadow-2xl">
                 <div className="text-4xl mb-3">🔤</div>
-                <p className="text-lg font-bold text-slate-700">Loading Word Sounds Studio...</p>
-                <p className="text-sm text-slate-600 mt-2">Module loading from CDN.</p>
+                <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Word Sounds Studio' }) || 'Loading Word Sounds Studio...'}</p>
+                <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_short') || 'Module loading from CDN.'}</p>
                 {props.onClose && <button onClick={props.onClose} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>}
             </div>
         </div>
@@ -898,8 +898,8 @@ const StudentAnalyticsPanel = React.memo((props) => {
         <div className="fixed inset-0 z-[80] bg-black/60 flex items-center justify-center p-4" onClick={props.onClose}>
             <div className="bg-white rounded-2xl p-8 text-center max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
                 <div className="text-4xl mb-3">📊</div>
-                <p className="text-lg font-bold text-slate-700">Loading Assessment Center...</p>
-                <p className="text-sm text-slate-600 mt-2">Module loading from CDN. If this persists, check your connection.</p>
+                <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Assessment Center' }) || 'Loading Assessment Center...'}</p>
+                <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
                 <button onClick={props.onClose} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
             </div>
         </div>,
@@ -1313,7 +1313,7 @@ const StudentSubmitModal = React.memo((props) => {
         <div className="fixed inset-0 z-[200] bg-black/60 flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl p-8 text-center max-w-md shadow-2xl">
                 <div className="text-4xl mb-3">📤</div>
-                <p className="text-lg font-bold text-slate-700">Loading Submit Panel...</p>
+                <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Submit Panel' }) || 'Loading Submit Panel...'}</p>
                 {props.onClose && <button onClick={props.onClose} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>}
             </div>
         </div>
@@ -1530,7 +1530,7 @@ const StudentQuizOverlay = React.memo((props) => {
 const DraftFeedbackInterface = React.memo((props) => {
     const Ext = window.AlloModules && window.AlloModules.DraftFeedbackInterface;
     if (Ext) return <Ext {...props} />;
-    return <div className="p-8 text-center text-slate-600">Loading feedback interface...</div>;
+    return <div className="p-8 text-center text-slate-600">{t('common.loading_module', { name: 'feedback interface' }) || 'Loading feedback interface...'}</div>;
 });
 const TeacherGate = React.memo((props) => {
     const Ext = window.AlloModules && window.AlloModules.TeacherGate;
@@ -1613,9 +1613,10 @@ window.__alloUtils.cleanJson = cleanJson;
 window.__alloUtils.safeJsonParse = safeJsonParse;
 const InfoTooltip = React.memo(({ text, id }) => {
   const tooltipId = id || ('tooltip-' + Math.random().toString(36).substr(2, 6));
+  const { t } = useContext(LanguageContext) || { t: (k) => undefined };
   return (
   <div className="relative inline-block group ml-1 align-middle z-10">
-    <button type="button" aria-describedby={tooltipId} className="text-slate-600 cursor-help hover:text-indigo-500 focus:text-indigo-500 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-1 rounded-full" aria-label="More information">
+    <button type="button" aria-describedby={tooltipId} className="text-slate-600 cursor-help hover:text-indigo-500 focus:text-indigo-500 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-1 rounded-full" aria-label={t('common.more_information') || 'More information'}>
       <HelpCircle size={12} />
     </button>
     <div id={tooltipId} role="tooltip" className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-slate-800 text-white text-[11px] rounded-lg shadow-xl opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity pointer-events-none leading-tight invisible group-hover:visible group-focus-within:visible text-center border border-slate-600 z-50">
@@ -1920,51 +1921,51 @@ const ClozeInput = React.memo((props) => {
 });
 const MemoryGame = React.memo((props) => {
   const Impl = window.AlloModules && window.AlloModules.MemoryGame;
-  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">Loading game...</div>;
+  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">{t('common.loading_game') || 'Loading game...'}</div>;
 });
 const MatchingGame = React.memo((props) => {
   const Impl = window.AlloModules && window.AlloModules.MatchingGame;
-  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">Loading game...</div>;
+  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">{t('common.loading_game') || 'Loading game...'}</div>;
 });
 const TimelineGame = React.memo((props) => {
   const Impl = window.AlloModules && window.AlloModules.TimelineGame;
-  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">Loading game...</div>;
+  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">{t('common.loading_game') || 'Loading game...'}</div>;
 });
 const ConceptSortGame = React.memo((props) => {
   const Impl = window.AlloModules && window.AlloModules.ConceptSortGame;
-  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">Loading game...</div>;
+  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">{t('common.loading_game') || 'Loading game...'}</div>;
 });
 const VennGame = React.memo((props) => {
   const Impl = window.AlloModules && window.AlloModules.VennGame;
-  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">Loading game...</div>;
+  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">{t('common.loading_game') || 'Loading game...'}</div>;
 });
 const CauseEffectSortGame = React.memo((props) => {
   const Impl = window.AlloModules && window.AlloModules.CauseEffectSortGame;
-  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">Loading game...</div>;
+  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">{t('common.loading_game') || 'Loading game...'}</div>;
 });
 const PipelineBuilderGame = React.memo((props) => {
   const Impl = window.AlloModules && window.AlloModules.PipelineBuilderGame;
-  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">Loading game...</div>;
+  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">{t('common.loading_game') || 'Loading game...'}</div>;
 });
 const CrosswordGame = React.memo((props) => {
   const Impl = window.AlloModules && window.AlloModules.CrosswordGame;
-  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">Loading game...</div>;
+  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">{t('common.loading_game') || 'Loading game...'}</div>;
 });
 const SyntaxScramble = React.memo((props) => {
   const Impl = window.AlloModules && window.AlloModules.SyntaxScramble;
-  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">Loading game...</div>;
+  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">{t('common.loading_game') || 'Loading game...'}</div>;
 });
 const BingoGame = React.memo((props) => {
   const Impl = window.AlloModules && window.AlloModules.BingoGame;
-  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">Loading game...</div>;
+  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">{t('common.loading_game') || 'Loading game...'}</div>;
 });
 const StudentBingoGame = React.memo((props) => {
   const Impl = window.AlloModules && window.AlloModules.StudentBingoGame;
-  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">Loading game...</div>;
+  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">{t('common.loading_game') || 'Loading game...'}</div>;
 });
 const WordScrambleGame = React.memo((props) => {
   const Impl = window.AlloModules && window.AlloModules.WordScrambleGame;
-  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">Loading game...</div>;
+  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">{t('common.loading_game') || 'Loading game...'}</div>;
 });
 const SkeletonLoader = ({ type }) => {
   return (
@@ -2011,7 +2012,7 @@ const AdventureShop = React.memo((props) => {
 const CastLobby = React.memo((props) => {
     const Ext = window.AlloModules && window.AlloModules.CastLobby;
     if (Ext) return <Ext {...props} />;
-    return <div className="p-4 text-center text-slate-600">Loading character cast...</div>;
+    return <div className="p-4 text-center text-slate-600">{t('common.loading_module', { name: 'character cast' }) || 'Loading character cast...'}</div>;
 });
 const RoleSelectionModal = React.memo((props) => {
     const Ext = window.AlloModules && window.AlloModules.RoleSelectionModal;
@@ -2039,8 +2040,8 @@ const RosterKeyPanel = React.memo((props) => {
         <div className="fixed inset-0 z-[200] bg-black/60 flex items-center justify-center p-4" onClick={props.onClose}>
             <div className="bg-white rounded-2xl p-8 text-center max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
                 <div className="text-4xl mb-3">👥</div>
-                <p className="text-lg font-bold text-slate-700">Loading Roster Panel...</p>
-                <p className="text-sm text-slate-600 mt-2">Module loading from CDN.</p>
+                <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Roster Panel' }) || 'Loading Roster Panel...'}</p>
+                <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_short') || 'Module loading from CDN.'}</p>
                 <button onClick={props.onClose} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
             </div>
         </div>
@@ -2050,12 +2051,12 @@ const RosterKeyPanel = React.memo((props) => {
 const SimpleBarChart = React.memo((props) => {
     const Ext = window.AlloModules && window.AlloModules.SimpleBarChart;
     if (Ext) return <Ext {...props} />;
-    return <div className="text-xs text-slate-600 italic text-center py-4">Loading chart...</div>;
+    return <div className="text-xs text-slate-600 italic text-center py-4">{t('common.loading_module', { name: 'chart' }) || 'Loading chart...'}</div>;
 });
 const SimpleDonutChart = (props) => {
     const Ext = window.AlloModules && window.AlloModules.SimpleDonutChart;
     if (Ext) return <Ext {...props} />;
-    return <div className="text-xs text-slate-600 italic text-center py-4">Loading chart...</div>;
+    return <div className="text-xs text-slate-600 italic text-center py-4">{t('common.loading_module', { name: 'chart' }) || 'Loading chart...'}</div>;
 };
 const ConfettiEffect = ({ isActive }) => {
     if (!isActive) return null;
@@ -2090,7 +2091,7 @@ const calculateAnalyticsMetrics = (dashboardData) => {
 const LongitudinalProgressChart = React.memo((props) => {
     const Ext = window.AlloModules && window.AlloModules.LongitudinalProgressChart;
     if (Ext) return <Ext {...props} />;
-    return <div className="text-xs text-slate-600 italic text-center py-4">Loading progress chart...</div>;
+    return <div className="text-xs text-slate-600 italic text-center py-4">{t('common.loading_module', { name: 'progress chart' }) || 'Loading progress chart...'}</div>;
 });
 
 const LearnerProgressView = React.memo((props) => {
@@ -2100,8 +2101,8 @@ const LearnerProgressView = React.memo((props) => {
         <div className="max-w-4xl mx-auto p-8 text-center animate-in fade-in duration-300">
             <div className="bg-white rounded-2xl p-8 shadow-lg border border-slate-400">
                 <div className="text-4xl mb-3">📊</div>
-                <p className="text-lg font-bold text-slate-700">Loading Learning Progress...</p>
-                <p className="text-sm text-slate-600 mt-2">Module loading from CDN.</p>
+                <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Learning Progress' }) || 'Loading Learning Progress...'}</p>
+                <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_short') || 'Module loading from CDN.'}</p>
                 {props.onClose && <button onClick={props.onClose} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>}
             </div>
         </div>
@@ -2115,8 +2116,8 @@ const TeacherDashboard = React.memo((props) => {
         <div className="fixed inset-0 z-[200] bg-slate-100 flex items-center justify-center animate-in fade-in duration-300">
             <div className="bg-white rounded-2xl p-8 text-center max-w-md shadow-2xl border border-slate-400">
                 <div className="text-4xl mb-3">📋</div>
-                <p className="text-lg font-bold text-slate-700">Loading Teacher Dashboard...</p>
-                <p className="text-sm text-slate-600 mt-2">Module loading from CDN.</p>
+                <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Teacher Dashboard' }) || 'Loading Teacher Dashboard...'}</p>
+                <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_short') || 'Module loading from CDN.'}</p>
                 {props.onClose && <button onClick={props.onClose} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>}
             </div>
         </div>
@@ -2130,8 +2131,8 @@ const QuickStartWizard = React.memo((props) => {
         <div className="fixed inset-0 z-[300] bg-slate-900/90 flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={props.onClose}>
             <div className="bg-white rounded-2xl p-8 text-center max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
                 <div className="text-4xl mb-3">🚀</div>
-                <p className="text-lg font-bold text-slate-700">Loading Setup Wizard...</p>
-                <p className="text-sm text-slate-600 mt-2">Module loading from CDN.</p>
+                <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Setup Wizard' }) || 'Loading Setup Wizard...'}</p>
+                <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_short') || 'Module loading from CDN.'}</p>
                 <button onClick={props.onClose} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
             </div>
         </div>
@@ -2141,7 +2142,7 @@ const FocusReaderOverlay = React.memo((props) => {
     const Ext = window.AlloModules && (window.AlloModules.FocusReaderOverlay || window.AlloModules.SpeedReaderOverlay);
     if (Ext) return <Ext {...props} />;
     if (!props.isOpen) return null;
-    return <div className="fixed inset-0 z-[300] bg-black/80 flex items-center justify-center text-white text-lg">Loading Focus Mode...</div>;
+    return <div className="fixed inset-0 z-[300] bg-black/80 flex items-center justify-center text-white text-lg">{t('common.loading_module', { name: 'Focus Mode' }) || 'Loading Focus Mode...'}</div>;
 });
 const SpeedReaderOverlay = FocusReaderOverlay;
 const BionicChunkReader = FocusReaderOverlay;
@@ -2149,13 +2150,13 @@ const PerspectiveCrawlOverlay = React.memo((props) => {
     const Ext = window.AlloModules && window.AlloModules.PerspectiveCrawlOverlay;
     if (Ext) return <Ext {...props} />;
     if (!props.isOpen) return null;
-    return <div className="fixed inset-0 z-[300] bg-black/80 flex items-center justify-center text-white text-lg">Loading Cinematic Crawl...</div>;
+    return <div className="fixed inset-0 z-[300] bg-black/80 flex items-center justify-center text-white text-lg">{t('common.loading_module', { name: 'Cinematic Crawl' }) || 'Loading Cinematic Crawl...'}</div>;
 });
 const KaraokeReaderOverlay = React.memo((props) => {
     const Ext = window.AlloModules && window.AlloModules.KaraokeReaderOverlay;
     if (Ext) return <Ext {...props} />;
     if (!props.isOpen) return null;
-    return <div className="fixed inset-0 z-[300] bg-black/80 flex items-center justify-center text-white text-lg">Loading Karaoke Reader...</div>;
+    return <div className="fixed inset-0 z-[300] bg-black/80 flex items-center justify-center text-white text-lg">{t('common.loading_module', { name: 'Karaoke Reader' }) || 'Loading Karaoke Reader...'}</div>;
 });
 const ImmersiveToolbar = React.memo((props) => {
     const Ext = window.AlloModules && window.AlloModules.ImmersiveToolbar;
@@ -2165,7 +2166,7 @@ const ImmersiveToolbar = React.memo((props) => {
 const InteractiveBlueprintCard = React.memo((props) => {
     const Ext = window.AlloModules && window.AlloModules.InteractiveBlueprintCard;
     if (Ext) return <Ext {...props} />;
-    return <div className="p-4 text-center text-slate-600">Loading blueprint editor...</div>;
+    return <div className="p-4 text-center text-slate-600">{t('common.loading_module', { name: 'blueprint editor' }) || 'Loading blueprint editor...'}</div>;
 });
 const HarmonyMeter = ({ score }) => {
     const Ext = window.AlloModules && window.AlloModules.HarmonyMeter;
@@ -20896,7 +20897,7 @@ Return ONLY valid JSON in this format:
     <ThemeContext.Provider value={_themeCtx}>
     <div className={`min-h-screen bg-slate-50 font-sans text-slate-800 flex flex-col ${disableAnimations ? 'reduce-motion' : ''}`}>
       {kokoroLoadState && kokoroLoadState.loading && (
-        <div role="status" aria-live="polite" aria-label="AlloFlow loading" style={{
+        <div role="status" aria-live="polite" aria-label={t('common.alloflow_loading_aria') || 'AlloFlow loading'} style={{
           position: 'fixed', inset: 0, zIndex: 9999,
           background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -20976,7 +20977,7 @@ Return ONLY valid JSON in this format:
             <span className="opacity-60">|</span>
             <span className="capitalize">{lmsSession.role}</span>
           </div>
-          <button onClick={() => setLmsSession(null)} className="bg-white/20 hover:bg-white/30 px-2 py-0.5 rounded-md transition-colors" aria-label="Dismiss LMS banner">Dismiss</button>
+          <button onClick={() => setLmsSession(null)} className="bg-white/20 hover:bg-white/30 px-2 py-0.5 rounded-md transition-colors" aria-label={t('lms.dismiss_banner_aria') || 'Dismiss LMS banner'}>{t('lms.dismiss_button') || 'Dismiss'}</button>
         </div>
       )}
       {/* ── Bookmarklet Audit Queue ── */}
@@ -21016,7 +21017,7 @@ Return ONLY valid JSON in this format:
               );
             })}
           </div>
-          <p className="text-[11px] opacity-70 mt-2">Click a document to fetch and load it into the accessibility pipeline. Some LMS files may require you to be logged in to the LMS in this browser.</p>
+          <p className="text-[11px] opacity-70 mt-2">{t('lms.audit_queue_help') || 'Click a document to fetch and load it into the accessibility pipeline. Some LMS files may require you to be logged in to the LMS in this browser.'}</p>
         </div>
       )}
       <div role="status" aria-live="polite" className="fixed top-44 left-[45%] -translate-x-1/2 z-[400] flex flex-col gap-3 pointer-events-none items-center w-full max-w-md">
@@ -21538,8 +21539,8 @@ Return ONLY valid JSON in this format:
                         {isExtracting ? <RefreshCw size={12} className="animate-spin"/> : <Upload size={12} />}
                         {isExtracting ? t('input.actions.analyzing_short') : t('common.upload')}
                      </button>
-                     <label className="text-xs flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 px-3 py-1.5 rounded-full font-medium transition-colors shadow-sm cursor-pointer" title="Load a previously saved AlloFlow PDF project">
-                        <FileDown size={12} /> Load Project
+                     <label className="text-xs flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 px-3 py-1.5 rounded-full font-medium transition-colors shadow-sm cursor-pointer" title={t('input.load_project_tooltip') || 'Load a previously saved AlloFlow PDF project'}>
+                        <FileDown size={12} /> {t('input.load_project') || 'Load Project'}
                         <input type="file" accept=".json" className="hidden" onChange={(e) => {
                           const file = e.target.files?.[0]; if (!file) return;
                           const reader = new FileReader();
@@ -21710,7 +21711,7 @@ Return ONLY valid JSON in this format:
                   <div className="flex items-center gap-2">
                       <div className="bg-pink-100 p-1 rounded-md text-pink-700"><Volume2 size={16}/></div>
                       <div>
-                        <span className="text-sm font-bold text-slate-700 block">Word Sounds</span>
+                        <span className="text-sm font-bold text-slate-700 block">{t('sidebar.tool_wordsounds') || 'Word Sounds'}</span>
                       </div>
                   </div>
                   {expandedTools.includes('ui-tool-wordsounds') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
@@ -21827,9 +21828,9 @@ Return ONLY valid JSON in this format:
                     type="button"
                     onClick={() => setShowStoryForge(true)}
                     className="group flex items-center gap-1 px-2 py-0.5 mr-3 text-[11px] font-bold text-rose-800 bg-rose-50/80 hover:bg-rose-100 border border-rose-200/50 rounded-full transition-all hover:shadow-sm"
-                    aria-label="Open StoryForge"
+                    aria-label={t('sidebar.open_storyforge_aria') || 'Open StoryForge'}
                   >
-                    {'\uD83D\uDCD6'} <span className="group-hover:tracking-wide transition-all">StoryForge</span>
+                    {'\uD83D\uDCD6'} <span className="group-hover:tracking-wide transition-all">{t('sidebar.storyforge_label') || 'StoryForge'}</span>
                   </button>
                 </div>
                 {/* ── SentenceFramesPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
@@ -21921,7 +21922,7 @@ Return ONLY valid JSON in this format:
                 ${activeView === 'dbq' ? 'border-rose-600 shadow-xl shadow-rose-500/20' : 'border-slate-200 hover:border-rose-200 shadow-lg shadow-rose-500/10'}
               `}>
                 <button
-                    aria-label="Document-Based Questions"
+                    aria-label={t('sidebar.tool_dbq_aria') || 'Document-Based Questions'}
                     data-help-key="tool_dbq"
                     onClick={() => toggleTool('dbq')}
                     className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-rose-50 transition-colors"
@@ -21952,7 +21953,7 @@ Return ONLY valid JSON in this format:
                     type="button"
                     onClick={() => { setShowStemLab(true); setStemLabTab('explore'); }}
                     className="group flex items-center gap-1 px-2 py-0.5 mr-3 text-[11px] font-bold text-indigo-700 bg-indigo-50/80 hover:bg-indigo-100 border border-indigo-200/50 rounded-full transition-all hover:shadow-sm"
-                    aria-label="Open STEM Lab Explore"
+                    aria-label={t('sidebar.open_stem_lab_explore_aria') || 'Open STEM Lab Explore'}
                   >
                     🧪 <span className="group-hover:tracking-wide transition-all">Explore</span>
                   </button>
@@ -22296,10 +22297,10 @@ Return ONLY valid JSON in this format:
                                     onClick={canUndo ? handleAnnotationUndo : undefined}
                                     disabled={!canUndo}
                                     className={'p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 mr-1 ' + (canUndo ? 'text-slate-600 hover:bg-slate-100' : 'text-slate-300 cursor-not-allowed')}
-                                    title={canUndo ? ('Undo last annotation (' + annotationUndoCount + ' available) — Ctrl/Cmd+Z') : 'Nothing to undo'}
-                                    aria-label="Undo last annotation"
+                                    title={canUndo ? ((t('annotation.undo_tooltip', { count: annotationUndoCount }) || ('Undo last annotation (' + annotationUndoCount + ' available) — Ctrl/Cmd+Z'))) : (t('annotation.nothing_to_undo') || 'Nothing to undo')}
+                                    aria-label={t('annotation.undo_aria') || 'Undo last annotation'}
                                 >
-                                    ↩ Undo
+                                    {t('annotation.undo_button') || '↩ Undo'}
                                 </button>
                             );
                         })()}
@@ -22313,11 +22314,11 @@ Return ONLY valid JSON in this format:
                                     type="button"
                                     onClick={() => setShowAnnotationSidebar(prev => !prev)}
                                     className={'p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 mr-1 ' + (showAnnotationSidebar ? 'bg-slate-200 text-slate-700 ring-2 ring-slate-300' : 'text-slate-600 hover:bg-slate-100')}
-                                    title="Show all annotations"
-                                    aria-label="Toggle annotation list"
+                                    title={t('annotation.show_all_tooltip') || 'Show all annotations'}
+                                    aria-label={t('annotation.toggle_list_aria') || 'Toggle annotation list'}
                                     aria-pressed={showAnnotationSidebar}
                                 >
-                                    📋 List
+                                    {t('annotation.list_button') || '📋 List'}
                                     {total > 0 && (
                                         <span className="ml-0.5 bg-indigo-600 text-white text-[9px] font-bold rounded-full px-1.5 py-0.5 leading-none">
                                             {total}
@@ -22330,7 +22331,7 @@ Return ONLY valid JSON in this format:
                         <span role="button" tabIndex={0}
                             onClick={() => { setShowStemLab(true); setStemLabTab('explore'); }}
                             className="group flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold text-indigo-600 bg-indigo-50/80 hover:bg-indigo-100 border border-indigo-200/50 rounded-full transition-all hover:shadow-sm cursor-pointer ml-1"
-                            aria-label="Open STEM Lab Explore">
+                            aria-label={t('sidebar.open_stem_lab_explore_aria') || 'Open STEM Lab Explore'}>
                             🧪 <span className="group-hover:tracking-wide transition-all">Explore</span>
                         </span>
                     )}
@@ -22652,8 +22653,8 @@ Return ONLY valid JSON in this format:
                         <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center">
                             <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl">
                                 <div className="text-4xl mb-3">⚙️</div>
-                                <p className="text-lg font-bold text-slate-700">Loading Word Sounds...</p>
-                                <p className="text-sm text-slate-600 mt-2">Module loading from CDN.</p>
+                                <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Word Sounds' }) || 'Loading Word Sounds...'}</p>
+                                <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_short') || 'Module loading from CDN.'}</p>
                                 <button onClick={() => { setIsWordSoundsMode(false); setActiveView('input'); }} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300">Close</button>
                             </div>
                         </div>
@@ -23082,13 +23083,13 @@ Return ONLY valid JSON in this format:
                                 <div className="flex items-center justify-between mb-2">
                                     <div className="flex items-center gap-2">
                                         <span className="text-2xl">🏰</span>
-                                        <h2 className="text-lg font-black text-amber-900">Fluency Maze</h2>
+                                        <h2 className="text-lg font-black text-amber-900">{t('fluency_maze.title') || 'Fluency Maze'}</h2>
                                     </div>
-                                    <span className="text-[11px] font-bold text-amber-700 uppercase tracking-wider">Math facts unlock the gates</span>
+                                    <span className="text-[11px] font-bold text-amber-700 uppercase tracking-wider">{t('fluency_maze.tagline') || 'Math facts unlock the gates'}</span>
                                 </div>
                                 {!FluencyMazeComponent ? (
                                     <div className="p-4 bg-purple-50 rounded-xl border border-purple-200 text-center text-purple-700 text-sm">
-                                        Loading Fluency Maze module...
+                                        {t('common.loading_module', { name: 'Fluency Maze' }) || 'Loading Fluency Maze module...'}
                                     </div>
                                 ) : (
                                     <FluencyMazeComponent
@@ -23225,7 +23226,7 @@ Return ONLY valid JSON in this format:
                                         <Sparkles size={28} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-purple-600 animate-pulse" />
                                     </div>
                                     <p className="mt-6 text-lg font-bold text-slate-700">{t('persona.identifying')}</p>
-                                    <p className="text-sm text-slate-600 mt-1">Analyzing content for historical figures...</p>
+                                    <p className="text-sm text-slate-600 mt-1">{t('persona.analyzing_historical_figures') || 'Analyzing content for historical figures...'}</p>
                                 </div>
                             )}
                             {(Array.isArray(generatedContent?.data) ? generatedContent?.data : []).map((persona, idx) => {
@@ -23602,10 +23603,10 @@ Return ONLY valid JSON in this format:
       {isTeacherMode && activeSessionCode && (
         <button
           onClick={() => setShowLivePollingPanel(true)}
-          aria-label="Open live polling"
+          aria-label={t('live_polling.open_aria') || 'Open live polling'}
           style={{position:'fixed',bottom:'1rem',right:'1rem',zIndex:9999,background:'#1e3a8a',color:'white',border:'none',borderRadius:24,padding:'0.6rem 1rem',fontWeight:700,fontSize:'0.85rem',cursor:'pointer',boxShadow:'0 8px 20px rgba(30,58,138,0.35)'}}
         >
-          Live Polling
+          {t('live_polling.button') || 'Live Polling'}
         </button>
       )}
       {isTeacherMode && activeSessionCode && window.AlloModules && window.AlloModules.LivePolling && window.AlloModules.LivePolling.HostPanel &&
@@ -23629,10 +23630,10 @@ Return ONLY valid JSON in this format:
       {isTeacherMode && activeSessionCode && (
         <button
           onClick={() => setShowPictionaryHost(true)}
-          aria-label="Open Concept Pictionary"
+          aria-label={t('pictionary.open_aria') || 'Open Concept Pictionary'}
           style={{position:'fixed',bottom:'4rem',right:'1rem',zIndex:9999,background:'#9f1239',color:'white',border:'none',borderRadius:24,padding:'0.6rem 1rem',fontWeight:700,fontSize:'0.85rem',cursor:'pointer',boxShadow:'0 8px 20px rgba(159,18,57,0.35)'}}
         >
-          🎨 Pictionary
+          {t('pictionary.button') || '🎨 Pictionary'}
         </button>
       )}
       {isTeacherMode && activeSessionCode && showPictionaryHost && window.AlloModules && window.AlloModules.ConceptPictionary && window.AlloModules.ConceptPictionary.HostView &&
@@ -23722,7 +23723,7 @@ Return ONLY valid JSON in this format:
         const _aacColors = { noun:'#fef9c3', verb:'#dcfce7', adjective:'#dbeafe', other:'#f3f4f6' };
         return (
           <div
-            role="dialog" aria-modal="true" aria-label="Visual Support from your teacher"
+            role="dialog" aria-modal="true" aria-label={t('visual_support.teacher_modal_aria') || 'Visual Support from your teacher'}
             style={{position:'fixed',inset:0,zIndex:99998,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(0,0,0,0.55)',backdropFilter:'blur(10px)',WebkitBackdropFilter:'blur(10px)'}}
             onClick={(e) => { if (e.target === e.currentTarget) setVisualSupportsPayload(null); }}
           >
@@ -24063,15 +24064,15 @@ Return ONLY valid JSON in this format:
             <button onClick={() => setShowAIBackendModal(false)} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10" aria-label={t('common.close') || "Close"}><X size={20}/></button>
             <div className="flex items-center gap-2 mb-5 text-violet-900">
                 <div className="bg-violet-100 p-2 rounded-full"><Settings size={20} className="text-violet-600"/></div>
-                <h3 className="font-black text-lg">Advanced Settings</h3>
+                <h3 className="font-black text-lg">{t('canvas_settings.title') || 'Advanced Settings'}</h3>
             </div>
             <div className="space-y-4">
                 <div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">Google Search API Key <span className="normal-case font-normal text-slate-600">(optional)</span></label>
+                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('canvas_settings.google_api_label') || 'Google Search API Key'} <span className="normal-case font-normal text-slate-600">{t('common.optional_parenthetical') || '(optional)'}</span></label>
                     <input
-                        id="ai-canvas-cse-key" aria-label="Google Search API Key"
+                        id="ai-canvas-cse-key" aria-label={t('canvas_settings.google_api_label') || 'Google Search API Key'}
                         type="password"
-                        placeholder="Your Google API key..."
+                        placeholder={t('canvas_settings.google_api_placeholder') || 'Your Google API key...'}
                         defaultValue={(() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').cseApiKey || ''; } catch { return ''; } })()}
                         onChange={(e) => {
                             const current = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');
@@ -24080,14 +24081,14 @@ Return ONLY valid JSON in this format:
                         }}
                         className="w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
                     />
-                    <p className="text-[11px] text-slate-600 mt-1">Power users: enter your own Google Custom Search API key (100 free queries/day)</p>
+                    <p className="text-[11px] text-slate-600 mt-1">{t('canvas_settings.google_api_hint') || 'Power users: enter your own Google Custom Search API key (100 free queries/day)'}</p>
                 </div>
                 <div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">Wolfram Alpha App ID <span className="normal-case font-normal text-slate-600">(optional)</span></label>
+                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('canvas_settings.wolfram_label') || 'Wolfram Alpha App ID'} <span className="normal-case font-normal text-slate-600">{t('common.optional_parenthetical') || '(optional)'}</span></label>
                     <input
-                        id="ai-canvas-wolfram" aria-label="Wolfram Alpha App ID"
+                        id="ai-canvas-wolfram" aria-label={t('canvas_settings.wolfram_label') || 'Wolfram Alpha App ID'}
                         type="text"
-                        placeholder="XXXXX-XXXXXXXXXX (from developer.wolframalpha.com)"
+                        placeholder={t('canvas_settings.wolfram_placeholder') || 'XXXXX-XXXXXXXXXX (from developer.wolframalpha.com)'}
                         defaultValue={(() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').wolframAppId || ''; } catch { return ''; } })()}
                         onChange={(e) => {
                             const current = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');
@@ -24095,14 +24096,14 @@ Return ONLY valid JSON in this format:
                         }}
                         className="w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
                     />
-                    <p className="text-[11px] text-slate-600 mt-1">Free: 2,000 queries/month. Adds exact math solving and step-by-step verification</p>
+                    <p className="text-[11px] text-slate-600 mt-1">{t('canvas_settings.wolfram_hint') || 'Free: 2,000 queries/month. Adds exact math solving and step-by-step verification'}</p>
                 </div>
                 <div className="flex justify-end pt-2">
                     <button
                         onClick={() => setShowAIBackendModal(false)}
                         className="bg-violet-600 text-white px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-violet-700 transition-colors shadow-lg shadow-violet-200 active:scale-95"
                     >
-                        Done
+                        {t('common.done') || 'Done'}
                     </button>
                 </div>
             </div>
@@ -24223,7 +24224,7 @@ Return ONLY valid JSON in this format:
         </div>
       )}
       {!isAppReady && (
-        <div role="region" aria-label="AlloFlow loading screen" style={{
+        <div role="region" aria-label={t('splash.loading_screen_aria') || 'AlloFlow loading screen'} style={{
           position: 'fixed', inset: 0, zIndex: 99999,
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
           background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 30%, #312e81 60%, #1e3a5f 100%)',
@@ -24233,7 +24234,7 @@ Return ONLY valid JSON in this format:
           <div style={{ textAlign: 'center', animation: 'pulse 2s ease-in-out infinite', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <h1 style={{ fontSize: '36px', fontWeight: 900, color: 'white', margin: '0 0 16px', letterSpacing: '-0.5px', fontFamily: 'system-ui, -apple-system, sans-serif' }}>AlloFlow</h1>
             <img src={"https://raw.githubusercontent.com/Apomera/AlloFlow/main/rainbow-book.jpg"} alt="AlloFlow" style={{ width: '120px', height: '120px', marginBottom: '16px', filter: 'drop-shadow(0 0 24px rgba(99,102,241,0.5))', borderRadius: '20px', objectFit: 'cover' }} />
-            <p style={{ fontSize: '13px', color: 'rgba(165,180,252,0.8)', margin: '0 0 32px', fontWeight: 600, letterSpacing: '3px', textTransform: 'uppercase' }}>Adaptive Levels, Layers, & Outputs</p>
+            <p style={{ fontSize: '13px', color: 'rgba(165,180,252,0.8)', margin: '0 0 32px', fontWeight: 600, letterSpacing: '3px', textTransform: 'uppercase' }}>{t('about.allo_acronym_def') || 'Adaptive Levels, Layers, & Outputs'}</p>
             <p style={{ fontSize: '11px', color: 'rgba(165,180,252,0.5)', margin: '0 0 32px', fontWeight: 500, fontStyle: 'italic' }}>{t('splash.udl_tagline')}</p>
           </div>
           <div style={{ width: '280px', height: '6px', borderRadius: '3px', background: 'rgba(255,255,255,0.1)', overflow: 'hidden', boxShadow: '0 0 20px rgba(99,102,241,0.2)' }}>
@@ -24370,8 +24371,8 @@ Return ONLY valid JSON in this format:
             <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setShowStemLab(false)}>
                 <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
                     <div className="text-4xl mb-3">⚙️</div>
-                    <p className="text-lg font-bold text-slate-700">Loading STEM Lab...</p>
-                    <p className="text-sm text-slate-600 mt-2">Module loading from CDN. If this persists, check your connection.</p>
+                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'STEM Lab' }) || 'Loading STEM Lab...'}</p>
+                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
                     <button onClick={() => setShowStemLab(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
                 </div>
             </div>
@@ -24457,8 +24458,8 @@ Return ONLY valid JSON in this format:
             <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setIsSymbolStudioOpen(false)}>
                 <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
                     <div className="text-4xl mb-3">🎨</div>
-                    <p className="text-lg font-bold text-slate-700">Loading Symbol Studio...</p>
-                    <p className="text-sm text-slate-600 mt-2">Module loading from CDN. If this persists, check your connection.</p>
+                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Symbol Studio' }) || 'Loading Symbol Studio...'}</p>
+                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
                     <button onClick={() => setIsSymbolStudioOpen(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
                 </div>
             </div>
@@ -24531,8 +24532,8 @@ Return ONLY valid JSON in this format:
             <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setIsAlloHavenOpen(false)}>
                 <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
                     <div className="text-4xl mb-3">🌿</div>
-                    <p className="text-lg font-bold text-slate-700">Loading AlloHaven...</p>
-                    <p className="text-sm text-slate-600 mt-2">Module loading from CDN. If this persists, check your connection.</p>
+                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'AlloHaven' }) || 'Loading AlloHaven...'}</p>
+                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
                     <button onClick={() => setIsAlloHavenOpen(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
                 </div>
             </div>
@@ -24560,8 +24561,8 @@ Return ONLY valid JSON in this format:
             <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setIsDynamicAssessmentOpen(false)}>
                 <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
                     <div className="text-4xl mb-3">🔬</div>
-                    <p className="text-lg font-bold text-slate-700">Loading Dynamic Assessment Studio...</p>
-                    <p className="text-sm text-slate-600 mt-2">Module loading from CDN. If this persists, check your connection.</p>
+                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Dynamic Assessment Studio' }) || 'Loading Dynamic Assessment Studio...'}</p>
+                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
                     <button onClick={() => setIsDynamicAssessmentOpen(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
                 </div>
             </div>
@@ -24581,8 +24582,8 @@ Return ONLY valid JSON in this format:
             <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setIsCommunityCatalogOpen(false)}>
                 <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
                     <div className="text-4xl mb-3">📚</div>
-                    <p className="text-lg font-bold text-slate-700">Loading Community Catalog...</p>
-                    <p className="text-sm text-slate-600 mt-2">Module loading from CDN. If this persists, check your connection.</p>
+                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Community Catalog' }) || 'Loading Community Catalog...'}</p>
+                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
                     <button onClick={() => setIsCommunityCatalogOpen(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
                 </div>
             </div>
@@ -24605,8 +24606,8 @@ Return ONLY valid JSON in this format:
             <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setIsAccessibilityLabOpen(false)}>
                 <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
                     <div className="text-4xl mb-3">🔍</div>
-                    <p className="text-lg font-bold text-slate-700">Loading Accessibility Lab...</p>
-                    <p className="text-sm text-slate-600 mt-2">Module loading from CDN. If this persists, check your connection.</p>
+                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Accessibility Lab' }) || 'Loading Accessibility Lab...'}</p>
+                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
                     <button onClick={() => setIsAccessibilityLabOpen(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
                 </div>
             </div>
@@ -24632,8 +24633,8 @@ Return ONLY valid JSON in this format:
             <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setIsAuditRemediatorOpen(false)}>
                 <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
                     <div className="text-4xl mb-3">🛠️</div>
-                    <p className="text-lg font-bold text-slate-700">Loading Audit Remediator...</p>
-                    <p className="text-sm text-slate-600 mt-2">Module loading from CDN. If this persists, check your connection.</p>
+                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Audit Remediator' }) || 'Loading Audit Remediator...'}</p>
+                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
                     <button onClick={() => setIsAuditRemediatorOpen(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
                 </div>
             </div>
@@ -24690,8 +24691,8 @@ Return ONLY valid JSON in this format:
             <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setShowStoryForge(false)}>
                 <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
                     <div className="text-4xl mb-3">📖</div>
-                    <p className="text-lg font-bold text-slate-700">Loading StoryForge...</p>
-                    <p className="text-sm text-slate-600 mt-2">Module loading from CDN. If this persists, check your connection.</p>
+                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'StoryForge' }) || 'Loading StoryForge...'}</p>
+                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
                     <button onClick={() => setShowStoryForge(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
                 </div>
             </div>
@@ -24730,8 +24731,8 @@ Return ONLY valid JSON in this format:
             <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setShowLitLab(false)}>
                 <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
                     <div className="text-4xl mb-3">🎭</div>
-                    <p className="text-lg font-bold text-slate-700">Loading LitLab...</p>
-                    <p className="text-sm text-slate-600 mt-2">Module loading from CDN. If this persists, check your connection.</p>
+                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'LitLab' }) || 'Loading LitLab...'}</p>
+                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
                     <button onClick={() => setShowLitLab(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
                 </div>
             </div>
@@ -24783,8 +24784,8 @@ Return ONLY valid JSON in this format:
             <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setShowPoetTree(false)}>
                 <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
                     <div className="text-4xl mb-3">🌳</div>
-                    <p className="text-lg font-bold text-slate-700">Loading PoetTree...</p>
-                    <p className="text-sm text-slate-600 mt-2">Module loading from CDN. If this persists, check your connection.</p>
+                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'PoetTree' }) || 'Loading PoetTree...'}</p>
+                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
                     <button onClick={() => setShowPoetTree(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
                 </div>
             </div>
@@ -24815,8 +24816,8 @@ Return ONLY valid JSON in this format:
             <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setShowSelHub(false)}>
                 <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
                     <div className="text-4xl mb-3">{'\uD83D\uDC96'}</div>
-                    <p className="text-lg font-bold text-slate-700">Loading SEL Hub...</p>
-                    <p className="text-sm text-slate-600 mt-2">Module loading from CDN. If this persists, check your connection.</p>
+                    <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'SEL Hub' }) || 'Loading SEL Hub...'}</p>
+                    <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_long') || 'Module loading from CDN. If this persists, check your connection.'}</p>
                     <button onClick={() => setShowSelHub(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
                 </div>
             </div>
@@ -24915,23 +24916,23 @@ Return ONLY valid JSON in this format:
           return (
               <div className="fixed top-16 right-4 z-[45] w-[360px] max-h-[calc(100vh-5rem)] flex flex-col rounded-2xl shadow-2xl border-l-4 border-purple-500 overflow-hidden animate-in slide-in-from-right-5 duration-300"
                   style={{ background: theme === 'contrast' ? '#000' : '#0f172a', color: theme === 'contrast' ? '#fbbf24' : '#e2e8f0', fontFamily: 'ui-monospace, monospace', fontSize: '12px' }}
-                  role="complementary" aria-label="Read This Page panel"
+                  role="complementary" aria-label={t('read_this_page.panel_aria') || 'Read This Page panel'}
               >
                   {/* Header */}
                   <div className="flex items-center justify-between p-3 border-b" style={{ borderColor: theme === 'contrast' ? '#fbbf24' : '#334155' }}>
                       <div className="flex items-center gap-2 font-black text-sm">
                           <Ear size={16} className="text-purple-400" />
-                          <span>Read This Page</span>
+                          <span>{t('read_this_page.title') || 'Read This Page'}</span>
                       </div>
                       <div className="flex items-center gap-1">
                           <button id="rtp-read-all-btn" onClick={handleReadAll}
                               className="px-3 py-1 rounded-lg text-white text-[11px] font-bold transition-colors hover:brightness-110"
                               style={{ background: '#7c3aed' }}
-                          >{'\u25B6'} Read All</button>
+                          >{'\u25B6'} {t('read_this_page.read_all_button') || 'Read All'}</button>
                           <button onClick={handleStop}
                               className="px-2 py-1 rounded-lg text-white text-[11px] font-bold hover:bg-red-600 transition-colors"
                               style={{ background: '#dc2626' }}
-                          >{'\u23F9'} Stop</button>
+                          >{'\u23F9'} {t('read_this_page.stop_button') || 'Stop'}</button>
                           <button onClick={() => { handleStop(); setShowReadThisPage(false); setFocusNarrationEnabled(false); }}
                               className="ml-1 px-2 py-1 rounded-lg text-slate-600 hover:text-white hover:bg-slate-700 transition-colors text-[11px] font-bold"
                           >{'\u2715'}</button>
@@ -24943,9 +24944,9 @@ Return ONLY valid JSON in this format:
                           <input type="checkbox" checked={focusNarrationEnabled} onChange={(e) => setFocusNarrationEnabled(e.target.checked)}
                               className="w-4 h-4 rounded accent-purple-500"
                           />
-                          <span className="text-[11px] font-bold">Keyboard Focus Narration</span>
+                          <span className="text-[11px] font-bold">{t('read_this_page.focus_narration_label') || 'Keyboard Focus Narration'}</span>
                       </label>
-                      <span className="text-[11px] text-slate-600">{focusNarrationEnabled ? 'Tab to hear controls' : 'Off'}</span>
+                      <span className="text-[11px] text-slate-600">{focusNarrationEnabled ? (t('read_this_page.focus_narration_on_hint') || 'Tab to hear controls') : (t('common.off') || 'Off')}</span>
                   </div>
                   {/* Content Items */}
                   <div className="flex-1 overflow-y-auto p-2 space-y-1" style={{ maxHeight: 'calc(100vh - 12rem)' }}>
