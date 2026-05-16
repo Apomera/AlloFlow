@@ -1310,6 +1310,80 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               })
             )
           ),
+          // ── NEW v0.13: Challenge of the Day ──
+          (function() {
+            // Seed from current date so the challenge is stable for a day
+            var now = new Date();
+            var daySeed = now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate();
+            var challenges = [
+              { icon: '🪝', title: 'Rank by talon force', prompt: 'From memory: order these 5 species by grip force, weakest to strongest — bald eagle, harpy eagle, golden eagle, great horned owl, peregrine.', jumpTo: 'talons', answer: 'Peregrine (230 psi) → Bald eagle (400) → Great horned owl (500) → Harpy eagle (530) → Golden eagle (750)' },
+              { icon: '🎯', title: 'Match silhouette to family', prompt: 'Which family has POINTED swept-back wings + a medium tail with a tomial-tooth notch on the upper beak?', jumpTo: 'fieldid', answer: 'Falconidae — falcons. Pointed wings + the tomial tooth (used to sever the cervical vertebrae) are diagnostic.' },
+              { icon: '📐', title: 'Stoop physics', prompt: 'Estimate: a peregrine at 242 mph terminal velocity carries roughly how much kinetic energy at impact?', jumpTo: 'stoop', answer: '~5,000 J — pistol-bullet class. KE = ½ × 0.95 kg × (108 m/s)² ≈ 5,540 J.' },
+              { icon: '👁', title: 'UV vision', prompt: 'Which family of raptor can see ultraviolet light + uses it to track vole urine trails?', jumpTo: 'vision', answer: 'Falconidae (kestrels especially). Vole urine reflects UV strongly; the kestrel sees "glowing highways" of rodent travel routes. Viitala et al 1995 Nature.' },
+              { icon: '🤫', title: 'Silent flight mechanism', prompt: 'Name the 3 owl-feather features that produce silent flight.', jumpTo: 'silent', answer: 'Comb leading edge (serrated primaries) + fringed trailing edge + velvety dorsal surface. Shifts noise to ~16 kHz, above prey hearing range.' },
+              { icon: '🦉', title: 'Owl 3D hearing', prompt: 'How does an owl tell whether a sound came from ABOVE or BELOW its head?', jumpTo: 'senses', answer: 'Ear asymmetry: left ear opening sits higher on the skull than the right. Sound from above hits left ear first by ~30 microseconds; from below, right first. Payne 1962.' },
+              { icon: '🧭', title: 'Where the rivers meet', prompt: 'What is the world\'s largest single-site raptor migration count? About how many birds pass through each fall?', jumpTo: 'migration', answer: 'Veracruz River of Raptors (Mexico) — ~5 million birds per fall. Atlantic + Mississippi + Central flyways all converge before crossing into Central America.' },
+              { icon: '🐣', title: 'Why eagles are slow to recover', prompt: 'In K-selected raptor demographics, which is the highest-leverage parameter for population growth?', jumpTo: 'lifecycle', answer: 'Adult annual survival. Even small drops (e.g., from lead poisoning) flip λ from growing to declining. Adult breeders are worth 5-10× juveniles demographically.' },
+              { icon: '🏆', title: 'DDT recovery', prompt: 'Roughly how many peregrine pairs were left in the lower 48 US at the species\' nadir in 1972?', jumpTo: 'recoveries', answer: 'Fewer than 50. The species was functionally extinct east of the Rockies before the 1972 US DDT ban + The Peregrine Fund\'s captive-breeding program restored it to ~3,200 pairs by 2020.' },
+              { icon: '🦅', title: 'Tucker 1998', prompt: 'Why do peregrines fly a logarithmic spiral approach instead of a straight line?', jumpTo: 'spiral', answer: 'Constant retinal angle on the prey — no head turn needed at terminal velocity, no drag penalty. Identical algorithm to AIM-9 Sidewinder missiles.' },
+              { icon: '🥚', title: 'What\'s in a pellet?', prompt: 'A barn owl pellet is composed of roughly what proportions of fur vs. bone vs. teeth?', jumpTo: 'pellet', answer: 'About 40-60% fur (matrix), 20-30% bone fragments, ~5% cranium, ~5% loose teeth, 5-15% feathers + bird bones, 0-10% insect chitin.' },
+              { icon: '🤝', title: 'Berkutchi', prompt: 'Which species do Mongolian Berkutchi traditionally train, + what prey can it take?', jumpTo: 'falconry', answer: 'Golden eagle (Aquila chrysaetos). Trained to take wolves, foxes, hares from horseback. Tradition dating to ~2000 BCE.' },
+              { icon: '⭐', title: 'Pale Male', prompt: 'How long did Pale Male, Manhattan\'s most famous red-tailed hawk, nest at 927 Fifth Avenue?', jumpTo: 'famous', answer: '32 years (1991-2023). Raised 26+ offspring. The 2004 coop-board nest-removal sparked a 12-day public outcry covered by the NYT.' },
+              { icon: '🪂', title: 'Wing-loading prediction', prompt: 'A bird with HIGH wing loading + HIGH aspect ratio will hunt how?', jumpTo: 'predictor', answer: 'Falcon-style stoop specialist. Fast level + lethal dive, large turning radius, bad at slow flight. (Peregrine: 8.8 kg/m² / AR 10.2)' }
+            ];
+            var todayChallenge = challenges[daySeed % challenges.length];
+            var revealed = (rh.challengeRevealed === daySeed);
+            return h('div', { className: 'bg-gradient-to-br from-purple-900/40 to-fuchsia-900/40 border border-purple-700/40 rounded-xl p-4' },
+              h('div', { className: 'flex items-baseline justify-between gap-2 mb-2' },
+                h('div', { className: 'text-sm font-bold text-purple-300' }, '🎲 Challenge of the Day'),
+                h('div', { className: 'text-[10px] text-slate-400 font-mono' }, now.toLocaleDateString())
+              ),
+              h('div', { className: 'flex items-start gap-3' },
+                h('div', { className: 'text-4xl flex-shrink-0' }, todayChallenge.icon),
+                h('div', { className: 'flex-1' },
+                  h('div', { className: 'text-base font-bold text-amber-200 mb-1' }, todayChallenge.title),
+                  h('div', { className: 'text-sm text-amber-100/90 leading-relaxed mb-3' }, todayChallenge.prompt),
+                  // Action buttons
+                  !revealed && h('div', { className: 'flex gap-2 flex-wrap' },
+                    h('button', {
+                      onClick: function() { setRH({ challengeRevealed: daySeed }); rhAnnounce('Answer revealed'); },
+                      className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-purple-700 text-amber-100 hover:bg-purple-600',
+                      'aria-label': 'Show answer'
+                    }, '👁 Show Answer'),
+                    h('button', {
+                      onClick: function() {
+                        setRH(function(cur) {
+                          var visited = Object.assign({}, cur.visited || {});
+                          visited[todayChallenge.jumpTo] = (visited[todayChallenge.jumpTo] || 0) + 1;
+                          return Object.assign({}, cur, { activeSection: todayChallenge.jumpTo, visited: visited });
+                        });
+                      },
+                      className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white hover:from-purple-700 hover:to-fuchsia-700',
+                      'aria-label': 'Jump to relevant section'
+                    }, '↗ Study the topic')
+                  ),
+                  // Revealed answer
+                  revealed && h('div', { className: 'bg-emerald-900/30 border border-emerald-700/40 rounded-lg p-3' },
+                    h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, '✓ Answer'),
+                    h('div', { className: 'text-xs text-emerald-100/90 leading-relaxed mb-2' }, todayChallenge.answer),
+                    h('button', {
+                      onClick: function() {
+                        setRH(function(cur) {
+                          var visited = Object.assign({}, cur.visited || {});
+                          visited[todayChallenge.jumpTo] = (visited[todayChallenge.jumpTo] || 0) + 1;
+                          return Object.assign({}, cur, { activeSection: todayChallenge.jumpTo, visited: visited });
+                        });
+                      },
+                      className: 'text-[10px] text-cyan-300 hover:text-cyan-200 underline',
+                      'aria-label': 'Jump to relevant section'
+                    }, '↗ Read more in the relevant section')
+                  )
+                )
+              ),
+              h('div', { className: 'text-[10px] text-slate-500 italic mt-2 text-right' }, 'New challenge tomorrow.')
+            );
+          })(),
+
           // ── NEW v0.11: Progress Tracker ──
           (function() {
             var visited = rh.visited || {};
@@ -5444,6 +5518,87 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             })
           ),
 
+          // ── NEW v0.13: Multi-species trajectory overlay ──
+          (function() {
+            // For each of 3 reference species, draw a trajectory curve from start altitude
+            // to a fixed prey position. Stoop steepness + travel distance differ by species.
+            var pw = 600, ph = 280, pad = 35;
+            var specs = [
+              { id: 'peregrine', name: 'Peregrine Falcon', color: '#dc2626', stoopMph: 242, stoopBonus: 3.5, startAltScale: 1.0, cdCurve: 0.18 },
+              { id: 'goldenEagle', name: 'Golden Eagle', color: '#fbbf24', stoopMph: 200, stoopBonus: 3.0, startAltScale: 1.0, cdCurve: 0.22 },
+              { id: 'goshawk', name: 'Northern Goshawk', color: '#10b981', stoopMph: 95, stoopBonus: 1.8, startAltScale: 0.6, cdCurve: 0.35 }
+            ];
+            // Plot grid: starting at (40, 20), ending at (560, 240) where prey is
+            var startX = pad + 10;
+            var startY = pad;
+            var endX = pw - pad - 10;
+            var endY = ph - pad;
+            // Each species: trajectory is a quadratic Bezier where control point shifts based on stoopMph
+            // Higher stoop speed = more direct (control point closer to straight line)
+            function trajectoryPath(spec) {
+              var s = { x: startX, y: startY + (1 - spec.startAltScale) * (ph - 2 * pad) }; // higher altitude = lower y
+              var e = { x: endX, y: endY };
+              // Control point: shifts toward direct line for high stoop speed (peregrine = direct dive),
+              // and arcs more for low stoop speed (goshawk = forest chase curve)
+              var directness = spec.stoopMph / 250;
+              var cx = s.x + (e.x - s.x) * 0.4;
+              var cy = s.y + (e.y - s.y) * (1 - directness * 0.5);
+              return 'M ' + s.x + ' ' + s.y + ' Q ' + cx + ' ' + cy + ' ' + e.x + ' ' + e.y;
+            }
+            return h('div', { className: 'bg-slate-900/40 border border-amber-700/40 rounded-xl p-4 mt-3' },
+              h('div', { className: 'text-sm font-bold text-amber-300 mb-2' }, '⚡ Multi-Species Trajectory Comparison'),
+              h('div', { className: 'text-xs text-slate-400 italic mb-3' }, 'Compare how 3 species approach the same prey target. Falcons + golden eagles use steep direct stoops; goshawks use a curved forest-chase trajectory.'),
+              h('div', { className: 'bg-slate-950/60 rounded-lg p-2' },
+                h('svg', { viewBox: '0 0 ' + pw + ' ' + ph, style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': 'Multi-species stoop trajectory comparison' },
+                  // Sky gradient
+                  (function() {
+                    return [
+                      h('defs', { key: 'defs' },
+                        h('linearGradient', { id: 'multiSky', x1: 0, y1: 0, x2: 0, y2: 1 },
+                          h('stop', { offset: '0%', stopColor: '#bae6fd' }),
+                          h('stop', { offset: '100%', stopColor: '#fef3c7' })
+                        )
+                      ),
+                      h('rect', { key: 'sky', x: 0, y: 0, width: pw, height: ph, fill: 'url(#multiSky)' }),
+                      // Ground
+                      h('rect', { key: 'ground', x: 0, y: ph - 20, width: pw, height: 20, fill: '#365314' })
+                    ];
+                  })(),
+                  // Trajectories
+                  specs.map(function(spec, i) {
+                    var pStart = { x: startX, y: startY + (1 - spec.startAltScale) * (ph - 2 * pad) };
+                    return h('g', { key: spec.id },
+                      h('path', { d: trajectoryPath(spec), fill: 'none', stroke: spec.color, strokeWidth: 2.5, strokeDasharray: '4,3' }),
+                      // Start bird emoji
+                      h('text', { x: pStart.x - 15, y: pStart.y + 5, fontSize: 18 }, '🦅'),
+                      h('text', { x: pStart.x - 15, y: pStart.y + 22, fontSize: 9, fill: spec.color, fontWeight: 'bold' }, spec.name.split(' ')[0]),
+                      // Speed annotation midway
+                      h('text', { x: startX + (endX - startX) * 0.55, y: pStart.y + (ph - 2 * pad) * 0.25 + i * 20, fontSize: 10, fill: spec.color, fontWeight: 'bold' }, spec.stoopMph + ' mph')
+                    );
+                  }),
+                  // Prey (shared target)
+                  h('circle', { cx: endX, cy: endY, r: 6, fill: '#9ca3af', stroke: '#1c1917', strokeWidth: 1 }),
+                  h('text', { x: endX, y: endY - 12, fontSize: 9, fill: '#1c1917', fontWeight: 'bold', textAnchor: 'middle' }, '🐦 prey'),
+                  // Legend
+                  h('rect', { x: pad, y: ph - 18, width: pw - 2 * pad, height: 14, fill: 'none' }),
+                  h('text', { x: pad, y: ph - 7, fontSize: 9, fill: '#1c1917' }, '↑ altitude — →  horizontal distance — →  ground impact')
+                )
+              ),
+              h('div', { className: 'grid grid-cols-3 gap-2 mt-2 text-xs' },
+                specs.map(function(spec, i) {
+                  return h('div', { key: spec.id, className: 'bg-slate-800/40 rounded p-2 border-l-4', style: { borderColor: spec.color } },
+                    h('div', { className: 'font-bold text-amber-200' }, spec.name),
+                    h('div', { className: 'text-[10px] text-slate-400 mt-1' }, 'Stoop speed: ', h('span', { className: 'font-mono text-amber-300' }, spec.stoopMph + ' mph')),
+                    h('div', { className: 'text-[10px] text-slate-400' }, 'Tuck Cd: ', h('span', { className: 'font-mono text-amber-300' }, spec.cdCurve))
+                  );
+                })
+              ),
+              h('div', { className: 'text-[10px] text-slate-500 italic mt-2' },
+                'Trajectory steepness reflects how committed each species is to the vertical stoop. Peregrines + golden eagles dive nearly vertical from high altitude. Goshawks use a lower-altitude curve through forest canopy. The same logarithmic-spiral principle applies — each species adjusts the curve to keep the prey at a constant retinal angle.'
+              )
+            );
+          })(),
+
           // Insight panel
           h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded-xl p-4 text-sm space-y-2' },
             h('div', { className: 'font-bold text-amber-300' }, '🎯 Why a spiral, not a straight line?'),
@@ -6131,22 +6286,143 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // RENDER: RESOURCES
       // ────────────────────────────────────────────────────────
       function renderResources() {
+        // ── NEW v0.13: Region selector + month-of-year seasonal panel ──
+        var region = rh.resourceRegion || 'national';
+        function setRegion(r) { setRH({ resourceRegion: r }); }
+        var regions = [
+          { id: 'national', label: '🇺🇸 National', desc: 'Sources covering all of North America' },
+          { id: 'northeast', label: '🏞 Northeast', desc: 'New England + Mid-Atlantic ridge sites' },
+          { id: 'southeast', label: '🌴 Southeast', desc: 'Gulf Coast + Atlantic wintering grounds' },
+          { id: 'midwest', label: '🌾 Midwest', desc: 'Mississippi flyway + Great Lakes' },
+          { id: 'southwest', label: '🏜 Southwest', desc: 'Desert raptors + condor range' },
+          { id: 'northwest', label: '🌲 Northwest', desc: 'Pacific flyway + boreal forest' }
+        ];
+        // Regional sites (additional to the national RESOURCES)
+        var regionalSites = {
+          northeast: [
+            { name: 'Hawk Mountain Sanctuary (PA)', url: 'https://www.hawkmountain.org/', desc: 'The original 1934 raptor sanctuary. Visit during fall migration to see thousands of broadwings + sharp-shins funneling along the Kittatinny Ridge. 8 lookouts + free public access mid-Aug to mid-Dec.' },
+            { name: 'Cape May Hawkwatch (NJ)', url: 'https://njaudubon.org/centers/cape-may-bird-observatory/', desc: 'Cape May Bird Observatory\'s coastal funnel — best raptor watching on the East Coast on NW-wind days in October. ~40,000 birds counted annually.' },
+            { name: 'Quaker Ridge Hawkwatch (CT)', url: 'https://greenwich.audubon.org/conservation/hawkwatch', desc: 'Audubon-run; great accessible hawkwatch in southern New England.' },
+            { name: 'Lighthouse Point Park, New Haven', url: 'https://www.newhaven-ct.gov/', desc: 'Free + accessible — coastal fall migration site.' }
+          ],
+          southeast: [
+            { name: 'Audubon Center for Birds of Prey (FL)', url: 'https://cbop.audubon.org/', desc: 'Florida\'s premier raptor rehab + education center. Visit + see ambassador birds.' },
+            { name: 'Curry Hammock State Park (FL Keys)', url: 'https://www.floridastateparks.org/parks-and-trails/curry-hammock-state-park', desc: 'Famous fall hawkwatch — peregrines + merlins funnel through the Keys.' },
+            { name: 'Hawk Hill / Florida Keys Hawkwatch', url: 'https://hawkcount.org/', desc: 'October peregrine days here are legendary — sometimes 500+ peregrines in a single day.' }
+          ],
+          midwest: [
+            { name: 'Hawk Ridge Bird Observatory (Duluth, MN)', url: 'https://hawkridge.org/', desc: '60-90K raptors counted annually. Lake Superior\'s western shore concentrates birds reluctant to cross open water.' },
+            { name: 'Whitefish Point Bird Observatory (MI)', url: 'https://wpbo.org/', desc: 'Upper Peninsula migration corridor. Spring + fall raptor counts.' },
+            { name: 'Illinois Beach State Park Hawkwatch', url: 'https://www.dnr.illinois.gov/parks/park.illinoisbeach.html', desc: 'Lake Michigan western shore — excellent fall raptor passage.' }
+          ],
+          southwest: [
+            { name: 'HawkWatch International (UT)', url: 'https://hawkwatch.org/', desc: 'Long-term monitoring across the Intermountain West. Volunteer counts at 20+ sites.' },
+            { name: 'Smith Point Hawk Watch (TX Gulf Coast)', url: 'https://hawkcount.org/', desc: 'Gulf-coast funnel site — Mississippi flyway birds + Veracruz-bound migrants pass through here.' },
+            { name: 'Hopper Mountain National Wildlife Refuge (CA)', url: 'https://www.fws.gov/refuge/hopper-mountain', desc: 'Original California condor reintroduction site.' },
+            { name: 'Big Bend National Park (TX)', url: 'https://www.nps.gov/bibe/', desc: 'Year-round raptor diversity — golden eagles, peregrines, harriers, kites.' }
+          ],
+          northwest: [
+            { name: 'Goshute Mountains Hawkwatch (NV)', url: 'https://hawkwatch.org/', desc: 'High-altitude desert ridge — best peregrine + goshawk site in the West.' },
+            { name: 'Bonney Butte Hawkwatch (OR)', url: 'https://hawkwatch.org/', desc: 'Pacific Northwest fall migration.' },
+            { name: 'Cape Mendocino (CA)', url: 'https://www.audubon.org/', desc: 'Coastal raptor concentration point.' },
+            { name: 'Golden Gate Raptor Observatory (CA)', url: 'https://www.parksconservancy.org/programs/golden-gate-raptor-observatory', desc: '30,000 raptors per year. Marin Headlands.' }
+          ],
+          national: []
+        };
+        var regionalForCurrent = regionalSites[region] || [];
+
+        // Seasonal "this month" data
+        var now = new Date();
+        var month = now.getMonth(); // 0-11
+        var monthData = [
+          { name: 'January', focus: 'Winter — bald eagles concentrated along open rivers + reservoirs. Snowy owl irruption years peak now.', action: 'Visit a known eagle wintering site (Mississippi River pools, Klamath Basin CA, Skagit River WA). Bring binoculars.' },
+          { name: 'February', focus: 'Bald eagles + great horned owls already nesting + incubating eggs. Courtship displays of golden eagles in west.', action: 'Listen for great horned owl duetting at dusk (the deep "hoo-hoo-hoooo"). Wisconsin Eagle Days festivals run mid-Feb.' },
+          { name: 'March', focus: 'Northbound migration begins. Ospreys returning to northern lakes.', action: 'Set up + monitor an osprey nest platform if you have one. Submit early-arrival dates to eBird — they\'re shifting earlier with climate change.' },
+          { name: 'April', focus: 'Peak northbound migration. Eilat Israel + Cape May spring counts active. Most species back on territory.', action: 'Eilat International Birding Centre runs guided spring trips. Hawk Mountain reopens for spring count.' },
+          { name: 'May', focus: 'Nesting season. Eggs hatched in most species. Adults very protective — keep distance.', action: 'Volunteer at a banding station. Hawk Mountain + many state agencies need helpers for nest monitoring.' },
+          { name: 'June', focus: 'Chicks growing rapidly. Photographer-friendly window — birds at nest, predictable schedule.', action: 'Visit a nest cam (Decorah Eagles, Cornell). Volunteer for songbird-decline observation (which affects raptor prey base).' },
+          { name: 'July', focus: 'Fledglings on the wing for the first time. Many awkward + obvious — first-year mortality begins.', action: 'Report dependent fledglings to local rehab if injured. Avoid disturbing nests during peak fledgling weeks.' },
+          { name: 'August', focus: 'Broad-winged hawks gathering for kettles. Hawk Mountain count BEGINS mid-Aug.', action: 'Hawk Mountain North Lookout opens 15 Aug. Plan a fall hawkwatch visit for mid-Sept peak.' },
+          { name: 'September', focus: 'PEAK FALL MIGRATION. Broadwings kettling — 1M+ birds at Veracruz on cold-front days. Cape May coastal funnel active.', action: 'This is THE month for hawkwatch trips. Veracruz River of Raptors festivals run Sept-Oct. Visit Hawk Mountain on a cold-front + NW wind day.' },
+          { name: 'October', focus: 'Peregrines, kestrels, sharp-shinned hawks dominate the Cape May coastal counts. Buteo migration continues.', action: 'Cape May Bird Observatory hosts October peregrine festivals. Bring a scope for distant ridge birds.' },
+          { name: 'November', focus: 'Late-season migration. Rough-legged hawks arriving from Arctic. Bald eagles + golden eagles peaking at northern sites.', action: 'Eagle viewing at Conowingo Dam (MD), Mississippi River pools, BC Squamish Eagle Run.' },
+          { name: 'December', focus: 'Winter raptor count begins. Snowy owl irruption years detectable now. Christmas Bird Count happens nationally.', action: 'Join an Audubon Christmas Bird Count (Dec 14-Jan 5). 80,000 volunteers, world\'s longest-running citizen-science count.' }
+        ];
+        var thisMonth = monthData[month];
+
         return h('div', { className: 'space-y-3' },
           h('div', { className: 'bg-gradient-to-br from-slate-800/40 to-slate-900/40 border border-slate-700/40 rounded-xl p-4' },
             h('div', { className: 'text-lg font-bold text-amber-200 mb-1' }, '📚 Resources + Citizen Science'),
             h('div', { className: 'text-sm text-slate-300' }, 'Where to keep learning + how to contribute real data to raptor research.')
           ),
-          h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
-            RESOURCES.map(function(r, i) {
-              return h('a', { key: i, href: r.url, target: '_blank', rel: 'noopener noreferrer',
-                className: 'block bg-slate-800/40 border border-slate-700/50 hover:border-amber-600/60 hover:bg-slate-700/40 rounded-lg p-3 transition-all',
-                'aria-label': r.name + ' — opens in new tab'
-              },
-                h('div', { className: 'text-sm font-bold text-amber-300 mb-1' }, r.name + ' ↗'),
-                h('div', { className: 'text-xs text-slate-300 leading-relaxed' }, r.desc)
-              );
-            })
+
+          // ── NEW v0.13: This-month seasonal panel ──
+          h('div', { className: 'bg-gradient-to-br from-amber-900/30 to-orange-900/30 border border-amber-700/50 rounded-xl p-4' },
+            h('div', { className: 'flex items-baseline justify-between gap-2 mb-2' },
+              h('div', { className: 'text-base font-bold text-amber-300' }, '🗓 What\'s happening THIS MONTH — ' + thisMonth.name),
+              h('div', { className: 'text-[10px] text-slate-400 font-mono' }, now.toLocaleDateString())
+            ),
+            h('div', { className: 'text-sm text-amber-100/90 leading-relaxed mb-2' },
+              h('span', { className: 'font-bold' }, 'Focus: '), thisMonth.focus
+            ),
+            h('div', { className: 'bg-slate-900/50 rounded-lg p-3 border border-amber-700/30' },
+              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, '🎯 Suggested action this month'),
+              h('div', { className: 'text-xs text-emerald-100/90 leading-relaxed' }, thisMonth.action)
+            )
           ),
+
+          // ── NEW v0.13: Region selector ──
+          h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-3' },
+            h('div', { className: 'text-xs font-bold text-amber-300 mb-2' }, '🌎 Filter by region'),
+            h('div', { className: 'flex flex-wrap gap-2' },
+              regions.map(function(r) {
+                var active = region === r.id;
+                return h('button', {
+                  key: r.id,
+                  onClick: function() { setRegion(r.id); },
+                  className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (active
+                    ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-md'
+                    : 'bg-slate-800 text-amber-200 hover:bg-slate-700 border border-slate-700'),
+                  'aria-label': r.label + ': ' + r.desc,
+                  'aria-pressed': active
+                }, r.label);
+              })
+            ),
+            h('div', { className: 'text-[10px] text-slate-400 italic mt-2' }, (regions.filter(function(rx) { return rx.id === region; })[0] || {}).desc)
+          ),
+
+          // Regional hawk-watch sites (if non-national)
+          regionalForCurrent.length > 0 && h('div', null,
+            h('div', { className: 'text-sm font-bold text-cyan-300 mb-2' }, '📍 Regional hawk-watch sites + rehab facilities'),
+            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
+              regionalForCurrent.map(function(r, i) {
+                return h('a', { key: i, href: r.url, target: '_blank', rel: 'noopener noreferrer',
+                  className: 'block bg-cyan-900/20 border border-cyan-700/40 hover:border-cyan-500/70 hover:bg-cyan-800/30 rounded-lg p-3 transition-all',
+                  'aria-label': r.name + ' — opens in new tab'
+                },
+                  h('div', { className: 'text-sm font-bold text-cyan-300 mb-1' }, r.name + ' ↗'),
+                  h('div', { className: 'text-xs text-cyan-100/80 leading-relaxed' }, r.desc)
+                );
+              })
+            )
+          ),
+
+          // National resources (always shown)
+          h('div', null,
+            h('div', { className: 'text-sm font-bold text-amber-300 mb-2' }, '🌎 National + global resources'),
+            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
+              RESOURCES.map(function(r, i) {
+                return h('a', { key: i, href: r.url, target: '_blank', rel: 'noopener noreferrer',
+                  className: 'block bg-slate-800/40 border border-slate-700/50 hover:border-amber-600/60 hover:bg-slate-700/40 rounded-lg p-3 transition-all',
+                  'aria-label': r.name + ' — opens in new tab'
+                },
+                  h('div', { className: 'text-sm font-bold text-amber-300 mb-1' }, r.name + ' ↗'),
+                  h('div', { className: 'text-xs text-slate-300 leading-relaxed' }, r.desc)
+                );
+              })
+            )
+          ),
+
           h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded-xl p-4 text-xs text-emerald-100/90' },
             h('div', { className: 'font-bold text-emerald-300 mb-1' }, '💡 Start with one observation'),
             'Open eBird or iNaturalist. Pick any raptor you saw today. Log it. You\'ve just contributed to one of the largest biodiversity datasets in human history — and you\'ve learned the species better than any textbook will teach you.'
