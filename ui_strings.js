@@ -9535,5 +9535,42 @@
     "shape_radiogroup_aria": "Volume Builder shape",
     "answer_placeholder": "Enter volume...",
     "answer_aria": "Volume answer"
+  },
+  "notes_feedback": {
+    "title": "Feedback on your notes",
+    "dismiss_aria": "Dismiss feedback",
+    "strength_label": "What you did well",
+    "growth_label": "One thing to try next time",
+    "source_label": "About the source text",
+    "no_xp_hint": "You've already earned XP from this entry before. Keep going — new improvements earn more XP.",
+    "no_ai": "AI feedback is not available right now.",
+    "cornell_needs_notes": "Add at least 2 rows of notes before asking for feedback.",
+    "lab_needs_substance": "Fill in the hypothesis, analysis, or conclusion before asking for feedback.",
+    "reading_needs_thinking": "Write at least your thinking or connection before asking for feedback.",
+    "empty": "Fill in some of the template before asking for feedback.",
+    "thinking": "Reading your notes...",
+    "error": "Could not generate feedback right now. Try again in a moment.",
+    "loading": "Reading your notes...",
+    "button": "Get AI Feedback",
+    "xp_earned": "+{xp} XP"
+  },
+  "note_insights": {
+    "title": "Your note-taking patterns",
+    "subtitle": "Growth-focused observations across your saved entries. Not a grade — a mirror.",
+    "close_aria": "Close insights",
+    "loading": "Looking across your notebook...",
+    "loading_hint": "This takes a few seconds — patterns need a careful read.",
+    "no_data": "No insights yet.",
+    "overview_label": "Overview",
+    "try_next_label": "Try next:",
+    "celebration_label": "Keep doing this",
+    "footer": "These observations are a mirror, not a grade. Use what's useful, set aside what isn't.",
+    "no_ai": "AI is not available right now.",
+    "need_more_entries": "Save at least 2 note-taking entries before generating insights.",
+    "error": "Could not generate insights right now. Try again in a moment.",
+    "button_aria": "Generate note-taking insights across your saved entries",
+    "need_more_entries_short": "Save 2+ entries to unlock",
+    "button_tooltip": "AI looks for patterns across your notes and offers growth suggestions",
+    "button": "Insights"
   }
 }

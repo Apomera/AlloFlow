@@ -29,6 +29,336 @@ const _CardSection = ({ title, hint, color = 'indigo', children }) => {
   );
 };
 
+// ── AI Feedback (per-instance) ───────────────────────────────────────────
+// Strengths-first feedback on a saved template. Returns one specific strength,
+// one growth nudge, and a soft source-alignment check. XP is awarded via
+// handleScoreUpdate; the max-score tracker prevents grinding by capping XP
+// to the delta above the student's previous best on this resource id.
+//
+// Design notes:
+// - Rubric scores are INTERNAL ONLY (used to compute XP). They are NOT shown
+//   to the student to avoid the demotivation framing of a numeric grade.
+// - Source check is "soft" per Aaron's design call: if a quoted line isn't
+//   found in the source, AI frames as "I couldn't find this in the text —
+//   did you paraphrase?" rather than flagging incorrect.
+// - Lead with one specific strength, then ONE growth nudge (not a list).
+//   Hattie's research: multiple critiques in one feedback episode reduce
+//   retention of any single suggestion.
+
+const _NOTE_RUBRICS = {
+  'cornell-notes': {
+    strengthsFocus: [
+      'cue column quality (are cues retrieval prompts vs just headings?)',
+      'notes column substance (do notes capture key ideas from the source?)',
+      'summary synthesis (does the summary synthesize, or just restate?)',
+      'cross-field coherence (can the cues actually be answered from the notes?)',
+    ],
+    growthAreas: [
+      'cues that are more inferential ("Why might X have led to Y?") rather than purely factual ("What year did X happen?")',
+      'fuller summary that connects ideas rather than listing them',
+      'cues that map directly to notes so retrieval practice works',
+      'specific examples in the notes column to anchor abstract ideas',
+    ],
+  },
+  'lab-report': {
+    strengthsFocus: [
+      'hypothesis (testable + has reasoning?)',
+      'procedure reproducibility (could another student follow this exactly?)',
+      'data hygiene (units present, specific measurements, qualitative + quantitative)',
+      'CER quality (claim-evidence-reasoning all present, reasoning especially)',
+      'conclusion (addresses hypothesis + sources of error?)',
+    ],
+    growthAreas: [
+      'reasoning section (the WHY) — students reliably skip this; it is where the science thinking happens',
+      'specific measurements with units rather than vague descriptions',
+      'procedure detail sufficient for reproducibility',
+      'naming sources of error in the conclusion',
+      'a testable hypothesis with reasoning ("because ___") rather than a guess',
+    ],
+  },
+  'reading-response': {
+    strengthsFocus: [
+      'evidence (is the favorite line a real quote from the text?)',
+      'thinking section depth (substantive reflection vs surface)',
+      'connection quality (is the connection substantive, or just "this reminds me of...")',
+      'question (genuine inquiry vs comprehension-check question)',
+    ],
+    growthAreas: [
+      'a connection beyond the surface — what specifically about this text triggered the connection?',
+      'a genuine inquiry question (something the text leaves open, not something it already answered)',
+      'a direct quote with the page number rather than a paraphrase',
+      'pushing past the first thought to a deeper response',
+    ],
+  },
+};
+
+// Build a compact text dump of the student's filled-in template, suitable for
+// embedding in the AI prompt. We strip empty fields so the AI focuses on what
+// the student actually wrote.
+function _serializeTemplateForFeedback(templateType, data) {
+  if (!data) return '';
+  const parts = [];
+  if (data.title) parts.push(`TITLE: ${data.title}`);
+  if (templateType === 'cornell-notes') {
+    const cues = (Array.isArray(data.cues) ? data.cues : []).map(c => (c.text || '').trim()).filter(Boolean);
+    const notes = (Array.isArray(data.notes) ? data.notes : []).map(n => (n.text || '').trim()).filter(Boolean);
+    if (cues.length) parts.push('CUES:\n' + cues.map((c, i) => `  ${i + 1}. ${c}`).join('\n'));
+    if (notes.length) parts.push('NOTES:\n' + notes.map((n, i) => `  ${i + 1}. ${n}`).join('\n'));
+    if (data.summary) parts.push(`SUMMARY: ${data.summary}`);
+  } else if (templateType === 'lab-report') {
+    if (data.question) parts.push(`RESEARCH QUESTION: ${data.question}`);
+    if (data.hypothesis) parts.push(`HYPOTHESIS: ${data.hypothesis}`);
+    const materials = (Array.isArray(data.materials) ? data.materials : []).map(m => (m.text || '').trim()).filter(Boolean);
+    const procedure = (Array.isArray(data.procedure) ? data.procedure : []).map(p => (p.text || '').trim()).filter(Boolean);
+    if (materials.length) parts.push('MATERIALS: ' + materials.join(', '));
+    if (procedure.length) parts.push('PROCEDURE:\n' + procedure.map((p, i) => `  ${i + 1}. ${p}`).join('\n'));
+    if (data.data) parts.push(`DATA/OBSERVATIONS: ${data.data}`);
+    if (data.analysis) parts.push(`ANALYSIS (CER): ${data.analysis}`);
+    if (data.conclusion) parts.push(`CONCLUSION: ${data.conclusion}`);
+  } else if (templateType === 'reading-response') {
+    if (data.author) parts.push(`AUTHOR: ${data.author}`);
+    if (data.pageRange) parts.push(`PAGES: ${data.pageRange}`);
+    if (data.favoriteLine) parts.push(`FAVORITE LINE: ${data.favoriteLine}`);
+    if (data.thinkings) parts.push(`THINKING: ${data.thinkings}`);
+    if (data.connection && data.connection.text) parts.push(`CONNECTION (${data.connection.type || 'text-to-self'}): ${data.connection.text}`);
+    if (data.question) parts.push(`QUESTION: ${data.question}`);
+  }
+  return parts.join('\n\n');
+}
+
+// Detect whether the student filled in enough to warrant feedback. Returns
+// { ok: bool, reason: string } — if not ok, we skip the AI call entirely.
+function _checkTemplateReadyForFeedback(templateType, data) {
+  if (!data) return { ok: false, reason: 'empty' };
+  if (templateType === 'cornell-notes') {
+    const notes = (Array.isArray(data.notes) ? data.notes : []).filter(n => (n.text || '').trim());
+    if (notes.length < 2) return { ok: false, reason: 'cornell_needs_notes' };
+  } else if (templateType === 'lab-report') {
+    if (!(data.hypothesis || '').trim() && !(data.analysis || '').trim() && !(data.conclusion || '').trim()) {
+      return { ok: false, reason: 'lab_needs_substance' };
+    }
+  } else if (templateType === 'reading-response') {
+    if (!(data.thinkings || '').trim() && !(data.connection && data.connection.text || '').trim()) {
+      return { ok: false, reason: 'reading_needs_thinking' };
+    }
+  }
+  return { ok: true, reason: '' };
+}
+
+// Build the AI prompt. Source text is OPTIONAL — when present, the AI does a
+// soft source-alignment check. When absent, the rubric-only path runs.
+function _buildNotesFeedbackPrompt(templateType, data, sourceText) {
+  const meta = _NOTE_RUBRICS[templateType] || _NOTE_RUBRICS['cornell-notes'];
+  const sourceBlock = sourceText
+    ? `\nSOURCE TEXT (what the student was reading / studying):\n"""\n${(sourceText || '').slice(0, 3000)}\n"""\n`
+    : '';
+  const templateLabel = ({
+    'cornell-notes': 'Cornell Notes',
+    'lab-report': 'Lab Report',
+    'reading-response': 'Reading Response',
+  })[templateType] || 'Note Template';
+  return `
+You are a supportive teacher giving feedback on a student's ${templateLabel} note-taking work.
+
+Your tone is strengths-first. You ALWAYS lead with one specific thing the student did well, citing what they actually wrote. Then you give ONE growth nudge — not a list, just one concrete next step. Multiple critiques in one feedback episode reduce the chance the student acts on any of them (Hattie). If the student's work is rough, the strength can be effort-based ("you filled in every section even when it was hard"), but it must be specific.
+
+You are NOT a grader. The student does not see a numeric score. You provide rubric scores in the JSON for the system's internal XP calculation only.
+
+Quality dimensions for ${templateLabel}:
+${meta.strengthsFocus.map(s => `- ${s}`).join('\n')}
+
+Common growth areas to consider for the nudge:
+${meta.growthAreas.map(g => `- ${g}`).join('\n')}
+
+${sourceBlock}STUDENT WORK:
+"""
+${_serializeTemplateForFeedback(templateType, data)}
+"""
+
+Return ONLY JSON:
+{
+  "strength": "1-2 sentences naming a specific strong choice the student made, with a brief quote from their work in single quotes. Strengths-first; effort counts as a strength if the work is rough.",
+  "growthNudge": "1-2 sentences with ONE concrete next-step suggestion. No list. Frame as 'next time, try ___' or 'one thing that could push this further: ___'.",
+  "sourceAlignment": {
+    "found": ${sourceText ? 'true or false (was the student work substantively connected to the source text? If they quoted, was the quote actually present?)' : 'null (no source text provided)'},
+    "message": "If you found a soft alignment issue, frame as 'I couldn't find this exact line in the text — did you paraphrase?' Never 'incorrect'. Empty string if no issue."
+  },
+  "rubric": {
+    "completion": 0-3,
+    "quality": 0-15,
+    "alignment": 0-5
+  }
+}
+`.trim();
+}
+
+// XP calc: completion floor + quality ceiling + source bonus + first-time bonus.
+// Returns the candidate "current score" to pass to handleScoreUpdate (which
+// awards only the delta above the student's previous best on this resource).
+function _calculateNotesXPScore(rubric, isFirstTime) {
+  if (!rubric) return 0;
+  const completion = Math.max(0, Math.min(3, Math.round(rubric.completion || 0)));
+  const quality = Math.max(0, Math.min(15, Math.round(rubric.quality || 0)));
+  const alignment = Math.max(0, Math.min(5, Math.round(rubric.alignment || 0)));
+  const firstTime = isFirstTime ? 5 : 0;
+  return completion + quality + alignment + firstTime;
+}
+
+// Inline panel that displays the feedback after the AI returns. Strengths-
+// first design: green strength block (top), amber growth nudge (middle), soft
+// source-alignment note (bottom, only if non-empty), small XP toast.
+const _NotesFeedbackPanel = ({ feedback, xpEarned, onDismiss, t }) => {
+  if (!feedback) return null;
+  return (
+    <div className="max-w-3xl mx-auto px-4 pb-6">
+      <div className="bg-gradient-to-br from-emerald-50 to-amber-50 border-2 border-emerald-300 rounded-xl p-5 shadow-md animate-in slide-in-from-bottom-2 duration-300">
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <span className="text-2xl" aria-hidden="true">💬</span>
+            <h3 className="font-black text-base text-emerald-800">{t('notes_feedback.title') || 'Feedback on your notes'}</h3>
+          </div>
+          <button
+            onClick={onDismiss}
+            className="text-slate-400 hover:text-slate-600 text-lg leading-none"
+            aria-label={t('notes_feedback.dismiss_aria') || 'Dismiss feedback'}
+          >✕</button>
+        </div>
+        <div className="space-y-3">
+          <div className="bg-emerald-100/70 border-l-4 border-emerald-500 rounded-r-md p-3">
+            <div className="text-[11px] font-black text-emerald-800 uppercase tracking-wider mb-1">{t('notes_feedback.strength_label') || 'What you did well'}</div>
+            <div className="text-sm text-slate-700 leading-relaxed">{feedback.strength}</div>
+          </div>
+          <div className="bg-amber-100/70 border-l-4 border-amber-500 rounded-r-md p-3">
+            <div className="text-[11px] font-black text-amber-900 uppercase tracking-wider mb-1">{t('notes_feedback.growth_label') || 'One thing to try next time'}</div>
+            <div className="text-sm text-slate-700 leading-relaxed">{feedback.growthNudge}</div>
+          </div>
+          {feedback.sourceAlignment && feedback.sourceAlignment.message ? (
+            <div className="bg-sky-100/70 border-l-4 border-sky-500 rounded-r-md p-3">
+              <div className="text-[11px] font-black text-sky-800 uppercase tracking-wider mb-1">{t('notes_feedback.source_label') || 'About the source text'}</div>
+              <div className="text-sm text-slate-700 leading-relaxed">{feedback.sourceAlignment.message}</div>
+            </div>
+          ) : null}
+          {xpEarned > 0 ? (
+            <div className="flex items-center justify-center gap-2 text-sm font-bold text-violet-700 bg-violet-50 border border-violet-200 rounded-full px-4 py-2">
+              <span aria-hidden="true">⭐</span>
+              <span>{t('notes_feedback.xp_earned', { xp: xpEarned }) || `+${xpEarned} XP`}</span>
+            </div>
+          ) : (
+            <div className="text-center text-[11px] italic text-slate-500">
+              {t('notes_feedback.no_xp_hint') || "You've already earned XP from this entry before. Keep going — new improvements earn more XP."}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Hook factory that wires the "Get AI Feedback" button to the AI call + XP
+// dispatch. Returns { feedbackState, isLoading, requestFeedback, dismiss }.
+// Each view component instantiates this and renders the button + panel.
+function _useNotesFeedback(props, templateType) {
+  const [feedback, setFeedback] = React.useState(null);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [xpEarned, setXpEarned] = React.useState(0);
+  const generatedContent = props.generatedContent;
+  const callGemini = props.callGemini;
+  const addToast = props.addToast || (() => {});
+  const handleScoreUpdate = props.handleScoreUpdate;
+  const inputText = props.inputText || '';
+  const t = props.t || ((k, d) => d || k);
+
+  const requestFeedback = React.useCallback(async () => {
+    if (typeof callGemini !== 'function') {
+      addToast(t('notes_feedback.no_ai') || 'AI feedback is not available right now.', 'warning');
+      return;
+    }
+    const data = (generatedContent && generatedContent.data) || {};
+    const ready = _checkTemplateReadyForFeedback(templateType, data);
+    if (!ready.ok) {
+      const reasonMsg = ({
+        cornell_needs_notes: t('notes_feedback.cornell_needs_notes') || 'Add at least 2 rows of notes before asking for feedback.',
+        lab_needs_substance: t('notes_feedback.lab_needs_substance') || 'Fill in the hypothesis, analysis, or conclusion before asking for feedback.',
+        reading_needs_thinking: t('notes_feedback.reading_needs_thinking') || 'Write at least your thinking or connection before asking for feedback.',
+        empty: t('notes_feedback.empty') || 'Fill in some of the template before asking for feedback.',
+      })[ready.reason] || (t('notes_feedback.empty') || 'Fill in some of the template before asking for feedback.');
+      addToast(reasonMsg, 'info');
+      return;
+    }
+    setIsLoading(true);
+    addToast(t('notes_feedback.thinking') || 'Reading your notes...', 'info');
+    try {
+      const prompt = _buildNotesFeedbackPrompt(templateType, data, inputText);
+      const raw = await callGemini(prompt, true);
+      const parsed = JSON.parse((window.__alloUtils && window.__alloUtils.cleanJson ? window.__alloUtils.cleanJson(raw) : raw));
+      setFeedback(parsed);
+      // XP wiring — first-time bonus uses the resource's prior max via the
+      // handleScoreUpdate delta calc, but we also check whether THIS template
+      // type has any feedback history yet for the +5 first-time bonus.
+      const isFirstTime = !((generatedContent && generatedContent.data && generatedContent.data.feedbackCount) || 0);
+      const score = _calculateNotesXPScore(parsed.rubric, isFirstTime);
+      const resourceId = (generatedContent && generatedContent.id) || null;
+      const activityName = ({
+        'cornell-notes': 'Cornell Notes Feedback',
+        'lab-report': 'Lab Report Feedback',
+        'reading-response': 'Reading Response Feedback',
+      })[templateType] || 'Notes Feedback';
+      if (typeof handleScoreUpdate === 'function' && resourceId) {
+        // handleScoreUpdate returns void; we compute the actual delta by
+        // tracking the previous max ourselves for the UI display only.
+        const prevMax = (generatedContent && generatedContent.data && generatedContent.data.prevFeedbackScore) || 0;
+        const delta = Math.max(0, score - prevMax);
+        handleScoreUpdate(score, activityName, resourceId);
+        setXpEarned(delta);
+        // Persist the new max + feedback count on the entry so future calls
+        // know whether this is a first-time-on-this-type submission. We use
+        // the handleNoteUpdate prop if available to do this cleanly.
+        if (typeof props.handleNoteUpdate === 'function') {
+          props.handleNoteUpdate('prevFeedbackScore', score);
+          props.handleNoteUpdate('feedbackCount', (data.feedbackCount || 0) + 1);
+        }
+      } else {
+        setXpEarned(0);
+      }
+    } catch (e) {
+      console.warn('[NotesFeedback] failed', e);
+      addToast(t('notes_feedback.error') || 'Could not generate feedback right now. Try again in a moment.', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [callGemini, generatedContent, inputText, templateType, addToast, handleScoreUpdate, t, props]);
+
+  const dismiss = React.useCallback(() => {
+    setFeedback(null);
+    setXpEarned(0);
+  }, []);
+
+  return { feedback, isLoading, xpEarned, requestFeedback, dismiss };
+}
+
+// Inline "Get AI Feedback" button used by each view above the footer.
+const _GetFeedbackButton = ({ onClick, isLoading, t, colorClass = 'emerald' }) => {
+  const palette = ({
+    emerald: 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-700',
+    sky: 'bg-sky-600 hover:bg-sky-700 text-white border-sky-700',
+    violet: 'bg-violet-600 hover:bg-violet-700 text-white border-violet-700',
+  })[colorClass] || 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-700';
+  return (
+    <div className="flex justify-center pt-2">
+      <button
+        onClick={onClick}
+        disabled={isLoading}
+        className={`px-5 py-2 text-sm font-bold rounded-full border shadow-sm transition-all ${palette} disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2`}
+        aria-busy={isLoading}
+        data-help-key="notes_feedback_button"
+      >
+        <span aria-hidden="true">{isLoading ? '⏳' : '💬'}</span>
+        <span>{isLoading ? (t('notes_feedback.loading') || 'Reading your notes...') : (t('notes_feedback.button') || 'Get AI Feedback')}</span>
+      </button>
+    </div>
+  );
+};
+
 // ── Cornell Notes ───────────────────────────────────────────────────────
 // Two-column note-taking with a summary band. Cues column AI-populated with
 // key terms / anticipated questions from today's source; Notes column has
@@ -45,6 +375,7 @@ const CornellNotesView = React.memo((props) => {
   const notes = Array.isArray(data.notes) ? data.notes : [];
   const summary = typeof data.summary === 'string' ? data.summary : '';
   const lessonRef = data.lessonRef || {};
+  const fb = _useNotesFeedback(props, 'cornell-notes');
   const rowCount = Math.max(cues.length, notes.length, 1);
   const handleCueChange = (idx, newText) => {
     const next = cues.slice();
@@ -144,6 +475,8 @@ const CornellNotesView = React.memo((props) => {
           data-help-key="cornell_notes_summary_section"
         />
       </_CardSection>
+      <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} t={t} colorClass="emerald" />
+      <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} />
       <div className="text-[11px] text-slate-500 italic text-center">Cornell Notes: cues on the left, notes on the right, summary below. Saved to your history so this entry stays with you across lessons.</div>
     </div>
   );
@@ -157,6 +490,7 @@ const LabReportView = React.memo((props) => {
   const data = (generatedContent && generatedContent.data) || {};
   const title = data.title || '';
   const question = data.question || '';
+  const fb = _useNotesFeedback(props, 'lab-report');
   const hypothesis = data.hypothesis || '';
   const materials = Array.isArray(data.materials) ? data.materials : [];
   const procedure = Array.isArray(data.procedure) ? data.procedure : [];
@@ -291,6 +625,8 @@ const LabReportView = React.memo((props) => {
           data-help-key="lab_report_conclusion_field"
         />
       </_CardSection>
+      <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} t={t} colorClass="sky" />
+      <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} />
       <div className="text-[11px] text-slate-500 italic text-center">Lab Report saved to your history. Open it later to keep adding observations across days.</div>
     </div>
   );
@@ -300,9 +636,11 @@ const LabReportView = React.memo((props) => {
 const ReadingResponseView = React.memo((props) => {
   const generatedContent = props.generatedContent;
   const handleNoteUpdate = props.handleNoteUpdate || (() => {});
+  const t = props.t || ((k, d) => d || k);
   const data = (generatedContent && generatedContent.data) || {};
   const title = data.title || '';
   const author = data.author || '';
+  const fb = _useNotesFeedback(props, 'reading-response');
   const pageRange = data.pageRange || '';
   const favoriteLine = data.favoriteLine || '';
   const thinkings = data.thinkings || '';
@@ -407,6 +745,8 @@ const ReadingResponseView = React.memo((props) => {
           data-help-key="reading_response_open_question_field"
         />
       </_CardSection>
+      <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} t={t} colorClass="violet" />
+      <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} />
       <div className="text-[11px] text-slate-500 italic text-center">Reading Response saved to your history. Browse all your responses to build a record of your reading life.</div>
     </div>
   );
@@ -490,13 +830,154 @@ const _entryTitle = (entry) => {
   return meta ? `Untitled ${meta.label}` : 'Untitled entry';
 };
 
+// ── Longitudinal Insights ────────────────────────────────────────────────
+// Process feedback across the student's saved note-taking history. Different
+// from per-instance feedback — this is metacognitive, looks at patterns over
+// time, and is NOT scored or XP-bearing. The point is growth, not evaluation.
+function _buildNoteInsightsPrompt(noteEntries) {
+  // Group entries by type + summarize each so we don't blow the context window.
+  const byType = { 'cornell-notes': [], 'lab-report': [], 'reading-response': [] };
+  for (const entry of noteEntries) {
+    const tt = (entry && entry.data && entry.data.templateType) || null;
+    if (!tt || !byType[tt]) continue;
+    byType[tt].push(_serializeTemplateForFeedback(tt, entry.data || {}).slice(0, 800));
+  }
+  const blocks = [];
+  for (const [type, samples] of Object.entries(byType)) {
+    if (samples.length === 0) continue;
+    const label = ({ 'cornell-notes': 'Cornell Notes', 'lab-report': 'Lab Reports', 'reading-response': 'Reading Responses' })[type];
+    blocks.push(`=== ${label} (${samples.length} entries) ===\n${samples.slice(0, 5).map((s, i) => `--- entry ${i + 1} ---\n${s}`).join('\n\n')}`);
+  }
+  return `
+You are a supportive teacher analyzing a student's note-taking pattern across many sessions. The goal is metacognitive growth feedback, not evaluation of individual entries.
+
+Look for PATTERNS across multiple entries, not problems with any single one. Examples of patterns worth surfacing:
+- "Your Cornell cues tend to be factual ('What year did X happen?') rather than inferential ('Why might X have led to Y?'). Try mixing in some inference cues for deeper retrieval practice."
+- "Your CER Reasoning sections average ~8 words. Research suggests aim for 25-40 words — Reasoning is where the scientific thinking lives."
+- "You consistently write text-to-self connections in Reading Response. Try a text-to-text connection next time to push different thinking."
+- "Your hypotheses are getting more specific over time — keep going."
+
+Tone: warm, growth-focused, specific. Always frame as "try ___ next time" not "you should ___ ".
+
+The student does NOT see scores or grades from this. This is process feedback only.
+
+NOTE-TAKING HISTORY:
+${blocks.join('\n\n')}
+
+Return ONLY JSON:
+{
+  "summary": "1-2 sentence overview of the student's note-taking practice based on the entries provided. Specific and warm.",
+  "patterns": [
+    {
+      "title": "Short label (4-8 words) naming the pattern",
+      "observation": "1-2 sentences describing what you noticed, specific to this student's work",
+      "tryNext": "1 sentence with a concrete, actionable suggestion"
+    }
+  ],
+  "celebration": "1 sentence naming something the student is doing well and should keep doing."
+}
+
+Generate 2-4 patterns. Quality over quantity — one really specific pattern is worth more than three generic ones.
+`.trim();
+}
+
+const _NoteInsightsModal = ({ isOpen, onClose, insights, isLoading, t }) => {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4" role="dialog" aria-modal="true">
+      <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden border border-slate-200">
+        <div className="flex items-start justify-between p-5 border-b border-slate-200 bg-gradient-to-r from-emerald-50 to-violet-50">
+          <div>
+            <div className="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">Note-Taking Insights</div>
+            <h2 className="text-2xl font-black text-slate-800 mt-0.5">📊 {t('note_insights.title') || 'Your note-taking patterns'}</h2>
+            <p className="text-xs text-slate-600 mt-1 leading-snug">{t('note_insights.subtitle') || 'Growth-focused observations across your saved entries. Not a grade — a mirror.'}</p>
+          </div>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-700 text-2xl leading-none p-1 -mt-1 -mr-1 rounded hover:bg-slate-100" aria-label={t('note_insights.close_aria') || 'Close insights'}>✕</button>
+        </div>
+        <div className="flex-1 overflow-y-auto p-5 bg-slate-50 space-y-3">
+          {isLoading ? (
+            <div className="text-center py-12">
+              <div className="text-5xl mb-3 animate-pulse">📓</div>
+              <p className="text-slate-600 font-bold">{t('note_insights.loading') || 'Looking across your notebook...'}</p>
+              <p className="text-xs text-slate-500 mt-1">{t('note_insights.loading_hint') || 'This takes a few seconds — patterns need a careful read.'}</p>
+            </div>
+          ) : !insights ? (
+            <div className="text-center py-12 text-slate-500 text-sm">{t('note_insights.no_data') || 'No insights yet.'}</div>
+          ) : (
+            <>
+              {insights.summary ? (
+                <div className="bg-white border border-slate-200 rounded-xl p-4">
+                  <div className="text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1">{t('note_insights.overview_label') || 'Overview'}</div>
+                  <div className="text-sm text-slate-700 leading-relaxed">{insights.summary}</div>
+                </div>
+              ) : null}
+              {Array.isArray(insights.patterns) && insights.patterns.map((p, i) => (
+                <div key={i} className="bg-white border-l-4 border-violet-400 rounded-r-xl p-4 shadow-sm">
+                  <div className="text-sm font-black text-violet-800 mb-1">{p.title}</div>
+                  <div className="text-sm text-slate-700 leading-relaxed mb-2">{p.observation}</div>
+                  <div className="text-xs bg-violet-50 border border-violet-200 rounded p-2 text-violet-900">
+                    <span className="font-bold">{t('note_insights.try_next_label') || 'Try next:'}</span> {p.tryNext}
+                  </div>
+                </div>
+              ))}
+              {insights.celebration ? (
+                <div className="bg-emerald-50 border-2 border-emerald-300 rounded-xl p-4 mt-4">
+                  <div className="text-[11px] font-black text-emerald-800 uppercase tracking-wider mb-1">🌱 {t('note_insights.celebration_label') || 'Keep doing this'}</div>
+                  <div className="text-sm text-slate-700 leading-relaxed">{insights.celebration}</div>
+                </div>
+              ) : null}
+            </>
+          )}
+        </div>
+        <div className="px-5 py-3 border-t border-slate-200 bg-white text-[11px] text-slate-500 italic">
+          {t('note_insights.footer') || "These observations are a mirror, not a grade. Use what's useful, set aside what isn't."}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const NotebookOverlay = React.memo((props) => {
   const isOpen = !!props.isOpen;
   const onClose = props.onClose || (() => {});
   const history = Array.isArray(props.history) ? props.history : [];
   const onSelectEntry = props.onSelectEntry || (() => {});
   const t = props.t || ((k, d) => d || k);
+  const callGemini = props.callGemini;
+  const addToast = props.addToast || (() => {});
   const [activeFilter, setActiveFilter] = React.useState('all');
+  const [insightsOpen, setInsightsOpen] = React.useState(false);
+  const [insights, setInsights] = React.useState(null);
+  const [insightsLoading, setInsightsLoading] = React.useState(false);
+
+  const noteEntries = history.filter(h => h && h.type === 'note-taking');
+
+  const handleGenerateInsights = React.useCallback(async () => {
+    if (typeof callGemini !== 'function') {
+      addToast(t('note_insights.no_ai') || 'AI is not available right now.', 'warning');
+      return;
+    }
+    if (noteEntries.length < 2) {
+      addToast(t('note_insights.need_more_entries') || 'Save at least 2 note-taking entries before generating insights.', 'info');
+      return;
+    }
+    setInsightsOpen(true);
+    setInsightsLoading(true);
+    setInsights(null);
+    try {
+      const prompt = _buildNoteInsightsPrompt(noteEntries);
+      const raw = await callGemini(prompt, true);
+      const parsed = JSON.parse((window.__alloUtils && window.__alloUtils.cleanJson ? window.__alloUtils.cleanJson(raw) : raw));
+      setInsights(parsed);
+    } catch (e) {
+      console.warn('[NoteInsights] failed', e);
+      addToast(t('note_insights.error') || 'Could not generate insights right now. Try again in a moment.', 'error');
+      setInsightsOpen(false);
+    } finally {
+      setInsightsLoading(false);
+    }
+  }, [callGemini, noteEntries, addToast, t]);
 
   React.useEffect(() => {
     if (!isOpen) return;
@@ -574,7 +1055,17 @@ const NotebookOverlay = React.memo((props) => {
               </button>
             );
           })}
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-2">
+            <button
+              onClick={handleGenerateInsights}
+              disabled={insightsLoading || noteEntries.length < 2}
+              className="px-3 py-1.5 text-xs font-bold text-violet-800 bg-violet-100 border border-violet-300 rounded-full hover:bg-violet-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+              aria-label={t('note_insights.button_aria') || 'Generate note-taking insights across your saved entries'}
+              title={noteEntries.length < 2 ? (t('note_insights.need_more_entries_short') || 'Save 2+ entries to unlock') : (t('note_insights.button_tooltip') || 'AI looks for patterns across your notes and offers growth suggestions')}
+              data-help-key="note_insights_button"
+            >
+              {insightsLoading ? '⏳' : '📊'} {t('note_insights.button') || 'Insights'}
+            </button>
             <button
               onClick={handlePrintAll}
               className="px-3 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 border border-slate-300 rounded-full hover:bg-slate-200"
@@ -645,6 +1136,13 @@ const NotebookOverlay = React.memo((props) => {
           <span className="font-mono">{sortedEntries.length} total</span>
         </div>
       </div>
+      <_NoteInsightsModal
+        isOpen={insightsOpen}
+        onClose={() => setInsightsOpen(false)}
+        insights={insights}
+        isLoading={insightsLoading}
+        t={t}
+      />
     </div>
   );
 });
