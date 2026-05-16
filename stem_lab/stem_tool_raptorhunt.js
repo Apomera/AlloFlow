@@ -1034,6 +1034,147 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
     }
   };
 
+  // ───────────────────────────────────────────────────────────
+  // FAMOUS BIRDS + CULTURAL SYMBOLS DATA
+  // ───────────────────────────────────────────────────────────
+  // Individual famous raptors + cross-cultural symbolic meanings.
+  var FAMOUS = {
+    intro: 'Raptors are the world\'s most-used national + military symbols — and a handful of individual wild birds have become global celebrities. Pale Male, the Manhattan red-tail who nested on a Fifth Avenue cooperative for 32 years, was on the front page of the New York Times when the building tried to remove his nest. Old Abe, an injured Wisconsin eagle, traveled with a Civil War regiment + survived 36 battles. The bald eagle\'s 1782 selection as US national emblem narrowly defeated Benjamin Franklin\'s proposal for the wild turkey. The golden eagle is the founding myth of Mexico City (Tenochtitlan). The harpy eagle is the Brazilian Air Force\'s symbol. The Haast\'s eagle of New Zealand — extinct ~1400 CE — survives in Maori oral history as the giant Pouakai.',
+
+    individuals: [
+      {
+        name: 'Pale Male',
+        species: 'Red-tailed Hawk',
+        years: '1991-2023',
+        location: '927 Fifth Avenue, Manhattan',
+        story: 'A pale-plumaged male red-tail moved into Central Park in 1991 + nested on the cornice of a Fifth Avenue cooperative in 1993. He raised 26+ offspring over 32 years on that nest. In December 2004, the building\'s coop board removed his nest as a "safety hazard." A 12-day public outcry — including front-page New York Times coverage, protests outside the building, and Mary Tyler Moore\'s public statement — forced the board to install a stainless-steel cradle that Pale Male promptly rebuilt on. He died in 2023, age 32+ (extraordinary longevity for a wild red-tail; record is ~30 years).',
+        legacy: 'Demonstrated that urban raptor populations can thrive long-term given even minimal accommodation. Spawned the 2002 documentary "Pale Male." Cornell Lab\'s Manhattan red-tail nest cam has tracked his descendants ever since.'
+      },
+      {
+        name: 'Old Abe',
+        species: 'Bald Eagle',
+        years: '1861-1881',
+        location: 'Wisconsin → Civil War theater',
+        story: 'Captured as an eaglet in 1861 by an Ojibwe man, Old Abe was sold to a Wisconsin family + then adopted as regimental mascot by Company C, 8th Wisconsin Infantry. He traveled with the regiment through 36 battles, perched on a wooden cross-pole + a custom shield, and would screech during charges (boosting morale, terrifying Confederate troops). He survived the war intact, became a celebrity at the Wisconsin State Capitol, raised money for veteran charities at $100/hr (huge sum in 1870s), and died from smoke inhalation during a Capitol fire in 1881.',
+        legacy: 'First celebrity raptor in American history. The 101st Airborne Division\'s "Screaming Eagles" insignia depicts Old Abe. The Wisconsin State Capitol still displays a stuffed mount + uniformed perch.'
+      },
+      {
+        name: 'Challenger',
+        species: 'Bald Eagle',
+        years: '1989-present',
+        location: 'American Eagle Foundation, Tennessee',
+        story: 'Found as an eaglet in 1989 having fallen from his nest. Hand-raised (which left him imprinted on humans + permanently non-releasable). He became a "flying ambassador" — trained to fly into stadiums during the US national anthem. Has flown at 400+ MLB, NFL, college games, including 2 World Series + 2 Super Bowls. The only bald eagle named for the Space Shuttle Challenger crew (a tribute to the 1986 disaster).',
+        legacy: 'Probably the most-watched individual bald eagle in human history — viewed in person by 10+ million people, broadcast to hundreds of millions. The American Eagle Foundation\'s flagship education bird.'
+      },
+      {
+        name: 'Frodo',
+        species: 'Mauritius Kestrel',
+        years: '1973-1974',
+        location: 'Mauritius',
+        story: 'In 1974, when the Mauritius kestrel population was reduced to 4 known wild birds, Frodo was one of two adult males left alive. Carl Jones identified him + nicknamed him for his small size + outsized importance. Frodo\'s mate hatched their last wild chick in 1974. Jones extracted that chick + subsequent eggs for captive breeding. Frodo himself was never captured + continued breeding in the wild until ~1976.',
+        legacy: 'Founder bird of the entire restored Mauritius kestrel population. Every wild kestrel on the island today descends from Frodo + his mate. The species would be extinct without these 2 birds.'
+      },
+      {
+        name: 'AC9 (and the captive Class of 1987)',
+        species: 'California Condor',
+        years: '1980-present (AC9 still alive 2024)',
+        location: 'California',
+        story: 'AC9 was the last wild California condor — captured April 19, 1987 + brought into the captive-breeding program. After 5 years of captive breeding (1987-1992), AC9 was the FIRST condor reintroduced to the wild in 2002 + has produced 9 wild-hatched chicks. AC9 was named after his radio-transmitter band: "Adult Condor 9."',
+        legacy: 'Represents the moral + scientific gamble of 1987: capture every wild condor on Earth to save the species. AC9 + the 21 other condors of 1987 are the literal ancestors of every California condor alive today.'
+      }
+    ],
+
+    symbols: [
+      {
+        symbol: 'Bald Eagle — United States',
+        adopted: 'June 20, 1782',
+        myth: 'The Second Continental Congress chose the bald eagle (Haliaeetus leucocephalus) for the Great Seal after 6 years of debate. Charles Thomson designed the final seal showing an eagle with arrows of war + olive branch of peace.',
+        controversy: 'Benjamin Franklin famously wrote (1784, in a private letter to his daughter): "For my own part, I wish the Bald Eagle had not been chosen as the Representative of our Country. He is a Bird of bad moral Character; he does not get his Living honestly... like those among Men who live by Sharping & Robbing, he is generally poor, and often very lousy. Besides, he is a rank Coward..." Franklin preferred the wild turkey: "a much more respectable Bird, and withal a true original Native of America." Most historians read this as Franklin\'s humorous critique of the seal, not a literal proposal to switch.'
+      },
+      {
+        symbol: 'Golden Eagle — Mexico',
+        adopted: 'Aztec founding myth ~1325 CE; modern flag 1821',
+        myth: 'The Aztec founding myth of Tenochtitlan: the wandering Mexica people would settle where they saw a golden eagle perched on a nopal cactus + devouring a serpent. They saw this vision on a small island in Lake Texcoco. Tenochtitlan (modern Mexico City) was founded there in 1325. The image — eagle, snake, cactus — has appeared on every Mexican flag since 1821.',
+        controversy: 'The species in Mexican iconography is sometimes called "Águila Real" (Royal Eagle = Aquila chrysaetos = golden eagle), but some Aztec codices depict a crested caracara instead. The official 1968 flag standard specifies golden eagle.'
+      },
+      {
+        symbol: 'Harpy Eagle — Panama + Brazilian Air Force',
+        adopted: 'Panama national bird 2002; Brazilian Air Force insignia 1947',
+        myth: 'The harpy eagle is the national bird of Panama (the Panamanian harpy is Panama\'s top predator + a critically endangered conservation symbol). The Brazilian Air Force adopted the harpy in 1947 — chosen for the species\' fearsome talons + raw power. Brazilian Air Force fighter squadrons fly under harpy insignia variants.',
+        controversy: 'Panama actively works on harpy conservation — its national zoo runs captive-breeding + reintroduction programs in the Darién Gap region. The bird\'s symbolic visibility helps fund actual habitat protection.'
+      },
+      {
+        symbol: 'Haast\'s Eagle — Maori oral history (extinct)',
+        adopted: 'Maori folklore ~1300-1400 CE',
+        myth: 'Haast\'s eagle (Hieraaetus moorei) was the largest eagle that ever lived — wingspan ~3 m, mass 10-15 kg. It preyed on moa (giant flightless birds), New Zealand\'s only native large herbivore. Maori arrived in New Zealand ~1280-1300 CE. Moa were extinct by ~1445. Haast\'s eagle followed shortly after — its prey base gone. But the bird survives in Maori oral history as Te Hokioi or Pouakai, a giant flying creature said to have attacked people. Cave paintings + bone remains suggest these stories are NOT pure mythology — Maori may have witnessed (or been victims of) actual Haast\'s eagle attacks.',
+        controversy: 'Among the most credible animal-extinction folklore in the world. The "Pouakai" stories were dismissed as myth for 200 years until subfossil bones + carbon dating confirmed Haast\'s eagle was real, recent, and overlapped with humans.'
+      },
+      {
+        symbol: 'Peregrine Falcon — Egyptian pharaohs (Horus)',
+        adopted: '~3000 BCE (Old Kingdom Egypt)',
+        myth: 'The god Horus — son of Osiris + Isis, divine sky-king of pharaonic Egypt — was depicted as a falcon-headed man for ~3,000 years. Most Egyptologists identify Horus\'s falcon as a peregrine (some say lanner falcon). The Eye of Horus symbol (Wedjat) was based on the falcon\'s facial markings (cheek mark + eye-ring). Pharaohs were called "Horus-on-Earth"; each pharaoh\'s name was preceded by a falcon hieroglyph + a serekh frame.',
+        controversy: 'The falcon-headed god is one of the oldest continuously-worshipped symbols in human history — older than Christianity, older than Buddhism, older than written Chinese. The peregrine had been a sacred bird in the Nile Valley for at least 3,000 years before the Roman conquest.'
+      },
+      {
+        symbol: 'Eagle — Roman Empire (Aquila)',
+        adopted: 'Marius reforms of Roman legions, ~104 BCE',
+        myth: 'After Gaius Marius reformed the Roman legions, each legion carried an "Aquila" — a silver (later gold) eagle standard atop a pole. The Aquila was the legion\'s sacred totem. Losing it in battle was the worst possible disgrace; emperors mounted full military campaigns to recover lost Aquilae (e.g., the Augustan recovery of the Varian Disaster eagles after 16 years). The Roman eagle inspired the imperial eagles of the Byzantine Empire, Holy Roman Empire, Russian Empire, German Empire, Habsburg Empire, Napoleonic France, US national emblem, and dozens of modern military insignia.',
+        controversy: 'The Roman eagle is the ancestor of nearly every Western "imperial eagle" symbol. It is the longest-running political symbol in continuous use in human history.'
+      }
+    ],
+
+    closingNote: 'Across at least 5,000 years + every inhabited continent, humans have selected raptors as symbols of authority, ferocity, courage, and divine power. No other animal group comes close in symbolic usage. Why? Because raptors do what we wish we could — they fly, they hunt, they kill at distance, they are visibly dominant. They are, in the deepest sense, the visual ideal of power.'
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // GLOSSARY DATA — A-Z reference of raptor terminology
+  // ───────────────────────────────────────────────────────────
+  var GLOSSARY = [
+    { term: 'Accipiter', def: 'Genus of forest-interior hawks with short broad wings + long banded tail. North American examples: sharp-shinned, Cooper\'s, northern goshawk.' },
+    { term: 'Alula', def: 'The "thumb" of a bird\'s wing — small bundle of feathers anchored at the leading edge. Functions as a leading-edge slat at slow speed/high angle of attack.' },
+    { term: 'Anisodactyl', def: 'Foot arrangement with 3 toes forward + 1 toe back (the hallux). The default raptor foot pattern.' },
+    { term: 'Aspect Ratio', def: 'Wingspan² / wing area. High = soaring efficient (eagle 6-7, albatross 15). Low = forest-agile (accipiter 4-5).' },
+    { term: 'Aquila', def: 'Genus name for eagles (Latin for "eagle"). Also the Roman legion\'s eagle-standard.' },
+    { term: 'Berkutchi', def: 'Kazakh + Mongolian golden-eagle hunters on horseback. Practice dates to ~2000 BCE. ~250 active practitioners remain in 2024.' },
+    { term: 'Bolus / Cast / Pellet', def: 'Indigestible material (fur, bones, teeth, exoskeletons) regurgitated by raptors — most famous in owls. See Pellet Lab.' },
+    { term: 'Brood Patch', def: 'Bare skin area on the female\'s belly during incubation. Provides direct heat transfer to eggs.' },
+    { term: 'Buteo', def: 'Genus of broad-winged, broad-tailed hawks. Soaring + perch-hunting specialists. North American examples: red-tailed, red-shouldered, broad-winged, Swainson\'s.' },
+    { term: 'Casting', def: 'The act of regurgitating a pellet.' },
+    { term: 'Cere', def: 'Patch of soft skin at the base of the upper beak, often brightly colored (yellow in most hawks/eagles, blue in some kestrels). Contains the nostrils.' },
+    { term: 'Crepuscular', def: 'Active at dawn + dusk. Some owls (eastern screech, short-eared) are crepuscular rather than fully nocturnal.' },
+    { term: 'Crop', def: 'Bulging food-storage pouch in the esophagus, just below the throat. Visible as a lump after a big meal. Owls lack a crop — they store food in the gizzard.' },
+    { term: 'DDT / DDE', def: 'Pesticide (DDT) + its breakdown product (DDE) that caused massive raptor population crashes 1947-1972 via eggshell thinning. Banned in US 1972.' },
+    { term: 'Diurnal', def: 'Active during daylight hours. Hawks, eagles, falcons.' },
+    { term: 'Double-clutching', def: 'Conservation technique: remove the first clutch of eggs for artificial incubation; the female lays a second clutch. Doubles reproductive output per breeding season. Key to peregrine + condor + Mauritius kestrel recoveries.' },
+    { term: 'Eyrie / Aerie', def: 'A raptor\'s nest, especially on a cliff. The word "eyrie" is the British spelling; "aerie" is American.' },
+    { term: 'Fledge / Fledgling', def: 'First flight from the nest. Fledgling = post-fledging young, still dependent on parents.' },
+    { term: 'Falconidae', def: 'Family of falcons + caracaras. Distinguished from hawks (Accipitridae) by anatomy + a single tomial tooth on the upper beak.' },
+    { term: 'Fovea', def: 'High-density cone region in the retina that provides sharpest vision. Most diurnal raptors have TWO foveas per eye; owls + humans have one.' },
+    { term: 'Hacking', def: 'Soft-release method developed by falconers. Captive-bred birds are placed in a hack box at a release site, fed remotely, and gradually transition to wild hunting. Used in peregrine + condor + bald eagle recoveries.' },
+    { term: 'Hallux', def: 'The rear toe. In raptors, the hallux talon is the primary killing weapon — longest + curved + driven straight through prey vital organs.' },
+    { term: 'IRRUPTION', def: 'When northern raptors move far south in winter due to prey crashes (lemmings, voles). NOT a range shift — irruption birds return north next spring. Famous: 2013-14 snowy owl irruption.' },
+    { term: 'Jess', def: 'Falconry term for the soft leather straps anchored at the bird\'s ankles for handler control.' },
+    { term: 'Kettle', def: 'A column of soaring raptors riding a thermal upward. Famous at migration sites — Veracruz, Hawk Mountain — where 100s to 1000s of birds can be in a single kettle.' },
+    { term: 'Kiting', def: 'Holding stationary in mid-air by facing into a strong headwind, wings extended. Common in red-tailed + rough-legged hawks.' },
+    { term: 'K-selected', def: 'Life history pattern of long-lived, slow-reproducing species (raptors, whales, humans). Opposite of r-selected (mice, insects). K-selected populations are vulnerable to even small adult mortality increases.' },
+    { term: 'Mantle', def: 'When a raptor spreads wings + tail over its prey to hide it from kleptoparasites. "Mantling" is a defensive food-protection behavior.' },
+    { term: 'Mews', def: 'A falconer\'s housing facility for raptors. In US, USDA-inspected with specific dimensional + welfare requirements.' },
+    { term: 'Nare', def: 'A bird\'s nostril. In peregrines, contains a bony tubercle that redirects airflow during a 240 mph stoop.' },
+    { term: 'Nictitating Membrane', def: 'Clear "third eyelid" that slides horizontally across the eye. Protects from debris + dryness without blocking vision. Critical during a peregrine stoop.' },
+    { term: 'Pellet', def: 'See Bolus. The indigestible remains regurgitated by raptors.' },
+    { term: 'Pin Feathers', def: 'New feathers still encased in a keratin sheath. Looks like a porcupine quill until the sheath splits.' },
+    { term: 'Polyandry', def: 'One female mating with multiple males in a season. Rare in raptors but documented in some harriers + Galápagos hawks.' },
+    { term: 'Primaries', def: 'The 10 outermost wing feathers, attached to the "hand" bones. The propulsion + steering surface in flight.' },
+    { term: 'Raptor', def: 'A diurnal or nocturnal predatory bird with hooked beak + curved talons. Includes hawks, eagles, falcons, owls, osprey, kites, vultures (sometimes). Term comes from Latin "raptor" = "snatcher."' },
+    { term: 'Rectrices', def: 'Tail feathers. Numbered as 3 pairs (R1 inner to R6 outer).' },
+    { term: 'Sexual Size Dimorphism (Reverse)', def: 'In raptors, females are typically 20-50% LARGER than males — opposite of most birds. Most extreme in accipiters + falcons. Likely tied to prey size: males hunt smaller faster prey, females hunt larger.' },
+    { term: 'Stoop', def: 'A high-speed steeply-angled dive used by falcons to attack airborne prey. Peregrines reach ~242 mph; the fastest known animal speed.' },
+    { term: 'Tarsus', def: 'The "leg" between the foot + the ankle joint. Some raptors have feathered tarsi (rough-legged hawk, snowy owl); most have bare scaly tarsi.' },
+    { term: 'Tomial Tooth', def: 'A pointed projection on the upper beak edge in falcons. Fits into a notch on the lower beak — used to sever the cervical vertebrae of prey in a single bite.' },
+    { term: 'Wing Loading', def: 'Body mass divided by wing area (kg/m²). High loading = fast/heavy/diving (falcons 9 kg/m²); low loading = slow/soaring (vultures 3 kg/m²).' },
+    { term: 'Zygodactyl', def: 'Foot with 2 toes forward + 2 back. Ospreys can rotate their outer toe to switch from anisodactyl (3-and-1) to zygodactyl (2-and-2) for gripping wet fish.' }
+  ];
+
   // ═══════════════════════════════════════════════════════════
   // TOOL REGISTRATION
   // ═══════════════════════════════════════════════════════════
@@ -1091,6 +1232,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         { id: 'spiral', label: 'Stoop Trajectory', icon: '🌀' },
         { id: 'acuity', label: 'Vision Acuity Demo', icon: '👁️‍🗨️' },
         { id: 'recoveries', label: 'Recovery Case Studies', icon: '🏆' },
+        { id: 'predictor', label: 'Wing-Loading Predictor', icon: '🪂' },
+        { id: 'famous', label: 'Famous Birds & Symbols', icon: '⭐' },
+        { id: 'glossary', label: 'Glossary', icon: '📖' },
         { id: 'quiz', label: 'Field ID Quiz', icon: '🎓' },
         { id: 'resources', label: 'Resources', icon: '📚' }
       ];
@@ -1106,7 +1250,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('div', { className: 'flex-1' },
                 h('div', { className: 'text-xl font-bold text-amber-200' }, 'Raptor Hunt: Predator Physics + Biology'),
                 h('div', { className: 'text-sm text-amber-100/80 mt-1' }, 'Hunt as a peregrine at 240 mph. Crush bones at 530 psi as a harpy. See vole urine trails in UV like a kestrel. Glide silently on owl feathers. Then study the biology that makes it all possible.'),
-                h('div', { className: 'text-xs text-amber-300/70 mt-2 italic' }, '22 sections · 8 species · 3D + 2D simulators · interactive labs · anatomy + acuity demo · recovery case studies · 18-question quiz')
+                h('div', { className: 'text-xs text-amber-300/70 mt-2 italic' }, '25 sections · 8 species · 6 interactive labs · anatomy + acuity demo · case studies · 42-term glossary · 18-question quiz')
               )
             )
           ),
@@ -3881,6 +4025,249 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       }
 
       // ────────────────────────────────────────────────────────
+      // RENDER: WING-LOADING PREDICTOR
+      // ────────────────────────────────────────────────────────
+      // Inverse of Flight Physics: drag sliders → predict hunt style
+      function renderPredictor() {
+        var pr = rh.predictor || { mass: 1.0, wingspan: 1.2, wingArea: 0.25 };
+        function setPR(patch) { setRH({ predictor: Object.assign({}, pr, patch) }); }
+        // Calculate derived values
+        var wingLoading = pr.mass / pr.wingArea; // kg/m²
+        var aspectRatio = (pr.wingspan * pr.wingspan) / pr.wingArea;
+        // Classify hunt style based on loading × AR
+        var huntStyle, styleDesc, styleColor, styleEmoji;
+        if (wingLoading > 7 && aspectRatio > 8) {
+          huntStyle = 'Falcon — Stoop Specialist'; styleEmoji = '🚀'; styleColor = 'red';
+          styleDesc = 'High wing loading + high aspect ratio = fast/heavy + efficient glide. This bird hunts by stooping from altitude. Terminal velocity is high; turning radius is large. Comparable to: peregrine, prairie falcon, lanner.';
+        } else if (wingLoading < 5 && aspectRatio > 7) {
+          huntStyle = 'Eagle / Vulture — Soaring Specialist'; styleEmoji = '🪶'; styleColor = 'amber';
+          styleDesc = 'Low wing loading + high aspect ratio = efficient thermal soaring with slow level flight. Long-distance scanning predator. Comparable to: bald eagle, golden eagle, turkey vulture, condor.';
+        } else if (wingLoading < 4 && aspectRatio < 6) {
+          huntStyle = 'Buteo — Perch + Pounce'; styleEmoji = '🌲'; styleColor = 'emerald';
+          styleDesc = 'Low wing loading + low aspect ratio = slow, maneuverable, can kite into headwinds. Hunts from perches over open country. Comparable to: red-tailed hawk, red-shouldered hawk, rough-legged hawk, harrier.';
+        } else if (wingLoading > 4 && aspectRatio < 6) {
+          huntStyle = 'Accipiter — Forest Chaser'; styleEmoji = '🌳'; styleColor = 'cyan';
+          styleDesc = 'Medium loading + low aspect ratio (short broad wings, long tail) = high agility, terrible glide efficiency. Threads through dense canopy after small birds. Comparable to: Cooper\'s hawk, sharp-shinned hawk, northern goshawk.';
+        } else if (wingLoading < 5 && aspectRatio < 7 && aspectRatio > 4) {
+          huntStyle = 'Owl — Silent Glide'; styleEmoji = '🦉'; styleColor = 'violet';
+          styleDesc = 'Low loading + moderate aspect ratio (wide broad wings with comb-edged primaries) = silent stalk + drop attack from perch. Comparable to: great horned owl, barred owl, barn owl.';
+        } else {
+          huntStyle = 'Generalist / Intermediate'; styleEmoji = '🦅'; styleColor = 'slate';
+          styleDesc = 'These dimensions fall between specialized hunt-style niches. The bird could hunt opportunistically across several modes — moderate stoop, moderate soaring, moderate perch-pounce. Few real raptors are this generalist; most have committed to one strategy.';
+        }
+        // Find closest real species (Euclidean in loading + AR space, normalized)
+        function distance(loading, ar) {
+          return Math.sqrt(Math.pow((wingLoading - loading) / 18, 2) + Math.pow((aspectRatio - ar) / 12, 2));
+        }
+        var sortedSpecies = SPECIES.map(function(s) {
+          return { s: s, d: distance(s.wingLoading, s.aspectRatio) };
+        }).sort(function(a, b) { return a.d - b.d; });
+        var closest = sortedSpecies.slice(0, 3);
+
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-cyan-900/40 to-sky-900/40 border border-cyan-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-lg font-bold text-cyan-200 mb-2' }, '🪂 Wing-Loading Predictor'),
+            h('div', { className: 'text-sm text-cyan-100/90 leading-relaxed' },
+              'In the Flight Physics module you learned that wing loading + aspect ratio predict hunt style. This is the inverse: ',
+              h('span', { className: 'font-bold text-amber-300' }, 'design a raptor by setting its body dimensions'),
+              ' + the tool tells you what hunt strategy that bird would evolve. Compare to real species. The fingers-of-the-glove fit between body geometry + behavior is the core insight of raptor flight biology.'
+            )
+          ),
+
+          // Sliders
+          h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4 space-y-3' },
+            h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
+              h('div', null,
+                h('label', { className: 'text-xs text-cyan-300 flex justify-between' },
+                  h('span', null, 'Body mass'),
+                  h('span', { className: 'font-mono text-amber-300' }, pr.mass.toFixed(2) + ' kg')
+                ),
+                h('input', { type: 'range', min: 0.1, max: 10, step: 0.1, value: pr.mass,
+                  onInput: function(e) { setPR({ mass: parseFloat(e.target.value) }); },
+                  className: 'w-full', 'aria-label': 'Body mass kg' }),
+                h('div', { className: 'text-[10px] text-slate-500' }, 'Kestrel 0.1 · peregrine 0.9 · golden 4.2 · harpy 7.5')
+              ),
+              h('div', null,
+                h('label', { className: 'text-xs text-cyan-300 flex justify-between' },
+                  h('span', null, 'Wingspan'),
+                  h('span', { className: 'font-mono text-amber-300' }, pr.wingspan.toFixed(2) + ' m')
+                ),
+                h('input', { type: 'range', min: 0.5, max: 3.0, step: 0.05, value: pr.wingspan,
+                  onInput: function(e) { setPR({ wingspan: parseFloat(e.target.value) }); },
+                  className: 'w-full', 'aria-label': 'Wingspan m' }),
+                h('div', { className: 'text-[10px] text-slate-500' }, 'Kestrel 0.6 · peregrine 1.05 · golden 2.1 · harpy 2.05')
+              ),
+              h('div', null,
+                h('label', { className: 'text-xs text-cyan-300 flex justify-between' },
+                  h('span', null, 'Wing area'),
+                  h('span', { className: 'font-mono text-amber-300' }, pr.wingArea.toFixed(2) + ' m²')
+                ),
+                h('input', { type: 'range', min: 0.02, max: 1.0, step: 0.01, value: pr.wingArea,
+                  onInput: function(e) { setPR({ wingArea: parseFloat(e.target.value) }); },
+                  className: 'w-full', 'aria-label': 'Wing area m²' }),
+                h('div', { className: 'text-[10px] text-slate-500' }, 'Kestrel 0.05 · peregrine 0.11 · golden 0.65 · harpy 0.50')
+              )
+            )
+          ),
+
+          // Derived values + prediction
+          h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
+            h('div', { className: 'bg-slate-900/40 border border-slate-700/50 rounded-lg p-3 text-center' },
+              h('div', { className: 'text-[10px] uppercase tracking-wider text-slate-400' }, 'Wing Loading'),
+              h('div', { className: 'text-2xl font-bold text-amber-300 my-1' }, wingLoading.toFixed(1)),
+              h('div', { className: 'text-[10px] text-slate-400' }, 'kg / m²')
+            ),
+            h('div', { className: 'bg-slate-900/40 border border-slate-700/50 rounded-lg p-3 text-center' },
+              h('div', { className: 'text-[10px] uppercase tracking-wider text-slate-400' }, 'Aspect Ratio'),
+              h('div', { className: 'text-2xl font-bold text-amber-300 my-1' }, aspectRatio.toFixed(1)),
+              h('div', { className: 'text-[10px] text-slate-400' }, 'wingspan² / area')
+            )
+          ),
+
+          // Predicted hunt style
+          h('div', { className: 'bg-gradient-to-br from-' + styleColor + '-900/40 to-' + styleColor + '-800/30 border border-' + styleColor + '-700/50 rounded-xl p-5' },
+            h('div', { className: 'flex items-baseline gap-3 mb-2' },
+              h('div', { className: 'text-3xl' }, styleEmoji),
+              h('div', null,
+                h('div', { className: 'text-[10px] uppercase tracking-wider text-' + styleColor + '-300' }, 'Predicted hunt style'),
+                h('div', { className: 'text-lg font-bold text-' + styleColor + '-200' }, huntStyle)
+              )
+            ),
+            h('div', { className: 'text-sm text-' + styleColor + '-100/90 leading-relaxed' }, styleDesc)
+          ),
+
+          // Closest real species
+          h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-sm font-bold text-amber-300 mb-3' }, '🎯 Closest real species (in loading × AR space)'),
+            h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-2' },
+              closest.map(function(c, i) {
+                return h('div', { key: c.s.id, className: 'bg-slate-800/40 rounded p-3 text-center border ' + (i === 0 ? 'border-amber-500 ring-2 ring-amber-400/30' : 'border-slate-700/40') },
+                  h('div', { className: 'text-2xl mb-1' }, c.s.emoji),
+                  h('div', { className: 'text-sm font-bold text-amber-200' }, c.s.name),
+                  h('div', { className: 'text-[10px] text-slate-400 font-mono mt-1' }, 'Loading: ' + c.s.wingLoading + ' · AR: ' + c.s.aspectRatio),
+                  i === 0 && h('div', { className: 'text-[10px] text-amber-300 mt-1 font-bold' }, '★ Best match')
+                );
+              })
+            )
+          ),
+
+          // Presets
+          h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-3' },
+            h('div', { className: 'text-xs font-bold text-cyan-300 mb-2' }, '⚡ Try a preset'),
+            h('div', { className: 'flex flex-wrap gap-2' },
+              [
+                { label: 'Peregrine', mass: 0.95, wingspan: 1.05, wingArea: 0.108 },
+                { label: 'Red-tailed Hawk', mass: 1.15, wingspan: 1.3, wingArea: 0.31 },
+                { label: 'Bald Eagle', mass: 4.5, wingspan: 2.0, wingArea: 0.62 },
+                { label: 'Goshawk', mass: 1.0, wingspan: 1.1, wingArea: 0.20 },
+                { label: 'Harpy Eagle', mass: 7.5, wingspan: 2.05, wingArea: 0.50 },
+                { label: 'Owl', mass: 1.45, wingspan: 1.4, wingArea: 0.40 }
+              ].map(function(p) {
+                return h('button', { key: p.label,
+                  onClick: function() { setPR({ mass: p.mass, wingspan: p.wingspan, wingArea: p.wingArea }); rhAnnounce('Loaded ' + p.label + ' dimensions'); },
+                  className: 'px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 text-amber-200 hover:bg-slate-700 hover:text-amber-100',
+                  'aria-label': 'Load ' + p.label + ' dimensions'
+                }, p.label);
+              })
+            )
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: FAMOUS BIRDS + CULTURAL SYMBOLS
+      // ────────────────────────────────────────────────────────
+      function renderFamous() {
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-purple-900/40 to-fuchsia-900/40 border border-purple-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-lg font-bold text-purple-200 mb-2' }, '⭐ Famous Birds & Cultural Symbols'),
+            h('div', { className: 'text-sm text-purple-100/90 leading-relaxed' }, FAMOUS.intro)
+          ),
+
+          // Famous individuals
+          h('div', { className: 'space-y-3' },
+            h('div', { className: 'text-sm font-bold text-amber-300' }, '🦅 Famous Individual Raptors'),
+            FAMOUS.individuals.map(function(b, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-slate-700/50 rounded-lg p-4' },
+                h('div', { className: 'flex items-baseline justify-between gap-2 mb-2' },
+                  h('div', null,
+                    h('div', { className: 'text-base font-bold text-purple-300' }, b.name),
+                    h('div', { className: 'text-xs italic text-amber-300/80' }, b.species + ' · ' + b.years + ' · ' + b.location)
+                  )
+                ),
+                h('div', { className: 'text-xs text-slate-200 leading-relaxed mb-2' }, b.story),
+                h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-2 text-xs text-emerald-100/90 italic' }, '✦ Legacy: ' + b.legacy)
+              );
+            })
+          ),
+
+          // Cultural symbols
+          h('div', { className: 'space-y-3' },
+            h('div', { className: 'text-sm font-bold text-amber-300' }, '🏛 Cultural & National Symbols'),
+            FAMOUS.symbols.map(function(s, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-slate-700/50 rounded-lg p-4' },
+                h('div', { className: 'flex items-baseline justify-between gap-2 mb-2' },
+                  h('div', { className: 'text-base font-bold text-purple-300' }, s.symbol),
+                  h('div', { className: 'text-[10px] text-slate-500 font-mono' }, s.adopted)
+                ),
+                h('div', { className: 'text-xs text-slate-200 leading-relaxed mb-2' }, s.myth),
+                h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-2 text-xs text-amber-100/90' }, '💬 ' + s.controversy)
+              );
+            })
+          ),
+
+          // Closing note
+          h('div', { className: 'bg-gradient-to-br from-amber-900/30 to-orange-900/30 border border-amber-700/40 rounded-xl p-4 text-center' },
+            h('div', { className: 'text-sm text-amber-100/90 italic leading-relaxed' }, FAMOUS.closingNote)
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: GLOSSARY (A-Z reference)
+      // ────────────────────────────────────────────────────────
+      function renderGlossary() {
+        var glossSearch = (rh.glossSearch || '').toLowerCase();
+        function setSearch(s) { setRH({ glossSearch: s }); }
+        var filtered = glossSearch
+          ? GLOSSARY.filter(function(g) { return g.term.toLowerCase().indexOf(glossSearch) !== -1 || g.def.toLowerCase().indexOf(glossSearch) !== -1; })
+          : GLOSSARY;
+
+        return h('div', { className: 'space-y-3' },
+          h('div', { className: 'bg-gradient-to-br from-slate-800/40 to-slate-900/40 border border-slate-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-lg font-bold text-amber-200 mb-2' }, '📖 Raptor Glossary'),
+            h('div', { className: 'text-sm text-slate-300 leading-relaxed' }, GLOSSARY.length + ' terms — A-Z reference covering anatomy, behavior, conservation, falconry, and population biology. Searchable.')
+          ),
+
+          // Search
+          h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-lg p-3' },
+            h('input', {
+              type: 'text',
+              placeholder: '🔍 Search terms or definitions...',
+              value: glossSearch,
+              onInput: function(e) { setSearch(e.target.value); },
+              className: 'w-full px-3 py-2 rounded-lg bg-slate-800 text-amber-200 border border-slate-700 focus:border-amber-500 focus:outline-none text-sm',
+              'aria-label': 'Search glossary'
+            }),
+            glossSearch && h('div', { className: 'text-[10px] text-slate-400 mt-2' }, filtered.length + ' of ' + GLOSSARY.length + ' terms match')
+          ),
+
+          // Glossary entries
+          filtered.length === 0 ? h('div', { className: 'text-center text-slate-500 italic py-8' }, 'No matches.') :
+            h('div', { className: 'space-y-2' },
+              filtered.map(function(g, i) {
+                return h('div', { key: i, className: 'bg-slate-800/40 border border-slate-700/50 rounded p-3' },
+                  h('div', { className: 'flex items-baseline gap-2' },
+                    h('div', { className: 'text-sm font-bold text-amber-300 flex-shrink-0' }, g.term),
+                    h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, g.def)
+                  )
+                );
+              })
+            )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
       // RENDER: RESOURCES
       // ────────────────────────────────────────────────────────
       function renderResources() {
@@ -3912,7 +4299,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // ────────────────────────────────────────────────────────
       return h('div', { className: 'space-y-4', role: 'region', 'aria-label': 'Raptor Hunt tool' },
         // Section count chip
-        h('div', { className: 'text-[11px] text-slate-500 uppercase tracking-wider' }, '22 sections · 8 species · 3D + 2D simulators · acuity demo · 5 recovery case studies · 18-question quiz'),
+        h('div', { className: 'text-[11px] text-slate-500 uppercase tracking-wider' }, '25 sections · 8 species · 6 interactive labs · acuity demo · 5 recoveries · famous birds · 42-term glossary · 18-question quiz'),
         // Tab nav (scrollable horizontal)
         h('div', { className: 'flex gap-1.5 overflow-x-auto pb-1', role: 'tablist', 'aria-label': 'Raptor Hunt sections' },
           SECTIONS.map(function(s) {
@@ -3952,6 +4339,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           activeSection === 'spiral' && renderSpiral(),
           activeSection === 'acuity' && renderAcuity(),
           activeSection === 'recoveries' && renderRecoveries(),
+          activeSection === 'predictor' && renderPredictor(),
+          activeSection === 'famous' && renderFamous(),
+          activeSection === 'glossary' && renderGlossary(),
           activeSection === 'quiz' && renderQuiz(),
           activeSection === 'resources' && renderResources()
         )
