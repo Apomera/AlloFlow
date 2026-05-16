@@ -216,7 +216,83 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       range: 'Cosmopolitan — every continent except Antarctica',
       weird: 'Reversible outer toe + spicules on the foot pads = a "two-pronged tongs" grip designed specifically for grasping slippery wet fish. Closes nostrils with a flap of skin before submerging — no other raptor has this.',
       biome: 'lake',
-      stoopDiveBonus: 1.6, pullupG: 5 }
+      stoopDiveBonus: 1.6, pullupG: 5 },
+
+    // ── NEW v0.18: 5 additional species ──
+    { id: 'kestrel', name: 'American Kestrel', scientific: 'Falco sparverius', emoji: '🦅', family: 'Falconidae', isOwl: false,
+      massKg: 0.12, wingspanM: 0.58, wingAreaSqM: 0.039, wingLoading: 3.1, aspectRatio: 8.6,
+      maxLevelMph: 39, stoopMph: 60,
+      talonForcePsi: 70, talonLengthMm: 12,
+      visualAcuityX: 2.0, foveaCount: 2, visualFieldDeg: 200,
+      eyeWeightPctBody: 4.5,
+      habitat: ['open-country', 'grassland', 'farmland', 'edge'], prey: ['rodent', 'large-insect', 'songbird', 'snake'],
+      huntStyle: 'active hover-hunt — windmills wings to hold stationary 30-60 ft over a field, drops on prey when spotted',
+      ecology: 'Smallest North American falcon. Most cosmopolitan raptor on the continent — found in every state. Documented declining ~50% since 1970, cause unknown but suspected: pesticide-driven insect crash + nest-cavity loss + mesopredator release (Cooper\'s hawk recovery).',
+      conservation: 'Declining — listed as state Special Concern in several US states despite global Least Concern',
+      range: 'Americas (Alaska to Tierra del Fuego, including Caribbean)',
+      weird: 'Sees UV light + uses it to track vole urine trails (Viitala et al 1995, Nature). The original UV-vision raptor discovery. Despite tiny size, holds the record for "most widely distributed falcon in the Americas."',
+      biome: 'grassland',
+      stoopDiveBonus: 1.4, pullupG: 8 },
+
+    { id: 'coopersHawk', name: "Cooper's Hawk", scientific: 'Accipiter cooperii', emoji: '🦅', family: 'Accipitridae', isOwl: false,
+      massKg: 0.45, wingspanM: 0.78, wingAreaSqM: 0.092, wingLoading: 4.9, aspectRatio: 6.6,
+      maxLevelMph: 35, stoopMph: 70,
+      talonForcePsi: 220, talonLengthMm: 22,
+      visualAcuityX: 3.0, foveaCount: 2, visualFieldDeg: 220,
+      eyeWeightPctBody: 3.8,
+      habitat: ['suburban', 'edge', 'forest', 'urban'], prey: ['pigeon', 'songbird', 'mourning-dove', 'small-bird'],
+      huntStyle: 'ambush + agile chase — bursts from cover at bird feeders, threads between branches, often kills prey by repeated talon strikes (not single squeeze)',
+      ecology: 'The most successful urban + suburban raptor in North America. Population EXPLODED 1970-2020 as urban tree cover matured + bird feeders proliferated. Often the predator a Pale Male was competing with in NYC. Marked sexual dimorphism — females 40%+ larger than males.',
+      conservation: 'Least Concern + increasing; urban expansion turned a once-uncommon forest bird into the backyard raptor of choice',
+      range: 'North America (S. Canada to Panama)',
+      weird: 'A Cooper\'s hawk does not deliver a clean kill — it grips the prey + maintains pressure while the prey struggles, sometimes 1-3 minutes. Different killing strategy from the falcon\'s strike-and-snap-neck. Falconers consider them one of the more difficult species to train due to their high-strung temperament.',
+      biome: 'forest',
+      stoopDiveBonus: 1.6, pullupG: 10 },
+
+    { id: 'snowyOwl', name: 'Snowy Owl', scientific: 'Bubo scandiacus', emoji: '🦉', family: 'Strigidae', isOwl: true,
+      massKg: 1.8, wingspanM: 1.5, wingAreaSqM: 0.48, wingLoading: 3.75, aspectRatio: 4.7,
+      maxLevelMph: 35, stoopMph: 50,
+      talonForcePsi: 450, talonLengthMm: 35,
+      visualAcuityX: 2.0, foveaCount: 1, visualFieldDeg: 110,
+      eyeWeightPctBody: 4.8,
+      habitat: ['tundra', 'arctic', 'coastal-winter'], prey: ['lemming', 'rabbit', 'duck', 'arctic-hare'],
+      huntStyle: 'still-hunt from perch + ground hover; unlike most owls, often hunts in daylight (Arctic 24-hour summer sun)',
+      ecology: 'Apex Arctic predator. Population dynamics tied to lemming cycles — boom years produce irruption winters that send birds far south to Texas + even Bermuda. Famously white plumage with dark barring in females + juveniles; males get paler with age.',
+      conservation: 'Vulnerable (IUCN) — recently uplisted from Least Concern due to climate-change-driven Arctic habitat loss + lemming-cycle disruption',
+      range: 'Circumpolar Arctic — breeds in High Arctic, winters into temperate latitudes irregularly',
+      weird: 'Heaviest North American owl. The most diurnal of all owl species — adapted to Arctic 24-hour summer daylight. Iconic 2013-14 winter irruption deposited birds on every East Coast US beach.',
+      biome: 'tundra',
+      stoopDiveBonus: 1.3, pullupG: 5 },
+
+    { id: 'gyrfalcon', name: 'Gyrfalcon', scientific: 'Falco rusticolus', emoji: '🦅', family: 'Falconidae', isOwl: false,
+      massKg: 1.5, wingspanM: 1.3, wingAreaSqM: 0.16, wingLoading: 9.4, aspectRatio: 10.6,
+      maxLevelMph: 80, stoopMph: 200,
+      talonForcePsi: 350, talonLengthMm: 32,
+      visualAcuityX: 2.8, foveaCount: 2, visualFieldDeg: 200,
+      eyeWeightPctBody: 3.8,
+      habitat: ['arctic', 'tundra', 'sea-cliff'], prey: ['ptarmigan', 'duck', 'shorebird', 'seabird'],
+      huntStyle: 'level-pursuit specialist — high-speed level chase at 80 mph rather than vertical stoop, exhausts ptarmigan in long open-country runs',
+      ecology: 'Largest falcon. Apex Arctic predator. Historically considered the falcon of medieval European kings — Iceland gyrfalcons were diplomatic gifts to monarchs. White morph particularly prized. Population stable but vulnerable to climate-driven shifts in ptarmigan range.',
+      conservation: 'Least Concern; some populations Vulnerable due to wind farm + climate impacts',
+      range: 'Circumpolar Arctic — Iceland, Greenland, N. Scandinavia, N. Russia, N. Alaska + Canada',
+      weird: 'Largest falcon species, sometimes 2-3× heavier than a peregrine. Despite higher mass, terminal stoop velocity is similar to peregrine because of higher wing loading + longer wings. The medieval European falcons of kings were almost always gyrfalcons.',
+      biome: 'tundra',
+      stoopDiveBonus: 2.8, pullupG: 22 },
+
+    { id: 'missKite', name: 'Mississippi Kite', scientific: 'Ictinia mississippiensis', emoji: '🪶', family: 'Accipitridae', isOwl: false,
+      massKg: 0.28, wingspanM: 0.91, wingAreaSqM: 0.078, wingLoading: 3.6, aspectRatio: 10.6,
+      maxLevelMph: 36, stoopMph: 75,
+      talonForcePsi: 85, talonLengthMm: 13,
+      visualAcuityX: 2.5, foveaCount: 2, visualFieldDeg: 200,
+      eyeWeightPctBody: 4.0,
+      habitat: ['riparian', 'urban-park', 'edge'], prey: ['large-insect', 'cicada', 'dragonfly', 'small-bird'],
+      huntStyle: 'aerial insectivory — catches dragonflies + cicadas on the wing with talons, often consumes prey while still flying',
+      ecology: 'Long-distance migrant: breeds in southern US, winters in central S. America (~5,000 mile round-trip). Population expanding northward into Great Plains since 1970. Sociable — nests in loose colonies, often near urban parks + university campuses (famously aggressive around nest sites).',
+      conservation: 'Least Concern + expanding range; benefits from urban tree cover',
+      range: 'Breeds: south-central + SE US. Winters: Bolivia, Paraguay, N. Argentina',
+      weird: 'Aerial insect-catcher — one of the few raptors whose primary prey is INSECTS. Eats while flying. Population is expanding while many raptors decline because of (1) cottonwood + urban trees providing nest sites and (2) urban heat island + lawn-watering boosting cicada populations.',
+      biome: 'grassland',
+      stoopDiveBonus: 1.5, pullupG: 9 }
   ];
 
   // ───────────────────────────────────────────────────────────
@@ -247,7 +323,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
     fox:           { id: 'fox',           label: 'Red Fox',          color: 0xc2410c, sizeM: 0.50, speedMps: 11.0, behavior: 'flee-on-sight', points: 16, terrain: 'mountain' },
     grouse:        { id: 'grouse',        label: 'Ruffed Grouse',    color: 0x713f12, sizeM: 0.30, speedMps: 9.0, behavior: 'flee-on-sight', points: 13, terrain: 'boreal-forest' },
     hare:          { id: 'hare',          label: 'Snowshoe Hare',    color: 0xd6d3d1, sizeM: 0.35, speedMps: 13.0, behavior: 'flee-on-sight', points: 14, terrain: 'boreal-forest' },
-    squirrel:      { id: 'squirrel',      label: 'Squirrel',         color: 0x57534e, sizeM: 0.20, speedMps: 7.0, behavior: 'flee-on-sight', points: 8,  terrain: 'boreal-forest' }
+    squirrel:      { id: 'squirrel',      label: 'Squirrel',         color: 0x57534e, sizeM: 0.20, speedMps: 7.0, behavior: 'flee-on-sight', points: 8,  terrain: 'boreal-forest' },
+    // ── NEW v0.18 prey types ──
+    largeInsect:   { id: 'largeInsect',   label: 'Cicada/Dragonfly', color: 0x84cc16, sizeM: 0.04, speedMps: 4.0, behavior: 'wander',        points: 4,  terrain: 'grassland' },
+    mourningDove:  { id: 'mourningDove',  label: 'Mourning Dove',    color: 0xa8a29e, sizeM: 0.15, speedMps: 9.0, behavior: 'flee-on-sight', points: 7,  terrain: 'forest' },
+    lemming:       { id: 'lemming',       label: 'Lemming',          color: 0x713f12, sizeM: 0.10, speedMps: 3.5, behavior: 'wander',        points: 7,  terrain: 'tundra' },
+    ptarmigan:     { id: 'ptarmigan',     label: 'Ptarmigan',        color: 0xe7e5e4, sizeM: 0.32, speedMps: 14.0, behavior: 'flee-on-sight', points: 14, terrain: 'tundra' },
+    arcticHare:    { id: 'arcticHare',    label: 'Arctic Hare',      color: 0xfafaf9, sizeM: 0.40, speedMps: 13.0, behavior: 'flee-on-sight', points: 15, terrain: 'tundra' },
+    cicada:        { id: 'cicada',        label: 'Cicada',           color: 0x365314, sizeM: 0.03, speedMps: 2.0, behavior: 'wander',        points: 3,  terrain: 'grassland' },
+    dragonfly:     { id: 'dragonfly',     label: 'Dragonfly',        color: 0x06b6d4, sizeM: 0.05, speedMps: 5.0, behavior: 'wander',        points: 4,  terrain: 'grassland' }
   };
 
   // Per-species prey list (drives sim spawning)
@@ -259,7 +343,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
     greatHorned:     ['rabbit', 'rodent', 'skunk', 'smallOwl'],
     goldenEagle:     ['groundSquirrel', 'fawnDeer', 'pronghornCalf', 'fox'],
     northernGoshawk: ['grouse', 'songbird', 'squirrel', 'hare'],
-    osprey:          ['fish']
+    osprey:          ['fish'],
+    // NEW v0.18
+    kestrel:         ['rodent', 'largeInsect', 'songbird', 'snake'],
+    coopersHawk:     ['pigeon', 'songbird', 'mourningDove'],
+    snowyOwl:        ['lemming', 'arcticHare', 'duck', 'ptarmigan'],
+    gyrfalcon:       ['ptarmigan', 'duck', 'shorebird'],
+    missKite:        ['cicada', 'dragonfly', 'largeInsect', 'songbird']
   };
 
   // ───────────────────────────────────────────────────────────
@@ -743,7 +833,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       explanation: 'Snowy owl irruptions are tied to Arctic lemming + vole population crashes after peak years. Birds that depended on those prey populations move far south to find food. NOT a permanent range shift — irruption birds don\'t breed in the south + return north next spring.' },
     { id: 'q18', difficulty: 'hard', q: 'Why do peregrines fly a LOGARITHMIC SPIRAL approach to their prey during a stoop rather than a straight line?',
       options: ['The spiral is faster', 'It keeps the prey at a constant viewing angle (head doesn\'t need to turn at terminal velocity)', 'It conserves energy', 'To confuse the prey'], correctIdx: 1,
-      explanation: 'Tucker 1998 computer model showed peregrines fly a logarithmic spiral that keeps the prey image at a fixed retinal angle. This way the falcon doesn\'t need to turn its head at terminal velocity (which would create drag + impair aerodynamic streamlining). Identical to the proportional-navigation algorithm used by air-to-air missiles.' }
+      explanation: 'Tucker 1998 computer model showed peregrines fly a logarithmic spiral that keeps the prey image at a fixed retinal angle. This way the falcon doesn\'t need to turn its head at terminal velocity (which would create drag + impair aerodynamic streamlining). Identical to the proportional-navigation algorithm used by air-to-air missiles.' },
+
+    // ── NEW v0.18: Questions covering the 5 new species ──
+    { id: 'q19', difficulty: 'easy', q: 'Which raptor is the SMALLEST falcon in North America + actively HOVERS over roadside fields with windmilling wings?',
+      options: ['American Kestrel', 'Peregrine Falcon', 'Cooper\'s Hawk', 'Mississippi Kite'], correctIdx: 0,
+      explanation: 'The American Kestrel (Falco sparverius) is the smallest North American falcon (~120 g). Famous for active hover-hunting over open fields + roadside shoulders. Pioneer species for raptor UV-vision research (Viitala et al 1995 Nature).' },
+    { id: 'q20', difficulty: 'easy', q: 'A medium-sized hawk explodes from cover at a backyard bird feeder and snatches a sparrow. Most likely species:',
+      options: ['Red-tailed hawk', 'Cooper\'s hawk', 'Bald eagle', 'Mississippi kite'], correctIdx: 1,
+      explanation: 'Cooper\'s hawk is the urban + suburban accipiter that has become the most common backyard predator in North America since 1970. Population exploded as urban tree cover matured + bird feeders proliferated. Distinctive flap-flap-glide rhythm + long banded tail.' },
+    { id: 'q21', difficulty: 'medium', q: 'A snowy owl is documented in southern Texas in winter. The most likely cause is:',
+      options: ['Climate-change range expansion', 'Irruption year — Arctic lemming population crash forced southward dispersal', 'Escaped pet owl', 'Hurricane displacement'], correctIdx: 1,
+      explanation: 'Snowy owl irruptions are tied to Arctic lemming + vole boom-bust cycles. After a peak lemming year, populations crash + young owls disperse far south to find food. The famous 2013-14 East-Coast irruption deposited birds on every Atlantic beach. Birds return to Arctic to breed; not a permanent range shift.' },
+    { id: 'q22', difficulty: 'medium', q: 'A gyrfalcon hunts very differently from a peregrine. The gyrfalcon\'s primary hunt strategy is:',
+      options: ['Vertical stoop from extreme altitude', 'Sustained level-pursuit chase, exhausting prey in long open-country runs', 'Plunge-diving into water', 'Silent ambush from perch'], correctIdx: 1,
+      explanation: 'Gyrfalcons specialize in level-pursuit hunting at 80+ mph rather than the peregrine\'s vertical stoop. They run down ptarmigan in long open-country chases — well-adapted to the treeless Arctic tundra where there\'s nowhere for prey to hide. Despite being the largest falcon, they were historically the diplomatic gift of medieval European kings (the Iceland gyrfalcons sent to European courts).' },
+    { id: 'q23', difficulty: 'hard', q: 'The Mississippi Kite is unusual among raptors because its primary prey is:',
+      options: ['Other birds of prey', 'Fish caught in mid-flight', 'Large insects (cicadas, dragonflies) caught + consumed on the wing', 'Carrion'], correctIdx: 2,
+      explanation: 'Mississippi kites are aerial insectivores — they catch dragonflies, cicadas, and other large insects with their talons + eat them while still flying. They\'re among the very few raptors whose primary diet is insects, not vertebrates. Their range is expanding northward into the Great Plains, helped by cottonwood + urban tree nest sites.' }
   ];
 
   // ───────────────────────────────────────────────────────────
@@ -1250,7 +1357,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('div', { className: 'flex-1' },
                 h('div', { className: 'text-xl font-bold text-amber-200' }, 'Raptor Hunt: Predator Physics + Biology'),
                 h('div', { className: 'text-sm text-amber-100/80 mt-1' }, 'Hunt as a peregrine at 240 mph. Crush bones at 530 psi as a harpy. See vole urine trails in UV like a kestrel. Glide silently on owl feathers. Then study the biology that makes it all possible.'),
-                h('div', { className: 'text-xs text-amber-300/70 mt-2 italic' }, '25 sections · 8 species · 6 interactive labs · anatomy + acuity demo · case studies · 42-term glossary · 18-question quiz')
+                h('div', { className: 'text-xs text-amber-300/70 mt-2 italic' }, '25 sections · 13 species · 6 interactive labs · anatomy + acuity demo · case studies · 42-term glossary · 23-question quiz')
               )
             )
           ),
@@ -1272,7 +1379,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             },
               h('div', { className: 'text-3xl mb-2' }, '📋'),
               h('div', { className: 'font-bold text-amber-200' }, 'Species Roster'),
-              h('div', { className: 'text-xs text-amber-100/80 mt-1' }, '8 species: peregrine, harpy, golden, bald, red-tail, goshawk, owl, osprey. Mass, talon force, vision, hunt style.')
+              h('div', { className: 'text-xs text-amber-100/80 mt-1' }, '13 species: peregrine, harpy, golden, bald, red-tail, goshawk, owl, osprey, kestrel, Cooper\'s, snowy, gyrfalcon, kite. Mass, talon force, vision, hunt style.')
             ),
             h('button', {
               onClick: function() { setRH({ activeSection: 'talons' }); },
@@ -2180,7 +2287,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                         bodyColor;
         // Body (elongated capsule)
         var body = new THREE.Mesh(
-          new THREE.CapsuleGeometry ? new THREE.CapsuleGeometry(0.3, 0.9, 4, 8) : new THREE.SphereGeometry(0.4, 8, 8),
+          (typeof THREE.CapsuleGeometry === 'function') ? new THREE.CapsuleGeometry(0.3, 0.9, 4, 8) : new THREE.SphereGeometry(0.4, 8, 8),
           new THREE.MeshStandardMaterial({ color: bodyColor, roughness: 0.8 })
         );
         body.rotation.x = Math.PI / 2;
@@ -4189,9 +4296,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('div', { className: 'text-sm font-bold text-amber-300 mb-3' }, 'Choose difficulty'),
               h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-2' },
                 [
-                  { id: 'easy', label: 'Easy', desc: '5 silhouette + obvious questions', count: QUIZ_QUESTIONS.filter(function(q) { return q.difficulty === 'easy'; }).length },
-                  { id: 'medium', label: 'Medium', desc: '7 deeper combos', count: QUIZ_QUESTIONS.filter(function(q) { return q.difficulty === 'medium'; }).length },
-                  { id: 'hard', label: 'Hard', desc: '6 deep science + nuance', count: QUIZ_QUESTIONS.filter(function(q) { return q.difficulty === 'hard'; }).length },
+                  { id: 'easy', label: 'Easy', desc: 'Silhouettes + obvious questions', count: QUIZ_QUESTIONS.filter(function(q) { return q.difficulty === 'easy'; }).length },
+                  { id: 'medium', label: 'Medium', desc: 'Deeper combos', count: QUIZ_QUESTIONS.filter(function(q) { return q.difficulty === 'medium'; }).length },
+                  { id: 'hard', label: 'Hard', desc: 'Deep science + nuance', count: QUIZ_QUESTIONS.filter(function(q) { return q.difficulty === 'hard'; }).length },
                   { id: 'all', label: 'All 18', desc: 'Full quiz', count: QUIZ_QUESTIONS.length }
                 ].map(function(d) {
                   var active = quizState.difficulty === d.id;
@@ -7643,7 +7750,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // ────────────────────────────────────────────────────────
       return h('div', { className: 'space-y-4', role: 'region', 'aria-label': 'Raptor Hunt tool' },
         // Section count chip
-        h('div', { className: 'text-[11px] text-slate-500 uppercase tracking-wider' }, '25 sections · 8 species · 6 interactive labs · acuity demo · 5 recoveries · famous birds · 42-term glossary · 18-question quiz'),
+        h('div', { className: 'text-[11px] text-slate-500 uppercase tracking-wider' }, '25 sections · 13 species · 6 interactive labs · acuity demo · 5 recoveries · famous birds · 42-term glossary · 23-question quiz'),
         // Tab nav (scrollable horizontal)
         h('div', { className: 'flex gap-1.5 overflow-x-auto pb-1', role: 'tablist', 'aria-label': 'Raptor Hunt sections' },
           SECTIONS.map(function(s) {

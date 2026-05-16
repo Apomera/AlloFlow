@@ -3980,6 +3980,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'stem_lab/stem_tool_kitchenlab.js',
         'stem_lab/stem_tool_microbiology.js',
         'stem_lab/stem_tool_raptorhunt.js',
+        'stem_lab/stem_tool_schoolbehaviortoolkit.js',
       ];
       var selToolModules = [
         'sel_hub/sel_safety_layer.js', // load first so other SEL tools can hook the safety layer
