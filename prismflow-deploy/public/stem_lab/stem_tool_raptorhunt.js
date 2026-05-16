@@ -3816,6 +3816,568 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
   };
 
   // ───────────────────────────────────────────────────────────
+  // NEW v0.41: HABITAT ATLAS — 12 N. American habitats + species
+  // ───────────────────────────────────────────────────────────
+  var HABITAT_ATLAS = {
+    intro: 'North America has at least 12 distinct habitat types that support different raptor communities. This atlas covers each habitat with characteristic species, prey base, viewing tips, + conservation challenges.',
+    habitats: [
+      {
+        name: 'Eastern deciduous forest',
+        states: 'New England → Appalachian → Midwest',
+        climate: 'Temperate. 4 distinct seasons. Annual precipitation 30-50 in.',
+        trees: 'Oak, maple, beech, hickory, birch, pine (mixed). 5-15m canopy.',
+        keySpecies: ['Cooper\'s hawk', 'red-shouldered hawk', 'broad-winged hawk', 'red-tailed hawk', 'great horned owl', 'barred owl', 'eastern screech owl'],
+        preyBase: 'Squirrels, chipmunks, voles, mice, songbirds, snakes, frogs, large insects',
+        bestViewing: 'Dawn at forest edges. Migration counts at Allegheny Front, Hawk Mountain.',
+        challenges: 'Habitat fragmentation, suburban encroachment, rodenticides.',
+        seasonal: 'Spring (breeding) March-May. Fall migration peaks September-November.'
+      },
+      {
+        name: 'Boreal (taiga) forest',
+        states: 'Northern Maine, Adirondacks, northern Great Lakes, Boreal Canada',
+        climate: 'Cold. Long winters. 20-40 in snow. Short summers.',
+        trees: 'Spruce, fir, jack pine, tamarack. Dense conifer canopy.',
+        keySpecies: ['Northern goshawk', 'great gray owl', 'boreal owl', 'northern hawk owl', 'merlin'],
+        preyBase: 'Snowshoe hares, red squirrels, lemmings, grouse, voles',
+        bestViewing: 'Visit specialized birding tours. Sax-Zim Bog MN. Boreal birding requires patience.',
+        challenges: 'Climate change drying boreal. Spruce bark beetle outbreaks. Forestry.',
+        seasonal: 'Year-round residents. Winter influx of irruptive species.'
+      },
+      {
+        name: 'Plains grassland',
+        states: 'Kansas, Nebraska, Dakotas, Montana, parts of TX/OK/IA',
+        climate: 'Dry continental. 10-30 in precipitation. Hot summers, cold winters.',
+        trees: 'Mostly treeless. Cottonwood + willow in riparian.',
+        keySpecies: ['Ferruginous hawk', 'Swainson\'s hawk', 'red-tailed hawk', 'prairie falcon', 'American kestrel', 'burrowing owl', 'short-eared owl', 'rough-legged hawk (winter)'],
+        preyBase: 'Prairie dogs, ground squirrels, voles, mice, snakes, large insects',
+        bestViewing: 'Open vistas — drive country roads. National Grasslands. Winter raptor routes.',
+        challenges: 'Grassland conversion to cropland (90% loss). Prairie dog eradication. Wind energy.',
+        seasonal: 'Spring + fall raptor migrations especially heavy. Winter brings rough-legs from Arctic.'
+      },
+      {
+        name: 'Western mountain',
+        states: 'Rockies (CO, MT, ID, WY), Sierra Nevada (CA), Cascade (OR, WA)',
+        climate: 'Cool. High altitude. Variable precipitation by elevation.',
+        trees: 'Pine, fir, spruce (by elevation). Treeline ~3000m.',
+        keySpecies: ['Golden eagle', 'red-tailed hawk', 'prairie falcon', 'goshawk', 'kestrel', 'rough-legged hawk', 'great gray owl', 'flammulated owl'],
+        preyBase: 'Marmots, ground squirrels, hares, snowshoe hares, voles, grouse, sage-grouse',
+        bestViewing: 'Mountain passes during migration. Hawkwatch sites: Manzanos NM, Goshutes UT.',
+        challenges: 'Wind energy development, lead poisoning, climate change altering treeline.',
+        seasonal: 'Year-round residents + migrants.'
+      },
+      {
+        name: 'Coastal (Pacific + Atlantic)',
+        states: 'Coastal areas of all coastal states',
+        climate: 'Marine moderated. Mild winters, cool summers. Variable rainfall.',
+        trees: 'Variable by latitude. Tidal marshes, beaches, cliffs.',
+        keySpecies: ['Bald eagle', 'osprey', 'peregrine falcon', 'merlin (winter)', 'short-eared owl', 'northern harrier'],
+        preyBase: 'Fish (salmon, mullet, herring), seabirds, waterfowl, occasional seals + carcasses',
+        bestViewing: 'Coastal national parks. Salmon runs Chilkat AK + Skagit WA + Klamath CA.',
+        challenges: 'Oil spills, plastic in nests, fishing line entanglement, mercury contamination.',
+        seasonal: 'Bald eagles concentrate at salmon runs Nov-Feb. Osprey breeding Apr-Sep.'
+      },
+      {
+        name: 'Tundra (Arctic)',
+        states: 'Alaska, northern Canada, occasional irruption southward',
+        climate: 'Arctic. Long winters. 6 months of darkness. Brief summer.',
+        trees: 'Treeless. Lichens, mosses, low shrubs.',
+        keySpecies: ['Snowy owl', 'gyrfalcon', 'rough-legged hawk', 'peregrine falcon (breeding)', 'short-eared owl'],
+        preyBase: 'Lemmings, voles, ptarmigan, waterfowl, hares',
+        bestViewing: 'Visit Arctic communities. Watch for irruptions in winter (especially snowy owls).',
+        challenges: 'Climate change most severe in Arctic. Lemming cycles disrupted by early snowmelt. Permafrost thaw.',
+        seasonal: 'Most species winter in lower 48 during Arctic winter. Breeding May-Aug only.'
+      },
+      {
+        name: 'Wetland (eastern marshes + swamps)',
+        states: 'Florida, Louisiana, Mississippi delta, Great Lakes coastal',
+        climate: 'Variable. Wet. Important seasonal habitats.',
+        trees: 'Cypress, mangrove, tupelo, willow, cypress knees.',
+        keySpecies: ['Osprey', 'bald eagle', 'snail kite (Florida)', 'short-eared owl', 'long-eared owl', 'northern harrier'],
+        preyBase: 'Fish, frogs, snakes, waterfowl, voles, large insects, apple snails',
+        bestViewing: 'Everglades NP, Aransas NWR, Mattamuskeet NWR.',
+        challenges: 'Wetland drainage (50% loss since colonization), agricultural runoff, mercury bioaccumulation.',
+        seasonal: 'Year-round. Florida + Louisiana have winter raptor concentrations.'
+      },
+      {
+        name: 'Desert + arid southwest',
+        states: 'Arizona, Nevada, southern California, New Mexico, west Texas',
+        climate: 'Arid. <15 in precipitation. Extreme heat summer.',
+        trees: 'Sparse. Mesquite, palo verde, saguaro cactus, juniper at elevation.',
+        keySpecies: ['Harris\'s hawk', 'red-tailed hawk', 'great horned owl', 'burrowing owl', 'elf owl', 'common black-hawk'],
+        preyBase: 'Lizards, snakes, kangaroo rats, jackrabbits, large insects, ground-nesting birds',
+        bestViewing: 'Saguaro NP, Big Bend NP, Salton Sea. Desert birding can be tough due to heat.',
+        challenges: 'Climate change increasing desertification. Solar farm siting. Land grabs.',
+        seasonal: 'Year-round. Some Harris\'s hawks hunt cooperatively.'
+      },
+      {
+        name: 'Tropical (Florida Keys + Hawaii + Pacific Trust)',
+        states: 'Florida Keys, Hawaii, US territories',
+        climate: 'Tropical. Year-round warm. Hurricane season.',
+        trees: 'Mangrove, palm, hardwood hammock. Hawaiian + Tropical Pacific endemics.',
+        keySpecies: ['Short-tailed hawk', 'snail kite', 'osprey', 'occasional vagrants from Cuba/Caribbean'],
+        preyBase: 'Tropical fish, apple snails, frogs, lizards, large insects',
+        bestViewing: 'Everglades NP. Hawaii has only 1 endemic raptor (Hawaiian hawk, now stable).',
+        challenges: 'Habitat loss, hurricanes, invasive species, tropical disease vectors.',
+        seasonal: 'Year-round but Caribbean immigrants increase during hurricane season.'
+      },
+      {
+        name: 'Urban + suburban',
+        states: 'All major cities',
+        climate: 'Modified by human activity.',
+        trees: 'Variable. Mature urban trees + parks + scattered woodlots.',
+        keySpecies: ['Peregrine falcon', 'red-tailed hawk', 'Cooper\'s hawk', 'great horned owl', 'eastern screech owl', 'Merlin (some cities)', 'Mississippi kite (south)'],
+        preyBase: 'Pigeons, starlings, sparrows, rats, squirrels, songbirds',
+        bestViewing: 'Urban parks, nest cams, peregrine sites at skyscrapers.',
+        challenges: 'Window strikes (1B birds/yr), rodenticide poisoning, vehicle strikes.',
+        seasonal: 'Year-round residents. Migration through urban green corridors.'
+      },
+      {
+        name: 'Agricultural matrix',
+        states: 'Midwest cropland, Plains wheat, California Central Valley',
+        climate: 'Variable.',
+        trees: 'Mostly removed. Hedgerows + shelterbelts where present.',
+        keySpecies: ['Red-tailed hawk', 'kestrel', 'rough-legged hawk (winter)', 'northern harrier', 'short-eared owl', 'burrowing owl'],
+        preyBase: 'Voles, mice, rabbits, snakes, large insects',
+        bestViewing: 'County roads at dawn + dusk. Christmas Bird Counts.',
+        challenges: 'Industrial agriculture loss of hedgerows + small fields. Pesticide exposure. Wind energy.',
+        seasonal: 'Year-round + winter raptor concentrations.'
+      },
+      {
+        name: 'Riparian (river + stream corridor)',
+        states: 'Throughout US along rivers + streams',
+        climate: 'Variable based on overall biome.',
+        trees: 'Cottonwood, willow, sycamore, alder, oak. Higher tree density than surrounding habitat.',
+        keySpecies: ['Bald eagle', 'osprey', 'red-shouldered hawk', 'Cooper\'s hawk', 'great horned owl', 'barred owl'],
+        preyBase: 'Fish, frogs, snakes, songbirds, small mammals',
+        bestViewing: 'Float trips. River corridors during migration. Audubon Christmas Bird Counts.',
+        challenges: 'Dam-building, agricultural runoff, water diversion, riparian habitat loss.',
+        seasonal: 'Year-round + migrant stopover.'
+      }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.41: LESSON PLAN LIBRARY — classroom activities
+  // ───────────────────────────────────────────────────────────
+  var LESSON_PLANS = {
+    intro: 'Ready-to-use lesson plans for K-12 teachers, after-school programs, + homeschoolers. Each lesson includes objectives, materials, procedure, assessment, + extensions.',
+    plans: [
+      {
+        title: 'Wing Loading Lab',
+        grade: 'Grades 4-8',
+        subject: 'Physics + Biology',
+        duration: '45-60 min',
+        objectives: ['Students will calculate wing loading (kg/m²) for different raptors.', 'Students will explain how wing loading affects flight style.', 'Students will compare diving falcons with soaring vultures.'],
+        materials: ['Calculator', 'Image cards of raptors with wing area + body mass data', 'Worksheet'],
+        procedure: [
+          'Introduce wing loading concept: WL = mass / wing area.',
+          'Provide species cards (peregrine, vulture, eagle, owl).',
+          'Students calculate WL for each.',
+          'Class discussion: which raptors have high WL? Low WL? How does this relate to flight style?',
+          'Connect to predator strategy.'
+        ],
+        assessment: 'Worksheet check + class discussion of findings.',
+        extensions: 'Calculate WL for student-sized paper airplanes. Test flight characteristics.'
+      },
+      {
+        title: 'Pellet Dissection',
+        grade: 'Grades 4-8',
+        subject: 'Biology + Data analysis',
+        duration: '60-90 min',
+        objectives: ['Students will dissect a pellet + identify prey species.', 'Students will count + measure bones.', 'Students will plot data + compare across pellets.'],
+        materials: ['Sterile pellets (Carolina Biological, $5-10 each)', 'Forceps', 'Magnifying glass', 'Skull/bone ID chart', 'Data tables'],
+        procedure: [
+          'Distribute pellets + materials.',
+          'Soak in warm water if dry.',
+          'Carefully break apart.',
+          'Sort bones (skulls, leg bones).',
+          'Use ID chart to identify prey.',
+          'Count skulls = minimum prey count.',
+          'Record data on class table.',
+          'Discuss diet variability between pellets.'
+        ],
+        assessment: 'Data table + summary writing.',
+        extensions: 'Compare pellets from different owl species. Calculate biomass from prey weights.'
+      },
+      {
+        title: 'Visual Acuity Demo',
+        grade: 'Grades 6-12',
+        subject: 'Biology + Physics',
+        duration: '30-45 min',
+        objectives: ['Students will compare human + raptor visual acuity.', 'Students will calculate visual acuity from angular resolution.'],
+        materials: ['Snellen eye chart', 'Distance measuring device (laser or tape)', 'Worksheet'],
+        procedure: [
+          'Introduce visual acuity concept.',
+          'Have students read Snellen chart at increasing distances.',
+          'Record distance vs smallest letter readable.',
+          'Calculate students\' visual acuity.',
+          'Compare to raptor (2-3x human acuity).',
+          'Discuss: what enables raptor superior vision? (Larger eye, denser photoreceptors, 2 foveas per eye)'
+        ],
+        assessment: 'Quantitative student calculations + qualitative discussion.',
+        extensions: 'Test acuity in low light. Discuss color vision differences.'
+      },
+      {
+        title: 'Hawkwatch Field Trip',
+        grade: 'Grades 4-12',
+        subject: 'Ecology + Behavior',
+        duration: 'Half day to full day',
+        objectives: ['Students will identify migrating raptors.', 'Students will count individual birds.', 'Students will analyze flight patterns + species composition.'],
+        materials: ['Binoculars', 'Field guide', 'Data sheets', 'Maps', 'Phones for eBird (optional)'],
+        procedure: [
+          'Pre-visit: practice ID in classroom.',
+          'Visit September-November at known site.',
+          'Each student tracks own count + ID.',
+          'Compare data with hawkwatch volunteers.',
+          'Discuss species composition + migration timing.'
+        ],
+        assessment: 'Data submission + post-visit reflection.',
+        extensions: 'Submit data to eBird. Track migration timing year over year.'
+      },
+      {
+        title: 'Talon Force Lab',
+        grade: 'Grades 8-12',
+        subject: 'Physics',
+        duration: '45-60 min',
+        objectives: ['Students will calculate force from talon penetration depth + prey resistance.', 'Students will compare across species.'],
+        materials: ['Force gauge', 'Various surrogate prey (clay, foam, balloons)', 'Talon model'],
+        procedure: [
+          'Introduce force = pressure × area concept.',
+          'Use model talon to penetrate surrogate.',
+          'Measure force required to penetrate.',
+          'Calculate pressure (kPa).',
+          'Compare to real raptor data (harpy 530+ psi, peregrine 200 psi).',
+          'Discuss: how do talon shape + foot strength generate kill?'
+        ],
+        assessment: 'Calculation accuracy + understanding of pressure concepts.',
+        extensions: 'Connect to engineering — modern prosthetics + climbing claws are inspired by raptors.'
+      },
+      {
+        title: 'Eagle Cam Watching',
+        grade: 'Grades K-12',
+        subject: 'Behavior + Ecology',
+        duration: 'Variable — anytime during nesting season',
+        objectives: ['Students will observe raptor parenting behavior.', 'Students will document developmental milestones.', 'Students will discuss + reflect on findings.'],
+        materials: ['Computer + internet', 'Decorah Eagles, Big Bear Eagles, or local cam'],
+        procedure: [
+          'Choose nest cam.',
+          'Schedule regular viewing windows.',
+          'Students log observations.',
+          'Track development: egg → hatch → chick growth → fledging.',
+          'Discuss specific parenting behaviors observed.'
+        ],
+        assessment: 'Observation log + summary.',
+        extensions: 'Compare with other cams. Track multiple years.'
+      },
+      {
+        title: 'Build a Nest Box',
+        grade: 'Grades 4-12',
+        subject: 'Engineering + Conservation',
+        duration: '2-3 hours',
+        objectives: ['Students will build kestrel or screech owl nest box.', 'Students will install in appropriate habitat.', 'Students will monitor occupancy.'],
+        materials: ['Cedar boards', 'Hardware', 'Power tools (adult supervised)', 'Plan from American Kestrel Partnership'],
+        procedure: [
+          'Use template from AKP.org.',
+          'Cut + assemble box.',
+          'Install on tree or post in suitable habitat.',
+          'Document GPS + photo.',
+          'Monitor monthly for occupancy.',
+          'Submit data to AKP.'
+        ],
+        assessment: 'Built nest box + ongoing data submission.',
+        extensions: 'Multiple boxes + analysis of occupancy preferences.'
+      },
+      {
+        title: 'Map Migration with eBird',
+        grade: 'Grades 7-12',
+        subject: 'Data analysis + Ecology',
+        duration: '45-60 min',
+        objectives: ['Students will use eBird data to map raptor migration.', 'Students will calculate seasonal range shifts.'],
+        materials: ['Computer + internet', 'eBird account', 'Worksheet'],
+        procedure: [
+          'Pick a species (e.g., broad-winged hawk).',
+          'Use eBird Explore tool to map sightings monthly.',
+          'Observe range shift across year.',
+          'Compare with historical maps.',
+          'Discuss climate-change implications.'
+        ],
+        assessment: 'Map analysis + discussion.',
+        extensions: 'Track multiple species. Submit own data.'
+      },
+      {
+        title: 'Cultural Symbols Research',
+        grade: 'Grades 7-12',
+        subject: 'Social Studies + Biology',
+        duration: '1-2 weeks',
+        objectives: ['Students will research + present a raptor cultural symbol.', 'Students will compare symbols across cultures.'],
+        materials: ['Library access', 'Project materials'],
+        procedure: [
+          'Each student picks a culture + raptor symbol (Horus, Aquila, Pouakai, Berkutchi, etc.).',
+          'Research 1 week.',
+          'Create poster or presentation.',
+          'Present to class.',
+          'Discuss why raptors are universal cultural symbols.'
+        ],
+        assessment: 'Project quality + class discussion.',
+        extensions: 'Field trip to natural history museum.'
+      },
+      {
+        title: 'Raptor Banding Day',
+        grade: 'Grades 8-12',
+        subject: 'Biology + Research',
+        duration: 'Half day at banding station',
+        objectives: ['Students will observe live banding.', 'Students will understand demographic monitoring.'],
+        materials: ['Visit to active banding station', 'Permission forms', 'Logistics'],
+        procedure: [
+          'Schedule with regional banding station.',
+          'Travel to site.',
+          'Observe banding operations.',
+          'Discuss data collected.',
+          'Connect to population biology.'
+        ],
+        assessment: 'Reflection paper.',
+        extensions: 'Track banded bird recoveries over years.'
+      },
+      {
+        title: 'Conservation Story',
+        grade: 'Grades 5-12',
+        subject: 'History + Conservation',
+        duration: '2-3 days',
+        objectives: ['Students will tell the story of a raptor recovery.', 'Students will identify key actions + actors.'],
+        materials: ['Library', 'Internet'],
+        procedure: [
+          'Pick recovery story (peregrine, bald eagle, California condor, Mauritius kestrel).',
+          'Research timeline + key people.',
+          'Create timeline or story map.',
+          'Discuss what made recovery successful.',
+          'Compare across recoveries.'
+        ],
+        assessment: 'Project + class presentation.',
+        extensions: 'Interview local conservationist. Volunteer at local rehab.'
+      },
+      {
+        title: 'Diet Web Mapping',
+        grade: 'Grades 6-12',
+        subject: 'Ecology',
+        duration: '1-2 hours',
+        objectives: ['Students will create food web with raptor at top.', 'Students will identify trophic interactions.'],
+        materials: ['Construction paper', 'String', 'Markers', 'Local species list'],
+        procedure: [
+          'Identify local raptors (e.g., great horned owl).',
+          'List prey species.',
+          'List producers (plants).',
+          'Connect arrows to show eating relationships.',
+          'Discuss: what happens if a node is removed?'
+        ],
+        assessment: 'Web complexity + accuracy.',
+        extensions: 'Map for multiple raptor species. Compare habitat-specific webs.'
+      }
+    ],
+    tips: [
+      'Connect to local raptors. Students engage more with familiar species.',
+      'Use multiple senses — video, sound, hands-on.',
+      'Real data + real photos > stylized illustrations.',
+      'Welcome questions — \'why\' questions show engagement.',
+      'Ethical conduct: no flushing birds for photos, no nest disturbance.',
+      'Connect to citizen science (eBird, iNaturalist).',
+      'Use local nature centers + rehab facilities.',
+      'Differentiate: high-ability students go deep; struggling students get visual + tactile.'
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.41: ID MYSTERY CASES — 12 ID puzzles with reveal
+  // ───────────────────────────────────────────────────────────
+  var MYSTERY_CASES = {
+    intro: 'Practice raptor identification by working through these 12 mystery cases. Each presents observations + clues; the student deduces the species. Used to teach field-ID logic + diagnostic feature recognition.',
+    cases: [
+      {
+        number: 1,
+        difficulty: 'Easy',
+        observations: 'A medium-sized hawk with rufous tail, broad rounded wings, soaring in slow circles over a meadow. Pale chest with darker streaks.',
+        clues: ['Rufous tail visible from above', 'Broad rounded wings = buteo', 'Soaring style = thermal-using', 'Common east of Rockies'],
+        possibleSpecies: ['Red-tailed hawk', 'Red-shouldered hawk', 'Northern harrier', 'Cooper\'s hawk'],
+        answer: 'Red-tailed hawk',
+        why: 'Rufous (red) tail is diagnostic + identifies this species. The most common large hawk in N. America.'
+      },
+      {
+        number: 2,
+        difficulty: 'Easy',
+        observations: 'A small bird with long pointed wings, perched on a power line over an open field. Bobs tail. About kestrel-sized.',
+        clues: ['Long pointed wings = falcon', 'Tail bobbing = American kestrel diagnostic', 'Open habitat'],
+        possibleSpecies: ['American kestrel', 'Merlin', 'Mississippi kite', 'Peregrine'],
+        answer: 'American kestrel',
+        why: 'Smallest falcon + the tail-bobbing perched behavior is uniquely American kestrel.'
+      },
+      {
+        number: 3,
+        difficulty: 'Medium',
+        observations: 'A medium-sized hawk dashing through dense forest, weaving between trees. Short broad wings, long tail. Striped underside.',
+        clues: ['Forest-flying = accipiter', 'Short wings + long tail = accipiter', 'Adult striped = mature accipiter'],
+        possibleSpecies: ['Sharp-shinned hawk', 'Cooper\'s hawk', 'Northern goshawk', 'Northern harrier'],
+        answer: 'Cooper\'s hawk',
+        why: 'Two main species fit (sharp-shin too small for "medium-sized"; northern goshawk has black + white face). Cooper\'s most common.'
+      },
+      {
+        number: 4,
+        difficulty: 'Medium',
+        observations: 'A large eagle perched at the top of a dead tree near a salmon river in November in Alaska. White head + dark body.',
+        clues: ['Adult bald eagle plumage (white head + dark body) requires age 4-5+', 'Salmon river + Alaska in November = bald eagle prime habitat'],
+        possibleSpecies: ['Bald eagle', 'Golden eagle', 'Osprey', 'Northern harrier'],
+        answer: 'Bald eagle',
+        why: 'White head + dark body + salmon river = bald eagle. Golden eagle has dark head; osprey has different coloration; harrier is much smaller.'
+      },
+      {
+        number: 5,
+        difficulty: 'Medium',
+        observations: 'A medium-sized hawk hovering with active wingbeats over a snowy field, briefly perches on a fence post. White chest with dark belly band.',
+        clues: ['Hovering = kestrel OR rough-legged', 'Snow = winter visitor', 'Belly band = rough-legged hawk diagnostic'],
+        possibleSpecies: ['American kestrel', 'Rough-legged hawk', 'Northern harrier', 'Red-tailed hawk'],
+        answer: 'Rough-legged hawk',
+        why: 'The dark belly band against white chest is diagnostic for rough-legged. Hovering in winter = rough-leg (kestrel doesn\'t winter in most snowy areas).'
+      },
+      {
+        number: 6,
+        difficulty: 'Hard',
+        observations: 'A small hawk flying low across an open marsh in the Midwest in January, owl-like facial disc, V-shaped wing position. Dark color.',
+        clues: ['Low flight over marsh', 'Facial disc on hawk', 'V-shaped wing position', 'Winter season'],
+        possibleSpecies: ['Northern harrier', 'Cooper\'s hawk', 'Short-eared owl', 'Northern goshawk'],
+        answer: 'Northern harrier',
+        why: 'Owl-like facial disc + V-shaped wings + marsh + flat-faced flight pattern = northern harrier. Has unique facial disc among hawks.'
+      },
+      {
+        number: 7,
+        difficulty: 'Hard',
+        observations: 'A medium-large hawk over the Pacific NW forest, white below with dark streaks, broad pointed wings. Hunting a salmon stream.',
+        clues: ['White below with streaks', 'Broad pointed wings (more pointed than buteo)', 'Salmon stream = food source'],
+        possibleSpecies: ['Osprey', 'Bald eagle (immature)', 'Peregrine falcon', 'Red-tailed hawk'],
+        answer: 'Osprey',
+        why: 'White below + broad pointed wings + hunting fish over water = osprey. Bald eagle has darker streaks; peregrine has more pointed wings; red-tail soars over land.'
+      },
+      {
+        number: 8,
+        difficulty: 'Hard',
+        observations: 'A tiny owl visible at twilight in an arid desert, perches on saguaro cactus. Distinctive ear tufts but very small.',
+        clues: ['Arid desert habitat', 'Saguaro cactus = SW Sonoran Desert', 'Tiny size with ear tufts'],
+        possibleSpecies: ['Elf owl', 'Western screech owl', 'Burrowing owl', 'Northern saw-whet owl'],
+        answer: 'Elf owl',
+        why: 'World\'s smallest owl. Saguaro cactus + Sonoran desert + ear tufts = elf owl. Burrowing owl is ground-dwelling. Western screech owl is more variable but elf owl is desert-specialist.'
+      },
+      {
+        number: 9,
+        difficulty: 'Hard',
+        observations: 'An eagle-sized bird in a rainforest canopy in Panama. Greyish above, white below. Massive feet. Hunts canopy mammals.',
+        clues: ['Massive feet for canopy hunting', 'Rainforest', 'Greyish above + white below', 'Eagle-sized'],
+        possibleSpecies: ['Harpy eagle', 'Ornate hawk-eagle', 'Black-and-white hawk-eagle', 'Crested eagle'],
+        answer: 'Harpy eagle',
+        why: 'Massive feet + canopy mammal hunting = harpy eagle. Other neotropical hawk-eagles have smaller feet + different niches.'
+      },
+      {
+        number: 10,
+        difficulty: 'Hard',
+        observations: 'A large all-white owl perched on a beach dune in coastal MA in February. Rare visitor that has caused excitement.',
+        clues: ['Pure white owl', 'Coastal beach', 'February (winter)', 'Massive size = larger than most hawks'],
+        possibleSpecies: ['Snowy owl', 'Barred owl', 'Great horned owl', 'Short-eared owl'],
+        answer: 'Snowy owl',
+        why: 'Only NA owl that\'s pure white. Irruption years (2013-14, 2017-18) bring snowy owls to coastal areas far south of breeding range.'
+      },
+      {
+        number: 11,
+        difficulty: 'Hard',
+        observations: 'A medium owl in a Vermont conifer forest at dawn, with rounded head + no ear tufts. Brown + bar-patterned belly.',
+        clues: ['No ear tufts', 'Conifer forest', 'Bar pattern on belly'],
+        possibleSpecies: ['Barred owl', 'Great gray owl', 'Northern hawk owl', 'Short-eared owl'],
+        answer: 'Barred owl',
+        why: 'Bar pattern on belly + lack of ear tufts + conifer forest = barred owl. Famously asks "who-cooks-for-you?"'
+      },
+      {
+        number: 12,
+        difficulty: 'Master',
+        observations: 'A medium-large falcon stooping at peregrine speeds, in winter on the Plains. Lighter coloration than typical peregrine.',
+        clues: ['Stooping at peregrine speeds', 'Plains habitat', 'Winter', 'Lighter than peregrine'],
+        possibleSpecies: ['Peregrine falcon', 'Prairie falcon', 'Gyrfalcon', 'Merlin'],
+        answer: 'Gyrfalcon (rare winter visitor) or Prairie falcon (typical)',
+        why: 'Gyrfalcon is winter visitor to Plains from Arctic — pale color + speed = gyrfalcon. Prairie falcon is more common Plains resident with similar build. Either is acceptable.'
+      }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.41: REGIONAL FIELD GUIDES — North America by region
+  // ───────────────────────────────────────────────────────────
+  var REGIONAL_GUIDES = {
+    intro: 'Comprehensive regional field guides for 6 N. American regions. Each covers characteristic species, must-see sites, seasonal patterns, + local quirks.',
+    regions: [
+      {
+        name: 'Northeast (Maine to Pennsylvania)',
+        characteristic: 'Strong fall migration. Many wintering species. Cold-hardy raptors.',
+        residents: ['Red-tailed hawk', 'great horned owl', 'barred owl', 'eastern screech owl', 'sharp-shinned hawk', 'Cooper\'s hawk'],
+        breeders: ['Broad-winged hawk', 'red-shouldered hawk', 'kestrel (declining)', 'peregrine falcon (urban + cliff)', 'bald eagle (growing)'],
+        winterers: ['Rough-legged hawk (irruptive)', 'merlin', 'snowy owl (irruptive)', 'long-eared owl'],
+        mustSeeSites: ['Hawk Mountain Sanctuary, PA', 'Cape May Bird Observatory, NJ', 'Allegheny Front Hawk Watch, PA', 'White Mountains, NH', 'Adirondacks, NY'],
+        bestSeason: 'September-November migration. December-March winter eagle + raptor concentrations.',
+        challenges: 'Mature forest fragmentation, suburban encroachment, rodenticides, climate-driven northern shifts.',
+        signatureBirds: 'Broad-winged hawk migrations of 1000s in single thermal kettle.'
+      },
+      {
+        name: 'Mid-Atlantic + Southeast',
+        characteristic: 'Mild climate. Strong fall + spring migrations. Year-round species.',
+        residents: ['Red-tailed hawk', 'red-shouldered hawk', 'great horned owl', 'barred owl', 'eastern screech owl', 'Cooper\'s hawk', 'sharp-shinned hawk', 'bald eagle'],
+        breeders: ['Mississippi kite (Texas + Plains)', 'crested caracara (Florida + S. Texas)', 'short-tailed hawk (FL Keys)', 'snail kite (Florida wetlands)'],
+        winterers: ['Northern harrier', 'merlin', 'occasional peregrine'],
+        mustSeeSites: ['Everglades NP', 'Aransas NWR, TX', 'Pelham, AL', 'St Marks NWR, FL'],
+        bestSeason: 'October-March. Spring March-May for breeding.',
+        challenges: 'Wetland loss, rapid urbanization, hurricane impact, fragmenting development.',
+        signatureBirds: 'Snail kite + Mississippi kite are regional specialties.'
+      },
+      {
+        name: 'Midwest + Great Lakes',
+        characteristic: 'Wetland-rich. Strong migration + wintering. Cold winters.',
+        residents: ['Red-tailed hawk', 'great horned owl', 'barred owl', 'kestrel (declining)', 'Cooper\'s hawk', 'sharp-shinned hawk', 'bald eagle'],
+        breeders: ['Northern goshawk (Boreal Great Lakes)', 'broad-winged hawk', 'long-eared owl', 'short-eared owl', 'osprey', 'merlin (growing)'],
+        winterers: ['Rough-legged hawk (irruptive)', 'snowy owl (irruptive)', 'Arctic raptor visitors', 'great gray owl (irruptive)'],
+        mustSeeSites: ['Hawk Ridge Bird Observatory, MN', 'Sax-Zim Bog, MN', 'Whitefish Point, MI', 'Ottawa NWR, OH'],
+        bestSeason: 'August-November migration. December-March winter influx of northern species.',
+        challenges: 'Agricultural conversion, prairie fragmentation, urban sprawl, wind energy.',
+        signatureBirds: 'Hawk Ridge migration. Snowy + great gray owl irruptions during high years.'
+      },
+      {
+        name: 'Plains + Rockies',
+        characteristic: 'Open habitat. Major Plains migration. Wind energy concerns.',
+        residents: ['Red-tailed hawk', 'ferruginous hawk', 'prairie falcon', 'kestrel', 'great horned owl', 'burrowing owl'],
+        breeders: ['Swainson\'s hawk', 'ferruginous hawk', 'prairie falcon', 'golden eagle', 'short-eared owl', 'great gray owl (high alt)', 'flammulated owl'],
+        winterers: ['Rough-legged hawk', 'gyrfalcon (rare)', 'snowy owl (irruptive)'],
+        mustSeeSites: ['Manzanos NM hawkwatch', 'Goshute Mountains UT hawkwatch', 'Cherry Creek Reservoir, CO', 'Wind Cave NP, SD'],
+        bestSeason: 'September-November migration. May-July breeding.',
+        challenges: 'Wind energy development, prairie loss, agricultural pesticides, lead poisoning from hunting.',
+        signatureBirds: 'Ferruginous hawk (largest US hawk) + golden eagle.'
+      },
+      {
+        name: 'Southwest + Desert',
+        characteristic: 'Hot, arid. Sonoran specialty species. Year-round bird-watching.',
+        residents: ['Harris\'s hawk', 'red-tailed hawk', 'great horned owl', 'burrowing owl', 'elf owl', 'common black-hawk'],
+        breeders: ['Harris\'s hawk', 'gray hawk', 'common black-hawk', 'crested caracara (S Texas)', 'short-tailed hawk', 'elf owl', 'Mexican spotted owl'],
+        winterers: ['Northern harrier', 'rough-legged hawk (some years)', 'merlin', 'kestrel'],
+        mustSeeSites: ['Saguaro NP, AZ', 'Big Bend NP, TX', 'Santa Catalina Mts, AZ', 'White Sands NM', 'Bosque del Apache NWR, NM'],
+        bestSeason: 'Year-round, but winter (Dec-Feb) is cooler + bird-rich.',
+        challenges: 'Climate change accelerating desertification, solar farm siting, lead from hunting.',
+        signatureBirds: 'Harris\'s hawk (cooperative hunting) + elf owl (smallest US owl).'
+      },
+      {
+        name: 'Pacific Northwest',
+        characteristic: 'Marine influenced. Strong fish-eating + forest raptor community.',
+        residents: ['Red-tailed hawk', 'bald eagle', 'osprey', 'Cooper\'s hawk', 'sharp-shinned hawk', 'great horned owl', 'barred owl', 'northern spotted owl (declining)'],
+        breeders: ['Goshawk', 'red-breasted', 'short-eared owl', 'great gray owl'],
+        winterers: ['Concentrations at salmon runs (Skagit WA, Chilkat AK)', 'rough-legged hawk', 'gyrfalcon'],
+        mustSeeSites: ['Skagit River, WA', 'Chilkat Bald Eagle Preserve, AK', 'Hawk Mountain Hawkwatch, OR', 'Klamath Basin NWR'],
+        bestSeason: 'November-February for bald eagle salmon concentrations. April-August for breeding.',
+        challenges: 'Climate change + salmon run declines, logging impact on spotted owl + goshawk, mercury contamination.',
+        signatureBirds: 'Bald eagle salmon concentrations. Northern spotted owl recovery.'
+      }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
   // GLOSSARY DATA — A-Z reference of raptor terminology
   // ───────────────────────────────────────────────────────────
   var GLOSSARY = [
@@ -4009,6 +4571,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         { id: 'preyatlas', label: 'Prey Atlas', icon: '🐭' },
         { id: 'fossils', label: 'Fossil Record', icon: '🦖' },
         { id: 'demographics', label: 'Population & Demographics', icon: '📊' },
+        { id: 'habitats', label: 'Habitat Atlas', icon: '🏞' },
+        { id: 'lessons', label: 'Lesson Plan Library', icon: '🎒' },
+        { id: 'mystery', label: 'ID Mystery Cases', icon: '🕵' },
+        { id: 'regional', label: 'Regional Field Guides', icon: '🗺' },
         { id: 'glossary', label: 'Glossary', icon: '📖' },
         { id: 'quiz', label: 'Field ID Quiz', icon: '🎓' },
         { id: 'resources', label: 'Resources', icon: '📚' }
@@ -13373,6 +13939,302 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       }
 
       // ────────────────────────────────────────────────────────
+      // RENDER: HABITAT ATLAS (v0.41)
+      // ────────────────────────────────────────────────────────
+      function renderHabitats() {
+        var habIdx = rh.habitatIdx == null ? 0 : rh.habitatIdx;
+        function setHabIdx(i) { setRH({ habitatIdx: i }); }
+        var hab = HABITAT_ATLAS.habitats[habIdx];
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-green-900/40 to-emerald-900/40 border border-green-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '🏞'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-green-200' }, 'Habitat Atlas'),
+                h('div', { className: 'text-sm text-green-100/85 mt-1' }, HABITAT_ATLAS.intro)
+              )
+            )
+          ),
+          // Habitat picker
+          h('div', { className: 'flex flex-wrap gap-1' },
+            HABITAT_ATLAS.habitats.map(function(b, i) {
+              var sel = habIdx === i;
+              return h('button', {
+                key: i,
+                onClick: function() { setHabIdx(i); },
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-green-600 text-white font-bold' : 'bg-slate-800/60 text-green-200 hover:bg-slate-700/60'),
+                'aria-pressed': sel
+              }, b.name);
+            })
+          ),
+          // Active habitat
+          h('div', { className: 'bg-slate-800/40 border border-green-700/40 rounded-xl p-4 space-y-2' },
+            h('div', { className: 'text-lg font-bold text-green-300' }, hab.name),
+            h('div', { className: 'text-xs italic text-amber-200/80' }, '📍 ' + hab.states),
+            h('div', { className: 'text-xs italic text-cyan-200/80 mb-2' }, '🌡 ' + hab.climate),
+            h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
+              h('div', { className: 'font-bold text-emerald-300 mb-1' }, '🌳 Vegetation'),
+              h('div', { className: 'text-emerald-100/90' }, hab.trees)
+            ),
+            h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-2 text-xs' },
+              h('div', { className: 'font-bold text-amber-300 mb-1' }, '🦅 Key Raptor Species'),
+              h('div', { className: 'text-amber-100/90' }, hab.keySpecies.join(' · '))
+            ),
+            h('div', { className: 'bg-purple-900/20 border border-purple-700/40 rounded p-2 text-xs' },
+              h('div', { className: 'font-bold text-purple-300 mb-1' }, '🐭 Prey Base'),
+              h('div', { className: 'text-purple-100/90' }, hab.preyBase)
+            ),
+            h('div', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded p-2 text-xs' },
+              h('div', { className: 'font-bold text-cyan-300 mb-1' }, '👀 Best Viewing'),
+              h('div', { className: 'text-cyan-100/90' }, hab.bestViewing)
+            ),
+            h('div', { className: 'bg-rose-900/20 border border-rose-700/40 rounded p-2 text-xs' },
+              h('div', { className: 'font-bold text-rose-300 mb-1' }, '⚠ Challenges'),
+              h('div', { className: 'text-rose-100/90' }, hab.challenges)
+            ),
+            h('div', { className: 'bg-yellow-900/20 border border-yellow-700/40 rounded p-2 text-xs' },
+              h('div', { className: 'font-bold text-yellow-300 mb-1' }, '📅 Seasonal Patterns'),
+              h('div', { className: 'text-yellow-100/90' }, hab.seasonal)
+            )
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: LESSON PLAN LIBRARY (v0.41)
+      // ────────────────────────────────────────────────────────
+      function renderLessons() {
+        var lessonIdx = rh.lessonIdx == null ? 0 : rh.lessonIdx;
+        function setLessonIdx(i) { setRH({ lessonIdx: i }); }
+        var lp = LESSON_PLANS.plans[lessonIdx];
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-blue-900/40 to-indigo-900/40 border border-blue-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '🎒'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-blue-200' }, 'Lesson Plan Library'),
+                h('div', { className: 'text-sm text-blue-100/85 mt-1' }, LESSON_PLANS.intro)
+              )
+            )
+          ),
+          // Lesson picker
+          h('div', { className: 'flex flex-wrap gap-1' },
+            LESSON_PLANS.plans.map(function(p, i) {
+              var sel = lessonIdx === i;
+              return h('button', {
+                key: i,
+                onClick: function() { setLessonIdx(i); },
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-blue-600 text-white font-bold' : 'bg-slate-800/60 text-blue-200 hover:bg-slate-700/60'),
+                'aria-pressed': sel
+              }, p.title);
+            })
+          ),
+          // Active lesson
+          h('div', { className: 'bg-slate-800/40 border border-blue-700/40 rounded-xl p-4 space-y-3' },
+            h('div', null,
+              h('div', { className: 'text-lg font-bold text-blue-300' }, lp.title),
+              h('div', { className: 'text-xs italic text-amber-200/80' }, lp.grade + ' · ' + lp.subject + ' · ' + lp.duration)
+            ),
+            h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-3' },
+              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, '🎯 Objectives'),
+              h('ul', { className: 'space-y-1 list-disc list-inside text-xs text-emerald-100/90' },
+                lp.objectives.map(function(o, i) {
+                  return h('li', { key: i, className: 'leading-relaxed' }, o);
+                })
+              )
+            ),
+            h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-3' },
+              h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, '🛠 Materials'),
+              h('ul', { className: 'space-y-1 list-disc list-inside text-xs text-amber-100/90' },
+                lp.materials.map(function(m, i) {
+                  return h('li', { key: i }, m);
+                })
+              )
+            ),
+            h('div', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded p-3' },
+              h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, '📋 Procedure'),
+              h('ol', { className: 'space-y-1 list-decimal list-inside text-xs text-cyan-100/90' },
+                lp.procedure.map(function(p, i) {
+                  return h('li', { key: i, className: 'leading-relaxed' }, p);
+                })
+              )
+            ),
+            h('div', { className: 'grid md:grid-cols-2 gap-2' },
+              h('div', { className: 'bg-purple-900/20 border border-purple-700/40 rounded p-2 text-xs' },
+                h('div', { className: 'font-bold text-purple-300 mb-1' }, '✓ Assessment'),
+                h('div', { className: 'text-purple-100/90' }, lp.assessment)
+              ),
+              h('div', { className: 'bg-rose-900/20 border border-rose-700/40 rounded p-2 text-xs' },
+                h('div', { className: 'font-bold text-rose-300 mb-1' }, '🌟 Extensions'),
+                h('div', { className: 'text-rose-100/90' }, lp.extensions)
+              )
+            )
+          ),
+          // Teaching tips
+          h('div', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-sm font-bold text-cyan-300 mb-2' }, '👩‍🏫 Pedagogical Tips'),
+            h('ul', { className: 'space-y-1 list-disc list-inside text-xs text-cyan-100/90' },
+              LESSON_PLANS.tips.map(function(t, i) {
+                return h('li', { key: i, className: 'leading-relaxed' }, t);
+              })
+            )
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: ID MYSTERY CASES (v0.41)
+      // ────────────────────────────────────────────────────────
+      function renderMystery() {
+        var caseIdx = rh.caseIdx == null ? 0 : rh.caseIdx;
+        function setCaseIdx(i) { setRH({ caseIdx: i }); }
+        var caseRevealed = rh.caseRevealed || {};
+        function toggleReveal() {
+          var newRev = Object.assign({}, caseRevealed);
+          newRev[caseIdx] = !newRev[caseIdx];
+          setRH({ caseRevealed: newRev });
+        }
+        var c = MYSTERY_CASES.cases[caseIdx];
+        var revealed = caseRevealed[caseIdx];
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-purple-900/40 to-indigo-900/40 border border-purple-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '🕵'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-purple-200' }, 'ID Mystery Cases'),
+                h('div', { className: 'text-sm text-purple-100/85 mt-1' }, MYSTERY_CASES.intro)
+              )
+            )
+          ),
+          // Case picker
+          h('div', { className: 'flex flex-wrap gap-1' },
+            MYSTERY_CASES.cases.map(function(cs, i) {
+              var sel = caseIdx === i;
+              var solved = caseRevealed[i];
+              return h('button', {
+                key: i,
+                onClick: function() { setCaseIdx(i); },
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-purple-600 text-white font-bold' : (solved ? 'bg-emerald-900/60 text-emerald-200' : 'bg-slate-800/60 text-purple-200 hover:bg-slate-700/60')),
+                'aria-pressed': sel
+              }, '#' + cs.number + (solved ? ' ✓' : ''));
+            })
+          ),
+          // Active case
+          h('div', { className: 'bg-slate-800/40 border border-purple-700/40 rounded-xl p-4 space-y-3' },
+            h('div', { className: 'flex items-baseline justify-between' },
+              h('div', { className: 'text-lg font-bold text-purple-300' }, 'Case #' + c.number),
+              h('div', { className: 'text-xs font-mono px-2 py-1 rounded ' + (c.difficulty === 'Easy' ? 'bg-emerald-900/40 text-emerald-300' : c.difficulty === 'Medium' ? 'bg-amber-900/40 text-amber-300' : c.difficulty === 'Hard' ? 'bg-rose-900/40 text-rose-300' : 'bg-purple-900/40 text-purple-300') }, c.difficulty)
+            ),
+            h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
+              h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, '👀 Observations'),
+              h('div', { className: 'text-sm text-slate-100 leading-relaxed' }, c.observations)
+            ),
+            h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-3' },
+              h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, '💡 Clues'),
+              h('ul', { className: 'space-y-1 list-disc list-inside text-xs text-amber-100/90' },
+                c.clues.map(function(cl, i) {
+                  return h('li', { key: i, className: 'leading-relaxed' }, cl);
+                })
+              )
+            ),
+            h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
+              h('div', { className: 'text-xs font-bold text-purple-300 mb-1' }, '❓ Your Guess'),
+              h('div', { className: 'text-xs text-slate-200' }, c.possibleSpecies.join(' / '))
+            ),
+            // Reveal button
+            !revealed && h('button', {
+              onClick: toggleReveal,
+              className: 'w-full py-3 bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white rounded-lg font-bold hover:from-purple-700 hover:to-fuchsia-700',
+              'aria-label': 'Reveal answer'
+            }, '🔓 Reveal Answer'),
+            // Revealed answer
+            revealed && h('div', { className: 'space-y-2' },
+              h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-3' },
+                h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, '✅ Answer'),
+                h('div', { className: 'text-base font-bold text-emerald-100' }, c.answer)
+              ),
+              h('div', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded p-3' },
+                h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, '📖 Why'),
+                h('div', { className: 'text-xs text-cyan-100/90 leading-relaxed' }, c.why)
+              ),
+              h('button', {
+                onClick: toggleReveal,
+                className: 'text-xs text-purple-300 hover:text-purple-200',
+                'aria-label': 'Hide answer'
+              }, '🔒 Hide Answer')
+            )
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: REGIONAL FIELD GUIDES (v0.41)
+      // ────────────────────────────────────────────────────────
+      function renderRegional() {
+        var regionIdx = rh.regionIdx == null ? 0 : rh.regionIdx;
+        function setRegionIdx(i) { setRH({ regionIdx: i }); }
+        var r = REGIONAL_GUIDES.regions[regionIdx];
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-amber-900/40 to-orange-900/40 border border-amber-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '🗺'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-amber-200' }, 'Regional Field Guides'),
+                h('div', { className: 'text-sm text-amber-100/85 mt-1' }, REGIONAL_GUIDES.intro)
+              )
+            )
+          ),
+          // Region picker
+          h('div', { className: 'flex flex-wrap gap-1' },
+            REGIONAL_GUIDES.regions.map(function(reg, i) {
+              var sel = regionIdx === i;
+              return h('button', {
+                key: i,
+                onClick: function() { setRegionIdx(i); },
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-amber-600 text-white font-bold' : 'bg-slate-800/60 text-amber-200 hover:bg-slate-700/60'),
+                'aria-pressed': sel
+              }, reg.name.split(' (')[0]);
+            })
+          ),
+          // Active region
+          h('div', { className: 'bg-slate-800/40 border border-amber-700/40 rounded-xl p-4 space-y-3' },
+            h('div', { className: 'text-lg font-bold text-amber-300' }, r.name),
+            h('div', { className: 'text-sm italic text-cyan-200/90' }, r.characteristic),
+            h('div', { className: 'grid md:grid-cols-2 gap-2' },
+              h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-2 text-xs' },
+                h('div', { className: 'font-bold text-emerald-300 mb-1' }, '🏠 Year-Round Residents'),
+                h('div', { className: 'text-emerald-100/90' }, r.residents.join(' · '))
+              ),
+              h('div', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded p-2 text-xs' },
+                h('div', { className: 'font-bold text-cyan-300 mb-1' }, '🌱 Breeding Visitors'),
+                h('div', { className: 'text-cyan-100/90' }, r.breeders.join(' · '))
+              ),
+              h('div', { className: 'bg-blue-900/20 border border-blue-700/40 rounded p-2 text-xs' },
+                h('div', { className: 'font-bold text-blue-300 mb-1' }, '❄ Winter Visitors'),
+                h('div', { className: 'text-blue-100/90' }, r.winterers.join(' · '))
+              ),
+              h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-2 text-xs' },
+                h('div', { className: 'font-bold text-amber-300 mb-1' }, '📍 Must-See Sites'),
+                h('div', { className: 'text-amber-100/90' }, r.mustSeeSites.join(' · '))
+              )
+            ),
+            h('div', { className: 'bg-purple-900/20 border border-purple-700/40 rounded p-2 text-xs' },
+              h('div', { className: 'font-bold text-purple-300 mb-1' }, '📅 Best Season'),
+              h('div', { className: 'text-purple-100/90' }, r.bestSeason)
+            ),
+            h('div', { className: 'bg-rose-900/20 border border-rose-700/40 rounded p-2 text-xs' },
+              h('div', { className: 'font-bold text-rose-300 mb-1' }, '⚠ Conservation Challenges'),
+              h('div', { className: 'text-rose-100/90' }, r.challenges)
+            ),
+            h('div', { className: 'bg-yellow-900/20 border border-yellow-700/40 rounded p-2 text-xs' },
+              h('div', { className: 'font-bold text-yellow-300 mb-1' }, '⭐ Signature Birds'),
+              h('div', { className: 'text-yellow-100/90' }, r.signatureBirds)
+            )
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
       // RENDER: GLOSSARY (A-Z reference)
       // ────────────────────────────────────────────────────────
       function renderGlossary() {
@@ -14549,6 +15411,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           activeSection === 'preyatlas' && renderPreyAtlas(),
           activeSection === 'fossils' && renderFossils(),
           activeSection === 'demographics' && renderDemographics(),
+          activeSection === 'habitats' && renderHabitats(),
+          activeSection === 'lessons' && renderLessons(),
+          activeSection === 'mystery' && renderMystery(),
+          activeSection === 'regional' && renderRegional(),
           activeSection === 'glossary' && renderGlossary(),
           activeSection === 'quiz' && renderQuiz(),
           activeSection === 'resources' && renderResources()
