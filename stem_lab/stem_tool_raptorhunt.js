@@ -292,7 +292,106 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       range: 'Breeds: south-central + SE US. Winters: Bolivia, Paraguay, N. Argentina',
       weird: 'Aerial insect-catcher — one of the few raptors whose primary prey is INSECTS. Eats while flying. Population is expanding while many raptors decline because of (1) cottonwood + urban trees providing nest sites and (2) urban heat island + lawn-watering boosting cicada populations.',
       biome: 'grassland',
-      stoopDiveBonus: 1.5, pullupG: 9 }
+      stoopDiveBonus: 1.5, pullupG: 9 },
+
+    // ── NEW v0.32: 7 additional species (20 total) ──
+    { id: 'sharpShin', name: 'Sharp-shinned Hawk', scientific: 'Accipiter striatus', emoji: '🦅', family: 'Accipitridae', isOwl: false,
+      massKg: 0.13, wingspanM: 0.58, wingAreaSqM: 0.064, wingLoading: 2.0, aspectRatio: 5.3,
+      maxLevelMph: 30, stoopMph: 55,
+      talonForcePsi: 150, talonLengthMm: 14,
+      visualAcuityX: 2.8, foveaCount: 2, visualFieldDeg: 220,
+      eyeWeightPctBody: 3.5,
+      habitat: ['forest', 'edge', 'suburban'], prey: ['songbird', 'small-bird', 'rodent'],
+      huntStyle: 'lightning-fast ambush from cover at bird feeders + forest edges. Most extreme flap-flap-glide pattern of any North American hawk.',
+      ecology: 'Smaller sibling species to Cooper\'s hawk — same hunting style but on songbird-scale prey. Population recovered alongside Cooper\'s from DDT-era decline. Very common at bird feeders, often confused with Cooper\'s (sharp-shin = smaller, blockier head, square tail tip).',
+      conservation: 'Least Concern, increasing in suburban areas',
+      range: 'North America (S. Canada to Panama)',
+      weird: 'Most extreme reverse SSD — females are 60% heavier than males. Males specialize in tiny chickadees + warblers; females take robins + jays. The size gap is so extreme that males + females rarely compete for prey.',
+      biome: 'forest', stoopDiveBonus: 1.4, pullupG: 8 },
+
+    { id: 'merlin', name: 'Merlin', scientific: 'Falco columbarius', emoji: '🦅', family: 'Falconidae', isOwl: false,
+      massKg: 0.21, wingspanM: 0.62, wingAreaSqM: 0.054, wingLoading: 3.9, aspectRatio: 7.1,
+      maxLevelMph: 42, stoopMph: 100,
+      talonForcePsi: 120, talonLengthMm: 17,
+      visualAcuityX: 2.4, foveaCount: 2, visualFieldDeg: 200,
+      eyeWeightPctBody: 4.0,
+      habitat: ['open-country', 'coast', 'farmland'], prey: ['songbird', 'shorebird', 'large-insect'],
+      huntStyle: 'low-level pursuit chase — accelerates to top speed close to ground + runs down small birds in open air',
+      ecology: 'Compact + powerful falcon, intermediate between kestrel + peregrine. Three subspecies (Taiga, Prairie, Black) differ in plumage. Population stable to increasing. Often visible at coastal hawkwatch sites in October.',
+      conservation: 'Least Concern',
+      range: 'Holarctic — Canada to Mexico breeding; some winter in S. America',
+      weird: 'Merlins routinely chase + kill bigger prey than themselves — 200g shorebirds, occasionally even 400g pigeons. The medieval term "merlin" referred to a "lady\'s falcon" because the females were small enough for queens to hunt with.',
+      biome: 'grassland', stoopDiveBonus: 2.0, pullupG: 11 },
+
+    { id: 'roughLeg', name: 'Rough-legged Hawk', scientific: 'Buteo lagopus', emoji: '🦅', family: 'Accipitridae', isOwl: false,
+      massKg: 1.0, wingspanM: 1.35, wingAreaSqM: 0.36, wingLoading: 2.8, aspectRatio: 5.1,
+      maxLevelMph: 36, stoopMph: 85,
+      talonForcePsi: 220, talonLengthMm: 30,
+      visualAcuityX: 4.2, foveaCount: 2, visualFieldDeg: 220,
+      eyeWeightPctBody: 2.9,
+      habitat: ['tundra', 'open-country-winter', 'farmland-winter'], prey: ['rodent', 'lemming', 'rabbit', 'small-bird'],
+      huntStyle: 'hovers like a kestrel over open country — only large buteo that routinely hovers. Winters in temperate latitudes, summers in Arctic.',
+      ecology: 'Long-distance Arctic-breeding migrant. Population fluctuates with Arctic lemming cycles. Distinctively feathered tarsi all the way down to the toes (the "rough leg") — an Arctic-cold adaptation. Many color morphs (light, dark, intermediate).',
+      conservation: 'Least Concern; climate-vulnerable due to Arctic breeding range',
+      range: 'Breeds: Arctic Holarctic. Winters: temperate North America + Eurasia',
+      weird: 'The only large buteo that HOVERS. Most red-tails + buteos kite (stationary on a wind) but only rough-legs windmill their wings to hold position. Feathered tarsi all the way down to toes — looks like little pants. Arctic-cold adaptation.',
+      biome: 'tundra', stoopDiveBonus: 1.7, pullupG: 9 },
+
+    { id: 'swainsons', name: "Swainson's Hawk", scientific: 'Buteo swainsoni', emoji: '🦅', family: 'Accipitridae', isOwl: false,
+      massKg: 0.90, wingspanM: 1.30, wingAreaSqM: 0.35, wingLoading: 2.6, aspectRatio: 4.8,
+      maxLevelMph: 35, stoopMph: 80,
+      talonForcePsi: 190, talonLengthMm: 24,
+      visualAcuityX: 4.0, foveaCount: 2, visualFieldDeg: 220,
+      eyeWeightPctBody: 3.0,
+      habitat: ['grassland', 'prairie', 'farmland'], prey: ['rodent', 'large-insect', 'ground-squirrel', 'snake'],
+      huntStyle: 'soaring + perch-pounce in prairie. Migrant: shifts to insects (grasshoppers) on winter grounds in Argentina.',
+      ecology: 'Longest-distance migrant of any North American raptor — 14,000+ mile round trip Argentina-Canada. Massive kettles form at Veracruz on migration. 1990s organophosphate-poisoning crisis killed 35,000+ on Argentinean pampas before international ban. Now recovering.',
+      conservation: 'Least Concern + recovering; vulnerable to pesticide changes',
+      range: 'Breeds: W. North America. Winters: Argentine pampas',
+      weird: 'Switches diet completely on migration — insectivorous in Argentina, vertebrate-eater in N America. Sometimes called "the grasshopper hawk." Veracruz River of Raptors counts include massive Swainson\'s peaks in mid-September.',
+      biome: 'grassland', stoopDiveBonus: 2.0, pullupG: 9 },
+
+    { id: 'barred', name: 'Barred Owl', scientific: 'Strix varia', emoji: '🦉', family: 'Strigidae', isOwl: true,
+      massKg: 0.72, wingspanM: 1.10, wingAreaSqM: 0.33, wingLoading: 2.2, aspectRatio: 3.7,
+      maxLevelMph: 30, stoopMph: 45,
+      talonForcePsi: 280, talonLengthMm: 22,
+      visualAcuityX: 1.8, foveaCount: 1, visualFieldDeg: 110,
+      eyeWeightPctBody: 4.7,
+      habitat: ['forest', 'mature-forest', 'swamp'], prey: ['rodent', 'small-bird', 'frog', 'rabbit'],
+      huntStyle: 'still-hunt from perch + silent glide attack. More active in daylight than other owls — sometimes heard calling mid-afternoon.',
+      ecology: 'Eastern + Pacific Northwest forest specialist. Range expanding WESTWARD aggressively since 1900 — has reached coastal Oregon + California + is now in conflict with endangered northern spotted owl. Aggressive interspecific competition.',
+      conservation: 'Least Concern + expanding; threat to spotted owl recovery',
+      range: 'E. North America + expanding W. into Pacific Northwest',
+      weird: 'The "Who cooks for you? Who cooks for you-ALL?" owl. Most distinctive call of any North American owl. Will sometimes call mid-day from deep forest. Its westward range expansion is currently overwhelming the endangered northern spotted owl in Pacific NW forests — a major conservation dilemma.',
+      biome: 'forest-night', stoopDiveBonus: 1.4, pullupG: 5 },
+
+    { id: 'turkeyVulture', name: 'Turkey Vulture', scientific: 'Cathartes aura', emoji: '🦅', family: 'Cathartidae', isOwl: false,
+      massKg: 1.5, wingspanM: 1.75, wingAreaSqM: 0.57, wingLoading: 2.6, aspectRatio: 5.4,
+      maxLevelMph: 35, stoopMph: 50,
+      talonForcePsi: 50, talonLengthMm: 18,
+      visualAcuityX: 3.5, foveaCount: 1, visualFieldDeg: 220,
+      eyeWeightPctBody: 1.5,
+      habitat: ['open-country', 'edge', 'urban'], prey: ['carrion'],
+      huntStyle: 'NOT a hunter — finds carrion by smell from miles away. Soars on thermals all day looking for dead animals.',
+      ecology: 'Most widespread vulture in the Americas. Range expanding rapidly northward — now winters in places that had no turkey vultures 50 years ago. Olfactory hunter (Stager 1964 discovered this) — finds carrion via the gas mercaptan, which natural-gas leaks emit. Gas-pipeline crews now use turkey-vulture sightings to find leaks.',
+      conservation: 'Least Concern + expanding',
+      range: 'Americas — N. Canada to Cape Horn',
+      weird: 'One of the few birds with a functional sense of smell. Detects mercaptan (the smell of decay + also natural gas) from 1+ miles. Natural-gas companies route pipelines through known turkey-vulture territories because the vultures circle leaks. Convergent evolution of "raptor body plan" from scavenger ancestors — taxonomically NOT a true raptor, in its own order Cathartiformes.',
+      biome: 'grassland', stoopDiveBonus: 1.2, pullupG: 4 },
+
+    { id: 'condor', name: 'California Condor', scientific: 'Gymnogyps californianus', emoji: '🦅', family: 'Cathartidae', isOwl: false,
+      massKg: 9.5, wingspanM: 2.9, wingAreaSqM: 1.20, wingLoading: 7.9, aspectRatio: 7.0,
+      maxLevelMph: 30, stoopMph: 60,
+      talonForcePsi: 80, talonLengthMm: 22,
+      visualAcuityX: 4.0, foveaCount: 1, visualFieldDeg: 220,
+      eyeWeightPctBody: 1.8,
+      habitat: ['mountain', 'cliff', 'open-country'], prey: ['carrion'],
+      huntStyle: 'NOT a hunter — exclusive scavenger. Largest North American flying bird (9.5 ft wingspan). Soars on mountain thermals scanning for carrion.',
+      ecology: 'See Recovery Case Studies. 22 wild birds 1987 → 530+ today via 40-year captive-breed-and-release. Lead-shot poisoning remains the #1 ongoing threat — every wild condor is regularly recaptured + blood-tested + chelated for lead. Wild population is NOT yet self-sustaining; permanent intensive management ongoing.',
+      conservation: 'Critically Endangered (recovering)',
+      range: 'California, Arizona/Utah, Baja California, Mexico',
+      weird: 'Largest North American flying bird (9.5 ft wingspan). Lives 60+ years in captivity. Lays ONE egg every 2 years. The recovery has cost ~$50M to date + continues. Without sustained human intervention, the wild population would lead-poison itself back to extinction within 5-10 years.',
+      biome: 'mountain', stoopDiveBonus: 1.5, pullupG: 5 }
   ];
 
   // ───────────────────────────────────────────────────────────
@@ -349,7 +448,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
     coopersHawk:     ['pigeon', 'songbird', 'mourningDove'],
     snowyOwl:        ['lemming', 'arcticHare', 'duck', 'ptarmigan'],
     gyrfalcon:       ['ptarmigan', 'duck', 'shorebird'],
-    missKite:        ['cicada', 'dragonfly', 'largeInsect', 'songbird']
+    missKite:        ['cicada', 'dragonfly', 'largeInsect', 'songbird'],
+    // NEW v0.32
+    sharpShin:       ['songbird', 'mourningDove', 'rodent'],
+    merlin:          ['songbird', 'shorebird', 'largeInsect'],
+    roughLeg:        ['rodent', 'lemming', 'rabbit'],
+    swainsons:       ['rodent', 'largeInsect', 'groundSquirrel', 'snake'],
+    barred:          ['rodent', 'songbird', 'rabbit'],
+    turkeyVulture:   ['rodent', 'songbird'],  // surrogate for carrion (game doesn't have carrion mechanic yet)
+    condor:          ['rabbit', 'groundSquirrel']
   };
 
   // ───────────────────────────────────────────────────────────
@@ -864,7 +971,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       explanation: 'Phenological mismatch: raptors track prey availability, prey shifts with temperature. Documented in European honey buzzards (Both et al. 2009) where chicks now fledge AFTER the wasp peak passes. Hawk Mountain\'s 90+ year dataset is the canonical evidence base for this shift.' },
     { id: 'q27', difficulty: 'hard', q: 'According to the IUCN Red List status table, which raptor is the MOST AT RISK among the major North American species?',
       options: ['Bald eagle (LC)', 'Peregrine falcon (LC)', 'Snowy owl (VU)', 'Red-tailed hawk (LC)'], correctIdx: 2,
-      explanation: 'Snowy owl was recently uplisted to Vulnerable (VU) by IUCN due to climate-change-driven Arctic habitat loss + lemming-cycle disruption. Bald eagle + peregrine + red-tail are all Least Concern. Among the 13 species in this tool, snowy owl + harpy eagle are the only VU; all others are LC.' },
+      explanation: 'Snowy owl was recently uplisted to Vulnerable (VU) by IUCN due to climate-change-driven Arctic habitat loss + lemming-cycle disruption. Bald eagle + peregrine + red-tail are all Least Concern. Among the 20 species in this tool, snowy owl + harpy eagle are the only VU; all others are LC.' },
     { id: 'q28', difficulty: 'hard', q: 'Why do Arctic species (snowy owl, gyrfalcon) face the worst climate change impacts among raptors?',
       options: ['They live further from the equator', 'The Arctic is warming ~4× faster than the global average, disrupting prey cycles + habitat', 'They have shorter migration distances', 'They eat lemmings'], correctIdx: 1,
       explanation: 'Arctic amplification: high-latitude regions warm ~4× faster than the global average due to ice-albedo feedback. This flattens lemming cycles, alters tundra vegetation, shifts snow timing, and constricts breeding range northward. Snowy owls + gyrfalcons + ptarmigans face all these stressors simultaneously.' },
@@ -1489,7 +1596,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('div', { className: 'flex-1' },
                 h('div', { className: 'text-xl font-bold text-amber-200' }, 'Raptor Hunt: Predator Physics + Biology'),
                 h('div', { className: 'text-sm text-amber-100/80 mt-1' }, 'Hunt as a peregrine at 240 mph. Crush bones at 530 psi as a harpy. See vole urine trails in UV like a kestrel. Glide silently on owl feathers. Then study the biology that makes it all possible.'),
-                h('div', { className: 'text-xs text-amber-300/70 mt-2 italic' }, '25 sections · 13 species · 6 interactive labs · anatomy + acuity demo · case studies · 42-term glossary · 45-question quiz')
+                h('div', { className: 'text-xs text-amber-300/70 mt-2 italic' }, '25 sections · 20 species · 6 interactive labs · anatomy + acuity demo · case studies · 42-term glossary · 45-question quiz')
               )
             ),
             // ── NEW v0.20: "Surprise me" random-section button ──
@@ -1530,7 +1637,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             },
               h('div', { className: 'text-3xl mb-2' }, '📋'),
               h('div', { className: 'font-bold text-amber-200' }, 'Species Roster'),
-              h('div', { className: 'text-xs text-amber-100/80 mt-1' }, '13 species: peregrine, harpy, golden, bald, red-tail, goshawk, owl, osprey, kestrel, Cooper\'s, snowy, gyrfalcon, kite. Mass, talon force, vision, hunt style.')
+              h('div', { className: 'text-xs text-amber-100/80 mt-1' }, '20 species: peregrine, harpy, golden, bald, red-tail, goshawk, owl, osprey, kestrel, Cooper\'s, snowy, gyrfalcon, kite. Mass, talon force, vision, hunt style.')
             ),
             h('button', {
               onClick: function() { setRH({ activeSection: 'talons' }); },
@@ -9917,7 +10024,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // ────────────────────────────────────────────────────────
       return h('div', { className: 'space-y-4', role: 'region', 'aria-label': 'Raptor Hunt tool' },
         // Section count chip
-        h('div', { className: 'text-[11px] text-slate-500 uppercase tracking-wider' }, '25 sections · 13 species · 6 interactive labs · acuity demo · 5 recoveries · famous birds · 42-term glossary · 45-question quiz'),
+        h('div', { className: 'text-[11px] text-slate-500 uppercase tracking-wider' }, '25 sections · 20 species · 6 interactive labs · acuity demo · 5 recoveries · famous birds · 42-term glossary · 45-question quiz'),
         // Tab nav (scrollable horizontal)
         h('div', { className: 'flex gap-1.5 overflow-x-auto pb-1', role: 'tablist', 'aria-label': 'Raptor Hunt sections' },
           SECTIONS.map(function(s) {
