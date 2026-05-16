@@ -2379,6 +2379,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           scene.add(moonGlow);
         }
 
+        // ─── NEW v0.27: Starfield for night biome ───
+        var starsList = null;
+        if (isNight) {
+          var starGeo = new THREE.BufferGeometry();
+          var starCount = 600;
+          var starPos = new Float32Array(starCount * 3);
+          var starTwinkle = [];
+          for (var stIdx = 0; stIdx < starCount; stIdx++) {
+            // Spherical distribution on a dome, only upper hemisphere
+            var theta = Math.random() * Math.PI * 2;
+            var phi = Math.random() * Math.PI * 0.45;  // 0..0.45π = upper portion of sphere
+            var rDome = 700;
+            starPos[stIdx * 3] = rDome * Math.sin(phi) * Math.cos(theta);
+            starPos[stIdx * 3 + 1] = rDome * Math.cos(phi);
+            starPos[stIdx * 3 + 2] = rDome * Math.sin(phi) * Math.sin(theta);
+            starTwinkle.push({ phase: Math.random() * Math.PI * 2, freq: 0.5 + Math.random() * 2.5 });
+          }
+          starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+          var starMat = new THREE.PointsMaterial({ color: 0xfefce8, size: 1.5, transparent: true, opacity: 0.9, depthWrite: false, sizeAttenuation: true });
+          var stars = new THREE.Points(starGeo, starMat);
+          scene.add(stars);
+          starsList = { points: stars, twinkle: starTwinkle, count: starCount };
+        }
+
         // ─── NEW v0.25: Visible sun disc (or moon at night) ───
         var sunDiscCanvas = document.createElement('canvas');
         sunDiscCanvas.width = 128; sunDiscCanvas.height = 128;
@@ -2775,6 +2799,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         raptorGroup.add(talonGroup);
 
         scene.add(raptorGroup);
+        // ── NEW v0.27: Save head reference for prey-tracking animation ──
+        var headMesh = head;
+        var headOrigZ = 0.62;  // base position
+
+        // ── NEW v0.27: Catch FX particle pool (feathers/dust burst on strike) ──
+        var catchFxList = [];  // {particles, lifetime, maxLifetime}
+        function spawnCatchFx(x, y, z, preyColor) {
+          var fxCount = 28;
+          var fxGeo = new THREE.BufferGeometry();
+          var fxPos = new Float32Array(fxCount * 3);
+          var fxVel = [];
+          for (var fi = 0; fi < fxCount; fi++) {
+            fxPos[fi * 3] = x;
+            fxPos[fi * 3 + 1] = y;
+            fxPos[fi * 3 + 2] = z;
+            // Random outward velocity in 3D sphere
+            var fpTheta = Math.random() * Math.PI * 2;
+            var fpPhi = Math.acos(2 * Math.random() - 1);
+            var speed = 4 + Math.random() * 8;
+            fxVel.push({
+              vx: Math.sin(fpPhi) * Math.cos(fpTheta) * speed,
+              vy: Math.cos(fpPhi) * speed + 2,
+              vz: Math.sin(fpPhi) * Math.sin(fpTheta) * speed
+            });
+          }
+          fxGeo.setAttribute('position', new THREE.BufferAttribute(fxPos, 3));
+          var fxMat = new THREE.PointsMaterial({ color: preyColor || 0xfde047, size: 1.6, transparent: true, opacity: 1.0, depthWrite: false, sizeAttenuation: true });
+          var fxPoints = new THREE.Points(fxGeo, fxMat);
+          scene.add(fxPoints);
+          // Plus a brief golden flash sphere
+          var flashMat = new THREE.MeshBasicMaterial({ color: 0xfde047, transparent: true, opacity: 0.85, depthWrite: false });
+          var flash = new THREE.Mesh(new THREE.SphereGeometry(1.5, 12, 8), flashMat);
+          flash.position.set(x, y, z);
+          scene.add(flash);
+          catchFxList.push({ points: fxPoints, velocities: fxVel, flash: flash, lifetime: 0, maxLifetime: 1.2 });
+        }
 
         // ─── NEW v0.25: Bird ground shadow (depth-perception cue) ───
         var shadowCanvas = document.createElement('canvas');
@@ -3090,6 +3150,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (hitIdx >= 0) {
             // Catch!
             var caught = preyMeshes[hitIdx];
+            // ── NEW v0.27: Spawn catch FX at prey position before removal ──
+            spawnCatchFx(caught.mesh.position.x, caught.mesh.position.y, caught.mesh.position.z, caught.data.color || 0xfde047);
             scene.remove(caught.mesh);
             caught.mesh.traverse(function(o) { if (o.geometry) o.geometry.dispose(); if (o.material) { if (Array.isArray(o.material)) o.material.forEach(function(m){m.dispose();}); else o.material.dispose(); } });
             preyMeshes.splice(hitIdx, 1);
@@ -3281,6 +3343,69 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var shadowScale = Math.max(1.5, 4 - altAboveGround * 0.04);
           birdShadow.scale.set(shadowScale, shadowScale * 0.55, 1);
           birdShadow.material.opacity = Math.max(0.05, 0.5 - altAboveGround * 0.005);
+
+          // ── NEW v0.27: Catch-FX particles animation (gravity + fade) ──
+          for (var cfi = catchFxList.length - 1; cfi >= 0; cfi--) {
+            var fx = catchFxList[cfi];
+            fx.lifetime += dt;
+            var fxFrac = fx.lifetime / fx.maxLifetime;
+            if (fxFrac >= 1) {
+              scene.remove(fx.points); fx.points.geometry.dispose(); fx.points.material.dispose();
+              scene.remove(fx.flash); fx.flash.geometry.dispose(); fx.flash.material.dispose();
+              catchFxList.splice(cfi, 1);
+              continue;
+            }
+            // Update particle positions with gravity
+            var fxPosArr = fx.points.geometry.attributes.position.array;
+            for (var pi5 = 0; pi5 < fx.velocities.length; pi5++) {
+              var fv = fx.velocities[pi5];
+              fxPosArr[pi5 * 3]     += fv.vx * dt;
+              fxPosArr[pi5 * 3 + 1] += fv.vy * dt;
+              fxPosArr[pi5 * 3 + 2] += fv.vz * dt;
+              // Apply gravity
+              fv.vy -= 12 * dt;
+            }
+            fx.points.geometry.attributes.position.needsUpdate = true;
+            fx.points.material.opacity = Math.max(0, 1 - fxFrac);
+            // Flash quickly fades + expands
+            fx.flash.scale.setScalar(1 + fxFrac * 4);
+            fx.flash.material.opacity = Math.max(0, 0.85 - fxFrac * 1.5);
+          }
+
+          // ── NEW v0.27: Star twinkle for night biome ──
+          if (starsList) {
+            // Twinkle by modulating opacity of the entire points material with a slow flicker
+            // (per-vertex opacity needs custom shader; simple amplitude pulse is fine)
+            starsList.points.material.opacity = 0.7 + Math.sin(now * 0.002) * 0.2;
+            // Keep stars positioned around raptor (so they stay visible)
+            starsList.points.position.set(raptor.x, raptor.y - 50, raptor.z);
+          }
+
+          // ── NEW v0.27: Bird head tracks nearest prey ──
+          if (headMesh && preyMeshes.length > 0) {
+            // Find nearest prey
+            var headNearestDist = Infinity, headNearestPrey = null;
+            for (var hni = 0; hni < preyMeshes.length; hni++) {
+              var hnpx = preyMeshes[hni].mesh.position.x - raptor.x;
+              var hnpz = preyMeshes[hni].mesh.position.z - raptor.z;
+              var hnd = hnpx * hnpx + hnpz * hnpz;
+              if (hnd < headNearestDist) { headNearestDist = hnd; headNearestPrey = preyMeshes[hni]; }
+            }
+            // Only track when within ~80m + not diving (no point turning during a stoop)
+            if (headNearestPrey && headNearestDist < 80 * 80 && !diveKey) {
+              var pyAngle = Math.atan2(headNearestPrey.mesh.position.x - raptor.x, -(headNearestPrey.mesh.position.z - raptor.z));
+              var hRel = pyAngle - raptor.yaw;
+              while (hRel > Math.PI) hRel -= Math.PI * 2;
+              while (hRel < -Math.PI) hRel += Math.PI * 2;
+              // Clamp head rotation to plausible neck range (~75° each side for raptors)
+              hRel = Math.max(-1.3, Math.min(1.3, hRel));
+              // Smooth toward target rotation
+              headMesh.rotation.y += (hRel - headMesh.rotation.y) * 0.08;
+            } else {
+              // Slowly return to forward
+              headMesh.rotation.y += (0 - headMesh.rotation.y) * 0.03;
+            }
+          }
 
           // ── NEW v0.26: Animated lake water (vertex sin-wave ripples) ──
           if (lake && lakeOriginalY) {
