@@ -3087,6 +3087,460 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
   };
 
   // ───────────────────────────────────────────────────────────
+  // NEW v0.39: PELLET ID KEY — comprehensive bone + skull guide
+  // ───────────────────────────────────────────────────────────
+  var PELLET_ID_KEY = {
+    intro: 'Owl pellets are time capsules of predation. Each pellet reveals what one bird ate over 12-24 hours. Learning to identify the bones inside connects you to the food web in granular detail. This guide covers prey species + how to ID them by their remains.',
+    materials: [
+      'Sterile pellet (heat-treated at 250°F for 30 minutes by educational suppliers, killing parasites + pathogens).',
+      'Forceps or tweezers (for picking apart).',
+      'Toothpicks (for fine separation).',
+      'Magnifying glass (10x).',
+      'Petri dish or paper plate.',
+      'Soft brush.',
+      'White paper + pencil for sketching.',
+      'Field guide to skulls + bones.',
+      'Reference chart with measurements.'
+    ],
+    method: [
+      'Soak pellet in warm water 10-30 minutes if dry/hard.',
+      'Use forceps to gently break apart.',
+      'Separate fur into one pile, bones into another.',
+      'Use brush to clean bones.',
+      'Group similar bones together (skulls in one cluster, leg bones in another).',
+      'Count skulls first — gives a minimum number of prey individuals.',
+      'Measure key bones (femur length, skull length) for ID.',
+      'Sketch or photograph specimens.',
+      'Use ID key (below) to match.'
+    ],
+    skullKey: [
+      { prey: 'House mouse (Mus musculus)', skullLength: '20-22 mm', distinguishing: 'Continuous orange-yellow incisors. Small braincase. Very common in barn owl pellets.', notes: 'Introduced from Europe; abundant in farmland barns.' },
+      { prey: 'Deer mouse (Peromyscus species)', skullLength: '22-25 mm', distinguishing: 'Slightly larger than house mouse. Cusp pattern on molars distinctive.', notes: 'Native species. Common in pellets from rural barns.' },
+      { prey: 'Meadow vole (Microtus pennsylvanicus)', skullLength: '24-28 mm', distinguishing: 'Wider snout than mouse. Distinctive M-shape on molar cusps. Most abundant rodent in N. America by biomass.', notes: 'Bulk of barn owl, snowy owl, red-tail diets.' },
+      { prey: 'Prairie vole (Microtus ochrogaster)', skullLength: '24-27 mm', distinguishing: 'Similar to meadow vole, slightly stockier. Geographic range.', notes: 'Grassland Midwest.' },
+      { prey: 'White-footed mouse (Peromyscus leucopus)', skullLength: '22-24 mm', distinguishing: 'Similar to deer mouse, distinguished by geographic range + molar pattern.', notes: 'Eastern US.' },
+      { prey: 'Eastern cottontail (Sylvilagus floridanus)', skullLength: '60-72 mm', distinguishing: 'Distinctive large incisors. Two pairs of upper incisors (lagomorph feature).', notes: 'Found in great-horned owl + golden eagle pellets.' },
+      { prey: 'Eastern chipmunk (Tamias striatus)', skullLength: '34-37 mm', distinguishing: 'Skull moderate size. Cusps moderate.', notes: 'Squirrel family.' },
+      { prey: 'Squirrel (gray, fox)', skullLength: '50-65 mm', distinguishing: 'Larger than mouse. Reduced rostrum.', notes: 'Found in red-tail + great-horned pellets.' },
+      { prey: 'Star-nosed mole', skullLength: '24-27 mm', distinguishing: 'Distinctive elongated rostrum + reduced eye sockets. Highly fossorial.', notes: 'Rare in pellets but distinctive.' },
+      { prey: 'Eastern mole', skullLength: '28-32 mm', distinguishing: 'Similar elongated skull, slightly larger.', notes: 'Wetland + lawn habitat.' },
+      { prey: 'Shrew (various species)', skullLength: '15-20 mm', distinguishing: 'Very small. Sharp pointed teeth — different from mouse incisors.', notes: 'Common in barn owl pellets.' },
+      { prey: 'Bat', skullLength: '12-18 mm', distinguishing: 'Distinctive pointed skull. Carnassial molars.', notes: 'Found in great-horned owl pellets.' },
+      { prey: 'Songbird', skullLength: '14-20 mm', distinguishing: 'Beak attached. Distinctly avian shape. No teeth.', notes: 'Common in falcon + Cooper\'s hawk pellets.' },
+      { prey: 'Snake (small)', skullLength: '10-30 mm', distinguishing: 'Reptile-style skull with fangs. Long jaw.', notes: 'Found in red-tail pellets.' },
+      { prey: 'Insect (large beetle)', skullLength: 'Exoskeleton only', distinguishing: 'Chitinous parts, not bone. Wing covers + jaws.', notes: 'Common in kestrel + small owl pellets.' }
+    ],
+    boneKey: [
+      { bone: 'Femur (thigh bone)', identification: 'Longest leg bone. Distal end shows knee joint.', useFor: 'Body size estimation. Length × ~5 = head-body length.' },
+      { bone: 'Humerus (upper arm)', identification: 'Distinctive S-curve. Head connects to scapula.', useFor: 'Species ID + body size.' },
+      { bone: 'Mandible (jawbone)', identification: 'Two halves. Holds teeth.', useFor: 'Species ID via tooth pattern.' },
+      { bone: 'Pelvis', identification: 'Distinctive curve + acetabulum (hip socket).', useFor: 'Sex determination in some species.' },
+      { bone: 'Skull (cranium)', identification: 'Whole or fragmented. Most diagnostic for species ID.', useFor: 'Species ID via dental pattern + braincase shape.' },
+      { bone: 'Vertebrae', identification: 'Bead-like bones. Variable in number.', useFor: 'Cervical/thoracic/lumbar count helps confirm class.' },
+      { bone: 'Ribs', identification: 'Curved thin bones.', useFor: 'Less diagnostic. Helps confirm prey count.' },
+      { bone: 'Phalanges (toe bones)', identification: 'Small distinct bones.', useFor: 'Distinguishes mammal vs bird (digit pattern).' },
+      { bone: 'Scapula', identification: 'Flat shoulder blade.', useFor: 'Found in mammal prey.' },
+      { bone: 'Sternum + furcula', identification: 'Indicates bird prey.', useFor: 'Bird ID — only birds have furcula (wishbone).' }
+    ],
+    dataAnalysis: [
+      'Count skulls = minimum prey individuals.',
+      'Identify each prey to species.',
+      'Calculate biomass: each prey species has known average mass.',
+      'Compare to bird\'s daily caloric needs.',
+      'Plot prey diversity over time.',
+      'Compare across barn owl vs great-horned vs Cooper\'s pellets.',
+      'Track seasonal changes in diet.',
+      'Connect to ecology unit on food webs.'
+    ],
+    pedagogy: [
+      'Pellet dissection is excellent grade 4-8 hands-on biology.',
+      'Connects ecology, anatomy, math (measurement), data analysis.',
+      'Students often most engaged with pellet of all bio activities.',
+      'Avoid teasing — some students may be initially squeamish.',
+      'Consider sensitivity: trauma + body parts triggers exist.',
+      'Provide alternatives: photo dissection, virtual pellet apps.',
+      'Document findings via lab notebook + data table.',
+      'Compare results across class for prey diversity statistics.',
+      'Connect to local ecology + conservation discussion.'
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.39: BIRDING GEAR GUIDE
+  // ───────────────────────────────────────────────────────────
+  var GEAR_GUIDE = {
+    intro: 'Quality gear makes raptor observation easier + more enjoyable. Here is a comprehensive guide to optical gear, field tools, recommended brands, + budget tiers — for beginners through serious enthusiasts.',
+    categories: [
+      {
+        category: 'Binoculars',
+        whyItMatters: 'Single most important tool. Cheap binoculars frustrate; quality binoculars open the hobby.',
+        budgetTiers: [
+          { tier: 'Entry ($50-150)', recommended: 'Nikon Aculon 8x42, Celestron Outland 8x42, Bushnell Engage 8x42', specs: '8x magnification, 42mm objective, decent ED glass.' },
+          { tier: 'Mid ($150-400)', recommended: 'Nikon Monarch 5 8x42, Celestron Granite 8x42, Vanguard Endeavor 8x42', specs: 'Full HD/ED glass, better waterproofing, lifetime warranty.' },
+          { tier: 'High ($400-800)', recommended: 'Nikon Monarch HG 8x42, Vortex Razor HD 8x42, Zeiss Conquest HD 8x42', specs: 'Field-flat HD glass, dielectric coating, exceptional clarity.' },
+          { tier: 'Premium ($800-2500)', recommended: 'Swarovski EL 8x32, Zeiss Victory SF 8x42, Leica Noctivid 8x42', specs: 'Top-tier glass, lifetime warranty, finest workmanship.' }
+        ],
+        tips: [
+          'Always 8x42 or 8x32 for raptor observation — too high magnification = shaky image.',
+          'Try before buy — different fits work for different faces.',
+          'Look for waterproof + nitrogen-filled.',
+          'Lifetime warranty is huge differentiator.',
+          'Quality binoculars hold value — used market is good.',
+          'Adjust diopter once for your eyes; never touch again.'
+        ]
+      },
+      {
+        category: 'Spotting scope',
+        whyItMatters: 'For long-distance observation at hawkwatch sites + nest viewing.',
+        budgetTiers: [
+          { tier: 'Entry ($100-300)', recommended: 'Celestron Ultima 80, Vortex Razor', specs: '60-80mm objective, 20-60x zoom.' },
+          { tier: 'Mid ($300-800)', recommended: 'Nikon Monarch 80, Celestron Regal 65', specs: '65-80mm HD glass, better eyepiece.' },
+          { tier: 'High ($800-2500)', recommended: 'Vortex Razor HD, Zeiss Conquest Gavia, Swarovski ATX', specs: 'Top-tier HD glass, modular eyepiece.' }
+        ],
+        tips: [
+          'Tripod is essential — handheld is useless at high magnification.',
+          'Sturdy carbon-fiber tripod (Gitzo, RRS, or Manfrotto 055) recommended.',
+          'Zoom eyepiece more versatile than fixed.',
+          'Bring eyepiece cover to keep dust out.',
+          'Stable head matters more than expensive legs.'
+        ]
+      },
+      {
+        category: 'Field guides',
+        whyItMatters: 'Identification reference + learning aid.',
+        budgetTiers: [
+          { tier: 'Free apps', recommended: 'eBird Merlin (free), iNaturalist (free)', specs: 'Photo + sound ID. Comprehensive.' },
+          { tier: '$15-30 print', recommended: 'Sibley Birds (4th ed), National Geographic Field Guide, Crossley ID Guide Raptors', specs: 'Region-specific + portable.' },
+          { tier: '$50-100 specialty', recommended: 'Hawks at a Distance (Liguori), Hawks in Flight (Dunne+Sutton+Sibley), Raptor Identification Series', specs: 'Deep raptor-specific.' }
+        ],
+        tips: [
+          'Always carry one (digital or paper).',
+          'Mark species you\'ve seen.',
+          'Annotate with dates + locations.',
+          'Use Merlin for sound ID + age class predictions.',
+          'Specialty guides for advanced ID.'
+        ]
+      },
+      {
+        category: 'Clothing + gear',
+        whyItMatters: 'Comfort + camouflage = longer observation time.',
+        budgetTiers: [
+          { tier: 'Essential', recommended: 'Earth tones (browns, olives, khakis). NO BRIGHT COLORS.', specs: 'Field-ready clothing.' },
+          { tier: 'Better', recommended: 'Merino wool base layers, quality rain shell, comfortable boots', specs: 'All-weather + lightweight.' },
+          { tier: 'Premium', recommended: 'Smartwool, Patagonia, Filson, Sitka Gear', specs: 'Cold + wet weather ready.' }
+        ],
+        tips: [
+          'Layer for variable conditions.',
+          'Avoid synthetic fabrics that rustle.',
+          'Quality boots prevent foot fatigue.',
+          'Sun hat with brim.',
+          'Insect repellent (DEET or picaridin).',
+          'Sunglasses + sunscreen.'
+        ]
+      },
+      {
+        category: 'Camera + lens',
+        whyItMatters: 'Documentation + bird-watching enrichment.',
+        budgetTiers: [
+          { tier: 'Smartphone + adapter', recommended: 'Phone scope adapter (PhoneSkope, Snapzoom)', specs: 'Use your existing phone + binoculars.' },
+          { tier: 'Bridge camera', recommended: 'Nikon Coolpix P1000, Sony RX10 IV', specs: '60-125x zoom built-in.' },
+          { tier: 'DSLR/mirrorless', recommended: 'Canon R7 + RF 100-400 ($1500+), Sony a6700 + 200-600 ($2500+)', specs: 'Professional photo capability.' }
+        ],
+        tips: [
+          'Image quality less important than enjoyment.',
+          'Camera should encourage observation, not replace it.',
+          'Battery life matters in cold weather.',
+          'Memory cards: take extras.',
+          'Practice fast autofocus on stationary birds before flight.'
+        ]
+      },
+      {
+        category: 'Notebook + writing',
+        whyItMatters: 'Field notes are where learning happens.',
+        budgetTiers: [
+          { tier: 'Essential', recommended: 'Rite-in-the-Rain (waterproof), Field Notes, Moleskine', specs: '5x7" pocketable.' },
+          { tier: 'Better', recommended: 'Habitat-specific + bird-ID journal', specs: 'Specialized formats.' }
+        ],
+        tips: [
+          'Pencil > pen (pencil works wet).',
+          'Date + time + location at top of every page.',
+          'Numbered species lists at bottom.',
+          'Sketch what you can\'t photograph.',
+          'Save notebooks — they become reference for years.'
+        ]
+      },
+      {
+        category: 'Trailcam + remote',
+        whyItMatters: 'Documents elusive activity.',
+        budgetTiers: [
+          { tier: 'Basic ($100-200)', recommended: 'Bushnell Trophy Cam, Browning Strike Force', specs: 'Motion-triggered, IR illumination.' },
+          { tier: 'Advanced ($200-500)', recommended: 'Reconyx HyperFire, Browning Spec Ops Elite', specs: 'Cellular upload, faster trigger.' }
+        ],
+        tips: [
+          'Position carefully — face north to avoid sun glare.',
+          'Solar power extends battery life.',
+          'Test trigger zone with hand first.',
+          'Hide in dense brush.',
+          'Don\'t deploy at sensitive nests.'
+        ]
+      },
+      {
+        category: 'Software + apps',
+        whyItMatters: 'Data management + research.',
+        budgetTiers: [
+          { tier: 'Essential (free)', recommended: 'eBird, iNaturalist, Merlin Bird ID', specs: 'Comprehensive data tools.' },
+          { tier: 'Premium', recommended: 'Birds of the World (Cornell, $50/yr), eBird Premium subscriptions', specs: 'Reference + analytics.' }
+        ],
+        tips: [
+          'Log everything to eBird.',
+          'Practice Merlin sound ID daily.',
+          'Use BirdCast forecast tool for migration planning.',
+          'Local FB groups + Discord servers excellent for tips.'
+        ]
+      }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.39: CAREER PATHWAYS IN RAPTOR BIOLOGY
+  // ───────────────────────────────────────────────────────────
+  var CAREERS = {
+    intro: 'Working with raptors as a career is achievable — but competitive. Below are paths from entry-level volunteer through PhD researcher, with educational + experience requirements, salary expectations, + how to break in.',
+    careers: [
+      {
+        title: 'Wildlife rehabilitator',
+        education: 'No formal degree required, but biology coursework + 6-12 month apprenticeship at licensed facility.',
+        license: 'USFWS Class I or II rehabilitator permit + state wildlife agency permit.',
+        salary: '$25-45K (entry) to $50-70K (mid-career manager).',
+        path: 'Volunteer at facility (1-2 years) → apprenticeship (6-12 months) → state exam → state + federal permit applications.',
+        topEmployers: 'Wildlife centers (Wildlife Center of Virginia, Tristate Bird Rescue), zoos, university clinics.',
+        notes: 'Hands-on with raptors. Variable income; many do it as second career or alongside main job.'
+      },
+      {
+        title: 'Park ranger / wildlife biologist (federal)',
+        education: 'BS wildlife biology or related field.',
+        license: 'No special license required for federal.',
+        salary: 'GS-5 entry $35K, GS-9 mid $52K, GS-11 senior $63K.',
+        path: 'Internships during college → entry GS-5/7 position → competitive promotion to specialized roles.',
+        topEmployers: 'National Park Service, US Fish + Wildlife Service, BLM, USFS, state DNR.',
+        notes: 'Stable but moderate pay. Excellent benefits + retirement. Outdoor work primary.'
+      },
+      {
+        title: 'Wildlife biologist (state)',
+        education: 'BS wildlife biology required, MS preferred.',
+        license: 'State employee.',
+        salary: '$40-65K.',
+        path: 'Internships → entry wildlife biologist → specialty programs (raptor monitoring, etc.).',
+        topEmployers: 'State Departments of Fish + Game / Wildlife.',
+        notes: 'Field work + lab + policy. Variable by state.'
+      },
+      {
+        title: 'Falconer / master falconer',
+        education: 'No formal education required.',
+        license: 'State + federal falconer permit. 7-year apprenticeship + master falconer exam.',
+        salary: 'Falconry alone is rarely income source. Side business: $5-30K/year for educational programs.',
+        path: 'General falconer (5 yr) → Master falconer (7 yr) → specialized work (abatement, demonstration, education).',
+        topEmployers: 'Self-employed; commercial bird abatement companies (airport, vineyard).',
+        notes: 'Lifestyle commitment. Requires daily care + financial resources.'
+      },
+      {
+        title: 'University researcher / PhD raptor biology',
+        education: 'BS + MS + PhD biology, ecology, or wildlife.',
+        license: 'No special license.',
+        salary: 'Grad student: $25-40K + tuition. PhD postdoc: $50-70K. Faculty: $60-150K depending on rank.',
+        path: 'BS → grad school (5-7 years for PhD) → postdoc (2-4 years) → faculty position OR research scientist OR conservation NGO.',
+        topEmployers: 'Universities, USDA Forest Service Research, Smithsonian, museums, conservation orgs.',
+        notes: 'Highest barrier + most competitive. But also highest research impact.'
+      },
+      {
+        title: 'Conservation biologist (NGO)',
+        education: 'BS minimum, MS preferred.',
+        license: 'No special license.',
+        salary: '$40-90K.',
+        path: 'Internships → entry researcher / program coordinator → senior role.',
+        topEmployers: 'Hawk Mountain, Peregrine Fund, Audubon Society, Cornell Lab of Ornithology, HMANA, BirdLife Int.',
+        notes: 'Variable salary. NGOs often have housing or other benefits. Mission-driven.'
+      },
+      {
+        title: 'Environmental educator / naturalist',
+        education: 'BS or BA in education, environmental studies, biology.',
+        license: 'Teaching license helpful but not required.',
+        salary: '$30-60K.',
+        path: 'Internships → assistant educator → senior educator → director.',
+        topEmployers: 'Nature centers, museums, zoos, NPS interpretation programs.',
+        notes: 'Talking to public + leading programs. Public engagement skill important.'
+      },
+      {
+        title: 'Bird bander (federal master station)',
+        education: 'High school + bander training + apprenticeship.',
+        license: 'USFWS bander permit.',
+        salary: 'Often unpaid or stipend-based ($200-1000/season). Some career positions $35-50K.',
+        path: 'Volunteer banding (2-4 seasons) → apprentice bander → bander → master bander.',
+        topEmployers: 'BBO sites (Hawk Mountain, Cape May, Manomet), research stations, raptor centers.',
+        notes: 'Hands-on but seasonal. Many banders do it as supplement to other careers.'
+      },
+      {
+        title: 'Veterinarian (wildlife / avian)',
+        education: 'DVM + residency (3-5 years post-DVM).',
+        license: 'State veterinary license + specialty board certification.',
+        salary: '$70-180K depending on practice.',
+        path: 'BS → DVM (4 years) → wildlife / zoo / avian residency (3-5 years) → board certification → private practice or institutional.',
+        topEmployers: 'Veterinary teaching hospitals, zoos, large rehab facilities.',
+        notes: 'Highest barrier of all paths. Most lucrative. Direct medical impact on raptor recovery.'
+      },
+      {
+        title: 'Citizen scientist / volunteer (avocational)',
+        education: 'None required.',
+        license: 'None.',
+        salary: 'Free (it\'s a hobby).',
+        path: 'Just start. Visit hawkwatch site. Log eBird checklists. Volunteer at rehab. Take courses.',
+        topEmployers: 'Self-directed.',
+        notes: 'Most accessible path. Contributes massive scientific value collectively (eBird + iNaturalist + Christmas Bird Count).'
+      },
+      {
+        title: 'Wildlife photographer',
+        education: 'No formal required, but specialty photography programs helpful.',
+        license: 'None.',
+        salary: 'Variable — most wildlife photographers do it part-time. Top professionals $50-150K.',
+        path: 'Self-taught → portfolio → gallery + magazine sales → assignment work.',
+        topEmployers: 'Self-employed; magazine clients; print sales; calendars.',
+        notes: 'Highly competitive market. Patience + ethical practice matter more than gear.'
+      },
+      {
+        title: 'Wildlife writer / journalist',
+        education: 'BA journalism + biology/wildlife.',
+        license: 'None.',
+        salary: '$30-100K.',
+        path: 'Internships at magazines → freelance → staff position.',
+        topEmployers: 'Audubon Magazine, Bird Watcher\'s Digest, BirdLife, Smithsonian Magazine, National Geographic.',
+        notes: 'Writing + journalism declining industry, but bird journalism still alive.'
+      }
+    ],
+    advice: [
+      'Volunteer first. Every paid position prefers people with demonstrated experience.',
+      'Get on eBird + iNaturalist. Free citizen science participation builds your credentials.',
+      'Attend conferences: AOU, Raptor Research Foundation, HMANA annual meetings.',
+      'Network. Most jobs filled via personal referrals.',
+      'Be willing to start with seasonal/internship work in rural areas.',
+      'Languages matter — Spanish for Latin American work, French for Africa.',
+      'Statistics + GIS skills are increasingly required.',
+      'Photography + social media + science communication skills are valuable.',
+      'Consider combining bird work with primary career (teacher who leads weekend bird walks; nurse who volunteers at rehab).',
+      'Patience. Career building takes years.'
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.39: FALCONRY CURRICULUM — apprentice to master path
+  // ───────────────────────────────────────────────────────────
+  var FALCONRY_CURRICULUM = {
+    intro: 'Falconry is one of humanity\'s oldest practices (~4,000 years documented) + currently regulated under federal + state law. The path from new apprentice to master falconer takes minimum 7 years. This curriculum outlines the full path.',
+    levels: [
+      {
+        level: 'Apprentice (years 1-2)',
+        requirements: [
+          '14+ years old (US).',
+          'Pass written falconry exam (state-administered).',
+          'Identify a sponsor — a general or master falconer who agrees to mentor.',
+          'Have mews + equipment ready before getting first bird.',
+          'Pass facility inspection by state wildlife.',
+          'Get federal + state falconry permits.'
+        ],
+        whatYouHave: 'One raptor (typically passage red-tailed hawk or American kestrel — depends on state rules).',
+        whatYouLearn: 'Husbandry basics, daily care, weight management, training fundamentals, hunting in field. Building of trust with bird.',
+        commonProblems: 'Bird refuses to come on call (bate). Weight too high or too low. First-year birds often very high-spirited.',
+        averageDuration: '2 years minimum to graduate to general.'
+      },
+      {
+        level: 'General falconer (years 3-7)',
+        requirements: [
+          '2 years apprentice falconry experience minimum.',
+          'Sponsor recommendation.',
+          'May possess up to 3 raptors (varies by state).',
+          'Can sponsor apprentices (most don\'t until master level).'
+        ],
+        whatYouHave: 'Up to 3 raptors. Can be combination of species + age classes.',
+        whatYouLearn: 'Multiple-bird management. Advanced training techniques. Specialized hunting strategies. Imprint birds vs passage birds.',
+        commonProblems: 'Time management with multiple birds. Distinguishing what each bird needs. Hunting season scheduling.',
+        averageDuration: '5+ years general (you must spend minimum 5 years general to qualify for master).'
+      },
+      {
+        level: 'Master falconer (year 7+)',
+        requirements: [
+          '5 years general falconer experience minimum.',
+          'Pass master falconer interview / exam (varies by state).',
+          'Demonstrated proficiency.',
+          'No license revocations.'
+        ],
+        whatYouHave: 'Up to 5 raptors. Some master falconers maintain very large mews with many birds.',
+        whatYouLearn: 'Eagle handling (different rules for eagles). Captive breeding regulations. Advanced flight training. Teaching apprentices.',
+        commonProblems: 'Long-term bird care management. Multiple species + ages. Apprentice mentorship.',
+        averageDuration: 'Lifetime practice.'
+      }
+    ],
+    speciesProgression: [
+      { species: 'American kestrel', level: 'Apprentice', notes: 'Smallest US raptor. Very high-energy + difficult. Apprentices in many states start here.' },
+      { species: 'Red-tailed hawk', level: 'Apprentice', notes: 'Sturdy + forgiving. Most common apprentice bird in US.' },
+      { species: 'Red-shouldered hawk', level: 'Apprentice (some states)', notes: 'Smaller + slightly more difficult than red-tail.' },
+      { species: 'Cooper\'s hawk', level: 'General', notes: 'Notoriously difficult + skittish. Forest-flying specialist.' },
+      { species: 'Sharp-shinned hawk', level: 'General', notes: 'Even smaller + harder to handle than Cooper\'s.' },
+      { species: 'Harris\'s hawk', level: 'General', notes: 'Social raptor — sometimes hunted in pairs. Forgiving + intelligent.' },
+      { species: 'Peregrine falcon', level: 'General', notes: 'World\'s fastest. Requires open landscapes for hunting flights.' },
+      { species: 'Prairie falcon', level: 'General', notes: 'Western US falcon. Hot weather tolerance.' },
+      { species: 'Gyrfalcon', level: 'General', notes: 'Arctic + northern falcon. Cold-weather hunter.' },
+      { species: 'Goshawk', level: 'General to Master', notes: 'Powerful forest-interior hawk. Highly specialized.' },
+      { species: 'Golden eagle', level: 'Master only', notes: 'Federal eagle permit required separately. Most difficult.' }
+    ],
+    equipment: [
+      { item: 'Mews', cost: '$1000-5000', purpose: 'Bird housing. USDA + state inspected. Specific dimension requirements.' },
+      { item: 'Weathering area', cost: '$200-500', purpose: 'Outdoor perch area where bird can sun + air bath.' },
+      { item: 'Jesses + leash', cost: '$50-150', purpose: 'Leather restraints anchored at bird\'s ankles.' },
+      { item: 'Hood', cost: '$50-200', purpose: 'Calms bird during transport. Hooded bird thinks it\'s sleeping.' },
+      { item: 'Lure', cost: '$30-100', purpose: 'Training device. Trains bird to return to handler.' },
+      { item: 'Bath pan', cost: '$30-100', purpose: 'Bath for hygiene.' },
+      { item: 'Scale', cost: '$50-150', purpose: 'Daily weight monitoring (critical for training).' },
+      { item: 'Glove', cost: '$50-200', purpose: 'Thick leather glove for handling.' },
+      { item: 'Telemetry transmitter', cost: '$300-800', purpose: 'Locate bird if it flies off + doesn\'t return.' },
+      { item: 'GPS/cellular tracker (modern)', cost: '$300-1500', purpose: 'Modern alternative to telemetry.' }
+    ],
+    husbandry: [
+      'Daily weight check (same time, same scale).',
+      'Daily feeding (calibrated to weight goal).',
+      'Daily mews + equipment cleaning.',
+      'Routine veterinary care.',
+      'Annual molt (replaces all feathers; bird needs more food + rest).',
+      'Year-round monitoring of bird\'s condition.',
+      'Annual permit renewal.'
+    ],
+    flightTraining: [
+      'Initial taming: bird perched on glove, exposed to handler.',
+      'Lure work: bird flies short distance to lure.',
+      'Free flight: bird flies short distance + returns.',
+      'Hunting practice: bird hunts simulated prey on creance (long line).',
+      'Released hunting: bird hunts free, returns to handler.',
+      'Long-term: refining hunting techniques + maintaining condition.',
+      'Each step takes 4-12 weeks.'
+    ],
+    legalNotes: [
+      'US federal law (Migratory Bird Treaty Act + Bald + Golden Eagle Protection Act) makes ownership of raptors without permit a federal crime.',
+      'Falconry permits are issued by USFWS + state wildlife.',
+      'Apprenticeship requirements + ongoing inspection are mandatory.',
+      'Eagles require separate eagle permit (extensive additional training + experience).',
+      'Wild-take of raptors by falconers is regulated + limited.',
+      'Captive-bred raptors from licensed breeders are common option.',
+      'Falconry is treated as wildlife stewardship — bird welfare requirements are extensive.',
+      'States like New York have full apprentice → general → master path with separate exams; CA has different structure.'
+    ],
+    learnMore: [
+      'NAFA (North American Falconers Association) — national organization. nafa.org',
+      'IAF (International Association for Falconry) — global. iaf.org',
+      'State falconers associations — most states have one.',
+      'UNESCO Falconry Intangible Cultural Heritage — international.',
+      'Federal regulations — USFWS Falconry Pamphlet 6/2024 update.'
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
   // GLOSSARY DATA — A-Z reference of raptor terminology
   // ───────────────────────────────────────────────────────────
   var GLOSSARY = [
@@ -3272,6 +3726,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         { id: 'ecology', label: 'Ecology & Food Webs', icon: '🕸' },
         { id: 'evolution', label: 'Evolution & Taxonomy', icon: '🧬' },
         { id: 'fieldnat', label: 'Field Naturalist', icon: '📓' },
+        { id: 'pelletkey', label: 'Pellet ID Key', icon: '🔬' },
+        { id: 'gear', label: 'Birding Gear Guide', icon: '🔭' },
+        { id: 'careers', label: 'Careers in Raptor Biology', icon: '💼' },
+        { id: 'falconrycurriculum', label: 'Falconry Curriculum', icon: '📚' },
         { id: 'glossary', label: 'Glossary', icon: '📖' },
         { id: 'quiz', label: 'Field ID Quiz', icon: '🎓' },
         { id: 'resources', label: 'Resources', icon: '📚' }
@@ -12008,6 +12466,373 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       }
 
       // ────────────────────────────────────────────────────────
+      // RENDER: PELLET ID KEY (v0.39)
+      // ────────────────────────────────────────────────────────
+      function renderPelletKey() {
+        var pelletTab = rh.pelletKeyTab || 'method';
+        function setPelletTab(t) { setRH({ pelletKeyTab: t }); }
+        var tabs = [
+          { id: 'method', label: '🔧 Method' },
+          { id: 'skulls', label: '💀 Skull Key' },
+          { id: 'bones', label: '🦴 Bone Key' },
+          { id: 'analysis', label: '📊 Data Analysis' },
+          { id: 'pedagogy', label: '👩‍🏫 Pedagogy' }
+        ];
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-amber-900/40 to-yellow-900/40 border border-amber-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '🔬'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-amber-200' }, 'Pellet ID Key'),
+                h('div', { className: 'text-sm text-amber-100/85 mt-1' }, PELLET_ID_KEY.intro)
+              )
+            )
+          ),
+          h('div', { className: 'flex flex-wrap gap-1 bg-slate-900/60 rounded-lg p-1', role: 'tablist' },
+            tabs.map(function(t) {
+              var active = pelletTab === t.id;
+              return h('button', {
+                key: t.id,
+                onClick: function() { setPelletTab(t.id); },
+                className: 'px-3 py-1.5 rounded text-xs font-bold ' + (active
+                  ? 'bg-amber-600 text-white'
+                  : 'text-amber-200 hover:text-white'),
+                role: 'tab',
+                'aria-selected': active
+              }, t.label);
+            })
+          ),
+          pelletTab === 'method' && h('div', { className: 'space-y-3' },
+            h('div', { className: 'bg-slate-800/40 border border-amber-700/40 rounded-xl p-4' },
+              h('div', { className: 'text-sm font-bold text-amber-300 mb-2' }, '🛠 Materials Needed'),
+              h('ul', { className: 'space-y-1 list-disc list-inside text-sm text-slate-200' },
+                PELLET_ID_KEY.materials.map(function(m, i) {
+                  return h('li', { key: i }, m);
+                })
+              )
+            ),
+            h('div', { className: 'bg-slate-800/40 border border-amber-700/40 rounded-xl p-4' },
+              h('div', { className: 'text-sm font-bold text-amber-300 mb-2' }, '📋 Method (step-by-step)'),
+              h('ol', { className: 'space-y-1 list-decimal list-inside text-sm text-slate-200' },
+                PELLET_ID_KEY.method.map(function(m, i) {
+                  return h('li', { key: i, className: 'leading-relaxed' }, m);
+                })
+              )
+            )
+          ),
+          pelletTab === 'skulls' && h('div', { className: 'space-y-2' },
+            PELLET_ID_KEY.skullKey.map(function(s, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-amber-700/30 rounded-lg p-3' },
+                h('div', { className: 'flex items-baseline justify-between gap-2 mb-1' },
+                  h('div', { className: 'text-sm font-bold text-amber-300' }, s.prey),
+                  h('div', { className: 'text-xs text-cyan-300 font-mono' }, s.skullLength)
+                ),
+                h('div', { className: 'text-xs text-slate-200 mb-1 leading-relaxed' }, s.distinguishing),
+                h('div', { className: 'text-[10px] italic text-purple-200/80' }, s.notes)
+              );
+            })
+          ),
+          pelletTab === 'bones' && h('div', { className: 'grid md:grid-cols-2 gap-2' },
+            PELLET_ID_KEY.boneKey.map(function(b, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-amber-700/30 rounded-lg p-3' },
+                h('div', { className: 'text-sm font-bold text-amber-300 mb-1' }, '🦴 ' + b.bone),
+                h('div', { className: 'text-xs text-slate-200 mb-1' }, b.identification),
+                h('div', { className: 'text-xs italic text-emerald-200/90' }, 'Use for: ' + b.useFor)
+              );
+            })
+          ),
+          pelletTab === 'analysis' && h('div', { className: 'bg-slate-800/40 border border-amber-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-sm font-bold text-amber-300 mb-2' }, '📊 Data Analysis Steps'),
+            h('ol', { className: 'space-y-1 list-decimal list-inside text-sm text-slate-200' },
+              PELLET_ID_KEY.dataAnalysis.map(function(d, i) {
+                return h('li', { key: i, className: 'leading-relaxed' }, d);
+              })
+            )
+          ),
+          pelletTab === 'pedagogy' && h('div', { className: 'bg-slate-800/40 border border-purple-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-sm font-bold text-purple-300 mb-2' }, '👩‍🏫 Pedagogical Notes for Teachers'),
+            h('ul', { className: 'space-y-1 list-disc list-inside text-sm text-purple-100/90' },
+              PELLET_ID_KEY.pedagogy.map(function(p, i) {
+                return h('li', { key: i, className: 'leading-relaxed' }, p);
+              })
+            )
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: BIRDING GEAR GUIDE (v0.39)
+      // ────────────────────────────────────────────────────────
+      function renderGear() {
+        var gearCatIdx = rh.gearCat == null ? 0 : rh.gearCat;
+        function setGearCat(i) { setRH({ gearCat: i }); }
+        var cat = GEAR_GUIDE.categories[gearCatIdx];
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-cyan-900/40 to-blue-900/40 border border-cyan-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '🔭'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-cyan-200' }, 'Birding Gear Guide'),
+                h('div', { className: 'text-sm text-cyan-100/85 mt-1' }, GEAR_GUIDE.intro)
+              )
+            )
+          ),
+          // Category picker
+          h('div', { className: 'flex flex-wrap gap-1' },
+            GEAR_GUIDE.categories.map(function(c, i) {
+              var sel = gearCatIdx === i;
+              return h('button', {
+                key: i,
+                onClick: function() { setGearCat(i); },
+                className: 'px-3 py-1.5 rounded text-xs ' + (sel ? 'bg-cyan-600 text-white font-bold' : 'bg-slate-800/60 text-cyan-200 hover:bg-slate-700/60'),
+                'aria-pressed': sel
+              }, c.category);
+            })
+          ),
+          // Active category
+          h('div', { className: 'bg-slate-800/40 border border-cyan-700/40 rounded-xl p-4 space-y-3' },
+            h('div', { className: 'text-lg font-bold text-cyan-300' }, cat.category),
+            h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
+              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, '💡 Why it matters'),
+              h('div', { className: 'text-sm text-slate-100 leading-relaxed' }, cat.whyItMatters)
+            ),
+            h('div', { className: 'space-y-2' },
+              h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, '💰 Budget Tiers'),
+              cat.budgetTiers.map(function(t, i) {
+                return h('div', { key: i, className: 'bg-slate-900/40 border-l-4 border-amber-600 rounded-r p-3' },
+                  h('div', { className: 'text-sm font-bold text-amber-200' }, t.tier),
+                  h('div', { className: 'text-xs text-slate-200 mb-1' }, '★ ' + t.recommended),
+                  h('div', { className: 'text-[10px] italic text-cyan-200/80' }, t.specs)
+                );
+              })
+            ),
+            h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-3' },
+              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, '🎯 Tips'),
+              h('ul', { className: 'space-y-1 list-disc list-inside text-xs text-emerald-100/90' },
+                cat.tips.map(function(t, i) {
+                  return h('li', { key: i, className: 'leading-relaxed' }, t);
+                })
+              )
+            )
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: CAREER PATHWAYS (v0.39)
+      // ────────────────────────────────────────────────────────
+      function renderCareers() {
+        var careerIdx = rh.careerIdx == null ? 0 : rh.careerIdx;
+        function setCareerIdx(i) { setRH({ careerIdx: i }); }
+        var c = CAREERS.careers[careerIdx];
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-yellow-900/40 to-amber-900/40 border border-yellow-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '💼'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-yellow-200' }, 'Careers in Raptor Biology'),
+                h('div', { className: 'text-sm text-yellow-100/85 mt-1' }, CAREERS.intro)
+              )
+            )
+          ),
+          // Career picker
+          h('div', { className: 'flex flex-wrap gap-1' },
+            CAREERS.careers.map(function(career, i) {
+              var sel = careerIdx === i;
+              return h('button', {
+                key: i,
+                onClick: function() { setCareerIdx(i); },
+                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-yellow-600 text-white font-bold' : 'bg-slate-800/60 text-yellow-200 hover:bg-slate-700/60'),
+                'aria-pressed': sel
+              }, career.title);
+            })
+          ),
+          // Active career
+          h('div', { className: 'bg-slate-800/40 border border-yellow-700/40 rounded-xl p-4 space-y-2' },
+            h('div', { className: 'text-lg font-bold text-yellow-300' }, c.title),
+            h('div', { className: 'grid md:grid-cols-2 gap-2' },
+              h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
+                h('div', { className: 'font-bold text-cyan-300 mb-1' }, '🎓 Education'),
+                h('div', { className: 'text-cyan-100/90' }, c.education)
+              ),
+              h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
+                h('div', { className: 'font-bold text-amber-300 mb-1' }, '📜 License'),
+                h('div', { className: 'text-amber-100/90' }, c.license)
+              ),
+              h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
+                h('div', { className: 'font-bold text-emerald-300 mb-1' }, '💰 Salary'),
+                h('div', { className: 'text-emerald-100/90' }, c.salary)
+              ),
+              h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
+                h('div', { className: 'font-bold text-purple-300 mb-1' }, '🛤 Path'),
+                h('div', { className: 'text-purple-100/90' }, c.path)
+              )
+            ),
+            h('div', { className: 'bg-rose-900/20 border border-rose-700/40 rounded p-2 text-xs' },
+              h('div', { className: 'font-bold text-rose-300 mb-1' }, '🏢 Top Employers'),
+              h('div', { className: 'text-rose-100/90' }, c.topEmployers)
+            ),
+            h('div', { className: 'bg-yellow-900/20 border border-yellow-700/40 rounded p-2 text-xs' },
+              h('div', { className: 'font-bold text-yellow-300 mb-1' }, '💡 Notes'),
+              h('div', { className: 'text-yellow-100/90' }, c.notes)
+            )
+          ),
+          // Advice
+          h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-sm font-bold text-amber-300 mb-2' }, '🎯 Career-Building Advice'),
+            h('ul', { className: 'space-y-1 list-disc list-inside text-xs text-amber-100/90' },
+              CAREERS.advice.map(function(a, i) {
+                return h('li', { key: i, className: 'leading-relaxed' }, a);
+              })
+            )
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: FALCONRY CURRICULUM (v0.39)
+      // ────────────────────────────────────────────────────────
+      function renderFalconryCurriculum() {
+        var fcTab = rh.falconryCurrTab || 'levels';
+        function setFcTab(t) { setRH({ falconryCurrTab: t }); }
+        var levelIdx = rh.falconryLevel == null ? 0 : rh.falconryLevel;
+        function setLevel(i) { setRH({ falconryLevel: i }); }
+        var lvl = FALCONRY_CURRICULUM.levels[levelIdx];
+        var tabs = [
+          { id: 'levels', label: '📜 Levels' },
+          { id: 'species', label: '🦅 Species Progression' },
+          { id: 'equipment', label: '🛠 Equipment' },
+          { id: 'training', label: '🎯 Training' },
+          { id: 'legal', label: '⚖ Legal' }
+        ];
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-orange-900/40 to-amber-900/40 border border-orange-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '📚'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-orange-200' }, 'Falconry Curriculum'),
+                h('div', { className: 'text-sm text-orange-100/85 mt-1' }, FALCONRY_CURRICULUM.intro)
+              )
+            )
+          ),
+          h('div', { className: 'flex flex-wrap gap-1 bg-slate-900/60 rounded-lg p-1', role: 'tablist' },
+            tabs.map(function(t) {
+              var active = fcTab === t.id;
+              return h('button', {
+                key: t.id,
+                onClick: function() { setFcTab(t.id); },
+                className: 'px-3 py-1.5 rounded text-xs font-bold ' + (active
+                  ? 'bg-orange-600 text-white'
+                  : 'text-orange-200 hover:text-white'),
+                role: 'tab',
+                'aria-selected': active
+              }, t.label);
+            })
+          ),
+          fcTab === 'levels' && h('div', { className: 'space-y-3' },
+            h('div', { className: 'flex flex-wrap gap-1' },
+              FALCONRY_CURRICULUM.levels.map(function(l, i) {
+                var sel = levelIdx === i;
+                return h('button', {
+                  key: i,
+                  onClick: function() { setLevel(i); },
+                  className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-orange-600 text-white font-bold' : 'bg-slate-800/60 text-orange-200 hover:bg-slate-700/60'),
+                  'aria-pressed': sel
+                }, l.level);
+              })
+            ),
+            h('div', { className: 'bg-slate-800/40 border border-orange-700/40 rounded-xl p-4 space-y-2' },
+              h('div', { className: 'text-lg font-bold text-orange-300' }, lvl.level),
+              h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
+                h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, '📋 Requirements'),
+                h('ul', { className: 'space-y-1 list-disc list-inside text-xs text-cyan-100/90' },
+                  lvl.requirements.map(function(r, i) {
+                    return h('li', { key: i, className: 'leading-relaxed' }, r);
+                  })
+                )
+              ),
+              h('div', { className: 'grid md:grid-cols-2 gap-2' },
+                h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-2 text-xs' },
+                  h('div', { className: 'font-bold text-amber-300 mb-1' }, '✨ What You Have'),
+                  h('div', { className: 'text-amber-100/90' }, lvl.whatYouHave)
+                ),
+                h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-2 text-xs' },
+                  h('div', { className: 'font-bold text-emerald-300 mb-1' }, '📚 What You Learn'),
+                  h('div', { className: 'text-emerald-100/90' }, lvl.whatYouLearn)
+                ),
+                h('div', { className: 'bg-rose-900/20 border border-rose-700/40 rounded p-2 text-xs' },
+                  h('div', { className: 'font-bold text-rose-300 mb-1' }, '⚠ Common Problems'),
+                  h('div', { className: 'text-rose-100/90' }, lvl.commonProblems)
+                ),
+                h('div', { className: 'bg-purple-900/20 border border-purple-700/40 rounded p-2 text-xs' },
+                  h('div', { className: 'font-bold text-purple-300 mb-1' }, '⏰ Duration'),
+                  h('div', { className: 'text-purple-100/90' }, lvl.averageDuration)
+                )
+              )
+            )
+          ),
+          fcTab === 'species' && h('div', { className: 'space-y-2' },
+            FALCONRY_CURRICULUM.speciesProgression.map(function(s, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border-l-4 border-orange-600 rounded-r-lg p-3' },
+                h('div', { className: 'flex items-baseline justify-between gap-2 mb-1' },
+                  h('div', { className: 'text-sm font-bold text-orange-300' }, s.species),
+                  h('div', { className: 'text-xs text-purple-300 font-mono uppercase' }, s.level)
+                ),
+                h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, s.notes)
+              );
+            })
+          ),
+          fcTab === 'equipment' && h('div', { className: 'grid md:grid-cols-2 gap-2' },
+            FALCONRY_CURRICULUM.equipment.map(function(eq, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-orange-700/30 rounded-lg p-3' },
+                h('div', { className: 'flex items-baseline justify-between mb-1' },
+                  h('div', { className: 'text-sm font-bold text-orange-300' }, eq.item),
+                  h('div', { className: 'text-xs text-emerald-300 font-mono' }, eq.cost)
+                ),
+                h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, eq.purpose)
+              );
+            })
+          ),
+          fcTab === 'training' && h('div', { className: 'space-y-3' },
+            h('div', { className: 'bg-slate-800/40 border border-orange-700/40 rounded-xl p-4' },
+              h('div', { className: 'text-sm font-bold text-orange-300 mb-2' }, '🏥 Daily Husbandry'),
+              h('ul', { className: 'space-y-1 list-disc list-inside text-sm text-slate-200' },
+                FALCONRY_CURRICULUM.husbandry.map(function(h2, i) {
+                  return h('li', { key: i, className: 'leading-relaxed' }, h2);
+                })
+              )
+            ),
+            h('div', { className: 'bg-slate-800/40 border border-orange-700/40 rounded-xl p-4' },
+              h('div', { className: 'text-sm font-bold text-orange-300 mb-2' }, '🎯 Flight Training Progression'),
+              h('ol', { className: 'space-y-1 list-decimal list-inside text-sm text-slate-200' },
+                FALCONRY_CURRICULUM.flightTraining.map(function(f, i) {
+                  return h('li', { key: i, className: 'leading-relaxed' }, f);
+                })
+              )
+            )
+          ),
+          fcTab === 'legal' && h('div', { className: 'space-y-3' },
+            h('div', { className: 'bg-rose-900/20 border border-rose-700/40 rounded-xl p-4' },
+              h('div', { className: 'text-sm font-bold text-rose-300 mb-2' }, '⚖ Legal Framework'),
+              h('ul', { className: 'space-y-1 list-disc list-inside text-sm text-rose-100/90' },
+                FALCONRY_CURRICULUM.legalNotes.map(function(l, i) {
+                  return h('li', { key: i, className: 'leading-relaxed' }, l);
+                })
+              )
+            ),
+            h('div', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded-xl p-4' },
+              h('div', { className: 'text-sm font-bold text-cyan-300 mb-2' }, '📚 Learn More'),
+              h('ul', { className: 'space-y-1 list-disc list-inside text-sm text-cyan-100/90' },
+                FALCONRY_CURRICULUM.learnMore.map(function(l, i) {
+                  return h('li', { key: i, className: 'leading-relaxed' }, l);
+                })
+              )
+            )
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
       // RENDER: GLOSSARY (A-Z reference)
       // ────────────────────────────────────────────────────────
       function renderGlossary() {
@@ -13176,6 +14001,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           activeSection === 'ecology' && renderEcology(),
           activeSection === 'evolution' && renderEvolution(),
           activeSection === 'fieldnat' && renderFieldNat(),
+          activeSection === 'pelletkey' && renderPelletKey(),
+          activeSection === 'gear' && renderGear(),
+          activeSection === 'careers' && renderCareers(),
+          activeSection === 'falconrycurriculum' && renderFalconryCurriculum(),
           activeSection === 'glossary' && renderGlossary(),
           activeSection === 'quiz' && renderQuiz(),
           activeSection === 'resources' && renderResources()
