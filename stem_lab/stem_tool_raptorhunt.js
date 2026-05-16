@@ -2338,6 +2338,67 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           scene.add(moonGlow);
         }
 
+        // ─── NEW v0.25: Visible sun disc (or moon at night) ───
+        var sunDiscCanvas = document.createElement('canvas');
+        sunDiscCanvas.width = 128; sunDiscCanvas.height = 128;
+        var sdc = sunDiscCanvas.getContext('2d');
+        var sdGrad = sdc.createRadialGradient(64, 64, 8, 64, 64, 60);
+        if (isNight) {
+          sdGrad.addColorStop(0, 'rgba(248, 250, 252, 1)');
+          sdGrad.addColorStop(0.5, 'rgba(226, 232, 240, 0.6)');
+          sdGrad.addColorStop(1, 'rgba(148, 163, 184, 0)');
+        } else {
+          sdGrad.addColorStop(0, 'rgba(255, 250, 200, 1)');
+          sdGrad.addColorStop(0.3, 'rgba(254, 240, 138, 0.85)');
+          sdGrad.addColorStop(0.6, 'rgba(252, 211, 77, 0.4)');
+          sdGrad.addColorStop(1, 'rgba(251, 191, 36, 0)');
+        }
+        sdc.fillStyle = sdGrad;
+        sdc.fillRect(0, 0, 128, 128);
+        var sunTex = new THREE.CanvasTexture(sunDiscCanvas);
+        var sunSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: sunTex, transparent: true, depthWrite: false }));
+        sunSprite.position.set(120, 180, 80);
+        sunSprite.scale.set(40, 40, 1);
+        scene.add(sunSprite);
+
+        // ─── NEW v0.25: Cloud sprites (skip in night biome) ───
+        if (!isNight) {
+          var cloudCanvas = document.createElement('canvas');
+          cloudCanvas.width = 256; cloudCanvas.height = 128;
+          var cc = cloudCanvas.getContext('2d');
+          // Soft white puffy cloud
+          for (var ci = 0; ci < 8; ci++) {
+            var cx2 = 50 + ci * 25 + Math.random() * 30;
+            var cy2 = 64 + (Math.random() - 0.5) * 30;
+            var cr = 25 + Math.random() * 20;
+            var cGrad = cc.createRadialGradient(cx2, cy2, 0, cx2, cy2, cr);
+            cGrad.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
+            cGrad.addColorStop(0.6, 'rgba(255, 255, 255, 0.45)');
+            cGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            cc.fillStyle = cGrad;
+            cc.fillRect(0, 0, 256, 128);
+          }
+          var cloudTex = new THREE.CanvasTexture(cloudCanvas);
+          // Spawn 8-14 clouds at various positions in the sky
+          var numClouds = species.biome === 'cliff' || species.biome === 'mountain' ? 6 : 12;
+          var clouds = [];
+          for (var clI = 0; clI < numClouds; clI++) {
+            var cloud = new THREE.Sprite(new THREE.SpriteMaterial({ map: cloudTex, transparent: true, depthWrite: false, opacity: 0.55 + Math.random() * 0.35 }));
+            var clTheta = Math.random() * Math.PI * 2;
+            var clRadius = 200 + Math.random() * 250;
+            cloud.position.set(
+              Math.cos(clTheta) * clRadius,
+              60 + Math.random() * 80,
+              Math.sin(clTheta) * clRadius
+            );
+            var clScale = 40 + Math.random() * 50;
+            cloud.scale.set(clScale * 2, clScale, 1);
+            scene.add(cloud);
+            clouds.push({ sprite: cloud, driftSpeed: 0.2 + Math.random() * 0.3 });
+          }
+          var cloudList = clouds; // exposed for animation
+        }
+
         // ─── Terrain: large displaced plane ───
         var terrainSize = 800;
         var terrainSegs = 96;
@@ -2616,6 +2677,97 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         raptorGroup.add(talonGroup);
 
         scene.add(raptorGroup);
+
+        // ─── NEW v0.25: Bird ground shadow (depth-perception cue) ───
+        var shadowCanvas = document.createElement('canvas');
+        shadowCanvas.width = 64; shadowCanvas.height = 32;
+        var shc = shadowCanvas.getContext('2d');
+        var shGrad = shc.createRadialGradient(32, 16, 0, 32, 16, 28);
+        shGrad.addColorStop(0, 'rgba(0,0,0,0.6)');
+        shGrad.addColorStop(0.7, 'rgba(0,0,0,0.2)');
+        shGrad.addColorStop(1, 'rgba(0,0,0,0)');
+        shc.fillStyle = shGrad;
+        shc.fillRect(0, 0, 64, 32);
+        var shadowTex = new THREE.CanvasTexture(shadowCanvas);
+        var birdShadow = new THREE.Mesh(
+          new THREE.PlaneGeometry(2, 1),
+          new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false, opacity: 0.5 })
+        );
+        birdShadow.rotation.x = -Math.PI / 2;
+        birdShadow.position.y = 0.05;
+        scene.add(birdShadow);
+
+        // ─── NEW v0.25: Biome ambient particles (snow/leaves/dust) ───
+        var particleSystem = null;
+        var particleData = null;
+        if (species.biome === 'tundra' || species.biome === 'boreal-forest') {
+          // Snow particles
+          var snowCount = 400;
+          var snowGeo = new THREE.BufferGeometry();
+          var snowPos = new Float32Array(snowCount * 3);
+          particleData = { type: 'snow', velocities: [] };
+          for (var spi = 0; spi < snowCount; spi++) {
+            snowPos[spi * 3] = (Math.random() - 0.5) * 400;
+            snowPos[spi * 3 + 1] = Math.random() * 200;
+            snowPos[spi * 3 + 2] = (Math.random() - 0.5) * 400;
+            particleData.velocities.push({ vx: (Math.random() - 0.5) * 0.4, vy: -0.3 - Math.random() * 0.4, vz: (Math.random() - 0.5) * 0.2 });
+          }
+          snowGeo.setAttribute('position', new THREE.BufferAttribute(snowPos, 3));
+          particleSystem = new THREE.Points(snowGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.5, transparent: true, opacity: 0.85, depthWrite: false }));
+          scene.add(particleSystem);
+        } else if (species.biome === 'forest' || species.biome === 'rainforest') {
+          // Drifting leaves
+          var leafCount = 200;
+          var leafGeo = new THREE.BufferGeometry();
+          var leafPos = new Float32Array(leafCount * 3);
+          particleData = { type: 'leaves', velocities: [] };
+          for (var lpi = 0; lpi < leafCount; lpi++) {
+            leafPos[lpi * 3] = (Math.random() - 0.5) * 400;
+            leafPos[lpi * 3 + 1] = Math.random() * 80 + 5;
+            leafPos[lpi * 3 + 2] = (Math.random() - 0.5) * 400;
+            particleData.velocities.push({ vx: (Math.random() - 0.5) * 0.8, vy: -0.15 - Math.random() * 0.3, vz: (Math.random() - 0.5) * 0.6, swayPhase: Math.random() * Math.PI * 2 });
+          }
+          leafGeo.setAttribute('position', new THREE.BufferAttribute(leafPos, 3));
+          particleSystem = new THREE.Points(leafGeo, new THREE.PointsMaterial({ color: species.biome === 'rainforest' ? 0x84cc16 : 0xea580c, size: 0.7, transparent: true, opacity: 0.75, depthWrite: false }));
+          scene.add(particleSystem);
+        } else if (species.biome === 'mountain' || species.biome === 'grassland') {
+          // Dust motes / pollen
+          var dustCount = 150;
+          var dustGeo = new THREE.BufferGeometry();
+          var dustPos = new Float32Array(dustCount * 3);
+          particleData = { type: 'dust', velocities: [] };
+          for (var dpi = 0; dpi < dustCount; dpi++) {
+            dustPos[dpi * 3] = (Math.random() - 0.5) * 300;
+            dustPos[dpi * 3 + 1] = Math.random() * 50 + 2;
+            dustPos[dpi * 3 + 2] = (Math.random() - 0.5) * 300;
+            particleData.velocities.push({ vx: (Math.random() - 0.5) * 0.15, vy: (Math.random() - 0.5) * 0.05, vz: (Math.random() - 0.5) * 0.15 });
+          }
+          dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
+          particleSystem = new THREE.Points(dustGeo, new THREE.PointsMaterial({ color: 0xfde68a, size: 0.4, transparent: true, opacity: 0.5, depthWrite: false }));
+          scene.add(particleSystem);
+        }
+
+        // ─── NEW v0.25: Dive speed-lines (only visible during stoop) ───
+        var speedLineCount = 60;
+        var speedLineGeo = new THREE.BufferGeometry();
+        var speedLinePos = new Float32Array(speedLineCount * 6); // 2 vertices per line
+        for (var sli = 0; sli < speedLineCount; sli++) {
+          // Random radial offset around camera-forward direction
+          var theta = Math.random() * Math.PI * 2;
+          var rad = 1 + Math.random() * 3;
+          var startZ = -2 - Math.random() * 8;
+          var endZ = startZ + 2 + Math.random() * 3;
+          speedLinePos[sli * 6]     = Math.cos(theta) * rad;
+          speedLinePos[sli * 6 + 1] = Math.sin(theta) * rad;
+          speedLinePos[sli * 6 + 2] = startZ;
+          speedLinePos[sli * 6 + 3] = Math.cos(theta) * rad;
+          speedLinePos[sli * 6 + 4] = Math.sin(theta) * rad;
+          speedLinePos[sli * 6 + 5] = endZ;
+        }
+        speedLineGeo.setAttribute('position', new THREE.BufferAttribute(speedLinePos, 3));
+        var speedLineMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, depthWrite: false });
+        var speedLines = new THREE.LineSegments(speedLineGeo, speedLineMat);
+        scene.add(speedLines);
 
         // ─── Prey spawn ───
         var preyList = SPECIES_PREY[species.id] || ['rodent'];
@@ -3021,6 +3173,78 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           camera.position.y += (camTargetY - camera.position.y) * 0.18;
           camera.position.z += (camTargetZ - camera.position.z) * 0.18;
           camera.lookAt(raptor.x, raptor.y + 0.3, raptor.z);
+
+          // ── NEW v0.25: Bird ground shadow follows bird position + scales with altitude ──
+          var groundBelowBird = terrainHeightAt(raptor.x, raptor.z);
+          var altAboveGround = raptor.y - groundBelowBird;
+          birdShadow.position.set(raptor.x, groundBelowBird + 0.05, raptor.z);
+          birdShadow.rotation.z = -raptor.yaw;  // shadow rotates with bird heading
+          // Scale + fade with altitude (smaller + fainter when higher)
+          var shadowScale = Math.max(1.5, 4 - altAboveGround * 0.04);
+          birdShadow.scale.set(shadowScale, shadowScale * 0.55, 1);
+          birdShadow.material.opacity = Math.max(0.05, 0.5 - altAboveGround * 0.005);
+
+          // ── NEW v0.25: Drifting clouds ──
+          if (typeof cloudList !== 'undefined' && cloudList) {
+            cloudList.forEach(function(c) {
+              c.sprite.position.x += c.driftSpeed * dt;
+              if (c.sprite.position.x > 400) c.sprite.position.x = -400;
+            });
+          }
+
+          // ── NEW v0.25: Ambient particles drift ──
+          if (particleSystem && particleData) {
+            var pos = particleSystem.geometry.attributes.position.array;
+            var vels = particleData.velocities;
+            for (var ppi = 0; ppi < vels.length; ppi++) {
+              var v = vels[ppi];
+              if (particleData.type === 'snow') {
+                pos[ppi * 3]     += v.vx;
+                pos[ppi * 3 + 1] += v.vy;
+                pos[ppi * 3 + 2] += v.vz;
+                // Wrap when reaches ground
+                if (pos[ppi * 3 + 1] < 0) {
+                  pos[ppi * 3 + 1] = 180 + Math.random() * 20;
+                  pos[ppi * 3] = raptor.x + (Math.random() - 0.5) * 400;
+                  pos[ppi * 3 + 2] = raptor.z + (Math.random() - 0.5) * 400;
+                }
+              } else if (particleData.type === 'leaves') {
+                v.swayPhase += dt * 2;
+                pos[ppi * 3]     += v.vx + Math.sin(v.swayPhase) * 0.3;
+                pos[ppi * 3 + 1] += v.vy;
+                pos[ppi * 3 + 2] += v.vz + Math.cos(v.swayPhase) * 0.2;
+                if (pos[ppi * 3 + 1] < 0) {
+                  pos[ppi * 3 + 1] = 60 + Math.random() * 30;
+                  pos[ppi * 3] = raptor.x + (Math.random() - 0.5) * 400;
+                  pos[ppi * 3 + 2] = raptor.z + (Math.random() - 0.5) * 400;
+                }
+              } else { // dust
+                pos[ppi * 3]     += v.vx;
+                pos[ppi * 3 + 1] += v.vy;
+                pos[ppi * 3 + 2] += v.vz;
+                // Recenter occasionally
+                var pd2x = pos[ppi * 3] - raptor.x, pd2z = pos[ppi * 3 + 2] - raptor.z;
+                if (pd2x * pd2x + pd2z * pd2z > 150 * 150) {
+                  pos[ppi * 3] = raptor.x + (Math.random() - 0.5) * 200;
+                  pos[ppi * 3 + 2] = raptor.z + (Math.random() - 0.5) * 200;
+                  pos[ppi * 3 + 1] = Math.random() * 40 + 2;
+                }
+              }
+            }
+            particleSystem.geometry.attributes.position.needsUpdate = true;
+          }
+
+          // ── NEW v0.25: Dive speed-lines (visible only during stoop, intensity scales with speed) ──
+          if (diveKey && raptor.speed > raptor.maxLevel * 0.8) {
+            // Position the speed-lines mesh in front of the camera, aligned with travel direction
+            speedLines.position.copy(camera.position);
+            speedLines.lookAt(raptor.x, raptor.y, raptor.z);
+            // Fade in based on dive speed
+            var speedFrac = (raptor.speed - raptor.maxLevel * 0.8) / (raptor.stoopMax - raptor.maxLevel * 0.8);
+            speedLineMat.opacity = Math.min(0.7, speedFrac * 0.9);
+          } else {
+            speedLineMat.opacity = Math.max(0, speedLineMat.opacity - 3 * dt);
+          }
 
           // ── Prey AI ──
           var detectionR = 25 + (raptor.isOwl ? -10 : 0); // owls are silent, harder to detect
