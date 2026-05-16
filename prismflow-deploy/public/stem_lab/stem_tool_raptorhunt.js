@@ -1796,7 +1796,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var threeLoaded = !!window.THREE || (rh._threeLoaded === true);
         // Stats
         var allStats = huntStats[selectedSpecies] || { catches: 0, attempts: 0, bestRun: 0 };
+        var tutorialDismissed = !!rh.huntTutorialDismissed;
         return h('div', { className: 'space-y-3' },
+          // ── NEW v0.16: Tutorial overlay (dismissible) ──
+          !tutorialDismissed && h('div', { className: 'bg-gradient-to-br from-cyan-900/40 to-indigo-900/40 border-2 border-cyan-500 rounded-xl p-4' },
+            h('div', { className: 'flex items-start justify-between gap-3' },
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'flex items-center gap-2 mb-2' },
+                  h('div', { className: 'text-2xl' }, '🎓'),
+                  h('div', { className: 'text-base font-bold text-cyan-300' }, 'First time? Quick tutorial')
+                ),
+                h('div', { className: 'text-xs text-cyan-100/90 leading-relaxed mb-3' },
+                  'You play a ', h('span', { className: 'font-bold text-amber-300' }, sp.emoji + ' ' + sp.name), ' in third-person view. Goal: dive on prey + strike. Each species has different physics — peregrines stoop at terminal velocity, owls glide silently with smaller detection radius.'
+                ),
+                h('div', { className: 'grid grid-cols-1 md:grid-cols-5 gap-2' },
+                  [
+                    { keys: 'W A S D', desc: 'Steer (yaw + pitch)' },
+                    { keys: 'Q / E', desc: 'Altitude down/up' },
+                    { keys: 'Shift', desc: 'DIVE (accelerate)' },
+                    { keys: 'Space', desc: 'PULL UP (climb)' },
+                    { keys: 'F', desc: 'STRIKE prey in front' }
+                  ].map(function(ctrl, i) {
+                    return h('div', { key: i, className: 'bg-slate-900/60 rounded p-2 text-center' },
+                      h('div', { className: 'font-mono text-amber-300 font-bold text-xs' }, ctrl.keys),
+                      h('div', { className: 'text-[10px] text-slate-300 mt-1' }, ctrl.desc)
+                    );
+                  })
+                ),
+                h('div', { className: 'text-[10px] text-cyan-200/70 italic mt-2' },
+                  '🦅 Tip: Click the canvas first to give it keyboard focus. Then start with a slow level glide before trying to dive. Prey flees on sight — sneak up from behind or above.'
+                )
+              ),
+              h('button', {
+                onClick: function() { setRH({ huntTutorialDismissed: true }); rhAnnounce('Tutorial dismissed'); },
+                className: 'flex-shrink-0 text-cyan-300 hover:text-cyan-100 text-xs',
+                'aria-label': 'Dismiss tutorial'
+              }, '✕ Got it')
+            )
+          ),
           h('div', { className: 'bg-slate-900/50 border border-slate-700/50 rounded-xl p-4' },
             h('div', { className: 'flex items-center justify-between gap-3 flex-wrap' },
               h('div', null,
@@ -6395,7 +6432,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // Inverse of Flight Physics: drag sliders → predict hunt style
       function renderPredictor() {
         var pr = rh.predictor || { mass: 1.0, wingspan: 1.2, wingArea: 0.25 };
+        var predictorMode = rh.predictorMode || 'design';
+        var fr = rh.frankenRaptor || { wingsFrom: 'peregrine', bodyFrom: 'harpyEagle' };
         function setPR(patch) { setRH({ predictor: Object.assign({}, pr, patch) }); }
+        function setPredictorMode(m) { setRH({ predictorMode: m }); }
+        function setFR(patch) { setRH({ frankenRaptor: Object.assign({}, fr, patch) }); }
+        // If in frankenraptor mode, derive synthetic dimensions from the chosen body parts
+        if (predictorMode === 'franken') {
+          var wingsSp = findSpecies(fr.wingsFrom);
+          var bodySp = findSpecies(fr.bodyFrom);
+          // Use the wing dimensions from one species + body mass from the other
+          pr = { mass: bodySp.massKg, wingspan: wingsSp.wingspanM, wingArea: wingsSp.wingAreaSqM };
+        }
         // Calculate derived values
         var wingLoading = pr.mass / pr.wingArea; // kg/m²
         var aspectRatio = (pr.wingspan * pr.wingspan) / pr.wingArea;
@@ -6431,7 +6479,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-cyan-900/40 to-sky-900/40 border border-cyan-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-lg font-bold text-cyan-200 mb-2' }, '🪂 Wing-Loading Predictor'),
+            h('div', { className: 'flex items-start justify-between gap-3 flex-wrap mb-2' },
+              h('div', { className: 'text-lg font-bold text-cyan-200' }, '🪂 Wing-Loading Predictor'),
+              // ── NEW v0.16: Mode toggle ──
+              h('div', { className: 'flex gap-1 bg-slate-900/60 rounded-lg p-1' },
+                [{ id: 'design', label: '🎚 Design' }, { id: 'franken', label: '🧬 Frankenraptor' }].map(function(m) {
+                  var active = predictorMode === m.id;
+                  return h('button', {
+                    key: m.id,
+                    onClick: function() { setPredictorMode(m.id); },
+                    className: 'px-3 py-1 rounded text-xs font-bold transition-all ' + (active
+                      ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white'
+                      : 'text-cyan-200 hover:text-cyan-100'),
+                    'aria-label': m.id === 'design' ? 'Design from sliders' : 'Frankenraptor: blend 2 species',
+                    'aria-pressed': active
+                  }, m.label);
+                })
+              )
+            ),
             h('div', { className: 'text-sm text-cyan-100/90 leading-relaxed' },
               'In the Flight Physics module you learned that wing loading + aspect ratio predict hunt style. This is the inverse: ',
               h('span', { className: 'font-bold text-amber-300' }, 'design a raptor by setting its body dimensions'),
@@ -6439,8 +6504,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             )
           ),
 
-          // Sliders
-          h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4 space-y-3' },
+          // ── NEW v0.16: Frankenraptor picker (only in franken mode) ──
+          predictorMode === 'franken' && h('div', { className: 'bg-purple-900/30 border border-purple-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-sm font-bold text-purple-300 mb-2' }, '🧬 Build a Frankenraptor — mix species body parts'),
+            h('div', { className: 'text-xs text-purple-100/80 italic mb-3' }, 'Pick wings from one species and body from another. The tool computes what hunt style your hybrid would evolve toward.'),
+            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
+              h('div', null,
+                h('label', { className: 'text-xs text-purple-300 font-bold block mb-1' }, '🪶 Wings from'),
+                h('select', {
+                  value: fr.wingsFrom, onChange: function(e) { setFR({ wingsFrom: e.target.value }); },
+                  className: 'w-full px-3 py-2 rounded-lg bg-slate-800 text-purple-100 border border-purple-700 text-sm',
+                  'aria-label': 'Wings species'
+                },
+                  SPECIES.map(function(s) { return h('option', { key: s.id, value: s.id }, s.emoji + ' ' + s.name + ' wings (span ' + s.wingspanM + ' m, AR ' + s.aspectRatio + ')'); })
+                )
+              ),
+              h('div', null,
+                h('label', { className: 'text-xs text-purple-300 font-bold block mb-1' }, '🦴 Body / mass from'),
+                h('select', {
+                  value: fr.bodyFrom, onChange: function(e) { setFR({ bodyFrom: e.target.value }); },
+                  className: 'w-full px-3 py-2 rounded-lg bg-slate-800 text-purple-100 border border-purple-700 text-sm',
+                  'aria-label': 'Body species'
+                },
+                  SPECIES.map(function(s) { return h('option', { key: s.id, value: s.id }, s.emoji + ' ' + s.name + ' body (' + s.massKg + ' kg)'); })
+                )
+              )
+            ),
+            // Synthetic-bird display
+            (function() {
+              var wSp = findSpecies(fr.wingsFrom), bSp = findSpecies(fr.bodyFrom);
+              return h('div', { className: 'mt-3 p-3 bg-slate-900/60 rounded-lg text-center' },
+                h('div', { className: 'text-2xl mb-1' }, wSp.emoji + ' wings + ' + bSp.emoji + ' body'),
+                h('div', { className: 'text-xs text-purple-200' }, 'Synthetic dimensions: ',
+                  h('span', { className: 'font-mono text-amber-300' }, bSp.massKg + ' kg / ' + wSp.wingspanM + ' m span / ' + wSp.wingAreaSqM + ' m² area')
+                ),
+                h('div', { className: 'text-[10px] text-purple-300/80 italic mt-1' },
+                  fr.wingsFrom === fr.bodyFrom ? 'Same species both parts → just the real ' + wSp.name + '.' : 'Hybrid creature — wing-loading × AR placed below.'
+                )
+              );
+            })()
+          ),
+
+          // Sliders (only in design mode)
+          predictorMode === 'design' && h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4 space-y-3' },
             h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
               h('div', null,
                 h('label', { className: 'text-xs text-cyan-300 flex justify-between' },
@@ -6909,6 +7015,92 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'font-bold text-emerald-300 mb-1' }, '💡 Start with one observation'),
             'Open eBird or iNaturalist. Pick any raptor you saw today. Log it. You\'ve just contributed to one of the largest biodiversity datasets in human history — and you\'ve learned the species better than any textbook will teach you.'
           ),
+
+          // ── NEW v0.16: Math Practice Problems ──
+          (function() {
+            var mathShown = rh.mathShown || {};
+            function toggleProblem(id) {
+              setRH(function(cur) {
+                var m = Object.assign({}, cur.mathShown || {});
+                m[id] = !m[id];
+                return Object.assign({}, cur, { mathShown: m });
+              });
+            }
+            var problems = [
+              {
+                id: 'mp1', topic: '🪂 Wing Loading',
+                problem: 'A peregrine falcon weighs 0.95 kg + has a wing area of 0.108 m². What is its wing loading in kg/m²? What does this number tell you about its hunt style?',
+                solution: 'Wing loading = mass / wing area = 0.95 / 0.108 ≈ 8.8 kg/m². This is HIGH — high wing loading = high stall speed = built for fast level flight + dive, bad at slow soaring. Confirms the peregrine\'s falcon-stoop hunt profile.'
+              },
+              {
+                id: 'mp2', topic: '📐 Terminal Velocity',
+                problem: 'Using v_t = √(2mg / ρACd), calculate terminal velocity for a peregrine in stoop: m = 0.95 kg, A = 0.018 m² (tuck), Cd = 0.18, ρ = 1.225 kg/m³, g = 9.81 m/s². Convert to mph.',
+                solution: 'v_t = √(2 × 0.95 × 9.81 / (1.225 × 0.018 × 0.18)) = √(18.64 / 0.00397) = √4699 ≈ 68.5 m/s. Convert: 68.5 × 2.237 ≈ 153 mph. (Real peregrines hit ~242 mph by reducing frontal area further + finding stronger air; Cornell radar 2005 confirmed.)'
+              },
+              {
+                id: 'mp3', topic: '⚡ Kinetic Energy',
+                problem: 'A peregrine reaches terminal velocity of 108 m/s (~242 mph) in a stoop. What is its kinetic energy at impact? Compare to a .22 caliber bullet (~150 J).',
+                solution: 'KE = ½mv² = 0.5 × 0.95 × (108)² = 0.5 × 0.95 × 11664 ≈ 5,540 J. This is ~37× the KE of a .22 bullet. The falcon delivers pistol-caliber kinetic energy with clenched feet.'
+              },
+              {
+                id: 'mp4', topic: '📊 Aspect Ratio',
+                problem: 'A bald eagle has wingspan 2.0 m + wing area 0.62 m². Calculate aspect ratio (AR = wingspan² / wing area). Compare to an albatross (AR ≈ 15) — what does the difference imply?',
+                solution: 'AR = (2.0)² / 0.62 = 4.0 / 0.62 ≈ 6.5. Albatross AR of 15 means MUCH more efficient soaring (long thin wings) — they fly for days without flapping. The bald eagle has lower AR because it must combine soaring with maneuverability for taking fish from water + branches.'
+              },
+              {
+                id: 'mp5', topic: '👁 Acuity at distance',
+                problem: 'A human reads a newspaper headline at 25 feet. A red-tailed hawk has 4× human visual acuity. At what distance can the red-tail read the same headline?',
+                solution: 'Distance ratio scales linearly with acuity: 25 ft × 4 = 100 ft. (This is where the famous "red-tail reads a newspaper at 100 feet" claim comes from.) A golden eagle at 5.5× would read it at ~138 ft. A peregrine at 2.6× would read it at ~65 ft.'
+              },
+              {
+                id: 'mp6', topic: '🐣 Population λ',
+                problem: 'For a peregrine population: adult annual survival = 0.85, juvenile 1st-year survival = 0.40, fecundity = 1.5 chicks per female per year. Calculate λ using the simple formula λ ≈ adult-survival + (juv-survival × fecundity)/2. Is this population growing, stable, or declining?',
+                solution: 'λ = 0.85 + (0.40 × 1.5) / 2 = 0.85 + 0.30 = 1.15. This means +15% per year — GROWING strongly. (Realistic populations bumped down by other factors, so observed λ for peregrine recovery was closer to 1.05-1.10.)'
+              },
+              {
+                id: 'mp7', topic: '🪝 Pressure ratio',
+                problem: 'A golden eagle has talon grip force of 750 psi. A meadow vole has cranial crush threshold of ~25 psi. Calculate the grip:crush ratio. What does this tell you about lethality?',
+                solution: 'Ratio = 750 / 25 = 30×. The golden eagle\'s grip exceeds the vole\'s crush threshold by 30-fold — instant kill, no struggle. For comparison, a human grip (80 psi) on a vole skull = 3.2× — would still crush but with some resistance. The 30× margin explains why eagle predation on small mammals is essentially never witnessed as "struggle" — the strike + grip is the kill.'
+              },
+              {
+                id: 'mp8', topic: '🌀 Time to terminal',
+                problem: 'Approximation: time to reach terminal velocity ≈ v_t / g. For a peregrine with v_t = 68.5 m/s, calculate t. At 95% of terminal, the bird has dropped how far (rough integration: distance ≈ v_t² / 2g for 95%)?',
+                solution: 't ≈ 68.5 / 9.81 ≈ 7.0 seconds. Distance at 95% terminal ≈ (68.5)² / (2 × 9.81) ≈ 240 m altitude lost (~785 ft). This is why peregrine stoops typically initiate from 500-1000 ft+ altitude — anything shorter doesn\'t hit terminal velocity.'
+              },
+              {
+                id: 'mp9', topic: '🥚 Pellet biomass',
+                problem: 'A barn owl roost contains 50 pellets. If each pellet averages 4 prey items at 25g biomass each, what total biomass does the roost record? How many prey animals?',
+                solution: 'Total prey = 50 × 4 = 200 prey animals. Total biomass = 50 × 4 × 25 = 5,000 g = 5 kg. This 5 kg of small-mammal biomass is what the local owl pair consumed over the roost\'s pellet-collection period. Pellet science is how ecologists quantify small-mammal communities without trapping.'
+              },
+              {
+                id: 'mp10', topic: '🪶 Glide ratio',
+                problem: 'A bald eagle has aspect ratio 6.5. Using the rough approximation L/D ≈ 0.5 + 1.5×AR, calculate glide ratio. If the eagle starts at 500 m altitude in still air, how far can it glide before landing?',
+                solution: 'L/D = 0.5 + 1.5 × 6.5 = 0.5 + 9.75 = 10.25. Distance = altitude × L/D = 500 × 10.25 = 5,125 m ≈ 5.1 km (~3.2 miles). This is in still air; thermal lift can extend this indefinitely if the bird finds a column with sink rate exceeding its glide sink rate.'
+              }
+            ];
+            return h('details', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded-xl p-3' },
+              h('summary', { className: 'text-sm font-bold text-emerald-300 cursor-pointer' }, '🧮 Math Practice Problems — 10 numerical workouts'),
+              h('div', { className: 'mt-3 space-y-2' },
+                h('div', { className: 'text-xs text-slate-400 italic mb-2' }, 'Real physics problems from this tool. Work them out on paper, then click Show Solution to check. Topics: wing loading, terminal velocity, KE, aspect ratio, acuity scaling, population λ, talon pressure, fall time, pellet biomass, glide ratio.'),
+                problems.map(function(p) {
+                  var shown = !!mathShown[p.id];
+                  return h('div', { key: p.id, className: 'bg-slate-800/40 rounded-lg p-3' },
+                    h('div', { className: 'text-[10px] uppercase tracking-wider text-emerald-300 font-bold mb-1' }, p.topic),
+                    h('div', { className: 'text-xs text-slate-200 leading-relaxed mb-2' }, p.problem),
+                    h('button', {
+                      onClick: function() { toggleProblem(p.id); },
+                      className: 'px-3 py-1 rounded text-xs font-bold ' + (shown ? 'bg-slate-700 text-slate-300' : 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white'),
+                      'aria-label': shown ? 'Hide solution' : 'Show solution'
+                    }, shown ? '✕ Hide solution' : '✓ Show solution'),
+                    shown && h('div', { className: 'mt-2 bg-emerald-900/30 border border-emerald-700/40 rounded p-2 text-xs text-emerald-100/90 leading-relaxed' },
+                      h('span', { className: 'font-bold text-emerald-300' }, 'Solution: '),
+                      p.solution
+                    )
+                  );
+                })
+              )
+            );
+          })(),
 
           // ── NEW v0.15: Printable Classroom Worksheets ──
           h('details', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded-xl p-3' },
