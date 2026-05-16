@@ -1921,6 +1921,136 @@ function _computeNotebookQualitySignals(dashboardData) {
   }
   return out;
 }
+function _computeCrossToolMisconceptions(dashboardData) {
+  const out = {
+    noteTaking: [],
+    // [{ template, field, missingCount, totalCount, missingPct }]
+    sentenceFrames: []
+    // [{ generationTitle, framesMissingPct, framesSampled }]
+  };
+  const ntStats = {
+    "cornell-notes": { fields: ["summary", "cuesFilled", "notesFilled"], counts: {}, total: 0 },
+    "lab-report": { fields: ["hypothesis", "analysis", "conclusion", "procedureFilled"], counts: {}, total: 0 },
+    "reading-response": { fields: ["favoriteLine", "thinkings", "connection", "question"], counts: {}, total: 0 }
+  };
+  Object.keys(ntStats).forEach((tt) => ntStats[tt].fields.forEach((f) => ntStats[tt].counts[f] = 0));
+  (dashboardData || []).forEach((s2) => {
+    const hist = s2.history || [];
+    const notes = hist.filter((h) => h && h.type === "note-taking");
+    notes.forEach((e) => {
+      const d = e.data || {};
+      const tt = d.templateType;
+      if (!ntStats[tt]) return;
+      ntStats[tt].total++;
+      if (tt === "cornell-notes") {
+        if (!(d.summary || "").trim()) ntStats[tt].counts.summary++;
+        const cuesCount = (Array.isArray(d.cues) ? d.cues : []).filter((c) => c && (c.text || "").trim()).length;
+        if (cuesCount === 0) ntStats[tt].counts.cuesFilled++;
+        const notesCount = (Array.isArray(d.notes) ? d.notes : []).filter((n) => n && (n.text || "").trim()).length;
+        if (notesCount === 0) ntStats[tt].counts.notesFilled++;
+      } else if (tt === "lab-report") {
+        if (!(d.hypothesis || "").trim()) ntStats[tt].counts.hypothesis++;
+        if (!(d.analysis || "").trim()) ntStats[tt].counts.analysis++;
+        if (!(d.conclusion || "").trim()) ntStats[tt].counts.conclusion++;
+        const procCount = (Array.isArray(d.procedure) ? d.procedure : []).filter((p) => p && (p.text || "").trim()).length;
+        if (procCount === 0) ntStats[tt].counts.procedureFilled++;
+      } else if (tt === "reading-response") {
+        if (!(d.favoriteLine || "").trim()) ntStats[tt].counts.favoriteLine++;
+        if (!(d.thinkings || "").trim()) ntStats[tt].counts.thinkings++;
+        if (!(d.connection && d.connection.text || "").trim()) ntStats[tt].counts.connection++;
+        if (!(d.question || "").trim()) ntStats[tt].counts.question++;
+      }
+    });
+  });
+  const fieldLabels = {
+    "cornell-notes": {
+      summary: "Summary box (Pauk: where retention consolidation happens)",
+      cuesFilled: "Cue column (the metacognitive lever \u2014 drives retrieval practice)",
+      notesFilled: "Notes column (the lesson content itself)"
+    },
+    "lab-report": {
+      hypothesis: "Hypothesis (testable prediction with reasoning)",
+      analysis: "Analysis / CER (claim-evidence-reasoning \u2014 the science thinking)",
+      conclusion: "Conclusion (what was learned + sources of error)",
+      procedureFilled: "Procedure (reproducibility \u2014 could another student follow it?)"
+    },
+    "reading-response": {
+      favoriteLine: "Favorite line (close-reading anchor \u2014 direct quote from text)",
+      thinkings: "What this made me think about (substantive reflection)",
+      connection: "Connection (text-to-self / text / world \u2014 Keene & Zimmermann)",
+      question: "Open question (genuine inquiry \u2014 metacognitive engagement)"
+    }
+  };
+  const templateNames = {
+    "cornell-notes": "Cornell Notes",
+    "lab-report": "Lab Report",
+    "reading-response": "Reading Response"
+  };
+  Object.keys(ntStats).forEach((tt) => {
+    const stats = ntStats[tt];
+    if (stats.total === 0) return;
+    stats.fields.forEach((field) => {
+      const missing = stats.counts[field];
+      const pct = Math.round(missing / stats.total * 100);
+      if (pct >= 40 && missing >= 2) {
+        out.noteTaking.push({
+          template: templateNames[tt],
+          field,
+          fieldLabel: fieldLabels[tt][field],
+          missingCount: missing,
+          totalCount: stats.total,
+          missingPct: pct
+        });
+      }
+    });
+  });
+  out.noteTaking.sort((a, b) => b.missingPct - a.missingPct);
+  const sfMap = /* @__PURE__ */ new Map();
+  const sfTitles = /* @__PURE__ */ new Map();
+  const sfFrameCounts = /* @__PURE__ */ new Map();
+  (dashboardData || []).forEach((s2) => {
+    const hist = s2.history || [];
+    const sfItems = hist.filter((h) => h && h.type === "sentence-frames");
+    sfItems.forEach((item) => {
+      sfTitles.set(item.id, item.title || "Sentence Frames");
+      const studentResps = s2.responses && s2.responses[item.id] || {};
+      const items = item.data && Array.isArray(item.data.items) ? item.data.items : [];
+      items.forEach((_, idx) => {
+        const responseVal = studentResps[idx];
+        const filled = responseVal !== void 0 && responseVal !== null && String(responseVal).trim().length > 0;
+        sfMap.set(`${s2.id}:${item.id}:${idx}`, filled);
+        sfFrameCounts.set(item.id, Math.max(sfFrameCounts.get(item.id) || 0, idx + 1));
+      });
+    });
+  });
+  for (const [genId, frameCount] of sfFrameCounts.entries()) {
+    if (frameCount === 0) continue;
+    let totalStudentFrames = 0;
+    let filledFrames = 0;
+    let studentsAttempted = /* @__PURE__ */ new Set();
+    for (const [key, filled] of sfMap.entries()) {
+      const [studentId, gid] = key.split(":");
+      if (gid !== genId) continue;
+      totalStudentFrames++;
+      if (filled) {
+        filledFrames++;
+        studentsAttempted.add(studentId);
+      }
+    }
+    if (totalStudentFrames === 0 || studentsAttempted.size < 2) continue;
+    const missingPct = Math.round((totalStudentFrames - filledFrames) / totalStudentFrames * 100);
+    if (missingPct >= 30) {
+      out.sentenceFrames.push({
+        generationTitle: sfTitles.get(genId) || "Sentence Frames",
+        frameCount,
+        studentsAttempted: studentsAttempted.size,
+        missingPct
+      });
+    }
+  }
+  out.sentenceFrames.sort((a, b) => b.missingPct - a.missingPct);
+  return out;
+}
 function _signalTone(signalKey, value) {
   if (value === null || value === void 0) return "gray";
   const thresholds = {
@@ -1953,6 +2083,11 @@ const _NotebookQualityCard = ({ tone, label, value, suffix, denom, hint }) => {
   }[tone];
   return /* @__PURE__ */ React.createElement("div", { className: `${palette.bg} ${palette.border} border rounded-lg p-3`, title: hint }, /* @__PURE__ */ React.createElement("div", { className: "flex items-baseline justify-between mb-1" }, /* @__PURE__ */ React.createElement("span", { className: `text-[10px] font-bold uppercase tracking-wider ${palette.text}` }, label), denom ? /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-500 font-mono" }, denom) : null), /* @__PURE__ */ React.createElement("div", { className: `text-2xl font-black ${palette.num}` }, value === null || value === void 0 ? "\u2014" : value, suffix || ""), hint ? /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-600 mt-1 leading-snug" }, hint) : null);
 };
+const CrossToolMisconceptionsSection = React.memo(({ dashboardData, t }) => {
+  const signals = React.useMemo(() => _computeCrossToolMisconceptions(dashboardData), [dashboardData]);
+  if (signals.noteTaking.length === 0 && signals.sentenceFrames.length === 0) return null;
+  return /* @__PURE__ */ React.createElement("div", { className: "bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-400", "data-help-key": "dashboard_cross_tool_misconceptions" }, /* @__PURE__ */ React.createElement("h3", { className: "text-lg font-bold text-slate-800 mb-1 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 20, className: "text-orange-500" }), t("dashboard.cross_misconceptions.title") || "Cross-Tool Pattern Detection"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-4 italic" }, t("dashboard.cross_misconceptions.subtitle") || "Structural gaps in student work across non-quiz tools. Each pattern is a class-wide instructional opportunity."), signals.noteTaking.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mb-4" }, /* @__PURE__ */ React.createElement("h4", { className: "text-[11px] font-bold text-violet-700 uppercase tracking-wider mb-2" }, "\u{1F4D3} ", t("dashboard.cross_misconceptions.notebook_label") || "Note-taking field gaps"), /* @__PURE__ */ React.createElement("ul", { className: "space-y-2" }, signals.noteTaking.slice(0, 6).map((s2, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "bg-orange-50 border-l-4 border-orange-400 rounded-r-md p-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-baseline gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-bold text-orange-900" }, s2.template, ": ", s2.fieldLabel), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-orange-700 bg-white border border-orange-300 px-2 py-0.5 rounded whitespace-nowrap" }, s2.missingPct, "% missing")), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 mt-1" }, s2.missingCount, " of ", s2.totalCount, " entries across the class have this field empty."))))), signals.sentenceFrames.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { className: "text-[11px] font-bold text-indigo-700 uppercase tracking-wider mb-2" }, "\u270D\uFE0F ", t("dashboard.cross_misconceptions.frames_label") || "Sentence-frame response gaps"), /* @__PURE__ */ React.createElement("ul", { className: "space-y-2" }, signals.sentenceFrames.slice(0, 5).map((s2, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "bg-indigo-50 border-l-4 border-indigo-400 rounded-r-md p-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-baseline gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-bold text-indigo-900 truncate" }, s2.generationTitle), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-700 bg-white border border-indigo-300 px-2 py-0.5 rounded whitespace-nowrap" }, s2.missingPct, "% blank")), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 mt-1" }, s2.frameCount, " frame", s2.frameCount === 1 ? "" : "s", " \xB7 ", s2.studentsAttempted, " student", s2.studentsAttempted === 1 ? "" : "s", " attempted"))))));
+});
 const TeacherCommentThread = React.memo(({ studentId, resourceId, comments, onAdd, onDelete, t }) => {
   const [draft, setDraft] = React.useState("");
   const [expanded, setExpanded] = React.useState(false);
@@ -3427,7 +3562,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
         label: `${Math.round(analytics.quizCompletionRate)}%`,
         color: "blue"
       }
-    ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-2 text-center" }, t("dashboard.insights.students_participating"))), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-6 rounded-2xl shadow-sm border border-slate-400 flex flex-col justify-center" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-600 uppercase tracking-wider mb-2" }, t("dashboard.insights.avg_adv_level")), /* @__PURE__ */ React.createElement("div", { className: "text-5xl font-black text-purple-600 text-center mb-2" }, analytics.avgAdventureLevel.toFixed(1)), /* @__PURE__ */ React.createElement("div", { className: "w-full bg-slate-100 rounded-full h-2 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "bg-purple-500 h-full", style: { width: `${Math.min(100, analytics.avgAdventureLevel / 10 * 100)}%` } })), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-2 text-center" }, t("dashboard.insights.adv_level_desc")))), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-6 rounded-2xl shadow-sm border border-slate-400" }, /* @__PURE__ */ React.createElement("h3", { className: "text-lg font-bold text-slate-800 mb-4 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 20, className: "text-red-500" }), " ", t("dashboard.insights.misconceptions_title")), misconceptionChartData.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-col md:flex-row gap-8 items-center" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 w-full" }, /* @__PURE__ */ React.createElement(SimpleBarChart, { data: misconceptionChartData, color: "red" })), /* @__PURE__ */ React.createElement("div", { className: "flex-1 w-full" }, /* @__PURE__ */ React.createElement("ul", { className: "space-y-3" }, analytics.misconceptions.map((m, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "text-sm bg-red-50 p-3 rounded-lg border border-red-100" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-red-800 mb-1 flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, "Question ", i + 1), /* @__PURE__ */ React.createElement("span", { className: "bg-white px-2 rounded text-red-600 border border-red-200" }, m.count, " ", t("dashboard.insights.misses"))), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 italic line-clamp-2" }, '"', m.question, '"')))))) : /* @__PURE__ */ React.createElement("div", { className: "text-center py-10 text-slate-600 italic" }, t("dashboard.insights.no_misconceptions"))), /* @__PURE__ */ React.createElement(ClassNotebookSection, { dashboardData, callGemini, addToast: addToast2, t }), (() => {
+    ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-2 text-center" }, t("dashboard.insights.students_participating"))), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-6 rounded-2xl shadow-sm border border-slate-400 flex flex-col justify-center" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-600 uppercase tracking-wider mb-2" }, t("dashboard.insights.avg_adv_level")), /* @__PURE__ */ React.createElement("div", { className: "text-5xl font-black text-purple-600 text-center mb-2" }, analytics.avgAdventureLevel.toFixed(1)), /* @__PURE__ */ React.createElement("div", { className: "w-full bg-slate-100 rounded-full h-2 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "bg-purple-500 h-full", style: { width: `${Math.min(100, analytics.avgAdventureLevel / 10 * 100)}%` } })), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-2 text-center" }, t("dashboard.insights.adv_level_desc")))), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-6 rounded-2xl shadow-sm border border-slate-400" }, /* @__PURE__ */ React.createElement("h3", { className: "text-lg font-bold text-slate-800 mb-4 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 20, className: "text-red-500" }), " ", t("dashboard.insights.misconceptions_title")), misconceptionChartData.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-col md:flex-row gap-8 items-center" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 w-full" }, /* @__PURE__ */ React.createElement(SimpleBarChart, { data: misconceptionChartData, color: "red" })), /* @__PURE__ */ React.createElement("div", { className: "flex-1 w-full" }, /* @__PURE__ */ React.createElement("ul", { className: "space-y-3" }, analytics.misconceptions.map((m, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "text-sm bg-red-50 p-3 rounded-lg border border-red-100" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-red-800 mb-1 flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, "Question ", i + 1), /* @__PURE__ */ React.createElement("span", { className: "bg-white px-2 rounded text-red-600 border border-red-200" }, m.count, " ", t("dashboard.insights.misses"))), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 italic line-clamp-2" }, '"', m.question, '"')))))) : /* @__PURE__ */ React.createElement("div", { className: "text-center py-10 text-slate-600 italic" }, t("dashboard.insights.no_misconceptions"))), /* @__PURE__ */ React.createElement(CrossToolMisconceptionsSection, { dashboardData, t }), /* @__PURE__ */ React.createElement(ClassNotebookSection, { dashboardData, callGemini, addToast: addToast2, t }), (() => {
       const allProbes = dashboardData.flatMap(
         (s2) => s2.probeHistory ? Object.values(s2.probeHistory).flat() : []
       );

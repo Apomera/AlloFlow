@@ -2457,6 +2457,154 @@ function _computeNotebookQualitySignals(dashboardData) {
   }
   return out;
 }
+// Cross-tool misconception / completion-gap detection.
+// Extends the existing quiz-misconceptions panel beyond quiz items into
+// note-taking field-completion gaps and sentence-frames frame-completion gaps.
+// "Misconception" here is used loosely — these are structural gaps in student
+// work that signal class-wide instructional opportunities (e.g., "the whole
+// class is skipping the CER Reasoning step").
+function _computeCrossToolMisconceptions(dashboardData) {
+  const out = {
+    noteTaking: [],         // [{ template, field, missingCount, totalCount, missingPct }]
+    sentenceFrames: [],     // [{ generationTitle, framesMissingPct, framesSampled }]
+  };
+
+  // ── Note-taking field-completion gaps ───────────────────────────────
+  // For each template type, count how often each KEY field is missing or
+  // empty across all entries in the class. Surface fields with >= 40%
+  // missing rate as actionable signals.
+  const ntStats = {
+    'cornell-notes': { fields: ['summary', 'cuesFilled', 'notesFilled'], counts: {}, total: 0 },
+    'lab-report':    { fields: ['hypothesis', 'analysis', 'conclusion', 'procedureFilled'], counts: {}, total: 0 },
+    'reading-response': { fields: ['favoriteLine', 'thinkings', 'connection', 'question'], counts: {}, total: 0 },
+  };
+  Object.keys(ntStats).forEach(tt => ntStats[tt].fields.forEach(f => ntStats[tt].counts[f] = 0));
+
+  (dashboardData || []).forEach(s => {
+    const hist = s.history || [];
+    const notes = hist.filter(h => h && h.type === 'note-taking');
+    notes.forEach(e => {
+      const d = e.data || {};
+      const tt = d.templateType;
+      if (!ntStats[tt]) return;
+      ntStats[tt].total++;
+      if (tt === 'cornell-notes') {
+        if (!(d.summary || '').trim()) ntStats[tt].counts.summary++;
+        const cuesCount = (Array.isArray(d.cues) ? d.cues : []).filter(c => c && (c.text || '').trim()).length;
+        if (cuesCount === 0) ntStats[tt].counts.cuesFilled++;
+        const notesCount = (Array.isArray(d.notes) ? d.notes : []).filter(n => n && (n.text || '').trim()).length;
+        if (notesCount === 0) ntStats[tt].counts.notesFilled++;
+      } else if (tt === 'lab-report') {
+        if (!(d.hypothesis || '').trim()) ntStats[tt].counts.hypothesis++;
+        if (!(d.analysis || '').trim()) ntStats[tt].counts.analysis++;
+        if (!(d.conclusion || '').trim()) ntStats[tt].counts.conclusion++;
+        const procCount = (Array.isArray(d.procedure) ? d.procedure : []).filter(p => p && (p.text || '').trim()).length;
+        if (procCount === 0) ntStats[tt].counts.procedureFilled++;
+      } else if (tt === 'reading-response') {
+        if (!(d.favoriteLine || '').trim()) ntStats[tt].counts.favoriteLine++;
+        if (!(d.thinkings || '').trim()) ntStats[tt].counts.thinkings++;
+        if (!(d.connection && d.connection.text || '').trim()) ntStats[tt].counts.connection++;
+        if (!(d.question || '').trim()) ntStats[tt].counts.question++;
+      }
+    });
+  });
+
+  const fieldLabels = {
+    'cornell-notes': {
+      summary: 'Summary box (Pauk: where retention consolidation happens)',
+      cuesFilled: 'Cue column (the metacognitive lever — drives retrieval practice)',
+      notesFilled: 'Notes column (the lesson content itself)',
+    },
+    'lab-report': {
+      hypothesis: 'Hypothesis (testable prediction with reasoning)',
+      analysis: 'Analysis / CER (claim-evidence-reasoning — the science thinking)',
+      conclusion: 'Conclusion (what was learned + sources of error)',
+      procedureFilled: 'Procedure (reproducibility — could another student follow it?)',
+    },
+    'reading-response': {
+      favoriteLine: 'Favorite line (close-reading anchor — direct quote from text)',
+      thinkings: 'What this made me think about (substantive reflection)',
+      connection: 'Connection (text-to-self / text / world — Keene & Zimmermann)',
+      question: 'Open question (genuine inquiry — metacognitive engagement)',
+    },
+  };
+  const templateNames = {
+    'cornell-notes': 'Cornell Notes',
+    'lab-report': 'Lab Report',
+    'reading-response': 'Reading Response',
+  };
+
+  Object.keys(ntStats).forEach(tt => {
+    const stats = ntStats[tt];
+    if (stats.total === 0) return;
+    stats.fields.forEach(field => {
+      const missing = stats.counts[field];
+      const pct = Math.round((missing / stats.total) * 100);
+      // Only surface as a misconception signal if >= 40% missing AND >= 2 affected
+      if (pct >= 40 && missing >= 2) {
+        out.noteTaking.push({
+          template: templateNames[tt],
+          field,
+          fieldLabel: fieldLabels[tt][field],
+          missingCount: missing,
+          totalCount: stats.total,
+          missingPct: pct,
+        });
+      }
+    });
+  });
+  out.noteTaking.sort((a, b) => b.missingPct - a.missingPct);
+
+  // ── Sentence-frames completion gaps ─────────────────────────────────
+  // For each sentence-frames artifact, count how many students responded
+  // to each frame. Surface frames with low response rates (signal of student
+  // struggle with the scaffold or with the underlying concept).
+  const sfMap = new Map(); // key: "{studentId}:{generationId}:{frameIndex}" -> filled? (boolean)
+  const sfTitles = new Map(); // generationId -> title
+  const sfFrameCounts = new Map(); // generationId -> max frame index seen
+  (dashboardData || []).forEach(s => {
+    const hist = s.history || [];
+    const sfItems = hist.filter(h => h && h.type === 'sentence-frames');
+    sfItems.forEach(item => {
+      sfTitles.set(item.id, item.title || 'Sentence Frames');
+      const studentResps = (s.responses && s.responses[item.id]) || {};
+      const items = (item.data && Array.isArray(item.data.items)) ? item.data.items : [];
+      items.forEach((_, idx) => {
+        const responseVal = studentResps[idx];
+        const filled = responseVal !== undefined && responseVal !== null && String(responseVal).trim().length > 0;
+        sfMap.set(`${s.id}:${item.id}:${idx}`, filled);
+        sfFrameCounts.set(item.id, Math.max(sfFrameCounts.get(item.id) || 0, idx + 1));
+      });
+    });
+  });
+  // Aggregate per generation
+  for (const [genId, frameCount] of sfFrameCounts.entries()) {
+    if (frameCount === 0) continue;
+    let totalStudentFrames = 0;
+    let filledFrames = 0;
+    let studentsAttempted = new Set();
+    for (const [key, filled] of sfMap.entries()) {
+      const [studentId, gid] = key.split(':');
+      if (gid !== genId) continue;
+      totalStudentFrames++;
+      if (filled) { filledFrames++; studentsAttempted.add(studentId); }
+    }
+    if (totalStudentFrames === 0 || studentsAttempted.size < 2) continue;
+    const missingPct = Math.round(((totalStudentFrames - filledFrames) / totalStudentFrames) * 100);
+    if (missingPct >= 30) {
+      out.sentenceFrames.push({
+        generationTitle: sfTitles.get(genId) || 'Sentence Frames',
+        frameCount,
+        studentsAttempted: studentsAttempted.size,
+        missingPct,
+      });
+    }
+  }
+  out.sentenceFrames.sort((a, b) => b.missingPct - a.missingPct);
+
+  return out;
+}
+
 // Color-code each signal: green (healthy), amber (partial), red (weak), gray (no data).
 function _signalTone(signalKey, value) {
   if (value === null || value === undefined) return 'gray';
@@ -2493,6 +2641,57 @@ const _NotebookQualityCard = ({ tone, label, value, suffix, denom, hint }) => {
     </div>
   );
 };
+
+// ── CrossToolMisconceptionsSection ───────────────────────────────────────
+// Surfaces non-quiz misconception signals (note-taking field-completion gaps
+// + sentence-frames frame-completion gaps) on the Insights tab. Complements
+// the existing quiz misconceptions panel which only looks at quiz items.
+// Hidden when no signals trigger their thresholds (avoids noise).
+const CrossToolMisconceptionsSection = React.memo(({ dashboardData, t }) => {
+  const signals = React.useMemo(() => _computeCrossToolMisconceptions(dashboardData), [dashboardData]);
+  if (signals.noteTaking.length === 0 && signals.sentenceFrames.length === 0) return null;
+  return (
+    <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-400" data-help-key="dashboard_cross_tool_misconceptions">
+      <h3 className="text-lg font-bold text-slate-800 mb-1 flex items-center gap-2">
+        <AlertCircle size={20} className="text-orange-500"/>
+        {t('dashboard.cross_misconceptions.title') || 'Cross-Tool Pattern Detection'}
+      </h3>
+      <p className="text-xs text-slate-600 mb-4 italic">{t('dashboard.cross_misconceptions.subtitle') || 'Structural gaps in student work across non-quiz tools. Each pattern is a class-wide instructional opportunity.'}</p>
+      {signals.noteTaking.length > 0 && (
+        <div className="mb-4">
+          <h4 className="text-[11px] font-bold text-violet-700 uppercase tracking-wider mb-2">📓 {t('dashboard.cross_misconceptions.notebook_label') || 'Note-taking field gaps'}</h4>
+          <ul className="space-y-2">
+            {signals.noteTaking.slice(0, 6).map((s, i) => (
+              <li key={i} className="bg-orange-50 border-l-4 border-orange-400 rounded-r-md p-3">
+                <div className="flex justify-between items-baseline gap-2">
+                  <span className="text-sm font-bold text-orange-900">{s.template}: {s.fieldLabel}</span>
+                  <span className="text-xs font-bold text-orange-700 bg-white border border-orange-300 px-2 py-0.5 rounded whitespace-nowrap">{s.missingPct}% missing</span>
+                </div>
+                <div className="text-xs text-slate-600 mt-1">{s.missingCount} of {s.totalCount} entries across the class have this field empty.</div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {signals.sentenceFrames.length > 0 && (
+        <div>
+          <h4 className="text-[11px] font-bold text-indigo-700 uppercase tracking-wider mb-2">✍️ {t('dashboard.cross_misconceptions.frames_label') || 'Sentence-frame response gaps'}</h4>
+          <ul className="space-y-2">
+            {signals.sentenceFrames.slice(0, 5).map((s, i) => (
+              <li key={i} className="bg-indigo-50 border-l-4 border-indigo-400 rounded-r-md p-3">
+                <div className="flex justify-between items-baseline gap-2">
+                  <span className="text-sm font-bold text-indigo-900 truncate">{s.generationTitle}</span>
+                  <span className="text-xs font-bold text-indigo-700 bg-white border border-indigo-300 px-2 py-0.5 rounded whitespace-nowrap">{s.missingPct}% blank</span>
+                </div>
+                <div className="text-xs text-slate-600 mt-1">{s.frameCount} frame{s.frameCount === 1 ? '' : 's'} · {s.studentsAttempted} student{s.studentsAttempted === 1 ? '' : 's'} attempted</div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+});
 
 // ── TeacherCommentThread ─────────────────────────────────────────────────
 // Inline thread of teacher-private comments on a single student resource.
@@ -4730,6 +4929,9 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                     </div>
                                 )}
                             </div>
+                            {/* Cross-tool misconception / completion-gap detection (non-quiz tools) */}
+                            <CrossToolMisconceptionsSection dashboardData={dashboardData} t={t} />
+
                             {/* Class Notebook Activity — note-taking + anchor-chart aggregated across roster */}
                             <ClassNotebookSection dashboardData={dashboardData} callGemini={callGemini} addToast={addToast} t={t} />
 

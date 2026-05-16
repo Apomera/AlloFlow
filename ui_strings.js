@@ -4709,6 +4709,12 @@
       "textarea_aria": "New teacher comment",
       "save_btn": "Save",
       "saved": "Comment saved."
+    },
+    "cross_misconceptions": {
+      "title": "Cross-Tool Pattern Detection",
+      "subtitle": "Structural gaps in student work across non-quiz tools. Each pattern is a class-wide instructional opportunity.",
+      "notebook_label": "Note-taking field gaps",
+      "frames_label": "Sentence-frame response gaps"
     }
   },
   "tools": {
