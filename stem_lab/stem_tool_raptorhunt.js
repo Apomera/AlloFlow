@@ -2083,12 +2083,154 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // ────────────────────────────────────────────────────────
       // RENDER: HUNT SIM (Three.js)
       // ────────────────────────────────────────────────────────
+      // ── NEW v0.29: MISSION SYSTEM ──
+      // Each mission defines a scenario tied to real raptor biology + game mechanics
+      var MISSIONS = [
+        {
+          id: 'open',
+          name: 'Free Hunt (no mission)',
+          icon: '🦅',
+          difficulty: 'Open',
+          intro: 'No constraints. Hunt for the joy of flying.',
+          objective: 'Hunt as long as you want. Practice flight + strike + species-specific physics.',
+          timeLimit: 0,
+          calorieGoal: 0,
+          forbidden: [],
+          required: [],
+          pedagogy: 'Open practice mode. Use this to learn each species\'s controls before attempting timed missions.',
+          successText: 'Free hunt — no win condition. Track your stats in the achievement panel.'
+        },
+        {
+          id: 'feedChicks',
+          name: 'Feed the Chicks',
+          icon: '🐣',
+          difficulty: 'Easy',
+          intro: 'Your nest holds 2 hungry chicks. They need 200 kcal each by sunset.',
+          objective: 'Catch enough prey to deliver 400 kcal total in 4 minutes. Eating restores YOUR energy too.',
+          timeLimit: 240,
+          calorieGoal: 400,
+          forbidden: [],
+          required: [],
+          pedagogy: 'Parental care energy demand. Real raptors hunt 6-12 prey per day during chick-rearing — most catches must be net-positive (calories gained > calories burned hunting). This mission teaches the energy-budget tradeoff that drives nest success vs failure.',
+          successText: 'Chicks survive the day. They\'ll need food again tomorrow. Real raptor parents do this for 8-12 weeks straight.'
+        },
+        {
+          id: 'crossDesert',
+          name: 'Cross the Desert',
+          icon: '🏜',
+          difficulty: 'Medium',
+          intro: 'A 6-minute migration crossing. Sparse prey, headwinds, no time to dawdle.',
+          objective: 'Stay airborne 6 minutes + catch at least 1 prey to refuel. Run out of calories = forced down = fail.',
+          timeLimit: 360,
+          calorieGoal: 0,
+          forbidden: [],
+          required: ['stayAirborne'],
+          pedagogy: 'Migration energy budgets. Swainson\'s hawks fly 14,000 miles round-trip and lose 20-30% body mass crossing the Atacama desert. Picking when to flap vs glide is the difference between making it + dying mid-flight.',
+          successText: 'You crossed. Real migrants do this twice a year, for life.'
+        },
+        {
+          id: 'silentStrike',
+          name: 'Silent Strike (owl mission)',
+          icon: '🌙',
+          difficulty: 'Medium',
+          intro: 'Night hunt. Prey can\'t see you — but if you flap too loudly within 30m, they flee.',
+          objective: 'Catch 3 prey in 5 minutes without alerting the rest of the prey. Heavy flapping in detection range = miss.',
+          timeLimit: 300,
+          calorieGoal: 0,
+          forbidden: ['heavyFlap'],
+          required: ['catchN:3'],
+          pedagogy: 'Why owl wing morphology silences flight. The 3 silencing mechanisms (comb leading edge, fringe trailing edge, velvet dorsal) shift the noise spectrum out of mouse hearing range. Heavy flapping defeats the silencing — gliding does not.',
+          successText: 'Silent flight pays off. 3 catches, no panic.'
+        },
+        {
+          id: 'thermalKettle',
+          name: 'Ride the Thermal',
+          icon: '🌀',
+          difficulty: 'Medium',
+          intro: 'A column of rising warm air sits under you. Use it to gain altitude without flapping.',
+          objective: 'Reach 500m altitude in 3 minutes using ONLY thermal lift + glide (no pull-up flapping allowed).',
+          timeLimit: 180,
+          calorieGoal: 0,
+          forbidden: ['pullUp'],
+          required: ['altitude500'],
+          pedagogy: 'Thermal soaring physics. Soaring raptors gain altitude essentially free by circling inside rising warm air columns. A broad-winged hawk on migration can climb 1000m on a single thermal without flapping — at the cost of 0 calories. This is why kettles form on cold-front days when ground heating creates strong thermals.'
+          ,
+          successText: 'You climbed 500m on pure lift. This is how broadwings cross continents.'
+        },
+        {
+          id: 'avoidPredator',
+          name: 'Evade the Goshawk',
+          icon: '👁',
+          difficulty: 'Hard',
+          intro: 'A larger raptor is hunting YOU. Survive 4 minutes + catch your own prey while keeping distance.',
+          objective: 'Survive 4 minutes (don\'t let goshawk close to < 30m) + catch 2 prey. Goshawk closes when you\'re slow.',
+          timeLimit: 240,
+          calorieGoal: 0,
+          forbidden: [],
+          required: ['catchN:2', 'evadeNorthernGoshawk'],
+          pedagogy: 'Predator-prey relationships within the raptor guild. Goshawks frequently kill smaller raptors (sharp-shinned, Cooper\'s, kestrels). Smaller species evolved evasion strategies: hide in dense cover, change altitude rapidly, dive into thickets. Even apex predators are prey.',
+          successText: 'You out-flew the goshawk + still hunted. A real day in the life of a small raptor.'
+        },
+        {
+          id: 'highStoop',
+          name: 'High Stoop',
+          icon: '🚀',
+          difficulty: 'Hard',
+          intro: 'Drop from 1000m altitude. Hit a moving pigeon at terminal velocity. One strike to win.',
+          objective: 'Climb to 1000m, then stoop. Strike must happen during dive at speed >180 mph. 3-minute time limit.',
+          timeLimit: 180,
+          calorieGoal: 0,
+          forbidden: [],
+          required: ['stoopAt180mph'],
+          pedagogy: 'Peregrine stoop physics. A 1000m stoop reaches terminal velocity within 7 seconds. Kinetic energy at impact = 0.5 × 0.95 kg × 108² ≈ 5,540 J — pistol-bullet class. Tucker 1998 showed the falcon flies a logarithmic spiral approach to maintain constant retinal angle on prey.',
+          successText: 'Pistol-bullet strike. Tucker would approve.'
+        }
+      ];
       function renderHunt() {
         var threeLoaded = !!window.THREE || (rh._threeLoaded === true);
         // Stats
         var allStats = huntStats[selectedSpecies] || { catches: 0, attempts: 0, bestRun: 0 };
         var tutorialDismissed = !!rh.huntTutorialDismissed;
+        var activeMission = rh.activeMission || 'open';
+        var mission = MISSIONS.filter(function(m) { return m.id === activeMission; })[0] || MISSIONS[0];
         return h('div', { className: 'space-y-3' },
+          // ── NEW v0.29: Mission Selector ──
+          h('div', { className: 'bg-gradient-to-br from-amber-900/40 to-orange-900/40 border-2 border-amber-600 rounded-xl p-4' },
+            h('div', { className: 'flex items-center justify-between gap-3 mb-3 flex-wrap' },
+              h('div', null,
+                h('div', { className: 'text-sm font-bold text-amber-200' }, '🎯 Mission Select'),
+                h('div', { className: 'text-xs text-amber-100/80 mt-1' }, 'Choose a scenario. Open mode = no constraints. Missions teach specific concepts via gameplay.')
+              )
+            ),
+            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2' },
+              MISSIONS.map(function(m) {
+                var isActive = activeMission === m.id;
+                var diffColor = m.difficulty === 'Easy' ? 'emerald' : m.difficulty === 'Medium' ? 'amber' : m.difficulty === 'Hard' ? 'red' : 'slate';
+                return h('button', {
+                  key: m.id,
+                  onClick: function() { setRH({ activeMission: m.id }); rhAnnounce(m.name + ' selected'); },
+                  className: 'text-left p-3 rounded-lg border-2 transition-all ' + (isActive
+                    ? 'bg-amber-700/40 border-amber-400 ring-2 ring-amber-300/40'
+                    : 'bg-slate-800/50 border-slate-700 hover:border-amber-600/60 hover:bg-slate-700/50'),
+                  'aria-label': 'Select mission: ' + m.name + ' — ' + m.difficulty,
+                  'aria-pressed': isActive
+                },
+                  h('div', { className: 'flex items-baseline justify-between gap-2 mb-1' },
+                    h('div', { className: 'text-sm font-bold text-amber-200' }, m.icon + ' ' + m.name),
+                    h('div', { className: 'text-[10px] px-2 py-0.5 rounded font-mono bg-' + diffColor + '-900/40 text-' + diffColor + '-300 border border-' + diffColor + '-700/40' }, m.difficulty)
+                  ),
+                  h('div', { className: 'text-[10px] text-slate-300 leading-relaxed' }, m.intro)
+                );
+              })
+            ),
+            // Active mission detail
+            h('div', { className: 'mt-3 bg-slate-900/50 border border-amber-700/30 rounded-lg p-3' },
+              h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, '📋 OBJECTIVE'),
+              h('div', { className: 'text-xs text-slate-200 leading-relaxed mb-2' }, mission.objective),
+              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, '🧠 PEDAGOGY'),
+              h('div', { className: 'text-xs text-slate-200 leading-relaxed italic' }, mission.pedagogy)
+            )
+          ),
           // ── NEW v0.16: Tutorial overlay (dismissible) ──
           !tutorialDismissed && h('div', { className: 'bg-gradient-to-br from-cyan-900/40 to-indigo-900/40 border-2 border-cyan-500 rounded-xl p-4' },
             h('div', { className: 'flex items-start justify-between gap-3' },
@@ -3073,21 +3215,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
         // ─── State + Physics ───
         var startY = 30 + (species.biome === 'cliff' || species.biome === 'mountain' ? 30 : 0);
+        // NEW v0.29: Daily energy budget per species. Real raptors need ~7-15% of body mass per day in calories.
+        // 1 kg fresh meat ≈ 1300 kcal. Average raptor needs ~120 kcal/kg/day.
+        var dailyCaloriesNeeded = Math.round(species.massKg * 120);
+        // Calorie burn rates per second per kg of body mass:
+        //   gliding ≈ 4 kcal/min ≈ 0.067 kcal/s (very efficient)
+        //   flapping ≈ 60 kcal/min ≈ 1.0 kcal/s (15× more than glide!)
+        //   stooping ≈ 20 kcal/min ≈ 0.33 kcal/s (moderate — drag-limited)
         var raptor = {
           x: 0, y: startY, z: 80,
-          yaw: Math.PI, // facing -z initially
-          pitch: 0,
-          speed: 10, // m/s level cruise (will be ~22 mph)
-          maxLevel: species.maxLevelMph * 0.447, // mph to m/s
+          yaw: Math.PI, pitch: 0,
+          speed: 10,
+          maxLevel: species.maxLevelMph * 0.447,
           stoopMax: species.stoopMph * 0.447,
           maxG: species.pullupG,
-          diving: false,
-          pullingUp: false,
+          diving: false, pullingUp: false,
           mass: species.massKg,
           wingArea: species.wingAreaSqM,
           stoopBonus: species.stoopDiveBonus,
           isOwl: species.isOwl,
-          stunned: false
+          stunned: false,
+          // ── NEW v0.29: Energy + stamina state ──
+          calories: dailyCaloriesNeeded * 0.7,  // start at 70% fed
+          caloriesMax: dailyCaloriesNeeded,
+          stamina: 100,        // 0-100 burst capacity for hard flapping
+          staminaMax: 100,
+          exhausted: false     // when stamina hits 0, can't flap
         };
         var gravity = 9.81;
         var runStart = performance.now();
@@ -3095,6 +3248,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var runMaxSpeed = 0;
         var lastStrike = 0;
         var lastSpawn = performance.now();
+        // NEW v0.29: Track recent flight state for energy burn
+        var energyEventLog = [];  // pulse events for HUD ("+120 kcal Pigeon", "-5 cal flapping")
 
         // ─── Input ───
         var keys = {};
@@ -3223,7 +3378,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             caught.mesh.traverse(function(o) { if (o.geometry) o.geometry.dispose(); if (o.material) { if (Array.isArray(o.material)) o.material.forEach(function(m){m.dispose();}); else o.material.dispose(); } });
             preyMeshes.splice(hitIdx, 1);
             runCatches++;
-            rhAnnounce('Strike! Caught ' + caught.data.label + ' (+' + caught.data.points + ' XP)');
+            // ── NEW v0.29: Calorie restoration based on prey size + biomass ──
+            // Bigger prey = more calories. 1 kg meat ≈ 1300 kcal.
+            // Use prey sizeM as proxy for biomass (cubed for volume * meat density).
+            var preyMassKg = Math.max(0.01, Math.pow(caught.data.sizeM, 2.5) * 4);  // rough biomass estimate
+            var caloriesGained = preyMassKg * 1300;
+            // But raptors can only consume ~30% of their body mass in one meal
+            var maxMealKcal = species.massKg * 0.3 * 1300;
+            caloriesGained = Math.min(caloriesGained, maxMealKcal);
+            raptor.calories = Math.min(raptor.caloriesMax * 1.5, raptor.calories + caloriesGained);
+            raptor.starving = false;
+            energyEventLog.push({ msg: '+' + Math.round(caloriesGained) + ' kcal — ' + caught.data.label, t: now, color: '#10b981' });
+            rhAnnounce('Strike! Caught ' + caught.data.label + ' for ' + Math.round(caloriesGained) + ' calories');
             if (ctx.awardXP) ctx.awardXP(caught.data.points, 'Raptor Hunt: caught ' + caught.data.label);
             // Update stats
             setRH(function(prev) {
@@ -3253,18 +3419,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           }
         }
 
-        // ─── HUD overlay (DOM div) ───
+        // ─── HUD overlay (DOM div) — v0.29 WCAG-compliant rewrite ───
+        // High-contrast colors (all bgs use 0.85+ alpha + explicit text colors with >7:1 ratio against bg).
+        // Every numeric value gets aria-live region.
         var hudParent = canvasEl.parentElement;
         var hud = document.createElement('div');
-        hud.style.cssText = 'position:absolute;top:10px;left:10px;background:rgba(15,23,42,0.78);border:1px solid rgba(180,140,40,0.6);border-radius:10px;padding:10px 14px;color:#fbbf24;font-family:ui-monospace,Menlo,monospace;font-size:11px;pointer-events:none;line-height:1.5;text-shadow:0 0 4px rgba(0,0,0,0.6);min-width:180px';
+        hud.setAttribute('role', 'status');
+        hud.setAttribute('aria-label', 'Flight telemetry HUD');
+        hud.style.cssText = 'position:absolute;top:10px;left:10px;background:rgba(15,23,42,0.92);border:2px solid #fbbf24;border-radius:10px;padding:10px 14px;color:#fef3c7;font-family:ui-monospace,Menlo,monospace;font-size:12px;pointer-events:none;line-height:1.5;text-shadow:0 0 4px rgba(0,0,0,0.85);min-width:210px;font-weight:500';
         hudParent.appendChild(hud);
         var crossHair = document.createElement('div');
-        crossHair.style.cssText = 'position:absolute;top:50%;left:50%;width:24px;height:24px;margin:-12px 0 0 -12px;border:2px solid rgba(251,191,36,0.85);border-radius:50%;pointer-events:none;box-shadow:0 0 8px rgba(0,0,0,0.6)';
+        crossHair.setAttribute('aria-hidden', 'true');
+        crossHair.style.cssText = 'position:absolute;top:50%;left:50%;width:28px;height:28px;margin:-14px 0 0 -14px;border:3px solid #fde047;border-radius:50%;pointer-events:none;box-shadow:0 0 8px rgba(0,0,0,0.7), inset 0 0 8px rgba(0,0,0,0.5)';
         hudParent.appendChild(crossHair);
-        // Status line for caught counter
+        var crossHairDot = document.createElement('div');
+        crossHairDot.setAttribute('aria-hidden', 'true');
+        crossHairDot.style.cssText = 'position:absolute;top:50%;left:50%;width:4px;height:4px;margin:-2px 0 0 -2px;background:#fde047;border-radius:50%;pointer-events:none;box-shadow:0 0 4px rgba(0,0,0,0.8)';
+        hudParent.appendChild(crossHairDot);
+        // Status panel (top-right)
         var status = document.createElement('div');
-        status.style.cssText = 'position:absolute;top:10px;right:10px;background:rgba(15,23,42,0.78);border:1px solid rgba(16,185,129,0.6);border-radius:10px;padding:10px 14px;color:#6ee7b7;font-family:ui-monospace,Menlo,monospace;font-size:11px;pointer-events:none;line-height:1.5;text-shadow:0 0 4px rgba(0,0,0,0.6);min-width:160px';
+        status.setAttribute('role', 'status');
+        status.setAttribute('aria-label', 'Run statistics + nearest prey');
+        status.style.cssText = 'position:absolute;top:10px;right:10px;background:rgba(15,23,42,0.92);border:2px solid #10b981;border-radius:10px;padding:10px 14px;color:#d1fae5;font-family:ui-monospace,Menlo,monospace;font-size:12px;pointer-events:none;line-height:1.5;text-shadow:0 0 4px rgba(0,0,0,0.85);min-width:180px;font-weight:500';
         hudParent.appendChild(status);
+        // ── NEW v0.29: Energy + Stamina bars panel (bottom-left, above controls) ──
+        var energyPanel = document.createElement('div');
+        energyPanel.setAttribute('role', 'status');
+        energyPanel.setAttribute('aria-label', 'Energy + stamina bars');
+        energyPanel.style.cssText = 'position:absolute;bottom:110px;left:10px;background:rgba(15,23,42,0.92);border:2px solid #f97316;border-radius:10px;padding:10px 14px;color:#fed7aa;font-family:ui-monospace,Menlo,monospace;font-size:11px;pointer-events:none;line-height:1.4;text-shadow:0 0 4px rgba(0,0,0,0.85);min-width:200px;font-weight:500';
+        hudParent.appendChild(energyPanel);
+        // ── NEW v0.29: Event log (transient calorie + state messages, top-center) ──
+        var eventLogEl = document.createElement('div');
+        eventLogEl.setAttribute('aria-live', 'polite');
+        eventLogEl.setAttribute('aria-atomic', 'false');
+        eventLogEl.style.cssText = 'position:absolute;top:10px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:4px;pointer-events:none;align-items:center';
+        hudParent.appendChild(eventLogEl);
 
         // ─── Animate ───
         var lastT = performance.now();
@@ -3307,8 +3496,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           }
           // Smooth approach (different rates for dive vs pull-up)
           var accel = diveKey ? 12 : pullUpKey ? 8 : 4;
+          // ── NEW v0.29: Exhaustion reduces top speed + climb effectiveness ──
+          if (raptor.exhausted) {
+            targetSpeed = Math.min(targetSpeed, raptor.maxLevel * 0.45);
+            accel *= 0.4;
+          }
           raptor.speed += (targetSpeed - raptor.speed) * Math.min(1, accel * dt);
           runMaxSpeed = Math.max(runMaxSpeed, raptor.speed);
+
+          // ── NEW v0.29: Energy + stamina dynamics ──
+          // Determine current activity for burn rate
+          var burnPerSecPerKg;
+          var staminaBurn;
+          if (diveKey) {
+            burnPerSecPerKg = 0.33;  // stooping = moderate
+            staminaBurn = 0;
+          } else if (pullUpKey || raptor.speed < raptor.maxLevel * 0.55) {
+            burnPerSecPerKg = 1.0;   // flapping = high
+            staminaBurn = 18;        // stamina drains fast when flapping
+          } else {
+            // Cruise — mostly glide
+            var t2 = now / 1000;
+            var bCycle = 6 + species.massKg;
+            var bPhase = (t2 % bCycle) / bCycle;
+            if (bPhase < 0.10) {
+              burnPerSecPerKg = 0.7;  // brief flap burst
+              staminaBurn = 8;
+            } else {
+              burnPerSecPerKg = 0.067; // pure glide = ~15× more efficient than flap
+              staminaBurn = -25;       // stamina REGENERATES while gliding
+            }
+          }
+          var caloriesBurned = burnPerSecPerKg * species.massKg * dt;
+          raptor.calories -= caloriesBurned;
+          raptor.stamina = Math.max(0, Math.min(raptor.staminaMax, raptor.stamina - staminaBurn * dt));
+          // Exhaustion gate
+          if (raptor.stamina <= 0 && !raptor.exhausted) {
+            raptor.exhausted = true;
+            rhAnnounce('Exhausted! Glide to recover.');
+            energyEventLog.push({ msg: '⚠ EXHAUSTED — glide to recover', t: now, color: '#ef4444' });
+          } else if (raptor.stamina > 30 && raptor.exhausted) {
+            raptor.exhausted = false;
+            rhAnnounce('Recovered.');
+            energyEventLog.push({ msg: '✓ Recovered stamina', t: now, color: '#10b981' });
+          }
+          // Calorie starvation
+          if (raptor.calories <= 0 && !raptor.starving) {
+            raptor.starving = true;
+            rhAnnounce('Critical hunger! Hunt or land.');
+            energyEventLog.push({ msg: '⚠ STARVING — eat or land!', t: now, color: '#dc2626' });
+          }
+          raptor.calories = Math.max(-100, raptor.calories);  // can go slightly negative before forced down
+          // Prune old energy events
+          energyEventLog = energyEventLog.filter(function(e) { return now - e.t < 3500; });
 
           // ── Position update (forward in yaw direction, vertical from pitch + gravity at dive) ──
           var horizSpeed = raptor.speed * Math.cos(raptor.pitch);
@@ -3647,17 +3887,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             if (fresh) preyMeshes.push(fresh);
           }
 
-          // ── HUD ──
+          // ── HUD (v0.29 WCAG rewrite — explicit labels, bars, high contrast) ──
           var mph = (raptor.speed * 2.237).toFixed(0);
           var alt = (raptor.y - groundY).toFixed(0);
-          var stateLabel = diveKey ? 'STOOP' : pullUpKey ? 'PULL UP' : 'GLIDE';
-          var stateColor = diveKey ? '#fca5a5' : pullUpKey ? '#67e8f9' : '#fbbf24';
+          var stateLabel = diveKey ? 'STOOP' : pullUpKey ? 'PULL UP' : raptor.exhausted ? 'EXHAUSTED' : 'GLIDE';
+          var stateColor = diveKey ? '#fca5a5' : pullUpKey ? '#67e8f9' : raptor.exhausted ? '#f87171' : '#fcd34d';
           hud.innerHTML =
-            '<div style="font-weight:bold;border-bottom:1px solid rgba(180,140,40,0.4);padding-bottom:4px;margin-bottom:4px">' + species.emoji + ' ' + species.name + '</div>' +
-            'AIRSPEED &nbsp;<span style="color:#fff">' + mph + ' mph</span><br/>' +
-            'ALTITUDE &nbsp;<span style="color:#fff">' + alt + ' m</span><br/>' +
-            'STATE &nbsp;&nbsp;&nbsp;<span style="color:' + stateColor + ';font-weight:bold">' + stateLabel + '</span><br/>' +
-            'PEAK &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#fff">' + (runMaxSpeed * 2.237).toFixed(0) + ' mph</span>';
+            '<div style="font-weight:bold;border-bottom:1px solid #fbbf24;padding-bottom:4px;margin-bottom:6px;color:#fbbf24">' + species.emoji + ' ' + species.name + '</div>' +
+            '<div style="display:grid;grid-template-columns:80px 1fr;gap:4px 8px">' +
+              '<span style="color:#fde047">Airspeed:</span><span aria-label="' + mph + ' miles per hour">' + mph + ' mph</span>' +
+              '<span style="color:#fde047">Altitude:</span><span aria-label="' + alt + ' meters above ground">' + alt + ' m</span>' +
+              '<span style="color:#fde047">State:</span><span style="color:' + stateColor + ';font-weight:bold" aria-label="Flight state: ' + stateLabel + '">' + stateLabel + '</span>' +
+              '<span style="color:#fde047">Peak:</span><span>' + (runMaxSpeed * 2.237).toFixed(0) + ' mph</span>' +
+            '</div>';
+          // ── NEW v0.29: Energy + Stamina bars ──
+          var calPct = Math.max(0, Math.min(100, (raptor.calories / raptor.caloriesMax) * 100));
+          var stamPct = Math.max(0, Math.min(100, (raptor.stamina / raptor.staminaMax) * 100));
+          var calColor = calPct > 50 ? '#10b981' : calPct > 25 ? '#fbbf24' : '#dc2626';
+          var stamColor = stamPct > 50 ? '#06b6d4' : stamPct > 25 ? '#fbbf24' : '#dc2626';
+          energyPanel.innerHTML =
+            '<div style="font-weight:bold;border-bottom:1px solid #f97316;padding-bottom:4px;margin-bottom:6px;color:#fdba74">⚡ Energy + Stamina</div>' +
+            '<div style="margin-bottom:6px">' +
+              '<div style="display:flex;justify-content:space-between;margin-bottom:2px"><span>🍖 Calories</span><span style="color:' + calColor + '" aria-label="' + Math.round(raptor.calories) + ' of ' + raptor.caloriesMax + ' kilocalories">' + Math.round(raptor.calories) + ' / ' + raptor.caloriesMax + '</span></div>' +
+              '<div role="progressbar" aria-valuenow="' + Math.round(calPct) + '" aria-valuemin="0" aria-valuemax="100" aria-label="Calories ' + Math.round(calPct) + ' percent" style="background:#1e293b;height:8px;border-radius:4px;overflow:hidden;border:1px solid #475569"><div style="height:100%;width:' + calPct + '%;background:' + calColor + ';transition:width 0.3s"></div></div>' +
+            '</div>' +
+            '<div>' +
+              '<div style="display:flex;justify-content:space-between;margin-bottom:2px"><span>💨 Stamina</span><span style="color:' + stamColor + '" aria-label="' + Math.round(raptor.stamina) + ' of ' + raptor.staminaMax + ' stamina">' + Math.round(raptor.stamina) + ' / ' + raptor.staminaMax + '</span></div>' +
+              '<div role="progressbar" aria-valuenow="' + Math.round(stamPct) + '" aria-valuemin="0" aria-valuemax="100" aria-label="Stamina ' + Math.round(stamPct) + ' percent" style="background:#1e293b;height:8px;border-radius:4px;overflow:hidden;border:1px solid #475569"><div style="height:100%;width:' + stamPct + '%;background:' + stamColor + ';transition:width 0.3s"></div></div>' +
+            '</div>' +
+            '<div style="font-size:9px;color:#94a3b8;margin-top:6px;font-style:italic">' +
+              'Glide regenerates. Flap burns 15× faster than glide.' +
+            '</div>';
+          // ── Event log: render transient messages ──
+          eventLogEl.innerHTML = '';
+          energyEventLog.slice(-3).forEach(function(ev) {
+            var age = (now - ev.t) / 1000;
+            var op = Math.max(0, 1 - age / 3.5);
+            var msgEl = document.createElement('div');
+            msgEl.style.cssText = 'background:rgba(15,23,42,0.92);border:2px solid ' + ev.color + ';color:' + ev.color + ';padding:6px 12px;border-radius:8px;font-family:ui-sans-serif,system-ui;font-size:13px;font-weight:bold;opacity:' + op + ';text-shadow:0 0 4px rgba(0,0,0,0.85)';
+            msgEl.textContent = ev.msg;
+            eventLogEl.appendChild(msgEl);
+          });
           // ── NEW v0.24: Find nearest prey + distance for HUD ──
           var nearestDist = Infinity, nearestPrey = null, nearestBearing = 0;
           for (var npi = 0; npi < preyMeshes.length; npi++) {
@@ -3706,7 +3976,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           canvasEl.removeEventListener('keyup', onKeyUp);
           if (hud.parentElement) hud.parentElement.removeChild(hud);
           if (crossHair.parentElement) crossHair.parentElement.removeChild(crossHair);
+          if (crossHairDot.parentElement) crossHairDot.parentElement.removeChild(crossHairDot);
           if (status.parentElement) status.parentElement.removeChild(status);
+          if (energyPanel.parentElement) energyPanel.parentElement.removeChild(energyPanel);
+          if (eventLogEl.parentElement) eventLogEl.parentElement.removeChild(eventLogEl);
           // Dispose meshes
           scene.traverse(function(obj) {
             if (obj.geometry) obj.geometry.dispose();
