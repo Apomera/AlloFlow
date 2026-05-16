@@ -867,7 +867,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       explanation: 'Snowy owl was recently uplisted to Vulnerable (VU) by IUCN due to climate-change-driven Arctic habitat loss + lemming-cycle disruption. Bald eagle + peregrine + red-tail are all Least Concern. Among the 13 species in this tool, snowy owl + harpy eagle are the only VU; all others are LC.' },
     { id: 'q28', difficulty: 'hard', q: 'Why do Arctic species (snowy owl, gyrfalcon) face the worst climate change impacts among raptors?',
       options: ['They live further from the equator', 'The Arctic is warming ~4× faster than the global average, disrupting prey cycles + habitat', 'They have shorter migration distances', 'They eat lemmings'], correctIdx: 1,
-      explanation: 'Arctic amplification: high-latitude regions warm ~4× faster than the global average due to ice-albedo feedback. This flattens lemming cycles, alters tundra vegetation, shifts snow timing, and constricts breeding range northward. Snowy owls + gyrfalcons + ptarmigans face all these stressors simultaneously.' }
+      explanation: 'Arctic amplification: high-latitude regions warm ~4× faster than the global average due to ice-albedo feedback. This flattens lemming cycles, alters tundra vegetation, shifts snow timing, and constricts breeding range northward. Snowy owls + gyrfalcons + ptarmigans face all these stressors simultaneously.' },
+    // ── NEW v0.31: 17 more quiz questions ──
+    { id: 'q29', difficulty: 'easy', q: 'What is the "tomial tooth" on a falcon\'s upper beak used for?',
+      options: ['Eating seeds', 'Severing the cervical vertebrae of prey in a single bite', 'Cracking open eggs', 'Tearing tendons'], correctIdx: 1,
+      explanation: 'The tomial tooth is a pointed projection on the upper beak of falcons (Falconidae) that fits into a notch on the lower beak. Falcons kill prey by gripping it + severing the cervical (neck) vertebrae with one precise bite. Hawks + eagles + owls lack this — they kill by squeezing with talons.' },
+    { id: 'q30', difficulty: 'easy', q: 'A barn owl in pitch darkness can pinpoint a mouse to about how many degrees of accuracy by sound alone?',
+      options: ['~30°', '~10°', '~5°', '~1°'], correctIdx: 3,
+      explanation: 'Roger Payne\'s 1962 classic experiment: barn owls in total darkness struck mice on leaf litter with ~1° accuracy in both elevation + azimuth. The asymmetric ear placement (left ear higher than right) provides elevation cues; combined with horizontal timing differences, this gives full 3D acoustic localization unique among birds.' },
+    { id: 'q31', difficulty: 'easy', q: 'Which raptor family has the highest aspect-ratio wings?',
+      options: ['Accipiters (forest hawks)', 'Falcons (Falconidae)', 'Buteos (broad-winged hawks)', 'Owls (Strigidae)'], correctIdx: 1,
+      explanation: 'Falcons have the highest aspect ratio (long thin wings) of the raptor families — peregrines around AR 10. High AR = efficient glide + low induced drag = the streamlined silhouette suited for high-speed level flight + stoop. Owls + accipiters have the lowest AR (short broad wings = high maneuverability).' },
+    { id: 'q32', difficulty: 'easy', q: 'You see a hawk with a distinctive M-shaped silhouette plunging feet-first into water. Most likely species:',
+      options: ['Bald eagle', 'Osprey', 'Great horned owl', 'Red-tailed hawk'], correctIdx: 1,
+      explanation: 'Osprey. The kinked M-shape (where the wing bends at the carpal joint) is diagnostic. Ospreys are the only raptors that fully submerge during fishing dives + have specialized adaptations for it (reversible outer toe, spicules on footpads, nostril flap).' },
+    { id: 'q33', difficulty: 'medium', q: 'Which behavior gives a Cooper\'s hawk its name in falconry circles ("the corgi hawk")?',
+      options: ['Short legs', 'Aggressive "kek-kek-kek" barking call near the nest', 'Round face', 'Brown coloration'], correctIdx: 1,
+      explanation: 'Cooper\'s hawks produce a sharp "kek-kek-kek" alarm call that sounds remarkably like an angry small dog. Falconers + birders often describe the call as "an angry corgi" — and the closely-related goshawk\'s call is "an enraged corgi" (louder + faster).' },
+    { id: 'q34', difficulty: 'medium', q: 'A bird with HIGH wing loading (kg/m²) AND LOW aspect ratio describes which hunt style?',
+      options: ['Falcon stoop specialist', 'Eagle soaring specialist', 'Accipiter forest chaser', 'Owl silent glider'], correctIdx: 2,
+      explanation: 'High wing loading + low AR = fast/heavy + maneuverable + bad at gliding = the accipiter profile (Cooper\'s hawk, sharp-shinned hawk, northern goshawk). They\'re built to thread between branches at speed in forest interior, accepting poor energy efficiency for high turning rate.' },
+    { id: 'q35', difficulty: 'medium', q: 'During fall migration, what does a "cold front" do to raptor counts at hawkwatch sites like Hawk Mountain?',
+      options: ['Pauses migration', 'Drives a major migration push — cold air = strong thermals + N/NW wind = high counts', 'Forces birds to ground', 'Has no effect'], correctIdx: 1,
+      explanation: 'Cold fronts are the BIG raptor-count days. The cold air mass creates strong vertical temperature gradients = strong thermals. NW wind concentrates birds at the ridge bottleneck. Veterans at Hawk Mountain time their visits around cold fronts — typical numbers go from 200/day → 2000+/day.' },
+    { id: 'q36', difficulty: 'medium', q: 'A peregrine falcon eats a pigeon weighing 350g. Roughly how many kilocalories does this provide?',
+      options: ['~50 kcal', '~150 kcal', '~450 kcal', '~1500 kcal'], correctIdx: 2,
+      explanation: 'Fresh meat ≈ 1300 kcal/kg. 350g × 1.3 = ~455 kcal. This is roughly 3-4 days of basal calories for a 0.95 kg peregrine. After a successful hunt, peregrines often spend a full day perched + digesting, not hunting again until hungry.' },
+    { id: 'q37', difficulty: 'medium', q: 'Which is NOT one of the three owl-feather silent-flight mechanisms?',
+      options: ['Comb-edged leading primaries', 'Fringed trailing edge', 'Velvety dorsal surface', 'Iridescent ventral coating'], correctIdx: 3,
+      explanation: 'The three silencing mechanisms (Bachmann + Wagner studies): (1) comb-edged leading primaries break laminar-to-turbulent transition, (2) fringed trailing edge absorbs trailing-edge vortex noise, (3) velvety dorsal surface dampens feather-on-feather friction. Iridescent coating is a peacock-style display trait, not a silencing mechanism.' },
+    { id: 'q38', difficulty: 'medium', q: 'A red-tailed hawk female weighs 1.4 kg; the male weighs 0.95 kg. The female-to-male ratio (1.47) is an example of:',
+      options: ['Normal sexual size dimorphism (males larger)', 'Reverse sexual size dimorphism (females larger) — characteristic of raptors', 'Genetic abnormality', 'Age-based difference'], correctIdx: 1,
+      explanation: 'Reverse SSD. In raptors, females are CONSISTENTLY larger than males — opposite of most birds + mammals. The pattern is most extreme in accipiters + falcons. Current consensus: niche-divergence — male takes smaller agile prey, female takes larger; pair harvests more biomass than either gender alone could.' },
+    { id: 'q39', difficulty: 'medium', q: 'Which conservation action contributed MOST to peregrine recovery from 50 pairs (1972) to 3,200 pairs (2020)?',
+      options: ['Habitat restoration', 'Captive breeding + hacking using falconry techniques', 'Translocation from Europe', 'Predator removal'], correctIdx: 1,
+      explanation: 'The Peregrine Fund (founded 1970 by Tom Cade at Cornell) ran captive-breeding using falconry methods — particularly "hacking" (soft-release via falconry hack-box techniques). ~7,000 captive-bred peregrines were released over 25 years. Without this, the species would have remained extinct east of the Rockies despite the DDT ban.' },
+    { id: 'q40', difficulty: 'hard', q: 'What is the kinetic energy delivered by a peregrine in a 242 mph stoop (mass 0.95 kg)?',
+      options: ['~500 J', '~2000 J', '~5500 J', '~15000 J'], correctIdx: 2,
+      explanation: 'KE = ½mv² = 0.5 × 0.95 × (108 m/s)² = 0.5 × 0.95 × 11664 ≈ 5540 J. For context: a .22 caliber bullet at muzzle = ~150 J. A peregrine impact = ~37× a .22 bullet, concentrated into a 5ms strike — peregrines deliver pistol-bullet-class kinetic energy with clenched feet.' },
+    { id: 'q41', difficulty: 'hard', q: 'The harpy eagle\'s talon grip force is ~530 psi. Why does it have such powerful talons compared to other raptors?',
+      options: ['Heavier wings need more grip', 'It hunts canopy mammals (sloths, monkeys) that require crushing strikes to immobilize', 'It eats hard shells', 'Display purpose only'], correctIdx: 1,
+      explanation: 'Harpies hunt sloths + monkeys in the rainforest canopy — large strong mammals that fight back. The 530 psi grip can crush a sloth\'s skull instantly + immobilize a monkey before it can grab a branch. Talons are 12.5 cm long (longer than a grizzly\'s claws). Specialized for catching + holding heavy struggling prey, not just gripping.' },
+    { id: 'q42', difficulty: 'hard', q: 'Why do peregrines fly a LOGARITHMIC SPIRAL during a stoop instead of a straight line to the prey?',
+      options: ['The spiral is shorter', 'It keeps prey at a CONSTANT retinal angle so head doesn\'t need to turn at terminal velocity (no drag penalty)', 'It conserves energy', 'To confuse the prey'], correctIdx: 1,
+      explanation: 'Tucker 1998 (J Exp Biol). The logarithmic spiral maintains a constant angle between the falcon\'s body axis + the prey\'s position. The bird never needs to turn its head — eyes stay fixed forward through deep fovea, body stays streamlined. This is the SAME proportional-navigation algorithm used by AIM-9 Sidewinder air-to-air missiles, derived for the same physics-based reason.' },
+    { id: 'q43', difficulty: 'hard', q: 'A snowy owl in California in winter is most likely:',
+      options: ['Permanent range shift due to climate change', 'Irruption year — Arctic prey crash forced southward dispersal', 'Captive escapee', 'Hybrid bird'], correctIdx: 1,
+      explanation: 'Snowy owl irruptions are tied to Arctic lemming + vole boom-bust cycles. After a peak year, prey crash forces juveniles to disperse far south to find food. NOT a permanent range shift — birds return to Arctic to breed. The 2013-14 East Coast irruption put snowy owls on every Atlantic beach as far south as Bermuda.' },
+    { id: 'q44', difficulty: 'hard', q: 'Why do diurnal raptors (eagles, hawks, falcons) have TWO foveas per eye instead of one (like humans + owls)?',
+      options: ['Backup in case one fails', 'One for forward gaze (deep) + one for sideways gaze (shallow) — lets them resolve detail in TWO directions simultaneously', 'To see in color', 'To detect motion'], correctIdx: 1,
+      explanation: 'Diurnal raptors have a deep central fovea (binocular forward, used for prey targeting) + a shallow temporal fovea (monocular sideways, used to scan for kleptoparasites + threats). Both have high cone density. Result: a peregrine in a stoop can simultaneously resolve fine detail on its forward target AND its 45° sideways periphery. No mammal can do this.' },
+    { id: 'q45', difficulty: 'hard', q: 'The California condor population dropped to 22 individuals in 1987, ALL captured for captive breeding. What was the PRIMARY threat that pushed them to extinction?',
+      options: ['DDT', 'Lead-shot fragments in carrion (gut piles from hunters using lead ammunition)', 'Habitat loss', 'Direct shooting'], correctIdx: 1,
+      explanation: 'Lead poisoning from scavenging gut piles + carcasses left by hunters using lead ammunition. Lead fragments enter the bloodstream + cause paralysis of the digestive tract → slow starvation. Recovery has been entirely captive-breed + reintroduce, but lead REMAINS the #1 ongoing threat. Every wild condor is regularly recaptured + tested. California\'s 2019 lead-ammo ban is critical for ongoing recovery.' }
   ];
 
   // ───────────────────────────────────────────────────────────
@@ -1296,7 +1348,70 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
     { term: 'Tarsus', def: 'The "leg" between the foot + the ankle joint. Some raptors have feathered tarsi (rough-legged hawk, snowy owl); most have bare scaly tarsi.' },
     { term: 'Tomial Tooth', def: 'A pointed projection on the upper beak edge in falcons. Fits into a notch on the lower beak — used to sever the cervical vertebrae of prey in a single bite.' },
     { term: 'Wing Loading', def: 'Body mass divided by wing area (kg/m²). High loading = fast/heavy/diving (falcons 9 kg/m²); low loading = slow/soaring (vultures 3 kg/m²).' },
-    { term: 'Zygodactyl', def: 'Foot with 2 toes forward + 2 back. Ospreys can rotate their outer toe to switch from anisodactyl (3-and-1) to zygodactyl (2-and-2) for gripping wet fish.' }
+    { term: 'Zygodactyl', def: 'Foot with 2 toes forward + 2 back. Ospreys can rotate their outer toe to switch from anisodactyl (3-and-1) to zygodactyl (2-and-2) for gripping wet fish.' },
+    // ── NEW v0.31: 40 additional glossary terms ──
+    { term: 'Aposematism', def: 'Warning coloration that signals "dangerous, do not eat." Rare in raptors but seen in some prey they target — blue-ringed octopus rings, monarch butterfly wings, coral snake bands.' },
+    { term: 'Aspect ratio', def: 'Wingspan squared divided by wing area. High AR (10-15) = efficient soaring (albatross, swift, peregrine). Low AR (4-6) = high maneuverability (Cooper\'s hawk, owls, accipiters).' },
+    { term: 'Bate', def: 'Falconry term: when a tethered raptor flutters off the perch in an attempt to fly. Indicates the bird is unsettled or wants to hunt.' },
+    { term: 'Bearing', def: 'A raptor in flight following another bird in a stoop or chase. Used in falconry for following a hawk to its prey.' },
+    { term: 'Bill', def: 'The combined upper + lower mandibles. Raptor bills are hooked + sharp, evolved for tearing flesh. Falcons additionally have a tomial tooth on the upper mandible.' },
+    { term: 'Brooding', def: 'Adult sitting on chicks to keep them warm or shaded. Distinct from incubation (sitting on eggs). Both parents do this in some raptors; only female in others.' },
+    { term: 'Buoyant flight', def: 'Light, rocking flight pattern with light wingbeats — characteristic of kites + some harriers. Looks like the bird is floating on the wind.' },
+    { term: 'Carpal joint', def: 'The bird\'s "wrist" — where the wing bends mid-span. Visible as the bend in an osprey\'s distinctive M-shape silhouette.' },
+    { term: 'Casting', def: 'Falconry term for vomiting up a pellet — sign of healthy digestion. Owls cast every 6-10 hours after eating.' },
+    { term: 'Cere (yellow patch)', def: 'See Cere — but specifically, in falconry, the brightness of the cere is one indicator of hormonal status + breeding readiness in the female.' },
+    { term: 'Chase flight', def: 'Active pursuit of prey, usually involving rapid maneuvering. Distinct from a stoop (vertical dive) — chase flights are horizontal + curving.' },
+    { term: 'Clutch', def: 'A set of eggs laid by one female in one nesting attempt. Raptor clutches range from 1 (harpy eagle) to 7 (American kestrel).' },
+    { term: 'Color phase / morph', def: 'Discrete plumage variants within a single species. Red-tailed hawks have ~14 named color morphs (Krider\'s, Harlan\'s, Western dark, etc).' },
+    { term: 'Corvid', def: 'Members of family Corvidae (crows, ravens, jays, magpies). Often mob raptors to defend territory + drive them away. Not raptors themselves but central to raptor ecology.' },
+    { term: 'Coverts', def: 'Small feathers covering the bases of larger flight feathers (wings + tail). Provide aerodynamic streamlining + waterproofing.' },
+    { term: 'Crepuscular', def: 'Active at dawn + dusk. Many raptors are crepuscular — peak hunting at low-light transition times when prey is also active but visibility favors the hunter.' },
+    { term: 'Dimorphic plumage', def: 'Visible plumage differences between sexes. Common in songbirds, RARE in raptors — most adult raptors look identical regardless of sex (size differs but plumage doesn\'t). Exceptions: northern harrier, snail kite.' },
+    { term: 'Down', def: 'Soft fluffy under-feathers, especially in chicks. Provides insulation. Raptor chicks are covered in down for the first 2-4 weeks of life.' },
+    { term: 'Dust bath', def: 'Self-grooming behavior — bird rolls in dust or sand. Removes parasites + excess oils. Owls particularly enjoy this.' },
+    { term: 'Eyrie', def: 'A raptor\'s nest, especially on a cliff or in a high tree. British spelling; American spelling is "aerie."' },
+    { term: 'Fledging weight', def: 'Mass at which a chick first leaves the nest. Usually equals or slightly exceeds adult weight, because chicks must have full flight feathers before first flight.' },
+    { term: 'Footing', def: 'The act of striking prey with the talons. Distinct from gripping or perching. A "good foot" in falconry means the bird strikes accurately.' },
+    { term: 'Frounce', def: 'Trichomoniasis — a parasitic disease that causes cheesy yellow lesions in the throat. Common cause of death in raptors that eat pigeons (which often carry the parasite).' },
+    { term: 'Glide angle', def: 'Angle below horizontal that a gliding bird falls per unit of forward travel. Inverse of L/D ratio. A 6:1 glide ratio = 9.5° glide angle.' },
+    { term: 'Gular flutter', def: 'Rapid vibration of the throat skin to dissipate heat — analogous to dog panting. Used by raptors on hot days when they can\'t evaporate via sweat (birds don\'t have sweat glands).' },
+    { term: 'Hardpenned', def: 'Falconry term: a bird whose flight feathers have finished growing + hardened. Necessary before training begins.' },
+    { term: 'Hooded', def: 'Wearing a falconry hood (a leather cap covering the eyes to calm the bird during transport).' },
+    { term: 'Imprinting', def: 'Permanent recognition of caregiver identity formed during early development. Chicks raised by humans imprint on humans + become non-releasable. Modern best practice avoids imprinting by using puppet caregivers.' },
+    { term: 'Intermew', def: 'A raptor that has completed at least one molt. Indicates the bird has survived its first migration + is adult.' },
+    { term: 'Jess', def: 'Soft leather strap anchored at the bird\'s ankle. Used by falconers to attach a leash. Modern jesses use Aylmeri swivels to prevent twisting.' },
+    { term: 'Kleptoparasitism', def: 'Stealing food from another predator. Bald eagles steal from ospreys; frigatebirds steal from boobies. A form of foraging that minimizes hunt effort.' },
+    { term: 'Lift coefficient (Cl)', def: 'Dimensionless number describing how much lift a wing produces relative to airspeed squared + wing area. Higher Cl = more lift at a given speed. Raptor wings can change Cl by adjusting feather position (slot vs flat).' },
+    { term: 'Mantling', def: 'Wing-spreading behavior over a kill. Hides the food from kleptoparasites + signals "this is mine." Common in red-tails, eagles, falcons.' },
+    { term: 'Mews', def: 'A falconer\'s housing facility for raptors. From Old French "mue" = to molt. Federally inspected in the US with specific dimensional + welfare requirements.' },
+    { term: 'Mobbing', def: 'Group behavior where smaller birds (especially corvids + songbirds) harass a perched raptor to drive it away from a territory or nest site.' },
+    { term: 'Molting', def: 'Annual replacement of feathers. Most raptors take 2-4 months to complete a full molt. During molt, flight efficiency decreases — birds are vulnerable.' },
+    { term: 'Natal down', def: 'First-coat fluffy white down on a freshly-hatched chick. Replaced by thermal down within 1-2 weeks.' },
+    { term: 'Nictitating membrane', def: 'Transparent third eyelid that slides horizontally across the eye. Protects from debris during high-speed flight + dust during stoop. All birds have one; raptors depend on it.' },
+    { term: 'Olfaction', def: 'Sense of smell. Most raptors barely use it. Exception: turkey vultures + king vultures have large olfactory bulbs + locate carrion by smell from 1+ miles.' },
+    { term: 'Ophthalmology', def: 'The medical study of eyes. Raptor ophthalmology is its own specialized veterinary field — raptors have dramatically different eye anatomy from mammals (tubular owl eyes, dual fovea, pecten oculi).' },
+    { term: 'Passage', def: 'Falconry term for a juvenile raptor in its first migration. Passage birds are easier to train than haggards (adult wild-caught) but harder than eyas (nest-taken chicks).' },
+    { term: 'Pellet (cast)', def: 'Indigestible material (fur, bones, teeth, feathers) regurgitated by raptors. Owls produce the most distinctive pellets — often used in classroom dissection.' },
+    { term: 'Plumage cycle', def: 'The sequence of feather sets across a bird\'s lifetime. Most raptors take 2-4 years to reach adult plumage. Bald eagles need 5 years for the white head.' },
+    { term: 'Prebasic molt', def: 'The annual molt that precedes the breeding season (basic = non-breeding plumage). Usually happens after a year\'s breeding + before next migration.' },
+    { term: 'Quill', def: 'A new feather still encased in its keratin sheath. Looks like a porcupine quill until it bursts open during growth.' },
+    { term: 'Raptor (definition)', def: 'A diurnal or nocturnal predatory bird with hooked beak + curved talons. Includes hawks, eagles, falcons, owls, osprey, kites. Vultures are debated — Old World vultures are raptors taxonomically, New World vultures are not.' },
+    { term: 'Rectrices (tail feathers)', def: 'See Rectrices in base glossary. Specifically — numbered as 3 pairs (R1 = innermost, R6 = outermost). Loss of tail feathers reduces flight control dramatically.' },
+    { term: 'Refraction (eye)', def: 'The bending of light as it passes through the cornea + lens. Raptor eyes have higher refractive power than humans — partly because of bigger lens, partly because of unique pecten geometry.' },
+    { term: 'Sclera', def: 'The "white of the eye" — the tough outer coat. In raptors, the sclera is reinforced with bony plates (sclerotic ring) that maintain eye shape against the wind pressure of high-speed flight.' },
+    { term: 'Slot', def: 'The gap between the tips of adjacent primary feathers in a soaring eagle\'s wing. Each gap acts as a mini high-aspect-ratio wing, reducing induced drag at the wingtip vortex.' },
+    { term: 'Snipe', def: 'Confusingly, both (1) a real shorebird species, and (2) an old falconry term for a small fast prey item. Falconers train raptors to "snipe" — strike small evasive prey.' },
+    { term: 'Soaring', def: 'Sustained flight without flapping by using rising air (thermals or slope lift). Most efficient form of flight known — broad-winged hawks cross continents on it.' },
+    { term: 'Stoop angle', def: 'The angle of descent during a falcon\'s stoop, measured from horizontal. Peregrine stoops are typically 30-45° from vertical. Vertical stoops are rare + unstable.' },
+    { term: 'Sub-adult', def: 'A bird older than a juvenile but younger than a breeding adult. Most raptors are subadult for 2-4 years before reaching sexual maturity.' },
+    { term: 'Tarsus', def: 'The "leg" between the foot + the ankle joint. The visible "leg" on a perched raptor is actually the tarsus, not the thigh. Some raptors have feathered tarsi (rough-leg, snowy owl); most have bare scaly tarsi.' },
+    { term: 'Telemetry', def: 'Radio-transmitter tracking of an animal. Modern raptor telemetry uses GPS chips that text location data via cellular or satellite networks. Has revolutionized migration research.' },
+    { term: 'Thermal', def: 'A column of rising warm air, typically formed by sun heating dark ground (plowed fields, parking lots, rocky outcrops). Raptors circle inside thermals to gain altitude for free.' },
+    { term: 'Tomial tooth', def: 'A pointed projection on the upper beak of falcons. Fits into a notch on the lower beak. Used to sever the cervical vertebrae of prey in a single bite — falcons kill with this, not with talons.' },
+    { term: 'Turbulence', def: 'Chaotic air movement. Bad for fixed-wing aircraft, but raptors actually exploit turbulence — soaring birds can ride small-scale turbulence (gust soaring) to gain altitude without thermal columns.' },
+    { term: 'Vane (feather)', def: 'The flat blade portion of a feather, attached to the rachis (central shaft). The shape of the vane determines aerodynamic properties.' },
+    { term: 'Wing loading', def: 'See Wing Loading in base glossary. Numerically: body mass divided by wing area, units kg/m². The single most predictive number for hunt style.' },
+    { term: 'Wing slot', def: 'See Slot. Specifically — the visible gap between the outermost 4-7 primary feathers when an eagle or buteo soars. Slots reduce induced drag at the wingtip.' }
   ];
 
   // ═══════════════════════════════════════════════════════════
@@ -1374,7 +1489,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('div', { className: 'flex-1' },
                 h('div', { className: 'text-xl font-bold text-amber-200' }, 'Raptor Hunt: Predator Physics + Biology'),
                 h('div', { className: 'text-sm text-amber-100/80 mt-1' }, 'Hunt as a peregrine at 240 mph. Crush bones at 530 psi as a harpy. See vole urine trails in UV like a kestrel. Glide silently on owl feathers. Then study the biology that makes it all possible.'),
-                h('div', { className: 'text-xs text-amber-300/70 mt-2 italic' }, '25 sections · 13 species · 6 interactive labs · anatomy + acuity demo · case studies · 42-term glossary · 28-question quiz')
+                h('div', { className: 'text-xs text-amber-300/70 mt-2 italic' }, '25 sections · 13 species · 6 interactive labs · anatomy + acuity demo · case studies · 42-term glossary · 45-question quiz')
               )
             ),
             // ── NEW v0.20: "Surprise me" random-section button ──
@@ -9223,10 +9338,91 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 id: 'mp14', topic: '🪂 Wing-Loading Compare',
                 problem: 'Two raptors: kestrel (m=0.12 kg, A=0.039 m²) + gyrfalcon (m=1.5 kg, A=0.16 m²). Calculate wing loading for each. Despite the kestrel being much smaller, what does the comparison say about their hunt styles?',
                 solution: 'Kestrel WL = 0.12/0.039 = 3.1 kg/m². Gyrfalcon WL = 1.5/0.16 = 9.4 kg/m². Gyrfalcon has 3× the wing loading — much faster + harder to maneuver, terrible at slow flight. Kestrel has low WL = active hover-hunting (windmill its wings to stay stationary). Both are Falconidae but they\'ve specialized in OPPOSITE hunt strategies — kestrel = slow, gyrfalcon = fast pursuit. Demonstrates that family alone doesn\'t predict hunt style; wing-loading does.'
+              },
+              // ── NEW v0.31: 16 more math problems ──
+              {
+                id: 'mp15', topic: '🍖 Daily Energy Budget',
+                problem: 'A bald eagle (4.5 kg) needs ~120 kcal/kg/day. How many calories per day? If each meal is ~30% body mass at 1300 kcal/kg meat, how many meals/day does the eagle need?',
+                solution: 'Daily need = 4.5 × 120 = 540 kcal/day. Meal size = 4.5 × 0.30 × 1300 = 1,755 kcal (huge — they often eat once + digest for a day). Realistically eagles need < 1 meal/day if it\'s a full one. A typical "good" eagle day = 1 successful hunt OR a substantial carrion find.'
+              },
+              {
+                id: 'mp16', topic: '🪶 Flap vs Glide Energy',
+                problem: 'A raptor burns 1.0 kcal/s/kg flapping + 0.067 kcal/s/kg gliding. For a 1 kg peregrine flying for 20 minutes: how much energy does pure flapping cost vs pure gliding?',
+                solution: 'Flap: 1.0 × 1.0 × 60 × 20 = 1,200 kcal. Glide: 0.067 × 1.0 × 60 × 20 = 80 kcal. Flapping costs 15× more energy. Real raptors achieve roughly 90% glide + 10% flap, which dramatically extends their hunt time per meal. This is why broad-winged hawks can cross continents on a few hundred kcal of body fat.'
+              },
+              {
+                id: 'mp17', topic: '🌀 Thermal Lift Math',
+                problem: 'A typical thermal column has updraft speed 2 m/s. If a soaring hawk has glide sink rate 1 m/s in still air, what is the NET altitude gain per second circling inside the thermal?',
+                solution: 'Net climb = thermal updraft − sink rate = 2 − 1 = 1 m/s. So 60 m/min, 3,600 m/hr. A broad-winged hawk can reach cloud-base altitude (~2 km) in ~30 minutes of free circling. From cloud base it glides to the next thermal — average 250 miles/day on migration with zero flapping. The whole continent is mapped by thermal availability.'
+              },
+              {
+                id: 'mp18', topic: '👁 Two Fovea Geometry',
+                problem: 'A red-tailed hawk has central fovea (deep — used for forward gaze) + temporal fovea (shallow — used for sideways gaze). If the temporal fovea provides 45° lateral coverage on each eye, what total monocular sideways visual field does the bird have?',
+                solution: 'Each eye contributes ~45° lateral. Total = 2 × 45° = 90° of dual-fovea sideways coverage. Combined with the central fovea\'s forward 35° binocular zone + 110° monocular each side, the hawk can resolve fine detail SIMULTANEOUSLY in two directions at once. No mammal can do this.'
+              },
+              {
+                id: 'mp19', topic: '🦴 Skeleton Mass',
+                problem: 'Bird skeletons are ~5% of body mass; mammal skeletons are ~12-15%. For a 4.5 kg eagle, how much do its bones weigh? How much would a 4.5 kg "eagle-shaped mammal" weigh in bones?',
+                solution: 'Eagle bones = 4.5 × 0.05 = 0.225 kg. "Mammal" = 4.5 × 0.135 = 0.61 kg. The eagle saves 0.385 kg = ~9% of body mass on bones alone. Hollow + air-filled (pneumatized) bones explain the saving. That 9% saved is what makes flight energetically feasible.'
+              },
+              {
+                id: 'mp20', topic: '🎯 Prey-Catch Ratio',
+                problem: 'A peregrine attempts 8 strikes per day + succeeds in ~3 (~37.5% success rate). If each catch gives 250 kcal + each missed strike costs 30 kcal in energy, what is net daily energy from hunting?',
+                solution: 'Catches: 3 × 250 = 750 kcal. Missed strikes: 5 × 30 = 150 kcal cost. Net = 750 − 150 = 600 kcal/day. Daily need is ~120 kcal/kg × 0.95 kg = ~115 kcal. So 600 net = ~5× daily needs, allowing for chicks, surplus, fat reserves. Real raptors NEED that surplus during chick-rearing.'
+              },
+              {
+                id: 'mp21', topic: '🧬 Demography',
+                problem: 'Bald eagle population doubled every 5 years during recovery (1980-2005). Starting from 417 pairs in 1963 + assuming λ = 1.149 (doubling every 5 years), what year would you predict the population first exceeded 10,000 pairs?',
+                solution: 'log(10000/417) / log(1.149) = log(24) / 0.140 = 1.380 / 0.140 ≈ 22.8 years. Add to 1963 → predict ~1986. Actual observation: ~1990, very close. The exponential model captures the early recovery phase well; later years slow as density-dependence kicks in.'
+              },
+              {
+                id: 'mp22', topic: '🦅 Stoop Power',
+                problem: 'Power = force × velocity. A peregrine in stoop hitting prey at terminal v of 108 m/s has KE 5,540 J. If the strike-to-stop transfers in 5 milliseconds, what is the impact power in watts? In horsepower (1 hp = 746 W)?',
+                solution: 'Power = energy / time = 5540 / 0.005 = 1,108,000 W = 1.108 MW. In horsepower: 1,108,000 / 746 ≈ 1485 hp. The peregrine delivers ~1500 horsepower in 5ms at impact. For context: a small car engine is ~150 hp continuous. The peregrine is briefly producing 10× a car engine — concentrated over 5ms + 5 cm² of contact area.'
+              },
+              {
+                id: 'mp23', topic: '🌬 Wind Compensation',
+                problem: 'A raptor cruising at 15 m/s airspeed encounters a 5 m/s headwind. What is its ground speed? If it needs to cover 30 km, how does flight time change vs no-wind?',
+                solution: 'Ground speed = airspeed − headwind = 15 − 5 = 10 m/s. Time = distance / ground speed = 30,000 / 10 = 3,000 s = 50 min. No-wind: 30,000 / 15 = 2,000 s = 33 min. The 5 m/s headwind costs 50% more flight time = 50% more calories burned. Migration timing matters because crossing into a headwind can mean dying mid-flight.'
+              },
+              {
+                id: 'mp24', topic: '🎨 Sexual Dimorphism',
+                problem: 'A pair of red-shouldered hawks: male 0.45 kg, female 0.65 kg. Ratio = ? In a population of 100 mated pairs, total adult biomass = ?',
+                solution: 'Ratio = 0.65/0.45 = 1.44. Adult biomass = 100 × (0.45 + 0.65) = 110 kg. Note: females in raptors are LARGER, opposite of most birds. Pedagogical note: reverse SSD ratio for red-shoulders (1.44) is moderate — sharp-shinned hawks reach 1.5+, kites are barely 1.1.'
+              },
+              {
+                id: 'mp25', topic: '🔬 Acuity at Distance',
+                problem: 'A bald eagle has 5× human visual acuity. If a human can resolve a 5 cm object at 100 m, at what distance can the eagle resolve the same object?',
+                solution: 'Distance ratio scales with acuity: 100 × 5 = 500 m. The eagle can spot a 5 cm prey item from half a kilometer. For context: 5 cm is roughly the size of a vole. Eagle spotting a vole at 500m = soaring at altitude + scanning a wide territory simultaneously.'
+              },
+              {
+                id: 'mp26', topic: '📐 Glide Range Math',
+                problem: 'An eagle with L/D = 12 starts at 1500m altitude. (a) How far can it glide in still air? (b) If it finds a 1.5 m/s thermal + has 1 m/s sink rate, what is its NEW effective glide ratio?',
+                solution: '(a) Distance = altitude × L/D = 1500 × 12 = 18,000 m = 18 km. (b) Net climb in thermal = 1.5 − 1 = 0.5 m/s. The bird gains altitude while moving forward — effective L/D becomes INFINITE (the bird never descends). This is why broad-winged hawks "kettle" — they\'re trapped in lift columns until they peel off into the next gliding leg.'
+              },
+              {
+                id: 'mp27', topic: '🐣 Chick Demand',
+                problem: 'A red-tail nest has 3 chicks at week 4 of post-hatch growth. Each chick is ~150g + needs 30 kcal/day at this age. How many calories must the parents bring per day? At 1 prey item = 50 kcal avg, how many prey trips per day?',
+                solution: 'Daily chick demand = 3 × 30 = 90 kcal. PLUS parents need ~100 kcal each for themselves = 200 kcal more. Total = 290 kcal/day. Prey trips at 50 kcal each = 290/50 ≈ 6 prey deliveries/day. Plus parent self-feeding. Real red-tail nests record 8-12 prey trips/day during peak chick growth.'
+              },
+              {
+                id: 'mp28', topic: '🪂 Wingspan to Mass Scaling',
+                problem: 'Bird wingspan (b) scales with mass (m) as b ≈ k × m^0.33 (cube root). For a 1 kg bird with 1.0m wingspan, predict the wingspan of a 4 kg bird (4× mass) of similar build.',
+                solution: 'b_new = b × (m_new/m)^0.33 = 1.0 × (4)^0.33 = 1.0 × 1.587 ≈ 1.59 m. Comparison: peregrine (0.95 kg, 1.05 m) vs bald eagle (4.5 kg, 2.0 m). Predicted: 1.05 × (4.5/0.95)^0.33 = 1.05 × 1.67 = 1.75 m. Observed: 2.0 m. Eagles have slightly LARGER wings than the cube-root scaling predicts — broader low-wing-loading design for soaring.'
+              },
+              {
+                id: 'mp29', topic: '🌍 Population Density',
+                problem: 'A red-tailed hawk territory averages 4 km². The lower 48 US is ~7.5 million km². At 100% saturation (one pair per territory), how many red-tail pairs could the lower 48 theoretically support?',
+                solution: 'Pairs = 7,500,000 / 4 = 1,875,000 pairs. Actual continental US population: ~1.5 million pairs (~80% of theoretical maximum). Hawk density is at carrying capacity in much of its range. This is why red-tails are not declining — they\'ve filled the available niche.'
+              },
+              {
+                id: 'mp30', topic: '🌀 Cumulative Wind Drift',
+                problem: 'A raptor migrating south experiences crosswind of 3 m/s for 6 hours of flying time. What is the total LATERAL drift?',
+                solution: 'Drift = wind speed × time = 3 m/s × 6 × 3600 s = 64,800 m = 64.8 km. Without wind correction, the bird drifts almost 65 km off its target azimuth. This is why migrating raptors actively compensate — they "crab" into the wind by pointing nose into wind + traveling diagonally to maintain ground track. Tracking studies show real birds correct nearly perfectly even with no visual landmarks.'
               }
             ];
             return h('details', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded-xl p-3' },
-              h('summary', { className: 'text-sm font-bold text-emerald-300 cursor-pointer' }, '🧮 Math Practice Problems — 14 numerical workouts'),
+              h('summary', { className: 'text-sm font-bold text-emerald-300 cursor-pointer' }, '🧮 Math Practice Problems — 30 numerical workouts'),
               h('div', { className: 'mt-3 space-y-2' },
                 h('div', { className: 'text-xs text-slate-400 italic mb-2' }, 'Real physics problems from this tool. Work them out on paper, then click Show Solution to check. Topics: wing loading, terminal velocity, KE, aspect ratio, acuity scaling, population λ, talon pressure, fall time, pellet biomass, glide ratio.'),
                 problems.map(function(p) {
@@ -9313,7 +9509,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 h('div', { className: 'font-bold mb-2' }, '📚 5. Pre-trip prep (1 week before)'),
                 h('div', { className: 'space-y-1 text-[11px]' },
                   h('div', null, '☐ Students complete Raptor Hunt Hub + Roster sections'),
-                  h('div', null, '☐ Students complete the Field ID section (silhouettes) + take the 28-question quiz'),
+                  h('div', null, '☐ Students complete the Field ID section (silhouettes) + take the 45-question quiz'),
                   h('div', null, '☐ Practice with binoculars in classroom or schoolyard'),
                   h('div', null, '☐ Review what to record: date / location / weather / species / behavior')
                 )
@@ -9721,7 +9917,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // ────────────────────────────────────────────────────────
       return h('div', { className: 'space-y-4', role: 'region', 'aria-label': 'Raptor Hunt tool' },
         // Section count chip
-        h('div', { className: 'text-[11px] text-slate-500 uppercase tracking-wider' }, '25 sections · 13 species · 6 interactive labs · acuity demo · 5 recoveries · famous birds · 42-term glossary · 28-question quiz'),
+        h('div', { className: 'text-[11px] text-slate-500 uppercase tracking-wider' }, '25 sections · 13 species · 6 interactive labs · acuity demo · 5 recoveries · famous birds · 42-term glossary · 45-question quiz'),
         // Tab nav (scrollable horizontal)
         h('div', { className: 'flex gap-1.5 overflow-x-auto pb-1', role: 'tablist', 'aria-label': 'Raptor Hunt sections' },
           SECTIONS.map(function(s) {
