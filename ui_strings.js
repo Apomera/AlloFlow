@@ -4716,7 +4716,8 @@
       "notebook_label": "Note-taking field gaps",
       "frames_label": "Sentence-frame response gaps",
       "concept_sort_label": "Concept Sort misplacement patterns"
-    }
+    },
+    "all_tool_activity": "All Tool Activity"
   },
   "tools": {
     "source": "Source Material",

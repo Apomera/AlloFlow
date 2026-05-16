@@ -2351,6 +2351,86 @@ const LongitudinalProgressChart = React.memo(({ logs }) => {
         </div>
     );
 });
+// ── TEACHER_METRIC_REGISTRY ──────────────────────────────────────────────
+// Single source of truth for per-tool teacher-dashboard metrics. Each entry
+// declares how to count a student's engagement with that tool, and the
+// dashboard iterates over the registry to render tile clusters, CSV columns,
+// and PDF rows uniformly instead of hand-rolling per-tool inline logic.
+//
+// To add a new tool to the dashboard:
+//   1. Push an entry below with id + label + icon + color + count(student)
+//   2. The "All Tool Activity" tile cluster + CSV columns + report row
+//      auto-pick it up — no inline edits needed in 5 places.
+//
+// Doesn't replace the specialized panels (probes, fluency, notebook, etc.)
+// which need richer rendering — this is the uniform "how many of each" layer.
+const TEACHER_METRIC_REGISTRY = [
+  { id: 'quiz',            label: 'Quizzes',            icon: '📝', color: 'indigo',  count: (s) => (s.history || []).filter(h => h && h.type === 'quiz').length },
+  { id: 'adventure',       label: 'Adventures',         icon: '🗺️', color: 'purple',  count: (s) => (s.history || []).filter(h => h && h.type === 'adventure').length },
+  { id: 'glossary',        label: 'Glossaries',         icon: '📖', color: 'sky',     count: (s) => (s.history || []).filter(h => h && h.type === 'glossary').length },
+  { id: 'simplified',      label: 'Leveled Texts',      icon: '📄', color: 'blue',    count: (s) => (s.history || []).filter(h => h && h.type === 'simplified').length },
+  { id: 'outline',         label: 'Visual Organizers',  icon: '📊', color: 'cyan',    count: (s) => (s.history || []).filter(h => h && h.type === 'outline').length },
+  { id: 'concept-sort',    label: 'Concept Sorts',      icon: '🃏', color: 'rose',    count: (s) => (s.history || []).filter(h => h && h.type === 'concept-sort').length },
+  { id: 'timeline',        label: 'Timelines',          icon: '🕒', color: 'amber',   count: (s) => (s.history || []).filter(h => h && h.type === 'timeline').length },
+  { id: 'sentence-frames', label: 'Sentence Frames',    icon: '✍️', color: 'teal',    count: (s) => (s.history || []).filter(h => h && h.type === 'sentence-frames').length },
+  { id: 'note-taking',     label: 'Notebooks',          icon: '📓', color: 'violet',  count: (s) => (s.history || []).filter(h => h && h.type === 'note-taking').length },
+  { id: 'anchor-chart',    label: 'Anchor Charts',      icon: '📋', color: 'orange',  count: (s) => (s.history || []).filter(h => h && h.type === 'anchor-chart').length },
+  { id: 'dbq',             label: 'DBQs',               icon: '⚖️', color: 'rose',    count: (s) => (s.history || []).filter(h => h && h.type === 'dbq').length },
+  { id: 'persona',         label: 'Personas',           icon: '🎭', color: 'fuchsia', count: (s) => (s.history || []).filter(h => h && h.type === 'persona').length },
+  { id: 'math',            label: 'STEM Lab',           icon: '🧪', color: 'emerald', count: (s) => (s.history || []).filter(h => h && h.type === 'math').length },
+  { id: 'faq',             label: 'FAQs',               icon: '❓', color: 'slate',   count: (s) => (s.history || []).filter(h => h && h.type === 'faq').length },
+  { id: 'image',           label: 'Generated Images',   icon: '🖼️', color: 'pink',    count: (s) => (s.history || []).filter(h => h && h.type === 'image').length },
+  { id: 'brainstorm',      label: 'Brainstorms',        icon: '💡', color: 'amber',   count: (s) => (s.history || []).filter(h => h && h.type === 'brainstorm').length },
+  { id: 'fluency-record',  label: 'Fluency Records',    icon: '🎙️', color: 'green',   count: (s) => (s.history || []).filter(h => h && h.type === 'fluency-record').length },
+];
+const _metricTileColor = (color) => ({
+  indigo:  'bg-indigo-50 border-indigo-200 text-indigo-700',
+  purple:  'bg-purple-50 border-purple-200 text-purple-700',
+  sky:     'bg-sky-50 border-sky-200 text-sky-700',
+  blue:    'bg-blue-50 border-blue-200 text-blue-700',
+  cyan:    'bg-cyan-50 border-cyan-200 text-cyan-700',
+  rose:    'bg-rose-50 border-rose-200 text-rose-700',
+  amber:   'bg-amber-50 border-amber-200 text-amber-700',
+  teal:    'bg-teal-50 border-teal-200 text-teal-700',
+  violet:  'bg-violet-50 border-violet-200 text-violet-700',
+  orange:  'bg-orange-50 border-orange-200 text-orange-700',
+  fuchsia: 'bg-fuchsia-50 border-fuchsia-200 text-fuchsia-700',
+  emerald: 'bg-emerald-50 border-emerald-200 text-emerald-700',
+  slate:   'bg-slate-50 border-slate-200 text-slate-700',
+  pink:    'bg-pink-50 border-pink-200 text-pink-700',
+  green:   'bg-green-50 border-green-200 text-green-700',
+})[color] || 'bg-slate-50 border-slate-200 text-slate-700';
+
+// Registry-driven "All Tool Activity" tile cluster.
+// Renders one tile per registry entry whose count(student) > 0 (so we don't
+// flood the panel with empty tiles for tools the student hasn't touched).
+// Drops into the per-student detail view alongside the existing specialized
+// tile clusters.
+const AllToolActivityPanel = React.memo(({ student, t }) => {
+  if (!student) return null;
+  const active = TEACHER_METRIC_REGISTRY
+    .map(entry => ({ ...entry, n: entry.count(student) }))
+    .filter(e => e.n > 0)
+    .sort((a, b) => b.n - a.n);
+  if (active.length === 0) return null;
+  return (
+    <div className="bg-white p-4 sm:p-6 rounded-xl border border-slate-400 shadow-sm mb-6" data-help-key="dashboard_all_tool_activity">
+      <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 flex items-center gap-2">
+        🧰 {t('dashboard.all_tool_activity') || 'All Tool Activity'}
+        <span className="text-[10px] font-normal italic text-slate-500 normal-case">({active.length} tool{active.length === 1 ? '' : 's'} used)</span>
+      </h4>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3">
+        {active.map(e => (
+          <div key={e.id} className={`${_metricTileColor(e.color)} border rounded-lg p-3 text-center`}>
+            <div className="text-2xl font-black">{e.n}</div>
+            <div className="text-[10px] font-bold uppercase mt-1 leading-tight">{e.icon} {e.label}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+});
+
 // ── Notebook Quality Signals (deterministic) ─────────────────────────────
 // Surface class-wide notebook quality WITHOUT calling AI. Each signal has
 // a threshold from research that we color-code as healthy / partial / weak.
@@ -4348,13 +4428,16 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
   };
   const handleExportCSV = () => {
     if (!dashboardData || dashboardData.length === 0) return;
+    // Registry-driven per-tool count columns. Auto-extends when new tools
+    // get registered — no manual column-list updates needed.
+    const registryHeaders = TEACHER_METRIC_REGISTRY.map(e => e.label);
     const headers = [
         t('dashboard.csv.header_name'),
         t('dashboard.csv.header_date'),
         t('dashboard.csv.header_level'),
         t('dashboard.csv.header_quiz_avg'),
         t('dashboard.csv.header_total_xp')
-    , 'Probes', 'Avg WCPM', 'Surveys', 'Sessions', 'Cornell Notes', 'Lab Reports', 'Reading Responses', 'Anchor Charts', 'Notebook Feedback Requests'];
+    , 'Probes', 'Avg WCPM', 'Surveys', 'Sessions', 'Cornell Notes', 'Lab Reports', 'Reading Responses', 'Anchor Charts', 'Notebook Feedback Requests', ...registryHeaders];
     const rows = dashboardData.map(student => {
         const name = (student.studentNickname || "Anonymous").replace(/"/g, '""');
         const date = new Date(student.timestamp).toLocaleDateString();
@@ -4395,7 +4478,9 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
         const readingCount = noteEntries.filter(e => (e.data && e.data.templateType) === 'reading-response').length;
         const anchorCount = hist.filter(h => h && h.type === 'anchor-chart').length;
         const feedbackCount = noteEntries.reduce((sum, e) => sum + ((e.data && e.data.feedbackCount) || 0), 0);
-        return `"${name}","${date}","${level}","${quizAvg}","${xp}","${probeCount}","${avgWcpm}","${surveyCount}","${sessionCount}","${cornellCount}","${labCount}","${readingCount}","${anchorCount}","${feedbackCount}"`;
+        // Registry-driven per-tool counts (extends with each new registry entry)
+        const registryCounts = TEACHER_METRIC_REGISTRY.map(entry => entry.count(student));
+        return `"${name}","${date}","${level}","${quizAvg}","${xp}","${probeCount}","${avgWcpm}","${surveyCount}","${sessionCount}","${cornellCount}","${labCount}","${readingCount}","${anchorCount}","${feedbackCount}",${registryCounts.map(n => `"${n}"`).join(',')}`;
     });
     const csvContent = [headers.join(","), ...rows].join("\n");
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -4588,6 +4673,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                         </div>
                     </div>
                  </div>
+                 <AllToolActivityPanel student={selectedStudent} t={t} />
                  {(selectedStudent.probeHistory || selectedStudent.interventionLogs || selectedStudent.surveyResponses || selectedStudent.fluencyAssessments) && (
                      <div className="bg-white p-4 sm:p-6 rounded-xl border border-slate-400 shadow-sm mb-6 mt-6">
                          <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 flex items-center gap-2">
