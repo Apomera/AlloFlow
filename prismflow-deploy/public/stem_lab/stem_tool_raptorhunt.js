@@ -2604,7 +2604,123 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, kp.text)
               );
             })
-          )
+          ),
+
+          // ── NEW v0.12: Glide Ratio Calculator ──
+          (function() {
+            var gr = rh.gliderCalc || { speciesId: 'baldEagle', startAltM: 500, thermalLift: 1.5 };
+            function setGR(patch) { setRH({ gliderCalc: Object.assign({}, gr, patch) }); }
+            var sp2 = findSpecies(gr.speciesId);
+            // Approximate glide ratio L/D from aspect ratio (Tucker 1973 approx)
+            // L/D_max ≈ 0.5 + 1.5 * AR for soaring birds (rough)
+            var glideRatio = 0.5 + 1.5 * sp2.aspectRatio;
+            // Cap at realistic max ~16 (albatross-level)
+            glideRatio = Math.min(16, glideRatio);
+            // Distance covered per altitude lost
+            var distanceM = gr.startAltM * glideRatio;
+            var distanceKm = distanceM / 1000;
+            var distanceMi = distanceM * 0.000621371;
+            // With thermal lift = effectively extends glide range
+            // Net sink rate = (sink without lift) - (thermal lift). If lift > sink, bird never lands.
+            var sinkRateMps = 1.0; // baseline avian sink rate at best L/D
+            var netSink = sinkRateMps - gr.thermalLift;
+            var enhancedDistanceKm;
+            var infiniteGlide = false;
+            if (netSink <= 0) {
+              infiniteGlide = true;
+              enhancedDistanceKm = 999;
+            } else {
+              enhancedDistanceKm = (gr.startAltM * glideRatio * sinkRateMps / netSink) / 1000;
+            }
+            return h('div', { className: 'bg-slate-900/40 border border-cyan-700/40 rounded-xl p-4 space-y-3 mt-3' },
+              h('div', { className: 'text-sm font-bold text-cyan-300' }, '🪁 Glide Ratio Calculator'),
+              h('div', { className: 'text-xs text-slate-400 italic' }, 'Glide ratio (L/D) is the distance a bird can cover per unit altitude lost in still air. High aspect ratio = high L/D = efficient soaring. Thermal lift extends range further (or makes flight "free" if lift > sink rate).'),
+              // Species + sliders
+              h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
+                h('div', null,
+                  h('label', { className: 'text-xs text-cyan-300 font-bold block mb-1' }, '🦅 Species'),
+                  h('select', {
+                    value: gr.speciesId,
+                    onChange: function(e) { setGR({ speciesId: e.target.value }); },
+                    className: 'w-full px-3 py-2 rounded-lg bg-slate-800 text-amber-100 border border-slate-700 text-sm',
+                    'aria-label': 'Species'
+                  },
+                    SPECIES.map(function(s) { return h('option', { key: s.id, value: s.id }, s.emoji + ' ' + s.name + ' (AR ' + s.aspectRatio + ')'); })
+                  )
+                ),
+                h('div', null,
+                  h('label', { className: 'text-xs text-cyan-300 flex justify-between' },
+                    h('span', null, 'Start altitude'),
+                    h('span', { className: 'font-mono text-amber-300' }, gr.startAltM + ' m')
+                  ),
+                  h('input', { type: 'range', min: 100, max: 3000, step: 100, value: gr.startAltM,
+                    onInput: function(e) { setGR({ startAltM: parseInt(e.target.value) }); }, className: 'w-full',
+                    'aria-label': 'Start altitude' }),
+                  h('div', { className: 'text-[10px] text-slate-500' }, '500 m typical · 3000 m alpine soar')
+                ),
+                h('div', null,
+                  h('label', { className: 'text-xs text-cyan-300 flex justify-between' },
+                    h('span', null, 'Thermal lift (m/s)'),
+                    h('span', { className: 'font-mono text-amber-300' }, gr.thermalLift.toFixed(1))
+                  ),
+                  h('input', { type: 'range', min: 0, max: 3.0, step: 0.1, value: gr.thermalLift,
+                    onInput: function(e) { setGR({ thermalLift: parseFloat(e.target.value) }); }, className: 'w-full',
+                    'aria-label': 'Thermal lift' }),
+                  h('div', { className: 'text-[10px] text-slate-500' }, '0 = still air · 1.0 weak · 2.5 strong')
+                )
+              ),
+              // Results
+              h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-2' },
+                h('div', { className: 'bg-slate-800/40 rounded p-2 text-center' },
+                  h('div', { className: 'text-[10px] uppercase tracking-wider text-cyan-400' }, 'L/D Ratio'),
+                  h('div', { className: 'text-xl font-bold text-amber-300' }, glideRatio.toFixed(1)),
+                  h('div', { className: 'text-[10px] text-slate-500' }, 'from AR ' + sp2.aspectRatio)
+                ),
+                h('div', { className: 'bg-slate-800/40 rounded p-2 text-center' },
+                  h('div', { className: 'text-[10px] uppercase tracking-wider text-cyan-400' }, 'Still-air distance'),
+                  h('div', { className: 'text-xl font-bold text-amber-300' }, distanceKm.toFixed(1) + ' km'),
+                  h('div', { className: 'text-[10px] text-slate-500' }, '(' + distanceMi.toFixed(1) + ' miles)')
+                ),
+                h('div', { className: 'bg-slate-800/40 rounded p-2 text-center' },
+                  h('div', { className: 'text-[10px] uppercase tracking-wider text-cyan-400' }, 'With thermal'),
+                  h('div', { className: 'text-xl font-bold text-amber-300' }, infiniteGlide ? '∞' : enhancedDistanceKm.toFixed(1) + ' km'),
+                  h('div', { className: 'text-[10px] text-slate-500' }, infiniteGlide ? 'lift exceeds sink' : 'extended')
+                ),
+                h('div', { className: 'bg-slate-800/40 rounded p-2 text-center' },
+                  h('div', { className: 'text-[10px] uppercase tracking-wider text-cyan-400' }, 'Net sink'),
+                  h('div', { className: 'text-xl font-bold text-amber-300' }, infiniteGlide ? '↑ lift wins' : netSink.toFixed(1) + ' m/s'),
+                  h('div', { className: 'text-[10px] text-slate-500' }, 'after thermal')
+                )
+              ),
+              // Visualization SVG
+              (function() {
+                var pw = 600, ph = 90;
+                var pixPerKm = (pw - 40) / Math.max(50, distanceKm * 1.3);
+                var birdX = 20;
+                var glideEndX = 20 + distanceKm * pixPerKm;
+                return h('svg', { viewBox: '0 0 ' + pw + ' ' + ph, style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': 'Glide ratio visualization' },
+                  h('rect', { x: 0, y: 0, width: pw, height: ph, fill: '#0f172a' }),
+                  // Ground line
+                  h('line', { x1: 0, y1: ph - 15, x2: pw, y2: ph - 15, stroke: '#365314', strokeWidth: 3 }),
+                  // Bird start position (high)
+                  h('text', { x: birdX, y: 25, fontSize: 20, textAnchor: 'middle' }, sp2.emoji),
+                  h('text', { x: birdX, y: 45, fontSize: 9, fill: '#fde047', textAnchor: 'middle' }, gr.startAltM + 'm'),
+                  // Glide line
+                  h('line', { x1: birdX, y1: 30, x2: Math.min(glideEndX, pw - 30), y2: ph - 15, stroke: '#10b981', strokeWidth: 2, strokeDasharray: '4,4' }),
+                  // Landing point
+                  glideEndX < pw - 30 && h('g', null,
+                    h('circle', { cx: glideEndX, cy: ph - 15, r: 4, fill: '#fbbf24' }),
+                    h('text', { x: glideEndX, y: ph - 22, fontSize: 9, fill: '#fbbf24', textAnchor: 'middle' }, distanceKm.toFixed(1) + ' km')
+                  ),
+                  // Distance ruler
+                  h('text', { x: pw / 2, y: ph - 2, fontSize: 9, fill: '#94a3b8', textAnchor: 'middle' }, '→ horizontal distance →')
+                );
+              })(),
+              h('div', { className: 'text-[10px] text-slate-500 italic' },
+                'Bald eagles (AR 6.5) glide ~10:1 — 1 km horizontal per 100 m altitude lost. Albatross-class (AR 15) hit ~22:1. Falcons (lower AR ~10) sit around 16:1 but rarely use it — they\'re built for stoop, not soaring.'
+              )
+            );
+          })()
         );
       }
 
@@ -4546,20 +4662,113 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // ────────────────────────────────────────────────────────
       function renderAnatomy() {
         var hoveredId = rh.anatomyHover || null;
+        var anatomyMode = rh.anatomyMode || 'explore'; // 'explore' | 'quiz'
+        var quizPart = rh.anatomyQuizPart || null;
+        var quizOptions = rh.anatomyQuizOptions || null;
+        var quizResult = rh.anatomyQuizResult || null;
+        var quizStats = rh.anatomyQuizStats || { attempts: 0, correct: 0 };
         function setHover(id) {
           setRH({ anatomyHover: id });
         }
+        function setAnatomyMode(m) {
+          if (m === 'quiz') {
+            // Pick a random part + 3 wrong options
+            var pickIdx = Math.floor(Math.random() * ANATOMY.parts.length);
+            var pick = ANATOMY.parts[pickIdx];
+            var wrong = ANATOMY.parts.filter(function(p) { return p.id !== pick.id; }).slice().sort(function() { return Math.random() - 0.5; }).slice(0, 3);
+            var opts = [pick].concat(wrong).sort(function() { return Math.random() - 0.5; });
+            setRH({ anatomyMode: 'quiz', anatomyQuizPart: pick.id, anatomyQuizOptions: opts.map(function(p) { return p.id; }), anatomyQuizResult: null, anatomyHover: null });
+          } else {
+            setRH({ anatomyMode: 'explore', anatomyHover: null });
+          }
+        }
+        function nextQuiz() {
+          var pickIdx = Math.floor(Math.random() * ANATOMY.parts.length);
+          var pick = ANATOMY.parts[pickIdx];
+          var wrong = ANATOMY.parts.filter(function(p) { return p.id !== pick.id; }).slice().sort(function() { return Math.random() - 0.5; }).slice(0, 3);
+          var opts = [pick].concat(wrong).sort(function() { return Math.random() - 0.5; });
+          setRH({ anatomyQuizPart: pick.id, anatomyQuizOptions: opts.map(function(p) { return p.id; }), anatomyQuizResult: null });
+        }
+        function submitGuess(guessId) {
+          var correct = guessId === quizPart;
+          var part = ANATOMY.parts.filter(function(p) { return p.id === quizPart; })[0];
+          setRH(function(cur) {
+            var stats = cur.anatomyQuizStats || { attempts: 0, correct: 0 };
+            return Object.assign({}, cur, {
+              anatomyQuizResult: { guessId: guessId, correct: correct, part: part.label, desc: part.desc },
+              anatomyQuizStats: { attempts: stats.attempts + 1, correct: stats.correct + (correct ? 1 : 0) }
+            });
+          });
+          rhAnnounce(correct ? 'Correct — ' + part.label : 'Incorrect. Answer was ' + part.label);
+          if (correct && ctx.awardXP) ctx.awardXP(2, 'Anatomy quiz: ' + part.label);
+        }
         var hovered = hoveredId ? ANATOMY.parts.filter(function(p) { return p.id === hoveredId; })[0] : null;
+        // For quiz mode: the target part anchor we highlight
+        var quizTargetPart = quizPart ? ANATOMY.parts.filter(function(p) { return p.id === quizPart; })[0] : null;
 
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-amber-900/40 to-yellow-900/40 border border-amber-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-lg font-bold text-amber-200 mb-2' }, '🦴 Raptor Anatomy'),
-            h('div', { className: 'text-sm text-amber-100/90 leading-relaxed' }, ANATOMY.intro)
+            h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-lg font-bold text-amber-200 mb-2' }, '🦴 Raptor Anatomy'),
+                h('div', { className: 'text-sm text-amber-100/90 leading-relaxed' }, ANATOMY.intro)
+              ),
+              // ── NEW v0.12: Mode toggle ──
+              h('div', { className: 'flex gap-1 bg-slate-900/60 rounded-lg p-1' },
+                ['explore', 'quiz'].map(function(m) {
+                  var active = anatomyMode === m;
+                  return h('button', {
+                    key: m,
+                    onClick: function() { setAnatomyMode(m); },
+                    className: 'px-3 py-1 rounded text-xs font-bold transition-all ' + (active
+                      ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white'
+                      : 'text-amber-200 hover:text-amber-100'),
+                    'aria-label': m === 'explore' ? 'Explore mode' : 'Quiz mode',
+                    'aria-pressed': active
+                  }, m === 'explore' ? '👁 Explore' : '🎯 Quiz');
+                })
+              )
+            )
+          ),
+
+          // ── Quiz Mode Panel ──
+          anatomyMode === 'quiz' && quizTargetPart && h('div', { className: 'bg-gradient-to-br from-orange-900/40 to-red-900/40 border border-orange-700/40 rounded-xl p-4' },
+            h('div', { className: 'flex items-center justify-between gap-3 mb-2' },
+              h('div', { className: 'text-sm font-bold text-orange-300' }, '🎯 Identify the highlighted anchor →'),
+              h('div', { className: 'text-xs font-mono text-amber-300' }, 'Score: ' + quizStats.correct + '/' + quizStats.attempts)
+            ),
+            !quizResult ? h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-2' },
+              quizOptions && quizOptions.map(function(optId) {
+                var optPart = ANATOMY.parts.filter(function(p) { return p.id === optId; })[0];
+                if (!optPart) return null;
+                return h('button', {
+                  key: optId,
+                  onClick: function() { submitGuess(optId); },
+                  className: 'px-3 py-2 rounded-lg text-xs font-bold bg-slate-800/50 text-amber-200 hover:bg-amber-900/40 hover:text-amber-100 border border-slate-700 transition-all',
+                  'aria-label': 'Guess ' + optPart.label
+                }, optPart.label);
+              })
+            ) : h('div', { className: 'space-y-2' },
+              h('div', { className: 'p-3 rounded-lg ' + (quizResult.correct ? 'bg-emerald-900/40 border border-emerald-700/50' : 'bg-red-900/40 border border-red-700/50') },
+                h('div', { className: 'flex items-baseline gap-2 mb-1' },
+                  h('div', { className: 'text-2xl' }, quizResult.correct ? '✓' : '✗'),
+                  h('div', { className: 'font-bold ' + (quizResult.correct ? 'text-emerald-300' : 'text-red-300') }, quizResult.correct ? 'Correct! +2 XP — ' + quizResult.part : 'The answer was ' + quizResult.part)
+                ),
+                h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, quizResult.desc)
+              ),
+              h('button', {
+                onClick: nextQuiz,
+                className: 'w-full px-4 py-2 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-600 to-orange-600 text-white hover:from-amber-700 hover:to-orange-700',
+                'aria-label': 'Next anatomy question'
+              }, '➡ Next Anchor')
+            )
           ),
 
           // Interactive SVG
           h('div', { className: 'bg-slate-900/60 border border-amber-700/40 rounded-xl p-3' },
-            h('div', { className: 'text-xs text-slate-400 mb-2 italic' }, '👆 Hover or tap a label to read about each body part'),
+            h('div', { className: 'text-xs text-slate-400 mb-2 italic' }, anatomyMode === 'explore'
+              ? '👆 Hover or tap a label to read about each body part'
+              : '🎯 The pulsing red anchor is the target. Pick the right name from the options above.'),
             h('svg', {
               viewBox: '0 0 800 500',
               role: 'img',
@@ -4604,8 +4813,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('path', { d: 'M 500 265 Q 510 285 505 310', stroke: '#451a03', strokeWidth: 2, fill: 'none' }),
               h('path', { d: 'M 530 265 Q 540 285 535 310', stroke: '#451a03', strokeWidth: 2, fill: 'none' }),
 
-              // Labels — draw lines from anchor to label position, then label
-              ANATOMY.parts.map(function(p, i) {
+              // Labels — in explore mode show all; in quiz mode only show target as red pulsing dot
+              anatomyMode === 'explore' ? ANATOMY.parts.map(function(p, i) {
                 var isHovered = hoveredId === p.id;
                 return h('g', { key: p.id },
                   // Connector line
@@ -4642,7 +4851,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     style: { pointerEvents: 'none', userSelect: 'none' }
                   }, p.label)
                 );
-              })
+              }) :
+              // Quiz mode: show target anchor only, pulsing
+              (quizTargetPart && h('g', null,
+                // Outer pulsing ring (3 concentric)
+                h('circle', { cx: quizTargetPart.x, cy: quizTargetPart.y, r: 18, fill: 'none', stroke: '#dc2626', strokeWidth: 2, opacity: 0.4 }),
+                h('circle', { cx: quizTargetPart.x, cy: quizTargetPart.y, r: 12, fill: 'none', stroke: '#dc2626', strokeWidth: 2, opacity: 0.7 }),
+                h('circle', { cx: quizTargetPart.x, cy: quizTargetPart.y, r: 7, fill: '#dc2626', stroke: '#fff', strokeWidth: 2 }),
+                // Question-mark label in quiz mode (revealed only on answered)
+                quizResult && h('text', {
+                  x: quizTargetPart.x, y: quizTargetPart.y - 25,
+                  fontSize: 14, fontWeight: 'bold',
+                  fill: quizResult.correct ? '#10b981' : '#dc2626',
+                  textAnchor: 'middle'
+                }, '★ ' + quizTargetPart.label)
+              ))
             )
           ),
 
@@ -5815,15 +6038,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // ────────────────────────────────────────────────────────
       function renderGlossary() {
         var glossSearch = (rh.glossSearch || '').toLowerCase();
+        var glossCategory = rh.glossCategory || 'all';
         function setSearch(s) { setRH({ glossSearch: s }); }
-        var filtered = glossSearch
-          ? GLOSSARY.filter(function(g) { return g.term.toLowerCase().indexOf(glossSearch) !== -1 || g.def.toLowerCase().indexOf(glossSearch) !== -1; })
-          : GLOSSARY;
+        function setCat(c) { setRH({ glossCategory: c }); }
+        // ── NEW v0.12: Categorize terms ──
+        // Assign categories by term-keyword inference
+        function categorize(term, def) {
+          var t = term.toLowerCase(), d = def.toLowerCase();
+          if (/wing|primaries|secondaries|alula|rectrices|fovea|cere|nare|crop|tarsus|hallux|nictitating|pin feathers|talon|brood/i.test(t + ' ' + d)) return 'anatomy';
+          if (/falconry|berkutchi|jess|mews|hood|hack|lure|aerie|aquila/i.test(t + ' ' + d)) return 'falconry';
+          if (/ddt|conservation|recovery|peregrine fund|endangered|hawk mountain/i.test(t + ' ' + d)) return 'conservation';
+          if (/stoop|wing loading|aspect ratio|aerodynam|drag|thermal|kettle|kiting/i.test(t + ' ' + d)) return 'physics';
+          if (/migration|irruption|breeding|fledge|mantle|crepuscular|diurnal|polyandry|sexual size|k-selected/i.test(t + ' ' + d)) return 'behavior';
+          if (/accipiter|buteo|raptor|falconidae|zygodactyl|anisodactyl/i.test(t + ' ' + d)) return 'taxonomy';
+          return 'other';
+        }
+        var categorized = GLOSSARY.map(function(g) { return Object.assign({}, g, { cat: categorize(g.term, g.def) }); });
+        var categories = [
+          { id: 'all', label: 'All' },
+          { id: 'anatomy', label: '🦴 Anatomy', color: 'amber' },
+          { id: 'physics', label: '📐 Physics', color: 'cyan' },
+          { id: 'behavior', label: '🌗 Behavior', color: 'indigo' },
+          { id: 'falconry', label: '🤝 Falconry', color: 'orange' },
+          { id: 'taxonomy', label: '🧬 Taxonomy', color: 'emerald' },
+          { id: 'conservation', label: '🌍 Conservation', color: 'green' }
+        ];
+        var catCounts = {};
+        categorized.forEach(function(g) { catCounts[g.cat] = (catCounts[g.cat] || 0) + 1; });
+        var filtered = categorized.filter(function(g) {
+          var catMatch = glossCategory === 'all' || g.cat === glossCategory;
+          var searchMatch = !glossSearch || g.term.toLowerCase().indexOf(glossSearch) !== -1 || g.def.toLowerCase().indexOf(glossSearch) !== -1;
+          return catMatch && searchMatch;
+        });
 
         return h('div', { className: 'space-y-3' },
           h('div', { className: 'bg-gradient-to-br from-slate-800/40 to-slate-900/40 border border-slate-700/40 rounded-xl p-4' },
             h('div', { className: 'text-lg font-bold text-amber-200 mb-2' }, '📖 Raptor Glossary'),
-            h('div', { className: 'text-sm text-slate-300 leading-relaxed' }, GLOSSARY.length + ' terms — A-Z reference covering anatomy, behavior, conservation, falconry, and population biology. Searchable.')
+            h('div', { className: 'text-sm text-slate-300 leading-relaxed' }, GLOSSARY.length + ' terms — A-Z reference covering anatomy, behavior, conservation, falconry, taxonomy, and physics. Searchable + filterable.')
           ),
 
           // Search
@@ -5835,18 +6086,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               onInput: function(e) { setSearch(e.target.value); },
               className: 'w-full px-3 py-2 rounded-lg bg-slate-800 text-amber-200 border border-slate-700 focus:border-amber-500 focus:outline-none text-sm',
               'aria-label': 'Search glossary'
-            }),
-            glossSearch && h('div', { className: 'text-[10px] text-slate-400 mt-2' }, filtered.length + ' of ' + GLOSSARY.length + ' terms match')
+            })
           ),
+
+          // ── NEW v0.12: Category filter chips ──
+          h('div', { className: 'flex flex-wrap gap-1.5' },
+            categories.map(function(c) {
+              var active = glossCategory === c.id;
+              var count = c.id === 'all' ? GLOSSARY.length : (catCounts[c.id] || 0);
+              return h('button', {
+                key: c.id,
+                onClick: function() { setCat(c.id); },
+                className: 'px-3 py-1 rounded-full text-xs font-bold transition-all ' + (active
+                  ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-md'
+                  : 'bg-slate-800 text-amber-200 hover:bg-slate-700 border border-slate-700'),
+                'aria-label': c.label + ' filter (' + count + ' terms)',
+                'aria-pressed': active
+              }, c.label + ' (' + count + ')');
+            })
+          ),
+
+          // Results count
+          h('div', { className: 'text-[10px] text-slate-400' }, filtered.length + ' of ' + GLOSSARY.length + ' terms shown' + (glossSearch ? ' (search: ' + glossSearch + ')' : '') + (glossCategory !== 'all' ? ' (category: ' + glossCategory + ')' : '')),
 
           // Glossary entries
           filtered.length === 0 ? h('div', { className: 'text-center text-slate-500 italic py-8' }, 'No matches.') :
             h('div', { className: 'space-y-2' },
               filtered.map(function(g, i) {
+                var catColors = { anatomy: 'amber', physics: 'cyan', behavior: 'indigo', falconry: 'orange', taxonomy: 'emerald', conservation: 'green', other: 'slate' };
+                var cc = catColors[g.cat] || 'slate';
                 return h('div', { key: i, className: 'bg-slate-800/40 border border-slate-700/50 rounded p-3' },
                   h('div', { className: 'flex items-baseline gap-2' },
                     h('div', { className: 'text-sm font-bold text-amber-300 flex-shrink-0' }, g.term),
-                    h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, g.def)
+                    h('span', { className: 'text-[9px] px-1.5 py-0.5 rounded-full bg-' + cc + '-900/40 text-' + cc + '-300 border border-' + cc + '-700/40 font-mono uppercase' }, g.cat),
+                    h('div', { className: 'text-xs text-slate-200 leading-relaxed flex-1' }, g.def)
                   )
                 );
               })
