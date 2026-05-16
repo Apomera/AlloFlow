@@ -3745,17 +3745,38 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
       if (addToast) addToast((t('dashboard.bulk.generating_notebooks_pdf', { count: students.length }) || `Generating notebook PDF for ${students.length} student${students.length === 1 ? '' : 's'}...`), 'info');
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
+      const escapeHtml = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const renderCommentsBlock = (studentId, resourceId) => {
+          const list = getCommentsFor(studentId, resourceId);
+          if (!list || list.length === 0) return '';
+          const items = list.map(c => `
+              <li style="margin-bottom:8px; padding:8px 10px; background:#fffbeb; border-left:3px solid #f59e0b; border-radius:4px;">
+                  <div style="font-size:0.85em; color:#1e293b; line-height:1.5; white-space:pre-wrap;">${escapeHtml(c.text)}</div>
+                  <div style="font-size:0.7em; color:#92400e; font-style:italic; margin-top:4px;">📝 ${new Date(c.timestamp).toLocaleString()}</div>
+              </li>
+          `).join('');
+          return `
+              <div style="margin-top:12px;">
+                  <div style="font-size:0.7em; font-weight:bold; text-transform:uppercase; color:#92400e; margin-bottom:6px;">💬 Teacher notes (${list.length})</div>
+                  <ul style="list-style:none; padding:0; margin:0;">${items}</ul>
+              </div>
+          `;
+      };
       const studentSections = students.map((student, sidx) => {
           const notebookEntries = (student.history || []).filter(h => h && (h.type === 'note-taking' || h.type === 'anchor-chart'));
           const entriesHtml = notebookEntries.map((item) => {
               try {
-                  return generateResourceHTML ? generateResourceHTML(item, true, student.responses || {}) : '';
+                  const body = generateResourceHTML ? generateResourceHTML(item, true, student.responses || {}) : '';
+                  const comments = renderCommentsBlock(student.id, item.id);
+                  return body + comments;
               } catch (_) { return ''; }
           }).filter(Boolean).join('<hr style="margin:30px 0; border:0; border-top:1px dashed #cbd5e1;" />');
+          // Count any teacher comments on this student for the header badge
+          const commentCount = notebookEntries.reduce((sum, item) => sum + getCommentsFor(student.id, item.id).length, 0);
           return `
               <div style="margin-bottom:40px; ${sidx > 0 ? 'page-break-before:always;' : ''}">
                   <h2 style="font-size:18px; font-weight:bold; color:#4f46e5; border-bottom:2px solid #c7d2fe; padding-bottom:6px; margin-bottom:16px;">
-                      ${(student.studentNickname || 'Anonymous')} — Notebook (${notebookEntries.length} ${notebookEntries.length === 1 ? 'entry' : 'entries'})
+                      ${(student.studentNickname || 'Anonymous')} — Notebook (${notebookEntries.length} ${notebookEntries.length === 1 ? 'entry' : 'entries'})${commentCount > 0 ? ` <span style="font-size:11px; font-weight:normal; color:#92400e;">· ${commentCount} teacher note${commentCount === 1 ? '' : 's'}</span>` : ''}
                   </h2>
                   ${entriesHtml || '<p style="color:#64748b; font-style:italic;">No notebook entries.</p>'}
               </div>
@@ -4735,32 +4756,32 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                              const filteredNotebookCount = getCurrentFilteredStudents().filter(s => (s.history || []).some(h => h && h.type === 'note-taking')).length;
                              if (filteredCount === 0) return null;
                              return (
-                                 <div className="flex items-center gap-2 flex-wrap bg-slate-50 border border-slate-200 rounded-xl p-2" data-help-key="dashboard_bulk_actions_toolbar">
-                                     <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider pl-2 pr-1">
+                                 <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap bg-slate-50 border border-slate-200 rounded-xl p-2" data-help-key="dashboard_bulk_actions_toolbar">
+                                     <span className="text-[10px] sm:text-[11px] font-bold text-slate-600 uppercase tracking-wider pl-1 sm:pl-2 pr-1 w-full sm:w-auto">
                                          {t('dashboard.bulk.label') || 'Bulk actions'} ({filteredCount}):
                                      </span>
                                      <button
                                          onClick={handleBulkMarkGraded}
-                                         className="text-xs font-bold text-green-700 bg-green-50 hover:bg-green-100 border border-green-300 px-2.5 py-1 rounded-full transition-colors"
+                                         className="text-xs font-bold text-green-700 bg-green-50 hover:bg-green-100 border border-green-300 px-2 sm:px-2.5 py-1 rounded-full transition-colors"
                                          title={t('dashboard.bulk.mark_graded_tooltip') || 'Mark all currently-filtered students as graded'}
-                                     >✅ Mark all graded</button>
+                                     ><span className="hidden sm:inline">✅ Mark all graded</span><span className="sm:hidden">✅ Mark</span></button>
                                      <button
                                          onClick={handleBulkUnmarkGraded}
-                                         className="text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 px-2.5 py-1 rounded-full transition-colors"
+                                         className="text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 px-2 sm:px-2.5 py-1 rounded-full transition-colors"
                                          title={t('dashboard.bulk.unmark_graded_tooltip') || 'Clear graded flag on all currently-filtered students'}
-                                     >⬜ Clear graded</button>
+                                     ><span className="hidden sm:inline">⬜ Clear graded</span><span className="sm:hidden">⬜ Clear</span></button>
                                      <button
                                          onClick={handleBulkExportNotebooksPDF}
                                          disabled={filteredNotebookCount === 0}
-                                         className="text-xs font-bold text-violet-800 bg-violet-50 hover:bg-violet-100 border border-violet-300 px-2.5 py-1 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                         className="text-xs font-bold text-violet-800 bg-violet-50 hover:bg-violet-100 border border-violet-300 px-2 sm:px-2.5 py-1 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                                          title={filteredNotebookCount === 0 ? (t('dashboard.bulk.no_notebook_in_filter') || 'No filtered students have notebook entries') : (t('dashboard.bulk.export_notebooks_tooltip') || 'Export all filtered students\' notebooks as one PDF (cut-apart classroom set)')}
-                                     >📓 Export notebooks ({filteredNotebookCount})</button>
+                                     ><span className="hidden sm:inline">📓 Export notebooks ({filteredNotebookCount})</span><span className="sm:hidden">📓 PDF ({filteredNotebookCount})</span></button>
                                      <button
                                          onClick={handleBulkGenerateFeedback}
                                          disabled={filteredNotebookCount === 0}
-                                         className="text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-300 px-2.5 py-1 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                         className="text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-300 px-2 sm:px-2.5 py-1 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                                          title={filteredNotebookCount === 0 ? (t('dashboard.bulk.no_notebook_in_filter') || 'No filtered students have notebook entries') : (t('dashboard.bulk.feedback_tooltip') || 'AI generates one short feedback note per student, ready to print + hand back')}
-                                     >💬 AI feedback sheets ({filteredNotebookCount})</button>
+                                     ><span className="hidden sm:inline">💬 AI feedback sheets ({filteredNotebookCount})</span><span className="sm:hidden">💬 AI ({filteredNotebookCount})</span></button>
                                  </div>
                              );
                          })()}
