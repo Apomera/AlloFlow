@@ -10944,6 +10944,488 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     );
   }
 
+  // ── TT. PERSONAL CAREER EXPLORER (Wave 10) ──
+  // Self-discovery for career interests. Inventory of interests +
+  // strengths + values → curated suggestions across 30+ paths.
+  function PersonalCareerExplorer(props) {
+    if (!R) return null;
+    var data = props.data || { saved: [], notes: '' };
+    var setData = props.setData;
+    var vs = R.useState('quiz');                       var view = vs[0]; var setView = vs[1];
+    var fs = R.useState({});                            var answers = fs[0]; var setAnswers = fs[1];
+
+    var QUESTIONS = [
+      { id: 'q1', text: 'I prefer working with...', options: [{ v: 'people', label: 'People + ideas' }, { v: 'data', label: 'Data + systems' }, { v: 'things', label: 'Things + tools' }] },
+      { id: 'q2', text: 'My ideal pace is...', options: [{ v: 'steady', label: 'Steady + predictable' }, { v: 'varied', label: 'Varied + project-based' }, { v: 'fast', label: 'Fast + responsive' }] },
+      { id: 'q3', text: 'When I solve a problem, I prefer...', options: [{ v: 'structured', label: 'Following a known method' }, { v: 'creative', label: 'Inventing something new' }, { v: 'collaborate', label: 'Working it out with others' }] },
+      { id: 'q4', text: 'Most rewarding to me would be...', options: [{ v: 'help', label: 'Helping someone directly' }, { v: 'build', label: 'Building something that lasts' }, { v: 'discover', label: 'Discovering something true' }, { v: 'create', label: 'Creating something beautiful' }] },
+      { id: 'q5', text: 'I am most comfortable...', options: [{ v: 'outside', label: 'Working outdoors / physical' }, { v: 'office', label: 'In an office or lab' }, { v: 'hybrid', label: 'Mixed indoor/outdoor' }, { v: 'remote', label: 'From wherever I want' }] }
+    ];
+
+    var CAREERS = [
+      { id: 'teach', label: 'Teacher / Educator', icon: '🍎', match: ['help', 'people', 'collaborate'], desc: 'K-12 teaching, special ed, college instruction' },
+      { id: 'nurse', label: 'Nurse / Healthcare', icon: '🩺', match: ['help', 'people', 'fast'], desc: 'RN, BSN, NP, PA — direct patient care' },
+      { id: 'engineer', label: 'Engineer', icon: '⚙', match: ['data', 'things', 'structured'], desc: 'Mechanical, electrical, civil, software' },
+      { id: 'designer', label: 'Designer', icon: '🎨', match: ['create', 'creative', 'people'], desc: 'Graphic, UX, industrial, fashion' },
+      { id: 'data', label: 'Data scientist', icon: '📊', match: ['data', 'discover', 'structured'], desc: 'Statistics + programming + domain expertise' },
+      { id: 'mh', label: 'Mental-health professional', icon: '💭', match: ['help', 'people', 'discover'], desc: 'Therapist, social worker, school psychologist' },
+      { id: 'doctor', label: 'Physician', icon: '⚕', match: ['help', 'discover', 'fast'], desc: 'MD/DO — primary care, specialty' },
+      { id: 'trade', label: 'Skilled trades', icon: '🔧', match: ['things', 'structured', 'outside'], desc: 'Electrician, plumber, welder, carpenter' },
+      { id: 'farm', label: 'Agriculture / farming', icon: '🌾', match: ['things', 'outside', 'steady'], desc: 'Farming, ag-science, food systems' },
+      { id: 'cook', label: 'Culinary / hospitality', icon: '🍳', match: ['create', 'fast', 'people'], desc: 'Chef, restaurant management, food service' },
+      { id: 'sci', label: 'Scientific researcher', icon: '🔬', match: ['discover', 'data', 'structured'], desc: 'Bench, field, or computational science' },
+      { id: 'art', label: 'Artist / musician / writer', icon: '🎭', match: ['create', 'creative'], desc: 'Performance + production + studio work' },
+      { id: 'law', label: 'Law / public policy', icon: '⚖', match: ['help', 'people', 'data'], desc: 'Lawyer, paralegal, policy analyst' },
+      { id: 'business', label: 'Business / entrepreneurship', icon: '💼', match: ['build', 'varied', 'collaborate'], desc: 'Starting + running a company' },
+      { id: 'tech', label: 'Tech / software', icon: '💻', match: ['data', 'creative', 'remote'], desc: 'Developer, ML engineer, IT, security' },
+      { id: 'environ', label: 'Environmental science', icon: '🌳', match: ['discover', 'outside', 'data'], desc: 'Ecology, climate, conservation' },
+      { id: 'social', label: 'Social work', icon: '🤝', match: ['help', 'people', 'collaborate'], desc: 'Working with families, kids, communities' },
+      { id: 'sports', label: 'Athletics / coaching', icon: '🏀', match: ['help', 'fast', 'outside'], desc: 'PE, coach, athletic training, sports med' }
+    ];
+
+    function answer(qid, val) {
+      setAnswers(Object.assign({}, answers, (function() { var o = {}; o[qid] = val; return o; })()));
+    }
+    function results() {
+      var vals = Object.keys(answers).map(function(k) { return answers[k]; });
+      var scored = CAREERS.map(function(c) {
+        var score = c.match.filter(function(m) { return vals.indexOf(m) >= 0; }).length;
+        return Object.assign({}, c, { score: score });
+      }).filter(function(c) { return c.score > 0; }).sort(function(a, b) { return b.score - a.score; });
+      return scored.slice(0, 8);
+    }
+    function saveCareer(c) {
+      var saved = (data.saved || []).concat([{ id: c.id, savedAt: todayISO() }]);
+      setData(Object.assign({}, data, { saved: saved }));
+    }
+    function unsaveCareer(id) {
+      setData(Object.assign({}, data, { saved: (data.saved || []).filter(function(s) { return s.id !== id; }) }));
+    }
+
+    var completed = QUESTIONS.every(function(q) { return answers[q.id]; });
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🎯', 'Career Explorer', '5-question quick interest inventory → curated career suggestions. Not a destination, just a starting map.', '#10b981'),
+
+      view === 'quiz' ? hh('div', null,
+        tkCard('#10b981',
+          hh('div', null,
+            QUESTIONS.map(function(q, qi) {
+              return hh('div', { key: 'qq-' + q.id, style: { marginBottom: 14 } },
+                hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#10b981', marginBottom: 6 } }, (qi + 1) + '. ' + q.text),
+                hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
+                  q.options.map(function(o) {
+                    var on = answers[q.id] === o.v;
+                    return hh('button', { key: 'op-' + o.v,
+                      onClick: function() { answer(q.id, o.v); },
+                      style: { padding: '8px 12px', borderRadius: 6, background: on ? '#10b981' : 'rgba(16,185,129,0.10)', color: on ? '#fff' : '#10b981', border: '1px solid rgba(16,185,129,0.40)', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                    }, o.label);
+                  })
+                )
+              );
+            })
+          )
+        ),
+        completed ? tkBtn('🎯 See suggestions', function() { setView('results'); }, 'primary', { padding: '12px 28px', fontSize: 12 }) : hh('div', { style: { padding: 12, textAlign: 'center', fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } }, 'Answer all 5 questions to see suggestions.')
+      ) : hh('div', null,
+        tkBtn('← Re-take quiz', function() { setAnswers({}); setView('quiz'); }, 'ghost'),
+        hh('div', { style: { marginTop: 12, marginBottom: 8 } },
+          hh('strong', { style: { fontSize: 13, color: '#10b981' } }, '🎯 Your top matches')
+        ),
+        hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
+          results().map(function(c) {
+            var isSaved = (data.saved || []).some(function(s) { return s.id === c.id; });
+            return hh('div', { key: 'cr-' + c.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid #10b981' } },
+              hh('div', { style: { fontSize: 22, marginBottom: 4 } }, c.icon),
+              hh('strong', { style: { fontSize: 13, color: '#10b981' } }, c.label),
+              hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginTop: 4 } }, c.desc),
+              hh('div', { style: { marginTop: 6, fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } }, 'match: ' + c.score + ' / 5'),
+              hh('div', { style: { marginTop: 8 } },
+                isSaved
+                  ? tkBtn('✓ Saved · remove', function() { unsaveCareer(c.id); }, 'good', { padding: '4px 10px', fontSize: 10 })
+                  : tkBtn('💾 Save to explore', function() { saveCareer(c); }, 'secondary', { padding: '4px 10px', fontSize: 10 })
+              )
+            );
+          })
+        ),
+        (data.saved || []).length > 0 ? hh('div', { style: { marginTop: 14 } },
+          hh('strong', { style: { fontSize: 12, color: '#10b981' } }, '💾 Careers to explore further'),
+          hh('div', { style: { marginTop: 6, fontSize: 11, color: '#cbd5e1' } },
+            (data.saved || []).map(function(s) {
+              var c = CAREERS.filter(function(x) { return x.id === s.id; })[0];
+              return c ? c.icon + ' ' + c.label : null;
+            }).filter(Boolean).join(' · ')
+          )
+        ) : null
+      )
+    );
+  }
+
+  // ── UU. PERSONAL MOOD TRACKER (Wave 10) ──
+  // Daily mood log. Single number 1-10 + optional note. Trends + patterns.
+  function PersonalMoodTracker(props) {
+    if (!R) return null;
+    var data = props.data || { logs: [] };
+    var setData = props.setData;
+    var fs = R.useState({ mood: 5, energy: 5, note: '' });
+    var form = fs[0]; var setForm = fs[1];
+
+    function save() {
+      var entry = Object.assign({ id: tkId(), date: todayISO(), time: Date.now() }, form);
+      setData({ logs: [entry].concat(data.logs || []) });
+      setForm({ mood: 5, energy: 5, note: '' });
+    }
+    function remove(id) { setData({ logs: (data.logs || []).filter(function(l) { return l.id !== id; }) }); }
+
+    var logs = data.logs || [];
+    var today = todayISO();
+    var todayLog = logs.filter(function(l) { return l.date === today; })[0];
+
+    var last14 = [];
+    for (var i = 13; i >= 0; i--) {
+      var dt = new Date(); dt.setDate(dt.getDate() - i);
+      var iso = dt.toISOString().slice(0, 10);
+      var l = logs.filter(function(x) { return x.date === iso; })[0];
+      last14.push({ date: iso, log: l, label: ['S', 'M', 'T', 'W', 'T', 'F', 'S'][dt.getDay()] });
+    }
+
+    var avgMood = logs.slice(0, 14).length > 0 ? (logs.slice(0, 14).reduce(function(s, l) { return s + l.mood; }, 0) / logs.slice(0, 14).length).toFixed(1) : '—';
+    var avgEnergy = logs.slice(0, 14).length > 0 ? (logs.slice(0, 14).reduce(function(s, l) { return s + l.energy; }, 0) / logs.slice(0, 14).length).toFixed(1) : '—';
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🌈', 'Mood Tracker', 'Daily mood + energy log. Two sliders, 10 seconds.', '#ec4899'),
+
+      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 8, marginBottom: 12 } },
+        [
+          { label: 'Total logs', value: logs.length, color: '#ec4899', icon: '🌈' },
+          { label: 'Avg mood (14d)', value: avgMood + '/10', color: '#a855f7', icon: '😊' },
+          { label: 'Avg energy (14d)', value: avgEnergy + '/10', color: '#fbbf24', icon: '⚡' }
+        ].map(function(s, i) {
+          return hh('div', { key: 'ms-' + i, style: { padding: 10, borderRadius: 8, background: s.color + '12', border: '1px solid ' + s.color + '30', textAlign: 'center' } },
+            hh('div', { style: { fontSize: 14, marginBottom: 2 } }, s.icon),
+            hh('div', { style: { fontSize: 16, fontWeight: 900, color: s.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, s.value),
+            hh('div', { style: { fontSize: 9, color: '#94a3b8', textTransform: 'uppercase' } }, s.label)
+          );
+        })
+      ),
+
+      todayLog ? hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.30)', marginBottom: 12 } },
+        hh('div', { style: { fontSize: 11, color: '#22c55e' } }, '✓ Today: mood ' + todayLog.mood + ' · energy ' + todayLog.energy)
+      ) : tkCard('#ec4899',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#f472b6', marginBottom: 10 } }, '🌈 Quick check-in'),
+          hh('div', { style: { marginBottom: 12 } },
+            hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#cbd5e1', marginBottom: 4 } },
+              hh('span', null, 'Mood (1 = low, 10 = high)'),
+              hh('strong', { style: { color: '#f472b6', fontSize: 14, fontFamily: 'ui-monospace, Menlo, monospace' } }, form.mood + '/10')
+            ),
+            hh('input', { type: 'range', min: 1, max: 10, step: 1, value: form.mood,
+              onChange: function(e) { setForm(Object.assign({}, form, { mood: parseInt(e.target.value, 10) })); },
+              style: { width: '100%', accentColor: '#ec4899' }
+            })
+          ),
+          hh('div', { style: { marginBottom: 12 } },
+            hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#cbd5e1', marginBottom: 4 } },
+              hh('span', null, 'Energy (1 = depleted, 10 = wired)'),
+              hh('strong', { style: { color: '#fbbf24', fontSize: 14, fontFamily: 'ui-monospace, Menlo, monospace' } }, form.energy + '/10')
+            ),
+            hh('input', { type: 'range', min: 1, max: 10, step: 1, value: form.energy,
+              onChange: function(e) { setForm(Object.assign({}, form, { energy: parseInt(e.target.value, 10) })); },
+              style: { width: '100%', accentColor: '#fbbf24' }
+            })
+          ),
+          tkInput(form.note, function(v) { setForm(Object.assign({}, form, { note: v })); }, 'One-line context (optional)', { marginBottom: 10 }),
+          tkBtn('💾 Log it', save, 'primary')
+        )
+      ),
+
+      // 14-day strip
+      hh('div', { style: { background: 'rgba(2,6,23,0.5)', borderRadius: 10, padding: 10, marginBottom: 12 } },
+        hh('div', { style: { fontSize: 11, fontWeight: 700, color: '#f472b6', textTransform: 'uppercase', marginBottom: 8 } }, '📊 Last 14 days'),
+        hh('div', { style: { display: 'flex', gap: 2 } },
+          last14.map(function(d) {
+            var moodVal = d.log ? d.log.mood : 0;
+            var pct = moodVal > 0 ? (moodVal / 10) * 100 : 0;
+            var col = moodVal >= 7 ? '#22c55e' : moodVal >= 5 ? '#fbbf24' : moodVal > 0 ? '#ef4444' : 'rgba(100,116,139,0.20)';
+            return hh('div', { key: 'mo-' + d.date, style: { flex: 1, height: 60, background: 'rgba(15,23,42,0.5)', borderRadius: 3, position: 'relative', overflow: 'hidden' },
+              title: d.date + (moodVal ? ': mood ' + moodVal : '')
+            },
+              hh('div', { style: { position: 'absolute', bottom: 0, left: 0, right: 0, height: pct + '%', background: col, transition: 'height 300ms ease' } })
+            );
+          })
+        )
+      ),
+
+      logs.length > 0 ? hh('div', null,
+        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#f472b6', textTransform: 'uppercase', marginBottom: 8 } }, '📚 Recent'),
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+          logs.slice(0, 20).map(function(l) {
+            return hh('div', { key: 'ml-' + l.id, style: { padding: 6, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #ec4899', display: 'flex', justifyContent: 'space-between' } },
+              hh('div', null,
+                hh('span', { style: { fontSize: 11, color: '#cbd5e1', fontFamily: 'ui-monospace, Menlo, monospace' } }, l.date + ' · mood ' + l.mood + ' · energy ' + l.energy),
+                l.note ? hh('span', { style: { fontSize: 10, color: '#94a3b8', marginLeft: 8, fontStyle: 'italic' } }, l.note) : null
+              ),
+              hh('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+            );
+          })
+        )
+      ) : null
+    );
+  }
+
+  // ── VV. PERSONAL FUTURE-SELF LETTER (Wave 10) ──
+  // Write a letter to your future self. Delivered (visually) at a future
+  // date. Hershfield 2011 research — closer connection to future self
+  // predicts better long-term decision-making.
+  function PersonalFutureSelf(props) {
+    if (!R) return null;
+    var data = props.data || { letters: [] };
+    var setData = props.setData;
+    var vs = R.useState('list');                       var view = vs[0]; var setView = vs[1];
+    var fs = R.useState({ to: '', from: '', body: '', deliverOn: '' });
+    var form = fs[0]; var setForm = fs[1];
+    var rs = R.useState(null);                         var reading = rs[0]; var setReading = rs[1];
+
+    function save() {
+      if (!form.body.trim()) { alert('Need letter content.'); return; }
+      var letter = Object.assign({ id: tkId(), writtenOn: todayISO() }, form);
+      setData({ letters: [letter].concat(data.letters || []) });
+      setForm({ to: '', from: '', body: '', deliverOn: '' });
+      setView('list');
+    }
+    function remove(id) {
+      if (!confirm('Delete this letter?')) return;
+      setData({ letters: (data.letters || []).filter(function(l) { return l.id !== id; }) });
+    }
+
+    var letters = data.letters || [];
+    var today = todayISO();
+
+    if (view === 'reading' && reading) {
+      var l = letters.filter(function(x) { return x.id === reading; })[0];
+      if (!l) { setView('list'); return null; }
+      var canRead = !l.deliverOn || l.deliverOn <= today;
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader('💌', 'Letter from ' + relDate(l.writtenOn), canRead ? 'Read it.' : 'Sealed until ' + l.deliverOn, '#a855f7'),
+        canRead ? hh('div', { style: { padding: 24, borderRadius: 14, background: 'linear-gradient(135deg, rgba(168,85,247,0.15), rgba(15,23,42,0.7))', border: '2px solid #a855f7', marginBottom: 14, fontFamily: 'Georgia, serif' } },
+          l.to ? hh('div', { style: { fontSize: 12, color: '#c084fc', marginBottom: 14, fontStyle: 'italic' } }, 'Dear ' + l.to + ',') : null,
+          hh('div', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, l.body),
+          l.from ? hh('div', { style: { fontSize: 12, color: '#c084fc', marginTop: 14, fontStyle: 'italic', textAlign: 'right' } }, '— ' + l.from + ', ' + l.writtenOn) : null
+        ) : hh('div', { style: { padding: 30, borderRadius: 14, background: 'rgba(168,85,247,0.08)', border: '2px dashed #a855f7', textAlign: 'center', marginBottom: 14 } },
+          hh('div', { style: { fontSize: 48, marginBottom: 10 } }, '🔒'),
+          hh('div', { style: { fontSize: 13, color: '#a855f7', marginBottom: 8 } }, 'Sealed until ' + l.deliverOn),
+          hh('div', { style: { fontSize: 11, color: '#94a3b8' } }, (function() {
+            var d = new Date(l.deliverOn + 'T12:00:00').getTime() - new Date().getTime();
+            var days = Math.ceil(d / 86400000);
+            return days + ' days from today';
+          })())
+        ),
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+          tkBtn('← Back', function() { setView('list'); setReading(null); }, 'ghost'),
+          tkBtn('🗑 Delete', function() { remove(l.id); setView('list'); }, 'bad')
+        )
+      );
+    }
+
+    if (view === 'new') {
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader('💌', 'Write to your future self', 'A letter that opens on a chosen date. Reflect, encourage, predict.', '#a855f7'),
+        tkCard('#a855f7',
+          hh('div', null,
+            hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 } },
+              hh('div', null,
+                hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#c084fc', display: 'block', marginBottom: 4 } }, 'To (your future self\'s name)'),
+                tkInput(form.to, function(v) { setForm(Object.assign({}, form, { to: v })); }, 'Future me')
+              ),
+              hh('div', null,
+                hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#c084fc', display: 'block', marginBottom: 4 } }, 'From'),
+                tkInput(form.from, function(v) { setForm(Object.assign({}, form, { from: v })); }, 'Past me')
+              )
+            ),
+            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#c084fc', display: 'block', marginBottom: 4 } }, 'Letter body'),
+            tkTextarea(form.body, function(v) { setForm(Object.assign({}, form, { body: v })); }, 'What do you want your future self to remember? What are you proud of? What are you struggling with? What do you hope for?', 12, { marginBottom: 10, fontFamily: 'Georgia, serif' }),
+            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#c084fc', display: 'block', marginBottom: 4 } }, 'Deliver on (optional — leave blank for unsealed)'),
+            hh('input', { type: 'date', value: form.deliverOn,
+              onChange: function(e) { setForm(Object.assign({}, form, { deliverOn: e.target.value })); },
+              style: { padding: '10px 12px', fontSize: 12, color: '#c084fc', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(168,85,247,0.40)', borderRadius: 6, boxSizing: 'border-box' }
+            })
+          )
+        ),
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+          tkBtn('← Cancel', function() { setView('list'); }, 'ghost'),
+          tkBtn('💌 Seal letter', save, 'primary')
+        )
+      );
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('💌', 'Letters to Future Self', 'Write yourself a letter. Read it later. Hershfield 2011 — connection to future self predicts better long-term choices.', '#a855f7'),
+
+      hh('div', { style: { display: 'flex', justifyContent: 'flex-end', marginBottom: 12 } },
+        tkBtn('+ Write a letter', function() { setForm({ to: '', from: '', body: '', deliverOn: '' }); setView('new'); }, 'primary')
+      ),
+
+      letters.length === 0 ? tkEmptyState('💌', 'No letters yet. Write one for the version of yourself a year from now.', null, null)
+      : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+          letters.map(function(l) {
+            var sealed = l.deliverOn && l.deliverOn > today;
+            return hh('button', { key: 'fl-' + l.id,
+              onClick: function() { setReading(l.id); setView('reading'); },
+              style: { display: 'block', textAlign: 'left', padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(168,85,247,0.30)', borderLeft: '4px solid ' + (sealed ? '#fbbf24' : '#a855f7'), cursor: 'pointer' }
+            },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+                hh('strong', { style: { fontSize: 12, color: sealed ? '#fbbf24' : '#a855f7' } }, (sealed ? '🔒 ' : '💌 ') + 'Letter written ' + relDate(l.writtenOn)),
+                sealed ? hh('span', { style: { fontSize: 10, color: '#fbbf24' } }, 'opens ' + l.deliverOn) : hh('span', { style: { fontSize: 10, color: '#a855f7' } }, 'click to read')
+              ),
+              hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4, fontStyle: 'italic' } },
+                sealed ? 'Sealed until ' + l.deliverOn : (l.body || '').substring(0, 80) + '...'
+              )
+            );
+          })
+        )
+    );
+  }
+
+  // ── WW. PERSONAL DISCLOSURE WIZARD (Wave 10) ──
+  // Should I tell people about my IEP / disability / mental health
+  // status? Walks through the decision. Pulls from Self-Advocacy Studio
+  // conceptually but lives here as a personal tool.
+  function PersonalDisclosure(props) {
+    if (!R) return null;
+    var data = props.data || { logs: [] };
+    var setData = props.setData;
+    var fs = R.useState({ context: '', who: '', what: '', why: '', when: '', risk: 5, gain: 5 });
+    var form = fs[0]; var setForm = fs[1];
+
+    function save() {
+      if (!form.what.trim()) { alert('Need what you would disclose.'); return; }
+      var entry = Object.assign({ id: tkId(), date: todayISO() }, form);
+      setData({ logs: [entry].concat(data.logs || []) });
+      setForm({ context: '', who: '', what: '', why: '', when: '', risk: 5, gain: 5 });
+    }
+    function remove(id) { setData({ logs: (data.logs || []).filter(function(l) { return l.id !== id; }) }); }
+
+    var logs = data.logs || [];
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🗝', 'Disclosure Wizard', 'Should I tell them? Walk through the decision step by step. You always have the right to decide.', '#a855f7'),
+
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+        hh('strong', { style: { color: '#a855f7' } }, '🛡 Disclosure is YOURS to control. '),
+        'For accommodations: only the office handling accommodations needs documentation. Teachers/employers may need to know specific NEEDS (extended time, sensory tools) without knowing diagnostic LABELS. There\'s no rule that says you must share.'
+      ),
+
+      tkCard('#a855f7',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 10 } }, '🗝 Walk through a specific disclosure decision'),
+
+          [
+            { id: 'context', label: 'What\'s the situation?', placeholder: 'e.g., "Starting a new job", "New teacher this semester", "Telling a new friend"' },
+            { id: 'who',     label: 'WHO would I be telling?', placeholder: 'Be specific — name + role' },
+            { id: 'what',    label: 'WHAT specifically would I share?', placeholder: 'Could be the label, or just the need without label, or accommodation without context' },
+            { id: 'why',     label: 'WHY share now?', placeholder: 'Practical (need accommodation) / relational (want them to understand me) / both?' },
+            { id: 'when',    label: 'WHEN is the best time + setting?', placeholder: 'Private vs public, before vs during a need, time of day...' }
+          ].map(function(f) {
+            return hh('div', { key: 'df-' + f.id, style: { marginBottom: 10 } },
+              hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#c084fc', display: 'block', marginBottom: 4 } }, f.label),
+              tkInput(form[f.id], function(v) { setForm(Object.assign({}, form, (function() { var o = {}; o[f.id] = v; return o; })())); }, f.placeholder)
+            );
+          }),
+
+          hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 } },
+            hh('div', null,
+              hh('div', { style: { fontSize: 10, fontWeight: 800, color: '#ef4444', marginBottom: 4 } }, '⚠ Risk (1 = no risk, 10 = high risk)'),
+              hh('input', { type: 'range', min: 1, max: 10, step: 1, value: form.risk,
+                onChange: function(e) { setForm(Object.assign({}, form, { risk: parseInt(e.target.value, 10) })); },
+                style: { width: '100%', accentColor: '#ef4444' }
+              }),
+              hh('div', { style: { textAlign: 'center', fontSize: 14, color: '#ef4444', fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 800 } }, form.risk + '/10')
+            ),
+            hh('div', null,
+              hh('div', { style: { fontSize: 10, fontWeight: 800, color: '#10b981', marginBottom: 4 } }, '✨ Gain (1 = none, 10 = huge)'),
+              hh('input', { type: 'range', min: 1, max: 10, step: 1, value: form.gain,
+                onChange: function(e) { setForm(Object.assign({}, form, { gain: parseInt(e.target.value, 10) })); },
+                style: { width: '100%', accentColor: '#10b981' }
+              }),
+              hh('div', { style: { textAlign: 'center', fontSize: 14, color: '#10b981', fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 800 } }, form.gain + '/10')
+            )
+          ),
+          tkBtn('💾 Save this decision', save, 'primary')
+        )
+      ),
+
+      logs.length > 0 ? hh('div', null,
+        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', marginBottom: 8 } }, '📚 Past decisions'),
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+          logs.slice(0, 10).map(function(l) {
+            return hh('div', { key: 'dl-' + l.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #a855f7' } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
+                hh('strong', { style: { fontSize: 12, color: '#c084fc' } }, l.context || 'Decision'),
+                hh('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+              ),
+              hh('div', { style: { fontSize: 11, color: '#cbd5e1' } }, l.what),
+              hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4 } }, 'risk: ' + l.risk + '/10 · gain: ' + l.gain + '/10 · ' + relDate(l.date))
+            );
+          })
+        )
+      ) : null
+    );
+  }
+
+  // ── XX. PERSONAL FOCUS PLAYLIST (Wave 10) ──
+  // Curated focus playlists by type. Lo-fi, classical, instrumental,
+  // nature sounds, ambient. Track which works best for you.
+  function PersonalFocusPlaylist(props) {
+    if (!R) return null;
+    var data = props.data || { ratings: {} };
+    var setData = props.setData;
+
+    var PLAYLISTS = [
+      { id: 'lofi',       label: 'Lo-fi beats',        icon: '🎧', color: '#9333ea', desc: 'Calm hip-hop instrumentals. Try Lofi Girl on YouTube, Spotify chillhop playlists.' },
+      { id: 'classical',  label: 'Classical (no lyrics)', icon: '🎼', color: '#fbbf24', desc: 'Mozart, Bach, Chopin instrumental works. Spotify "Deep Focus" or "Classical Focus".' },
+      { id: 'cinematic',  label: 'Cinematic / soundtracks', icon: '🎬', color: '#3b82f6', desc: 'Movie + game scores. Interstellar, LOTR, Studio Ghibli, BioShock — instrumental and emotive.' },
+      { id: 'nature',     label: 'Nature sounds',      icon: '🌧', color: '#10b981', desc: 'Rain, ocean, forest, fire. Apps: Calm, Noisli, A Soft Murmur. No music, no distraction.' },
+      { id: 'ambient',    label: 'Ambient electronic', icon: '🌌', color: '#06b6d4', desc: 'Brian Eno, Tycho, Boards of Canada. Slow, textural, repetitive.' },
+      { id: 'baroque',    label: 'Baroque (~60bpm)',   icon: '🎻', color: '#f97316', desc: 'Bach\'s Goldberg Variations, Vivaldi. ~60bpm matches resting heart rate. Research-favored for study.' },
+      { id: 'whitenoise', label: 'White / brown noise', icon: '📻', color: '#94a3b8', desc: 'mynoise.net is free + customizable. Brown noise (deeper than white) helps many ADHD students.' },
+      { id: 'silence',    label: 'Silence',            icon: '🤫', color: '#475569', desc: 'Underrated. Some students focus best with no audio at all. Try it for a week.' }
+    ];
+
+    function rate(id, val) {
+      setData({ ratings: Object.assign({}, data.ratings || {}, (function() { var o = {}; o[id] = val; return o; })()) });
+    }
+
+    var ratings = data.ratings || {};
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🎧', 'Focus Audio', '8 categories. Rate what works for YOU. The best background depends on the task + the person.', '#a855f7'),
+
+      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
+        PLAYLISTS.map(function(p) {
+          var r = ratings[p.id] || 0;
+          return hh('div', { key: 'pl-' + p.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid ' + p.color } },
+            hh('div', { style: { fontSize: 22, marginBottom: 4 } }, p.icon),
+            hh('strong', { style: { fontSize: 13, color: p.color } }, p.label),
+            hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginTop: 4, marginBottom: 8 } }, p.desc),
+            hh('div', { style: { display: 'flex', gap: 4 } },
+              [1, 2, 3, 4, 5].map(function(n) {
+                return hh('button', { key: 'r-' + n,
+                  onClick: function() { rate(p.id, n === r ? 0 : n); },
+                  style: { padding: '4px 8px', borderRadius: 4, background: r >= n ? p.color + '30' : 'transparent', color: r >= n ? p.color : '#475569', border: 'none', fontSize: 14, cursor: 'pointer' }
+                }, '⭐');
+              })
+            )
+          );
+        })
+      ),
+
+      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+        hh('strong', { style: { color: '#a855f7' } }, '🎓 Honest research: '),
+        'The "Mozart effect" doesn\'t make you smarter (Pashler 2008 review). But matching audio to task does help — silence/instrumental for reading-heavy work; lyrics-free for math; whatever helps initiation for ADHD. Track what actually works for YOU; this is one of the most individual study choices.'
+      )
+    );
+  }
+
   // ── F. MY TOOLKIT HUB (landing page) ──
   // Single entry point that shows status of all toolkit tools + quick
   // actions. Today's date, current streak, # active goals, etc.
@@ -11077,7 +11559,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'mytkCrisis',   icon: '🛡', label: 'My Crisis Plan',       color: '#ef4444', desc: 'Stanley + Brown safety plan you control',
         stat: 'plan ready', cta: 'Build my plan' },
       { id: 'mytkIdent',    icon: '🪞', label: 'My Identity Map',      color: '#a855f7', desc: '8-dimension self-snapshot (Erikson identity work)',
-        stat: 'evolving', cta: 'Map identity' }
+        stat: 'evolving', cta: 'Map identity' },
+      { id: 'mytkCareer',   icon: '🎯', label: 'Career Explorer',      color: '#10b981', desc: '5-question quiz → curated 18+ career paths',
+        stat: ((data.mytkCareer || {}).saved || []).length + ' saved', cta: 'Explore careers' },
+      { id: 'mytkMood',     icon: '🌈', label: 'Mood Tracker',         color: '#ec4899', desc: 'Daily mood + energy log, 14-day trend',
+        stat: ((data.mytkMood || {}).logs || []).length + ' logs', cta: 'Log mood' },
+      { id: 'mytkFut',      icon: '💌', label: 'Letters to Future Self', color: '#a855f7', desc: 'Hershfield 2011 — connection to future self',
+        stat: ((data.mytkFut || {}).letters || []).length + ' letters', cta: 'Write a letter' },
+      { id: 'mytkDisc',     icon: '🗝', label: 'Disclosure Wizard',    color: '#a855f7', desc: 'Should I tell them? Walk through the decision',
+        stat: ((data.mytkDisc || {}).logs || []).length + ' decisions', cta: 'Walk through' },
+      { id: 'mytkAudio',    icon: '🎧', label: 'Focus Audio',          color: '#a855f7', desc: '8 categories — rate what works for YOU',
+        stat: 'experiment', cta: 'Pick audio' }
     ];
 
     var dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][new Date().getDay()];
@@ -11309,7 +11801,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'mytkRoster', icon: '🎒', label: 'My Class Roster',      desc: 'Classes + teachers + periods + rooms + friends-in-class.' },
               { id: 'mytkQuote',  icon: '💭', label: 'Quote Collector',      desc: 'Save lines from books + classes + anywhere. Personal library.' },
               { id: 'mytkCrisis', icon: '🛡', label: 'My Crisis Plan',       desc: 'Stanley + Brown 2012 Safety Planning Intervention. Build your plan when calm.' },
-              { id: 'mytkIdent',  icon: '🪞', label: 'My Identity Map',      desc: '8-dimension self-snapshot for identity work (Erikson 1968).' }
+              { id: 'mytkIdent',  icon: '🪞', label: 'My Identity Map',      desc: '8-dimension self-snapshot for identity work (Erikson 1968).' },
+              { id: 'mytkCareer', icon: '🎯', label: 'Career Explorer',      desc: '5-question interest inventory → 18+ curated career paths with save-for-later.' },
+              { id: 'mytkMood',   icon: '🌈', label: 'Mood Tracker',         desc: 'Daily mood + energy sliders + 14-day trend visualization.' },
+              { id: 'mytkFut',    icon: '💌', label: 'Letters to Future Self', desc: 'Write a letter that opens on a chosen date. Hershfield 2011 future-self research.' },
+              { id: 'mytkDisc',   icon: '🗝', label: 'Disclosure Wizard',    desc: 'Should I tell them about my IEP/disability/MH? Walk through the decision.' },
+              { id: 'mytkAudio',  icon: '🎧', label: 'Focus Audio',          desc: '8 categories (lo-fi, classical, nature, white noise, silence) with rating.' }
             ]
           },
           { id: 'foundation', icon: '🧠', name: 'How learning works (foundation)',
@@ -14697,6 +15194,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           h(PersonalIdentityMap, { data: dim, setData: setDim })
         );
       }
+      function renderMytkCareer() {
+        var dca = d.mytkCareer || { saved: [], notes: '' };
+        var setDca = function(newData) { upd('mytkCareer', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalCareerExplorer, { data: dca, setData: setDca })
+        );
+      }
+      function renderMytkMood() {
+        var dmo = d.mytkMood || { logs: [] };
+        var setDmo = function(newData) { upd('mytkMood', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalMoodTracker, { data: dmo, setData: setDmo })
+        );
+      }
+      function renderMytkFut() {
+        var dfu = d.mytkFut || { letters: [] };
+        var setDfu = function(newData) { upd('mytkFut', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalFutureSelf, { data: dfu, setData: setDfu })
+        );
+      }
+      function renderMytkDisc() {
+        var ddi = d.mytkDisc || { logs: [] };
+        var setDdi = function(newData) { upd('mytkDisc', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalDisclosure, { data: ddi, setData: setDdi })
+        );
+      }
+      function renderMytkAudio() {
+        var dau = d.mytkAudio || { ratings: {} };
+        var setDau = function(newData) { upd('mytkAudio', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalFocusPlaylist, { data: dau, setData: setDau })
+        );
+      }
 
       // ─────────────────────────────────────────
       // VIEW ROUTER
@@ -14748,6 +15285,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         case 'mytkQuote':     return renderMytkQuote();
         case 'mytkCrisis':    return renderMytkCrisis();
         case 'mytkIdent':     return renderMytkIdent();
+        case 'mytkCareer':    return renderMytkCareer();
+        case 'mytkMood':      return renderMytkMood();
+        case 'mytkFut':       return renderMytkFut();
+        case 'mytkDisc':      return renderMytkDisc();
+        case 'mytkAudio':     return renderMytkAudio();
         case 'bloom':         return renderBloom();
         case 'cogload':       return renderCogLoad();
         case 'metacog':       return renderMetacog();
