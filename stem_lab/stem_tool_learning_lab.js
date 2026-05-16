@@ -13505,6 +13505,392 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     );
   }
 
+  // ── VVV. PERSONAL LIFE SKILLS TRACKER (Wave 15) ──
+  // Track development of practical adult skills students rarely get
+  // direct instruction in. Skill tree across 6 categories.
+  function PersonalLifeSkills(props) {
+    if (!R) return null;
+    var data = props.data || { skills: {} };
+    var setData = props.setData;
+
+    var SKILLS = {
+      cooking: { label: 'Cooking + food', color: '#fbbf24', items: [
+        'Boil water + cook pasta', 'Cook a basic egg dish', 'Read a recipe + follow it', 'Use a knife safely (basic cuts)',
+        'Make a salad', 'Cook a vegetable from raw', 'Make a soup from scratch', 'Bake bread or cookies',
+        'Plan + shop for a meal', 'Cook a meal for someone else', 'Adapt a recipe for what\'s in the fridge', 'Use the oven without supervision'
+      ]},
+      home: { label: 'Home + self-care', color: '#10b981', items: [
+        'Do laundry start-to-finish', 'Iron a shirt', 'Sew a button', 'Unclog a drain',
+        'Change a light bulb', 'Plunge a toilet', 'Clean a bathroom', 'Take out trash + recycling',
+        'Set a personal-care routine + stick to it', 'Schedule + go to my own doctor appointment', 'Refill a prescription', 'Pack for a trip'
+      ]},
+      money: { label: 'Money', color: '#10b981', items: [
+        'Read a paycheck stub', 'Understand a budget', 'Open a bank account', 'Use a debit card responsibly',
+        'Understand credit + interest', 'File taxes (with help)', 'Negotiate a price', 'Compare prices + value',
+        'Save for something specific', 'Understand my insurance', 'Know my Social Security number is private', 'Spot a financial scam'
+      ]},
+      transport: { label: 'Transportation', color: '#3b82f6', items: [
+        'Read a public transit map', 'Take a bus or train alone', 'Order an Uber/Lyft', 'Get a learner\'s permit',
+        'Get a driver\'s license', 'Change a flat tire', 'Check tire pressure + oil', 'Plan a route + use GPS',
+        'Bike safely on streets', 'Walk in unfamiliar areas safely', 'Handle a car emergency', 'Travel to another state alone'
+      ]},
+      social: { label: 'Social + communication', color: '#a855f7', items: [
+        'Make a doctor appointment by phone', 'Email a teacher / professor', 'Order food at a restaurant', 'Return an item to a store',
+        'Ask for help from a stranger', 'Politely refuse something', 'Apologize meaningfully', 'Have a hard conversation',
+        'Negotiate a disagreement', 'Set + maintain a boundary', 'Make a new friend as an adult', 'End a friendship/relationship that isn\'t working'
+      ]},
+      civic: { label: 'Civic + adult', color: '#ec4899', items: [
+        'Register to vote', 'Know my representatives', 'Read a contract before signing', 'Get a state ID',
+        'Apply for a passport', 'Fill out a job application', 'Write a resume', 'Interview for a job',
+        'Apply to college / trade school', 'Apply for financial aid (FAFSA)', 'Apply for an apartment', 'Understand a rental lease'
+      ]}
+    };
+
+    function toggleSkill(cat, item) {
+      var s = Object.assign({}, data.skills || {});
+      var key = cat + '|' + item;
+      if (s[key]) delete s[key];
+      else s[key] = todayISO();
+      setData({ skills: s });
+    }
+
+    var skills = data.skills || {};
+    var totalSkills = Object.keys(SKILLS).reduce(function(s, cat) { return s + SKILLS[cat].items.length; }, 0);
+    var doneSkills = Object.keys(skills).length;
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🏆', 'Life Skills Tracker', 'Practical adult skills students rarely get direct instruction in. Track YOUR progression. ' + doneSkills + ' of ' + totalSkills + ' built.', '#10b981'),
+
+      hh('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(16,185,129,0.18), rgba(15,23,42,0.7))', border: '1px solid rgba(16,185,129,0.40)', marginBottom: 14, textAlign: 'center' } },
+        hh('div', { style: { fontSize: 32, fontWeight: 900, color: '#10b981', fontFamily: 'ui-monospace, Menlo, monospace' } }, doneSkills + ' / ' + totalSkills),
+        hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 4 } }, 'life skills built · ' + Math.round((doneSkills / totalSkills) * 100) + '%')
+      ),
+
+      Object.keys(SKILLS).map(function(catKey) {
+        var cat = SKILLS[catKey];
+        var catDone = cat.items.filter(function(it) { return skills[catKey + '|' + it]; }).length;
+        return hh('div', { key: 'sc-' + catKey, style: { marginBottom: 14 } },
+          hh('div', { style: { display: 'flex', justifyContent: 'space-between', padding: '6px 12px', background: cat.color + '15', borderRadius: 6, marginBottom: 6 } },
+            hh('strong', { style: { fontSize: 12, color: cat.color } }, cat.label),
+            hh('span', { style: { fontSize: 11, color: cat.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, catDone + '/' + cat.items.length)
+          ),
+          hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 4 } },
+            cat.items.map(function(it) {
+              var done = !!skills[catKey + '|' + it];
+              return hh('button', { key: 'sk-' + it,
+                onClick: function() { toggleSkill(catKey, it); },
+                style: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 8px', borderRadius: 4, background: done ? cat.color + '20' : 'rgba(15,23,42,0.5)', color: done ? cat.color : '#cbd5e1', border: '1px solid ' + (done ? cat.color : 'rgba(100,116,139,0.30)'), fontSize: 10, cursor: 'pointer', textAlign: 'left' }
+              },
+                hh('span', { style: { width: 14, height: 14, borderRadius: 3, background: done ? cat.color : 'transparent', border: '1px solid ' + cat.color, color: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 900, flexShrink: 0 } }, done ? '✓' : ''),
+                hh('span', { style: { flex: 1 } }, it)
+              );
+            })
+          )
+        );
+      })
+    );
+  }
+
+  // ── WWW. PERSONAL ETHICAL DILEMMA WALKER (Wave 15) ──
+  // Walk through hard ethical situations step by step. Specifically
+  // designed for adolescent moral reasoning development.
+  function PersonalEthical(props) {
+    if (!R) return null;
+    var data = props.data || { logs: [] };
+    var setData = props.setData;
+    var fs = R.useState({ situation: '', who: '', values: '', options: '', choice: '', why: '' });
+    var form = fs[0]; var setForm = fs[1];
+
+    function save() {
+      if (!form.situation.trim()) { alert('Need a situation.'); return; }
+      var l = Object.assign({ id: tkId(), date: todayISO() }, form);
+      setData({ logs: [l].concat(data.logs || []) });
+      setForm({ situation: '', who: '', values: '', options: '', choice: '', why: '' });
+    }
+    function remove(id) { setData({ logs: (data.logs || []).filter(function(l) { return l.id !== id; }) }); }
+
+    var STEPS = [
+      { id: 'situation', label: '1. The situation', prompt: 'What\'s happening? Describe it as factually as possible — separate facts from interpretation.' },
+      { id: 'who',       label: '2. Who is affected?', prompt: 'Everyone touched by the decision — including yourself. List them.' },
+      { id: 'values',    label: '3. My values at stake', prompt: 'What do I care about here? Honesty? Loyalty? Fairness? Safety? Connection?' },
+      { id: 'options',   label: '4. My options', prompt: 'List at least 3 — including options that feel uncomfortable.' },
+      { id: 'choice',    label: '5. My choice', prompt: 'What will I do?' },
+      { id: 'why',       label: '6. Why', prompt: 'What\'s the value or reason driving this? Will I be at peace with this in a year?' }
+    ];
+
+    var logs = data.logs || [];
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('⚖', 'Ethical Dilemma Walker', '6-step framework for working through hard moral situations. Kohlberg-aligned moral development scaffolding.', '#a855f7'),
+
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+        hh('strong', { style: { color: '#a855f7' } }, '⚖ Moral reasoning: '),
+        'Kohlberg 1958 showed moral reasoning develops in stages — the highest involves balancing universal principles. Working through dilemmas in writing IS the development. There are rarely clean answers, but THINKING IT THROUGH matters.'
+      ),
+
+      tkCard('#a855f7',
+        hh('div', null,
+          STEPS.map(function(s) {
+            return hh('div', { key: 'es-' + s.id, style: { padding: 10, borderRadius: 8, background: 'rgba(2,6,23,0.4)', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
+              hh('label', { style: { fontSize: 11, fontWeight: 800, color: '#c084fc', display: 'block', marginBottom: 4 } }, s.label),
+              hh('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic', marginBottom: 6 } }, s.prompt),
+              tkTextarea(form[s.id], function(v) { setForm(Object.assign({}, form, (function() { var o = {}; o[s.id] = v; return o; })())); }, '', 2)
+            );
+          }),
+          tkBtn('💾 Save this walk-through', save, 'primary')
+        )
+      ),
+
+      logs.length > 0 ? hh('div', null,
+        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', marginBottom: 8 } }, '📚 Past dilemmas worked through'),
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+          logs.slice(0, 10).map(function(l) {
+            return hh('div', { key: 'el-' + l.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #a855f7' } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
+                hh('strong', { style: { fontSize: 11, color: '#c084fc' } }, '⚖ ' + l.date),
+                hh('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+              ),
+              l.situation ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 4 } }, hh('strong', { style: { color: '#a855f7' } }, 'Situation: '), l.situation) : null,
+              l.choice ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, fontStyle: 'italic' } }, hh('strong', { style: { color: '#10b981' } }, 'Choice: '), l.choice) : null
+            );
+          })
+        )
+      ) : null
+    );
+  }
+
+  // ── XXX. PERSONAL COMMUNITY RESOURCE FINDER (Wave 15) ──
+  // Build a personalized list of community resources — local crisis
+  // lines, food banks, free counseling, advocacy orgs, etc.
+  function PersonalResources(props) {
+    if (!R) return null;
+    var data = props.data || { resources: [] };
+    var setData = props.setData;
+    var fs = R.useState({ name: '', cat: 'crisis', contact: '', notes: '' });
+    var form = fs[0]; var setForm = fs[1];
+
+    var CATS = [
+      { id: 'crisis',     label: 'Crisis / safety', icon: '🚨', color: '#ef4444' },
+      { id: 'mh',         label: 'Mental health',   icon: '💭', color: '#a855f7' },
+      { id: 'medical',    label: 'Medical',         icon: '⚕', color: '#3b82f6' },
+      { id: 'food',       label: 'Food + basic needs', icon: '🍞', color: '#fbbf24' },
+      { id: 'legal',      label: 'Legal + advocacy', icon: '⚖', color: '#06b6d4' },
+      { id: 'education',  label: 'Education + tutoring', icon: '📚', color: '#10b981' },
+      { id: 'community',  label: 'Community groups', icon: '🤝', color: '#ec4899' },
+      { id: 'specialty',  label: 'Disability / specialty', icon: '🪪', color: '#f97316' }
+    ];
+
+    // Pre-seed with universal resources (the safety net)
+    var BUILTIN = [
+      { id: 'b1', name: '988 Suicide & Crisis Lifeline', cat: 'crisis', contact: 'Call or text 988', notes: '24/7, free, confidential. US only.' },
+      { id: 'b2', name: 'Crisis Text Line', cat: 'crisis', contact: 'Text HOME to 741741', notes: '24/7 text-based crisis support.' },
+      { id: 'b3', name: 'Maine Mobile Crisis (kids + adults)', cat: 'crisis', contact: '1-888-568-1112', notes: 'Statewide Maine. Mobile response.' },
+      { id: 'b4', name: 'Trevor Project (LGBTQ+ youth)', cat: 'crisis', contact: '1-866-488-7386 or text START to 678-678', notes: '24/7 for LGBTQ+ young people.' },
+      { id: 'b5', name: 'SAMHSA Helpline (substance use)', cat: 'mh', contact: '1-800-662-HELP (4357)', notes: '24/7 referral service, free.' },
+      { id: 'b6', name: 'NAMI Maine HelpLine', cat: 'mh', contact: '1-800-464-5767', notes: 'Maine mental-health resource navigation.' },
+      { id: 'b7', name: 'RAINN National Sexual Assault', cat: 'crisis', contact: '1-800-656-HOPE (4673)', notes: '24/7, confidential.' },
+      { id: 'b8', name: 'Maine 211', cat: 'community', contact: 'Dial 211 or 211maine.org', notes: 'Statewide social-services info.' }
+    ];
+
+    function add() {
+      if (!form.name.trim()) { alert('Need a name.'); return; }
+      var r = Object.assign({ id: tkId(), createdAt: todayISO() }, form);
+      setData({ resources: [r].concat(data.resources || []) });
+      setForm({ name: '', cat: 'crisis', contact: '', notes: '' });
+    }
+    function remove(id) { setData({ resources: (data.resources || []).filter(function(r) { return r.id !== id; }) }); }
+
+    var all = BUILTIN.concat(data.resources || []);
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🛟', 'Community Resources', 'Universal crisis lines + your personal list. Save what works in your community.', '#ef4444'),
+
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+        hh('strong', { style: { color: '#ef4444' } }, '🛟 Built-in crisis resources are listed below. '),
+        'Add your own: a school counselor, local therapist, doctor, food bank, advocacy org, study buddy line, etc.'
+      ),
+
+      tkCard('#10b981',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#10b981', marginBottom: 8 } }, '+ Add a personal resource'),
+          hh('div', { style: { display: 'grid', gridTemplateColumns: '2fr 1fr 2fr', gap: 6, marginBottom: 6 } },
+            tkInput(form.name, function(v) { setForm(Object.assign({}, form, { name: v })); }, 'Name'),
+            hh('select', { value: form.cat,
+              onChange: function(e) { setForm(Object.assign({}, form, { cat: e.target.value })); },
+              style: { padding: '8px 10px', fontSize: 11, color: '#10b981', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(16,185,129,0.40)', borderRadius: 6 }
+            }, CATS.map(function(c) { return hh('option', { key: 'opc-' + c.id, value: c.id }, c.label); })),
+            tkInput(form.contact, function(v) { setForm(Object.assign({}, form, { contact: v })); }, 'Phone / web / address')
+          ),
+          tkInput(form.notes, function(v) { setForm(Object.assign({}, form, { notes: v })); }, 'Notes (hours, what they help with)', { marginBottom: 8 }),
+          tkBtn('+ Add', add, 'primary')
+        )
+      ),
+
+      CATS.map(function(cat) {
+        var inCat = all.filter(function(r) { return r.cat === cat.id; });
+        if (inCat.length === 0) return null;
+        return hh('div', { key: 'rc-' + cat.id, style: { marginBottom: 14 } },
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: cat.color, marginBottom: 8, padding: '4px 10px', background: cat.color + '15', borderRadius: 6, display: 'inline-block' } }, cat.icon + ' ' + cat.label),
+          hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+            inCat.map(function(r) {
+              return hh('div', { key: 'rs-' + r.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid ' + cat.color } },
+                hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' } },
+                  hh('div', null,
+                    hh('strong', { style: { fontSize: 12, color: cat.color } }, r.name),
+                    r.contact ? hh('div', { style: { fontSize: 11, color: '#e2e8f0', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 2 } }, r.contact) : null,
+                    r.notes ? hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4, fontStyle: 'italic' } }, r.notes) : null
+                  ),
+                  !r.id.startsWith('b') ? hh('button', { onClick: function() { remove(r.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕') : null
+                )
+              );
+            })
+          )
+        );
+      }).filter(Boolean)
+    );
+  }
+
+  // ── YYY. PERSONAL SUNDAY PLANNING (Wave 15) ──
+  // Sunday-evening planning ritual. 5 sections. Sets the week up.
+  function PersonalSundayPlan(props) {
+    if (!R) return null;
+    var data = props.data || { plans: [] };
+    var setData = props.setData;
+    var fs = R.useState({ wins: '', focus: '', deadlines: '', selfcare: '', hopes: '' });
+    var form = fs[0]; var setForm = fs[1];
+
+    function save() {
+      var p = Object.assign({ id: tkId(), date: todayISO() }, form);
+      setData({ plans: [p].concat(data.plans || []) });
+      setForm({ wins: '', focus: '', deadlines: '', selfcare: '', hopes: '' });
+    }
+    function remove(id) { setData({ plans: (data.plans || []).filter(function(p) { return p.id !== id; }) }); }
+
+    var SECTIONS = [
+      { id: 'wins',      label: '✨ Last week\'s wins (anything)', placeholder: 'What worked? What did I do that I\'m proud of?' },
+      { id: 'focus',     label: '🎯 This week\'s ONE main focus',  placeholder: 'If I only do one thing well this week, what is it?' },
+      { id: 'deadlines', label: '📅 Deadlines + commitments',     placeholder: 'What\'s due? What can\'t slip?' },
+      { id: 'selfcare',  label: '🧘 Self-care non-negotiables',   placeholder: 'Sleep, meals, exercise, social time, alone time.' },
+      { id: 'hopes',     label: '🌅 What I\'m hoping for',         placeholder: 'Not the same as a goal. A wish for how the week feels.' }
+    ];
+
+    var plans = data.plans || [];
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('📋', 'Sunday Plan', '15-minute ritual to set up your week. Best done Sunday evening (or whenever your week starts).', '#3b82f6'),
+
+      tkCard('#3b82f6',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#60a5fa', marginBottom: 10 } }, '📋 This week\'s plan'),
+          SECTIONS.map(function(s) {
+            return hh('div', { key: 'sp-' + s.id, style: { padding: 10, borderRadius: 8, background: 'rgba(2,6,23,0.4)', borderLeft: '3px solid #3b82f6', marginBottom: 10 } },
+              hh('label', { style: { display: 'block', fontSize: 12, fontWeight: 800, color: '#60a5fa', marginBottom: 4 } }, s.label),
+              hh('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic', marginBottom: 6 } }, s.placeholder),
+              tkTextarea(form[s.id], function(v) { setForm(Object.assign({}, form, (function() { var o = {}; o[s.id] = v; return o; })())); }, '', 2)
+            );
+          }),
+          tkBtn('💾 Save plan', save, 'primary')
+        )
+      ),
+
+      plans.length > 0 ? hh('div', null,
+        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', marginBottom: 8 } }, '📚 Past plans'),
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+          plans.slice(0, 10).map(function(p) {
+            return hh('div', { key: 'pp-' + p.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #3b82f6' } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
+                hh('strong', { style: { fontSize: 11, color: '#60a5fa' } }, '📋 Week of ' + p.date),
+                hh('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+              ),
+              p.focus ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, hh('strong', { style: { color: '#60a5fa' } }, '🎯 Focus: '), p.focus) : null
+            );
+          })
+        )
+      ) : null
+    );
+  }
+
+  // ── ZZZ. PERSONAL FRIENDSHIP TRACKER (Wave 15) ──
+  // Who do I owe a check-in to? When did I last talk to people who matter?
+  // Combats relational drift especially common with neurodivergent students.
+  function PersonalFriendshipTracker(props) {
+    if (!R) return null;
+    var data = props.data || { friends: [] };
+    var setData = props.setData;
+    var fs = R.useState({ name: '', relationship: '', cadence: 'weekly' });
+    var form = fs[0]; var setForm = fs[1];
+
+    var CADENCES = [
+      { id: 'daily',   label: 'Daily', days: 1, color: '#ef4444' },
+      { id: 'weekly',  label: 'Weekly', days: 7, color: '#fbbf24' },
+      { id: 'biweekly',label: 'Biweekly', days: 14, color: '#10b981' },
+      { id: 'monthly', label: 'Monthly', days: 30, color: '#3b82f6' },
+      { id: 'quarterly',label: 'Quarterly', days: 90, color: '#a855f7' }
+    ];
+
+    function add() {
+      if (!form.name.trim()) { alert('Need a name.'); return; }
+      var f = Object.assign({ id: tkId(), addedAt: todayISO(), lastContact: todayISO() }, form);
+      setData({ friends: [f].concat(data.friends || []) });
+      setForm({ name: '', relationship: '', cadence: 'weekly' });
+    }
+    function logContact(id) {
+      setData({ friends: (data.friends || []).map(function(f) { return f.id === id ? Object.assign({}, f, { lastContact: todayISO() }) : f; }) });
+    }
+    function remove(id) { setData({ friends: (data.friends || []).filter(function(f) { return f.id !== id; }) }); }
+
+    var friends = data.friends || [];
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🤝', 'Friendship Tracker', 'Combat relational drift. Track who you owe a check-in to. Especially helpful when life gets busy.', '#ec4899'),
+
+      tkCard('#ec4899',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#f472b6', marginBottom: 8 } }, '+ Add someone'),
+          hh('div', { style: { display: 'grid', gridTemplateColumns: '2fr 2fr', gap: 6, marginBottom: 8 } },
+            tkInput(form.name, function(v) { setForm(Object.assign({}, form, { name: v })); }, 'Their name'),
+            tkInput(form.relationship, function(v) { setForm(Object.assign({}, form, { relationship: v })); }, 'Relationship (best friend, mom, cousin)')
+          ),
+          hh('div', { style: { fontSize: 11, color: '#f472b6', marginBottom: 4 } }, 'Ideal cadence:'),
+          hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 } },
+            CADENCES.map(function(c) {
+              var on = form.cadence === c.id;
+              return hh('button', { key: 'cd-' + c.id,
+                onClick: function() { setForm(Object.assign({}, form, { cadence: c.id })); },
+                style: { padding: '6px 10px', borderRadius: 6, background: on ? c.color + '30' : 'rgba(15,23,42,0.5)', color: on ? c.color : '#94a3b8', border: '1px solid ' + (on ? c.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
+              }, c.label);
+            })
+          ),
+          tkBtn('+ Add', add, 'primary')
+        )
+      ),
+
+      friends.length === 0 ? tkEmptyState('🤝', 'No friends tracked yet.', null, null)
+      : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+          friends.map(function(f) {
+            var c = CADENCES.filter(function(x) { return x.id === f.cadence; })[0] || CADENCES[1];
+            var since = daysAgo(f.lastContact);
+            var overdue = since >= c.days;
+            var color = overdue ? '#ef4444' : '#10b981';
+            return hh('div', { key: 'fr-' + f.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid ' + color } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
+                hh('div', null,
+                  hh('strong', { style: { fontSize: 13, color: '#f472b6' } }, '🤝 ' + f.name),
+                  f.relationship ? hh('span', { style: { fontSize: 11, color: '#94a3b8', marginLeft: 6 } }, '— ' + f.relationship) : null
+                ),
+                hh('div', null,
+                  hh('span', { style: { padding: '4px 10px', borderRadius: 999, background: color + '20', color: color, fontSize: 11, fontWeight: 800, marginRight: 6 } }, overdue ? '⚠ Overdue' : '✓ On track'),
+                  hh('button', { onClick: function() { remove(f.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                )
+              ),
+              hh('div', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 6 } }, 'Cadence: ' + c.label + ' · last contact: ' + relDate(f.lastContact) + (overdue ? ' (' + since + 'd ago)' : '')),
+              tkBtn('📞 Mark contacted today', function() { logContact(f.id); }, 'good', { padding: '4px 12px', fontSize: 10 })
+            );
+          })
+        )
+    );
+  }
+
   // ── F. MY TOOLKIT HUB (landing page) ──
   // Single entry point that shows status of all toolkit tools + quick
   // actions. Today's date, current streak, # active goals, etc.
@@ -13694,7 +14080,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'mytkOpen',     icon: '✉', label: 'Unsent Letters',       color: '#ec4899', desc: 'Write to anyone. Don\'t send (Pennebaker 1986)',
         stat: ((data.mytkOpen || {}).letters || []).length + ' letters', cta: 'Write a letter' },
       { id: 'mytkHigh',     icon: '✨', label: 'Daily Highlights',     color: '#fbbf24', desc: '5-min end-of-day reel + tomorrow intention',
-        stat: ((data.mytkHigh || {}).highlights || []).length + ' reels', cta: 'Highlight today' }
+        stat: ((data.mytkHigh || {}).highlights || []).length + ' reels', cta: 'Highlight today' },
+      { id: 'mytkLifeSkills',icon: '🏆',label: 'Life Skills Tracker',  color: '#10b981', desc: '72 adult life skills across 6 categories',
+        stat: Object.keys(((data.mytkLifeSkills || {}).skills || {})).length + ' built', cta: 'Track skills' },
+      { id: 'mytkEthical',  icon: '⚖', label: 'Ethical Dilemma Walker',color: '#a855f7', desc: '6-step Kohlberg moral reasoning framework',
+        stat: ((data.mytkEthical || {}).logs || []).length + ' dilemmas', cta: 'Walk a dilemma' },
+      { id: 'mytkResources',icon: '🛟', label: 'Community Resources',  color: '#ef4444', desc: 'Universal crisis lines + your personal list',
+        stat: ((data.mytkResources || {}).resources || []).length + ' added', cta: 'Add a resource' },
+      { id: 'mytkSunday',   icon: '📋', label: 'Sunday Plan',          color: '#3b82f6', desc: '5-section weekly planning ritual',
+        stat: ((data.mytkSunday || {}).plans || []).length + ' weeks planned', cta: 'Plan this week' },
+      { id: 'mytkFriends',  icon: '🤝', label: 'Friendship Tracker',   color: '#ec4899', desc: 'Combat relational drift with cadence tracking',
+        stat: ((data.mytkFriends || {}).friends || []).length + ' tracked', cta: 'Track friendships' }
     ];
 
     var dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][new Date().getDay()];
@@ -13954,7 +14350,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'mytkND',     icon: '🧠',label: 'Neurodivergence Journal', desc: 'Identity-first journal for the lived ND experience.' },
               { id: 'mytkLifeMap',icon: '🗺',label: 'Life Map',             desc: '8-dimension life snapshot with SVG radar visualization.' },
               { id: 'mytkOpen',   icon: '✉',label: 'Unsent Letters',       desc: 'Therapeutic letter-writing (Pennebaker 1986). Don\'t send.' },
-              { id: 'mytkHigh',   icon: '✨',label: 'Daily Highlights',     desc: '5-min end-of-day reel: 3 bright moments + lesson + tomorrow intention.' }
+              { id: 'mytkHigh',   icon: '✨',label: 'Daily Highlights',     desc: '5-min end-of-day reel: 3 bright moments + lesson + tomorrow intention.' },
+              { id: 'mytkLifeSkills',icon: '🏆',label: 'Life Skills Tracker', desc: '72 practical adult skills across 6 categories (cooking/home/money/transport/social/civic).' },
+              { id: 'mytkEthical',icon: '⚖',label: 'Ethical Dilemma Walker',desc: '6-step framework for working through hard moral situations (Kohlberg-aligned).' },
+              { id: 'mytkResources',icon: '🛟',label: 'Community Resources',  desc: 'Universal crisis lines (988, Maine Mobile, Trevor, etc.) + your personal additions.' },
+              { id: 'mytkSunday', icon: '📋',label: 'Sunday Plan',          desc: '5-section weekly planning ritual: wins, focus, deadlines, self-care, hopes.' },
+              { id: 'mytkFriends',icon: '🤝',label: 'Friendship Tracker',   desc: 'Track who you owe a check-in to. Cadence-aware. Especially helpful when life gets busy.' }
             ]
           },
           { id: 'foundation', icon: '🧠', name: 'How learning works (foundation)',
@@ -17566,6 +17967,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           h(PersonalHighlights, { data: dhl, setData: setDhl })
         );
       }
+      function renderMytkLifeSkills() {
+        var dls = d.mytkLifeSkills || { skills: {} };
+        var setDls = function(newData) { upd('mytkLifeSkills', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalLifeSkills, { data: dls, setData: setDls })
+        );
+      }
+      function renderMytkEthical() {
+        var det = d.mytkEthical || { logs: [] };
+        var setDet = function(newData) { upd('mytkEthical', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalEthical, { data: det, setData: setDet })
+        );
+      }
+      function renderMytkResources() {
+        var drs = d.mytkResources || { resources: [] };
+        var setDrs = function(newData) { upd('mytkResources', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalResources, { data: drs, setData: setDrs })
+        );
+      }
+      function renderMytkSunday() {
+        var dsp = d.mytkSunday || { plans: [] };
+        var setDsp = function(newData) { upd('mytkSunday', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalSundayPlan, { data: dsp, setData: setDsp })
+        );
+      }
+      function renderMytkFriends() {
+        var dft = d.mytkFriends || { friends: [] };
+        var setDft = function(newData) { upd('mytkFriends', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalFriendshipTracker, { data: dft, setData: setDft })
+        );
+      }
 
       // ─────────────────────────────────────────
       // VIEW ROUTER
@@ -17645,6 +18086,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         case 'mytkLifeMap':   return renderMytkLifeMap();
         case 'mytkOpen':      return renderMytkOpen();
         case 'mytkHigh':      return renderMytkHigh();
+        case 'mytkLifeSkills':return renderMytkLifeSkills();
+        case 'mytkEthical':   return renderMytkEthical();
+        case 'mytkResources': return renderMytkResources();
+        case 'mytkSunday':    return renderMytkSunday();
+        case 'mytkFriends':   return renderMytkFriends();
         case 'bloom':         return renderBloom();
         case 'cogload':       return renderCogLoad();
         case 'metacog':       return renderMetacog();
