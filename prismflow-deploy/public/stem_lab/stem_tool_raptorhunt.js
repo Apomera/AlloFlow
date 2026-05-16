@@ -2463,6 +2463,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         }
 
         // ─── Player raptor mesh (procedural bird) ───
+        // ─── NEW v0.24: Detailed raptor mesh (replaces simple boxes) ───
         var raptorGroup = new THREE.Group();
         var bodyColor = species.id === 'baldEagle' ? 0x2a2418 :
                         species.id === 'osprey' ? 0xfafaf5 :
@@ -2471,50 +2472,149 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                         species.id === 'peregrine' ? 0x44403c :
                         species.id === 'goldenEagle' ? 0x4a3a20 :
                         species.id === 'northernGoshawk' ? 0x57534e :
+                        species.id === 'snowyOwl' ? 0xfafaf9 :
+                        species.id === 'gyrfalcon' ? 0xe5e7eb :
+                        species.id === 'kestrel' ? 0xc2410c :
+                        species.id === 'coopersHawk' ? 0x57534e :
+                        species.id === 'missKite' ? 0x6b7280 :
                         0x6b4423;
         var wingColor = species.id === 'baldEagle' ? 0x4a2c0e :
                         species.id === 'osprey' ? 0x44403c :
                         species.id === 'greatHorned' ? 0x57341a :
+                        species.id === 'snowyOwl' ? 0xf1f5f9 :
+                        species.id === 'gyrfalcon' ? 0xcbd5e1 :
                         bodyColor;
-        // Body (elongated capsule)
-        var body = new THREE.Mesh(
-          (typeof THREE.CapsuleGeometry === 'function') ? new THREE.CapsuleGeometry(0.3, 0.9, 4, 8) : new THREE.SphereGeometry(0.4, 8, 8),
-          new THREE.MeshStandardMaterial({ color: bodyColor, roughness: 0.8 })
-        );
-        body.rotation.x = Math.PI / 2;
+        // Breast color (often lighter than back)
+        var breastColor = species.id === 'baldEagle' ? 0x2a2418 :
+                          species.id === 'redTail' ? 0xfef3c7 :
+                          species.id === 'peregrine' ? 0xfef3c7 :
+                          species.id === 'osprey' ? 0xfafaf5 :
+                          species.id === 'snowyOwl' ? 0xffffff :
+                          species.id === 'greatHorned' ? 0xd6cfa0 :
+                          0x9ca3af;
+
+        // Body — elongated using stretched sphere (more bird-like than capsule)
+        var bodyGeo = new THREE.SphereGeometry(0.35, 16, 12);
+        bodyGeo.scale(0.7, 0.7, 1.8);  // stretch along z = flight direction
+        var body = new THREE.Mesh(bodyGeo, new THREE.MeshStandardMaterial({ color: bodyColor, roughness: 0.85, flatShading: false }));
         raptorGroup.add(body);
-        // Head
+        // Breast (ventral side, slightly forward — lighter color)
+        var breastGeo = new THREE.SphereGeometry(0.33, 16, 12);
+        breastGeo.scale(0.65, 0.55, 1.5);
+        var breast = new THREE.Mesh(breastGeo, new THREE.MeshStandardMaterial({ color: breastColor, roughness: 0.85 }));
+        breast.position.set(0, -0.1, 0.1);
+        raptorGroup.add(breast);
+        // Head (smaller sphere, set forward)
         var head = new THREE.Mesh(
-          new THREE.SphereGeometry(0.22, 10, 8),
-          new THREE.MeshStandardMaterial({ color: species.id === 'baldEagle' ? 0xfff9e0 : bodyColor, roughness: 0.7 })
+          new THREE.SphereGeometry(0.22, 14, 10),
+          new THREE.MeshStandardMaterial({ color: species.id === 'baldEagle' ? 0xfff9e0 : species.id === 'snowyOwl' ? 0xffffff : bodyColor, roughness: 0.75 })
         );
-        head.position.set(0, 0.08, 0.55);
+        head.position.set(0, 0.06, 0.62);
         raptorGroup.add(head);
-        // Beak
+        // Eye markings (white sclera + dark pupil) — 2 sides for visible eye contact
+        var eyeMat = new THREE.MeshBasicMaterial({ color: 0xfefce8 });
+        var pupilMat = new THREE.MeshBasicMaterial({ color: 0x1c1917 });
+        [-1, 1].forEach(function(side) {
+          var eye = new THREE.Mesh(new THREE.SphereGeometry(0.045, 8, 6), eyeMat);
+          eye.position.set(side * 0.13, 0.10, 0.70);
+          raptorGroup.add(eye);
+          var pupil = new THREE.Mesh(new THREE.SphereGeometry(0.025, 6, 4), pupilMat);
+          pupil.position.set(side * 0.15, 0.10, 0.74);
+          raptorGroup.add(pupil);
+        });
+        // Beak — sharper hook shape (cone + small downward tip)
         var beak = new THREE.Mesh(
-          new THREE.ConeGeometry(0.07, 0.22, 6),
-          new THREE.MeshStandardMaterial({ color: 0xfbbf24, roughness: 0.5 })
+          new THREE.ConeGeometry(0.06, 0.22, 6),
+          new THREE.MeshStandardMaterial({ color: 0x1c1917, roughness: 0.4 })
         );
-        beak.position.set(0, 0.04, 0.78);
-        beak.rotation.x = -Math.PI / 2 + 0.15;
+        beak.position.set(0, 0.02, 0.82);
+        beak.rotation.x = -Math.PI / 2 + 0.4;  // hooks downward
         raptorGroup.add(beak);
-        // Wings (two flat box meshes)
-        var wingSpan = Math.max(1.5, Math.min(3.5, species.wingspanM));
-        var wingArea = species.wingAreaSqM * 6; // visual scale
-        var wingGeo = new THREE.BoxGeometry(wingSpan, 0.04, 0.45);
-        var leftWing = new THREE.Mesh(wingGeo, new THREE.MeshStandardMaterial({ color: wingColor, roughness: 0.8 }));
-        leftWing.position.set(-wingSpan * 0.4, 0.03, 0.1);
-        raptorGroup.add(leftWing);
-        var rightWing = new THREE.Mesh(wingGeo, new THREE.MeshStandardMaterial({ color: wingColor, roughness: 0.8 }));
-        rightWing.position.set(wingSpan * 0.4, 0.03, 0.1);
-        raptorGroup.add(rightWing);
-        // Tail
-        var tail = new THREE.Mesh(
-          new THREE.BoxGeometry(0.5, 0.03, 0.35),
-          new THREE.MeshStandardMaterial({ color: species.id === 'redTail' ? 0xb45309 : wingColor, roughness: 0.8 })
+        // Cere (yellow patch at beak base)
+        var cere = new THREE.Mesh(
+          new THREE.SphereGeometry(0.075, 8, 6),
+          new THREE.MeshStandardMaterial({ color: 0xfbbf24, roughness: 0.6 })
         );
-        tail.position.set(0, 0.02, -0.55);
+        cere.scale.set(0.8, 0.5, 0.5);
+        cere.position.set(0, 0.05, 0.73);
+        raptorGroup.add(cere);
+
+        // Wings — broken into multiple pieces per wing (shoulder + main + 3 finger primaries)
+        var wingSpan = Math.max(1.5, Math.min(3.5, species.wingspanM));
+        var isOwlOrAccip = species.isOwl || species.family === 'Accipitridae';
+        var wingDepth = isOwlOrAccip ? 0.55 : 0.40;  // broader wings for eagles + owls
+        var leftWingGroup = new THREE.Group();
+        var rightWingGroup = new THREE.Group();
+        // Main inner wing (secondary feathers area)
+        var wingMat = new THREE.MeshStandardMaterial({ color: wingColor, roughness: 0.85, flatShading: false });
+        var innerWingGeo = new THREE.BoxGeometry(wingSpan * 0.5, 0.04, wingDepth);
+        // Pivot wing at root by attaching to a group anchored at the body
+        var leftInner = new THREE.Mesh(innerWingGeo, wingMat);
+        leftInner.position.set(-wingSpan * 0.25, 0.05, 0.05);
+        leftWingGroup.add(leftInner);
+        var rightInner = new THREE.Mesh(innerWingGeo, wingMat);
+        rightInner.position.set(wingSpan * 0.25, 0.05, 0.05);
+        rightWingGroup.add(rightInner);
+        // Outer wing (primaries area, narrower toward tip)
+        var outerWingGeo = new THREE.BoxGeometry(wingSpan * 0.45, 0.035, wingDepth * 0.7);
+        var leftOuter = new THREE.Mesh(outerWingGeo, wingMat);
+        leftOuter.position.set(-wingSpan * 0.7, 0.05, -0.05);
+        leftWingGroup.add(leftOuter);
+        var rightOuter = new THREE.Mesh(outerWingGeo, wingMat);
+        rightOuter.position.set(wingSpan * 0.7, 0.05, -0.05);
+        rightWingGroup.add(rightOuter);
+        // Finger primaries (visible on eagles + buteos) — 3 per wing
+        if (isOwlOrAccip || species.family === 'Pandionidae') {
+          var fingerMat = new THREE.MeshStandardMaterial({ color: 0x1c1917, roughness: 0.85 });
+          for (var fi = 0; fi < 3; fi++) {
+            var fingerGeo = new THREE.BoxGeometry(wingSpan * 0.18, 0.03, wingDepth * 0.5);
+            var lF = new THREE.Mesh(fingerGeo, fingerMat);
+            lF.position.set(-wingSpan * (0.92 + fi * 0.02), 0.05, -0.18 - fi * 0.04);
+            lF.rotation.y = -0.15 - fi * 0.08;
+            leftWingGroup.add(lF);
+            var rF = new THREE.Mesh(fingerGeo, fingerMat);
+            rF.position.set(wingSpan * (0.92 + fi * 0.02), 0.05, -0.18 - fi * 0.04);
+            rF.rotation.y = 0.15 + fi * 0.08;
+            rightWingGroup.add(rF);
+          }
+        }
+        raptorGroup.add(leftWingGroup);
+        raptorGroup.add(rightWingGroup);
+        // Tail — wider fan or longer rect depending on species
+        var tailWidth = species.family === 'Accipitridae' ? 0.7 : 0.55;
+        var tailLength = (species.family === 'Accipitridae' && !species.isOwl) ? 0.8 : 0.55;
+        if (species.id === 'northernGoshawk' || species.id === 'coopersHawk') tailLength = 0.95;  // accipiter long tail
+        var tailColor = species.id === 'redTail' ? 0xb45309 : species.id === 'snowyOwl' ? 0xffffff : wingColor;
+        var tail = new THREE.Mesh(
+          new THREE.BoxGeometry(tailWidth, 0.04, tailLength),
+          new THREE.MeshStandardMaterial({ color: tailColor, roughness: 0.85 })
+        );
+        tail.position.set(0, 0.02, -0.6 - tailLength * 0.25);
         raptorGroup.add(tail);
+        // Tail bands (for accipiters + buteos that have banded tails)
+        if (species.family === 'Accipitridae' && species.id !== 'baldEagle' && species.id !== 'redTail') {
+          for (var bi = 0; bi < 3; bi++) {
+            var band = new THREE.Mesh(
+              new THREE.BoxGeometry(tailWidth * 0.95, 0.045, 0.06),
+              new THREE.MeshStandardMaterial({ color: 0x1c1917 })
+            );
+            band.position.set(0, 0.03, -0.65 - bi * tailLength * 0.25);
+            raptorGroup.add(band);
+          }
+        }
+        // Talons — small dark claws below body (visible from camera angle)
+        var talonGroup = new THREE.Group();
+        for (var ti3 = 0; ti3 < 3; ti3++) {
+          var talon = new THREE.Mesh(
+            new THREE.ConeGeometry(0.025, 0.10, 5),
+            new THREE.MeshStandardMaterial({ color: 0x1c1917 })
+          );
+          talon.position.set((ti3 - 1) * 0.06, -0.20, 0.2);
+          talon.rotation.x = Math.PI;
+          talonGroup.add(talon);
+        }
+        raptorGroup.add(talonGroup);
+
         scene.add(raptorGroup);
 
         // ─── Prey spawn ───
@@ -2524,7 +2624,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var preyId = preyList[Math.floor(Math.random() * preyList.length)];
           var pd = PREY[preyId];
           if (!pd) return null;
-          var radius = 250 + Math.random() * 200;
+          // Spawn closer to give student visible prey within scan range
+          var radius = 80 + Math.random() * 220;  // 80-300m (was 250-450m)
           var theta = Math.random() * Math.PI * 2;
           var px = Math.cos(theta) * radius;
           var pz = Math.sin(theta) * radius;
@@ -2533,32 +2634,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (pd.id === 'fish' || pd.id === 'waterfowl' || pd.id === 'duck') {
             var rd2 = Math.sqrt(px * px + pz * pz);
             if (species.biome === 'lake' && rd2 > 100) {
-              // pull to lake
               var sc = 80 / rd2;
               px = px * sc; pz = pz * sc;
             }
             py = species.biome === 'lake' ? -1.4 : py;
           }
-          var size = pd.sizeM * 4; // visual scale
+          // Larger visual scale — minimum size + size boost for tiny insects
+          var sizeBoost = (pd.sizeM < 0.10) ? 12 : 8;  // insects/rodents get extra boost to be visible
+          var size = Math.max(0.6, pd.sizeM * sizeBoost);  // floor at 0.6m so nothing is invisible
+          // ── NEW v0.24: Group with prey mesh + beacon for visibility ──
+          var preyGroup = new THREE.Group();
           var geo = pd.id === 'snake'
             ? new THREE.CylinderGeometry(size * 0.15, size * 0.15, size * 1.8, 6)
             : pd.id === 'fish'
               ? new THREE.ConeGeometry(size * 0.4, size * 1.4, 6)
-              : new THREE.BoxGeometry(size, size * 0.55, size * 1.1);
-          var mat = new THREE.MeshStandardMaterial({ color: pd.color, roughness: 0.8 });
+              : pd.id === 'cicada' || pd.id === 'dragonfly' || pd.id === 'largeInsect'
+                ? new THREE.SphereGeometry(size * 0.7, 8, 6)  // insects = round
+                : pd.id === 'songbird' || pd.id === 'pigeon' || pd.id === 'sparrow' || pd.id === 'mourningDove' || pd.id === 'ptarmigan'
+                  ? new THREE.SphereGeometry(size * 0.55, 10, 8)  // birds = rounded
+                  : new THREE.BoxGeometry(size, size * 0.55, size * 1.2);
+          var mat = new THREE.MeshStandardMaterial({ color: pd.color, roughness: 0.7, emissive: pd.color, emissiveIntensity: 0.15 });
           var mesh = new THREE.Mesh(geo, mat);
-          mesh.position.set(px, py + size * 0.3, pz);
           if (pd.id === 'snake') { mesh.rotation.x = Math.PI / 2; mesh.rotation.z = Math.random() * Math.PI; }
           if (pd.id === 'fish') { mesh.rotation.x = Math.PI / 2; }
-          scene.add(mesh);
+          preyGroup.add(mesh);
+          // ── Beacon: thin vertical glow above prey so it's spotted at distance ──
+          var beaconMat = new THREE.MeshBasicMaterial({ color: 0xfde047, transparent: true, opacity: 0.45 });
+          var beacon = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.15, 0.05, 8, 5),
+            beaconMat
+          );
+          beacon.position.y = 4.5;
+          preyGroup.add(beacon);
+          // Tiny crown sphere at top for extra visibility
+          var beaconCap = new THREE.Mesh(
+            new THREE.SphereGeometry(0.35, 8, 6),
+            new THREE.MeshBasicMaterial({ color: 0xfde047, transparent: true, opacity: 0.85 })
+          );
+          beaconCap.position.y = 8.5;
+          preyGroup.add(beaconCap);
+          preyGroup.position.set(px, py + size * 0.5, pz);
+          scene.add(preyGroup);
           return {
-            mesh: mesh,
+            mesh: preyGroup,    // group, not single mesh
+            visual: mesh,        // for animation
+            beacon: beacon,
+            beaconCap: beaconCap,
             data: pd,
             vx: (Math.random() - 0.5) * pd.speedMps * 0.3,
             vz: (Math.random() - 0.5) * pd.speedMps * 0.3,
             spawnedAt: performance.now(),
             alerted: false,
-            fleeBoost: 1.0
+            fleeBoost: 1.0,
+            bobPhase: Math.random() * Math.PI * 2  // animation phase
           };
         }
         for (var pi = 0; pi < 12; pi++) {
@@ -2712,7 +2840,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (hitIdx >= 0) {
             // Catch!
             var caught = preyMeshes[hitIdx];
-            scene.remove(caught.mesh); caught.mesh.geometry.dispose(); caught.mesh.material.dispose();
+            scene.remove(caught.mesh);
+            caught.mesh.traverse(function(o) { if (o.geometry) o.geometry.dispose(); if (o.material) { if (Array.isArray(o.material)) o.material.forEach(function(m){m.dispose();}); else o.material.dispose(); } });
             preyMeshes.splice(hitIdx, 1);
             runCatches++;
             rhAnnounce('Strike! Caught ' + caught.data.label + ' (+' + caught.data.points + ' XP)');
@@ -2843,21 +2972,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           raptorGroup.position.set(raptor.x, raptor.y, raptor.z);
           raptorGroup.rotation.set(0, raptor.yaw, 0);
           raptorGroup.rotation.x = -raptor.pitch * 0.6;
-          // Wing flap animation (level flight only)
-          if (!diveKey) {
-            var flap = Math.sin(now * 0.012) * 0.35;
-            leftWing.rotation.z = flap;
-            rightWing.rotation.z = -flap;
+          // ── NEW v0.24: Realistic flight cycle (mostly glide, periodic flap bursts) ──
+          if (diveKey) {
+            // Tucked dive — wings folded back tight
+            leftWingGroup.rotation.z = 0.45;
+            rightWingGroup.rotation.z = -0.45;
+            leftWingGroup.rotation.y = -0.3;
+            rightWingGroup.rotation.y = 0.3;
+          } else if (pullUpKey || raptor.speed < raptor.maxLevel * 0.55) {
+            // Pull-up or low-speed — ACTIVE FLAPPING (this is where real raptors flap)
+            // Faster, deeper flap
+            var flap = Math.sin(now * 0.018) * 0.55;
+            leftWingGroup.rotation.z = flap;
+            rightWingGroup.rotation.z = -flap;
+            leftWingGroup.rotation.y = 0;
+            rightWingGroup.rotation.y = 0;
           } else {
-            // Tucked dive
-            leftWing.rotation.z = 0.4;
-            rightWing.rotation.z = -0.4;
-            leftWing.position.x = -wingSpan * 0.18;
-            rightWing.position.x = wingSpan * 0.18;
-          }
-          if (!diveKey) {
-            leftWing.position.x = -wingSpan * 0.4;
-            rightWing.position.x = wingSpan * 0.4;
+            // Cruise — mostly GLIDE with rare flap bursts
+            // Flap "phase" is mostly 0 (glide). Every ~6-10 seconds, do a 2-flap burst.
+            // Use deterministic flap timing seeded by raptor speed so it looks more natural
+            var t = now / 1000;
+            var burstCycle = 6 + (species.massKg);  // heavier birds flap less often
+            var burstPhase = (t % burstCycle) / burstCycle;  // 0..1 over cycle
+            var inBurst = burstPhase < 0.10;  // 10% of cycle = ~0.6-0.9s of flapping
+            if (inBurst) {
+              // Brief 2-flap burst — smoother + slightly less amplitude than active flap
+              var burstFlap = Math.sin(now * 0.020) * 0.42;
+              leftWingGroup.rotation.z = burstFlap;
+              rightWingGroup.rotation.z = -burstFlap;
+            } else {
+              // GLIDE — wings nearly flat with subtle dihedral oscillation
+              // Small wobble simulating thermal turbulence
+              var wobble = Math.sin(now * 0.001) * 0.04;
+              leftWingGroup.rotation.z = 0.05 + wobble;
+              rightWingGroup.rotation.z = -0.05 - wobble;
+            }
+            leftWingGroup.rotation.y = 0;
+            rightWingGroup.rotation.y = 0;
           }
 
           // ── Camera follow (third-person, behind + above) ──
@@ -2901,9 +3052,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             if (pm2.data.id !== 'fish') {
               pm2.mesh.position.y = terrainHeightAt(pm2.mesh.position.x, pm2.mesh.position.z) + pm2.data.sizeM * 0.6;
             }
+            // ── NEW v0.24: Bobbing animation + beacon pulse for visibility ──
+            if (pm2.visual) {
+              pm2.visual.position.y = Math.sin(now * 0.003 + pm2.bobPhase) * 0.15 + (pm2.data.sizeM * 0.5);
+            }
+            if (pm2.beaconCap) {
+              var pulse = 0.6 + Math.sin(now * 0.005 + pm2.bobPhase) * 0.4;
+              pm2.beaconCap.scale.set(pulse, pulse, pulse);
+            }
             // Despawn ancient prey
             if (now - pm2.spawnedAt > 60000) {
-              scene.remove(pm2.mesh); pm2.mesh.geometry.dispose(); pm2.mesh.material.dispose();
+              scene.remove(pm2.mesh);
+              pm2.mesh.traverse(function(o) { if (o.geometry) o.geometry.dispose(); if (o.material) { if (Array.isArray(o.material)) o.material.forEach(function(m){m.dispose();}); else o.material.dispose(); } });
               preyMeshes.splice(pi3, 1); pi3--;
             }
           }
@@ -2925,11 +3085,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             'ALTITUDE &nbsp;<span style="color:#fff">' + alt + ' m</span><br/>' +
             'STATE &nbsp;&nbsp;&nbsp;<span style="color:' + stateColor + ';font-weight:bold">' + stateLabel + '</span><br/>' +
             'PEAK &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#fff">' + (runMaxSpeed * 2.237).toFixed(0) + ' mph</span>';
+          // ── NEW v0.24: Find nearest prey + distance for HUD ──
+          var nearestDist = Infinity, nearestPrey = null, nearestBearing = 0;
+          for (var npi = 0; npi < preyMeshes.length; npi++) {
+            var npp = preyMeshes[npi];
+            var ndx = npp.mesh.position.x - raptor.x;
+            var ndz = npp.mesh.position.z - raptor.z;
+            var nd = Math.sqrt(ndx * ndx + ndz * ndz);
+            if (nd < nearestDist) {
+              nearestDist = nd;
+              nearestPrey = npp;
+              // Bearing relative to raptor's yaw (0 = directly ahead, +deg = right, -deg = left)
+              var preyAngle = Math.atan2(ndx, -ndz);  // world bearing
+              var rel = preyAngle - raptor.yaw;
+              while (rel > Math.PI) rel -= Math.PI * 2;
+              while (rel < -Math.PI) rel += Math.PI * 2;
+              nearestBearing = rel;
+            }
+          }
+          var bearingDeg = nearestBearing * 180 / Math.PI;
+          var arrowChar = Math.abs(bearingDeg) < 15 ? '↑' :
+                          bearingDeg > 15 && bearingDeg < 75 ? '↗' :
+                          bearingDeg >= 75 && bearingDeg <= 105 ? '→' :
+                          bearingDeg > 105 && bearingDeg < 165 ? '↘' :
+                          Math.abs(bearingDeg) >= 165 ? '↓' :
+                          bearingDeg < -15 && bearingDeg > -75 ? '↖' :
+                          bearingDeg <= -75 && bearingDeg >= -105 ? '←' :
+                          '↙';
+          var nearestColor = nearestDist < 50 ? '#fde047' : nearestDist < 150 ? '#fbbf24' : '#94a3b8';
           status.innerHTML =
             '<div style="font-weight:bold;border-bottom:1px solid rgba(16,185,129,0.4);padding-bottom:4px;margin-bottom:4px">RUN</div>' +
             'CATCHES &nbsp;<span style="color:#fff;font-weight:bold">' + runCatches + '</span><br/>' +
             'TIME &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#fff">' + ((now - runStart) / 1000).toFixed(0) + 's</span><br/>' +
-            'PREY &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#fff">' + preyMeshes.length + '</span>';
+            'PREY &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#fff">' + preyMeshes.length + '</span><br/>' +
+            (nearestPrey
+              ? '<div style="margin-top:4px;padding-top:4px;border-top:1px solid rgba(16,185,129,0.4)">NEAREST &nbsp;<span style="color:' + nearestColor + ';font-size:14px;font-weight:bold">' + arrowChar + ' ' + nearestDist.toFixed(0) + 'm</span></div>'
+              : '');
 
           renderer.render(scene, camera);
         }
