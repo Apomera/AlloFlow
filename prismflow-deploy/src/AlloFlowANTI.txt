@@ -18004,12 +18004,32 @@ Return ONLY valid JSON in this format:
       ${JSON.stringify(currentConfig)}
       Teacher Instruction: "${userInstruction}",
       Task:
-      1. Interpret the request (e.g., "Add a quiz", "Remove glossary", "Focus on vocabulary", "Change grade to 5th").
+      1. Interpret the request (e.g., "Add a quiz", "Remove glossary", "Focus on vocabulary", "Change grade to 5th", "Add note-taking templates", "Make an anchor chart").
       2. Modify the JSON:
          - Update "recommendedResources" array to add/remove tools (ensure valid tool IDs).
          - Update "globalSettings" (gradeLevel, tone) if requested.
          - Update "toolDirectives" to add specific instructions for tools if requested.
-      Valid Tools: analysis, simplified, glossary, outline, image, quiz, sentence-frames, brainstorm, timeline, concept-sort, adventure, faq, lesson-plan.
+      Valid Tools (tool_id — when to use):
+        - analysis — Always recommended first; analyzes source text for key ideas, vocabulary, structure.
+        - simplified — Adapt text to a reading level (differentiation).
+        - glossary — Key vocabulary with definitions, examples, images.
+        - outline — Visual organizer (Venn, Flow Chart, Structured Outline, T-Chart, Fishbone, etc.).
+        - image — AI-generated illustration of a key concept.
+        - quiz — Assessment questions (MCQ, free response, Exit Ticket, Pre-Check, Formative, Spaced Review).
+        - sentence-frames — Scaffolded writing prompts (good for ELL or structured responses).
+        - brainstorm — Open-ended idea generation around a topic.
+        - timeline — Chronological sequence (historical or procedural content).
+        - concept-sort — Categorization activity; students sort terms into groups.
+        - adventure — Choose-your-own-adventure interactive narrative.
+        - faq — Frequently asked questions generated from source text.
+        - persona — Interview historical figures, scientists, or literary characters as if real.
+        - dbq — Document-Based Question activity with HAPP framework and rubric.
+        - note-taking — Scaffolded note-taking templates (Cornell / Lab Report / Reading Response) that persist across lessons.
+        - anchor-chart — EL-style class anchor chart (Reference / Process / Concept Map / Comparison) with AI-drafted structure and editable icons.
+        - math — Opens STEM Lab (interactive math/science exploration tools).
+        - lesson-plan — Teacher-facing synthesis of the whole pack. ALWAYS place LAST.
+        - gemini-bridge — Interactive simulation/app generator (React, Python, p5.js, chatbot).
+        - alignment-report — Post-hoc audit of generated resources against standards (only if explicit standards + user requests audit).
       Return ONLY the updated valid JSON.
       `;
       try {
