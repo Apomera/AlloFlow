@@ -14217,6 +14217,238 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     );
   }
 
+  // ── DDDD. PERSONAL DAILY 3 (Wave 17) ──
+  // Morning ritual: write the 3 most important things to do today.
+  // Maximally simple. The single highest-leverage productivity practice
+  // for many people.
+  function PersonalDaily3(props) {
+    if (!R) return null;
+    var data = props.data || { days: {} };
+    var setData = props.setData;
+    var today = todayISO();
+    var todayDay = (data.days || {})[today] || { items: ['', '', ''], done: [false, false, false], reflection: '' };
+    var fs = R.useState(todayDay);                     var form = fs[0]; var setForm = fs[1];
+
+    function update(patch) {
+      var newForm = Object.assign({}, form, patch);
+      setForm(newForm);
+      setData({ days: Object.assign({}, data.days || {}, (function() { var o = {}; o[today] = newForm; return o; })()) });
+    }
+    function setItem(i, v) {
+      var items = form.items.slice(); items[i] = v;
+      update({ items: items });
+    }
+    function toggleDone(i) {
+      var done = form.done.slice(); done[i] = !done[i];
+      update({ done: done });
+    }
+
+    var days = data.days || {};
+    var allDates = Object.keys(days).sort().reverse();
+    var done = form.done.filter(function(d) { return d; }).length;
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🎯', 'Daily 3', 'Pick THE 3 most important things to do today. Just three. Resist the urge for more.', '#ef4444'),
+
+      hh('div', { style: { padding: 12, borderRadius: 12, background: 'linear-gradient(135deg, rgba(239,68,68,0.18), rgba(15,23,42,0.7))', border: '2px solid #ef4444', marginBottom: 14 } },
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 10 } },
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fca5a5' } }, '🎯 Today (' + new Date().toLocaleDateString() + ')'),
+          hh('span', { style: { padding: '4px 10px', borderRadius: 999, background: 'rgba(239,68,68,0.20)', color: '#ef4444', fontSize: 11, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace' } }, done + '/3')
+        ),
+        [0, 1, 2].map(function(i) {
+          var d = form.done[i];
+          return hh('div', { key: 'd3-' + i, style: { display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8, padding: 10, borderRadius: 8, background: 'rgba(2,6,23,0.5)', borderLeft: '3px solid ' + (d ? '#10b981' : '#ef4444') } },
+            hh('button', { onClick: function() { toggleDone(i); },
+              style: { width: 24, height: 24, borderRadius: 6, background: d ? '#10b981' : 'transparent', color: '#0f172a', border: '2px solid ' + (d ? '#10b981' : '#ef4444'), fontSize: 14, fontWeight: 900, cursor: 'pointer', flexShrink: 0 }
+            }, d ? '✓' : ''),
+            hh('div', { style: { flex: 1 } },
+              tkInput(form.items[i], function(v) { setItem(i, v); }, 'Priority ' + (i + 1), { fontSize: 13, textDecoration: d ? 'line-through' : 'none', opacity: d ? 0.6 : 1 })
+            )
+          );
+        }),
+        hh('div', { style: { marginTop: 10 } },
+          hh('label', { style: { fontSize: 11, color: '#fca5a5', display: 'block', marginBottom: 4 } }, 'End-of-day reflection (optional)'),
+          tkTextarea(form.reflection, function(v) { update({ reflection: v }); }, 'What got done? What didn\'t? Why?', 2)
+        )
+      ),
+
+      allDates.length > 1 ? hh('div', null,
+        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', marginBottom: 8 } }, '📚 Past days'),
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+          allDates.filter(function(d) { return d !== today; }).slice(0, 14).map(function(date) {
+            var day = days[date];
+            var dones = (day.done || []).filter(function(d) { return d; }).length;
+            return hh('div', { key: 'pd-' + date, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #ef4444' } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
+                hh('strong', { style: { fontSize: 11, color: '#fca5a5', fontFamily: 'ui-monospace, Menlo, monospace' } }, date),
+                hh('span', { style: { fontSize: 11, color: dones === 3 ? '#10b981' : dones >= 2 ? '#fbbf24' : '#ef4444', fontFamily: 'ui-monospace, Menlo, monospace' } }, dones + '/3')
+              ),
+              hh('div', { style: { fontSize: 10, color: '#cbd5e1' } },
+                (day.items || []).filter(function(x) { return x; }).map(function(item, i) {
+                  return (day.done && day.done[i]) ? '✓ ' + item : '○ ' + item;
+                }).join(' · ')
+              )
+            );
+          })
+        )
+      ) : null,
+
+      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+        hh('strong', { style: { color: '#ef4444' } }, '🎯 Why just 3: '),
+        'Too many priorities = no priority. Three is the sweet spot — enough to feel ambitious, few enough to actually finish. If you regularly hit all 3, increase your scope. If you regularly miss them, shrink them.'
+      )
+    );
+  }
+
+  // ── EEEE. PERSONAL CONFIDENCE BUILDER (Wave 17) ──
+  // Track moments when you noticed confidence. Pattern reveals what
+  // genuinely builds it for YOU.
+  function PersonalConfidence(props) {
+    if (!R) return null;
+    var data = props.data || { moments: [] };
+    var setData = props.setData;
+    var fs = R.useState({ what: '', when: '', what_did_it: '', strength_showed: '' });
+    var form = fs[0]; var setForm = fs[1];
+
+    function save() {
+      if (!form.what.trim()) { alert('Need a brief description.'); return; }
+      var m = Object.assign({ id: tkId(), date: todayISO() }, form);
+      setData({ moments: [m].concat(data.moments || []) });
+      setForm({ what: '', when: '', what_did_it: '', strength_showed: '' });
+    }
+    function remove(id) { setData({ moments: (data.moments || []).filter(function(m) { return m.id !== id; }) }); }
+
+    var moments = data.moments || [];
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('💪', 'Confidence Builder', 'Track moments when you noticed confidence. The pattern reveals what builds it for YOU.', '#10b981'),
+
+      tkCard('#10b981',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#10b981', marginBottom: 8 } }, '💪 Log a confidence moment'),
+          [
+            { id: 'what',           label: 'What happened?',                     placeholder: 'Brief — "I asked a question in chemistry"' },
+            { id: 'when',           label: 'When did you notice the confidence?', placeholder: 'Before / during / after?' },
+            { id: 'what_did_it',    label: 'What contributed?',                  placeholder: 'Practice? A friend? Preparation? Specific words you used?' },
+            { id: 'strength_showed', label: 'What strength of yours showed up?', placeholder: 'Courage? Curiosity? Persistence?' }
+          ].map(function(f) {
+            return hh('div', { key: 'cf-' + f.id, style: { marginBottom: 8 } },
+              hh('label', { style: { fontSize: 11, fontWeight: 700, color: '#10b981', display: 'block', marginBottom: 4 } }, f.label),
+              tkInput(form[f.id], function(v) { setForm(Object.assign({}, form, (function() { var o = {}; o[f.id] = v; return o; })())); }, f.placeholder)
+            );
+          }),
+          tkBtn('💾 Log', save, 'primary')
+        )
+      ),
+
+      moments.length > 0 ? hh('div', null,
+        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#10b981', textTransform: 'uppercase', marginBottom: 8 } }, '📚 Your confidence pattern'),
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+          moments.slice(0, 15).map(function(m) {
+            return hh('div', { key: 'cm-' + m.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #10b981' } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
+                hh('strong', { style: { fontSize: 12, color: '#10b981' } }, '💪 ' + m.what),
+                hh('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+              ),
+              hh('div', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 4 } }, relDate(m.date)),
+              m.what_did_it ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } }, hh('strong', { style: { color: '#10b981' } }, 'What helped: '), m.what_did_it) : null,
+              m.strength_showed ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginTop: 4 } }, hh('strong', { style: { color: '#10b981' } }, 'Strength: '), m.strength_showed) : null
+            );
+          })
+        )
+      ) : null,
+
+      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+        hh('strong', { style: { color: '#10b981' } }, '🎓 Why log this: '),
+        'Bandura 1977 — self-efficacy is the most powerful predictor of trying hard things. The way you build it is by NOTICING when it shows up + understanding what conditions produced it. Over time the pattern becomes a blueprint.'
+      )
+    );
+  }
+
+  // ── FFFF. PERSONAL HOPE LIBRARY (Wave 17) ──
+  // Things to do, places to go, experiences to have, people to meet.
+  // A library of hopes for hard days when you need to remember life is
+  // bigger than this moment.
+  function PersonalHope(props) {
+    if (!R) return null;
+    var data = props.data || { hopes: [] };
+    var setData = props.setData;
+    var fs = R.useState({ text: '', category: 'experience' });
+    var form = fs[0]; var setForm = fs[1];
+
+    var CATS = [
+      { id: 'place',      label: 'A place I want to go', icon: '🌍', color: '#06b6d4' },
+      { id: 'experience', label: 'An experience I want', icon: '✨', color: '#fbbf24' },
+      { id: 'skill',      label: 'A skill I want to learn', icon: '🛠', color: '#10b981' },
+      { id: 'person',     label: 'A person I want to meet/know', icon: '🤝', color: '#ec4899' },
+      { id: 'thing',      label: 'Something I want to make', icon: '🎨', color: '#a855f7' },
+      { id: 'become',     label: 'A way I want to BE', icon: '🌟', color: '#fb923c' }
+    ];
+
+    function add() {
+      if (!form.text.trim()) return;
+      var h = Object.assign({ id: tkId(), addedAt: todayISO() }, form);
+      setData({ hopes: [h].concat(data.hopes || []) });
+      setForm({ text: '', category: 'experience' });
+    }
+    function remove(id) { setData({ hopes: (data.hopes || []).filter(function(h) { return h.id !== id; }) }); }
+    function markDone(id) {
+      setData({ hopes: (data.hopes || []).map(function(h) { return h.id === id ? Object.assign({}, h, { done: !h.done, doneAt: !h.done ? todayISO() : null }) : h; }) });
+    }
+
+    var hopes = data.hopes || [];
+    var random = hopes.filter(function(h) { return !h.done; }).length > 0 ? hopes.filter(function(h) { return !h.done; })[Math.floor(Math.random() * hopes.filter(function(h) { return !h.done; }).length)] : null;
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🌅', 'Hope Library', 'Places, experiences, skills, people, things, ways of being you hope for. For hard days when you need to remember life is bigger.', '#fb923c'),
+
+      random ? hh('div', { style: { padding: 20, borderRadius: 14, background: 'linear-gradient(135deg, rgba(251,146,60,0.25), rgba(15,23,42,0.7))', border: '2px solid #fb923c', marginBottom: 14, textAlign: 'center' } },
+        hh('div', { style: { fontSize: 10, color: '#fb923c', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 } }, '🌅 Random hope'),
+        hh('div', { style: { fontSize: 16, color: '#e2e8f0', lineHeight: 1.55, marginBottom: 4 } }, random.text),
+        hh('div', { style: { fontSize: 10, color: '#fb923c' } }, (CATS.filter(function(c) { return c.id === random.category; })[0] || { label: '' }).label)
+      ) : null,
+
+      tkCard('#fb923c',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fb923c', marginBottom: 8 } }, '+ Add a hope'),
+          hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 } },
+            CATS.map(function(c) {
+              var on = form.category === c.id;
+              return hh('button', { key: 'hc-' + c.id,
+                onClick: function() { setForm(Object.assign({}, form, { category: c.id })); },
+                style: { padding: '6px 10px', borderRadius: 6, background: on ? c.color + '30' : 'rgba(15,23,42,0.5)', color: on ? c.color : '#94a3b8', border: '1px solid ' + (on ? c.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
+              }, c.icon + ' ' + c.label);
+            })
+          ),
+          hh('div', { style: { display: 'flex', gap: 6 } },
+            tkInput(form.text, function(v) { setForm(Object.assign({}, form, { text: v })); }, 'Describe the hope', { flex: 1 }),
+            tkBtn('+ Add', add, 'primary', { padding: '8px 14px' })
+          )
+        )
+      ),
+
+      hopes.length === 0 ? tkEmptyState('🌅', 'Your library is empty. Add 5 things — small or huge.', null, null)
+      : CATS.map(function(cat) {
+          var inCat = hopes.filter(function(h) { return h.category === cat.id; });
+          if (inCat.length === 0) return null;
+          return hh('div', { key: 'hc-' + cat.id, style: { marginBottom: 14 } },
+            hh('div', { style: { fontSize: 12, fontWeight: 800, color: cat.color, marginBottom: 8, padding: '4px 10px', background: cat.color + '15', borderRadius: 6, display: 'inline-block' } }, cat.icon + ' ' + cat.label),
+            hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+              inCat.map(function(h) {
+                return hh('div', { key: 'hp-' + h.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + cat.color, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 } },
+                  hh('div', { style: { flex: 1, fontSize: 12, color: '#cbd5e1', textDecoration: h.done ? 'line-through' : 'none', opacity: h.done ? 0.6 : 1 } }, (h.done ? '✓ ' : '') + h.text),
+                  hh('div', { style: { display: 'flex', gap: 4 } },
+                    tkBtn(h.done ? '↺' : '✓', function() { markDone(h.id); }, h.done ? 'ghost' : 'good', { padding: '4px 10px', fontSize: 10 }),
+                    hh('button', { onClick: function() { remove(h.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  )
+                );
+              })
+            )
+          );
+        }).filter(Boolean)
+    );
+  }
+
   // ── F. MY TOOLKIT HUB (landing page) ──
   // Single entry point that shows status of all toolkit tools + quick
   // actions. Today's date, current streak, # active goals, etc.
@@ -14422,7 +14654,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'mytkMomentum', icon: '📆', label: 'Momentum Calendar',    color: '#10b981', desc: '12-week grid per habit, Seinfeld chain',
         stat: ((data.mytkMomentum || {}).habits || []).length + ' habits', cta: 'Track momentum' },
       { id: 'mytkScreen',   icon: '📱', label: 'Screen Time Tracker',  color: '#ef4444', desc: 'Self-report screen time + reflection',
-        stat: ((data.mytkScreen || {}).logs || []).length + ' logs', cta: 'Log today' }
+        stat: ((data.mytkScreen || {}).logs || []).length + ' logs', cta: 'Log today' },
+      { id: 'mytkD3',       icon: '🎯', label: 'Daily 3',              color: '#ef4444', desc: 'THE 3 most important things today. Just 3.',
+        stat: Object.keys(((data.mytkD3 || {}).days || {})).length + ' days planned', cta: 'Plan today' },
+      { id: 'mytkConf',     icon: '💪', label: 'Confidence Builder',   color: '#10b981', desc: 'Track moments. Pattern reveals what builds it for YOU',
+        stat: ((data.mytkConf || {}).moments || []).length + ' moments', cta: 'Log a moment' },
+      { id: 'mytkHope',     icon: '🌅', label: 'Hope Library',         color: '#fb923c', desc: 'Places, experiences, skills, people, things you hope for',
+        stat: ((data.mytkHope || {}).hopes || []).length + ' hopes', cta: 'Add a hope' }
     ];
 
     var dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][new Date().getDay()];
@@ -14690,7 +14928,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'mytkFriends',icon: '🤝',label: 'Friendship Tracker',   desc: 'Track who you owe a check-in to. Cadence-aware. Especially helpful when life gets busy.' },
               { id: 'mytkValues',icon: '🧭',label: 'Values Compass',        desc: 'Sort 36 values → top 10 → top 5 → top 3 with why-reasoning (Hayes ACT 1999).' },
               { id: 'mytkMomentum',icon: '📆',label: 'Momentum Calendar',   desc: '12-week × 7-day grid per habit. Seinfeld "don\'t break the chain" flexible version.' },
-              { id: 'mytkScreen',icon: '📱',label: 'Screen Time Tracker',   desc: 'Self-report total + scrolling + productive screen time + how you felt about it.' }
+              { id: 'mytkScreen',icon: '📱',label: 'Screen Time Tracker',   desc: 'Self-report total + scrolling + productive screen time + how you felt about it.' },
+              { id: 'mytkD3',   icon: '🎯',label: 'Daily 3',                desc: 'THE 3 most important things to do today. Resist adding more.' },
+              { id: 'mytkConf', icon: '💪',label: 'Confidence Builder',     desc: 'Log moments when you noticed confidence. Pattern reveals what builds it (Bandura 1977).' },
+              { id: 'mytkHope', icon: '🌅',label: 'Hope Library',           desc: 'Places, experiences, skills, people, ways of being you hope for. Random pick for hard days.' }
             ]
           },
           { id: 'foundation', icon: '🧠', name: 'How learning works (foundation)',
@@ -18366,6 +18607,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           h(PersonalScreenTime, { data: dsc, setData: setDsc })
         );
       }
+      function renderMytkD3() {
+        var dd3 = d.mytkD3 || { days: {} };
+        var setDd3 = function(newData) { upd('mytkD3', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalDaily3, { data: dd3, setData: setDd3 })
+        );
+      }
+      function renderMytkConf() {
+        var dco = d.mytkConf || { moments: [] };
+        var setDco = function(newData) { upd('mytkConf', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalConfidence, { data: dco, setData: setDco })
+        );
+      }
+      function renderMytkHope() {
+        var dhp = d.mytkHope || { hopes: [] };
+        var setDhp = function(newData) { upd('mytkHope', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalHope, { data: dhp, setData: setDhp })
+        );
+      }
 
       // ─────────────────────────────────────────
       // VIEW ROUTER
@@ -18453,6 +18718,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         case 'mytkValues':    return renderMytkValues();
         case 'mytkMomentum':  return renderMytkMomentum();
         case 'mytkScreen':    return renderMytkScreen();
+        case 'mytkD3':        return renderMytkD3();
+        case 'mytkConf':      return renderMytkConf();
+        case 'mytkHope':      return renderMytkHope();
         case 'bloom':         return renderBloom();
         case 'cogload':       return renderCogLoad();
         case 'metacog':       return renderMetacog();
