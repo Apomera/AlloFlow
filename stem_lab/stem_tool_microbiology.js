@@ -3233,6 +3233,75 @@
               );
             })(),
             '#ec4899'
+          ),
+
+          // ─── Hygiene hypothesis + allergies/asthma ──────────────
+          sectionCard('🤧 The hygiene hypothesis — why allergies + asthma are rising',
+            (function() {
+              var HH_TOPICS = [
+                { id: 'pattern', name: 'The rising-disease pattern', emoji: '📈',
+                  body: 'Over the past 50-100 years, ALLERGIC + AUTOIMMUNE diseases have risen dramatically in high-income countries. ASTHMA prevalence in US children: ~ 3% in 1980 → ~ 8% in 2020. PEANUT ALLERGY: ~ 0.4% in 1997 → ~ 2.5% in 2017 (US children). ATOPIC DERMATITIS (eczema): now affects ~ 15-20% of children, up from ~ 2-3% in the 1960s. CELIAC DISEASE: 4× increase since the 1950s. TYPE 1 DIABETES (autoimmune): 3-5% annual increase in many countries. INFLAMMATORY BOWEL DISEASE: ~ 2× increase since 1990. The pattern is real, well-documented, + much more pronounced in WEALTHIER + URBANIZED populations.',
+                  caveat: 'These are correlations + the changes are happening too fast for genetic explanation. The trend is consistent across many countries with different healthcare systems + diagnostic practices, so it is not just better diagnosis. The rising pattern is the SETUP for various hypotheses about causation; the cause itself is debated.'
+                },
+                { id: 'strachan', name: 'Strachan 1989 + the original hypothesis', emoji: '👶',
+                  body: 'David Strachan (London epidemiologist) published a 1989 study finding that children with MORE SIBLINGS had LOWER rates of hay fever + allergic disease. He hypothesized that early-life exposure to common infections (more readily caught from siblings) helped the immune system develop properly, preventing it from misdirecting against harmless allergens later. The "hygiene hypothesis" was born. The framing caught on culturally: "kids today are too clean." Decades of follow-up research has both confirmed PARTS of the original idea + complicated others significantly.',
+                  caveat: 'Strachan\'s original hypothesis was a snapshot + simple. He later expanded + refined it (2000, 2017). The "too clean" pop-culture version is mostly WRONG — modern handwashing + sanitation save lives + are not the problem. The problem is more specific: changes in microbial EXPOSURE during early development, including absence of beneficial commensal microbes, not generic hygiene.'
+                },
+                { id: 'oldfriends', name: 'The "Old Friends" hypothesis', emoji: '🤝',
+                  body: 'Graham Rook (UCL, 2003) refined Strachan\'s framework into the "Old Friends" hypothesis. The key insight: humans evolved alongside a set of microbes ("old friends") for hundreds of thousands of years — soil microbes, helminths (parasitic worms), enteric bacteria, environmental fungi. These microbes were ABUNDANT in our ancestral environment + helped train the developing immune system to distinguish friend from foe. In modern high-income environments, exposure to old friends has dropped dramatically — fewer soil contacts, indoor lifestyles, processed food, water disinfection, mass deworming, urbanization. The immune system that didn\'t get its training mistakes harmless pollen + dust + foods for enemies.',
+                  caveat: 'The "Old Friends" framing is biologically sophisticated + supported by accumulating evidence. The Amish + Hutterite communities provide quasi-natural experiments — both have similar genetics + are mostly farm-based, but Amish (more direct farm-animal contact) have ~ 5× lower asthma prevalence than Hutterites (more isolated from livestock). Helminth-deworming has correlated with rising allergic disease in some populations. Specific mechanisms: gut microbiota influence regulatory T-cell development; environmental microbes influence skin barrier development.'
+                },
+                { id: 'gut', name: 'Gut microbiome + early life', emoji: '🦠',
+                  body: 'The first 1,000 days of life (conception through age 2) is critical for gut microbiome establishment + immune development. Several modern practices may disrupt this: (a) CESAREAN SECTIONS (now ~ 32% of US births vs ~ 5% in 1970) bypass the vaginal microbiome transfer that establishes baby\'s gut bacteria. (b) FORMULA FEEDING (vs breastfeeding) provides different nutrition + microbiota. (c) EARLY ANTIBIOTICS in infancy (1 in 3 US infants gets antibiotics by age 1) disrupt gut bacterial community for months to years. (d) PROCESSED-FOOD diets lack the fiber + plant diversity that maintain healthy gut bacteria. Each correlates with increased allergic + autoimmune disease risk in cohort studies.',
+                  caveat: 'These are CORRELATIONS, not proven causes. C-sections are sometimes life-saving + the right choice. Formula feeding is sometimes the only option. Some antibiotics in infancy are absolutely necessary. The relevant question is not "avoid C-section" but "if doing C-section, can we minimize the microbial disruption?" Some hospitals now offer "vaginal seeding" (swabbing C-section babies with maternal vaginal fluid) — initial trials show microbiome benefit; long-term outcomes still being studied.'
+                },
+                { id: 'farm', name: 'The farm effect', emoji: '🐄',
+                  body: 'Rural farm-raised children have CONSISTENTLY lower rates of asthma + allergies than non-farm rural children + much lower than urban children. The "farm effect" has been documented across Europe (PASTURE study), the US (Wisconsin Amish, Indiana Hutterite), and developing countries. The protective elements appear to be: (a) UNPROCESSED MILK consumption (raw milk has been shown to reduce asthma risk; pasteurized milk does not — though raw-milk-borne infections remain a real risk); (b) early-life livestock contact (specific microbial exposures); (c) hay + bedding dust exposure; (d) outdoor + farm-environment microbial diversity in early years. The protective effect appears strongest if exposure starts BEFORE age 1 + ideally in utero (via maternal exposures).',
+                  caveat: 'Public health does NOT recommend drinking raw milk for allergy prevention — the protective effect is modest + the foodborne-illness risk is real. Some specific milk components (whey proteins, fatty acids, microbial signatures) may be the active factors + might be safely added to processed milk. Active research at Helsinki, Munich, NIH. The farm effect informs broader thinking but does not yet translate to a population-level intervention recommendation.'
+                },
+                { id: 'dual', name: 'Dual-exposure for food allergy', emoji: '🥜',
+                  body: 'For FOOD ALLERGIES specifically, a more refined model has emerged: the DUAL-ALLERGEN-EXPOSURE HYPOTHESIS (Gideon Lack 2015). Children develop food allergies through SKIN exposure to food proteins (especially through eczema-disrupted skin), but develop ORAL tolerance through early EATING of those same foods. So: early peanut introduction in babies\' DIET reduces peanut allergy; PROTECTING peanuts from baby\'s skin reduces sensitization. This was demonstrated by the LEAP trial (2015, Lack et al.): introducing peanut to high-risk infants at 4-11 months reduced peanut allergy by 86% vs avoidance. The 2017 + 2021 US guidelines now recommend EARLY INTRODUCTION of peanut + other allergenic foods at 4-6 months, completely reversing previous "avoid until age 3" recommendations.',
+                  caveat: 'The LEAP-trial reversal is one of the clearest examples of pediatric medicine getting better through rigorous trials. School psychologists + counselors should know about it for family conversations about feeding practices. The American Academy of Pediatrics 2017 + the NIH Allergic Diseases Sciences research initiative 2021 reflect the updated science. Families with older children who avoided peanuts under previous guidance + now have allergies should NOT blame themselves — the guidance was based on the evidence available at the time.'
+                },
+                { id: 'eczema', name: 'Eczema + the atopic march', emoji: '🌡️',
+                  body: 'ECZEMA (atopic dermatitis) is the most common skin condition of childhood + often the FIRST step in the "atopic march" — eczema → food allergies → asthma → allergic rhinitis. The skin barrier disruption in eczema allows allergen sensitization through the skin. Genetic factors include FILAGGRIN gene mutations (FLG, ~ 30% of severe eczema patients). Environmental factors include: low humidity + cold winters (Maine winters are tough for eczema), harsh soaps + detergents, hard water, certain fabrics. Modern eczema management focuses on RESTORING + PROTECTING the skin barrier (emollient moisturizers from birth in high-risk infants, gentle cleansers, avoiding triggers).',
+                  caveat: 'Some studies have shown that AGGRESSIVE infant skin moisturization may reduce eczema risk in high-risk infants — though the most rigorous large trials (PreventADALL 2020, BEEP 2020) have shown smaller effects than earlier pilot studies suggested. Current recommendations are: regular emollient use is safe + reasonable in high-risk infants but is not a proven intervention. Avoiding fragrance + harsh cleansers in baby products is uncontroversially good practice.'
+                },
+                { id: 'practical', name: 'What this means for families + schools', emoji: '🏠',
+                  body: 'The hygiene hypothesis suggests SOME directions for families with prevention concerns: (1) BREASTFEEDING when possible, for at least 6 months. (2) EARLY introduction of common food allergens (peanut, egg, tree nuts) at 4-6 months for healthy babies — particularly important for high-risk infants. (3) Outdoor + nature exposure (some "dirt" is good). (4) Diverse high-fiber + plant-rich diet for the whole family. (5) Antibiotic stewardship — only use when medically necessary. (6) Pet ownership in early life may be protective (multiple studies show modest effects). (7) Avoid both extremes of cleanliness — neither sterile-clean nor unclean is optimal.',
+                  caveat: 'These are GENERAL principles, not prescriptions. Individual cases vary. Children with diagnosed food allergies need to AVOID their triggers + carry epinephrine; the "early introduction" advice is for healthy babies, not allergic children. Each family\'s situation is different. Pediatricians + allergists + dietitians provide individual guidance. School psychologists + nurses see children across the asthma + allergy spectrum + can support families navigating both prevention questions + active management.'
+                }
+              ];
+              var sel = d.selectedHH || 'pattern';
+              var topic = HH_TOPICS.find(function(t) { return t.id === sel; }) || HH_TOPICS[0];
+              return h('div', null,
+                h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
+                  'Asthma, eczema, peanut allergy, type 1 diabetes, inflammatory bowel disease — all have risen sharply in wealthy countries over the past 50-100 years. Genetics have not changed; something in our environment has. The "hygiene hypothesis" + its refinements suggest the answer involves disruption of early-life microbial exposure. School psychologists + nurses + counselors regularly meet children + families navigating these conditions; understanding the science supports better conversations.'
+                ),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+                  HH_TOPICS.map(function(t) {
+                    var on = t.id === sel;
+                    return h('button', {
+                      key: t.id,
+                      onClick: function() { upd({ selectedHH: t.id }); },
+                      style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#06b6d4' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #06b6d4' : '1px solid #334155' }
+                    }, t.emoji + ' ' + t.name);
+                  })
+                ),
+                h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(6,182,212,0.08)', border: '1px solid rgba(6,182,212,0.35)' } },
+                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#67e8f9', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+                  h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+                  h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
+                    h('strong', null, 'Honest framing: '), topic.caveat
+                  )
+                ),
+                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 11.5, color: '#e9d5ff', lineHeight: 1.65 } },
+                  h('strong', null, 'School considerations: '),
+                  'School policies often address food allergies (peanut-free zones, EpiPen training, lunch protocols) + asthma management (inhaler access, recess + PE accommodations) + eczema (sunscreen + lotion use). These conditions affect ~ 10-25% of students across categories. Schools that handle them well: clear written plans, trained school nurses, family-school-clinic communication, accessible epinephrine. Schools that handle them poorly: outdated information, single-event focus rather than systematic accommodation, family anxiety. School psychologists + counselors are often the trusted bridge between clinical + school systems for these students.'
+                )
+              );
+            })(),
+            '#06b6d4'
           )
         );
       }

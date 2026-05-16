@@ -430,7 +430,7 @@
 
       function sectionCard(title, children, accent) {
         accent = accent || EMERALD;
-        return h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155', borderLeft: '3px solid ' + accent, marginBottom: 12 } },
+        return h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + accent, marginBottom: 12 } },
           title ? h('div', { style: { fontSize: 14, fontWeight: 800, color: '#e2e8f0', marginBottom: 8 } }, title) : null,
           children
         );
@@ -457,7 +457,7 @@
                 { name: 'Eukaryotes (incl. fungi + protists)', desc: 'Cells WITH a nucleus + organelles (mitochondria, chloroplasts). Includes single-celled fungi (yeast), filamentous fungi (mold), protists (amoeba, Plasmodium), and all plants + animals.', accent: '#a855f7' },
                 { name: 'Viruses (not cellular)', desc: 'Genetic material in a protein shell. Cannot reproduce without a host cell. Most biologists do not classify them as alive — but they certainly behave like life when inside cells.', accent: '#0ea5e9' }
               ].map(function(g, i) {
-                return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + g.accent } },
+                return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + g.accent } },
                   h('div', { style: { fontSize: 13, fontWeight: 800, color: '#e2e8f0', marginBottom: 4 } }, g.name),
                   h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.55 } }, g.desc)
                 );
@@ -499,7 +499,7 @@
                   { age: '540 Mya', name: 'Cambrian explosion', desc: 'Suddenly, most major animal body plans appear in the fossil record within ~25 million years. The explanation is contested (genuine evolutionary rapid radiation? earlier soft-bodied ancestors that didn\'t fossilize? oxygen reaching critical levels?). Either way, the era of large multicellular animals begins.', color: '#f59e0b' },
                   { age: '~300 kya', name: 'Homo sapiens', desc: 'Our species appears in Africa about 300,000 years ago. We are recent newcomers; microbes have been here for ~14,000× longer.', color: '#a78bfa' }
                 ].map(function(e, i) {
-                  return h('div', { key: i, style: { display: 'grid', gridTemplateColumns: '90px 1fr', gap: 12, padding: 8, borderRadius: 8, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + e.color } },
+                  return h('div', { key: i, style: { display: 'grid', gridTemplateColumns: '90px 1fr', gap: 12, padding: 8, borderRadius: 8, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + e.color } },
                     h('div', { style: { fontSize: 13, fontWeight: 800, color: e.color, paddingTop: 2 } }, e.age),
                     h('div', null,
                       h('div', { style: { fontSize: 13, fontWeight: 700, color: '#e2e8f0', marginBottom: 2 } }, e.name),
@@ -546,7 +546,7 @@
                     desc: 'Maine\'s apple-growing tradition produces a robust cider industry; Maine breweries are among the highest density per capita in the US. Local yeasts adapted to Maine apples are still being domesticated by Maine fermentation labs. Each cidery + brewery cultivates particular yeast strains that survive cool Maine fermentation temperatures.',
                     prevention: '(not a pathogen — economically important.)' }
                 ].map(function(m, i) {
-                  return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + m.color } },
+                  return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + m.color } },
                     h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4, gap: 8, flexWrap: 'wrap' } },
                       h('div', { style: { fontSize: 12.5, fontWeight: 800, color: m.color } }, m.name),
                       h('div', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5 } }, m.kind)
@@ -689,7 +689,7 @@
                       { name: 'Diagnostics', desc: 'SHERLOCK + DETECTR: CRISPR-based diagnostic tests that detect specific DNA or RNA sequences from pathogens within an hour. Used for COVID, Zika, dengue, Lassa. Pocket-sized + low-cost.' },
                       { name: 'Basic research', desc: 'Knocking out a gene used to take a graduate student\'s entire PhD. With CRISPR it takes a week. Functional studies of every gene in the human genome are now feasible. Most biology labs in the world use CRISPR daily.' }
                     ].map(function(a, i) {
-                      return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + EMERALD } },
+                      return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + EMERALD } },
                         h('div', { style: { fontSize: 12.5, fontWeight: 800, color: '#6ee7b7', marginBottom: 4 } }, a.name),
                         h('div', { style: { fontSize: 11.5, color: '#e2e8f0', lineHeight: 1.55 } }, a.desc)
                       );
@@ -700,19 +700,19 @@
                   h('p', { style: { margin: '0 0 10px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
                     'CRISPR makes things easy that used to be hard. That includes things we may not want to do.'
                   ),
-                  h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.10)', border: '1px solid rgba(220,38,38,0.35)', borderLeft: '3px solid #ef4444', marginBottom: 10 } },
+                  h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.10)', borderTop: '1px solid rgba(220,38,38,0.35)', borderRight: '1px solid rgba(220,38,38,0.35)', borderBottom: '1px solid rgba(220,38,38,0.35)', borderLeft: '3px solid #ef4444', marginBottom: 10 } },
                     h('div', { style: { fontSize: 12.5, fontWeight: 800, color: '#fca5a5', marginBottom: 6 } }, 'He Jiankui (2018): the first edited human babies'),
                     h('p', { style: { margin: 0, fontSize: 12, color: '#fee2e2', lineHeight: 1.65 } },
                       'A Chinese researcher used CRISPR to edit twin embryos (knocking out the CCR5 gene to try to confer HIV resistance) and bring them to term in 2018. The international scientific community condemned the work as deeply unethical: no medical need, no informed consent that could meet the bar, no way to ensure no off-target edits, no plan for the lifetime of the twins. He was sentenced to 3 years in prison. The case prompted broad agreement that germline editing (changes that pass to future generations) is not currently ethically defensible.'
                     )
                   ),
-                  h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.35)', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
+                  h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.35)', borderRight: '1px solid rgba(245,158,11,0.35)', borderBottom: '1px solid rgba(245,158,11,0.35)', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
                     h('div', { style: { fontSize: 12.5, fontWeight: 800, color: '#fbbf24', marginBottom: 6 } }, 'Somatic vs germline editing'),
                     h('p', { style: { margin: 0, fontSize: 12, color: '#fde68a', lineHeight: 1.65 } },
                       'SOMATIC editing changes DNA in body cells of a living person. The edits affect that person only; not their children. (Casgevy for sickle cell is somatic.) GERMLINE editing changes DNA in sperm, eggs, or embryos. The edits pass to every cell of the resulting person AND to their descendants. The scientific consensus is: somatic editing is ethically OK for treating disease; germline editing is not currently OK because we cannot anticipate the consequences across generations.'
                     )
                   ),
-                  h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.35)', borderLeft: '3px solid #a855f7' } },
+                  h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.35)', borderRight: '1px solid rgba(168,85,247,0.35)', borderBottom: '1px solid rgba(168,85,247,0.35)', borderLeft: '3px solid #a855f7' } },
                     h('div', { style: { fontSize: 12.5, fontWeight: 800, color: '#d8b4fe', marginBottom: 6 } }, 'Gene drives'),
                     h('p', { style: { margin: 0, fontSize: 12, color: '#e9d5ff', lineHeight: 1.65 } },
                       'CRISPR-based gene drives can spread a gene through a wild population in a few generations, even if the gene reduces fitness. Proposed uses: eradicate malaria-carrying mosquitoes; eliminate invasive species. Risk: once released, hard or impossible to undo. International conversations are ongoing about whether + how to ever deploy a gene drive in the wild.'
@@ -792,7 +792,7 @@
               );
             })
           ),
-          h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155', borderLeft: '3px solid ' + (roleColor[selected.role] || EMERALD) } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + (roleColor[selected.role] || EMERALD) } },
             h('h3', { style: { margin: '0 0 4px', color: '#6ee7b7', fontSize: 18 } }, selected.name),
             h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 12 } }, 'Shape: ' + selected.shape + ' · ', h('span', { style: { color: roleColor[selected.role], fontWeight: 700, textTransform: 'uppercase' } }, roleLabel[selected.role])),
             infoBlock('Where', selected.where, '#94a3b8'),
@@ -916,7 +916,7 @@
                   }, t.icon + ' ' + t.name);
                 })
               ),
-              h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + selT.color } },
+              h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + selT.color } },
                 h('div', { style: { fontSize: 15, fontWeight: 800, color: selT.color, marginBottom: 8 } }, selT.icon + ' ' + selT.name),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.08)', borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
                   h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'How it spreads'),
@@ -1039,7 +1039,7 @@
               );
             })
           ),
-          h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155', borderLeft: '3px solid ' + (roleColor[selected.role] || '#a855f7') } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + (roleColor[selected.role] || '#a855f7') } },
             h('h3', { style: { margin: '0 0 4px', color: '#d8b4fe', fontSize: 18 } }, selected.name),
             h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 12 } }, 'Kind: ' + selected.kind + ' · ', h('span', { style: { color: roleColor[selected.role] || '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, selected.role)),
             h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', borderLeft: '3px solid #94a3b8', marginBottom: 8 } },
@@ -1150,7 +1150,7 @@
               );
             })
           ),
-          h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155', borderLeft: '3px solid ' + (roleColor[selected.role] || '#0ea5e9') } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + (roleColor[selected.role] || '#0ea5e9') } },
             h('h3', { style: { margin: '0 0 4px', color: '#7dd3fc', fontSize: 18 } }, selected.name),
             h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 12 } }, 'Kind: ' + selected.kind + ' · ', h('span', { style: { color: roleColor[selected.role] || '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, selected.role)),
             h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', borderLeft: '3px solid #94a3b8', marginBottom: 8 } },
@@ -1193,7 +1193,7 @@
               );
             })
           ),
-          h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155', borderLeft: '3px solid #ef4444' } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid #ef4444' } },
             h('h3', { style: { margin: '0 0 4px', color: '#fca5a5', fontSize: 18 } }, selected.name),
             h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 12 } }, selected.kind),
             h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', borderLeft: '3px solid #94a3b8', marginBottom: 8 } },
@@ -1437,7 +1437,7 @@
       // RESISTANCE
       function renderResistance() {
         return h('div', { style: { padding: 16 } },
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.35)', borderLeft: '3px solid #ef4444', marginBottom: 12, fontSize: 12.5, color: '#fecaca', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.35)', borderRight: '1px solid rgba(239,68,68,0.35)', borderBottom: '1px solid rgba(239,68,68,0.35)', borderLeft: '3px solid #ef4444', marginBottom: 12, fontSize: 12.5, color: '#fecaca', lineHeight: 1.65 } },
             h('strong', null, '⚠️ Antibiotic resistance is a global health crisis. '),
             'Antibiotic-resistant infections killed at least 1.27 million people in 2019, with millions more deaths in which resistance contributed. The CDC ranks it among the top global health threats of this century.'
           ),
@@ -1486,7 +1486,7 @@
                     }, m.name);
                   })
                 ),
-                h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
+                h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
                   h('div', { style: { fontSize: 14, fontWeight: 800, color: sel.color, marginBottom: 8 } }, sel.name),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.08)', borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
                     h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'What happens'),
@@ -1554,7 +1554,7 @@
                     resists: 'VanA/VanB resistance changes the terminus to D-Ala-D-Lac, which vancomycin can\'t bind. VRE (vancomycin-resistant Enterococcus) and VRSA (vancomycin-resistant Staph) are growing problems.',
                     color: '#ef4444' }
                 ].map(function(c, i) {
-                  return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + c.color } },
+                  return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + c.color } },
                     h('div', { style: { fontSize: 12.5, fontWeight: 800, color: c.color, marginBottom: 4 } }, c.name),
                     h('div', { style: { fontSize: 10.5, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 4 } }, 'Target: ' + c.target),
                     h('div', { style: { fontSize: 11.5, color: '#e2e8f0', lineHeight: 1.55, marginBottom: 6 } }, h('strong', null, 'How it works: '), c.how),
@@ -1591,7 +1591,7 @@
               h('p', { style: { margin: '0 0 12px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
                 'Bacteriophages (or just "phages") are viruses that infect bacteria — and ONLY bacteria, never human cells. The most abundant biological entity on Earth (~10³¹ of them). They were discovered in 1915-17 + used as antibacterial therapy in the Soviet Union throughout the 20th century. Western medicine largely abandoned them after antibiotics took off in the 1940s — but the antibiotic resistance crisis is bringing phage therapy back.'
               ),
-              h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid #6ee7b7', marginBottom: 10 } },
+              h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid #6ee7b7', marginBottom: 10 } },
                 h('div', { style: { fontSize: 12.5, fontWeight: 800, color: '#6ee7b7', marginBottom: 8 } }, 'Why phages are uniquely promising:'),
                 h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12, color: '#e2e8f0', lineHeight: 1.75 } },
                   h('li', null, h('strong', null, 'Self-replicating: '), 'A single phage multiplies inside the bacterial host. One dose can grow into trillions, kill the infection, then disappear as targets run out.'),
@@ -1870,7 +1870,7 @@
                   );
                 })
               ),
-              h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
+              h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8, flexWrap: 'wrap' } },
                   h('div', { style: { fontSize: 15, fontWeight: 800, color: sel.color } }, sel.name),
                   h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } }, sel.age)
@@ -2091,7 +2091,7 @@
                   }, a.name);
                 })
               ),
-              h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
+              h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
                 h('div', { style: { fontSize: 15, fontWeight: 800, color: sel.color, marginBottom: 8 } }, sel.name),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.08)', borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
                   h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Microbes used'),
@@ -2396,7 +2396,7 @@
                   }, s.name);
                 })
               ),
-              h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
+              h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
                 h('div', { style: { fontSize: 15, fontWeight: 800, color: sel.color, marginBottom: 4 } }, sel.name),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.08)', borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
                   h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Microbes responsible'),
@@ -2441,15 +2441,15 @@
             h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
               h('p', { style: { margin: '0 0 8px' } }, 'Industrial agriculture depends on biological nitrogen fixation in three forms: leguminous crop rotations (alfalfa, clover, soybean) for organic nitrogen, Rhizobium-inoculated seed treatments, and supplementary Haber-Bosch synthetic fertilizers. Each option has trade-offs.'),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 8 } },
-                h('div', { style: { padding: 8, borderRadius: 6, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid #22c55e' } },
+                h('div', { style: { padding: 8, borderRadius: 6, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid #22c55e' } },
                   h('div', { style: { fontSize: 12, fontWeight: 800, color: '#86efac', marginBottom: 4 } }, 'Crop rotation'),
                   h('div', { style: { fontSize: 11.5, color: '#e2e8f0', lineHeight: 1.55 } }, 'Plant legumes one season to "fix" nitrogen; plant nitrogen-hungry crops the next. Indigenous "three sisters" agriculture (corn + beans + squash) used this for millennia. Slow + reliable + low-input.')
                 ),
-                h('div', { style: { padding: 8, borderRadius: 6, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid #0ea5e9' } },
+                h('div', { style: { padding: 8, borderRadius: 6, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid #0ea5e9' } },
                   h('div', { style: { fontSize: 12, fontWeight: 800, color: '#7dd3fc', marginBottom: 4 } }, 'Rhizobium inoculants'),
                   h('div', { style: { fontSize: 11.5, color: '#e2e8f0', lineHeight: 1.55 } }, 'Seed-coat soybeans, peanuts, peas with the right strain of Rhizobium before planting. Targeted, effective, used at industrial scale.')
                 ),
-                h('div', { style: { padding: 8, borderRadius: 6, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid #f59e0b' } },
+                h('div', { style: { padding: 8, borderRadius: 6, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid #f59e0b' } },
                   h('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', marginBottom: 4 } }, 'Synthetic fertilizer (Haber-Bosch)'),
                   h('div', { style: { fontSize: 11.5, color: '#e2e8f0', lineHeight: 1.55 } }, 'Industrial process (1909) converts N₂ + H₂ → NH₃ at high temperature + pressure. Currently feeds about half the world. Uses 1-2% of all global energy. Largest single contributor to anthropogenic reactive nitrogen on Earth.')
                 )
@@ -2702,7 +2702,7 @@
                   { name: 'Cytotoxic / Killer T cells (CD8+)', arm: 'adaptive', role: 'Kill infected cells. Each recognizes one antigen + MHC class I combination. Critical for clearing viral + cancerous cells.', color: EMERALD },
                   { name: 'Regulatory T cells (Tregs)', arm: 'adaptive', role: 'Brakes on the immune response. Stop responses to self-antigens (preventing autoimmunity). Defective Tregs are implicated in many autoimmune diseases.', color: EMERALD }
                 ].map(function(c, i) {
-                  return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + c.color } },
+                  return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + c.color } },
                     h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 } },
                       h('div', { style: { fontSize: 12.5, fontWeight: 800, color: '#e2e8f0' } }, c.name),
                       h('div', { style: { fontSize: 9.5, color: c.color, textTransform: 'uppercase', fontWeight: 700, letterSpacing: 0.5 } }, c.arm)
@@ -2761,7 +2761,7 @@
                 'T cells don\'t see pathogens directly. They see fragments of pathogens presented on the surface of other cells. The presenting molecule is called MHC (Major Histocompatibility Complex; also called HLA in humans). Two classes; two T cell types.'
               ),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 } },
-                h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid #38bdf8' } },
+                h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid #38bdf8' } },
                   h('div', { style: { fontSize: 13, fontWeight: 800, color: '#7dd3fc', marginBottom: 6 } }, 'MHC class I'),
                   h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } },
                     h('strong', null, 'Where: '), 'On almost every nucleated cell.', h('br'),
@@ -2769,7 +2769,7 @@
                     h('strong', null, 'Detected by: '), 'CD8+ killer T cells. If they see a foreign peptide on MHC-I, they kill the cell.'
                   )
                 ),
-                h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid #ec4899' } },
+                h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid #ec4899' } },
                   h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbcfe8', marginBottom: 6 } }, 'MHC class II'),
                   h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } },
                     h('strong', null, 'Where: '), 'Mainly on professional antigen-presenting cells (dendritic cells, macrophages, B cells).', h('br'),
@@ -2898,7 +2898,7 @@
                     }, s.name);
                   })
                 ),
-                h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
+                h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
                   h('div', { style: { fontSize: 14, fontWeight: 800, color: sel.color, marginBottom: 8 } }, sel.name),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.08)', borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
                     h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'What happens'),
@@ -2977,7 +2977,7 @@
                     );
                   })
                 ),
-                h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + selT.color } },
+                h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + selT.color } },
                   h('div', { style: { fontSize: 15, fontWeight: 800, color: selT.color, marginBottom: 8 } }, selT.type),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.08)', borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
                     h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'How common'),
@@ -3233,6 +3233,75 @@
               );
             })(),
             '#ec4899'
+          ),
+
+          // ─── Hygiene hypothesis + allergies/asthma ──────────────
+          sectionCard('🤧 The hygiene hypothesis — why allergies + asthma are rising',
+            (function() {
+              var HH_TOPICS = [
+                { id: 'pattern', name: 'The rising-disease pattern', emoji: '📈',
+                  body: 'Over the past 50-100 years, ALLERGIC + AUTOIMMUNE diseases have risen dramatically in high-income countries. ASTHMA prevalence in US children: ~ 3% in 1980 → ~ 8% in 2020. PEANUT ALLERGY: ~ 0.4% in 1997 → ~ 2.5% in 2017 (US children). ATOPIC DERMATITIS (eczema): now affects ~ 15-20% of children, up from ~ 2-3% in the 1960s. CELIAC DISEASE: 4× increase since the 1950s. TYPE 1 DIABETES (autoimmune): 3-5% annual increase in many countries. INFLAMMATORY BOWEL DISEASE: ~ 2× increase since 1990. The pattern is real, well-documented, + much more pronounced in WEALTHIER + URBANIZED populations.',
+                  caveat: 'These are correlations + the changes are happening too fast for genetic explanation. The trend is consistent across many countries with different healthcare systems + diagnostic practices, so it is not just better diagnosis. The rising pattern is the SETUP for various hypotheses about causation; the cause itself is debated.'
+                },
+                { id: 'strachan', name: 'Strachan 1989 + the original hypothesis', emoji: '👶',
+                  body: 'David Strachan (London epidemiologist) published a 1989 study finding that children with MORE SIBLINGS had LOWER rates of hay fever + allergic disease. He hypothesized that early-life exposure to common infections (more readily caught from siblings) helped the immune system develop properly, preventing it from misdirecting against harmless allergens later. The "hygiene hypothesis" was born. The framing caught on culturally: "kids today are too clean." Decades of follow-up research has both confirmed PARTS of the original idea + complicated others significantly.',
+                  caveat: 'Strachan\'s original hypothesis was a snapshot + simple. He later expanded + refined it (2000, 2017). The "too clean" pop-culture version is mostly WRONG — modern handwashing + sanitation save lives + are not the problem. The problem is more specific: changes in microbial EXPOSURE during early development, including absence of beneficial commensal microbes, not generic hygiene.'
+                },
+                { id: 'oldfriends', name: 'The "Old Friends" hypothesis', emoji: '🤝',
+                  body: 'Graham Rook (UCL, 2003) refined Strachan\'s framework into the "Old Friends" hypothesis. The key insight: humans evolved alongside a set of microbes ("old friends") for hundreds of thousands of years — soil microbes, helminths (parasitic worms), enteric bacteria, environmental fungi. These microbes were ABUNDANT in our ancestral environment + helped train the developing immune system to distinguish friend from foe. In modern high-income environments, exposure to old friends has dropped dramatically — fewer soil contacts, indoor lifestyles, processed food, water disinfection, mass deworming, urbanization. The immune system that didn\'t get its training mistakes harmless pollen + dust + foods for enemies.',
+                  caveat: 'The "Old Friends" framing is biologically sophisticated + supported by accumulating evidence. The Amish + Hutterite communities provide quasi-natural experiments — both have similar genetics + are mostly farm-based, but Amish (more direct farm-animal contact) have ~ 5× lower asthma prevalence than Hutterites (more isolated from livestock). Helminth-deworming has correlated with rising allergic disease in some populations. Specific mechanisms: gut microbiota influence regulatory T-cell development; environmental microbes influence skin barrier development.'
+                },
+                { id: 'gut', name: 'Gut microbiome + early life', emoji: '🦠',
+                  body: 'The first 1,000 days of life (conception through age 2) is critical for gut microbiome establishment + immune development. Several modern practices may disrupt this: (a) CESAREAN SECTIONS (now ~ 32% of US births vs ~ 5% in 1970) bypass the vaginal microbiome transfer that establishes baby\'s gut bacteria. (b) FORMULA FEEDING (vs breastfeeding) provides different nutrition + microbiota. (c) EARLY ANTIBIOTICS in infancy (1 in 3 US infants gets antibiotics by age 1) disrupt gut bacterial community for months to years. (d) PROCESSED-FOOD diets lack the fiber + plant diversity that maintain healthy gut bacteria. Each correlates with increased allergic + autoimmune disease risk in cohort studies.',
+                  caveat: 'These are CORRELATIONS, not proven causes. C-sections are sometimes life-saving + the right choice. Formula feeding is sometimes the only option. Some antibiotics in infancy are absolutely necessary. The relevant question is not "avoid C-section" but "if doing C-section, can we minimize the microbial disruption?" Some hospitals now offer "vaginal seeding" (swabbing C-section babies with maternal vaginal fluid) — initial trials show microbiome benefit; long-term outcomes still being studied.'
+                },
+                { id: 'farm', name: 'The farm effect', emoji: '🐄',
+                  body: 'Rural farm-raised children have CONSISTENTLY lower rates of asthma + allergies than non-farm rural children + much lower than urban children. The "farm effect" has been documented across Europe (PASTURE study), the US (Wisconsin Amish, Indiana Hutterite), and developing countries. The protective elements appear to be: (a) UNPROCESSED MILK consumption (raw milk has been shown to reduce asthma risk; pasteurized milk does not — though raw-milk-borne infections remain a real risk); (b) early-life livestock contact (specific microbial exposures); (c) hay + bedding dust exposure; (d) outdoor + farm-environment microbial diversity in early years. The protective effect appears strongest if exposure starts BEFORE age 1 + ideally in utero (via maternal exposures).',
+                  caveat: 'Public health does NOT recommend drinking raw milk for allergy prevention — the protective effect is modest + the foodborne-illness risk is real. Some specific milk components (whey proteins, fatty acids, microbial signatures) may be the active factors + might be safely added to processed milk. Active research at Helsinki, Munich, NIH. The farm effect informs broader thinking but does not yet translate to a population-level intervention recommendation.'
+                },
+                { id: 'dual', name: 'Dual-exposure for food allergy', emoji: '🥜',
+                  body: 'For FOOD ALLERGIES specifically, a more refined model has emerged: the DUAL-ALLERGEN-EXPOSURE HYPOTHESIS (Gideon Lack 2015). Children develop food allergies through SKIN exposure to food proteins (especially through eczema-disrupted skin), but develop ORAL tolerance through early EATING of those same foods. So: early peanut introduction in babies\' DIET reduces peanut allergy; PROTECTING peanuts from baby\'s skin reduces sensitization. This was demonstrated by the LEAP trial (2015, Lack et al.): introducing peanut to high-risk infants at 4-11 months reduced peanut allergy by 86% vs avoidance. The 2017 + 2021 US guidelines now recommend EARLY INTRODUCTION of peanut + other allergenic foods at 4-6 months, completely reversing previous "avoid until age 3" recommendations.',
+                  caveat: 'The LEAP-trial reversal is one of the clearest examples of pediatric medicine getting better through rigorous trials. School psychologists + counselors should know about it for family conversations about feeding practices. The American Academy of Pediatrics 2017 + the NIH Allergic Diseases Sciences research initiative 2021 reflect the updated science. Families with older children who avoided peanuts under previous guidance + now have allergies should NOT blame themselves — the guidance was based on the evidence available at the time.'
+                },
+                { id: 'eczema', name: 'Eczema + the atopic march', emoji: '🌡️',
+                  body: 'ECZEMA (atopic dermatitis) is the most common skin condition of childhood + often the FIRST step in the "atopic march" — eczema → food allergies → asthma → allergic rhinitis. The skin barrier disruption in eczema allows allergen sensitization through the skin. Genetic factors include FILAGGRIN gene mutations (FLG, ~ 30% of severe eczema patients). Environmental factors include: low humidity + cold winters (Maine winters are tough for eczema), harsh soaps + detergents, hard water, certain fabrics. Modern eczema management focuses on RESTORING + PROTECTING the skin barrier (emollient moisturizers from birth in high-risk infants, gentle cleansers, avoiding triggers).',
+                  caveat: 'Some studies have shown that AGGRESSIVE infant skin moisturization may reduce eczema risk in high-risk infants — though the most rigorous large trials (PreventADALL 2020, BEEP 2020) have shown smaller effects than earlier pilot studies suggested. Current recommendations are: regular emollient use is safe + reasonable in high-risk infants but is not a proven intervention. Avoiding fragrance + harsh cleansers in baby products is uncontroversially good practice.'
+                },
+                { id: 'practical', name: 'What this means for families + schools', emoji: '🏠',
+                  body: 'The hygiene hypothesis suggests SOME directions for families with prevention concerns: (1) BREASTFEEDING when possible, for at least 6 months. (2) EARLY introduction of common food allergens (peanut, egg, tree nuts) at 4-6 months for healthy babies — particularly important for high-risk infants. (3) Outdoor + nature exposure (some "dirt" is good). (4) Diverse high-fiber + plant-rich diet for the whole family. (5) Antibiotic stewardship — only use when medically necessary. (6) Pet ownership in early life may be protective (multiple studies show modest effects). (7) Avoid both extremes of cleanliness — neither sterile-clean nor unclean is optimal.',
+                  caveat: 'These are GENERAL principles, not prescriptions. Individual cases vary. Children with diagnosed food allergies need to AVOID their triggers + carry epinephrine; the "early introduction" advice is for healthy babies, not allergic children. Each family\'s situation is different. Pediatricians + allergists + dietitians provide individual guidance. School psychologists + nurses see children across the asthma + allergy spectrum + can support families navigating both prevention questions + active management.'
+                }
+              ];
+              var sel = d.selectedHH || 'pattern';
+              var topic = HH_TOPICS.find(function(t) { return t.id === sel; }) || HH_TOPICS[0];
+              return h('div', null,
+                h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
+                  'Asthma, eczema, peanut allergy, type 1 diabetes, inflammatory bowel disease — all have risen sharply in wealthy countries over the past 50-100 years. Genetics have not changed; something in our environment has. The "hygiene hypothesis" + its refinements suggest the answer involves disruption of early-life microbial exposure. School psychologists + nurses + counselors regularly meet children + families navigating these conditions; understanding the science supports better conversations.'
+                ),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+                  HH_TOPICS.map(function(t) {
+                    var on = t.id === sel;
+                    return h('button', {
+                      key: t.id,
+                      onClick: function() { upd({ selectedHH: t.id }); },
+                      style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#06b6d4' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #06b6d4' : '1px solid #334155' }
+                    }, t.emoji + ' ' + t.name);
+                  })
+                ),
+                h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(6,182,212,0.08)', border: '1px solid rgba(6,182,212,0.35)' } },
+                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#67e8f9', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+                  h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+                  h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
+                    h('strong', null, 'Honest framing: '), topic.caveat
+                  )
+                ),
+                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 11.5, color: '#e9d5ff', lineHeight: 1.65 } },
+                  h('strong', null, 'School considerations: '),
+                  'School policies often address food allergies (peanut-free zones, EpiPen training, lunch protocols) + asthma management (inhaler access, recess + PE accommodations) + eczema (sunscreen + lotion use). These conditions affect ~ 10-25% of students across categories. Schools that handle them well: clear written plans, trained school nurses, family-school-clinic communication, accessible epinephrine. Schools that handle them poorly: outdated information, single-event focus rather than systematic accommodation, family anxiety. School psychologists + counselors are often the trusted bridge between clinical + school systems for these students.'
+                )
+              );
+            })(),
+            '#06b6d4'
           )
         );
       }
@@ -3290,7 +3359,7 @@
               );
             })
           ),
-          h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155', borderLeft: '3px solid ' + EMERALD } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + EMERALD } },
             h('h3', { style: { margin: '0 0 4px', color: '#6ee7b7', fontSize: 18 } }, selected.icon + ' ' + selected.name + ' (' + selected.year + ')'),
             infoBlock('What happened', selected.what, '#94a3b8'),
             infoBlock('Why it mattered', selected.why, EMERALD),
@@ -3331,7 +3400,7 @@
                     }, p.name);
                   })
                 ),
-                h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
+                h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
                   h('div', { style: { fontSize: 14, fontWeight: 800, color: sel.color, marginBottom: 8 } }, sel.name),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.08)', borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
                     h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'What it covers'),
@@ -3503,7 +3572,7 @@
       // PRINT
       function renderPrint() {
         return h('div', { style: { padding: 16 } },
-          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.4)', borderLeft: '3px solid ' + EMERALD, marginBottom: 12, fontSize: 12.5, color: '#a7f3d0', lineHeight: 1.65 } },
+          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(16,185,129,0.10)', borderTop: '1px solid rgba(16,185,129,0.4)', borderRight: '1px solid rgba(16,185,129,0.4)', borderBottom: '1px solid rgba(16,185,129,0.4)', borderLeft: '3px solid ' + EMERALD, marginBottom: 12, fontSize: 12.5, color: '#a7f3d0', lineHeight: 1.65 } },
             h('strong', null, '🖨 Microbiology lab reference. '),
             'A one-page take-along: lab safety (BSL levels, handling), bacteria/virus reference, antibiotic stewardship checklist, and the microbiome do/don\'t list.'
           ),

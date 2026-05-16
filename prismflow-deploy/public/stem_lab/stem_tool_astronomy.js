@@ -471,19 +471,19 @@
       // Helpers
       // ──────────────────────────────────────────────────────────────
       function safetyBanner(msg) {
-        return h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.35)', borderLeft: '3px solid #ef4444', marginBottom: 12, fontSize: 12, color: '#fecaca', lineHeight: 1.6 } },
+        return h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.12)', borderTop: '1px solid rgba(239,68,68,0.35)', borderRight: '1px solid rgba(239,68,68,0.35)', borderBottom: '1px solid rgba(239,68,68,0.35)', borderLeft: '3px solid #ef4444', marginBottom: 12, fontSize: 12, color: '#fecaca', lineHeight: 1.6 } },
           h('strong', null, '⚠️ '),
           msg
         );
       }
       function softNote(msg) {
-        return h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', borderLeft: '3px solid #6366f1', marginBottom: 10, fontSize: 12, color: '#c7d2fe', lineHeight: 1.6, fontStyle: 'italic' } },
+        return h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.10)', borderTop: '1px solid rgba(99,102,241,0.3)', borderRight: '1px solid rgba(99,102,241,0.3)', borderBottom: '1px solid rgba(99,102,241,0.3)', borderLeft: '3px solid #6366f1', marginBottom: 10, fontSize: 12, color: '#c7d2fe', lineHeight: 1.6, fontStyle: 'italic' } },
           msg
         );
       }
       function sectionCard(title, children, accent) {
         accent = accent || INDIGO;
-        return h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155', borderLeft: '3px solid ' + accent, marginBottom: 12 } },
+        return h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + accent, marginBottom: 12 } },
           title ? h('div', { style: { fontSize: 14, fontWeight: 800, color: '#e2e8f0', marginBottom: 8 } }, title) : null,
           children
         );
@@ -761,7 +761,7 @@
                   { name: 'Plato crater', kind: 'Dark-floored crater', desc: 'On the northern shore of Mare Imbrium. Unusually dark, smooth floor — flooded with later lava. About 100 km across. A favorite of small-telescope observers.', color: '#a78bfa' },
                   { name: 'Lunar highlands', kind: 'Ancient terrain', desc: 'The bright, heavily-cratered regions. About 4.4 billion years old — the original lunar crust, predating the maria. Made of anorthosite, an aluminum-rich rock. The "face" you see is partly highlands (white).', color: '#cbd5e1' }
                 ].map(function(f, i) {
-                  return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + f.color } },
+                  return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + f.color } },
                     h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 } },
                       h('div', { style: { fontSize: 13, fontWeight: 800, color: '#e2e8f0' } }, f.name),
                       h('div', { style: { fontSize: 10, color: f.color, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, f.kind)
@@ -874,7 +874,7 @@
                     }, t.name);
                   })
                 ),
-                h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + sel.color } }, sel.content)
+                h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + sel.color } }, sel.content)
               );
             })(),
             '#0ea5e9'
@@ -982,7 +982,7 @@
                     }, s.name);
                   })
                 ),
-                h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
+                h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
                   h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 } },
                     h('div', { style: { fontSize: 15, fontWeight: 800, color: sel.color } }, sel.name),
                     h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } }, sel.age)
@@ -1007,6 +1007,75 @@
               );
             })(),
             '#a855f7'
+          ),
+
+          // ─── Solar system formation deep-dive ────────────────────
+          sectionCard('🌍 How the Solar System was actually built — 4.6 billion years',
+            (function() {
+              var SS_TOPICS = [
+                { id: 'nebula', name: 'The molecular cloud + collapse', emoji: '☁️',
+                  body: 'About 4.6 billion years ago, a giant molecular cloud — cold (~10 K) hydrogen + helium + dust + ice grains, perhaps 1-2 light-years across, containing the metals from generations of dead stars — began to collapse. The trigger was likely a nearby supernova\'s shockwave (we see evidence in short-lived isotopes that should not have survived the time since formation; their presence in old meteorites suggests recent injection from a supernova). The cloud spun up as it collapsed (conservation of angular momentum), flattened into a disk, and developed a hot dense core that became the Sun. The whole spin-up took perhaps 100,000 years. The disk that survived is the "solar nebula."',
+                  caveat: 'The supernova-trigger hypothesis is supported by short-lived isotopes (²⁶Al, ⁶⁰Fe, ¹⁸²Hf) found in meteorites, but other triggers (stellar winds from massive nearby stars, density waves) are also plausible. The Sun likely formed in a cluster of 1,000-10,000 stars that has since dispersed; finding our solar siblings is an active search area (Gaia mission survey).'
+                },
+                { id: 'tline', name: 'The frost line + composition gradient', emoji: '❄️',
+                  body: 'In the protoplanetary disk, temperature decreased with distance from the proto-Sun. Inside the FROST LINE (~ 2.7 AU, beyond Mars), it was too hot for water + ammonia + methane to condense as ice. Outside, those volatiles froze into solid grains that could accumulate. This is the fundamental reason the inner planets are rocky + small (only metals + silicates could condense) + the outer planets are gas + ice giants (much more raw material available beyond the frost line). The frost line position itself moved inward as the Sun stabilized. Comets formed in the cold outer regions; asteroids formed in the warm inner zones.',
+                  caveat: 'The "frost line" framing is a simplification — there are actually multiple condensation fronts for different volatiles (water at ~ 170 K, CO2 at ~ 80 K, ammonia at ~ 110 K, methane at ~ 60 K, CO at ~ 30 K). Each set a different boundary. The "snow line" terminology is used in modern protoplanetary-disk modeling. Different snow lines explain different compositional gradations we see in the Solar System today.'
+                },
+                { id: 'planetesimal', name: 'Pebbles, planetesimals, embryos', emoji: '🪨',
+                  body: 'Dust grains stuck together via electrostatic + van der Waals forces, eventually forming pebbles ~1 cm. The "meter-size barrier" problem: at sizes between cm and km, particles spiral into the Sun faster than they can grow. Modern theory invokes "streaming instability" — clumps of pebbles concentrating in disk pressure bumps + collapsing gravitationally directly to ~ 100-km PLANETESIMALS. Planetesimals collided + grew into PLANETARY EMBRYOS (~ Moon to Mars size) within a few million years. The embryos then collided over ~100 million years to form the planets.',
+                  caveat: 'The streaming-instability mechanism (proposed by Anders Johansen + Andrew Youdin + colleagues, ~2007) is widely accepted but observational evidence is still being collected. ALMA images of protoplanetary disks (HL Tau 2014 onward) show ring structures consistent with the predicted concentrations. The full transition from dust to planet is one of the more active areas of modern astrophysics.'
+                },
+                { id: 'differentiate', name: 'Differentiation + early Earth', emoji: '🔥',
+                  body: 'Early Earth was molten. Heat sources: gravitational potential energy of accretion, radioactive decay of short-lived isotopes (especially ²⁶Al), and giant impacts. The molten Earth DIFFERENTIATED — heavy elements (iron, nickel) sank to form the core; lighter elements (silicates) rose to form the mantle + crust. This took perhaps 30-50 million years. The MAGNETIC FIELD started up as the liquid iron outer core convected. The crust solidified by ~ 4.4 billion years ago (the oldest known zircon mineral grains, from Western Australia, date to that time). Liquid water existed by ~ 4.4 Ga based on oxygen isotope evidence from the same zircons.',
+                  caveat: 'The Hadean (~4.6-4.0 Ga) is the most data-poor era of Earth history. We have almost no rocks older than ~ 4 Ga (the oldest INTACT rock is the Acasta Gneiss in Canada at ~ 4.03 Ga); just the resilient zircon grains. Conditions on early Earth are largely inferred from chemical proxies in those zircons + comparisons to the Moon + Mars + other rocky bodies.'
+                },
+                { id: 'moon', name: 'The Moon-forming giant impact', emoji: '🌑',
+                  body: 'About 4.5 billion years ago, a Mars-sized body (named THEIA, after the Greek titan + mother of Selene the Moon goddess) collided with proto-Earth. The collision was catastrophic — energy comparable to vaporizing both bodies. Material was ejected into orbit + re-accreted into the Moon over ~100 years. Evidence: the Moon has Earth-like oxygen + titanium + tungsten isotopic ratios (suggesting it formed from Earth\'s mantle material, not from a separately-formed body); the Moon has a small iron core (consistent with Theia\'s iron having mostly stayed on Earth); the Earth-Moon system has unusually high angular momentum (consistent with a glancing impact).',
+                  caveat: 'The giant-impact hypothesis is now standard but key details remain debated: was Theia from inside or outside the inner solar system? How much of the Moon is Earth material vs Theia material (modern simulations suggest ~ 50-80% Earth)? Why is the Moon as similar to Earth\'s mantle as it is? The 2022 lunar sample analyses + the planned Artemis lunar samples are testing competing models.'
+                },
+                { id: 'lhb', name: 'Late Heavy Bombardment + Nice model', emoji: '☄️',
+                  body: 'Between ~ 4.1-3.8 billion years ago, the inner Solar System was bombarded by a SPIKE of impacts (vs the steady decline that simple accretion would predict). Evidence: lunar crater statistics + Apollo sample impact ages. The NICE MODEL (proposed in 2005 by a team meeting in Nice, France) explains it: Jupiter + Saturn entered a 2:1 orbital resonance, which destabilized the orbits of Uranus + Neptune + sent them outward; this gravitationally scattered the outer-disk planetesimal population, throwing many inward through the inner Solar System. The Late Heavy Bombardment delivered much of Earth\'s water (from icy + water-rich planetesimals) + organic molecules (precursors to life).',
+                  caveat: 'Recent re-dating of lunar samples suggests the "spike" may have been smaller than originally thought — some scientists now favor a "Late Accretion" model with steady declining impact rates rather than a distinct spike. The Nice model itself is supported by orbital dynamics + the existence of the Kuiper Belt + scattered disk in their observed configurations, but specific details (the timing, the trigger) are being refined.'
+                },
+                { id: 'asteroids', name: 'The asteroid belt + Kuiper belt + Oort cloud', emoji: '🌌',
+                  body: 'Three populations of small bodies remain from solar-system formation. (1) ASTEROID BELT between Mars + Jupiter — ~ 1 million bodies > 1 km, dominated by silicate + carbon-rich material; Jupiter\'s gravity prevented planet formation here. Most are at 2.2-3.3 AU. (2) KUIPER BELT beyond Neptune (~ 30-50 AU) — icy bodies from the original outer disk, including Pluto + ~ 200 dwarf-planet-class objects + thousands of smaller. The Kuiper Belt is the source of SHORT-PERIOD COMETS (those that orbit Sun in less than 200 years). (3) OORT CLOUD at huge distance (~ 2,000-200,000 AU) — a spherical halo of icy bodies + the source of LONG-PERIOD COMETS. The Oort cloud has never been directly observed; we infer its existence from the orbital characteristics of long-period comets.',
+                  caveat: 'The Kuiper Belt was theoretically predicted (Edgeworth 1943, Kuiper 1951) but not confirmed until 1992 with the discovery of (15760) Albion. Pluto was reclassified from planet to dwarf planet in 2006 partly because the Kuiper Belt context made clear that Pluto is one of many similar bodies. The Oort cloud is still entirely theoretical — its first direct observations may come from the Vera Rubin Observatory (LSST) survey starting in 2025.'
+                },
+                { id: 'water', name: 'Where did Earth\'s water come from?', emoji: '💧',
+                  body: 'Earth has ~ 0.02% water by mass (mostly in the oceans + a similar amount in the mantle). For a body that formed INSIDE the frost line, that is much more water than expected — Earth should have been mostly "dry" except for what was delivered later. The leading hypotheses: (1) ASTEROID DELIVERY from the outer asteroid belt (carbonaceous chondrites have water content + D/H ratios similar to Earth\'s oceans). (2) COMET DELIVERY from the Kuiper Belt + Oort Cloud (most comets have higher D/H than Earth\'s water, suggesting comets are a minority contributor). (3) NATIVE WATER from the inner disk\'s very last accretion phase. The current consensus: Earth\'s water mostly came from carbonaceous-chondrite asteroids delivered during late accretion + the Late Heavy Bombardment, with a small contribution from native + cometary sources.',
+                  caveat: 'The D/H ratio (deuterium-to-hydrogen) of water in different solar-system bodies is a "fingerprint" that tracks where the water formed. Earth: 156 ppm. Comets: 200-800 ppm (varying widely). Carbonaceous chondrites: 140-170 ppm. So most Earth water came from carbonaceous chondrites. Recent Rosetta measurements of 67P / Churyumov-Gerasimenko (a Jupiter-family comet) gave D/H = 530 ppm — much higher than Earth water — supporting the chondrite-dominated model.'
+                },
+                { id: 'lessons', name: 'What this means for exoplanets', emoji: '🪐',
+                  body: 'The Solar System story informs how we interpret exoplanetary systems. (1) Most stars probably formed protoplanetary disks; planet formation looks COMMON. (2) The frost-line distinction (rocky inner / gas outer) should be common — though specific details depend on stellar mass + disk lifetime. (3) Planetary migration is the rule, not the exception — most exoplanet systems show evidence of migration (hot Jupiters, compact multi-planet systems, eccentric outer planets). (4) Habitable planets require complex contingent events: a giant impact producing a moon for tidal stabilization, late-accretion water delivery from outer-system bodies, an outer-system gas giant to deflect asteroid impacts, etc. The "easy" parts (form a planet, form water) happen everywhere; the "hard" parts (deliver water to the right place, stabilize the climate, develop life) may be rarer.',
+                  caveat: 'The relative ease vs difficulty of life-supporting planet formation is at the heart of the Fermi paradox + the Drake equation. The Solar System story does NOT directly tell us how rare or common Earth-like outcomes are. We are still learning what details are essential vs incidental from comparison with the diverse exoplanet population.'
+                }
+              ];
+              var sel = d.selectedSSF || 'nebula';
+              var topic = SS_TOPICS.find(function(t) { return t.id === sel; }) || SS_TOPICS[0];
+              return h('div', null,
+                h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
+                  'The Solar System took about 100 million years to mostly form + another billion years to settle. The detailed story has come together from samples (Moon rocks, meteorites, asteroid + comet samples from JAXA + NASA + ESA missions), spacecraft observations (Voyager through New Horizons), modern computer simulations, + observations of protoplanetary disks around other stars. It is a story of physics + chemistry + cosmic accident — and the contingent steps that made Earth habitable.'
+                ),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+                  SS_TOPICS.map(function(t) {
+                    var on = t.id === sel;
+                    return h('button', {
+                      key: t.id,
+                      onClick: function() { upd({ selectedSSF: t.id }); },
+                      style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#3b82f6' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #3b82f6' : '1px solid #334155' }
+                    }, t.emoji + ' ' + t.name);
+                  })
+                ),
+                h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.35)' } },
+                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#93c5fd', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+                  h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+                  h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
+                    h('strong', null, 'Honest framing: '), topic.caveat
+                  )
+                )
+              );
+            })(),
+            '#3b82f6'
           )
         );
         function dataPair(label, value) {
@@ -1044,7 +1113,7 @@
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
               EXO_OVERVIEW.methods.map(function(m, i) {
-                return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid #38bdf8' } },
+                return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid #38bdf8' } },
                   h('div', { style: { fontSize: 13, fontWeight: 800, color: '#7dd3fc', marginBottom: 4 } }, m.name),
                   h('div', { style: { fontSize: 11.5, color: '#e2e8f0', lineHeight: 1.55, marginBottom: 6 } }, m.how),
                   h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', lineHeight: 1.5 } }, h('strong', null, 'Where: '), m.first)
@@ -1360,7 +1429,7 @@
                     }, t.name);
                   })
                 ),
-                h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + sel.color, marginBottom: 14 } },
+                h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + sel.color, marginBottom: 14 } },
                   h('div', { style: { fontSize: 14, fontWeight: 800, color: sel.color, marginBottom: 4 } }, sel.name),
                   h('div', { style: { fontSize: 11.5, color: '#94a3b8', fontStyle: 'italic', marginBottom: 8 } }, sel.what + ' · Confidence: ' + sel.confidence),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.08)', borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
@@ -1777,7 +1846,7 @@
                   { name: 'Supergiants', desc: 'The most massive stars in their final stage. Will end as supernovae. Betelgeuse, Rigel, Deneb.', color: '#f87171' },
                   { name: 'White Dwarfs', desc: 'The cooling core of a dead Sun-like star. Earth-sized but as massive as the Sun. Eventually fades to a black dwarf (none exist yet — the universe is too young).', color: '#bfdbfe' }
                 ].map(function(r, i) {
-                  return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + r.color } },
+                  return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + r.color } },
                     h('div', { style: { fontSize: 12, fontWeight: 800, color: r.color, marginBottom: 2 } }, r.name),
                     h('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.55 } }, r.desc)
                   );
@@ -2024,7 +2093,7 @@
                     }, n.name);
                   })
                 ),
-                h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
+                h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
                   h('div', { style: { fontSize: 15, fontWeight: 800, color: sel.color, marginBottom: 4 } }, sel.name),
                   h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10, fontStyle: 'italic' } }, 'Example: ' + sel.example),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.08)', borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
@@ -2157,7 +2226,7 @@
                     }, l.name);
                   })
                 ),
-                h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + selL.color } },
+                h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + selL.color } },
                   h('div', { style: { fontSize: 15, fontWeight: 800, color: selL.color, marginBottom: 4 } }, selL.name),
                   h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 } },
                     h('div', { style: { padding: 6, borderRadius: 6, background: '#1e293b' } },
@@ -2249,7 +2318,7 @@
                     }, c.name);
                   })
                 ),
-                h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
+                h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
                   h('h3', { style: { margin: '0 0 10px', color: sel.color, fontSize: 17 } }, sel.name),
                   h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, marginBottom: 10 } },
                     [
@@ -2300,11 +2369,11 @@
               ),
 
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, marginBottom: 12 } },
-                h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid #fbbf24' } },
+                h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid #fbbf24' } },
                   h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbbf24', marginBottom: 4 } }, 'Apparent magnitude (m)'),
                   h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, 'How bright the object LOOKS from Earth. Depends on both how much light the object emits AND how far away it is. A bright nearby star and a dim distant star can have the same apparent magnitude.')
                 ),
-                h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid #c7d2fe' } },
+                h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid #c7d2fe' } },
                   h('div', { style: { fontSize: 13, fontWeight: 800, color: '#c7d2fe', marginBottom: 4 } }, 'Absolute magnitude (M)'),
                   h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, 'How bright the object would APPEAR if placed at a standard distance of 10 parsecs (32.6 light-years). Lets us compare the actual luminosity of stars regardless of distance.')
                 )
@@ -2661,7 +2730,7 @@
 
                 h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
                   ERAS.map(function(e, i) {
-                    return h('div', { key: i, style: { display: 'grid', gridTemplateColumns: '120px 1fr', gap: 12, padding: 8, borderRadius: 8, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + e.color } },
+                    return h('div', { key: i, style: { display: 'grid', gridTemplateColumns: '120px 1fr', gap: 12, padding: 8, borderRadius: 8, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + e.color } },
                       h('div', { style: { fontSize: 11.5, fontWeight: 800, color: e.color, paddingTop: 2, fontFamily: 'ui-monospace, monospace' } }, e.time),
                       h('div', null,
                         h('div', { style: { fontSize: 13, fontWeight: 700, color: '#e2e8f0', marginBottom: 2 } }, e.name),
@@ -2717,7 +2786,7 @@
                     why: 'Calibrated by Type Ia supernovae. The current ~9% discrepancy between H₀ measured locally vs from the cosmic microwave background ("Hubble tension") is one of the biggest open questions in cosmology.',
                     color: '#a855f7' }
                 ].map(function(r, i) {
-                  return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: '#0f172a', border: '1px solid #334155', borderLeft: '4px solid ' + r.color } },
+                  return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '4px solid ' + r.color } },
                     h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4, flexWrap: 'wrap' } },
                       h('div', { style: { fontSize: 18, fontWeight: 900, color: r.color, minWidth: 22 } }, r.rung),
                       h('div', { style: { fontSize: 13, fontWeight: 800, color: '#e2e8f0', flex: 1 } }, r.name),
@@ -3220,7 +3289,7 @@
                     }, it.name);
                   })
                 ),
-                h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
+                h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
                   h('div', { style: { fontSize: 14, fontWeight: 800, color: sel.color, marginBottom: 4 } }, sel.name),
                   h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', marginBottom: 8 } }, sel.when),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.08)', borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
@@ -3300,7 +3369,7 @@
                     );
                   })
                 ),
-                h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
+                h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
                   h('div', { style: { fontSize: 15, fontWeight: 800, color: sel.color, marginBottom: 4 } }, sel.name),
                   h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', marginBottom: 8 } }, sel.size + ' · ' + sel.loc),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.08)', borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
@@ -3549,7 +3618,7 @@
                   }, f.name);
                 })
               ),
-              h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
+              h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid ' + sel.color } },
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8, flexWrap: 'wrap' } },
                   h('div', { style: { fontSize: 16, fontWeight: 800, color: sel.color } }, sel.name),
                   h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } }, sel.years)
@@ -4218,7 +4287,7 @@
         var bortle = BORTLE.find(function(b) { return b.class === d.bortleClass; }) || BORTLE[4];
         var obsList = (d.observingList || []).map(function(id) { return CONSTELLATIONS.find(function(c) { return c.id === id; }); }).filter(Boolean);
         return h('div', { style: { padding: 16 } },
-          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.4)', borderLeft: '3px solid ' + INDIGO, marginBottom: 12, fontSize: 12.5, color: '#c7d2fe', lineHeight: 1.65 } },
+          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(99,102,241,0.10)', borderTop: '1px solid rgba(99,102,241,0.4)', borderRight: '1px solid rgba(99,102,241,0.4)', borderBottom: '1px solid rgba(99,102,241,0.4)', borderLeft: '3px solid ' + INDIGO, marginBottom: 12, fontSize: 12.5, color: '#c7d2fe', lineHeight: 1.65 } },
             h('strong', null, '🖨 Observing kit. '),
             'A take-into-the-field reference: your observing list, this season\'s constellation map, the moon phase calendar, safety reminders, and a quick reference for binocular vs naked-eye targets.'
           ),

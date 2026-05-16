@@ -1734,8 +1734,82 @@
           })(),
           pedestrianAccessibleBridgesSection(),
           movableBridgesSection(),
-          tunnelsAndUnderwaterSection()
+          tunnelsAndUnderwaterSection(),
+          railwayBridgesSection()
         );
+
+        function railwayBridgesSection() {
+          var RAIL = [
+            { id: 'loads', name: 'Railway bridge loading is different', emoji: '🚂',
+              what: 'Highway bridges carry distributed traffic (many small light vehicles). Railway bridges carry CONCENTRATED, HEAVY, REPEATED loads (locomotive + cars in tight succession). The typical AASHTO highway design truck is ~ 320 kN (HS-20). The Cooper E-80 railway design load is ~ 1,800 kN per locomotive axle — about 6× heavier. Railway loads happen in tight axle spacing (~ 1.5 m), so the stress pattern is concentrated. The dynamic impact factor from a train can be 30-100% of static load vs ~15% for highway.',
+              how: 'AREMA (American Railway Engineering + Maintenance-of-Way Association) provides the standard for US railway bridges; Eurocodes EN 1991-2 cover European practice. Design uses Cooper E-80 (US freight standard) + lighter loads (Cooper E-70, E-60) for older lines. Modern rapid transit + high-speed rail use different load classes — typically lighter axles but higher speeds + tighter geometry constraints. Eurocode 1991-2 Load Model 71 + HSLM (high-speed load model) for European freight + passenger lines.',
+              limit: 'Highway-bridge engineers transitioning to rail work need significant retraining. Load magnitudes + fatigue cycles are very different. A rail-bridge fatigue calculation may consider tens of millions of cycles over the service life; a highway bridge typically considers ~ 1-10 million.'
+            },
+            { id: 'fatigue', name: 'Fatigue is the dominant concern', emoji: '🔁',
+              what: 'A freight locomotive crossing a bridge applies a load spike + then removes it. Over a century of service, a busy freight line sees ~ 100,000-1,000,000+ train passages — each one a fatigue cycle. Railway bridges are designed for FATIGUE first + ultimate strength second. The Cooper-design load is in essence a fatigue-equivalent stress pattern. AREMA fatigue categories are stricter than AASHTO\'s for the same connection details. Welded joints that are fine for highway bridges may fail in fatigue under railway service.',
+              how: 'Modern design uses MINER\'S RULE (linear damage accumulation): each fatigue cycle uses up some fraction of the connection\'s fatigue life; cumulative damage > 1.0 = expected failure. The Cooper E-80 design fatigue load applies for ~ 80% of design life; more severe occasional events apply for the remaining 20%. Railway bridge inspections focus heavily on fatigue-prone details: web-stiffener gaps, gusset-plate edges, riveted-joint corrosion, welded connection details.',
+              limit: 'Older riveted bridges (pre-1950s) have surprisingly good fatigue performance — riveted joints have multiple load paths + the rivet-tension prestress can be re-tensioned. Modern bolted + welded joints can have worse fatigue performance if details are wrong. The Hassanlu Bridge collapse (Iran, 2024) + earlier collapses of relatively-recent welded bridges have prompted re-examination of fatigue design assumptions.'
+            },
+            { id: 'famous', name: 'Iconic + tragic railway bridges', emoji: '🌉',
+              what: '(a) FORTH BRIDGE (Scotland, 1890) — cantilever truss with 521-m main spans, built deliberately massive to restore public confidence after the Tay Bridge disaster; the most-recognizable railway bridge in the world + still carrying ~ 200 trains/day. (b) ÖRESUND BRIDGE (Denmark-Sweden, 2000) — cable-stayed + tunnel combination carrying both road + rail across the strait; demonstrated successful multi-modal cross-border infrastructure. (c) BROOKLYN BRIDGE (1883) was originally rail+pedestrian; the rail tracks were removed in 1944 + the bridge is now pedestrian + vehicle. (d) LANDWASSER VIADUCT (Switzerland, 1902) — limestone-arch railway bridge curving into a tunnel; an icon of Swiss railway engineering. (e) HUEY P. LONG BRIDGE (Louisiana, 1935) — combination rail + highway over the Mississippi; rail decks above + below the road. TRAGIC: the TAY BRIDGE (1879, collapsed) killed ~75 people + reshaped Victorian engineering standards.',
+              how: 'Railway-bridge construction has often been ambitious because railway construction itself was the major capital project of an era. The first transcontinental railroad in the US (1869) required hundreds of bridges; the Trans-Siberian (1916) similarly transformed Russian engineering. Major engineering disasters (Tay 1879) had outsized influence because public + political attention focused on the new infrastructure.',
+              limit: 'Many historic railway bridges are now under-loaded by modern standards (slower trains, longer spacing) + over-loaded by modern weight (modern locomotives are heavier than 1900s ones). Each historic bridge is a unique fatigue-management problem. Some are preserved at lower load classes; others get re-railed with carbon-fiber or steel reinforcement.'
+            },
+            { id: 'hsr', name: 'High-speed rail bridges', emoji: '⚡',
+              what: 'Trains running at 200-350+ km/h impose UNIQUE design requirements. The vehicle-bridge interaction at high speed can excite resonance modes the bridge would not feel at lower speeds. The "second bending mode" (the deck flexing in an S-shape) is particularly relevant. Design must ensure that NO operating speed corresponds to a resonance with the train\'s axle-pattern frequency. SHINKANSEN bridges (Japan, since 1964) + TGV bridges (France, since 1981) + CHINESE HSR bridges (since 2008, now 45,000+ km of network including thousands of HSR bridges) have established the modern standards. The Danyang-Kunshan Grand Bridge (China, 165 km long, opened 2011, world\'s longest bridge of any kind) is a high-speed-rail viaduct.',
+              how: 'Modern HSR bridge design uses BALLASTLESS TRACK + RIGID TRACK STRUCTURE with very tight geometric tolerances (track alignment must remain within mm over the service life). Pre-stressed concrete + steel-composite designs dominate. Deck stiffness + damping is calibrated through dynamic analysis software + verified by track-recording vehicles. Acceptance criteria: train acceleration < 0.5 m/s² (passenger comfort), deck acceleration < 0.35g (track stability), deflection limits ~ L/2500 (very stiff vs L/800 for typical highway bridges).',
+              limit: 'HSR bridges are extraordinarily expensive — China spends ~ $20-30M per km on HSR viaduct, vs ~ $5-10M for highway. The US has limited HSR (the Acela in the Northeast Corridor uses upgraded conventional rail, not true HSR). California HSR has been under construction since 2015 with major cost + schedule issues; some bridges have been built but the full route is not operational. The economics + politics of HSR bridges in the US are challenging.'
+            },
+            { id: 'modern', name: 'Modern railway bridge engineering', emoji: '⚙️',
+              what: 'Modern railway bridges combine elements from highway + tunnel engineering. Common types: PRESTRESSED-CONCRETE BOX GIRDERS (most common for medium spans, 30-100 m), STEEL-CONCRETE COMPOSITE GIRDERS (for medium-large spans), CABLE-STAYED RAIL BRIDGES (for longer spans + dramatic appearance), TRUSS BRIDGES (still used for major freight crossings + when steel cost is favorable), ARCH BRIDGES (Sydney Harbour Bridge 1932 is famous; the Caiyuanba Bridge in China is the world\'s longest steel arch carrying rail). For very long crossings: combined rail + highway bridges (Storebælt Denmark, Yantai-Dalian China, planned crossings worldwide).',
+              how: 'AREMA + AAR (Association of American Railroads) cover US standards. The big freight railroads (BNSF, Union Pacific, CSX, Norfolk Southern) maintain their own design + engineering departments + work with consultants for major bridges. Internationally, government rail operators (SNCF France, DB Germany, JR Japan, China Railway, Network Rail UK) similarly drive bridge design.',
+              limit: 'Railway bridges have less PUBLIC visibility than highway bridges + much less academic literature. Bridge engineering at top US universities is heavily oriented toward highway practice. This has created a knowledge-transfer challenge — railway practitioners often have to develop expertise through industry training rather than university curriculum.'
+            },
+            { id: 'maine', name: 'Maine railway bridges', emoji: '🌲',
+              what: 'Maine has ~ 1,170 miles of active rail + many historic railway bridges. Major freight routes: PAN AM RAILWAYS (now CSX) Boston-to-Portland-to-Brownville corridor, MONTREAL MAINE + ATLANTIC line (closed after the 2013 Lac-Mégantic disaster), CANADIAN PACIFIC for the Maine Eastern division. Most lines are 286,000-pound (130-tonne) per car capacity — the modern North American freight standard. NOTABLE BRIDGES: Penobscot Narrows Bridge (2006) carries highway, not rail, but is parallel to historic Waldo-Hancock Bridge. Sarah Mildred Long Bridge (Portsmouth-Kittery, replaced 2018) carries highway + rail combination. The 1907 Vauban-style Hartland Trestle (Hartland to Pittsfield) is one of the oldest active railway viaducts in northern New England.',
+              how: 'Maine\'s railway bridge infrastructure has been under-invested compared to highway. Many bridges are 100+ years old, originally built for Cooper E-60 loads + later strengthened or downgraded for current service. The state has been working with the Maine DOT + private rail operators on capital programs since the late 2000s, with mixed progress. The Maine Northern Railway + the Maine Eastern Railroad have both had bridge-related operational restrictions.',
+              limit: 'New England rail revival (especially passenger rail expansion under the Northeast Corridor Connections Plan) depends on bridge upgrades to many older crossings. Most Maine rail bridges were built for slower 19th-century operations; modernizing for 90+ mph passenger service requires either major upgrades or new construction. Funding has been incremental + uncertain. Citizens who want passenger rail expansion in Maine should engage with the MaineDOT Active Transportation Advisory Committee + the New England Passenger Rail Authority.'
+            },
+            { id: 'maglev', name: 'Maglev + the future', emoji: '🚄',
+              what: 'Magnetic-levitation trains do not roll on rails — they float on a magnetic guideway. JAPAN\'S CHUO SHINKANSEN (Tokyo-to-Nagoya-to-Osaka, partial operation 2027, full ~2037) is the most ambitious maglev project, with bridges + tunnels designed to support trains at 500 km/h. China\'s Shanghai maglev (operational 2004) was an earlier commercial demonstration. Maglev bridges have unique requirements: the guideway must be precisely aligned (mm-level over km lengths), the magnetic field tolerances must be tight, and the dynamic loads from the maglev train differ from conventional rail (concentrated electromagnetic forces at fixed points along the guideway).',
+              how: 'Most large-scale maglev bridges to date are viaduct structures supporting precast guideway segments. Construction precision rivals semiconductor manufacturing in some respects (the guideway alignment tolerances are sub-millimeter over distances). The technology has not displaced conventional HSR economically — maglev infrastructure is substantially more expensive per km — but Japan + Korea + China continue to develop it.',
+              limit: 'Maglev has been "10 years away" for 40+ years. The Shanghai system operates but has not been duplicated. The Chuo Shinkansen Tokyo-Nagoya segment is delayed from original 2027 to ~2034. Whether maglev will scale to global infrastructure or remain a specialty technology is unclear. For US planning purposes, betting on conventional HSR (or even staying with conventional rail) is currently the lower-risk choice.'
+            }
+          ];
+          var sel = d.selectedRail || 'loads';
+          var topic = RAIL.find(function(t) { return t.id === sel; }) || RAIL[0];
+          return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
+            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '🚂 Railway bridges + freight engineering'),
+            h('p', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, margin: '0 0 12px' } },
+              'Railway bridges are a distinct discipline from highway bridges. Loads are heavier, concentrated, and repeated. Fatigue dominates design. Speeds for modern high-speed rail require dynamic considerations highway engineers rarely see. Railway-bridge practice has a smaller academic footprint than highway practice but the engineering depth is at least equivalent. For passenger + freight rail revival, every region\'s railway bridges are infrastructure-renewal frontline.'
+            ),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
+              RAIL.map(function(t) {
+                var on = t.id === sel;
+                return h('button', {
+                  key: t.id,
+                  onClick: function() { upd({ selectedRail: t.id }); },
+                  style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#fbbf24' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #fbbf24' : '1px solid #334155' }
+                }, t.emoji + ' ' + t.name);
+              })
+            ),
+            h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
+              h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, topic.emoji + ' ' + topic.name),
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'What it is'),
+                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.what)
+              ),
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.06)', borderLeft: '3px solid #22c55e', marginBottom: 8 } },
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'How it works in practice'),
+                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.how)
+              ),
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', borderLeft: '3px solid #ef4444' } },
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Honest limit'),
+                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.limit)
+              )
+            )
+          );
+        }
 
         function tunnelsAndUnderwaterSection() {
           var TUN = [
