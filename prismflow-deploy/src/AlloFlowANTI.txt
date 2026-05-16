@@ -14727,10 +14727,26 @@ Return ONLY valid JSON in this format:
   };
   const calculateStudentStats = () => {
       const quizzesTaken = history.filter(h => h.type === 'quiz').length;
+      // Notebook activity rollup (added when note-taking + anchor-chart
+      // shipped May 2026 — counts surface on teacher dashboard).
+      const noteTakingEntries = history.filter(h => h.type === 'note-taking');
+      const anchorChartEntries = history.filter(h => h.type === 'anchor-chart').length;
+      const notebookFeedbackRequests = noteTakingEntries.reduce((sum, e) => sum + ((e.data && e.data.feedbackCount) || 0), 0);
+      const cornellCount = noteTakingEntries.filter(e => (e.data && e.data.templateType) === 'cornell-notes').length;
+      const labReportCount = noteTakingEntries.filter(e => (e.data && e.data.templateType) === 'lab-report').length;
+      const readingResponseCount = noteTakingEntries.filter(e => (e.data && e.data.templateType) === 'reading-response').length;
       return {
           totalXP: globalPoints,
           adventureLevel: adventureState.level,
-          quizzesTaken
+          quizzesTaken,
+          notebook: {
+              cornell: cornellCount,
+              labReport: labReportCount,
+              readingResponse: readingResponseCount,
+              anchorChart: anchorChartEntries,
+              total: noteTakingEntries.length + anchorChartEntries,
+              aiFeedbackRequests: notebookFeedbackRequests,
+          },
       };
   };
   const isScaffoldComplete = React.useMemo(() => {
@@ -14754,7 +14770,21 @@ Return ONLY valid JSON in this format:
       }
   }, [generatedContent, studentResponses]);
   const handleSubmitAssignment = (confirmedName, summaryStats) => {
-      const relevantTypes = ['quiz', 'simplified', 'adventure', 'sentence-frames', 'timeline', 'concept-sort', 'math', 'lesson-plan', 'glossary', 'word-sounds'];
+      // Whitelist of student-authored or student-engaged resource types that
+      // should ride the Save & Submit JSON to the teacher. Anything the student
+      // CREATED, FILLED IN, or ENGAGED WITH belongs here. Excluded: teacher-
+      // only tools (analysis, udl-advice, alignment-report, brainstorm,
+      // gemini-bridge) which would never be student-authored.
+      //
+      // Historical gap: note-taking + anchor-chart shipped May 2026 but were
+      // never added to this list, so student work in those tools never
+      // reached the teacher dashboard. Fixed May 2026.
+      const relevantTypes = [
+          'quiz', 'simplified', 'adventure', 'sentence-frames', 'timeline',
+          'concept-sort', 'math', 'lesson-plan', 'glossary', 'word-sounds',
+          'note-taking', 'anchor-chart', 'dbq', 'faq', 'outline', 'image',
+          'fluency-record',
+      ];
       const filteredContent = history.filter(item => relevantTypes.includes(item.type));
       const cleanContent = sanitizeSubmissionData(filteredContent);
       const submissionData = {
@@ -23549,6 +23579,7 @@ ${_toolList}
               dashboardView={dashboardView}
               generateResourceHTML={generateResourceHTML}
               onOpenBehaviorLens={() => setShowBehaviorLens(true)}
+              callGemini={callGemini}
           />
       </ErrorBoundary>
       )}
