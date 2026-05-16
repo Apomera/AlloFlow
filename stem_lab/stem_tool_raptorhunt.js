@@ -1911,7 +1911,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 'aria-label': 'Hunt as ' + sp.name
               }, '🎯 Hunt as ' + sp.name + ' →')
             )
-          )
+          ),
+
+          // ── NEW v0.21: Vocalizations panel ──
+          (function() {
+            var VOCALS = [
+              { id: 'peregrine', call: '"eechip-eechip-eechip" — sharp + repeated, often given at the nest or in defense of territory', mnemonic: 'rapid raspy bark', when: 'nest defense + intruder alert' },
+              { id: 'baldEagle', call: '"weak-eek-eek-eek" — surprisingly thin + high-pitched whistle for such a large bird', mnemonic: 'wimpy chitter (NOT the dramatic scream in movies)', when: 'territorial + courtship', note: 'The "eagle scream" you hear in movies is almost always a red-tail dubbed over a bald eagle clip — Hollywood corrects the bird\'s actual unimpressive voice.' },
+              { id: 'redTail', call: '"KEEEER-ee-er" — descending raspy scream, 2-3 seconds long', mnemonic: 'classic "movie hawk"', when: 'soaring + perched alert', note: 'THE iconic raptor call in American media. Dubbed in over bald eagles, golden eagles, ospreys — even owls in Hollywood films.' },
+              { id: 'redShouldered', call: '"kee-yah, kee-yah, kee-yah" — clear repeated 2-syllable call', mnemonic: 'high clear yelp, repeated', when: 'territorial + during nesting' },
+              { id: 'kestrel', call: '"klee-klee-klee-klee" — rapid high-pitched chitter', mnemonic: 'sewing-machine staccato', when: 'alarm + during territorial flights' },
+              { id: 'coopersHawk', call: '"kek-kek-kek-kek" — sharp barking call, often near nest', mnemonic: 'angry corgi', when: 'at the nest defending territory' },
+              { id: 'northernGoshawk', call: '"kak-kak-kak-kak-kak" — louder + more aggressive than Cooper\'s, often given during a charge', mnemonic: 'enraged corgi', when: 'aggressive territorial defense (will dive-bomb humans near nest)' },
+              { id: 'osprey', call: '"chereep-chereep-chereep" — high whistled chirp, often given over water', mnemonic: 'sad seagull', when: 'food-begging + nest contact' },
+              { id: 'goldenEagle', call: 'mostly silent; rare "wonk-wonk" or weak yelping near nest', mnemonic: 'quiet bird, surprising for size', when: 'mostly mute except near nest' },
+              { id: 'harpyEagle', call: 'mostly silent in the wild; soft mewing whistles near nest', mnemonic: 'quiet jungle ghost', when: 'rarely heard — relies on visual presence' },
+              { id: 'greatHorned', call: '"hoo-h\'HOO-hoo-hoo" — deep 4-5 syllable hoot, second note emphasized', mnemonic: '"Whose awake? Me too!"', when: 'territory + courtship duets at dusk + dawn' },
+              { id: 'barred', call: '"Who cooks for you? Who cooks for you-ALL?" — distinctive 8-syllable phrase', mnemonic: 'best-known owl call', when: 'territory + at any hour, even daytime' },
+              { id: 'snowyOwl', call: 'silent female; males give "krooh-krooh" hoot during breeding', mnemonic: 'rare + low', when: 'mostly silent in winter (when most people see them)' },
+              { id: 'gyrfalcon', call: '"keh-keh-keh-keh" — similar to other falcons but slower + lower-pitched', mnemonic: 'big-falcon bark', when: 'rare; alarm + at nest' },
+              { id: 'missKite', call: '"phee-phew" — descending 2-note whistle, repeated', mnemonic: 'two-tone whistle', when: 'often given in flight + at communal nest colonies' }
+            ];
+            return h('div', { className: 'bg-slate-900/40 border border-pink-700/40 rounded-xl p-4 space-y-2' },
+              h('div', { className: 'text-sm font-bold text-pink-300' }, '🎵 Vocalizations — Iconic Calls + Mnemonics'),
+              h('div', { className: 'text-xs text-slate-400 italic mb-2' }, 'Most raptor IDs in the field are by silhouette, but several species have iconic calls. The mnemonic phrases below are what serious birders memorize.'),
+              h('div', { className: 'space-y-2' },
+                VOCALS.map(function(v, i) {
+                  // Try to find species (may not exist in SPECIES if it's a bonus entry like red-shouldered or barred owl)
+                  var sp2 = SPECIES.filter(function(s) { return s.id === v.id; })[0];
+                  var emoji = sp2 ? sp2.emoji : '🦅';
+                  var name = sp2 ? sp2.name : (v.id.charAt(0).toUpperCase() + v.id.slice(1).replace(/([A-Z])/g, ' $1') + (v.id === 'redShouldered' ? ' Hawk' : v.id === 'barred' ? ' Owl' : ''));
+                  return h('div', { key: i, className: 'bg-slate-800/40 rounded-lg p-3' },
+                    h('div', { className: 'flex items-baseline justify-between gap-2 mb-1' },
+                      h('div', { className: 'text-sm font-bold text-amber-200' }, emoji + ' ' + name),
+                      h('div', { className: 'text-[10px] italic text-pink-300' }, '🎯 ' + v.mnemonic)
+                    ),
+                    h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, '🔊 ' + v.call),
+                    h('div', { className: 'text-[10px] text-slate-400 italic mt-1' }, 'Context: ' + v.when),
+                    v.note && h('div', { className: 'text-[10px] text-amber-300 mt-1' }, '💡 ' + v.note)
+                  );
+                })
+              ),
+              h('div', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded p-3 text-xs text-cyan-100/90' },
+                h('span', { className: 'font-bold text-cyan-300' }, '🦻 Hear them yourself: '),
+                'Cornell Lab\'s ',
+                h('a', { href: 'https://www.macaulaylibrary.org/', target: '_blank', rel: 'noopener noreferrer', className: 'text-cyan-300 underline hover:text-cyan-200' }, 'Macaulay Library'),
+                ' has free audio for every species. Search by species name. Free to use for educational + non-commercial purposes.'
+              )
+            );
+          })()
         );
       }
 
@@ -4452,12 +4500,65 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             )
           ),
 
-          // Climate impact
-          h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-base font-bold text-emerald-300 mb-2' }, '🌡 ' + MIGRATION.climateImpact.title),
-            h('ul', { className: 'space-y-1 text-xs text-emerald-100/90 list-disc list-inside' },
-              MIGRATION.climateImpact.points.map(function(p, i) { return h('li', { key: i }, p); })
-            )
+          // ── NEW v0.21: Climate Change deep-dive (replaces + extends the 5-bullet block) ──
+          h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded-xl p-4 space-y-3' },
+            h('div', { className: 'text-base font-bold text-emerald-300' }, '🌡 ' + MIGRATION.climateImpact.title),
+            // Original bullets kept as quick-summary
+            h('div', { className: 'bg-slate-900/40 rounded-lg p-3' },
+              h('div', { className: 'text-xs font-bold text-amber-300 mb-2' }, '📌 Five observed patterns'),
+              h('ul', { className: 'space-y-1 text-xs text-emerald-100/90 list-disc list-inside' },
+                MIGRATION.climateImpact.points.map(function(p, i) { return h('li', { key: i }, p); })
+              )
+            ),
+            // Mechanisms grid
+            h('div', null,
+              h('div', { className: 'text-xs font-bold text-amber-300 mb-2' }, '⚙ Mechanisms — why climate is reshaping raptor migration'),
+              h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
+                [
+                  { name: 'Phenological mismatch', detail: 'Songbirds + insects shift breeding earlier with warming. If raptors don\'t shift at the same rate, peak prey availability happens BEFORE chicks need food. Documented in European honey buzzards (Both et al. 2009) — chicks fledge after the wasp peak passes.' },
+                  { name: 'Stopover habitat loss', detail: 'Migrating raptors refuel at consistent stopover sites. Drought, fire, + agricultural intensification are degrading these. Veracruz wetlands face increasing water-stress; Eilat\'s desert oasis is shrinking.' },
+                  { name: 'Headwind frequency shifts', detail: 'Jet-stream changes from Arctic warming alter the wind patterns raptors depend on for soaring. Stronger headwinds = more flap-flight = higher energy cost = lower survival on migration.' },
+                  { name: 'Thermal availability', detail: 'Some regions get MORE thermals (good for raptors), others get fewer or weaker. Mediterranean raptors crossing Sahara face stronger but shorter-duration thermal columns.' },
+                  { name: 'Prey base disruption', detail: 'Snowy owls depend on lemming + vole cycles, which are flattening in some Arctic regions due to changing snowpack. Boom years become more variable + unpredictable.' },
+                  { name: 'Short-stoppers + non-migrants', detail: 'Several species (turkey vultures, red-tails, bald eagles) are wintering MUCH further north than 50 years ago — a permanent range shift, not irruption. Some are skipping migration entirely.' }
+                ].map(function(mech, i) {
+                  return h('div', { key: i, className: 'bg-slate-800/40 rounded p-3 border border-slate-700/40' },
+                    h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, mech.name),
+                    h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, mech.detail)
+                  );
+                })
+              )
+            ),
+            // Regional impacts
+            h('div', null,
+              h('div', { className: 'text-xs font-bold text-amber-300 mb-2' }, '🌍 Regional impacts'),
+              h('div', { className: 'space-y-1.5 text-xs' },
+                [
+                  { region: 'Arctic (snowy owl, gyrfalcon)', impact: 'WORST hit — Arctic warming 4× global rate. Lemming cycles flattening. Range constricting northward. Both species IUCN-uplisted.' },
+                  { region: 'Temperate North America (red-tail, Cooper\'s)', impact: 'MIXED — some species adapting (Cooper\'s thriving in cities), others (kestrels) declining. Migration earlier by 1-3 days/decade.' },
+                  { region: 'Sahara crossing (European honey buzzard, harriers)', impact: 'NEGATIVE — desert expansion + stopover loss. Crossing window narrowing.' },
+                  { region: 'Tropical raptors (harpy, Philippine eagle)', impact: 'CATASTROPHIC — habitat loss + climate stressors compound. Already-slow reproduction can\'t compensate.' },
+                  { region: 'Mediterranean (Eleonora\'s falcon, booted eagle)', impact: 'EARLY ARRIVAL signals — some species arriving 5-10 days earlier on breeding grounds than 1980 baseline.' }
+                ].map(function(r, i) {
+                  return h('div', { key: i, className: 'flex items-start gap-3 bg-slate-800/40 rounded p-2' },
+                    h('div', { className: 'flex-shrink-0 w-56 text-xs font-bold text-cyan-300' }, r.region),
+                    h('div', { className: 'text-xs text-slate-200 flex-1' }, r.impact)
+                  );
+                })
+              )
+            ),
+            // Projections panel
+            h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded-lg p-3' },
+              h('div', { className: 'text-xs font-bold text-amber-300 mb-2' }, '🔮 Projections (2050 baseline)'),
+              h('ul', { className: 'space-y-1 text-xs text-amber-100/90 list-disc list-inside' },
+                h('li', null, 'BirdLife International projects ~15-30% of long-distance migrant raptors will face significant range shifts.'),
+                h('li', null, 'Snowy owl populations may decline 30-50% from current ~28,000 birds, primarily from Arctic prey-base disruption.'),
+                h('li', null, 'Turkey vulture + black vulture wintering ranges expected to extend ~500 km further north.'),
+                h('li', null, 'Mediterranean species (honey buzzard, lesser kestrel) may lose 20-40% of current European breeding range.'),
+                h('li', null, 'The long Hawk Mountain dataset (1934-now) will continue being the canonical evidence base for documenting these shifts.')
+              )
+            ),
+            h('div', { className: 'text-[10px] text-slate-500 italic' }, 'Sources: Both et al. 2009 J Anim Ecol; Bildstein 2017 Raptors; BirdLife International State of World\'s Birds 2022; Therrien et al. 2014 snowy owl winter ecology.')
           ),
 
           // ── NEW v0.17: Migration Calendar (Gantt-style) ──
@@ -7954,11 +8055,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             )
           ),
 
-          // ── NEW v0.14: Academic Bibliography ──
+          // ── NEW v0.14: Academic Bibliography (with v0.21 BibTeX export) ──
           h('details', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-3' },
             h('summary', { className: 'text-sm font-bold text-amber-300 cursor-pointer' }, '📚 Academic Bibliography — every citation used in this tool'),
             h('div', { className: 'mt-3 space-y-2 text-xs' },
-              h('div', { className: 'text-slate-400 italic mb-3' }, 'Primary scientific sources cited throughout Raptor Hunt. Click any DOI or journal link to read the full paper.'),
+              h('div', { className: 'flex items-center justify-between gap-2 mb-2' },
+                h('div', { className: 'text-slate-400 italic' }, 'Primary scientific sources cited throughout Raptor Hunt. Click any DOI or journal link to read the full paper.'),
+                // ── NEW v0.21: BibTeX export button ──
+                h('button', {
+                  onClick: function() {
+                    var bibtex = [
+                      '@article{tucker1998,\n  author = {Tucker, Vance A.},\n  title = {Curved flight paths and sideways vision in peregrine falcons (Falco peregrinus)},\n  journal = {Journal of Experimental Biology},\n  volume = {201},\n  number = {3},\n  pages = {403--414},\n  year = {1998}\n}',
+                      '@article{tucker1990,\n  author = {Tucker, Vance A.},\n  title = {Body drag, feather drag and interference drag of the mounting strut in a peregrine falcon, Falco peregrinus},\n  journal = {Journal of Experimental Biology},\n  volume = {149},\n  pages = {449--468},\n  year = {1990}\n}',
+                      '@book{cade1969,\n  author = {Cade, Tom J.},\n  title = {The Falcons of the World},\n  publisher = {Cornell University Press},\n  year = {1969}\n}',
+                      '@article{ponitz2014,\n  author = {Ponitz, B. and others},\n  title = {Diving-flight aerodynamics of a peregrine falcon (Falco peregrinus)},\n  journal = {PLoS ONE},\n  volume = {9},\n  number = {2},\n  pages = {e86506},\n  year = {2014}\n}',
+                      '@article{viitala1995,\n  author = {Viitala, J. and Korpim{\\"a}ki, E. and Palokangas, P. and Koivula, M.},\n  title = {Attraction of kestrels to vole scent marks visible in ultraviolet light},\n  journal = {Nature},\n  volume = {373},\n  pages = {425--427},\n  year = {1995}\n}',
+                      '@article{lind2013,\n  author = {Lind, O. and Mitkus, M. and Olsson, P. and Kelber, A.},\n  title = {Ultraviolet sensitivity and colour vision in raptor foraging},\n  journal = {Journal of Experimental Biology},\n  volume = {216},\n  number = {10},\n  pages = {1819--1826},\n  year = {2013}\n}',
+                      '@article{mitkus2017,\n  author = {Mitkus, M. and Olsson, P. and Toomey, M.B. and Corbo, J.C. and Kelber, A.},\n  title = {Specialized photoreceptor composition in the raptor fovea},\n  journal = {Journal of Comparative Neurology},\n  volume = {525},\n  number = {9},\n  pages = {2152--2163},\n  year = {2017}\n}',
+                      '@article{payne1962,\n  author = {Payne, Roger S.},\n  title = {How the Barn Owl Locates Prey by Hearing},\n  journal = {Living Bird},\n  volume = {1},\n  pages = {151--159},\n  year = {1962}\n}',
+                      '@article{bachmann2007,\n  author = {Bachmann, T. and Kl{\\"a}n, S. and Baumgartner, W. and Klaas, M. and Schr{\\"o}der, W. and Wagner, H.},\n  title = {Morphometric characterisation of wing feathers of the barn owl (Tyto alba) and the pigeon (Columba livia)},\n  journal = {Frontiers in Zoology},\n  volume = {4},\n  number = {1},\n  pages = {23},\n  year = {2007}\n}',
+                      '@article{wagner2017,\n  author = {Wagner, H. and Weger, M. and Klaas, M. and Schr{\\"o}der, W.},\n  title = {Features of owl wings that promote silent flight},\n  journal = {Interface Focus},\n  volume = {7},\n  number = {1},\n  pages = {20160078},\n  year = {2017}\n}',
+                      '@article{sustaita2013,\n  author = {Sustaita, D. and Pouydebat, E. and Manzano, A. and Abdala, V. and Hertel, F. and Herrel, A.},\n  title = {Getting a grip on tetrapod grasping: form, function, and evolution},\n  journal = {Biological Reviews},\n  volume = {88},\n  number = {2},\n  pages = {380--405},\n  year = {2013}\n}',
+                      '@article{fowler2009,\n  author = {Fowler, D.W. and Freedman, E.A. and Scannella, J.B.},\n  title = {Predatory functional morphology in raptors: interdigital variation in talon size is related to prey restraint and immobilisation technique},\n  journal = {PLoS ONE},\n  volume = {4},\n  number = {11},\n  pages = {e7999},\n  year = {2009}\n}',
+                      '@article{therrien2014,\n  author = {Therrien, J.F. and Gauthier, G. and Korpim{\\"a}ki, E. and B{\\^e}ty, J.},\n  title = {Predation pressure by avian predators suggests summer limitation of small-mammal populations in the Canadian Arctic},\n  journal = {Ecology},\n  volume = {95},\n  number = {1},\n  pages = {56--67},\n  year = {2014}\n}',
+                      '@book{newton2002,\n  author = {Newton, Ian},\n  title = {Population Limitation in Birds},\n  publisher = {Academic Press},\n  year = {2002}\n}',
+                      '@book{cade1988,\n  author = {Cade, T.J. and Enderson, J.H. and Thelander, C.G. and White, C.M.},\n  title = {Peregrine Falcon Populations: Their Management and Recovery},\n  publisher = {The Peregrine Fund},\n  address = {Boise, ID},\n  year = {1988}\n}',
+                      '@book{carson1962,\n  author = {Carson, Rachel},\n  title = {Silent Spring},\n  publisher = {Houghton Mifflin},\n  year = {1962}\n}',
+                      '@book{snyder2000,\n  author = {Snyder, N. and Snyder, H.},\n  title = {The California Condor: A Saga of Natural History and Conservation},\n  publisher = {Academic Press},\n  year = {2000}\n}',
+                      '@article{jones1995,\n  author = {Jones, C.G. and Heck, W. and Lewis, R.E. and Mungroo, Y. and Slade, G. and Cade, T.},\n  title = {The restoration of the Mauritius Kestrel Falco punctatus population},\n  journal = {Ibis},\n  volume = {137},\n  number = {s1},\n  pages = {S173--S180},\n  year = {1995}\n}',
+                      '@article{bedrosian2012,\n  author = {Bedrosian, B.E. and Craighead, D. and Crandall, R.},\n  title = {Lead exposure in bald eagles from big game hunting, the continental implications and successful mitigation efforts},\n  journal = {PLoS ONE},\n  volume = {7},\n  number = {12},\n  pages = {e51978},\n  year = {2012}\n}',
+                      '@book{bildstein2017,\n  author = {Bildstein, Keith L.},\n  title = {Raptors: The Curious Nature of Diurnal Birds of Prey},\n  publisher = {Cornell University Press},\n  year = {2017}\n}',
+                      '@book{frederick1240,\n  author = {Frederick II of Hohenstaufen},\n  title = {De Arte Venandi cum Avibus},\n  note = {Translated by Wood, C.A. \\& Fyfe, F.M. (1943) Stanford University Press},\n  year = {1240}\n}',
+                      '@misc{unesco2010falconry,\n  author = {{UNESCO}},\n  title = {Falconry, a living human heritage. Intangible Cultural Heritage list.},\n  year = {2010},\n  url = {https://ich.unesco.org/en/RL/falconry-a-living-human-heritage-01708}\n}'
+                    ].join('\n\n');
+                    try {
+                      navigator.clipboard.writeText(bibtex).then(function() {
+                        rhAnnounce('BibTeX bibliography copied to clipboard');
+                        if (ctx.awardXP) ctx.awardXP(2, 'Bibliography export');
+                      });
+                    } catch (e) {
+                      // Fallback: download as file
+                      var blob = new Blob([bibtex], { type: 'text/plain' });
+                      var url = URL.createObjectURL(blob);
+                      var a = document.createElement('a');
+                      a.href = url; a.download = 'raptor_hunt_bibliography.bib';
+                      document.body.appendChild(a); a.click();
+                      document.body.removeChild(a); URL.revokeObjectURL(url);
+                      rhAnnounce('BibTeX bibliography downloaded as .bib file');
+                    }
+                  },
+                  className: 'flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-600 to-orange-600 text-white hover:from-amber-700 hover:to-orange-700',
+                  'aria-label': 'Copy BibTeX bibliography to clipboard'
+                }, '📋 Copy as BibTeX')
+              ),
 
               // Group by topic
               [
