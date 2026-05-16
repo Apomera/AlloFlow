@@ -3987,6 +3987,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'stem_lab/stem_tool_microbiology.js',
         'stem_lab/stem_tool_raptorhunt.js',
         'stem_lab/stem_tool_schoolbehaviortoolkit.js',
+        // May 16 2026: FisherLab + AquacultureLab — 3D immersive sims
+        // teaching Maine boating navigation alongside fishing + aquaculture
+        // fundamentals. Anchor exhibits for the King Middle Spring 2026 pilot.
+        'stem_lab/stem_tool_fisherlab.js',
+        'stem_lab/stem_tool_aquaculture.js',
       ];
       var selToolModules = [
         'sel_hub/sel_safety_layer.js', // load first so other SEL tools can hook the safety layer
