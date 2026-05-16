@@ -6238,6 +6238,856 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     );
   }
 
+  // ── L. PERSONAL WEEKLY REFLECTION (Wave 3) ──
+  // Weekly journal with structured prompts. Reflection has the highest
+  // evidence-to-effort ratio for metacognitive growth (Zimmerman 2002,
+  // Schön 1983 reflective practice). Saves entries over time, searchable.
+  function PersonalWeeklyReflection(props) {
+    if (!R) return null;
+    var data = props.data || { entries: [] };
+    var setData = props.setData;
+    var vs = R.useState('list');                       var view = vs[0];    var setView = vs[1];
+    var es = R.useState(null);                         var editingId = es[0]; var setEditingId = es[1];
+    var fs = R.useState({ went_well: '', stuck: '', will_try: '', wins: '', proud: '', overall: 7 });
+    var form = fs[0];                                  var setForm = fs[1];
+    var rs = R.useState(null);                         var viewing = rs[0]; var setViewing = rs[1];
+
+    var PROMPTS = [
+      { id: 'went_well',   icon: '✅', color: '#10b981', label: 'What went well this week?', help: 'Anything that worked. Small or large.' },
+      { id: 'stuck',       icon: '⚠️', color: '#fbbf24', label: 'Where did I get stuck?', help: 'A subject, a habit, a moment of overwhelm. No judgement.' },
+      { id: 'will_try',    icon: '🎯', color: '#3b82f6', label: 'What will I try next week?', help: 'One concrete experiment based on what I learned this week.' },
+      { id: 'wins',        icon: '🏆', color: '#a855f7', label: 'My 3 biggest wins this week', help: 'Anything you\'re glad happened. Tiny ones count.' },
+      { id: 'proud',       icon: '🌟', color: '#fb923c', label: 'What am I proud of?', help: 'Effort, choice, ask-for-help, follow-through. Not just outcome.' }
+    ];
+
+    function save() {
+      var id = editingId || tkId();
+      var entry = Object.assign({ id: id, date: todayISO(), week: weekOf(todayISO()) }, form);
+      var entries = (data.entries || []).slice();
+      var i = entries.findIndex(function(e) { return e.id === id; });
+      if (i >= 0) entries[i] = entry;
+      else entries.unshift(entry);
+      setData({ entries: entries });
+      setForm({ went_well: '', stuck: '', will_try: '', wins: '', proud: '', overall: 7 });
+      setEditingId(null);
+      setView('list');
+    }
+    function remove(id) {
+      setData({ entries: (data.entries || []).filter(function(e) { return e.id !== id; }) });
+    }
+    function weekOf(iso) {
+      var dt = new Date(iso + 'T12:00:00');
+      var d = new Date(dt.valueOf());
+      var dayOfYear = (Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - Date.UTC(d.getFullYear(), 0, 0)) / 86400000;
+      var weekNum = Math.ceil((dayOfYear + new Date(d.getFullYear(), 0, 1).getDay() + 1) / 7);
+      return d.getFullYear() + '-W' + String(weekNum).padStart(2, '0');
+    }
+
+    var entries = data.entries || [];
+
+    // Weekly avg + streak
+    var thisWeek = weekOf(todayISO());
+    var thisWeekEntry = entries.filter(function(e) { return e.week === thisWeek; })[0];
+    var weekStreak = (function() {
+      var weeks = entries.map(function(e) { return e.week; }).filter(function(w, i, arr) { return arr.indexOf(w) === i; }).sort();
+      if (weeks.length === 0) return 0;
+      // Walk back through consecutive weeks
+      var streak = 0;
+      for (var i = 0; i < 52; i++) {
+        var dt = new Date(); dt.setDate(dt.getDate() - i * 7);
+        var iso = dt.toISOString().slice(0, 10);
+        var wk = weekOf(iso);
+        if (weeks.indexOf(wk) >= 0) streak++;
+        else if (i > 0) break;
+      }
+      return streak;
+    })();
+
+    if (view === 'detail' && viewing) {
+      var e = entries.filter(function(x) { return x.id === viewing; })[0];
+      if (!e) { setView('list'); return null; }
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader('📔', 'Reflection from ' + e.date, e.week + ' · ' + relDate(e.date), '#f472b6'),
+
+        // Overall rating
+        hh('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(244,114,182,0.10)', border: '1px solid rgba(244,114,182,0.30)', marginBottom: 12, textAlign: 'center' } },
+          hh('div', { style: { fontSize: 10, color: '#f9a8d4', textTransform: 'uppercase', marginBottom: 4 } }, 'Overall week'),
+          hh('div', { style: { fontSize: 32, fontWeight: 900, color: '#f472b6', fontFamily: 'ui-monospace, Menlo, monospace' } }, e.overall + '/10')
+        ),
+
+        // Prompt responses
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+          PROMPTS.map(function(p) {
+            var val = e[p.id];
+            if (!val) return null;
+            return hh('div', { key: 'd-' + p.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid ' + p.color } },
+              hh('div', { style: { fontSize: 11, fontWeight: 800, color: p.color, marginBottom: 6 } }, p.icon + ' ' + p.label),
+              hh('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.7, whiteSpace: 'pre-wrap' } }, val)
+            );
+          }).filter(Boolean)
+        ),
+
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginTop: 14, flexWrap: 'wrap', gap: 8 } },
+          tkBtn('← Back to all', function() { setView('list'); setViewing(null); }, 'ghost'),
+          hh('div', { style: { display: 'flex', gap: 6 } },
+            tkBtn('✏ Edit', function() { setEditingId(e.id); setForm({ went_well: e.went_well || '', stuck: e.stuck || '', will_try: e.will_try || '', wins: e.wins || '', proud: e.proud || '', overall: e.overall || 7 }); setView('new'); }, 'secondary'),
+            tkBtn('🗑 Delete', function() { if (confirm('Delete this reflection?')) { remove(e.id); setView('list'); } }, 'bad')
+          )
+        )
+      );
+    }
+
+    if (view === 'new') {
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader('📔', editingId ? 'Edit reflection' : 'This week\'s reflection', '5 short prompts. 5 minutes. The highest-evidence metacognitive intervention.', '#f472b6'),
+
+        // Overall rating slider
+        tkCard('#f472b6',
+          hh('div', null,
+            hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#f472b6', marginBottom: 8 } }, 'Overall, how was this week?'),
+            hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#cbd5e1', marginBottom: 4 } },
+              hh('span', null, 'Rough'),
+              hh('strong', { style: { fontSize: 18, color: '#f472b6', fontFamily: 'ui-monospace, Menlo, monospace' } }, form.overall + '/10'),
+              hh('span', null, 'Great')
+            ),
+            hh('input', { type: 'range', min: 1, max: 10, step: 1, value: form.overall,
+              onChange: function(e2) { setForm(Object.assign({}, form, { overall: parseInt(e2.target.value, 10) })); },
+              style: { width: '100%', accentColor: '#f472b6' }
+            })
+          )
+        ),
+
+        // Prompts
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 14 } },
+          PROMPTS.map(function(p) {
+            return hh('div', { key: 'p-' + p.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid ' + p.color } },
+              hh('div', { style: { fontSize: 12, fontWeight: 800, color: p.color, marginBottom: 2 } }, p.icon + ' ' + p.label),
+              hh('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic', marginBottom: 8 } }, p.help),
+              tkTextarea(form[p.id], function(v) { setForm(Object.assign({}, form, (function() { var o = {}; o[p.id] = v; return o; })())); }, '', 3)
+            );
+          })
+        ),
+
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+          tkBtn('← Cancel', function() { setView('list'); setEditingId(null); }, 'ghost'),
+          tkBtn('💾 Save reflection', save, 'primary')
+        )
+      );
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('📔', 'Weekly Reflection', 'Structured 5-prompt journal. Highest-evidence metacognitive growth tool there is (Zimmerman 2002).', '#f472b6'),
+
+      // Stats row
+      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 8, marginBottom: 12 } },
+        [
+          { label: 'Total reflections', value: entries.length, color: '#f472b6', icon: '📔' },
+          { label: 'Week streak', value: weekStreak + 'w', color: '#fbbf24', icon: '🔥' },
+          { label: 'Avg week rating', value: entries.length > 0 ? (entries.reduce(function(s, e) { return s + (e.overall || 0); }, 0) / entries.length).toFixed(1) : '—', color: '#a855f7', icon: '⭐' }
+        ].map(function(s, i) {
+          return hh('div', { key: 'rs-' + i, style: { padding: 10, borderRadius: 8, background: s.color + '12', border: '1px solid ' + s.color + '30', textAlign: 'center' } },
+            hh('div', { style: { fontSize: 14, marginBottom: 2 } }, s.icon),
+            hh('div', { style: { fontSize: 18, fontWeight: 900, color: s.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, s.value),
+            hh('div', { style: { fontSize: 9, color: '#94a3b8', textTransform: 'uppercase' } }, s.label)
+          );
+        })
+      ),
+
+      // This week status
+      thisWeekEntry ? hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.30)', marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+        hh('div', null,
+          hh('span', { style: { color: '#22c55e', fontWeight: 800, marginRight: 8 } }, '✓'),
+          hh('span', { style: { color: '#cbd5e1', fontSize: 12 } }, 'You reflected this week. ', hh('em', { style: { color: '#22c55e' } }, 'Nice.'))
+        ),
+        tkBtn('View', function() { setViewing(thisWeekEntry.id); setView('detail'); }, 'secondary', { padding: '4px 10px', fontSize: 10 })
+      ) : hh('div', { style: { padding: 12, borderRadius: 10, background: 'linear-gradient(135deg, rgba(244,114,182,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(244,114,182,0.40)', marginBottom: 12, textAlign: 'center' } },
+        hh('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 8 } }, 'No reflection yet for ', hh('strong', null, thisWeek), '. 5 prompts. 5 minutes.'),
+        tkBtn('+ Start this week\'s reflection', function() { setForm({ went_well: '', stuck: '', will_try: '', wins: '', proud: '', overall: 7 }); setEditingId(null); setView('new'); }, 'primary')
+      ),
+
+      // History
+      entries.length > 0 ? hh('div', null,
+        hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#f472b6', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, '📚 Reflection history'),
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+          entries.map(function(e) {
+            var preview = (e.went_well || e.stuck || e.proud || '').substring(0, 60);
+            return hh('button', { key: 'h-' + e.id,
+              onClick: function() { setViewing(e.id); setView('detail'); },
+              style: { display: 'block', textAlign: 'left', padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(244,114,182,0.20)', borderLeft: '3px solid #f472b6', cursor: 'pointer' }
+            },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
+                hh('span', { style: { fontSize: 11, color: '#f472b6', fontWeight: 700, fontFamily: 'ui-monospace, Menlo, monospace' } }, e.week + ' · ' + relDate(e.date)),
+                hh('span', { style: { padding: '2px 8px', borderRadius: 999, background: 'rgba(244,114,182,0.18)', color: '#f472b6', fontSize: 10, fontWeight: 800 } }, e.overall + '/10')
+              ),
+              preview ? hh('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } }, '"' + preview + (preview.length === 60 ? '…' : '') + '"') : null
+            );
+          })
+        )
+      ) : null
+    );
+  }
+
+  // ── M. PERSONAL STRATEGY WIZARD (Wave 3) ──
+  // Adaptive recommendation engine. Input: subject + assessment type +
+  // days until + prior knowledge level + preferred format. Output:
+  // prioritized study strategies ranked by Dunlosky 2013 evidence + fit.
+  function PersonalStrategyWizard(props) {
+    if (!R) return null;
+    var data = props.data || { savedPlans: [] };
+    var setData = props.setData;
+    var fs = R.useState({
+      subject: '', assessment: 'test', days: 7, prior: 'some',
+      format: 'mixed', notes: ''
+    });
+    var form = fs[0]; var setForm = fs[1];
+    var rs = R.useState(null); var result = rs[0]; var setResult = rs[1];
+
+    var STRATEGIES = [
+      { id: 'practiceTest', label: 'Practice testing (flashcards, mock quizzes)', utility: 'HIGH', icon: '🃏', color: '#10b981',
+        fitTest: function(f) {
+          return f.assessment === 'test' || f.assessment === 'memorize' ? 10
+            : f.assessment === 'essay' || f.assessment === 'project' ? 6 : 8;
+        },
+        why: 'Karpicke + Roediger 2006. Strongest single study finding. Always relevant.'
+      },
+      { id: 'spaced', label: 'Distributed practice (study over days, not all at once)', utility: 'HIGH', icon: '⏰', color: '#10b981',
+        fitTest: function(f) { return f.days >= 5 ? 10 : f.days >= 3 ? 6 : 2; },
+        why: 'Cepeda et al. 2008. Spacing wins by 30-50% on retention. Useless if <3 days.'
+      },
+      { id: 'selfExplain', label: 'Self-explanation as you study', utility: 'MODERATE', icon: '💬', color: '#fbbf24',
+        fitTest: function(f) {
+          return f.assessment === 'essay' || f.assessment === 'apply' ? 9 : f.prior === 'some' || f.prior === 'much' ? 7 : 4;
+        },
+        why: 'Chi et al. 1994. Strong in math + science. Requires baseline knowledge.'
+      },
+      { id: 'interleave', label: 'Interleaved practice (mix topic types)', utility: 'MODERATE', icon: '🔀', color: '#fbbf24',
+        fitTest: function(f) { return f.assessment === 'test' && f.prior !== 'none' ? 8 : 4; },
+        why: 'Rohrer + Taylor 2007. Mostly for math + similar problem types.'
+      },
+      { id: 'elaborative', label: 'Elaborative interrogation ("why is this true?")', utility: 'MODERATE', icon: '❓', color: '#fbbf24',
+        fitTest: function(f) { return f.prior === 'some' || f.prior === 'much' ? 7 : 3; },
+        why: 'McDaniel + Donnelly 1996. Works for factual material. Needs some baseline.'
+      },
+      { id: 'cornell', label: 'Cornell-style note-taking + summary', utility: 'MODERATE', icon: '📓', color: '#3b82f6',
+        fitTest: function(f) { return f.assessment === 'test' || f.assessment === 'essay' ? 6 : 3; },
+        why: 'Pauk 1989. Helps if you actively re-engage with the notes (review + summary).'
+      },
+      { id: 'concept', label: 'Concept mapping (connect ideas visually)', utility: 'MODERATE', icon: '🕸', color: '#a855f7',
+        fitTest: function(f) { return f.assessment === 'essay' || f.assessment === 'apply' ? 8 : 4; },
+        why: 'Novak + Gowin 1984. Strong for synthesis-heavy material.'
+      },
+      { id: 'mock', label: 'Take a full mock test under timed conditions', utility: 'HIGH', icon: '⏱', color: '#10b981',
+        fitTest: function(f) { return f.assessment === 'test' && f.days >= 2 ? 10 : 3; },
+        why: 'Combines retrieval + reduces test anxiety. Best 2-5 days before real test.'
+      },
+      { id: 'teach', label: 'Teach the material to someone (or pretend)', utility: 'MODERATE', icon: '🗣', color: '#fbbf24',
+        fitTest: function(f) { return f.prior === 'much' ? 9 : f.prior === 'some' ? 7 : 4; },
+        why: 'Feynman technique. Forces synthesis. Best as final-week confidence check.'
+      },
+      { id: 'summarize', label: 'Write a 1-page summary per chapter', utility: 'LOW', icon: '📋', color: '#ef4444',
+        fitTest: function(f) { return f.assessment === 'essay' ? 5 : 2; },
+        why: 'Dunlosky 2013 LOW. Helpful only if you actively reorganize, not just shorten.'
+      },
+      { id: 'highlight', label: 'Highlight / underline as you read', utility: 'LOW', icon: '🖍', color: '#ef4444',
+        fitTest: function() { return 1; },
+        why: 'Dunlosky 2013 LOW. Feels productive, almost no transfer. Skip.'
+      },
+      { id: 'reread', label: 'Re-read your notes or textbook', utility: 'LOW', icon: '📖', color: '#ef4444',
+        fitTest: function() { return 2; },
+        why: 'Dunlosky 2013 LOW. Comfortable, almost no benefit beyond first read. Skip.'
+      }
+    ];
+
+    var ASSESSMENT_TYPES = [
+      { id: 'test',     label: 'Test / quiz (factual)', icon: '📝' },
+      { id: 'apply',    label: 'Application / problem-solving', icon: '🔧' },
+      { id: 'essay',    label: 'Essay / writing', icon: '✍️' },
+      { id: 'project',  label: 'Project / presentation', icon: '🎬' },
+      { id: 'memorize', label: 'Pure memorization (vocab, formulas)', icon: '🧠' }
+    ];
+    var PRIOR_LEVELS = [
+      { id: 'none',   label: 'No clue', icon: '😵', color: '#ef4444' },
+      { id: 'little', label: 'A little', icon: '🤏', color: '#fbbf24' },
+      { id: 'some',   label: 'Solid base', icon: '👍', color: '#10b981' },
+      { id: 'much',   label: 'Pretty strong', icon: '💪', color: '#06b6d4' }
+    ];
+
+    function generate() {
+      var scored = STRATEGIES.map(function(s) {
+        return Object.assign({}, s, { fit: s.fitTest(form) });
+      }).sort(function(a, b) { return b.fit - a.fit; });
+      setResult({
+        form: Object.assign({}, form),
+        recommendations: scored,
+        generatedAt: todayISO()
+      });
+    }
+    function savePlan() {
+      if (!result) return;
+      var plan = { id: tkId(), savedAt: todayISO(), subject: form.subject || 'Untitled', form: form, top3: result.recommendations.slice(0, 3) };
+      setData({ savedPlans: [plan].concat(data.savedPlans || []) });
+    }
+    function deletePlan(id) {
+      setData({ savedPlans: (data.savedPlans || []).filter(function(p) { return p.id !== id; }) });
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🪄', 'Strategy Wizard', 'Tell the wizard about your situation. Get a prioritized study plan based on Dunlosky 2013 + your context.', '#a855f7'),
+
+      // Input form
+      tkCard('#a855f7',
+        hh('div', null,
+          hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Subject / topic'),
+          tkInput(form.subject, function(v) { setForm(Object.assign({}, form, { subject: v })); }, 'e.g., "Biology Chapter 5 — cells"', { marginBottom: 12 }),
+
+          hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'What kind of assessment?'),
+          hh('div', { style: { display: 'flex', gap: 4, marginBottom: 12, flexWrap: 'wrap' } },
+            ASSESSMENT_TYPES.map(function(a) {
+              return hh('button', { key: 'a-' + a.id,
+                onClick: function() { setForm(Object.assign({}, form, { assessment: a.id })); },
+                style: { padding: '8px 12px', borderRadius: 6, background: form.assessment === a.id ? '#a855f7' : 'rgba(168,85,247,0.10)', color: form.assessment === a.id ? '#fff' : '#c084fc', border: '1px solid rgba(168,85,247,0.40)', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+              }, a.icon + ' ' + a.label);
+            })
+          ),
+
+          hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 } },
+            hh('div', null,
+              hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Days until ' + (form.assessment || 'assessment')),
+              hh('input', { type: 'number', min: 1, max: 60, value: form.days,
+                onChange: function(e) { setForm(Object.assign({}, form, { days: parseInt(e.target.value, 10) })); },
+                style: { width: '100%', padding: '10px 12px', fontSize: 14, color: '#a855f7', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(168,85,247,0.40)', borderRadius: 6, boxSizing: 'border-box', textAlign: 'center', fontWeight: 800 }
+              })
+            ),
+            hh('div', null,
+              hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Current knowledge'),
+              hh('div', { style: { display: 'flex', gap: 4 } },
+                PRIOR_LEVELS.map(function(p) {
+                  return hh('button', { key: 'p-' + p.id,
+                    onClick: function() { setForm(Object.assign({}, form, { prior: p.id })); },
+                    style: { flex: 1, padding: '8px 4px', borderRadius: 6, background: form.prior === p.id ? p.color + '30' : 'rgba(15,23,42,0.5)', color: form.prior === p.id ? p.color : '#94a3b8', border: '1px solid ' + (form.prior === p.id ? p.color : 'rgba(100,116,139,0.30)'), fontSize: 14, cursor: 'pointer' },
+                    title: p.label
+                  }, p.icon);
+                })
+              )
+            )
+          ),
+
+          tkBtn('🪄 Generate study plan', generate, 'primary', { padding: '12px 24px', fontSize: 12, width: '100%', textAlign: 'center' })
+        )
+      ),
+
+      // Result
+      result ? tkCard('#a855f7',
+        hh('div', null,
+          hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 8 } },
+            hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#c084fc' } }, '✨ Your prioritized plan'),
+            tkBtn('💾 Save this plan', savePlan, 'good', { padding: '6px 12px', fontSize: 10 })
+          ),
+          hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+            result.recommendations.map(function(s, i) {
+              var rank = i + 1;
+              var rankColor = rank <= 3 ? '#10b981' : rank <= 6 ? '#fbbf24' : '#94a3b8';
+              return hh('div', { key: 'rec-' + s.id, style: {
+                display: 'flex', alignItems: 'flex-start', gap: 8,
+                padding: 10, borderRadius: 8,
+                background: 'rgba(15,23,42,0.5)',
+                border: '1px solid ' + s.color + '30',
+                borderLeft: '3px solid ' + s.color,
+                opacity: rank > 6 ? 0.5 : 1
+              } },
+                hh('div', { style: { width: 26, height: 26, borderRadius: '50%', background: rankColor + '20', color: rankColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 900, fontFamily: 'ui-monospace, Menlo, monospace', flexShrink: 0 } }, '#' + rank),
+                hh('div', { style: { flex: 1, minWidth: 0 } },
+                  hh('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 } },
+                    hh('span', null, s.icon),
+                    hh('strong', { style: { fontSize: 12, color: s.color } }, s.label),
+                    hh('span', { style: { padding: '2px 6px', borderRadius: 4, background: s.color + '20', color: s.color, fontSize: 9, fontWeight: 800 } }, s.utility),
+                    hh('span', { style: { padding: '2px 6px', borderRadius: 4, background: rankColor + '15', color: rankColor, fontSize: 9, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace' } }, 'fit: ' + s.fit + '/10')
+                  ),
+                  hh('div', { style: { fontSize: 10, color: '#cbd5e1', lineHeight: 1.55, fontStyle: 'italic' } }, s.why)
+                )
+              );
+            })
+          )
+        )
+      ) : null,
+
+      // Saved plans
+      (data.savedPlans || []).length > 0 ? hh('div', { style: { marginTop: 14 } },
+        hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, '📚 Saved plans'),
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+          (data.savedPlans || []).map(function(p) {
+            return hh('div', { key: 'sp-' + p.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(168,85,247,0.30)', borderLeft: '3px solid #a855f7' } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 } },
+                hh('div', { style: { fontSize: 12, color: '#c084fc', fontWeight: 700 } }, p.subject),
+                hh('div', { style: { display: 'flex', gap: 4 } },
+                  hh('span', { style: { fontSize: 10, color: '#94a3b8' } }, relDate(p.savedAt)),
+                  hh('button', { onClick: function() { deletePlan(p.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                )
+              ),
+              hh('div', { style: { fontSize: 10, color: '#cbd5e1', fontFamily: 'ui-monospace, Menlo, monospace' } },
+                (p.top3 || []).map(function(t, i) { return (i + 1) + '. ' + t.icon + ' ' + t.label; }).join(' · ')
+              )
+            );
+          })
+        )
+      ) : null
+    );
+  }
+
+  // ── N. PERSONAL COGNITIVE LOAD MONITOR (Wave 3) ──
+  // Daily check-in. Rate today's cognitive load on three Sweller dimensions.
+  // Identify overwhelm triggers. Adaptive suggestions to reduce load.
+  function PersonalCognitiveLoadMonitor(props) {
+    if (!R) return null;
+    var data = props.data || { entries: [] };
+    var setData = props.setData;
+    var fs = R.useState({ intrinsic: 5, extraneous: 5, germane: 5, triggers: [], notes: '' });
+    var form = fs[0]; var setForm = fs[1];
+
+    var TRIGGERS = [
+      { id: 'sleep',         label: 'Poor sleep last night', icon: '😴' },
+      { id: 'noise',         label: 'Noisy environment',     icon: '🔊' },
+      { id: 'phone',         label: 'Phone interruptions',   icon: '📱' },
+      { id: 'multitask',     label: 'Tried to multitask',    icon: '🔀' },
+      { id: 'newconcept',    label: 'New / hard concept',    icon: '🧩' },
+      { id: 'unclear',       label: 'Unclear instructions',  icon: '❓' },
+      { id: 'overwhelmed',   label: 'Just felt overwhelmed', icon: '😵' },
+      { id: 'social',        label: 'Social stress',         icon: '🤝' },
+      { id: 'physical',      label: 'Physical (pain, hunger, headache)', icon: '🤕' },
+      { id: 'deadline',      label: 'Deadline pressure',     icon: '⏰' }
+    ];
+
+    function toggleTrigger(id) {
+      var triggers = form.triggers.slice();
+      var i = triggers.indexOf(id);
+      if (i >= 0) triggers.splice(i, 1);
+      else triggers.push(id);
+      setForm(Object.assign({}, form, { triggers: triggers }));
+    }
+    function save() {
+      var entry = Object.assign({ id: tkId(), date: todayISO() }, form);
+      setData({ entries: [entry].concat(data.entries || []) });
+      setForm({ intrinsic: 5, extraneous: 5, germane: 5, triggers: [], notes: '' });
+    }
+    function remove(id) { setData({ entries: (data.entries || []).filter(function(e) { return e.id !== id; }) }); }
+
+    var entries = data.entries || [];
+    var today = todayISO();
+    var todayEntry = entries.filter(function(e) { return e.date === today; })[0];
+
+    // 7-day trend
+    var last7 = [];
+    for (var i = 6; i >= 0; i--) {
+      var dt = new Date(); dt.setDate(dt.getDate() - i);
+      var iso = dt.toISOString().slice(0, 10);
+      var e = entries.filter(function(x) { return x.date === iso; })[0];
+      last7.push({ date: iso, entry: e, label: ['S', 'M', 'T', 'W', 'T', 'F', 'S'][dt.getDay()] });
+    }
+
+    var totalLoad = form.intrinsic + form.extraneous + form.germane;
+    var overloadColor = totalLoad >= 24 ? '#ef4444' : totalLoad >= 18 ? '#fbbf24' : '#10b981';
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('⚖️', 'Cognitive Load Monitor', 'Daily check-in on Sweller\'s 3 types of load + overwhelm triggers. Pattern over time = personal insight.', '#fbbf24'),
+
+      // Today
+      todayEntry ? hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.30)', marginBottom: 12 } },
+        hh('div', { style: { fontSize: 12, fontWeight: 700, color: '#22c55e', marginBottom: 4 } }, '✓ Today\'s check-in saved'),
+        hh('div', { style: { fontSize: 11, color: '#cbd5e1' } },
+          'Intrinsic ', todayEntry.intrinsic, ' · Extraneous ', todayEntry.extraneous, ' · Germane ', todayEntry.germane,
+          (todayEntry.triggers || []).length > 0 ? ' · ' + (todayEntry.triggers || []).length + ' triggers' : ''
+        )
+      ) : tkCard('#fbbf24',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', marginBottom: 10 } }, '⚖️ Today\'s check-in'),
+
+          // 3 sliders
+          [
+            { id: 'intrinsic', label: 'Intrinsic load', color: '#3b82f6', help: 'Actual difficulty of the material I worked on' },
+            { id: 'extraneous', label: 'Extraneous load', color: '#ef4444', help: 'Wasted effort (distractions, confusion, bad instructions)' },
+            { id: 'germane', label: 'Germane load', color: '#10b981', help: 'Effort that built understanding (the productive kind)' }
+          ].map(function(s) {
+            return hh('div', { key: 'cl-' + s.id, style: { marginBottom: 12 } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
+                hh('div', null,
+                  hh('strong', { style: { fontSize: 11, color: s.color, marginRight: 6 } }, s.label),
+                  hh('span', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, s.help)
+                ),
+                hh('strong', { style: { fontSize: 14, color: s.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, form[s.id] + '/10')
+              ),
+              hh('input', { type: 'range', min: 0, max: 10, step: 1, value: form[s.id],
+                onChange: function(e) { setForm(Object.assign({}, form, (function() { var o = {}; o[s.id] = parseInt(e.target.value, 10); return o; })())); },
+                style: { width: '100%', accentColor: s.color }
+              })
+            );
+          }),
+
+          hh('div', { style: { padding: 8, borderRadius: 6, background: overloadColor + '12', border: '1px solid ' + overloadColor + '30', textAlign: 'center', marginBottom: 12 } },
+            hh('span', { style: { fontSize: 11, color: '#cbd5e1', marginRight: 6 } }, 'Total load:'),
+            hh('strong', { style: { fontSize: 16, color: overloadColor, fontFamily: 'ui-monospace, Menlo, monospace' } }, totalLoad + '/30'),
+            hh('span', { style: { fontSize: 10, color: overloadColor, marginLeft: 6 } },
+              totalLoad >= 24 ? 'overload zone' : totalLoad >= 18 ? 'demanding' : 'manageable'
+            )
+          ),
+
+          // Triggers
+          hh('div', { style: { marginBottom: 12 } },
+            hh('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', marginBottom: 6 } }, '⚠️ Overwhelm triggers (tap all that apply)'),
+            hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
+              TRIGGERS.map(function(t) {
+                var on = form.triggers.indexOf(t.id) >= 0;
+                return hh('button', { key: 't-' + t.id,
+                  onClick: function() { toggleTrigger(t.id); },
+                  style: { padding: '6px 10px', borderRadius: 6, background: on ? 'rgba(251,191,36,0.20)' : 'rgba(15,23,42,0.5)', color: on ? '#fbbf24' : '#94a3b8', border: '1px solid ' + (on ? '#fbbf24' : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
+                }, t.icon + ' ' + t.label);
+              })
+            )
+          ),
+
+          tkTextarea(form.notes, function(v) { setForm(Object.assign({}, form, { notes: v })); }, 'Notes (optional) — what happened today, what surprised you, what to remember', 2, { marginBottom: 10 }),
+          tkBtn('💾 Save check-in', save, 'primary')
+        )
+      ),
+
+      // 7-day strip
+      hh('div', { style: { background: 'rgba(2,6,23,0.5)', borderRadius: 10, padding: 10, marginBottom: 12 } },
+        hh('div', { style: { fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, '📊 Last 7 days'),
+        hh('div', { style: { display: 'flex', gap: 4, alignItems: 'flex-end' } },
+          last7.map(function(d) {
+            var total = d.entry ? (d.entry.intrinsic + d.entry.extraneous + d.entry.germane) : 0;
+            var pct = total > 0 ? (total / 30) * 100 : 0;
+            var col = total >= 24 ? '#ef4444' : total >= 18 ? '#fbbf24' : total > 0 ? '#10b981' : 'rgba(100,116,139,0.20)';
+            return hh('div', { key: 'd-' + d.date, style: { flex: 1, textAlign: 'center' } },
+              hh('div', { style: { fontSize: 9, color: '#94a3b8', marginBottom: 4 } }, d.label),
+              hh('div', { style: { height: 60, background: 'rgba(15,23,42,0.5)', borderRadius: 4, position: 'relative', overflow: 'hidden' } },
+                hh('div', { style: { position: 'absolute', bottom: 0, left: 0, right: 0, height: pct + '%', background: col, transition: 'height 300ms ease' } })
+              ),
+              hh('div', { style: { fontSize: 9, color: total > 0 ? col : '#475569', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 4 } }, total > 0 ? total : '—')
+            );
+          })
+        )
+      ),
+
+      // Recent history
+      entries.length > 0 ? hh('div', null,
+        hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, '📚 History'),
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+          entries.slice(0, 10).map(function(e) {
+            var total = e.intrinsic + e.extraneous + e.germane;
+            return hh('div', { key: 'e-' + e.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + (total >= 24 ? '#ef4444' : total >= 18 ? '#fbbf24' : '#10b981') } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+                hh('span', { style: { fontSize: 11, color: '#cbd5e1', fontFamily: 'ui-monospace, Menlo, monospace' } }, e.date + ' · ' + relDate(e.date)),
+                hh('div', { style: { display: 'flex', gap: 6, alignItems: 'center' } },
+                  hh('span', { style: { fontSize: 10, color: '#94a3b8' } }, e.intrinsic + '/' + e.extraneous + '/' + e.germane),
+                  hh('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                )
+              ),
+              (e.triggers || []).length > 0 ? hh('div', { style: { fontSize: 9, color: '#94a3b8', marginTop: 4 } }, '⚠ ' + e.triggers.map(function(tid) { return (TRIGGERS.filter(function(t) { return t.id === tid; })[0] || {}).label; }).filter(Boolean).join(' · ')) : null,
+              e.notes ? hh('div', { style: { fontSize: 10, color: '#cbd5e1', fontStyle: 'italic', marginTop: 4 } }, '"' + e.notes + '"') : null
+            );
+          })
+        )
+      ) : null
+    );
+  }
+
+  // ── O. PERSONAL MOTIVATION AUDIT (Wave 3, SDT-based) ──
+  // Quick check on autonomy / competence / relatedness for current
+  // classes/activities. Adaptive suggestions to boost weakest dimension.
+  // Deci + Ryan Self-Determination Theory.
+  function PersonalMotivationAudit(props) {
+    if (!R) return null;
+    var data = props.data || { audits: [] };
+    var setData = props.setData;
+    var fs = R.useState({ activity: '', autonomy: 5, competence: 5, relatedness: 5, notes: '' });
+    var form = fs[0]; var setForm = fs[1];
+
+    var DIMENSIONS = [
+      { id: 'autonomy',     label: 'Autonomy',     icon: '🎯', color: '#a855f7', help: 'Do I feel like I have choice / agency in this?' },
+      { id: 'competence',   label: 'Competence',   icon: '💪', color: '#10b981', help: 'Do I feel capable of growing / succeeding at this?' },
+      { id: 'relatedness',  label: 'Relatedness',  icon: '🤝', color: '#ef4444', help: 'Do I feel connected to others through this activity?' }
+    ];
+    var BOOST_SUGGESTIONS = {
+      autonomy: [
+        'Pick ONE small element of this activity you DO control. Vary that.',
+        'Ask your teacher / supervisor: "Is there flexibility on X?" Negotiate even tiny choices.',
+        'Reframe: even if you didn\'t pick the activity, you\'re picking HOW to engage with it.',
+        'If truly forced + no flexibility: notice that this is a temporary structural constraint, not a permanent identity.'
+      ],
+      competence: [
+        'Find ONE concrete skill in this domain you can practice in 10 min today.',
+        'Track 1 small win per session. Visible progress is what builds competence.',
+        'Get feedback on something specific (not "is this good?" — "is THIS section clear?").',
+        'Compare to your past self, not to peers. The slope is what matters, not the absolute level.'
+      ],
+      relatedness: [
+        'Find ONE person in this activity who matters to you. Even a 5-min conversation helps.',
+        'Join a study group or peer feedback pair on this material.',
+        'Ask someone what they think of the topic — interest + connection are linked.',
+        'If isolation is the structural issue: this is what the relatedness gap looks like. Worth flagging to a supportive adult.'
+      ]
+    };
+
+    function save() {
+      if (!form.activity.trim()) { alert('Need an activity name.'); return; }
+      var entry = Object.assign({ id: tkId(), date: todayISO() }, form);
+      setData({ audits: [entry].concat(data.audits || []) });
+      setForm({ activity: '', autonomy: 5, competence: 5, relatedness: 5, notes: '' });
+    }
+    function remove(id) { setData({ audits: (data.audits || []).filter(function(e) { return e.id !== id; }) }); }
+
+    var weakest = DIMENSIONS.reduce(function(min, d) { return form[d.id] < form[min.id] ? d : min; }, DIMENSIONS[0]);
+    var total = form.autonomy + form.competence + form.relatedness;
+    var audits = data.audits || [];
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🌟', 'Motivation Audit', 'Self-Determination Theory (Deci + Ryan): motivation is built from autonomy, competence, and relatedness. Check yours for any activity.', '#ec4899'),
+
+      tkCard('#ec4899',
+        hh('div', null,
+          hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#f472b6', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'What activity are you auditing?'),
+          tkInput(form.activity, function(v) { setForm(Object.assign({}, form, { activity: v })); }, 'e.g., "AP Chemistry class" or "Cross-country practice"', { marginBottom: 16 }),
+
+          // 3 dimension sliders
+          DIMENSIONS.map(function(dim) {
+            return hh('div', { key: 'dim-' + dim.id, style: { padding: 10, borderRadius: 8, background: 'rgba(2,6,23,0.4)', borderLeft: '3px solid ' + dim.color, marginBottom: 10 } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
+                hh('div', null,
+                  hh('strong', { style: { fontSize: 12, color: dim.color, marginRight: 8 } }, dim.icon + ' ' + dim.label),
+                  hh('span', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, dim.help)
+                ),
+                hh('strong', { style: { fontSize: 16, color: dim.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, form[dim.id] + '/10')
+              ),
+              hh('input', { type: 'range', min: 0, max: 10, step: 1, value: form[dim.id],
+                onChange: function(e) { setForm(Object.assign({}, form, (function() { var o = {}; o[dim.id] = parseInt(e.target.value, 10); return o; })())); },
+                style: { width: '100%', accentColor: dim.color }
+              })
+            );
+          }),
+
+          tkTextarea(form.notes, function(v) { setForm(Object.assign({}, form, { notes: v })); }, 'Notes (optional)', 2, { marginBottom: 10 }),
+          tkBtn('💾 Save audit', save, 'primary')
+        )
+      ),
+
+      // Adaptive suggestions for weakest dimension
+      form.activity ? hh('div', { style: { padding: 12, borderRadius: 10, background: 'linear-gradient(135deg, ' + weakest.color + '15, rgba(15,23,42,0.7))', border: '1px solid ' + weakest.color + '40', borderLeft: '4px solid ' + weakest.color, marginBottom: 12 } },
+        hh('div', { style: { fontSize: 12, fontWeight: 800, color: weakest.color, marginBottom: 8 } }, '🎯 To boost your weakest: ' + weakest.label),
+        hh('ul', { style: { margin: 0, paddingLeft: 18, color: '#cbd5e1', fontSize: 11, lineHeight: 1.7 } },
+          BOOST_SUGGESTIONS[weakest.id].map(function(s, i) {
+            return hh('li', { key: 's-' + i, style: { marginBottom: 4 } }, s);
+          })
+        )
+      ) : null,
+
+      // History
+      audits.length > 0 ? hh('div', null,
+        hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#f472b6', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, '📚 Past audits'),
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+          audits.slice(0, 10).map(function(a) {
+            var tot = a.autonomy + a.competence + a.relatedness;
+            return hh('div', { key: 'a-' + a.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #ec4899' } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
+                hh('strong', { style: { fontSize: 12, color: '#f472b6' } }, a.activity),
+                hh('div', { style: { display: 'flex', gap: 6, alignItems: 'center' } },
+                  hh('span', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } }, a.date),
+                  hh('button', { onClick: function() { remove(a.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                )
+              ),
+              hh('div', { style: { fontSize: 10, color: '#cbd5e1', fontFamily: 'ui-monospace, Menlo, monospace' } },
+                '🎯 A:' + a.autonomy + ' · 💪 C:' + a.competence + ' · 🤝 R:' + a.relatedness + ' = ' + tot + '/30'
+              )
+            );
+          })
+        )
+      ) : null,
+
+      // Citation
+      hh('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(236,72,153,0.08)', border: '1px solid rgba(236,72,153,0.30)', fontSize: 10, color: '#cbd5e1', lineHeight: 1.6 } },
+        hh('strong', { style: { color: '#ec4899' } }, '📚 Source: '),
+        'Deci + Ryan (2000). "The What and Why of Goal Pursuits." ', hh('em', null, 'Psychological Inquiry'), ', 11(4), 227-268. Self-Determination Theory has the largest accumulated evidence of any motivation framework in education research. Activities high on all three (autonomy + competence + relatedness) sustain motivation; deficits in any one predict disengagement.'
+      )
+    );
+  }
+
+  // ── P. PERSONAL LEARNING PROFILE (Wave 3) ──
+  // Student-discovered profile: what helps me focus, what overwhelms me,
+  // my best time of day, my accommodations, my goals identity. One-page
+  // printable. Editable across all dimensions.
+  function PersonalLearningProfile(props) {
+    if (!R) return null;
+    var data = props.data || { profile: {} };
+    var setData = props.setData;
+    var p = data.profile || {};
+
+    function update(key, val) {
+      setData({ profile: Object.assign({}, p, (function() { var o = {}; o[key] = val; return o; })()) });
+    }
+
+    var FIELDS = [
+      { id: 'name',          label: 'My name (or initials)', icon: '🧑',  placeholder: 'just for the printout', type: 'input' },
+      { id: 'bestTime',      label: 'My best time of day to focus', icon: '🌅', placeholder: 'e.g., "Mornings before noon"', type: 'input' },
+      { id: 'worstTime',     label: 'My hardest time of day', icon: '🌙', placeholder: 'e.g., "After 4pm I\'m wiped"', type: 'input' },
+      { id: 'helps',         label: 'What helps me focus', icon: '✅', placeholder: 'e.g., "Quiet space + my noise-canceling headphones + phone in another room"', type: 'textarea' },
+      { id: 'overwhelms',    label: 'What overwhelms me', icon: '⚠', placeholder: 'e.g., "Long verbal directions + bright fluorescent lights + group projects"', type: 'textarea' },
+      { id: 'strengths',     label: 'What I\'m good at', icon: '💪', placeholder: 'e.g., "Visual thinking, finding patterns, asking questions"', type: 'textarea' },
+      { id: 'growing',       label: 'What I\'m working on', icon: '🌱', placeholder: 'e.g., "Asking for help earlier, not later"', type: 'textarea' },
+      { id: 'helpers',       label: 'Adults who get me', icon: '🤝', placeholder: 'e.g., "Ms. Garcia, my school psych Dr. Pomera, my mom"', type: 'textarea' },
+      { id: 'goals',         label: 'What I want this year', icon: '🎯', placeholder: 'A real one. Could be academic, social, personal.', type: 'textarea' },
+      { id: 'identity',      label: 'Things people should know about how I learn', icon: '💡', placeholder: 'e.g., "I have ADHD. I need to move. Quiet ≠ disengaged for me. I think out loud."', type: 'textarea' }
+    ];
+
+    function print() {
+      try { window.print(); } catch (e) { alert('Use your browser\'s print function (Ctrl/Cmd+P).'); }
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🪞', 'My Learning Profile', 'A one-page snapshot of how you learn. For YOU first. Sharable with teachers, advisors, or your IEP team.', '#06b6d4'),
+
+      hh('div', { style: { display: 'flex', justifyContent: 'flex-end', marginBottom: 10 } },
+        tkBtn('🖨 Print my profile', print, 'secondary')
+      ),
+
+      hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
+        FIELDS.map(function(f) {
+          return hh('div', { key: 'f-' + f.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(6,182,212,0.30)', borderLeft: '4px solid #06b6d4' } },
+            hh('label', { style: { display: 'block', fontSize: 11, fontWeight: 800, color: '#67e8f9', marginBottom: 6 } }, f.icon + ' ' + f.label),
+            f.type === 'input' ? tkInput(p[f.id], function(v) { update(f.id, v); }, f.placeholder)
+              : tkTextarea(p[f.id], function(v) { update(f.id, v); }, f.placeholder, 3)
+          );
+        })
+      ),
+
+      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(6,182,212,0.08)', border: '1px solid rgba(6,182,212,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+        hh('strong', { style: { color: '#06b6d4' } }, '💡 Use this: '),
+        'At the start of each year, hand a copy to teachers or your IEP team. The self-advocacy practice matters as much as the document itself. Update it whenever you learn something new about yourself.'
+      )
+    );
+  }
+
+  // ── Q. PERSONAL REFLECTION PROMPTS LIBRARY (Wave 3) ──
+  // 30+ metacognitive prompts students can journal on. Each prompt
+  // saves an entry that goes into a searchable log. Curated for
+  // self-discovery, goal-setting, growth.
+  function PersonalReflectionPrompts(props) {
+    if (!R) return null;
+    var data = props.data || { responses: [] };
+    var setData = props.setData;
+    var ps = R.useState(null);                var picked = ps[0];   var setPicked = ps[1];
+    var rs = R.useState('');                  var response = rs[0]; var setResponse = rs[1];
+    var vs = R.useState('library');           var view = vs[0];     var setView = vs[1]; // library | answer | history
+
+    var CATEGORIES = [
+      { id: 'metacog',   label: 'Metacognition',         color: '#9333ea', icon: '🧠' },
+      { id: 'identity',  label: 'Identity + values',     color: '#ec4899', icon: '🪞' },
+      { id: 'growth',    label: 'Growth + struggle',     color: '#10b981', icon: '🌱' },
+      { id: 'connection',label: 'Connection + support',  color: '#fbbf24', icon: '🤝' }
+    ];
+
+    var PROMPTS = [
+      { id: 'mc1', cat: 'metacog', text: 'What is one thing I learned this week that I didn\'t know before?' },
+      { id: 'mc2', cat: 'metacog', text: 'When did I notice myself fully focused? What helped?' },
+      { id: 'mc3', cat: 'metacog', text: 'What strategy did I try that didn\'t work? Why?' },
+      { id: 'mc4', cat: 'metacog', text: 'If I taught this material to a 5th grader, what would I say first?' },
+      { id: 'mc5', cat: 'metacog', text: 'What question about this topic do I still have?' },
+      { id: 'mc6', cat: 'metacog', text: 'How is what I\'m studying now connected to something I already know?' },
+      { id: 'mc7', cat: 'metacog', text: 'When did I feel overwhelmed today? What was the first sign?' },
+      { id: 'mc8', cat: 'metacog', text: 'What\'s one thing I did today that took more effort than I expected? Why?' },
+
+      { id: 'id1', cat: 'identity', text: 'When am I most myself?' },
+      { id: 'id2', cat: 'identity', text: 'What is something true about me that most people don\'t see?' },
+      { id: 'id3', cat: 'identity', text: 'What is one thing I\'m glad I\'m different about?' },
+      { id: 'id4', cat: 'identity', text: 'What\'s a value I hold that I rarely talk about?' },
+      { id: 'id5', cat: 'identity', text: 'What would 10-year-old me think of who I am now?' },
+      { id: 'id6', cat: 'identity', text: 'What\'s a label others have put on me that doesn\'t fit?' },
+      { id: 'id7', cat: 'identity', text: 'What\'s something I do that surprises people?' },
+      { id: 'id8', cat: 'identity', text: 'When do I feel most useful?' },
+
+      { id: 'gr1', cat: 'growth', text: 'What\'s something hard I did this week?' },
+      { id: 'gr2', cat: 'growth', text: 'What\'s something I tried that didn\'t go well — and what did I learn?' },
+      { id: 'gr3', cat: 'growth', text: 'What\'s a small thing I\'ve gotten better at in the last 6 months?' },
+      { id: 'gr4', cat: 'growth', text: 'What\'s a fear I\'ve outgrown?' },
+      { id: 'gr5', cat: 'growth', text: 'What advice would I give past-me from 1 year ago?' },
+      { id: 'gr6', cat: 'growth', text: 'What\'s a mistake I made that I\'m glad about, in hindsight?' },
+      { id: 'gr7', cat: 'growth', text: 'When I imagine the version of me I want to be in 5 years — what is that person doing?' },
+
+      { id: 'co1', cat: 'connection', text: 'Who is one person who genuinely sees me?' },
+      { id: 'co2', cat: 'connection', text: 'When was the last time I asked for help? How did it go?' },
+      { id: 'co3', cat: 'connection', text: 'Who in my life makes me feel calmer when they\'re around?' },
+      { id: 'co4', cat: 'connection', text: 'What\'s a friendship I want to invest more in?' },
+      { id: 'co5', cat: 'connection', text: 'When did someone do something small that mattered to me?' },
+      { id: 'co6', cat: 'connection', text: 'What kind of support do I need that I haven\'t asked for?' },
+      { id: 'co7', cat: 'connection', text: 'Who could I check in on this week?' }
+    ];
+
+    var responses = data.responses || [];
+
+    function saveResponse() {
+      if (!picked || !response.trim()) { alert('Pick a prompt + write something.'); return; }
+      var entry = { id: tkId(), promptId: picked.id, promptText: picked.text, text: response.trim(), date: todayISO() };
+      setData({ responses: [entry].concat(responses) });
+      setResponse(''); setPicked(null); setView('library');
+    }
+
+    if (view === 'history') {
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader('📓', 'My reflection history', responses.length + ' saved responses', '#a855f7'),
+        tkBtn('← Back to prompts', function() { setView('library'); }, 'ghost'),
+        responses.length === 0 ? tkEmptyState('📓', 'No responses yet. Browse prompts and start writing.', null, null)
+        : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 } },
+            responses.map(function(r) {
+              var cat = CATEGORIES.filter(function(c) { return c.id === (PROMPTS.filter(function(p) { return p.id === r.promptId; })[0] || {}).cat; })[0] || CATEGORIES[0];
+              return hh('div', { key: 'r-' + r.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid ' + cat.color } },
+                hh('div', { style: { fontSize: 10, color: cat.color, fontWeight: 700, marginBottom: 4, fontFamily: 'ui-monospace, Menlo, monospace' } }, cat.icon + ' ' + r.date),
+                hh('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', marginBottom: 6 } }, 'Q: ' + r.promptText),
+                hh('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, r.text)
+              );
+            })
+          )
+      );
+    }
+
+    if (view === 'answer' && picked) {
+      var cat = CATEGORIES.filter(function(c) { return c.id === picked.cat; })[0] || CATEGORIES[0];
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader('📝', cat.icon + ' ' + cat.label, 'Take your time. No right answer.', cat.color),
+        hh('div', { style: { padding: 14, borderRadius: 10, background: 'linear-gradient(135deg, ' + cat.color + '15, rgba(15,23,42,0.7))', border: '2px solid ' + cat.color, marginBottom: 12 } },
+          hh('div', { style: { fontSize: 9, color: cat.color, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 } }, 'Prompt'),
+          hh('div', { style: { fontSize: 15, color: '#e2e8f0', lineHeight: 1.55, fontStyle: 'italic' } }, picked.text)
+        ),
+        tkTextarea(response, setResponse, 'Your response...', 8, { marginBottom: 10 }),
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+          tkBtn('← Different prompt', function() { setPicked(null); setResponse(''); setView('library'); }, 'ghost'),
+          tkBtn('💾 Save my response', saveResponse, 'primary')
+        )
+      );
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('📓', 'Reflection Prompts', '30+ metacognitive prompts. Browse, pick one that catches your eye, write a response. Saves to your history.', '#a855f7'),
+
+      hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 12 } },
+        hh('div', { style: { fontSize: 11, color: '#94a3b8' } }, responses.length + ' saved responses'),
+        tkBtn('📓 My history', function() { setView('history'); }, 'secondary')
+      ),
+
+      CATEGORIES.map(function(cat) {
+        var catPrompts = PROMPTS.filter(function(p) { return p.cat === cat.id; });
+        return hh('div', { key: 'c-' + cat.id, style: { marginBottom: 16 } },
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: cat.color, marginBottom: 8, padding: '6px 12px', background: cat.color + '12', borderRadius: 6, display: 'inline-block' } }, cat.icon + ' ' + cat.label),
+          hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+            catPrompts.map(function(p) {
+              return hh('button', { key: 'p-' + p.id,
+                onClick: function() { setPicked(p); setResponse(''); setView('answer'); },
+                style: { display: 'block', textAlign: 'left', padding: '10px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', color: '#cbd5e1', border: '1px solid ' + cat.color + '20', borderLeft: '3px solid ' + cat.color, fontSize: 12, lineHeight: 1.5, cursor: 'pointer' }
+              }, p.text);
+            })
+          )
+        );
+      })
+    );
+  }
+
   // ── F. MY TOOLKIT HUB (landing page) ──
   // Single entry point that shows status of all toolkit tools + quick
   // actions. Today's date, current streak, # active goals, etc.
@@ -6303,7 +7153,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'mytkTasks',    icon: '✂', label: 'Task Breaker',         color: '#f97316', desc: 'Big assignments into 2-5 min steps',
         stat: openTasks + ' open', cta: 'Break a task down' },
       { id: 'mytkHabits',   icon: '✅', label: 'Habit Tracker',        color: '#10b981', desc: 'Daily check-ins + streak heatmap',
-        stat: habitCount + ' tracked', cta: 'Track a habit' }
+        stat: habitCount + ' tracked', cta: 'Track a habit' },
+      { id: 'mytkReflect',  icon: '📔', label: 'Weekly Reflection',    color: '#f472b6', desc: '5-prompt journal — highest-evidence metacog tool',
+        stat: ((data.mytkReflect || {}).entries || []).length + ' reflections', cta: 'Reflect on this week' },
+      { id: 'mytkWizard',   icon: '🪄', label: 'Strategy Wizard',      color: '#a855f7', desc: 'Adaptive plan generator (Dunlosky 2013)',
+        stat: ((data.mytkWizard || {}).savedPlans || []).length + ' saved plans', cta: 'Generate a plan' },
+      { id: 'mytkLoad',     icon: '⚖️', label: 'Cognitive Load Monitor', color: '#fbbf24', desc: 'Daily 3-axis load check + triggers',
+        stat: ((data.mytkLoad || {}).entries || []).length + ' check-ins', cta: 'Log today\'s load' },
+      { id: 'mytkMotiv',    icon: '🌟', label: 'Motivation Audit',     color: '#ec4899', desc: 'SDT autonomy/competence/relatedness check',
+        stat: ((data.mytkMotiv || {}).audits || []).length + ' audits', cta: 'Audit motivation' },
+      { id: 'mytkProfile',  icon: '🪞', label: 'My Learning Profile',  color: '#06b6d4', desc: 'One-page self-snapshot, printable',
+        stat: Object.keys(((data.mytkProfile || {}).profile) || {}).length + ' fields filled', cta: 'Build my profile' },
+      { id: 'mytkPrompts',  icon: '📓', label: 'Reflection Prompts',   color: '#a855f7', desc: '30+ metacognitive prompts + journal',
+        stat: ((data.mytkPrompts || {}).responses || []).length + ' responses', cta: 'Pick a prompt' }
     ];
 
     var dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][new Date().getDay()];
@@ -6501,7 +7363,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'mytkPlanner',icon: '📅', label: 'Study Planner',        desc: 'Weekly schedule grid + subject-time breakdown.' },
               { id: 'mytkExam',   icon: '🎓', label: 'Exam Prep',            desc: 'Backwards-plan from exam date with auto-generated daily intensity.' },
               { id: 'mytkTasks',  icon: '✂', label: 'Task Breaker',          desc: 'Decompose big assignments into 2-5 minute steps with time estimates.' },
-              { id: 'mytkHabits', icon: '✅', label: 'Habit Tracker',        desc: 'Daily check-ins + streak heatmap + Lally 2009 evidence.' }
+              { id: 'mytkHabits', icon: '✅', label: 'Habit Tracker',        desc: 'Daily check-ins + streak heatmap + Lally 2009 evidence.' },
+              { id: 'mytkReflect',icon: '📔', label: 'Weekly Reflection',    desc: '5-prompt structured journal — Zimmerman 2002 metacognitive growth.' },
+              { id: 'mytkWizard', icon: '🪄', label: 'Strategy Wizard',      desc: 'Adaptive study-plan generator based on Dunlosky 2013 + your context.' },
+              { id: 'mytkLoad',   icon: '⚖️', label: 'Cog Load Monitor',     desc: 'Daily check-in on Sweller\'s 3 load types + overwhelm triggers.' },
+              { id: 'mytkMotiv',  icon: '🌟', label: 'Motivation Audit',     desc: 'Self-Determination Theory check (autonomy / competence / relatedness).' },
+              { id: 'mytkProfile',icon: '🪞', label: 'Learning Profile',     desc: 'One-page self-snapshot you control — printable for teachers / IEP.' },
+              { id: 'mytkPrompts',icon: '📓', label: 'Reflection Prompts',   desc: '30+ metacognitive prompts across 4 categories. Saves to journal history.' }
             ]
           },
           { id: 'foundation', icon: '🧠', name: 'How learning works (foundation)',
@@ -9621,6 +10489,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           h(PersonalHabitTracker, { data: dh, setData: setDh })
         );
       }
+      function renderMytkReflect() {
+        var dr = d.mytkReflect || { entries: [] };
+        var setDr = function(newData) { upd('mytkReflect', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalWeeklyReflection, { data: dr, setData: setDr })
+        );
+      }
+      function renderMytkWizard() {
+        var dw = d.mytkWizard || { savedPlans: [] };
+        var setDw = function(newData) { upd('mytkWizard', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalStrategyWizard, { data: dw, setData: setDw })
+        );
+      }
+      function renderMytkLoad() {
+        var dl = d.mytkLoad || { entries: [] };
+        var setDl = function(newData) { upd('mytkLoad', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalCognitiveLoadMonitor, { data: dl, setData: setDl })
+        );
+      }
+      function renderMytkMotiv() {
+        var dm = d.mytkMotiv || { audits: [] };
+        var setDm = function(newData) { upd('mytkMotiv', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalMotivationAudit, { data: dm, setData: setDm })
+        );
+      }
+      function renderMytkProfile() {
+        var dp = d.mytkProfile || { profile: {} };
+        var setDp = function(newData) { upd('mytkProfile', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalLearningProfile, { data: dp, setData: setDp })
+        );
+      }
+      function renderMytkPrompts() {
+        var dpr = d.mytkPrompts || { responses: [] };
+        var setDpr = function(newData) { upd('mytkPrompts', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalReflectionPrompts, { data: dpr, setData: setDpr })
+        );
+      }
 
       // ─────────────────────────────────────────
       // VIEW ROUTER
@@ -9638,6 +10554,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         case 'mytkExam':      return renderMytkExam();
         case 'mytkTasks':     return renderMytkTasks();
         case 'mytkHabits':    return renderMytkHabits();
+        case 'mytkReflect':   return renderMytkReflect();
+        case 'mytkWizard':    return renderMytkWizard();
+        case 'mytkLoad':      return renderMytkLoad();
+        case 'mytkMotiv':     return renderMytkMotiv();
+        case 'mytkProfile':   return renderMytkProfile();
+        case 'mytkPrompts':   return renderMytkPrompts();
         case 'bloom':         return renderBloom();
         case 'cogload':       return renderCogLoad();
         case 'metacog':       return renderMetacog();
