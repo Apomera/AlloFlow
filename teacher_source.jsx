@@ -2352,28 +2352,268 @@ const LongitudinalProgressChart = React.memo(({ logs }) => {
     );
 });
 // ── TEACHER_METRIC_REGISTRY ──────────────────────────────────────────────
-// Single source of truth for per-tool teacher-dashboard metrics. Each entry
-// declares how to count a student's engagement with that tool, and the
-// dashboard iterates over the registry to render tile clusters, CSV columns,
-// and PDF rows uniformly instead of hand-rolling per-tool inline logic.
+// Single source of truth for per-tool teacher-dashboard metrics.
 //
-// To add a new tool to the dashboard:
+// Each entry CAN declare:
+//   id           (required) tool id matching dispatcher type
+//   label        (required) display name
+//   icon         (required) emoji for the tile
+//   color        (required) palette key (see _metricTileColor)
+//   count(s)     (required) per-student count function
+//   qualitySignals(dashboardData)   (optional) returns array of class-wide
+//                                    deterministic quality signals
+//                                    [{ key, label, value, suffix, denom, hint, tone }]
+//   misconceptions(dashboardData)   (optional) returns array of misconception
+//                                    pattern objects (shape varies by category)
+//                                    [{ category, ...categorySpecificFields }]
+//
+// External tool modules can extend the registry by pushing entries to
+// window.AlloModules.TeacherMetricRegistry BEFORE or AFTER teacher_module.js
+// loads — the merge logic at the bottom of this file handles both orders.
+//
+// To add a new tool to the dashboard from within teacher_source.jsx:
 //   1. Push an entry below with id + label + icon + color + count(student)
-//   2. The "All Tool Activity" tile cluster + CSV columns + report row
-//      auto-pick it up — no inline edits needed in 5 places.
+//   2. Optionally add qualitySignals and/or misconceptions functions
+//   3. The "All Tool Activity" tile cluster + CSV columns + Class Quality
+//      Signals + Cross-Tool Pattern Detection auto-pick it up — no inline
+//      edits in 5 places.
 //
-// Doesn't replace the specialized panels (probes, fluency, notebook, etc.)
-// which need richer rendering — this is the uniform "how many of each" layer.
-const TEACHER_METRIC_REGISTRY = [
+// To add a tool from an EXTERNAL CDN module (e.g., sel_hub_module.js):
+//   window.AlloModules = window.AlloModules || {};
+//   window.AlloModules.TeacherMetricRegistry = window.AlloModules.TeacherMetricRegistry || [];
+//   window.AlloModules.TeacherMetricRegistry.push({ id: 'foo', ... });
+//
+// Doesn't replace the specialized panels (probes, fluency, notebook detail)
+// which need richer rendering — this is the uniform "how many of each" layer
+// plus the two extension points (qualitySignals / misconceptions) for any
+// future deterministic per-tool analysis.
+const _BUILTIN_METRIC_REGISTRY = [
   { id: 'quiz',            label: 'Quizzes',            icon: '📝', color: 'indigo',  count: (s) => (s.history || []).filter(h => h && h.type === 'quiz').length },
   { id: 'adventure',       label: 'Adventures',         icon: '🗺️', color: 'purple',  count: (s) => (s.history || []).filter(h => h && h.type === 'adventure').length },
   { id: 'glossary',        label: 'Glossaries',         icon: '📖', color: 'sky',     count: (s) => (s.history || []).filter(h => h && h.type === 'glossary').length },
   { id: 'simplified',      label: 'Leveled Texts',      icon: '📄', color: 'blue',    count: (s) => (s.history || []).filter(h => h && h.type === 'simplified').length },
   { id: 'outline',         label: 'Visual Organizers',  icon: '📊', color: 'cyan',    count: (s) => (s.history || []).filter(h => h && h.type === 'outline').length },
-  { id: 'concept-sort',    label: 'Concept Sorts',      icon: '🃏', color: 'rose',    count: (s) => (s.history || []).filter(h => h && h.type === 'concept-sort').length },
+  {
+    id: 'concept-sort', label: 'Concept Sorts', icon: '🃏', color: 'rose',
+    count: (s) => (s.history || []).filter(h => h && h.type === 'concept-sort').length,
+    // Class-wide concept-sort misconception detection: aggregate per-item
+    // misplacement patterns across all student attempts (data captured by
+    // ConceptSortGame's conceptSortAttempt event into gameCompletions).
+    misconceptions: (dashboardData) => {
+      const csKey = (p) => `${(p.itemText || '').toLowerCase().trim()}|${(p.placedCategoryLabel || '').toLowerCase().trim()}|${(p.correctCategoryLabel || '').toLowerCase().trim()}`;
+      const csAgg = new Map();
+      let csTotalAttempts = 0;
+      (dashboardData || []).forEach(s => {
+        const gc = s.gameCompletions || {};
+        const attempts = (gc.conceptSortAttempt || []).concat(gc.conceptSort || []);
+        attempts.forEach(att => {
+          csTotalAttempts++;
+          const incPlacements = Array.isArray(att.incorrectPlacements) ? att.incorrectPlacements : [];
+          incPlacements.forEach(p => {
+            if (!p.itemText) return;
+            const key = csKey(p);
+            if (!csAgg.has(key)) {
+              csAgg.set(key, { itemText: p.itemText, placedLabel: p.placedCategoryLabel, correctLabel: p.correctCategoryLabel, count: 0 });
+            }
+            csAgg.get(key).count++;
+          });
+        });
+      });
+      return Array.from(csAgg.values())
+        .filter(p => p.count >= 3 && csTotalAttempts > 0 && (p.count / csTotalAttempts) >= 0.20)
+        .sort((a, b) => b.count - a.count)
+        .map(p => ({ category: 'conceptSort', ...p, totalAttempts: csTotalAttempts, missPct: Math.round((p.count / csTotalAttempts) * 100) }));
+    },
+  },
   { id: 'timeline',        label: 'Timelines',          icon: '🕒', color: 'amber',   count: (s) => (s.history || []).filter(h => h && h.type === 'timeline').length },
-  { id: 'sentence-frames', label: 'Sentence Frames',    icon: '✍️', color: 'teal',    count: (s) => (s.history || []).filter(h => h && h.type === 'sentence-frames').length },
-  { id: 'note-taking',     label: 'Notebooks',          icon: '📓', color: 'violet',  count: (s) => (s.history || []).filter(h => h && h.type === 'note-taking').length },
+  {
+    id: 'sentence-frames', label: 'Sentence Frames', icon: '✍️', color: 'teal',
+    count: (s) => (s.history || []).filter(h => h && h.type === 'sentence-frames').length,
+    // Class-wide sentence-frame response-rate detection: flag scaffolds where
+    // students collectively left ≥30% of frames blank (signal of difficulty
+    // with the scaffold OR underlying concept).
+    misconceptions: (dashboardData) => {
+      const sfMap = new Map();
+      const sfTitles = new Map();
+      const sfFrameCounts = new Map();
+      (dashboardData || []).forEach(s => {
+        const hist = s.history || [];
+        const sfItems = hist.filter(h => h && h.type === 'sentence-frames');
+        sfItems.forEach(item => {
+          sfTitles.set(item.id, item.title || 'Sentence Frames');
+          const studentResps = (s.responses && s.responses[item.id]) || {};
+          const items = (item.data && Array.isArray(item.data.items)) ? item.data.items : [];
+          items.forEach((_, idx) => {
+            const responseVal = studentResps[idx];
+            const filled = responseVal !== undefined && responseVal !== null && String(responseVal).trim().length > 0;
+            sfMap.set(`${s.id}:${item.id}:${idx}`, filled);
+            sfFrameCounts.set(item.id, Math.max(sfFrameCounts.get(item.id) || 0, idx + 1));
+          });
+        });
+      });
+      const results = [];
+      for (const [genId, frameCount] of sfFrameCounts.entries()) {
+        if (frameCount === 0) continue;
+        let totalStudentFrames = 0, filledFrames = 0;
+        const studentsAttempted = new Set();
+        for (const [key, filled] of sfMap.entries()) {
+          const [studentId, gid] = key.split(':');
+          if (gid !== genId) continue;
+          totalStudentFrames++;
+          if (filled) { filledFrames++; studentsAttempted.add(studentId); }
+        }
+        if (totalStudentFrames === 0 || studentsAttempted.size < 2) continue;
+        const missingPct = Math.round(((totalStudentFrames - filledFrames) / totalStudentFrames) * 100);
+        if (missingPct >= 30) {
+          results.push({ category: 'sentenceFrames', generationTitle: sfTitles.get(genId) || 'Sentence Frames', frameCount, studentsAttempted: studentsAttempted.size, missingPct });
+        }
+      }
+      return results.sort((a, b) => b.missingPct - a.missingPct);
+    },
+  },
+  {
+    id: 'note-taking', label: 'Notebooks', icon: '📓', color: 'violet',
+    count: (s) => (s.history || []).filter(h => h && h.type === 'note-taking').length,
+    // Per-template field-completion misconceptions: ≥40% of entries missing
+    // a key field (with ≥2 affected) surfaces as an instructional opportunity.
+    misconceptions: (dashboardData) => {
+      const ntStats = {
+        'cornell-notes':    { fields: ['summary', 'cuesFilled', 'notesFilled'], counts: {}, total: 0 },
+        'lab-report':       { fields: ['hypothesis', 'analysis', 'conclusion', 'procedureFilled'], counts: {}, total: 0 },
+        'reading-response': { fields: ['favoriteLine', 'thinkings', 'connection', 'question'], counts: {}, total: 0 },
+      };
+      Object.keys(ntStats).forEach(tt => ntStats[tt].fields.forEach(f => ntStats[tt].counts[f] = 0));
+      (dashboardData || []).forEach(s => {
+        const hist = s.history || [];
+        const notes = hist.filter(h => h && h.type === 'note-taking');
+        notes.forEach(e => {
+          const d = e.data || {};
+          const tt = d.templateType;
+          if (!ntStats[tt]) return;
+          ntStats[tt].total++;
+          if (tt === 'cornell-notes') {
+            if (!(d.summary || '').trim()) ntStats[tt].counts.summary++;
+            const cuesCount = (Array.isArray(d.cues) ? d.cues : []).filter(c => c && (c.text || '').trim()).length;
+            if (cuesCount === 0) ntStats[tt].counts.cuesFilled++;
+            const notesCount = (Array.isArray(d.notes) ? d.notes : []).filter(n => n && (n.text || '').trim()).length;
+            if (notesCount === 0) ntStats[tt].counts.notesFilled++;
+          } else if (tt === 'lab-report') {
+            if (!(d.hypothesis || '').trim()) ntStats[tt].counts.hypothesis++;
+            if (!(d.analysis || '').trim()) ntStats[tt].counts.analysis++;
+            if (!(d.conclusion || '').trim()) ntStats[tt].counts.conclusion++;
+            const procCount = (Array.isArray(d.procedure) ? d.procedure : []).filter(p => p && (p.text || '').trim()).length;
+            if (procCount === 0) ntStats[tt].counts.procedureFilled++;
+          } else if (tt === 'reading-response') {
+            if (!(d.favoriteLine || '').trim()) ntStats[tt].counts.favoriteLine++;
+            if (!(d.thinkings || '').trim()) ntStats[tt].counts.thinkings++;
+            if (!(d.connection && d.connection.text || '').trim()) ntStats[tt].counts.connection++;
+            if (!(d.question || '').trim()) ntStats[tt].counts.question++;
+          }
+        });
+      });
+      const fieldLabels = {
+        'cornell-notes': {
+          summary: 'Summary box (Pauk: where retention consolidation happens)',
+          cuesFilled: 'Cue column (the metacognitive lever — drives retrieval practice)',
+          notesFilled: 'Notes column (the lesson content itself)',
+        },
+        'lab-report': {
+          hypothesis: 'Hypothesis (testable prediction with reasoning)',
+          analysis: 'Analysis / CER (claim-evidence-reasoning — the science thinking)',
+          conclusion: 'Conclusion (what was learned + sources of error)',
+          procedureFilled: 'Procedure (reproducibility — could another student follow it?)',
+        },
+        'reading-response': {
+          favoriteLine: 'Favorite line (close-reading anchor — direct quote from text)',
+          thinkings: 'What this made me think about (substantive reflection)',
+          connection: 'Connection (text-to-self / text / world — Keene & Zimmermann)',
+          question: 'Open question (genuine inquiry — metacognitive engagement)',
+        },
+      };
+      const templateNames = { 'cornell-notes': 'Cornell Notes', 'lab-report': 'Lab Report', 'reading-response': 'Reading Response' };
+      const results = [];
+      Object.keys(ntStats).forEach(tt => {
+        const stats = ntStats[tt];
+        if (stats.total === 0) return;
+        stats.fields.forEach(field => {
+          const missing = stats.counts[field];
+          const pct = Math.round((missing / stats.total) * 100);
+          if (pct >= 40 && missing >= 2) {
+            results.push({ category: 'noteTaking', template: templateNames[tt], field, fieldLabel: fieldLabels[tt][field], missingCount: missing, totalCount: stats.total, missingPct: pct });
+          }
+        });
+      });
+      return results.sort((a, b) => b.missingPct - a.missingPct);
+    },
+    // Note-taking quality signals: 6 deterministic class-wide signals against
+    // research thresholds (Pauk, Kiewra, McNeill & Krajcik, Keene & Zimmermann,
+    // Hattie). Each returns a tone (green/amber/red) for at-a-glance scanning.
+    qualitySignals: (dashboardData) => {
+      const wc = (s) => { const t = String(s || '').trim(); return t ? t.split(/\s+/).length : 0; };
+      let cornellCount = 0, cornellWithSummary = 0;
+      let cornellCuesTotal = 0, cornellEntriesForCues = 0;
+      let cerWordsTotal = 0, cerEntriesCounted = 0;
+      let rrCount = 0, rrWithEvidence = 0;
+      let studentsWithRR = 0, studentsWith2PlusConnTypes = 0;
+      let studentsWithNotebook = 0, studentsWithFeedback = 0;
+      (dashboardData || []).forEach(s => {
+        const hist = s.history || [];
+        const notes = hist.filter(h => h && h.type === 'note-taking');
+        if (notes.length === 0) return;
+        studentsWithNotebook++;
+        let studentFeedbackCount = 0;
+        const connTypesSeen = new Set();
+        let studentHasRR = false;
+        notes.forEach(e => {
+          const d = e.data || {};
+          const tt = d.templateType;
+          studentFeedbackCount += d.feedbackCount || 0;
+          if (tt === 'cornell-notes') {
+            cornellCount++;
+            if (wc(d.summary) >= 20) cornellWithSummary++;
+            const cueCount = (Array.isArray(d.cues) ? d.cues : []).filter(c => c && (c.text || '').trim()).length;
+            if (cueCount > 0) { cornellCuesTotal += cueCount; cornellEntriesForCues++; }
+          } else if (tt === 'lab-report') {
+            const cerWords = wc(d.analysis);
+            if (cerWords > 0) { cerWordsTotal += cerWords; cerEntriesCounted++; }
+          } else if (tt === 'reading-response') {
+            rrCount++; studentHasRR = true;
+            if ((d.favoriteLine || '').trim()) rrWithEvidence++;
+            if (d.connection && d.connection.type) connTypesSeen.add(d.connection.type);
+          }
+        });
+        if (studentHasRR) { studentsWithRR++; if (connTypesSeen.size >= 2) studentsWith2PlusConnTypes++; }
+        if (studentFeedbackCount > 0) studentsWithFeedback++;
+      });
+      const signals = [];
+      const _tone = (v, h, p) => v >= h ? 'green' : v >= p ? 'amber' : 'red';
+      if (cornellCount > 0) {
+        const v = Math.round((cornellWithSummary / cornellCount) * 100);
+        signals.push({ key: 'summaryFillRate', label: 'Cornell summary rate', value: v, suffix: '%', denom: `${cornellWithSummary}/${cornellCount}`, hint: '% of Cornell entries with ≥20-word summary (research threshold; Pauk/Kiewra)', tone: _tone(v, 70, 40) });
+      }
+      if (cornellEntriesForCues > 0) {
+        const v = (cornellCuesTotal / cornellEntriesForCues).toFixed(1);
+        signals.push({ key: 'avgCues', label: 'Cornell cue density', value: v, denom: `avg / ${cornellEntriesForCues} entries`, hint: 'Avg cues per Cornell entry. ≥5 is healthy retrieval-practice density', tone: _tone(parseFloat(v), 5, 3) });
+      }
+      if (cerEntriesCounted > 0) {
+        const v = Math.round(cerWordsTotal / cerEntriesCounted);
+        signals.push({ key: 'avgCerWords', label: 'Lab CER length', value: v, suffix: ' wd', denom: `avg / ${cerEntriesCounted} reports`, hint: 'Avg word count of CER analysis. ≥30 words is where reasoning lives (McNeill & Krajcik)', tone: _tone(v, 30, 15) });
+      }
+      if (rrCount > 0) {
+        const v = Math.round((rrWithEvidence / rrCount) * 100);
+        signals.push({ key: 'rrEvidenceRate', label: 'Reading evidence rate', value: v, suffix: '%', denom: `${rrWithEvidence}/${rrCount}`, hint: '% of Reading Responses with a favorite line filled (close-reading anchor)', tone: _tone(v, 70, 40) });
+      }
+      if (studentsWithRR > 0) {
+        const v = Math.round((studentsWith2PlusConnTypes / studentsWithRR) * 100);
+        signals.push({ key: 'connectionVariety', label: 'Connection variety', value: v, suffix: '%', denom: `${studentsWith2PlusConnTypes}/${studentsWithRR} students`, hint: '% of students using ≥2 of 3 connection types (text-to-self/text/world)', tone: _tone(v, 50, 25) });
+      }
+      if (studentsWithNotebook > 0) {
+        const v = Math.round((studentsWithFeedback / studentsWithNotebook) * 100);
+        signals.push({ key: 'selfAssessment', label: 'Self-assessment use', value: v, suffix: '%', denom: `${studentsWithFeedback}/${studentsWithNotebook} students`, hint: '% of students who have requested AI feedback ≥1× (metacognitive engagement proxy)', tone: _tone(v, 50, 25) });
+      }
+      return signals;
+    },
+  },
   { id: 'anchor-chart',    label: 'Anchor Charts',      icon: '📋', color: 'orange',  count: (s) => (s.history || []).filter(h => h && h.type === 'anchor-chart').length },
   { id: 'dbq',             label: 'DBQs',               icon: '⚖️', color: 'rose',    count: (s) => (s.history || []).filter(h => h && h.type === 'dbq').length },
   { id: 'persona',         label: 'Personas',           icon: '🎭', color: 'fuchsia', count: (s) => (s.history || []).filter(h => h && h.type === 'persona').length },
@@ -2383,6 +2623,31 @@ const TEACHER_METRIC_REGISTRY = [
   { id: 'brainstorm',      label: 'Brainstorms',        icon: '💡', color: 'amber',   count: (s) => (s.history || []).filter(h => h && h.type === 'brainstorm').length },
   { id: 'fluency-record',  label: 'Fluency Records',    icon: '🎙️', color: 'green',   count: (s) => (s.history || []).filter(h => h && h.type === 'fluency-record').length },
 ];
+
+// Publish registry on window.AlloModules so external modules can self-register
+// metrics by pushing entries. Merges any pre-existing entries (external module
+// loaded before teacher_module.js) with the built-in registry.
+if (typeof window !== 'undefined') {
+  window.AlloModules = window.AlloModules || {};
+  const preExisting = Array.isArray(window.AlloModules.TeacherMetricRegistry)
+    ? window.AlloModules.TeacherMetricRegistry
+    : [];
+  // Dedupe by id; built-in wins on conflict (intentional — external overrides
+  // would silently change dashboard math)
+  const builtinIds = new Set(_BUILTIN_METRIC_REGISTRY.map(e => e.id));
+  const externalEntries = preExisting.filter(e => e && e.id && !builtinIds.has(e.id));
+  window.AlloModules.TeacherMetricRegistry = [..._BUILTIN_METRIC_REGISTRY, ...externalEntries];
+}
+// Live getter — always returns the current registry, including entries added
+// by other modules AFTER teacher_module.js loaded.
+function getTeacherMetricRegistry() {
+  if (typeof window !== 'undefined' && Array.isArray(window.AlloModules && window.AlloModules.TeacherMetricRegistry)) {
+    return window.AlloModules.TeacherMetricRegistry;
+  }
+  return _BUILTIN_METRIC_REGISTRY;
+}
+// Backwards-compat alias — older code paths still reference this constant.
+const TEACHER_METRIC_REGISTRY = _BUILTIN_METRIC_REGISTRY;
 const _metricTileColor = (color) => ({
   indigo:  'bg-indigo-50 border-indigo-200 text-indigo-700',
   purple:  'bg-purple-50 border-purple-200 text-purple-700',
@@ -2408,7 +2673,8 @@ const _metricTileColor = (color) => ({
 // tile clusters.
 const AllToolActivityPanel = React.memo(({ student, t }) => {
   if (!student) return null;
-  const active = TEACHER_METRIC_REGISTRY
+  // Read from the LIVE registry so externally-registered tools also surface
+  const active = getTeacherMetricRegistry()
     .map(entry => ({ ...entry, n: entry.count(student) }))
     .filter(e => e.n > 0)
     .sort((a, b) => b.n - a.n);
@@ -2431,27 +2697,27 @@ const AllToolActivityPanel = React.memo(({ student, t }) => {
   );
 });
 
-// ── Notebook Quality Signals (deterministic) ─────────────────────────────
-// Surface class-wide notebook quality WITHOUT calling AI. Each signal has
-// a threshold from research that we color-code as healthy / partial / weak.
-// Complements the AI Class Insights button: AI gives qualitative patterns,
-// these give quantitative at-a-glance signals teachers can scan in 2 seconds.
-//
-// Thresholds (citations in code below):
-//   - Cornell summary fill rate: % of Cornell entries with summary >= 20 words
-//   - Cornell cue density: avg cues per entry (>= 5 = healthy)
-//   - Lab Report CER length: avg analysis word count (>= 30 = healthy)
-//   - Reading Response evidence rate: % of entries with favoriteLine filled
-//   - Connection type variety: % of students who have used >= 2 of the 3
-//     connection types (text-to-self / text-to-text / text-to-world)
-//   - Self-assessment engagement: % of students with >= 1 AI feedback request
-function _wordCount(str) {
-  if (!str) return 0;
-  const trimmed = String(str).trim();
-  if (!trimmed) return 0;
-  return trimmed.split(/\s+/).length;
+// ── Class Quality Signals (registry-driven orchestrator) ────────────────
+// Iterates the metric registry and flat-maps each tool's qualitySignals()
+// contribution. Tools with no qualitySignals function contribute nothing.
+// Replaces the previous hand-rolled _computeNotebookQualitySignals which
+// hardcoded note-taking specifics.
+function _computeAllQualitySignals(dashboardData) {
+  const out = [];
+  getTeacherMetricRegistry().forEach(entry => {
+    if (typeof entry.qualitySignals !== 'function') return;
+    try {
+      const signals = entry.qualitySignals(dashboardData) || [];
+      signals.forEach(s => out.push({ ...s, _toolId: entry.id, _toolLabel: entry.label }));
+    } catch (e) { console.warn('[qualitySignals] tool', entry.id, 'failed', e); }
+  });
+  return out;
 }
+// Kept for any callers that referenced the old function name (defensive shim).
 function _computeNotebookQualitySignals(dashboardData) {
+  // Returns a shape-compatible object so any external/legacy callers still work.
+  // New code should use _computeAllQualitySignals() instead.
+  const flat = _computeAllQualitySignals(dashboardData);
   const out = {
     summaryFillRate: { value: null, count: 0, total: 0 },
     avgCues: { value: null, total: 0, n: 0 },
@@ -2460,6 +2726,29 @@ function _computeNotebookQualitySignals(dashboardData) {
     connectionVariety: { value: null, count: 0, total: 0 },
     selfAssessment: { value: null, count: 0, total: 0 },
   };
+  flat.forEach(s => { if (out[s.key]) out[s.key].value = s.value; });
+  return out;
+}
+function _wordCount(str) {
+  if (!str) return 0;
+  const trimmed = String(str).trim();
+  if (!trimmed) return 0;
+  return trimmed.split(/\s+/).length;
+}
+// Deprecated — quality signals now live inside note-taking's registry entry.
+// This function body is preserved so any old external callers that may have
+// referenced it as a module-level helper still parse, but new code paths use
+// the registry-driven flow above. Returns an empty result; the new flow's
+// _computeAllQualitySignals delivers the real signals.
+// (Legacy body removed — note-taking quality signals now live in the
+// 'note-taking' registry entry's qualitySignals() function above. The thin
+// _computeNotebookQualitySignals shim above maps the registry output back to
+// the legacy object shape any old caller might still expect.)
+function _DEAD_LEGACY_DO_NOT_CALL(dashboardData) {
+  // Unreachable dead code below — kept inside an unreferenced function so
+  // the parser still accepts the file. This block will be deleted in the
+  // next cleanup pass when we verify no external code references it.
+  const out = {};
   let cornellCount = 0, cornellWithSummary = 0;
   let cornellCuesTotal = 0, cornellEntriesForCues = 0;
   let cerWordsTotal = 0, cerEntriesCounted = 0;
@@ -2537,17 +2826,35 @@ function _computeNotebookQualitySignals(dashboardData) {
   }
   return out;
 }
-// Cross-tool misconception / completion-gap detection.
-// Extends the existing quiz-misconceptions panel beyond quiz items into
-// note-taking field-completion gaps and sentence-frames frame-completion gaps.
-// "Misconception" here is used loosely — these are structural gaps in student
-// work that signal class-wide instructional opportunities (e.g., "the whole
-// class is skipping the CER Reasoning step").
+// Cross-tool misconception / completion-gap detection — registry-driven.
+// Iterates the metric registry and flat-maps each tool's misconceptions()
+// contribution into category-keyed buckets. Tools with no misconceptions()
+// function contribute nothing. Each pattern carries a 'category' field
+// (e.g. 'noteTaking', 'sentenceFrames', 'conceptSort') that the rendering
+// section uses to group + style the patterns.
 function _computeCrossToolMisconceptions(dashboardData) {
+  const out = { noteTaking: [], sentenceFrames: [], conceptSort: [] };
+  getTeacherMetricRegistry().forEach(entry => {
+    if (typeof entry.misconceptions !== 'function') return;
+    try {
+      const patterns = entry.misconceptions(dashboardData) || [];
+      patterns.forEach(p => {
+        const cat = p && p.category;
+        if (cat && Array.isArray(out[cat])) out[cat].push(p);
+        else if (!out._other) (out._other = []).push(p); // future-proof for new categories
+        else out._other.push(p);
+      });
+    } catch (e) { console.warn('[misconceptions] tool', entry.id, 'failed', e); }
+  });
+  return out;
+}
+// Legacy body retained inside a dead function so the parser still accepts the
+// file. Will be removed in next cleanup pass after verifying no external refs.
+function _DEAD_LEGACY_CROSS_TOOL_DO_NOT_CALL(dashboardData) {
   const out = {
-    noteTaking: [],         // [{ template, field, missingCount, totalCount, missingPct }]
-    sentenceFrames: [],     // [{ generationTitle, framesMissingPct, framesSampled }]
-    conceptSort: [],        // [{ itemText, placedCategoryLabel, correctCategoryLabel, count, totalAttempts }]
+    noteTaking: [],
+    sentenceFrames: [],
+    conceptSort: [],
   };
 
   // ── Concept-sort per-item misplacement aggregation ──────────────────
@@ -4429,8 +4736,9 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
   const handleExportCSV = () => {
     if (!dashboardData || dashboardData.length === 0) return;
     // Registry-driven per-tool count columns. Auto-extends when new tools
-    // get registered — no manual column-list updates needed.
-    const registryHeaders = TEACHER_METRIC_REGISTRY.map(e => e.label);
+    // get registered (incl. externally-registered tools via window.AlloModules
+    // .TeacherMetricRegistry.push()) — no manual column-list updates needed.
+    const registryHeaders = getTeacherMetricRegistry().map(e => e.label);
     const headers = [
         t('dashboard.csv.header_name'),
         t('dashboard.csv.header_date'),
@@ -4478,8 +4786,9 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
         const readingCount = noteEntries.filter(e => (e.data && e.data.templateType) === 'reading-response').length;
         const anchorCount = hist.filter(h => h && h.type === 'anchor-chart').length;
         const feedbackCount = noteEntries.reduce((sum, e) => sum + ((e.data && e.data.feedbackCount) || 0), 0);
-        // Registry-driven per-tool counts (extends with each new registry entry)
-        const registryCounts = TEACHER_METRIC_REGISTRY.map(entry => entry.count(student));
+        // Registry-driven per-tool counts (extends with each new registry entry,
+        // including externally-registered tools)
+        const registryCounts = getTeacherMetricRegistry().map(entry => entry.count(student));
         return `"${name}","${date}","${level}","${quizAvg}","${xp}","${probeCount}","${avgWcpm}","${surveyCount}","${sessionCount}","${cornellCount}","${labCount}","${readingCount}","${anchorCount}","${feedbackCount}",${registryCounts.map(n => `"${n}"`).join(',')}`;
     });
     const csvContent = [headers.join(","), ...rows].join("\n");

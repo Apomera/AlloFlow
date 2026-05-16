@@ -1828,16 +1828,255 @@ const LongitudinalProgressChart = React.memo(({ logs }) => {
     return /* @__PURE__ */ React.createElement("g", { key: i, className: "group cursor-pointer" }, /* @__PURE__ */ React.createElement("circle", { cx: x, cy: y, r: "5", className: "fill-white stroke-indigo-600 stroke-2 transition-all duration-300 group-hover:r-7 group-hover:fill-indigo-50" }), /* @__PURE__ */ React.createElement("foreignObject", { x: Math.min(width - 120, Math.max(0, x - 60)), y: y - 50, width: "120", height: "50", className: "opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-800 text-white text-[11px] px-3 py-2 rounded-lg text-center shadow-xl" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold" }, new Date(l.timestamp).toLocaleDateString()), /* @__PURE__ */ React.createElement("div", { className: "text-yellow-300 font-mono" }, l.xp, " XP"))));
   }))), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600 font-medium mt-2 px-2" }, /* @__PURE__ */ React.createElement("span", null, t("dashboard.progress_chart.label_start"), ": ", new Date(logs[0].timestamp).toLocaleDateString()), /* @__PURE__ */ React.createElement("span", null, t("dashboard.progress_chart.label_current"), ": ", new Date(logs[logs.length - 1].timestamp).toLocaleDateString())));
 });
-const TEACHER_METRIC_REGISTRY = [
+const _BUILTIN_METRIC_REGISTRY = [
   { id: "quiz", label: "Quizzes", icon: "\u{1F4DD}", color: "indigo", count: (s2) => (s2.history || []).filter((h) => h && h.type === "quiz").length },
   { id: "adventure", label: "Adventures", icon: "\u{1F5FA}\uFE0F", color: "purple", count: (s2) => (s2.history || []).filter((h) => h && h.type === "adventure").length },
   { id: "glossary", label: "Glossaries", icon: "\u{1F4D6}", color: "sky", count: (s2) => (s2.history || []).filter((h) => h && h.type === "glossary").length },
   { id: "simplified", label: "Leveled Texts", icon: "\u{1F4C4}", color: "blue", count: (s2) => (s2.history || []).filter((h) => h && h.type === "simplified").length },
   { id: "outline", label: "Visual Organizers", icon: "\u{1F4CA}", color: "cyan", count: (s2) => (s2.history || []).filter((h) => h && h.type === "outline").length },
-  { id: "concept-sort", label: "Concept Sorts", icon: "\u{1F0CF}", color: "rose", count: (s2) => (s2.history || []).filter((h) => h && h.type === "concept-sort").length },
+  {
+    id: "concept-sort",
+    label: "Concept Sorts",
+    icon: "\u{1F0CF}",
+    color: "rose",
+    count: (s2) => (s2.history || []).filter((h) => h && h.type === "concept-sort").length,
+    // Class-wide concept-sort misconception detection: aggregate per-item
+    // misplacement patterns across all student attempts (data captured by
+    // ConceptSortGame's conceptSortAttempt event into gameCompletions).
+    misconceptions: (dashboardData) => {
+      const csKey = (p) => `${(p.itemText || "").toLowerCase().trim()}|${(p.placedCategoryLabel || "").toLowerCase().trim()}|${(p.correctCategoryLabel || "").toLowerCase().trim()}`;
+      const csAgg = /* @__PURE__ */ new Map();
+      let csTotalAttempts = 0;
+      (dashboardData || []).forEach((s2) => {
+        const gc = s2.gameCompletions || {};
+        const attempts = (gc.conceptSortAttempt || []).concat(gc.conceptSort || []);
+        attempts.forEach((att) => {
+          csTotalAttempts++;
+          const incPlacements = Array.isArray(att.incorrectPlacements) ? att.incorrectPlacements : [];
+          incPlacements.forEach((p) => {
+            if (!p.itemText) return;
+            const key = csKey(p);
+            if (!csAgg.has(key)) {
+              csAgg.set(key, { itemText: p.itemText, placedLabel: p.placedCategoryLabel, correctLabel: p.correctCategoryLabel, count: 0 });
+            }
+            csAgg.get(key).count++;
+          });
+        });
+      });
+      return Array.from(csAgg.values()).filter((p) => p.count >= 3 && csTotalAttempts > 0 && p.count / csTotalAttempts >= 0.2).sort((a, b) => b.count - a.count).map((p) => ({ category: "conceptSort", ...p, totalAttempts: csTotalAttempts, missPct: Math.round(p.count / csTotalAttempts * 100) }));
+    }
+  },
   { id: "timeline", label: "Timelines", icon: "\u{1F552}", color: "amber", count: (s2) => (s2.history || []).filter((h) => h && h.type === "timeline").length },
-  { id: "sentence-frames", label: "Sentence Frames", icon: "\u270D\uFE0F", color: "teal", count: (s2) => (s2.history || []).filter((h) => h && h.type === "sentence-frames").length },
-  { id: "note-taking", label: "Notebooks", icon: "\u{1F4D3}", color: "violet", count: (s2) => (s2.history || []).filter((h) => h && h.type === "note-taking").length },
+  {
+    id: "sentence-frames",
+    label: "Sentence Frames",
+    icon: "\u270D\uFE0F",
+    color: "teal",
+    count: (s2) => (s2.history || []).filter((h) => h && h.type === "sentence-frames").length,
+    // Class-wide sentence-frame response-rate detection: flag scaffolds where
+    // students collectively left ≥30% of frames blank (signal of difficulty
+    // with the scaffold OR underlying concept).
+    misconceptions: (dashboardData) => {
+      const sfMap = /* @__PURE__ */ new Map();
+      const sfTitles = /* @__PURE__ */ new Map();
+      const sfFrameCounts = /* @__PURE__ */ new Map();
+      (dashboardData || []).forEach((s2) => {
+        const hist = s2.history || [];
+        const sfItems = hist.filter((h) => h && h.type === "sentence-frames");
+        sfItems.forEach((item) => {
+          sfTitles.set(item.id, item.title || "Sentence Frames");
+          const studentResps = s2.responses && s2.responses[item.id] || {};
+          const items = item.data && Array.isArray(item.data.items) ? item.data.items : [];
+          items.forEach((_, idx) => {
+            const responseVal = studentResps[idx];
+            const filled = responseVal !== void 0 && responseVal !== null && String(responseVal).trim().length > 0;
+            sfMap.set(`${s2.id}:${item.id}:${idx}`, filled);
+            sfFrameCounts.set(item.id, Math.max(sfFrameCounts.get(item.id) || 0, idx + 1));
+          });
+        });
+      });
+      const results = [];
+      for (const [genId, frameCount] of sfFrameCounts.entries()) {
+        if (frameCount === 0) continue;
+        let totalStudentFrames = 0, filledFrames = 0;
+        const studentsAttempted = /* @__PURE__ */ new Set();
+        for (const [key, filled] of sfMap.entries()) {
+          const [studentId, gid] = key.split(":");
+          if (gid !== genId) continue;
+          totalStudentFrames++;
+          if (filled) {
+            filledFrames++;
+            studentsAttempted.add(studentId);
+          }
+        }
+        if (totalStudentFrames === 0 || studentsAttempted.size < 2) continue;
+        const missingPct = Math.round((totalStudentFrames - filledFrames) / totalStudentFrames * 100);
+        if (missingPct >= 30) {
+          results.push({ category: "sentenceFrames", generationTitle: sfTitles.get(genId) || "Sentence Frames", frameCount, studentsAttempted: studentsAttempted.size, missingPct });
+        }
+      }
+      return results.sort((a, b) => b.missingPct - a.missingPct);
+    }
+  },
+  {
+    id: "note-taking",
+    label: "Notebooks",
+    icon: "\u{1F4D3}",
+    color: "violet",
+    count: (s2) => (s2.history || []).filter((h) => h && h.type === "note-taking").length,
+    // Per-template field-completion misconceptions: ≥40% of entries missing
+    // a key field (with ≥2 affected) surfaces as an instructional opportunity.
+    misconceptions: (dashboardData) => {
+      const ntStats = {
+        "cornell-notes": { fields: ["summary", "cuesFilled", "notesFilled"], counts: {}, total: 0 },
+        "lab-report": { fields: ["hypothesis", "analysis", "conclusion", "procedureFilled"], counts: {}, total: 0 },
+        "reading-response": { fields: ["favoriteLine", "thinkings", "connection", "question"], counts: {}, total: 0 }
+      };
+      Object.keys(ntStats).forEach((tt) => ntStats[tt].fields.forEach((f) => ntStats[tt].counts[f] = 0));
+      (dashboardData || []).forEach((s2) => {
+        const hist = s2.history || [];
+        const notes = hist.filter((h) => h && h.type === "note-taking");
+        notes.forEach((e) => {
+          const d = e.data || {};
+          const tt = d.templateType;
+          if (!ntStats[tt]) return;
+          ntStats[tt].total++;
+          if (tt === "cornell-notes") {
+            if (!(d.summary || "").trim()) ntStats[tt].counts.summary++;
+            const cuesCount = (Array.isArray(d.cues) ? d.cues : []).filter((c) => c && (c.text || "").trim()).length;
+            if (cuesCount === 0) ntStats[tt].counts.cuesFilled++;
+            const notesCount = (Array.isArray(d.notes) ? d.notes : []).filter((n) => n && (n.text || "").trim()).length;
+            if (notesCount === 0) ntStats[tt].counts.notesFilled++;
+          } else if (tt === "lab-report") {
+            if (!(d.hypothesis || "").trim()) ntStats[tt].counts.hypothesis++;
+            if (!(d.analysis || "").trim()) ntStats[tt].counts.analysis++;
+            if (!(d.conclusion || "").trim()) ntStats[tt].counts.conclusion++;
+            const procCount = (Array.isArray(d.procedure) ? d.procedure : []).filter((p) => p && (p.text || "").trim()).length;
+            if (procCount === 0) ntStats[tt].counts.procedureFilled++;
+          } else if (tt === "reading-response") {
+            if (!(d.favoriteLine || "").trim()) ntStats[tt].counts.favoriteLine++;
+            if (!(d.thinkings || "").trim()) ntStats[tt].counts.thinkings++;
+            if (!(d.connection && d.connection.text || "").trim()) ntStats[tt].counts.connection++;
+            if (!(d.question || "").trim()) ntStats[tt].counts.question++;
+          }
+        });
+      });
+      const fieldLabels = {
+        "cornell-notes": {
+          summary: "Summary box (Pauk: where retention consolidation happens)",
+          cuesFilled: "Cue column (the metacognitive lever \u2014 drives retrieval practice)",
+          notesFilled: "Notes column (the lesson content itself)"
+        },
+        "lab-report": {
+          hypothesis: "Hypothesis (testable prediction with reasoning)",
+          analysis: "Analysis / CER (claim-evidence-reasoning \u2014 the science thinking)",
+          conclusion: "Conclusion (what was learned + sources of error)",
+          procedureFilled: "Procedure (reproducibility \u2014 could another student follow it?)"
+        },
+        "reading-response": {
+          favoriteLine: "Favorite line (close-reading anchor \u2014 direct quote from text)",
+          thinkings: "What this made me think about (substantive reflection)",
+          connection: "Connection (text-to-self / text / world \u2014 Keene & Zimmermann)",
+          question: "Open question (genuine inquiry \u2014 metacognitive engagement)"
+        }
+      };
+      const templateNames = { "cornell-notes": "Cornell Notes", "lab-report": "Lab Report", "reading-response": "Reading Response" };
+      const results = [];
+      Object.keys(ntStats).forEach((tt) => {
+        const stats = ntStats[tt];
+        if (stats.total === 0) return;
+        stats.fields.forEach((field) => {
+          const missing = stats.counts[field];
+          const pct = Math.round(missing / stats.total * 100);
+          if (pct >= 40 && missing >= 2) {
+            results.push({ category: "noteTaking", template: templateNames[tt], field, fieldLabel: fieldLabels[tt][field], missingCount: missing, totalCount: stats.total, missingPct: pct });
+          }
+        });
+      });
+      return results.sort((a, b) => b.missingPct - a.missingPct);
+    },
+    // Note-taking quality signals: 6 deterministic class-wide signals against
+    // research thresholds (Pauk, Kiewra, McNeill & Krajcik, Keene & Zimmermann,
+    // Hattie). Each returns a tone (green/amber/red) for at-a-glance scanning.
+    qualitySignals: (dashboardData) => {
+      const wc = (s2) => {
+        const t = String(s2 || "").trim();
+        return t ? t.split(/\s+/).length : 0;
+      };
+      let cornellCount = 0, cornellWithSummary = 0;
+      let cornellCuesTotal = 0, cornellEntriesForCues = 0;
+      let cerWordsTotal = 0, cerEntriesCounted = 0;
+      let rrCount = 0, rrWithEvidence = 0;
+      let studentsWithRR = 0, studentsWith2PlusConnTypes = 0;
+      let studentsWithNotebook = 0, studentsWithFeedback = 0;
+      (dashboardData || []).forEach((s2) => {
+        const hist = s2.history || [];
+        const notes = hist.filter((h) => h && h.type === "note-taking");
+        if (notes.length === 0) return;
+        studentsWithNotebook++;
+        let studentFeedbackCount = 0;
+        const connTypesSeen = /* @__PURE__ */ new Set();
+        let studentHasRR = false;
+        notes.forEach((e) => {
+          const d = e.data || {};
+          const tt = d.templateType;
+          studentFeedbackCount += d.feedbackCount || 0;
+          if (tt === "cornell-notes") {
+            cornellCount++;
+            if (wc(d.summary) >= 20) cornellWithSummary++;
+            const cueCount = (Array.isArray(d.cues) ? d.cues : []).filter((c) => c && (c.text || "").trim()).length;
+            if (cueCount > 0) {
+              cornellCuesTotal += cueCount;
+              cornellEntriesForCues++;
+            }
+          } else if (tt === "lab-report") {
+            const cerWords = wc(d.analysis);
+            if (cerWords > 0) {
+              cerWordsTotal += cerWords;
+              cerEntriesCounted++;
+            }
+          } else if (tt === "reading-response") {
+            rrCount++;
+            studentHasRR = true;
+            if ((d.favoriteLine || "").trim()) rrWithEvidence++;
+            if (d.connection && d.connection.type) connTypesSeen.add(d.connection.type);
+          }
+        });
+        if (studentHasRR) {
+          studentsWithRR++;
+          if (connTypesSeen.size >= 2) studentsWith2PlusConnTypes++;
+        }
+        if (studentFeedbackCount > 0) studentsWithFeedback++;
+      });
+      const signals = [];
+      const _tone = (v, h, p) => v >= h ? "green" : v >= p ? "amber" : "red";
+      if (cornellCount > 0) {
+        const v = Math.round(cornellWithSummary / cornellCount * 100);
+        signals.push({ key: "summaryFillRate", label: "Cornell summary rate", value: v, suffix: "%", denom: `${cornellWithSummary}/${cornellCount}`, hint: "% of Cornell entries with \u226520-word summary (research threshold; Pauk/Kiewra)", tone: _tone(v, 70, 40) });
+      }
+      if (cornellEntriesForCues > 0) {
+        const v = (cornellCuesTotal / cornellEntriesForCues).toFixed(1);
+        signals.push({ key: "avgCues", label: "Cornell cue density", value: v, denom: `avg / ${cornellEntriesForCues} entries`, hint: "Avg cues per Cornell entry. \u22655 is healthy retrieval-practice density", tone: _tone(parseFloat(v), 5, 3) });
+      }
+      if (cerEntriesCounted > 0) {
+        const v = Math.round(cerWordsTotal / cerEntriesCounted);
+        signals.push({ key: "avgCerWords", label: "Lab CER length", value: v, suffix: " wd", denom: `avg / ${cerEntriesCounted} reports`, hint: "Avg word count of CER analysis. \u226530 words is where reasoning lives (McNeill & Krajcik)", tone: _tone(v, 30, 15) });
+      }
+      if (rrCount > 0) {
+        const v = Math.round(rrWithEvidence / rrCount * 100);
+        signals.push({ key: "rrEvidenceRate", label: "Reading evidence rate", value: v, suffix: "%", denom: `${rrWithEvidence}/${rrCount}`, hint: "% of Reading Responses with a favorite line filled (close-reading anchor)", tone: _tone(v, 70, 40) });
+      }
+      if (studentsWithRR > 0) {
+        const v = Math.round(studentsWith2PlusConnTypes / studentsWithRR * 100);
+        signals.push({ key: "connectionVariety", label: "Connection variety", value: v, suffix: "%", denom: `${studentsWith2PlusConnTypes}/${studentsWithRR} students`, hint: "% of students using \u22652 of 3 connection types (text-to-self/text/world)", tone: _tone(v, 50, 25) });
+      }
+      if (studentsWithNotebook > 0) {
+        const v = Math.round(studentsWithFeedback / studentsWithNotebook * 100);
+        signals.push({ key: "selfAssessment", label: "Self-assessment use", value: v, suffix: "%", denom: `${studentsWithFeedback}/${studentsWithNotebook} students`, hint: "% of students who have requested AI feedback \u22651\xD7 (metacognitive engagement proxy)", tone: _tone(v, 50, 25) });
+      }
+      return signals;
+    }
+  },
   { id: "anchor-chart", label: "Anchor Charts", icon: "\u{1F4CB}", color: "orange", count: (s2) => (s2.history || []).filter((h) => h && h.type === "anchor-chart").length },
   { id: "dbq", label: "DBQs", icon: "\u2696\uFE0F", color: "rose", count: (s2) => (s2.history || []).filter((h) => h && h.type === "dbq").length },
   { id: "persona", label: "Personas", icon: "\u{1F3AD}", color: "fuchsia", count: (s2) => (s2.history || []).filter((h) => h && h.type === "persona").length },
@@ -1847,6 +2086,20 @@ const TEACHER_METRIC_REGISTRY = [
   { id: "brainstorm", label: "Brainstorms", icon: "\u{1F4A1}", color: "amber", count: (s2) => (s2.history || []).filter((h) => h && h.type === "brainstorm").length },
   { id: "fluency-record", label: "Fluency Records", icon: "\u{1F399}\uFE0F", color: "green", count: (s2) => (s2.history || []).filter((h) => h && h.type === "fluency-record").length }
 ];
+if (typeof window !== "undefined") {
+  window.AlloModules = window.AlloModules || {};
+  const preExisting = Array.isArray(window.AlloModules.TeacherMetricRegistry) ? window.AlloModules.TeacherMetricRegistry : [];
+  const builtinIds = new Set(_BUILTIN_METRIC_REGISTRY.map((e) => e.id));
+  const externalEntries = preExisting.filter((e) => e && e.id && !builtinIds.has(e.id));
+  window.AlloModules.TeacherMetricRegistry = [..._BUILTIN_METRIC_REGISTRY, ...externalEntries];
+}
+function getTeacherMetricRegistry() {
+  if (typeof window !== "undefined" && Array.isArray(window.AlloModules && window.AlloModules.TeacherMetricRegistry)) {
+    return window.AlloModules.TeacherMetricRegistry;
+  }
+  return _BUILTIN_METRIC_REGISTRY;
+}
+const TEACHER_METRIC_REGISTRY = _BUILTIN_METRIC_REGISTRY;
 const _metricTileColor = (color) => ({
   indigo: "bg-indigo-50 border-indigo-200 text-indigo-700",
   purple: "bg-purple-50 border-purple-200 text-purple-700",
@@ -1866,17 +2119,25 @@ const _metricTileColor = (color) => ({
 })[color] || "bg-slate-50 border-slate-200 text-slate-700";
 const AllToolActivityPanel = React.memo(({ student, t }) => {
   if (!student) return null;
-  const active = TEACHER_METRIC_REGISTRY.map((entry) => ({ ...entry, n: entry.count(student) })).filter((e) => e.n > 0).sort((a, b) => b.n - a.n);
+  const active = getTeacherMetricRegistry().map((entry) => ({ ...entry, n: entry.count(student) })).filter((e) => e.n > 0).sort((a, b) => b.n - a.n);
   if (active.length === 0) return null;
   return /* @__PURE__ */ React.createElement("div", { className: "bg-white p-4 sm:p-6 rounded-xl border border-slate-400 shadow-sm mb-6", "data-help-key": "dashboard_all_tool_activity" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 flex items-center gap-2" }, "\u{1F9F0} ", t("dashboard.all_tool_activity") || "All Tool Activity", /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-normal italic text-slate-500 normal-case" }, "(", active.length, " tool", active.length === 1 ? "" : "s", " used)")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3" }, active.map((e) => /* @__PURE__ */ React.createElement("div", { key: e.id, className: `${_metricTileColor(e.color)} border rounded-lg p-3 text-center` }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black" }, e.n), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase mt-1 leading-tight" }, e.icon, " ", e.label)))));
 });
-function _wordCount(str) {
-  if (!str) return 0;
-  const trimmed = String(str).trim();
-  if (!trimmed) return 0;
-  return trimmed.split(/\s+/).length;
+function _computeAllQualitySignals(dashboardData) {
+  const out = [];
+  getTeacherMetricRegistry().forEach((entry) => {
+    if (typeof entry.qualitySignals !== "function") return;
+    try {
+      const signals = entry.qualitySignals(dashboardData) || [];
+      signals.forEach((s2) => out.push({ ...s2, _toolId: entry.id, _toolLabel: entry.label }));
+    } catch (e) {
+      console.warn("[qualitySignals] tool", entry.id, "failed", e);
+    }
+  });
+  return out;
 }
 function _computeNotebookQualitySignals(dashboardData) {
+  const flat = _computeAllQualitySignals(dashboardData);
   const out = {
     summaryFillRate: { value: null, count: 0, total: 0 },
     avgCues: { value: null, total: 0, n: 0 },
@@ -1885,6 +2146,19 @@ function _computeNotebookQualitySignals(dashboardData) {
     connectionVariety: { value: null, count: 0, total: 0 },
     selfAssessment: { value: null, count: 0, total: 0 }
   };
+  flat.forEach((s2) => {
+    if (out[s2.key]) out[s2.key].value = s2.value;
+  });
+  return out;
+}
+function _wordCount(str) {
+  if (!str) return 0;
+  const trimmed = String(str).trim();
+  if (!trimmed) return 0;
+  return trimmed.split(/\s+/).length;
+}
+function _DEAD_LEGACY_DO_NOT_CALL(dashboardData) {
+  const out = {};
   let cornellCount = 0, cornellWithSummary = 0;
   let cornellCuesTotal = 0, cornellEntriesForCues = 0;
   let cerWordsTotal = 0, cerEntriesCounted = 0;
@@ -1964,13 +2238,28 @@ function _computeNotebookQualitySignals(dashboardData) {
   return out;
 }
 function _computeCrossToolMisconceptions(dashboardData) {
+  const out = { noteTaking: [], sentenceFrames: [], conceptSort: [] };
+  getTeacherMetricRegistry().forEach((entry) => {
+    if (typeof entry.misconceptions !== "function") return;
+    try {
+      const patterns = entry.misconceptions(dashboardData) || [];
+      patterns.forEach((p) => {
+        const cat = p && p.category;
+        if (cat && Array.isArray(out[cat])) out[cat].push(p);
+        else if (!out._other) (out._other = []).push(p);
+        else out._other.push(p);
+      });
+    } catch (e) {
+      console.warn("[misconceptions] tool", entry.id, "failed", e);
+    }
+  });
+  return out;
+}
+function _DEAD_LEGACY_CROSS_TOOL_DO_NOT_CALL(dashboardData) {
   const out = {
     noteTaking: [],
-    // [{ template, field, missingCount, totalCount, missingPct }]
     sentenceFrames: [],
-    // [{ generationTitle, framesMissingPct, framesSampled }]
     conceptSort: []
-    // [{ itemText, placedCategoryLabel, correctCategoryLabel, count, totalAttempts }]
   };
   const csKey = (p) => `${(p.itemText || "").toLowerCase().trim()}|${(p.placedCategoryLabel || "").toLowerCase().trim()}|${(p.correctCategoryLabel || "").toLowerCase().trim()}`;
   const csAgg = /* @__PURE__ */ new Map();
@@ -3300,7 +3589,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
   };
   const handleExportCSV = () => {
     if (!dashboardData || dashboardData.length === 0) return;
-    const registryHeaders = TEACHER_METRIC_REGISTRY.map((e) => e.label);
+    const registryHeaders = getTeacherMetricRegistry().map((e) => e.label);
     const headers = [
       t("dashboard.csv.header_name"),
       t("dashboard.csv.header_date"),
@@ -3357,7 +3646,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
       const readingCount = noteEntries.filter((e) => (e.data && e.data.templateType) === "reading-response").length;
       const anchorCount = hist.filter((h) => h && h.type === "anchor-chart").length;
       const feedbackCount = noteEntries.reduce((sum, e) => sum + (e.data && e.data.feedbackCount || 0), 0);
-      const registryCounts = TEACHER_METRIC_REGISTRY.map((entry) => entry.count(student));
+      const registryCounts = getTeacherMetricRegistry().map((entry) => entry.count(student));
       return `"${name}","${date}","${level}","${quizAvg}","${xp}","${probeCount}","${avgWcpm}","${surveyCount}","${sessionCount}","${cornellCount}","${labCount}","${readingCount}","${anchorCount}","${feedbackCount}",${registryCounts.map((n) => `"${n}"`).join(",")}`;
     });
     const csvContent = [headers.join(","), ...rows].join("\n");
