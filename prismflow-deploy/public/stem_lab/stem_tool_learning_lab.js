@@ -5355,6 +5355,889 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     );
   }
 
+  // ── G. PERSONAL FLASHCARD DECK (Wave 2) ──
+  // Create flashcards. Review with simple SM-2-lite spaced repetition.
+  // Each card has front, back, deck tag, ease factor, next-due date.
+  // Review mode picks cards due today, user rates Hard/Good/Easy.
+  function PersonalFlashcardDeck(props) {
+    if (!R) return null;
+    var data = props.data || { cards: [], decks: ['Default'] };
+    var setData = props.setData;
+
+    var vs = R.useState('decks');     var view = vs[0];     var setView = vs[1]; // decks | cards | review | add
+    var ds = R.useState('Default');   var deck = ds[0];     var setDeck = ds[1];
+    var fs = R.useState({ front: '', back: '' });
+    var form = fs[0];                 var setForm = fs[1];
+    var es = R.useState(null);        var editing = es[0];  var setEditing = es[1];
+    var rs = R.useState(0);           var revIdx = rs[0];   var setRevIdx = rs[1];
+    var ss = R.useState(false);       var showBack = ss[0]; var setShowBack = ss[1];
+    var revStats = R.useState({ correct: 0, total: 0 });
+    var stats = revStats[0];          var setStats = revStats[1];
+
+    var cards = data.cards || [];
+    var decks = data.decks && data.decks.length ? data.decks : ['Default'];
+    var deckCards = cards.filter(function(c) { return c.deck === deck; });
+    var today = todayISO();
+    var dueCards = deckCards.filter(function(c) { return !c.nextDue || c.nextDue <= today; });
+
+    function saveCard(card) {
+      var arr = cards.slice();
+      if (card.id) {
+        var i = arr.findIndex(function(c) { return c.id === card.id; });
+        if (i >= 0) arr[i] = card;
+      } else {
+        card.id = tkId();
+        card.createdAt = today;
+        card.ease = 2.5; card.interval = 0; card.nextDue = today;
+        card.reviewCount = 0;
+        arr.unshift(card);
+      }
+      setData(Object.assign({}, data, { cards: arr }));
+    }
+    function removeCard(id) {
+      setData(Object.assign({}, data, { cards: cards.filter(function(c) { return c.id !== id; }) }));
+    }
+    function addDeck() {
+      var name = prompt('Deck name?');
+      if (!name) return;
+      var newDecks = decks.concat([name]);
+      setData(Object.assign({}, data, { decks: newDecks }));
+      setDeck(name);
+    }
+    function removeDeck(name) {
+      if (name === 'Default') { alert('Cannot delete Default deck.'); return; }
+      if (!confirm('Delete deck "' + name + '" and all its cards?')) return;
+      setData(Object.assign({}, data, {
+        decks: decks.filter(function(d) { return d !== name; }),
+        cards: cards.filter(function(c) { return c.deck !== name; })
+      }));
+      setDeck('Default');
+    }
+
+    // SM-2-lite scheduling
+    function rate(card, quality) {
+      // quality: 0=Again, 1=Hard, 2=Good, 3=Easy
+      var newEase = Math.max(1.3, (card.ease || 2.5) + (0.1 - (3 - quality) * (0.08 + (3 - quality) * 0.02)));
+      var newInterval;
+      if (quality === 0) newInterval = 1;
+      else if ((card.interval || 0) === 0) newInterval = quality === 1 ? 1 : quality === 2 ? 3 : 5;
+      else newInterval = Math.round((card.interval || 1) * newEase);
+      var nextDate = new Date();
+      nextDate.setDate(nextDate.getDate() + newInterval);
+      var nextDueISO = nextDate.toISOString().slice(0, 10);
+      saveCard(Object.assign({}, card, {
+        ease: newEase, interval: newInterval, nextDue: nextDueISO,
+        reviewCount: (card.reviewCount || 0) + 1,
+        lastReviewed: today
+      }));
+      setStats({ correct: stats.correct + (quality >= 2 ? 1 : 0), total: stats.total + 1 });
+      // Advance
+      if (revIdx + 1 >= dueCards.length) {
+        setView('decks');
+        setRevIdx(0);
+      } else {
+        setRevIdx(revIdx + 1);
+        setShowBack(false);
+      }
+    }
+
+    if (view === 'review' && dueCards.length > 0) {
+      var card = dueCards[revIdx] || dueCards[0];
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader('🃏', 'Reviewing: ' + deck, 'Card ' + (revIdx + 1) + ' of ' + dueCards.length + ' due · ' + stats.correct + '/' + stats.total + ' correct this session', '#06b6d4'),
+
+        hh('div', { style: { padding: 30, background: 'linear-gradient(135deg, rgba(6,182,212,0.15), rgba(15,23,42,0.7))', borderRadius: 14, border: '2px solid #06b6d4', marginBottom: 12, minHeight: 180, display: 'flex', flexDirection: 'column', justifyContent: 'center' } },
+          hh('div', { style: { fontSize: 9, color: '#67e8f9', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, textAlign: 'center' } }, showBack ? 'BACK' : 'FRONT'),
+          hh('div', { style: { fontSize: 18, color: '#e2e8f0', textAlign: 'center', lineHeight: 1.5, fontWeight: showBack ? 600 : 700 } }, showBack ? card.back : card.front)
+        ),
+
+        !showBack ? hh('div', { style: { textAlign: 'center', marginBottom: 12 } },
+          tkBtn('👁 Show answer', function() { setShowBack(true); }, 'primary', { padding: '12px 32px', fontSize: 13 })
+        ) : hh('div', null,
+          hh('div', { style: { fontSize: 11, color: '#94a3b8', textAlign: 'center', marginBottom: 8 } }, 'How well did you know it?'),
+          hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 } },
+            [
+              { label: 'Again', color: '#ef4444', q: 0, info: 'no recall' },
+              { label: 'Hard',  color: '#f97316', q: 1, info: '+1d' },
+              { label: 'Good',  color: '#10b981', q: 2, info: '+3-5d' },
+              { label: 'Easy',  color: '#06b6d4', q: 3, info: '+5-10d' }
+            ].map(function(b) {
+              return hh('button', { key: 'rt-' + b.q,
+                onClick: function() { rate(card, b.q); },
+                style: { padding: '12px 8px', borderRadius: 8, background: b.color + '15', color: b.color, border: '1.5px solid ' + b.color, fontSize: 11, fontWeight: 800, cursor: 'pointer' }
+              },
+                hh('div', null, b.label),
+                hh('div', { style: { fontSize: 8, opacity: 0.8, marginTop: 2 } }, b.info)
+              );
+            })
+          )
+        ),
+
+        hh('div', { style: { textAlign: 'center', marginTop: 10 } },
+          tkBtn('End session', function() { setView('decks'); setRevIdx(0); }, 'ghost')
+        )
+      );
+    }
+
+    if (view === 'add') {
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader('+', editing ? 'Edit card' : 'New flashcard', 'Front = the question or prompt. Back = the answer.', '#06b6d4'),
+        tkCard('#06b6d4',
+          hh('div', null,
+            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#67e8f9', textTransform: 'uppercase', marginBottom: 4, display: 'block' } }, 'Front'),
+            tkTextarea(form.front, function(v) { setForm(Object.assign({}, form, { front: v })); }, 'e.g., "What is the function of mitochondria?"', 3, { marginBottom: 10 }),
+            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#67e8f9', textTransform: 'uppercase', marginBottom: 4, display: 'block' } }, 'Back'),
+            tkTextarea(form.back, function(v) { setForm(Object.assign({}, form, { back: v })); }, 'e.g., "Powerhouse of the cell — produces ATP via oxidative phosphorylation"', 3, { marginBottom: 10 }),
+            hh('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Deck: ', hh('strong', { style: { color: '#67e8f9' } }, deck))
+          )
+        ),
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+          tkBtn('← Cancel', function() { setView('decks'); setForm({ front: '', back: '' }); setEditing(null); }, 'ghost'),
+          tkBtn('💾 Save card', function() {
+            if (!form.front.trim() || !form.back.trim()) { alert('Both front and back are required.'); return; }
+            saveCard(Object.assign({}, editing || {}, { front: form.front.trim(), back: form.back.trim(), deck: deck }));
+            setForm({ front: '', back: '' }); setEditing(null); setView('decks');
+          }, 'primary')
+        )
+      );
+    }
+
+    if (view === 'cards') {
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader('🃏', deck + ' deck', deckCards.length + ' cards · ' + dueCards.length + ' due today', '#06b6d4'),
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 12, gap: 6, flexWrap: 'wrap' } },
+          tkBtn('← All decks', function() { setView('decks'); }, 'ghost'),
+          hh('div', { style: { display: 'flex', gap: 6 } },
+            tkBtn('+ New card', function() { setForm({ front: '', back: '' }); setEditing(null); setView('add'); }, 'secondary'),
+            dueCards.length > 0 ? tkBtn('▶ Review ' + dueCards.length, function() { setView('review'); setRevIdx(0); setShowBack(false); setStats({ correct: 0, total: 0 }); }, 'primary') : null
+          )
+        ),
+        deckCards.length === 0 ? tkEmptyState('🃏', 'No cards in this deck yet.', '+ Create your first card', function() { setForm({ front: '', back: '' }); setEditing(null); setView('add'); })
+        : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+            deckCards.map(function(c) {
+              var due = !c.nextDue || c.nextDue <= today;
+              return hh('div', { key: 'c-' + c.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(6,182,212,0.30)', borderLeft: '3px solid ' + (due ? '#06b6d4' : '#64748b') } },
+                hh('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 4 } },
+                  hh('div', { style: { fontSize: 11, color: '#e2e8f0', fontWeight: 700, flex: 1 } }, c.front),
+                  hh('div', { style: { display: 'flex', gap: 4, alignItems: 'flex-start' } },
+                    hh('span', { style: { padding: '2px 6px', borderRadius: 999, background: due ? 'rgba(6,182,212,0.18)' : 'rgba(100,116,139,0.18)', color: due ? '#06b6d4' : '#94a3b8', fontSize: 9, fontWeight: 800 } },
+                      due ? 'DUE' : 'in ' + (Math.max(0, daysAgo(today) - daysAgo(c.nextDue) || 0)) + 'd'),
+                    hh('button', { onClick: function() { if (confirm('Delete this card?')) removeCard(c.id); },
+                      style: { background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: 12, padding: 2 }
+                    }, '✕')
+                  )
+                ),
+                hh('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, '→ ' + c.back),
+                hh('div', { style: { fontSize: 9, color: '#64748b', marginTop: 4, fontFamily: 'ui-monospace, Menlo, monospace' } }, 'reviewed ' + (c.reviewCount || 0) + 'x · ease ' + (c.ease || 2.5).toFixed(2))
+              );
+            })
+          )
+      );
+    }
+
+    // Decks view
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🃏', 'My Flashcard Decks', 'Create decks + cards. Review uses spaced repetition (SM-2 simplified). Reviewed cards reappear on a schedule that matches your retention.', '#06b6d4'),
+
+      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 14 } },
+        decks.map(function(deckName) {
+          var dCards = cards.filter(function(c) { return c.deck === deckName; });
+          var dDue = dCards.filter(function(c) { return !c.nextDue || c.nextDue <= today; });
+          return hh('button', { key: 'd-' + deckName,
+            onClick: function() { setDeck(deckName); setView('cards'); },
+            style: {
+              display: 'block', textAlign: 'left', padding: 14, borderRadius: 12,
+              background: 'linear-gradient(135deg, rgba(6,182,212,0.15), rgba(15,23,42,0.7))',
+              border: '1px solid rgba(6,182,212,0.40)', borderLeft: '4px solid #06b6d4',
+              cursor: 'pointer', transition: 'all 200ms ease'
+            }
+          },
+            hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 } },
+              hh('div', { style: { fontSize: 14, fontWeight: 800, color: '#67e8f9' } }, '🃏 ' + deckName),
+              deckName !== 'Default' ? hh('span', { onClick: function(e) { e.stopPropagation(); removeDeck(deckName); }, style: { color: '#64748b', cursor: 'pointer', fontSize: 12 } }, '✕') : null
+            ),
+            hh('div', { style: { fontSize: 11, color: '#94a3b8' } }, dCards.length + ' card' + (dCards.length !== 1 ? 's' : '')),
+            hh('div', { style: { marginTop: 8, padding: '6px 10px', borderRadius: 6, background: dDue.length > 0 ? 'rgba(6,182,212,0.20)' : 'rgba(100,116,139,0.10)', color: dDue.length > 0 ? '#06b6d4' : '#64748b', fontSize: 10, fontWeight: 800, textAlign: 'center' } },
+              dDue.length > 0 ? '▶ ' + dDue.length + ' due today' : 'no cards due'
+            )
+          );
+        }),
+        hh('button', {
+          onClick: addDeck,
+          style: { display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 14, borderRadius: 12, background: 'rgba(2,6,23,0.4)', border: '1px dashed rgba(6,182,212,0.40)', color: '#67e8f9', fontSize: 12, fontWeight: 800, cursor: 'pointer', minHeight: 80 }
+        }, '+ New deck')
+      ),
+
+      // Lesson card
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(6,182,212,0.08)', border: '1px solid rgba(6,182,212,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+        hh('strong', { style: { color: '#06b6d4' } }, '🎓 Why flashcards work (when done right): '),
+        'Cards force RETRIEVAL practice (Karpicke + Roediger 2006) — pulling info out of memory is what consolidates it. Spaced repetition (Ebbinghaus 1885; modern SM-2 algorithm Wozniak 1990) shows each card just before you would forget it. Cramming 50 cards in one night = practice testing without the spacing benefit. 5 cards per day for 10 days produces 4-5× better long-term retention than 50 cards in one night for the same total effort.'
+      )
+    );
+  }
+
+  // ── H. PERSONAL STUDY PLANNER (Wave 2) ──
+  // Weekly schedule with study blocks. Drag-free interface (click cells).
+  // Recurring slots + one-off blocks. Subject tagging. Total weekly minutes.
+  function PersonalStudyPlanner(props) {
+    if (!R) return null;
+    var data = props.data || { blocks: [], subjects: ['Math', 'English', 'Science', 'History', 'Other'] };
+    var setData = props.setData;
+
+    var vs = R.useState('week');     var view = vs[0];     var setView = vs[1]; // week | add
+    var fs = R.useState({ day: 1, hour: 16, duration: 60, subject: 'Math', task: '', recurring: true });
+    var form = fs[0];                var setForm = fs[1];
+
+    var DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    var HOURS = [];
+    for (var h = 6; h <= 22; h++) HOURS.push(h);
+
+    function fmtHour(h) { return (h % 12 || 12) + (h < 12 ? 'a' : 'p'); }
+    function addBlock(b) {
+      var blocks = (data.blocks || []).concat([Object.assign({ id: tkId(), createdAt: todayISO() }, b)]);
+      setData(Object.assign({}, data, { blocks: blocks }));
+    }
+    function removeBlock(id) {
+      setData(Object.assign({}, data, { blocks: (data.blocks || []).filter(function(b) { return b.id !== id; }) }));
+    }
+    function addSubject() {
+      var name = prompt('Subject name?');
+      if (!name) return;
+      setData(Object.assign({}, data, { subjects: (data.subjects || []).concat([name]) }));
+    }
+
+    var blocks = data.blocks || [];
+    var subjects = data.subjects && data.subjects.length ? data.subjects : ['Other'];
+
+    var SUBJ_COLORS = ['#9333ea', '#ef4444', '#10b981', '#fbbf24', '#06b6d4', '#a78bfa', '#f97316', '#3b82f6'];
+    function subColor(s) {
+      var idx = subjects.indexOf(s);
+      return SUBJ_COLORS[idx % SUBJ_COLORS.length] || '#94a3b8';
+    }
+
+    var totalWeekMin = blocks.reduce(function(sum, b) { return sum + (b.duration || 0); }, 0);
+    var totalWeekHr = (totalWeekMin / 60).toFixed(1);
+    var bySubject = subjects.map(function(s) {
+      var min = blocks.filter(function(b) { return b.subject === s; }).reduce(function(sum, b) { return sum + (b.duration || 0); }, 0);
+      return { subject: s, min: min, color: subColor(s) };
+    });
+
+    if (view === 'add') {
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader('+', 'Add study block', 'When + what + how long.', '#3b82f6'),
+        tkCard('#3b82f6',
+          hh('div', null,
+            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Day of week'),
+            hh('div', { style: { display: 'flex', gap: 4, marginBottom: 12, flexWrap: 'wrap' } },
+              DAYS.map(function(d, i) {
+                return hh('button', { key: 'd-' + i,
+                  onClick: function() { setForm(Object.assign({}, form, { day: i })); },
+                  style: { padding: '8px 12px', borderRadius: 6, background: form.day === i ? '#3b82f6' : 'rgba(59,130,246,0.10)', color: form.day === i ? '#fff' : '#60a5fa', border: '1px solid rgba(59,130,246,0.40)', fontSize: 11, fontWeight: 800, cursor: 'pointer' }
+                }, d);
+              })
+            ),
+            hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 } },
+              hh('div', null,
+                hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Start time'),
+                hh('select', {
+                  value: form.hour, onChange: function(e) { setForm(Object.assign({}, form, { hour: parseInt(e.target.value, 10) })); },
+                  style: { width: '100%', padding: '8px 10px', fontSize: 12, color: '#e2e8f0', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6 }
+                }, HOURS.map(function(h) { return hh('option', { key: 'h-' + h, value: h }, fmtHour(h)); }))
+              ),
+              hh('div', null,
+                hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Duration'),
+                hh('select', {
+                  value: form.duration, onChange: function(e) { setForm(Object.assign({}, form, { duration: parseInt(e.target.value, 10) })); },
+                  style: { width: '100%', padding: '8px 10px', fontSize: 12, color: '#e2e8f0', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6 }
+                }, [25, 45, 60, 90, 120].map(function(m) { return hh('option', { key: 'm-' + m, value: m }, m + ' min'); }))
+              )
+            ),
+            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Subject'),
+            hh('div', { style: { display: 'flex', gap: 4, marginBottom: 12, flexWrap: 'wrap' } },
+              subjects.map(function(s) {
+                var col = subColor(s);
+                return hh('button', { key: 'su-' + s,
+                  onClick: function() { setForm(Object.assign({}, form, { subject: s })); },
+                  style: { padding: '6px 12px', borderRadius: 6, background: form.subject === s ? col + '30' : 'rgba(15,23,42,0.5)', color: form.subject === s ? col : '#94a3b8', border: '1px solid ' + (form.subject === s ? col : 'rgba(100,116,139,0.30)'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                }, s);
+              }),
+              hh('button', { onClick: addSubject, style: { padding: '6px 12px', borderRadius: 6, background: 'transparent', color: '#94a3b8', border: '1px dashed rgba(148,163,184,0.40)', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '+ Add subject')
+            ),
+            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Task or topic (optional)'),
+            tkInput(form.task, function(v) { setForm(Object.assign({}, form, { task: v })); }, 'e.g., "Chapter 5 problem set"', { marginBottom: 12 }),
+            hh('label', { style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: '#cbd5e1', cursor: 'pointer' } },
+              hh('input', { type: 'checkbox', checked: form.recurring, onChange: function(e) { setForm(Object.assign({}, form, { recurring: e.target.checked })); } }),
+              'Repeat weekly'
+            )
+          )
+        ),
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+          tkBtn('← Cancel', function() { setView('week'); }, 'ghost'),
+          tkBtn('💾 Add block', function() { addBlock(form); setView('week'); }, 'primary')
+        )
+      );
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('📅', 'Weekly Study Planner', 'Visual schedule of your study blocks. Click a cell to add. Recurring slots build the routine.', '#3b82f6'),
+
+      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 8, marginBottom: 14 } },
+        [
+          { label: 'Total this week', value: totalWeekHr + 'h', color: '#3b82f6', icon: '⏱' },
+          { label: 'Active blocks', value: blocks.length, color: '#9333ea', icon: '📦' },
+          { label: 'Subjects', value: subjects.length, color: '#10b981', icon: '📚' }
+        ].map(function(s, i) {
+          return hh('div', { key: 'ws-' + i, style: { padding: 10, borderRadius: 8, background: s.color + '12', border: '1px solid ' + s.color + '30', textAlign: 'center' } },
+            hh('div', { style: { fontSize: 14, marginBottom: 2 } }, s.icon),
+            hh('div', { style: { fontSize: 18, fontWeight: 900, color: s.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, s.value),
+            hh('div', { style: { fontSize: 9, color: '#94a3b8', textTransform: 'uppercase' } }, s.label)
+          );
+        })
+      ),
+
+      hh('div', { style: { display: 'flex', justifyContent: 'flex-end', marginBottom: 10 } },
+        tkBtn('+ Add block', function() { setView('add'); }, 'primary')
+      ),
+
+      // Week grid
+      hh('div', { style: { background: 'rgba(2,6,23,0.5)', borderRadius: 10, padding: 8, marginBottom: 12, overflowX: 'auto' } },
+        hh('div', { style: { display: 'grid', gridTemplateColumns: '50px repeat(7, minmax(60px, 1fr))', gap: 2, minWidth: 500 } },
+          // Header row
+          [hh('div', { key: 'tl' }, '')].concat(DAYS.map(function(d) {
+            return hh('div', { key: 'd-' + d, style: { textAlign: 'center', fontSize: 10, fontWeight: 800, color: '#94a3b8', padding: 4 } }, d);
+          })),
+          // Hour rows
+          HOURS.flatMap(function(h) {
+            return [hh('div', { key: 'h-' + h, style: { fontSize: 9, color: '#64748b', textAlign: 'right', padding: '4px 6px', fontFamily: 'ui-monospace, Menlo, monospace' } }, fmtHour(h))]
+              .concat(DAYS.map(function(d, di) {
+                var cellBlocks = blocks.filter(function(b) { return b.day === di && b.hour <= h && (b.hour + (b.duration / 60)) > h; });
+                var firstHere = blocks.filter(function(b) { return b.day === di && b.hour === h; })[0];
+                if (firstHere) {
+                  var col = subColor(firstHere.subject);
+                  var cellHeight = Math.max(28, (firstHere.duration / 60) * 28);
+                  return hh('div', { key: 'c-' + di + '-' + h, style: { position: 'relative', minHeight: 28 } },
+                    hh('div', {
+                      title: firstHere.subject + (firstHere.task ? ' — ' + firstHere.task : ''),
+                      style: {
+                        position: 'absolute', top: 0, left: 0, right: 0,
+                        height: cellHeight - 2 + 'px',
+                        background: col + '30', border: '1px solid ' + col, borderLeft: '3px solid ' + col,
+                        borderRadius: 4, padding: 4, overflow: 'hidden',
+                        fontSize: 9, color: col, fontWeight: 700, cursor: 'pointer'
+                      },
+                      onClick: function() { if (confirm('Remove this block?')) removeBlock(firstHere.id); }
+                    },
+                      hh('div', { style: { whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, firstHere.subject),
+                      cellHeight > 40 && firstHere.task ? hh('div', { style: { fontSize: 8, color: '#cbd5e1', fontWeight: 500, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, firstHere.task) : null
+                    )
+                  );
+                }
+                if (cellBlocks.length > 0) return hh('div', { key: 'c-' + di + '-' + h, style: { minHeight: 28 } });
+                return hh('div', { key: 'c-' + di + '-' + h, style: { minHeight: 28, background: 'rgba(15,23,42,0.4)', borderRadius: 4 } });
+              }));
+          })
+        )
+      ),
+
+      // Subject breakdown
+      bySubject.filter(function(s) { return s.min > 0; }).length > 0 ? tkCard('#a78bfa',
+        hh('div', null,
+          hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#c084fc', marginBottom: 8 } }, '📊 Weekly time by subject'),
+          bySubject.filter(function(s) { return s.min > 0; }).map(function(s) {
+            var pct = totalWeekMin > 0 ? (s.min / totalWeekMin * 100) : 0;
+            return hh('div', { key: 'sb-' + s.subject, style: { marginBottom: 8 } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#cbd5e1', marginBottom: 4 } },
+                hh('span', { style: { color: s.color, fontWeight: 700 } }, s.subject),
+                hh('span', { style: { fontFamily: 'ui-monospace, Menlo, monospace' } }, Math.round(s.min) + 'm · ' + Math.round(pct) + '%')
+              ),
+              hh('div', { style: { height: 8, background: 'rgba(15,23,42,0.6)', borderRadius: 4, overflow: 'hidden' } },
+                hh('div', { style: { width: pct + '%', height: '100%', background: s.color, transition: 'width 300ms ease' } })
+              )
+            );
+          })
+        )
+      ) : null
+    );
+  }
+
+  // ── I. PERSONAL EXAM PREP PLANNER (Wave 2) ──
+  // Backwards-plan from exam date. Generates daily blocks distributed
+  // over the available days using spaced practice (more frequent close
+  // to exam, fewer further out). Saves the plan.
+  function PersonalExamPrep(props) {
+    if (!R) return null;
+    var data = props.data || { exams: [] };
+    var setData = props.setData;
+    var vs = R.useState('list');                          var view = vs[0];   var setView = vs[1];
+    var fs = R.useState({ name: '', date: '', units: 5, dailyMin: 30 });
+    var form = fs[0];                                     var setForm = fs[1];
+
+    function addExam(e) {
+      var exam = Object.assign({ id: tkId(), createdAt: todayISO(), completedDays: [] }, e);
+      setData({ exams: [exam].concat(data.exams || []) });
+    }
+    function removeExam(id) {
+      setData({ exams: (data.exams || []).filter(function(e) { return e.id !== id; }) });
+    }
+    function markDay(examId, day) {
+      var exams = (data.exams || []).map(function(e) {
+        if (e.id !== examId) return e;
+        var cd = (e.completedDays || []).slice();
+        if (cd.indexOf(day) >= 0) cd = cd.filter(function(d) { return d !== day; });
+        else cd.push(day);
+        return Object.assign({}, e, { completedDays: cd });
+      });
+      setData({ exams: exams });
+    }
+
+    function daysUntil(iso) {
+      if (!iso) return 0;
+      var target = new Date(iso + 'T12:00:00').getTime();
+      var now = new Date().getTime();
+      return Math.ceil((target - now) / 86400000);
+    }
+
+    function planForExam(exam) {
+      var days = daysUntil(exam.date);
+      if (days <= 0) return [];
+      // Generate study plan: distribute units across days with intensification near the end
+      var plan = [];
+      var unitsPerDay = exam.units / days;
+      for (var i = 0; i < days; i++) {
+        var dt = new Date();
+        dt.setDate(dt.getDate() + i);
+        var iso = dt.toISOString().slice(0, 10);
+        var daysFromExam = days - i;
+        var intensity;
+        if (daysFromExam <= 2) intensity = 'review-all';
+        else if (daysFromExam <= 7) intensity = 'practice-test';
+        else intensity = 'learn-new';
+        var unitsToday = Math.min(exam.units, Math.ceil((i + 1) * unitsPerDay) - Math.ceil(i * unitsPerDay));
+        plan.push({
+          day: iso, daysFromExam: daysFromExam,
+          intensity: intensity, units: unitsToday,
+          minutes: intensity === 'review-all' ? exam.dailyMin * 1.5 : exam.dailyMin
+        });
+      }
+      return plan;
+    }
+
+    var exams = data.exams || [];
+
+    if (view === 'add') {
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader('+', 'New exam prep plan', 'Backwards-plan from the exam date.', '#fbbf24'),
+        tkCard('#fbbf24',
+          hh('div', null,
+            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Exam name'),
+            tkInput(form.name, function(v) { setForm(Object.assign({}, form, { name: v })); }, 'e.g., "Biology midterm — Unit 3-5"', { marginBottom: 12 }),
+            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Exam date'),
+            hh('input', { type: 'date', value: form.date,
+              onChange: function(e) { setForm(Object.assign({}, form, { date: e.target.value })); },
+              style: { width: '100%', padding: '10px 12px', fontSize: 12, color: '#e2e8f0', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box', marginBottom: 12 }
+            }),
+            hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
+              hh('div', null,
+                hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, '# units / chapters'),
+                hh('input', { type: 'number', min: 1, max: 50, value: form.units,
+                  onChange: function(e) { setForm(Object.assign({}, form, { units: parseInt(e.target.value, 10) })); },
+                  style: { width: '100%', padding: '10px 12px', fontSize: 12, color: '#e2e8f0', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box' }
+                })
+              ),
+              hh('div', null,
+                hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Minutes/day'),
+                hh('input', { type: 'number', min: 15, max: 240, step: 15, value: form.dailyMin,
+                  onChange: function(e) { setForm(Object.assign({}, form, { dailyMin: parseInt(e.target.value, 10) })); },
+                  style: { width: '100%', padding: '10px 12px', fontSize: 12, color: '#e2e8f0', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box' }
+                })
+              )
+            )
+          )
+        ),
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+          tkBtn('← Cancel', function() { setView('list'); }, 'ghost'),
+          tkBtn('🎓 Generate plan', function() {
+            if (!form.name.trim() || !form.date) { alert('Need name + date.'); return; }
+            addExam(form);
+            setForm({ name: '', date: '', units: 5, dailyMin: 30 });
+            setView('list');
+          }, 'primary')
+        )
+      );
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🎓', 'Exam Prep Backwards Planner', 'Plan from exam date back to today. Schedule intensifies as the exam approaches. Spaced practice + review baked in.', '#fbbf24'),
+
+      hh('div', { style: { display: 'flex', justifyContent: 'flex-end', marginBottom: 12 } },
+        tkBtn('+ New exam plan', function() { setView('add'); }, 'primary')
+      ),
+
+      exams.length === 0 ? tkEmptyState('🎓', 'No exam plans yet. Add an upcoming exam to generate a study plan.', '+ Create your first plan', function() { setView('add'); })
+      : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
+          exams.map(function(exam) {
+            var days = daysUntil(exam.date);
+            var plan = planForExam(exam);
+            var completedToday = plan[0] && (exam.completedDays || []).indexOf(plan[0].day) >= 0;
+            return hh('div', { key: 'e-' + exam.id, style: {
+              padding: 14, borderRadius: 12,
+              background: 'linear-gradient(135deg, rgba(251,191,36,0.15), rgba(15,23,42,0.7))',
+              border: '1px solid rgba(251,191,36,0.40)', borderLeft: '4px solid #fbbf24'
+            } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 8 } },
+                hh('div', null,
+                  hh('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24' } }, exam.name),
+                  hh('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } }, exam.date + ' · ' + exam.units + ' units · ' + exam.dailyMin + 'm/day')
+                ),
+                hh('div', { style: { textAlign: 'right' } },
+                  hh('div', { style: { padding: '6px 12px', borderRadius: 999, background: days <= 3 ? 'rgba(239,68,68,0.20)' : days <= 7 ? 'rgba(251,146,60,0.20)' : 'rgba(251,191,36,0.20)', color: days <= 3 ? '#ef4444' : days <= 7 ? '#fb923c' : '#fbbf24', fontSize: 16, fontWeight: 900, fontFamily: 'ui-monospace, Menlo, monospace' } }, days + 'd'),
+                  hh('button', { onClick: function() { removeExam(exam.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 12, cursor: 'pointer', marginTop: 4 } }, '✕ delete')
+                )
+              ),
+              // Plan display
+              days > 0 ? hh('div', { style: { background: 'rgba(2,6,23,0.5)', borderRadius: 8, padding: 10 } },
+                hh('div', { style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', marginBottom: 8 } }, '📅 Generated plan'),
+                hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 4 } },
+                  plan.slice(0, 14).map(function(day, i) {
+                    var done = (exam.completedDays || []).indexOf(day.day) >= 0;
+                    var phaseColor = day.intensity === 'review-all' ? '#ef4444' : day.intensity === 'practice-test' ? '#fbbf24' : '#10b981';
+                    return hh('button', { key: 'pl-' + i,
+                      onClick: function() { markDay(exam.id, day.day); },
+                      style: { padding: 8, borderRadius: 6, background: done ? phaseColor + '30' : 'rgba(15,23,42,0.5)', border: '1px solid ' + phaseColor + '40', textAlign: 'left', cursor: 'pointer', opacity: done ? 0.7 : 1 }
+                    },
+                      hh('div', { style: { fontSize: 9, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } }, 'D-' + day.daysFromExam),
+                      hh('div', { style: { fontSize: 10, color: phaseColor, fontWeight: 700, marginTop: 2 } }, day.intensity === 'review-all' ? '🔥 Review all' : day.intensity === 'practice-test' ? '🎯 Practice test' : '📖 Learn new'),
+                      hh('div', { style: { fontSize: 9, color: '#cbd5e1', marginTop: 2, fontFamily: 'ui-monospace, Menlo, monospace' } }, day.units + ' unit · ' + Math.round(day.minutes) + 'm'),
+                      done ? hh('div', { style: { fontSize: 11, color: phaseColor, marginTop: 4 } }, '✓ Done') : null
+                    );
+                  })
+                ),
+                plan.length > 14 ? hh('div', { style: { marginTop: 8, fontSize: 10, color: '#94a3b8', textAlign: 'center', fontStyle: 'italic' } }, '+ ' + (plan.length - 14) + ' more days') : null
+              ) : hh('div', { style: { padding: 12, textAlign: 'center', color: '#94a3b8', fontStyle: 'italic', fontSize: 11 } }, '⚠ Exam date is past or today — no plan to generate.')
+            );
+          })
+        )
+    );
+  }
+
+  // ── J. PERSONAL TASK BREAKER (Wave 2) ──
+  // Decompose big assignments into 2-5 minute subtasks. Time estimation
+  // training (predict vs actual). EF support for autistic/ADHD students
+  // who struggle with initiation due to overwhelm.
+  function PersonalTaskBreaker(props) {
+    if (!R) return null;
+    var data = props.data || { tasks: [] };
+    var setData = props.setData;
+    var vs = R.useState('list');                  var view = vs[0];   var setView = vs[1];
+    var fs = R.useState({ title: '', dueDate: '', steps: [{ id: tkId(), text: '', estMin: 5, done: false }] });
+    var form = fs[0];                              var setForm = fs[1];
+    var es = R.useState(null);                     var editing = es[0]; var setEditing = es[1];
+
+    function addStep() { setForm(Object.assign({}, form, { steps: form.steps.concat([{ id: tkId(), text: '', estMin: 5, done: false }]) })); }
+    function updateStep(i, patch) {
+      var steps = form.steps.slice();
+      steps[i] = Object.assign({}, steps[i], patch);
+      setForm(Object.assign({}, form, { steps: steps }));
+    }
+    function removeStep(i) {
+      setForm(Object.assign({}, form, { steps: form.steps.filter(function(_, j) { return j !== i; }) }));
+    }
+    function save() {
+      if (!form.title.trim()) { alert('Need a title.'); return; }
+      var task = Object.assign({ id: editing || tkId(), createdAt: todayISO() }, form);
+      var tasks = (data.tasks || []).slice();
+      var i = tasks.findIndex(function(t) { return t.id === task.id; });
+      if (i >= 0) tasks[i] = task;
+      else tasks.unshift(task);
+      setData({ tasks: tasks });
+      setForm({ title: '', dueDate: '', steps: [{ id: tkId(), text: '', estMin: 5, done: false }] });
+      setEditing(null);
+      setView('list');
+    }
+    function remove(id) {
+      setData({ tasks: (data.tasks || []).filter(function(t) { return t.id !== id; }) });
+    }
+    function toggleStep(taskId, stepId) {
+      var tasks = (data.tasks || []).map(function(t) {
+        if (t.id !== taskId) return t;
+        return Object.assign({}, t, { steps: t.steps.map(function(s) {
+          if (s.id !== stepId) return s;
+          return Object.assign({}, s, { done: !s.done, completedAt: !s.done ? Date.now() : null });
+        }) });
+      });
+      setData({ tasks: tasks });
+    }
+
+    var tasks = data.tasks || [];
+
+    if (view === 'add') {
+      var totalEst = form.steps.reduce(function(s, st) { return s + (st.estMin || 0); }, 0);
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader('✂', editing ? 'Edit task' : 'Break down a task', 'Big assignment → 2-5 minute steps. Overwhelm becomes tractable.', '#f97316'),
+        tkCard('#f97316',
+          hh('div', null,
+            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#fb923c', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Task title'),
+            tkInput(form.title, function(v) { setForm(Object.assign({}, form, { title: v })); }, 'e.g., "Write biology lab report"', { marginBottom: 12 }),
+            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#fb923c', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Due date (optional)'),
+            hh('input', { type: 'date', value: form.dueDate,
+              onChange: function(e) { setForm(Object.assign({}, form, { dueDate: e.target.value })); },
+              style: { width: '100%', padding: '10px 12px', fontSize: 12, color: '#e2e8f0', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box', marginBottom: 14 }
+            }),
+            hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fb923c', marginBottom: 8 } }, '📋 Steps (' + form.steps.length + ' · ~' + totalEst + 'm total)'),
+            hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 10 } },
+              form.steps.map(function(s, i) {
+                return hh('div', { key: 'st-' + s.id, style: { display: 'flex', gap: 6, alignItems: 'flex-start', padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.4)', borderLeft: '2px solid #f97316' } },
+                  hh('div', { style: { fontSize: 11, color: '#fb923c', fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 8, minWidth: 24 } }, (i + 1) + '.'),
+                  hh('div', { style: { flex: 1, minWidth: 0 } },
+                    tkInput(s.text, function(v) { updateStep(i, { text: v }); }, 'e.g., "Open the lab data spreadsheet"', { marginBottom: 4, fontSize: 11 }),
+                    hh('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
+                      hh('span', { style: { fontSize: 10, color: '#94a3b8' } }, 'Est:'),
+                      hh('input', { type: 'number', min: 1, max: 60, value: s.estMin,
+                        onChange: function(e) { updateStep(i, { estMin: parseInt(e.target.value, 10) }); },
+                        style: { width: 60, padding: '4px 8px', fontSize: 11, color: '#fb923c', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(251,146,60,0.40)', borderRadius: 4 }
+                      }),
+                      hh('span', { style: { fontSize: 10, color: '#94a3b8' } }, 'min')
+                    )
+                  ),
+                  hh('button', { onClick: function() { removeStep(i); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 12, cursor: 'pointer', padding: 4 } }, '✕')
+                );
+              })
+            ),
+            tkBtn('+ Add step', addStep, 'secondary')
+          )
+        ),
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+          tkBtn('← Cancel', function() { setView('list'); }, 'ghost'),
+          tkBtn('💾 Save task', save, 'primary')
+        )
+      );
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('✂', 'Task Breaker', 'Big assignments feel impossible — that\'s working memory overwhelm. Decompose into 2-5 min steps and initiation becomes possible.', '#f97316'),
+
+      hh('div', { style: { display: 'flex', justifyContent: 'flex-end', marginBottom: 12 } },
+        tkBtn('+ New task', function() { setForm({ title: '', dueDate: '', steps: [{ id: tkId(), text: '', estMin: 5, done: false }] }); setEditing(null); setView('add'); }, 'primary')
+      ),
+
+      tasks.length === 0 ? tkEmptyState('✂', 'No tasks broken down yet. Pick a big assignment, break it into 2-5 minute steps.', '+ Break down a task', function() { setForm({ title: '', dueDate: '', steps: [{ id: tkId(), text: '', estMin: 5, done: false }] }); setView('add'); })
+      : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+          tasks.map(function(t) {
+            var done = (t.steps || []).filter(function(s) { return s.done; }).length;
+            var total = (t.steps || []).length;
+            var pct = total > 0 ? Math.round((done / total) * 100) : 0;
+            var totalEst = (t.steps || []).reduce(function(sum, s) { return sum + (s.estMin || 0); }, 0);
+            var doneEst = (t.steps || []).filter(function(s) { return s.done; }).reduce(function(sum, s) { return sum + (s.estMin || 0); }, 0);
+            return hh('div', { key: 't-' + t.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(249,115,22,0.30)', borderLeft: '4px solid #f97316' } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 6 } },
+                hh('div', { style: { flex: 1, minWidth: 0 } },
+                  hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#fb923c' } }, t.title),
+                  hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontFamily: 'ui-monospace, Menlo, monospace' } }, done + '/' + total + ' steps · ' + doneEst + '/' + totalEst + ' min' + (t.dueDate ? ' · due ' + t.dueDate : ''))
+                ),
+                hh('div', { style: { display: 'flex', gap: 4 } },
+                  hh('button', { onClick: function() { setEditing(t.id); setForm({ title: t.title, dueDate: t.dueDate, steps: t.steps }); setView('add'); },
+                    style: { background: 'transparent', border: 'none', color: '#94a3b8', fontSize: 11, cursor: 'pointer', padding: 4 } }, '✏'),
+                  hh('button', { onClick: function() { if (confirm('Delete this task?')) remove(t.id); },
+                    style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer', padding: 4 } }, '✕')
+                )
+              ),
+              hh('div', { style: { height: 6, background: 'rgba(15,23,42,0.6)', borderRadius: 3, overflow: 'hidden', marginBottom: 10 } },
+                hh('div', { style: { width: pct + '%', height: '100%', background: pct === 100 ? '#10b981' : '#f97316', transition: 'width 300ms ease' } })
+              ),
+              hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+                (t.steps || []).map(function(s, i) {
+                  return hh('div', { key: 'ts-' + s.id, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 4, background: 'rgba(2,6,23,0.4)' } },
+                    hh('button', { onClick: function() { toggleStep(t.id, s.id); },
+                      style: { width: 18, height: 18, borderRadius: 4, border: '1.5px solid #f97316', background: s.done ? '#f97316' : 'transparent', color: '#0f172a', fontSize: 11, fontWeight: 900, cursor: 'pointer', flexShrink: 0 }
+                    }, s.done ? '✓' : ''),
+                    hh('div', { style: { flex: 1, fontSize: 11, color: '#cbd5e1', textDecoration: s.done ? 'line-through' : 'none', opacity: s.done ? 0.6 : 1 } }, (i + 1) + '. ' + s.text),
+                    hh('span', { style: { fontSize: 9, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } }, s.estMin + 'm')
+                  );
+                })
+              )
+            );
+          })
+        )
+    );
+  }
+
+  // ── K. PERSONAL HABIT TRACKER (Wave 2) ──
+  // Daily check-ins for habits: sleep, study time, phone-free time,
+  // exercise, etc. Streak per habit + heatmap calendar. Evidence-aligned
+  // habit formation (Lally et al. 2009: avg 66 days to form a habit).
+  function PersonalHabitTracker(props) {
+    if (!R) return null;
+    var data = props.data || { habits: [], logs: {} };
+    var setData = props.setData;
+    var vs = R.useState('today');               var view = vs[0];   var setView = vs[1];
+    var ns = R.useState({ name: '', icon: '✅', target: '' });
+    var form = ns[0];                            var setForm = ns[1];
+
+    var TEMPLATE_HABITS = [
+      { name: '8+ hours of sleep', icon: '😴', target: 'every night' },
+      { name: 'Phone off desk during study', icon: '📱', target: 'each study session' },
+      { name: '25-min focus session', icon: '⏱️', target: 'at least 1/day' },
+      { name: 'Review notes within 24h', icon: '📓', target: 'after each class' },
+      { name: 'Practice testing (not re-reading)', icon: '🃏', target: '3x/week' },
+      { name: '30 min exercise', icon: '🏃', target: '3x/week' },
+      { name: 'No screens 1h before bed', icon: '🌙', target: 'every night' },
+      { name: 'Daily check-in with a friend', icon: '🤝', target: 'every day' }
+    ];
+
+    function addHabit(h) {
+      var habit = Object.assign({ id: tkId(), createdAt: todayISO() }, h);
+      setData(Object.assign({}, data, { habits: (data.habits || []).concat([habit]) }));
+    }
+    function removeHabit(id) {
+      var logs = Object.assign({}, data.logs || {});
+      delete logs[id];
+      setData({ habits: (data.habits || []).filter(function(h) { return h.id !== id; }), logs: logs });
+    }
+    function toggleDay(habitId, day) {
+      var logs = Object.assign({}, data.logs || {});
+      var hl = (logs[habitId] || []).slice();
+      var idx = hl.indexOf(day);
+      if (idx >= 0) hl.splice(idx, 1);
+      else hl.push(day);
+      logs[habitId] = hl;
+      setData(Object.assign({}, data, { logs: logs }));
+    }
+
+    function habitStreak(habitId) {
+      var hl = (data.logs || {})[habitId] || [];
+      var streak = 0;
+      for (var i = 0; i < 365; i++) {
+        var dt = new Date(); dt.setDate(dt.getDate() - i);
+        var iso = dt.toISOString().slice(0, 10);
+        if (hl.indexOf(iso) >= 0) streak++;
+        else if (i > 0) break;
+      }
+      return streak;
+    }
+    function habitsTotalThisWeek(habitId) {
+      var hl = (data.logs || {})[habitId] || [];
+      var count = 0;
+      for (var i = 0; i < 7; i++) {
+        var dt = new Date(); dt.setDate(dt.getDate() - i);
+        var iso = dt.toISOString().slice(0, 10);
+        if (hl.indexOf(iso) >= 0) count++;
+      }
+      return count;
+    }
+
+    var habits = data.habits || [];
+    var today = todayISO();
+
+    if (view === 'add') {
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader('+', 'Add a habit', 'Pick a template or write your own.', '#10b981'),
+
+        tkCard('#10b981',
+          hh('div', null,
+            hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#10b981', marginBottom: 10 } }, '✨ Common student habits'),
+            hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 16 } },
+              TEMPLATE_HABITS.map(function(h, i) {
+                return hh('button', { key: 'tp-' + i,
+                  onClick: function() { addHabit(h); setView('today'); },
+                  style: { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 6, background: 'rgba(2,6,23,0.4)', color: '#cbd5e1', border: '1px dashed rgba(16,185,129,0.30)', cursor: 'pointer', textAlign: 'left' }
+                },
+                  hh('span', { style: { fontSize: 16 } }, h.icon),
+                  hh('div', { style: { flex: 1 } },
+                    hh('div', { style: { fontSize: 12, fontWeight: 700 } }, h.name),
+                    hh('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'target: ' + h.target)
+                  ),
+                  hh('span', { style: { color: '#10b981', fontSize: 14 } }, '+')
+                );
+              })
+            ),
+
+            hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#10b981', marginBottom: 6 } }, '📝 Or write your own'),
+            hh('div', { style: { display: 'flex', gap: 6, alignItems: 'center', marginBottom: 8 } },
+              hh('span', { style: { fontSize: 18 } }, form.icon),
+              hh('input', { type: 'text', value: form.icon, onChange: function(e) { setForm(Object.assign({}, form, { icon: e.target.value })); }, placeholder: '🎯',
+                style: { width: 50, padding: '8px', fontSize: 14, color: '#e2e8f0', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, textAlign: 'center' }
+              }),
+              tkInput(form.name, function(v) { setForm(Object.assign({}, form, { name: v })); }, 'Habit name', { flex: 1 })
+            ),
+            tkInput(form.target, function(v) { setForm(Object.assign({}, form, { target: v })); }, 'Target (e.g., "5x/week")', { marginBottom: 10 }),
+            tkBtn('+ Add custom habit', function() {
+              if (!form.name.trim()) { alert('Need a name.'); return; }
+              addHabit(form);
+              setForm({ name: '', icon: '✅', target: '' });
+              setView('today');
+            }, 'primary')
+          )
+        ),
+
+        hh('div', { style: { display: 'flex', justifyContent: 'flex-start' } },
+          tkBtn('← Back', function() { setView('today'); }, 'ghost')
+        )
+      );
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('✅', 'Habit Tracker', 'Daily check-ins build the routine. Habits take ~66 days to form (Lally 2009).', '#10b981'),
+
+      hh('div', { style: { display: 'flex', justifyContent: 'flex-end', marginBottom: 12 } },
+        tkBtn('+ Add habit', function() { setView('add'); }, 'primary')
+      ),
+
+      habits.length === 0 ? tkEmptyState('✅', 'No habits tracked yet. Pick from common student habits or build your own.', '+ Add your first habit', function() { setView('add'); })
+      : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+          habits.map(function(h) {
+            var streak = habitStreak(h.id);
+            var thisWeek = habitsTotalThisWeek(h.id);
+            var todayDone = ((data.logs || {})[h.id] || []).indexOf(today) >= 0;
+            return hh('div', { key: 'h-' + h.id, style: {
+              padding: 12, borderRadius: 12,
+              background: 'linear-gradient(135deg, rgba(16,185,129,0.10), rgba(15,23,42,0.7))',
+              border: '1px solid rgba(16,185,129,0.30)', borderLeft: '4px solid #10b981'
+            } },
+              hh('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
+                hh('div', { style: { fontSize: 22 } }, h.icon),
+                hh('div', { style: { flex: 1, minWidth: 0 } },
+                  hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#10b981' } }, h.name),
+                  hh('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'target: ' + h.target)
+                ),
+                hh('div', { style: { display: 'flex', gap: 6 } },
+                  hh('div', { style: { padding: '6px 12px', borderRadius: 999, background: streak > 0 ? 'rgba(251,191,36,0.20)' : 'rgba(100,116,139,0.10)', color: streak > 0 ? '#fbbf24' : '#94a3b8', fontSize: 12, fontWeight: 900, fontFamily: 'ui-monospace, Menlo, monospace' } }, '🔥 ' + streak),
+                  hh('div', { style: { padding: '6px 12px', borderRadius: 999, background: 'rgba(16,185,129,0.20)', color: '#10b981', fontSize: 12, fontWeight: 900, fontFamily: 'ui-monospace, Menlo, monospace' } }, thisWeek + '/7'),
+                  hh('button', { onClick: function() { if (confirm('Remove this habit and all its history?')) removeHabit(h.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer', padding: 4 } }, '✕')
+                )
+              ),
+              // 30-day strip
+              hh('div', { style: { display: 'flex', gap: 2, marginBottom: 8 } },
+                (function() {
+                  var arr = [];
+                  for (var i = 29; i >= 0; i--) {
+                    var dt = new Date(); dt.setDate(dt.getDate() - i);
+                    var iso = dt.toISOString().slice(0, 10);
+                    var done = ((data.logs || {})[h.id] || []).indexOf(iso) >= 0;
+                    var isToday = iso === today;
+                    arr.push(hh('div', { key: 'day-' + i,
+                      title: iso + (done ? ' ✓' : ''),
+                      style: { flex: 1, height: 16, borderRadius: 2, background: done ? '#10b981' : 'rgba(100,116,139,0.15)', border: isToday ? '1px solid #fbbf24' : 'none' }
+                    }));
+                  }
+                  return arr;
+                })()
+              ),
+              // Today button
+              hh('button', { onClick: function() { toggleDay(h.id, today); },
+                style: { width: '100%', padding: '10px', borderRadius: 8, background: todayDone ? 'rgba(16,185,129,0.30)' : 'rgba(16,185,129,0.10)', color: todayDone ? '#10b981' : '#94a3b8', border: '1.5px solid ' + (todayDone ? '#10b981' : 'rgba(16,185,129,0.40)'), fontSize: 12, fontWeight: 800, cursor: 'pointer' }
+              }, todayDone ? '✓ Done today — undo' : 'Mark done today')
+            );
+          })
+        ),
+
+      // Lesson card
+      habits.length > 0 ? hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+        hh('strong', { style: { color: '#10b981' } }, '🎓 Habit formation reality: '),
+        'Lally et al. (2009) — actual average was 66 DAYS, not the 21-day myth. Range was 18-254 days. The "missed a day" effect: missing one day did NOT prevent habit formation in the data. Self-blame on a miss is the bigger threat than the miss itself. Just resume tomorrow.'
+      ) : null
+    );
+  }
+
   // ── F. MY TOOLKIT HUB (landing page) ──
   // Single entry point that shows status of all toolkit tools + quick
   // actions. Today's date, current streak, # active goals, etc.
@@ -5381,6 +6264,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var accomData = data.mytkAccom || { selected: {}, custom: [] };
     var accomCount = Object.keys(accomData.selected || {}).filter(function(k) { return accomData.selected[k]; }).length + (accomData.custom || []).length;
 
+    var flashData = data.mytkFlash || { cards: [], decks: ['Default'] };
+    var flashCount = (flashData.cards || []).length;
+    var flashDue = (flashData.cards || []).filter(function(c) { return !c.nextDue || c.nextDue <= todayISOv; }).length;
+
+    var plannerData = data.mytkPlanner || { blocks: [] };
+    var weekMin = (plannerData.blocks || []).reduce(function(s, b) { return s + (b.duration || 0); }, 0);
+
+    var examData = data.mytkExam || { exams: [] };
+    var examCount = (examData.exams || []).length;
+
+    var taskData = data.mytkTasks || { tasks: [] };
+    var openTasks = (taskData.tasks || []).filter(function(t) {
+      var done = (t.steps || []).filter(function(s) { return s.done; }).length;
+      return done < (t.steps || []).length;
+    }).length;
+
+    var habitData = data.mytkHabits || { habits: [], logs: {} };
+    var habitCount = (habitData.habits || []).length;
+
     var TOOLS = [
       { id: 'mytkGoals',    icon: '🎯', label: 'My Goals',           color: '#9333ea', desc: 'Personal SMART goals + progress tracking',
         stat: activeGoals + ' active', cta: 'Track goals' },
@@ -5391,7 +6293,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'mytkIfThen',   icon: '🔗', label: 'If-Then Plans',       color: '#a78bfa', desc: 'Pre-decided responses to common triggers',
         stat: ifThens + ' active', cta: 'Add an implementation intention' },
       { id: 'mytkAccom',    icon: '🪪', label: 'Accommodation Card',  color: '#10b981', desc: 'My own card + self-advocacy script',
-        stat: accomCount + ' on card', cta: 'Build my card' }
+        stat: accomCount + ' on card', cta: 'Build my card' },
+      { id: 'mytkFlash',    icon: '🃏', label: 'Flashcards',          color: '#06b6d4', desc: 'Personal decks with spaced repetition',
+        stat: flashDue + ' due / ' + flashCount, cta: flashDue > 0 ? 'Review ' + flashDue + ' due' : 'Build a deck' },
+      { id: 'mytkPlanner',  icon: '📅', label: 'Study Planner',        color: '#3b82f6', desc: 'Weekly schedule + subject breakdown',
+        stat: Math.round(weekMin / 60 * 10) / 10 + 'h/week', cta: 'Plan your week' },
+      { id: 'mytkExam',     icon: '🎓', label: 'Exam Prep',            color: '#fbbf24', desc: 'Backwards-plan from exam date',
+        stat: examCount + ' upcoming', cta: 'Plan an exam' },
+      { id: 'mytkTasks',    icon: '✂', label: 'Task Breaker',         color: '#f97316', desc: 'Big assignments into 2-5 min steps',
+        stat: openTasks + ' open', cta: 'Break a task down' },
+      { id: 'mytkHabits',   icon: '✅', label: 'Habit Tracker',        color: '#10b981', desc: 'Daily check-ins + streak heatmap',
+        stat: habitCount + ' tracked', cta: 'Track a habit' }
     ];
 
     var dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][new Date().getDay()];
@@ -5584,7 +6496,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'mytkFocus',  icon: '⏱️', label: 'Focus Timer',          desc: 'Custom Pomodoro + session log + daily streak.' },
               { id: 'mytkBrain',  icon: '🧠', label: 'Brain Dump',           desc: 'Externalize working-memory contents — get it out of your head.' },
               { id: 'mytkIfThen', icon: '🔗', label: 'If-Then Plans',        desc: 'Gollwitzer implementation intentions. Pre-decide your response to triggers.' },
-              { id: 'mytkAccom',  icon: '🪪', label: 'Accommodation Card',   desc: 'Your own accommodations card + self-advocacy script.' }
+              { id: 'mytkAccom',  icon: '🪪', label: 'Accommodation Card',   desc: 'Your own accommodations card + self-advocacy script.' },
+              { id: 'mytkFlash',  icon: '🃏', label: 'Flashcards',           desc: 'Personal decks with spaced-repetition review (SM-2-lite).' },
+              { id: 'mytkPlanner',icon: '📅', label: 'Study Planner',        desc: 'Weekly schedule grid + subject-time breakdown.' },
+              { id: 'mytkExam',   icon: '🎓', label: 'Exam Prep',            desc: 'Backwards-plan from exam date with auto-generated daily intensity.' },
+              { id: 'mytkTasks',  icon: '✂', label: 'Task Breaker',          desc: 'Decompose big assignments into 2-5 minute steps with time estimates.' },
+              { id: 'mytkHabits', icon: '✅', label: 'Habit Tracker',        desc: 'Daily check-ins + streak heatmap + Lally 2009 evidence.' }
             ]
           },
           { id: 'foundation', icon: '🧠', name: 'How learning works (foundation)',
@@ -8664,6 +9581,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           h(PersonalAccommodationCard, { data: da, setData: setDa })
         );
       }
+      function renderMytkFlash() {
+        var df = d.mytkFlash || { cards: [], decks: ['Default'] };
+        var setDf = function(newData) { upd('mytkFlash', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalFlashcardDeck, { data: df, setData: setDf })
+        );
+      }
+      function renderMytkPlanner() {
+        var dp = d.mytkPlanner || { blocks: [], subjects: ['Math', 'English', 'Science', 'History', 'Other'] };
+        var setDp = function(newData) { upd('mytkPlanner', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalStudyPlanner, { data: dp, setData: setDp })
+        );
+      }
+      function renderMytkExam() {
+        var de = d.mytkExam || { exams: [] };
+        var setDe = function(newData) { upd('mytkExam', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalExamPrep, { data: de, setData: setDe })
+        );
+      }
+      function renderMytkTasks() {
+        var dt = d.mytkTasks || { tasks: [] };
+        var setDt = function(newData) { upd('mytkTasks', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalTaskBreaker, { data: dt, setData: setDt })
+        );
+      }
+      function renderMytkHabits() {
+        var dh = d.mytkHabits || { habits: [], logs: {} };
+        var setDh = function(newData) { upd('mytkHabits', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalHabitTracker, { data: dh, setData: setDh })
+        );
+      }
 
       // ─────────────────────────────────────────
       // VIEW ROUTER
@@ -8676,6 +9633,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         case 'mytkBrain':     return renderMytkBrain();
         case 'mytkIfThen':    return renderMytkIfThen();
         case 'mytkAccom':     return renderMytkAccom();
+        case 'mytkFlash':     return renderMytkFlash();
+        case 'mytkPlanner':   return renderMytkPlanner();
+        case 'mytkExam':      return renderMytkExam();
+        case 'mytkTasks':     return renderMytkTasks();
+        case 'mytkHabits':    return renderMytkHabits();
         case 'bloom':         return renderBloom();
         case 'cogload':       return renderCogLoad();
         case 'metacog':       return renderMetacog();
