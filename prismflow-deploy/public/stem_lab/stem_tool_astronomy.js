@@ -2627,6 +2627,79 @@
               );
             })(),
             '#a78bfa'
+          ),
+
+          // ─── Variable stars ─────────────────────────────────────
+          sectionCard('🌟 Variable stars — the changeable sky',
+            (function() {
+              var VAR_TOPICS = [
+                { id: 'overview', name: 'Why stars vary', emoji: '📊',
+                  body: 'Most stars look constant on human timescales, but a SURPRISING NUMBER vary in brightness — periodically, irregularly, or in single dramatic events. The cause depends on the star type: PULSATING stars expand + contract on their own internal physics (Cepheids, RR Lyrae, Miras); ECLIPSING BINARIES dim when one star passes in front of another from our viewpoint; ROTATING stars with starspots vary as the spots cycle in + out of view; CATACLYSMIC variables erupt as mass transfers between binary companions (novae, dwarf novae, supernovae); INTRINSIC + EXTRINSIC effects combine in complex systems. About 200,000+ variable stars are now cataloged; Gaia + LSST will multiply that into the millions.',
+                  caveat: 'The first deliberate variable-star observation in the modern era was David Fabricius in 1596, watching Mira (omicron Ceti) in Cetus brighten + fade. By 1786 the British observer Edward Pigott had catalogued the first systematic list of variable stars. The field has been observation-driven ever since — astronomers point at known variables + record their brightness over time, building "light curves" that constrain stellar-physics models. Amateur astronomers contribute substantially through the AAVSO.'
+                },
+                { id: 'cepheid', name: 'Cepheids — the cosmic distance ladder', emoji: '📏',
+                  body: 'Cepheid variables (named for delta Cephei, the prototype, discovered 1784) PULSATE radially over periods of 1-100 days with brightness amplitudes of 0.5-2 magnitudes. The crucial fact (Henrietta Leavitt, 1908, at Harvard): their PERIOD predicts their LUMINOSITY. A 30-day Cepheid is intrinsically about 10,000 times brighter than the Sun; a 3-day Cepheid is much less luminous. So if you can MEASURE the period (easy: a few weeks of observation), you can INFER the absolute magnitude, then compare to observed brightness, then DERIVE the distance. Leavitt\'s relation is the rung of the cosmic distance ladder that calibrates everything beyond the local neighborhood. Edwin Hubble used Cepheids in M31 (Andromeda) in 1923-1924 to prove it is a separate GALAXY rather than a nebula in our Milky Way — a finding that redefined the scale of the universe.',
+                  caveat: 'Leavitt\'s discovery was made while working as a "computer" (a calculation assistant) at the Harvard College Observatory, paid 30 cents an hour. She received almost no recognition during her lifetime + died in 1921 of cancer before Hubble used her relation to redefine cosmology. The Nobel Committee was considering nominating her in 1924, but the Nobel is not awarded posthumously. Her work is now considered foundational to extragalactic astronomy.'
+                },
+                { id: 'rrlyrae', name: 'RR Lyrae — globular-cluster ageometers', emoji: '⭐',
+                  body: 'RR Lyrae variables (named for RR Lyrae, the prototype) are SHORTER-PERIOD pulsators (0.2-1 day) common in old globular clusters. They are all about the same intrinsic brightness (~ 40 times the Sun), so each one acts as an INDEPENDENT distance indicator. RR Lyrae are particularly useful for distances to old populations + for galactic-archaeology work. They are easy to find (their distinctive sawtooth light curves stand out) + bright enough to be detected throughout the Milky Way halo + into nearby galaxies. Over 50,000 RR Lyrae are now catalogued; current + future surveys (Gaia, LSST) will find millions.',
+                  caveat: 'RR Lyrae pulsate via the same kappa-mechanism (helium ionization layer driving) as Cepheids but in older + lower-mass stars. They are particularly useful for finding very old structures: streams + dwarf-galaxy debris in the Milky Way halo are full of them. Some RR Lyrae show the Blazhko effect (period-amplitude variations on years-long timescales) that we still do not fully understand.'
+                },
+                { id: 'mira', name: 'Mira variables — pulsating red giants', emoji: '🔴',
+                  body: 'Mira (omicron Ceti) was the first non-supernova variable star ever recognized — discovered in 1596 by David Fabricius. The class now bears its name: MIRA VARIABLES are red-giant stars in the late stages of stellar evolution, pulsating over PERIODS of 100-1,000 days with HUGE brightness amplitudes (3-10 magnitudes — a factor of ~ 100 to ~ 10,000 in flux). At maximum, Mira itself is naked-eye easy (magnitude 2-3); at minimum, it requires a telescope (magnitude 8-10). The pulsation mechanism: in the very-extended, cool atmosphere of a red giant, opacity changes with temperature drive a slow-period instability that pumps the outer layers.',
+                  caveat: 'Mira variables shed mass through their pulsations — they are LOSING their outer layers in slow planetary-nebula-type mass loss. Mira itself is leaving a 13-light-year-long TAIL of expelled gas behind it (discovered by GALEX, 2007). The pulsations + mass loss + chemistry of Mira-class stars are the gateway to the planetary-nebula + white-dwarf phases. Mira is approximately what our Sun will become in another ~ 5 billion years.'
+                },
+                { id: 'eclipsing', name: 'Eclipsing binaries — mutual occultation', emoji: '🌑',
+                  body: 'In an ECLIPSING BINARY system, two stars orbit each other in a plane CLOSE TO our line of sight, so each star periodically blocks the other from our view. The classic example is ALGOL (β Persei, the "demon star"), known since antiquity to dim periodically (every 2.87 days, dimming by ~ 1 magnitude for ~ 10 hours). When Algol\'s brighter star is hidden behind the dimmer companion, total light drops. Modern eclipsing binaries are powerful: by measuring the SHAPE + timing of the light dips, plus orbital velocities from spectroscopy, astronomers determine SEPARATIONS + MASSES + RADII + temperatures of both stars precisely. Eclipsing binaries provide the most-accurate direct stellar mass measurements available.',
+                  caveat: 'For exoplanet detection, the TRANSIT method (Kepler, TESS, JWST) is essentially eclipsing-binary technique applied to a STAR + PLANET pair instead of two stars. The technique scales: exo-Earths transit their host stars dimming them by ~ 0.01%, vs Algol\'s 75% dimming. The same physics, the same statistics, vastly different sensitivities. The PLATO mission (ESA, launching 2026) is the next-generation transit survey.'
+                },
+                { id: 'cataclysmic', name: 'Novae + cataclysmic variables', emoji: '💥',
+                  body: 'A CATACLYSMIC VARIABLE is a binary system with a WHITE DWARF accreting matter from a close companion. The matter accumulates on the dwarf\'s surface; when enough builds up, it ignites in a thermonuclear runaway, brightening the system by 100,000× or more in a few days — a CLASSICAL NOVA. The dwarf survives + the cycle can repeat (RECURRENT novae have periods of decades to centuries; the well-known T Coronae Borealis is overdue for its next eruption, predicted any year now — last erupted 1946, predicted ~ 80-year cycle). DWARF NOVAE (a different mechanism) brighten by 5-100× in days from accretion-disk instabilities, repeating every weeks-to-months. Novae deliver ~ 10⁻⁴ solar masses of processed material to the interstellar medium each eruption, contributing to galactic chemical evolution.',
+                  caveat: 'Novae are NOT supernovae. A nova brightens 100,000× (~ 12 magnitudes); a supernova brightens 10⁹× (~ 22 magnitudes). The mechanisms are entirely different: novae are surface explosions on a surviving white dwarf, supernovae destroy stars. Misuse of "nova" in popular media + sci-fi has caused lasting confusion. T Coronae Borealis 2024-2026 nova IF it erupts as predicted will be the brightest naked-eye nova in 80+ years — worth being ready to observe.'
+                },
+                { id: 'aavso', name: 'Amateurs + AAVSO contributions', emoji: '👥',
+                  body: 'The American Association of Variable Star Observers (AAVSO, founded 1911) is one of the longest-running citizen-science organizations in any field. Volunteer observers worldwide submit ~ 1 MILLION variable-star brightness estimates PER YEAR. The database now has over 50 MILLION historical observations, including some going back to the 19th century. AAVSO data has supported thousands of professional papers — including the Hubble distance to M31 (using AAVSO Cepheid observations), the prediction + recovery of recurrent novae, the discovery of new variables, support for spacecraft target-of-opportunity observations (Hubble, Chandra, Kepler, JWST all use AAVSO data to schedule observations of varying targets). The AAVSO Visual Atlas + Variable Star Index are go-to amateur tools.',
+                  caveat: 'AAVSO observation is one of the most-rewarding entry points for student + family astronomy. A simple binocular + a printed comparison-star chart + a log book + a few minutes per clear night = real scientific contribution. The AAVSO offers free training, mentorship, + recognition. The Eta Carinae project, the AGN Watch network, the cataclysmic-variable observing campaigns all welcome new participants. For King Middle students: this is a science career on-ramp that needs no expensive equipment.'
+                },
+                { id: 'survey', name: 'Modern surveys + the future', emoji: '🛰️',
+                  body: 'Variable-star astronomy is being TRANSFORMED by modern time-domain surveys. (1) GAIA (ESA, 2013-present) is measuring positions + brightnesses + spectra of ~ 2 billion stars; expected to catalog millions of variables. (2) ZWICKY TRANSIENT FACILITY (ZTF, Palomar, since 2018) scans the entire Northern Hemisphere sky every 2 nights. (3) ATLAS (Asteroid Terrestrial-impact Last Alert System) does similar work + is finding many new variables. (4) THE VERA C. RUBIN OBSERVATORY (LSST, beginning operations 2025-2026) will image the entire visible Southern Hemisphere sky EVERY THREE NIGHTS for 10 years — producing ~ 20 million variable-star detections + perhaps 10,000 supernovae per year. The data volume + discovery rate will be unprecedented; the analysis is itself a research challenge.',
+                  caveat: 'Modern surveys are generating MORE variable-star detections than humans can review individually. Machine-learning classifiers are now trained on AAVSO + Kepler data to triage candidates. The "follow-up" of interesting candidates increasingly relies on AMATEUR + ROBOTIC small telescopes. The democratization of professional-grade observation tools (free archive access, free analysis software, citizen-science protocols) is reshaping how astronomy gets done.'
+                },
+                { id: 'observing', name: 'Observing variable stars yourself', emoji: '🔭',
+                  body: 'Variable-star observation requires SURPRISINGLY little equipment. ENTRY STEPS: (1) Pick a bright variable in season — Mira from October-February, Algol in fall + winter, R Lyrae year-round but best summer-fall. (2) Get a finder chart + comparison-star chart (free from AAVSO\'s VSP/Variable Star Plotter tool). (3) Estimate brightness by comparing the variable to nearby stars of known magnitude using your unaided eye or binoculars. (4) Record date + time + estimate to the AAVSO online database. Many AAVSO members observe daily; you can start with one observation per clear night. Visual observation is still useful + valued; CCD photometry is more precise but requires more equipment. For Maine: long winter nights + dark skies + variable astronomy = a productive winter hobby.',
+                  caveat: 'Variable-star observation builds skills (observational discipline, error estimation, magnitude scaling, light-curve analysis) that translate directly into more advanced research. Several major astrophysical results have come from amateur observations: the recovery of Comet Encke 1818, the recurrent nova predictions, the discovery of many supernovae (including the closest one to Earth in decades, SN 2014J in M82, by Tom Boles + Steve Fossey in 2014). Astronomy may be the only science where amateur contributions remain essential at the professional research frontier.'
+                }
+              ];
+              var sel = d.selectedVar || 'overview';
+              var topic = VAR_TOPICS.find(function(t) { return t.id === sel; }) || VAR_TOPICS[0];
+              return h('div', null,
+                h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
+                  'Many stars look the same night after night. But many do not — they pulsate, they eclipse, they erupt. Variable-star astronomy is one of the most productive intersections of professional + amateur astronomy. The same Cepheid that calibrates the cosmic distance scale is observable from any backyard. The next nova outburst from T Coronae Borealis could be visible any night now. For students at King Middle: this is one of the most accessible serious-research paths in any science.'
+                ),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+                  VAR_TOPICS.map(function(t) {
+                    var on = t.id === sel;
+                    return h('button', {
+                      key: t.id,
+                      onClick: function() { upd({ selectedVar: t.id }); },
+                      style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#eab308' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #eab308' : '1px solid #334155' }
+                    }, t.emoji + ' ' + t.name);
+                  })
+                ),
+                h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(234,179,8,0.08)', border: '1px solid rgba(234,179,8,0.35)' } },
+                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#fde047', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+                  h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+                  h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
+                    h('strong', null, 'Honest framing: '), topic.caveat
+                  )
+                ),
+                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 11.5, color: '#dcfce7', lineHeight: 1.65 } },
+                  h('strong', null, 'Watch tonight: '),
+                  'ALGOL (β Persei in Perseus) is one of the easiest variables — every 2.87 days it dims from magnitude 2.1 to 3.4 for ~ 10 hours. AAVSO publishes a prediction calendar so you can plan an observation around a minimum. Standing in your back yard, comparing Algol to nearby stars, you are doing the same observation Geminiano Montanari did in 1669 + that John Goodricke explained as binary eclipsing in 1782 (he died at 21, before seeing the explanation confirmed — but his hypothesis was right).'
+                )
+              );
+            })(),
+            '#eab308'
           )
         );
       }
