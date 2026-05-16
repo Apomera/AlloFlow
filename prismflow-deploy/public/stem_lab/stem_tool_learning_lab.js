@@ -10536,6 +10536,414 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     );
   }
 
+  // ── OO. PERSONAL MEMORY PALACE BUILDER (Wave 9) ──
+  // Method of loci. Pick a familiar place (your house, your school).
+  // Add items to specific locations within it. Practice walking through.
+  // Ancient memory technique with strong modern research support.
+  function PersonalMemoryPalace(props) {
+    if (!R) return null;
+    var data = props.data || { palaces: [] };
+    var setData = props.setData;
+    var vs = R.useState('list');                       var view = vs[0]; var setView = vs[1];
+    var as = R.useState(null);                         var activeId = as[0]; var setActiveId = as[1];
+    var ns = R.useState({ name: '', description: '' });
+    var newP = ns[0]; var setNewP = ns[1];
+    var ls = R.useState({ location: '', item: '', vivid: '' });
+    var locForm = ls[0]; var setLocForm = ls[1];
+    var ts = R.useState(false);                        var practicing = ts[0]; var setPracticing = ts[1];
+    var ws = R.useState(0);                            var walkIdx = ws[0]; var setWalkIdx = ws[1];
+
+    function createPalace() {
+      if (!newP.name.trim()) return;
+      var palace = { id: tkId(), name: newP.name.trim(), description: newP.description.trim(), loci: [], createdAt: todayISO() };
+      setData({ palaces: [palace].concat(data.palaces || []) });
+      setActiveId(palace.id);
+      setNewP({ name: '', description: '' });
+      setView('edit');
+    }
+    function getPalace() { return (data.palaces || []).filter(function(p) { return p.id === activeId; })[0]; }
+    function updatePalace(patch) {
+      setData({ palaces: (data.palaces || []).map(function(p) { return p.id === activeId ? Object.assign({}, p, patch) : p; }) });
+    }
+    function removePalace(id) {
+      if (!confirm('Delete this memory palace?')) return;
+      setData({ palaces: (data.palaces || []).filter(function(p) { return p.id !== id; }) });
+    }
+    function addLoci() {
+      if (!locForm.location.trim() || !locForm.item.trim()) { alert('Need location + item.'); return; }
+      var p = getPalace();
+      updatePalace({ loci: (p.loci || []).concat([Object.assign({ id: tkId() }, locForm)]) });
+      setLocForm({ location: '', item: '', vivid: '' });
+    }
+    function removeLoci(id) {
+      var p = getPalace();
+      updatePalace({ loci: p.loci.filter(function(l) { return l.id !== id; }) });
+    }
+
+    if (view === 'edit') {
+      var p = getPalace();
+      if (!p) { setView('list'); return null; }
+      if (practicing) {
+        var current = p.loci[walkIdx];
+        return hh('div', { style: { padding: 14 } },
+          tkSectionHeader('🚶', 'Walking through ' + p.name, 'Stop ' + (walkIdx + 1) + ' of ' + p.loci.length, '#10b981'),
+          hh('div', { style: { padding: 24, borderRadius: 14, background: 'linear-gradient(135deg, rgba(16,185,129,0.20), rgba(15,23,42,0.7))', border: '2px solid #10b981', marginBottom: 14 } },
+            hh('div', { style: { fontSize: 11, color: '#10b981', fontWeight: 800, textTransform: 'uppercase', marginBottom: 8 } }, '📍 Location'),
+            hh('div', { style: { fontSize: 18, color: '#e2e8f0', marginBottom: 14, lineHeight: 1.5 } }, current ? current.location : ''),
+            hh('div', { style: { fontSize: 11, color: '#10b981', fontWeight: 800, textTransform: 'uppercase', marginBottom: 8 } }, '🎯 Item to remember'),
+            hh('div', { style: { fontSize: 16, color: '#cbd5e1', marginBottom: 12, lineHeight: 1.5, fontStyle: 'italic' } }, current ? current.item : ''),
+            current && current.vivid ? hh('div', null,
+              hh('div', { style: { fontSize: 11, color: '#10b981', fontWeight: 800, textTransform: 'uppercase', marginBottom: 6 } }, '🌈 Vivid image'),
+              hh('div', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.6 } }, current.vivid)
+            ) : null
+          ),
+          hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+            tkBtn('← Stop walk', function() { setPracticing(false); setWalkIdx(0); }, 'ghost'),
+            walkIdx + 1 >= p.loci.length
+              ? tkBtn('✓ Done walking', function() { setPracticing(false); setWalkIdx(0); }, 'good')
+              : tkBtn('Next stop →', function() { setWalkIdx(walkIdx + 1); }, 'primary')
+          )
+        );
+      }
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader('🏛', p.name, p.description + ' · ' + (p.loci || []).length + ' loci', '#a855f7'),
+        hh('div', { style: { display: 'flex', gap: 6, marginBottom: 10 } },
+          tkBtn('← All palaces', function() { setView('list'); setActiveId(null); }, 'ghost'),
+          (p.loci || []).length > 0 ? tkBtn('🚶 Walk through', function() { setPracticing(true); setWalkIdx(0); }, 'primary') : null
+        ),
+        tkCard('#a855f7',
+          hh('div', null,
+            hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 8 } }, '+ Add location → item'),
+            tkInput(locForm.location, function(v) { setLocForm(Object.assign({}, locForm, { location: v })); }, 'Location (e.g., "front door of my house")', { marginBottom: 6 }),
+            tkInput(locForm.item, function(v) { setLocForm(Object.assign({}, locForm, { item: v })); }, 'Item to remember (e.g., "mitochondria → cell powerhouse")', { marginBottom: 6 }),
+            tkTextarea(locForm.vivid, function(v) { setLocForm(Object.assign({}, locForm, { vivid: v })); }, 'Make it VIVID (e.g., "A giant glowing battery the size of my front door, sparking electricity")', 2, { marginBottom: 8 }),
+            tkBtn('+ Add this stop', addLoci, 'primary')
+          )
+        ),
+        (p.loci || []).length === 0 ? tkEmptyState('🏛', 'No stops yet. Add 5-15 specific locations on your mental walk.', null, null)
+        : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+            (p.loci || []).map(function(l, i) {
+              return hh('div', { key: 'lc-' + l.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid #a855f7' } },
+                hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
+                  hh('span', { style: { fontSize: 11, color: '#c084fc', fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 800 } }, '📍 ' + (i + 1) + '. ' + l.location),
+                  hh('button', { onClick: function() { removeLoci(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                ),
+                hh('div', { style: { fontSize: 12, color: '#e2e8f0', marginBottom: l.vivid ? 4 : 0 } }, '→ ' + l.item),
+                l.vivid ? hh('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, '🌈 ' + l.vivid) : null
+              );
+            })
+          )
+      );
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🏛', 'Memory Palace Builder', 'Method of loci. Walk a familiar place, attach items to locations. Ancient + research-supported.', '#a855f7'),
+      tkCard('#a855f7',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 8 } }, '+ New palace'),
+          tkInput(newP.name, function(v) { setNewP(Object.assign({}, newP, { name: v })); }, 'Palace name (e.g., "My house")', { marginBottom: 6 }),
+          tkInput(newP.description, function(v) { setNewP(Object.assign({}, newP, { description: v })); }, 'What\'s this palace for? (e.g., "AP Bio Unit 5 vocab")', { marginBottom: 8 }),
+          tkBtn('Create palace', createPalace, 'primary')
+        )
+      ),
+      (data.palaces || []).length === 0 ? tkEmptyState('🏛', 'No memory palaces yet. Pick a place you know well to start.', null, null)
+      : hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
+          (data.palaces || []).map(function(p) {
+            return hh('button', { key: 'pa-' + p.id,
+              onClick: function() { setActiveId(p.id); setView('edit'); },
+              style: { display: 'block', textAlign: 'left', padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(168,85,247,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(168,85,247,0.40)', borderLeft: '4px solid #a855f7', cursor: 'pointer' }
+            },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+                hh('strong', { style: { fontSize: 13, color: '#c084fc' } }, '🏛 ' + p.name),
+                hh('span', { onClick: function(e) { e.stopPropagation(); removePalace(p.id); }, style: { color: '#64748b', cursor: 'pointer', fontSize: 12 } }, '✕')
+              ),
+              p.description ? hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4, fontStyle: 'italic' } }, p.description) : null,
+              hh('div', { style: { fontSize: 11, color: '#c084fc', marginTop: 4, fontFamily: 'ui-monospace, Menlo, monospace' } }, (p.loci || []).length + ' loci')
+            );
+          })
+        ),
+      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+        hh('strong', { style: { color: '#a855f7' } }, '🎓 The method of loci: '),
+        'Ancient Greek + Roman orators used this to memorize hour-long speeches. Modern memory champions still rely on it. Strong research support (Maguire et al. 2003 — World Memory Championship competitors show distinct hippocampal patterns). The vividness + specific-location combo bypasses normal forgetting curves.'
+      )
+    );
+  }
+
+  // ── PP. PERSONAL CLASS ROSTER (Wave 9) ──
+  // Track classes: name, teacher, period, when/where, friend in class.
+  // Subject-tagged for cross-reference with other toolkit tools.
+  function PersonalClassRoster(props) {
+    if (!R) return null;
+    var data = props.data || { classes: [] };
+    var setData = props.setData;
+    var fs = R.useState({ name: '', teacher: '', period: '', room: '', day: '', friend: '', notes: '' });
+    var form = fs[0]; var setForm = fs[1];
+    var es = R.useState(null);  var editing = es[0]; var setEditing = es[1];
+
+    function save() {
+      if (!form.name.trim()) { alert('Need a class name.'); return; }
+      var id = editing || tkId();
+      var cls = Object.assign({ id: id, createdAt: todayISO() }, form);
+      var classes = (data.classes || []).slice();
+      var i = classes.findIndex(function(c) { return c.id === id; });
+      if (i >= 0) classes[i] = cls;
+      else classes.unshift(cls);
+      setData({ classes: classes });
+      setForm({ name: '', teacher: '', period: '', room: '', day: '', friend: '', notes: '' });
+      setEditing(null);
+    }
+    function remove(id) {
+      if (!confirm('Remove this class?')) return;
+      setData({ classes: (data.classes || []).filter(function(c) { return c.id !== id; }) });
+    }
+    function startEdit(c) {
+      setEditing(c.id);
+      setForm({ name: c.name, teacher: c.teacher || '', period: c.period || '', room: c.room || '', day: c.day || '', friend: c.friend || '', notes: c.notes || '' });
+    }
+
+    var classes = data.classes || [];
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🎒', 'My Class Roster', 'All your classes, teachers, schedules, room numbers, and friends-in-class. Quick reference.', '#3b82f6'),
+
+      tkCard('#3b82f6',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#60a5fa', marginBottom: 8 } }, editing ? '✏ Edit class' : '+ Add class'),
+          hh('div', { style: { display: 'grid', gridTemplateColumns: '2fr 2fr', gap: 6, marginBottom: 6 } },
+            tkInput(form.name, function(v) { setForm(Object.assign({}, form, { name: v })); }, 'Class name'),
+            tkInput(form.teacher, function(v) { setForm(Object.assign({}, form, { teacher: v })); }, 'Teacher')
+          ),
+          hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: 6, marginBottom: 6 } },
+            tkInput(form.period, function(v) { setForm(Object.assign({}, form, { period: v })); }, 'Period'),
+            tkInput(form.room, function(v) { setForm(Object.assign({}, form, { room: v })); }, 'Room'),
+            tkInput(form.day, function(v) { setForm(Object.assign({}, form, { day: v })); }, 'Days (e.g., "MWF")')
+          ),
+          tkInput(form.friend, function(v) { setForm(Object.assign({}, form, { friend: v })); }, 'Friend in this class (optional)', { marginBottom: 6 }),
+          tkInput(form.notes, function(v) { setForm(Object.assign({}, form, { notes: v })); }, 'Notes (workload, vibe, accommodations needed)', { marginBottom: 8 }),
+          hh('div', { style: { display: 'flex', gap: 6 } },
+            tkBtn(editing ? '💾 Update' : '+ Add', save, 'primary'),
+            editing ? tkBtn('Cancel', function() { setEditing(null); setForm({ name: '', teacher: '', period: '', room: '', day: '', friend: '', notes: '' }); }, 'ghost') : null
+          )
+        )
+      ),
+
+      classes.length === 0 ? tkEmptyState('🎒', 'No classes added yet.', null, null)
+      : hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
+          classes.map(function(c) {
+            return hh('div', { key: 'cl-' + c.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid #3b82f6' } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 } },
+                hh('strong', { style: { fontSize: 13, color: '#60a5fa' } }, '🎒 ' + c.name),
+                hh('div', { style: { display: 'flex', gap: 4 } },
+                  hh('button', { onClick: function() { startEdit(c); }, style: { background: 'transparent', border: 'none', color: '#60a5fa', fontSize: 11, cursor: 'pointer' } }, '✏'),
+                  hh('button', { onClick: function() { remove(c.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                )
+              ),
+              c.teacher ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 4 } }, '👤 ' + c.teacher) : null,
+              c.period || c.room || c.day ? hh('div', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 4 } },
+                [c.period && 'P' + c.period, c.room && 'Rm ' + c.room, c.day].filter(Boolean).join(' · ')
+              ) : null,
+              c.friend ? hh('div', { style: { fontSize: 11, color: '#10b981' } }, '🤝 with ' + c.friend) : null,
+              c.notes ? hh('div', { style: { fontSize: 10, color: '#cbd5e1', marginTop: 6, fontStyle: 'italic', padding: 6, background: 'rgba(2,6,23,0.4)', borderRadius: 4 } }, c.notes) : null
+            );
+          })
+        )
+    );
+  }
+
+  // ── QQ. PERSONAL QUOTE COLLECTOR (Wave 9) ──
+  // Save quotes from books, classes, conversations. Auto-tagged. Browse
+  // for inspiration on hard days. Maintains a personal "library of words
+  // that matter."
+  function PersonalQuoteCollector(props) {
+    if (!R) return null;
+    var data = props.data || { quotes: [] };
+    var setData = props.setData;
+    var fs = R.useState({ text: '', source: '', context: '', tag: '' });
+    var form = fs[0]; var setForm = fs[1];
+    var qs = R.useState(''); var search = qs[0]; var setSearch = qs[1];
+
+    function save() {
+      if (!form.text.trim()) { alert('Need quote text.'); return; }
+      var quote = Object.assign({ id: tkId(), date: todayISO() }, form);
+      setData({ quotes: [quote].concat(data.quotes || []) });
+      setForm({ text: '', source: '', context: '', tag: '' });
+    }
+    function remove(id) { setData({ quotes: (data.quotes || []).filter(function(q) { return q.id !== id; }) }); }
+
+    var quotes = data.quotes || [];
+    var filtered = search ? quotes.filter(function(q) {
+      var s = search.toLowerCase();
+      return (q.text || '').toLowerCase().indexOf(s) >= 0 ||
+             (q.source || '').toLowerCase().indexOf(s) >= 0 ||
+             (q.tag || '').toLowerCase().indexOf(s) >= 0;
+    }) : quotes;
+    var random = quotes.length > 0 ? quotes[Math.floor(Math.random() * quotes.length)] : null;
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('💭', 'Quote Collector', 'Save lines from books + classes + conversations + anywhere. Browse on hard days.', '#fbbf24'),
+
+      random ? hh('div', { style: { padding: 16, borderRadius: 12, background: 'linear-gradient(135deg, rgba(251,191,36,0.20), rgba(15,23,42,0.7))', border: '2px solid #fbbf24', marginBottom: 14 } },
+        hh('div', { style: { fontSize: 10, color: '#fbbf24', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 } }, '✨ Random from your collection'),
+        hh('div', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.65, fontStyle: 'italic' } }, '"' + random.text + '"'),
+        random.source ? hh('div', { style: { fontSize: 11, color: '#fbbf24', marginTop: 8, fontFamily: 'Georgia, serif' } }, '— ' + random.source) : null
+      ) : null,
+
+      tkCard('#fbbf24',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, '+ Save a quote'),
+          tkTextarea(form.text, function(v) { setForm(Object.assign({}, form, { text: v })); }, 'The quote (no quotation marks needed)', 3, { marginBottom: 6 }),
+          hh('div', { style: { display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 6, marginBottom: 8 } },
+            tkInput(form.source, function(v) { setForm(Object.assign({}, form, { source: v })); }, 'Source (e.g., "Toni Morrison")'),
+            tkInput(form.tag, function(v) { setForm(Object.assign({}, form, { tag: v })); }, 'Tag (optional)')
+          ),
+          tkInput(form.context, function(v) { setForm(Object.assign({}, form, { context: v })); }, 'Where you found it / why it matters', { marginBottom: 8 }),
+          tkBtn('💾 Save quote', save, 'primary')
+        )
+      ),
+
+      hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, gap: 8, flexWrap: 'wrap' } },
+        hh('div', { style: { fontSize: 11, color: '#94a3b8' } }, quotes.length + ' quote' + (quotes.length !== 1 ? 's' : '')),
+        tkInput(search, setSearch, '🔎 Search', { width: 200 })
+      ),
+
+      filtered.length === 0 ? tkEmptyState('💭', quotes.length === 0 ? 'No quotes saved yet.' : 'No matches.', null, null)
+      : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+          filtered.map(function(q) {
+            return hh('div', { key: 'qu-' + q.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid #fbbf24' } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' } },
+                hh('div', { style: { flex: 1, fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, fontStyle: 'italic', fontFamily: 'Georgia, serif' } }, '"' + q.text + '"'),
+                hh('button', { onClick: function() { remove(q.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+              ),
+              q.source ? hh('div', { style: { fontSize: 11, color: '#fbbf24', marginTop: 6, fontWeight: 700 } }, '— ' + q.source) : null,
+              q.context ? hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4, fontStyle: 'italic' } }, q.context) : null,
+              q.tag ? hh('span', { style: { display: 'inline-block', marginTop: 6, padding: '2px 8px', borderRadius: 999, background: 'rgba(251,191,36,0.15)', color: '#fbbf24', fontSize: 9, fontWeight: 700 } }, '#' + q.tag) : null
+            );
+          })
+        )
+    );
+  }
+
+  // ── RR. PERSONAL CRISIS PLAN (Wave 9) ──
+  // Student-built safety plan for mental-health crisis moments.
+  // Stanley + Brown 2012 safety planning intervention. Saves locally.
+  function PersonalCrisisPlan(props) {
+    if (!R) return null;
+    var data = props.data || { plan: {} };
+    var setData = props.setData;
+    var p = data.plan || {};
+    function update(key, val) {
+      setData({ plan: Object.assign({}, p, (function() { var o = {}; o[key] = val; return o; })()) });
+    }
+
+    var STEPS = [
+      { id: 'warning',    label: '1. Warning signs', icon: '⚠', color: '#fbbf24',
+        prompt: 'How do I know I\'m heading into crisis? (Thoughts, feelings, behaviors, body signals)' },
+      { id: 'coping',     label: '2. Internal coping', icon: '🧰', color: '#3b82f6',
+        prompt: 'What can I do BY MYSELF to take my mind off the crisis? (e.g., listen to music, take a walk, watch a comfort show)' },
+      { id: 'distract',   label: '3. People + places that distract', icon: '🌳', color: '#10b981',
+        prompt: 'Where can I go + who can I be around to help shift my mind? (Not for help yet — just for distraction)' },
+      { id: 'helpers',    label: '4. People I can ask for help', icon: '🤝', color: '#a855f7',
+        prompt: 'Friends, family, mentors I can reach out to. Name + how to contact them.' },
+      { id: 'pros',       label: '5. Professionals + crisis resources', icon: '☎', color: '#ec4899',
+        prompt: 'My therapist, school counselor, doctor. Crisis lines: 988 (US), Maine Mobile Crisis 1-888-568-1112. Maine Crisis Text "HOME" to 741741.' },
+      { id: 'safe',       label: '6. Making the environment safer', icon: '🛡', color: '#ef4444',
+        prompt: 'Things I will remove or put away during a hard time (medications, alcohol, sharp objects). Where + who has them.' }
+    ];
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🛡', 'My Crisis Plan', 'Stanley + Brown 2012 Safety Planning Intervention. Build YOUR plan. Refer to it on hard days.', '#ef4444'),
+
+      hh('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.15)', border: '2px solid #ef4444', marginBottom: 14 } },
+        hh('div', { style: { fontSize: 12, color: '#fca5a5', fontWeight: 800, marginBottom: 6 } }, '🚨 IF YOU ARE IN CRISIS RIGHT NOW:'),
+        hh('div', { style: { fontSize: 12, color: '#fecaca', lineHeight: 1.6 } },
+          'Call or text ', hh('strong', null, '988'), ' (US Suicide + Crisis Lifeline). ',
+          'Maine Mobile Crisis: ', hh('strong', null, '1-888-568-1112'), '. ',
+          'Text ', hh('strong', null, '"HOME"'), ' to ', hh('strong', null, '741741'), ' (Crisis Text Line). ',
+          'You can reach a real person 24/7. This planning tool is for AFTER you\'re safe — to prepare for next time.'
+        )
+      ),
+
+      hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+        STEPS.map(function(s) {
+          return hh('div', { key: 'cs-' + s.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid ' + s.color } },
+            hh('label', { style: { display: 'block', fontSize: 12, fontWeight: 800, color: s.color, marginBottom: 4 } }, s.icon + ' ' + s.label),
+            hh('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic', marginBottom: 8 } }, s.prompt),
+            tkTextarea(p[s.id], function(v) { update(s.id, v); }, '', 3)
+          );
+        })
+      ),
+
+      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+        hh('strong', { style: { color: '#ef4444' } }, '🎓 Why this works: '),
+        'Stanley + Brown 2012, JAMA Psychiatry. Safety planning intervention has the strongest evidence for reducing repeat-attempts after a crisis. The act of WRITING this plan when you\'re calm makes it accessible when you\'re not. Share your plan with someone safe — a parent, counselor, friend.'
+      )
+    );
+  }
+
+  // ── SS. PERSONAL IDENTITY MAP (Wave 9) ──
+  // Self-discovery tool — student maps their roles, values, communities,
+  // strengths. The act of articulating identity supports SEL + adolescent
+  // development (Erikson). Critical for marginalized students.
+  function PersonalIdentityMap(props) {
+    if (!R) return null;
+    var data = props.data || { map: {} };
+    var setData = props.setData;
+    var m = data.map || {};
+
+    function update(key, val) {
+      setData({ map: Object.assign({}, m, (function() { var o = {}; o[key] = val; return o; })()) });
+    }
+
+    var DIMENSIONS = [
+      { id: 'roles',       label: 'Roles I play', icon: '👥', color: '#9333ea',
+        prompt: 'e.g., daughter, sister, student, soccer captain, big-sib in church youth group' },
+      { id: 'cultures',    label: 'My cultures + heritage', icon: '🌍', color: '#10b981',
+        prompt: 'e.g., Cape Verdean-American, Maine Yankee, second-gen, Catholic, queer Catholic' },
+      { id: 'values',      label: 'Values I hold', icon: '⭐', color: '#fbbf24',
+        prompt: 'What matters to me, even when it costs me something? e.g., loyalty, honesty, fairness, creativity, family' },
+      { id: 'communities', label: 'Communities I belong to', icon: '🤝', color: '#3b82f6',
+        prompt: 'Where I feel I belong. e.g., robotics team, church, Discord server, family, friend group' },
+      { id: 'strengths',   label: 'My strengths', icon: '💪', color: '#06b6d4',
+        prompt: 'What I do well + what people compliment me on. Internal AND external skills.' },
+      { id: 'growing',     label: 'Where I\'m growing', icon: '🌱', color: '#a855f7',
+        prompt: 'Skills, qualities, areas of self I\'m working on right now' },
+      { id: 'voices',      label: 'Voices that have shaped me', icon: '🗣', color: '#ec4899',
+        prompt: 'People (alive or gone), authors, artists who taught me how to think + see' },
+      { id: 'aspirations', label: 'Who I want to become', icon: '🌟', color: '#f97316',
+        prompt: 'The version of me I\'m moving toward. Specific is better than aspirational-vague.' }
+    ];
+
+    function print() { try { window.print(); } catch (e) {} }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🪞', 'My Identity Map', 'A snapshot of who you are right now. For YOU first. Sharable with mentors, counselors, IEP team.', '#a855f7'),
+
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+        hh('strong', { style: { color: '#a855f7' } }, '🪞 Identity ≠ a fixed thing. '),
+        'Erikson (1968) described adolescence as the identity-exploration stage. The work is articulating who you are NOW, while staying open to who you\'re becoming. There are no wrong answers.'
+      ),
+
+      hh('div', { style: { display: 'flex', justifyContent: 'flex-end', marginBottom: 10 } },
+        tkBtn('🖨 Print map', print, 'secondary')
+      ),
+
+      hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
+        DIMENSIONS.map(function(d) {
+          return hh('div', { key: 'id-' + d.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid ' + d.color } },
+            hh('label', { style: { display: 'block', fontSize: 12, fontWeight: 800, color: d.color, marginBottom: 4 } }, d.icon + ' ' + d.label),
+            hh('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic', marginBottom: 8 } }, d.prompt),
+            tkTextarea(m[d.id], function(v) { update(d.id, v); }, '', 3)
+          );
+        })
+      ),
+
+      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+        hh('strong', { style: { color: '#a855f7' } }, '💡 Use it: '),
+        'Re-read at the start of each school year. Update when something has shifted. Especially powerful when you\'re struggling — identity questions ("who AM I?") get loud in those moments, and having your own answers written down is grounding.'
+      )
+    );
+  }
+
   // ── F. MY TOOLKIT HUB (landing page) ──
   // Single entry point that shows status of all toolkit tools + quick
   // actions. Today's date, current streak, # active goals, etc.
@@ -10659,7 +11067,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'mytkDec',      icon: '⚖️', label: 'Decision Maker',       color: '#9333ea', desc: 'Structured options × criteria × weights',
         stat: ((data.mytkDec || {}).decisions || []).length + ' decisions', cta: 'Make a decision' },
       { id: 'mytkVocab',    icon: '🔤', label: 'Vocab Builder',        color: '#3b82f6', desc: 'Subject vocab lists with self-quiz',
-        stat: ((data.mytkVocab || {}).lists || []).length + ' lists', cta: 'Build vocab' }
+        stat: ((data.mytkVocab || {}).lists || []).length + ' lists', cta: 'Build vocab' },
+      { id: 'mytkPalace',   icon: '🏛', label: 'Memory Palace',        color: '#a855f7', desc: 'Method of loci — ancient + research-supported',
+        stat: ((data.mytkPalace || {}).palaces || []).length + ' palaces', cta: 'Build a palace' },
+      { id: 'mytkRoster',   icon: '🎒', label: 'My Class Roster',      color: '#3b82f6', desc: 'Classes, teachers, periods, rooms, friends',
+        stat: ((data.mytkRoster || {}).classes || []).length + ' classes', cta: 'Track classes' },
+      { id: 'mytkQuote',    icon: '💭', label: 'Quote Collector',      color: '#fbbf24', desc: 'Save quotes that matter — your personal library',
+        stat: ((data.mytkQuote || {}).quotes || []).length + ' quotes', cta: 'Collect quotes' },
+      { id: 'mytkCrisis',   icon: '🛡', label: 'My Crisis Plan',       color: '#ef4444', desc: 'Stanley + Brown safety plan you control',
+        stat: 'plan ready', cta: 'Build my plan' },
+      { id: 'mytkIdent',    icon: '🪞', label: 'My Identity Map',      color: '#a855f7', desc: '8-dimension self-snapshot (Erikson identity work)',
+        stat: 'evolving', cta: 'Map identity' }
     ];
 
     var dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][new Date().getDay()];
@@ -10886,7 +11304,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'mytkMind',   icon: '🧘', label: 'Mindfulness',          desc: '6 guided practices (body scan, breath, RAIN, walking, eating, open). MBSR-aligned.' },
               { id: 'mytkAnxiety',icon: '🧰', label: 'Anxiety Toolkit',      desc: '6 quick-access tools when anxiety hits: naming, slow-exhale breath, cold water, defusion, grounding, evidence-check.' },
               { id: 'mytkDec',    icon: '⚖️', label: 'Decision Maker',       desc: 'Structured choice tool: options × weighted criteria × scores → clarity for big decisions.' },
-              { id: 'mytkVocab',  icon: '🔤', label: 'Vocab Builder',        desc: 'Subject-specific vocab lists with self-quiz + mastery tracking.' }
+              { id: 'mytkVocab',  icon: '🔤', label: 'Vocab Builder',        desc: 'Subject-specific vocab lists with self-quiz + mastery tracking.' },
+              { id: 'mytkPalace', icon: '🏛', label: 'Memory Palace',        desc: 'Method of loci — attach memorized items to locations in a familiar place.' },
+              { id: 'mytkRoster', icon: '🎒', label: 'My Class Roster',      desc: 'Classes + teachers + periods + rooms + friends-in-class.' },
+              { id: 'mytkQuote',  icon: '💭', label: 'Quote Collector',      desc: 'Save lines from books + classes + anywhere. Personal library.' },
+              { id: 'mytkCrisis', icon: '🛡', label: 'My Crisis Plan',       desc: 'Stanley + Brown 2012 Safety Planning Intervention. Build your plan when calm.' },
+              { id: 'mytkIdent',  icon: '🪞', label: 'My Identity Map',      desc: '8-dimension self-snapshot for identity work (Erikson 1968).' }
             ]
           },
           { id: 'foundation', icon: '🧠', name: 'How learning works (foundation)',
@@ -14234,6 +14657,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           h(PersonalVocabBuilder, { data: dvb, setData: setDvb })
         );
       }
+      function renderMytkPalace() {
+        var dmp = d.mytkPalace || { palaces: [] };
+        var setDmp = function(newData) { upd('mytkPalace', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalMemoryPalace, { data: dmp, setData: setDmp })
+        );
+      }
+      function renderMytkRoster() {
+        var dcr = d.mytkRoster || { classes: [] };
+        var setDcr = function(newData) { upd('mytkRoster', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalClassRoster, { data: dcr, setData: setDcr })
+        );
+      }
+      function renderMytkQuote() {
+        var dqu = d.mytkQuote || { quotes: [] };
+        var setDqu = function(newData) { upd('mytkQuote', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalQuoteCollector, { data: dqu, setData: setDqu })
+        );
+      }
+      function renderMytkCrisis() {
+        var dcp = d.mytkCrisis || { plan: {} };
+        var setDcp = function(newData) { upd('mytkCrisis', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalCrisisPlan, { data: dcp, setData: setDcp })
+        );
+      }
+      function renderMytkIdent() {
+        var dim = d.mytkIdent || { map: {} };
+        var setDim = function(newData) { upd('mytkIdent', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalIdentityMap, { data: dim, setData: setDim })
+        );
+      }
 
       // ─────────────────────────────────────────
       // VIEW ROUTER
@@ -14280,6 +14743,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         case 'mytkAnxiety':   return renderMytkAnxiety();
         case 'mytkDec':       return renderMytkDec();
         case 'mytkVocab':     return renderMytkVocab();
+        case 'mytkPalace':    return renderMytkPalace();
+        case 'mytkRoster':    return renderMytkRoster();
+        case 'mytkQuote':     return renderMytkQuote();
+        case 'mytkCrisis':    return renderMytkCrisis();
+        case 'mytkIdent':     return renderMytkIdent();
         case 'bloom':         return renderBloom();
         case 'cogload':       return renderCogLoad();
         case 'metacog':       return renderMetacog();
