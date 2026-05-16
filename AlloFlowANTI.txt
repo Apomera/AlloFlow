@@ -5871,7 +5871,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
             window.removeEventListener('beforeunload', sessionCleanupOnUnload);
         };
     }, [activeSessionCode, isTeacherMode, db, appId]);
-  const [sessionData, setSessionData] = useState(null);
+  // sessionData useState moved up to ~line 5825 (before _picMyRoleRaw
+  // const block) to fix the TDZ ReferenceError on initial render.
   const [joinCodeInput, setJoinCodeInput] = useState('');
   const [joinAppIdInput, setJoinAppIdInput] = useState('');
   const [isJoinPopoverOpen, setIsJoinPopoverOpen] = useState(false);
