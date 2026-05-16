@@ -5817,6 +5817,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (concepts.length > 0) setPictionaryIncomingConcepts(concepts);
     setShowPictionaryHost(true);
   }, []);
+  // sessionData useState moved up here (was at line ~5868) so the
+  // _picMyRoleRaw / _picRoundActive const declarations below can reference
+  // it without hitting the TDZ. Previously fired
+  // "Cannot access 'sessionData' before initialization" on every load
+  // because the const block ran synchronously before useState declared it.
+  const [sessionData, setSessionData] = useState(null);
   // Auto-open the Pictionary guest overlay on students once the teacher has
   // assigned them a role (drawer or guesser) in the live session. We watch the
   // Tier-1 roster.{uid}.role field via the existing sessionData snapshot.
