@@ -1953,6 +1953,69 @@ const _NotebookQualityCard = ({ tone, label, value, suffix, denom, hint }) => {
   }[tone];
   return /* @__PURE__ */ React.createElement("div", { className: `${palette.bg} ${palette.border} border rounded-lg p-3`, title: hint }, /* @__PURE__ */ React.createElement("div", { className: "flex items-baseline justify-between mb-1" }, /* @__PURE__ */ React.createElement("span", { className: `text-[10px] font-bold uppercase tracking-wider ${palette.text}` }, label), denom ? /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-500 font-mono" }, denom) : null), /* @__PURE__ */ React.createElement("div", { className: `text-2xl font-black ${palette.num}` }, value === null || value === void 0 ? "\u2014" : value, suffix || ""), hint ? /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-600 mt-1 leading-snug" }, hint) : null);
 };
+const TeacherCommentThread = React.memo(({ studentId, resourceId, comments, onAdd, onDelete, t }) => {
+  const [draft, setDraft] = React.useState("");
+  const [expanded, setExpanded] = React.useState(false);
+  const list = comments || [];
+  const handleSubmit = (e) => {
+    if (e) e.preventDefault();
+    if (!draft.trim()) return;
+    onAdd(studentId, resourceId, draft);
+    setDraft("");
+  };
+  if (list.length === 0 && !expanded) {
+    return /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => setExpanded(true),
+        className: "mt-3 text-xs font-bold text-slate-500 hover:text-indigo-700 flex items-center gap-1.5 transition-colors",
+        "data-help-key": "dashboard_teacher_comment_add",
+        "aria-label": t("dashboard.comments.add_aria") || "Add a private teacher comment to this resource"
+      },
+      "\u{1F4AC} ",
+      t("dashboard.comments.add_btn") || "Add private note"
+    );
+  }
+  return /* @__PURE__ */ React.createElement("div", { className: "mt-3 border-t border-slate-200 pt-3", "data-help-key": "dashboard_teacher_comment_thread" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5" }, "\u{1F4AC} ", t("dashboard.comments.label") || "Teacher notes", list.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 normal-case font-normal" }, "(", list.length, ")"), /* @__PURE__ */ React.createElement("span", { className: "ml-auto text-slate-500 normal-case font-normal italic" }, t("dashboard.comments.privacy_note") || "Private to you \u2014 never shared with student")), list.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "space-y-2 mb-3" }, list.map((c) => /* @__PURE__ */ React.createElement("li", { key: c.id, className: "bg-amber-50/50 border-l-4 border-amber-400 rounded-r-md p-2 group" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed whitespace-pre-wrap flex-1" }, c.text), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => onDelete(studentId, resourceId, c.id),
+      className: "text-slate-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity text-xs",
+      "aria-label": t("dashboard.comments.delete_aria") || "Delete this comment",
+      title: t("dashboard.comments.delete_tooltip") || "Delete this comment"
+    },
+    "\u2715"
+  )), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500 mt-1 font-mono" }, new Date(c.timestamp).toLocaleString())))), /* @__PURE__ */ React.createElement("form", { onSubmit: handleSubmit, className: "flex gap-2 items-start" }, /* @__PURE__ */ React.createElement(
+    "textarea",
+    {
+      value: draft,
+      onChange: (e) => setDraft(e.target.value),
+      onKeyDown: (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key === "Enter") handleSubmit();
+      },
+      placeholder: t("dashboard.comments.placeholder") || "Note to yourself about this resource (Cmd/Ctrl+Enter to save)",
+      className: "flex-1 text-sm bg-white border border-slate-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-amber-300 resize-y min-h-[60px]",
+      rows: 2,
+      "aria-label": t("dashboard.comments.textarea_aria") || "New teacher comment"
+    }
+  ), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-1.5" }, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "submit",
+      disabled: !draft.trim(),
+      className: "px-3 py-1.5 text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white rounded-md disabled:opacity-40 disabled:cursor-not-allowed"
+    },
+    t("dashboard.comments.save_btn") || "Save"
+  ), list.length === 0 && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: () => setExpanded(false),
+      className: "px-3 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-700"
+    },
+    t("common.cancel") || "Cancel"
+  ))));
+});
 const ClassNotebookSection = React.memo(({ dashboardData, callGemini, addToast: addToast2, t }) => {
   const [insights, setInsights] = React.useState(null);
   const [insightsLoading, setInsightsLoading] = React.useState(false);
@@ -2345,6 +2408,47 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
   const modalRef = useRef(null);
   useFocusTrap(modalRef, true);
   const [gradedIds, setGradedIds] = useState(/* @__PURE__ */ new Set());
+  const [teacherComments, setTeacherComments] = useState(() => {
+    try {
+      const stored = localStorage.getItem("allo_teacher_comments");
+      if (stored) return new Map(JSON.parse(stored));
+    } catch (_) {
+    }
+    return /* @__PURE__ */ new Map();
+  });
+  React.useEffect(() => {
+    try {
+      localStorage.setItem("allo_teacher_comments", JSON.stringify(Array.from(teacherComments.entries())));
+    } catch (_) {
+    }
+  }, [teacherComments]);
+  const _commentKey = (studentId, resourceId) => `${studentId || "unknown"}:${resourceId || "unknown"}`;
+  const getCommentsFor = React.useCallback((studentId, resourceId) => {
+    return teacherComments.get(_commentKey(studentId, resourceId)) || [];
+  }, [teacherComments]);
+  const addComment = (studentId, resourceId, text) => {
+    const trimmed = (text || "").trim();
+    if (!trimmed) return;
+    setTeacherComments((prev) => {
+      const next = new Map(prev);
+      const key = _commentKey(studentId, resourceId);
+      const list = next.get(key) || [];
+      next.set(key, [...list, { id: "c-" + Date.now() + "-" + Math.random().toString(36).slice(2, 6), text: trimmed, timestamp: (/* @__PURE__ */ new Date()).toISOString() }]);
+      return next;
+    });
+    if (addToast2) addToast2(t("dashboard.comments.saved") || "Comment saved.", "success");
+  };
+  const deleteComment = (studentId, resourceId, commentId) => {
+    setTeacherComments((prev) => {
+      const next = new Map(prev);
+      const key = _commentKey(studentId, resourceId);
+      const list = next.get(key) || [];
+      const updated = list.filter((c) => c.id !== commentId);
+      if (updated.length === 0) next.delete(key);
+      else next.set(key, updated);
+      return next;
+    });
+  };
   const [studentFilter, setStudentFilter] = useState("all");
   const [activeTab, setActiveTab] = useState("students");
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -3184,7 +3288,17 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
           __html: generateResourceHTML ? generateResourceHTML(item, true, selectedStudent.responses || {}) : "<p>Error: Renderer not available.</p>"
         }
       }
-    )))), selectedStudent.history.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "text-center py-12 text-slate-600 italic" }, t("dashboard.empty.no_history")))) : /* @__PURE__ */ React.createElement(React.Fragment, null, dashboardData.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "relative flex flex-col items-center justify-center h-full text-slate-600 gap-4 border-4 border-dashed border-slate-300 rounded-3xl hover:bg-slate-100 hover:border-indigo-300 hover:text-indigo-500 transition-all cursor-pointer group min-h-[400px] bg-white" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 p-6 rounded-full shadow-sm mb-2 group-hover:scale-110 transition-transform" }, /* @__PURE__ */ React.createElement(Upload, { size: 48, className: "text-slate-600 group-hover:text-indigo-500" })), /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black text-slate-600 group-hover:text-indigo-700" }, t("dashboard.drop_files")), /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold opacity-70 bg-slate-200 px-3 py-1 rounded-full group-hover:bg-indigo-100 group-hover:text-indigo-600 transition-colors" }, t("dashboard.batch_supported")), /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement(
+      TeacherCommentThread,
+      {
+        studentId: selectedStudent.id,
+        resourceId: item.id,
+        comments: getCommentsFor(selectedStudent.id, item.id),
+        onAdd: addComment,
+        onDelete: deleteComment,
+        t
+      }
+    ))), selectedStudent.history.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "text-center py-12 text-slate-600 italic" }, t("dashboard.empty.no_history")))) : /* @__PURE__ */ React.createElement(React.Fragment, null, dashboardData.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "relative flex flex-col items-center justify-center h-full text-slate-600 gap-4 border-4 border-dashed border-slate-300 rounded-3xl hover:bg-slate-100 hover:border-indigo-300 hover:text-indigo-500 transition-all cursor-pointer group min-h-[400px] bg-white" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 p-6 rounded-full shadow-sm mb-2 group-hover:scale-110 transition-transform" }, /* @__PURE__ */ React.createElement(Upload, { size: 48, className: "text-slate-600 group-hover:text-indigo-500" })), /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black text-slate-600 group-hover:text-indigo-700" }, t("dashboard.drop_files")), /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold opacity-70 bg-slate-200 px-3 py-1 rounded-full group-hover:bg-indigo-100 group-hover:text-indigo-600 transition-colors" }, t("dashboard.batch_supported")), /* @__PURE__ */ React.createElement(
       "input",
       {
         "aria-label": t("common.upload_json_file"),
@@ -3273,6 +3387,9 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
       return /* @__PURE__ */ React.createElement("tr", { key: idx, className: `hover:bg-slate-50 transition-colors ${isGraded ? "bg-green-50/30" : ""}` }, /* @__PURE__ */ React.createElement("td", { className: "p-4 font-bold text-indigo-900 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("div", { className: "w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs" }, student.studentNickname.charAt(0).toUpperCase()), isGraded && /* @__PURE__ */ React.createElement("div", { className: "absolute -bottom-1 -right-1 bg-green-500 text-white rounded-full p-0.5 border border-white shadow-sm" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 8 }))), student.studentNickname, isGraded && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-green-700 bg-green-100 px-1.5 py-0.5 rounded ml-2 uppercase tracking-wider" }, t("dashboard.table.graded")), student.probeHistory && Object.keys(student.probeHistory).length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded ml-1 border border-amber-200", title: Object.values(student.probeHistory).flat().length + " probes" }, "\u{1F4CA}"), student.surveyResponses && student.surveyResponses.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded ml-1 border border-purple-200", title: student.surveyResponses.length + " surveys" }, "\u{1F4DD}"), student.sessionCounter > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-cyan-700 bg-cyan-50 px-1.5 py-0.5 rounded ml-1 border border-cyan-200", title: student.sessionCounter + " sessions" }, "\u{1F504}"), (() => {
         const noteCount = (student.history || []).filter((h) => h && (h.type === "note-taking" || h.type === "anchor-chart")).length;
         return noteCount > 0 ? /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-violet-700 bg-violet-50 px-1.5 py-0.5 rounded ml-1 border border-violet-200", title: noteCount + " notebook entries (notes + anchor charts)" }, "\u{1F4D3}") : null;
+      })(), (() => {
+        const commentCount = Array.from(teacherComments.keys()).filter((k) => k.startsWith(`${student.id}:`)).reduce((sum, k) => sum + (teacherComments.get(k) || []).length, 0);
+        return commentCount > 0 ? /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded ml-1 border border-amber-200", title: commentCount + " private teacher notes on this student's work" }, "\u{1F4AC}") : null;
       })()), /* @__PURE__ */ React.createElement("td", { className: "p-4 text-slate-600 font-mono text-xs" }, new Date(student.timestamp).toLocaleDateString(), " ", /* @__PURE__ */ React.createElement("span", { className: "hidden sm:inline" }, new Date(student.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }))), /* @__PURE__ */ React.createElement("td", { className: "p-4" }, /* @__PURE__ */ React.createElement("span", { className: "bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-bold border border-green-200" }, calculateScore(student.history))), /* @__PURE__ */ React.createElement("td", { className: "p-4" }, level !== "N/A" ? /* @__PURE__ */ React.createElement("span", { className: "bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full font-bold border border-purple-200 flex items-center gap-1 w-fit" }, /* @__PURE__ */ React.createElement(MapIcon, { size: 10 }), " Lvl ", level) : /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 text-xs" }, "-")), /* @__PURE__ */ React.createElement("td", { className: "p-4 text-right" }, /* @__PURE__ */ React.createElement(
         "button",
         {

@@ -4697,6 +4697,18 @@
       "unmarked_graded": "Cleared graded flag on {count} student(s).",
       "generating_notebooks_pdf": "Generating notebook PDF for {count} student(s)...",
       "generating_feedback": "Generating feedback messages for {count} student(s)..."
+    },
+    "comments": {
+      "add_aria": "Add a private teacher comment to this resource",
+      "add_btn": "Add private note",
+      "label": "Teacher notes",
+      "privacy_note": "Private to you — never shared with student",
+      "delete_aria": "Delete this comment",
+      "delete_tooltip": "Delete this comment",
+      "placeholder": "Note to yourself about this resource (Cmd/Ctrl+Enter to save)",
+      "textarea_aria": "New teacher comment",
+      "save_btn": "Save",
+      "saved": "Comment saved."
     }
   },
   "tools": {

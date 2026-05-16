@@ -2494,6 +2494,89 @@ const _NotebookQualityCard = ({ tone, label, value, suffix, denom, hint }) => {
   );
 };
 
+// ── TeacherCommentThread ─────────────────────────────────────────────────
+// Inline thread of teacher-private comments on a single student resource.
+// Teacher's annotations persist in localStorage on the dashboard side; never
+// synced back to the student (dashboard is one-way upload). Useful for:
+//   - per-resource feedback notes the teacher wants to remember for IEP team
+//   - tracking observations across multiple review passes
+//   - bundling comments into Research/Notebook PDF exports (future)
+const TeacherCommentThread = React.memo(({ studentId, resourceId, comments, onAdd, onDelete, t }) => {
+  const [draft, setDraft] = React.useState('');
+  const [expanded, setExpanded] = React.useState(false);
+  const list = comments || [];
+  const handleSubmit = (e) => {
+      if (e) e.preventDefault();
+      if (!draft.trim()) return;
+      onAdd(studentId, resourceId, draft);
+      setDraft('');
+  };
+  if (list.length === 0 && !expanded) {
+      return (
+          <button
+              onClick={() => setExpanded(true)}
+              className="mt-3 text-xs font-bold text-slate-500 hover:text-indigo-700 flex items-center gap-1.5 transition-colors"
+              data-help-key="dashboard_teacher_comment_add"
+              aria-label={t('dashboard.comments.add_aria') || 'Add a private teacher comment to this resource'}
+          >
+              💬 {t('dashboard.comments.add_btn') || 'Add private note'}
+          </button>
+      );
+  }
+  return (
+      <div className="mt-3 border-t border-slate-200 pt-3" data-help-key="dashboard_teacher_comment_thread">
+          <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+              💬 {t('dashboard.comments.label') || 'Teacher notes'}
+              {list.length > 0 && <span className="text-slate-600 normal-case font-normal">({list.length})</span>}
+              <span className="ml-auto text-slate-500 normal-case font-normal italic">{t('dashboard.comments.privacy_note') || 'Private to you — never shared with student'}</span>
+          </div>
+          {list.length > 0 && (
+              <ul className="space-y-2 mb-3">
+                  {list.map(c => (
+                      <li key={c.id} className="bg-amber-50/50 border-l-4 border-amber-400 rounded-r-md p-2 group">
+                          <div className="flex items-start justify-between gap-2">
+                              <div className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap flex-1">{c.text}</div>
+                              <button
+                                  onClick={() => onDelete(studentId, resourceId, c.id)}
+                                  className="text-slate-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity text-xs"
+                                  aria-label={t('dashboard.comments.delete_aria') || 'Delete this comment'}
+                                  title={t('dashboard.comments.delete_tooltip') || 'Delete this comment'}
+                              >✕</button>
+                          </div>
+                          <div className="text-[10px] text-slate-500 mt-1 font-mono">{new Date(c.timestamp).toLocaleString()}</div>
+                      </li>
+                  ))}
+              </ul>
+          )}
+          <form onSubmit={handleSubmit} className="flex gap-2 items-start">
+              <textarea
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                  onKeyDown={(e) => { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') handleSubmit(); }}
+                  placeholder={t('dashboard.comments.placeholder') || 'Note to yourself about this resource (Cmd/Ctrl+Enter to save)'}
+                  className="flex-1 text-sm bg-white border border-slate-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-amber-300 resize-y min-h-[60px]"
+                  rows={2}
+                  aria-label={t('dashboard.comments.textarea_aria') || 'New teacher comment'}
+              />
+              <div className="flex flex-col gap-1.5">
+                  <button
+                      type="submit"
+                      disabled={!draft.trim()}
+                      className="px-3 py-1.5 text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white rounded-md disabled:opacity-40 disabled:cursor-not-allowed"
+                  >{t('dashboard.comments.save_btn') || 'Save'}</button>
+                  {list.length === 0 && (
+                      <button
+                          type="button"
+                          onClick={() => setExpanded(false)}
+                          className="px-3 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-700"
+                      >{t('common.cancel') || 'Cancel'}</button>
+                  )}
+              </div>
+          </form>
+      </div>
+  );
+});
+
 // ── ClassNotebookSection ─────────────────────────────────────────────────
 // Class-wide aggregate of note-taking + anchor-chart activity, with an AI
 // button that surfaces patterns across the roster (parallel to the per-
@@ -3333,6 +3416,49 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
   const modalRef = useRef(null);
   useFocusTrap(modalRef, true);
   const [gradedIds, setGradedIds] = useState(new Set());
+  // Teacher comment threads per (student, resource). Persisted to localStorage
+  // since the dashboard is a one-way student→teacher upload and the comments
+  // are the teacher's PRIVATE annotations, not shared with the student.
+  // Shape: Map<string "{studentId}:{resourceId}", Array<{ id, text, timestamp }>>
+  const [teacherComments, setTeacherComments] = useState(() => {
+      try {
+          const stored = localStorage.getItem('allo_teacher_comments');
+          if (stored) return new Map(JSON.parse(stored));
+      } catch (_) {}
+      return new Map();
+  });
+  React.useEffect(() => {
+      try {
+          localStorage.setItem('allo_teacher_comments', JSON.stringify(Array.from(teacherComments.entries())));
+      } catch (_) {}
+  }, [teacherComments]);
+  const _commentKey = (studentId, resourceId) => `${studentId || 'unknown'}:${resourceId || 'unknown'}`;
+  const getCommentsFor = React.useCallback((studentId, resourceId) => {
+      return teacherComments.get(_commentKey(studentId, resourceId)) || [];
+  }, [teacherComments]);
+  const addComment = (studentId, resourceId, text) => {
+      const trimmed = (text || '').trim();
+      if (!trimmed) return;
+      setTeacherComments(prev => {
+          const next = new Map(prev);
+          const key = _commentKey(studentId, resourceId);
+          const list = next.get(key) || [];
+          next.set(key, [...list, { id: 'c-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6), text: trimmed, timestamp: new Date().toISOString() }]);
+          return next;
+      });
+      if (addToast) addToast(t('dashboard.comments.saved') || 'Comment saved.', 'success');
+  };
+  const deleteComment = (studentId, resourceId, commentId) => {
+      setTeacherComments(prev => {
+          const next = new Map(prev);
+          const key = _commentKey(studentId, resourceId);
+          const list = next.get(key) || [];
+          const updated = list.filter(c => c.id !== commentId);
+          if (updated.length === 0) next.delete(key);
+          else next.set(key, updated);
+          return next;
+      });
+  };
   const [studentFilter, setStudentFilter] = useState('all');
   const [activeTab, setActiveTab] = useState('students');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -4337,6 +4463,14 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                             }}
                         />
                     </div>
+                    <TeacherCommentThread
+                        studentId={selectedStudent.id}
+                        resourceId={item.id}
+                        comments={getCommentsFor(selectedStudent.id, item.id)}
+                        onAdd={addComment}
+                        onDelete={deleteComment}
+                        t={t}
+                    />
                 </div>
                 ))}
                 {selectedStudent.history.length === 0 && (
@@ -4482,6 +4616,11 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                                       {(() => {
                                                           const noteCount = (student.history || []).filter(h => h && (h.type === 'note-taking' || h.type === 'anchor-chart')).length;
                                                           return noteCount > 0 ? <span className="text-[11px] font-bold text-violet-700 bg-violet-50 px-1.5 py-0.5 rounded ml-1 border border-violet-200" title={noteCount + ' notebook entries (notes + anchor charts)'}>📓</span> : null;
+                                                      })()}
+                                                      {(() => {
+                                                          // Count teacher comments across all this student's resources
+                                                          const commentCount = Array.from(teacherComments.keys()).filter(k => k.startsWith(`${student.id}:`)).reduce((sum, k) => sum + (teacherComments.get(k) || []).length, 0);
+                                                          return commentCount > 0 ? <span className="text-[11px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded ml-1 border border-amber-200" title={commentCount + ' private teacher notes on this student\'s work'}>💬</span> : null;
                                                       })()}
                                                   </td>
                                                  <td className="p-4 text-slate-600 font-mono text-xs">
