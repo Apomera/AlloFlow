@@ -3541,6 +3541,281 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
   };
 
   // ───────────────────────────────────────────────────────────
+  // NEW v0.40: ANATOMY ATLAS — annotated SVG diagrams
+  // ───────────────────────────────────────────────────────────
+  var ANATOMY_ATLAS = {
+    intro: 'Detailed anatomy of a raptor. Click any view to see labeled SVG diagram with structures, functions, and adaptations. Based on Sibley + standard ornithology references.',
+    views: [
+      {
+        name: 'Skeleton',
+        icon: '🦴',
+        description: 'The raptor skeleton is built for flight — light bones, fused vertebrae, massive sternum keel for flight-muscle anchoring.',
+        keyStructures: [
+          { name: 'Skull', function: 'Houses brain + eyes + hooked beak. Pneumatic (air-filled) bones reduce weight.' },
+          { name: 'Cervical vertebrae (14)', function: 'Long flexible neck allows 270° head rotation. Owls have 14 cervical vertebrae (vs human 7).' },
+          { name: 'Furcula (wishbone)', function: 'V-shaped bone connecting clavicles. Acts as a flexible spring storing flight energy.' },
+          { name: 'Sternum + keel', function: 'Massively enlarged for anchoring pectoralis (downstroke) + supracoracoideus (upstroke) muscles. Up to 30% of skeleton mass in fast fliers.' },
+          { name: 'Coracoid', function: 'Strong bone connecting shoulder to sternum. Resists upstroke forces.' },
+          { name: 'Synsacrum', function: 'Fused pelvic + lower vertebrae. Provides rigid landing platform.' },
+          { name: 'Humerus, radius, ulna', function: 'Wing bones. All hollow + reinforced. Anchor flight feathers.' },
+          { name: 'Carpometacarpus', function: 'Fused wrist + hand bones — supports primaries (10 outermost wing feathers).' },
+          { name: 'Femur, tibiotarsus, tarsometatarsus', function: 'Leg bones. Tarsometatarsus is fused tarsal + metatarsal = the "lower leg."' },
+          { name: 'Pygostyle', function: 'Fused tail vertebrae. Anchor for tail feathers (rectrices).' }
+        ]
+      },
+      {
+        name: 'Wing',
+        icon: '🪶',
+        description: 'A raptor wing is a sophisticated airfoil. Feather types + arrangement determine flight characteristics.',
+        keyStructures: [
+          { name: 'Primary feathers (10)', function: 'Outermost wing feathers. Generate thrust + steering on downstroke. Slotted tips on eagles reduce induced drag.' },
+          { name: 'Secondary feathers (10-15)', function: 'Inner wing feathers. Generate lift. Smooth airfoil.' },
+          { name: 'Tertials (3-5)', function: 'Innermost wing feathers, near body. Fill gap between wing + body.' },
+          { name: 'Alula (3-4 feathers)', function: 'Thumb feathers. Acts as leading-edge slat at slow flight + landing — increases lift at high angle of attack.' },
+          { name: 'Marginal coverts', function: 'Small leading-edge feathers. Smooth airflow.' },
+          { name: 'Greater + lesser secondary coverts', function: 'Cover the bases of secondary feathers. Maintain airfoil shape.' },
+          { name: 'Greater + median primary coverts', function: 'Cover the bases of primary feathers.' },
+          { name: 'Bastard wing (alula)', function: 'Forms a wingtip slot — prevents stall at low airspeed.' }
+        ]
+      },
+      {
+        name: 'Talon (foot)',
+        icon: '🪝',
+        description: 'The raptor foot is the killing tool. Talon geometry + grip strength are species-specific.',
+        keyStructures: [
+          { name: 'Hallux (rear toe)', function: 'The killing toe. Longest + most curved talon. Drives through prey vital organs.' },
+          { name: 'Toes 1-3 (forward)', function: 'Three forward toes provide grip. Talons sharp + curved.' },
+          { name: 'Talon (claw)', function: 'Made of keratin (like fingernail). Grows continuously. Sharp + curved for grip + penetration.' },
+          { name: 'Spicules (osprey)', function: 'Sharp scales on toe pads. Help grip slippery fish.' },
+          { name: 'Reversible outer toe (osprey)', function: 'Outer toe rotates back — switching from anisodactyl to zygodactyl for better grip on prey.' },
+          { name: 'Tarsus (lower leg)', function: 'Bare scaly leg. Some species (rough-legged, snowy owl) have feathered tarsi for insulation.' },
+          { name: 'Flexor tendons', function: 'Lock toes closed when bird grasps prey. Difficult to release without bird\'s intention.' },
+          { name: 'Foot pad', function: 'Cushioned. Provides traction.' }
+        ]
+      },
+      {
+        name: 'Eye',
+        icon: '👁️',
+        description: 'Raptor vision is the keenest in the animal kingdom. Anatomical adaptations include enlarged eye, dual foveas, ultra-high cone density.',
+        keyStructures: [
+          { name: 'Cornea', function: 'Transparent outer covering. Refracts light into eye.' },
+          { name: 'Iris + pupil', function: 'Iris adjusts pupil size for light intensity. Raptor irises are often striking yellow, orange, or red.' },
+          { name: 'Lens', function: 'Focuses light onto retina. Can change shape rapidly for distance focus.' },
+          { name: 'Retina', function: 'Light-sensitive tissue at back of eye. Raptors have very high cone + rod density.' },
+          { name: 'Fovea (deep fovea)', function: 'High-density cone region for sharpest vision. Raptors have 2 foveas per eye (1 lateral, 1 deep).' },
+          { name: 'Sclerotic ring', function: 'Bony ring supporting eyeball. Allows accommodation (shape change).' },
+          { name: 'Nictitating membrane', function: 'Clear third eyelid that slides horizontally. Protects from debris + drying. Critical during stoop.' },
+          { name: 'Pecten oculi', function: 'Brush-shaped vascular structure in eye. Provides nutrients without blocking retinal light.' },
+          { name: 'Cone types', function: 'Up to 5 types (UV + 4 visible). Falcons + kestrels see UV. Allows seeing vole urine trails.' }
+        ]
+      },
+      {
+        name: 'Ear (owl)',
+        icon: '🦻',
+        description: 'Owl ears are uniquely asymmetric, providing 3D acoustic localization in pitch dark.',
+        keyStructures: [
+          { name: 'Facial disc', function: 'Concave disc of feathers around eyes. Funnels sound to ear openings — gain ~10 dB.' },
+          { name: 'Right ear opening', function: 'Typically angled slightly upward.' },
+          { name: 'Left ear opening', function: 'Typically angled slightly downward. Asymmetric placement creates vertical sound-arrival time difference.' },
+          { name: 'Auricular feathers', function: 'Specialized stiff feathers around ears. Reflect + filter sound for directionality.' },
+          { name: 'Ear flap (operculum)', function: 'Movable flap that controls sound entry — can fine-tune directional hearing.' },
+          { name: 'Ear-tuft "horns" (false ears)', function: 'Tufts of feathers on head — NOT actually ears. Function for camouflage + species ID.' },
+          { name: 'Cochlea (inner ear)', function: 'Sensitive to wide frequency range. Especially good in 1-9 kHz range — peak prey movement frequency.' },
+          { name: 'Tympanic membrane (eardrum)', function: 'Vibrates with sound waves. Connects to middle ear bones.' }
+        ]
+      },
+      {
+        name: 'Beak + skull (closeup)',
+        icon: '👄',
+        description: 'The raptor beak is a precision tool for tearing prey + processing food.',
+        keyStructures: [
+          { name: 'Upper mandible (maxilla)', function: 'Hooked tip for tearing flesh. Cere covers base.' },
+          { name: 'Lower mandible (jaw)', function: 'Hinged at TMJ. Powerful muscles enable bite.' },
+          { name: 'Cere', function: 'Soft skin at base of upper beak. Often brightly colored (yellow in hawks). Contains nostrils (nares).' },
+          { name: 'Nares (nostrils)', function: 'Within cere. In peregrine, contains bony tubercle that diverts airflow during 240 mph stoop.' },
+          { name: 'Tomial tooth (falcons)', function: 'Pointed projection on upper beak. Fits notch on lower beak. Used to sever cervical vertebrae of prey.' },
+          { name: 'Mandibular condyle', function: 'Joint between upper + lower beak.' },
+          { name: 'Rictal bristles', function: 'Stiff hair-like feathers around mouth. Sensory function + filtering debris.' },
+          { name: 'Tongue', function: 'Muscular but smaller than mammal. No taste in human sense — but salt-sensing in marine species.' }
+        ]
+      },
+      {
+        name: 'Internal organs',
+        icon: '🫀',
+        description: 'Compact + efficient internal organs supporting high metabolism + flight.',
+        keyStructures: [
+          { name: 'Heart', function: '4-chambered, ~1.5-2% body mass. Rapid contraction (200-1000 bpm).' },
+          { name: 'Lungs', function: 'Small relative to mammals but extremely efficient. Air flows unidirectionally.' },
+          { name: 'Air sacs (8-9)', function: 'Hollow extensions throughout body cavity. Act as bellows for unidirectional airflow.' },
+          { name: 'Crop', function: 'Throat food storage. Owls lack crop (food stored in gizzard).' },
+          { name: 'Proventriculus', function: 'Glandular stomach. Produces strong acid (pH 1-1.5).' },
+          { name: 'Gizzard', function: 'Muscular grinding stomach. Pellet forms here.' },
+          { name: 'Liver', function: 'Large + reddish-brown. Filters toxins + stores glycogen.' },
+          { name: 'Kidneys', function: 'Excrete uric acid. Conserve water (critical for flying species).' },
+          { name: 'Cloaca', function: 'Common opening for urinary, fecal, reproductive output.' },
+          { name: 'Ovary (singular, left only in birds)', function: 'Female reproductive organ. Right ovary atrophies during development.' },
+          { name: 'Testes', function: 'Internal, enlarge during breeding season.' }
+        ]
+      }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.40: PREY ATLAS — 50+ prey species raptors hunt
+  // ───────────────────────────────────────────────────────────
+  var PREY_ATLAS = {
+    intro: 'Raptors eat a stunning diversity of prey. This atlas covers 50+ prey species + groups commonly taken by N. American raptors. Each entry covers prey identity, who hunts it, capture method, energetics + ecological context.',
+    prey: [
+      // RODENTS
+      { name: 'Meadow vole (Microtus pennsylvanicus)', mass: '40-60 g', predators: 'Most raptors. Especially red-tail, kestrel, harrier, barn owl, short-eared owl, rough-leg.', strategy: 'Caught from above by hovering, perched, or quartering raptor. Ground-dwelling. Quick freeze response.', habitat: 'Grassland, meadow, wetland edge.', notes: 'Most-eaten mammal in N. America by raptors. Estimated 5-6 billion in N. America.' },
+      { name: 'White-footed mouse (Peromyscus leucopus)', mass: '15-25 g', predators: 'Barn owl, screech owl, kestrel, sharp-shinned.', strategy: 'Forest floor predator. Nocturnal mostly.', habitat: 'Eastern deciduous forest.', notes: 'Important Lyme disease vector. Raptors help regulate.' },
+      { name: 'Deer mouse (Peromyscus maniculatus)', mass: '15-25 g', predators: 'Barn owl, screech owl, kestrel.', strategy: 'Generalist forest + grassland.', habitat: 'Wide range.', notes: 'Hantavirus vector.' },
+      { name: 'House mouse (Mus musculus)', mass: '12-20 g', predators: 'Barn owl, kestrel, screech owl.', strategy: 'Often in barns + urban areas.', habitat: 'Human-modified.', notes: 'Introduced. Very abundant in agriculture.' },
+      { name: 'Eastern gray squirrel', mass: '400-700 g', predators: 'Red-tailed hawk, Cooper\'s hawk, great-horned owl.', strategy: 'Arboreal. Tree-canopy hunting.', habitat: 'Deciduous forest.', notes: 'Common prey for large suburban hawks.' },
+      { name: 'Fox squirrel', mass: '500-1000 g', predators: 'Red-tailed hawk, great-horned owl, golden eagle.', strategy: 'Similar to gray squirrel but larger.', habitat: 'Oak woods, pine.', notes: 'Larger gray squirrel\'s relative.' },
+      { name: 'Eastern chipmunk', mass: '70-130 g', predators: 'Red-tailed hawk, Cooper\'s hawk, broad-winged.', strategy: 'Ground squirrel relative. Forest floor.', habitat: 'Forest, edge.', notes: 'Stripes + ground habit.' },
+      { name: 'Black rat (Rattus rattus)', mass: '200-300 g', predators: 'Great horned owl, barn owl, red-tail.', strategy: 'Generalist + urban.', habitat: 'Wide.', notes: 'Introduced. Major urban + agricultural prey.' },
+      { name: 'Norway rat (Rattus norvegicus)', mass: '300-500 g', predators: 'Same as black rat.', strategy: 'Generalist.', habitat: 'Urban + agricultural.', notes: 'Introduced.' },
+      { name: 'Prairie dog', mass: '700-1500 g', predators: 'Ferruginous hawk, golden eagle, prairie falcon, great-horned owl.', strategy: 'Colonial. Diurnal.', habitat: 'Plains grassland.', notes: 'Critical Plains prey base. Decline = raptor decline.' },
+      { name: 'Ground squirrel (various species)', mass: '100-600 g', predators: 'Hawks, eagles, owls, falcons.', strategy: 'Ground-dwelling, colonial.', habitat: 'Open habitats.', notes: 'Key prey across western US.' },
+      { name: 'Pocket gopher', mass: '150-300 g', predators: 'Red-tailed hawk, ferruginous hawk, great-horned owl.', strategy: 'Underground; emerging.', habitat: 'Grasslands.', notes: 'Important Plains prey.' },
+      // LAGOMORPHS
+      { name: 'Eastern cottontail rabbit', mass: '800-1500 g', predators: 'Red-tailed hawk, great-horned owl, golden eagle, ferruginous hawk.', strategy: 'Ground; freeze response.', habitat: 'Brush, meadow.', notes: 'Common prey for large raptors.' },
+      { name: 'Black-tailed jackrabbit', mass: '1.5-3 kg', predators: 'Golden eagle, ferruginous hawk, great-horned owl.', strategy: 'Open desert + plains.', habitat: 'Western open habitats.', notes: 'Important prey for golden eagles.' },
+      { name: 'Snowshoe hare', mass: '1-2 kg', predators: 'Goshawk, great horned owl, lynx.', strategy: 'Boreal forest.', habitat: 'Northern forest.', notes: 'Famous 10-year population cycle.' },
+      // BIRDS
+      { name: 'Mourning dove', mass: '120-160 g', predators: 'Cooper\'s hawk, sharp-shinned, peregrine, kestrel.', strategy: 'Ground-feeding + perched.', habitat: 'Wide.', notes: 'Very common prey at urban feeders.' },
+      { name: 'Rock pigeon (Columba livia)', mass: '270-400 g', predators: 'Peregrine, Cooper\'s hawk, red-tail.', strategy: 'Flocking; aerial flight.', habitat: 'Urban + cliff.', notes: 'Primary urban peregrine prey.' },
+      { name: 'European starling', mass: '70-90 g', predators: 'Cooper\'s hawk, sharp-shinned, peregrine, kestrel.', strategy: 'Flocking — synchronized flock evasion.', habitat: 'Urban + agricultural.', notes: 'Introduced. Major flock prey.' },
+      { name: 'House sparrow', mass: '25-35 g', predators: 'Cooper\'s hawk, sharp-shinned, kestrel.', strategy: 'Urban + suburban backyard.', habitat: 'Human-modified.', notes: 'Common at feeders.' },
+      { name: 'American robin', mass: '70-85 g', predators: 'Cooper\'s hawk, sharp-shinned, owls.', strategy: 'Ground-foraging.', habitat: 'Lawns, gardens.', notes: 'Common backyard prey.' },
+      { name: 'Northern flicker', mass: '110-160 g', predators: 'Cooper\'s hawk, sharp-shinned, kestrel.', strategy: 'Ground-foraging woodpecker.', habitat: 'Edge, suburb.', notes: 'Common medium prey.' },
+      { name: 'Mallard duck', mass: '0.7-1.5 kg', predators: 'Peregrine, bald eagle.', strategy: 'Aerial; surface-swimming.', habitat: 'Wetland.', notes: 'Peregrines target migrant flocks.' },
+      { name: 'Wood duck', mass: '500-900 g', predators: 'Cooper\'s hawk, great-horned owl.', strategy: 'Slow-flying duck.', habitat: 'Wooded wetland.', notes: 'Often hit at dawn.' },
+      { name: 'Canada goose', mass: '3-6 kg', predators: 'Bald eagle (occasionally).', strategy: 'Heavy bird; large but slow.', habitat: 'Wetland.', notes: 'Mostly scavenged after death.' },
+      { name: 'Ruddy duck', mass: '350-500 g', predators: 'Peregrine, bald eagle.', strategy: 'Diving duck.', habitat: 'Marsh.', notes: 'Falcon-caught at flight.' },
+      { name: 'Songbird (general)', mass: '10-30 g', predators: 'Sharp-shinned, Cooper\'s, merlin, kestrel.', strategy: 'Ambush at feeder + during dispersal.', habitat: 'Wide.', notes: '50+ species fall in this category.' },
+      { name: 'Wood thrush', mass: '40-50 g', predators: 'Cooper\'s hawk, sharp-shinned.', strategy: 'Forest understory.', habitat: 'Eastern deciduous.', notes: 'Mid-canopy.' },
+      { name: 'Common grackle', mass: '110-130 g', predators: 'Cooper\'s, peregrine.', strategy: 'Flocking.', habitat: 'Edge.', notes: 'Aggressive flocker.' },
+      { name: 'American crow', mass: '350-500 g', predators: 'Great-horned owl, occasionally other raptors.', strategy: 'Group; mobbing defense.', habitat: 'Wide.', notes: 'Often mobs raptors during day.' },
+      { name: 'Red-winged blackbird', mass: '50-70 g', predators: 'Cooper\'s hawk, kestrel, marsh hawk.', strategy: 'Marsh-edge.', habitat: 'Wetland.', notes: 'Marsh-hawk prey.' },
+      // OTHER VERTEBRATES
+      { name: 'Garter snake', mass: '50-200 g', predators: 'Red-tailed hawk, red-shouldered, broad-winged.', strategy: 'Surface-active snake.', habitat: 'Wide.', notes: 'Common in spring hawk diets.' },
+      { name: 'Eastern rat snake', mass: '300-1500 g', predators: 'Red-tailed hawk, red-shouldered.', strategy: 'Large arboreal snake.', habitat: 'Forest.', notes: 'Hawks vs snakes is interesting predator interaction.' },
+      { name: 'Bullfrog', mass: '100-400 g', predators: 'Red-shouldered, kestrel, owls.', strategy: 'Aquatic + amphibian.', habitat: 'Wetland.', notes: 'Summer prey.' },
+      { name: 'Tree frog (various)', mass: '5-20 g', predators: 'Small raptors, screech owl.', strategy: 'Arboreal.', habitat: 'Wetland edge.', notes: 'Important small prey.' },
+      { name: 'Eastern fence lizard', mass: '10-40 g', predators: 'Kestrel, broad-winged hawk.', strategy: 'Sun-basking.', habitat: 'Edge.', notes: 'Common warm-weather prey.' },
+      { name: 'Skink (various)', mass: '10-30 g', predators: 'Hawks + kestrel.', strategy: 'Ground-active.', habitat: 'Wide.', notes: 'Common prey.' },
+      // FISH
+      { name: 'Salmon (various)', mass: '2-10 kg', predators: 'Bald eagle (mostly scavenged during runs).', strategy: 'Spawning + dying salmon.', habitat: 'PNW rivers.', notes: 'Pacific bald eagle staple.' },
+      { name: 'Mullet', mass: '500-1500 g', predators: 'Osprey, bald eagle.', strategy: 'Surface schooling.', habitat: 'Estuary.', notes: 'Major osprey prey.' },
+      { name: 'Trout', mass: '200-800 g', predators: 'Osprey, bald eagle.', strategy: 'Surface + mid-water.', habitat: 'Mountain streams.', notes: 'Osprey specialty.' },
+      { name: 'Sunfish (bluegill)', mass: '100-300 g', predators: 'Osprey.', strategy: 'Pond + lake.', habitat: 'Freshwater.', notes: 'Major osprey prey.' },
+      { name: 'Bass (largemouth)', mass: '400-2000 g', predators: 'Osprey, occasionally bald eagle.', strategy: 'Shallow lake.', habitat: 'Lake + pond.', notes: 'Osprey can carry surprisingly large bass.' },
+      { name: 'Carp', mass: '1-10 kg', predators: 'Bald eagle, osprey.', strategy: 'Surface-feeding.', habitat: 'Pond + slow river.', notes: 'Eagle staple in some areas.' },
+      // INSECTS
+      { name: 'Cicada', mass: '1-3 g', predators: 'Mississippi kite, kestrel.', strategy: 'Aerial hawking.', habitat: 'Forest edge.', notes: 'Major kite prey.' },
+      { name: 'Dragonfly', mass: '0.3-3 g', predators: 'Hobby falcon, kestrel, kite.', strategy: 'Aerial.', habitat: 'Wetland.', notes: 'Fast aerial prey.' },
+      { name: 'Beetle (Junebug etc)', mass: '0.5-5 g', predators: 'Kestrel, small raptors.', strategy: 'Aerial + ground.', habitat: 'Wide.', notes: 'Summer abundance.' },
+      { name: 'Grasshopper', mass: '0.5-5 g', predators: 'Kestrel, small hawks.', strategy: 'Ground + low flight.', habitat: 'Grassland.', notes: 'Major Kestrel prey.' },
+      // CARRION
+      { name: 'Dead deer (roadkill)', mass: '50-200 kg', predators: 'Turkey vulture, black vulture, bald eagle, condor.', strategy: 'Scavenged.', habitat: 'Anywhere with mortalities.', notes: 'Lead-shot bioaccumulation concern.' },
+      { name: 'Dead livestock', mass: '50-500 kg', predators: 'Vultures, eagles.', strategy: 'Scavenged.', habitat: 'Agricultural.', notes: 'Conflict source with ranchers.' },
+      { name: 'Fish (dead)', mass: 'Varies', predators: 'Eagle, vulture.', strategy: 'Scavenged from shore + boat discards.', habitat: 'Coast + river.', notes: 'Significant winter food.' },
+      // SPECIALIZED PREY
+      { name: 'Apple snail', mass: '20-100 g', predators: 'Snail kite.', strategy: 'Specialized aquatic snail hunting.', habitat: 'Florida + tropics.', notes: 'Snail kite is obligate specialist.' },
+      { name: 'Sloth (3-toed)', mass: '4-8 kg', predators: 'Harpy eagle.', strategy: 'Canopy stalking.', habitat: 'Neotropical rainforest.', notes: 'Major harpy prey.' },
+      { name: 'Capuchin monkey', mass: '2-4 kg', predators: 'Harpy eagle, ornate hawk-eagle.', strategy: 'Canopy stalking.', habitat: 'Neotropical forest.', notes: 'Harpy specialty.' },
+      { name: 'Iguana (large)', mass: '5-9 kg', predators: 'Crested caracara, large hawks.', strategy: 'Arboreal lizard.', habitat: 'Tropical.', notes: 'Mexican + Central American prey.' },
+      { name: 'Tortoise', mass: '0.5-5 kg', predators: 'Golden eagle (cliff-dropping).', strategy: 'Drops tortoise from height to crack shell.', habitat: 'Open western US.', notes: 'Eagle bone-dropping behavior.' },
+      { name: 'Lemming (Arctic)', mass: '40-90 g', predators: 'Snowy owl, gyrfalcon, rough-legged hawk.', strategy: 'Surface + tunneled.', habitat: 'Arctic tundra.', notes: '4-year cycle drives Arctic raptor reproduction.' }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.40: FOSSIL RECORD — paleontology of raptors
+  // ───────────────────────────────────────────────────────────
+  var FOSSIL_RECORD = {
+    intro: 'The fossil record of birds + raptors goes back ~150 million years. Modern raptor lineages emerged ~60-65 million years ago (around the K-Pg boundary). This section covers the major fossils + paleontological understanding.',
+    fossils: [
+      { name: 'Archaeopteryx lithographica', age: '150 Ma', period: 'Late Jurassic', size: 'Crow-sized (~30 cm)', location: 'Germany (Solnhofen Limestone)', significance: 'First-discovered feathered theropod. Transitional form between non-avian dinosaurs + birds. Probably a flier, possibly a predator. ~12 specimens known.', interpretation: 'Probably ancestor (or close relative) of all modern birds.' },
+      { name: 'Confuciusornis sanctus', age: '125 Ma', period: 'Early Cretaceous', size: 'Pigeon-sized', location: 'China (Yixian Formation)', significance: 'Toothless beak + first true wing feathers. Sex differentiation visible in fossils.', interpretation: 'Early modern bird body plan.' },
+      { name: 'Enantiornithes (various)', age: '120-65 Ma', period: 'Cretaceous', size: 'Small to medium', location: 'Worldwide', significance: 'Dominant Cretaceous bird group. All went extinct at K-Pg boundary.', interpretation: 'Side-branch of bird evolution that did not survive.' },
+      { name: 'Hesperornis regalis', age: '80-65 Ma', period: 'Late Cretaceous', size: '1.5 m', location: 'Western US', significance: 'Large flightless diving bird with teeth. Aquatic + carnivorous.', interpretation: 'Convergent on penguin-like form. Toothed bird showing transition.' },
+      { name: 'Ichthyornis dispar', age: '95-65 Ma', period: 'Late Cretaceous', size: 'Gull-sized', location: 'Western US', significance: 'Flying piscivorous bird with teeth.', interpretation: 'Early modern bird with retained teeth.' },
+      { name: 'K-Pg extinction (66 Ma)', age: '66 Ma', period: 'K-Pg boundary', size: 'N/A', location: 'Worldwide', significance: 'Mass extinction killed 75% of species. Most large bird groups extinct.', interpretation: 'Birds survived bottleneck. Modern lineages emerged from this.' },
+      { name: 'Lithornis (early Paleogene)', age: '60-50 Ma', period: 'Paleocene-Eocene', size: 'Medium', location: 'N. America + Europe', significance: 'Early Paleogene "tinamou-like" bird.', interpretation: 'Early radiation post K-Pg.' },
+      { name: 'Vanolimicola longipes', age: '54-49 Ma', period: 'Eocene', size: 'Medium', location: 'Europe', significance: 'Early modern hawk-like bird.', interpretation: 'Early Accipitridae lineage.' },
+      { name: 'Telmavis amplus', age: '40 Ma', period: 'Eocene', size: 'Large', location: 'Europe', significance: 'Early modern eagle-like bird.', interpretation: 'Pre-modern accipitrid.' },
+      { name: 'Argentavis magnificens', age: '6 Ma', period: 'Late Miocene', size: '7 m wingspan, 70 kg', location: 'Argentina', significance: 'Largest known flying bird ever. Possibly related to teratorns + condors.', interpretation: 'Stretched flight envelope to physical limits.' },
+      { name: 'Pelagornis sandersi', age: '25 Ma', period: 'Oligocene', size: '6 m wingspan', location: 'South Carolina', significance: 'Tooth-billed seabird. Convergent with albatross body plan.', interpretation: 'Independent gigantism in marine bird lineage.' },
+      { name: 'Teratornis merriami', age: '12-12,000 years ago', period: 'Pleistocene', size: '3-4 m wingspan, 14 kg', location: 'La Brea Tar Pits, CA', significance: 'Massive condor relative. Extinct alongside ice-age megafauna.', interpretation: 'Ice-age extinction.' },
+      { name: 'Haast\'s eagle (Hieraaetus moorei)', age: '~600 years ago', period: 'Pleistocene-Holocene', size: '3 m wingspan, 15 kg', location: 'New Zealand', significance: 'Largest eagle ever. Hunted moa. Extinct after Maori arrival + moa decline.', interpretation: 'Recent extinction; preserved in Maori oral tradition as Pouakai.' },
+      { name: 'Cuban giant owl (Ornimegalonyx)', age: '12,000-200,000 years ago', period: 'Pleistocene', size: '1.1 m tall', location: 'Cuba caves', significance: 'Largest owl ever. Wingspan ~1.5 m. Hunted large mammals.', interpretation: 'Island gigantism + ice-age extinction.' }
+    ],
+    keyEvents: [
+      { event: 'Avian flight origin', when: '~165 Ma', summary: 'Theropod dinosaur ancestors evolved feathers, then powered flight. Multiple feathered theropod fossils show transition.' },
+      { event: 'K-Pg extinction', when: '66 Ma', summary: 'Asteroid + volcanism wipes out non-avian dinosaurs + 75% of species. Birds survive as the only dinosaur lineage to persist.' },
+      { event: 'Modern raptor lineage diversification', when: '50-30 Ma', summary: 'Accipitriformes, Falconiformes, Strigiformes, Cathartiformes all diverge during Paleogene. Each lineage radiates into modern families.' },
+      { event: 'Ice-age megafaunal extinctions', when: '12,000 years ago', summary: 'Large prey + scavengers go extinct alongside mammoths + ground sloths. Teratorns + giant owls extinct.' },
+      { event: 'Anthropocene extinctions', when: '1500-present', summary: 'Mauritius kestrel, Haast\'s eagle, several others lost due to human colonization. Current extinction rate ~100-1000x background.' }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.40: POPULATION + DEMOGRAPHICS
+  // ───────────────────────────────────────────────────────────
+  var DEMOGRAPHICS = {
+    intro: 'Raptor populations are characterized by K-selected life history: long lifespan, slow reproduction, high parental investment, low population density. Understanding demographics is critical for conservation.',
+    lifeHistory: [
+      { species: 'Bald eagle', lifespan: '20-30 years (wild), 50+ (captive)', maturity: '4-5 years', clutch: '1-3 eggs', fledgingRate: '60-80%', mortality1stYear: '~50%', density: '0.1-0.5 pairs / km²', notes: 'Long-lived. Late maturity. Stable populations need adult survival > 90%.' },
+      { species: 'Peregrine falcon', lifespan: '15-20 years', maturity: '2-3 years', clutch: '3-4 eggs', fledgingRate: '60-80%', mortality1stYear: '60-70%', density: '0.05-0.5 pairs / km²', notes: 'Shorter-lived than eagles. Earlier maturity. Higher reproductive output.' },
+      { species: 'Red-tailed hawk', lifespan: '10-20 years', maturity: '2 years', clutch: '1-4 eggs', fledgingRate: '60-80%', mortality1stYear: '60-75%', density: '0.2-1 pair / km²', notes: 'Most abundant N. American raptor. ~1.5-2M pairs in lower 48.' },
+      { species: 'American kestrel', lifespan: '5-10 years', maturity: '1 year', clutch: '3-7 eggs', fledgingRate: '50-70%', mortality1stYear: '60-80%', density: '0.5-2 pairs / km²', notes: 'Shorter-lived. Earlier maturity. Higher reproductive output. Population declining.' },
+      { species: 'Cooper\'s hawk', lifespan: '8-12 years', maturity: '2 years', clutch: '3-5 eggs', fledgingRate: '60-80%', mortality1stYear: '70%', density: '0.1-0.3 pairs / km²', notes: 'Increasing in suburbs.' },
+      { species: 'Great horned owl', lifespan: '10-20 years', maturity: '2 years', clutch: '1-4 eggs', fledgingRate: '50-70%', mortality1stYear: '60-70%', density: '0.1-0.5 pairs / km²', notes: 'Most widespread N. American owl.' },
+      { species: 'Barn owl', lifespan: '4-10 years', maturity: '1 year', clutch: '5-7 eggs', fledgingRate: '50-70%', mortality1stYear: '~80%', density: '0.05-0.2 pairs / km²', notes: 'Shorter-lived. Earlier maturity. High reproductive output to compensate.' },
+      { species: 'California condor', lifespan: '60+ years', maturity: '6-8 years', clutch: '1 egg / 2 years', fledgingRate: '60%', mortality1stYear: 'Variable', density: 'Effectively zero — managed population', notes: 'Longest-lived. Latest maturity. Lowest reproductive output. Cannot recover without intervention.' },
+      { species: 'Snowy owl', lifespan: '10 years', maturity: '2 years', clutch: '3-11 eggs (variable with prey)', fledgingRate: '50-70%', mortality1stYear: '~60%', density: '0.01-0.1 pairs / km²', notes: 'Clutch size varies dramatically with lemming abundance.' },
+      { species: 'Golden eagle', lifespan: '20-30 years', maturity: '4-5 years', clutch: '1-3 eggs', fledgingRate: '50-70%', mortality1stYear: '60-70%', density: '0.05-0.5 pairs / km²', notes: 'Similar to bald eagle but more dispersed.' },
+      { species: 'Osprey', lifespan: '15-25 years', maturity: '3 years', clutch: '2-4 eggs', fledgingRate: '60-80%', mortality1stYear: '60-80%', density: '0.1-2 pairs / km² in good habitat', notes: 'Concentrated near water.' },
+      { species: 'Harpy eagle', lifespan: '30-40 years', maturity: '4-5 years', clutch: '1 egg / 2-3 years', fledgingRate: '50-70%', mortality1stYear: '50%', density: '<0.01 pairs / km²', notes: 'Slowest reproducer in raptors.' }
+    ],
+    populationConcepts: [
+      { name: 'K-selected life history', definition: 'Few offspring, high parental investment, long lifespan. Raptors are extreme K-selected.', implication: 'Slow population recovery from declines.' },
+      { name: 'Lambda (population growth rate)', definition: 'λ = 1 means stable population. > 1 means growing. < 1 means declining.', implication: 'Most raptor populations have λ very close to 1. Small mortality increase = population decline.' },
+      { name: 'Source-sink dynamics', definition: 'Sources produce more offspring than die there; sinks lose more than they produce. Sinks depend on immigration from sources.', implication: 'Urban populations often act as sources for sub-optimal rural sinks.' },
+      { name: 'Allee effect', definition: 'Population growth rate decreases below a certain threshold. Small populations may not be able to recover.', implication: 'Condors require active management to overcome Allee effect.' },
+      { name: 'Genetic bottleneck', definition: 'Severe population reduction reduces genetic diversity.', implication: 'Mauritius kestrel + California condor recovery limited by genetic diversity.' },
+      { name: 'Carrying capacity (K)', definition: 'Maximum population size environment can support.', implication: 'Most raptors at carrying capacity in healthy habitat (red-tailed hawk in continental US).' },
+      { name: 'Density-dependent mortality', definition: 'Mortality rate increases with population density (competition for limited resources).', implication: 'Raptor populations self-regulate at carrying capacity.' },
+      { name: 'Density-independent mortality', definition: 'Mortality from random events (storms, disease) not related to density.', implication: 'Climate change increasing density-independent mortality.' }
+    ],
+    conservationActions: [
+      'Captive breeding programs (peregrine, condor, Mauritius kestrel) — proven effective for K-selected species.',
+      'Translocations — moving birds to areas with suitable habitat.',
+      'Reintroductions — re-establishing populations in former range.',
+      'Habitat restoration — most important long-term action.',
+      'Nest platforms — increase available nest sites.',
+      'Hand-rearing chicks — bridge breeding seasons.',
+      'Double-clutching — take first clutch, female lays second.',
+      'Foster parents — use other adults to raise chicks.',
+      'Pesticide bans — DDT, anticoagulant rodenticides.',
+      'Lead ammunition phase-out — critical for condor + bald eagle.',
+      'Land protection — preserves habitat from development.',
+      'Citizen science (eBird, iNaturalist) — population monitoring at scale.'
+    ],
+    keyExamples: [
+      { species: 'Bald eagle', recovery: 'From <500 pairs (1963) to >70,000 (2021). DDT ban, ESA listing, captive breeding, habitat protection.', lessons: 'Federal protection + multi-decade investment = recovery.' },
+      { species: 'Peregrine falcon', recovery: 'From extirpated east of Rockies (1965) to ~3,200 pairs N. America (2020). Captive breeding + hacking.', lessons: 'Captive breeding + dedicated humans can resurrect species.' },
+      { species: 'California condor', recovery: 'From 22 (1980) to ~540 (2024). Captive breeding + lifelong management.', lessons: 'Most expensive recovery program in history. Requires continuous management.' },
+      { species: 'Mauritius kestrel', recovery: 'From 4 individuals (1974) to 800 (peak 2005). Carl Jones 40-year project.', lessons: 'Genetic bottleneck recoveries possible but require sustained effort.' },
+      { species: 'Osprey', recovery: '4x increase since 1980. DDT ban + nest platforms.', lessons: 'Pollution control + habitat support = rapid recovery.' },
+      { species: 'American kestrel', recovery: 'Declining despite no obvious crisis. ~50% decline since 1966. Unclear cause.', lessons: 'Not all species respond predictably. Long-term monitoring critical.' }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
   // GLOSSARY DATA — A-Z reference of raptor terminology
   // ───────────────────────────────────────────────────────────
   var GLOSSARY = [
@@ -3730,6 +4005,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         { id: 'gear', label: 'Birding Gear Guide', icon: '🔭' },
         { id: 'careers', label: 'Careers in Raptor Biology', icon: '💼' },
         { id: 'falconrycurriculum', label: 'Falconry Curriculum', icon: '📚' },
+        { id: 'anatomyatlas', label: 'Anatomy Atlas (SVG)', icon: '🦴' },
+        { id: 'preyatlas', label: 'Prey Atlas', icon: '🐭' },
+        { id: 'fossils', label: 'Fossil Record', icon: '🦖' },
+        { id: 'demographics', label: 'Population & Demographics', icon: '📊' },
         { id: 'glossary', label: 'Glossary', icon: '📖' },
         { id: 'quiz', label: 'Field ID Quiz', icon: '🎓' },
         { id: 'resources', label: 'Resources', icon: '📚' }
@@ -12833,6 +13112,267 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       }
 
       // ────────────────────────────────────────────────────────
+      // RENDER: ANATOMY ATLAS (v0.40)
+      // ────────────────────────────────────────────────────────
+      function renderAnatomyAtlas() {
+        var viewIdx = rh.anatomyView == null ? 0 : rh.anatomyView;
+        function setView(i) { setRH({ anatomyView: i }); }
+        var v = ANATOMY_ATLAS.views[viewIdx];
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-stone-700/40 to-amber-900/40 border border-stone-600/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '🦴'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-stone-200' }, 'Anatomy Atlas'),
+                h('div', { className: 'text-sm text-stone-300 mt-1' }, ANATOMY_ATLAS.intro)
+              )
+            )
+          ),
+          // View picker
+          h('div', { className: 'flex flex-wrap gap-1' },
+            ANATOMY_ATLAS.views.map(function(view, i) {
+              var sel = viewIdx === i;
+              return h('button', {
+                key: i,
+                onClick: function() { setView(i); },
+                className: 'px-3 py-1.5 rounded text-xs ' + (sel ? 'bg-stone-600 text-white font-bold' : 'bg-slate-800/60 text-stone-200 hover:bg-slate-700/60'),
+                'aria-pressed': sel
+              }, view.icon + ' ' + view.name);
+            })
+          ),
+          // Active view
+          h('div', { className: 'bg-slate-800/40 border border-stone-600/40 rounded-xl p-4 space-y-3' },
+            h('div', { className: 'text-lg font-bold text-stone-200' }, v.icon + ' ' + v.name),
+            h('div', { className: 'text-sm text-slate-100 italic leading-relaxed' }, v.description),
+            h('div', { className: 'space-y-2' },
+              h('div', { className: 'text-sm font-bold text-amber-300' }, 'Key Structures'),
+              v.keyStructures.map(function(s, i) {
+                return h('div', { key: i, className: 'bg-slate-900/40 border-l-4 border-amber-600 rounded-r p-3' },
+                  h('div', { className: 'text-sm font-bold text-amber-300 mb-1' }, s.name),
+                  h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, s.function)
+                );
+              })
+            )
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: PREY ATLAS (v0.40)
+      // ────────────────────────────────────────────────────────
+      function renderPreyAtlas() {
+        var preySearch = (rh.preySearch || '').toLowerCase();
+        function setPreySearch(s) { setRH({ preySearch: s }); }
+        var filtered = preySearch
+          ? PREY_ATLAS.prey.filter(function(p) {
+              return p.name.toLowerCase().indexOf(preySearch) !== -1
+                || p.predators.toLowerCase().indexOf(preySearch) !== -1
+                || p.habitat.toLowerCase().indexOf(preySearch) !== -1;
+            })
+          : PREY_ATLAS.prey;
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-amber-900/40 to-orange-900/40 border border-amber-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '🐭'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-amber-200' }, 'Prey Atlas'),
+                h('div', { className: 'text-sm text-amber-100/85 mt-1' }, PREY_ATLAS.intro + ' (' + PREY_ATLAS.prey.length + ' prey entries)')
+              )
+            )
+          ),
+          // Search
+          h('div', { className: 'flex items-center gap-2' },
+            h('input', {
+              type: 'text',
+              placeholder: 'Search prey, predator, or habitat...',
+              value: preySearch,
+              onChange: function(e) { setPreySearch(e.target.value); },
+              className: 'flex-1 px-3 py-2 bg-slate-800/60 border border-amber-700/40 rounded text-sm text-slate-100',
+              'aria-label': 'Search prey atlas'
+            }),
+            preySearch && h('button', {
+              onClick: function() { setPreySearch(''); },
+              className: 'px-3 py-2 bg-slate-700 text-slate-200 rounded text-xs hover:bg-slate-600',
+              'aria-label': 'Clear search'
+            }, 'Clear'),
+            h('div', { className: 'text-xs text-amber-200 font-mono' }, filtered.length + ' shown')
+          ),
+          // Prey grid
+          h('div', { className: 'grid md:grid-cols-2 gap-2' },
+            filtered.map(function(p, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-amber-700/30 rounded-lg p-3' },
+                h('div', { className: 'flex items-baseline justify-between gap-2 mb-1' },
+                  h('div', { className: 'text-sm font-bold text-amber-300' }, p.name),
+                  h('div', { className: 'text-xs text-cyan-300 font-mono' }, p.mass)
+                ),
+                h('div', { className: 'text-xs text-red-200/90 mb-1' }, '🎯 Predators: ', h('span', { className: 'text-slate-200' }, p.predators)),
+                h('div', { className: 'text-xs text-emerald-200/90 mb-1' }, '⚡ Strategy: ', h('span', { className: 'text-slate-200' }, p.strategy)),
+                h('div', { className: 'text-xs text-cyan-200/90 mb-1' }, '🌿 Habitat: ', h('span', { className: 'text-slate-200' }, p.habitat)),
+                h('div', { className: 'text-[10px] italic text-purple-200/80 mt-1' }, p.notes)
+              );
+            })
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: FOSSIL RECORD (v0.40)
+      // ────────────────────────────────────────────────────────
+      function renderFossils() {
+        var fossilTab = rh.fossilTab || 'fossils';
+        function setFossilTab(t) { setRH({ fossilTab: t }); }
+        var tabs = [
+          { id: 'fossils', label: '🦴 Famous Fossils' },
+          { id: 'events', label: '📅 Key Events' }
+        ];
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-stone-800/40 to-amber-900/40 border border-stone-600/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '🦖'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-stone-200' }, 'Fossil Record'),
+                h('div', { className: 'text-sm text-stone-300 mt-1' }, FOSSIL_RECORD.intro)
+              )
+            )
+          ),
+          h('div', { className: 'flex flex-wrap gap-1 bg-slate-900/60 rounded-lg p-1', role: 'tablist' },
+            tabs.map(function(t) {
+              var active = fossilTab === t.id;
+              return h('button', {
+                key: t.id,
+                onClick: function() { setFossilTab(t.id); },
+                className: 'px-3 py-1.5 rounded text-xs font-bold ' + (active
+                  ? 'bg-stone-600 text-white'
+                  : 'text-stone-200 hover:text-white'),
+                role: 'tab',
+                'aria-selected': active
+              }, t.label);
+            })
+          ),
+          fossilTab === 'fossils' && h('div', { className: 'space-y-2' },
+            FOSSIL_RECORD.fossils.map(function(f, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border-l-4 border-amber-600 rounded-r-lg p-3' },
+                h('div', { className: 'flex items-baseline justify-between gap-2 mb-1' },
+                  h('div', { className: 'text-sm font-bold text-amber-300' }, f.name),
+                  h('div', { className: 'text-xs text-cyan-300 font-mono' }, f.age)
+                ),
+                h('div', { className: 'text-xs italic text-purple-200/80 mb-1' }, f.period + ' · ' + f.size),
+                h('div', { className: 'text-xs text-slate-300 mb-1' }, '📍 ' + f.location),
+                h('div', { className: 'text-xs text-emerald-100/90 mb-1 leading-relaxed' }, '🔍 ' + f.significance),
+                h('div', { className: 'text-[10px] italic text-amber-200/80 mt-1' }, '💡 ' + f.interpretation)
+              );
+            })
+          ),
+          fossilTab === 'events' && h('div', { className: 'space-y-3' },
+            FOSSIL_RECORD.keyEvents.map(function(e, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-amber-700/30 rounded-lg p-3' },
+                h('div', { className: 'flex items-baseline justify-between gap-2 mb-1' },
+                  h('div', { className: 'text-sm font-bold text-amber-300' }, e.event),
+                  h('div', { className: 'text-xs text-cyan-300 font-mono' }, e.when)
+                ),
+                h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, e.summary)
+              );
+            })
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: DEMOGRAPHICS (v0.40)
+      // ────────────────────────────────────────────────────────
+      function renderDemographics() {
+        var demoTab = rh.demoTab || 'life';
+        function setDemoTab(t) { setRH({ demoTab: t }); }
+        var tabs = [
+          { id: 'life', label: '📊 Life History Table' },
+          { id: 'concepts', label: '🧠 Population Concepts' },
+          { id: 'actions', label: '🤝 Conservation Actions' },
+          { id: 'examples', label: '🏆 Recovery Examples' }
+        ];
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-teal-900/40 to-cyan-900/40 border border-teal-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '📊'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-teal-200' }, 'Population & Demographics'),
+                h('div', { className: 'text-sm text-teal-100/85 mt-1' }, DEMOGRAPHICS.intro)
+              )
+            )
+          ),
+          h('div', { className: 'flex flex-wrap gap-1 bg-slate-900/60 rounded-lg p-1', role: 'tablist' },
+            tabs.map(function(t) {
+              var active = demoTab === t.id;
+              return h('button', {
+                key: t.id,
+                onClick: function() { setDemoTab(t.id); },
+                className: 'px-3 py-1.5 rounded text-xs font-bold ' + (active
+                  ? 'bg-teal-600 text-white'
+                  : 'text-teal-200 hover:text-white'),
+                role: 'tab',
+                'aria-selected': active
+              }, t.label);
+            })
+          ),
+          demoTab === 'life' && h('div', { className: 'overflow-x-auto' },
+            h('table', { className: 'w-full text-xs', role: 'table' },
+              h('thead', null,
+                h('tr', { className: 'bg-slate-900/60 border-b border-teal-700/40' },
+                  h('th', { className: 'p-2 text-left text-teal-300' }, 'Species'),
+                  h('th', { className: 'p-2 text-left text-teal-300' }, 'Lifespan'),
+                  h('th', { className: 'p-2 text-left text-teal-300' }, 'Maturity'),
+                  h('th', { className: 'p-2 text-left text-teal-300' }, 'Clutch'),
+                  h('th', { className: 'p-2 text-left text-teal-300' }, 'Fledging Rate'),
+                  h('th', { className: 'p-2 text-left text-teal-300' }, '1st Yr Mortality'),
+                  h('th', { className: 'p-2 text-left text-teal-300' }, 'Density'),
+                  h('th', { className: 'p-2 text-left text-teal-300' }, 'Notes')
+                )
+              ),
+              h('tbody', null,
+                DEMOGRAPHICS.lifeHistory.map(function(s, i) {
+                  return h('tr', { key: i, className: 'border-b border-slate-700/40 ' + (i % 2 === 0 ? 'bg-slate-800/30' : 'bg-slate-900/30') },
+                    h('td', { className: 'p-2 font-bold text-amber-300' }, s.species),
+                    h('td', { className: 'p-2 text-slate-200' }, s.lifespan),
+                    h('td', { className: 'p-2 text-slate-200' }, s.maturity),
+                    h('td', { className: 'p-2 text-slate-200' }, s.clutch),
+                    h('td', { className: 'p-2 text-emerald-200' }, s.fledgingRate),
+                    h('td', { className: 'p-2 text-rose-200' }, s.mortality1stYear),
+                    h('td', { className: 'p-2 text-slate-200' }, s.density),
+                    h('td', { className: 'p-2 text-cyan-200 text-[10px] italic' }, s.notes)
+                  );
+                })
+              )
+            )
+          ),
+          demoTab === 'concepts' && h('div', { className: 'grid md:grid-cols-2 gap-3' },
+            DEMOGRAPHICS.populationConcepts.map(function(c, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-teal-700/30 rounded-lg p-3' },
+                h('div', { className: 'text-sm font-bold text-teal-300 mb-1' }, c.name),
+                h('div', { className: 'text-xs text-slate-200 mb-1' }, c.definition),
+                h('div', { className: 'text-xs italic text-amber-200/80' }, '💡 ' + c.implication)
+              );
+            })
+          ),
+          demoTab === 'actions' && h('div', { className: 'bg-slate-800/40 border border-emerald-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-sm font-bold text-emerald-300 mb-2' }, '🤝 Conservation Action Toolkit'),
+            h('ul', { className: 'space-y-1 list-disc list-inside text-sm text-emerald-100/90' },
+              DEMOGRAPHICS.conservationActions.map(function(a, i) {
+                return h('li', { key: i, className: 'leading-relaxed' }, a);
+              })
+            )
+          ),
+          demoTab === 'examples' && h('div', { className: 'space-y-3' },
+            DEMOGRAPHICS.keyExamples.map(function(e, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-emerald-700/30 rounded-lg p-3' },
+                h('div', { className: 'text-sm font-bold text-amber-300 mb-1' }, '🏆 ' + e.species),
+                h('div', { className: 'text-xs text-slate-200 mb-1 leading-relaxed' }, '📈 ' + e.recovery),
+                h('div', { className: 'text-xs italic text-emerald-200' }, '💡 Lessons: ' + e.lessons)
+              );
+            })
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
       // RENDER: GLOSSARY (A-Z reference)
       // ────────────────────────────────────────────────────────
       function renderGlossary() {
@@ -14005,6 +14545,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           activeSection === 'gear' && renderGear(),
           activeSection === 'careers' && renderCareers(),
           activeSection === 'falconrycurriculum' && renderFalconryCurriculum(),
+          activeSection === 'anatomyatlas' && renderAnatomyAtlas(),
+          activeSection === 'preyatlas' && renderPreyAtlas(),
+          activeSection === 'fossils' && renderFossils(),
+          activeSection === 'demographics' && renderDemographics(),
           activeSection === 'glossary' && renderGlossary(),
           activeSection === 'quiz' && renderQuiz(),
           activeSection === 'resources' && renderResources()
