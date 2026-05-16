@@ -5811,7 +5811,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // Auto-open the Pictionary guest overlay on students once the teacher has
   // assigned them a role (drawer or guesser) in the live session. We watch the
   // Tier-1 roster.{uid}.role field via the existing sessionData snapshot.
-  const _picMyRole = (!isTeacherMode && user && user.uid && sessionData && sessionData.roster && sessionData.roster[user.uid] && sessionData.roster[user.uid].role) || null;
+  const _picMyRoleRaw = (!isTeacherMode && user && user.uid && sessionData && sessionData.roster && sessionData.roster[user.uid] && sessionData.roster[user.uid].role) || null;
+  const _picRoundActive = !!(sessionData && sessionData.pictionaryRound && sessionData.pictionaryRound.active);
+  // Late-joiner default: if a round is active but the student doesn't have a
+  // role yet (they joined the session AFTER the teacher started the round),
+  // treat them as a guesser so they can still watch + guess.
+  const _picMyRole = _picMyRoleRaw || (_picRoundActive ? 'guesser' : null);
   React.useEffect(() => {
     if (isTeacherMode) return;
     if (!activeSessionCode || !user || !user.uid) return;
@@ -7701,12 +7706,15 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   }, [history]);
   const notebookEntryCount = React.useMemo(() => {
       if (!history) return 0;
-      return history.filter(h => h && h.type === 'note-taking').length;
+      // The Notebook overlay surfaces both note-taking AND anchor-chart entries.
+      return history.filter(h => h && (h.type === 'note-taking' || h.type === 'anchor-chart')).length;
   }, [history]);
   const handleSelectNotebookEntry = React.useCallback((entry) => {
       if (!entry) return;
       setGeneratedContent(entry);
-      setActiveView('note-taking');
+      // Route to the correct view based on entry type — note-taking and
+      // anchor-chart are distinct top-level views with their own renderers.
+      setActiveView(entry.type === 'anchor-chart' ? 'anchor-chart' : 'note-taking');
       setShowNotebook(false);
   }, []);
   const fetchCloudHistory = async () => {
