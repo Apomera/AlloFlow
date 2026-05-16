@@ -12049,6 +12049,511 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     );
   }
 
+  // ── EEE. PERSONAL ACHIEVEMENT WALL (Wave 12) ──
+  // Visual gallery of achievements. Categorized. Photo + caption +
+  // date + reflection. Counters imposter syndrome.
+  function PersonalAchievementWall(props) {
+    if (!R) return null;
+    var data = props.data || { achievements: [] };
+    var setData = props.setData;
+    var fs = R.useState({ title: '', category: 'academic', date: todayISO(), reflection: '' });
+    var form = fs[0]; var setForm = fs[1];
+
+    var CATS = [
+      { id: 'academic',  label: 'Academic',  icon: '📚', color: '#3b82f6' },
+      { id: 'personal',  label: 'Personal growth', icon: '🌱', color: '#10b981' },
+      { id: 'creative',  label: 'Creative',  icon: '🎨', color: '#a855f7' },
+      { id: 'social',    label: 'Social + relational', icon: '🤝', color: '#ec4899' },
+      { id: 'athletic',  label: 'Athletic',  icon: '🏃', color: '#fbbf24' },
+      { id: 'service',   label: 'Service',   icon: '💛', color: '#06b6d4' },
+      { id: 'overcome',  label: 'Things I overcame', icon: '⛰', color: '#ef4444' }
+    ];
+
+    function save() {
+      if (!form.title.trim()) { alert('Need a title.'); return; }
+      var a = Object.assign({ id: tkId() }, form);
+      setData({ achievements: [a].concat(data.achievements || []) });
+      setForm({ title: '', category: 'academic', date: todayISO(), reflection: '' });
+    }
+    function remove(id) { setData({ achievements: (data.achievements || []).filter(function(a) { return a.id !== id; }) }); }
+
+    var achievements = data.achievements || [];
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🏆', 'Achievement Wall', 'YOUR gallery of accomplishments. Visual record that counters imposter syndrome.', '#fbbf24'),
+
+      tkCard('#fbbf24',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, '🏆 Add an achievement'),
+          tkInput(form.title, function(v) { setForm(Object.assign({}, form, { title: v })); }, 'What did you do? (e.g., "Got into AP Bio", "Made varsity team", "Finished first novel")', { marginBottom: 8 }),
+          hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 } },
+            CATS.map(function(c) {
+              var on = form.category === c.id;
+              return hh('button', { key: 'ac-' + c.id,
+                onClick: function() { setForm(Object.assign({}, form, { category: c.id })); },
+                style: { padding: '6px 10px', borderRadius: 6, background: on ? c.color + '30' : 'rgba(15,23,42,0.5)', color: on ? c.color : '#94a3b8', border: '1px solid ' + (on ? c.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
+              }, c.icon + ' ' + c.label);
+            })
+          ),
+          hh('input', { type: 'date', value: form.date,
+            onChange: function(e) { setForm(Object.assign({}, form, { date: e.target.value })); },
+            style: { width: '100%', padding: '10px 12px', fontSize: 12, color: '#fbbf24', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(251,191,36,0.40)', borderRadius: 6, boxSizing: 'border-box', marginBottom: 8 }
+          }),
+          tkTextarea(form.reflection, function(v) { setForm(Object.assign({}, form, { reflection: v })); }, 'Reflection: what did this take? What did you learn?', 2, { marginBottom: 8 }),
+          tkBtn('💾 Add', save, 'primary')
+        )
+      ),
+
+      achievements.length === 0 ? tkEmptyState('🏆', 'No achievements yet. Add your first — anything counts.', null, null)
+      : hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
+          achievements.map(function(a) {
+            var c = CATS.filter(function(x) { return x.id === a.category; })[0] || CATS[0];
+            return hh('div', { key: 'av-' + a.id, style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, ' + c.color + '15, rgba(15,23,42,0.7))', border: '1px solid ' + c.color + '40', borderLeft: '4px solid ' + c.color } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 } },
+                hh('div', null,
+                  hh('div', { style: { fontSize: 24, marginBottom: 4 } }, c.icon),
+                  hh('strong', { style: { fontSize: 13, color: c.color, lineHeight: 1.4 } }, a.title)
+                ),
+                hh('button', { onClick: function() { remove(a.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: 12 } }, '✕')
+              ),
+              hh('div', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 4 } }, a.date + ' · ' + c.label),
+              a.reflection ? hh('div', { style: { marginTop: 8, padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.4)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, fontStyle: 'italic' } }, a.reflection) : null
+            );
+          })
+        )
+    );
+  }
+
+  // ── FFF. PERSONAL AFFIRMATION LIBRARY (Wave 12) ──
+  // Curated + custom affirmations. Daily rotation. Not "magical
+  // thinking" — research-backed self-affirmation theory (Steele 1988).
+  function PersonalAffirmations(props) {
+    if (!R) return null;
+    var data = props.data || { custom: [], favorites: [], lastReadDate: null };
+    var setData = props.setData;
+    var ns = R.useState(''); var newOne = ns[0]; var setNewOne = ns[1];
+
+    var BUILTIN = [
+      'I am allowed to take up space.',
+      'My pace is my pace. Comparison is the thief of joy.',
+      'I am learning. Learning includes not-yet-knowing.',
+      'I deserve accommodations because I have a brain that works in a specific way.',
+      'Asking for help is a skill, not a weakness.',
+      'My identity is bigger than my grades.',
+      'I am the kind of person who finishes hard things.',
+      'I can do hard things. I have evidence — I\'ve done hard things before.',
+      'Being neurodivergent is not a problem to fix.',
+      'Rest is productive.',
+      'I am exactly where I need to be in my own story.',
+      'My worth is not contingent on my output today.',
+      'I am building a life that fits me.',
+      'I am allowed to change my mind.',
+      'I am allowed to not have everything figured out.',
+      'Small steps in the right direction count.',
+      'My voice matters in this conversation.',
+      'I am someone\'s favorite person.',
+      'I can disagree with someone and still respect them. They can do the same to me.',
+      'I do not need permission to be myself.'
+    ];
+
+    var custom = data.custom || [];
+    var favorites = data.favorites || [];
+    var all = BUILTIN.map(function(t, i) { return { id: 'b-' + i, text: t, builtin: true }; }).concat(custom.map(function(t, i) { return { id: 'c-' + i, text: t, builtin: false }; }));
+
+    function addCustom() {
+      if (!newOne.trim()) return;
+      setData(Object.assign({}, data, { custom: custom.concat([newOne.trim()]) }));
+      setNewOne('');
+    }
+    function removeCustom(text) {
+      setData(Object.assign({}, data, { custom: custom.filter(function(t) { return t !== text; }) }));
+    }
+    function toggleFav(id) {
+      var newFavs = favorites.indexOf(id) >= 0 ? favorites.filter(function(f) { return f !== id; }) : favorites.concat([id]);
+      setData(Object.assign({}, data, { favorites: newFavs }));
+    }
+
+    // Random daily — same each day via seed
+    function dailyAffirmation() {
+      var today = todayISO();
+      var seed = today.split('-').reduce(function(s, p) { return s + parseInt(p, 10); }, 0);
+      var pool = favorites.length > 0 ? all.filter(function(a) { return favorites.indexOf(a.id) >= 0; }) : all;
+      return pool[seed % pool.length];
+    }
+
+    var daily = dailyAffirmation();
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('✨', 'Affirmation Library', 'Self-affirmation theory (Steele 1988): briefly remembering what matters to you buffers against threats to identity.', '#fbbf24'),
+
+      // Daily card
+      daily ? hh('div', { style: { padding: 24, borderRadius: 14, background: 'linear-gradient(135deg, rgba(251,191,36,0.25), rgba(15,23,42,0.7))', border: '2px solid #fbbf24', marginBottom: 14, textAlign: 'center' } },
+        hh('div', { style: { fontSize: 10, color: '#fbbf24', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 } }, '✨ Today'),
+        hh('div', { style: { fontSize: 16, color: '#e2e8f0', lineHeight: 1.65, fontStyle: 'italic', fontFamily: 'Georgia, serif' } }, '"' + daily.text + '"')
+      ) : null,
+
+      // Add custom
+      tkCard('#fbbf24',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, '+ Add your own affirmation'),
+          hh('div', { style: { display: 'flex', gap: 6 } },
+            tkInput(newOne, setNewOne, 'Write something true about you (or that you want to be true)', { flex: 1 }),
+            tkBtn('+', addCustom, 'primary', { padding: '8px 16px' })
+          )
+        )
+      ),
+
+      // List
+      hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+        all.map(function(a) {
+          var fav = favorites.indexOf(a.id) >= 0;
+          return hh('div', { key: 'af-' + a.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + (fav ? '#fbbf24' : 'rgba(251,191,36,0.40)') } },
+            hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 } },
+              hh('div', { style: { flex: 1, fontSize: 12, color: '#e2e8f0', fontStyle: 'italic', fontFamily: 'Georgia, serif' } }, '"' + a.text + '"'),
+              hh('div', { style: { display: 'flex', gap: 6, alignItems: 'center' } },
+                hh('button', { onClick: function() { toggleFav(a.id); },
+                  style: { background: 'transparent', border: 'none', color: fav ? '#fbbf24' : '#475569', fontSize: 16, cursor: 'pointer' }
+                }, fav ? '⭐' : '☆'),
+                !a.builtin ? hh('button', { onClick: function() { removeCustom(a.text); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕') : null
+              )
+            )
+          );
+        })
+      ),
+
+      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+        hh('strong', { style: { color: '#fbbf24' } }, '🎓 Self-affirmation theory: '),
+        'Steele 1988 + many replications. Briefly affirming an important value (not "I\'m awesome" — more like "I value being a good friend") before a stressful task reduces threat response + improves performance. Especially powerful for students from groups facing stereotype threat (Cohen + Garcia 2014).'
+      )
+    );
+  }
+
+  // ── GGG. PERSONAL ROLE MODEL GALLERY (Wave 12) ──
+  // Curate role models — real people, fictional characters, historical
+  // figures. What you admire about each. Builds aspirational identity.
+  function PersonalRoleModels(props) {
+    if (!R) return null;
+    var data = props.data || { models: [] };
+    var setData = props.setData;
+    var fs = R.useState({ name: '', who: '', admire: '', icon: '🌟' });
+    var form = fs[0]; var setForm = fs[1];
+
+    function save() {
+      if (!form.name.trim()) { alert('Need a name.'); return; }
+      var m = Object.assign({ id: tkId(), addedAt: todayISO() }, form);
+      setData({ models: [m].concat(data.models || []) });
+      setForm({ name: '', who: '', admire: '', icon: '🌟' });
+    }
+    function remove(id) { setData({ models: (data.models || []).filter(function(m) { return m.id !== id; }) }); }
+
+    var models = data.models || [];
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🌟', 'Role Models', 'People (real, fictional, historical) whose qualities you want to grow. What you admire shows you what you value.', '#fbbf24'),
+
+      tkCard('#fbbf24',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, '+ Add a role model'),
+          hh('div', { style: { display: 'grid', gridTemplateColumns: '60px 2fr 2fr', gap: 6, marginBottom: 8 } },
+            tkInput(form.icon, function(v) { setForm(Object.assign({}, form, { icon: v })); }, '🌟', { textAlign: 'center', fontSize: 18 }),
+            tkInput(form.name, function(v) { setForm(Object.assign({}, form, { name: v })); }, 'Their name'),
+            tkInput(form.who, function(v) { setForm(Object.assign({}, form, { who: v })); }, 'Who are they? (1 phrase)')
+          ),
+          tkTextarea(form.admire, function(v) { setForm(Object.assign({}, form, { admire: v })); }, 'What specifically do you admire? (Quality, behavior, way of being)', 3, { marginBottom: 8 }),
+          tkBtn('💾 Add', save, 'primary')
+        )
+      ),
+
+      models.length === 0 ? tkEmptyState('🌟', 'No role models added yet.', null, null)
+      : hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
+          models.map(function(m) {
+            return hh('div', { key: 'rm-' + m.id, style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(251,191,36,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(251,191,36,0.40)', borderLeft: '4px solid #fbbf24' } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
+                hh('div', null,
+                  hh('div', { style: { fontSize: 26, marginBottom: 4 } }, m.icon || '🌟'),
+                  hh('strong', { style: { fontSize: 13, color: '#fbbf24' } }, m.name)
+                ),
+                hh('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 12, cursor: 'pointer' } }, '✕')
+              ),
+              m.who ? hh('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic', marginBottom: 6 } }, m.who) : null,
+              m.admire ? hh('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.4)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } },
+                hh('strong', { style: { color: '#fbbf24' } }, '💡 What I admire: '), m.admire
+              ) : null
+            );
+          })
+        )
+    );
+  }
+
+  // ── HHH. PERSONAL SELF-ASSESSMENT QUIZ (Wave 12) ──
+  // 12-question academic self-awareness check. Pulls patterns. No
+  // grades — just self-knowledge.
+  function PersonalSelfAssessment(props) {
+    if (!R) return null;
+    var data = props.data || { assessments: [] };
+    var setData = props.setData;
+    var as = R.useState({}); var ans = as[0]; var setAns = as[1];
+
+    var Q = [
+      { id: 'q1',  text: 'I learn best when I can...', options: ['see it', 'hear it', 'do it', 'discuss it'] },
+      { id: 'q2',  text: 'My most productive time of day is...', options: ['Early morning', 'Mid-morning', 'Afternoon', 'Evening/night'] },
+      { id: 'q3',  text: 'When I\'m stuck on something, I usually...', options: ['Try harder alone', 'Take a break', 'Ask for help right away', 'Avoid it'] },
+      { id: 'q4',  text: 'I retain information best when...', options: ['I re-read', 'I quiz myself', 'I teach someone else', 'I make a visual'] },
+      { id: 'q5',  text: 'The biggest barrier to my learning is...', options: ['Anxiety', 'Distractions', 'Boredom / disengagement', 'Not knowing where to start'] },
+      { id: 'q6',  text: 'I do my best work when the environment is...', options: ['Silent', 'Low background noise', 'Music playing', 'Full of activity'] },
+      { id: 'q7',  text: 'I feel most confident in school when...', options: ['I\'m getting praise', 'I understand the material', 'I\'m helping someone else', 'I\'m connecting it to my life'] },
+      { id: 'q8',  text: 'My biggest strength as a student is...', options: ['Memory', 'Asking questions', 'Effort + persistence', 'Creative thinking'] },
+      { id: 'q9',  text: 'I struggle most with...', options: ['Starting things', 'Finishing things', 'Following directions', 'Speaking up'] },
+      { id: 'q10', text: 'I learn most from teachers who...', options: ['Explain step by step', 'Tell stories', 'Push me to think harder', 'Treat me like a peer'] },
+      { id: 'q11', text: 'When I\'m overwhelmed I want...', options: ['Quiet space', 'Someone to talk to', 'A specific plan', 'Reassurance'] },
+      { id: 'q12', text: 'In 5 years I want to be someone who...', options: ['Knows their craft deeply', 'Helps others', 'Builds new things', 'Has a balanced life'] }
+    ];
+
+    function pick(qid, val) { setAns(Object.assign({}, ans, (function() { var o = {}; o[qid] = val; return o; })())); }
+    function save() {
+      var entry = { id: tkId(), date: todayISO(), answers: ans };
+      setData({ assessments: [entry].concat(data.assessments || []) });
+      setAns({});
+    }
+
+    var assessments = data.assessments || [];
+    var done = Object.keys(ans).length === Q.length;
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🔍', 'Self-Assessment', '12 questions about how YOU learn. No right answers. Just self-knowledge.', '#a855f7'),
+
+      tkCard('#a855f7',
+        hh('div', null,
+          Q.map(function(q, qi) {
+            return hh('div', { key: 'q-' + q.id, style: { marginBottom: 12 } },
+              hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#c084fc', marginBottom: 6 } }, (qi + 1) + '. ' + q.text),
+              hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
+                q.options.map(function(o) {
+                  var on = ans[q.id] === o;
+                  return hh('button', { key: 'qo-' + o,
+                    onClick: function() { pick(q.id, o); },
+                    style: { padding: '6px 10px', borderRadius: 6, background: on ? '#a855f7' : 'rgba(168,85,247,0.10)', color: on ? '#fff' : '#c084fc', border: '1px solid rgba(168,85,247,0.40)', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                  }, o);
+                })
+              )
+            );
+          })
+        )
+      ),
+
+      done ? hh('div', { style: { textAlign: 'center', marginBottom: 14 } },
+        tkBtn('💾 Save this snapshot', save, 'primary', { padding: '12px 24px', fontSize: 12 })
+      ) : null,
+
+      assessments.length > 0 ? hh('div', null,
+        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', marginBottom: 8 } }, '📚 Past snapshots'),
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+          assessments.map(function(a) {
+            return hh('div', { key: 'sa-' + a.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #a855f7' } },
+              hh('div', { style: { fontSize: 11, color: '#c084fc', fontWeight: 700 } }, a.date + ' · ' + relDate(a.date)),
+              hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2 } }, 'Top: ' + (a.answers.q4 || '?') + ' · ' + (a.answers.q5 || '?') + ' · ' + (a.answers.q8 || '?'))
+            );
+          })
+        )
+      ) : null
+    );
+  }
+
+  // ── III. PERSONAL LEARNING CONTRACT (Wave 12) ──
+  // Self-agreement. Specific commitments + rewards + accountability.
+  // Behavioral contracting research has 60+ years of support.
+  function PersonalLearningContract(props) {
+    if (!R) return null;
+    var data = props.data || { contracts: [] };
+    var setData = props.setData;
+    var vs = R.useState('list');                       var view = vs[0]; var setView = vs[1];
+    var fs = R.useState({ title: '', commitments: [''], rewards: '', accountability: '', startDate: todayISO(), endDate: '' });
+    var form = fs[0]; var setForm = fs[1];
+
+    function addCommit() {
+      setForm(Object.assign({}, form, { commitments: form.commitments.concat(['']) }));
+    }
+    function updateCommit(i, v) {
+      var c = form.commitments.slice(); c[i] = v;
+      setForm(Object.assign({}, form, { commitments: c }));
+    }
+    function removeCommit(i) {
+      setForm(Object.assign({}, form, { commitments: form.commitments.filter(function(_, j) { return j !== i; }) }));
+    }
+    function save() {
+      if (!form.title.trim()) { alert('Need a title.'); return; }
+      var c = Object.assign({ id: tkId(), signed: false }, form);
+      setData({ contracts: [c].concat(data.contracts || []) });
+      setForm({ title: '', commitments: [''], rewards: '', accountability: '', startDate: todayISO(), endDate: '' });
+      setView('list');
+    }
+    function sign(id) {
+      setData({ contracts: (data.contracts || []).map(function(c) { return c.id === id ? Object.assign({}, c, { signed: true, signedAt: todayISO() }) : c; }) });
+    }
+    function remove(id) {
+      if (!confirm('Delete this contract?')) return;
+      setData({ contracts: (data.contracts || []).filter(function(c) { return c.id !== id; }) });
+    }
+
+    if (view === 'new') {
+      return hh('div', { style: { padding: 14 } },
+        tkSectionHeader('📜', 'New learning contract', 'A formal agreement with yourself. Specific. Time-bound.', '#06b6d4'),
+        tkCard('#06b6d4',
+          hh('div', null,
+            tkInput(form.title, function(v) { setForm(Object.assign({}, form, { title: v })); }, 'Contract title (e.g., "First-quarter writing focus")', { marginBottom: 10 }),
+            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#67e8f9', display: 'block', marginBottom: 4 } }, '📋 My commitments'),
+            hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 8 } },
+              form.commitments.map(function(c, i) {
+                return hh('div', { key: 'cm-' + i, style: { display: 'flex', gap: 4 } },
+                  hh('span', { style: { color: '#67e8f9', fontWeight: 800, minWidth: 16 } }, (i + 1) + '.'),
+                  tkInput(c, function(v) { updateCommit(i, v); }, 'I will...', { flex: 1, fontSize: 11 }),
+                  hh('button', { onClick: function() { removeCommit(i); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                );
+              })
+            ),
+            tkBtn('+ Add commitment', addCommit, 'secondary', { fontSize: 10, padding: '6px 12px', marginBottom: 10 }),
+            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#67e8f9', display: 'block', marginBottom: 4 } }, '🎁 What I\'ll reward myself with for keeping these'),
+            tkTextarea(form.rewards, function(v) { setForm(Object.assign({}, form, { rewards: v })); }, 'Small + meaningful. Not "scrolling for 4 hours" — something restorative.', 2, { marginBottom: 10 }),
+            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#67e8f9', display: 'block', marginBottom: 4 } }, '🤝 Who can hold me accountable?'),
+            tkTextarea(form.accountability, function(v) { setForm(Object.assign({}, form, { accountability: v })); }, 'Name + how they\'ll check in', 2, { marginBottom: 10 }),
+            hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
+              hh('div', null,
+                hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#67e8f9', display: 'block', marginBottom: 4 } }, 'Start'),
+                hh('input', { type: 'date', value: form.startDate,
+                  onChange: function(e) { setForm(Object.assign({}, form, { startDate: e.target.value })); },
+                  style: { width: '100%', padding: '8px 10px', fontSize: 11, color: '#06b6d4', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(6,182,212,0.40)', borderRadius: 6, boxSizing: 'border-box' }
+                })
+              ),
+              hh('div', null,
+                hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#67e8f9', display: 'block', marginBottom: 4 } }, 'End (review date)'),
+                hh('input', { type: 'date', value: form.endDate,
+                  onChange: function(e) { setForm(Object.assign({}, form, { endDate: e.target.value })); },
+                  style: { width: '100%', padding: '8px 10px', fontSize: 11, color: '#06b6d4', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(6,182,212,0.40)', borderRadius: 6, boxSizing: 'border-box' }
+                })
+              )
+            )
+          )
+        ),
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+          tkBtn('← Cancel', function() { setView('list'); }, 'ghost'),
+          tkBtn('💾 Save (unsigned)', save, 'primary')
+        )
+      );
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('📜', 'Learning Contracts', 'Formal agreements with yourself. 60+ years of behavioral-contracting research support.', '#06b6d4'),
+
+      hh('div', { style: { display: 'flex', justifyContent: 'flex-end', marginBottom: 12 } },
+        tkBtn('+ New contract', function() { setForm({ title: '', commitments: [''], rewards: '', accountability: '', startDate: todayISO(), endDate: '' }); setView('new'); }, 'primary')
+      ),
+
+      (data.contracts || []).length === 0 ? tkEmptyState('📜', 'No contracts yet.', null, null)
+      : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+          (data.contracts || []).map(function(c) {
+            return hh('div', { key: 'lc-' + c.id, style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(6,182,212,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(6,182,212,0.40)', borderLeft: '4px solid #06b6d4' } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
+                hh('strong', { style: { fontSize: 14, color: '#67e8f9' } }, '📜 ' + c.title),
+                c.signed ? hh('span', { style: { padding: '2px 8px', borderRadius: 999, background: 'rgba(16,185,129,0.20)', color: '#10b981', fontSize: 10, fontWeight: 800 } }, '✓ Signed') : null
+              ),
+              hh('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 8 } }, c.startDate + ' → ' + (c.endDate || 'open')),
+              c.commitments && c.commitments.filter(function(x) { return x; }).length > 0 ? hh('div', { style: { marginBottom: 8 } },
+                hh('div', { style: { fontSize: 11, color: '#67e8f9', fontWeight: 700, marginBottom: 4 } }, 'I commit to:'),
+                hh('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 11, color: '#cbd5e1', lineHeight: 1.65 } },
+                  c.commitments.filter(function(x) { return x; }).map(function(co, i) {
+                    return hh('li', { key: 'co-' + i }, co);
+                  })
+                )
+              ) : null,
+              c.rewards ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 4 } }, hh('strong', { style: { color: '#fbbf24' } }, '🎁 Reward: '), c.rewards) : null,
+              c.accountability ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 8 } }, hh('strong', { style: { color: '#10b981' } }, '🤝 Accountability: '), c.accountability) : null,
+              hh('div', { style: { display: 'flex', justifyContent: 'flex-end', gap: 6 } },
+                !c.signed ? tkBtn('✓ Sign it', function() { sign(c.id); }, 'good', { padding: '4px 12px', fontSize: 11 }) : null,
+                tkBtn('🗑 Delete', function() { remove(c.id); }, 'bad', { padding: '4px 10px', fontSize: 10 })
+              )
+            );
+          })
+        )
+    );
+  }
+
+  // ── JJJ. PERSONAL CIRCLE OF SUPPORT (Wave 12) ──
+  // Map who supports you in your life. Concentric circles. Visual + clear.
+  function PersonalCircleSupport(props) {
+    if (!R) return null;
+    var data = props.data || { people: [] };
+    var setData = props.setData;
+    var fs = R.useState({ name: '', role: '', closeness: 'close', whyMatter: '' });
+    var form = fs[0]; var setForm = fs[1];
+
+    var LEVELS = [
+      { id: 'closest',  label: 'Inner circle (closest 1-3 people)', color: '#ef4444' },
+      { id: 'close',    label: 'Close (a few people I really trust)', color: '#f97316' },
+      { id: 'good',     label: 'Good (I know I can rely on them)', color: '#fbbf24' },
+      { id: 'connect',  label: 'Connection (helpful + present)', color: '#10b981' },
+      { id: 'know',     label: 'Know (people I know but don\'t lean on)', color: '#06b6d4' }
+    ];
+
+    function save() {
+      if (!form.name.trim()) { alert('Need a name.'); return; }
+      var p = Object.assign({ id: tkId(), addedAt: todayISO() }, form);
+      setData({ people: [p].concat(data.people || []) });
+      setForm({ name: '', role: '', closeness: 'close', whyMatter: '' });
+    }
+    function remove(id) { setData({ people: (data.people || []).filter(function(p) { return p.id !== id; }) }); }
+
+    var people = data.people || [];
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🤝', 'Circle of Support', 'Map your real support network. Especially useful when you feel alone — visible reminder that you\'re not.', '#10b981'),
+
+      tkCard('#10b981',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#10b981', marginBottom: 8 } }, '+ Add someone'),
+          hh('div', { style: { display: 'grid', gridTemplateColumns: '2fr 2fr', gap: 6, marginBottom: 8 } },
+            tkInput(form.name, function(v) { setForm(Object.assign({}, form, { name: v })); }, 'Their name'),
+            tkInput(form.role, function(v) { setForm(Object.assign({}, form, { role: v })); }, 'Their role (mom, mentor, best friend, etc.)')
+          ),
+          hh('div', { style: { fontSize: 11, color: '#10b981', marginBottom: 4 } }, 'How close?'),
+          hh('div', { style: { display: 'flex', gap: 4, marginBottom: 8, flexWrap: 'wrap' } },
+            LEVELS.map(function(l) {
+              var on = form.closeness === l.id;
+              return hh('button', { key: 'lv-' + l.id,
+                onClick: function() { setForm(Object.assign({}, form, { closeness: l.id })); },
+                style: { padding: '6px 10px', borderRadius: 6, background: on ? l.color + '30' : 'rgba(15,23,42,0.5)', color: on ? l.color : '#94a3b8', border: '1px solid ' + (on ? l.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
+              }, l.label.split(' (')[0]);
+            })
+          ),
+          tkInput(form.whyMatter, function(v) { setForm(Object.assign({}, form, { whyMatter: v })); }, 'Why they matter (specific — 1 line)', { marginBottom: 8 }),
+          tkBtn('💾 Add', save, 'primary')
+        )
+      ),
+
+      people.length === 0 ? tkEmptyState('🤝', 'No support people added yet. Start with 1.', null, null)
+      : LEVELS.map(function(level) {
+          var inLevel = people.filter(function(p) { return p.closeness === level.id; });
+          if (inLevel.length === 0) return null;
+          return hh('div', { key: 'cs-' + level.id, style: { marginBottom: 14 } },
+            hh('div', { style: { fontSize: 11, fontWeight: 800, color: level.color, marginBottom: 8, padding: '4px 10px', background: level.color + '15', borderRadius: 6, display: 'inline-block' } }, level.label),
+            hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+              inLevel.map(function(p) {
+                return hh('div', { key: 'pe-' + p.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid ' + level.color } },
+                  hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+                    hh('div', null,
+                      hh('strong', { style: { fontSize: 12, color: level.color } }, p.name),
+                      p.role ? hh('span', { style: { fontSize: 11, color: '#94a3b8', marginLeft: 6 } }, '— ' + p.role) : null
+                    ),
+                    hh('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  ),
+                  p.whyMatter ? hh('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 4, fontStyle: 'italic' } }, '"' + p.whyMatter + '"') : null
+                );
+              })
+            )
+          );
+        }).filter(Boolean)
+    );
+  }
+
   // ── F. MY TOOLKIT HUB (landing page) ──
   // Single entry point that shows status of all toolkit tools + quick
   // actions. Today's date, current streak, # active goals, etc.
@@ -12204,7 +12709,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'mytkEmail',    icon: '📧', label: 'Teacher Email Builder',color: '#3b82f6', desc: '6 templates for common student emails',
         stat: ((data.mytkEmail || {}).saved || []).length + ' drafts', cta: 'Pick a template' },
       { id: 'mytkBody',     icon: '🫀', label: 'Body Awareness',       color: '#ec4899', desc: '8-area body scan, builds interoception',
-        stat: ((data.mytkBody || {}).checks || []).length + ' scans', cta: 'Scan now' }
+        stat: ((data.mytkBody || {}).checks || []).length + ' scans', cta: 'Scan now' },
+      { id: 'mytkAchieve',  icon: '🏆', label: 'Achievement Wall',     color: '#fbbf24', desc: 'Gallery of accomplishments',
+        stat: ((data.mytkAchieve || {}).achievements || []).length + ' achievements', cta: 'Add an achievement' },
+      { id: 'mytkAffirm',   icon: '✨', label: 'Affirmations',         color: '#fbbf24', desc: '20+ built-in + your custom (Steele 1988)',
+        stat: ((data.mytkAffirm || {}).favorites || []).length + ' favorites', cta: 'Read daily' },
+      { id: 'mytkRole',     icon: '🌟', label: 'Role Models',          color: '#fbbf24', desc: 'People whose qualities you want to grow',
+        stat: ((data.mytkRole || {}).models || []).length + ' models', cta: 'Add a role model' },
+      { id: 'mytkAssess',   icon: '🔍', label: 'Self-Assessment',      color: '#a855f7', desc: '12-question academic self-awareness check',
+        stat: ((data.mytkAssess || {}).assessments || []).length + ' snapshots', cta: 'Take the quiz' },
+      { id: 'mytkContract', icon: '📜', label: 'Learning Contract',    color: '#06b6d4', desc: 'Self-agreement: commitments + rewards + accountability',
+        stat: ((data.mytkContract || {}).contracts || []).length + ' contracts', cta: 'Make a contract' },
+      { id: 'mytkCircle',   icon: '🤝', label: 'Circle of Support',    color: '#10b981', desc: 'Map your real support network',
+        stat: ((data.mytkCircle || {}).people || []).length + ' people', cta: 'Map your circle' }
     ];
 
     var dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][new Date().getDay()];
@@ -12447,7 +12964,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'mytkQuest',  icon: '❓', label: 'Question Log',         desc: 'Capture mid-class wonders. Process in study or office hours.' },
               { id: 'mytkSuccess',icon: '🏆', label: 'Success Log',          desc: 'Log wins, tiny + big. Counter negativity bias (Goldman 2020).' },
               { id: 'mytkEmail',  icon: '📧', label: 'Teacher Email Builder',desc: '6 templates (missed class, extension, accommodation, help, grade question, thanks).' },
-              { id: 'mytkBody',   icon: '🫀', label: 'Body Awareness',       desc: '8-area daily body scan. Builds interoception (van der Kolk).' }
+              { id: 'mytkBody',   icon: '🫀', label: 'Body Awareness',       desc: '8-area daily body scan. Builds interoception (van der Kolk).' },
+              { id: 'mytkAchieve',icon: '🏆', label: 'Achievement Wall',     desc: 'Categorized gallery of accomplishments + reflections. Counters imposter syndrome.' },
+              { id: 'mytkAffirm', icon: '✨', label: 'Affirmation Library',  desc: '20+ built-in affirmations + custom + daily rotation (Steele 1988 self-affirmation).' },
+              { id: 'mytkRole',   icon: '🌟', label: 'Role Models',          desc: 'People (real/fictional/historical) whose qualities you admire + want to grow.' },
+              { id: 'mytkAssess', icon: '🔍', label: 'Self-Assessment',      desc: '12-question quiz on how YOU learn. Saves snapshots over time.' },
+              { id: 'mytkContract',icon: '📜',label: 'Learning Contract',    desc: 'Formal self-agreement with commitments + rewards + accountability (behavioral contracting).' },
+              { id: 'mytkCircle', icon: '🤝', label: 'Circle of Support',    desc: 'Map your support network in 5 levels of closeness.' }
             ]
           },
           { id: 'foundation', icon: '🧠', name: 'How learning works (foundation)',
@@ -15923,6 +16446,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           h(PersonalBodyCheck, { data: dbo, setData: setDbo })
         );
       }
+      function renderMytkAchieve() {
+        var dac = d.mytkAchieve || { achievements: [] };
+        var setDac = function(newData) { upd('mytkAchieve', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalAchievementWall, { data: dac, setData: setDac })
+        );
+      }
+      function renderMytkAffirm() {
+        var daf = d.mytkAffirm || { custom: [], favorites: [] };
+        var setDaf = function(newData) { upd('mytkAffirm', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalAffirmations, { data: daf, setData: setDaf })
+        );
+      }
+      function renderMytkRole() {
+        var drm = d.mytkRole || { models: [] };
+        var setDrm = function(newData) { upd('mytkRole', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalRoleModels, { data: drm, setData: setDrm })
+        );
+      }
+      function renderMytkAssess() {
+        var dsa = d.mytkAssess || { assessments: [] };
+        var setDsa = function(newData) { upd('mytkAssess', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalSelfAssessment, { data: dsa, setData: setDsa })
+        );
+      }
+      function renderMytkContract() {
+        var dlc = d.mytkContract || { contracts: [] };
+        var setDlc = function(newData) { upd('mytkContract', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalLearningContract, { data: dlc, setData: setDlc })
+        );
+      }
+      function renderMytkCircle() {
+        var dcs = d.mytkCircle || { people: [] };
+        var setDcs = function(newData) { upd('mytkCircle', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalCircleSupport, { data: dcs, setData: setDcs })
+        );
+      }
 
       // ─────────────────────────────────────────
       // VIEW ROUTER
@@ -15985,6 +16556,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         case 'mytkSuccess':   return renderMytkSuccess();
         case 'mytkEmail':     return renderMytkEmail();
         case 'mytkBody':      return renderMytkBody();
+        case 'mytkAchieve':   return renderMytkAchieve();
+        case 'mytkAffirm':    return renderMytkAffirm();
+        case 'mytkRole':      return renderMytkRole();
+        case 'mytkAssess':    return renderMytkAssess();
+        case 'mytkContract':  return renderMytkContract();
+        case 'mytkCircle':    return renderMytkCircle();
         case 'bloom':         return renderBloom();
         case 'cogload':       return renderCogLoad();
         case 'metacog':       return renderMetacog();
