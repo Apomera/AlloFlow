@@ -3851,46 +3851,45 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
         className="fixed inset-0 z-[200] bg-slate-100 flex flex-col animate-in fade-in duration-300"
     >
       <div className="bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm shrink-0 z-10 flex flex-col">
-          <div className="p-4 flex justify-between items-center">
-            <div className="flex items-center gap-3">
-                <div className="bg-indigo-100 p-2 rounded-lg text-indigo-600">
+          <div className="p-3 sm:p-4 flex flex-wrap justify-between items-center gap-2">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                <div className="bg-indigo-100 p-2 rounded-lg text-indigo-600 shrink-0">
                     <Layout size={24} />
                 </div>
-                <h2 className="text-xl font-black text-slate-800">{t('dashboard.grading_dashboard')}</h2>
+                <h2 className="text-base sm:text-xl font-black text-slate-800 truncate">{t('dashboard.grading_dashboard')}</h2>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
                 {dashboardData.length > 0 && (<>
                     <button
                         onClick={handleExportCSV} data-help-key="dashboard_export_csv_btn"
-                        className="text-xs font-bold text-green-600 hover:text-green-800 hover:bg-green-50 px-3 py-1.5 rounded-full transition-colors mr-2 border border-green-200 shadow-sm flex items-center gap-1"
+                        className="text-xs font-bold text-green-600 hover:text-green-800 hover:bg-green-50 px-2 sm:px-3 py-1.5 rounded-full transition-colors border border-green-200 shadow-sm flex items-center gap-1"
                         title={t('dashboard.export_csv_tooltip')}
                         aria-label={t('dashboard.export_csv_tooltip')}
                     >
-                        <FileDown size={14} /> {t('dashboard.export_csv')}
-                    
+                        <FileDown size={14} /> <span className="hidden sm:inline">{t('dashboard.export_csv')}</span><span className="sm:hidden">CSV</span>
                     </button>
                     <button
                         onClick={handleExportResearchPDF} data-help-key="dashboard_export_research_btn"
-                        className="text-xs font-bold text-purple-600 hover:text-purple-800 hover:bg-purple-50 px-3 py-1.5 rounded-full transition-colors mr-2 border border-purple-200 shadow-sm flex items-center gap-1"
+                        className="text-xs font-bold text-purple-600 hover:text-purple-800 hover:bg-purple-50 px-2 sm:px-3 py-1.5 rounded-full transition-colors border border-purple-200 shadow-sm flex items-center gap-1"
                         title={t('research.export_apa_title')}
                         aria-label={t('teacher.research.export_btn_aria') || 'Export Research Report'}
                     >
-                        <FileDown size={14} /> 📊 Research PDF
+                        <FileDown size={14} /> <span className="hidden sm:inline">📊 Research PDF</span><span className="sm:hidden">📊 PDF</span>
                     </button>
                 </>)}
                 {dashboardData.length > 0 && (
                     <button
                         onClick={handleClearAll} data-help-key="dashboard_clear_all_btn"
-                        className="text-xs font-bold text-red-500 hover:text-red-700 hover:bg-red-50 px-3 py-1.5 rounded-full transition-colors mr-2 border border-transparent hover:border-red-100"
+                        className="text-xs font-bold text-red-500 hover:text-red-700 hover:bg-red-50 px-2 sm:px-3 py-1.5 rounded-full transition-colors border border-transparent hover:border-red-100"
                         title={t('dashboard.reset_tooltip')}
                         aria-label={t('dashboard.reset_tooltip')}
                     >
-                        {t('dashboard.clear_all')}
+                        <span className="hidden sm:inline">{t('dashboard.clear_all')}</span><span className="sm:hidden">Clear</span>
                     </button>
                 )}
                 <button
                 onClick={onClose}
-                className="p-2 rounded-full text-slate-600 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                className="p-2 rounded-full text-slate-600 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors shrink-0"
                 autoFocus
                 aria-label={t('common.close_dashboard')}
                 >
@@ -3899,28 +3898,28 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
             </div>
           </div>
           {dashboardData.length > 0 && dashboardView === 'list' && (
-              <div className="flex px-6 gap-6">
+              <div className="flex px-3 sm:px-6 gap-4 sm:gap-6 overflow-x-auto whitespace-nowrap">
                   <button
                       onClick={() => setActiveTab('students')}
-                      className={`pb-3 text-sm font-bold border-b-2 transition-all ${activeTab === 'students' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
+                      className={`pb-3 text-sm font-bold border-b-2 transition-all shrink-0 ${activeTab === 'students' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
                   >
                       {t('dashboard.tab_students')} ({dashboardData.length})
                   </button>
                   <button
                       onClick={() => setActiveTab('insights')}
-                      className={`pb-3 text-sm font-bold border-b-2 transition-all ${activeTab === 'insights' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
+                      className={`pb-3 text-sm font-bold border-b-2 transition-all shrink-0 ${activeTab === 'insights' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
                   >
                       {t('dashboard.tab_insights')}
                   </button>
                   <button
                       onClick={() => setActiveTab('behavior')}
-                      className={`pb-3 text-sm font-bold border-b-2 transition-all ${activeTab === 'behavior' ? 'border-orange-600 text-orange-700' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
+                      className={`pb-3 text-sm font-bold border-b-2 transition-all shrink-0 ${activeTab === 'behavior' ? 'border-orange-600 text-orange-700' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
                   >
                       🔍 {t('behavior_lens.hub.title') || 'Behavior'}
                   </button>
                   <button
                       onClick={() => setActiveTab('stems')}
-                      className={`pb-3 text-sm font-bold border-b-2 transition-all ${activeTab === 'stems' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
+                      className={`pb-3 text-sm font-bold border-b-2 transition-all shrink-0 ${activeTab === 'stems' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
                   >
                       🔬 STEM Stations
                   </button>
@@ -3930,28 +3929,28 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
       <div className="flex-grow p-6 overflow-y-auto bg-slate-100">
          {dashboardView === 'detail' && selectedStudent ? (
              <div className="max-w-5xl mx-auto h-full flex flex-col animate-in slide-in-from-right-8 duration-300">
-                 <div className="flex items-center justify-between gap-6 mb-6 border-b border-slate-200 pb-6 sticky top-0 bg-slate-50 z-10 pt-2">
-                     <div className="flex items-center gap-6">
+                 <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-6 mb-6 border-b border-slate-200 pb-4 sm:pb-6 sticky top-0 bg-slate-50 z-10 pt-2">
+                     <div className="flex items-center gap-3 sm:gap-6 min-w-0 flex-1">
                          <button
                              aria-label={t('common.check')}
                             onClick={() => setDashboardView('list')}
-                            className="flex items-center gap-2 px-4 py-2 bg-white text-slate-600 font-bold rounded-full shadow-sm border border-slate-400 hover:bg-slate-50 transition-colors shrink-0"
+                            className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-white text-slate-600 font-bold rounded-full shadow-sm border border-slate-400 hover:bg-slate-50 transition-colors shrink-0 text-xs sm:text-sm"
                          >
-                             <ArrowDown className="rotate-90" size={16}/> {t('dashboard.back_button')}
+                             <ArrowDown className="rotate-90" size={16}/> <span className="hidden sm:inline">{t('dashboard.back_button')}</span>
                          </button>
-                         <div>
-                             <h2 className="text-3xl font-black text-slate-800 flex items-center gap-3">
-                                <div className="relative">
-                                    <div className="w-12 h-12 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xl shadow-md border-4 border-indigo-100">
+                         <div className="min-w-0 flex-1">
+                             <h2 className="text-xl sm:text-3xl font-black text-slate-800 flex items-center gap-2 sm:gap-3 min-w-0">
+                                <div className="relative shrink-0">
+                                    <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-full bg-indigo-600 text-white flex items-center justify-center text-base sm:text-xl shadow-md border-2 sm:border-4 border-indigo-100">
                                         {selectedStudent.studentNickname.charAt(0).toUpperCase()}
                                     </div>
                                     {gradedIds.has(selectedStudent.id) && (
                                         <div className="absolute -bottom-1 -right-1 bg-green-500 text-white rounded-full p-0.5 border-2 border-white shadow-sm">
-                                            <CheckCircle2 size={14} />
+                                            <CheckCircle2 size={12} />
                                         </div>
                                     )}
                                 </div>
-                                {selectedStudent.studentNickname}
+                                <span className="truncate">{selectedStudent.studentNickname}</span>
                              </h2>
                              <div className="flex items-center gap-3 mt-2 flex-wrap">
                                  <p className="text-xs text-slate-600 font-mono bg-slate-100 px-2 py-1 rounded border border-slate-400">
@@ -4025,11 +4024,11 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                     </div>
                  </div>
                  {(selectedStudent.probeHistory || selectedStudent.interventionLogs || selectedStudent.surveyResponses || selectedStudent.fluencyAssessments) && (
-                     <div className="bg-white p-6 rounded-xl border border-slate-400 shadow-sm mb-6 mt-6">
+                     <div className="bg-white p-4 sm:p-6 rounded-xl border border-slate-400 shadow-sm mb-6 mt-6">
                          <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 flex items-center gap-2">
                              📊 Assessment & Research Data
                          </h4>
-                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
                              {selectedStudent.probeHistory && Object.keys(selectedStudent.probeHistory).length > 0 && (
                                  <div className="bg-amber-50 rounded-xl p-4 border border-amber-200">
                                      <div className="text-2xl font-black text-amber-700">{Object.values(selectedStudent.probeHistory).flat().length}</div>
