@@ -13891,6 +13891,332 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     );
   }
 
+  // ── AAAA. PERSONAL VALUES COMPASS (Wave 16) ──
+  // 30 values cards → narrow to top 10 → top 5 → top 3. Forces clarity
+  // about what you actually care about. ACT-aligned (Hayes 1999).
+  function PersonalValuesCompass(props) {
+    if (!R) return null;
+    var data = props.data || { selected: [], top10: [], top5: [], top3: [], reasoning: {} };
+    var setData = props.setData;
+    var vs = R.useState('sort');                       var view = vs[0]; var setView = vs[1];
+
+    var VALUES = [
+      'Adventure', 'Authenticity', 'Beauty', 'Belonging', 'Challenge', 'Compassion',
+      'Connection', 'Courage', 'Creativity', 'Curiosity', 'Dignity', 'Discovery',
+      'Equality', 'Family', 'Freedom', 'Fun', 'Generosity', 'Growth',
+      'Health', 'Honesty', 'Humor', 'Independence', 'Justice', 'Kindness',
+      'Knowledge', 'Loyalty', 'Mastery', 'Order', 'Peace', 'Perseverance',
+      'Privacy', 'Purpose', 'Recognition', 'Service', 'Spirituality', 'Tradition'
+    ];
+
+    function toggleSelected(v) {
+      var s = (data.selected || []).slice();
+      var i = s.indexOf(v);
+      if (i >= 0) s.splice(i, 1);
+      else if (s.length < 10) s.push(v);
+      else { alert('Pick only your top 10. Remove one first.'); return; }
+      setData(Object.assign({}, data, { selected: s }));
+    }
+    function moveTo(level, v) {
+      var current = data[level] || [];
+      var i = current.indexOf(v);
+      if (i >= 0) { var newC = current.filter(function(x) { return x !== v; }); setData(Object.assign({}, data, (function() { var o = {}; o[level] = newC; return o; })())); }
+      else {
+        var maxLevel = level === 'top10' ? 10 : level === 'top5' ? 5 : 3;
+        if (current.length >= maxLevel) { alert('Pick only ' + maxLevel + ' at this level.'); return; }
+        var newC = current.concat([v]);
+        setData(Object.assign({}, data, (function() { var o = {}; o[level] = newC; return o; })()));
+      }
+    }
+    function updateReasoning(v, text) {
+      setData(Object.assign({}, data, { reasoning: Object.assign({}, data.reasoning || {}, (function() { var o = {}; o[v] = text; return o; })()) }));
+    }
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('🧭', 'Values Compass', 'Sort 36 values → top 10 → top 5 → top 3. Forces clarity. ACT-aligned (Hayes 1999).', '#a855f7'),
+
+      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14 } },
+        hh('strong', { style: { color: '#a855f7' } }, '🧭 Acceptance + Commitment Therapy: '),
+        'Hayes 1999. Values aren\'t goals — they\'re directions. "Honesty" isn\'t completed; you just keep moving in that direction. Knowing your top 3 lets you choose actions that move toward them, especially in hard moments.'
+      ),
+
+      hh('div', { role: 'tablist', style: { display: 'flex', gap: 4, marginBottom: 14, flexWrap: 'wrap' } },
+        [{ id: 'sort', label: '1. Pick top 10' }, { id: 'narrow5', label: '2. Narrow to 5' }, { id: 'narrow3', label: '3. Narrow to 3' }, { id: 'why', label: '4. Why?' }].map(function(t) {
+          var active = view === t.id;
+          return hh('button', { key: 'vt-' + t.id,
+            onClick: function() { setView(t.id); },
+            style: { padding: '8px 14px', borderRadius: 6, background: active ? '#a855f7' : 'rgba(168,85,247,0.10)', color: active ? '#fff' : '#c084fc', border: '1px solid rgba(168,85,247,0.40)', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+          }, t.label);
+        })
+      ),
+
+      view === 'sort' ? hh('div', null,
+        hh('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 10 } }, 'Tap to pick your top 10 values. ' + ((data.selected || []).length) + '/10 selected.'),
+        hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 6 } },
+          VALUES.map(function(v) {
+            var on = (data.selected || []).indexOf(v) >= 0;
+            return hh('button', { key: 'vl-' + v,
+              onClick: function() { toggleSelected(v); },
+              style: { padding: '10px 12px', borderRadius: 8, background: on ? 'rgba(168,85,247,0.30)' : 'rgba(15,23,42,0.5)', color: on ? '#c084fc' : '#cbd5e1', border: '1.5px solid ' + (on ? '#a855f7' : 'rgba(100,116,139,0.30)'), fontSize: 12, fontWeight: on ? 800 : 600, cursor: 'pointer' }
+            }, (on ? '✓ ' : '') + v);
+          })
+        )
+      ) : view === 'narrow5' ? hh('div', null,
+        hh('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 10 } }, 'From your top 10, pick the 5 that matter most. ' + ((data.top5 || []).length) + '/5 selected.'),
+        hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 6 } },
+          (data.selected || []).map(function(v) {
+            var on = (data.top5 || []).indexOf(v) >= 0;
+            return hh('button', { key: 'v5-' + v,
+              onClick: function() { moveTo('top5', v); },
+              style: { padding: '10px 12px', borderRadius: 8, background: on ? 'rgba(168,85,247,0.30)' : 'rgba(15,23,42,0.5)', color: on ? '#c084fc' : '#cbd5e1', border: '1.5px solid ' + (on ? '#a855f7' : 'rgba(100,116,139,0.30)'), fontSize: 12, fontWeight: on ? 800 : 600, cursor: 'pointer' }
+            }, (on ? '✓ ' : '') + v);
+          })
+        )
+      ) : view === 'narrow3' ? hh('div', null,
+        hh('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 10 } }, 'From your top 5, pick THE 3 that you live by. ' + ((data.top3 || []).length) + '/3 selected.'),
+        hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 6 } },
+          (data.top5 || []).map(function(v) {
+            var on = (data.top3 || []).indexOf(v) >= 0;
+            return hh('button', { key: 'v3-' + v,
+              onClick: function() { moveTo('top3', v); },
+              style: { padding: '14px 16px', borderRadius: 10, background: on ? 'rgba(168,85,247,0.40)' : 'rgba(15,23,42,0.5)', color: on ? '#c084fc' : '#cbd5e1', border: '2px solid ' + (on ? '#a855f7' : 'rgba(100,116,139,0.30)'), fontSize: 14, fontWeight: on ? 900 : 600, cursor: 'pointer' }
+            }, (on ? '⭐ ' : '') + v);
+          })
+        )
+      ) : hh('div', null,
+        hh('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 10 } }, 'For each of your top 3 — why does this matter? What does living it look like in practice?'),
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+          (data.top3 || []).map(function(v) {
+            return hh('div', { key: 'vy-' + v, style: { padding: 14, borderRadius: 10, background: 'rgba(168,85,247,0.15)', border: '2px solid #a855f7' } },
+              hh('div', { style: { fontSize: 16, fontWeight: 900, color: '#c084fc', marginBottom: 8 } }, '⭐ ' + v),
+              tkTextarea((data.reasoning || {})[v], function(t) { updateReasoning(v, t); }, 'Why this matters + what living it looks like in practice', 4)
+            );
+          })
+        )
+      )
+    );
+  }
+
+  // ── BBBB. PERSONAL MOMENTUM CALENDAR (Wave 16) ──
+  // Visual calendar where you mark productive days. Like a Seinfeld
+  // "don't break the chain" but flexible.
+  function PersonalMomentum(props) {
+    if (!R) return null;
+    var data = props.data || { habits: [], logs: {} };
+    var setData = props.setData;
+    var fs = R.useState({ label: '', color: '#10b981' });
+    var form = fs[0]; var setForm = fs[1];
+
+    var COLORS = ['#10b981', '#3b82f6', '#a855f7', '#ec4899', '#fbbf24', '#ef4444', '#06b6d4', '#f97316'];
+
+    function addHabit() {
+      if (!form.label.trim()) return;
+      var h = Object.assign({ id: tkId(), createdAt: todayISO() }, form);
+      setData(Object.assign({}, data, { habits: (data.habits || []).concat([h]) }));
+      setForm({ label: '', color: '#10b981' });
+    }
+    function removeHabit(id) {
+      if (!confirm('Remove this habit + all its logs?')) return;
+      var logs = Object.assign({}, data.logs || {});
+      delete logs[id];
+      setData({ habits: (data.habits || []).filter(function(h) { return h.id !== id; }), logs: logs });
+    }
+    function toggleDay(habitId, day) {
+      var logs = Object.assign({}, data.logs || {});
+      logs[habitId] = logs[habitId] || [];
+      if (logs[habitId].indexOf(day) >= 0) logs[habitId] = logs[habitId].filter(function(d) { return d !== day; });
+      else logs[habitId] = logs[habitId].concat([day]);
+      setData(Object.assign({}, data, { logs: logs }));
+    }
+
+    var habits = data.habits || [];
+    var logs = data.logs || {};
+
+    // 84-day grid (12 weeks)
+    function gridDays() {
+      var days = [];
+      for (var i = 83; i >= 0; i--) {
+        var dt = new Date(); dt.setDate(dt.getDate() - i);
+        days.push({ date: dt.toISOString().slice(0, 10), dayOfWeek: dt.getDay() });
+      }
+      return days;
+    }
+    var days = gridDays();
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('📆', 'Momentum Calendar', '12-week grid per habit. Seinfeld "don\'t break the chain" — flexible version.', '#10b981'),
+
+      tkCard('#10b981',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#10b981', marginBottom: 8 } }, '+ Add a habit to track'),
+          hh('div', { style: { display: 'flex', gap: 6, alignItems: 'center', marginBottom: 8 } },
+            tkInput(form.label, function(v) { setForm(Object.assign({}, form, { label: v })); }, 'Habit name (e.g., "Read 30 min")', { flex: 1 }),
+            hh('div', { style: { display: 'flex', gap: 2 } },
+              COLORS.map(function(c) {
+                var on = form.color === c;
+                return hh('button', { key: 'cl-' + c,
+                  onClick: function() { setForm(Object.assign({}, form, { color: c })); },
+                  style: { width: 24, height: 24, borderRadius: '50%', background: c, border: on ? '2px solid #fff' : '1px solid rgba(0,0,0,0.3)', cursor: 'pointer' }
+                });
+              })
+            ),
+            tkBtn('+', addHabit, 'primary', { padding: '8px 14px' })
+          )
+        )
+      ),
+
+      habits.length === 0 ? tkEmptyState('📆', 'No habits tracked yet.', null, null)
+      : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 14 } },
+          habits.map(function(h) {
+            var habitLogs = logs[h.id] || [];
+            var streak = (function() {
+              var s = 0;
+              for (var i = 0; i < 84; i++) {
+                var dt = new Date(); dt.setDate(dt.getDate() - i);
+                var iso = dt.toISOString().slice(0, 10);
+                if (habitLogs.indexOf(iso) >= 0) s++;
+                else if (i > 0) break;
+              }
+              return s;
+            })();
+            return hh('div', { key: 'mh-' + h.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid ' + h.color } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 8 } },
+                hh('strong', { style: { fontSize: 13, color: h.color } }, h.label),
+                hh('div', null,
+                  hh('span', { style: { fontSize: 14, color: '#fbbf24', fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 800, marginRight: 8 } }, '🔥 ' + streak + 'd'),
+                  hh('button', { onClick: function() { removeHabit(h.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 12, cursor: 'pointer' } }, '✕')
+                )
+              ),
+              // 12 weeks × 7 days grid
+              hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 2 } },
+                (function() {
+                  var weeks = []; for (var w = 0; w < 12; w++) weeks.push(w);
+                  return weeks.map(function(w) {
+                    return hh('div', { key: 'wk-' + w, style: { display: 'flex', flexDirection: 'column', gap: 2 } },
+                      [0, 1, 2, 3, 4, 5, 6].map(function(d) {
+                        var dayIdx = w * 7 + d;
+                        var day = days[dayIdx];
+                        if (!day) return hh('div', { key: 'em-' + d, style: { height: 12 } });
+                        var done = habitLogs.indexOf(day.date) >= 0;
+                        return hh('button', { key: 'cd-' + day.date,
+                          onClick: function() { toggleDay(h.id, day.date); },
+                          title: day.date + (done ? ' ✓' : ''),
+                          style: { height: 12, background: done ? h.color : 'rgba(100,116,139,0.15)', border: 'none', borderRadius: 2, cursor: 'pointer' }
+                        });
+                      })
+                    );
+                  });
+                })()
+              ),
+              hh('div', { style: { fontSize: 9, color: '#94a3b8', marginTop: 4, textAlign: 'right', fontFamily: 'ui-monospace, Menlo, monospace' } }, habitLogs.length + ' days total in last 12 weeks')
+            );
+          })
+        )
+    );
+  }
+
+  // ── CCCC. PERSONAL SCREEN-TIME TRACKER (Wave 16) ──
+  // Self-report screen time + reflection. Not punitive — just data.
+  function PersonalScreenTime(props) {
+    if (!R) return null;
+    var data = props.data || { logs: [] };
+    var setData = props.setData;
+    var fs = R.useState({ total: 4, scrolling: 2, productive: 1, reflective: 5 });
+    var form = fs[0]; var setForm = fs[1];
+
+    function save() {
+      var entry = Object.assign({ id: tkId(), date: todayISO() }, form);
+      setData({ logs: [entry].concat(data.logs || []) });
+      setForm({ total: 4, scrolling: 2, productive: 1, reflective: 5 });
+    }
+    function remove(id) { setData({ logs: (data.logs || []).filter(function(l) { return l.id !== id; }) }); }
+
+    var logs = data.logs || [];
+    var today = todayISO();
+    var todayLog = logs.filter(function(l) { return l.date === today; })[0];
+
+    var avg7Total = logs.slice(0, 7).length > 0 ? (logs.slice(0, 7).reduce(function(s, l) { return s + (l.total || 0); }, 0) / logs.slice(0, 7).length).toFixed(1) : '—';
+    var avg7Scroll = logs.slice(0, 7).length > 0 ? (logs.slice(0, 7).reduce(function(s, l) { return s + (l.scrolling || 0); }, 0) / logs.slice(0, 7).length).toFixed(1) : '—';
+
+    return hh('div', { style: { padding: 14 } },
+      tkSectionHeader('📱', 'Screen Time Tracker', 'Daily self-report. No moralizing. Just data → your pattern → your choice.', '#ef4444'),
+
+      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 8, marginBottom: 12 } },
+        [
+          { label: '7d avg total', value: avg7Total + 'h', color: '#ef4444', icon: '⏱' },
+          { label: '7d avg scrolling', value: avg7Scroll + 'h', color: '#fbbf24', icon: '📱' },
+          { label: 'Total logs', value: logs.length, color: '#a855f7', icon: '📊' }
+        ].map(function(s, i) {
+          return hh('div', { key: 'sts-' + i, style: { padding: 10, borderRadius: 8, background: s.color + '12', border: '1px solid ' + s.color + '30', textAlign: 'center' } },
+            hh('div', { style: { fontSize: 14, marginBottom: 2 } }, s.icon),
+            hh('div', { style: { fontSize: 16, fontWeight: 900, color: s.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, s.value),
+            hh('div', { style: { fontSize: 9, color: '#94a3b8', textTransform: 'uppercase' } }, s.label)
+          );
+        })
+      ),
+
+      todayLog ? hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.30)', marginBottom: 12, fontSize: 11, color: '#22c55e' } },
+        '✓ Today logged: ' + todayLog.total + 'h total · ' + todayLog.scrolling + 'h scrolling · feeling ' + todayLog.reflective + '/10'
+      ) : tkCard('#ef4444',
+        hh('div', null,
+          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fca5a5', marginBottom: 10 } }, '📱 Estimate today\'s screen time'),
+          hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 } },
+            hh('div', null,
+              hh('label', { style: { fontSize: 10, fontWeight: 700, color: '#fca5a5', display: 'block', marginBottom: 4 } }, 'Total hours'),
+              hh('div', { style: { textAlign: 'center', fontSize: 18, color: '#ef4444', fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 800 } }, form.total + 'h'),
+              hh('input', { type: 'range', min: 0, max: 16, step: 0.5, value: form.total,
+                onChange: function(e) { setForm(Object.assign({}, form, { total: parseFloat(e.target.value) })); },
+                style: { width: '100%', accentColor: '#ef4444' }
+              })
+            ),
+            hh('div', null,
+              hh('label', { style: { fontSize: 10, fontWeight: 700, color: '#fbbf24', display: 'block', marginBottom: 4 } }, 'Of that, scrolling'),
+              hh('div', { style: { textAlign: 'center', fontSize: 18, color: '#fbbf24', fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 800 } }, form.scrolling + 'h'),
+              hh('input', { type: 'range', min: 0, max: 16, step: 0.5, value: form.scrolling,
+                onChange: function(e) { setForm(Object.assign({}, form, { scrolling: parseFloat(e.target.value) })); },
+                style: { width: '100%', accentColor: '#fbbf24' }
+              })
+            )
+          ),
+          hh('div', { style: { marginBottom: 10 } },
+            hh('label', { style: { fontSize: 10, fontWeight: 700, color: '#10b981', display: 'block', marginBottom: 4 } }, 'Productive screen time (school, creating, learning)'),
+            hh('div', { style: { textAlign: 'center', fontSize: 18, color: '#10b981', fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 800 } }, form.productive + 'h'),
+            hh('input', { type: 'range', min: 0, max: 16, step: 0.5, value: form.productive,
+              onChange: function(e) { setForm(Object.assign({}, form, { productive: parseFloat(e.target.value) })); },
+              style: { width: '100%', accentColor: '#10b981' }
+            })
+          ),
+          hh('div', { style: { marginBottom: 10 } },
+            hh('label', { style: { fontSize: 11, fontWeight: 700, color: '#a855f7', display: 'block', marginBottom: 4 } }, 'How do you feel about today\'s use? (' + form.reflective + '/10)'),
+            hh('input', { type: 'range', min: 1, max: 10, step: 1, value: form.reflective,
+              onChange: function(e) { setForm(Object.assign({}, form, { reflective: parseInt(e.target.value, 10) })); },
+              style: { width: '100%', accentColor: '#a855f7' }
+            })
+          ),
+          tkBtn('💾 Log it', save, 'primary')
+        )
+      ),
+
+      logs.length > 0 ? hh('div', null,
+        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', marginBottom: 8 } }, '📚 Recent'),
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+          logs.slice(0, 14).map(function(l) {
+            var col = l.total >= 8 ? '#ef4444' : l.total >= 5 ? '#fbbf24' : '#10b981';
+            return hh('div', { key: 'st-' + l.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + col, display: 'flex', justifyContent: 'space-between' } },
+              hh('span', { style: { fontSize: 11, color: '#cbd5e1', fontFamily: 'ui-monospace, Menlo, monospace' } }, l.date + ' · ' + l.total + 'h (' + l.scrolling + 'h scroll, ' + l.productive + 'h productive) · felt ' + l.reflective + '/10'),
+              hh('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+            );
+          })
+        )
+      ) : null,
+
+      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+        hh('strong', { style: { color: '#ef4444' } }, '📱 Honest framing: '),
+        'Screen time research is messy. The pattern is more important than the number. WHAT you do with screens matters more than HOW LONG. The reflection question ("how did you FEEL about it?") is the most useful data here.'
+      )
+    );
+  }
+
   // ── F. MY TOOLKIT HUB (landing page) ──
   // Single entry point that shows status of all toolkit tools + quick
   // actions. Today's date, current streak, # active goals, etc.
@@ -14090,7 +14416,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'mytkSunday',   icon: '📋', label: 'Sunday Plan',          color: '#3b82f6', desc: '5-section weekly planning ritual',
         stat: ((data.mytkSunday || {}).plans || []).length + ' weeks planned', cta: 'Plan this week' },
       { id: 'mytkFriends',  icon: '🤝', label: 'Friendship Tracker',   color: '#ec4899', desc: 'Combat relational drift with cadence tracking',
-        stat: ((data.mytkFriends || {}).friends || []).length + ' tracked', cta: 'Track friendships' }
+        stat: ((data.mytkFriends || {}).friends || []).length + ' tracked', cta: 'Track friendships' },
+      { id: 'mytkValues',   icon: '🧭', label: 'Values Compass',       color: '#a855f7', desc: 'Sort 36 values → top 3 (Hayes 1999 ACT)',
+        stat: ((data.mytkValues || {}).top3 || []).length + ' top values', cta: 'Find values' },
+      { id: 'mytkMomentum', icon: '📆', label: 'Momentum Calendar',    color: '#10b981', desc: '12-week grid per habit, Seinfeld chain',
+        stat: ((data.mytkMomentum || {}).habits || []).length + ' habits', cta: 'Track momentum' },
+      { id: 'mytkScreen',   icon: '📱', label: 'Screen Time Tracker',  color: '#ef4444', desc: 'Self-report screen time + reflection',
+        stat: ((data.mytkScreen || {}).logs || []).length + ' logs', cta: 'Log today' }
     ];
 
     var dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][new Date().getDay()];
@@ -14355,7 +14687,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'mytkEthical',icon: '⚖',label: 'Ethical Dilemma Walker',desc: '6-step framework for working through hard moral situations (Kohlberg-aligned).' },
               { id: 'mytkResources',icon: '🛟',label: 'Community Resources',  desc: 'Universal crisis lines (988, Maine Mobile, Trevor, etc.) + your personal additions.' },
               { id: 'mytkSunday', icon: '📋',label: 'Sunday Plan',          desc: '5-section weekly planning ritual: wins, focus, deadlines, self-care, hopes.' },
-              { id: 'mytkFriends',icon: '🤝',label: 'Friendship Tracker',   desc: 'Track who you owe a check-in to. Cadence-aware. Especially helpful when life gets busy.' }
+              { id: 'mytkFriends',icon: '🤝',label: 'Friendship Tracker',   desc: 'Track who you owe a check-in to. Cadence-aware. Especially helpful when life gets busy.' },
+              { id: 'mytkValues',icon: '🧭',label: 'Values Compass',        desc: 'Sort 36 values → top 10 → top 5 → top 3 with why-reasoning (Hayes ACT 1999).' },
+              { id: 'mytkMomentum',icon: '📆',label: 'Momentum Calendar',   desc: '12-week × 7-day grid per habit. Seinfeld "don\'t break the chain" flexible version.' },
+              { id: 'mytkScreen',icon: '📱',label: 'Screen Time Tracker',   desc: 'Self-report total + scrolling + productive screen time + how you felt about it.' }
             ]
           },
           { id: 'foundation', icon: '🧠', name: 'How learning works (foundation)',
@@ -18007,6 +18342,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           h(PersonalFriendshipTracker, { data: dft, setData: setDft })
         );
       }
+      function renderMytkValues() {
+        var dvc = d.mytkValues || { selected: [], top10: [], top5: [], top3: [], reasoning: {} };
+        var setDvc = function(newData) { upd('mytkValues', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalValuesCompass, { data: dvc, setData: setDvc })
+        );
+      }
+      function renderMytkMomentum() {
+        var dmm = d.mytkMomentum || { habits: [], logs: {} };
+        var setDmm = function(newData) { upd('mytkMomentum', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalMomentum, { data: dmm, setData: setDmm })
+        );
+      }
+      function renderMytkScreen() {
+        var dsc = d.mytkScreen || { logs: [] };
+        var setDsc = function(newData) { upd('mytkScreen', newData); };
+        return h('div', { style: { padding: '8px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
+          tkBackBar(),
+          h(PersonalScreenTime, { data: dsc, setData: setDsc })
+        );
+      }
 
       // ─────────────────────────────────────────
       // VIEW ROUTER
@@ -18091,6 +18450,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         case 'mytkResources': return renderMytkResources();
         case 'mytkSunday':    return renderMytkSunday();
         case 'mytkFriends':   return renderMytkFriends();
+        case 'mytkValues':    return renderMytkValues();
+        case 'mytkMomentum':  return renderMytkMomentum();
+        case 'mytkScreen':    return renderMytkScreen();
         case 'bloom':         return renderBloom();
         case 'cogload':       return renderCogLoad();
         case 'metacog':       return renderMetacog();
