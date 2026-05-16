@@ -8979,13 +8979,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         // ─── Input ───
         var keys = {};
         function onKeyDown(e) {
-          var k = e.key.toLowerCase();
+          var raw = e.key.toLowerCase();
+          // Arrow keys → WASD aliases so left/right turn the BIRD (not scroll the page)
+          var k = raw;
+          if (raw === 'arrowleft')  k = 'a';
+          else if (raw === 'arrowright') k = 'd';
+          else if (raw === 'arrowup')    k = 'w';
+          else if (raw === 'arrowdown')  k = 's';
           keys[k] = true;
           if (k === 'f') { strike(); e.preventDefault(); }
           if (k === ' ' || k === 'shift') e.preventDefault();
           if (['w','a','s','d','q','e'].indexOf(k) !== -1) e.preventDefault();
+          if (['arrowleft','arrowright','arrowup','arrowdown'].indexOf(raw) !== -1) e.preventDefault();
         }
-        function onKeyUp(e) { keys[e.key.toLowerCase()] = false; }
+        function onKeyUp(e) {
+          var raw = e.key.toLowerCase();
+          var k = raw;
+          if (raw === 'arrowleft')  k = 'a';
+          else if (raw === 'arrowright') k = 'd';
+          else if (raw === 'arrowup')    k = 'w';
+          else if (raw === 'arrowdown')  k = 's';
+          keys[k] = false;
+        }
         canvasEl.addEventListener('keydown', onKeyDown);
         canvasEl.addEventListener('keyup', onKeyUp);
         canvasEl.focus();
@@ -9364,19 +9379,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             raptor.y -= 1.5 * dt;
           }
 
-          // Hard floor + ceiling
+          // Hard floor + ceiling — realistic landing/crash physics
           var groundY = terrainHeightAt(raptor.x, raptor.z);
           var minY = groundY + 1.5;
-          if (raptor.y < minY) {
-            if (raptor.speed > 25) {
-              // Crash — reset with penalty
-              rhAnnounce('Crash! Run reset.');
-              raptor.y = minY + 30;
-              raptor.speed = raptor.maxLevel * 0.5;
+          if (raptor.y < minY || raptor.landed || raptor.crashed) {
+            // Vertical component of motion — dominates whether it's a soft landing or a crash
+            var verticalSpeed = raptor.speed * Math.abs(Math.sin(raptor.pitch));
+            if (raptor.landed || raptor.crashed) {
+              // Already on the ground — stay put, regenerate, wait for SPACE to take off
+              raptor.y = minY;
+              raptor.speed = 0;
+              raptor.pitch = 0;
+              // Regenerate while perched (faster for clean landing, slower while stunned)
+              raptor.stamina = Math.min(raptor.staminaMax, raptor.stamina + (raptor.crashed ? 12 : 35) * dt);
+              if (raptor.crashed) {
+                raptor.crashTimer = (raptor.crashTimer || 0) - dt;
+                if (raptor.crashTimer <= 0) {
+                  raptor.crashed = false;
+                  raptor.landed = true;  // graduates from crash → standing perched
+                  energyEventLog.push({ msg: '✓ Stood back up — SPACE to take off', t: now, color: '#a3e635' });
+                }
+              }
+              // SPACE = take off (only after crash recovery period)
+              if (pullUpKey && !raptor.crashed) {
+                raptor.landed = false;
+                raptor.speed = raptor.maxLevel * 0.5;
+                raptor.y = minY + 8;
+                raptor.pitch = 0.3;  // pitched up for climb
+                rhAnnounce('Taking off.');
+                energyEventLog.push({ msg: '↑ Takeoff', t: now, color: '#a3e635' });
+              }
+            } else if (verticalSpeed > 18 || raptor.speed > 50) {
+              // HARD CRASH — fast vertical impact OR very high overall speed
+              rhAnnounce('Crash! Stunned. Wait, then SPACE to take off.');
+              energyEventLog.push({ msg: '💥 CRASH — stunned ~3s', t: now, color: '#ef4444' });
+              raptor.crashed = true;
+              raptor.crashTimer = 3.0;
+              raptor.y = minY;
+              raptor.speed = 0;
+              raptor.pitch = 0;
               runCatches = 0;
               runStart = performance.now();
             } else {
+              // SOFT/ROUGH LANDING — slow enough to set down on feet
+              var soft = verticalSpeed < 6 && raptor.speed < 18;
+              var msg = soft ? 'Landed.' : 'Rough landing.';
+              rhAnnounce(msg);
+              energyEventLog.push({ msg: '🪶 ' + msg + ' SPACE to take off', t: now, color: soft ? '#a3e635' : '#fbbf24' });
+              raptor.landed = true;
               raptor.y = minY;
+              raptor.speed = 0;
+              raptor.pitch = 0;
             }
           }
           if (raptor.y > 300) raptor.y = 300;
