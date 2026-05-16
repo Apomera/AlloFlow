@@ -2734,6 +2734,359 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
   };
 
   // ───────────────────────────────────────────────────────────
+  // NEW v0.38: PHYSIOLOGY DEEP DIVE — internal anatomy + function
+  // ───────────────────────────────────────────────────────────
+  var PHYSIOLOGY = {
+    intro: 'Raptors are biological machines fine-tuned by ~60 million years of evolution. Their internal physiology — heart, blood, respiration, digestion, metabolism — is dramatically different from mammals + makes their predatory lifestyle possible. Below is a 6-system deep dive.',
+    systems: [
+      {
+        name: 'Cardiovascular',
+        icon: '❤️',
+        keyFacts: [
+          'Heart mass: ~1.5-2% of body mass (humans: ~0.5%). Raptors invest 3-4× more body mass in heart.',
+          'Heart rate at rest: 200-500 bpm (vs human 60-80). At flight: 600-1000+ bpm.',
+          'Four-chambered heart with complete septum. Identical structure to mammals — convergent evolution from common ancestor.',
+          'Higher hemoglobin concentration than mammals — more oxygen per blood unit.',
+          'Faster blood circulation time (~10-15 seconds whole-body for small raptors).',
+          'Larger right atrium than mammals — accommodates returning blood from huge wing muscles.'
+        ],
+        adaptations: [
+          'Peregrine stoop generates ~14g forces. Cardiovascular system handles this without aortic rupture via flexible blood vessel walls.',
+          'Long-distance migrants like ospreys have 50% larger hearts than non-migratory relatives.',
+          'Hummingbirds (not raptors but extreme example) have heart rate up to 1,260 bpm during hover.',
+          'Oxygen extraction efficiency from blood is ~95% in raptors vs ~25% in humans.'
+        ],
+        diseases: [
+          'Aspergillosis — fungal infection in lung air sacs, often fatal.',
+          'Sarcocystis — protozoan infection in muscle.',
+          'Atherosclerosis — extremely rare in wild raptors due to short lifespan + lean diet.'
+        ]
+      },
+      {
+        name: 'Respiratory',
+        icon: '🌬',
+        keyFacts: [
+          'Bird respiratory system is FUNDAMENTALLY different from mammal. ~10× more efficient.',
+          'Air flows UNIDIRECTIONALLY through lungs (vs bidirectional in mammals). Both inhale + exhale push fresh air through gas-exchange tissue.',
+          'Air sacs (8-9 total) extend through body cavity. Used as bellows.',
+          'No diaphragm — sternum + body wall + air sacs do the breathing work.',
+          'Hollow bones connect to air sacs — pneumatic bones increase respiratory capacity.',
+          'Cross-current gas exchange (vs mammal countercurrent) extracts oxygen more efficiently.'
+        ],
+        adaptations: [
+          'Bar-headed goose flies at 9,000 m over Himalaya — lower O2 than Everest summit. No raptor matches this but golden eagles seen at 6,000+ m.',
+          'Hyperventilation tolerance — raptors don\'t blackout when over-breathing during exertion.',
+          'CO2 sensitivity is similar to mammals but managed by different brain regions.',
+          'Raptors can hold breath very briefly — most don\'t need to (continuous air movement).'
+        ],
+        diseases: [
+          'Aspergillosis — most common respiratory disease in captive + wild raptors.',
+          'Air sacculitis — bacterial infection of air sacs.',
+          'Tuberculosis (avian) — chronic wasting + nodules in respiratory tract.'
+        ]
+      },
+      {
+        name: 'Digestive',
+        icon: '🍖',
+        keyFacts: [
+          'Crop — expandable food storage pouch in throat. Owls lack crop (food storage in gizzard).',
+          'Proventriculus — glandular stomach producing strong acid (pH ~1-1.5, stronger than human pH 2-3).',
+          'Gizzard — muscular grinder. Owls have less-developed gizzard; raptors with bone-eating habits have stronger.',
+          'Short intestinal tract (~6× body length) vs mammals (~10-20× body length). Fast digestion.',
+          'No urinary bladder. Urine + feces combine in cloaca + excrete together.',
+          'Pellet formation: indigestible fur, bones, exoskeleton compacted in gizzard + regurgitated.'
+        ],
+        adaptations: [
+          'Acid pH ~1 dissolves bone, leather, feathers. Vultures have pH ~0.5 — kills anthrax, botulinum toxin.',
+          'Some raptors can eat 25% of body mass in single meal.',
+          'Fast digestion — meal cleared in 12-24 hours.',
+          'Lammergeier digests bone entirely — gets nutrition from marrow + bone matrix.',
+          'Vultures have highly antibacterial digestive system — eats rotten meat without disease.'
+        ],
+        diseases: [
+          'Trichomoniasis (frounce) — protozoan infection of upper digestive tract.',
+          'Lead poisoning — most common digestive entry point for lead from ammunition.',
+          'Heavy metal accumulation in liver — chronic exposure to mercury, lead.'
+        ]
+      },
+      {
+        name: 'Renal + Excretory',
+        icon: '💧',
+        keyFacts: [
+          'Two kidneys, each with three sections. More vascularized than mammal kidneys.',
+          'Uric acid excretion (not urea). Solid white paste, saves water — critical for desert + flying species.',
+          'No urinary bladder — urine flows directly through ureters to cloaca.',
+          'Salt glands above eyes excrete excess sodium chloride — important in coastal + marine species.',
+          'Water conservation: highly concentrated urine, minimal water loss.',
+          'Renal portal system — blood from legs bypasses heart en route to kidneys, allows more filtration.'
+        ],
+        adaptations: [
+          'Desert raptors (lanner falcon, brown falcon) can survive months without drinking water — get all water from prey.',
+          'Marine raptors (osprey, sea eagle) tolerate high salt intake via salt glands.',
+          'Soaring at altitude: low water loss enables 8-hour soaring without water.',
+          'Eagles can lose 25% body water without dying (humans: ~15% is fatal).'
+        ],
+        diseases: [
+          'Gout — uric acid crystal buildup in joints. Caused by high-protein diet, dehydration.',
+          'Kidney damage from lead, mercury, pesticide exposure.',
+          'Renal failure — late-stage of chronic poisoning.'
+        ]
+      },
+      {
+        name: 'Skeletal + Muscular',
+        icon: '🦴',
+        keyFacts: [
+          'Hollow pneumatic bones — strong but light. Reduces flight cost.',
+          'Fused vertebrae in synsacrum — rigid spine for flight stability.',
+          'Furcula (wishbone) — flexible "spring" stores energy on downstroke, releases on upstroke.',
+          'Keel of sternum massively enlarged — anchor for flight muscles.',
+          'Flight muscles = ~30% of body mass in fast fliers (peregrines). Wing-spread muscles ~5-10%.',
+          'Pectoralis (downstroke) is huge. Supracoracoideus (upstroke) is smaller but anchored to same keel.'
+        ],
+        adaptations: [
+          'Wing bones are hollow but reinforced — bear high G-forces during stoop.',
+          'Talon bones are fused for maximum strength.',
+          'Fast-twitch muscle fibers dominate flight muscles — explosive power.',
+          'Owls have feathered tarsi for warmth + silencing leg movements in flight.',
+          'Harpy eagle feet have foot-tendon strength to crush sloth bones in single squeeze.'
+        ],
+        diseases: [
+          'Bumblefoot (pododermatitis) — chronic infected lesion on foot. Common in captive raptors with poor perch maintenance.',
+          'Air sacculitis (related to bones).',
+          'Avian malaria — anemia + muscle weakness.'
+        ]
+      },
+      {
+        name: 'Nervous + Sensory',
+        icon: '🧠',
+        keyFacts: [
+          'Brain mass is small but extremely dense — packed neurons.',
+          'Optic lobes (back of brain) are HUGE — vision is the dominant sense.',
+          'Telencephalon (forebrain) has folded surface — sophisticated cognition.',
+          'Cerebellum is large — fine motor control for flight.',
+          'Owls have asymmetric ear openings (vertical asymmetry up to 10 mm) for 3D acoustic localization.',
+          'Pineal gland regulates seasonal hormones + migration timing.'
+        ],
+        adaptations: [
+          'Visual acuity 2-3× human (most raptors). Dual fovea in eagles enables simultaneous fixation on different distances.',
+          'Color vision in 4 channels (UV + visible) in falcons + kestrels.',
+          'Owl 3D acoustic localization accurate to ~1° — works in pitch dark.',
+          'Magnetic compass via cryptochrome receptors in eye + iron sensors in beak.',
+          'Tool use documented in some species — black kite carries flame to flush prey.',
+          'Cognitive flexibility — Cooper\'s hawks demonstrate problem-solving in captive studies.'
+        ],
+        diseases: [
+          'Lead encephalopathy — lead poisoning damages brain.',
+          'West Nile virus — neurologic damage; high mortality in some raptors.',
+          'Avian flu (H5N1) — neurologic symptoms in some strains.',
+          'Trauma — concussion from vehicle/window strike most common.'
+        ]
+      }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.38: ECOLOGY + FOOD WEBS
+  // ───────────────────────────────────────────────────────────
+  var ECOLOGY = {
+    intro: 'Raptors are apex or mesopredators in nearly every terrestrial ecosystem. They occupy specific ecological niches + form complex food webs with prey, competitors, scavengers. Understanding raptor ecology means understanding the entire ecosystem they live in.',
+    nicheConcepts: [
+      { name: 'Trophic level', def: 'Raptors are typically tertiary or quaternary consumers — eating herbivores, omnivores, or other carnivores. Carcass-eaters like vultures fill detritivore + decomposer roles too.' },
+      { name: 'Top-down control', def: 'Raptor predation regulates prey populations. Removal of raptors causes prey populations to boom (mesopredator release effect).' },
+      { name: 'Mesopredator release', def: 'When top predators (eagles, hawks) decline, mid-sized predators (foxes, raccoons, feral cats) expand + disproportionately impact ground-nesting birds.' },
+      { name: 'Keystone species', def: 'Some raptors are keystones. The African crowned eagle in some forests is THE primary predator that maintains ecological balance.' },
+      { name: 'Indicator species', def: 'Because raptors bioaccumulate pesticides + heavy metals, their health reflects ecosystem health. DDT crisis was first noticed via peregrine declines.' },
+      { name: 'Specialist vs generalist', def: 'Specialists (osprey = fish, snail kite = apple snail) are vulnerable to prey decline. Generalists (red-tailed hawk = everything) are robust.' },
+      { name: 'Ecological release', def: 'When competitor species are removed, remaining species expand into vacant niche. Cooper\'s hawks expanded forest-edge niche after sharp-shinned declined.' },
+      { name: 'Habitat heterogeneity', def: 'Raptors need varied habitat — open hunting grounds + dense roosting/nesting cover. Pure cropland or pure forest = poor raptor habitat.' }
+    ],
+    foodWebs: [
+      {
+        habitat: 'Eastern deciduous forest',
+        primaryRaptors: ['Cooper\'s hawk', 'red-shouldered hawk', 'red-tailed hawk', 'great horned owl', 'barred owl', 'eastern screech owl'],
+        keyPrey: 'Squirrels, chipmunks, voles, mice, rabbits, songbirds, snakes, frogs, large insects, occasional skunks/opossums',
+        competitors: 'Other raptors compete for similar prey; foxes + bobcats compete for small mammals; raccoons compete for ground-nesters',
+        ecosystemServices: 'Rodent + pest control (estimated $1-2 billion/year in pest control). Suppression of mesopredators (foxes, raccoons) that would otherwise harm songbirds.',
+        threats: 'Habitat fragmentation, suburban development, rodenticides, window strikes'
+      },
+      {
+        habitat: 'Great Plains grassland',
+        primaryRaptors: ['Ferruginous hawk', 'Swainson\'s hawk', 'red-tailed hawk', 'prairie falcon', 'American kestrel', 'burrowing owl', 'short-eared owl', 'rough-legged hawk (winter)'],
+        keyPrey: 'Prairie dogs, ground squirrels, mice, voles, snakes, large insects, occasional jackrabbits',
+        competitors: 'Coyotes, foxes, badgers compete for prairie dogs + ground squirrels',
+        ecosystemServices: 'Critical control of rodent populations. Prevents crop damage. Maintains grassland productivity.',
+        threats: 'Grassland conversion to cropland (90% loss since 1900), prairie dog eradication programs eliminating prey base, wind farm collisions'
+      },
+      {
+        habitat: 'Western mountain',
+        primaryRaptors: ['Golden eagle', 'red-tailed hawk', 'prairie falcon', 'goshawk', 'American kestrel', 'rough-legged hawk', 'great gray owl', 'flammulated owl'],
+        keyPrey: 'Marmots, ground squirrels, hares, snowshoe hares, mice, voles, grouse, sage-grouse',
+        competitors: 'Mountain lions, coyotes, foxes',
+        ecosystemServices: 'Regulation of medium mammals + grouse populations. Indicators of high-elevation ecosystem health.',
+        threats: 'Wind energy development, lead poisoning from hunting (carcasses), grouse hunting reducing prey base'
+      },
+      {
+        habitat: 'Coastal + marine',
+        primaryRaptors: ['Bald eagle', 'osprey', 'white-tailed eagle (Europe)', 'merlin (winter)', 'short-eared owl'],
+        keyPrey: 'Fish (salmon, herring, mullet), seabirds, waterfowl, occasional seals + carcasses',
+        competitors: 'Other large birds (gulls, cormorants), marine mammals',
+        ecosystemServices: 'Carrion cleanup. Population regulation of mid-sized fish. Indicators of coastal pollution.',
+        threats: 'Oil spills, plastic in nests, fishing line entanglement, mercury/PCB contamination from fish'
+      },
+      {
+        habitat: 'Wetland + freshwater',
+        primaryRaptors: ['Osprey', 'bald eagle', 'snail kite (Florida)', 'short-eared owl', 'long-eared owl', 'northern harrier'],
+        keyPrey: 'Fish, frogs, snakes, waterfowl, voles, large insects (snail kite specializes on apple snails)',
+        competitors: 'Herons, egrets, otters',
+        ecosystemServices: 'Population control of voles + waterfowl. Indicator of water quality.',
+        threats: 'Wetland drainage (50% loss since colonization), agricultural runoff, mercury bioaccumulation'
+      },
+      {
+        habitat: 'Tropical rainforest',
+        primaryRaptors: ['Harpy eagle', 'crested eagle', 'black-and-white hawk-eagle', 'ornate hawk-eagle', 'forest-falcon species'],
+        keyPrey: 'Sloths, monkeys, opossums, large lizards, large birds (parrots, toucans)',
+        competitors: 'Jaguars, ocelots, large snakes (anaconda, boa)',
+        ecosystemServices: 'Critical top-predator role. Maintains arboreal mammal populations. Cultural keystone species in indigenous cultures.',
+        threats: 'Deforestation (~5% canopy loss/year in Amazon since 2000), hunting, illegal pet trade'
+      },
+      {
+        habitat: 'Arctic tundra',
+        primaryRaptors: ['Snowy owl', 'gyrfalcon', 'rough-legged hawk', 'peregrine falcon', 'short-eared owl'],
+        keyPrey: 'Lemmings, voles, ptarmigan, waterfowl, hares',
+        competitors: 'Arctic foxes, wolverines, jaegers',
+        ecosystemServices: 'Strong top-down control of lemming + vole populations. Indicator of climate impact.',
+        threats: 'Climate change is most severe in Arctic. Lemming cycles disrupted by early snowmelt. Permafrost thaw affecting prey base.'
+      },
+      {
+        habitat: 'Desert',
+        primaryRaptors: ['Lanner falcon', 'sooty falcon', 'pallid harrier', 'long-legged buzzard', 'desert eagle owl'],
+        keyPrey: 'Lizards, snakes, insects, ground-nesting birds, small mammals',
+        competitors: 'Coyotes (Americas), jackals (Africa, Eurasia), large lizards',
+        ecosystemServices: 'Population control in fragile desert ecosystems. Indicator of climate stability.',
+        threats: 'Climate change increasing desertification, but also expanding desert raptor ranges. Renewable energy (solar farms) emerging concern.'
+      }
+    ],
+    services: [
+      { service: 'Pest control', value: 'Estimated $1-2 billion/year in US agricultural pest control by raptors. A single barn owl pair eats ~3,000 rodents/year.', who: 'All raptor species' },
+      { service: 'Carrion cleanup', value: 'Vultures process ~70% of dead-animal biomass in some ecosystems. Prevents disease spread + nutrient lock-up.', who: 'Vultures, condors, eagles' },
+      { service: 'Mesopredator regulation', value: 'Suppresses foxes + raccoons that would otherwise destroy songbird populations.', who: 'Eagles, large hawks, owls' },
+      { service: 'Ecotourism', value: '$100M+/year in raptor-related tourism (Hawk Mountain ~50k visitors/year, eagle festivals + condor viewing programs).', who: 'All major species' },
+      { service: 'Cultural + spiritual', value: 'Continuous human cultural connection for 5,000+ years. Indigenous + national symbols.', who: 'Most species' },
+      { service: 'Indicator species', value: 'Bioaccumulation of pesticides + heavy metals reveals ecosystem contamination. Peregrine + osprey are flagship indicators.', who: 'Top predators' }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.38: EVOLUTION + TAXONOMY
+  // ───────────────────────────────────────────────────────────
+  var EVOLUTION_TAX = {
+    intro: 'Raptors are a fascinating case in evolutionary biology — at least 3 separate lineages converged on the predatory bird body plan. Modern taxonomy + DNA evidence has reshuffled our understanding dramatically since 2000.',
+    timeline: [
+      { mya: 150, event: 'Archaeopteryx — earliest known bird, hawk-sized predator. Possibly first feathered theropod with flight.' },
+      { mya: 100, event: 'Modern bird lineages begin diverging. Predatory niche fills via various theropod descendants.' },
+      { mya: 65, event: 'K-Pg extinction event. Most large theropods extinct. Birds survive + radiate.' },
+      { mya: 60, event: 'Falconidae lineage diverges from other birds.' },
+      { mya: 55, event: 'Accipitridae (eagles, hawks) lineage emerges.' },
+      { mya: 50, event: 'Strigiformes (owls) diverge.' },
+      { mya: 30, event: 'Cathartiformes (New World vultures) diverge. Long thought to be raptors; DNA shows separate origin.' },
+      { mya: 20, event: 'Modern genera + species diversification. Many recognizable species today emerge.' },
+      { mya: 12, event: 'Peregrine falcon lineage diverges from other falcons.' },
+      { mya: 5, event: 'Modern accipiters (Cooper\'s hawk, sharp-shinned, goshawk) diverge.' },
+      { mya: 2, event: 'Pleistocene glaciations drive speciation + range shifts.' },
+      { mya: 0.04, event: 'Modern humans appear. Begin influencing raptor populations via habitat change.' },
+      { mya: 0.005, event: 'Agriculture begins. Raptors adapt to human-modified landscapes.' },
+      { mya: 0.0001, event: 'DDT crisis (1947-1972). Modern conservation movement begins.' }
+    ],
+    convergence: [
+      { feature: 'Hooked beak', evolvedIn: 'Accipitridae, Falconidae, Strigiformes, Cathartiformes, Pandionidae', explanation: 'Tearing flesh requires similar tool. All raptor groups evolved hooked beak independently.' },
+      { feature: 'Curved talons', evolvedIn: 'All raptor groups + some predatory non-raptors', explanation: 'Gripping prey needs strong curved claws. Convergent in many predatory species.' },
+      { feature: 'Forward-facing eyes', evolvedIn: 'All raptors', explanation: 'Binocular vision enables depth perception for striking prey. Convergent with carnivorous mammals.' },
+      { feature: 'Acute vision', evolvedIn: 'All diurnal raptors', explanation: 'Independent evolution of high-density retinal photoreceptors.' },
+      { feature: 'Carrion diet', evolvedIn: 'Old World vultures (Accipitridae) + New World vultures (Cathartiformes)', explanation: 'Two completely separate lineages independently evolved bald heads + scavenging behavior.' },
+      { feature: 'Silent flight', evolvedIn: 'Owls + occasionally harriers', explanation: 'Stealth requires silent feathers. Owls have full silencing complex; harriers have partial development.' },
+      { feature: 'Nocturnal hunting', evolvedIn: 'Owls primarily', explanation: 'Owl lineage convergent with bats + cats in evolving for night-active prey.' },
+      { feature: 'Reversible toe', evolvedIn: 'Osprey, owls, snake-hunters', explanation: 'Convergent evolution of zygodactyl-switching for grip improvement.' }
+    ],
+    taxonomy: {
+      order: [
+        { name: 'Accipitriformes', count: '~250 species', members: 'Hawks, eagles, kites, harriers, OW vultures, secretary bird', note: 'Includes Pandionidae (osprey) but recently reclassified — sometimes its own order.' },
+        { name: 'Falconiformes', count: '~70 species', members: 'Falcons + caracaras', note: 'Genetically closer to parrots than to hawks! 2000s DNA studies show this.' },
+        { name: 'Strigiformes', count: '~250 species', members: 'Owls (both Strigidae + Tytonidae)', note: 'Two families: typical owls + barn owls.' },
+        { name: 'Cathartiformes', count: '7 species', members: 'New World vultures + condors', note: 'NOT true raptors. Closer to storks (Ciconiiformes). Convergent evolution of raptor body plan.' }
+      ],
+      families: [
+        { name: 'Accipitridae', members: 'Hawks, eagles, kites, harriers, OW vultures', count: '~240 species' },
+        { name: 'Pandionidae', members: 'Osprey only (sometimes in Accipitridae)', count: '1 species' },
+        { name: 'Falconidae', members: 'Falcons, caracaras', count: '~70 species' },
+        { name: 'Strigidae', members: 'Typical owls', count: '~210 species' },
+        { name: 'Tytonidae', members: 'Barn owls', count: '~20 species' },
+        { name: 'Cathartidae', members: 'New World vultures', count: '7 species' },
+        { name: 'Sagittariidae', members: 'Secretary bird only', count: '1 species' }
+      ]
+    },
+    extinctSpecies: [
+      { name: 'Haast\'s eagle (Hieraaetus moorei)', range: 'New Zealand', extinct: '~1445 CE', size: 'Largest eagle ever. 3 m wingspan. 15 kg.', cause: 'Extinct ~150 years after Maori arrival + concurrent moa extinction.' },
+      { name: 'Cuban giant owl (Ornimegalonyx)', range: 'Cuba', extinct: 'Last ice age (~12,000 ya)', size: '1.1 m tall. Largest known owl.', cause: 'Extinct with megafaunal collapse.' },
+      { name: 'Argentavis magnificens', range: 'Argentina', extinct: '~6 mya', size: 'Wingspan 7 m. Massive condor-like bird.', cause: 'Pliocene extinctions.' },
+      { name: 'Teratornis merriami', range: 'North America', extinct: '~12,000 ya', size: 'Wingspan 3-4 m. Condor relative.', cause: 'Megafaunal extinction at end of Ice Age.' },
+      { name: 'St. Helena cuckoo-hawk', range: 'St. Helena island', extinct: '~1500s CE', size: 'Small Buteo relative.', cause: 'European colonization + habitat loss.' },
+      { name: 'Réunion crested eagle', range: 'Réunion Island', extinct: '1670', size: 'Medium eagle.', cause: 'Hunting by sailors + habitat loss.' }
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // NEW v0.38: FIELD NATURALIST PRACTICES
+  // ───────────────────────────────────────────────────────────
+  var FIELD_NATURALIST = {
+    intro: 'Becoming a raptor naturalist is a lifelong practice combining patient observation, systematic data collection, ethical fieldcraft, + scientific reasoning. Here is a guide to the practices + tools.',
+    skills: [
+      { skill: 'Sit-spotting', description: 'Choose a location, return daily, sit silently 30-60 minutes. Observe what passes through. Over weeks + months, you learn the rhythms of one place. Most influential nature observers (John Muir, Aldo Leopold) practiced sit-spotting.', how: 'Pick a spot accessible year-round. Visit 3+ times/week. Same time of day. Bring notebook + binoculars. Don\'t talk. Just watch.' },
+      { skill: 'Field notebook', description: 'Date, time, location (GPS), weather, observations. Sketches. Sound notes. Behavior notes. Numbers seen + estimate.', how: 'Use waterproof notebook (Rite-in-the-Rain) + pencil. Specific format: Date/Time/Location at top, observations in narrative below, totals + species list at bottom.' },
+      { skill: 'Binocular use', description: 'Quality 8x42 or 10x42 binoculars. Scan systematically. Learn to find perched bird + then bring binoculars to face (don\'t look-then-search through binoculars).', how: 'Practice "spot-then-look" routine. Learn to focus quickly. Master adjusting both barrels.' },
+      { skill: 'Field marks', description: 'Diagnostic features that distinguish similar species. Wingbar pattern, head pattern, tail pattern, behavior, voice.', how: 'Study field guides BEFORE field trips. Learn 5-10 key marks per species pair (Cooper\'s vs sharp-shinned).' },
+      { skill: 'Behavior observation', description: 'Don\'t just identify species — observe behavior. Mating, territorial defense, hunting, food handling. These reveal more than species ID.', how: 'After ID, ask: what is this bird doing? Why? What\'s the context?' },
+      { skill: 'Migration counting', description: 'Volunteer at hawkwatch sites. Help systematic count. Learn migration timing + species patterns.', how: 'Hawk Mountain, Cape May, Veracruz, Hawkwatch.org — most sites welcome volunteers.' },
+      { skill: 'eBird logging', description: 'Submit checklists. Add data to global ornithology database. Learn species ID rigor in process.', how: 'Download eBird app. Use during every field outing. Be honest about uncertain IDs.' },
+      { skill: 'Photo documentation', description: 'Photographs serve as evidence + reference. Even bad photos help with ID.', how: 'Always carry phone or camera. Document rare or interesting sightings.' },
+      { skill: 'Acoustic recording', description: 'Phone records calls. Helps with ID + becomes data for Macaulay Library.', how: 'Phone\'s default voice recorder works. Aim toward bird if possible. Note context.' },
+      { skill: 'Citizen science', description: 'iNaturalist, eBird, Hawk Migration Association of N. America (HMANA), nest monitoring programs.', how: 'Join one project. Commit to systematic participation over years.' }
+    ],
+    surveysAndCounts: [
+      { name: 'Hawk Migration Count', when: 'September - November', where: 'Hawk Mountain PA, Cape May NJ, Veracruz Mexico, many sites', what: 'Standardized count of migrating raptors. Volunteer.' },
+      { name: 'Winter Raptor Survey', when: 'November - February', where: 'Many states have official surveys', what: 'Document wintering raptors along driving routes.' },
+      { name: 'Christmas Bird Count', when: 'Mid-December to early January', where: '2,500+ count circles worldwide', what: 'Cornell Lab + Audubon co-sponsor. Volunteer at local circle.' },
+      { name: 'Big Day', when: 'May 1 - June 14', where: 'Worldwide', what: 'Count as many species as possible in 24 hours. Annual Cornell event.' },
+      { name: 'eBird Year List', when: 'Year-round', where: 'Anywhere', what: 'Build personal year list of species observed.' },
+      { name: 'Nest Monitoring', when: 'March - August', where: 'Local', what: 'Volunteer-monitor nests via state wildlife agency program.' },
+      { name: 'Banding station volunteering', when: 'Spring + fall', where: 'Hawk Mountain, Cape May, others', what: 'Help with mist-net captures + banding.' },
+      { name: 'Owl prowl', when: 'January - March', where: 'Forested areas', what: 'Volunteer-led owl census walks.' },
+      { name: 'Wintering eagle survey', when: 'January', where: 'Reservoirs, rivers, coast', what: 'Mid-winter eagle count via state wildlife.' }
+    ],
+    bandingStations: [
+      { name: 'Hawk Mountain Sanctuary', state: 'PA', specialty: '80+ year hawkwatch + occasional banding.', open: 'Sep-Dec', url: 'hawkmountain.org' },
+      { name: 'Cape May Bird Observatory', state: 'NJ', specialty: 'Largest US east coast banding station.', open: 'Sep-Nov', url: 'birds.cornell.edu' },
+      { name: 'Allegheny Front Hawk Watch', state: 'PA', specialty: 'Banding + count site.', open: 'Sep-Nov', url: 'alleghenyfront.org' },
+      { name: 'Hawk Ridge', state: 'MN', specialty: 'Western Great Lakes major banding.', open: 'Aug-Nov', url: 'hawkridge.org' },
+      { name: 'Whitefish Point', state: 'MI', specialty: 'Spring + fall banding station.', open: 'Mar-May + Sep-Nov', url: 'wpbo.org' },
+      { name: 'Hawkwatch International Sites', state: 'Multiple', specialty: 'Goshutes UT + Manzanos NM are flagship.', open: 'Sep-Nov', url: 'hawkwatch.org' },
+      { name: 'Predatory Bird Research', state: 'CA', specialty: 'UCSC research site for west coast banding.', open: 'Spring + fall', url: 'predatorybirdresearch.org' },
+      { name: 'Mt. Davidson', state: 'NV', specialty: 'High-altitude banding.', open: 'Fall', url: 'gbbo.org' }
+    ],
+    ethicalGuidelines: [
+      'Stay on trails. Don\'t flush birds for better views.',
+      'Maintain 100m+ from active nests.',
+      'Don\'t broadcast calls — disrupts territorial behavior.',
+      'Don\'t bait raptors.',
+      'Share GPS data only with eBird, iNaturalist, or state wildlife — never publicly post nest sites.',
+      'When photographing, use long lenses + blinds.',
+      'Report injured or dead birds to rehab or wildlife agency.',
+      'Take only photos. Leave only footprints.',
+      'Be patient. Magic happens when you sit still.',
+      'Share knowledge — newer birders need experienced mentors.'
+    ]
+  };
+
+  // ───────────────────────────────────────────────────────────
   // GLOSSARY DATA — A-Z reference of raptor terminology
   // ───────────────────────────────────────────────────────────
   var GLOSSARY = [
@@ -2915,6 +3268,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         { id: 'behavior', label: 'Behavior Repertoire', icon: '🌗' },
         { id: 'urban', label: 'Urban Raptors', icon: '🏙' },
         { id: 'climate', label: 'Climate Change Impact', icon: '🌡' },
+        { id: 'physiology', label: 'Physiology Deep Dive', icon: '❤️' },
+        { id: 'ecology', label: 'Ecology & Food Webs', icon: '🕸' },
+        { id: 'evolution', label: 'Evolution & Taxonomy', icon: '🧬' },
+        { id: 'fieldnat', label: 'Field Naturalist', icon: '📓' },
         { id: 'glossary', label: 'Glossary', icon: '📖' },
         { id: 'quiz', label: 'Field ID Quiz', icon: '🎓' },
         { id: 'resources', label: 'Resources', icon: '📚' }
@@ -11329,6 +11686,328 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       }
 
       // ────────────────────────────────────────────────────────
+      // RENDER: PHYSIOLOGY DEEP DIVE (v0.38)
+      // ────────────────────────────────────────────────────────
+      function renderPhysiology() {
+        var sysIdx = rh.physiologySystem == null ? 0 : rh.physiologySystem;
+        function setSys(i) { setRH({ physiologySystem: i }); }
+        var sys = PHYSIOLOGY.systems[sysIdx];
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-rose-900/40 to-pink-900/40 border border-rose-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '❤️'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-rose-200' }, 'Physiology Deep Dive'),
+                h('div', { className: 'text-sm text-rose-100/85 mt-1' }, PHYSIOLOGY.intro)
+              )
+            )
+          ),
+          // System picker
+          h('div', { className: 'flex flex-wrap gap-1' },
+            PHYSIOLOGY.systems.map(function(s, i) {
+              var sel = sysIdx === i;
+              return h('button', {
+                key: i,
+                onClick: function() { setSys(i); },
+                className: 'px-3 py-1.5 rounded text-xs ' + (sel ? 'bg-rose-600 text-white font-bold' : 'bg-slate-800/60 text-rose-200 hover:bg-slate-700/60'),
+                'aria-pressed': sel
+              }, s.icon + ' ' + s.name);
+            })
+          ),
+          // Active system
+          h('div', { className: 'bg-slate-800/40 border border-rose-700/40 rounded-xl p-4 space-y-3' },
+            h('div', { className: 'text-lg font-bold text-rose-300' }, sys.icon + ' ' + sys.name + ' System'),
+            h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
+              h('div', { className: 'text-xs font-bold text-cyan-300 mb-2' }, '📋 Key Facts'),
+              h('ul', { className: 'space-y-1 list-disc list-inside text-sm text-slate-100' },
+                sys.keyFacts.map(function(f, i) {
+                  return h('li', { key: i, className: 'leading-relaxed' }, f);
+                })
+              )
+            ),
+            h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-3' },
+              h('div', { className: 'text-xs font-bold text-emerald-300 mb-2' }, '🚀 Adaptations'),
+              h('ul', { className: 'space-y-1 list-disc list-inside text-sm text-emerald-100/90' },
+                sys.adaptations.map(function(a, i) {
+                  return h('li', { key: i, className: 'leading-relaxed' }, a);
+                })
+              )
+            ),
+            h('div', { className: 'bg-rose-900/20 border border-rose-700/40 rounded p-3' },
+              h('div', { className: 'text-xs font-bold text-rose-300 mb-2' }, '🦠 Diseases + Disorders'),
+              h('ul', { className: 'space-y-1 list-disc list-inside text-sm text-rose-100/90' },
+                sys.diseases.map(function(d, i) {
+                  return h('li', { key: i, className: 'leading-relaxed' }, d);
+                })
+              )
+            )
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: ECOLOGY + FOOD WEBS (v0.38)
+      // ────────────────────────────────────────────────────────
+      function renderEcology() {
+        var ecoTab = rh.ecologyTab || 'niche';
+        function setEcoTab(t) { setRH({ ecologyTab: t }); }
+        var habitatIdx = rh.ecologyHabitat == null ? 0 : rh.ecologyHabitat;
+        function setHab(i) { setRH({ ecologyHabitat: i }); }
+        var hab = ECOLOGY.foodWebs[habitatIdx];
+        var tabs = [
+          { id: 'niche', label: '🧠 Niche Concepts' },
+          { id: 'webs', label: '🕸 Food Webs by Habitat' },
+          { id: 'services', label: '💎 Ecosystem Services' }
+        ];
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-green-900/40 to-emerald-900/40 border border-green-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '🕸'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-green-200' }, 'Ecology & Food Webs'),
+                h('div', { className: 'text-sm text-green-100/85 mt-1' }, ECOLOGY.intro)
+              )
+            )
+          ),
+          h('div', { className: 'flex flex-wrap gap-1 bg-slate-900/60 rounded-lg p-1', role: 'tablist' },
+            tabs.map(function(t) {
+              var active = ecoTab === t.id;
+              return h('button', {
+                key: t.id,
+                onClick: function() { setEcoTab(t.id); },
+                className: 'px-3 py-1.5 rounded text-xs font-bold ' + (active
+                  ? 'bg-green-600 text-white'
+                  : 'text-green-200 hover:text-white'),
+                role: 'tab',
+                'aria-selected': active
+              }, t.label);
+            })
+          ),
+          ecoTab === 'niche' && h('div', { className: 'grid md:grid-cols-2 gap-3' },
+            ECOLOGY.nicheConcepts.map(function(n, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-green-700/30 rounded-lg p-3' },
+                h('div', { className: 'text-sm font-bold text-green-300 mb-1' }, n.name),
+                h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, n.def)
+              );
+            })
+          ),
+          ecoTab === 'webs' && h('div', { className: 'space-y-3' },
+            h('div', { className: 'flex flex-wrap gap-1' },
+              ECOLOGY.foodWebs.map(function(f, i) {
+                var sel = habitatIdx === i;
+                return h('button', {
+                  key: i,
+                  onClick: function() { setHab(i); },
+                  className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-green-600 text-white font-bold' : 'bg-slate-800/60 text-green-200 hover:bg-slate-700/60'),
+                  'aria-pressed': sel
+                }, f.habitat);
+              })
+            ),
+            h('div', { className: 'bg-slate-800/40 border border-green-700/40 rounded-xl p-4 space-y-2' },
+              h('div', { className: 'text-lg font-bold text-green-300' }, hab.habitat),
+              h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
+                h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, '🦅 Primary Raptors'),
+                h('div', { className: 'text-sm text-amber-100/90' }, hab.primaryRaptors.join(' · '))
+              ),
+              h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
+                h('div', { className: 'text-xs font-bold text-purple-300 mb-1' }, '🐭 Key Prey'),
+                h('div', { className: 'text-sm text-purple-100/90' }, hab.keyPrey)
+              ),
+              h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
+                h('div', { className: 'text-xs font-bold text-orange-300 mb-1' }, '⚔ Competitors'),
+                h('div', { className: 'text-sm text-orange-100/90' }, hab.competitors)
+              ),
+              h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-3' },
+                h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, '💎 Ecosystem Services'),
+                h('div', { className: 'text-sm text-emerald-100/90 leading-relaxed' }, hab.ecosystemServices)
+              ),
+              h('div', { className: 'bg-rose-900/20 border border-rose-700/40 rounded p-3' },
+                h('div', { className: 'text-xs font-bold text-rose-300 mb-1' }, '⚠ Threats'),
+                h('div', { className: 'text-sm text-rose-100/90 leading-relaxed' }, hab.threats)
+              )
+            )
+          ),
+          ecoTab === 'services' && h('div', { className: 'space-y-3' },
+            ECOLOGY.services.map(function(s, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-emerald-700/40 rounded-lg p-3' },
+                h('div', { className: 'text-sm font-bold text-emerald-300 mb-1' }, '💎 ' + s.service),
+                h('div', { className: 'text-xs text-slate-200 mb-1' }, s.value),
+                h('div', { className: 'text-[10px] italic text-amber-200/80' }, 'Provided by: ' + s.who)
+              );
+            })
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: EVOLUTION + TAXONOMY (v0.38)
+      // ────────────────────────────────────────────────────────
+      function renderEvolution() {
+        var evoTab = rh.evolutionTab || 'timeline';
+        function setEvoTab(t) { setRH({ evolutionTab: t }); }
+        var tabs = [
+          { id: 'timeline', label: '📅 Evolutionary Timeline' },
+          { id: 'convergence', label: '🔀 Convergent Evolution' },
+          { id: 'taxonomy', label: '🧬 Modern Taxonomy' },
+          { id: 'extinct', label: '💀 Extinct Species' }
+        ];
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-violet-900/40 to-purple-900/40 border border-violet-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '🧬'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-violet-200' }, 'Evolution & Taxonomy'),
+                h('div', { className: 'text-sm text-violet-100/85 mt-1' }, EVOLUTION_TAX.intro)
+              )
+            )
+          ),
+          h('div', { className: 'flex flex-wrap gap-1 bg-slate-900/60 rounded-lg p-1', role: 'tablist' },
+            tabs.map(function(t) {
+              var active = evoTab === t.id;
+              return h('button', {
+                key: t.id,
+                onClick: function() { setEvoTab(t.id); },
+                className: 'px-3 py-1.5 rounded text-xs font-bold ' + (active
+                  ? 'bg-violet-600 text-white'
+                  : 'text-violet-200 hover:text-white'),
+                role: 'tab',
+                'aria-selected': active
+              }, t.label);
+            })
+          ),
+          evoTab === 'timeline' && h('div', { className: 'space-y-1' },
+            EVOLUTION_TAX.timeline.map(function(t, i) {
+              return h('div', { key: i, className: 'flex items-start gap-3 bg-slate-800/40 border-l-4 border-violet-600 rounded-r-lg p-2' },
+                h('div', { className: 'text-violet-300 font-mono font-bold text-sm w-28 flex-shrink-0' }, t.mya + ' mya'),
+                h('div', { className: 'text-sm text-slate-100 leading-relaxed' }, t.event)
+              );
+            })
+          ),
+          evoTab === 'convergence' && h('div', { className: 'space-y-3' },
+            EVOLUTION_TAX.convergence.map(function(c, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-violet-700/30 rounded-lg p-3' },
+                h('div', { className: 'text-sm font-bold text-violet-300 mb-1' }, '🔀 ' + c.feature),
+                h('div', { className: 'text-xs italic text-amber-200/80 mb-1' }, 'Evolved in: ' + c.evolvedIn),
+                h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, c.explanation)
+              );
+            })
+          ),
+          evoTab === 'taxonomy' && h('div', { className: 'space-y-3' },
+            h('div', { className: 'bg-slate-800/40 border border-violet-700/30 rounded-lg p-3' },
+              h('div', { className: 'text-sm font-bold text-violet-300 mb-2' }, 'Orders'),
+              h('div', { className: 'space-y-2' },
+                EVOLUTION_TAX.taxonomy.order.map(function(o, i) {
+                  return h('div', { key: i, className: 'bg-slate-900/40 rounded p-2' },
+                    h('div', { className: 'text-sm font-bold text-amber-300' }, o.name + ' ', h('span', { className: 'text-xs text-slate-400' }, '(' + o.count + ')')),
+                    h('div', { className: 'text-xs text-slate-200 mb-1' }, o.members),
+                    h('div', { className: 'text-[10px] italic text-cyan-200/80' }, o.note)
+                  );
+                })
+              )
+            ),
+            h('div', { className: 'bg-slate-800/40 border border-violet-700/30 rounded-lg p-3' },
+              h('div', { className: 'text-sm font-bold text-violet-300 mb-2' }, 'Families'),
+              h('div', { className: 'grid md:grid-cols-2 gap-2' },
+                EVOLUTION_TAX.taxonomy.families.map(function(f, i) {
+                  return h('div', { key: i, className: 'bg-slate-900/40 rounded p-2 text-xs' },
+                    h('div', { className: 'font-bold text-amber-300' }, f.name + ' ', h('span', { className: 'text-slate-400' }, '(' + f.count + ')')),
+                    h('div', { className: 'text-slate-200' }, f.members)
+                  );
+                })
+              )
+            )
+          ),
+          evoTab === 'extinct' && h('div', { className: 'space-y-3' },
+            EVOLUTION_TAX.extinctSpecies.map(function(e, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-violet-700/30 rounded-lg p-3' },
+                h('div', { className: 'text-sm font-bold text-violet-300 mb-1' }, '💀 ' + e.name),
+                h('div', { className: 'text-xs italic text-amber-200/80 mb-1' }, e.range + ' · Extinct ' + e.extinct),
+                h('div', { className: 'text-xs text-slate-200 mb-1' }, '📏 ' + e.size),
+                h('div', { className: 'text-xs text-rose-100/90 leading-relaxed' }, '⚠ Cause: ' + e.cause)
+              );
+            })
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: FIELD NATURALIST (v0.38)
+      // ────────────────────────────────────────────────────────
+      function renderFieldNat() {
+        var fnTab = rh.fieldnatTab || 'skills';
+        function setFnTab(t) { setRH({ fieldnatTab: t }); }
+        var tabs = [
+          { id: 'skills', label: '🛠 Skills' },
+          { id: 'surveys', label: '📊 Surveys + Counts' },
+          { id: 'banding', label: '🎯 Banding Stations' },
+          { id: 'ethics', label: '⚖ Ethics' }
+        ];
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-emerald-900/40 to-teal-900/40 border border-emerald-700/40 rounded-xl p-5' },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'text-5xl' }, '📓'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-xl font-bold text-emerald-200' }, 'Field Naturalist'),
+                h('div', { className: 'text-sm text-emerald-100/85 mt-1' }, FIELD_NATURALIST.intro)
+              )
+            )
+          ),
+          h('div', { className: 'flex flex-wrap gap-1 bg-slate-900/60 rounded-lg p-1', role: 'tablist' },
+            tabs.map(function(t) {
+              var active = fnTab === t.id;
+              return h('button', {
+                key: t.id,
+                onClick: function() { setFnTab(t.id); },
+                className: 'px-3 py-1.5 rounded text-xs font-bold ' + (active
+                  ? 'bg-emerald-600 text-white'
+                  : 'text-emerald-200 hover:text-white'),
+                role: 'tab',
+                'aria-selected': active
+              }, t.label);
+            })
+          ),
+          fnTab === 'skills' && h('div', { className: 'space-y-3' },
+            FIELD_NATURALIST.skills.map(function(s, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-emerald-700/30 rounded-lg p-3' },
+                h('div', { className: 'text-sm font-bold text-emerald-300 mb-1' }, '🛠 ' + s.skill),
+                h('div', { className: 'text-xs text-slate-200 leading-relaxed mb-1' }, s.description),
+                h('div', { className: 'text-xs text-cyan-100/90 italic' }, '💡 ' + s.how)
+              );
+            })
+          ),
+          fnTab === 'surveys' && h('div', { className: 'grid md:grid-cols-2 gap-3' },
+            FIELD_NATURALIST.surveysAndCounts.map(function(s, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-cyan-700/30 rounded-lg p-3' },
+                h('div', { className: 'text-sm font-bold text-cyan-300 mb-1' }, '📊 ' + s.name),
+                h('div', { className: 'text-xs text-amber-300/80 italic mb-1' }, '📅 ' + s.when),
+                h('div', { className: 'text-xs text-emerald-300/80 italic mb-1' }, '📍 ' + s.where),
+                h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, s.what)
+              );
+            })
+          ),
+          fnTab === 'banding' && h('div', { className: 'grid md:grid-cols-2 gap-3' },
+            FIELD_NATURALIST.bandingStations.map(function(b, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-amber-700/30 rounded-lg p-3' },
+                h('div', { className: 'text-sm font-bold text-amber-300 mb-1' }, '🎯 ' + b.name),
+                h('div', { className: 'text-xs italic text-slate-400 mb-1' }, b.state),
+                h('div', { className: 'text-xs text-slate-200 mb-1' }, b.specialty),
+                h('div', { className: 'text-xs text-emerald-200 italic mb-1' }, '🗓 ' + b.open),
+                h('div', { className: 'text-xs text-cyan-300 font-mono' }, '🌐 ' + b.url)
+              );
+            })
+          ),
+          fnTab === 'ethics' && h('div', { className: 'bg-rose-900/20 border border-rose-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-base font-bold text-rose-300 mb-2' }, '⚖ Field Ethics — The Naturalist\'s Code'),
+            h('ul', { className: 'space-y-1 list-disc list-inside text-sm text-rose-100/90' },
+              FIELD_NATURALIST.ethicalGuidelines.map(function(g, i) {
+                return h('li', { key: i, className: 'leading-relaxed' }, g);
+              })
+            )
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
       // RENDER: GLOSSARY (A-Z reference)
       // ────────────────────────────────────────────────────────
       function renderGlossary() {
@@ -12493,6 +13172,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           activeSection === 'behavior' && renderBehavior(),
           activeSection === 'urban' && renderUrban(),
           activeSection === 'climate' && renderClimate(),
+          activeSection === 'physiology' && renderPhysiology(),
+          activeSection === 'ecology' && renderEcology(),
+          activeSection === 'evolution' && renderEvolution(),
+          activeSection === 'fieldnat' && renderFieldNat(),
           activeSection === 'glossary' && renderGlossary(),
           activeSection === 'quiz' && renderQuiz(),
           activeSection === 'resources' && renderResources()
