@@ -351,12 +351,451 @@
   ];
 
   // ──────────────────────────────────────────────────────────────────
+  // INTERACTIVE WIDGETS (module scope)
+  // Three React components hoisted out of render(ctx) so their useState
+  // persists across re-renders. AlloFlow runtime guarantees window.React
+  // with hooks. Components: AntibioticResistanceSim (petri-dish evolution),
+  // SnowCholeraMap (1854 Soho intervention experiment), VirtualMicroscope
+  // (zoom + slide swap with rendered organisms).
+  // ──────────────────────────────────────────────────────────────────
+  var R = (typeof window !== 'undefined' && window.React) ? window.React : null;
+  var hh = R ? R.createElement : null;
+
+  // ── 1. ANTIBIOTIC RESISTANCE EVOLUTION SIM ──
+  function AntibioticResistanceSim(props) {
+    if (!R) return null;
+    var awardXP = props.awardXP;
+    var ds = R.useState(60);    var dose = ds[0];      var setDose = ds[1];
+    var ts = R.useState(14);    var duration = ts[0];  var setDuration = ts[1];
+    var rs = R.useState(3);     var initRes = rs[0];   var setInitRes = rs[1];
+    var ps = R.useState(false); var playing = ps[0];   var setPlaying = ps[1];
+    var ks = R.useState(0);     var day = ks[0];       var setDay = ks[1];
+    var hs = R.useState([]);    var history = hs[0];   var setHistory = hs[1];
+    var bs = R.useState([]);    var bact = bs[0];      var setBact = bs[1];
+    var awardedRef = R.useRef(false);
+
+    R.useEffect(function() { if (bact.length === 0) seed(); }, []);
+
+    function seed() {
+      var pop = []; var n = 80;
+      for (var i = 0; i < n; i++) {
+        var angle = Math.random() * Math.PI * 2;
+        var radius = Math.sqrt(Math.random()) * 92;
+        pop.push({ x: 100 + radius * Math.cos(angle), y: 100 + radius * Math.sin(angle), resistant: Math.random() * 100 < initRes, alive: true, jitter: Math.random() * 0.6 + 0.7 });
+      }
+      setBact(pop); setDay(0);
+      setHistory([{ day: 0, sensitive: pop.filter(function(b) { return !b.resistant; }).length, resistant: pop.filter(function(b) { return b.resistant; }).length }]);
+      awardedRef.current = false;
+    }
+
+    function step() {
+      if (day >= duration) { setPlaying(false); return; }
+      var nextDay = day + 1;
+      var killSens = dose / 100;
+      var killRes = 0.05;
+      var newBact = bact.map(function(b) {
+        if (!b.alive) return b;
+        var p = b.resistant ? killRes : killSens;
+        if (Math.random() < p) return Object.assign({}, b, { alive: false });
+        return b;
+      });
+      var alive = newBact.filter(function(b) { return b.alive; });
+      var dead  = newBact.filter(function(b) { return !b.alive; });
+      var open = dead.slice();
+      for (var i = 0; i < alive.length && open.length > 0; i++) {
+        if (Math.random() < 0.25) {
+          var parent = alive[i]; var child = open.shift();
+          newBact[newBact.indexOf(child)] = { x: parent.x + (Math.random() - 0.5) * 12, y: parent.y + (Math.random() - 0.5) * 12, resistant: parent.resistant, alive: true, jitter: Math.random() * 0.6 + 0.7 };
+        }
+      }
+      setBact(newBact);
+      var sens = newBact.filter(function(b) { return b.alive && !b.resistant; }).length;
+      var res  = newBact.filter(function(b) { return b.alive && b.resistant; }).length;
+      setHistory(function(h2) { return h2.concat([{ day: nextDay, sensitive: sens, resistant: res }]); });
+      setDay(nextDay);
+      if (nextDay >= duration && !awardedRef.current) {
+        awardedRef.current = true;
+        if (awardXP) awardXP(3);
+      }
+    }
+
+    R.useEffect(function() {
+      if (!playing) return;
+      var t = setTimeout(step, 600);
+      return function() { clearTimeout(t); };
+    }, [playing, day, bact]);
+
+    function reset() { setPlaying(false); seed(); }
+
+    var totalAlive = bact.filter(function(b) { return b.alive; }).length;
+    var totalRes   = bact.filter(function(b) { return b.alive && b.resistant; }).length;
+    var pctRes = totalAlive > 0 ? Math.round((totalRes / totalAlive) * 100) : 0;
+    var initialPct = history.length > 0 ? Math.round((history[0].resistant / Math.max(1, (history[0].sensitive + history[0].resistant))) * 100) : initRes;
+
+    return hh('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 12, padding: 16, marginBottom: 14, borderTop: '1px solid rgba(239,68,68,0.30)', borderRight: '1px solid rgba(239,68,68,0.30)', borderBottom: '1px solid rgba(239,68,68,0.30)', borderLeft: '4px solid #ef4444', boxShadow: '0 4px 20px rgba(239,68,68,0.10)' } },
+      hh('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
+        hh('div', { 'aria-hidden': 'true', style: { width: 36, height: 36, borderRadius: '50%', background: 'rgba(239,68,68,0.18)', border: '1.5px solid #ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 } }, '🧫'),
+        hh('div', { style: { flex: 1, minWidth: 200 } },
+          hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#fca5a5' } }, 'Antibiotic resistance — petri-dish evolution sim'),
+          hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, 'Apply selection pressure. Watch resistant strains take over the population. Real evolution in 14 ticks.')
+        )
+      ),
+      hh('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(220px, 1fr) minmax(180px, 1fr)', gap: 12, marginBottom: 12 } },
+        hh('div', { style: { background: 'rgba(2,6,23,0.7)', borderRadius: 10, padding: 8 } },
+          hh('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4, textAlign: 'center' } }, 'Petri dish · Day ' + day + ' of ' + duration),
+          hh('svg', { viewBox: '0 0 200 200', preserveAspectRatio: 'xMidYMid meet', 'aria-label': 'Petri dish showing bacterial population', style: { width: '100%', maxWidth: 240, display: 'block', margin: '0 auto' } },
+            hh('defs', null, hh('radialGradient', { id: 'dishBg', cx: '50%', cy: '50%', r: '50%' }, hh('stop', { offset: '0%', stopColor: '#1e293b' }), hh('stop', { offset: '100%', stopColor: '#0f172a' }))),
+            hh('circle', { cx: 100, cy: 100, r: 95, fill: 'url(#dishBg)', stroke: '#475569', strokeWidth: 1.5 }),
+            day < duration && day > 0 ? hh('circle', { cx: 100, cy: 100, r: 95, fill: '#fbbf24', opacity: 0.04 + (dose / 100) * 0.10 }) : null,
+            bact.map(function(b, i) {
+              if (!b.alive) return hh('circle', { key: 'b-' + i, cx: b.x, cy: b.y, r: 1.2, fill: '#475569', opacity: 0.18 });
+              var color = b.resistant ? '#ef4444' : '#22d3ee';
+              return hh('circle', { key: 'b-' + i, cx: b.x, cy: b.y, r: 2.2 * b.jitter, fill: color, opacity: 0.85 });
+            })
+          ),
+          hh('div', { style: { display: 'flex', justifyContent: 'center', gap: 12, marginTop: 6, fontSize: 9, color: '#94a3b8' } },
+            hh('span', null, hh('span', { style: { display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: '#22d3ee', marginRight: 4, verticalAlign: 'middle' } }), 'sensitive'),
+            hh('span', null, hh('span', { style: { display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: '#ef4444', marginRight: 4, verticalAlign: 'middle' } }), 'resistant')
+          )
+        ),
+        hh('div', { style: { background: 'rgba(2,6,23,0.7)', borderRadius: 10, padding: 10 } },
+          hh('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6, textAlign: 'center' } }, '% resistant over time'),
+          hh('svg', { viewBox: '0 0 100 60', preserveAspectRatio: 'none', 'aria-hidden': 'true', style: { width: '100%', height: 100, display: 'block' } },
+            hh('line', { x1: 4, y1: 56, x2: 96, y2: 56, stroke: 'rgba(148,163,184,0.30)', strokeWidth: 0.4 }),
+            hh('line', { x1: 4, y1: 4, x2: 4, y2: 56, stroke: 'rgba(148,163,184,0.30)', strokeWidth: 0.4 }),
+            hh('line', { x1: 4, y1: 4, x2: 96, y2: 4, stroke: 'rgba(239,68,68,0.20)', strokeWidth: 0.3, strokeDasharray: '1,1' }),
+            history.length > 1 ? hh('polyline', { points: history.map(function(p, i) { var alive = p.sensitive + p.resistant; var pct = alive > 0 ? p.resistant / alive : 0; var x = 4 + (i / Math.max(1, duration)) * 92; var y = 56 - pct * 52; return x + ',' + y; }).concat(['96,56', '4,56']).join(' '), fill: 'rgba(239,68,68,0.20)', stroke: 'none' }) : null,
+            history.length > 1 ? hh('polyline', { points: history.map(function(p, i) { var alive = p.sensitive + p.resistant; var pct = alive > 0 ? p.resistant / alive : 0; var x = 4 + (i / Math.max(1, duration)) * 92; var y = 56 - pct * 52; return x + ',' + y; }).join(' '), fill: 'none', stroke: '#ef4444', strokeWidth: 1.2 }) : null,
+            hh('circle', { cx: 4 + (day / Math.max(1, duration)) * 92, cy: 56 - (pctRes / 100) * 52, r: 1.8, fill: '#ef4444', stroke: '#fff', strokeWidth: 0.4 }),
+            hh('text', { x: 6, y: 8, fontSize: 3.5, fill: '#fca5a5' }, '100%'),
+            hh('text', { x: 6, y: 54, fontSize: 3.5, fill: '#94a3b8' }, '0%'),
+            hh('text', { x: 50, y: 59, fontSize: 3, fill: '#94a3b8', textAnchor: 'middle' }, 'days')
+          ),
+          hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginTop: 8 } },
+            hh('div', { style: { padding: 6, borderRadius: 6, background: 'rgba(34,211,238,0.10)', border: '1px solid rgba(34,211,238,0.30)' } },
+              hh('div', { style: { fontSize: 8, fontWeight: 800, color: '#67e8f9', textTransform: 'uppercase' } }, 'Alive'),
+              hh('div', { style: { fontSize: 14, fontWeight: 900, color: '#22d3ee' } }, totalAlive)
+            ),
+            hh('div', { style: { padding: 6, borderRadius: 6, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.30)' } },
+              hh('div', { style: { fontSize: 8, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase' } }, '% Resistant'),
+              hh('div', { style: { fontSize: 14, fontWeight: 900, color: '#ef4444' } }, pctRes + '%')
+            )
+          )
+        )
+      ),
+      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 10 } },
+        hh('label', { style: { fontSize: 10, color: '#cbd5e1' } },
+          hh('div', { style: { marginBottom: 4 } }, 'Antibiotic dose: ', hh('strong', { style: { color: '#fbbf24' } }, dose + '%')),
+          hh('input', { type: 'range', min: 0, max: 100, step: 5, value: dose, disabled: day > 0, onChange: function(e) { setDose(parseInt(e.target.value, 10)); }, style: { width: '100%', accentColor: '#fbbf24', opacity: day > 0 ? 0.5 : 1 } })
+        ),
+        hh('label', { style: { fontSize: 10, color: '#cbd5e1' } },
+          hh('div', { style: { marginBottom: 4 } }, 'Treatment duration: ', hh('strong', { style: { color: '#22d3ee' } }, duration + ' days')),
+          hh('input', { type: 'range', min: 3, max: 30, step: 1, value: duration, disabled: day > 0, onChange: function(e) { setDuration(parseInt(e.target.value, 10)); }, style: { width: '100%', accentColor: '#22d3ee', opacity: day > 0 ? 0.5 : 1 } })
+        ),
+        hh('label', { style: { fontSize: 10, color: '#cbd5e1' } },
+          hh('div', { style: { marginBottom: 4 } }, 'Initial resistance: ', hh('strong', { style: { color: '#ef4444' } }, initRes + '%')),
+          hh('input', { type: 'range', min: 0, max: 15, step: 1, value: initRes, disabled: day > 0, onChange: function(e) { setInitRes(parseInt(e.target.value, 10)); }, style: { width: '100%', accentColor: '#ef4444', opacity: day > 0 ? 0.5 : 1 } })
+        )
+      ),
+      hh('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 10, flexWrap: 'wrap' } },
+        hh('button', { onClick: function() { if (day === 0) seed(); setPlaying(function(p) { return !p; }); }, disabled: day >= duration, style: { padding: '8px 18px', borderRadius: 8, background: playing ? '#ef4444' : 'rgba(239,68,68,0.18)', color: playing ? '#fff' : '#fca5a5', border: '1.5px solid #ef4444', fontSize: 11, fontWeight: 800, cursor: day >= duration ? 'default' : 'pointer', opacity: day >= duration ? 0.4 : 1 } }, playing ? '⏸ Pause' : '▶ Play'),
+        hh('button', { onClick: function() { setPlaying(false); step(); }, disabled: day >= duration, style: { padding: '8px 14px', borderRadius: 8, background: 'rgba(148,163,184,0.10)', color: '#cbd5e1', border: '1px solid rgba(148,163,184,0.30)', fontSize: 11, fontWeight: 700, cursor: day >= duration ? 'default' : 'pointer', opacity: day >= duration ? 0.4 : 1 } }, '⏭ Step day'),
+        hh('button', { onClick: reset, style: { padding: '8px 14px', borderRadius: 8, background: 'rgba(148,163,184,0.10)', color: '#94a3b8', border: '1px solid rgba(148,163,184,0.30)', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '↺ Reset')
+      ),
+      day >= duration && history.length > 1 ? hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+        hh('strong', { style: { color: '#22c55e' } }, '🎓 What you just saw: '),
+        'You started with ' + initialPct + '% resistant bacteria. After ' + duration + ' days at ' + dose + '% dose, the population is ' + pctRes + '% resistant. The drug killed sensitive bacteria — but the resistant minority had no competition and took over the dish. ',
+        (pctRes >= 80 ? 'This is selection at work. The next round of the same antibiotic would barely dent this population.' : pctRes >= 40 ? 'A meaningful resistance shift. In a hospital, this is the start of the failed-second-course pattern.' : 'Modest shift — likely because dose was too low to apply real selection pressure, OR initial resistance was very rare. Try increasing dose.'),
+        ' Now do the inverse: re-run with a SHORTER duration. Watch resistance climb LESS — but if you stop too early, surviving sensitive bacteria can rebound and the cycle repeats.'
+      ) : null
+    );
+  }
+
+  // ── 2. SNOW'S CHOLERA MAP (1854 Soho outbreak) ──
+  function SnowCholeraMap(props) {
+    if (!R) return null;
+    var awardXP = props.awardXP;
+    var ws = R.useState(0);     var week = ws[0];          var setWeek = ws[1];
+    var hs = R.useState(false); var handleRemoved = hs[0]; var setHandleRemoved = hs[1];
+    var sho = R.useState(true); var showDeaths = sho[0];   var setShowDeaths = sho[1];
+    var awardedRef = R.useRef(false);
+
+    var WEEKS = [
+      { label: 'Aug 31', deaths: 12, note: 'Outbreak begins. Mostly miasma theory in play.' },
+      { label: 'Sept 1', deaths: 70, note: 'Cases spike. Snow already mapping addresses.' },
+      { label: 'Sept 2', deaths: 127, note: 'Peak day. Snow notes pump as common factor.' },
+      { label: 'Sept 5', deaths: 76, note: 'Cases dropping (people fleeing Soho).' },
+      { label: 'Sept 8', deaths: 38, note: 'Snow persuades parish to remove pump handle.' },
+      { label: 'Sept 12', deaths: 15, note: 'Case rate continues to fall.' },
+      { label: 'Sept 15', deaths: 6, note: 'Outbreak nearly contained.' }
+    ];
+    var w = WEEKS[week];
+
+    var DEATHS = (function() {
+      var seed = 7;
+      function rng() { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; }
+      var dots = []; var n = 220;
+      for (var i = 0; i < n; i++) {
+        var nearPump = rng() < 0.78; var x, y;
+        if (nearPump) { var angle = rng() * Math.PI * 2; var rad = Math.pow(rng(), 1.5) * 55; x = 200 + rad * Math.cos(angle); y = 150 + rad * Math.sin(angle); }
+        else { x = 30 + rng() * 340; y = 30 + rng() * 240; }
+        dots.push({ x: x, y: y });
+      }
+      return dots;
+    })();
+
+    var totalDeaths = WEEKS.reduce(function(s, w) { return s + w.deaths; }, 0);
+    var seenSoFar = WEEKS.slice(0, week + 1).reduce(function(s, w) { return s + w.deaths; }, 0);
+    var cumDeathFraction = seenSoFar / totalDeaths;
+
+    R.useEffect(function() {
+      if (handleRemoved && week >= 4 && !awardedRef.current) {
+        awardedRef.current = true;
+        if (awardXP) awardXP(2);
+      }
+    }, [handleRemoved, week]);
+
+    return hh('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 12, padding: 16, marginBottom: 14, borderTop: '1px solid rgba(168,85,247,0.30)', borderRight: '1px solid rgba(168,85,247,0.30)', borderBottom: '1px solid rgba(168,85,247,0.30)', borderLeft: '4px solid #a855f7' } },
+      hh('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
+        hh('div', { 'aria-hidden': 'true', style: { width: 36, height: 36, borderRadius: '50%', background: 'rgba(168,85,247,0.18)', border: '1.5px solid #a855f7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 } }, '🗺️'),
+        hh('div', { style: { flex: 1, minWidth: 200 } },
+          hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#d8b4fe' } }, 'Snow\'s map · Soho cholera outbreak, 1854'),
+          hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, 'Walk through 6 weeks of the outbreak. Try removing the Broad Street pump handle. Watch the data move (or not).')
+        )
+      ),
+      hh('div', { style: { background: 'rgba(2,6,23,0.7)', borderRadius: 10, padding: 8, marginBottom: 10 } },
+        hh('svg', { viewBox: '0 0 400 300', preserveAspectRatio: 'xMidYMid meet', 'aria-label': '1854 Soho map showing cholera deaths clustered around Broad Street water pump', style: { width: '100%', maxHeight: 300, display: 'block' } },
+          hh('rect', { x: 0, y: 0, width: 400, height: 300, fill: '#1a1410' }),
+          hh('rect', { x: 0, y: 0, width: 400, height: 300, fill: '#3d2f1f', opacity: 0.4 }),
+          hh('g', { stroke: '#9ca3af', strokeWidth: 6, fill: 'none', opacity: 0.5 },
+            hh('line', { x1: 30, y1: 150, x2: 370, y2: 150 }),
+            hh('line', { x1: 100, y1: 30, x2: 100, y2: 270 }),
+            hh('line', { x1: 230, y1: 30, x2: 230, y2: 270 }),
+            hh('line', { x1: 320, y1: 30, x2: 320, y2: 270 }),
+            hh('line', { x1: 30, y1: 80, x2: 370, y2: 80 }),
+            hh('line', { x1: 30, y1: 220, x2: 370, y2: 220 })
+          ),
+          hh('g', { fill: '#ca8a04', fontSize: 6, fontFamily: 'Georgia, serif', fontStyle: 'italic' },
+            hh('text', { x: 200, y: 145, textAnchor: 'middle' }, 'BROAD STREET'),
+            hh('text', { x: 95, y: 28 }, 'Wardour'),
+            hh('text', { x: 225, y: 28 }, 'Berwick'),
+            hh('text', { x: 315, y: 28 }, 'Marshall'),
+            hh('text', { x: 30, y: 78 }, 'Brewer'),
+            hh('text', { x: 30, y: 218 }, 'Lexington')
+          ),
+          showDeaths ? hh('g', null, DEATHS.map(function(d, i) {
+            var visible = (i / DEATHS.length) <= cumDeathFraction;
+            if (!visible) return null;
+            var nearPump = Math.hypot(d.x - 200, d.y - 150) < 60;
+            var lateInOutbreak = (i / DEATHS.length) > 0.6;
+            var faded = handleRemoved && nearPump && lateInOutbreak;
+            return hh('circle', { key: 'd-' + i, cx: d.x, cy: d.y, r: 2.4, fill: '#dc2626', opacity: faded ? 0.15 : 0.85, stroke: '#fff', strokeWidth: 0.3 });
+          })) : null,
+          hh('g', null, [{ x: 80, y: 90 }, { x: 320, y: 90 }, { x: 350, y: 200 }, { x: 80, y: 240 }, { x: 240, y: 240 }].map(function(p, i) {
+            return hh('g', { key: 'op-' + i },
+              hh('rect', { x: p.x - 4, y: p.y - 6, width: 8, height: 12, fill: '#64748b', stroke: '#1f2937', strokeWidth: 0.5 }),
+              hh('text', { x: p.x, y: p.y + 18, fontSize: 4, fill: '#94a3b8', textAnchor: 'middle', fontFamily: 'Georgia, serif' }, 'other pump')
+            );
+          })),
+          hh('g', null,
+            hh('rect', { x: 195, y: 144, width: 10, height: 14, fill: handleRemoved ? '#475569' : '#fbbf24', stroke: '#1f2937', strokeWidth: 0.8 }),
+            !handleRemoved ? hh('rect', { x: 205, y: 145, width: 8, height: 2, fill: '#92400e', stroke: '#1f2937', strokeWidth: 0.4 }) : null,
+            !handleRemoved ? hh('circle', { cx: 200, cy: 150, r: 8, fill: 'none', stroke: '#fbbf24', strokeWidth: 0.6, opacity: 0.5 }) : null,
+            !handleRemoved ? hh('circle', { cx: 200, cy: 150, r: 12, fill: 'none', stroke: '#fbbf24', strokeWidth: 0.4, opacity: 0.3 }) : null,
+            hh('text', { x: 200, y: 172, fontSize: 6, fill: handleRemoved ? '#94a3b8' : '#fde047', textAnchor: 'middle', fontFamily: 'Georgia, serif', fontWeight: 700 }, handleRemoved ? '✗ pump handle removed' : 'BROAD ST PUMP')
+          )
+        )
+      ),
+      hh('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' } },
+        hh('span', { style: { fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', whiteSpace: 'nowrap' } }, w.label),
+        hh('input', { type: 'range', min: 0, max: WEEKS.length - 1, step: 1, value: week, 'aria-label': 'Outbreak week', onChange: function(e) { setWeek(parseInt(e.target.value, 10)); }, style: { flex: 1, minWidth: 120, accentColor: '#a855f7' } }),
+        hh('div', { style: { padding: '4px 10px', borderRadius: 999, background: 'rgba(220,38,38,0.18)', color: '#fca5a5', fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', border: '1px solid rgba(220,38,38,0.40)' } }, w.deaths + ' deaths')
+      ),
+      hh('div', { style: { padding: '10px 12px', borderRadius: 8, marginBottom: 10, background: 'rgba(2,6,23,0.5)', borderLeft: '3px solid #a855f7' } },
+        hh('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.6 } }, w.note)
+      ),
+      hh('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 10 } },
+        hh('button', { onClick: function() { setHandleRemoved(function(h2) { return !h2; }); }, style: { padding: '10px 16px', borderRadius: 8, background: handleRemoved ? 'rgba(148,163,184,0.18)' : '#fbbf24', color: handleRemoved ? '#cbd5e1' : '#0f172a', border: '1.5px solid #fbbf24', fontSize: 11, fontWeight: 800, cursor: 'pointer' } }, handleRemoved ? '↺ Replace pump handle' : '🔧 Remove pump handle (Snow\'s intervention)'),
+        hh('button', { onClick: function() { setShowDeaths(function(s) { return !s; }); }, style: { padding: '10px 14px', borderRadius: 8, background: 'rgba(148,163,184,0.10)', color: '#94a3b8', border: '1px solid rgba(148,163,184,0.30)', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, showDeaths ? '👁 Hide death dots' : '👁 Show death dots'),
+        hh('button', { onClick: function() { setWeek(0); setHandleRemoved(false); }, style: { padding: '10px 14px', borderRadius: 8, background: 'rgba(148,163,184,0.10)', color: '#94a3b8', border: '1px solid rgba(148,163,184,0.30)', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '↺ Restart outbreak')
+      ),
+      handleRemoved && week >= 4 ? hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+        hh('strong', { style: { color: '#22c55e' } }, '🎓 What Snow proved: '),
+        'The clustering of deaths around ONE pump, while other neighborhoods served by other pumps had few deaths, was inconsistent with airborne ("miasma") transmission. The dot map made the pattern visible. Removing the handle removed the source. Cholera fell. The case founded BOTH modern epidemiology AND data visualization. Tufte calls Snow\'s map "the most important data visualization ever made." (Honest footnote: case rate was already declining before removal because residents had fled — but the geographical pattern was the real evidence.)'
+      ) : null
+    );
+  }
+
+  // ── 3. VIRTUAL MICROSCOPE — organism slide swap ──
+  function VirtualMicroscope(props) {
+    if (!R) return null;
+    var awardXP = props.awardXP;
+    var os = R.useState('ecoli');  var organism = os[0]; var setOrganism = os[1];
+    var ms = R.useState(400);      var mag = ms[0];      var setMag = ms[1];
+    var ss = R.useState(new Set()); var seen = ss[0];     var setSeen = ss[1];
+
+    var ORGANISMS = [
+      { id: 'ecoli', name: 'E. coli', icon: '🦠', kingdom: 'Bacterium · 2 µm', minVisibleMag: 200, color: '#22d3ee', shape: 'rod', sizeAt100: 0.6,
+        info: 'Rod-shaped bacterium ~2 µm long. At 400-1000× you see the cell shape. To see flagella or pili you need EM. Has a single circular chromosome (no nucleus), ribosomes (smaller than ours, which is why erythromycin works against E. coli but not us), and flagella for swimming.' },
+      { id: 'strep', name: 'Streptococcus', icon: '🟢', kingdom: 'Bacterium · 1 µm', minVisibleMag: 400, color: '#a855f7', shape: 'cocci_chain', sizeAt100: 0.4,
+        info: 'Spherical bacteria (cocci) that divide along one axis, producing chains. Streptococcus pyogenes causes strep throat + scarlet fever. Streptococcus pneumoniae is the leading cause of bacterial pneumonia. Some species are beneficial fermenters (yogurt).' },
+      { id: 'parame', name: 'Paramecium', icon: '🐛', kingdom: 'Protist · 250 µm', minVisibleMag: 40, color: '#22c55e', shape: 'paramecium', sizeAt100: 4,
+        info: 'Single-celled eukaryote. Visible as a moving slipper-shaped blob even at 100×. Covered in cilia for swimming + feeding (sweep food into a "mouth"). Has TWO nuclei: macronucleus for everyday RNA, micronucleus for sex/exchange. Found in pond water everywhere.' },
+      { id: 'plasmo', name: 'Plasmodium', icon: '🩸', kingdom: 'Protist · 5 µm', minVisibleMag: 600, color: '#dc2626', shape: 'plasmodium', sizeAt100: 0.7,
+        info: 'Causes malaria. Lives inside red blood cells (visible as dark inclusion in stained smear). Five species infect humans; P. falciparum is deadliest. Has mosquito + human stages of life cycle. Killed an estimated half of all humans who ever lived (modern estimate, mostly children under 5).' },
+      { id: 'phage', name: 'T4 Bacteriophage', icon: '🚀', kingdom: 'Virus · 0.2 µm', minVisibleMag: 50000, color: '#fbbf24', shape: 'phage', sizeAt100: 0.05,
+        info: 'A virus that infects E. coli. Has icosahedral head + contractile tail + base plate with tail fibers. Lands on bacterium, injects DNA through tail like a syringe. Hijacks cell to make more phages. Visible only by electron microscopy. Phage therapy is being explored as antibiotic alternative.' }
+    ];
+    var sel = ORGANISMS.filter(function(o) { return o.id === organism; })[0];
+    var canSee = mag >= sel.minVisibleMag;
+    var apparentSize = Math.min(180, sel.sizeAt100 * (mag / 100) * 12);
+    var labels = mag >= sel.minVisibleMag * 2;
+
+    R.useEffect(function() {
+      if (canSee && !seen.has(organism)) {
+        var ns = new Set(seen); ns.add(organism); setSeen(ns);
+        if (awardXP && ns.size === 1) awardXP(1);
+        if (awardXP && ns.size === 5) awardXP(2);
+      }
+    }, [organism, canSee]);
+
+    function renderOrganism(o, size, showLabels) {
+      var c = o.color; var s = size; var cx = 100, cy = 100;
+      if (o.shape === 'rod') {
+        return hh('g', null,
+          hh('rect', { x: cx - s * 0.7, y: cy - s * 0.18, width: s * 1.4, height: s * 0.36, rx: s * 0.18, fill: c, stroke: '#0f172a', strokeWidth: 0.6, opacity: 0.85 }),
+          showLabels ? hh('g', null,
+            hh('circle', { cx: cx - s * 0.5, cy: cy, r: s * 0.06, fill: '#7c3aed' }),
+            hh('text', { x: cx - s * 0.5, y: cy - s * 0.3, fontSize: 6, fill: '#a78bfa', textAnchor: 'middle' }, 'nucleoid'),
+            hh('g', { stroke: '#fbbf24', strokeWidth: 0.4, fill: 'none' },
+              hh('path', { d: 'M ' + (cx + s * 0.7) + ' ' + (cy - 1) + ' Q ' + (cx + s * 1.2) + ' ' + (cy - 6) + ' ' + (cx + s * 1.5) + ' ' + (cy - 2) }),
+              hh('path', { d: 'M ' + (cx + s * 0.7) + ' ' + cy + ' Q ' + (cx + s * 1.3) + ' ' + (cy + 5) + ' ' + (cx + s * 1.6) + ' ' + cy }),
+              hh('path', { d: 'M ' + (cx + s * 0.7) + ' ' + (cy + 1) + ' Q ' + (cx + s * 1.2) + ' ' + (cy + 8) + ' ' + (cx + s * 1.5) + ' ' + (cy + 3) })
+            ),
+            hh('text', { x: cx + s * 1.6, y: cy + 8, fontSize: 6, fill: '#fde047' }, 'flagella')
+          ) : null
+        );
+      }
+      if (o.shape === 'cocci_chain') {
+        var chain = [];
+        for (var i = 0; i < 5; i++) {
+          chain.push(hh('circle', { key: 'c-' + i, cx: cx + (i - 2) * s * 0.5, cy: cy, r: s * 0.22, fill: c, stroke: '#0f172a', strokeWidth: 0.5, opacity: 0.85 }));
+        }
+        return hh('g', null, chain, showLabels ? hh('text', { x: cx, y: cy + s * 0.6, fontSize: 6, fill: '#d8b4fe', textAnchor: 'middle' }, 'chain of cocci') : null);
+      }
+      if (o.shape === 'paramecium') {
+        var cilia = [];
+        for (var ii = 0; ii < 24; ii++) {
+          var ang = (ii / 24) * Math.PI * 2;
+          var rx = s * 0.6, ry = s * 0.3;
+          var x1 = cx + rx * Math.cos(ang); var y1 = cy + ry * Math.sin(ang);
+          var x2 = cx + (rx + 4) * Math.cos(ang); var y2 = cy + (ry + 4) * Math.sin(ang);
+          cilia.push(hh('line', { key: 'ci-' + ii, x1: x1, y1: y1, x2: x2, y2: y2 }));
+        }
+        return hh('g', null,
+          hh('ellipse', { cx: cx, cy: cy, rx: s * 0.6, ry: s * 0.3, fill: c, stroke: '#0f172a', strokeWidth: 0.6, opacity: 0.7 }),
+          hh('g', { stroke: '#22c55e', strokeWidth: 0.4 }, cilia),
+          hh('ellipse', { cx: cx - s * 0.05, cy: cy, rx: s * 0.18, ry: s * 0.10, fill: '#16a34a', opacity: 0.7 }),
+          hh('circle', { cx: cx + s * 0.15, cy: cy - s * 0.05, r: s * 0.04, fill: '#15803d' }),
+          hh('path', { d: 'M ' + (cx - s * 0.3) + ' ' + cy + ' Q ' + (cx - s * 0.1) + ' ' + (cy - s * 0.18) + ' ' + (cx + s * 0.1) + ' ' + (cy - s * 0.15), fill: 'none', stroke: '#15803d', strokeWidth: 0.6 }),
+          showLabels ? hh('g', null,
+            hh('text', { x: cx - s * 0.05, y: cy - s * 0.4, fontSize: 5, fill: '#86efac', textAnchor: 'middle' }, 'macronucleus'),
+            hh('text', { x: cx + s * 0.5, y: cy + s * 0.5, fontSize: 5, fill: '#86efac', textAnchor: 'middle' }, 'cilia'),
+            hh('text', { x: cx - s * 0.3, y: cy + s * 0.5, fontSize: 5, fill: '#86efac', textAnchor: 'middle' }, 'oral groove')
+          ) : null
+        );
+      }
+      if (o.shape === 'plasmodium') {
+        return hh('g', null,
+          hh('circle', { cx: cx, cy: cy, r: s * 0.7, fill: '#fca5a5', stroke: '#7f1d1d', strokeWidth: 0.5, opacity: 0.6 }),
+          hh('circle', { cx: cx, cy: cy, r: s * 0.25, fill: '#7f1d1d', opacity: 0.4 }),
+          hh('circle', { cx: cx + s * 0.25, cy: cy - s * 0.1, r: s * 0.18, fill: 'none', stroke: c, strokeWidth: s * 0.08, opacity: 0.9 }),
+          hh('circle', { cx: cx + s * 0.25 + s * 0.12, cy: cy - s * 0.18, r: s * 0.05, fill: '#0f172a' }),
+          showLabels ? hh('g', null,
+            hh('text', { x: cx, y: cy + s * 0.95, fontSize: 5, fill: '#fca5a5', textAnchor: 'middle' }, 'red blood cell host'),
+            hh('text', { x: cx + s * 0.7, y: cy - s * 0.3, fontSize: 5, fill: '#fecaca' }, 'parasite (ring stage)')
+          ) : null
+        );
+      }
+      if (o.shape === 'phage') {
+        return hh('g', null,
+          hh('polygon', { points: (cx - s * 0.25) + ',' + (cy - s * 0.5) + ' ' + (cx + s * 0.25) + ',' + (cy - s * 0.5) + ' ' + (cx + s * 0.4) + ',' + (cy - s * 0.25) + ' ' + (cx + s * 0.25) + ',' + cy + ' ' + (cx - s * 0.25) + ',' + cy + ' ' + (cx - s * 0.4) + ',' + (cy - s * 0.25), fill: c, stroke: '#0f172a', strokeWidth: 0.6, opacity: 0.9 }),
+          hh('rect', { x: cx - s * 0.06, y: cy, width: s * 0.12, height: s * 0.4, fill: '#fbbf24', stroke: '#0f172a', strokeWidth: 0.4 }),
+          hh('line', { x1: cx - s * 0.07, y1: cy + s * 0.1, x2: cx + s * 0.07, y2: cy + s * 0.1, stroke: '#0f172a', strokeWidth: 0.3 }),
+          hh('line', { x1: cx - s * 0.07, y1: cy + s * 0.2, x2: cx + s * 0.07, y2: cy + s * 0.2, stroke: '#0f172a', strokeWidth: 0.3 }),
+          hh('line', { x1: cx - s * 0.07, y1: cy + s * 0.3, x2: cx + s * 0.07, y2: cy + s * 0.3, stroke: '#0f172a', strokeWidth: 0.3 }),
+          hh('rect', { x: cx - s * 0.18, y: cy + s * 0.4, width: s * 0.36, height: s * 0.05, fill: '#92400e' }),
+          hh('g', { stroke: '#92400e', strokeWidth: 0.6, fill: 'none' },
+            hh('path', { d: 'M ' + (cx - s * 0.15) + ' ' + (cy + s * 0.45) + ' L ' + (cx - s * 0.3) + ' ' + (cy + s * 0.7) }),
+            hh('path', { d: 'M ' + (cx + s * 0.15) + ' ' + (cy + s * 0.45) + ' L ' + (cx + s * 0.3) + ' ' + (cy + s * 0.7) }),
+            hh('path', { d: 'M ' + (cx - s * 0.05) + ' ' + (cy + s * 0.45) + ' L ' + (cx - s * 0.15) + ' ' + (cy + s * 0.75) }),
+            hh('path', { d: 'M ' + (cx + s * 0.05) + ' ' + (cy + s * 0.45) + ' L ' + (cx + s * 0.15) + ' ' + (cy + s * 0.75) })
+          ),
+          showLabels ? hh('g', null,
+            hh('text', { x: cx + s * 0.5, y: cy - s * 0.35, fontSize: 5, fill: '#fde047' }, 'head (DNA inside)'),
+            hh('text', { x: cx + s * 0.5, y: cy + s * 0.7, fontSize: 5, fill: '#92400e' }, 'tail fibers')
+          ) : null
+        );
+      }
+      return null;
+    }
+
+    return hh('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 12, padding: 16, marginBottom: 14, borderTop: '1px solid rgba(16,185,129,0.30)', borderRight: '1px solid rgba(16,185,129,0.30)', borderBottom: '1px solid rgba(16,185,129,0.30)', borderLeft: '4px solid #10b981' } },
+      hh('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
+        hh('div', { 'aria-hidden': 'true', style: { width: 36, height: 36, borderRadius: '50%', background: 'rgba(16,185,129,0.18)', border: '1.5px solid #10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 } }, '🔬'),
+        hh('div', { style: { flex: 1, minWidth: 200 } },
+          hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#6ee7b7' } }, 'Virtual microscope · swap slides'),
+          hh('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, 'Pick an organism. Crank the magnification. Watch structure emerge.')
+        ),
+        hh('div', { style: { padding: '4px 10px', borderRadius: 999, background: 'rgba(16,185,129,0.12)', color: '#6ee7b7', fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', border: '1px solid rgba(16,185,129,0.40)' } }, 'Slides seen: ' + seen.size + '/5')
+      ),
+      hh('div', { role: 'tablist', 'aria-label': 'Organism slides', style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 12 } },
+        ORGANISMS.map(function(o) {
+          var active = o.id === organism;
+          return hh('button', { key: 'sl-' + o.id, role: 'tab', 'aria-selected': active ? 'true' : 'false', onClick: function() { setOrganism(o.id); }, style: { flex: '1 1 100px', minWidth: 80, padding: '8px 6px', borderRadius: 8, background: active ? o.color + '22' : 'rgba(15,23,42,0.5)', color: active ? o.color : '#94a3b8', border: '1.5px solid ' + (active ? o.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: active ? 800 : 600, cursor: 'pointer', transition: 'all 180ms ease' } },
+            hh('div', { style: { fontSize: 16, marginBottom: 2 } }, o.icon),
+            hh('div', null, o.name),
+            hh('div', { style: { fontSize: 8, opacity: 0.7, marginTop: 2 } }, o.kingdom)
+          );
+        })
+      ),
+      hh('div', { style: { background: '#0a0e1a', borderRadius: '50%', width: '100%', maxWidth: 320, height: 280, margin: '0 auto 12px', position: 'relative', overflow: 'hidden', border: '4px solid #1f2937', boxShadow: 'inset 0 0 40px rgba(16,185,129,0.10), 0 0 30px rgba(0,0,0,0.5)' } },
+        hh('svg', { viewBox: '0 0 200 200', preserveAspectRatio: 'xMidYMid meet', 'aria-label': 'Microscope view of ' + sel.name + ' at ' + mag + 'x', style: { width: '100%', height: '100%', display: 'block' } },
+          hh('defs', null, hh('pattern', { id: 'mscope-grid', x: 0, y: 0, width: 20, height: 20, patternUnits: 'userSpaceOnUse' }, hh('path', { d: 'M 20 0 L 0 0 0 20', fill: 'none', stroke: '#1e293b', strokeWidth: 0.3 }))),
+          hh('rect', { x: 0, y: 0, width: 200, height: 200, fill: 'url(#mscope-grid)' }),
+          canSee ? renderOrganism(sel, apparentSize, labels) : hh('g', null,
+            hh('text', { x: 100, y: 90, fontSize: 8, fill: '#475569', textAnchor: 'middle' }, 'Below visibility threshold'),
+            hh('text', { x: 100, y: 105, fontSize: 6, fill: '#64748b', textAnchor: 'middle' }, sel.name + ' needs ≥' + sel.minVisibleMag + '×'),
+            hh('text', { x: 100, y: 130, fontSize: 24, textAnchor: 'middle' }, '·')
+          )
+        ),
+        hh('div', { style: { position: 'absolute', top: 10, right: 14, padding: '4px 10px', borderRadius: 999, background: 'rgba(16,185,129,0.20)', color: '#6ee7b7', fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', border: '1px solid rgba(16,185,129,0.40)' } }, mag + '×')
+      ),
+      hh('div', { style: { padding: '0 4px', marginBottom: 10 } },
+        hh('input', { type: 'range', min: 10, max: 100000, step: 10, value: mag, 'aria-label': 'Magnification', onChange: function(e) { setMag(parseInt(e.target.value, 10)); }, style: { width: '100%', accentColor: '#10b981' } }),
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#64748b', marginTop: 2, fontFamily: 'ui-monospace, Menlo, monospace' } },
+          hh('span', null, '10× (eye)'), hh('span', null, '400× (light)'), hh('span', null, '2000× (oil)'), hh('span', null, '100,000× (EM)')
+        )
+      ),
+      hh('div', { style: { display: 'flex', gap: 6, justifyContent: 'center', marginBottom: 10, flexWrap: 'wrap' } },
+        [10, 100, 400, 1000, 10000, 100000].map(function(level) {
+          return hh('button', { key: 'q-' + level, onClick: function() { setMag(level); }, style: { padding: '4px 10px', borderRadius: 6, background: mag === level ? '#10b981' : 'rgba(16,185,129,0.10)', color: mag === level ? '#0f172a' : '#6ee7b7', border: '1px solid #10b981', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, level >= 1000 ? (level / 1000) + 'k×' : level + '×');
+        })
+      ),
+      hh('div', { style: { padding: '10px 12px', borderRadius: 8, background: 'rgba(2,6,23,0.5)', borderLeft: '3px solid ' + sel.color } },
+        hh('div', { style: { fontSize: 11, fontWeight: 800, color: sel.color, marginBottom: 4 } }, sel.icon + ' ' + sel.name + ' · ' + sel.kingdom),
+        hh('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } }, sel.info)
+      )
+    );
+  }
+
+  // ──────────────────────────────────────────────────────────────────
   // Plugin registration
   // ──────────────────────────────────────────────────────────────────
   window.StemLab.registerTool('microbiology', {
     icon: '🦠',
     label: 'Microbiology Lab',
-    desc: 'NGSS MS-LS1 + HS-LS1 + HS-LS3 + HS-LS4. The microbial world: bacteria (beneficial + pathogenic), viruses (incl. COVID, flu, HIV, phages, measles), microscopy (light + phase + fluorescent + EM + AFM), antibiotic resistance evolution, the human + soil + ocean microbiome, immune system + vaccines, fermentation (sourdough, yogurt, kimchi, sauerkraut, kombucha, cheese), classic case studies (Snow\'s cholera map, Fleming\'s penicillin, MRSA, COVID/mRNA, FMT), AP-style quiz, printable lab safety + key microbes card.',
+    desc: 'NGSS MS-LS1 + HS-LS1 + HS-LS3 + HS-LS4. The microbial world: bacteria (beneficial + pathogenic), viruses (incl. COVID, flu, HIV, phages, measles), microscopy (light + phase + fluorescent + EM + AFM, plus a virtual-microscope slide-swap with rendered E. coli / Streptococcus / Paramecium / Plasmodium / T4 phage), antibiotic resistance evolution (interactive petri-dish selection-pressure sim), the human + soil + ocean microbiome, immune system + vaccines, fermentation (sourdough, yogurt, kimchi, sauerkraut, kombucha, cheese), classic case studies (Snow\'s 1854 cholera map as walkable interactive, Fleming\'s penicillin, MRSA, COVID/mRNA, FMT), AP-style quiz, printable lab safety + key microbes card.',
     color: 'emerald',
     category: 'science',
     render: function(ctx) {
@@ -1297,6 +1736,8 @@
             'Microscopy. The history of microbiology IS the history of better microscopes. Each improvement opened a whole new biology.'
           ),
 
+          h(VirtualMicroscope, { awardXP: awardXP }),
+
           // Magnification slider
           sectionCard('Scale: what can you see at different magnifications?',
             h('div', null,
@@ -1441,6 +1882,7 @@
             h('strong', null, '⚠️ Antibiotic resistance is a global health crisis. '),
             'Antibiotic-resistant infections killed at least 1.27 million people in 2019, with millions more deaths in which resistance contributed. The CDC ranks it among the top global health threats of this century.'
           ),
+          h(AntibioticResistanceSim, { awardXP: awardXP }),
           sectionCard('How resistance evolves (in 5 steps)',
             h('ol', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.85 } },
               h('li', null, h('strong', { style: { color: '#6ee7b7' } }, 'Random mutation. '), 'A bacterium\'s DNA copies with rare errors. Most are harmful or neutral. Occasionally, one happens to make the bacterium less sensitive to an antibiotic.'),
@@ -3365,6 +3807,9 @@
             infoBlock('Why it mattered', selected.why, EMERALD),
             infoBlock('Lesson', selected.lesson, '#f59e0b')
           ),
+
+          // Interactive Snow's cholera map appears when the Snow case is selected
+          d.selectedCase === 'snow' ? h('div', { style: { marginTop: 12 } }, h(SnowCholeraMap, { awardXP: awardXP })) : null,
 
           sectionCard('🌐 One Health + pandemic preparedness',
             (function() {
