@@ -56,8 +56,14 @@ function listFiles(dir) {
 }
 const files = listFiles(ROOT);
 
-// data-help-key="foo"  OR  data-help-key={'foo'}  OR  data-help-key={"foo"}
-const refRe = /data-help-key\s*=\s*(?:\{?\s*['"]([a-z][\w-]*)['"]\s*\}?)/g;
+// Matches all three reference shapes:
+//   JSX source:               data-help-key="foo"     data-help-key={'foo'}
+//   Compiled React.createElement object literal:   "data-help-key": "foo"   'data-help-key': 'foo'
+// The compiled form lives in _module.js files (Babel output of JSX sources)
+// where the attribute name itself is wrapped in quotes as a JS object key.
+// Missing this form caused 181 keys to be falsely flagged as dead in an
+// earlier audit run.
+const refRe = /['"]?data-help-key['"]?\s*[=:]\s*(?:\{?\s*['"]([a-z][\w-]*)['"]\s*\}?)/g;
 
 const refsByKey = new Map();   // key -> { count, files: Set }
 for (const file of files) {
