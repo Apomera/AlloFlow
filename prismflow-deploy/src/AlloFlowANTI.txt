@@ -14792,7 +14792,13 @@ Return ONLY valid JSON in this format:
           submissionDate: new Date().toISOString(),
           stats: { ...calculateStudentStats(), summary: summaryStats },
           content: cleanContent,
-          answers: studentResponses
+          answers: studentResponses,
+          // Game-engagement data (concept-sort placements, memory match results,
+          // matching/timeline/crossword/etc. completions). Required for the
+          // teacher dashboard's cross-tool misconception detection — without
+          // this, concept-sort per-item misplacement data never reaches the
+          // teacher. Added May 2026 alongside the dashboard misconception work.
+          gameCompletions: gameCompletions,
       };
       const safeName = (submissionData.studentName).replace(/[^a-z0-9]/gi, '_');
       const dateStr = new Date().toISOString().split('T')[0];
