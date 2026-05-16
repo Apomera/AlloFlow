@@ -79,10 +79,15 @@ class PictionaryHost {
     this.onGuestLeft = config.onGuestLeft || (() => {});
     this.onStroke = config.onStroke || (() => {});
     this.onGuess = config.onGuess || (() => {});
+    // Fired when an active round auto-resolves due to timer expiration. The
+    // view uses this to flip its own round-resolved local state since the
+    // resolution didn't originate from a user click.
+    this.onRoundAutoResolved = config.onRoundAutoResolved || (() => {});
     this.peers = new Map();           // uid -> { pc, dc, codename, signalingRef }
     this.collectionUnsub = null;
-    this.activeRound = null;          // { roundId, concept, drawerUids: Set, status }
+    this.activeRound = null;          // { roundId, concept, drawerUids: Set, status, startedAt, durationMs }
     this.strokeHistory = [];          // [{strokeId, uid, color, points}]
+    this._timeoutHandle = null;
     this._stopped = false;
   }
   async start() {
@@ -131,7 +136,8 @@ class PictionaryHost {
         if (this.strokeHistory.length > 0) {
           try { dc.send(JSON.stringify({ type: 'strokeHistory', payload: { strokes: this.strokeHistory } })); } catch (_) {}
         }
-        // If a round is active, also send the round-start (with concept only if drawer)
+        // If a round is active, also send the round-start (with concept only if drawer).
+        // Includes startedAt + durationMs so late-joiners can sync their countdown.
         if (this.activeRound) {
           const isDrawer = this.activeRound.drawerUids.has(uid);
           const payload = {
@@ -140,6 +146,8 @@ class PictionaryHost {
             isDrawer,
             concept: isDrawer ? this.activeRound.concept : null,
             drawerUids: Array.from(this.activeRound.drawerUids),
+            startedAt: this.activeRound.startedAt,
+            durationMs: this.activeRound.durationMs,
           };
           try { dc.send(JSON.stringify({ type: 'roundStart', payload })); } catch (_) {}
         }
@@ -195,15 +203,32 @@ class PictionaryHost {
     this.onStroke(senderUid, senderCodename, augmented);
   }
   startRound(roundData) {
-    // roundData: { concept, drawerUids: string[] }
+    // roundData: { concept, drawerUids: string[], durationMs?: number }
     const drawerSet = new Set((roundData && roundData.drawerUids) || []);
+    const startedAt = Date.now();
+    const durationMs = (roundData && typeof roundData.durationMs === 'number' && roundData.durationMs > 0) ? roundData.durationMs : null;
     this.activeRound = {
       roundId: _pic_genId('round'),
       concept: String((roundData && roundData.concept) || ''),
       drawerUids: drawerSet,
       status: 'drawing',
+      startedAt,
+      durationMs,
     };
     this.strokeHistory = [];
+    // Auto-resolve timeout when a duration is set. Clears in resolveRound/stop.
+    if (this._timeoutHandle) { clearTimeout(this._timeoutHandle); this._timeoutHandle = null; }
+    if (durationMs) {
+      this._timeoutHandle = setTimeout(() => {
+        this._timeoutHandle = null;
+        if (!this.activeRound) return;
+        // Auto-resolve: no winner, reveal concept; notify the view via callback
+        // so it can update local roundActive/roundResolved state.
+        const reveal = this.activeRound.concept;
+        this.resolveRound({ winnerUid: null, reason: 'timeout' });
+        try { this.onRoundAutoResolved({ concept: reveal, reason: 'timeout' }); } catch (_) {}
+      }, durationMs);
+    }
     // Send roundStart to each peer; only drawers receive the concept
     this.peers.forEach((peer, uid) => {
       if (!peer.dc || peer.dc.readyState !== 'open') return;
@@ -214,18 +239,22 @@ class PictionaryHost {
         isDrawer,
         concept: isDrawer ? this.activeRound.concept : null,
         drawerUids: Array.from(drawerSet),
+        startedAt,
+        durationMs,
       };
       try { peer.dc.send(JSON.stringify({ type: 'roundStart', payload })); } catch (_) {}
     });
   }
   resolveRound(result) {
-    // result: { winnerUid?: string, revealConcept: bool }
+    // result: { winnerUid?: string, reason?: 'timeout' | 'manual' }
     if (!this.activeRound) return;
+    if (this._timeoutHandle) { clearTimeout(this._timeoutHandle); this._timeoutHandle = null; }
     const payload = {
       roundId: this.activeRound.roundId,
       status: 'resolved',
       winnerUid: (result && result.winnerUid) || null,
       concept: this.activeRound.concept,
+      reason: (result && result.reason) || 'manual',
     };
     const msg = JSON.stringify({ type: 'roundResolved', payload });
     this.peers.forEach((peer) => {
@@ -258,6 +287,7 @@ class PictionaryHost {
   }
   stop() {
     this._stopped = true;
+    if (this._timeoutHandle) { clearTimeout(this._timeoutHandle); this._timeoutHandle = null; }
     if (this.collectionUnsub) {
       try { this.collectionUnsub(); } catch (_) {}
       this.collectionUnsub = null;
@@ -533,6 +563,38 @@ const PictionaryCanvas = React.memo((props) => {
   );
 });
 
+// ── Round countdown (shared by all three views) ────────────────────────
+// Renders a ticking countdown badge + slim progress bar. Pure-clock: computes
+// remaining time from (now - startedAt) vs durationMs so all peers agree
+// without needing the host to broadcast tick messages.
+const RoundCountdown = React.memo((props) => {
+  const startedAt = props.startedAt;
+  const durationMs = props.durationMs;
+  const [now, setNow] = React.useState(Date.now());
+  React.useEffect(() => {
+    if (!startedAt || !durationMs) return;
+    const id = setInterval(() => setNow(Date.now()), 250);
+    return () => clearInterval(id);
+  }, [startedAt, durationMs]);
+  if (!startedAt || !durationMs) return null;
+  const elapsed = now - startedAt;
+  const remaining = Math.max(0, durationMs - elapsed);
+  const secs = Math.ceil(remaining / 1000);
+  const pct = Math.max(0, Math.min(100, (remaining / durationMs) * 100));
+  const isUrgent = remaining > 0 && remaining < 10000;
+  const isDone = remaining <= 0;
+  const barColor = isDone ? 'bg-slate-400' : isUrgent ? 'bg-red-500' : 'bg-emerald-500';
+  const textColor = isDone ? 'text-slate-500' : isUrgent ? 'text-red-700' : 'text-slate-700';
+  return (
+    <div className="flex items-center gap-2 text-xs font-bold" role="timer" aria-live="off" aria-label={`Time remaining: ${secs} seconds`}>
+      <span className={textColor}>⏱ {isDone ? '0s' : secs + 's'}</span>
+      <div className="w-20 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+        <div className={`h-full transition-all duration-200 ${barColor}`} style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  );
+});
+
 // ── Toolbox (drawers only) ─────────────────────────────────────────────
 const DrawerToolbox = React.memo((props) => {
   const color = props.color || PEN_COLORS[0].hex;
@@ -610,8 +672,10 @@ const PictionaryHostView = React.memo((props) => {
   const [concept, setConcept] = React.useState('');
   const [conceptIdeas, setConceptIdeas] = React.useState([]);
   const [drawerUids, setDrawerUids] = React.useState([]);            // string[]
+  const [durationMs, setDurationMs] = React.useState(60000);         // 1 min default; 0 = unlimited
+  const [activeRoundMeta, setActiveRoundMeta] = React.useState(null); // { startedAt, durationMs }
   const [roundActive, setRoundActive] = React.useState(false);
-  const [roundResolved, setRoundResolved] = React.useState(null);    // { concept, winnerUid }
+  const [roundResolved, setRoundResolved] = React.useState(null);    // { concept, winnerUid, reason }
   const [isLoadingIdeas, setIsLoadingIdeas] = React.useState(false);
 
   // Seed concept ideas from a bridge tool when the overlay opens.
@@ -633,6 +697,14 @@ const PictionaryHostView = React.memo((props) => {
       onGuess: (uid, codename, payload) => setGuessFeed((prev) => prev.concat([{
         id: _pic_genId('guess'), uid, codename, text: payload.text, ts: payload.timestamp || Date.now(), marked: null,
       }])),
+      onRoundAutoResolved: (info) => {
+        // Timer expired; round resolved with no winner. The host already
+        // broadcast roundResolved to peers; just sync local view state.
+        setRoundResolved({ concept: (info && info.concept) || '', winnerUid: null, reason: 'timeout' });
+        setRoundActive(false);
+        setActiveRoundMeta(null);
+        _clearRolesAndRound();
+      },
     });
     host.start().catch((err) => console.warn('[Pictionary host] start failed:', err && err.message));
     hostRef.current = host;
@@ -667,11 +739,14 @@ const PictionaryHostView = React.memo((props) => {
 
   const handleStartRound = async () => {
     if (!hostRef.current || !concept.trim() || drawerUids.length === 0) return;
-    hostRef.current.startRound({ concept: concept.trim(), drawerUids });
+    const startedAt = Date.now();
+    const effectiveDuration = durationMs > 0 ? durationMs : null;
+    hostRef.current.startRound({ concept: concept.trim(), drawerUids, durationMs: effectiveDuration });
     setStrokes([]);
     setGuessFeed([]);
     setRoundActive(true);
     setRoundResolved(null);
+    setActiveRoundMeta(effectiveDuration ? { startedAt, durationMs: effectiveDuration } : null);
     // Write Tier-1 role markers to session doc so each peer can identify its role,
     // plus a pictionaryRound aggregate that late-joiners use to auto-open the
     // guest overlay (gets defaulted to 'guesser' on their side).
@@ -696,15 +771,17 @@ const PictionaryHostView = React.memo((props) => {
   const handleMarkCorrect = async (guessId) => {
     setGuessFeed((prev) => prev.map((g) => g.id === guessId ? { ...g, marked: 'correct' } : g));
     const correctGuess = guessFeed.find((g) => g.id === guessId);
-    if (hostRef.current) hostRef.current.resolveRound({ winnerUid: correctGuess && correctGuess.uid });
-    setRoundResolved({ concept, winnerUid: correctGuess && correctGuess.uid });
+    if (hostRef.current) hostRef.current.resolveRound({ winnerUid: correctGuess && correctGuess.uid, reason: 'manual' });
+    setRoundResolved({ concept, winnerUid: correctGuess && correctGuess.uid, reason: 'manual' });
     setRoundActive(false);
+    setActiveRoundMeta(null);
     await _clearRolesAndRound();
   };
   const handleEndRound = async () => {
-    if (hostRef.current) hostRef.current.resolveRound({ winnerUid: null });
-    setRoundResolved({ concept, winnerUid: null });
+    if (hostRef.current) hostRef.current.resolveRound({ winnerUid: null, reason: 'manual' });
+    setRoundResolved({ concept, winnerUid: null, reason: 'manual' });
     setRoundActive(false);
+    setActiveRoundMeta(null);
     await _clearRolesAndRound();
   };
   const handleResetForNextRound = () => {
@@ -713,6 +790,7 @@ const PictionaryHostView = React.memo((props) => {
     setStrokes([]);
     setGuessFeed([]);
     setRoundResolved(null);
+    setActiveRoundMeta(null);
     if (hostRef.current) hostRef.current.clearCanvas();
   };
 
@@ -733,9 +811,12 @@ const PictionaryHostView = React.memo((props) => {
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 p-5">
           <div>
             <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 mb-3">
-              <div className="flex items-center justify-between gap-2 mb-2">
+              <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
                 <div className="text-xs font-bold uppercase tracking-wider text-slate-700">Canvas</div>
                 <div className="flex items-center gap-2">
+                  {roundActive && activeRoundMeta ? (
+                    <RoundCountdown startedAt={activeRoundMeta.startedAt} durationMs={activeRoundMeta.durationMs} />
+                  ) : null}
                   {roundActive ? (
                     <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-100 text-rose-800 border border-rose-300">● Round live</span>
                   ) : roundResolved ? (
@@ -754,7 +835,11 @@ const PictionaryHostView = React.memo((props) => {
                   <strong>Concept:</strong> {roundResolved.concept || '(none)'}{' '}
                   {roundResolved.winnerUid && roster[roundResolved.winnerUid] ? (
                     <span>— first correct: <strong>{roster[roundResolved.winnerUid].name}</strong></span>
-                  ) : <span className="italic">— ended without a winner</span>}
+                  ) : roundResolved.reason === 'timeout' ? (
+                    <span className="italic">— ⏱ time's up</span>
+                  ) : (
+                    <span className="italic">— ended without a winner</span>
+                  )}
                   <div className="mt-2">
                     <button onClick={handleResetForNextRound} className="px-3 py-1 text-xs font-bold rounded-full bg-emerald-600 text-white hover:bg-emerald-700">Set up next round →</button>
                   </div>
@@ -832,6 +917,23 @@ const PictionaryHostView = React.memo((props) => {
                       })}
                     </ul>
                   )}
+                </div>
+                <div className="bg-white border border-slate-200 rounded-xl p-3">
+                  <div className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">3. Round timer</div>
+                  <select
+                    value={durationMs}
+                    onChange={(e) => setDurationMs(Number(e.target.value))}
+                    className="w-full text-sm border border-slate-300 rounded p-1.5 outline-none focus:ring-2 focus:ring-rose-300"
+                    aria-label="Round timer"
+                  >
+                    <option value={0}>No timer (manual end)</option>
+                    <option value={30000}>30 seconds</option>
+                    <option value={60000}>1 minute</option>
+                    <option value={90000}>90 seconds</option>
+                    <option value={120000}>2 minutes</option>
+                    <option value={180000}>3 minutes</option>
+                  </select>
+                  <p className="text-[11px] text-slate-500 italic mt-1 leading-snug">When the timer runs out, the round auto-resolves and the concept reveals.</p>
                 </div>
                 <button
                   onClick={handleStartRound}
@@ -931,13 +1033,18 @@ const PictionaryGuestOverlay = React.memo((props) => {
     <div className="fixed inset-0 z-[80] flex items-start justify-center p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-label="Concept Pictionary">
       <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-sm" aria-hidden="true" />
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl my-8 overflow-hidden border border-slate-200">
-        <div className="flex items-start justify-between p-4 border-b border-slate-200 bg-gradient-to-r from-rose-50 to-amber-50">
-          <div>
+        <div className="flex items-start justify-between p-4 border-b border-slate-200 bg-gradient-to-r from-rose-50 to-amber-50 gap-3">
+          <div className="flex-1 min-w-0">
             <div className="text-[11px] font-bold text-rose-700 uppercase tracking-wider">{isDrawer ? '🎨 You are a drawer' : '👀 You are a guesser'}</div>
             <h2 className="text-xl font-black text-slate-800 mt-0.5">Concept Pictionary</h2>
             {!connected ? <div className="text-[11px] text-amber-700 mt-1">Connecting…</div> : null}
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-700 text-2xl leading-none p-1 rounded hover:bg-slate-100" aria-label="Close">✕</button>
+          <div className="flex items-center gap-3 flex-shrink-0">
+            {activeRound && activeRound.durationMs && activeRound.startedAt ? (
+              <RoundCountdown startedAt={activeRound.startedAt} durationMs={activeRound.durationMs} />
+            ) : null}
+            <button onClick={onClose} className="text-slate-400 hover:text-slate-700 text-2xl leading-none p-1 rounded hover:bg-slate-100" aria-label="Close">✕</button>
+          </div>
         </div>
         <div className="p-4">
           {activeRound && isDrawer ? (
