@@ -2530,16 +2530,142 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // RENDER: FIELD ID
       // ────────────────────────────────────────────────────────
       function renderFieldId() {
+        // Inline SVG silhouettes for each of the 8 groups
+        // viewBox 240x110; bird body roughly centered + facing right
+        function silhouetteSvg(id) {
+          var common = { viewBox: '0 0 240 110', style: { width: '100%', height: 'auto', maxHeight: '110px' }, 'aria-hidden': 'true' };
+          var fill = '#fde047';
+          if (id === 'falcon') {
+            // Long pointed swept wings
+            return h('svg', common,
+              h('path', { d: 'M 30 55 Q 60 30 90 50 L 120 53 L 150 50 Q 180 30 210 55 L 200 58 Q 175 55 150 60 L 120 60 L 90 60 Q 65 55 40 58 Z', fill: fill }),
+              // Body
+              h('ellipse', { cx: 120, cy: 56, rx: 14, ry: 5, fill: '#facc15' }),
+              // Tail
+              h('path', { d: 'M 108 58 L 90 70 L 100 65 L 110 70 Z', fill: '#fde047' }),
+              // Head
+              h('circle', { cx: 138, cy: 55, r: 4, fill: '#facc15' })
+            );
+          }
+          if (id === 'eagle') {
+            // Long broad wings with finger slots
+            return h('svg', common,
+              // Wing left
+              h('path', { d: 'M 30 55 Q 60 35 90 50 L 90 60 Q 60 55 30 60 Z', fill: fill }),
+              h('path', { d: 'M 20 50 L 32 56 L 18 58 Z', fill: fill }),
+              h('path', { d: 'M 18 55 L 30 58 L 16 62 Z', fill: fill }),
+              h('path', { d: 'M 22 60 L 32 60 L 22 65 Z', fill: fill }),
+              // Wing right
+              h('path', { d: 'M 150 50 Q 180 35 210 55 L 210 60 Q 180 55 150 60 Z', fill: fill }),
+              h('path', { d: 'M 220 50 L 208 56 L 222 58 Z', fill: fill }),
+              h('path', { d: 'M 222 55 L 210 58 L 224 62 Z', fill: fill }),
+              h('path', { d: 'M 218 60 L 208 60 L 218 65 Z', fill: fill }),
+              // Body
+              h('ellipse', { cx: 120, cy: 56, rx: 18, ry: 6, fill: '#facc15' }),
+              // Tail (fan)
+              h('path', { d: 'M 105 60 L 90 78 L 100 70 L 105 76 L 110 72 L 120 78 Z', fill: '#fde047' }),
+              // Head
+              h('circle', { cx: 142, cy: 55, r: 5, fill: '#facc15' })
+            );
+          }
+          if (id === 'buteo') {
+            // Broad rounded wings, fan tail
+            return h('svg', common,
+              h('path', { d: 'M 40 55 Q 60 40 90 52 L 90 60 Q 60 58 40 60 Z', fill: fill }),
+              h('path', { d: 'M 150 52 Q 180 40 200 55 L 200 60 Q 180 58 150 60 Z', fill: fill }),
+              h('ellipse', { cx: 120, cy: 58, rx: 17, ry: 6, fill: '#facc15' }),
+              // Wide fan tail
+              h('path', { d: 'M 105 62 L 90 80 L 100 73 L 105 78 L 115 72 L 120 78 Z', fill: '#fde047' }),
+              h('circle', { cx: 140, cy: 56, r: 5, fill: '#facc15' })
+            );
+          }
+          if (id === 'accipiter') {
+            // Short broad wings + LONG tail
+            return h('svg', common,
+              h('path', { d: 'M 60 55 Q 75 45 95 52 L 95 62 Q 75 60 60 62 Z', fill: fill }),
+              h('path', { d: 'M 145 52 Q 165 45 180 55 L 180 62 Q 165 60 145 62 Z', fill: fill }),
+              h('ellipse', { cx: 120, cy: 58, rx: 15, ry: 5, fill: '#facc15' }),
+              // Very long banded tail
+              h('rect', { x: 80, y: 60, width: 30, height: 6, fill: '#facc15' }),
+              h('line', { x1: 88, y1: 60, x2: 88, y2: 66, stroke: '#a16207', strokeWidth: 1 }),
+              h('line', { x1: 96, y1: 60, x2: 96, y2: 66, stroke: '#a16207', strokeWidth: 1 }),
+              h('line', { x1: 104, y1: 60, x2: 104, y2: 66, stroke: '#a16207', strokeWidth: 1 }),
+              h('circle', { cx: 138, cy: 56, r: 4, fill: '#facc15' })
+            );
+          }
+          if (id === 'harrier') {
+            // Long narrow wings raised in dihedral V
+            return h('svg', common,
+              h('path', { d: 'M 25 60 L 95 48 L 95 56 L 35 64 Z', fill: fill }),
+              h('path', { d: 'M 145 48 L 215 60 L 205 64 L 145 56 Z', fill: fill }),
+              h('ellipse', { cx: 120, cy: 56, rx: 13, ry: 4, fill: '#facc15' }),
+              h('rect', { x: 105, y: 58, width: 12, height: 4, fill: '#facc15' }),
+              h('rect', { x: 105, y: 56, width: 4, height: 8, fill: '#fff', opacity: 0.85 }), // white rump patch
+              h('circle', { cx: 134, cy: 54, r: 4, fill: '#facc15' })
+            );
+          }
+          if (id === 'kite') {
+            // Long narrow wings + forked tail
+            return h('svg', common,
+              h('path', { d: 'M 30 55 Q 60 40 95 50 L 95 58 Q 60 56 30 58 Z', fill: fill }),
+              h('path', { d: 'M 145 50 Q 180 40 210 55 L 210 58 Q 180 56 145 58 Z', fill: fill }),
+              h('ellipse', { cx: 120, cy: 55, rx: 13, ry: 4, fill: '#facc15' }),
+              // Forked tail
+              h('polygon', { points: '108,57 88,68 96,62 95,75 100,65 105,72 108,63', fill: '#facc15' }),
+              h('circle', { cx: 136, cy: 53, r: 4, fill: '#facc15' })
+            );
+          }
+          if (id === 'osprey') {
+            // Distinctive M-shape — kinked wings
+            return h('svg', common,
+              h('path', { d: 'M 25 55 L 55 38 L 85 55 L 95 53 L 95 60 L 85 62 L 55 47 L 32 62 Z', fill: fill }),
+              h('path', { d: 'M 155 53 L 185 38 L 215 55 L 208 62 L 185 47 L 155 60 Z', fill: fill }),
+              h('ellipse', { cx: 120, cy: 56, rx: 13, ry: 4, fill: '#facc15' }),
+              h('rect', { x: 108, y: 58, width: 10, height: 4, fill: '#facc15' }),
+              h('circle', { cx: 138, cy: 54, r: 4, fill: '#facc15' })
+            );
+          }
+          if (id === 'owl') {
+            // Broad rounded wings, big round head
+            return h('svg', common,
+              h('path', { d: 'M 35 60 Q 65 40 95 53 L 95 65 Q 65 65 35 65 Z', fill: fill }),
+              h('path', { d: 'M 145 53 Q 175 40 205 60 L 205 65 Q 175 65 145 65 Z', fill: fill }),
+              h('ellipse', { cx: 120, cy: 58, rx: 16, ry: 6, fill: '#facc15' }),
+              // Big round head
+              h('circle', { cx: 138, cy: 52, r: 8, fill: '#facc15' }),
+              // Ear tufts
+              h('path', { d: 'M 132 45 L 130 38 L 134 45 Z', fill: '#facc15' }),
+              h('path', { d: 'M 144 45 L 146 38 L 142 45 Z', fill: '#facc15' }),
+              // Short tail
+              h('path', { d: 'M 108 62 L 100 70 L 116 70 L 115 64 Z', fill: '#fde047' })
+            );
+          }
+          return null;
+        }
+
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-yellow-900/40 to-amber-900/40 border border-yellow-700/40 rounded-xl p-4' },
             h('div', { className: 'text-lg font-bold text-yellow-200 mb-2' }, '🔍 Field Identification: Wing Shape + Flight Pattern'),
             h('div', { className: 'text-sm text-yellow-100/90 leading-relaxed' }, 'You almost never get a clear close-up of a raptor in the wild. Field ID works on ', h('span', { className: 'font-bold' }, 'gestalt — silhouette + flight pattern + behavior'), '. Color comes last. Learn the 8 silhouette groups below and you can ID 90% of North American raptors at a quarter mile.')
           ),
-          // Silhouette cards
+          // Silhouette cards (now with inline SVGs!)
           h('div', { className: 'space-y-3' },
             FIELD_ID.silhouettes.map(function(s, i) {
               return h('div', { key: i, className: 'bg-slate-800/40 border border-slate-700/50 rounded-lg p-4' },
-                h('div', { className: 'text-sm font-bold text-yellow-300 mb-2' }, s.label),
+                h('div', { className: 'flex items-start gap-4 mb-2' },
+                  // Silhouette SVG (left)
+                  h('div', {
+                    className: 'flex-shrink-0 bg-slate-900/60 rounded-lg border border-slate-700/60 p-2',
+                    style: { width: '140px' }
+                  },
+                    silhouetteSvg(s.id) || h('div', { className: 'text-xs text-slate-500 text-center py-4' }, '(silhouette)')
+                  ),
+                  // Title (right)
+                  h('div', { className: 'flex-1' },
+                    h('div', { className: 'text-sm font-bold text-yellow-300 mb-1' }, s.label),
+                    h('div', { className: 'text-[10px] text-slate-400 italic' }, '↑ silhouette as seen from below in flight')
+                  )
+                ),
                 h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2 text-xs' },
                   h('div', null, h('span', { className: 'text-slate-500' }, 'Wing shape: '), h('span', { className: 'text-slate-200' }, s.wingShape)),
                   h('div', null, h('span', { className: 'text-slate-500' }, 'Tail: '), h('span', { className: 'text-slate-200' }, s.tailShape)),
@@ -2573,6 +2699,90 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           h('div', { className: 'bg-gradient-to-br from-cyan-900/40 to-teal-900/40 border border-cyan-700/40 rounded-xl p-4' },
             h('div', { className: 'text-lg font-bold text-cyan-200 mb-2' }, '🧭 Migration: 5 Million Birds, 5 Major Flyways'),
             h('div', { className: 'text-sm text-cyan-100/90 leading-relaxed' }, MIGRATION.overview)
+          ),
+
+          // Interactive World Map (NEW v0.7)
+          h('div', { className: 'bg-slate-950/60 border border-cyan-700/40 rounded-xl p-3' },
+            h('div', { className: 'text-sm font-bold text-cyan-300 mb-2' }, '🗺 World Map — 5 Flyways + Famous Watch Sites'),
+            h('div', { className: 'text-[10px] text-slate-400 mb-2 italic' }, 'Hover a flyway color or a star to learn more. Arrows show fall migration direction (NE → SW for most North American species).'),
+            h('svg', { viewBox: '0 0 700 360', style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': 'World map showing the 5 major raptor migration flyways and famous hawk-watch site locations' },
+              // Ocean background
+              h('rect', { x: 0, y: 0, width: 700, height: 360, fill: '#082f49' }),
+              // ── Continental masses (simplified equirectangular) ──
+              // North America
+              h('path', { d: 'M 60 80 L 180 60 L 210 90 L 230 130 L 240 165 L 195 220 L 145 230 L 100 195 L 70 150 Z', fill: '#1e3a2a', stroke: '#475569', strokeWidth: 1 }),
+              // Greenland
+              h('path', { d: 'M 245 60 L 280 65 L 285 100 L 260 110 L 250 90 Z', fill: '#1e3a2a', stroke: '#475569', strokeWidth: 1 }),
+              // South America
+              h('path', { d: 'M 175 235 L 215 240 L 230 290 L 215 340 L 190 350 L 175 320 L 165 280 Z', fill: '#1e3a2a', stroke: '#475569', strokeWidth: 1 }),
+              // Europe
+              h('path', { d: 'M 330 75 L 410 70 L 420 110 L 395 140 L 360 150 L 335 125 Z', fill: '#1e3a2a', stroke: '#475569', strokeWidth: 1 }),
+              // Africa
+              h('path', { d: 'M 340 155 L 420 160 L 430 220 L 415 285 L 380 305 L 355 280 L 345 220 Z', fill: '#1e3a2a', stroke: '#475569', strokeWidth: 1 }),
+              // Asia
+              h('path', { d: 'M 420 75 L 600 80 L 640 130 L 625 175 L 580 200 L 510 195 L 450 175 L 425 140 Z', fill: '#1e3a2a', stroke: '#475569', strokeWidth: 1 }),
+              // India
+              h('path', { d: 'M 500 180 L 540 175 L 555 215 L 530 240 L 510 220 Z', fill: '#1e3a2a', stroke: '#475569', strokeWidth: 1 }),
+              // Australia
+              h('path', { d: 'M 590 270 L 660 270 L 655 320 L 610 330 L 590 305 Z', fill: '#1e3a2a', stroke: '#475569', strokeWidth: 1 }),
+              // Equator + meridian guides
+              h('line', { x1: 0, y1: 200, x2: 700, y2: 200, stroke: '#1e293b', strokeWidth: 1, strokeDasharray: '2,4' }),
+              h('text', { x: 5, y: 197, fontSize: 9, fill: '#475569' }, 'Equator'),
+
+              // ── Flyway paths + arrows (defs for marker arrowheads) ──
+              h('defs', null,
+                ['#fbbf24', '#10b981', '#f97316', '#3b82f6', '#a855f7'].map(function(c, i) {
+                  return h('marker', { key: i, id: 'arr' + i, viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto-start-reverse' },
+                    h('path', { d: 'M 0 0 L 10 5 L 0 10 Z', fill: c })
+                  );
+                })
+              ),
+              // 1. Atlantic Flyway (yellow)
+              h('path', { d: 'M 180 100 Q 200 140 200 175 Q 195 210 210 240', stroke: '#fbbf24', strokeWidth: 3, fill: 'none', strokeDasharray: '6,3', markerEnd: 'url(#arr0)', opacity: 0.85 }),
+              // 2. Mississippi Flyway (green)
+              h('path', { d: 'M 160 110 Q 168 150 170 190 Q 175 215 220 245', stroke: '#10b981', strokeWidth: 3, fill: 'none', strokeDasharray: '6,3', markerEnd: 'url(#arr1)', opacity: 0.85 }),
+              // 3. Central Flyway (orange) — extends to Argentina!
+              h('path', { d: 'M 140 110 Q 145 165 160 200 Q 175 240 200 290 Q 205 320 200 345', stroke: '#f97316', strokeWidth: 3, fill: 'none', strokeDasharray: '6,3', markerEnd: 'url(#arr2)', opacity: 0.85 }),
+              // 4. Pacific Flyway (blue)
+              h('path', { d: 'M 95 100 Q 110 145 130 175 Q 145 200 165 235', stroke: '#3b82f6', strokeWidth: 3, fill: 'none', strokeDasharray: '6,3', markerEnd: 'url(#arr3)', opacity: 0.85 }),
+              // 5. European-African Flyway (purple)
+              h('path', { d: 'M 370 90 Q 380 130 380 165 Q 380 210 395 260', stroke: '#a855f7', strokeWidth: 3, fill: 'none', strokeDasharray: '6,3', markerEnd: 'url(#arr4)', opacity: 0.85 }),
+
+              // ── Famous watch sites (yellow stars) ──
+              [
+                { name: 'Hawk Mtn', x: 195, y: 132 },
+                { name: 'Cape May', x: 200, y: 142 },
+                { name: 'Veracruz', x: 188, y: 195 },
+                { name: 'GGRO', x: 105, y: 152 },
+                { name: 'Eilat', x: 415, y: 165 },
+                { name: 'Batumi', x: 425, y: 122 }
+              ].map(function(site, i) {
+                return h('g', { key: i },
+                  h('circle', { cx: site.x, cy: site.y, r: 6, fill: '#fde047', stroke: '#92400e', strokeWidth: 1.5 }),
+                  h('text', { x: site.x, y: site.y + 2, fontSize: 8, fill: '#1c1917', textAnchor: 'middle', fontWeight: 'bold' }, '★'),
+                  h('text', { x: site.x + 9, y: site.y + 3, fontSize: 9, fill: '#fde047', fontWeight: 'bold' }, site.name)
+                );
+              }),
+
+              // ── Legend ──
+              h('rect', { x: 10, y: 305, width: 200, height: 50, fill: 'rgba(15,23,42,0.85)', stroke: '#475569', strokeWidth: 1, rx: 4 }),
+              h('text', { x: 15, y: 318, fontSize: 9, fill: '#fde047', fontWeight: 'bold' }, 'FLYWAYS'),
+              [
+                { c: '#fbbf24', l: 'Atlantic' },
+                { c: '#10b981', l: 'Mississippi' },
+                { c: '#f97316', l: 'Central' },
+                { c: '#3b82f6', l: 'Pacific' },
+                { c: '#a855f7', l: 'EU-Africa' }
+              ].map(function(le, i) {
+                var col = i % 3, row = Math.floor(i / 3);
+                return h('g', { key: i },
+                  h('line', { x1: 18 + col * 65, y1: 332 + row * 12, x2: 30 + col * 65, y2: 332 + row * 12, stroke: le.c, strokeWidth: 2.5 }),
+                  h('text', { x: 33 + col * 65, y: 335 + row * 12, fontSize: 9, fill: '#e5e7eb' }, le.l)
+                );
+              })
+            ),
+            // Map footer
+            h('div', { className: 'text-[10px] text-slate-500 mt-2 italic' }, 'Map: equirectangular projection, continents simplified for clarity. Flyway paths shown as fall-migration direction. Stars mark major hawk-watch sites with documented annual counts.')
           ),
 
           // Flyways
@@ -3126,6 +3336,179 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               })
             )
           ),
+
+          // ── Virtual dissection (NEW v0.7) ──
+          (function() {
+            var pd = rh.pelletDx || { started: false, bones: null, identified: {}, complete: false };
+            function setPD(patch) {
+              setRH(function(prev) {
+                var cur = prev.pelletDx || { started: false, bones: null, identified: {}, complete: false };
+                return Object.assign({}, prev, { pelletDx: Object.assign({}, cur, typeof patch === 'function' ? patch(cur) : patch) });
+              });
+            }
+            // 7 prey types, each with a "bone" the student identifies
+            var preyTypes = [
+              { id: 'vole', name: 'Meadow Vole', biomass: 30, signature: 'M-shaped molar cusps; orange incisors; ~18 mm cranium', wrong: ['Deer Mouse', 'Shrew', 'Sparrow'] },
+              { id: 'mouse', name: 'Deer Mouse', biomass: 20, signature: 'Small ~15 mm cranium; long incisors; pointed snout shape', wrong: ['Meadow Vole', 'Shrew', 'Lemming'] },
+              { id: 'shrew', name: 'Short-tailed Shrew', biomass: 18, signature: 'RED-TIPPED teeth (iron-pigmented enamel); ~14 mm pointed snout cranium', wrong: ['Deer Mouse', 'Vole', 'Bat'] },
+              { id: 'sparrow', name: 'House Sparrow', biomass: 28, signature: 'Conical seed-eating beak; hollow bones; bird-skull shape', wrong: ['Starling', 'Songbird', 'Bat'] },
+              { id: 'starling', name: 'European Starling', biomass: 75, signature: 'Long pointed bird beak; black feather barbs in pellet; medium bird cranium', wrong: ['Sparrow', 'Robin', 'Pigeon'] },
+              { id: 'lemming', name: 'Bog Lemming', biomass: 35, signature: 'Vole-like but with FLAT-TOPPED grinding molars; chunky body', wrong: ['Meadow Vole', 'Deer Mouse', 'Shrew'] },
+              { id: 'bat', name: 'Little Brown Bat', biomass: 8, signature: 'Tiny wing-finger bones; large eye orbits; bird-like skull but with mammal teeth', wrong: ['Sparrow', 'Shrew', 'Songbird'] }
+            ];
+            function generatePellet() {
+              // 1-4 prey per pellet, weighted toward smaller pellets being more common
+              var nPrey = Math.random() < 0.3 ? 1 : Math.random() < 0.7 ? 2 : Math.random() < 0.9 ? 3 : 4;
+              var bones = [];
+              for (var i = 0; i < nPrey; i++) {
+                var prey = preyTypes[Math.floor(Math.random() * preyTypes.length)];
+                bones.push({
+                  uid: 'b' + i + '_' + Math.random().toString(36).slice(2, 8),
+                  preyId: prey.id,
+                  preyName: prey.name,
+                  signature: prey.signature,
+                  wrong: prey.wrong,
+                  biomass: prey.biomass,
+                  // Random position in pellet view
+                  x: 12 + Math.random() * 76, // 12-88%
+                  y: 12 + Math.random() * 76
+                });
+              }
+              return bones;
+            }
+            function startDx() {
+              setPD({ started: true, bones: generatePellet(), identified: {}, complete: false });
+              rhAnnounce('New pellet generated. Click each bone to identify it.');
+            }
+            function identifyBone(bone, guess) {
+              var correct = guess === bone.preyId;
+              setPD(function(cur) {
+                var newId = Object.assign({}, cur.identified);
+                newId[bone.uid] = { guess: guess, correct: correct, preyName: bone.preyName };
+                var allDone = cur.bones.every(function(b) { return newId[b.uid]; });
+                return { identified: newId, complete: allDone };
+              });
+              if (correct) { if (ctx.awardXP) ctx.awardXP(2, 'Pellet Lab dissection: correct ID'); }
+              rhAnnounce(correct ? 'Correct — ' + bone.preyName : 'Incorrect — actual species was ' + bone.preyName);
+            }
+            // Stats
+            var idCount = Object.keys(pd.identified || {}).length;
+            var correctCount = Object.values(pd.identified || {}).filter(function(v) { return v.correct; }).length;
+            var totalBones = (pd.bones || []).length;
+            var biomass = pd.bones && pd.complete ? pd.bones.reduce(function(sum, b) { return sum + b.biomass; }, 0) : 0;
+            var uniqueSpecies = pd.bones && pd.complete ? Array.from(new Set(pd.bones.map(function(b) { return b.preyId; }))).length : 0;
+            return h('div', { className: 'bg-orange-900/20 border border-orange-700/40 rounded-xl p-5' },
+              h('div', { className: 'text-base font-bold text-orange-300 mb-2' }, '🔬 Virtual Dissection — Try It'),
+              h('div', { className: 'text-xs text-orange-100/90 mb-3 leading-relaxed' }, 'Generate a virtual pellet, then click each bone to identify the prey species. Each pellet contains 1-4 prey animals from your local rodent + bird population. Use the signature clues to pick the right species.'),
+
+              !pd.started ? h('div', { className: 'text-center py-4' },
+                h('button', {
+                  onClick: startDx,
+                  className: 'px-5 py-3 rounded-xl text-sm font-bold bg-gradient-to-r from-orange-600 to-red-600 text-white hover:from-orange-700 hover:to-red-700 transition-all',
+                  'aria-label': 'Generate virtual pellet'
+                }, '🦉 Generate Virtual Pellet')
+              ) : h('div', { className: 'space-y-3' },
+                // Pellet visual (gradient blob with bones scattered)
+                h('div', { className: 'relative bg-gradient-to-br from-stone-700 to-stone-900 rounded-3xl mx-auto', style: { width: '100%', maxWidth: '400px', aspectRatio: '4/3', backgroundImage: 'radial-gradient(circle, rgba(120,53,15,0.3), transparent 70%)' } },
+                  h('div', { className: 'absolute inset-0 flex items-center justify-center pointer-events-none' },
+                    h('div', { className: 'text-xs text-stone-400 italic' }, '— pellet — click bones below to identify —')
+                  ),
+                  (pd.bones || []).map(function(b, i) {
+                    var idr = pd.identified[b.uid];
+                    var bg = idr ? (idr.correct ? 'bg-emerald-500' : 'bg-red-500') : 'bg-amber-400';
+                    return h('button', {
+                      key: b.uid,
+                      onClick: function() {
+                        if (idr) return; // already done
+                        // Pick a random ordering of options including the correct
+                        var opts = b.wrong.slice(0, 2).concat([b.preyName]).sort(function() { return Math.random() - 0.5; });
+                        // Use a simple confirm-style prompt (cycle through options)
+                        // Actually we'll show options inline below.
+                        // For now, store which bone is "active" for picking
+                        setPD({ activeBone: b.uid });
+                      },
+                      disabled: !!idr,
+                      'aria-label': 'Bone fragment ' + (i + 1) + (idr ? ' — identified as ' + idr.preyName : ' — click to identify'),
+                      className: 'absolute w-8 h-8 rounded-full ' + bg + ' shadow-lg transform hover:scale-110 transition-all flex items-center justify-center text-xs font-bold text-stone-900 border-2 border-stone-900',
+                      style: { left: b.x + '%', top: b.y + '%', transform: 'translate(-50%, -50%)' }
+                    }, idr ? (idr.correct ? '✓' : '✗') : '🦴');
+                  })
+                ),
+
+                // Active bone identification panel
+                (function() {
+                  var activeBone = (pd.bones || []).filter(function(b) { return b.uid === pd.activeBone && !pd.identified[b.uid]; })[0];
+                  if (!activeBone) return null;
+                  var opts = activeBone.wrong.slice(0, 2).concat([activeBone.preyName]);
+                  // Deterministic shuffle by uid
+                  opts = opts.sort(function(a, b) { return (a + activeBone.uid).localeCompare(b + activeBone.uid); });
+                  return h('div', { className: 'bg-slate-900/60 border border-amber-700/40 rounded-lg p-3' },
+                    h('div', { className: 'text-xs font-bold text-amber-300 mb-2' }, '🦴 Identify this bone'),
+                    h('div', { className: 'text-xs text-slate-200 mb-3 italic' }, 'Signature: ' + activeBone.signature),
+                    h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-2' },
+                      opts.map(function(opt, oi) {
+                        // Map back to id
+                        var matchingPrey = preyTypes.filter(function(p) { return p.name === opt; })[0];
+                        var guessId = matchingPrey ? matchingPrey.id : opt;
+                        return h('button', {
+                          key: oi,
+                          onClick: function() { identifyBone(activeBone, guessId); setPD({ activeBone: null }); },
+                          className: 'px-3 py-2 rounded-lg text-xs font-bold bg-slate-800 text-amber-200 hover:bg-amber-900/40 hover:text-amber-100 transition-all border border-slate-700',
+                          'aria-label': 'Identify as ' + opt
+                        }, opt);
+                      })
+                    )
+                  );
+                })(),
+
+                // Progress
+                h('div', { className: 'flex items-center justify-between text-xs' },
+                  h('div', { className: 'text-slate-300' }, 'Bones identified: ' + idCount + ' / ' + totalBones + ' · Correct: ', h('span', { className: 'text-emerald-300 font-bold' }, correctCount)),
+                  pd.complete && h('div', { className: 'text-emerald-300 font-bold' }, '✓ Dissection complete')
+                ),
+
+                // Results panel
+                pd.complete && h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded-lg p-3 space-y-2' },
+                  h('div', { className: 'text-sm font-bold text-emerald-300' }, '📊 Pellet Analysis Results'),
+                  h('div', { className: 'grid grid-cols-3 gap-2 text-center' },
+                    h('div', { className: 'bg-slate-800/40 rounded p-2' },
+                      h('div', { className: 'text-xl font-bold text-amber-300' }, totalBones),
+                      h('div', { className: 'text-[10px] text-slate-400 uppercase' }, 'Prey items')
+                    ),
+                    h('div', { className: 'bg-slate-800/40 rounded p-2' },
+                      h('div', { className: 'text-xl font-bold text-amber-300' }, uniqueSpecies),
+                      h('div', { className: 'text-[10px] text-slate-400 uppercase' }, 'Species')
+                    ),
+                    h('div', { className: 'bg-slate-800/40 rounded p-2' },
+                      h('div', { className: 'text-xl font-bold text-amber-300' }, biomass + 'g'),
+                      h('div', { className: 'text-[10px] text-slate-400 uppercase' }, 'Biomass')
+                    )
+                  ),
+                  h('div', { className: 'text-xs text-emerald-100/90 italic leading-relaxed' },
+                    'Real-world equivalent: a single owl roost with 50 pellets like this would document ',
+                    h('span', { className: 'font-bold text-amber-300' }, totalBones * 50 + ' prey animals'),
+                    ' across the local landscape — ',
+                    h('span', { className: 'font-bold text-amber-300' }, (biomass * 50 / 1000).toFixed(1) + ' kg of small-mammal biomass'),
+                    ' — without trapping a single mouse. This is why pellet science is a backbone of small-mammal ecology research.'
+                  )
+                ),
+
+                // Reset button
+                h('div', { className: 'flex gap-2 justify-center pt-2' },
+                  h('button', {
+                    onClick: startDx,
+                    className: 'px-4 py-2 rounded-lg text-xs font-bold bg-slate-700 text-amber-300 hover:bg-slate-600',
+                    'aria-label': 'Generate another pellet'
+                  }, '🔁 New Pellet'),
+                  h('button', {
+                    onClick: function() { setPD({ started: false, bones: null, identified: {}, complete: false, activeBone: null }); },
+                    className: 'px-4 py-2 rounded-lg text-xs font-bold bg-slate-700 text-slate-300 hover:bg-slate-600',
+                    'aria-label': 'Close dissection'
+                  }, '✕ Close')
+                )
+              )
+            );
+          })(),
 
           // Dissection method
           h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded-xl p-5' },
