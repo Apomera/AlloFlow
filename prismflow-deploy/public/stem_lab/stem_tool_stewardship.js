@@ -1108,13 +1108,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
 
         // ── Selection phase ──
         if (cmp.mode === 'selecting') {
-          return h('div', { style: { maxWidth: 800, margin: '0 auto', padding: 16 } },
+          return h('div', {
+            // Dark shell — see note on the hub view above; same palette
+            // dependency on a dark background to meet WCAG AA.
+            style: { background: '#0f172a', borderRadius: 16, padding: '20px 16px', minHeight: 'calc(100vh - 32px)' }
+          }, h('div', { style: { maxWidth: 800, margin: '0 auto' } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 } },
               h('button', { onClick: closeComparison, 'aria-label': 'Cancel comparison',
                 style: { background: 'transparent', border: '1px solid #334155', color: '#cbd5e1', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13 } }, '← Back to hub'),
               h('h2', { style: { margin: 0, color: '#a855f7', fontSize: 20 } }, '🔀 Compare two campaigns')
             ),
-            h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.4)', borderLeft: '3px solid #a855f7', marginBottom: 14, fontSize: 13, color: '#e9d5ff', lineHeight: 1.55 } },
+            h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.4)', borderRight: '1px solid rgba(168,85,247,0.4)', borderBottom: '1px solid rgba(168,85,247,0.4)', borderLeft: '3px solid #a855f7', marginBottom: 14, fontSize: 13, color: '#e9d5ff', lineHeight: 1.55 } },
               cmp.a
                 ? 'Selected: ' + (CAMPAIGNS.find(function(c) { return c.id === cmp.a; }) || {}).label + '. Pick a second completed campaign to compare against.'
                 : 'Pick any two of your completed campaigns. The hub will show them side-by-side with a pair-specific reflection prompt.'
@@ -1139,7 +1143,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             completedSnaps.length < 2 ? h('p', { style: { marginTop: 12, fontSize: 12, color: '#fbbf24', fontStyle: 'italic' } },
               'You need at least 2 completed campaigns to compare. Currently you have ' + completedSnaps.length + '.'
             ) : null
-          );
+          )); // close inner maxWidth + outer dark shell
         }
 
         // ── Viewing phase ──
@@ -1195,7 +1199,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             );
           }
 
-          return h('div', { style: { maxWidth: 900, margin: '0 auto', padding: 16 } },
+          return h('div', {
+            // Dark shell — same WCAG reason as the other view roots
+            style: { background: '#0f172a', borderRadius: 16, padding: '20px 16px', minHeight: 'calc(100vh - 32px)' }
+          }, h('div', { style: { maxWidth: 900, margin: '0 auto' } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' } },
               h('button', { onClick: closeComparison, 'aria-label': 'Back to hub',
                 style: { background: 'transparent', border: '1px solid #334155', color: '#cbd5e1', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13 } }, '← Back'),
@@ -1209,7 +1216,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
               style: {
                 padding: 14, borderRadius: 12, marginBottom: 14,
                 background: 'linear-gradient(135deg, rgba(168,85,247,0.14) 0%, rgba(56,189,248,0.04) 100%)',
-                border: '1px solid rgba(168,85,247,0.4)', borderLeft: '4px solid #a855f7'
+                borderTop: '1px solid rgba(168,85,247,0.4)', borderRight: '1px solid rgba(168,85,247,0.4)', borderBottom: '1px solid rgba(168,85,247,0.4)', borderLeft: '4px solid #a855f7'
               }
             },
               h('div', { style: { fontSize: 11, color: '#a855f7', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 4 } }, 'Pair reflection'),
@@ -1243,7 +1250,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                 );
               })
             )
-          );
+          )); // close inner maxWidth + outer dark shell
         }
 
         closeComparison();
@@ -1303,9 +1310,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
         if (step >= TUTORIAL_STEPS.length) step = TUTORIAL_STEPS.length - 1;
         var s = TUTORIAL_STEPS[step];
         return h('div', {
-          style: { maxWidth: 700, margin: '0 auto', padding: 16 },
+          // Dark shell — see hub view for WCAG rationale
+          style: { background: '#0f172a', borderRadius: 16, padding: '20px 16px', minHeight: 'calc(100vh - 32px)' },
           role: 'region', 'aria-label': 'Stewardship Hub onboarding tutorial'
-        },
+        }, h('div', { style: { maxWidth: 700, margin: '0 auto' } },
           // Header
           h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 } },
             h('div', null,
@@ -1330,7 +1338,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             style: {
               padding: 20, borderRadius: 14,
               background: 'linear-gradient(135deg, rgba(134,239,172,0.10) 0%, rgba(56,189,248,0.04) 100%)',
-              border: '1px solid rgba(134,239,172,0.4)', borderLeft: '4px solid #86efac',
+              borderTop: '1px solid rgba(134,239,172,0.4)', borderRight: '1px solid rgba(134,239,172,0.4)', borderBottom: '1px solid rgba(134,239,172,0.4)', borderLeft: '4px solid #86efac',
               marginBottom: 14
             }
           },
@@ -1353,7 +1361,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
               style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #15803d 0%, #166534 100%)', color: '#fff', fontWeight: 800, fontSize: 14 } },
               step === TUTORIAL_STEPS.length - 1 ? 'Got it, take me to the hub →' : 'Next →')
           )
-        );
+        )); // close inner maxWidth + outer dark shell
       }
 
       // ── Printable Campaign Report mode ──
@@ -1580,7 +1588,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
 
         // ── Briefing phase ──
         if (!st || phase === 'briefing') {
-          return h('div', { style: { maxWidth: 800, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': scenario.label + ' briefing' },
+          return h('div', {
+            // Dark shell — see hub view for WCAG rationale
+            style: { background: '#0f172a', borderRadius: 16, padding: '20px 16px', minHeight: 'calc(100vh - 32px)' },
+            role: 'region', 'aria-label': scenario.label + ' briefing'
+          }, h('div', { style: { maxWidth: 800, margin: '0 auto' } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, flexWrap: 'wrap' } },
               h('button', { onClick: closeScenario, 'aria-label': 'Back to hub',
                 style: { background: 'transparent', border: '1px solid #334155', color: '#cbd5e1', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13 } }, '← Back to hub'),
@@ -1625,7 +1637,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
               h('button', { onClick: closeScenario, 'aria-label': 'Cancel',
                 style: { padding: '10px 16px', borderRadius: 10, border: '1px solid #334155', cursor: 'pointer', background: 'transparent', color: '#cbd5e1', fontWeight: 700, fontSize: 13 } }, 'Cancel')
             )
-          );
+          )); // close inner maxWidth + outer dark shell
         }
 
         // ── Playing phase ──
@@ -1633,7 +1645,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
           var step = st.step || 0;
           var decision = scenario.decisions[step];
           if (!decision) return null;
-          return h('div', { style: { maxWidth: 820, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': scenario.label + ', decision ' + (step + 1) },
+          return h('div', {
+            // Dark shell — same WCAG rationale
+            style: { background: '#0f172a', borderRadius: 16, padding: '20px 16px', minHeight: 'calc(100vh - 32px)' },
+            role: 'region', 'aria-label': scenario.label + ', decision ' + (step + 1)
+          }, h('div', { style: { maxWidth: 820, margin: '0 auto' } },
             // Header bar
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, flexWrap: 'wrap' } },
               h('button', { onClick: closeScenario, 'aria-label': 'Pause and return to hub',
@@ -1704,13 +1720,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                 })
               )
             ) : null
-          );
+          )); // close inner maxWidth + outer dark shell
         }
 
         // ── Debrief phase ──
         if (phase === 'debrief') {
           var outcome = st.outcome;
-          return h('div', { style: { maxWidth: 820, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': scenario.label + ' debrief' },
+          return h('div', {
+            // Dark shell — same WCAG rationale
+            style: { background: '#0f172a', borderRadius: 16, padding: '20px 16px', minHeight: 'calc(100vh - 32px)' },
+            role: 'region', 'aria-label': scenario.label + ' debrief'
+          }, h('div', { style: { maxWidth: 820, margin: '0 auto' } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, flexWrap: 'wrap' } },
               h('button', { onClick: closeScenario, 'aria-label': 'Back to hub',
                 style: { background: 'transparent', border: '1px solid #334155', color: '#cbd5e1', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13 } }, '← Back to hub'),
@@ -1777,7 +1797,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             ) : null,
             // Synthesis
             h('div', {
-              style: { padding: 14, borderRadius: 12, marginBottom: 16, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.4)', borderLeft: '3px solid #a855f7' }
+              style: { padding: 14, borderRadius: 12, marginBottom: 16, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.4)', borderRight: '1px solid rgba(168,85,247,0.4)', borderBottom: '1px solid rgba(168,85,247,0.4)', borderLeft: '3px solid #a855f7' }
             },
               h('div', { style: { fontSize: 11, color: '#a855f7', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 6 } }, '🧠 Cross-region synthesis'),
               h('p', { style: { margin: 0, color: '#e9d5ff', fontSize: 13.5, lineHeight: 1.65 } }, scenario.synthesis)
@@ -1799,7 +1819,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
               h('button', { onClick: closeScenario, 'aria-label': 'Back to hub',
                 style: { padding: '10px 18px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, ' + scenario.color + ' 0%, ' + scenario.color + 'cc 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, '← Back to hub')
             )
-          );
+          )); // close inner maxWidth + outer dark shell
         }
         return null;
       }
@@ -1880,9 +1900,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
       }
 
       return h('div', {
-        style: { maxWidth: 900, margin: '0 auto', padding: 16 },
+        // Dark self-contained shell: this tool's color palette assumes a dark
+        // navy background (greens like #86efac, slates like #94a3b8 / #cbd5e1
+        // fail WCAG AA on white). Wrapping the panel in #0f172a guarantees the
+        // designed contrast regardless of the parent page's background.
+        style: { background: '#0f172a', borderRadius: 16, padding: '20px 16px', minHeight: 'calc(100vh - 32px)' },
         role: 'region',
         'aria-label': 'Environmental Stewardship Campaigns hub'
+      }, h('div', {
+        style: { maxWidth: 900, margin: '0 auto' }
       },
         // Header
         h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' } },
@@ -1902,7 +1928,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
           style: {
             padding: 14, borderRadius: 12, marginBottom: 16,
             background: 'linear-gradient(135deg, rgba(21,128,61,0.18) 0%, rgba(56,189,248,0.06) 100%)',
-            border: '1px solid rgba(134,239,172,0.4)', borderLeft: '4px solid #16a34a',
+            borderTop: '1px solid rgba(134,239,172,0.4)', borderRight: '1px solid rgba(134,239,172,0.4)', borderBottom: '1px solid rgba(134,239,172,0.4)', borderLeft: '4px solid #16a34a',
             display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 10
           }
         },
@@ -1963,7 +1989,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             style: {
               marginBottom: 16, padding: 16, borderRadius: 12,
               background: 'linear-gradient(135deg, rgba(168,85,247,0.14) 0%, rgba(56,189,248,0.04) 100%)',
-              border: '1px solid rgba(168,85,247,0.4)', borderLeft: '4px solid #a855f7'
+              borderTop: '1px solid rgba(168,85,247,0.4)', borderRight: '1px solid rgba(168,85,247,0.4)', borderBottom: '1px solid rgba(168,85,247,0.4)', borderLeft: '4px solid #a855f7'
             }
           },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, flexWrap: 'wrap' } },
@@ -2005,7 +2031,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             style: {
               marginBottom: 16, padding: 16, borderRadius: 12,
               background: 'linear-gradient(135deg, rgba(168,85,247,0.16) 0%, rgba(56,189,248,0.06) 100%)',
-              border: '1px solid rgba(168,85,247,0.5)', borderLeft: '4px solid #a855f7'
+              borderTop: '1px solid rgba(168,85,247,0.5)', borderRight: '1px solid rgba(168,85,247,0.5)', borderBottom: '1px solid rgba(168,85,247,0.5)', borderLeft: '4px solid #a855f7'
             }
           },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
@@ -2020,7 +2046,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                 var insight = FAMILY_PAIRING_INSIGHTS[famId];
                 var famMeta = FAMILY_COLORS[famId] || {};
                 return h('div', { key: famId,
-                  style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.7)', border: '1px solid rgba(168,85,247,0.25)', borderLeft: '3px solid ' + (famMeta.accent || '#a855f7') }
+                  style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.7)', borderTop: '1px solid rgba(168,85,247,0.25)', borderRight: '1px solid rgba(168,85,247,0.25)', borderBottom: '1px solid rgba(168,85,247,0.25)', borderLeft: '3px solid ' + (famMeta.accent || '#a855f7') }
                 },
                   h('div', { style: { fontSize: 11, color: famMeta.accent || '#a855f7', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 4 } }, (famMeta.label || famId) + ' · ' + (famMeta.mechanic || '')),
                   h('div', { style: { fontSize: 14, fontWeight: 800, color: '#e9d5ff', marginBottom: 6 } }, insight.title),
@@ -2197,7 +2223,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             )
           )
         )
-      );
+      )); // close inner maxWidth wrapper + outer dark shell
     }
   });
 
