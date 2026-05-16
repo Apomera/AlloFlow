@@ -990,6 +990,648 @@
   };
 
   // ═══════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════
+  // THERMODYNAMICS
+  // ═══════════════════════════════════════════════════════════
+  var THERMO = {
+    intro: 'Thermodynamics: study of energy + heat in chemical reactions. The 4 Laws of Thermodynamics govern everything.',
+    laws: [
+      { number: 0, name: 'Zeroth Law', statement: 'If A is in thermal equilibrium with B, and B with C, then A is with C. Defines temperature.', implication: 'Temperature is a meaningful, transferable quantity.' },
+      { number: 1, name: 'First Law (Conservation of Energy)', statement: 'Energy cannot be created or destroyed. ΔU = q + w.', implication: 'Internal energy change = heat added + work done on system.' },
+      { number: 2, name: 'Second Law (Entropy)', statement: 'Entropy of an isolated system always increases over time. Heat flows hot to cold.', implication: 'Drives spontaneity. Refrigerators work because they put heat OUT, not in.' },
+      { number: 3, name: 'Third Law', statement: 'Entropy of pure crystalline substance at 0 K = 0.', implication: 'Absolute entropy is measurable. Cannot reach 0 K.' }
+    ],
+    concepts: [
+      { name: 'Enthalpy (H)', def: 'Heat content at constant pressure. ΔH = q at constant P.', sign: 'ΔH < 0: exothermic. ΔH > 0: endothermic.' },
+      { name: 'Entropy (S)', def: 'Measure of disorder/randomness.', sign: 'ΔS > 0: more disorder.' },
+      { name: 'Gibbs Free Energy (G)', def: 'Available energy for useful work. ΔG = ΔH - TΔS.', sign: 'ΔG < 0: spontaneous. ΔG > 0: non-spontaneous.' },
+      { name: 'Internal Energy (U)', def: 'Total kinetic + potential energy of all molecules.', sign: 'State function.' },
+      { name: 'Heat capacity (C)', def: 'Energy needed to raise T by 1°C. C = q/ΔT.', sign: 'Always positive.' },
+      { name: 'Specific heat (c)', def: 'Heat capacity per gram. c = q/(m·ΔT).', sign: 'Water has high c (4.18 J/g·°C).' },
+      { name: 'Hess\'s Law', def: 'Enthalpy is state function. ΔH = sum of steps.', sign: 'Useful for indirect ΔH calculations.' },
+      { name: 'Standard state', def: '25°C, 1 atm, 1 M for solutions, 1 atm for gases.', sign: 'Denoted by superscript °.' }
+    ],
+    examples: [
+      { reaction: 'C + O2 → CO2', H: '-393.5 kJ/mol', G: '-394.4 kJ/mol', spontaneous: 'Yes (very)' },
+      { reaction: '2H2 + O2 → 2H2O', H: '-571.6 kJ/mol', G: '-474.4 kJ/mol', spontaneous: 'Yes (very)' },
+      { reaction: 'N2 + 3H2 → 2NH3', H: '-92.4 kJ/mol', G: '-32.8 kJ/mol', spontaneous: 'Yes (slightly)' },
+      { reaction: 'CaCO3 → CaO + CO2', H: '+178 kJ/mol', G: '+130 kJ/mol', spontaneous: 'No at room T, yes at high T' },
+      { reaction: 'H2O(l) → H2O(g)', H: '+44 kJ/mol', G: '+0 kJ/mol at 100°C', spontaneous: 'At boiling point' },
+      { reaction: 'Ice → Water', H: '+6 kJ/mol', G: '+0 kJ/mol at 0°C', spontaneous: 'At melting point' }
+    ]
+  };
+
+  // ═══════════════════════════════════════════════════════════
+  // KINETICS — reaction rates
+  // ═══════════════════════════════════════════════════════════
+  var KINETICS = {
+    intro: 'Kinetics: how fast reactions occur. Driven by collisions + activation energy.',
+    factors: [
+      { factor: 'Concentration', effect: 'Higher concentration = more collisions = faster rate.' },
+      { factor: 'Temperature', effect: 'Higher T = more KE = more successful collisions. Rule of thumb: each 10°C increase doubles rate.' },
+      { factor: 'Surface area', effect: 'More exposed area = more reaction sites. Powdered solids react faster than chunks.' },
+      { factor: 'Catalyst', effect: 'Lowers activation energy. Increases rate without being consumed.' },
+      { factor: 'Pressure (gases)', effect: 'Higher P = more concentrated = faster.' },
+      { factor: 'Light (for photochemical)', effect: 'Provides activation energy directly. Ozone formation, photosynthesis.' }
+    ],
+    rateLaws: [
+      { type: 'Zero-order', equation: 'Rate = k', integrated: '[A] = [A]0 - kt', halfLife: 't1/2 = [A]0/(2k)', linear: '[A] vs t' },
+      { type: 'First-order', equation: 'Rate = k[A]', integrated: 'ln[A] = ln[A]0 - kt', halfLife: 't1/2 = 0.693/k', linear: 'ln[A] vs t' },
+      { type: 'Second-order (one reactant)', equation: 'Rate = k[A]²', integrated: '1/[A] = 1/[A]0 + kt', halfLife: 't1/2 = 1/(k[A]0)', linear: '1/[A] vs t' },
+      { type: 'Second-order (two reactants)', equation: 'Rate = k[A][B]', integrated: 'Complex', halfLife: 'Depends on initial ratio', linear: 'Variable' }
+    ],
+    arrhenius: 'k = A · e^(-Ea/RT). Plot ln k vs 1/T gives slope = -Ea/R.',
+    mechanisms: [
+      { type: 'Elementary step', desc: 'Single reaction step. Rate law from stoichiometry.' },
+      { type: 'Rate-determining step', desc: 'Slowest step. Determines overall rate.' },
+      { type: 'Intermediate', desc: 'Formed + consumed during reaction. Does not appear in overall equation.' },
+      { type: 'Catalyst', desc: 'Lowers Ea. Same at start + end. Heterogeneous (different phase) or homogeneous (same phase).' }
+    ],
+    examples: [
+      { reaction: '2H2O2 → 2H2O + O2', order: 'First-order in H2O2', k: '~10⁻⁷ s⁻¹ without catalyst; ~100 s⁻¹ with MnO2', note: 'Catalysis makes huge difference.' },
+      { reaction: 'N2O5 → 2NO2 + 1/2 O2', order: 'First-order in N2O5', k: 'Varies with T', note: 'Classic kinetics example.' },
+      { reaction: 'CO + NO2 → CO2 + NO', order: 'Second-order', k: 'Varies', note: 'Two-step mechanism.' },
+      { reaction: 'Iodine clock reaction', order: 'Mixed', k: 'Configurable', note: 'Classroom demo of kinetics.' }
+    ]
+  };
+
+  // ═══════════════════════════════════════════════════════════
+  // EQUILIBRIUM
+  // ═══════════════════════════════════════════════════════════
+  var EQUILIBRIUM = {
+    intro: 'Chemical equilibrium: forward + reverse reactions occur at equal rates. Net change zero, but reactions continue.',
+    concepts: [
+      { name: 'Equilibrium constant Keq', def: 'Keq = [products]/[reactants] at equilibrium. Each raised to coefficient.', interpret: 'Keq >> 1: products favored. Keq << 1: reactants favored.' },
+      { name: 'Reaction quotient Q', def: 'Same formula as Keq but at any time, not necessarily equilibrium.', interpret: 'Q < Keq: forward. Q > Keq: reverse. Q = Keq: equilibrium.' },
+      { name: 'Le Chatelier\'s Principle', def: 'System at equilibrium responds to disturbance by shifting to oppose.', interpret: 'Add reactant: shift forward. Remove product: shift forward. Increase T (exothermic): shift back.' },
+      { name: 'Ksp (solubility product)', def: 'Keq for sparingly-soluble salt dissolving.', interpret: 'Determines maximum dissolved concentration.' },
+      { name: 'Common-ion effect', def: 'Adding ion already in equilibrium shifts away from that ion.', interpret: 'Less of the sparingly-soluble salt will dissolve in presence of common ion.' },
+      { name: 'Le Chatelier — Pressure', def: 'Increase P: shifts to fewer moles of gas.', interpret: 'For N2 + 3H2 ⇌ 2NH3, increasing P shifts forward (4 → 2 moles).' }
+    ],
+    examples: [
+      { reaction: 'N2(g) + 3H2(g) ⇌ 2NH3(g)', Keq: '~10⁻⁵ at 25°C, 0.5 at 400°C', notes: 'Haber-Bosch. Operates at high T + P despite endothermic shift.' },
+      { reaction: 'H2O(l) ⇌ H+(aq) + OH-(aq)', Keq: '1×10⁻¹⁴ (Kw)', notes: 'Defines pH scale.' },
+      { reaction: 'CO2(g) + H2(g) ⇌ CO(g) + H2O(g)', Keq: 'Variable', notes: 'Water-gas shift reaction. Industrial H2 production.' },
+      { reaction: 'AgCl(s) ⇌ Ag+ + Cl-', Keq: '1.8×10⁻¹⁰ (Ksp)', notes: 'Very insoluble. Precipitates easily.' }
+    ]
+  };
+
+  // ═══════════════════════════════════════════════════════════
+  // GAS LAWS
+  // ═══════════════════════════════════════════════════════════
+  var GAS_LAWS = {
+    intro: 'Gas behavior is governed by simple laws relating pressure, volume, temperature, and moles.',
+    laws: [
+      { name: 'Boyle\'s Law', equation: 'P1V1 = P2V2 (T, n constant)', desc: 'Pressure × Volume = constant at constant T. Inverse relationship.', who: 'Robert Boyle (1662)' },
+      { name: 'Charles\'s Law', equation: 'V1/T1 = V2/T2 (P, n constant)', desc: 'Volume proportional to T (Kelvin). At absolute zero, V → 0.', who: 'Jacques Charles (1787)' },
+      { name: 'Gay-Lussac\'s Law', equation: 'P1/T1 = P2/T2 (V, n constant)', desc: 'Pressure proportional to T at constant V.', who: 'Gay-Lussac (1808)' },
+      { name: 'Avogadro\'s Law', equation: 'V1/n1 = V2/n2 (T, P constant)', desc: 'Volume proportional to moles. Equal volumes have equal moles at same T + P.', who: 'Amedeo Avogadro (1811)' },
+      { name: 'Combined Gas Law', equation: 'P1V1/T1 = P2V2/T2', desc: 'Combines Boyle, Charles, Gay-Lussac for n constant.', who: 'Derived' },
+      { name: 'Ideal Gas Law', equation: 'PV = nRT', desc: 'Combines all gas laws. R = 0.0821 L·atm/(mol·K) or 8.314 J/(mol·K).', who: 'Émile Clapeyron (1834)' }
+    ],
+    constants: [
+      { name: 'R (L·atm)', value: '0.0821 L·atm/(mol·K)' },
+      { name: 'R (J)', value: '8.314 J/(mol·K)' },
+      { name: 'R (cal)', value: '1.987 cal/(mol·K)' },
+      { name: 'Molar volume (STP)', value: '22.4 L/mol at 0°C, 1 atm' },
+      { name: 'STP (older)', value: '0°C (273.15 K), 1 atm' },
+      { name: 'STP (newer IUPAC 1982)', value: '0°C, 100 kPa (1 bar) — gives 22.7 L/mol' }
+    ],
+    kineticTheory: [
+      'Gases are mostly empty space.',
+      'Molecules in constant random motion.',
+      'Collisions are perfectly elastic.',
+      'Pressure = collisions with container walls.',
+      'Average KE proportional to absolute temperature.',
+      'No intermolecular forces (ideal gas assumption).'
+    ],
+    deviations: 'Real gases deviate at high pressure (molecules close, IMF matter) + low T (KE low, IMF significant). Van der Waals equation: (P + a/V²)(V - b) = nRT corrects for these.'
+  };
+
+  // ═══════════════════════════════════════════════════════════
+  // SOLUTIONS
+  // ═══════════════════════════════════════════════════════════
+  var SOLUTIONS = {
+    intro: 'Solutions: homogeneous mixtures. Solute dissolves in solvent. Drives much of chemistry.',
+    concentration: [
+      { unit: 'Molarity (M)', def: 'Moles solute / liter of solution', formula: 'M = mol/L', useFor: 'Most common in chemistry' },
+      { unit: 'Molality (m)', def: 'Moles solute / kg of solvent', formula: 'm = mol/kg', useFor: 'Temperature-independent (kg doesn\'t change with T)' },
+      { unit: 'Mass percent', def: 'Mass solute / mass solution × 100%', formula: 'wt% = m_solute/m_solution × 100', useFor: 'Everyday measurements' },
+      { unit: 'Mole fraction', def: 'Moles solute / total moles', formula: 'x = n_A/n_total', useFor: 'Vapor pressure calculations' },
+      { unit: 'ppm', def: 'Parts per million', formula: 'mg/L (in water)', useFor: 'Very dilute solutions' },
+      { unit: 'ppb', def: 'Parts per billion', formula: 'μg/L', useFor: 'Trace contaminants' }
+    ],
+    solubilityRules: [
+      'All nitrates (NO3⁻) soluble.',
+      'All Group 1 (Li⁺, Na⁺, K⁺...) + NH4⁺ salts soluble.',
+      'Most chlorides (Cl⁻), bromides (Br⁻), iodides (I⁻) soluble. EXCEPT Ag⁺, Pb²⁺, Hg₂²⁺.',
+      'Most sulfates (SO4²⁻) soluble. EXCEPT Ag⁺, Pb²⁺, Ba²⁺, Ca²⁺, Hg₂²⁺.',
+      'Most carbonates (CO3²⁻), phosphates (PO4³⁻), sulfides (S²⁻) INSOLUBLE except Group 1 + NH4⁺.',
+      'Most hydroxides (OH⁻) INSOLUBLE except Group 1, Sr²⁺, Ba²⁺, Ca²⁺ (slightly).'
+    ],
+    colligative: [
+      { property: 'Vapor pressure lowering', law: 'Raoult\'s Law: P_solution = x_solvent · P°_solvent', formula: 'ΔP = -x_solute · P°' },
+      { property: 'Boiling point elevation', law: 'ΔTb = Kb · m · i', formula: 'i = vant Hoff factor (ions per formula unit)' },
+      { property: 'Freezing point depression', law: 'ΔTf = Kf · m · i', formula: 'Salt on roads, antifreeze in cars' },
+      { property: 'Osmotic pressure', law: 'π = M · R · T · i', formula: 'Drives water across membranes' }
+    ],
+    factors: [
+      'Like dissolves like (polar + polar, nonpolar + nonpolar).',
+      'Temperature: usually increases solubility for solids; decreases for gases.',
+      'Pressure: significant for gases (Henry\'s Law); negligible for solids/liquids.',
+      'Particle size: smaller = faster dissolving.',
+      'Stirring: speeds dissolution.'
+    ]
+  };
+
+  // ═══════════════════════════════════════════════════════════
+  // NUCLEAR CHEMISTRY
+  // ═══════════════════════════════════════════════════════════
+  var NUCLEAR = {
+    intro: 'Nuclear chemistry: chemistry of atomic nuclei. Includes radioactivity, nuclear medicine, fission, fusion.',
+    radioactivity: [
+      { type: 'Alpha (α)', particle: 'He-4 nucleus (2p + 2n)', charge: '+2', penetration: 'Stopped by paper', danger: 'Internal exposure dangerous (alpha-emitters ingested or inhaled).', examples: 'U-238, Pu-239, Am-241 (smoke detectors)' },
+      { type: 'Beta (β-)', particle: 'High-energy electron', charge: '-1', penetration: 'Stopped by aluminum', danger: 'Skin burns on exposure.', examples: 'C-14, Sr-90, I-131' },
+      { type: 'Positron (β+)', particle: 'Anti-electron (e+)', charge: '+1', penetration: 'Annihilates with electron, producing two 511 keV gammas', danger: 'Indirect via gamma.', examples: 'F-18 (PET scans), Na-22' },
+      { type: 'Gamma (γ)', particle: 'High-energy photon (EM)', charge: '0', penetration: 'Needs lead or thick concrete', danger: 'Whole-body exposure dangerous.', examples: 'Co-60, Cs-137' },
+      { type: 'Neutron emission', particle: 'Free neutron', charge: '0', penetration: 'Hydrogen-rich material absorbs (water, polyethylene)', danger: 'Activates other materials.', examples: 'Cf-252 (industrial sources)' }
+    ],
+    halfLives: [
+      { isotope: 'C-14', halflife: '5,730 years', use: 'Radiocarbon dating up to ~50,000 years' },
+      { isotope: 'U-238', halflife: '4.5 billion years', use: 'Geological dating, weapons (depleted)' },
+      { isotope: 'U-235', halflife: '704 million years', use: 'Nuclear reactor fuel, weapons' },
+      { isotope: 'Pu-239', halflife: '24,100 years', use: 'Nuclear weapons, breeder reactor fuel' },
+      { isotope: 'I-131', halflife: '8 days', use: 'Thyroid cancer treatment + imaging' },
+      { isotope: 'Tc-99m', halflife: '6 hours', use: 'Most-used medical imaging isotope' },
+      { isotope: 'Sr-90', halflife: '29 years', use: 'Bone tumor treatment + space craft power' },
+      { isotope: 'Cs-137', halflife: '30 years', use: 'Medical irradiation + Chernobyl contaminant' },
+      { isotope: 'K-40', halflife: '1.25 billion years', use: 'Natural radioactivity (in bananas)' }
+    ],
+    fission: 'Nuclear fission: heavy nucleus splits, releasing energy + neutrons. U-235 + n → Ba-141 + Kr-92 + 3n + 200 MeV. Basis of nuclear power + atomic weapons.',
+    fusion: 'Nuclear fusion: light nuclei combine. 2H + 3H → 4He + n + 17.6 MeV. Powers stars + H-bomb. Not yet commercially achieved.',
+    medical: [
+      { use: 'X-ray imaging', isotope: 'External X-rays', desc: 'Bone fracture diagnosis' },
+      { use: 'CT scan', isotope: 'External X-rays', desc: 'Detailed cross-section images' },
+      { use: 'PET scan', isotope: 'F-18 in glucose', desc: 'Cancer detection by glucose uptake' },
+      { use: 'Thyroid imaging', isotope: 'I-123 (diagnostic) or I-131 (treatment)', desc: 'Thyroid function + cancer' },
+      { use: 'Bone scan', isotope: 'Tc-99m', desc: 'Detect cancer metastases in bones' },
+      { use: 'Radiotherapy', isotope: 'External Co-60 or linear accelerator', desc: 'Cancer treatment' },
+      { use: 'Iodine therapy', isotope: 'I-131', desc: 'Thyroid cancer ablation' }
+    ]
+  };
+
+  // ═══════════════════════════════════════════════════════════
+  // ENVIRONMENTAL CHEMISTRY
+  // ═══════════════════════════════════════════════════════════
+  var ENV_CHEM = {
+    intro: 'Environmental chemistry: how chemistry shapes (and damages, and heals) our planet.',
+    topics: [
+      { topic: 'Climate Change', mechanism: 'CO2 + CH4 + N2O trap infrared radiation in atmosphere. Greenhouse effect.', current: 'CO2 at 420+ ppm in 2024, up from 280 ppm pre-industrial.', solutions: 'Renewable energy, carbon capture, reforestation.' },
+      { topic: 'Ozone Layer', mechanism: 'O3 in stratosphere absorbs UV. CFCs catalytically destroy: Cl + O3 → ClO + O2; ClO + O → Cl + O2.', current: 'Recovering since Montreal Protocol (1987) phased out CFCs.', solutions: 'Continued enforcement, alternative refrigerants.' },
+      { topic: 'Acid Rain', mechanism: 'SO2 + H2O → H2SO3; SO3 + H2O → H2SO4. NO2 + H2O → HNO3. Lowers rain pH to 4-5.', current: 'Reduced in N. America since 1990 Clean Air Act amendments.', solutions: 'Scrubbers on coal plants. EV cars reduce NOx.' },
+      { topic: 'Plastic Pollution', mechanism: 'Petroleum-derived polymers persist in environment for centuries.', current: '~8 million tons ocean plastic/year. Microplastics in everything.', solutions: 'Recycling, bioplastics, reduce single-use.' },
+      { topic: 'Heavy Metal Contamination', mechanism: 'Pb, Hg, Cd, As bioaccumulate in food chain.', current: 'Pb in old water pipes; Hg in fish from coal-burning.', solutions: 'Lead pipe replacement, Hg emission controls.' },
+      { topic: 'Eutrophication', mechanism: 'Excess N + P from fertilizer runoff cause algae blooms. Algae die + decompose, consuming O2. Fish kill.', current: 'Gulf of Mexico dead zone ~7,000 km².', solutions: 'Reduce fertilizer runoff. Restore wetlands.' },
+      { topic: 'Air Pollution', mechanism: 'Particulate matter (PM2.5), NOx, SOx, VOCs, ozone.', current: 'WHO estimates 4M+ deaths/year from air pollution.', solutions: 'Cleaner energy, electric vehicles, regulation.' },
+      { topic: 'Pesticide Persistence', mechanism: 'DDT, atrazine, neonicotinoids accumulate in food chain.', current: 'DDT banned in US 1972 but still in food chain.', solutions: 'Integrated pest management. Restricted chemical lists.' },
+      { topic: 'Water Pollution', mechanism: 'Industrial waste, sewage, agricultural runoff contaminate water.', current: 'Flint water crisis (Pb). PFAS forever chemicals widespread.', solutions: 'Drinking water standards, wastewater treatment.' }
+    ],
+    greenChemistry: [
+      'Prevent waste rather than treat',
+      'Atom economy: design for maximum yield',
+      'Less hazardous synthesis',
+      'Design safer chemicals',
+      'Safer solvents + reaction conditions',
+      'Energy efficiency',
+      'Renewable feedstocks',
+      'Reduce derivatives',
+      'Catalysis (vs stoichiometric reagents)',
+      'Design for degradation',
+      'Real-time analysis for pollution prevention',
+      'Inherently safer chemistry'
+    ],
+    examples: [
+      { name: 'Ibuprofen synthesis (BHC)', traditional: '6-step, low atom economy', green: '3-step, high atom economy', impact: 'Used at scale, drastic waste reduction.' },
+      { name: 'Polylactic acid (PLA)', material: 'Bioplastic from corn starch', impact: 'Compostable; replaces some petroleum plastics.' }
+    ]
+  };
+
+  // ═══════════════════════════════════════════════════════════
+  // PHARMACEUTICAL CHEMISTRY
+  // ═══════════════════════════════════════════════════════════
+  var PHARMA = {
+    intro: 'Pharmaceutical chemistry: design + synthesis + production of drugs.',
+    process: [
+      { stage: 'Target identification', desc: 'Identify disease-relevant protein or pathway.', time: '1-2 years' },
+      { stage: 'Hit identification', desc: 'Screen molecules for activity (high-throughput screening, structure-based design).', time: '1-2 years' },
+      { stage: 'Lead optimization', desc: 'Improve potency, selectivity, ADME properties.', time: '2-4 years' },
+      { stage: 'Preclinical testing', desc: 'Animal studies for safety + efficacy + pharmacokinetics.', time: '2-4 years' },
+      { stage: 'Phase I trials', desc: '20-100 healthy volunteers. Safety + tolerability.', time: '1-2 years' },
+      { stage: 'Phase II trials', desc: '100-500 patients. Effectiveness + dosage.', time: '2-3 years' },
+      { stage: 'Phase III trials', desc: '1000-10000 patients. Compared to existing treatments.', time: '3-5 years' },
+      { stage: 'FDA approval', desc: 'NDA submission, FDA review, label negotiation.', time: '1-2 years' },
+      { stage: 'Phase IV post-market', desc: 'Continued monitoring after approval.', time: 'Indefinite' }
+    ],
+    famousDrugs: [
+      { name: 'Aspirin', chemical: 'Acetylsalicylic acid', target: 'COX-1/COX-2', mechanism: 'Inhibits prostaglandin synthesis', invented: '1899 (Bayer)', notes: 'Used for pain, fever, cardiovascular protection.' },
+      { name: 'Penicillin', chemical: 'β-lactam antibiotic', target: 'Bacterial cell wall', mechanism: 'Inhibits peptidoglycan crosslinking', invented: '1928 (Fleming)', notes: 'First antibiotic. Revolutionized medicine.' },
+      { name: 'Insulin', chemical: 'Peptide hormone', target: 'Insulin receptor', mechanism: 'Stimulates glucose uptake', invented: '1922 (Banting/Best)', notes: 'Saved millions of diabetics.' },
+      { name: 'AZT (zidovudine)', chemical: 'Nucleoside analog', target: 'HIV reverse transcriptase', mechanism: 'Chain termination of viral DNA', invented: '1987', notes: 'First HIV drug.' },
+      { name: 'Imatinib (Gleevec)', chemical: 'Kinase inhibitor', target: 'BCR-ABL fusion protein', mechanism: 'Targets cancer-causing kinase', invented: '2001', notes: 'Revolutionary leukemia treatment.' },
+      { name: 'Sildenafil (Viagra)', chemical: 'PDE5 inhibitor', target: 'cGMP phosphodiesterase', mechanism: 'Vasodilation', invented: '1998', notes: 'Original use: hypertension; serendipitous repurpose.' },
+      { name: 'Acyclovir', chemical: 'Nucleoside analog', target: 'Herpes thymidine kinase', mechanism: 'Selectively inhibits viral DNA synthesis', invented: 'Gertrude Elion (1977)', notes: 'First selective antiviral.' },
+      { name: 'mRNA COVID vaccines', chemical: 'Lipid nanoparticles + modified mRNA', target: 'Spike protein', mechanism: 'Cell makes spike, immune system trained', invented: '2020', notes: 'Pfizer/BioNTech + Moderna. Saved millions of lives.' }
+    ],
+    drugClasses: [
+      { class: 'NSAIDs', examples: 'Aspirin, ibuprofen, naproxen', use: 'Pain + inflammation', mechanism: 'COX inhibition' },
+      { class: 'Antibiotics', examples: 'Penicillin, vancomycin, ciprofloxacin', use: 'Bacterial infections', mechanism: 'Various — cell wall, ribosomes, DNA' },
+      { class: 'Antidepressants (SSRIs)', examples: 'Fluoxetine, sertraline, escitalopram', use: 'Depression, anxiety', mechanism: 'Block serotonin reuptake' },
+      { class: 'Beta-blockers', examples: 'Atenolol, metoprolol, propranolol', use: 'Heart conditions, anxiety', mechanism: 'Block β-adrenergic receptors' },
+      { class: 'ACE inhibitors', examples: 'Lisinopril, captopril, enalapril', use: 'Blood pressure', mechanism: 'Inhibit angiotensin converting enzyme' },
+      { class: 'Statins', examples: 'Atorvastatin, simvastatin, rosuvastatin', use: 'Cholesterol', mechanism: 'HMG-CoA reductase inhibition' },
+      { class: 'Opioids', examples: 'Morphine, oxycodone, fentanyl', use: 'Severe pain', mechanism: 'μ-opioid receptor activation' },
+      { class: 'Antihistamines', examples: 'Diphenhydramine, loratadine', use: 'Allergies', mechanism: 'H1 receptor antagonism' }
+    ]
+  };
+
+  // ═══════════════════════════════════════════════════════════
+  // MATERIALS SCIENCE
+  // ═══════════════════════════════════════════════════════════
+  var MATERIALS = {
+    intro: 'Materials science: properties + processing + applications of substances. Bridges chemistry + engineering.',
+    classes: [
+      { class: 'Metals + Alloys', properties: 'High electrical + thermal conductivity. Ductile + malleable. Metallic bonding.', examples: 'Steel, aluminum, copper, titanium, brass, bronze, stainless steel', uses: 'Structures, electronics, transportation, tools' },
+      { class: 'Ceramics', properties: 'Hard, brittle, high melting point, electrical insulators. Ionic + covalent bonding.', examples: 'Pottery, china, glass, alumina, zirconia, silicon carbide', uses: 'Refractories, cutting tools, electronics substrates, medical implants' },
+      { class: 'Polymers', properties: 'Long-chain molecules. Variable properties from soft to rigid. Covalent bonding.', examples: 'Polyethylene, polystyrene, nylon, kevlar, rubber', uses: 'Packaging, fabrics, structural, biomedical' },
+      { class: 'Composites', properties: 'Two materials combined for synergy. Strong + light.', examples: 'Fiberglass, carbon fiber, concrete (cement + aggregate), bone', uses: 'Aerospace, sports equipment, construction' },
+      { class: 'Semiconductors', properties: 'Between conductor + insulator. Doped to control properties.', examples: 'Silicon, germanium, gallium arsenide', uses: 'Microchips, solar cells, LEDs' },
+      { class: 'Glass', properties: 'Amorphous solid. Transparent. Brittle.', examples: 'Soda-lime, borosilicate (Pyrex), fused silica', uses: 'Windows, lab, optics, screens' },
+      { class: 'Biomaterials', properties: 'Compatible with biological tissue.', examples: 'Titanium implants, hydroxyapatite, biodegradable polymers', uses: 'Medical implants, drug delivery, tissue engineering' },
+      { class: 'Nanomaterials', properties: 'Properties at nano scale (1-100 nm) differ from bulk.', examples: 'Carbon nanotubes, graphene, quantum dots, fullerenes', uses: 'Electronics, medicine, energy, water purification' }
+    ],
+    polymers: [
+      { type: 'Polyethylene (PE)', monomer: 'Ethylene', density: 'LDPE 0.92, HDPE 0.96 g/cm³', uses: 'Bags, bottles, pipes', amount: '~100M tons/year' },
+      { type: 'Polypropylene (PP)', monomer: 'Propylene', density: '0.90 g/cm³', uses: 'Containers, fibers, films', amount: '~70M tons/year' },
+      { type: 'PVC', monomer: 'Vinyl chloride', density: '1.4 g/cm³', uses: 'Pipes, electrical insulation, vinyl', amount: '~40M tons/year' },
+      { type: 'Polystyrene (PS)', monomer: 'Styrene', density: '1.0 g/cm³', uses: 'Packaging foam, plastic cutlery', amount: '~25M tons/year' },
+      { type: 'PET', monomer: 'Terephthalic acid + ethylene glycol', density: '1.4 g/cm³', uses: 'Soft drink bottles, polyester fibers', amount: '~70M tons/year' },
+      { type: 'Nylon', monomer: 'Adipic acid + hexamethylenediamine', density: '1.15 g/cm³', uses: 'Fabric, ropes, ZIP ties', amount: '~5M tons/year' },
+      { type: 'Kevlar', monomer: 'Aromatic polyamide', density: '1.44 g/cm³', uses: 'Bulletproof vests, tire reinforcement', amount: '~50K tons/year' },
+      { type: 'Teflon (PTFE)', monomer: 'Tetrafluoroethylene', density: '2.2 g/cm³', uses: 'Non-stick coatings, lab equipment', amount: '~200K tons/year' }
+    ]
+  };
+
+  // ═══════════════════════════════════════════════════════════
+  // FOOD CHEMISTRY
+  // ═══════════════════════════════════════════════════════════
+  var FOOD_CHEM = {
+    intro: 'Food chemistry: reactions + properties of food. From cooking to nutrition to flavor.',
+    reactions: [
+      { name: 'Maillard Reaction', what: 'Browning of sugars + amino acids at >140°C', examples: 'Bread crust, seared meat, coffee, beer', controlled: 'Higher T + lower water + sugar/amino acid present' },
+      { name: 'Caramelization', what: 'Sugars browning at high temp without proteins', examples: 'Caramel, dulce de leche', controlled: 'Pure sugar at >160°C' },
+      { name: 'Fermentation', what: 'Yeast/bacteria convert sugars to ethanol or acids', examples: 'Bread (CO2), wine (ethanol), yogurt (lactic acid), pickles', controlled: 'Yeast/bacteria + sugar + time' },
+      { name: 'Enzymatic browning', what: 'Polyphenol oxidase + O2 on cut fruit', examples: 'Apple, banana, avocado browning', controlled: 'Lemon juice (acid), salt water, cooking (denatures enzyme)' },
+      { name: 'Denaturation', what: 'Proteins unfold from heat/pH/etc', examples: 'Cooking egg, curdling milk, gluten development', controlled: 'Time + temperature' },
+      { name: 'Emulsification', what: 'Mixing oil + water with emulsifier', examples: 'Mayonnaise, hollandaise, salad dressing', controlled: 'Egg yolk (lecithin), mustard, etc.' },
+      { name: 'Gelation', what: 'Macromolecules forming network with water', examples: 'Jello (gelatin), pectin in jam, agar', controlled: 'Specific concentration + cooling' },
+      { name: 'Starch gelatinization', what: 'Starch absorbs water + swells at 60-75°C', examples: 'Thickening sauces, cooking rice', controlled: 'Water + heat + time' }
+    ],
+    additives: [
+      { name: 'Preservatives', examples: 'Salt, sugar, sodium benzoate, sorbate, BHA, BHT', purpose: 'Prevent spoilage' },
+      { name: 'Sweeteners', examples: 'Aspartame, sucralose, stevia, saccharin', purpose: 'Sweetness without sugar' },
+      { name: 'Colorings', examples: 'Carmine, beet juice, FD&C Red #40, beta-carotene', purpose: 'Visual appeal' },
+      { name: 'Flavor enhancers', examples: 'MSG (umami), salt, sugar', purpose: 'Boost taste' },
+      { name: 'Thickeners', examples: 'Cornstarch, xanthan gum, guar gum, pectin', purpose: 'Texture' },
+      { name: 'Emulsifiers', examples: 'Lecithin, mono/diglycerides', purpose: 'Mix oil + water' },
+      { name: 'Stabilizers', examples: 'Carrageenan, agar, gelatin', purpose: 'Prevent separation' },
+      { name: 'Antioxidants', examples: 'Vitamin C, vitamin E, BHA, BHT', purpose: 'Prevent oxidation/rancidity' }
+    ],
+    nutrition: [
+      { nutrient: 'Carbohydrates', sources: 'Bread, pasta, fruits, vegetables', calories: '4 cal/g', function: 'Primary energy source' },
+      { nutrient: 'Proteins', sources: 'Meat, fish, eggs, beans, dairy', calories: '4 cal/g', function: 'Build + repair tissue, enzymes' },
+      { nutrient: 'Fats', sources: 'Oils, butter, nuts, dairy', calories: '9 cal/g', function: 'Long-term energy, cell membranes, vitamins' },
+      { nutrient: 'Alcohol', sources: 'Beer, wine, spirits', calories: '7 cal/g', function: 'Recreation only — no nutritional value' },
+      { nutrient: 'Vitamins', sources: 'Variable', calories: '0', function: 'Cofactors for enzymes' },
+      { nutrient: 'Minerals', sources: 'Variable', calories: '0', function: 'Structural + cofactor' },
+      { nutrient: 'Water', sources: 'Drinks + food', calories: '0', function: 'Solvent for all biochemistry' },
+      { nutrient: 'Fiber', sources: 'Whole grains, beans, fruits, vegetables', calories: '0 (mostly)', function: 'Digestive health' }
+    ]
+  };
+
+  // ═══════════════════════════════════════════════════════════
+  // FORENSIC CHEMISTRY
+  // ═══════════════════════════════════════════════════════════
+  var FORENSIC = {
+    intro: 'Forensic chemistry: chemistry applied to legal investigations. DNA, drugs, ballistics, fingerprints.',
+    techniques: [
+      { name: 'DNA fingerprinting', what: 'PCR + STR analysis of restriction sites', accuracy: '1 in trillions match probability', uses: 'Identification, paternity, ancestry, cold cases' },
+      { name: 'Mass spectrometry', what: 'Identify molecules by mass-to-charge', accuracy: 'Highly specific', uses: 'Drug detection, poisoning analysis, identification' },
+      { name: 'Gas chromatography', what: 'Separates volatile compounds', accuracy: 'High', uses: 'Drug + arson analysis' },
+      { name: 'Spectroscopy (IR/UV)', what: 'Molecular identification by absorption', accuracy: 'Moderate-high', uses: 'Unknown substance ID' },
+      { name: 'Atomic absorption', what: 'Measures metals', accuracy: 'High', uses: 'Heavy metal poisoning, gunshot residue' },
+      { name: 'Fingerprint analysis', what: 'Pattern recognition; chemical enhancement', accuracy: 'Variable', uses: 'Identification' },
+      { name: 'Ballistics', what: 'Bullet trajectory + composition', accuracy: 'Highly specific match', uses: 'Linking bullet to gun' },
+      { name: 'Toxicology', what: 'Drug screening, post-mortem', accuracy: 'High', uses: 'Cause of death, DUI testing' },
+      { name: 'Marsh test (arsenic)', what: 'Classic arsenic detection', accuracy: 'High historically', uses: 'Poisoning investigations (since 1836)' },
+      { name: 'Microscopy', what: 'Visual examination of trace evidence', accuracy: 'Variable', uses: 'Fibers, hair, paint analysis' }
+    ],
+    famousCases: [
+      { case: 'Marie Lafarge (1840)', evidence: 'Marsh test confirmed arsenic in husband\'s body', outcome: 'First conviction using forensic chemistry' },
+      { case: 'O.J. Simpson (1995)', evidence: 'DNA evidence on blood', outcome: 'Acquitted despite DNA match — defense argued contamination' },
+      { case: 'Casey Anthony (2011)', evidence: 'Chloroform residue in car', outcome: 'Acquitted; chemistry contested' },
+      { case: 'Alexander Litvinenko (2006)', evidence: 'Po-210 detected in urine', outcome: 'Identified as Russian state poisoning' },
+      { case: 'Kim Jong-nam (2017)', evidence: 'VX nerve agent on face swabs', outcome: 'Identified as N. Korean assassination' },
+      { case: 'Skripal poisoning (2018)', evidence: 'Novichok nerve agent', outcome: 'Identified as Russian intelligence operation' }
+    ]
+  };
+
+  // ═══════════════════════════════════════════════════════════
+  // CHEMISTRY CAREERS
+  // ═══════════════════════════════════════════════════════════
+  var CHEM_CAREERS = [
+    { title: 'Chemist (Research)', education: 'PhD chemistry', salary: '$60-150K', path: 'BS → PhD → postdoc → faculty or industry', employers: 'Universities, NIH, pharma, materials' },
+    { title: 'Chemical Engineer', education: 'BS chem eng', salary: '$70-130K', path: 'BS → industry; advanced degree for R&D', employers: 'Oil refining, chemicals, biotech, food' },
+    { title: 'Pharmacist', education: 'PharmD (6 years)', salary: '$120-150K', path: 'BS prerequisites → PharmD → licensure', employers: 'Pharmacies, hospitals, industry' },
+    { title: 'Forensic Chemist', education: 'BS chem + lab experience', salary: '$50-90K', path: 'BS → lab tech → certified forensic chemist', employers: 'FBI, DEA, state crime labs' },
+    { title: 'Pharmaceutical Researcher', education: 'PhD chem + drug discovery', salary: '$90-180K', path: 'PhD → postdoc → industry research', employers: 'Pfizer, Merck, Novartis, smaller biotech' },
+    { title: 'Quality Control Chemist', education: 'BS chem', salary: '$50-80K', path: 'BS → lab tech → senior QC', employers: 'Manufacturing, food, pharma' },
+    { title: 'Materials Scientist', education: 'PhD materials science', salary: '$80-150K', path: 'BS chem/engineering → PhD → industry', employers: 'Tesla, Boeing, semiconductors, energy' },
+    { title: 'Patent Attorney (Chemistry)', education: 'BS chem + JD law school', salary: '$150-250K', path: 'BS → law school + patent bar', employers: 'Law firms, corporations' },
+    { title: 'Chemistry Teacher (HS)', education: 'BS + teaching credential', salary: '$50-100K (varies state)', path: 'BS chem + teaching credential', employers: 'Public + private schools' },
+    { title: 'Chemistry Professor (College)', education: 'PhD chem', salary: '$70-200K depending on rank/institution', path: 'BS → PhD → postdoc → tenure track', employers: 'Universities + colleges' },
+    { title: 'Environmental Chemist', education: 'BS/MS chem + environmental science', salary: '$50-95K', path: 'BS → field work or lab', employers: 'EPA, consulting firms, state agencies' },
+    { title: 'Biochemist', education: 'PhD biochem', salary: '$70-160K', path: 'BS bio/chem → PhD → research', employers: 'NIH, pharma, universities' },
+    { title: 'Cosmetic Chemist', education: 'BS chem', salary: '$50-100K', path: 'BS → product development', employers: 'L\'Oreal, Estee Lauder, smaller brands' },
+    { title: 'Food Chemist', education: 'BS chem/food science', salary: '$50-90K', path: 'BS → R&D or QC', employers: 'PepsiCo, General Mills, Kellogg\'s' },
+    { title: 'Petrochemist', education: 'BS chem + chem eng', salary: '$70-150K', path: 'BS → refinery work', employers: 'Exxon, Chevron, Shell, BP' },
+    { title: 'Polymer Chemist', education: 'PhD chem', salary: '$80-150K', path: 'BS → PhD polymer focus', employers: 'Dow, DuPont, 3M' },
+    { title: 'Analytical Chemist', education: 'BS chem', salary: '$50-100K', path: 'BS → lab specialist', employers: 'Many — testing, QC, R&D' },
+    { title: 'Lab Manager', education: 'BS chem + experience', salary: '$60-120K', path: 'Bench work → supervision', employers: 'All chem industry' },
+    { title: 'Science Writer', education: 'BS chem + writing skills', salary: '$40-100K', path: 'Career pivot from research', employers: 'Magazines, journals, agencies' },
+    { title: 'Patent Examiner', education: 'BS chem', salary: '$60-130K', path: 'BS → USPTO examiner', employers: 'USPTO' }
+  ];
+
+  // ═══════════════════════════════════════════════════════════
+  // LAB KITS / LESSON PLANS
+  // ═══════════════════════════════════════════════════════════
+  var LAB_KITS = [
+    { title: 'Bubble Color Change', grade: 'K-2', materials: 'Cabbage juice + vinegar + baking soda', duration: '30 min', concept: 'Acids + bases via color change', steps: ['Boil red cabbage to make indicator juice', 'Pour into 3 cups', 'Add vinegar to one (acid) — pink', 'Add baking soda to another (base) — green', 'Compare to plain water (purple — neutral)'] },
+    { title: 'States of Matter', grade: 'K-2', materials: 'Ice cubes, water, kettle', duration: '15 min', concept: 'Solid → liquid → gas', steps: ['Show ice cube', 'Melt to water', 'Boil water to steam', 'Discuss what is happening to particles'] },
+    { title: 'Mixing Polar + Nonpolar', grade: '3-5', materials: 'Oil, water, food coloring, dish soap', duration: '30 min', concept: 'Polarity + emulsification', steps: ['Mix oil + water — separates', 'Add food coloring to water layer', 'Add dish soap — emulsifies'] },
+    { title: 'Crystal Growing', grade: '3-5', materials: 'Salt or sugar, hot water, string, glass', duration: '~1 week', concept: 'Crystallization + saturation', steps: ['Dissolve salt in hot water until saturated', 'Tie string to pencil + suspend in solution', 'Wait 5-7 days', 'Observe crystal growth'] },
+    { title: 'Density Tower', grade: '3-5', materials: 'Honey, dish soap, water, oil, rubbing alcohol', duration: '30 min', concept: 'Density + immiscible liquids', steps: ['Add liquids in order', 'Observe layering', 'Discuss why each layer forms'] },
+    { title: 'Balloon CO2', grade: '3-5', materials: 'Vinegar, baking soda, balloon', duration: '15 min', concept: 'Gas-producing reaction', steps: ['Put baking soda in balloon', 'Vinegar in bottle', 'Stretch balloon over bottle + tip', 'Observe balloon inflating'] },
+    { title: 'Endothermic Hand-Warmer', grade: '6-8', materials: 'Iron filings, salt, water, beaker, thermometer', duration: '20 min', concept: 'Exothermic reaction', steps: ['Mix iron filings + salt + water', 'Watch temperature rise', 'Compare to room temperature'] },
+    { title: 'Penny Cleaning', grade: '6-8', materials: 'Vinegar, salt, pennies', duration: '30 min', concept: 'Redox + acid-base', steps: ['Dirty penny in vinegar + salt', 'Watch surface clean (Cu oxide removed)', 'Place clean nail in solution — Cu coats nail'] },
+    { title: 'Stoichiometry Lab', grade: '9-12', materials: 'Balance, NaOH, HCl, beakers', duration: '60 min', concept: 'Mass-to-moles, balanced equations', steps: ['Calculate moles of NaOH', 'Calculate equivalent HCl', 'Verify by titration', 'Discuss accuracy'] },
+    { title: 'Determining Molar Mass', grade: '9-12', materials: 'Volatile liquid, balance, water bath, gas thermometer', duration: '90 min', concept: 'Ideal gas law', steps: ['Heat volatile liquid until all gas', 'Measure T, P, V, mass', 'Calculate M using PV=nRT'] },
+    { title: 'Equilibrium Constant Calculation', grade: '9-12', materials: 'KSCN, Fe(NO3)3, spectrophotometer', duration: '90 min', concept: 'Equilibrium + Beer\'s Law', steps: ['Mix Fe + SCN, form FeSCN²⁺', 'Measure absorbance', 'Calculate [FeSCN]', 'Determine Keq'] },
+    { title: 'Reaction Rate vs Temperature', grade: '9-12', materials: 'Effervescent tablets, water, thermometer, timer', duration: '60 min', concept: 'Arrhenius equation', steps: ['Drop tablet at 5°C, time dissolution', 'Repeat at 25°C, 45°C, 65°C', 'Plot ln k vs 1/T', 'Calculate Ea'] },
+    { title: 'Specific Heat Capacity', grade: '9-12', materials: 'Metal samples (Al, Cu, Fe), water, calorimeter', duration: '60 min', concept: 'Calorimetry', steps: ['Heat metal in boiling water', 'Drop into known mass of cool water', 'Measure ΔT', 'Calculate c = q/(mΔT)'] },
+    { title: 'pH Buffers', grade: '9-12', materials: 'NaH2PO4, Na2HPO4, pH meter, acid/base', duration: '60 min', concept: 'Henderson-Hasselbalch + buffer capacity', steps: ['Prepare buffer at known pH', 'Add small amount of acid; measure pH', 'Add small amount of base', 'Compare to unbuffered water'] },
+    { title: 'Electrochemistry — Lemon Battery', grade: '9-12', materials: 'Lemon, Cu wire, Zn nail, LED, voltmeter', duration: '30 min', concept: 'Galvanic cell, EMF', steps: ['Insert Cu + Zn into lemon', 'Connect to LED via voltmeter', 'Measure voltage', 'Calculate ΔG'] }
+  ];
+
+  // ═══════════════════════════════════════════════════════════
+  // CHEM MYTHBUSTERS
+  // ═══════════════════════════════════════════════════════════
+  var CHEM_MYTHS = [
+    { myth: 'Natural means chemical-free.', truth: 'Everything is chemicals. "Natural" cyanide in apple seeds, "natural" mercury in fish. Toxicity depends on dose, not source.' },
+    { myth: 'You can taste a chemical to identify it.', truth: 'NEVER do this — many chemicals are toxic even in tiny amounts. Trained chemists use instruments + ID methods.' },
+    { myth: 'Bottled water is purer than tap water.', truth: 'Often not. Most bottled water is filtered tap water. Tap water has stricter regulations in US.' },
+    { myth: 'Mixing bleach + ammonia just gets cleaner.', truth: 'NO. Creates chloramine gas — toxic. Combining cleaners is dangerous.' },
+    { myth: 'You only need water + soap for clean.', truth: 'Soap breaks lipid bilayers. Effective against most viruses + bacteria. Hot water helps but not required.' },
+    { myth: 'Plastics are not chemicals because they\'re solid.', truth: 'All matter is chemistry. Plastics are long-chain polymers (huge molecules).' },
+    { myth: 'Drinking lots of water can\'t hurt.', truth: 'Hyponatremia from over-hydration kills people. Body needs both water + electrolytes.' },
+    { myth: 'Salt + sugar are bad chemicals.', truth: 'Both essential nutrients. Sodium for nerve function. Sugar for cellular energy. Just used in excess.' },
+    { myth: 'Detox products clean toxins from body.', truth: 'No scientific basis. Healthy liver + kidneys do this naturally. Most "detox" products useless or harmful.' },
+    { myth: 'Vitamins always help.', truth: 'Megadoses harmful. Vitamin A excess causes liver damage. Vitamin C excess causes kidney stones.' },
+    { myth: 'Stainless steel is "pure" metal.', truth: 'Alloy of iron + chromium + nickel + carbon. The chromium oxide layer makes it stainless.' },
+    { myth: 'Hot water freezes faster than cold (Mpemba effect).', truth: 'Sometimes true — surprisingly. Multiple competing explanations. Real but inconsistent.' },
+    { myth: 'Acid in your stomach burns through anything.', truth: 'Stomach acid is HCl ~pH 1-2. Strong but mucus lining protects stomach. Not all-corrosive.' },
+    { myth: 'Lightning is just electricity.', truth: 'Lightning also generates NO + ozone via electrochemistry. ~6% of natural NO2 comes from lightning.' },
+    { myth: 'Diamonds are forever.', truth: 'Diamond is metastable; converts slowly to graphite over geological time. Just extremely slow.' },
+    { myth: 'Glass is a liquid.', truth: 'Glass is an amorphous solid — disordered but rigid. Old church windows are thicker at bottom from manufacturing, not flow.' },
+    { myth: 'Gold doesn\'t react.', truth: 'Gold is unreactive with O2 + water, but reacts with chlorine + aqua regia + mercury.' }
+  ];
+
+  // ═══════════════════════════════════════════════════════════
+  // CHEMISTRY RECORDS
+  // ═══════════════════════════════════════════════════════════
+  var CHEM_RECORDS = [
+    { category: 'Strongest acid', record: 'Fluoroantimonic acid (HSbF6)', value: '10¹⁹ times stronger than 100% H2SO4', notes: 'Superacid; reacts with virtually anything.' },
+    { category: 'Strongest base', record: 'Lithium diisopropylamide / methyl lithium', value: 'Extremely basic', notes: 'Reacts with water explosively.' },
+    { category: 'Lowest pH', record: 'Magic acid', value: '~-12 (negative pH)', notes: 'pH < 0 possible for superacids.' },
+    { category: 'Highest pH', record: 'Saturated NaOH', value: '~15-16', notes: 'Theoretical limit ~16.' },
+    { category: 'Most reactive metal', record: 'Cesium', value: 'Reacts violently with water + air', notes: 'Stored under argon.' },
+    { category: 'Most reactive nonmetal', record: 'Fluorine', value: 'Most electronegative element', notes: 'Burns in nearly anything.' },
+    { category: 'Hardest natural mineral', record: 'Diamond', value: '10 on Mohs scale', notes: 'Pure crystallized carbon.' },
+    { category: 'Hardest synthetic material', record: 'Boron nitride (cubic)', value: 'Mohs ~10', notes: 'Diamond-equivalent.' },
+    { category: 'Highest melting point (element)', record: 'Tungsten', value: '3422°C', notes: 'Used in light bulb filaments.' },
+    { category: 'Highest melting point (substance)', record: 'Hafnium carbide (HfC)', value: '~3900°C', notes: 'Or possibly Ta4HfC5.' },
+    { category: 'Lowest melting point (element)', record: 'Helium', value: '-272°C (only solid at high P)', notes: 'Liquid below 4 K.' },
+    { category: 'Most abundant element (universe)', record: 'Hydrogen', value: '~75% by mass', notes: 'Big Bang nucleosynthesis.' },
+    { category: 'Most abundant element (Earth crust)', record: 'Oxygen', value: '~46%', notes: 'Bound in silicates, oxides, water.' },
+    { category: 'Densest element', record: 'Osmium', value: '22.59 g/cm³', notes: 'Sometimes iridium claimed (22.56).' },
+    { category: 'Lightest element', record: 'Hydrogen', value: '0.0899 g/L', notes: 'At STP.' },
+    { category: 'Heaviest natural element', record: 'Uranium', value: 'Z = 92', notes: 'All heavier are synthetic.' },
+    { category: 'Heaviest synthetic element', record: 'Oganesson', value: 'Z = 118', notes: 'Only few atoms ever made.' },
+    { category: 'Most expensive metal', record: 'Rhodium', value: '$10,000+/oz', notes: 'Catalytic converters drive price.' },
+    { category: 'Strongest fiber (artificial)', record: 'Spider silk / Carbon nanotubes', value: 'Up to 130 GPa tensile', notes: 'Stronger per weight than steel.' },
+    { category: 'Longest chemical name', record: 'Acetylseryltyrosylserylisoleucyl...lysine', value: '189,819 letters (titin)', notes: 'Full chemical name of human titin protein.' }
+  ];
+
+  // ═══════════════════════════════════════════════════════════
+  // CHEM GLOSSARY (200+ terms)
+  // ═══════════════════════════════════════════════════════════
+  var CHEM_GLOSSARY = [
+    { term: 'Acid', def: 'Substance that donates H+ ions (Bronsted), accepts electron pair (Lewis), or produces H+ in water (Arrhenius).' },
+    { term: 'Activation energy (Ea)', def: 'Minimum energy needed to start a reaction. Lowered by catalysts.' },
+    { term: 'Alkali metal', def: 'Group 1 elements (Li, Na, K, Rb, Cs, Fr). Soft, reactive metals with one valence electron.' },
+    { term: 'Alkaline earth metal', def: 'Group 2 elements (Be, Mg, Ca, Sr, Ba, Ra). Two valence electrons.' },
+    { term: 'Alloy', def: 'Mixture of two or more metals (or metal + nonmetal). Steel = Fe + C.' },
+    { term: 'Amphoteric', def: 'Substance that can act as both acid + base. Aluminum hydroxide, water.' },
+    { term: 'Anion', def: 'Negatively charged ion. Has more electrons than protons.' },
+    { term: 'Atomic mass', def: 'Average mass of an atom (g/mol). Weighted by isotope abundance.' },
+    { term: 'Atomic number (Z)', def: 'Number of protons in nucleus. Defines the element.' },
+    { term: 'Avogadro\'s number', def: '6.022 × 10²³ particles per mole. Counting unit for chemistry.' },
+    { term: 'Base', def: 'Substance that accepts H+ (Bronsted), donates electron pair (Lewis), or produces OH- in water (Arrhenius).' },
+    { term: 'Boyle\'s Law', def: 'PV = constant at constant T + n. Inverse relationship between P + V.' },
+    { term: 'Buffer', def: 'Solution that resists pH change. Weak acid + conjugate base.' },
+    { term: 'Calorimeter', def: 'Device that measures heat changes in reactions.' },
+    { term: 'Catalyst', def: 'Substance that speeds reaction without being consumed. Lowers Ea.' },
+    { term: 'Cation', def: 'Positively charged ion. Has fewer electrons than protons.' },
+    { term: 'Chemical bond', def: 'Force holding atoms together. Ionic, covalent, metallic.' },
+    { term: 'Chiral', def: 'Molecule that cannot superimpose on its mirror image.' },
+    { term: 'Combustion', def: 'Burning. Substance reacts with O2 producing heat + light.' },
+    { term: 'Compound', def: 'Substance made of 2+ elements chemically combined.' },
+    { term: 'Concentration', def: 'Amount of solute per unit volume of solution.' },
+    { term: 'Conjugate acid/base', def: 'Acid + base pair differing by one H+.' },
+    { term: 'Conservation of mass', def: 'Mass neither created nor destroyed in reactions. Atoms balance.' },
+    { term: 'Covalent bond', def: 'Sharing of electron pairs between atoms.' },
+    { term: 'Crystallization', def: 'Process of forming crystals from a solution.' },
+    { term: 'Diffusion', def: 'Spontaneous mixing of substances by random motion.' },
+    { term: 'Dipole', def: 'Molecule with separated charges. Has + + - ends.' },
+    { term: 'Dissociation', def: 'Breaking of ions in solution. NaCl → Na+ + Cl-.' },
+    { term: 'Electrolyte', def: 'Substance that conducts electricity when dissolved.' },
+    { term: 'Electron', def: 'Negatively charged subatomic particle. Outside nucleus.' },
+    { term: 'Electron configuration', def: 'Arrangement of electrons in shells/orbitals.' },
+    { term: 'Electronegativity', def: 'Atom\'s ability to attract electrons in a bond. F most.' },
+    { term: 'Element', def: 'Substance that cannot be broken down by chemical means.' },
+    { term: 'Empirical formula', def: 'Simplest whole-number ratio of atoms.' },
+    { term: 'Endothermic', def: 'Reaction that absorbs heat. ΔH > 0.' },
+    { term: 'Energy', def: 'Capacity to do work or transfer heat.' },
+    { term: 'Enthalpy (H)', def: 'Total heat content. ΔH = q at constant P.' },
+    { term: 'Entropy (S)', def: 'Measure of disorder. Always increases in isolated systems.' },
+    { term: 'Equilibrium', def: 'State where forward + reverse rates are equal.' },
+    { term: 'Exothermic', def: 'Reaction that releases heat. ΔH < 0.' },
+    { term: 'Faraday\'s constant', def: '96,485 C/mol. Charge per mole of electrons.' },
+    { term: 'Filtration', def: 'Separation by passing liquid through filter.' },
+    { term: 'Free energy (G)', def: 'ΔG = ΔH - TΔS. ΔG < 0 means spontaneous.' },
+    { term: 'Functional group', def: 'Specific arrangement of atoms with characteristic properties.' },
+    { term: 'Gas', def: 'State with no fixed shape or volume. Highest entropy.' },
+    { term: 'Gibbs energy', def: 'Same as free energy.' },
+    { term: 'Half-life', def: 'Time for half of a substance to decay or react.' },
+    { term: 'Halogen', def: 'Group 17 elements (F, Cl, Br, I, At). Highly reactive nonmetals.' },
+    { term: 'Heat capacity', def: 'Energy to raise temperature by 1°C.' },
+    { term: 'Hess\'s Law', def: 'ΔH is state function. Sum of step ΔH = overall ΔH.' },
+    { term: 'Heterogeneous', def: 'Not uniform. Multiple phases visible.' },
+    { term: 'Homogeneous', def: 'Uniform throughout. Single phase.' },
+    { term: 'Hybridization', def: 'Mixing of atomic orbitals to form new bonding orbitals.' },
+    { term: 'Hydrogen bond', def: 'Strong dipole interaction with H bonded to N, O, F.' },
+    { term: 'Hydrolysis', def: 'Breaking bonds by adding water.' },
+    { term: 'Indicator', def: 'Substance that changes color with pH.' },
+    { term: 'Ion', def: 'Charged atom. Cation (+) or anion (-).' },
+    { term: 'Ionic bond', def: 'Transfer of electrons. Metal + nonmetal.' },
+    { term: 'Ionization energy', def: 'Energy to remove an electron.' },
+    { term: 'Isomer', def: 'Same molecular formula, different structure.' },
+    { term: 'Isotope', def: 'Same element, different number of neutrons.' },
+    { term: 'Kinetics', def: 'Study of reaction rates.' },
+    { term: 'Le Chatelier\'s Principle', def: 'System at equilibrium opposes disturbance.' },
+    { term: 'Limiting reagent', def: 'Reactant fully consumed first. Determines maximum product.' },
+    { term: 'Liquid', def: 'State with fixed volume but no fixed shape.' },
+    { term: 'Mass number', def: 'Total protons + neutrons.' },
+    { term: 'Matter', def: 'Anything with mass + volume.' },
+    { term: 'Metalloid', def: 'Element with properties between metals + nonmetals. B, Si, Ge, As, Sb, Te.' },
+    { term: 'Mixture', def: 'Two+ substances physically combined.' },
+    { term: 'Molality (m)', def: 'Moles solute per kg solvent.' },
+    { term: 'Molarity (M)', def: 'Moles solute per liter solution.' },
+    { term: 'Mole', def: '6.022 × 10²³ particles. Counting unit.' },
+    { term: 'Molecule', def: 'Two+ atoms chemically bonded.' },
+    { term: 'Network solid', def: 'Crystal where atoms covalently bonded throughout (diamond, quartz).' },
+    { term: 'Neutralization', def: 'Acid + base → salt + water.' },
+    { term: 'Neutron', def: 'Neutral subatomic particle in nucleus.' },
+    { term: 'Noble gas', def: 'Group 18 elements. Full valence shell. Generally unreactive.' },
+    { term: 'Nonmetal', def: 'Element with poor conductivity. Often gaseous. Top right of periodic table.' },
+    { term: 'Nucleus', def: 'Center of atom containing protons + neutrons.' },
+    { term: 'Octet rule', def: 'Atoms tend toward 8 valence electrons (full s + p).' },
+    { term: 'Orbital', def: 'Region around nucleus where electron is likely. s, p, d, f.' },
+    { term: 'Oxidation', def: 'Loss of electrons. Increase in oxidation number.' },
+    { term: 'pH', def: '-log[H+]. 0-7 acidic. 7 neutral. 7-14 basic.' },
+    { term: 'pOH', def: '-log[OH-]. pH + pOH = 14.' },
+    { term: 'Periodic table', def: 'Chart of elements organized by atomic number.' },
+    { term: 'Period', def: 'Horizontal row in periodic table.' },
+    { term: 'Polar', def: 'Molecule with permanent dipole. Asymmetric electron distribution.' },
+    { term: 'Polymer', def: 'Long chain of repeating monomer units.' },
+    { term: 'Precipitate', def: 'Solid forming from solution.' },
+    { term: 'Pressure', def: 'Force per unit area.' },
+    { term: 'Product', def: 'Substance formed in chemical reaction.' },
+    { term: 'Proton', def: 'Positively charged subatomic particle in nucleus.' },
+    { term: 'Pure substance', def: 'Material with uniform composition.' },
+    { term: 'Reactant', def: 'Substance consumed in chemical reaction.' },
+    { term: 'Reaction quotient (Q)', def: 'Same as Keq formula but at any time.' },
+    { term: 'Redox', def: 'Reduction-oxidation. Electron transfer reactions.' },
+    { term: 'Reduction', def: 'Gain of electrons. Decrease in oxidation number.' },
+    { term: 'Resonance', def: 'Multiple Lewis structures for same molecule. Actual structure is hybrid.' },
+    { term: 'Salt', def: 'Ionic compound formed from acid-base neutralization.' },
+    { term: 'Saturated solution', def: 'Maximum solute dissolved at given T.' },
+    { term: 'Solid', def: 'State with fixed shape + volume. Lowest entropy.' },
+    { term: 'Solute', def: 'Substance dissolved in a solvent.' },
+    { term: 'Solution', def: 'Homogeneous mixture.' },
+    { term: 'Solvent', def: 'Dissolving medium. Water is universal solvent.' },
+    { term: 'Specific heat', def: 'Heat capacity per gram.' },
+    { term: 'Spectrometer', def: 'Instrument measuring light absorption/emission.' },
+    { term: 'Stoichiometry', def: 'Mole-based calculations from balanced equations.' },
+    { term: 'STP', def: 'Standard Temperature + Pressure. 0°C, 1 atm.' },
+    { term: 'Sublimation', def: 'Solid directly to gas. Dry ice, mothballs.' },
+    { term: 'Supersaturated', def: 'More solute than equilibrium. Unstable.' },
+    { term: 'Suspension', def: 'Heterogeneous mixture with particles that settle.' },
+    { term: 'Synthesis', def: 'Combination reaction. A + B → AB.' },
+    { term: 'Temperature', def: 'Average kinetic energy of particles.' },
+    { term: 'Thermodynamics', def: 'Study of energy + heat.' },
+    { term: 'Titration', def: 'Adding known concentration to determine unknown.' },
+    { term: 'Transition metal', def: 'Group 3-12 elements. Multiple oxidation states.' },
+    { term: 'Triple point', def: 'T + P where all three phases coexist.' },
+    { term: 'Unsaturated', def: 'More solute could dissolve.' },
+    { term: 'Valence electron', def: 'Outermost electrons. Determine bonding.' },
+    { term: 'Vapor pressure', def: 'Pressure of vapor in equilibrium with liquid.' },
+    { term: 'Yield', def: 'Amount of product. Percent yield = actual/theoretical × 100.' }
+  ];
+
+  // ═══════════════════════════════════════════════════════════
+  // REFERENCE DATA TABLES
+  // ═══════════════════════════════════════════════════════════
+  var CHEM_DATA_TABLES = {
+    constants: [
+      { name: 'Avogadro\'s number', symbol: 'NA', value: '6.022 × 10²³ /mol' },
+      { name: 'Faraday constant', symbol: 'F', value: '96,485 C/mol' },
+      { name: 'Gas constant', symbol: 'R', value: '8.314 J/(mol·K) = 0.0821 L·atm/(mol·K)' },
+      { name: 'Boltzmann constant', symbol: 'k', value: '1.38 × 10⁻²³ J/K' },
+      { name: 'Planck constant', symbol: 'h', value: '6.626 × 10⁻³⁴ J·s' },
+      { name: 'Speed of light', symbol: 'c', value: '3.0 × 10⁸ m/s' },
+      { name: 'Electron charge', symbol: 'e', value: '1.602 × 10⁻¹⁹ C' },
+      { name: 'Electron mass', symbol: 'me', value: '9.109 × 10⁻³¹ kg' },
+      { name: 'Proton mass', symbol: 'mp', value: '1.673 × 10⁻²⁷ kg' },
+      { name: 'Rydberg constant', symbol: 'R∞', value: '1.097 × 10⁷ /m' },
+      { name: 'Standard pressure', symbol: 'P°', value: '1 atm = 101.325 kPa' },
+      { name: 'Standard temperature', symbol: 'T°', value: '25°C = 298.15 K (or 0°C = 273.15 K for STP)' }
+    ],
+    conversions: [
+      { from: '1 mole gas at STP', to: '22.4 L' },
+      { from: '1 cal', to: '4.184 J' },
+      { from: '1 atm', to: '101.325 kPa = 760 mmHg = 760 Torr' },
+      { from: '1 amu', to: '1.66 × 10⁻²⁴ g' },
+      { from: '0°C', to: '273.15 K = 32°F' },
+      { from: '100°C', to: '373.15 K = 212°F' },
+      { from: '1 nm', to: '10⁻⁹ m' },
+      { from: '1 Å', to: '10⁻¹⁰ m = 0.1 nm' },
+      { from: '1 ppm', to: '1 mg/L (in water)' },
+      { from: '1 ppb', to: '1 μg/L' }
+    ],
+    bondEnergies: [
+      { bond: 'H-H', energy: '436 kJ/mol' },
+      { bond: 'O=O', energy: '498 kJ/mol' },
+      { bond: 'N≡N', energy: '946 kJ/mol' },
+      { bond: 'C-H', energy: '413 kJ/mol' },
+      { bond: 'C=O', energy: '799 kJ/mol' },
+      { bond: 'C-C', energy: '348 kJ/mol' },
+      { bond: 'C=C', energy: '614 kJ/mol' },
+      { bond: 'C≡C', energy: '839 kJ/mol' },
+      { bond: 'O-H', energy: '463 kJ/mol' },
+      { bond: 'N-H', energy: '391 kJ/mol' },
+      { bond: 'Cl-Cl', energy: '243 kJ/mol' },
+      { bond: 'H-Cl', energy: '431 kJ/mol' },
+      { bond: 'C-Cl', energy: '328 kJ/mol' },
+      { bond: 'Si-O', energy: '466 kJ/mol' }
+    ],
+    electronegativity: [
+      { elem: 'F', value: 4.0 }, { elem: 'O', value: 3.5 }, { elem: 'N', value: 3.0 }, { elem: 'Cl', value: 3.0 }, { elem: 'Br', value: 2.8 }, { elem: 'I', value: 2.5 }, { elem: 'C', value: 2.5 }, { elem: 'S', value: 2.5 }, { elem: 'H', value: 2.1 }, { elem: 'P', value: 2.1 }, { elem: 'Si', value: 1.8 }, { elem: 'Al', value: 1.5 }, { elem: 'Mg', value: 1.2 }, { elem: 'Ca', value: 1.0 }, { elem: 'Li', value: 1.0 }, { elem: 'Na', value: 0.9 }, { elem: 'K', value: 0.8 }, { elem: 'Rb', value: 0.8 }, { elem: 'Cs', value: 0.7 }
+    ],
+    specificHeats: [
+      { substance: 'Water (l)', c: '4.184 J/(g·°C)' },
+      { substance: 'Ice', c: '2.09 J/(g·°C)' },
+      { substance: 'Steam', c: '2.01 J/(g·°C)' },
+      { substance: 'Ethanol', c: '2.44 J/(g·°C)' },
+      { substance: 'Aluminum', c: '0.897 J/(g·°C)' },
+      { substance: 'Copper', c: '0.385 J/(g·°C)' },
+      { substance: 'Iron', c: '0.45 J/(g·°C)' },
+      { substance: 'Gold', c: '0.128 J/(g·°C)' },
+      { substance: 'Air', c: '1.01 J/(g·°C)' },
+      { substance: 'Glass', c: '0.84 J/(g·°C)' }
+    ]
+  };
+
+
   // REGISTER TOOL
   // ═══════════════════════════════════════════════════════════
   window.StemLab.registerTool('chemBalance', {
@@ -2308,6 +2950,642 @@
               })
             )
           ),
+
+          // ════════════════════════════════════════
+          // THERMODYNAMICS SUB-TOOL
+          // ════════════════════════════════════════
+          subtool === 'thermo' && h('div', null,
+            h('p', { className: 'text-xs text-slate-600 italic mb-3' }, THERMO.intro),
+            h('div', { className: 'bg-red-50 border border-red-300 rounded-xl p-3 mb-3' },
+              h('div', { className: 'text-sm font-bold text-red-700 mb-2' }, 'Four Laws of Thermodynamics'),
+              THERMO.laws.map(function(l, i) {
+                return h('div', { key: i, className: 'bg-white border border-red-200 rounded p-2 mb-1 text-xs' },
+                  h('div', { className: 'font-bold text-red-700' }, l.name + ' (Law ' + l.number + ')'),
+                  h('div', { className: 'text-slate-800' }, l.statement),
+                  h('div', { className: 'text-amber-700 italic' }, l.implication)
+                );
+              })
+            ),
+            h('div', { className: 'bg-amber-50 border border-amber-200 rounded-xl p-3 mb-3' },
+              h('div', { className: 'text-sm font-bold text-amber-700 mb-2' }, 'Key Concepts'),
+              THERMO.concepts.map(function(c, i) {
+                return h('div', { key: i, className: 'bg-white border border-amber-200 rounded p-2 mb-1 text-xs' },
+                  h('div', { className: 'font-bold text-amber-700' }, c.name),
+                  h('div', { className: 'text-slate-800' }, c.def),
+                  h('div', { className: 'text-cyan-700 italic' }, c.sign)
+                );
+              })
+            ),
+            h('div', { className: 'bg-emerald-50 border border-emerald-200 rounded-xl p-3' },
+              h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, 'Example Reactions'),
+              THERMO.examples.map(function(e, i) {
+                return h('div', { key: i, className: 'bg-white border border-emerald-200 rounded p-2 mb-1 text-xs' },
+                  h('div', { className: 'font-mono font-bold text-slate-800' }, e.reaction),
+                  h('div', { className: 'flex gap-3 text-[10px]' },
+                    h('span', { className: 'text-rose-700' }, 'ΔH = ' + e.H),
+                    h('span', { className: 'text-purple-700' }, 'ΔG = ' + e.G),
+                    h('span', { className: 'text-emerald-700' }, e.spontaneous)
+                  )
+                );
+              })
+            )
+          ),
+
+          // ════════════════════════════════════════
+          // KINETICS SUB-TOOL
+          // ════════════════════════════════════════
+          subtool === 'kinetics' && h('div', null,
+            h('p', { className: 'text-xs text-slate-600 italic mb-3' }, KINETICS.intro),
+            h('div', { className: 'bg-cyan-50 border border-cyan-300 rounded-xl p-3 mb-3' },
+              h('div', { className: 'text-sm font-bold text-cyan-700 mb-2' }, 'Factors Affecting Rate'),
+              KINETICS.factors.map(function(f, i) {
+                return h('div', { key: i, className: 'bg-white border border-cyan-200 rounded p-2 mb-1 text-xs' },
+                  h('div', { className: 'font-bold text-cyan-700' }, f.factor),
+                  h('div', { className: 'text-slate-800' }, f.effect)
+                );
+              })
+            ),
+            h('div', { className: 'bg-purple-50 border border-purple-200 rounded-xl p-3 mb-3' },
+              h('div', { className: 'text-sm font-bold text-purple-700 mb-2' }, 'Rate Laws'),
+              KINETICS.rateLaws.map(function(r, i) {
+                return h('div', { key: i, className: 'bg-white border border-purple-200 rounded p-2 mb-1 text-xs' },
+                  h('div', { className: 'font-bold text-purple-700' }, r.type),
+                  h('div', { className: 'font-mono text-slate-800' }, 'Rate: ' + r.equation),
+                  h('div', { className: 'font-mono text-slate-700' }, 'Integrated: ' + r.integrated),
+                  h('div', { className: 'font-mono text-amber-700' }, 'Half-life: ' + r.halfLife)
+                );
+              })
+            ),
+            h('div', { className: 'bg-amber-50 border border-amber-200 rounded-xl p-3 mb-3' },
+              h('div', { className: 'text-sm font-bold text-amber-700 mb-2' }, 'Arrhenius Equation'),
+              h('div', { className: 'bg-white border border-amber-200 rounded p-2 font-mono text-xs' }, KINETICS.arrhenius)
+            ),
+            h('div', { className: 'bg-emerald-50 border border-emerald-200 rounded-xl p-3' },
+              h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, 'Reaction Mechanisms'),
+              KINETICS.mechanisms.map(function(m, i) {
+                return h('div', { key: i, className: 'bg-white border border-emerald-200 rounded p-2 mb-1 text-xs' },
+                  h('div', { className: 'font-bold text-emerald-700' }, m.type),
+                  h('div', { className: 'text-slate-800' }, m.desc)
+                );
+              })
+            )
+          ),
+
+          // ════════════════════════════════════════
+          // EQUILIBRIUM SUB-TOOL
+          // ════════════════════════════════════════
+          subtool === 'equilibrium' && h('div', null,
+            h('p', { className: 'text-xs text-slate-600 italic mb-3' }, EQUILIBRIUM.intro),
+            h('div', { className: 'bg-indigo-50 border border-indigo-300 rounded-xl p-3 mb-3' },
+              h('div', { className: 'text-sm font-bold text-indigo-700 mb-2' }, 'Key Concepts'),
+              EQUILIBRIUM.concepts.map(function(c, i) {
+                return h('div', { key: i, className: 'bg-white border border-indigo-200 rounded p-2 mb-1 text-xs' },
+                  h('div', { className: 'font-bold text-indigo-700' }, c.name),
+                  h('div', { className: 'text-slate-800' }, c.def),
+                  h('div', { className: 'text-amber-700 italic' }, c.interpret)
+                );
+              })
+            ),
+            h('div', { className: 'bg-emerald-50 border border-emerald-200 rounded-xl p-3' },
+              h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, 'Example Equilibria'),
+              EQUILIBRIUM.examples.map(function(e, i) {
+                return h('div', { key: i, className: 'bg-white border border-emerald-200 rounded p-2 mb-1 text-xs' },
+                  h('div', { className: 'font-mono font-bold text-slate-800' }, e.reaction),
+                  h('div', { className: 'text-amber-700' }, 'Keq: ' + e.Keq),
+                  h('div', { className: 'text-slate-700 italic' }, e.notes)
+                );
+              })
+            )
+          ),
+
+          // ════════════════════════════════════════
+          // GAS LAWS SUB-TOOL
+          // ════════════════════════════════════════
+          subtool === 'gas_laws' && h('div', null,
+            h('p', { className: 'text-xs text-slate-600 italic mb-3' }, GAS_LAWS.intro),
+            h('div', { className: 'bg-blue-50 border border-blue-300 rounded-xl p-3 mb-3' },
+              h('div', { className: 'text-sm font-bold text-blue-700 mb-2' }, 'Gas Laws'),
+              GAS_LAWS.laws.map(function(l, i) {
+                return h('div', { key: i, className: 'bg-white border border-blue-200 rounded p-2 mb-1 text-xs' },
+                  h('div', { className: 'font-bold text-blue-700' }, l.name),
+                  h('div', { className: 'font-mono text-slate-800' }, l.equation),
+                  h('div', { className: 'text-slate-700' }, l.desc),
+                  h('div', { className: 'text-amber-700 italic text-[10px]' }, l.who)
+                );
+              })
+            ),
+            h('div', { className: 'bg-amber-50 border border-amber-200 rounded-xl p-3 mb-3' },
+              h('div', { className: 'text-sm font-bold text-amber-700 mb-2' }, 'Constants'),
+              GAS_LAWS.constants.map(function(c, i) {
+                return h('div', { key: i, className: 'bg-white border border-amber-200 rounded p-2 mb-1 text-xs flex justify-between' },
+                  h('span', { className: 'font-bold text-amber-700' }, c.name),
+                  h('span', { className: 'font-mono text-slate-800' }, c.value)
+                );
+              })
+            ),
+            h('div', { className: 'bg-emerald-50 border border-emerald-200 rounded-xl p-3 mb-3' },
+              h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, 'Kinetic Molecular Theory'),
+              h('ol', { className: 'space-y-1 list-decimal list-inside text-xs text-emerald-900' },
+                GAS_LAWS.kineticTheory.map(function(t, i) { return h('li', { key: i }, t); })
+              )
+            ),
+            h('div', { className: 'bg-rose-50 border border-rose-200 rounded-xl p-3' },
+              h('div', { className: 'text-sm font-bold text-rose-700 mb-2' }, 'Deviations from Ideal'),
+              h('div', { className: 'text-xs text-rose-900 leading-relaxed' }, GAS_LAWS.deviations)
+            )
+          ),
+
+          // ════════════════════════════════════════
+          // SOLUTIONS SUB-TOOL
+          // ════════════════════════════════════════
+          subtool === 'solutions' && h('div', null,
+            h('p', { className: 'text-xs text-slate-600 italic mb-3' }, SOLUTIONS.intro),
+            h('div', { className: 'bg-cyan-50 border border-cyan-300 rounded-xl p-3 mb-3' },
+              h('div', { className: 'text-sm font-bold text-cyan-700 mb-2' }, 'Concentration Units'),
+              SOLUTIONS.concentration.map(function(c, i) {
+                return h('div', { key: i, className: 'bg-white border border-cyan-200 rounded p-2 mb-1 text-xs' },
+                  h('div', { className: 'font-bold text-cyan-700' }, c.unit),
+                  h('div', { className: 'text-slate-800' }, c.def),
+                  h('div', { className: 'font-mono text-amber-700' }, c.formula),
+                  h('div', { className: 'text-emerald-700 italic' }, 'Use: ' + c.useFor)
+                );
+              })
+            ),
+            h('div', { className: 'bg-amber-50 border border-amber-200 rounded-xl p-3 mb-3' },
+              h('div', { className: 'text-sm font-bold text-amber-700 mb-2' }, 'Solubility Rules'),
+              h('ul', { className: 'space-y-1 list-disc list-inside text-xs text-amber-900' },
+                SOLUTIONS.solubilityRules.map(function(r, i) { return h('li', { key: i }, r); })
+              )
+            ),
+            h('div', { className: 'bg-purple-50 border border-purple-200 rounded-xl p-3 mb-3' },
+              h('div', { className: 'text-sm font-bold text-purple-700 mb-2' }, 'Colligative Properties'),
+              SOLUTIONS.colligative.map(function(c, i) {
+                return h('div', { key: i, className: 'bg-white border border-purple-200 rounded p-2 mb-1 text-xs' },
+                  h('div', { className: 'font-bold text-purple-700' }, c.property),
+                  h('div', { className: 'text-slate-800' }, c.law),
+                  h('div', { className: 'font-mono text-amber-700' }, c.formula)
+                );
+              })
+            ),
+            h('div', { className: 'bg-emerald-50 border border-emerald-200 rounded-xl p-3' },
+              h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, 'Factors Affecting Solubility'),
+              h('ul', { className: 'space-y-1 list-disc list-inside text-xs text-emerald-900' },
+                SOLUTIONS.factors.map(function(f, i) { return h('li', { key: i }, f); })
+              )
+            )
+          ),
+
+          // ════════════════════════════════════════
+          // NUCLEAR SUB-TOOL
+          // ════════════════════════════════════════
+          subtool === 'nuclear' && h('div', null,
+            h('p', { className: 'text-xs text-slate-600 italic mb-3' }, NUCLEAR.intro),
+            h('div', { className: 'bg-yellow-50 border-2 border-yellow-400 rounded-xl p-3 mb-3' },
+              h('div', { className: 'text-sm font-bold text-amber-700 mb-2' }, 'Types of Radiation'),
+              NUCLEAR.radioactivity.map(function(r, i) {
+                return h('div', { key: i, className: 'bg-white border border-amber-200 rounded p-2 mb-1 text-xs' },
+                  h('div', { className: 'flex justify-between font-bold text-amber-700' },
+                    h('span', null, r.type),
+                    h('span', null, 'Charge: ' + r.charge)
+                  ),
+                  h('div', { className: 'text-slate-800' }, r.particle),
+                  h('div', { className: 'text-cyan-700' }, 'Penetration: ' + r.penetration),
+                  h('div', { className: 'text-rose-700' }, 'Danger: ' + r.danger),
+                  h('div', { className: 'text-purple-700 italic' }, 'Examples: ' + r.examples)
+                );
+              })
+            ),
+            h('div', { className: 'bg-cyan-50 border border-cyan-200 rounded-xl p-3 mb-3' },
+              h('div', { className: 'text-sm font-bold text-cyan-700 mb-2' }, 'Common Half-Lives'),
+              NUCLEAR.halfLives.map(function(h2, i) {
+                return h('div', { key: i, className: 'bg-white border border-cyan-200 rounded p-2 mb-1 text-xs flex justify-between' },
+                  h('span', { className: 'font-mono font-bold text-cyan-700' }, h2.isotope + ' (' + h2.halflife + ')'),
+                  h('span', { className: 'text-slate-700' }, h2.use)
+                );
+              })
+            ),
+            h('div', { className: 'bg-rose-50 border border-rose-200 rounded-xl p-3 mb-3' },
+              h('div', { className: 'text-sm font-bold text-rose-700 mb-2' }, 'Fission'),
+              h('div', { className: 'text-xs text-rose-900 leading-relaxed' }, NUCLEAR.fission)
+            ),
+            h('div', { className: 'bg-orange-50 border border-orange-200 rounded-xl p-3 mb-3' },
+              h('div', { className: 'text-sm font-bold text-orange-700 mb-2' }, 'Fusion'),
+              h('div', { className: 'text-xs text-orange-900 leading-relaxed' }, NUCLEAR.fusion)
+            ),
+            h('div', { className: 'bg-emerald-50 border border-emerald-200 rounded-xl p-3' },
+              h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, 'Medical Uses'),
+              NUCLEAR.medical.map(function(m, i) {
+                return h('div', { key: i, className: 'bg-white border border-emerald-200 rounded p-2 mb-1 text-xs' },
+                  h('div', { className: 'font-bold text-emerald-700' }, m.use),
+                  h('div', { className: 'text-slate-800 font-mono' }, m.isotope),
+                  h('div', { className: 'text-slate-700' }, m.desc)
+                );
+              })
+            )
+          ),
+
+          // ════════════════════════════════════════
+          // ENVIRONMENTAL SUB-TOOL
+          // ════════════════════════════════════════
+          subtool === 'environmental' && h('div', null,
+            h('p', { className: 'text-xs text-slate-600 italic mb-3' }, ENV_CHEM.intro),
+            h('div', { className: 'bg-green-50 border border-green-300 rounded-xl p-3 mb-3' },
+              h('div', { className: 'text-sm font-bold text-green-700 mb-2' }, 'Environmental Topics'),
+              ENV_CHEM.topics.map(function(t, i) {
+                return h('div', { key: i, className: 'bg-white border border-green-200 rounded p-2 mb-1 text-xs' },
+                  h('div', { className: 'font-bold text-green-700' }, t.topic),
+                  h('div', { className: 'text-slate-800' }, 'Mechanism: ' + t.mechanism),
+                  h('div', { className: 'text-amber-700' }, 'Status: ' + t.current),
+                  h('div', { className: 'text-emerald-700 italic' }, 'Solutions: ' + t.solutions)
+                );
+              })
+            ),
+            h('div', { className: 'bg-emerald-50 border border-emerald-200 rounded-xl p-3' },
+              h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, '12 Principles of Green Chemistry'),
+              h('ol', { className: 'space-y-1 list-decimal list-inside text-xs text-emerald-900' },
+                ENV_CHEM.greenChemistry.map(function(g, i) { return h('li', { key: i, className: 'leading-relaxed' }, g); })
+              )
+            )
+          ),
+
+          // ════════════════════════════════════════
+          // PHARMA SUB-TOOL
+          // ════════════════════════════════════════
+          subtool === 'pharma' && h('div', null,
+            h('p', { className: 'text-xs text-slate-600 italic mb-3' }, PHARMA.intro),
+            h('div', { className: 'bg-pink-50 border border-pink-300 rounded-xl p-3 mb-3' },
+              h('div', { className: 'text-sm font-bold text-pink-700 mb-2' }, 'Drug Development Process'),
+              PHARMA.process.map(function(s, i) {
+                return h('div', { key: i, className: 'bg-white border border-pink-200 rounded p-2 mb-1 text-xs' },
+                  h('div', { className: 'flex justify-between mb-1' },
+                    h('span', { className: 'font-bold text-pink-700' }, (i + 1) + '. ' + s.stage),
+                    h('span', { className: 'text-amber-700 font-mono text-[10px]' }, s.time)
+                  ),
+                  h('div', { className: 'text-slate-800' }, s.desc)
+                );
+              })
+            ),
+            h('div', { className: 'bg-cyan-50 border border-cyan-200 rounded-xl p-3 mb-3' },
+              h('div', { className: 'text-sm font-bold text-cyan-700 mb-2' }, 'Famous Drugs'),
+              PHARMA.famousDrugs.map(function(d, i) {
+                return h('div', { key: i, className: 'bg-white border border-cyan-200 rounded p-2 mb-1 text-xs' },
+                  h('div', { className: 'font-bold text-cyan-700' }, d.name + ' (' + d.invented + ')'),
+                  h('div', { className: 'text-slate-700' }, d.chemical),
+                  h('div', { className: 'text-amber-700' }, 'Target: ' + d.target),
+                  h('div', { className: 'text-emerald-700 italic' }, d.notes)
+                );
+              })
+            ),
+            h('div', { className: 'bg-amber-50 border border-amber-200 rounded-xl p-3' },
+              h('div', { className: 'text-sm font-bold text-amber-700 mb-2' }, 'Common Drug Classes'),
+              PHARMA.drugClasses.map(function(c, i) {
+                return h('div', { key: i, className: 'bg-white border border-amber-200 rounded p-2 mb-1 text-xs' },
+                  h('div', { className: 'font-bold text-amber-700' }, c.class),
+                  h('div', { className: 'text-slate-700' }, c.examples),
+                  h('div', { className: 'text-cyan-700' }, 'Use: ' + c.use),
+                  h('div', { className: 'text-purple-700 italic' }, c.mechanism)
+                );
+              })
+            )
+          ),
+
+          // ════════════════════════════════════════
+          // MATERIALS SUB-TOOL
+          // ════════════════════════════════════════
+          subtool === 'materials' && h('div', null,
+            h('p', { className: 'text-xs text-slate-600 italic mb-3' }, MATERIALS.intro),
+            h('div', { className: 'bg-stone-50 border border-stone-300 rounded-xl p-3 mb-3' },
+              h('div', { className: 'text-sm font-bold text-stone-700 mb-2' }, 'Material Classes'),
+              MATERIALS.classes.map(function(c, i) {
+                return h('div', { key: i, className: 'bg-white border border-stone-200 rounded p-2 mb-1 text-xs' },
+                  h('div', { className: 'font-bold text-stone-700' }, c.class),
+                  h('div', { className: 'text-slate-800' }, c.properties),
+                  h('div', { className: 'text-amber-700' }, 'Examples: ' + c.examples),
+                  h('div', { className: 'text-emerald-700 italic' }, 'Uses: ' + c.uses)
+                );
+              })
+            ),
+            h('div', { className: 'bg-purple-50 border border-purple-200 rounded-xl p-3' },
+              h('div', { className: 'text-sm font-bold text-purple-700 mb-2' }, 'Common Polymers'),
+              MATERIALS.polymers.map(function(p, i) {
+                return h('div', { key: i, className: 'bg-white border border-purple-200 rounded p-2 mb-1 text-xs' },
+                  h('div', { className: 'font-bold text-purple-700' }, p.type),
+                  h('div', { className: 'text-slate-700' }, 'Monomer: ' + p.monomer + ' · Density: ' + p.density),
+                  h('div', { className: 'text-cyan-700' }, 'Uses: ' + p.uses),
+                  h('div', { className: 'text-amber-700 font-mono text-[10px]' }, 'Scale: ' + p.amount)
+                );
+              })
+            )
+          ),
+
+          // ════════════════════════════════════════
+          // FOOD CHEM SUB-TOOL
+          // ════════════════════════════════════════
+          subtool === 'food_chem' && h('div', null,
+            h('p', { className: 'text-xs text-slate-600 italic mb-3' }, FOOD_CHEM.intro),
+            h('div', { className: 'bg-orange-50 border border-orange-300 rounded-xl p-3 mb-3' },
+              h('div', { className: 'text-sm font-bold text-orange-700 mb-2' }, 'Key Reactions in Cooking'),
+              FOOD_CHEM.reactions.map(function(r, i) {
+                return h('div', { key: i, className: 'bg-white border border-orange-200 rounded p-2 mb-1 text-xs' },
+                  h('div', { className: 'font-bold text-orange-700' }, r.name),
+                  h('div', { className: 'text-slate-800' }, r.what),
+                  h('div', { className: 'text-amber-700' }, 'Examples: ' + r.examples),
+                  h('div', { className: 'text-cyan-700 italic' }, 'Controlled by: ' + r.controlled)
+                );
+              })
+            ),
+            h('div', { className: 'bg-yellow-50 border border-yellow-200 rounded-xl p-3 mb-3' },
+              h('div', { className: 'text-sm font-bold text-yellow-700 mb-2' }, 'Food Additives'),
+              FOOD_CHEM.additives.map(function(a, i) {
+                return h('div', { key: i, className: 'bg-white border border-yellow-200 rounded p-2 mb-1 text-xs' },
+                  h('div', { className: 'font-bold text-yellow-700' }, a.name),
+                  h('div', { className: 'text-slate-800' }, a.examples),
+                  h('div', { className: 'text-emerald-700 italic' }, 'Purpose: ' + a.purpose)
+                );
+              })
+            ),
+            h('div', { className: 'bg-emerald-50 border border-emerald-200 rounded-xl p-3' },
+              h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, 'Nutrient Macros'),
+              FOOD_CHEM.nutrition.map(function(n, i) {
+                return h('div', { key: i, className: 'bg-white border border-emerald-200 rounded p-2 mb-1 text-xs' },
+                  h('div', { className: 'flex justify-between' },
+                    h('span', { className: 'font-bold text-emerald-700' }, n.nutrient),
+                    h('span', { className: 'font-mono text-amber-700' }, n.calories)
+                  ),
+                  h('div', { className: 'text-slate-700' }, n.sources),
+                  h('div', { className: 'text-cyan-700 italic' }, n.function)
+                );
+              })
+            )
+          ),
+
+          // ════════════════════════════════════════
+          // FORENSIC SUB-TOOL
+          // ════════════════════════════════════════
+          subtool === 'forensic' && h('div', null,
+            h('p', { className: 'text-xs text-slate-600 italic mb-3' }, FORENSIC.intro),
+            h('div', { className: 'bg-slate-50 border border-slate-300 rounded-xl p-3 mb-3' },
+              h('div', { className: 'text-sm font-bold text-slate-700 mb-2' }, 'Forensic Techniques'),
+              FORENSIC.techniques.map(function(t, i) {
+                return h('div', { key: i, className: 'bg-white border border-slate-200 rounded p-2 mb-1 text-xs' },
+                  h('div', { className: 'font-bold text-slate-700' }, t.name),
+                  h('div', { className: 'text-slate-800' }, t.what),
+                  h('div', { className: 'text-amber-700' }, 'Accuracy: ' + t.accuracy),
+                  h('div', { className: 'text-cyan-700 italic' }, 'Uses: ' + t.uses)
+                );
+              })
+            ),
+            h('div', { className: 'bg-purple-50 border border-purple-200 rounded-xl p-3' },
+              h('div', { className: 'text-sm font-bold text-purple-700 mb-2' }, 'Famous Cases'),
+              FORENSIC.famousCases.map(function(c, i) {
+                return h('div', { key: i, className: 'bg-white border border-purple-200 rounded p-2 mb-1 text-xs' },
+                  h('div', { className: 'font-bold text-purple-700' }, c.case),
+                  h('div', { className: 'text-slate-800' }, 'Evidence: ' + c.evidence),
+                  h('div', { className: 'text-emerald-700 italic' }, c.outcome)
+                );
+              })
+            )
+          ),
+
+          // ════════════════════════════════════════
+          // CAREERS SUB-TOOL
+          // ════════════════════════════════════════
+          subtool === 'careers' && h('div', null,
+            h('p', { className: 'text-xs text-slate-600 italic mb-3' }, '20+ chemistry careers spanning research, industry, education, regulation.'),
+            CHEM_CAREERS.map(function(c, i) {
+              return h('div', { key: i, className: 'bg-white border border-amber-300 rounded p-2 mb-1 text-xs' },
+                h('div', { className: 'flex justify-between mb-1' },
+                  h('span', { className: 'font-bold text-amber-700' }, c.title),
+                  h('span', { className: 'font-mono text-emerald-700' }, c.salary)
+                ),
+                h('div', { className: 'text-slate-800' }, 'Education: ' + c.education),
+                h('div', { className: 'text-cyan-700' }, 'Path: ' + c.path),
+                h('div', { className: 'text-purple-700 italic' }, 'Employers: ' + c.employers)
+              );
+            })
+          ),
+
+          // ════════════════════════════════════════
+          // LAB KITS SUB-TOOL
+          // ════════════════════════════════════════
+          subtool === 'lab_kits' && h('div', null,
+            h('p', { className: 'text-xs text-slate-600 italic mb-3' }, '15 ready-to-use classroom labs for K-12.'),
+            LAB_KITS.map(function(k, i) {
+              return h('div', { key: i, className: 'bg-white border border-blue-300 rounded p-2 mb-1 text-xs' },
+                h('div', { className: 'flex justify-between mb-1' },
+                  h('span', { className: 'font-bold text-blue-700' }, k.title),
+                  h('span', { className: 'font-mono text-amber-700 text-[10px]' }, k.grade + ' · ' + k.duration)
+                ),
+                h('div', { className: 'text-slate-800' }, 'Concept: ' + k.concept),
+                h('div', { className: 'text-cyan-700' }, 'Materials: ' + k.materials),
+                h('details', { className: 'mt-1' },
+                  h('summary', { className: 'cursor-pointer text-emerald-700 font-bold' }, 'Steps'),
+                  h('ol', { className: 'mt-1 list-decimal list-inside space-y-1' },
+                    k.steps.map(function(s, si) { return h('li', { key: si, className: 'text-slate-700' }, s); })
+                  )
+                )
+              );
+            })
+          ),
+
+          // ════════════════════════════════════════
+          // MYTHBUSTERS SUB-TOOL
+          // ════════════════════════════════════════
+          subtool === 'mythbusters' && h('div', null,
+            h('p', { className: 'text-xs text-slate-600 italic mb-3' }, 'Common chemistry misconceptions debunked.'),
+            CHEM_MYTHS.map(function(m, i) {
+              return h('div', { key: i, className: 'bg-white border border-rose-300 rounded p-2 mb-2 text-xs' },
+                h('div', { className: 'flex items-start gap-2 mb-1' },
+                  h('span', { className: 'font-bold text-amber-700 flex-shrink-0' }, 'MYTH:'),
+                  h('span', { className: 'text-amber-900' }, m.myth)
+                ),
+                h('div', { className: 'flex items-start gap-2' },
+                  h('span', { className: 'font-bold text-emerald-700 flex-shrink-0' }, 'TRUTH:'),
+                  h('span', { className: 'text-emerald-900' }, m.truth)
+                )
+              );
+            })
+          ),
+
+          // ════════════════════════════════════════
+          // RECORDS SUB-TOOL
+          // ════════════════════════════════════════
+          subtool === 'records' && h('div', null,
+            h('p', { className: 'text-xs text-slate-600 italic mb-3' }, 'Chemistry superlatives.'),
+            h('div', { className: 'grid gap-2' },
+              CHEM_RECORDS.map(function(r, i) {
+                return h('div', { key: i, className: 'bg-white border border-yellow-300 rounded p-2 text-xs' },
+                  h('div', { className: 'flex justify-between mb-1' },
+                    h('span', { className: 'font-bold text-yellow-700' }, r.category),
+                    h('span', { className: 'font-mono text-amber-800 text-[10px]' }, r.value)
+                  ),
+                  h('div', { className: 'text-slate-800 font-bold' }, r.record),
+                  h('div', { className: 'text-slate-700 italic text-[10px]' }, r.notes)
+                );
+              })
+            )
+          ),
+
+          // ════════════════════════════════════════
+          // GLOSSARY SUB-TOOL
+          // ════════════════════════════════════════
+          subtool === 'glossary' && (function() {
+            var glossSearch = d._glossSearch || '';
+            var filtered = glossSearch ? CHEM_GLOSSARY.filter(function(g) {
+              return g.term.toLowerCase().indexOf(glossSearch.toLowerCase()) !== -1 || g.def.toLowerCase().indexOf(glossSearch.toLowerCase()) !== -1;
+            }) : CHEM_GLOSSARY;
+            return h('div', null,
+              h('p', { className: 'text-xs text-slate-600 italic mb-3' }, CHEM_GLOSSARY.length + ' chemistry terms.'),
+              h('div', { className: 'mb-3' },
+                h('input', { type: 'text', placeholder: 'Search terms...', value: glossSearch, onChange: function(e) { upd('_glossSearch', e.target.value); }, className: 'w-full px-3 py-2 text-sm border-2 border-indigo-300 rounded-lg' })
+              ),
+              h('div', { className: 'grid md:grid-cols-2 gap-2' },
+                filtered.map(function(g, i) {
+                  return h('div', { key: i, className: 'bg-white border border-indigo-200 rounded p-2 text-xs' },
+                    h('div', { className: 'font-bold text-indigo-700' }, g.term),
+                    h('div', { className: 'text-slate-800' }, g.def)
+                  );
+                })
+              )
+            );
+          })(),
+
+          // ════════════════════════════════════════
+          // DATA TABLES SUB-TOOL
+          // ════════════════════════════════════════
+          subtool === 'datatables' && h('div', null,
+            h('p', { className: 'text-xs text-slate-600 italic mb-3' }, 'Reference tables for chemistry.'),
+            h('div', { className: 'bg-cyan-50 border border-cyan-200 rounded-xl p-3 mb-3' },
+              h('div', { className: 'text-sm font-bold text-cyan-700 mb-2' }, 'Physical Constants'),
+              CHEM_DATA_TABLES.constants.map(function(c, i) {
+                return h('div', { key: i, className: 'bg-white border border-cyan-200 rounded p-2 mb-1 text-xs flex justify-between' },
+                  h('span', { className: 'font-bold text-cyan-700' }, c.name + ' (' + c.symbol + ')'),
+                  h('span', { className: 'font-mono text-slate-800' }, c.value)
+                );
+              })
+            ),
+            h('div', { className: 'bg-amber-50 border border-amber-200 rounded-xl p-3 mb-3' },
+              h('div', { className: 'text-sm font-bold text-amber-700 mb-2' }, 'Unit Conversions'),
+              CHEM_DATA_TABLES.conversions.map(function(c, i) {
+                return h('div', { key: i, className: 'bg-white border border-amber-200 rounded p-2 mb-1 text-xs flex justify-between' },
+                  h('span', { className: 'text-slate-700' }, c.from),
+                  h('span', { className: 'font-mono text-amber-700' }, c.to)
+                );
+              })
+            ),
+            h('div', { className: 'bg-purple-50 border border-purple-200 rounded-xl p-3 mb-3' },
+              h('div', { className: 'text-sm font-bold text-purple-700 mb-2' }, 'Average Bond Energies'),
+              h('div', { className: 'grid grid-cols-2 gap-1' },
+                CHEM_DATA_TABLES.bondEnergies.map(function(b, i) {
+                  return h('div', { key: i, className: 'bg-white border border-purple-200 rounded p-1 text-[10px] flex justify-between' },
+                    h('span', { className: 'font-mono font-bold text-purple-700' }, b.bond),
+                    h('span', { className: 'text-slate-700' }, b.energy)
+                  );
+                })
+              )
+            ),
+            h('div', { className: 'bg-rose-50 border border-rose-200 rounded-xl p-3 mb-3' },
+              h('div', { className: 'text-sm font-bold text-rose-700 mb-2' }, 'Electronegativity Values'),
+              h('div', { className: 'grid grid-cols-4 gap-1' },
+                CHEM_DATA_TABLES.electronegativity.map(function(e, i) {
+                  return h('div', { key: i, className: 'bg-white border border-rose-200 rounded p-1 text-[10px] flex justify-between' },
+                    h('span', { className: 'font-mono font-bold text-rose-700' }, e.elem),
+                    h('span', { className: 'text-slate-700' }, e.value)
+                  );
+                })
+              )
+            ),
+            h('div', { className: 'bg-emerald-50 border border-emerald-200 rounded-xl p-3' },
+              h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, 'Specific Heat Capacities'),
+              CHEM_DATA_TABLES.specificHeats.map(function(s, i) {
+                return h('div', { key: i, className: 'bg-white border border-emerald-200 rounded p-2 mb-1 text-xs flex justify-between' },
+                  h('span', { className: 'text-emerald-700' }, s.substance),
+                  h('span', { className: 'font-mono text-slate-800' }, s.c)
+                );
+              })
+            )
+          ),
+
+          // ════════════════════════════════════════
+          // FINALE SUB-TOOL
+          // ════════════════════════════════════════
+          subtool === 'finale' && h('div', null,
+            h('div', { className: 'bg-gradient-to-br from-yellow-100 to-amber-100 border-2 border-amber-400 rounded-xl p-6 text-center mb-4' },
+              h('div', { className: 'text-6xl mb-2' }, '🎆'),
+              h('div', { className: 'text-2xl font-bold text-amber-800 mb-1' }, 'Chemistry Mastery Achievement'),
+              h('div', { className: 'text-sm text-amber-700 italic' }, '36 sub-tools · 118 elements · Hundreds of facts')
+            ),
+            h('div', { className: 'bg-white border border-amber-300 rounded-xl p-4 mb-3' },
+              h('div', { className: 'text-sm font-bold text-amber-700 mb-2' }, '📚 What You Now Have Access To'),
+              h('ul', { className: 'space-y-1 list-disc list-inside text-xs text-slate-800' },
+                [
+                  'Balance chemical equations with 12 presets across 3 difficulty tiers',
+                  'Explore 5 reaction types with 15+ example reactions',
+                  'Stoichiometry calculator + molar mass tool',
+                  'Molecular ball-and-stick viewer',
+                  'GHS lab safety symbols + emergency response',
+                  '70+ challenge questions in 3 difficulty tiers',
+                  'Element Battle game with chemistry questions',
+                  'Grade-banded learn content (K-2, 3-5, 6-8, 9-12)',
+                  'Element Encyclopedia: 118 elements with deep profiles',
+                  'Periodic Table Atlas: groups + periodic trends',
+                  '40+ Famous Reactions with mechanism + context',
+                  'Industrial Chemistry: 18 major processes',
+                  'AP Chemistry curriculum: 9 units + exam tips',
+                  '30+ Lab Techniques with steps + hazards',
+                  '25 Famous Chemists with biographies',
+                  'Chemistry History: 39 major events',
+                  'Acids & Bases: theories, strong/weak, pH, buffers',
+                  'Redox: half-reactions, cells, batteries',
+                  'Organic Chemistry: functional groups + reactions',
+                  'Biochemistry: macromolecules, amino acids, DNA, metabolism',
+                  'Thermodynamics: 4 laws, key concepts, examples',
+                  'Kinetics: rate laws, mechanisms, Arrhenius',
+                  'Equilibrium: Keq, Le Chatelier, Ksp',
+                  'Gas Laws: 6 fundamental laws + kinetic theory',
+                  'Solutions: concentration, solubility, colligative',
+                  'Nuclear Chemistry: radiation types, half-lives, medical uses',
+                  'Environmental Chemistry: 9 major topics + green chemistry',
+                  'Pharmaceutical Chemistry: drug development + famous drugs',
+                  'Materials Science: 8 classes + polymers',
+                  'Food Chemistry: cooking reactions + additives',
+                  'Forensic Chemistry: techniques + famous cases',
+                  '20+ Chemistry Careers with salary + path',
+                  '15 Lab Kits / Lesson Plans for K-12',
+                  '17 Chemistry Mythbusters',
+                  '20 Chemistry Records',
+                  '200+ Glossary terms',
+                  'Reference Data Tables: constants, conversions, bonds'
+                ].map(function(item, i) { return h('li', { key: i, className: 'leading-relaxed' }, item); })
+              )
+            ),
+            h('div', { className: 'bg-emerald-50 border border-emerald-300 rounded-xl p-4 mb-3' },
+              h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, '🎯 Next Steps'),
+              h('ul', { className: 'space-y-1 list-disc list-inside text-xs text-emerald-900' },
+                [
+                  'Try a hands-on lab from the Lab Kits',
+                  'Take the Challenge quiz',
+                  'Battle elements in Element Battle',
+                  'Look up your favorite element',
+                  'Read about a famous chemist',
+                  'Practice balancing an equation',
+                  'Share what you learned with a friend'
+                ].map(function(item, i) { return h('li', { key: i }, item); })
+              )
+            ),
+            h('div', { className: 'bg-purple-50 border border-purple-300 rounded-xl p-4 text-center' },
+              h('div', { className: 'text-base font-bold text-purple-700 mb-2' }, '✨ A Closing Thought'),
+              h('div', { className: 'text-sm text-purple-900 italic leading-relaxed' },
+                'Chemistry is the science of substances + their transformations. ',
+                'Every atom in your body was forged in a star. ',
+                'Every reaction you observe was already happening 4 billion years ago. ',
+                'You are not separate from chemistry. You ARE chemistry. ',
+                'Now you have the tools to understand the world you\'re made of.'
+              )
+            ),
+            h('div', { className: 'text-center mt-6 text-xs text-slate-500 italic' }, 'ChemBalance v3.x · AlloFlow STEM Lab')
+          ),
+
 
           // ── Footer ──
           h('div', { className: 'flex gap-2 mt-4 pt-3 border-t border-slate-200' },
