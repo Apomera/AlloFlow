@@ -79,6 +79,10 @@ class PictionaryHost {
     this.onGuestLeft = config.onGuestLeft || (() => {});
     this.onStroke = config.onStroke || (() => {});
     this.onGuess = config.onGuess || (() => {});
+    // Fired when a drawer broadcasts an undo so the host view can drop the
+    // stroke from its local rendering state (the host's strokeHistory buffer
+    // is updated inside _onIncomingStrokeUndo).
+    this.onStrokeUndo = config.onStrokeUndo || (() => {});
     // Fired when an active round auto-resolves due to timer expiration. The
     // view uses this to flip its own round-resolved local state since the
     // resolution didn't originate from a user click.
@@ -158,6 +162,8 @@ class PictionaryHost {
           if (!parsed || !parsed.type) return;
           if (parsed.type === 'stroke' && parsed.payload) {
             this._onIncomingStroke(uid, codename, parsed.payload);
+          } else if (parsed.type === 'strokeUndo' && parsed.payload && parsed.payload.strokeId) {
+            this._onIncomingStrokeUndo(uid, parsed.payload.strokeId);
           } else if (parsed.type === 'guess' && parsed.payload) {
             this.onGuess(uid, codename, parsed.payload);
           }
@@ -201,6 +207,24 @@ class PictionaryHost {
       }
     });
     this.onStroke(senderUid, senderCodename, augmented);
+  }
+  _onIncomingStrokeUndo(senderUid, strokeId) {
+    if (!this.activeRound || !this.activeRound.drawerUids.has(senderUid)) return;
+    // Only let a drawer undo their own strokes — silently no-op for everyone else.
+    const idx = this.strokeHistory.findIndex((s) => s && s.strokeId === strokeId);
+    if (idx < 0) return;
+    if (this.strokeHistory[idx].uid !== senderUid) return;
+    this.strokeHistory.splice(idx, 1);
+    // Re-broadcast to all peers (including other drawers + guessers) so their
+    // canvases drop the stroke too. Sender already dropped it locally.
+    const msg = JSON.stringify({ type: 'strokeUndo', payload: { strokeId } });
+    this.peers.forEach((peer, uid) => {
+      if (uid === senderUid) return;
+      if (peer.dc && peer.dc.readyState === 'open') {
+        try { peer.dc.send(msg); } catch (_) {}
+      }
+    });
+    this.onStrokeUndo(senderUid, strokeId);
   }
   startRound(roundData) {
     // roundData: { concept, drawerUids: string[], durationMs?: number }
@@ -311,6 +335,7 @@ class PictionaryGuest {
     this.onRoundResolved = config.onRoundResolved || (() => {});
     this.onStroke = config.onStroke || (() => {});
     this.onStrokeHistory = config.onStrokeHistory || (() => {});
+    this.onStrokeUndo = config.onStrokeUndo || (() => {});
     this.onCanvasClear = config.onCanvasClear || (() => {});
     this.pc = null;
     this.dc = null;
@@ -345,6 +370,7 @@ class PictionaryGuest {
         if (parsed.type === 'roundStart') this.onRoundStart(parsed.payload);
         else if (parsed.type === 'roundResolved') this.onRoundResolved(parsed.payload);
         else if (parsed.type === 'stroke') this.onStroke(parsed.payload);
+        else if (parsed.type === 'strokeUndo' && parsed.payload && parsed.payload.strokeId) this.onStrokeUndo(parsed.payload.strokeId);
         else if (parsed.type === 'strokeHistory') this.onStrokeHistory((parsed.payload && parsed.payload.strokes) || []);
         else if (parsed.type === 'canvasClear') this.onCanvasClear();
       } catch (_) {}
@@ -391,6 +417,10 @@ class PictionaryGuest {
   sendStroke(stroke) {
     if (!this.dc || this.dc.readyState !== 'open') return false;
     try { this.dc.send(JSON.stringify({ type: 'stroke', payload: stroke })); return true; } catch (_) { return false; }
+  }
+  sendStrokeUndo(strokeId) {
+    if (!this.dc || this.dc.readyState !== 'open') return false;
+    try { this.dc.send(JSON.stringify({ type: 'strokeUndo', payload: { strokeId } })); return true; } catch (_) { return false; }
   }
   sendGuess(text) {
     if (!this.dc || this.dc.readyState !== 'open') return false;
@@ -694,6 +724,7 @@ const PictionaryHostView = React.memo((props) => {
       onGuestConnected: (uid, codename) => setConnectedGuests((prev) => ({ ...prev, [uid]: codename })),
       onGuestLeft: (uid) => setConnectedGuests((prev) => { const next = { ...prev }; delete next[uid]; return next; }),
       onStroke: (uid, codename, stroke) => setStrokes((prev) => prev.concat([stroke])),
+      onStrokeUndo: (uid, strokeId) => setStrokes((prev) => prev.filter((s) => s.strokeId !== strokeId)),
       onGuess: (uid, codename, payload) => setGuessFeed((prev) => prev.concat([{
         id: _pic_genId('guess'), uid, codename, text: payload.text, ts: payload.timestamp || Date.now(), marked: null,
       }])),
@@ -994,11 +1025,31 @@ const PictionaryGuestOverlay = React.memo((props) => {
       onConnected: () => setConnected(true),
       onDisconnected: () => setConnected(false),
       onFailed: () => setConnected(false),
-      onRoundStart: (round) => { setActiveRound(round); setStrokes([]); setMyStrokeIds([]); setResolved(null); },
+      onRoundStart: (round) => {
+        setActiveRound(round);
+        setStrokes([]);
+        setMyStrokeIds([]);
+        setResolved(null);
+        // Per-drawer default color: each drawer gets a distinct hue from the
+        // palette based on their position in the drawerUids array. Lets the
+        // teacher and guessers visually parse who drew what during multi-drawer
+        // collaboration. Drawer can still change colors freely.
+        if (round && round.isDrawer && Array.isArray(round.drawerUids)) {
+          const myPos = round.drawerUids.indexOf(userUid);
+          if (myPos >= 0) {
+            const defaultColor = PEN_COLORS[myPos % PEN_COLORS.length];
+            if (defaultColor) {
+              setColor(defaultColor.hex);
+              setMode('pen');
+            }
+          }
+        }
+      },
       onRoundResolved: (r) => { setResolved(r); setActiveRound(null); },
       onStroke: (stroke) => setStrokes((prev) => prev.concat([stroke])),
       onStrokeHistory: (history) => setStrokes(history || []),
       onCanvasClear: () => { setStrokes([]); setMyStrokeIds([]); },
+      onStrokeUndo: (strokeId) => setStrokes((prev) => prev.filter((s) => s.strokeId !== strokeId)),
     });
     guest.join().catch((err) => console.warn('[Pictionary guest] join failed:', err && err.message));
     guestRef.current = guest;
@@ -1019,9 +1070,10 @@ const PictionaryGuestOverlay = React.memo((props) => {
     const lastId = myStrokeIds[myStrokeIds.length - 1];
     setMyStrokeIds((prev) => prev.slice(0, -1));
     setStrokes((prev) => prev.filter((s) => s.strokeId !== lastId));
-    // Note: this is a LOCAL undo — peers still see the stroke. Sending a
-    // dedicated 'eraseStroke' message would let everyone roll it back, but
-    // for v1 we keep undo local-only to avoid the conflict surface.
+    // Broadcast so every peer (other drawers, guessers, host) drops the stroke
+    // from their canvas too. Host validates that the originator owns the stroke
+    // before re-broadcasting, so undo only ever affects the sender's own work.
+    if (guestRef.current) guestRef.current.sendStrokeUndo(lastId);
   };
   const handleSubmitGuess = () => {
     const t = guessText.trim();

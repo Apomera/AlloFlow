@@ -97,6 +97,8 @@ class PictionaryHost {
     });
     this.onGuess = config.onGuess || (() => {
     });
+    this.onStrokeUndo = config.onStrokeUndo || (() => {
+    });
     this.onRoundAutoResolved = config.onRoundAutoResolved || (() => {
     });
     this.peers = /* @__PURE__ */ new Map();
@@ -182,6 +184,8 @@ class PictionaryHost {
           if (!parsed || !parsed.type) return;
           if (parsed.type === "stroke" && parsed.payload) {
             this._onIncomingStroke(uid, codename, parsed.payload);
+          } else if (parsed.type === "strokeUndo" && parsed.payload && parsed.payload.strokeId) {
+            this._onIncomingStrokeUndo(uid, parsed.payload.strokeId);
           } else if (parsed.type === "guess" && parsed.payload) {
             this.onGuess(uid, codename, parsed.payload);
           }
@@ -226,6 +230,24 @@ class PictionaryHost {
       }
     });
     this.onStroke(senderUid, senderCodename, augmented);
+  }
+  _onIncomingStrokeUndo(senderUid, strokeId) {
+    if (!this.activeRound || !this.activeRound.drawerUids.has(senderUid)) return;
+    const idx = this.strokeHistory.findIndex((s) => s && s.strokeId === strokeId);
+    if (idx < 0) return;
+    if (this.strokeHistory[idx].uid !== senderUid) return;
+    this.strokeHistory.splice(idx, 1);
+    const msg = JSON.stringify({ type: "strokeUndo", payload: { strokeId } });
+    this.peers.forEach((peer, uid) => {
+      if (uid === senderUid) return;
+      if (peer.dc && peer.dc.readyState === "open") {
+        try {
+          peer.dc.send(msg);
+        } catch (_) {
+        }
+      }
+    });
+    this.onStrokeUndo(senderUid, strokeId);
   }
   startRound(roundData) {
     const drawerSet = new Set(roundData && roundData.drawerUids || []);
@@ -363,6 +385,8 @@ class PictionaryGuest {
     });
     this.onStrokeHistory = config.onStrokeHistory || (() => {
     });
+    this.onStrokeUndo = config.onStrokeUndo || (() => {
+    });
     this.onCanvasClear = config.onCanvasClear || (() => {
     });
     this.pc = null;
@@ -404,6 +428,7 @@ class PictionaryGuest {
         if (parsed.type === "roundStart") this.onRoundStart(parsed.payload);
         else if (parsed.type === "roundResolved") this.onRoundResolved(parsed.payload);
         else if (parsed.type === "stroke") this.onStroke(parsed.payload);
+        else if (parsed.type === "strokeUndo" && parsed.payload && parsed.payload.strokeId) this.onStrokeUndo(parsed.payload.strokeId);
         else if (parsed.type === "strokeHistory") this.onStrokeHistory(parsed.payload && parsed.payload.strokes || []);
         else if (parsed.type === "canvasClear") this.onCanvasClear();
       } catch (_) {
@@ -456,6 +481,15 @@ class PictionaryGuest {
     if (!this.dc || this.dc.readyState !== "open") return false;
     try {
       this.dc.send(JSON.stringify({ type: "stroke", payload: stroke }));
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+  sendStrokeUndo(strokeId) {
+    if (!this.dc || this.dc.readyState !== "open") return false;
+    try {
+      this.dc.send(JSON.stringify({ type: "strokeUndo", payload: { strokeId } }));
       return true;
     } catch (_) {
       return false;
@@ -747,6 +781,7 @@ const PictionaryHostView = React.memo((props) => {
         return next;
       }),
       onStroke: (uid, codename, stroke) => setStrokes((prev) => prev.concat([stroke])),
+      onStrokeUndo: (uid, strokeId) => setStrokes((prev) => prev.filter((s) => s.strokeId !== strokeId)),
       onGuess: (uid, codename, payload) => setGuessFeed((prev) => prev.concat([{
         id: _pic_genId("guess"),
         uid,
@@ -934,6 +969,16 @@ const PictionaryGuestOverlay = React.memo((props) => {
         setStrokes([]);
         setMyStrokeIds([]);
         setResolved(null);
+        if (round && round.isDrawer && Array.isArray(round.drawerUids)) {
+          const myPos = round.drawerUids.indexOf(userUid);
+          if (myPos >= 0) {
+            const defaultColor = PEN_COLORS[myPos % PEN_COLORS.length];
+            if (defaultColor) {
+              setColor(defaultColor.hex);
+              setMode("pen");
+            }
+          }
+        }
       },
       onRoundResolved: (r) => {
         setResolved(r);
@@ -944,7 +989,8 @@ const PictionaryGuestOverlay = React.memo((props) => {
       onCanvasClear: () => {
         setStrokes([]);
         setMyStrokeIds([]);
-      }
+      },
+      onStrokeUndo: (strokeId) => setStrokes((prev) => prev.filter((s) => s.strokeId !== strokeId))
     });
     guest.join().catch((err) => console.warn("[Pictionary guest] join failed:", err && err.message));
     guestRef.current = guest;
@@ -967,6 +1013,7 @@ const PictionaryGuestOverlay = React.memo((props) => {
     const lastId = myStrokeIds[myStrokeIds.length - 1];
     setMyStrokeIds((prev) => prev.slice(0, -1));
     setStrokes((prev) => prev.filter((s) => s.strokeId !== lastId));
+    if (guestRef.current) guestRef.current.sendStrokeUndo(lastId);
   };
   const handleSubmitGuess = () => {
     const t = guessText.trim();

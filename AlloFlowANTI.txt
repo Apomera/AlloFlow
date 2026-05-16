@@ -23631,7 +23631,21 @@ Return ONLY valid JSON in this format:
           sessionRef: (typeof sessionUnsubscribeRef !== 'undefined' && sessionUnsubscribeRef && sessionUnsubscribeRef.current && sessionUnsubscribeRef.current.docRef) || (activeSessionCode ? doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode) : null),
           writeToSession,
           callGemini,
-          sourceText: (generatedContent && (generatedContent.source || (generatedContent.data && generatedContent.data.sourceText))) || (typeof inputText !== 'undefined' ? inputText : ''),
+          sourceText: (() => {
+            // Anchor charts don't carry sourceText; if one is open, synthesize
+            // a sourceText snapshot from the chart's title + section labels +
+            // bullets so AI concept-suggest has meaningful context to suggest
+            // drawable concepts from the chart's terminology.
+            if (generatedContent && generatedContent.type === 'anchor-chart' && generatedContent.data) {
+              const d = generatedContent.data;
+              const sectionsTxt = (Array.isArray(d.sections) ? d.sections : [])
+                .map(s => `${s && s.label ? s.label : ''}: ${(s && Array.isArray(s.bullets) ? s.bullets : []).join(', ')}`)
+                .filter(line => line.replace(/^:\s*$/, ''))
+                .join('\n');
+              return `Anchor chart: ${d.title || ''}\n${sectionsTxt}`;
+            }
+            return (generatedContent && (generatedContent.source || (generatedContent.data && generatedContent.data.sourceText))) || (typeof inputText !== 'undefined' ? inputText : '');
+          })(),
           initialConceptIdeas: pictionaryIncomingConcepts,
         })
       }
