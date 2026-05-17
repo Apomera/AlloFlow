@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-05-17T20:34:11.758Z",
+  "generated": "2026-05-17T23:53:17.349Z",
   "count": 2,
   "total_keys_expected": 9307,
   "available": [
@@ -14,8 +14,8 @@
     {
       "slug": "spanish_latin_america",
       "display": "Spanish (Latin America)",
-      "keys": 7013,
-      "bytes": 506694,
+      "keys": 7452,
+      "bytes": 532155,
       "updated": "2026-05-17"
     }
   ]
