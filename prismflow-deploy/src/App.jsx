@@ -3803,6 +3803,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', 'https://alloflow-cdn.pages.dev/view_kokoro_offer_modal_module.js'); }; })();
     // ConfirmDialog stays eager — used by many widgets (delete unit, end session, clear edges, etc.).
     loadModule('ConfirmDialog', 'https://alloflow-cdn.pages.dev/view_confirm_dialog_module.js');
+    // PromptDialog (May 2026 polish pass): polished replacement for window.prompt(); shared by AlloFlowUX.
+    loadModule('PromptDialog', 'https://alloflow-cdn.pages.dev/view_prompt_dialog_module.js');
     window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', 'https://alloflow-cdn.pages.dev/view_hints_modal_module.js'); }; })();
     window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://alloflow-cdn.pages.dev/view_xp_modal_module.js'); }; })();
     window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', 'https://alloflow-cdn.pages.dev/view_storybook_export_modal_module.js'); }; })();
@@ -5679,6 +5681,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [isStudentBingoGame, setIsStudentBingoGame] = useState(false);
   const [isWordScrambleGame, setIsWordScrambleGame] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState(null);
+  const [promptDialog, setPromptDialog] = useState(null);
   const [bingoSettings, setBingoSettings] = useState({
       gridSize: 5,
       mode: 'term',
@@ -6544,6 +6547,62 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   };
   useEffect(() => {
       addToastRef.current = addToast;
+  }, []);
+
+  // ── window.AlloFlowUX — global polished-UX helper (May 2026 polish pass) ──
+  // Any module or inline script can call:
+  //   window.AlloFlowUX.toast(msg, type)        — non-blocking toast (success/error/warning/info)
+  //   window.AlloFlowUX.confirm(msg, opts)      → Promise<boolean>
+  //   window.AlloFlowUX.prompt(msg, default, opts) → Promise<string|null>
+  // All three gracefully fall back to native browser dialogs if React state
+  // hasn't initialized yet (e.g. during the very first module load).
+  useEffect(() => {
+    window.AlloFlowUX = {
+      toast: (message, type = 'info') => {
+        try { addToast(String(message), type); }
+        catch (_) { try { window.console && window.console.log && window.console.log('[Toast]', message); } catch (_) {} }
+      },
+      confirm: (message, opts = {}) => new Promise((resolve) => {
+        try {
+          setConfirmDialog({
+            message: String(message),
+            title: opts.title,
+            detail: opts.detail,
+            confirmText: opts.confirmText,
+            cancelText: opts.cancelText,
+            tone: opts.tone || 'warning',
+            onConfirm: () => resolve(true),
+            onCancel: () => resolve(false),
+          });
+        } catch (_) {
+          try { resolve(!!window.confirm(String(message))); }
+          catch (__) { resolve(false); }
+        }
+      }),
+      prompt: (message, defaultValue = '', opts = {}) => new Promise((resolve) => {
+        try {
+          setPromptDialog({
+            message: String(message),
+            defaultValue: defaultValue == null ? '' : String(defaultValue),
+            title: opts.title,
+            placeholder: opts.placeholder,
+            confirmText: opts.confirmText,
+            cancelText: opts.cancelText,
+            multiline: !!opts.multiline,
+            maxLength: opts.maxLength,
+            inputType: opts.inputType || 'text',
+            validate: opts.validate,
+            onSubmit: (v) => resolve(v),
+            onCancel: () => resolve(null),
+          });
+        } catch (_) {
+          try {
+            const v = window.prompt(String(message), defaultValue == null ? '' : String(defaultValue));
+            resolve(v == null ? null : String(v));
+          } catch (__) { resolve(null); }
+        }
+      }),
+    };
   }, []);
 
   const handleImportResearchJSON = useCallback((file) => {
@@ -21214,6 +21273,7 @@ ${_toolList}
       </div>
       {showSessionModal && activeSessionCode && <SessionModal activeSessionAppId={activeSessionAppId} activeSessionCode={activeSessionCode} addToast={addToast} appId={appId} copyToClipboard={copyToClipboard} db={db} deleteDoc={deleteDoc} doc={doc} handleSetShowGroupModalToTrue={handleSetShowGroupModalToTrue} handleSetShowSessionModalToFalse={handleSetShowSessionModalToFalse} sessionData={sessionData} setActiveSessionCode={setActiveSessionCode} setConfirmDialog={setConfirmDialog} setSessionData={setSessionData} setShowSessionModal={setShowSessionModal} t={t} toggleSessionMode={toggleSessionMode} warnLog={warnLog} />}
       {confirmDialog && <ConfirmDialog confirmDialog={confirmDialog} setConfirmDialog={setConfirmDialog} t={t} />}
+      {promptDialog && <PromptDialog promptDialog={promptDialog} setPromptDialog={setPromptDialog} t={t} />}
       {/* ── GroupSessionModal extracted to view_misc_panels_module.js (CDN) ── */}
       {(showGroupModal && activeSessionCode && sessionData) && window.AlloModules && window.AlloModules.GroupSessionModal && React.createElement(window.AlloModules.GroupSessionModal, {
           activeSessionCode, addToast, appId, db,
@@ -25246,6 +25306,12 @@ function KokoroOfferModal(props) {
 function ConfirmDialog(props) {
     var Real = window.AlloModules && window.AlloModules.ConfirmDialog && window.AlloModules.ConfirmDialog.ConfirmDialog;
     if (Real && Real !== ConfirmDialog) return React.createElement(Real, props);
+    return null;
+}
+// ── PromptDialog extracted to view_prompt_dialog_module.js (CDN) ──
+function PromptDialog(props) {
+    var Real = window.AlloModules && window.AlloModules.PromptDialog && window.AlloModules.PromptDialog.PromptDialog;
+    if (Real && Real !== PromptDialog) return React.createElement(Real, props);
     return null;
 }
 // ── HintsModal extracted to view_hints_modal_module.js (CDN) ──
