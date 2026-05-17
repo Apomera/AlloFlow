@@ -21514,10 +21514,10 @@ ${_toolList}
             overflow-x: auto;
           }
         }
-        /* ── WCAG 1.4.12 Text Spacing — ensure user-overridden line-height / letter-spacing
-           / word-spacing / paragraph-spacing don't get clipped by fixed-height containers ── */
-        /* Note: the codebase already uses Tailwind's leading-* and tracking-* via rem units,
-           which scale naturally. This rule ensures no inline `height` traps text overflow. */
+        /* WCAG 1.4.12 Text Spacing — let user-overridden line/letter/word/paragraph
+           spacing render without being clipped by fixed-height containers. The codebase
+           already uses Tailwind leading- and tracking- classes (rem units) which scale
+           naturally; this rule just ensures no inline height traps text overflow. */
         .allo-textbox, .allo-textbox * {
           line-height: inherit;
         }
