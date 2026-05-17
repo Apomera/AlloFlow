@@ -536,7 +536,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         background:
           'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(99,102,241,0.22), transparent 70%), ' +
           clGrainSvg + ', ' +
-          'linear-gradient(180deg, #0c1432 0%, #1e1b4b 50%, #0a0a1f 100%)',
+          'linear-gradient(180deg, #0c1432 0%, #131a3a 50%, #0a0a1f 100%)',
         backgroundRepeat: 'no-repeat, repeat, no-repeat',
         backgroundAttachment: 'fixed, scroll, fixed',
         minHeight: '100vh',

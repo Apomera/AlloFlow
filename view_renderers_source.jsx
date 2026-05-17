@@ -1305,11 +1305,15 @@ const renderOutlineContent = (deps) => {
                 amber:   { bg: 'bg-amber-50/70',   header: 'text-amber-800',   dot: 'text-amber-500' },
                 rose:    { bg: 'bg-rose-50/70',    header: 'text-rose-800',    dot: 'text-rose-500' },
             };
-            const renderQuadrant = (branch, colorKey, borders, quadrantLabel, includeImage) => {
+            const renderQuadrant = (branch, colorKey, borders, quadrantLabel, includeImage, isBottomRow) => {
                 const items = (branch.items || []).map(itemText).filter(Boolean);
                 const c = QUADRANT_COLORS[colorKey];
+                // Bottom-row quadrants get extra top-padding so the centered
+                // "term" pill (positioned at the row boundary) does not
+                // visually overlap their headers.
+                const padCls = isBottomRow ? 'px-5 pb-5 pt-10' : 'p-5';
                 return (
-                    <div className={`${c.bg} p-5 ${borders}`} aria-label={quadrantLabel}>
+                    <div className={`${c.bg} ${padCls} ${borders}`} aria-label={quadrantLabel}>
                         <h4 className={`font-black text-sm uppercase tracking-wider mb-3 ${c.header}`}>
                             {branch.title}
                         </h4>
@@ -1347,12 +1351,17 @@ const renderOutlineContent = (deps) => {
                         </div>
                     )}
                     <div className="grid grid-cols-2 gap-0 border-2 border-slate-400 rounded-2xl overflow-hidden shadow-lg bg-white relative" style={{ minHeight: '460px' }}>
-                        {renderQuadrant(defBranch,    'indigo',  'border-r border-b border-slate-300', 'Definition',     false)}
-                        {renderQuadrant(charBranch,   'emerald', 'border-b border-slate-300',          'Characteristics', false)}
-                        {renderQuadrant(exBranch,     'amber',   'border-r border-slate-300',          'Examples',        true)}
-                        {renderQuadrant(nonExBranch,  'rose',    '',                                   'Non-Examples',    false)}
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white border-4 border-slate-700 rounded-full px-6 py-3 shadow-2xl z-10 max-w-[220px]">
-                            <div className="text-center font-black text-lg text-slate-800 leading-tight">
+                        {renderQuadrant(defBranch,    'indigo',  'border-r border-b border-slate-300', 'Definition',     false, false)}
+                        {renderQuadrant(charBranch,   'emerald', 'border-b border-slate-300',          'Characteristics', false, false)}
+                        {renderQuadrant(exBranch,     'amber',   'border-r border-slate-300',          'Examples',        true,  true)}
+                        {renderQuadrant(nonExBranch,  'rose',    '',                                   'Non-Examples',    false, true)}
+                        {/* Centered vocabulary-term pill — sits exactly on the
+                            row+column intersection. Tighter px/py + smaller
+                            max-w keeps it visually balanced. Bottom-row
+                            quadrants have pt-10 to leave clear breathing room
+                            below this pill. */}
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white border-4 border-slate-700 rounded-full px-5 py-2 shadow-2xl z-10 max-w-[180px]">
+                            <div className="text-center font-black text-base text-slate-800 leading-tight whitespace-normal break-words">
                                 {main || 'Vocabulary Term'}
                             </div>
                         </div>

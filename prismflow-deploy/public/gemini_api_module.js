@@ -199,12 +199,15 @@ const createGeminiAPI = deps => {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.image}:generateContent${apiKey ? `?key=${apiKey}` : ''}`;
     const parts = [{
       text: prompt
-    }, {
-      inlineData: {
-        mimeType: "image/png",
-        data: base64Image
-      }
     }];
+    if (base64Image) {
+      parts.push({
+        inlineData: {
+          mimeType: "image/png",
+          data: base64Image
+        }
+      });
+    }
     if (referenceBase64) {
       parts.push({
         text: "Reference portrait to match:"

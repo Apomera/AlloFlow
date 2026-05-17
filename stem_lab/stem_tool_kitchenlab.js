@@ -1747,7 +1747,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         background:
           'radial-gradient(ellipse 70% 50% at 50% 0%, rgba(251,146,60,0.18), transparent 70%), ' +
           klGrainSvg + ', ' +
-          'linear-gradient(135deg, #1c1410 0%, #3a2418 50%, #1c1410 100%)',
+          'linear-gradient(135deg, #1c1410 0%, #251a13 50%, #1c1410 100%)',
         backgroundRepeat: 'no-repeat, repeat, no-repeat',
         backgroundAttachment: 'fixed, scroll, fixed',
         minHeight: '100vh',

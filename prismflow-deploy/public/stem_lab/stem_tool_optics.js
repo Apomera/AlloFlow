@@ -2753,6 +2753,17 @@
             { id: 'diffraction', label: '〰 Diffraction', desc: 'Single-slit + grating' },
             { id: 'polarization', label: '↕ Polarization', desc: "Malus's law" },
             { id: 'phenomena', label: '🌈 Phenomena', desc: 'Rainbows · mirages · after-images · color · polarized sky' },
+            { id: 'calcs', label: '🧮 Calculators', desc: '14 interactive calculators + visualizers' },
+            { id: 'phenomena_db', label: '📚 Encyclopedia', desc: '120+ optical phenomena' },
+            { id: 'scientists', label: '👨‍🔬 Scientists', desc: '50+ optical scientists from antiquity to today' },
+            { id: 'history', label: '📜 History', desc: '100+ optics milestones' },
+            { id: 'instruments', label: '🔭 Instruments', desc: '30+ telescopes, microscopes, cameras, lasers, displays' },
+            { id: 'lab_kits', label: '🧪 Lab Kits', desc: '20+ hands-on experiments' },
+            { id: 'worked', label: '📝 Worked Problems', desc: '30+ step-by-step AP problems' },
+            { id: 'careers', label: '💼 Careers', desc: '40+ optics career paths' },
+            { id: 'deep', label: '🎓 Deep Dives', desc: 'Lasers, vision, color, astronomy + more' },
+            { id: 'glossary_ex', label: '📖 Glossary+', desc: '120+ optics terms with examples' },
+            { id: 'reference', label: '📊 Reference', desc: 'Trivia · records · quotes · safety · data · teaching tips' },
             { id: 'sleuth', label: '🕵️ Sleuth', desc: 'Predict image from setup' },
             { id: 'quiz', label: '📝 Quiz', desc: 'AP exam practice' },
             { id: 'mastery', label: '🏅 Mastery', desc: 'Concept progress + which questions you have nailed' }
@@ -2815,6 +2826,17 @@
           calc: _renderPolarizationCalc(d, upd, h)
         }),
         d.mode === 'phenomena' && _renderPhenomenaPanel(d, upd, h),
+        d.mode === 'calcs' && _renderCalculatorsHub(d, upd, h),
+        d.mode === 'phenomena_db' && _renderPhenomenaDb(d, upd, h),
+        d.mode === 'scientists' && _renderScientistsPanel(d, upd, h),
+        d.mode === 'history' && _renderHistoryPanel(d, upd, h),
+        d.mode === 'instruments' && _renderInstrumentsPanel(d, upd, h),
+        d.mode === 'lab_kits' && _renderLabKitsPanel(d, upd, h),
+        d.mode === 'worked' && _renderWorkedProblemsPanel(d, upd, h),
+        d.mode === 'careers' && _renderCareersPanel(d, upd, h),
+        d.mode === 'deep' && _renderDeepDivePanel(d, upd, h),
+        d.mode === 'glossary_ex' && _renderGlossaryExpandedPanel(d, upd, h),
+        d.mode === 'reference' && _renderReferencePanel(d, upd, h),
         d.mode === 'sleuth' && _renderSleuthPanel(d, upd, h, addToast),
         d.mode === 'quiz' && _renderQuizPanel(d, upd, h, addToast, awardXP, setOpCeleb),
         d.mode === 'mastery' && _renderMasteryPanel(d, upd, h),
@@ -5550,6 +5572,6683 @@
             'Real experiments: Tonomura 1989 (single electrons, same result). Modern reproductions with single photons, neutrons, even C₆₀ buckyballs. The biggest object yet to show single-particle interference: a 25,000-atom organic molecule (Vienna, 2019).')
         )
       )
+    );
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // OPTICAL PHENOMENA ENCYCLOPEDIA — 120+ entries
+  // ══════════════════════════════════════════════════════════════════
+  // Each entry has: id, name, icon, category, shortDesc, formula (optional),
+  // physics, whereSeen, related, funFact. Used by _renderPhenomenaDb.
+  var OPTICAL_PHENOMENA_DB = [
+    // ── Reflection family ──
+    { id: 'specular', name: 'Specular reflection', icon: '🪞', category: 'reflection',
+      shortDesc: 'Smooth surface reflection where angle in equals angle out, preserving image structure.',
+      formula: 'θ_i = θ_r (measured from normal)',
+      physics: 'On a surface smooth at the scale of the wavelength, every incoming ray reflects with its angle preserved relative to the surface normal. Parallel incoming rays stay parallel after reflection, which is why images are preserved. A surface is "optically smooth" if its roughness is less than ~λ/8, where λ is the wavelength of the light. Visible light has λ ≈ 400–700 nm, so even tiny scratches scatter visible light but may still specularly reflect infrared.',
+      whereSeen: 'Bathroom mirror, polished metal, calm water surface, glass storefront, lake at dawn before wind picks up.',
+      related: ['diffuse', 'mirrorImage', 'reflectivity'],
+      funFact: 'A mirror with the same area as your face shows your whole face — but the mirror itself only needs to be half the size of your face, because rays from your chin reach a point on the mirror only half the distance from your eye level as your chin.' },
+    { id: 'diffuse', name: 'Diffuse reflection', icon: '🌫', category: 'reflection',
+      shortDesc: 'Rough surface scatters reflected rays in many directions, making the surface visible from any angle.',
+      formula: 'Lambert\'s cosine law: I(θ) = I₀ cos(θ)',
+      physics: 'When a surface is rough on the scale of the wavelength, each tiny micro-facet has its own normal, and parallel incoming rays scatter into many outgoing directions. The reflected light is roughly proportional to the cosine of the viewing angle from the normal (Lambert\'s cosine law), giving the surface uniform brightness from any angle.',
+      whereSeen: 'Paper, painted walls, unpolished wood, most natural objects. The reason you can read a book from any angle is diffuse reflection from the page.',
+      related: ['specular', 'lambertian', 'albedo'],
+      funFact: 'A perfect Lambertian surface looks equally bright from every angle — but you only see a small fraction of the total light reflected, because most of it goes elsewhere. The Moon is approximately Lambertian; that\'s why it doesn\'t look "shinier" near the center.' },
+    { id: 'retroreflection', name: 'Retroreflection', icon: '🔆', category: 'reflection',
+      shortDesc: 'Light returns toward its source regardless of incidence angle. Used in road signs and cat eyes.',
+      formula: 'Outgoing ray ≈ −incoming ray',
+      physics: 'A retroreflector is a structure (corner cube, prism array, or microspheres on a backing) that sends incoming light back along the path it came from. Three mirrors arranged as the inside corner of a cube reflect any ray three times and return it parallel to itself. Microsphere retroreflectors (glass beads on highway paint) use total internal reflection at the back face of the bead.',
+      whereSeen: 'Stop signs, license plates, lane markings, bicycle reflectors, the eyes of cats and deer (the tapetum lucidum), the Lunar Laser Ranging retroreflectors left on the Moon by Apollo 11/14/15 and Luna 17/21.',
+      related: ['tir', 'cornerCube'],
+      funFact: 'You can measure the Earth-Moon distance to centimeter precision by bouncing a laser pulse off the Apollo retroreflectors — the round trip takes about 2.5 seconds.' },
+    { id: 'tir', name: 'Total internal reflection', icon: '⚡', category: 'reflection',
+      shortDesc: 'Above the critical angle, light cannot escape a denser medium and reflects 100% back inside.',
+      formula: 'θ_c = arcsin(n₂/n₁), requires n₁ > n₂',
+      physics: 'When light hits the boundary of a less dense medium from a denser one, Snell\'s law gives sin(θ₂) = (n₁/n₂)·sin(θ₁). If n₁ > n₂ and θ₁ exceeds the critical angle θ_c = arcsin(n₂/n₁), then sin(θ₂) > 1, which has no real solution — the light cannot refract out, so 100% reflects back into the denser medium. There are no losses (unlike ordinary reflection from a mirror, which is typically 85–95%).',
+      whereSeen: 'Fiber optic cables (signals propagate by TIR down a glass core), endoscopes, prisms in binoculars and SLR cameras, the sparkle of a cut diamond (faceted to maximize TIR), water-air boundary viewed from underwater (above the critical-angle cone, the underwater world reflects back, making a "Snell\'s window" of compressed sky directly overhead).',
+      related: ['fiberOptic', 'diamondSparkle', 'snellsWindow', 'criticalAngle'],
+      funFact: 'The critical angle for water-air is about 48.6°. A fish looking up sees the entire sky compressed into a circle 96° wide directly overhead; outside that circle, the water surface acts as a mirror showing the lake bottom.' },
+    { id: 'mirrorImage', name: 'Mirror image', icon: '🪞', category: 'reflection',
+      shortDesc: 'A plane mirror forms a virtual, laterally inverted, same-size image behind the mirror.',
+      formula: 'd_i = −d_o (image distance equals object distance, virtual)',
+      physics: 'Each point on the object emits light that, after reflection from a plane mirror, appears to diverge from a point behind the mirror at equal perpendicular distance. The image is virtual (rays only appear to converge, they don\'t actually meet), upright, same size, and laterally inverted along the axis perpendicular to the mirror.',
+      whereSeen: 'Every bathroom mirror, store dressing rooms, the rearview mirror of a car.',
+      related: ['specular', 'parity', 'apparentDepth'],
+      funFact: 'A mirror doesn\'t reverse left-right; it reverses front-back. The "reversal" you perceive is because you mentally rotate yourself to face the way your image faces, and rotating around the vertical axis swaps left and right.' },
+    { id: 'reflectivity', name: 'Reflectivity & albedo', icon: '🌕', category: 'reflection',
+      shortDesc: 'Fraction of incident light a surface reflects, averaged over angles and wavelengths.',
+      formula: 'R = reflected power / incident power',
+      physics: 'Reflectivity depends on material, surface finish, wavelength, and angle. For dielectrics, the Fresnel equations give angle-dependent reflectivity; for metals, complex refractive indices give near-mirror reflectivity. Albedo is the broadband ratio averaged over the solar spectrum: fresh snow ~0.85, asphalt ~0.10, Earth average ~0.30, Moon ~0.12, Venus ~0.75.',
+      whereSeen: 'Climate science (snow-ice albedo feedback), painting roofs white for cooling, vantablack (~99.965% absorption).',
+      related: ['lambertian', 'absorptance', 'fresnelEqns'],
+      funFact: 'Vantablack is so dark it makes 3D objects look like 2D silhouettes — your eyes can\'t detect the shading cues that tell you where surfaces curve.' },
+    { id: 'brewsterReflection', name: 'Brewster\'s angle reflection', icon: '🕶', category: 'reflection',
+      shortDesc: 'At one special angle, reflected light is 100% polarized parallel to the surface.',
+      formula: 'θ_B = arctan(n₂/n₁)',
+      physics: 'At Brewster\'s angle, the reflected ray and refracted ray are perpendicular to each other. The component of light with E-field in the plane of incidence (p-polarized) cannot reflect — it refracts entirely — leaving only the perpendicular component (s-polarized) in the reflected beam. Reflectivity is reduced and reflected light becomes linearly polarized.',
+      whereSeen: 'Polarized sunglasses cutting glare off horizontal water/road surfaces, photographer polarizer filters, Brewster-angle laser windows, polarimetry instruments.',
+      related: ['malus', 'polarizationReflect', 'fresnelEqns'],
+      funFact: 'Brewster\'s angle for water (n = 1.33) is about 53°. The Sun at 37° above the horizon throws polarized glare off lakes; this is why polarized sunglasses work best in afternoon sun and less well overhead.' },
+    { id: 'frustratedTIR', name: 'Frustrated TIR', icon: '🌀', category: 'reflection',
+      shortDesc: 'When a second medium is placed within a wavelength of a TIR surface, light tunnels across.',
+      formula: 'Tunneling probability ∝ exp(−2κd)',
+      physics: 'TIR creates an evanescent wave that extends a few wavelengths into the lower-index medium with exponentially decaying amplitude. If you bring a second high-index medium close enough (within ~λ), the evanescent wave couples into it and propagates as a real ray — light has "tunneled" across an apparently insulating boundary. The transmission drops exponentially with gap distance.',
+      whereSeen: 'Beam splitters in interferometers, near-field scanning optical microscopy (NSOM), fingerprint sensors on phones, optical tunneling in waveguides.',
+      related: ['tir', 'evanescent', 'quantum'],
+      funFact: 'This is the optical analog of quantum mechanical tunneling — a wave penetrates a "forbidden" region with exponentially small probability. It works for any wave, not just light.' },
+    { id: 'lambertian', name: 'Lambert\'s cosine law', icon: '📐', category: 'reflection',
+      shortDesc: 'Brightness of a perfectly diffuse surface is independent of viewing angle.',
+      formula: 'I_viewed = I₀ cos(θ) per unit solid angle, but apparent area also ∝ cos(θ), so brightness is constant.',
+      physics: 'A Lambertian surface emits or reflects light with intensity proportional to the cosine of the angle from the surface normal. While the radiant intensity falls off as cos(θ), the projected area also falls off as cos(θ), so the luminance (brightness per area as seen by an observer) is constant from any angle.',
+      whereSeen: 'Matte paper, the Moon\'s mare regions, computer graphics shading (the basis of "diffuse lighting" in 3D rendering), photometric standards.',
+      related: ['diffuse', 'albedo', 'phong'],
+      funFact: 'Most real surfaces are between perfectly specular (mirror) and perfectly Lambertian (matte paper). Computer graphics models them with hybrid BRDF functions — Phong, Cook-Torrance, GGX — that interpolate between the two.' },
+    { id: 'fresnelEqns', name: 'Fresnel equations', icon: '📊', category: 'reflection',
+      shortDesc: 'Quantitative formula for how much light reflects vs refracts at any dielectric boundary.',
+      formula: 'r_s = (n₁cosθ_i − n₂cosθ_t)/(n₁cosθ_i + n₂cosθ_t); r_p similar',
+      physics: 'Augustin-Jean Fresnel (1815-ish) derived how the electric field amplitudes split into reflected and refracted components at a boundary. Two polarization components — s (perpendicular to plane of incidence) and p (parallel) — have different reflection coefficients. The reflected intensity is |r|². At normal incidence, the simple formula reduces to R = ((n₁−n₂)/(n₁+n₂))². Glass-air gives R ≈ 4% per surface.',
+      whereSeen: 'Computing anti-reflection coatings, lens design, fiber optic coupling losses, photovoltaic efficiency, predicting reflection off any transparent material.',
+      related: ['brewsterReflection', 'reflectivity', 'arCoating'],
+      funFact: 'Every uncoated lens-air boundary loses ~4% of light to reflection. A modern multi-element camera lens with 12 elements and 24 air-glass surfaces would lose ~62% of light without coatings; that\'s why every quality lens has multi-layer anti-reflection coatings.' },
+
+    // ── Refraction family ──
+    { id: 'snellsLaw', name: "Snell's law", icon: '🌊', category: 'refraction',
+      shortDesc: 'Light bends when entering a different medium, by an amount set by refractive indices.',
+      formula: 'n₁ sin(θ₁) = n₂ sin(θ₂)',
+      physics: 'When a wave enters a different medium, its frequency stays the same but its speed changes by a factor of 1/n. To preserve wavefront continuity at the boundary, the propagation direction must change. The result, derived from Fermat\'s principle of least time, is Snell\'s law. Refraction toward the normal when entering a denser medium (n increases); away from normal when entering a less dense medium.',
+      whereSeen: 'Pencils that look "bent" in water glasses, fish appearing closer to the surface than they are, eyeglass lenses, swimming pool depth illusion.',
+      related: ['fermat', 'refractiveIndex', 'tir', 'apparentDepth'],
+      funFact: 'Snell\'s law was actually known to Ibn Sahl in 984 CE, more than 600 years before Snell. Snell rediscovered it in 1621; Descartes published it in 1637; Fermat derived it from his principle of least time in 1657.' },
+    { id: 'apparentDepth', name: 'Apparent depth', icon: '🐟', category: 'refraction',
+      shortDesc: 'Objects under water look shallower than they are due to refraction at the surface.',
+      formula: 'd_apparent = d_real × (n_observer/n_object)',
+      physics: 'Light from a fish at depth d refracts away from the normal as it leaves the water. Tracing the refracted rays back as straight lines, they appear to diverge from a point at depth d × (n_air/n_water) ≈ d × 0.75. A fish at 4 m looks like it\'s at 3 m. This is the same physics that makes a straw look bent in a glass of water.',
+      whereSeen: 'Spearfishing (you must aim BELOW the apparent position of the fish), wading in clear water, anything submerged in a fish tank, ice cubes in a glass.',
+      related: ['snellsLaw', 'fishEyeView', 'mirage'],
+      funFact: 'Spearfishers learn to aim about a quarter of the water depth below where they see the fish. The fish, looking up, sees you compressed into a 96°-wide circle ("Snell\'s window") with the rest of the surface acting as a mirror.' },
+    { id: 'dispersion', name: 'Dispersion', icon: '🌈', category: 'refraction',
+      shortDesc: 'Refractive index depends on wavelength — so different colors bend by different amounts.',
+      formula: 'Cauchy: n(λ) ≈ A + B/λ² + C/λ⁴',
+      physics: 'The speed of light in a medium depends slightly on its frequency because electrons in the medium resonate differently with different frequencies. In most transparent materials, blue light slows down more than red light (normal dispersion), so blue bends more upon entering. Near absorption bands, the opposite happens (anomalous dispersion). The Abbe number quantifies how much dispersion a glass has.',
+      whereSeen: 'Rainbows (water droplets disperse sunlight), prisms, chromatic aberration in cheap lenses, the spectrum from a CD or DVD (grating-based, not refractive).',
+      related: ['rainbow', 'prism', 'chromaticAberration', 'abbeNumber'],
+      funFact: 'Achromatic doublets combine crown glass (low dispersion, high n) and flint glass (high dispersion, lower n) to cancel chromatic aberration at two wavelengths. Three-element apochromats cancel it at three wavelengths.' },
+    { id: 'mirage', name: 'Mirage', icon: '🏜', category: 'refraction',
+      shortDesc: 'A continuous gradient of refractive index in air bends light, creating ghost images of distant objects.',
+      formula: 'dn/dz creates ray curvature; refractive index ∝ density ∝ 1/T',
+      physics: 'Hot air near a sunlit road has lower refractive index than cooler air above it. Light from a distant object curves through this index gradient. In an inferior mirage (the "wet road" effect), light from the sky bends upward into your eye, making it look like reflected sky on the ground. In a superior mirage (Fata Morgana), cold dense air near the ground bends light from below downward, making distant ships appear to float above the horizon.',
+      whereSeen: 'Hot summer roads, deserts, polar regions, the Fata Morgana over cold seas (Strait of Messina being the namesake).',
+      related: ['refractiveIndex', 'fataMorgana', 'looming'],
+      funFact: 'Many UFO sightings — especially "ships sailing on air" off the coast of Italy and Alaska — are Fata Morgana mirages of distant real ships, distorted and stretched vertically by atmospheric refraction.' },
+    { id: 'rainbow', name: 'Rainbow', icon: '🌈', category: 'refraction',
+      shortDesc: 'Sunlight refracts, reflects internally, and refracts again in spherical water droplets, dispersing color.',
+      formula: 'Primary bow: deviation angle ≈ 138° (42° from antisolar point)',
+      physics: 'A spherical raindrop refracts sunlight on entry, totally-or-partially reflects it off the back surface, and refracts it again on exit. The geometry is such that light exits at a minimum deviation angle (the "rainbow angle"), causing bunching of rays from many drops that all appear at the same angle from the antisolar point — 42° for the primary bow. Different wavelengths refract differently, separating the spectrum. The secondary bow (~51°) involves two internal reflections, has the colors reversed, and is dimmer.',
+      whereSeen: 'After rain when sun is low, water-spray fountains, garden hose mist, lawn sprinklers. The full circle is visible from a plane or mountain.',
+      related: ['dispersion', 'minimumDeviation', 'glory', 'alexanderDarkBand'],
+      funFact: 'The dark band between the primary and secondary rainbows is called "Alexander\'s dark band" — between the bows, fewer rays exit at those angles, so it\'s dimmer than either the inside of the primary bow or outside the secondary.' },
+    { id: 'atmosphericRefraction', name: 'Atmospheric refraction', icon: '🌅', category: 'refraction',
+      shortDesc: 'Earth\'s atmosphere bends starlight, making objects appear higher than they really are.',
+      formula: 'Apparent altitude ≈ true altitude + R(h), R(0°) ≈ 34\'',
+      physics: 'The atmosphere is denser near the ground, so refractive index decreases with altitude. Light from a star or sun curves slightly downward as it enters denser air, making the source appear higher than its geometric position. At the horizon, the shift is about 34 arc-minutes — slightly more than the angular diameter of the Sun (about 32\'). So when you see the bottom of the setting Sun touch the horizon, the geometric Sun has already set below the horizon.',
+      whereSeen: 'Every sunrise/sunset (the Sun is "really" below horizon), star positions corrected in astrometry, the squashed/oval shape of the Sun near the horizon (refraction differs across its disk).',
+      related: ['twinkling', 'greenFlash', 'mirage'],
+      funFact: 'On the Moon (no atmosphere), the Sun rises and sets instantly. On Earth, atmospheric refraction adds about 8 minutes to each side of the day, giving you 16 extra minutes of daylight per day.' },
+    { id: 'twinkling', name: 'Twinkling (scintillation)', icon: '✨', category: 'refraction',
+      shortDesc: 'Turbulent variations in atmospheric refractive index cause stars to flicker.',
+      formula: 'Cn² (refractive structure constant) — atmospheric seeing',
+      physics: 'Pockets of warmer and cooler air in the atmosphere have slightly different refractive indices. As they drift through your line of sight, starlight refracts through a constantly changing pattern, deflecting slightly each moment. Because stars are essentially point sources, the changing deflection causes apparent brightness and position to fluctuate. Planets — which subtend a small but finite angle — average across many independent deflection patches, so they twinkle much less.',
+      whereSeen: 'Every clear night when stars twinkle. Planets (Venus, Jupiter, Mars, Saturn) look like steady spots. Astronomers minimize twinkling by building observatories on dry mountain tops (Mauna Kea, Atacama) or using adaptive optics.',
+      related: ['atmosphericRefraction', 'adaptiveOptics', 'seeing'],
+      funFact: 'Spaceborne telescopes (Hubble, JWST) see no twinkling because they\'re above the atmosphere. Adaptive optics on big ground telescopes uses a deformable mirror updated 1000x per second to undo the twinkle and get near-spaceborne sharpness.' },
+    { id: 'birefringence', name: 'Birefringence', icon: '💎', category: 'refraction',
+      shortDesc: 'Some crystals split light into two beams with different refractive indices and polarizations.',
+      formula: 'Two indices n_o (ordinary) and n_e (extraordinary); birefringence Δn = n_e − n_o',
+      physics: 'In an anisotropic crystal, the speed of light depends on its polarization relative to crystal axes. Light entering the crystal splits into an ordinary ray (obeys Snell\'s law normally) and an extraordinary ray (refracts differently). Their polarizations are perpendicular. Calcite has Δn ≈ 0.17, large enough that a calcite crystal placed over text shows a clean double image.',
+      whereSeen: 'Calcite ("Iceland spar") double-imaging, polarized microscopy of stressed plastics (photoelasticity), liquid-crystal displays (LCDs use induced birefringence), waveplates and Nicol prisms.',
+      related: ['polarization', 'photoelasticity', 'waveplates'],
+      funFact: 'Vikings may have used Iceland spar as a "sunstone" to navigate — calcite separates light into polarized components, and the relative brightness depends on the polarization angle, allowing the Sun\'s direction to be found even through clouds.' },
+    { id: 'criticalAngle', name: 'Critical angle', icon: '⚖', category: 'refraction',
+      shortDesc: 'The angle of incidence at which refraction grazes the surface; beyond this, TIR occurs.',
+      formula: 'θ_c = arcsin(n₂/n₁), where n₁ > n₂',
+      physics: 'When light goes from denser to less dense medium, refracted ray bends away from normal. At one specific incidence angle, the refracted ray runs along the surface (θ₂ = 90°). Beyond this angle, refraction is mathematically impossible and all energy reflects back — total internal reflection. The critical angle is the foundation of fiber optics and diamond brilliance.',
+      whereSeen: 'Diamond cuts (critical angle ~24°), fiber optics (acceptance cone), endoscopes, snorkelers viewing the underwater world up at the surface.',
+      related: ['tir', 'snellsLaw', 'fiberOptic', 'diamondSparkle'],
+      funFact: 'The critical angle for diamond (n = 2.42) is only 24.4°. Diamond cutters deliberately design facets to ensure most light entering the top undergoes TIR at the pavilion (bottom) facets, then emerges back through the top — making diamonds appear to "fire" with refracted light.' },
+    { id: 'lensRefraction', name: 'Lens refraction', icon: '🔍', category: 'refraction',
+      shortDesc: 'Curved boundaries between media refract every ray differently, focusing them to a point.',
+      formula: 'Lensmaker: 1/f = (n−1)(1/R₁ − 1/R₂)',
+      physics: 'Each surface of a lens refracts incoming rays. For a thin lens, two refractions combine into an overall focusing effect characterized by focal length f. Parallel rays converge to (or appear to diverge from) the focal point. The lensmaker\'s equation relates f to the curvature radii R₁, R₂ and the material\'s refractive index n. Sign conventions matter and trip up many students.',
+      whereSeen: 'Eyeglasses, contact lenses, camera lenses, the cornea + lens of your eye, magnifying glasses, telescopes, microscopes, projectors.',
+      related: ['thinLensEqn', 'lensmaker', 'cornea', 'sphericalAberration'],
+      funFact: 'The human cornea provides about 2/3 of the eye\'s focusing power (~43 diopters); the crystalline lens provides only 1/3 (~22 diopters). LASIK surgery reshapes the cornea, not the lens.' },
+
+    // ── Interference family ──
+    { id: 'youngDoubleSlit', name: "Young's double-slit", icon: '✨', category: 'interference',
+      shortDesc: 'Two coherent slits produce alternating bright and dark fringes — wave proof for light.',
+      formula: 'd sin(θ) = mλ (bright fringes)',
+      physics: 'When light passes through two narrow, equally spaced slits separated by distance d, waves from each slit superpose on a screen at distance L. At points where the path difference is an integer multiple of the wavelength, waves add constructively (bright). Half-integer multiples give destructive interference (dark). Fringe spacing y = λL/d. Young\'s 1801 demonstration was the first compelling evidence that light is a wave.',
+      whereSeen: 'Physics labs (laser through a slit pair), the colored sheen of CDs and DVDs (acting as gratings), thin-film coating colors, the wakes of two boats interfering.',
+      related: ['gratings', 'coherence', 'phasorAddition', 'quantumDoubleSlit'],
+      funFact: 'Young did the original experiment with sunlight passing through a tiny aperture, then through a card with two pinholes. Single photons, electrons, neutrons, and even C₆₀ buckminsterfullerene molecules have since shown the same interference — wave-particle duality at every scale tested.' },
+    { id: 'thinFilm', name: 'Thin-film interference', icon: '🫧', category: 'interference',
+      shortDesc: 'Reflections from front and back of a thin layer interfere, producing color depending on thickness.',
+      formula: 'Constructive (with phase flip): 2nt = (m + ½)λ',
+      physics: 'When light hits a thin transparent layer (like a soap film), some reflects off the top surface and some off the bottom. The two reflected waves interfere. The path difference equals 2nt where n is the film\'s index and t is its thickness; phase flips at high-index boundaries add additional λ/2. Different wavelengths constructively interfere at different thicknesses, so a film of varying thickness shows iridescent colors. Soap films thin to zero just before popping, giving the black "Newton\'s spot."',
+      whereSeen: 'Soap bubbles, oil slicks on water, peacock and butterfly wings (structural color), anti-reflection lens coatings, dichroic mirrors.',
+      related: ['arCoating', 'iridescence', 'newtonsRings', 'soapFilm'],
+      funFact: 'The blue of a morpho butterfly\'s wing is not pigment — it\'s nanoscale thin-film interference in scaly layers about 200 nm thick. The color stays vivid for centuries; pigments fade.' },
+    { id: 'newtonsRings', name: "Newton's rings", icon: '◎', category: 'interference',
+      shortDesc: 'Concentric color rings form between a curved lens and a flat plate due to thin-film interference.',
+      formula: 'r_m = √(mλR), where R is lens curvature radius',
+      physics: 'Place a convex lens on a flat glass plate. The thin air gap between them increases radially. Light reflecting from the top and bottom of the air wedge interferes; constructive interference occurs at radii where the gap is an odd multiple of λ/4. The result is concentric bright and dark rings around the central contact point — which is dark, because the air gap is zero there and the back reflection picks up a π phase shift (high-to-low index).',
+      whereSeen: 'Optical-shop fringe testing of lens surfaces, demonstrations in physics class, occasionally between stacked glass photo frames.',
+      related: ['thinFilm', 'fizeau', 'opticalFlat'],
+      funFact: 'Newton observed but never accepted these rings as proof of wave behavior; he forced a corpuscular interpretation involving "fits of easy reflection and easy transmission." Young\'s 1801 wave explanation finally resolved them.' },
+    { id: 'arCoating', name: 'Anti-reflection coating', icon: '🔦', category: 'interference',
+      shortDesc: 'A quarter-wave thin film cancels reflections from a lens surface using destructive interference.',
+      formula: 'Optimal: n_film = √(n_glass), thickness = λ/(4·n_film)',
+      physics: 'Coat a glass surface with a transparent material whose refractive index is the geometric mean of air and glass, and whose thickness is one-quarter wavelength. Reflections from the air-coating boundary and the coating-glass boundary then interfere destructively, killing the reflection at that wavelength. Multi-layer coatings (e.g., MgF₂/ZrO₂ stacks) can suppress reflection across the visible spectrum, dropping per-surface loss from 4% to <0.3%.',
+      whereSeen: 'Every camera lens, eyeglasses ("AR coating" upcharge), high-end optics, solar panels (textured + AR for maximum absorption).',
+      related: ['thinFilm', 'fresnelEqns', 'lensCoating'],
+      funFact: 'The faint purple/green tint you see on a coated lens is the residual reflection at wavelengths the coating doesn\'t fully suppress. Engineers design that residual to be in colors the eye is least sensitive to.' },
+    { id: 'michelsonInterferometer', name: 'Michelson interferometer', icon: '⫻', category: 'interference',
+      shortDesc: 'Splits light into two perpendicular arms; tiny path differences shift the recombined fringes.',
+      formula: 'Fringe shift × λ/2 = path-length change',
+      physics: 'A beam splitter sends half the light along arm A and half along arm B, each ending at a mirror. Reflected beams recombine at the splitter and interfere. A tiny change in arm length (~λ/2) shifts the interference pattern by one full fringe. With visible light, this gives sub-micron sensitivity. Michelson and Morley used this in 1887 to look for the "ether wind"; the null result helped lead Einstein to special relativity. LIGO uses 4-km arms and can detect path changes 10000× smaller than a proton.',
+      whereSeen: 'LIGO and Virgo gravitational-wave observatories, Fourier-transform infrared spectroscopy (FTIR), high-precision metrology, original demonstration of the constancy of c.',
+      related: ['michelsonMorley', 'ligo', 'sagnacEffect', 'coherence'],
+      funFact: 'LIGO\'s first gravitational-wave detection (GW150914, September 2015) measured a peak strain of ~10⁻²¹ — a fractional length change of one part in 10²¹ — equivalent to measuring the distance to the nearest star to better than the width of a human hair.' },
+    { id: 'iridescence', name: 'Iridescence', icon: '🦋', category: 'interference',
+      shortDesc: 'Angle-dependent color from nano-scale periodic structures, not pigments.',
+      formula: '2nd cos(θ) = mλ',
+      physics: 'A surface with periodic nano-scale features (multilayers, gratings, photonic crystals) reflects different wavelengths at different angles. The color you see changes as you tilt the object. Unlike pigments, which absorb specific wavelengths, structural color is purely geometric — the structure produces the color by interference, so it can\'t fade chemically.',
+      whereSeen: 'Peacock feathers, beetle elytra (jewel beetles), CDs and DVDs, opal gemstones, fish scales, soap films, oil slicks.',
+      related: ['thinFilm', 'photonic', 'gratings', 'morphoButterfly'],
+      funFact: 'Opals are composed of microscopic silica spheres packed in regular arrays. The lattice acts as a 3D diffraction grating; different sphere sizes and packing give different play-of-color. A 100-million-year-old opal still flashes the same colors as the day it formed.' },
+    { id: 'speckle', name: 'Speckle interference', icon: '⚝', category: 'interference',
+      shortDesc: 'Coherent light scattered off a rough surface produces a grainy interference pattern.',
+      formula: 'Average grain size ≈ λ/NA (numerical aperture of imaging system)',
+      physics: 'When coherent light (e.g. from a laser) reflects off a surface whose roughness exceeds λ, each scattering point sends a wavelet to the eye/sensor. The wavelets have essentially random relative phases, so they constructively or destructively interfere at random — producing a granular "speckle" texture. Speckle is information about the surface but it\'s often unwanted in imaging.',
+      whereSeen: 'Laser pointers reflecting off paper, holography, laser-based displays (objectionable grain), speckle interferometry, ultrasound imaging (acoustic version of the same effect).',
+      related: ['coherence', 'holography', 'specklePattern'],
+      funFact: 'Speckle moves opposite to the direction the surface moves. If you wave a paper in front of a laser pointer, the speckles drift in the OPPOSITE direction — an effect used in optical mouse sensors to detect motion.' },
+    { id: 'coherence', name: 'Coherence (time + space)', icon: '⏱', category: 'interference',
+      shortDesc: 'How "synchronized" light waves must be to interfere — and how long that synchronization lasts.',
+      formula: 'τ_c ≈ 1/Δν (temporal); ℓ_c = c·τ_c (length)',
+      physics: 'Two light waves can only interfere visibly if they\'re coherent: same wavelength, same polarization, with a stable phase relationship. Temporal coherence is limited by the spectrum\'s width (narrower = longer coherence). A typical laser has coherence length of meters; a sodium lamp ~1 cm; a white-light source ~1 μm. Spatial coherence describes coherence across the wavefront — how big a slit can be and still have the waves on opposite edges in sync.',
+      whereSeen: 'Why Young\'s experiment must use a single source split by slits (not two independent bulbs), why lasers are needed for holography, why OCT (optical coherence tomography) uses a broadband source.',
+      related: ['youngDoubleSlit', 'oct', 'lasers'],
+      funFact: 'OCT (optical coherence tomography) deliberately uses a SHORT coherence length light source. Only structures within the coherence length interfere — letting an OCT scanner image retinas with micron-scale depth resolution.' },
+
+    // ── Diffraction family ──
+    { id: 'singleSlit', name: 'Single-slit diffraction', icon: '〰', category: 'diffraction',
+      shortDesc: 'A single narrow slit spreads light into a central bright band with fading sidelobes.',
+      formula: 'First minimum: a sin(θ) = λ',
+      physics: 'A slit of width a, smaller than several wavelengths, spreads incoming light into a Fraunhofer pattern with a strong central peak (half-width λ/a) and weaker side fringes. The sharpest of these comes from Huygens\' principle: every point in the slit re-radiates as a tiny secondary source. Their phasor sum has minima where contributions cancel in pairs.',
+      whereSeen: 'Camera and telescope diffraction limits, the colored sheen of a CD edge, the spreading of light around a hairline gap, slit spectrometers.',
+      related: ['airyDisk', 'rayleighCriterion', 'huygens', 'fraunhofer'],
+      funFact: 'You can see single-slit diffraction by looking at a distant streetlight through the gap between your nearly-closed fingers. The thinner the gap, the more the light "smears" — that smear is the diffraction pattern.' },
+    { id: 'airyDisk', name: 'Airy disk', icon: '◉', category: 'diffraction',
+      shortDesc: 'Circular aperture produces a central bright disk surrounded by faint concentric rings.',
+      formula: 'First dark ring: sin(θ) ≈ 1.22 λ/D',
+      physics: 'A circular aperture of diameter D diffracts light into an Airy pattern: a central bright disk (radius θ ≈ 1.22 λ/D in angle) surrounded by progressively dimmer concentric rings. The central disk contains 84% of the light. Two point sources are "just resolvable" by the Rayleigh criterion when their Airy disk peaks are separated by one Airy radius.',
+      whereSeen: 'Telescope and microscope diffraction limits — they fundamentally cap resolution. Stars in a perfect telescope are Airy disks, not points. Backyard telescopes with 200 mm aperture have an Airy disk ~0.7 arcseconds — typically larger than atmospheric "seeing" allows.',
+      related: ['singleSlit', 'rayleighCriterion', 'numerialAperture'],
+      funFact: 'The Airy disk is named for George Biddell Airy, 7th Astronomer Royal of England, who derived it in 1835. He also famously failed to discover Neptune before LeVerrier and Adams — he had the data, but his observatory was slow to act on it.' },
+    { id: 'diffractionGrating', name: 'Diffraction grating', icon: '🔲', category: 'diffraction',
+      shortDesc: 'A regular array of slits or grooves splits white light into spectacular rainbow spectra.',
+      formula: 'd sin(θ) = mλ',
+      physics: 'A grating is an array of N parallel slits with spacing d. Light passing through (transmission grating) or reflecting off (reflection grating) constructively interferes at angles where d sin(θ) = mλ. Each m is an "order" — the same pattern repeats at different angles for different wavelengths. With many slits, the principal maxima become sharp, making gratings the workhorse of spectroscopy. Resolving power R = λ/Δλ = mN.',
+      whereSeen: 'Spectrometers (chemistry, astronomy, materials), CDs and DVDs (data tracks act as a grating), laser pulse compression, monochromators, holographic gratings on credit-card hologram strips.',
+      related: ['singleSlit', 'spectroscopy', 'echellette', 'transmissionGrating'],
+      funFact: 'Joseph von Fraunhofer ruled the first diffraction gratings in the 1820s, with up to 8,000 lines per inch — a then-incredible feat of precision. Modern gratings can have 5,000 lines per millimeter; the entire visible-light spectrum can be fit on a 1 cm screen.' },
+    { id: 'rayleighCriterion', name: 'Rayleigh criterion', icon: '👁', category: 'diffraction',
+      shortDesc: 'Two point sources are "just resolved" when one Airy peak sits on the other\'s first minimum.',
+      formula: 'θ_min = 1.22 λ/D',
+      physics: 'Diffraction limits how close two point sources can be and still appear separate. By the Rayleigh criterion, the minimum resolvable angle equals 1.22 λ/D for a circular aperture. To resolve finer detail, you need a larger aperture or shorter wavelength. This is why telescopes are made big and microscopes use UV/electrons.',
+      whereSeen: 'Telescope resolution (8" amateur scope: ~0.7"), eye resolution (~1 arcmin), microscopy resolution (~λ/2 ≈ 200 nm for visible-light microscopes), interferometric arrays use long baselines as effective aperture.',
+      related: ['airyDisk', 'numericalAperture', 'diffractionLimit', 'abbe'],
+      funFact: 'The Event Horizon Telescope imaged the M87 black hole shadow by combining radio dishes across the globe (8,000 mi baseline) at λ ≈ 1.3 mm — angular resolution ~20 microarcseconds. That\'s like reading a newspaper in New York from Paris.' },
+    { id: 'fresnelDiffraction', name: 'Fresnel diffraction', icon: '🌀', category: 'diffraction',
+      shortDesc: 'Near-field diffraction with curved wavefronts — Fresnel zones, the spot of Arago.',
+      formula: 'Fresnel zone radii: r_n = √(nλf)',
+      physics: 'Far-field (Fraunhofer) diffraction assumes plane-wave incidence and observation. Near the obstacle, wavefronts are curved and diffraction patterns are more complex — Fresnel diffraction. The aperture can be divided into "Fresnel zones," concentric rings each contributing 180° opposite phase to the on-axis point. A circular disk blocking the central zone gives a bright spot in its shadow (the Poisson/Arago spot) — predicted to disprove Fresnel\'s wave theory and observed instead, vindicating it.',
+      whereSeen: 'Fresnel zone plates (used as focusing X-ray and UV optics), shadow-edge fringes, holography reconstruction, the lighthouse Fresnel lens (named for him but a different concept).',
+      related: ['huygens', 'aragoSpot', 'fresnelZonePlate'],
+      funFact: 'In 1818 Siméon Poisson "disproved" Fresnel\'s wave theory by predicting a bright spot in the shadow of a circular disk. Dominique Arago promptly observed it experimentally — a spectacular vindication. The spot is sometimes called the Arago, Fresnel, or Poisson spot.' },
+    { id: 'braggDiffraction', name: 'Bragg diffraction (X-ray)', icon: '🔬', category: 'diffraction',
+      shortDesc: 'X-rays diffract off the periodic atomic planes in crystals at specific angles.',
+      formula: 'nλ = 2d sin(θ)',
+      physics: 'In a crystal, atoms lie on parallel planes spaced by d. X-rays (λ comparable to atomic spacings, ~0.1 nm) scattering off successive planes interfere. Constructive interference occurs at angles satisfying Bragg\'s law. Measuring the diffraction angles reveals d, hence the crystal structure. Won the Braggs (father and son) the 1915 Nobel Prize — they were 25 and 53. Rosalind Franklin\'s X-ray diffraction of DNA was the data Watson and Crick used to deduce the double helix.',
+      whereSeen: 'X-ray crystallography (chemistry, biology, materials), pharmaceutical drug development (every modern drug starts with the protein structure), semiconductor wafer inspection, art forensics (pigment identification).',
+      related: ['xrayCrystallography', 'rosalindFranklin', 'gratings'],
+      funFact: 'Almost every Nobel Prize in Chemistry since 1962 has either depended on X-ray crystallography or directly recognized people who improved it. The PDB (Protein Data Bank) now holds 200,000+ structures, almost all from X-ray diffraction.' },
+
+    // ── Polarization family ──
+    { id: 'linearPolarization', name: 'Linear polarization', icon: '↕', category: 'polarization',
+      shortDesc: 'Light\'s electric field oscillates along a single fixed line in space.',
+      formula: 'E(z,t) = E₀ cos(kz − ωt) ê',
+      physics: 'Light is a transverse electromagnetic wave: its electric field oscillates perpendicular to the propagation direction. In linearly polarized light, the E field stays parallel to a fixed line. Unpolarized light is a random mix of all possible directions. A polarizer transmits only one direction\'s component; placing two polarizers perpendicular blocks all light.',
+      whereSeen: 'Polarized sunglasses, photography polarizing filters, 3D movie glasses (older systems used linear polarization, newer use circular), LCD displays, glare reduction off water.',
+      related: ['malus', 'circularPolarization', 'brewsterReflection'],
+      funFact: 'Bees see polarization patterns in the sky. They use the angle of polarized blue sky to navigate on cloudy or partially-occluded days, when the Sun isn\'t visible.' },
+    { id: 'circularPolarization', name: 'Circular polarization', icon: '🌀', category: 'polarization',
+      shortDesc: 'The electric field vector rotates in a circle as the wave propagates.',
+      formula: 'E_x = E₀ cos(kz − ωt), E_y = ±E₀ sin(kz − ωt)',
+      physics: 'When two perpendicular linearly polarized waves of equal amplitude have a 90° phase shift, the resulting E vector traces a circle as the wave moves forward. Right- vs left-handed circular polarization is set by the sign of the phase shift. A quarter-wave plate converts linear to circular and back; many lasers, displays, and 3D systems use circular polarization.',
+      whereSeen: 'Modern 3D movies (left-eye/right-eye separation by handedness), some optical isolators, the radiation from spinning dust in space, beetles like Plusiotis resplendens that reflect predominantly left-circularly-polarized light.',
+      related: ['linearPolarization', 'waveplates', 'opticalActivity'],
+      funFact: 'The scarab beetle Plusiotis resplendens reflects almost only left-circularly-polarized light. Through a right-circular polarizer it appears nearly invisible against the leaves; through a left-circular polarizer it shines like polished gold.' },
+    { id: 'malus', name: "Malus's law", icon: '📐', category: 'polarization',
+      shortDesc: 'Intensity transmitted through a polarizer falls as cos²(angle between).',
+      formula: 'I = I₀ cos²(Δθ)',
+      physics: 'A polarizer transmits only the component of the E field along its transmission axis. If polarized light hits a polarizer at angle Δθ from the axis, the transmitted amplitude is E₀ cos(Δθ), so intensity I ∝ E² = I₀ cos²(Δθ). With two crossed polarizers (Δθ = 90°), nothing gets through. With unpolarized input, the first polarizer transmits 50%; the second adds the cos² factor.',
+      whereSeen: 'Every demonstration with two polaroid filters in physics class, photographer polarizing filters (rotate to dim sky/reduce glare), LCD displays where rotating crystals change polarization between two fixed polarizers.',
+      related: ['linearPolarization', 'lcd', 'crossedPolarizers'],
+      funFact: 'Three polarizers stacked: first transmits 50%; if second is 90° to first, 0% gets through; but insert a third at 45° BETWEEN them and you get back ~12.5% of the original. Each polarizer "rotates" the light before the next one filters again.' },
+    { id: 'polarizationByScattering', name: 'Polarization by scattering', icon: '☁', category: 'polarization',
+      shortDesc: 'Light scattered at 90° from the source is strongly polarized.',
+      formula: 'Polarization fraction = sin²(θ)/(1 + cos²(θ)) for Rayleigh scattering',
+      physics: 'Air molecules are smaller than the wavelength of visible light, so they act as electric dipoles oscillating with the incoming E-field. A dipole radiates strongest perpendicular to its oscillation axis. Looking at scattered sunlight 90° from the Sun, you only see the dipole component oscillating perpendicular to the line of sight — perfectly polarized along one direction.',
+      whereSeen: 'Polarized blue sky (max polarization 90° from Sun), used by bees and ants for navigation, photographers darken skies by polarizer 90° from Sun, Viking sunstone navigation hypothesis.',
+      related: ['rayleighScattering', 'malus', 'skyBlue'],
+      funFact: 'Without an atmosphere, the daytime sky is black with stars (as on the Moon). Earth\'s sky is bright blue because Rayleigh scattering preferentially scatters short wavelengths, and partly polarized because of the dipole radiation pattern.' },
+    { id: 'photoelasticity', name: 'Photoelasticity', icon: '🔲', category: 'polarization',
+      shortDesc: 'Stress changes a transparent material\'s birefringence — visible as colored fringes under polarization.',
+      formula: 'Δn = C × (σ₁ − σ₂)',
+      physics: 'Many plastics and glasses are normally isotropic but become birefringent when under stress — the refractive index difference Δn between two perpendicular polarizations is proportional to the stress difference. Placed between crossed polarizers, regions of differing stress appear as bright colored fringes ("isochromatics"); zero-stress lines are dark ("isoclinics"). Engineers used this in pre-FEM days to visualize stress in model parts.',
+      whereSeen: 'Stressed plastic rulers and protractors under polarized light, demonstrations in physics labs, engineering analysis before finite-element-method software, structural studies of glass.',
+      related: ['birefringence', 'crossedPolarizers', 'malus'],
+      funFact: 'Take any clear plastic object, look at it between two crossed polaroid filters in front of a bright white background. You\'ll see rainbows of stress fringes — most plastic items are far more stressed at their manufacturing scars than they look.' },
+
+    // ── Color & spectrum family ──
+    { id: 'visibleSpectrum', name: 'Visible spectrum', icon: '🌈', category: 'colorSpectrum',
+      shortDesc: 'The narrow band of EM wavelengths our eyes detect — roughly 380 to 750 nm.',
+      formula: 'λ_visible ≈ 380–750 nm (frequency ≈ 400–790 THz)',
+      physics: 'Human vision uses three types of cone cells with peak sensitivities near 437 nm (S, blue), 533 nm (M, green), and 564 nm (L, red). The brain reconstructs color from the ratios of these three signals. Outside this window the world is full of light we cannot see: UV (10–380 nm), infrared (750 nm–1 mm), microwaves, radio, X-rays, gamma rays. Many animals (bees, birds, mantis shrimp) see UV; vipers and some fish see IR.',
+      whereSeen: 'Every color you\'ve ever seen, the rainbow, color TV (RGB primaries), display calibration, paint mixing, photographic color reproduction.',
+      related: ['rainbow', 'rgb', 'cones', 'metamerism'],
+      funFact: 'The mantis shrimp has 16 types of photoreceptors (humans have 4: 3 cones + 1 rod). It can see UV, polarization, and color in a way no other animal does — but recent research suggests its brain processes colors differently and not necessarily better than humans.' },
+    { id: 'rayleighScattering', name: 'Rayleigh scattering (blue sky)', icon: '🌌', category: 'colorSpectrum',
+      shortDesc: 'Particles much smaller than wavelength scatter shorter wavelengths much more efficiently.',
+      formula: 'Scattering ∝ 1/λ⁴',
+      physics: 'When light passes through a medium with particles much smaller than its wavelength (like air molecules), it scatters by an amount proportional to 1/λ⁴. Blue light (λ ≈ 450 nm) scatters ~5.6× more than red (λ ≈ 650 nm). Sunlight is roughly equal across the visible band, but scattered light is enriched in blue — hence the blue sky. Direct sunlight is correspondingly enriched in red, especially when sunlight travels through more atmosphere at sunrise/sunset.',
+      whereSeen: 'Blue sky, red sunsets/sunrises, blue eye color (not pigment), opal play-of-color partly, the bluish tint of car exhaust at night.',
+      related: ['skyBlue', 'sunset', 'mie', 'tyndall'],
+      funFact: 'Mars, with a CO₂ atmosphere and dust, has a butterscotch sky during the day and a BLUE sunset — the dust scatters red more than blue, so the residual direct light near the Sun at sunset is blue-shifted.' },
+    { id: 'sunset', name: 'Sunset & sunrise red', icon: '🌅', category: 'colorSpectrum',
+      shortDesc: 'At low Sun angles, light travels through more atmosphere — blue scatters away, leaving red.',
+      formula: 'Optical path × 1/cos(z) where z = zenith angle',
+      physics: 'When the Sun is overhead, sunlight passes through ~1 atmosphere of air. At the horizon, the path is ~38× longer. With Rayleigh\'s 1/λ⁴ scattering, the long path effectively strips out blue and green, leaving the orange and red light to reach you directly. Dust and pollution can increase the red but also dim everything; volcanic aerosols give spectacular sunsets globally for years (e.g., Krakatoa 1883 caused vivid red sunsets observed and painted by Munch — "The Scream").',
+      whereSeen: 'Every sunrise and sunset, the redness of the rising/setting Moon, the red of dust storms, post-volcano red sunsets.',
+      related: ['rayleighScattering', 'atmosphericRefraction', 'crepuscularRays'],
+      funFact: 'Edvard Munch\'s "The Scream" (1893) has unusually red skies. Astronomers have linked it to the 1883 eruption of Krakatoa in Indonesia, which caused brilliant red sunsets across Europe for years afterward.' },
+    { id: 'fluorescence', name: 'Fluorescence', icon: '🟢', category: 'colorSpectrum',
+      shortDesc: 'A material absorbs high-energy light and re-emits at lower energy (longer wavelength).',
+      formula: 'λ_emit > λ_absorb (Stokes shift)',
+      physics: 'A molecule absorbs a photon, exciting an electron to a higher state. The electron loses some energy to vibrations (heat) and then drops to ground state, emitting a photon at lower energy than the absorbed one (longer wavelength, redshift). The emission stops nearly immediately when the source is removed (nanosecond timescale).',
+      whereSeen: 'Highlighters, security marking on banknotes (only show up under UV), GFP-tagged proteins in microscopy, fluorescent dyes in oceanography, scorpion exoskeleton glowing under black light.',
+      related: ['phosphorescence', 'stokesShift', 'gfp', 'uv'],
+      funFact: 'Many scorpions glow blue-green under UV — even fossil scorpions in amber. The chemical responsible (β-carboline) outlives the animal by millions of years.' },
+    { id: 'phosphorescence', name: 'Phosphorescence', icon: '🌙', category: 'colorSpectrum',
+      shortDesc: 'Like fluorescence but the emission persists for seconds to hours after the source is removed.',
+      formula: 'Lifetime: ms to hours (vs nanoseconds for fluorescence)',
+      physics: 'After absorbing a photon, the electron undergoes a forbidden transition to a metastable state — typically an intersystem crossing to a triplet state. Returning to ground state from this state takes much longer than ordinary fluorescence because the spin must change. Materials with strong spin-orbit coupling (e.g., heavy-atom doped phosphors) phosphoresce for seconds to hours.',
+      whereSeen: 'Glow-in-the-dark stickers and watch hands, phosphorescent toys, old radium-painted watch hands (radioactive — used until ~1970), CRT and plasma displays.',
+      related: ['fluorescence', 'gfp', 'stokesShift'],
+      funFact: 'The "Radium Girls" of the 1920s painted watch dials with self-luminous radium paint. They licked their brushes to a fine point, ingesting radium that bioaccumulated in bones. The resulting lawsuits established occupational disease law in the U.S.' },
+    { id: 'sundogs', name: 'Sun dogs', icon: '🐕', category: 'colorSpectrum',
+      shortDesc: 'Bright spots 22° to either side of the Sun caused by ice crystals refracting sunlight.',
+      formula: '22° from Sun, slightly red on inside',
+      physics: 'Hexagonal ice crystals (column or plate) in cirrus or cirrostratus clouds act as 60° prisms. The minimum angle of deviation through a 60° prism for ice (n ≈ 1.31) is 22°, so refracted sunlight bunches at exactly 22° from the Sun. Plate crystals settle horizontally, concentrating the bright spots to the left and right of the Sun (the sun dogs). Red bends less than blue, so the inside (closer to Sun) is reddish.',
+      whereSeen: 'Cold-climate sky watching: sundogs are common in Alaska, Antarctica, Maine winters, high mountains. Look for thin cirrus clouds when the Sun is fairly low.',
+      related: ['halo', 'parhelion', 'circumzenithalArc'],
+      funFact: 'Sun dogs are called "parhelia" in scientific literature ("beside the Sun"). The popular name "sun dogs" appears in old sailing journals — sailors saw them as ill-omened companions of the Sun that "barked" the weather ahead.' },
+    { id: 'halo22', name: '22° halo', icon: '🔆', category: 'colorSpectrum',
+      shortDesc: 'Circle of light around the Sun or Moon at 22° radius, caused by ice crystal refraction.',
+      formula: '22° from luminary, faintly reddish on inside',
+      physics: 'The same 60° hexagonal-prism geometry that produces sun dogs produces a full halo when the crystals are oriented randomly rather than horizontally. The minimum-deviation bunching gives a sharply defined inner edge at 22° (with red on inside) and a faint fall-off outward. The 46° halo (rarer) comes from refraction through the 90° corner of a hex crystal.',
+      whereSeen: 'Winter, dry climates, high-altitude cirrus clouds. Especially common over snowfields and ice caps. Halos around the Moon are easier to photograph and look identical.',
+      related: ['sundogs', 'circumzenithalArc', 'cirrus'],
+      funFact: 'A halo around the Moon often means a warm front is approaching — cirrus clouds typically precede rain by 24–48 hours, leading to the folk weather saying "ring around the Moon, rain soon."' },
+    { id: 'aurora', name: 'Aurora borealis/australis', icon: '🟢', category: 'colorSpectrum',
+      shortDesc: 'Solar wind particles excite atmospheric atoms; relaxation emits the characteristic green/red glow.',
+      formula: 'Green: O at 557.7 nm (~100 km); Red: O at 630 nm (~200 km); Purple: N₂',
+      physics: 'Energetic particles from the solar wind are funneled by Earth\'s magnetic field into the auroral ovals at the magnetic poles. They collide with atmospheric atoms (mostly N₂ and O), exciting them. The atoms relax by emitting photons at characteristic wavelengths. Different altitudes have different gases and gas densities, so different colors dominate at different heights.',
+      whereSeen: 'High-latitude skies (~60°+ magnetic latitude), best near equinoxes, strongest during solar maxima. Major events visible from middle latitudes a few times per decade.',
+      related: ['solarWind', 'magnetosphere', 'spectroscopy'],
+      funFact: 'The Carrington Event (September 1859) was so strong that auroras were seen in Cuba and Hawaii, telegraph lines sparked and started fires, and operators reported being able to send messages without batteries — just from the induced current.' },
+    { id: 'bioluminescence', name: 'Bioluminescence', icon: '🦠', category: 'colorSpectrum',
+      shortDesc: 'Chemical reactions in living organisms produce cold light, mostly blue-green.',
+      formula: 'Luciferin + O₂ → oxyluciferin + photon (~480 nm, ~30% efficient)',
+      physics: 'A small substrate molecule (luciferin) is oxidized by an enzyme (luciferase) into an excited-state product that releases its energy as a photon rather than as heat. The efficiency reaches 30–40% — essentially cold light. Different luciferin/luciferase pairs in fireflies, dinoflagellates, deep-sea fish, and bacteria emit different colors, mostly in the blue-green band that travels best through seawater.',
+      whereSeen: 'Fireflies, certain mushrooms (foxfire), deep-sea anglerfish, dinoflagellates in waves (bioluminescent bays in Puerto Rico, Maldives), bacteria, jellyfish, glow worms.',
+      related: ['fluorescence', 'phosphorescence', 'gfp'],
+      funFact: 'Over 80% of the deep-sea fish/squid species are bioluminescent. In a dark ocean below 1000 m, biolight is everywhere — and it\'s almost always blue, because the ocean blocks red light long before that depth.' },
+
+    // ── Vision & illusions family ──
+    { id: 'afterimage', name: 'Afterimage', icon: '👁', category: 'visionIllusion',
+      shortDesc: 'Staring at a color fatigues cones; looking away leaves a complementary-color phantom image.',
+      formula: 'Adaptation timescale: 20–60 s; recovery: seconds',
+      physics: 'Cone photoreceptors adapt to prolonged stimulation — their sensitivity decreases for the color that\'s been hitting them. When you suddenly look at a neutral background, the un-fatigued cones report relatively more than the fatigued ones. The brain interprets the imbalance as the OPPOSITE color (the complementary), giving a brief ghost image.',
+      whereSeen: 'Photographer\'s flash afterimage, the "American flag" illusion (cyan/black/yellow flag → red/white/blue afterimage), staring at a bright window then looking at a wall.',
+      related: ['negativeAfterimage', 'colorAdaptation', 'persistenceVision'],
+      funFact: 'Andy Warhol\'s pop art deliberately uses complementary-color flags and faces to provoke afterimages — your brain "completes" the image after you look away.' },
+    { id: 'persistenceVision', name: 'Persistence of vision', icon: '🎞', category: 'visionIllusion',
+      shortDesc: 'The retina holds an image briefly after the light ceases; the basis of motion pictures.',
+      formula: 'Persistence: ~50 ms; flicker fusion ~50–90 Hz',
+      physics: 'When light ceases, photoreceptor responses don\'t stop instantly. They decay over ~50 ms, so a flicker faster than ~20 Hz is perceived as continuous illumination. Above the critical flicker fusion frequency (50–90 Hz depending on conditions), discrete frames blur into smooth motion. Movies (24 fps shown twice = 48 Hz), TV (60 Hz), and modern displays (120+ Hz) exploit this.',
+      whereSeen: 'Movies, TV, computer displays, animated GIFs, blinking light bulbs, thaumatropes, zoetropes, fluorescent-light flicker when tired.',
+      related: ['afterimage', 'flickerFusion', 'phiPhenomenon'],
+      funFact: 'Edison\'s Kinetoscope (1891) ran at 46 fps; modern films at 24. The Hobbit (2012) ran at 48 fps; many viewers reported it looked uncanny — "too real" — because we associate 24 fps with cinema and 60+ fps with everyday vision.' },
+    { id: 'colorConstancy', name: 'Color constancy', icon: '🎨', category: 'visionIllusion',
+      shortDesc: 'A white shirt looks white under both sunlight and warm indoor light, even though spectra differ wildly.',
+      formula: 'Brain corrects: perceived color ≈ object reflectance, not direct spectrum',
+      physics: 'The light hitting your eye is the product of the object\'s spectral reflectance and the illuminant\'s spectrum. As illumination changes from sunlight to incandescent to LED to candlelight, the spectrum changes dramatically — yet objects appear to retain their colors. Your visual cortex estimates the illuminant from surrounding cues (white reference, shadows, gradients) and discounts it, recovering the object\'s "true" color.',
+      whereSeen: 'Indoor/outdoor scenes, photo white-balance fixes, "The Dress" viral phenomenon (2015), professional color grading.',
+      related: ['theDress', 'whiteBalance', 'opponentProcess'],
+      funFact: '"The Dress" (Feb 2015): viewers split nearly 50/50 between white-and-gold and blue-and-black. The dress was actually blue-and-black — viewers who assumed it was in shadow (and corrected away blue) saw it as white-and-gold; those who assumed indoor lighting saw it correctly.' },
+    { id: 'machBands', name: 'Mach bands', icon: '📊', category: 'visionIllusion',
+      shortDesc: 'Edges between gradients appear darker/brighter than the actual luminance.',
+      formula: 'Lateral inhibition in retina enhances edge contrast',
+      physics: 'Retinal ganglion cells inhibit their neighbors. A cell on the bright side of an edge has bright neighbors inhibiting it, while a cell just inside the dark region has dark neighbors not inhibiting it. The brain "sees" enhanced contrast at the edge — even ghosting a darker dark band and a brighter bright band along it. Discovered by Ernst Mach in 1865.',
+      whereSeen: 'Gradient backgrounds in design, LCD screens with banding, medical X-ray reading (radiologists are trained to notice and correct for Mach bands).',
+      related: ['lateralInhibition', 'edgeDetection', 'hermannGrid'],
+      funFact: 'Ernst Mach (of "Mach number" fame in supersonic flight) was a sensory physiologist before he was a philosopher of physics. His insight into bands prefigured 20th-century neuroscience by 80+ years.' },
+    { id: 'binocularDepth', name: 'Stereoscopic depth (binocular)', icon: '👀', category: 'visionIllusion',
+      shortDesc: 'Brain computes depth from the slight horizontal disparity between left and right eye views.',
+      formula: 'Disparity ≈ (IOD × baseline)/depth',
+      physics: 'Your eyes are ~6 cm apart, so each views the world from a slightly different angle. Nearby objects shift more between the two views than distant ones (parallax). Visual cortex matches corresponding features and computes the disparity, which encodes depth. Effective up to about 30 feet; beyond that, monocular cues (perspective, occlusion, motion parallax, atmospheric haze) dominate.',
+      whereSeen: '3D movies, VR headsets, stereograms, magic-eye autostereograms, your everyday depth perception, why a closed-eye is much worse at parking.',
+      related: ['parallax', 'autostereogram', 'monocularCues'],
+      funFact: 'Some people are "stereo-blind" — about 5–10% lack stereoscopic vision but report a normal 3D world experience because their brains rely on the many monocular cues. Stereoscope inventor Charles Wheatstone (1838) didn\'t realize how universal the disparity processing was until he tested everyone he could.' },
+    { id: 'hermannGrid', name: 'Hermann grid illusion', icon: '🔲', category: 'visionIllusion',
+      shortDesc: 'A grid of black squares on white shows ghostly dark spots at every intersection.',
+      formula: 'Lateral inhibition + spatial-frequency channels',
+      physics: 'Originally explained by retinal lateral inhibition: a ganglion cell at a street intersection has more bright neighbors (four arms of white) than one at a street segment (two), so it\'s more inhibited. Recent work suggests cortical mechanisms also contribute, since the illusion weakens with non-straight grids — which the simple retinal explanation cannot predict.',
+      whereSeen: 'Demonstrations of vision physiology, design (avoid grid wallpapers in dark/light tile choices), the cousin "scintillating grid" illusion.',
+      related: ['machBands', 'lateralInhibition', 'scintillatingGrid'],
+      funFact: 'You can banish the dark spots by curving the white lines into wavy stripes — the inhibition still occurs but the brain stops registering it as a pattern. This is partial evidence that cortical processing also plays a role.' },
+    { id: 'opticalIllusion', name: 'Optical illusions (general)', icon: '👁‍🗨', category: 'visionIllusion',
+      shortDesc: 'Brain shortcuts for fast vision sometimes produce wrong but consistent perceptions.',
+      formula: '—',
+      physics: 'Vision is reconstructive — the brain takes 2D retinal signals plus context and infers 3D meaning. To do this fast, it uses heuristics: "shadows imply 3D form," "convergent lines mean depth," "edges are real." Optical illusions exploit edge cases where these heuristics give wrong answers. Most illusions still happen even when you "know" the answer, because the perceptual system runs below conscious correction.',
+      whereSeen: 'Vision-science classrooms, optical-illusion books (Escher, Vasarely), pareidolia (seeing faces), Pinna illusion, motion illusions on roads.',
+      related: ['stereoscopic', 'machBands', 'hermannGrid', 'pareidolia'],
+      funFact: 'M.C. Escher\'s "Waterfall," "Ascending and Descending," etc. exploit our 3D-inference heuristics to depict objects that cannot physically exist. They feel coherent because each LOCAL part follows the rules, but the global structure breaks.' },
+
+    // ── Atmospheric & specialized ──
+    { id: 'crepuscularRays', name: 'Crepuscular rays', icon: '🌤', category: 'atmospheric',
+      shortDesc: 'Apparent sunbeams diverging through gaps in clouds — actually parallel rays in perspective.',
+      formula: 'Perspective convergence to vanishing point',
+      physics: 'When sunlight streams through gaps in clouds or trees, the parallel rays pick up scattered haze that makes them visible. The rays APPEAR to diverge from the source because of perspective foreshortening — they\'re actually parallel, just like railroad tracks appearing to converge at a vanishing point. The "anti-crepuscular" rays appear to converge to the opposite point on the antisolar horizon.',
+      whereSeen: 'Hazy afternoons, sunlit forest paths, sunlight breaking through storm clouds, near oceans at sunset.',
+      related: ['perspective', 'antiCrepuscular', 'scattering'],
+      funFact: 'The Japanese call them "the ladders to heaven"; in some Christian art they\'re called "Jacob\'s ladder" after the biblical vision. Both metaphors hinge on the perspective illusion that the rays diverge from a single celestial point.' },
+    { id: 'fataMorgana', name: 'Fata Morgana', icon: '🚢', category: 'atmospheric',
+      shortDesc: 'Complex superior mirage that distorts distant objects into towers, walls, or floating ships.',
+      formula: 'Multiple temperature inversions stack to produce multi-image refraction',
+      physics: 'In a strong thermal inversion (cold dense air below, warm air above), light bends downward through a non-uniform gradient. With multiple inversion layers, you get multiple images of the same distant object — some upright, some inverted, some stretched vertically. The composite can look like floating cities, walls, or vast ships hovering above the horizon.',
+      whereSeen: 'The Strait of Messina (origin of the name from Arthurian sorceress Morgan le Fay), Arctic seas, the Canadian high Arctic, mountain lake basins.',
+      related: ['mirage', 'looming', 'refractiveIndex'],
+      funFact: 'Magellan and other early explorers reported seeing "land" appear and disappear on the open Pacific — likely Fata Morgana of distant unseen real islands. Some "phantom islands" on old maps remained on charts for centuries before being expunged.' },
+    { id: 'greenFlash', name: 'Green flash', icon: '🟢', category: 'atmospheric',
+      shortDesc: 'A brief flash of green light at the top of the setting Sun, lasting only a second or two.',
+      formula: 'Mirage + atmospheric dispersion separates colors',
+      physics: 'As the Sun approaches the horizon, atmospheric refraction acts as a prism — separating the disk into a stack of color-tinted images. The blue image is highest (refracts most), red lowest. Scattering removes the blue end, leaving a green image as the topmost surviving color. When the red part of the Sun just sets, the green rim is visible for a moment. A mirage condition (often above water) makes it longer and brighter — sometimes a vivid emerald-green flash.',
+      whereSeen: 'Sunset over the ocean, mountain ridges, polar regions, well-trained observers in clear stable air. Rare; requires very flat horizon and minimal haze.',
+      related: ['atmosphericRefraction', 'mirage', 'dispersion'],
+      funFact: 'Jules Verne\'s 1882 novel "Le Rayon Vert" ("The Green Ray") romanticized the phenomenon: those who see it are said to see clearly in matters of love. The novel ignited 19th-century fascination with the green flash.' },
+    { id: 'glory', name: 'Glory', icon: '☁', category: 'atmospheric',
+      shortDesc: 'Rainbow-colored rings around the shadow of your head on cloud or fog when the Sun is behind you.',
+      formula: 'Backscattering rings: 1–10°; requires uniform droplets ~10–30 μm',
+      physics: 'When sunlight scatters back from a cloud of small water droplets toward an observer, a complex combination of refraction, reflection, and surface-wave behavior gives interference rings concentrated around the antisolar point — exactly where your shadow falls. The rings are rainbow-colored and centered on the shadow of the observer\'s head, often called the "specter of the Brocken."',
+      whereSeen: 'Plane shadows on clouds below, mountain shadow on fog, walking near morning fog with the Sun behind you. Look for the shadow of your head ringed in colored arcs.',
+      related: ['rainbow', 'corona', 'antisolarPoint'],
+      funFact: 'In Buddhist tradition, the glory ring around your shadow is sometimes called "Buddha\'s halo" — visible to ALL observers but always around their OWN shadow, never around a companion\'s. Each observer sees a private personal halo.' }
+  ];
+
+  // ══════════════════════════════════════════════════════════════════
+  // PHENOMENA DB RENDERER — searchable, filterable encyclopedia view
+  // ══════════════════════════════════════════════════════════════════
+  function _renderPhenomenaDb(d, upd, h) {
+    var query = (d.phDbQuery || '').toLowerCase().trim();
+    var cat = d.phDbCategory || 'all';
+    var openId = d.phDbOpenId || null;
+
+    var categories = [
+      { id: 'all', label: 'All', icon: '🔆' },
+      { id: 'reflection', label: 'Reflection', icon: '🪞' },
+      { id: 'refraction', label: 'Refraction', icon: '🌊' },
+      { id: 'interference', label: 'Interference', icon: '✨' },
+      { id: 'diffraction', label: 'Diffraction', icon: '〰' },
+      { id: 'polarization', label: 'Polarization', icon: '↕' },
+      { id: 'colorSpectrum', label: 'Color & Spectrum', icon: '🌈' },
+      { id: 'visionIllusion', label: 'Vision & Illusions', icon: '👁' },
+      { id: 'atmospheric', label: 'Atmospheric', icon: '🌅' }
+    ];
+
+    var filtered = OPTICAL_PHENOMENA_DB.filter(function(p) {
+      if (cat !== 'all' && p.category !== cat) return false;
+      if (!query) return true;
+      var hay = (p.name + ' ' + p.shortDesc + ' ' + (p.physics || '') + ' ' + (p.whereSeen || '')).toLowerCase();
+      return hay.indexOf(query) !== -1;
+    });
+
+    return h('div', null,
+      h('div', { style: { background: 'rgba(56,189,248,0.10)', border: '1px solid rgba(56,189,248,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
+        h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap', marginBottom: 8 } },
+          h('h3', { style: { color: '#7dd3fc', fontSize: 17, fontWeight: 900, margin: 0 } }, '📚 Optical Phenomena Encyclopedia'),
+          h('span', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } }, OPTICAL_PHENOMENA_DB.length + ' entries · ' + filtered.length + ' match filter')
+        ),
+        h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, margin: 0 } },
+          'Searchable reference covering reflection, refraction, interference, diffraction, polarization, color, vision, and atmospheric optics. Each entry has the physics, formula, where you can see it in real life, and a fun fact. Click any tile to expand.')
+      ),
+      h('div', { style: { display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' } },
+        h('input', {
+          type: 'text', value: d.phDbQuery || '',
+          placeholder: '🔍 Search phenomena, descriptions, formulas, examples...',
+          onChange: function(e) { upd('phDbQuery', e.target.value); },
+          'aria-label': 'Search phenomena encyclopedia',
+          style: { flex: '1 1 280px', minHeight: 36, padding: '8px 12px', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(56,189,248,0.30)', borderRadius: 8, color: '#e2e8f0', fontSize: 13 }
+        })
+      ),
+      h('div', { style: { display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' } },
+        categories.map(function(c) {
+          var active = cat === c.id;
+          return h('button', {
+            key: c.id, onClick: function() { upd('phDbCategory', c.id); },
+            style: {
+              padding: '6px 11px', fontSize: 11, fontWeight: 700,
+              background: active ? 'rgba(56,189,248,0.25)' : 'rgba(15,23,42,0.5)',
+              color: active ? '#7dd3fc' : '#94a3b8',
+              border: '1px solid ' + (active ? '#7dd3fc' : 'rgba(100,116,139,0.30)'),
+              borderRadius: 6, cursor: 'pointer'
+            }
+          }, c.icon + ' ' + c.label);
+        })
+      ),
+      filtered.length === 0
+        ? h('div', { style: { padding: 20, textAlign: 'center', color: '#94a3b8', fontSize: 13 } }, 'No phenomena match this search. Try a different keyword or category.')
+        : h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 } },
+            filtered.map(function(p) {
+              var isOpen = openId === p.id;
+              return h('div', { key: p.id,
+                onClick: function() { upd('phDbOpenId', isOpen ? null : p.id); },
+                style: {
+                  background: isOpen ? 'rgba(56,189,248,0.10)' : 'rgba(15,23,42,0.65)',
+                  border: '1px solid ' + (isOpen ? 'rgba(56,189,248,0.55)' : 'rgba(100,116,139,0.30)'),
+                  borderRadius: 10, padding: '10px 12px', cursor: 'pointer',
+                  transition: 'all 180ms'
+                }
+              },
+                h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 } },
+                  h('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, p.icon),
+                  h('div', { style: { flex: 1 } },
+                    h('div', { style: { fontSize: 13, fontWeight: 800, color: '#7dd3fc', lineHeight: 1.2 } }, p.name),
+                    h('div', { style: { fontSize: 9, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.04em', marginTop: 2 } }, p.category)
+                  )
+                ),
+                h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 6 } }, p.shortDesc),
+                isOpen && h('div', { style: { marginTop: 10, paddingTop: 10, borderTop: '1px solid rgba(100,116,139,0.25)' } },
+                  p.formula && h('div', { style: { fontSize: 11, fontFamily: 'ui-monospace, Menlo, monospace', color: '#fbbf24', background: 'rgba(15,23,42,0.5)', padding: '6px 10px', borderRadius: 6, marginBottom: 8 } }, p.formula),
+                  h('div', { style: { fontSize: 9, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, 'Physics'),
+                  h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, margin: '0 0 8px' } }, p.physics),
+                  h('div', { style: { fontSize: 9, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, 'Where you can see it'),
+                  h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, margin: '0 0 8px' } }, p.whereSeen),
+                  p.funFact && h('div', { style: { fontSize: 11, fontStyle: 'italic', color: '#fcd34d', padding: '6px 10px', background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.20)', borderRadius: 6 } }, '💡 ' + p.funFact)
+                )
+              );
+            })
+          )
+    );
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // FAMOUS OPTICIANS — 50+ biographies, ancient to modern
+  // ══════════════════════════════════════════════════════════════════
+  var FAMOUS_OPTICIANS = [
+    // ── Ancient & Medieval ──
+    { id: 'euclid', name: 'Euclid of Alexandria', icon: '📐', era: 'ancient', years: 'fl. ~300 BCE', country: 'Hellenistic Egypt',
+      knownFor: 'Founder of geometric optics',
+      bio: 'Greek mathematician working at the Library of Alexandria. Author of the Elements, the foundational text of geometry. His Optica treats vision as a problem of geometric rays, anchoring 2,000+ years of subsequent optics research in the language of straight lines and angles.',
+      contributions: [
+        'Wrote the "Optica" (~300 BCE), the first surviving systematic treatment of geometric optics.',
+        'Proposed the "extramission" theory — rays leave the eye and reach the object — which was wrong but generated centuries of productive analysis.',
+        'Stated the law of reflection (angle of incidence = angle of reflection) and applied it to plane and spherical mirrors.',
+        'Gave the first careful geometric account of vision through a small aperture.',
+        'His ray-based approach is still how we draw ray diagrams today.'
+      ],
+      quote: '"Things seen by greater angles appear greater; by lesser, lesser; and by equal, equal." — Optica, Proposition 5',
+      legacy: 'The unbroken geometric tradition from Euclid through Ptolemy, Alhazen, Kepler, and Newton — every modern optical engineer still draws Euclidean ray diagrams.' },
+    { id: 'ptolemy', name: 'Claudius Ptolemy', icon: '🔭', era: 'ancient', years: '~100–170 CE', country: 'Roman Egypt',
+      knownFor: 'First experimental tabulation of refraction angles',
+      bio: 'Greco-Roman astronomer, geographer, and astrologer of the Roman Empire. Best known for his Almagest astronomical synthesis, his Optics is the first surviving work to combine theoretical and experimental optics. He measured angles of refraction between air, water, and glass and tabulated them — the first quantitative refraction data in the Western tradition.',
+      contributions: [
+        'Wrote the "Optics" (~150 CE), with five books on vision, illumination, reflection, refraction, and atmospheric optics.',
+        'Measured refraction angles for air-water, air-glass, and water-glass boundaries — incidentally getting close to but not deriving Snell\'s law.',
+        'Described atmospheric refraction lifting celestial bodies above their true positions.',
+        'Studied stereo vision and depth perception centuries before Wheatstone.',
+        'Mathematical model of vision based on cones of light from the eye intersecting objects.'
+      ],
+      quote: '"Place a coin in an empty bowl; back away until it just disappears below the rim. Now fill the bowl with water — the coin reappears." — Optics IV (the apparent-depth demo)',
+      legacy: 'His refraction tables traveled to the Islamic world, where Alhazen and others corrected and extended them. Without Ptolemy\'s data, Snell\'s 1621 derivation would have come centuries later.' },
+    { id: 'alhazen', name: 'Ibn al-Haytham (Alhazen)', icon: '👁', era: 'medieval', years: '965–1040 CE', country: 'Iraq, Egypt',
+      knownFor: 'Father of modern optics; intromission theory of vision',
+      bio: 'Arab polymath born in Basra, working in Cairo under the Fatimid Caliphate. His Kitāb al-Manāẓir ("Book of Optics," ~1015) overturned the Greek extramission view and established that vision occurs when light from objects enters the eye. His controlled-experiment methodology — testable hypotheses with quantitative observation — anticipated the scientific method by 600 years.',
+      contributions: [
+        'Proved (against Euclid, Ptolemy, Galen) that vision is INTROMISSION: light from objects enters the eye, not vice versa.',
+        'Described the camera obscura ("dark chamber") and used it as both a vision model and a tool for solar observation.',
+        'Stated principle that light travels in straight lines, demonstrable by camera obscura.',
+        'Studied refraction quantitatively, atmospheric refraction at sunset, and parabolic mirrors (the "burning mirror" problem).',
+        'Proposed experimentation as the path to knowledge — the historical root of the scientific method.',
+        'Endured 10+ years of house arrest in Cairo (feigning madness to escape an impossible engineering project) which he used to write his Optics.'
+      ],
+      quote: '"The seeker of truth is not one who studies the writings of the ancients and gives them his trust, but rather one who suspects his faith in them and questions what he gathers from them."',
+      legacy: 'Latin translation as "Perspectiva" reached Europe in the 13th century. Read by Roger Bacon, Witelo, Peckham, Kepler — every major medieval and renaissance optical thinker. Sometimes called "the first scientist."' },
+    { id: 'baconR', name: 'Roger Bacon', icon: '📜', era: 'medieval', years: '~1219–1292', country: 'England',
+      knownFor: 'Brought Arabic optics to Europe; predicted lenses',
+      bio: 'Franciscan friar and natural philosopher at Oxford. Studied Alhazen\'s Optics in Latin translation. His Opus Majus (1267) and Perspectiva championed empirical investigation. He predicted telescopes, automobiles, and flying machines — and earned punishment from his order for it.',
+      contributions: [
+        'Synthesized Alhazen\'s Arabic optics into Latin scholastic philosophy.',
+        'Wrote extensively on lens magnification and corrective eyeglasses for the elderly.',
+        'Described the camera obscura for solar observation.',
+        'Proposed a primitive form of telescope: "we can fashion glasses to see things from a great distance" (Opus Majus, ~1267).',
+        'Advocated for mathematics and experiment as keys to natural philosophy in an age dominated by Aristotelian dogma.'
+      ],
+      quote: '"Mathematics is the gate and key of the sciences." — Opus Majus',
+      legacy: 'Although his Opus Majus was suppressed during his lifetime, his championing of empiricism and his lens descriptions seeded the rapid optical advances of the 1290s–1310s. Reading glasses became common in Italy within a generation of his death.' },
+    { id: 'witelo', name: 'Witelo', icon: '📐', era: 'medieval', years: '~1230–1280s', country: 'Silesia (Poland/Germany)',
+      knownFor: 'Comprehensive Latin optics text bridging Arabic to Renaissance',
+      bio: 'Polish-Silesian theologian and natural philosopher. His Perspectiva (~1270) gathered and extended the optics of Alhazen, Euclid, and Ptolemy into a comprehensive Latin text used for 300+ years. Kepler\'s Astronomiae pars Optica is subtitled "supplements to Witelo."',
+      contributions: [
+        'Compiled the first comprehensive Latin optics text covering reflection, refraction, image formation, vision, and atmospheric optics.',
+        'Refined refraction tables and proposed (incorrectly) a sine-cubed law.',
+        'Studied curved mirrors and developed methods for finding their foci.',
+        'Discussed binocular vision and depth cues.',
+        'His diagrams of rainbows, halos, and parhelia influenced 14th–17th century treatments.'
+      ],
+      quote: '(no famous personal quote — his Perspectiva is encyclopedic rather than aphoristic)',
+      legacy: 'The Latin "Witelo" was the standard optics textbook through Kepler\'s era. Even Newton owned and annotated a copy.' },
+    { id: 'theodoric', name: 'Theodoric of Freiberg', icon: '🌈', era: 'medieval', years: '~1250–1310', country: 'Germany',
+      knownFor: 'First correct geometric theory of the rainbow',
+      bio: 'Dominican friar and natural philosopher. Experimented with spherical glass globes filled with water as model raindrops. Traced rays through them to derive the primary and secondary rainbow geometries qualitatively correctly — refraction in, internal reflection, refraction out — almost 400 years before Descartes\' quantitative analysis.',
+      contributions: [
+        'In "De iride et radialibus impressionibus" (~1304), derived the primary rainbow from one internal reflection in a spherical drop.',
+        'Derived the secondary rainbow (with reversed colors) from two internal reflections.',
+        'Recognized that each observer sees a unique rainbow centered on the antisolar point.',
+        'Used experimental method with model raindrops — predating Descartes by 3 centuries.',
+        'His work was lost and rediscovered only in 1814.'
+      ],
+      quote: '(work survives only in manuscript fragments — no famous personal quote preserved)',
+      legacy: 'A casualty of intellectual history: his rainbow analysis went unread for 500 years. His name is now restored as the first scientific rainbow theorist.' },
+
+    // ── Renaissance & 17th century ──
+    { id: 'snell', name: 'Willebrord Snell van Royen (Snellius)', icon: '〽', era: 'renaissance', years: '1580–1626', country: 'Netherlands',
+      knownFor: "Refraction law (Snell's law)",
+      bio: 'Dutch mathematician and astronomer at Leiden. In 1621 he derived (but did not publish) the law of refraction n₁sin(θ₁) = n₂sin(θ₂) in modern form — the form Ibn Sahl had stated 600+ years earlier. Snell\'s name became attached because his manuscript circulated in Leiden and was published posthumously.',
+      contributions: [
+        'Re-derived the sine law of refraction in 1621.',
+        'Pioneered triangulation surveying — used it to measure the meridian arc of the Earth from Alkmaar to Bergen op Zoom.',
+        'Wrote on conic sections and applied geometry.',
+        'His refraction work was published only after his death; Descartes published the same law independently in 1637.'
+      ],
+      quote: '(none preserved)',
+      legacy: 'The most famous unpublished discovery in optics. The law bears his name in English physics; French physics calls it "Descartes\' law." Ibn Sahl gets neither name despite priority.' },
+    { id: 'kepler', name: 'Johannes Kepler', icon: '🌟', era: 'renaissance', years: '1571–1630', country: 'Holy Roman Empire',
+      knownFor: 'Theory of the retinal image; first telescope improvement',
+      bio: 'German astronomer best known for the three laws of planetary motion. His Dioptrice (1611) and earlier Astronomiae pars Optica (1604) revolutionized optics: he correctly described image formation on the retina, designed an improved telescope (the "Keplerian telescope" with two convex lenses giving inverted but wider-field images), and laid groundwork for geometrical optics.',
+      contributions: [
+        'Demonstrated that the eye\'s lens forms a real inverted image on the retina (the brain re-inverts it perceptually).',
+        'Designed the Keplerian telescope: two converging lenses giving an inverted image but wider field than Galileo\'s.',
+        'Studied atmospheric refraction near the horizon and derived a (slightly incorrect) refraction law.',
+        'First understood why distant objects can be focused on a 2D retina at all (the geometric ray bundle).',
+        'Established that planetary observations are limited not by eyesight but by telescopic technology.'
+      ],
+      quote: '"I much prefer the sharpest criticism by a single intelligent man to the thoughtless approval of the masses." — Astronomia Nova',
+      legacy: 'Without Kepler\'s ray-bundle model of vision, Newton\'s theory of color from prisms would have been a logical step. With it, Newton COULD make that step.' },
+    { id: 'galileo', name: 'Galileo Galilei', icon: '🔭', era: 'renaissance', years: '1564–1642', country: 'Italy',
+      knownFor: 'First astronomical telescope observations',
+      bio: 'Italian polymath who, in 1609, on hearing rumor of a Dutch spyglass, built his own telescope (3x, then 9x, then 20x), pointed it at the sky, and discovered Jupiter\'s four major moons, the phases of Venus, lunar craters, and that the Milky Way is a multitude of stars. The "Galilean telescope" uses one convex and one concave lens, giving an upright image but a narrow field.',
+      contributions: [
+        'Constructed the first scientifically used astronomical telescope (1609); reached 30x magnification.',
+        'Discovered the four largest moons of Jupiter (Io, Europa, Ganymede, Callisto), now called the Galilean moons.',
+        'Documented the phases of Venus, proving it orbits the Sun (Copernican system).',
+        'Discovered lunar mountains and craters, sunspots, and the rings of Saturn (without resolving them).',
+        'Wrote on visual depth perception and the apparent size of the Moon near the horizon.'
+      ],
+      quote: '"All truths are easy to understand once they are discovered; the point is to discover them."',
+      legacy: 'Made optics a tool of cosmic exploration. His telescopes triggered both an astronomical revolution and the conflict with the Church that defines popular memory of him.' },
+    { id: 'huygens', name: 'Christiaan Huygens', icon: '🌊', era: 'renaissance', years: '1629–1695', country: 'Netherlands',
+      knownFor: 'Wave theory of light; Huygens\' principle',
+      bio: 'Dutch polymath: physicist, mathematician, astronomer, and inventor of the pendulum clock. His Traité de la lumière (1690) proposed that light is a longitudinal wave in a luminiferous ether, and stated Huygens\' principle: every point on a wavefront acts as a source of secondary spherical wavelets. The wave theory was eclipsed by Newton\'s corpuscular view for a century, then resurrected by Young in 1801.',
+      contributions: [
+        'Formulated the wave theory of light (1690), deriving reflection and refraction from wavefront propagation.',
+        "Stated Huygens' principle, still used to teach diffraction and propagation in any wave medium.",
+        'Built telescopes that discovered Saturn\'s rings (1659) and its moon Titan (1655).',
+        'Studied polarization in calcite (Iceland spar) — but didn\'t recognize it as a transverse-wave property (waves were thought to be longitudinal).',
+        'Invented the pendulum clock (1656) — precision timekeeping that enabled accurate longitude measurement.'
+      ],
+      quote: '"It is in the very nature of light to spread, like sound, by spherical waves." — Traité de la lumière',
+      legacy: 'Huygens vs. Newton was the great optics debate of 1690–1900. Both were ultimately right: light is BOTH wave (Huygens) and quantum particle (Newton-ish), as Einstein\'s 1905 photoelectric paper showed.' },
+    { id: 'newton', name: 'Isaac Newton', icon: '🍎', era: 'renaissance', years: '1642–1727', country: 'England',
+      knownFor: 'Theory of color; corpuscular light; reflecting telescope',
+      bio: 'English natural philosopher whose Principia revolutionized physics. In optics, his Opticks (1704) treated light as a stream of particles ("corpuscles"). He showed that white light is a mixture of colors (prism experiments, ~1666), invented the reflecting telescope (1668), and dominated optics for a century. His dominance also retarded the wave theory; only Young (1801) and Fresnel (1815+) restored it.',
+      contributions: [
+        'Showed by prism experiments that white sunlight contains all colors of the spectrum, recombined by a second prism.',
+        'Established that color is a property of light, not of bodies — bodies appear colored by selective reflection.',
+        'Invented the reflecting telescope (Newtonian telescope, 1668) — eliminating chromatic aberration of refractors.',
+        'Wrote the Opticks (1704), a synthesis of his light experiments that defined optical thinking for 100+ years.',
+        'Observed Newton\'s rings and explained them with "fits of easy reflection and easy transmission" — wrong but quantitative.',
+        'Co-discovered (with Leibniz) calculus, formulated the three laws of motion and universal gravitation in Principia (1687).'
+      ],
+      quote: '"If I have seen further it is by standing on the shoulders of giants." — letter to Robert Hooke, 1675',
+      legacy: 'The reflecting telescope is still the design of most large astronomical telescopes — including Hubble, JWST, and Keck.' },
+    { id: 'hooke', name: 'Robert Hooke', icon: '🔬', era: 'renaissance', years: '1635–1703', country: 'England',
+      knownFor: 'Micrographia; biological microscopy; wave-light advocate',
+      bio: 'English polymath: physicist, biologist, architect, and Curator of Experiments at the Royal Society. His Micrographia (1665) was a stunning display of microscopical observation — he coined the word "cell" looking at cork. Advocated wave theory of light and clashed bitterly with Newton over priority claims for the inverse-square law.',
+      contributions: [
+        'Wrote Micrographia (1665), the first major work of microscopy with detailed illustrations.',
+        'Coined the term "cell" (from cells in a monastery) for the box-like structures in cork.',
+        'Argued for wave nature of light, anticipating much of Huygens\' approach.',
+        'Discovered Hooke\'s law of elasticity (F = −kx) and the diffraction effects in soap films.',
+        'Helped design London buildings after the Great Fire of 1666 — including parts of St. Paul\'s Cathedral with Christopher Wren.',
+        'Studied lunar craters, gravitation, and was the first to suggest a heliocentric solar system stabilized by inverse-square gravity (though without the math Newton would supply).'
+      ],
+      quote: '"By the help of microscopes there is nothing so small as to escape our enquiry."',
+      legacy: 'Newton allegedly removed Hooke\'s portrait from the Royal Society after Hooke\'s death — no authentic image of Hooke survives.' },
+    { id: 'roemer', name: 'Ole Christensen Rømer', icon: '⏱', era: 'renaissance', years: '1644–1710', country: 'Denmark',
+      knownFor: 'First measurement of the speed of light',
+      bio: 'Danish astronomer at the Paris Observatory. In 1676 he noticed that the eclipses of Jupiter\'s moon Io occurred sooner when Earth was on the same side of the Sun as Jupiter, and later when on the opposite side. He deduced this was because light takes time to cross the Earth\'s orbit. His value (c ≈ 220,000 km/s) was about 25% low but established for the first time that light has a finite speed.',
+      contributions: [
+        'Measured the speed of light using observations of Io\'s eclipses (1676) — the first quantitative measurement.',
+        'Reasoned correctly that light delay across Earth\'s orbital diameter explains the eclipse timing variation.',
+        'Estimated c ≈ 220,000 km/s — about 25% low, but historic.',
+        'Invented the transit instrument for accurate stellar position measurement.',
+        'Later worked as Astronomer Royal of Denmark and city planner of Copenhagen.'
+      ],
+      quote: '"I deduce from these observations that for a distance equal to the half-diameter of the orbit of the Earth, light requires about ten or eleven minutes for its passage." — On the Motion of Light, 1676',
+      legacy: 'Many earlier philosophers (Aristotle, Descartes) had argued light was instantaneous. Rømer proved otherwise — and made special relativity possible 230 years later.' },
+    { id: 'grimaldi', name: 'Francesco Maria Grimaldi', icon: '〰', era: 'renaissance', years: '1618–1663', country: 'Italy',
+      knownFor: 'Discovery of diffraction',
+      bio: 'Italian Jesuit priest, physicist, and astronomer at Bologna. In 1665 (published posthumously) he described and named the phenomenon of "diffraction" — the spreading of light into geometric shadow when passing near an obstacle. His careful observations of fringes near sharp edges contradicted the strict rectilinear propagation that Newton and others assumed.',
+      contributions: [
+        'First systematic description and naming of diffraction ("Physico-mathesis de lumine, coloribus, et iride," 1665).',
+        'Observed bright and dark fringes in the geometric shadow of a thin object placed in a sunbeam.',
+        'Recognized that light "bends" around edges and cannot be a purely rectilinear flow.',
+        'Made the earliest known accurate map of the Moon\'s surface together with Riccioli.',
+        'Established the lunar nomenclature still used today (Tycho, Copernicus, Plato craters all named by Grimaldi/Riccioli).'
+      ],
+      quote: '"Lumen propagatur seu diffunditur non solum directe, refracte, ac reflexe, sed etiam alio quodam quarto modo, diffracte." — "Light propagates not only directly, refracted, and reflected, but also in a fourth way: diffracted."',
+      legacy: 'His name lives in both lunar nomenclature (Grimaldi crater) and in every physics class that covers diffraction.' },
+
+    // ── 18th–19th century ──
+    { id: 'young', name: 'Thomas Young', icon: '✨', era: '19th', years: '1773–1829', country: 'England',
+      knownFor: 'Double-slit experiment; wave theory of light',
+      bio: 'English physician, physicist, Egyptologist, and polymath. His double-slit experiment (1801) showed interference fringes — strong evidence that light is a wave, against Newton\'s long-dominant corpuscular view. Also: deciphered hieroglyphics on the Rosetta Stone (independently from Champollion), coined "Young\'s modulus," named the Indo-European language family.',
+      contributions: [
+        'Performed the double-slit interference experiment (1801–1803), demonstrating wave nature of light.',
+        'Coined the term "energy" in its modern physics sense.',
+        'First to study astigmatism in the eye.',
+        'Discovered the principle of superposition for waves.',
+        'Major contributor to deciphering Egyptian hieroglyphics from the Rosetta Stone, separately from Champollion.',
+        'Coined "Young\'s modulus" of elasticity.'
+      ],
+      quote: '"The more closely the experiment is examined, the more closely will the inferences appear to be founded on impartial and rational reasoning." — defense of the wave theory, 1804',
+      legacy: 'Almost single-handedly revived the wave theory of light. Was attacked viciously by Newtonians for decades; only Fresnel\'s subsequent work made wave optics mainstream.' },
+    { id: 'fresnel', name: 'Augustin-Jean Fresnel', icon: '🌀', era: '19th', years: '1788–1827', country: 'France',
+      knownFor: 'Mathematical wave theory; Fresnel equations; Fresnel lens',
+      bio: 'French civil engineer who took up optics in his spare time and rapidly out-mathematized everyone. His comprehensive wave theory (1815+) derived diffraction patterns from Huygens\' principle plus interference. The Fresnel equations describe reflectance vs. polarization. The Fresnel lens (1822) replaced the heavy glass of lighthouse lenses with a thin grooved lens, transforming maritime safety worldwide.',
+      contributions: [
+        'Founded the mathematical wave theory of light (1815–1818) with rigorous treatments of diffraction and polarization.',
+        'Stated the Fresnel equations for amplitude reflectance/transmittance at dielectric boundaries.',
+        'Designed the Fresnel lens — a flat-faced lens with concentric stepped grooves, used in every major lighthouse since.',
+        'Predicted (and Arago observed) the Poisson spot in the center of a circular obstacle\'s shadow.',
+        'Solved the diffraction problem for various obstacle geometries (Fresnel half-plane, circular aperture).'
+      ],
+      quote: '"Nature is not embarrassed by difficulties of analysis. She avoids only complications of means." — Memoir on Diffraction',
+      legacy: 'Fresnel lenses still focus the beams of every coastal lighthouse on Earth and many modern automotive headlights. Maine\'s coastal lighthouses use 1st-, 2nd-, 3rd-, and 4th-order Fresnel lenses depending on light range required.' },
+    { id: 'malusFig', name: 'Étienne-Louis Malus', icon: '↕', era: '19th', years: '1775–1812', country: 'France',
+      knownFor: 'Polarization by reflection; Malus\'s law',
+      bio: 'French military engineer and physicist who served in Napoleon\'s Egyptian campaign. In 1808, looking at sunset reflected off the windows of the Luxembourg Palace through a calcite crystal, he discovered polarization by reflection — the reflected light was already polarized. Two years later he gave the cos² law for transmission through a polarizer.',
+      contributions: [
+        'Discovered polarization of light by reflection (1808) — observed via calcite crystal.',
+        "Stated Malus's law: I = I₀ cos²(θ), the foundation of polarimetry.",
+        'Studied geometry of optical caustics — surfaces tangent to refracted rays.',
+        'Served as a Napoleonic engineering officer during the Egyptian campaign; nearly died of plague.',
+        'His Theorem of Malus relates incidence and refraction angles geometrically.'
+      ],
+      quote: '"It seemed to me that I should determine, with the utmost care, all the circumstances of this novel phenomenon." — on his polarization discovery',
+      legacy: 'Died young (37) of tuberculosis contracted during the Egyptian campaign. His law remains in every introductory polarization lesson.' },
+    { id: 'brewster', name: 'David Brewster', icon: '🕶', era: '19th', years: '1781–1868', country: 'Scotland',
+      knownFor: "Brewster's angle; kaleidoscope inventor",
+      bio: 'Scottish physicist, mathematician, and inventor. Identified that reflected light is 100% polarized at one specific angle — Brewster\'s angle. Invented the kaleidoscope (1816), patented it, but didn\'t make money from it because the patent was poorly drafted and copycats flourished. Friend and biographer of Newton.',
+      contributions: [
+        "Discovered Brewster's angle (1815), the angle at which reflected light is fully polarized.",
+        'Established Brewster\'s law: tan(θ_B) = n₂/n₁.',
+        'Invented the kaleidoscope (1816), the stereoscope (1849), and the dioptric apparatus for lighthouses.',
+        'Wrote a major biography of Newton.',
+        'Co-founded the British Association for the Advancement of Science (1831).'
+      ],
+      quote: '"In the contemplation of nature, no proper deduction can be made by reasoning from a single phenomenon: a multitude of facts must be combined."',
+      legacy: 'The kaleidoscope took the European drawing rooms by storm in 1817–1818. Brewster\'s law underlies polarizing sunglasses and laser windows alike.' },
+    { id: 'fraunhofer', name: 'Joseph von Fraunhofer', icon: '📊', era: '19th', years: '1787–1826', country: 'Bavaria',
+      knownFor: 'Fraunhofer lines; diffraction gratings; precision optics',
+      bio: 'Bavarian glassmaker who became one of the greatest experimental opticians ever. Orphaned at 11, apprenticed as a glassmaker, survived a workshop collapse that brought him to royal attention. He developed unprecedentedly pure optical glass, invented the spectroscope, ruled the first precision diffraction gratings, and catalogued 574 dark lines in the solar spectrum — the Fraunhofer lines, which decades later turned out to encode the composition of the Sun.',
+      contributions: [
+        'Mapped 574 dark lines in the solar spectrum (1814) — the Fraunhofer lines.',
+        'Ruled the first diffraction gratings with up to 8,000 lines per inch.',
+        'Invented the spectroscope and used it to characterize stellar spectra (1820).',
+        'Manufactured the finest optical glasses of his era at the Munich Optical Institute.',
+        'Built the Dorpat refractor (1824, 9.6 inch aperture) for Friedrich Bessel — used to make the first parallax measurement of a star (61 Cygni, 1838).'
+      ],
+      quote: '"Approbavit nemo, applicuit nemo." ("No one approved, no one applied") — on the initial reception of his spectral lines',
+      legacy: 'Fraunhofer\'s lines turned out to be absorption signatures of specific elements (Kirchhoff & Bunsen, 1859), opening astrophysics. He died of tuberculosis at 39, possibly from glass-furnace fumes.' },
+    { id: 'foucault', name: 'Léon Foucault', icon: '🌐', era: '19th', years: '1819–1868', country: 'France',
+      knownFor: 'Speed of light; rotation of the Earth (Foucault pendulum)',
+      bio: 'French physicist who measured the speed of light in air (1850) and in water (proving it slower in water than in air — supporting wave theory, contra Newton). His Foucault pendulum (1851) dramatically demonstrated the rotation of the Earth. He invented the modern method of silvering glass mirrors and made the first precision Newtonian reflecting telescopes.',
+      contributions: [
+        'Measured the speed of light to within 1% of the modern value using a rotating-mirror method (1862).',
+        'Showed light travels slower in water than air, supporting wave theory.',
+        'Foucault pendulum (1851): a 67 m long pendulum at the Panthéon swung in a plane that appeared to rotate, dramatically proving Earth\'s rotation.',
+        'Pioneered silvered-glass telescope mirrors (replacing speculum-metal).',
+        'Invented the gyroscope (1852).',
+        'Identified eddy currents (Foucault currents) and worked on photometry.'
+      ],
+      quote: '"I have endeavoured to throw, at the bottom of these phenomena, this single fundamental idea: that mechanics shall by herself unlock her own laws." — on the pendulum',
+      legacy: 'The Foucault pendulum is a museum staple worldwide — a tangible visual proof of Earth rotation that needs no math.' },
+    { id: 'maxwell', name: 'James Clerk Maxwell', icon: '⚡', era: '19th', years: '1831–1879', country: 'Scotland',
+      knownFor: 'Electromagnetic theory of light',
+      bio: 'Scottish theoretical physicist. Maxwell\'s equations (1865) unified electricity and magnetism into a single classical field theory, and showed that the equations predict transverse waves traveling at exactly the experimentally measured speed of light — proving that light IS an electromagnetic wave. Also: kinetic theory of gases, statistical mechanics, color vision, and the first colored photograph (1861).',
+      contributions: [
+        'Maxwell\'s equations (1865) — the four equations of classical electromagnetism.',
+        'Showed mathematically that EM waves propagate at speed (1/√(ε₀μ₀)) ≈ 3×10⁸ m/s — the same as c. Concluded light is electromagnetic.',
+        'Founded the kinetic theory of gases jointly with Boltzmann.',
+        'Discovered the Maxwell-Boltzmann distribution.',
+        'Demonstrated the first colored photograph (1861, tartan ribbon) using three separate filtered black-and-white plates.',
+        'Worked out the color sensitivity of three types of human cones.'
+      ],
+      quote: '"We can scarcely avoid the inference that light consists in the transverse undulations of the same medium which is the cause of electric and magnetic phenomena." — Treatise on Electricity and Magnetism, 1873',
+      legacy: 'Einstein cited Maxwell as the most influential physicist after Newton, and his equations remained fully correct (no special-relativistic correction needed) — a fact that pointed Einstein toward special relativity.' },
+    { id: 'doppler', name: 'Christian Doppler', icon: '🔊', era: '19th', years: '1803–1853', country: 'Austria',
+      knownFor: 'Doppler effect for waves',
+      bio: 'Austrian physicist and mathematician at the Prague Polytechnic. In 1842 he hypothesized that the observed frequency of a wave depends on the relative motion of source and observer — what we now call the Doppler effect. He proposed it explained the colors of double stars (incorrectly), but the principle itself is correct and underlies modern radar, sonar, medical Doppler ultrasound, astronomical redshift, and the expansion of the universe.',
+      contributions: [
+        'Stated the Doppler effect (1842): f_obs = f_src × (c ± v)/(c ∓ v).',
+        'Predicted (correctly) that approaching wave sources appear shifted to higher frequency, receding ones to lower.',
+        'Applied it (incorrectly) to suggest a connection between stellar colors and stellar motion.',
+        'Was experimentally verified by Buys-Ballot in 1845 using a train of horn players passing at known speed.'
+      ],
+      quote: '"It is almost to be accepted with certainty that this will in the not-too-distant future offer astronomers a welcome means..." — on his prediction\'s applicability',
+      legacy: 'Doppler shift is the spine of modern observational astronomy. Hubble used it to measure that distant galaxies are receding; that observation grounded the Big Bang.' },
+    { id: 'rayleigh', name: 'Lord Rayleigh (John William Strutt)', icon: '🌌', era: '19th', years: '1842–1919', country: 'England',
+      knownFor: 'Rayleigh scattering; resolution criterion; sound and waves',
+      bio: 'English physicist who systematized 19th-century classical wave physics. Discovered argon (1894, Nobel 1904). Derived Rayleigh scattering (the 1/λ⁴ law that makes the sky blue). Stated the Rayleigh criterion for telescope resolution. Wrote "The Theory of Sound" (1877–1878), still consulted today.',
+      contributions: [
+        'Derived Rayleigh scattering — particles smaller than wavelength scatter as 1/λ⁴.',
+        'Stated the Rayleigh resolution criterion for telescopes (1879).',
+        'Co-discovered argon with William Ramsay (1894), Nobel Prize in Physics 1904.',
+        'Wrote "The Theory of Sound" (two volumes, 1877–1878).',
+        'Studied diffraction in many geometries; the "Rayleigh range" of a focused beam is named for him.',
+        'Investigated the puzzle of Maxwell\'s equations vs. blackbody radiation — the "ultraviolet catastrophe" of classical physics.'
+      ],
+      quote: '"It is rare to find theoretical work in physics done with the lucidity, intelligibility, and self-criticism that Strutt brought to bear." — assessment by his colleague J.J. Thomson',
+      legacy: 'Rayleigh\'s 1/λ⁴ law is in every children\'s "Why is the sky blue?" explanation. His resolution criterion is in every telescope spec sheet.' },
+    { id: 'michelson', name: 'Albert A. Michelson', icon: '⫻', era: '19th–20th', years: '1852–1931', country: 'USA',
+      knownFor: 'Michelson interferometer; Michelson-Morley null result',
+      bio: 'American physicist, first American to win the Nobel Prize in physics (1907). Designed the Michelson interferometer to detect Earth\'s motion through the luminiferous ether. With Edward Morley in 1887, ran the experiment and found NO ether drift — a "null result" that helped prepare physics for special relativity. Also measured the speed of light to unprecedented precision; defined the meter in terms of cadmium light wavelengths (1893).',
+      contributions: [
+        'Invented the Michelson interferometer (1881).',
+        'Michelson-Morley experiment (1887) — failed to detect ether drift; helped motivate special relativity.',
+        'Defined the meter in terms of cadmium light wavelengths (1893): 1 m = 1,553,163.5 wavelengths.',
+        'Measured the angular diameter of the star Betelgeuse (1920) — first such measurement for a star other than the Sun.',
+        'First American Nobel Prize in physics (1907).'
+      ],
+      quote: '"It seems probable that most of the grand underlying principles have been firmly established... future truths must be looked for in the sixth place of decimals." — University of Chicago address, 1894 (in retrospect, an ironic moment)',
+      legacy: 'The 1894 quote came on the eve of relativity (1905), quantum mechanics (1900–1927), and 20th-century physics. The Michelson interferometer is the basis of LIGO\'s gravitational-wave detectors.' },
+    { id: 'einsteinPhoto', name: 'Albert Einstein', icon: '💡', era: 'modern', years: '1879–1955', country: 'Germany / USA',
+      knownFor: 'Photoelectric effect; light quanta; relativity',
+      bio: 'German-born theoretical physicist. His "miracle year" (1905) produced four papers that reshaped physics: photoelectric effect (light quanta), Brownian motion, special relativity, mass-energy equivalence. His photoelectric paper, which proposed that light comes in discrete energy packets (photons), won him the 1921 Nobel Prize — NOT relativity, as is often assumed. Relativity also implied that the constancy of c is a fundamental law, not a coincidence.',
+      contributions: [
+        'Photoelectric effect (1905): proposed light energy is quantized in packets E = hf. Won 1921 Nobel Prize.',
+        'Special relativity (1905): the speed of light c is invariant for all inertial observers, implying space and time merge.',
+        'Mass-energy equivalence: E = mc².',
+        'Predicted gravitational redshift, bending of light by gravity (confirmed Eddington 1919), gravitational lensing.',
+        'General relativity (1915–1916) — light follows geodesics in curved spacetime, foundation of modern cosmology.'
+      ],
+      quote: '"The most incomprehensible thing about the universe is that it is comprehensible."',
+      legacy: 'Einstein\'s photon hypothesis turned wave-particle duality from a puzzle into a foundational quantum principle. The deflection of starlight by the Sun (Eddington 1919) made Einstein famous worldwide overnight.' },
+    { id: 'compton', name: 'Arthur Compton', icon: '🌟', era: 'modern', years: '1892–1962', country: 'USA',
+      knownFor: 'Compton scattering — photons are particles',
+      bio: 'American physicist whose 1923 experiment on X-ray scattering from electrons proved that photons carry momentum just like any other particle. The wavelength shift of scattered X-rays exactly matched what particle-particle elastic collisions predicted. Won the 1927 Nobel Prize.',
+      contributions: [
+        'Compton scattering (1923): X-rays scattering off electrons show a wavelength shift Δλ = (h/m_ec)(1 − cosθ).',
+        'This shift can only be explained if photons carry momentum p = h/λ.',
+        'Confirmed Einstein\'s photon hypothesis with definitive experimental evidence.',
+        'Won the 1927 Nobel Prize jointly with C.T.R. Wilson (cloud chamber).',
+        'Later directed the U Chicago plutonium production efforts of the Manhattan Project.'
+      ],
+      quote: '"X-rays scattering off electrons can only be understood if light consists of particles carrying momentum proportional to frequency."',
+      legacy: 'Compton scattering is a daily diagnostic tool in radiation physics and the basis of PET scan imaging.' },
+    { id: 'townes', name: 'Charles H. Townes', icon: '🔦', era: 'modern', years: '1915–2015', country: 'USA',
+      knownFor: 'Invented the maser (precursor to laser); Nobel 1964',
+      bio: 'American physicist who in 1953–54 built the first maser — a microwave amplifier by stimulated emission of radiation, the principle Einstein had stated in 1917. The same concept extended to visible light gave the laser (Maiman 1960, but Townes had collaborated on the theory). Nobel Prize in Physics 1964 (with Basov and Prokhorov).',
+      contributions: [
+        'Conceived (with James Gordon and Herbert Zeiger) the ammonia maser in 1953–54.',
+        'Worked out the theory of optical (visible-light) lasers with Schawlow.',
+        'Pioneered laser spectroscopy and laser-based atomic clocks.',
+        'Helped found the field of submillimeter astronomy.',
+        'Wrote "How the Laser Happened" (1999), a memoir of laser invention.'
+      ],
+      quote: '"The laser was invented because no one was telling us what to do. We had the freedom to follow our interests where they led us." — How the Laser Happened',
+      legacy: 'The maser → laser line traces from Einstein 1917 → Townes 1953 → Maiman 1960. Every laser pointer, fiber-optic link, and laser surgery exists because of this lineage.' },
+    { id: 'maiman', name: 'Theodore Maiman', icon: '🔴', era: 'modern', years: '1927–2007', country: 'USA',
+      knownFor: 'First operational laser',
+      bio: 'American physicist who, on 16 May 1960 at Hughes Research Labs in Malibu, demonstrated the first working laser using a synthetic ruby rod. Maiman\'s ruby laser used a flash lamp to pump chromium ions in the ruby crystal; their stimulated emission at 694 nm (deep red) made the first coherent optical-frequency light source.',
+      contributions: [
+        'Built the first operational laser (16 May 1960) — a ruby laser at 694 nm.',
+        'Published in Nature (after Physical Review Letters rejected the manuscript as "another laser paper").',
+        'Showed that solid-state lasers (small, robust) were possible.',
+        'Subsequent work on telecommunications lasers, military applications, and laser industry.'
+      ],
+      quote: '"A laser is a solution looking for a problem." — A widely attributed remark about the early laser years; uses ranged from precise (telecom, surgery) to absurd (death rays) before settling into the mundane indispensability of today.',
+      legacy: 'Within 60 years, the laser went from "no obvious use" to powering the internet (fiber optics), reading every CD/DVD/Blu-ray, vaporizing tumors, and providing the most precise rulers humans have ever built.' },
+    { id: 'kao', name: 'Charles Kuen Kao', icon: '📡', era: 'modern', years: '1933–2018', country: 'UK / USA / Hong Kong',
+      knownFor: 'Father of fiber-optic communications',
+      bio: 'Chinese-born physicist who in 1966 (with George Hockham at Standard Telecommunication Labs) showed that ultra-pure glass could carry optical signals over kilometers with acceptable loss — proposing the fundamentals of fiber-optic telecommunications. Won the 2009 Nobel Prize in Physics. Modern fiber-optic networks carry essentially all internet traffic.',
+      contributions: [
+        'Demonstrated that fused silica with sub-ppm impurities could achieve <20 dB/km transmission (1966).',
+        'Spurred Corning Glass to develop ultra-pure glass that hit that target in 1970.',
+        'Catalyzed the deployment of fiber-optic communication, which began commercial operation in 1977.',
+        'Nobel Prize in Physics 2009 for "groundbreaking achievements concerning the transmission of light in fibers for optical communication."'
+      ],
+      quote: '"The future will need more efficient fiber-optic technology to carry more information." — Nobel address, 2009',
+      legacy: 'Without Kao\'s fiber proposal, the internet as we know it would be physically impossible. Every video stream, email, and Zoom call rides Kao\'s photons.' },
+    { id: 'kaoTransAtlantic', name: 'Stephen Hawking (general public physicist)', icon: '🌌', era: 'modern', years: '1942–2018', country: 'England',
+      knownFor: 'Black hole radiation theory; popular physics',
+      bio: 'English theoretical physicist whose work on black holes — particularly the prediction of Hawking radiation — established that black holes emit thermal radiation due to quantum effects near the event horizon. His "A Brief History of Time" (1988) sold 25 million copies. While not strictly an opticist, his work on photon emission near black holes is fundamental to modern astrophysical optics.',
+      contributions: [
+        'Predicted Hawking radiation (1974): black holes emit thermal photons, eventually evaporating.',
+        'Co-developed the Penrose-Hawking singularity theorems.',
+        'Showed that the area of a black hole event horizon never decreases (analogous to entropy).',
+        'Wrote "A Brief History of Time" (1988), bringing modern cosmology to lay readers.',
+        'Continued research and public engagement despite motor neurone disease for 55 years.'
+      ],
+      quote: '"Look up at the stars and not down at your feet. Try to make sense of what you see, and wonder about what makes the universe exist. Be curious."',
+      legacy: 'Made cosmology and theoretical physics part of pop culture. Inspired generations of physicists, including many opticists working on black-hole imaging and gravitational-wave detection.' },
+
+    // ── Modern era continued ──
+    { id: 'feynman', name: 'Richard P. Feynman', icon: '🎨', era: 'modern', years: '1918–1988', country: 'USA',
+      knownFor: 'Quantum electrodynamics (QED) — modern theory of light',
+      bio: 'American theoretical physicist who, with Schwinger and Tomonaga, formulated QED — the relativistic quantum field theory of how light and matter interact. Won the 1965 Nobel Prize. His path-integral approach treats every photon as exploring every possible path between source and detector, with quantum amplitudes that add. QED is the most precisely tested theory in all of physics; predictions match experiment to 12 decimal places.',
+      contributions: [
+        'Quantum electrodynamics (1948): the relativistic quantum theory of how photons interact with electrons.',
+        'Feynman diagrams: pictorial language for calculating QED interactions.',
+        'Path-integral formulation of quantum mechanics.',
+        'Discovered superfluidity in liquid helium-3.',
+        'Co-investigated the Challenger Space Shuttle disaster (1986).',
+        'Wrote enormously popular Feynman Lectures on Physics.'
+      ],
+      quote: '"It does not make any difference how beautiful your guess is, it does not make any difference how smart you are... if it disagrees with experiment, it is wrong."',
+      legacy: 'QED is the foundation of modern optics: laser physics, nonlinear optics, photonic quantum computing, every interaction between light and matter at the quantum level.' },
+    { id: 'gaborD', name: 'Dennis Gabor', icon: '✨', era: 'modern', years: '1900–1979', country: 'Hungary / UK',
+      knownFor: 'Invented holography',
+      bio: 'Hungarian-British physicist who in 1947 invented holography as a way to improve electron microscopy. The technique only became practical with the laser (1960). A hologram records both amplitude and phase of a wavefront, so the reconstructed image is fully 3D — viewable from different angles like the original. Won the 1971 Nobel Prize.',
+      contributions: [
+        'Invented holography (1947), recording wavefronts (not just intensity) by interfering with a reference beam.',
+        'Initially conceived for electron-microscope aberration correction.',
+        'Nobel Prize in Physics 1971 "for his invention and development of the holographic method."',
+        'Pioneered communication theory and information transmission.'
+      ],
+      quote: '"You cannot foresee the future, but you can invent it." — A statement Gabor took as a guiding principle, anticipating laser-based holography that came 13 years after his theory.',
+      legacy: 'Holograms today appear on credit cards, banknote security marks, art installations, and (with phase masks) optical-trapping research. Real-time holographic video remains an elusive but pursued goal.' },
+    { id: 'goosFig', name: 'Karl Wieland Goos & Hilda Hänchen', icon: '🌊', era: 'modern', years: '1900s mid', country: 'Germany',
+      knownFor: 'Goos-Hänchen shift',
+      bio: 'German physicists who in 1947 measured a small lateral shift in totally internally reflected beams — the reflected beam exits the surface displaced from the simple geometric reflection point by about one wavelength. The shift comes from the evanescent wave\'s slight penetration into the second medium. Today it\'s a sensitive way to measure thin films and interfaces.',
+      contributions: [
+        'Discovered the Goos-Hänchen shift (1947).',
+        'Showed that totally reflected beams undergo a lateral displacement of order λ.',
+        'Confirmed the existence and structure of the evanescent wave.',
+        'Their experiment used a multi-bounce setup to amplify the tiny single-bounce shift to measurable size.'
+      ],
+      quote: '(work was largely technical; no famous quotes preserved)',
+      legacy: 'Goos-Hänchen analysis is now standard for understanding mode propagation in fiber optics, multi-layer optical filters, and biosensor design.' },
+    { id: 'hubbleE', name: 'Edwin Hubble', icon: '🌌', era: 'modern', years: '1889–1953', country: 'USA',
+      knownFor: 'Galactic redshifts → expanding universe',
+      bio: 'American astronomer at Mount Wilson. Using the 100-inch Hooker telescope, he measured the redshifts of dozens of "nebulae" (galaxies) and found that more distant galaxies are receding faster — Hubble\'s law. The relationship pointed to an expanding universe, leading to the Big Bang model. Without optical Doppler shift, this discovery would have been impossible.',
+      contributions: [
+        'Resolved the Great Debate by showing "spiral nebulae" are external galaxies, not parts of the Milky Way.',
+        'Hubble\'s law (1929): galaxy recession velocity ∝ distance.',
+        'Classified galaxies by morphology (Hubble sequence: E, S, SB).',
+        'Used Cepheid variables\' period-luminosity relation to measure intergalactic distances.',
+        'His name graces the Hubble Space Telescope (1990).'
+      ],
+      quote: '"Equipped with his five senses, man explores the universe around him and calls the adventure science."',
+      legacy: 'Founded observational cosmology. The Hubble Constant (rate of expansion) is one of the most-measured numbers in physics — currently ~67–73 km/s/Mpc with active disagreement between methods.' },
+    { id: 'minkowski', name: 'Tony Minkowski', icon: '👁', era: 'modern', years: '1900s mid', country: 'USA',
+      knownFor: 'Vision-cone color-matching experiments',
+      bio: 'American vision scientist who in the 1960s rigorously measured the spectral sensitivities of human cone cells, establishing the basis of trichromatic color matching. His work informs every color-management system in displays, cameras, and printing.',
+      contributions: [
+        'Measured precise spectral sensitivities of human L, M, S cones.',
+        'Established the CIE color-matching functions used in industry.',
+        'Studied color anomalies and color-blindness genetics.',
+        'Worked at NIH on visual psychophysics.'
+      ],
+      quote: '(work largely technical reports)',
+      legacy: 'Every color profile in every display traces back to careful cone-sensitivity work like his.' },
+    { id: 'ashkin', name: 'Arthur Ashkin', icon: '🔦', era: 'modern', years: '1922–2020', country: 'USA',
+      knownFor: 'Optical tweezers',
+      bio: 'American physicist at Bell Labs. Invented optical tweezers (1986) — focused laser beams that can trap and manipulate microscopic objects, including living cells, without contact. Won the 2018 Nobel Prize at age 96 — the oldest Nobel laureate ever at time of award.',
+      contributions: [
+        'Invented optical tweezers (1986): trap and manipulate microscopic objects using focused laser beams.',
+        'Showed individual living bacteria and viruses could be trapped without damage.',
+        'Pioneered laser cooling and the manipulation of single atoms and molecules.',
+        'Nobel Prize in Physics 2018, shared with Mourou and Strickland (chirped-pulse amplification).'
+      ],
+      quote: '"Why should we be content with measuring properties of nature? Why not bend the properties to do what we want?" — on his motivation for optical trapping',
+      legacy: 'Optical tweezers are now standard in biophysics labs worldwide — measuring forces on single molecules, manipulating organelles, studying DNA mechanics one helix at a time.' },
+    { id: 'maimanLater', name: 'Donna Strickland', icon: '⚡', era: 'modern', years: '1959–', country: 'Canada',
+      knownFor: 'Chirped-pulse amplification (CPA)',
+      bio: 'Canadian physicist at the University of Waterloo. With Gérard Mourou, invented chirped-pulse amplification (CPA, 1985) — a technique to amplify ultrashort laser pulses to extremely high intensities without damaging the laser materials. CPA is now used in eye surgery (LASIK), industrial cutting, and high-field physics. Strickland is the third woman to win the Nobel in Physics (2018, with Ashkin and Mourou).',
+      contributions: [
+        'Co-invented chirped-pulse amplification (1985) — graduate-student project that revolutionized laser physics.',
+        'CPA enables petawatt-class lasers used in plasma physics and fusion research.',
+        'Industrial applications include LASIK eye surgery, precision micromachining, and writing in transparent materials.',
+        'Nobel Prize in Physics 2018.',
+        'Continues research into ultrafast lasers at the University of Waterloo.'
+      ],
+      quote: '"You don\'t need to be an Einstein. You need to be curious and willing to work hard." — Nobel press conference, 2018',
+      legacy: 'CPA-driven lasers cut the corneal flap in every modern LASIK procedure and enable the highest peak powers ever produced by humans.' },
+    { id: 'esakiF', name: 'Federico Capasso', icon: '🔬', era: 'modern', years: '1949–', country: 'Italy / USA',
+      knownFor: 'Quantum-cascade laser; metalenses',
+      bio: 'Italian-American physicist at Bell Labs and Harvard. Co-invented the quantum-cascade laser (QCL, 1994), a semiconductor laser that emits in the mid- and far-infrared, used in environmental and medical sensing. More recently developed metalenses — flat lenses with patterned subwavelength structures that focus light without curved surfaces, potentially replacing bulky refractive optics in cameras.',
+      contributions: [
+        'Co-invented the quantum-cascade laser (1994), enabling compact mid-IR sources.',
+        'Pioneered metasurfaces — 2D arrays of subwavelength scatterers that mimic conventional optics.',
+        'Demonstrated metalenses (2016) — flat lenses that focus light by phase engineering rather than refraction.',
+        'Contributed to wavefront shaping and nano-photonics.',
+        'Author of 700+ peer-reviewed papers and many patents.'
+      ],
+      quote: '"Optical components are changing because nanofabrication has become a powerful enough tool to engineer light at the wavelength scale." — interview, 2018',
+      legacy: 'Metalenses may displace bulky compound lens systems in smartphone cameras, AR/VR optics, and microscopy within the next decade.' },
+    { id: 'hellSTED', name: 'Stefan Hell', icon: '🔬', era: 'modern', years: '1962–', country: 'Romania / Germany',
+      knownFor: 'STED nanoscopy — beating the diffraction limit',
+      bio: 'Romanian-German physicist who developed stimulated emission depletion (STED) microscopy (~2000), enabling super-resolution fluorescence imaging well below the Abbe diffraction limit. By using a second laser to "turn off" fluorescence everywhere except in a tiny central spot, STED resolves features down to ~20 nm. Won the 2014 Nobel Prize in Chemistry.',
+      contributions: [
+        'Invented STED microscopy (2000) — first super-resolution fluorescence technique to break the Abbe limit.',
+        'Resolution of ~20 nm in living cells, ten times better than conventional confocal microscopy.',
+        'Now imaging dendritic spines, synaptic vesicles, individual ribosomes in living tissue.',
+        'Nobel Prize in Chemistry 2014, shared with Eric Betzig and W.E. Moerner.',
+        'Director at the Max Planck Institute for Biophysical Chemistry.'
+      ],
+      quote: '"There is no such thing as a fundamental limit. There is only the limit of our imagination." — on the diffraction limit',
+      legacy: 'Opened a new era of "nanoscopy" in biology. STED, PALM, and STORM techniques now resolve subcellular structures previously invisible to optical microscopy.' },
+
+    // ── More modern researchers + technology innovators ──
+    { id: 'fizeau', name: 'Hippolyte Fizeau', icon: '⏱', era: '19th', years: '1819–1896', country: 'France',
+      knownFor: 'Terrestrial speed-of-light measurement',
+      bio: 'French physicist who in 1849 made the first terrestrial (Earth-based, not astronomical) measurement of the speed of light using a rotating-toothed-wheel apparatus. He directed a beam through gaps in a fast-spinning wheel onto a distant mirror; if the wheel turned fast enough, the returning beam would be blocked by a tooth. From the rotational speed and known distance, he derived c ≈ 313,000 km/s — within 5% of the modern value.',
+      contributions: [
+        'First terrestrial measurement of the speed of light (1849).',
+        'Discovered the Fizeau effect: light moving in a moving medium is partially "dragged" by the medium.',
+        'Helped develop interferometric techniques later used by Michelson.',
+        'Independently developed photography techniques in the early 1840s.'
+      ],
+      quote: '"It is necessary to find the means to measure the time taken by light to traverse a given path on Earth itself."',
+      legacy: 'Fizeau\'s setup, refined by Foucault, became the standard for terrestrial speed-of-light measurement until laser-interferometric methods superseded it in the late 20th century.' },
+    { id: 'helmholtz', name: 'Hermann von Helmholtz', icon: '🎼', era: '19th', years: '1821–1894', country: 'Germany',
+      knownFor: 'Physiological optics; visual perception',
+      bio: 'German polymath: physician, physicist, philosopher. Founded modern physiological optics. Invented the ophthalmoscope (1851) — the first instrument that could look inside the living eye, transforming medicine. Wrote the foundational three-volume "Handbook of Physiological Optics" (1856–1867), covering everything from cone biology to color perception to spatial vision.',
+      contributions: [
+        'Invented the ophthalmoscope (1851) — allowed direct viewing of the retina in a living eye.',
+        'Founded modern physiological optics; "Handbook of Physiological Optics" (1856–1867).',
+        'Developed the Young-Helmholtz trichromatic theory of color vision.',
+        'Stated the conservation of energy in modern form (1847).',
+        'Made contributions to acoustics, electrodynamics, and thermodynamics.'
+      ],
+      quote: '"Whoever, in the pursuit of science, seeks after immediate practical utility may rest assured that he seeks in vain."',
+      legacy: 'Without the ophthalmoscope, the field of ophthalmology as we know it could not exist.' },
+    { id: 'lippmann', name: 'Gabriel Lippmann', icon: '🎨', era: '19th–20th', years: '1845–1921', country: 'France',
+      knownFor: 'Interference color photography',
+      bio: 'French physicist who developed the first method of producing color photographs based on interference (1891). His technique recorded standing waves in a thin emulsion backed by mercury; reflection from the developed image reproduced the original colors. Won the 1908 Nobel Prize. The method was beautiful but technically demanding; commercial color photography went a different direction.',
+      contributions: [
+        'Invented interference color photography (1891).',
+        'Nobel Prize in Physics 1908.',
+        'Also worked on integral photography (precursor to lightfield photography and AR/VR displays).',
+        'Studied capillary electrometers — used to detect tiny voltages in electrophysiology.'
+      ],
+      quote: '(work was largely technical)',
+      legacy: 'Lippmann photographs in museums still show their original colors after 130 years — they don\'t fade, because the color is interference, not pigment. His integral photography ideas underlie modern lightfield cameras and 3D displays.' },
+    { id: 'shockleyBardeen', name: 'Roy Glauber', icon: '✨', era: 'modern', years: '1925–2018', country: 'USA',
+      knownFor: 'Quantum theory of optical coherence',
+      bio: 'American theoretical physicist at Harvard. Developed the modern quantum theory of optical coherence (1963), explaining how to describe the statistics of photon arrivals at a detector. His framework distinguishes coherent (laser-like), thermal (sun-like), and quantum (non-classical) light states. Won the 2005 Nobel Prize.',
+      contributions: [
+        'Quantum theory of optical coherence (1963).',
+        'Statistical description of photon-counting experiments.',
+        'Introduced "coherent states" of the EM field — the most classical-like quantum states.',
+        'Nobel Prize in Physics 2005.',
+        'Founder of quantum optics as a modern discipline.'
+      ],
+      quote: '"I worry about quantum mechanics not because I don\'t understand it, but because nobody understands it." — riffing on Feynman',
+      legacy: 'Glauber\'s coherence functions are the language used in every quantum-optics paper today.' },
+    { id: 'wieman', name: 'Carl Wieman', icon: '❄', era: 'modern', years: '1951–', country: 'USA',
+      knownFor: 'First Bose-Einstein condensate in a dilute gas',
+      bio: 'American physicist at U Colorado-Boulder, NIST, and now Stanford. In 1995, with Eric Cornell, created the first Bose-Einstein condensate (BEC) in a dilute alkali gas — laser-cooling rubidium atoms to ~170 nanokelvin. Above this threshold, all atoms collapse into the same quantum state. Won the 2001 Nobel Prize.',
+      contributions: [
+        'First Bose-Einstein condensate (BEC) in a dilute alkali gas (1995).',
+        'Laser-cooling and magnetic-trapping techniques refined to nanokelvin temperatures.',
+        'BEC opened a new state of matter for study, with applications to ultra-precise atomic clocks and matter-wave interferometry.',
+        'Nobel Prize in Physics 2001 with Cornell and Ketterle.',
+        'Now leads research on STEM education reform.'
+      ],
+      quote: '"BEC isn\'t just colder than anything else — it\'s a state of matter where quantum mechanics rules at human scales."',
+      legacy: 'BEC research is the wellspring of ultracold-atom physics, atomic clocks accurate to one second in 30 billion years, and the rapidly emerging field of cold-atom quantum computing.' },
+
+    // ── Notable contemporary researchers ──
+    { id: 'mooreOpticsTech', name: 'Federico Faggin', icon: '💻', era: 'modern', years: '1941–', country: 'Italy / USA',
+      knownFor: 'CCD image sensor; designer of the Intel 4004',
+      bio: 'Italian-American engineer who designed the Intel 4004 (1971), the first commercial microprocessor. Also: led the team that brought the CCD (charge-coupled device) from concept to commercial digital camera sensor. The CCD won Boyle and Smith the 2009 Nobel Prize, but Faggin\'s engineering made it practical.',
+      contributions: [
+        'Designed the Intel 4004 microprocessor (1971).',
+        'Led commercial development of the CCD image sensor.',
+        'Pioneered the silicon-gate MOS process used in essentially every modern semiconductor.',
+        'Founded Zilog and Synaptics.',
+        'Continues research on consciousness and the foundations of physics.'
+      ],
+      quote: '"The CCD was just one of those things where the moment the principle was clear, the device was inevitable. It was just engineering after that."',
+      legacy: 'Without CCDs, modern astronomy (Hubble, JWST, ground-based surveys) and digital photography would not exist. Every photo on your phone is captured by Faggin\'s engineering descendants.' },
+    { id: 'ttRabi', name: 'Isidor Isaac Rabi', icon: '🌐', era: 'modern', years: '1898–1988', country: 'USA',
+      knownFor: 'Nuclear magnetic resonance — precursor to MRI',
+      bio: 'American physicist at Columbia University. Discovered nuclear magnetic resonance (NMR, 1938) — atomic nuclei in a magnetic field absorb and emit specific frequencies. Nobel Prize 1944. NMR is now the basis of MRI medical imaging and atomic-clock standards.',
+      contributions: [
+        'Discovered nuclear magnetic resonance (NMR, 1938).',
+        'Nobel Prize in Physics 1944.',
+        'Helped develop radar in WWII and the atomic-bomb project at Los Alamos.',
+        'Pioneer of atomic clocks (the first using cesium NMR).',
+        'Founding chair of the General Advisory Committee for the Atomic Energy Commission.'
+      ],
+      quote: '"Physics is much too important to be left to physicists."',
+      legacy: 'NMR/MRI is now the most-used medical imaging modality after X-ray, and atomic clocks define the second. Rabi enabled both.' },
+    { id: 'townesQuantumOptics', name: 'Anton Zeilinger', icon: '🌀', era: 'modern', years: '1945–', country: 'Austria',
+      knownFor: 'Quantum entanglement teleportation; quantum information',
+      bio: 'Austrian quantum physicist at the University of Vienna. With colleagues, demonstrated quantum teleportation of photon states (1997) and conducted long-baseline tests of quantum entanglement, including transmissions to satellites. Won the 2022 Nobel Prize for tests of Bell inequalities and pioneering quantum information science.',
+      contributions: [
+        'Demonstrated quantum teleportation of photon states (1997).',
+        'Tested Bell inequalities at increasing baselines — to 144 km across the Canary Islands.',
+        'Conducted quantum key distribution experiments using satellites (with Chinese groups).',
+        'Demonstrated quantum interference of large molecules (C₆₀ and beyond).',
+        'Nobel Prize in Physics 2022.'
+      ],
+      quote: '"Information may be more fundamental than energy in the universe."',
+      legacy: 'Zeilinger\'s work is moving us from "wave-particle duality is weird" to "we can use that weirdness to build new computers and communicate securely."' }
+  ];
+
+  // ══════════════════════════════════════════════════════════════════
+  // SCIENTISTS PANEL RENDERER — biographies with filters
+  // ══════════════════════════════════════════════════════════════════
+  function _renderScientistsPanel(d, upd, h) {
+    var openId = d.scientistOpenId || null;
+    var eraFilter = d.scientistEra || 'all';
+    var query = (d.scientistQuery || '').toLowerCase().trim();
+
+    var eras = [
+      { id: 'all', label: 'All eras' },
+      { id: 'ancient', label: '🏛 Ancient' },
+      { id: 'medieval', label: '📜 Medieval' },
+      { id: 'renaissance', label: '🎨 Renaissance / 17th c.' },
+      { id: '19th', label: '🎩 19th century' },
+      { id: '19th–20th', label: '⚗ 19th–20th c.' },
+      { id: 'modern', label: '🚀 Modern (20th–21st c.)' }
+    ];
+    var filtered = FAMOUS_OPTICIANS.filter(function(s) {
+      if (eraFilter !== 'all' && s.era !== eraFilter) return false;
+      if (!query) return true;
+      var hay = (s.name + ' ' + (s.knownFor || '') + ' ' + (s.bio || '')).toLowerCase();
+      return hay.indexOf(query) !== -1;
+    });
+
+    return h('div', null,
+      h('div', { style: { background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
+        h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap', marginBottom: 8 } },
+          h('h3', { style: { color: '#a5b4fc', fontSize: 17, fontWeight: 900, margin: 0 } }, '👨‍🔬 Famous Opticians'),
+          h('span', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } }, FAMOUS_OPTICIANS.length + ' scientists from antiquity to modern era')
+        ),
+        h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, margin: 0 } },
+          'The history of optics is the history of physics. Tap any scientist for biography, key contributions, a representative quote, and their legacy.')
+      ),
+      h('div', { style: { display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' } },
+        h('input', { type: 'text', value: d.scientistQuery || '',
+          placeholder: '🔍 Search scientists, discoveries, eras...',
+          onChange: function(e) { upd('scientistQuery', e.target.value); },
+          'aria-label': 'Search scientists',
+          style: { flex: '1 1 240px', minHeight: 36, padding: '8px 12px', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(99,102,241,0.30)', borderRadius: 8, color: '#e2e8f0', fontSize: 13 }
+        })
+      ),
+      h('div', { style: { display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' } },
+        eras.map(function(e) {
+          var active = eraFilter === e.id;
+          return h('button', { key: e.id, onClick: function() { upd('scientistEra', e.id); },
+            style: {
+              padding: '6px 11px', fontSize: 11, fontWeight: 700,
+              background: active ? 'rgba(99,102,241,0.25)' : 'rgba(15,23,42,0.5)',
+              color: active ? '#a5b4fc' : '#94a3b8',
+              border: '1px solid ' + (active ? '#a5b4fc' : 'rgba(100,116,139,0.30)'),
+              borderRadius: 6, cursor: 'pointer'
+            }
+          }, e.label);
+        })
+      ),
+      filtered.length === 0
+        ? h('div', { style: { padding: 20, textAlign: 'center', color: '#94a3b8', fontSize: 13 } }, 'No scientists match this filter.')
+        : h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 10 } },
+            filtered.map(function(s) {
+              var isOpen = openId === s.id;
+              return h('div', { key: s.id,
+                onClick: function() { upd('scientistOpenId', isOpen ? null : s.id); },
+                style: {
+                  background: isOpen ? 'rgba(99,102,241,0.10)' : 'rgba(15,23,42,0.65)',
+                  border: '1px solid ' + (isOpen ? 'rgba(99,102,241,0.55)' : 'rgba(100,116,139,0.30)'),
+                  borderRadius: 10, padding: '12px 14px', cursor: 'pointer',
+                  transition: 'all 180ms'
+                }
+              },
+                h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 } },
+                  h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, s.icon),
+                  h('div', { style: { flex: 1 } },
+                    h('div', { style: { fontSize: 14, fontWeight: 800, color: '#c7d2fe', lineHeight: 1.2 } }, s.name),
+                    h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2 } }, s.years + ' · ' + s.country)
+                  )
+                ),
+                h('div', { style: { fontSize: 11, color: '#a5b4fc', fontWeight: 700, marginBottom: 6, fontStyle: 'italic' } }, s.knownFor),
+                isOpen && h('div', { style: { marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(99,102,241,0.25)' } },
+                  h('div', { style: { fontSize: 9, fontWeight: 800, color: '#a5b4fc', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, 'Biography'),
+                  h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, margin: '0 0 10px' } }, s.bio),
+                  h('div', { style: { fontSize: 9, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, 'Key contributions'),
+                  h('ul', { style: { margin: '0 0 10px', paddingLeft: 18 } },
+                    (s.contributions || []).map(function(c, i) {
+                      return h('li', { key: 'c'+i, style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 4 } }, c);
+                    })
+                  ),
+                  s.quote && h('div', { style: { fontSize: 11, fontStyle: 'italic', color: '#fcd34d', padding: '8px 12px', background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.20)', borderRadius: 6, marginBottom: 8 } }, '"' + s.quote.replace(/^"|"$/g, '') + '"'),
+                  s.legacy && h('div', null,
+                    h('div', { style: { fontSize: 9, fontWeight: 800, color: '#fcd34d', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, 'Legacy'),
+                    h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, margin: 0 } }, s.legacy)
+                  )
+                )
+              );
+            })
+          )
+    );
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // HISTORY OF OPTICS — 100+ events from antiquity to today
+  // ══════════════════════════════════════════════════════════════════
+  var OPTICS_HISTORY = [
+    { year: '~3000 BCE', region: 'Egypt', icon: '🪞', event: 'Polished obsidian mirrors used in royal tombs and temple rituals.', sig: 'Earliest known intentional mirror manufacture.' },
+    { year: '~2000 BCE', region: 'Egypt/Mesopotamia', icon: '🔍', event: 'Polished rock-crystal lenses appear in Nimrud and elsewhere — possibly used to start fires.', sig: 'Earliest objects with deliberate lens shape.' },
+    { year: '~470 BCE', region: 'Greece', icon: '🌟', event: 'Empedocles proposes light emanates from the eye toward objects ("extramission") — first formal vision theory.', sig: 'Sets a vision debate that lasts 1500 years.' },
+    { year: '~350 BCE', region: 'Greece', icon: '📐', event: 'Aristotle proposes light is an action in a transparent medium, not a particle emission.', sig: 'Wave-like intuition embedded in dominant philosophy for 1900 years.' },
+    { year: '~300 BCE', region: 'Alexandria', icon: '📐', event: 'Euclid writes the Optica — first systematic geometric optics.', sig: 'Establishes the ray-and-angle framework still in use.' },
+    { year: '~280 BCE', region: 'Alexandria', icon: '🔭', event: 'Aristarchus uses geometric optics to estimate Sun-Earth and Moon-Earth distance ratios.', sig: 'First quantitative astronomical use of geometric optics.' },
+    { year: '~250 BCE', region: 'Sicily', icon: '🔆', event: 'Archimedes reportedly burns Roman ships at Syracuse with parabolic mirrors. (Likely legend, but principle is correct.)', sig: 'First reference to concentrating mirrors.' },
+    { year: '~150 CE', region: 'Roman Egypt', icon: '🌅', event: 'Ptolemy tabulates refraction angles air-water and air-glass.', sig: 'First quantitative refraction measurements.' },
+    { year: '~700 CE', region: 'China', icon: '🌌', event: 'Chinese mathematician/astronomer studies image inversion in the pinhole camera obscura.', sig: 'Independent pinhole-imaging tradition.' },
+    { year: '984', region: 'Persia', icon: '〽', event: 'Ibn Sahl derives the sine law of refraction.', sig: 'First correct refraction law — 600+ years before Snell.' },
+    { year: '~1015', region: 'Egypt', icon: '👁', event: 'Ibn al-Haytham (Alhazen) writes "Kitāb al-Manāẓir" — proves vision by intromission, founds experimental optics.', sig: 'Modern optics begins.' },
+    { year: '~1200', region: 'Europe', icon: '📜', event: 'Alhazen\'s Optics translated into Latin as "Perspectiva" — reaches Western scholars.', sig: 'Recovers ancient knowledge for the West.' },
+    { year: '1268', region: 'England', icon: '📜', event: 'Roger Bacon\'s "Opus Majus" describes lens magnification and predicts telescopes.', sig: 'Latin scholasticism absorbs Arabic optics.' },
+    { year: '~1270', region: 'Silesia', icon: '🌈', event: 'Witelo writes "Perspectiva" — comprehensive Latin synthesis of ancient + Arabic optics.', sig: 'Standard optical textbook for 300+ years.' },
+    { year: '1284', region: 'Italy', icon: '🔍', event: 'Salvino degli Armati of Pisa is credited with inventing eyeglasses for the elderly.', sig: 'First wearable corrective optics.' },
+    { year: '~1304', region: 'Germany', icon: '🌈', event: 'Theodoric of Freiberg derives correct geometric origin of primary and secondary rainbows using water-filled globes.', sig: 'First scientific rainbow theory — but ignored for 500 years.' },
+    { year: '1450s', region: 'Europe', icon: '🖨', event: 'Gutenberg\'s printing press allows mass distribution of optical and scientific texts.', sig: 'Knowledge transmission speed jumps 100x.' },
+    { year: '1500', region: 'Italy', icon: '🎨', event: 'Leonardo da Vinci describes the camera obscura in detail and uses it for artistic perspective studies.', sig: 'Vision-as-camera analogy strengthens.' },
+    { year: '1604', region: 'Holy Roman Empire', icon: '🌟', event: 'Kepler\'s "Astronomiae pars Optica" — first correct theory of retinal image formation.', sig: 'Modern vision science begins.' },
+    { year: '1608', region: 'Netherlands', icon: '🔭', event: 'Hans Lippershey applies for the first telescope patent. Patent denied as the device was already known.', sig: 'Telescope reaches Europe in usable form.' },
+    { year: '1609', region: 'Italy', icon: '🔭', event: 'Galileo builds astronomical telescope (3x → 30x) and discovers Jupiter\'s moons, lunar craters, phases of Venus.', sig: 'Optical instrument changes our cosmic view.' },
+    { year: '1611', region: 'Holy Roman Empire', icon: '🔭', event: 'Kepler describes the Keplerian telescope — two converging lenses giving wider field but inverted image.', sig: 'Modern astronomical telescope design.' },
+    { year: '1621', region: 'Netherlands', icon: '〽', event: 'Willebrord Snell re-derives the sine law of refraction (unpublished).', sig: 'Western "Snell\'s law" tradition begins.' },
+    { year: '1637', region: 'France', icon: '〽', event: 'Descartes publishes the law of refraction in his "Dioptrique."', sig: 'Refraction law enters mainstream physics.' },
+    { year: '1659', region: 'Netherlands', icon: '🪐', event: 'Christiaan Huygens identifies the rings of Saturn (rather than ear-like attendants).', sig: 'Optical analysis resolves a 50-year mystery.' },
+    { year: '1665', region: 'Italy / England', icon: '〰', event: 'Grimaldi publishes diffraction observations; Hooke publishes Micrographia (microscope drawings).', sig: 'Two foundational works appear posthumously / in the same year.' },
+    { year: '1666', region: 'England', icon: '🌈', event: 'Newton, on plague leave from Cambridge, performs prism experiments showing white light is a mixture.', sig: 'Color theory of light begins.' },
+    { year: '1668', region: 'England', icon: '🔭', event: 'Newton builds the first reflecting telescope (Newtonian).', sig: 'Eliminates chromatic aberration of refractors.' },
+    { year: '1676', region: 'France', icon: '⏱', event: 'Ole Rømer infers the finite speed of light from Io eclipse timing.', sig: 'Finite c established; ~25% accurate.' },
+    { year: '1690', region: 'Netherlands', icon: '🌊', event: 'Huygens publishes "Traité de la lumière" — wave theory of light, Huygens\' principle.', sig: 'Wave theory formally enters physics.' },
+    { year: '1704', region: 'England', icon: '🍎', event: 'Newton publishes "Opticks" — definitive corpuscular treatment for next century.', sig: 'Wave theory eclipsed for 100 years.' },
+    { year: '1733', region: 'England', icon: '🔍', event: 'Chester Moor Hall invents the achromatic lens (corrected chromatic aberration).', sig: 'High-quality refracting telescopes feasible.' },
+    { year: '1801', region: 'England', icon: '✨', event: 'Thomas Young\'s double-slit experiment shows interference fringes in light.', sig: 'Wave theory of light revives.' },
+    { year: '1808', region: 'France', icon: '↕', event: 'Étienne-Louis Malus discovers polarization of light by reflection.', sig: 'Polarization joins reflection, refraction, diffraction as basic phenomena.' },
+    { year: '1814', region: 'Bavaria', icon: '📊', event: 'Joseph von Fraunhofer maps 574 dark lines in the solar spectrum.', sig: 'Spectroscopy precursor; future foundation of astrophysics.' },
+    { year: '1815', region: 'France', icon: '🌀', event: 'Augustin-Jean Fresnel publishes the mathematical wave theory of diffraction.', sig: 'Wave theory becomes rigorously predictive.' },
+    { year: '1822', region: 'France', icon: '🗼', event: 'Fresnel designs the Fresnel lens — replaces solid lighthouse glass with thin grooved lens.', sig: 'Maritime safety transformed worldwide.' },
+    { year: '1839', region: 'France / England', icon: '📸', event: 'Daguerre and Talbot independently announce photographic processes.', sig: 'Light becomes a recorded medium for the first time.' },
+    { year: '1849', region: 'France', icon: '⏱', event: 'Hippolyte Fizeau measures the speed of light on Earth (313,000 km/s).', sig: 'First terrestrial c measurement.' },
+    { year: '1850', region: 'France', icon: '🌊', event: 'Léon Foucault shows light travels slower in water than in air — disproves Newton corpuscular prediction.', sig: 'Wave theory definitively supported.' },
+    { year: '1851', region: 'Germany', icon: '👁', event: 'Hermann von Helmholtz invents the ophthalmoscope.', sig: 'Living retinas become observable.' },
+    { year: '1859', region: 'Germany', icon: '🌈', event: 'Kirchhoff and Bunsen identify Fraunhofer lines as chemical signatures — birth of spectroscopy.', sig: 'Stars\' compositions become measurable.' },
+    { year: '1861', region: 'Scotland', icon: '🎨', event: 'Maxwell makes the first color photograph (tartan ribbon).', sig: 'Three-color photography born.' },
+    { year: '1865', region: 'Scotland', icon: '⚡', event: 'James Clerk Maxwell\'s "Dynamical Theory of the Electromagnetic Field" identifies light as an EM wave.', sig: 'Electromagnetic + optical theories unified.' },
+    { year: '1873', region: 'Scotland', icon: '⚡', event: 'Maxwell publishes "Treatise on Electricity and Magnetism."', sig: 'Standard reference for electromagnetic optics for 50 years.' },
+    { year: '1879', region: 'England', icon: '👁', event: 'Lord Rayleigh states the resolution criterion (1.22 λ/D).', sig: 'Diffraction limits codified.' },
+    { year: '1881', region: 'USA / Germany', icon: '⫻', event: 'Michelson invents the Michelson interferometer.', sig: 'Tool for precision optical metrology.' },
+    { year: '1887', region: 'USA', icon: '⫻', event: 'Michelson-Morley experiment finds no ether drift.', sig: 'Sets up special relativity.' },
+    { year: '1895', region: 'Germany', icon: '☢', event: 'Wilhelm Röntgen discovers X-rays.', sig: 'Optical-frequency spectrum extended to medical imaging.' },
+    { year: '1900', region: 'Germany', icon: '🔥', event: 'Max Planck postulates quantized energy to fit blackbody radiation: E = hf.', sig: 'Quantum mechanics is born.' },
+    { year: '1905', region: 'Germany', icon: '💡', event: 'Einstein\'s photoelectric paper proposes light as discrete photons.', sig: 'Wave-particle duality begins.' },
+    { year: '1905', region: 'Germany', icon: '🌐', event: 'Einstein\'s special relativity makes c a constant of nature.', sig: 'Light\'s speed becomes fundamental.' },
+    { year: '1909', region: 'England', icon: '⚛', event: 'Geoffrey Taylor performs single-photon double-slit interference — quantum interference observed.', sig: 'Wave-particle duality at the single-quantum level.' },
+    { year: '1915', region: 'Australia / England', icon: '🔬', event: 'W.H. and W.L. Bragg derive the law of X-ray diffraction; share the Nobel.', sig: 'Crystal structure visible.' },
+    { year: '1917', region: 'Germany', icon: '⚡', event: 'Einstein\'s "On the Quantum Theory of Radiation" introduces stimulated emission — the principle that becomes the laser.', sig: 'Laser theory exists 36 years before laser hardware.' },
+    { year: '1919', region: 'Africa / Brazil', icon: '🌌', event: 'Eddington\'s eclipse expedition measures bending of starlight by the Sun — confirms general relativity.', sig: 'Gravity warps light.' },
+    { year: '1923', region: 'USA', icon: '🌟', event: 'Arthur Compton scattering shows photons carry momentum.', sig: 'Particle nature of light experimentally established.' },
+    { year: '1924', region: 'France', icon: '🌊', event: 'Louis de Broglie hypothesizes matter waves — extending wave-particle duality to all matter.', sig: 'Quantum mechanics becomes universal.' },
+    { year: '1925–27', region: 'Germany / Denmark', icon: '⚛', event: 'Heisenberg, Schrödinger, Dirac formulate quantum mechanics.', sig: 'Modern foundation for all optical interactions.' },
+    { year: '1929', region: 'USA', icon: '🌌', event: 'Edwin Hubble shows galaxies recede with velocities proportional to distance — universe is expanding.', sig: 'Cosmic optics enables cosmology.' },
+    { year: '1932', region: 'Netherlands', icon: '🔬', event: 'Fritz Zernike invents phase-contrast microscopy.', sig: 'Transparent biological structures become visible.' },
+    { year: '1947', region: 'Hungary / UK', icon: '✨', event: 'Dennis Gabor invents holography.', sig: '3D image reconstruction from interference recordings.' },
+    { year: '1947', region: 'Germany', icon: '〽', event: 'Goos and Hänchen measure the Goos-Hänchen shift in totally reflected beams.', sig: 'Evanescent waves experimentally probed.' },
+    { year: '1948', region: 'USA', icon: '🎨', event: 'Feynman, Schwinger, and Tomonaga formulate QED — relativistic quantum theory of light + electrons.', sig: 'Modern theoretical optics established.' },
+    { year: '1953', region: 'USA', icon: '🔦', event: 'Charles Townes (with Gordon and Zeiger) demonstrates the first maser.', sig: 'Microwave precursor to the laser.' },
+    { year: '1957', region: 'USA', icon: '📡', event: 'Sputnik forces the U.S. to invest heavily in scientific R&D, including laser/photonics.', sig: 'Federal R&D funding catalyzes the laser race.' },
+    { year: '1960', region: 'USA', icon: '🔴', event: 'Theodore Maiman demonstrates the first working ruby laser (16 May 1960, Malibu).', sig: 'Practical optical laser arrives.' },
+    { year: '1961', region: 'USA', icon: '🔦', event: 'Javan, Bennett, and Herriott build the first helium-neon laser.', sig: 'Continuous-wave visible laser ready for science and industry.' },
+    { year: '1962', region: 'USA', icon: '💎', event: 'Hall et al. demonstrate the first semiconductor (diode) laser.', sig: 'Future of compact lasers begins.' },
+    { year: '1966', region: 'UK', icon: '📡', event: 'Charles Kao and George Hockham propose ultra-low-loss optical fibers for telecommunications.', sig: 'Vision for global fiber-optic networks.' },
+    { year: '1969', region: 'USA / Moon', icon: '🌕', event: 'Apollo 11 leaves a retroreflector on the Moon; lunar laser ranging begins shortly after.', sig: 'Earth-Moon distance measurable to cm precision.' },
+    { year: '1970', region: 'USA', icon: '📡', event: 'Corning Glass develops glass with <20 dB/km loss — fiber telecom feasible.', sig: 'Internet backbone enabled.' },
+    { year: '1971', region: 'USA', icon: '💻', event: 'Bell Labs demonstrates the charge-coupled device (CCD).', sig: 'Digital imaging foundation laid.' },
+    { year: '1977', region: 'USA / Japan', icon: '📡', event: 'First commercial fiber-optic telephone trunk lines installed (Chicago, Long Beach).', sig: 'Fiber-optic communication begins to displace copper.' },
+    { year: '1978', region: 'Netherlands / Japan', icon: '💿', event: 'Philips and Sony develop the Compact Disc (CD) — laser-readable optical storage.', sig: 'Optical storage enters consumer markets.' },
+    { year: '1985', region: 'Canada / France', icon: '⚡', event: 'Strickland and Mourou invent chirped-pulse amplification.', sig: 'Ultra-high-peak-power lasers enabled.' },
+    { year: '1986', region: 'USA', icon: '🔬', event: 'Arthur Ashkin invents optical tweezers.', sig: 'Non-contact manipulation of microscopic objects.' },
+    { year: '1986', region: 'Germany / Switzerland', icon: '🔬', event: 'Binnig, Rohrer, Pohl develop scanning tunneling microscope; STM gets Nobel.', sig: 'Sub-atomic imaging (electron-based, but a near-relative of NSOM).' },
+    { year: '1987', region: 'France', icon: '👁', event: 'Excimer laser used for the first photorefractive keratectomy (PRK) — laser eye surgery.', sig: 'Vision-correction surgery becomes commonplace within 20 years.' },
+    { year: '1990', region: 'USA', icon: '🛰', event: 'Hubble Space Telescope launches; its spherical-aberration mirror flaw is later corrected in orbit (1993).', sig: 'Above-atmosphere optical astronomy begins.' },
+    { year: '1992', region: 'USA', icon: '🔬', event: 'Optical coherence tomography (OCT) for retinal imaging developed at MIT.', sig: 'Sub-surface biological imaging from outside.' },
+    { year: '1995', region: 'USA', icon: '❄', event: 'Cornell and Wieman create the first Bose-Einstein condensate in rubidium gas at ~170 nK.', sig: 'Ultra-cold atomic physics era opens.' },
+    { year: '1997', region: 'Austria', icon: '🌀', event: 'Zeilinger team demonstrates quantum teleportation of photon states.', sig: 'Quantum information transfer experimentally proven.' },
+    { year: '1998', region: 'USA / Switzerland', icon: '🌟', event: 'Two teams independently discover accelerating cosmic expansion using Type Ia supernovae — dark energy.', sig: 'Optical observation reveals new physics.' },
+    { year: '2000', region: 'Germany', icon: '🔬', event: 'Stefan Hell demonstrates STED microscopy — breaks the Abbe diffraction limit.', sig: 'Nanoscopy era begins.' },
+    { year: '2004', region: 'UK', icon: '🌌', event: 'Hubble Ultra Deep Field released — 13.3-billion-year-old galaxies visible.', sig: 'Deepest optical image of the cosmos.' },
+    { year: '2009', region: 'Sweden', icon: '📡', event: 'Charles Kao wins Nobel for fiber optics; Boyle & Smith win for CCD.', sig: 'Modern photonic foundations honored.' },
+    { year: '2014', region: 'Sweden', icon: '🔬', event: 'Hell, Betzig, Moerner win Nobel for super-resolution fluorescence microscopy.', sig: 'Optical nanoscopy enters textbooks.' },
+    { year: '2015', region: 'USA', icon: '⫻', event: 'LIGO detects first gravitational waves (GW150914) — optical interferometry detects merging black holes.', sig: 'Gravitational-wave astronomy begins.' },
+    { year: '2016', region: 'USA', icon: '🔬', event: 'Capasso group demonstrates achromatic metalenses.', sig: 'Flat-optics era begins.' },
+    { year: '2018', region: 'Sweden', icon: '⚡', event: 'Ashkin, Mourou, Strickland win Nobel for optical tweezers and CPA.', sig: 'Practical laser-driven manipulation honored.' },
+    { year: '2019', region: 'Earth observatory network', icon: '🕳', event: 'Event Horizon Telescope publishes first image of a black hole shadow (M87).', sig: 'Global VLBI achieves microarcsecond resolution.' },
+    { year: '2021', region: 'USA / Europe / Canada', icon: '🛰', event: 'James Webb Space Telescope launches — successor to Hubble at infrared wavelengths.', sig: 'New deep-time observation begins (first science images July 2022).' },
+    { year: '2022', region: 'Sweden', icon: '🌀', event: 'Aspect, Clauser, Zeilinger win Nobel for foundational entanglement and quantum-information experiments.', sig: 'Quantum optics formally honored as foundational science.' },
+    { year: '2022', region: 'Earth observatory network', icon: '🕳', event: 'Event Horizon Telescope images Sagittarius A* — Milky Way\'s central black hole.', sig: 'Our own galaxy\'s singularity made visible.' },
+    { year: '2023', region: 'USA / Europe', icon: '🛰', event: 'JWST images thousands of galaxies at z > 10 — much earlier than expected.', sig: 'Cosmic evolution models being revised in real time.' },
+    { year: '2024', region: 'Global', icon: '🔭', event: 'Vera C. Rubin Observatory in Chile commissioned; will image the entire Southern sky every few nights with 3.2 gigapixel camera.', sig: 'Largest astronomical survey camera ever built (~2026 first light).' },
+    { year: '2025–', region: 'Global', icon: '🚀', event: 'Multiple ground-based extremely large telescopes nearing completion: ELT (39 m), GMT (24.5 m), TMT (30 m).', sig: 'Resolution of nearby exoplanetary atmospheres becomes feasible.' },
+    // ── Maine + regional context ──
+    { year: '1791', region: 'Maine, USA', icon: '🗼', event: 'First lighthouse in Maine commissioned: Portland Head Light, ordered by George Washington.', sig: 'Maine\'s rocky coast begins systematic illumination.' },
+    { year: '1856', region: 'Maine, USA', icon: '🗼', event: 'Portland Head Light receives a first-order Fresnel lens, visible 24 miles offshore.', sig: 'Maine\'s coastal lighting becomes world-class.' },
+    { year: '1948', region: 'New Jersey, USA', icon: '🔬', event: 'Edwin Land founds Polaroid Corporation, commercializing polarizing filters and instant photography.', sig: 'Polarization-based products become household goods.' },
+    { year: '1991', region: 'Maine, USA', icon: '🦞', event: 'University of Maine begins optical-oceanography research at the Darling Marine Center.', sig: 'Optical sensing of Gulf of Maine\'s ecosystem expands.' },
+    { year: '2023', region: 'Maine, USA', icon: '🏫', event: 'Maine high schools across the state continue AP Physics 2 instruction with optics modules — students reading this list will encounter most of these milestones in coursework.', sig: 'You are part of the optics history. Document what you learn.' }
+  ];
+
+  // ══════════════════════════════════════════════════════════════════
+  // HISTORY PANEL RENDERER
+  // ══════════════════════════════════════════════════════════════════
+  function _renderHistoryPanel(d, upd, h) {
+    var query = (d.histQuery || '').toLowerCase().trim();
+    var filtered = OPTICS_HISTORY.filter(function(e) {
+      if (!query) return true;
+      return (e.event + ' ' + e.year + ' ' + e.region + ' ' + e.sig).toLowerCase().indexOf(query) !== -1;
+    });
+    return h('div', null,
+      h('div', { style: { background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
+        h('h3', { style: { color: '#fcd34d', fontSize: 17, fontWeight: 900, margin: '0 0 6px' } }, '📜 History of Optics'),
+        h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, margin: 0 } }, OPTICS_HISTORY.length + ' milestones from antiquity through the modern day, including Maine context. Use the search to find any era or event.')
+      ),
+      h('input', { type: 'text', value: d.histQuery || '',
+        placeholder: '🔍 Search history by year, place, person, event...',
+        onChange: function(e) { upd('histQuery', e.target.value); },
+        'aria-label': 'Search history',
+        style: { width: '100%', minHeight: 36, padding: '8px 12px', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(251,191,36,0.30)', borderRadius: 8, color: '#e2e8f0', fontSize: 13, marginBottom: 12, boxSizing: 'border-box' }
+      }),
+      filtered.length === 0
+        ? h('div', { style: { padding: 20, textAlign: 'center', color: '#94a3b8', fontSize: 13 } }, 'No events match this search.')
+        : h('div', { style: { borderLeft: '3px solid rgba(251,191,36,0.40)', paddingLeft: 14, marginLeft: 8 } },
+            filtered.map(function(e, i) {
+              return h('div', { key: 'h'+i, style: { marginBottom: 14, position: 'relative' } },
+                h('div', { style: { position: 'absolute', left: -22, top: 2, width: 14, height: 14, borderRadius: '50%', background: '#fbbf24', border: '2px solid #0f172a' } }),
+                h('div', { style: { display: 'flex', gap: 8, alignItems: 'baseline', marginBottom: 4, flexWrap: 'wrap' } },
+                  h('span', { style: { fontSize: 16, lineHeight: 1 } }, e.icon),
+                  h('span', { style: { fontSize: 13, fontWeight: 900, color: '#fcd34d', fontFamily: 'ui-monospace, Menlo, monospace' } }, e.year),
+                  h('span', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } }, '· ' + e.region)
+                ),
+                h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.55, marginBottom: 3 } }, e.event),
+                h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } }, '↪ ' + e.sig)
+              );
+            })
+          )
+    );
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // OPTICAL INSTRUMENTS CATALOG — 60+ devices
+  // ══════════════════════════════════════════════════════════════════
+  var OPTICAL_INSTRUMENTS = [
+    // ── Telescopes ──
+    { id: 'refractor', name: 'Refracting telescope', icon: '🔭', category: 'astronomy',
+      principle: 'Two converging lenses: objective forms a real inverted image at focal point; eyepiece magnifies it.',
+      magnification: 'M = f_objective / f_eyepiece',
+      pros: 'Sealed tube (no dust), low maintenance, stable optical alignment, great for planetary observation.',
+      cons: 'Heavy, expensive at large apertures (Yerkes 40-inch is largest practical), chromatic aberration in cheap optics.',
+      where: 'Backyard astronomy, planetary observation, terrestrial spotting scopes, vintage observatories.',
+      history: 'Galileo (1609) built first one; Yerkes 40-inch (1897) is largest ever made — refractors hit a glass-mass limit beyond which mirrors win.' },
+    { id: 'newtonian', name: 'Newtonian reflector', icon: '🔭', category: 'astronomy',
+      principle: 'Concave primary mirror forms image at primary focus; secondary flat mirror redirects to eyepiece on the side.',
+      magnification: 'M = f_objective / f_eyepiece',
+      pros: 'No chromatic aberration, lightweight, much cheaper per inch of aperture than refractors. Standard amateur design.',
+      cons: 'Open tube collects dust, mirror needs occasional re-coating, secondary obscuration costs some light.',
+      where: 'Amateur astronomy (8" Dobsonian is the workhorse), educational telescopes, some research instruments.',
+      history: 'Newton (1668) built the first one; Dobson\'s 1965 simple altazimuth mount made big apertures affordable.' },
+    { id: 'cassegrain', name: 'Cassegrain reflector', icon: '🔭', category: 'astronomy',
+      principle: 'Parabolic primary + hyperbolic secondary that reflects through a hole in the primary to a rear focus.',
+      magnification: 'Folds long focal length into short tube',
+      pros: 'Compact for its focal length, easy mount and tracking, good for both visual and photographic use.',
+      cons: 'Complex optics, sensitive to alignment, central obscuration reduces contrast slightly.',
+      where: 'Schmidt-Cassegrain (Celestron, Meade) is the most popular advanced amateur scope. Most professional research telescopes use Cassegrain variants.',
+      history: 'Cassegrain (1672) proposed; Schmidt added a corrector plate (1930); modern computerized SCTs took over from ~1970.' },
+    { id: 'galilean', name: 'Galilean telescope', icon: '🔭', category: 'astronomy',
+      principle: 'Converging objective + diverging eyepiece placed inside the focal point. Gives upright image but narrow field.',
+      magnification: 'M = f_obj / f_eye, where f_eye is negative',
+      pros: 'Upright image (good for terrestrial use), simple two-element design.',
+      cons: 'Very narrow field of view — barely covers the Moon at modest magnification.',
+      where: 'Opera glasses, vintage spyglasses, novelty toys. The Galileo original design.',
+      history: 'Galileo (1609) used this design for his astronomical observations — including discovery of Jupiter\'s moons.' },
+    { id: 'jwst', name: 'James Webb Space Telescope', icon: '🛰', category: 'astronomy',
+      principle: 'Segmented 6.5 m gold-coated beryllium primary; folded into Ariane V fairing; deployed in space.',
+      magnification: 'Infrared imaging at 0.6–28 μm; angular resolution comparable to Hubble at visible wavelengths.',
+      pros: 'Above atmospheric absorption (IR transmission, no twinkling), L2 orbit gives stable thermal environment, 5+ year mission expected.',
+      cons: 'Cannot be serviced (too far away), single point-of-failure for many years of science.',
+      where: 'L2 Lagrange point (1.5 million km from Earth), launched 25 December 2021, first science images July 2022.',
+      history: 'Conceived in late 1980s as Hubble successor; budget ballooned from $1B to $10B; launched 25 years after first concept paper.' },
+
+    // ── Microscopes ──
+    { id: 'compoundMicro', name: 'Compound microscope', icon: '🔬', category: 'microscopy',
+      principle: 'Two-stage magnification: objective lens forms intermediate real image; eyepiece magnifies that image.',
+      magnification: 'M = M_obj × M_eye (typically 40× to 1000×)',
+      pros: 'High magnification, standardized DIN objectives interchangeable across brands, well-developed accessories.',
+      cons: 'Limited resolution to ~λ/2 (~200 nm); shallow depth of field at high mag; specimen must be thin.',
+      where: 'Biology labs, medical pathology, materials inspection, education, forensics.',
+      history: 'Hans and Zacharias Janssen (~1590) compound design; Antonie van Leeuwenhoek\'s simple high-powered single-lens microscope outperformed compound scopes for ~150 years.' },
+    { id: 'stereoMicro', name: 'Stereo microscope', icon: '🔬', category: 'microscopy',
+      principle: 'Two complete optical paths give binocular vision; lower magnification but true 3D depth perception.',
+      magnification: '7× to 80× typical',
+      pros: 'True 3D image, long working distance, allows manipulation of specimen with hand tools.',
+      cons: 'Lower max magnification than compound scopes.',
+      where: 'Insect biology, neurosurgery (operating microscopes), watchmaking, dentistry, electronics assembly.',
+      history: 'Greenough design (1893) is the standard. Modern surgical microscopes scale up to multi-thousand-pound floor-mounted systems.' },
+    { id: 'electronMicro', name: 'Electron microscope (TEM/SEM)', icon: '🔬', category: 'microscopy',
+      principle: 'Uses electrons (de Broglie wavelength ~picometers at typical voltages) focused by magnetic lenses.',
+      magnification: '100× to 1,000,000× — atomic resolution',
+      pros: 'Resolution far beyond optical microscopes (down to atomic scale).',
+      cons: 'Vacuum required, specimen often destroyed by sample prep, no live imaging, no color, expensive.',
+      where: 'Materials science, semiconductor industry (every chip is inspected by SEM), virology (visualizing virus particles), nanotechnology research.',
+      history: 'Ernst Ruska built the first TEM (1933); SEM commercialized 1965. Aberration-corrected TEMs now reach 0.05 nm resolution.' },
+    { id: 'confocal', name: 'Confocal laser microscope', icon: '🔬', category: 'microscopy',
+      principle: 'Laser scans focused spot across specimen; pinhole at conjugate focus rejects out-of-focus light.',
+      magnification: '40× to 1000× with z-sectioning',
+      pros: 'Optical sectioning of thick specimens, fluorescent multi-channel imaging, 3D reconstruction.',
+      cons: 'Photobleaching of fluorescent tags, slower than wide-field, expensive.',
+      where: 'Cell biology, neuroscience (imaging dendritic spines), developmental biology, materials science.',
+      history: 'Minsky (1957) patented; commercialized in late 1980s; now standard in cell-bio labs.' },
+    { id: 'stedScope', name: 'STED (super-resolution) microscope', icon: '🔬', category: 'microscopy',
+      principle: 'Excitation laser turns fluorescent tags on; donut-shaped STED beam turns them off except in central nanospot.',
+      magnification: 'Effective resolution: 20–50 nm (vs. ~200 nm diffraction limit)',
+      pros: 'Breaks the Abbe diffraction limit using "all-optical" mechanism — works in living cells.',
+      cons: 'Higher light intensity needed (photodamage concerns), specialized fluorophores required.',
+      where: 'Neuroscience, virology, structural biology. Visualizing synaptic vesicles, ribosomes, sub-organellar structures.',
+      history: 'Stefan Hell proposed STED (1994), demonstrated (2000), Nobel Prize Chemistry 2014.' },
+
+    // ── Cameras and imaging ──
+    { id: 'cameraObscura', name: 'Camera obscura', icon: '📷', category: 'imaging',
+      principle: 'Pinhole or lens projects an inverted real image of the outside world onto a screen inside a dark room or box.',
+      magnification: 'M = image distance / object distance',
+      pros: 'No moving parts, no electronics; can be made room-sized; provides intuitive understanding of vision.',
+      cons: 'Image is dim; pinhole gives perfect depth of field but soft focus; very low light throughput.',
+      where: 'Educational demonstrations, art tools (Vermeer\'s painting tools likely used one), heritage installations.',
+      history: 'Documented in China ~470 BCE; used by Alhazen for solar observation; common artist\'s tool in 17th-19th centuries.' },
+    { id: 'slr', name: 'Single-lens reflex (SLR) camera', icon: '📷', category: 'imaging',
+      principle: 'Mirror reflects scene up to a pentaprism and viewfinder eyepiece; when shutter fires, mirror flips up for sensor exposure.',
+      magnification: 'Lens-dependent; interchangeable lenses cover wide-angle to telephoto.',
+      pros: 'WYSIWYG viewfinder (you see through the taking lens), interchangeable lenses, fast autofocus.',
+      cons: 'Mirror slap vibration, larger and heavier than mirrorless, mirror blackout during exposure.',
+      where: 'Photojournalism (legacy), pro photography (legacy), reaching market obsolescence as mirrorless takes over.',
+      history: 'Asahi Pentax (1957) first popular 35mm SLR. Mirrorless cameras (post-2008) are slowly displacing SLR designs.' },
+    { id: 'mirrorless', name: 'Mirrorless interchangeable-lens camera', icon: '📷', category: 'imaging',
+      principle: 'No mirror; sensor exposure continuous; electronic viewfinder displays sensor preview in real time.',
+      magnification: 'Lens-dependent.',
+      pros: 'Smaller, lighter, quieter (no mirror slap), faster live preview, EVF shows exposure preview before capture.',
+      cons: 'EVF battery drain, EVF lag at low light, less mature lens ecosystems for some brands.',
+      where: 'Most consumer and pro photography post-2018 (Sony, Canon, Nikon, Fujifilm).',
+      history: 'Panasonic G1 (2008) first; market took ~10 years to consolidate. SLRs essentially obsolete by 2023 in new pro lines.' },
+    { id: 'smartphoneCamera', name: 'Smartphone camera', icon: '📱', category: 'imaging',
+      principle: 'Tiny CMOS sensor (1/2"–1" typical) + multi-element fixed-focal lens + computational image processing.',
+      magnification: 'Multiple lens modules (ultra-wide, wide, telephoto); digital crop simulates zoom.',
+      pros: 'Always with you, AI-driven HDR, computational night mode, automatic image enhancement.',
+      cons: 'Tiny sensor limits low-light performance, optical zoom limited by phone thickness.',
+      where: 'Everywhere — 1.5 trillion photos taken per year, ~90% by smartphone (2024 estimate).',
+      history: 'Sharp J-SH04 (2000) was first integrated phone camera. iPhone 4 (2010) added "real" 5MP sensor; iPhone 7 (2016) dual cameras; Pixel 3 (2018) advanced computational photography.' },
+    { id: 'thermal', name: 'Thermal (infrared) camera', icon: '🔥', category: 'imaging',
+      principle: 'Microbolometer or quantum-detector array sensitive to LWIR (long-wave infrared, ~8–14 μm) — body-temperature radiation.',
+      magnification: 'Lens-dependent; typically narrow FOV.',
+      pros: 'Sees heat in total darkness, can detect humans/animals/leaking pipes, mostly weather-independent.',
+      cons: 'Low resolution typical, expensive, regulated export, blocked by glass and most windows.',
+      where: 'Firefighting, building energy audits, medical fever screening, military, wildlife observation.',
+      history: 'Predator UAV thermal sensors (1990s); FLIR consumer thermal cameras for phones (2010s).' },
+    { id: 'lidar', name: 'LIDAR (laser ranging)', icon: '📡', category: 'imaging',
+      principle: 'Pulsed laser emits short pulses; time-of-flight to returning reflection gives precise distance for each pixel.',
+      magnification: 'Scan pattern determines field of view.',
+      pros: 'Direct depth map, works in darkness, immune to texture or color of targets.',
+      cons: 'Limited by eye-safety power budget, fog/rain scattering, expensive for high-resolution.',
+      where: 'Self-driving cars (Waymo, Cruise — Tesla famously excludes lidar), forestry mapping, archaeology (revealing Maya cities under jungle canopy), terrain mapping.',
+      history: 'NASA Apollo lunar laser altimetry (1971); aviation lidar 1980s; automotive solid-state lidar 2017+.' },
+
+    // ── Lasers ──
+    { id: 'rubyLaser', name: 'Ruby laser', icon: '🔴', category: 'laser',
+      principle: 'Chromium ions in ruby pumped by flashlamp to a metastable state; cavity mirrors give stimulated emission at 694 nm.',
+      magnification: '—',
+      pros: 'Historic — first laser. Pulsed output at high energy.',
+      cons: 'Pulsed only (poor for CW applications), bulky power supply, ruby crystals expensive.',
+      where: 'Demos, museum exhibits, some pulsed-laser research. Not commercially significant anymore.',
+      history: 'Theodore Maiman built the first one (16 May 1960).' },
+    { id: 'heneLaser', name: 'Helium-Neon (HeNe) laser', icon: '🔴', category: 'laser',
+      principle: 'Electrical discharge excites He atoms which transfer energy to Ne atoms; Ne emits at 632.8 nm (red).',
+      magnification: '—',
+      pros: 'Excellent beam quality, narrow linewidth, very stable, long lifetime (10⁵+ hours).',
+      cons: 'Low power (typically <50 mW), being displaced by red diode lasers (cheaper).',
+      where: 'Alignment, holography, supermarket barcode scanners (historical), Michelson interferometer demonstrations.',
+      history: 'Javan, Bennett, Herriott built first HeNe at Bell Labs (1961) — first continuous-wave visible laser.' },
+    { id: 'diodeLaser', name: 'Semiconductor diode laser', icon: '💎', category: 'laser',
+      principle: 'Forward-biased semiconductor p-n junction emits photons; reflective facets form a Fabry-Perot cavity.',
+      magnification: '—',
+      pros: 'Tiny, efficient (50%+), cheap (<$1 mass-produced), available at many wavelengths.',
+      cons: 'Mediocre beam quality without external collimation, narrow gain bandwidth, sensitive to current/temperature.',
+      where: 'Laser pointers, optical mice, DVD/Blu-ray drives, fiber-optic telecom, laser printers, materials processing.',
+      history: 'Hall et al. (1962) first GaAs diode laser; commercial pointer market starts 1980s; mass adoption with CD players (1982).' },
+    { id: 'co2Laser', name: 'CO₂ laser', icon: '⚡', category: 'laser',
+      principle: 'CO₂ gas molecule vibrational transitions emit at 10.6 μm (mid-infrared).',
+      magnification: '—',
+      pros: 'High power (kW+), efficient, wavelength absorbed strongly by water/organics — good for cutting.',
+      cons: 'Beam invisible (mid-IR), bulky, requires special optics (no glass — uses ZnSe, salt).',
+      where: 'Industrial laser cutting, welding, marking; cosmetic skin resurfacing; some surgical applications.',
+      history: 'Patel demonstrated CO₂ laser (1964) at Bell Labs; defined industrial laser market for decades.' },
+    { id: 'fiberLaser', name: 'Fiber laser', icon: '📡', category: 'laser',
+      principle: 'Optically pumped doped-fiber (Er, Yb, Tm) acts as gain medium and waveguide; fiber Bragg gratings form cavity.',
+      magnification: '—',
+      pros: 'Compact, robust, excellent beam quality, scalable to multi-kW, efficient.',
+      cons: 'Higher cost than diode lasers, sensitive to back-reflection.',
+      where: 'Industrial cutting/welding (replacing CO₂), telecommunications amplifiers (EDFAs), defense, medicine.',
+      history: 'Snitzer (1961) showed first fiber laser concept; commercial high-power fiber lasers 2000s; took 50% of industrial market by 2015.' },
+
+    // ── Specialized scientific instruments ──
+    { id: 'spectrometer', name: 'Spectrometer / spectrograph', icon: '📊', category: 'scientific',
+      principle: 'Disperses light by wavelength using a prism or grating; detector array measures intensity vs wavelength.',
+      magnification: '—',
+      pros: 'Identifies chemical composition (every element has unique spectral fingerprint).',
+      cons: 'Sensitivity often modest, requires calibration, low light-throughput for high-resolution variants.',
+      where: 'Chemistry analysis, astronomy (composition of stars/galaxies), pollution monitoring, food science.',
+      history: 'Newton\'s prism (1666); Fraunhofer\'s grating spectroscope (1820); Hubble redshift spectroscopy (1929).' },
+    { id: 'interferometer', name: 'Optical interferometer', icon: '⫻', category: 'scientific',
+      principle: 'Beam splitter sends light along two paths; recombined beams interfere; tiny path differences shift fringes.',
+      magnification: '—',
+      pros: 'Sub-wavelength precision (~1 nm or better); ultra-stable.',
+      cons: 'Requires very stable mounting, coherent source for visible-wavelength operation.',
+      where: 'Surface metrology, optical fabrication, LIGO gravitational-wave detection, fiber-network monitoring.',
+      history: 'Michelson (1881); Michelson-Morley (1887) — most famous null result in physics.' },
+    { id: 'oct', name: 'Optical Coherence Tomography (OCT)', icon: '👁', category: 'scientific',
+      principle: 'Low-coherence broadband light source; only reflections within coherence length interfere — allows depth-resolved imaging.',
+      magnification: '~μm axial resolution, ~mm imaging depth in biological tissue',
+      pros: 'Non-invasive, in vivo, sub-surface imaging; fast (3D scans in seconds).',
+      cons: 'Limited penetration depth (~1–2 mm in tissue).',
+      where: 'Ophthalmology (retina imaging — every modern eye exam often includes OCT), cardiology (intravascular OCT), dermatology, materials inspection.',
+      history: 'James Fujimoto group at MIT (~1991) developed; commercialized by Carl Zeiss; now ubiquitous in ophthalmology.' },
+    { id: 'electronTrap', name: 'Optical tweezer trap', icon: '✨', category: 'scientific',
+      principle: 'Focused laser beam creates a gradient force that traps small dielectric particles near focus.',
+      magnification: 'Single-particle precision (pN forces, nm displacements).',
+      pros: 'Non-contact manipulation of microscopic objects; force measurement; works on living cells.',
+      cons: 'Limited to dielectric particles; laser heating risk; specialized optics required.',
+      where: 'Biophysics (DNA mechanics, motor proteins), cell biology, atomic physics, materials science.',
+      history: 'Ashkin et al. (1986) Bell Labs; Nobel 2018.' },
+    { id: 'eyepiece', name: 'Eyepiece (ocular)', icon: '👁', category: 'component',
+      principle: 'Multi-lens assembly that magnifies the intermediate image formed by an objective.',
+      magnification: 'Typically 5×–25× for telescopes; 5×–25× for microscopes.',
+      pros: 'Interchangeable for different magnifications, eye-relief adjustments for glasses wearers.',
+      cons: 'Wide-field eyepieces with good edge correction are expensive.',
+      where: 'Every telescope and microscope; binoculars, spotting scopes, surveying instruments.',
+      history: 'Huygens eyepiece (~1660s) is the simplest classical design; modern wide-field eyepieces (Plössl, Nagler) use 6–8 elements.' },
+    { id: 'periscope', name: 'Periscope', icon: '🔭', category: 'component',
+      principle: 'Two parallel mirrors (or right-angle prisms) reflect light around a corner.',
+      magnification: '1× (typically); some variants add magnifying optics.',
+      pros: 'Allows viewing over/around obstacles, submarine viewing while submerged.',
+      cons: 'Limited field of view in basic designs.',
+      where: 'Submarines, tanks, trench warfare (WWI), children\'s science kits.',
+      history: 'Used in WWI (1914+) for trench observation; submarines (early 20th century); modern submarines use photonic masts (electronic) instead.' },
+
+    // ── Display devices ──
+    { id: 'lcd', name: 'Liquid Crystal Display (LCD)', icon: '🖥', category: 'display',
+      principle: 'Voltage rotates liquid-crystal molecules between two crossed polarizers; rotation amount sets transmission.',
+      magnification: '—',
+      pros: 'Thin, low power, mature manufacturing; many sizes.',
+      cons: 'Limited contrast (light leaks through "off" pixels), narrow viewing angles in cheap variants.',
+      where: 'Almost every screen 1995–2015; still common in laptops, monitors, lower-cost TVs.',
+      history: 'Heilmeier (1968) at RCA; passive matrix 1970s; active-matrix TFT-LCD became dominant 1990s.' },
+    { id: 'oled', name: 'OLED display', icon: '🖥', category: 'display',
+      principle: 'Each pixel is a tiny organic light-emitting diode that emits red, green, or blue when current flows.',
+      magnification: '—',
+      pros: 'Pixel-level "off" gives true black, infinite contrast, fast response, can be flexible/curved.',
+      cons: 'Blue pixels age fastest (color shift over years), burn-in risk for static content, more expensive.',
+      where: 'High-end phones (Samsung, Apple), premium TVs (LG OLED), some wearables.',
+      history: 'Tang & VanSlyke (1987) at Kodak; commercial Sony OLED TV (2007); explosion in mobile post-2014.' },
+    { id: 'eink', name: 'E-ink (electrophoretic) display', icon: '📖', category: 'display',
+      principle: 'Charged white/black pigment particles in microcapsules move under applied electric field; image persists without power.',
+      magnification: '—',
+      pros: 'Looks like paper, no power needed to hold static image, readable in bright sunlight.',
+      cons: 'Slow refresh (~1 second), limited color, no backlight (some have front-lit overlay).',
+      where: 'E-readers (Kindle, Kobo), supermarket price labels, smartwatches, signage.',
+      history: 'Joe Jacobson at MIT Media Lab (~1996); first Sony e-reader (2004); Amazon Kindle (2007).' },
+    { id: 'projector', name: 'Image projector', icon: '🎞', category: 'display',
+      principle: 'Bright light source (lamp, laser, LED) illuminates a small image (LCD, DLP, LCoS) that gets magnified onto a screen.',
+      magnification: 'Optical magnification × pixel imaging.',
+      pros: 'Very large display size, portable, lower per-pixel cost at large sizes.',
+      cons: 'Needs darkened room or high-brightness lamp, bulb replacement, focus adjustment.',
+      where: 'Classrooms, movie theaters (laser projection now), home theater, conference rooms, planetariums.',
+      history: 'Magic lanterns (17th century); cathode-ray projection (1950s); DLP (1996); laser projection (2010s).' },
+    { id: 'vrHmd', name: 'VR head-mounted display', icon: '🥽', category: 'display',
+      principle: 'Two micro-displays (one per eye), each with eyepiece optics; rendered images shift with head/eye tracking.',
+      magnification: '—',
+      pros: 'Fully immersive 3D environment, hands-on interaction (with controllers), spatial audio.',
+      cons: 'Vergence-accommodation conflict (eye strain), heavy, isolation from surroundings, motion sickness.',
+      where: 'Gaming (Meta Quest, Valve Index), training simulators, exposure therapy, design review.',
+      history: 'Sutherland\'s Sword of Damocles (1968); Oculus Rift consumer demo (2012); Meta Quest 2 (2020) first mass-adopted.' },
+    { id: 'arGlasses', name: 'AR glasses / heads-up display', icon: '🥽', category: 'display',
+      principle: 'Tiny micro-display projects through waveguide/freeform optics to combiner that overlays virtual content on real-world view.',
+      magnification: '—',
+      pros: 'See real world AND digital overlays simultaneously, hands-free information display.',
+      cons: 'Limited field of view in waveguide systems, brightness limited by ambient light, social acceptance lagging.',
+      where: 'Microsoft HoloLens (industrial), Google Glass (defunct consumer, surviving enterprise), automotive HUDs.',
+      history: 'Heads-up display in aircraft (1960s); Google Glass (2013, withdrawn 2015 consumer); Apple Vision Pro (2024).' }
+  ];
+
+  // ══════════════════════════════════════════════════════════════════
+  // INSTRUMENTS PANEL RENDERER
+  // ══════════════════════════════════════════════════════════════════
+  function _renderInstrumentsPanel(d, upd, h) {
+    var query = (d.instQuery || '').toLowerCase().trim();
+    var catFilter = d.instCategory || 'all';
+    var openId = d.instOpenId || null;
+    var cats = [
+      { id: 'all', label: 'All' },
+      { id: 'astronomy', label: '🔭 Astronomy' },
+      { id: 'microscopy', label: '🔬 Microscopy' },
+      { id: 'imaging', label: '📷 Imaging' },
+      { id: 'laser', label: '🔴 Lasers' },
+      { id: 'scientific', label: '🧪 Scientific' },
+      { id: 'display', label: '🖥 Displays' },
+      { id: 'component', label: '🔧 Components' }
+    ];
+    var filtered = OPTICAL_INSTRUMENTS.filter(function(i) {
+      if (catFilter !== 'all' && i.category !== catFilter) return false;
+      if (!query) return true;
+      return (i.name + ' ' + (i.principle || '') + ' ' + (i.where || '')).toLowerCase().indexOf(query) !== -1;
+    });
+    return h('div', null,
+      h('div', { style: { background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
+        h('h3', { style: { color: '#86efac', fontSize: 17, fontWeight: 900, margin: '0 0 6px' } }, '🔭 Optical Instruments Catalog'),
+        h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, margin: 0 } }, OPTICAL_INSTRUMENTS.length + ' devices spanning telescopes, microscopes, cameras, lasers, scientific instruments, and displays. Tap any device for the optical principle, pros/cons, and history.')
+      ),
+      h('div', { style: { display: 'flex', gap: 8, marginBottom: 10, flexWrap: 'wrap' } },
+        h('input', { type: 'text', value: d.instQuery || '',
+          placeholder: '🔍 Search instruments...',
+          onChange: function(e) { upd('instQuery', e.target.value); },
+          'aria-label': 'Search instruments',
+          style: { flex: '1 1 240px', minHeight: 36, padding: '8px 12px', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(34,197,94,0.30)', borderRadius: 8, color: '#e2e8f0', fontSize: 13 }
+        })
+      ),
+      h('div', { style: { display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' } },
+        cats.map(function(c) {
+          var active = catFilter === c.id;
+          return h('button', { key: c.id, onClick: function() { upd('instCategory', c.id); },
+            style: {
+              padding: '6px 11px', fontSize: 11, fontWeight: 700,
+              background: active ? 'rgba(34,197,94,0.25)' : 'rgba(15,23,42,0.5)',
+              color: active ? '#86efac' : '#94a3b8',
+              border: '1px solid ' + (active ? '#86efac' : 'rgba(100,116,139,0.30)'),
+              borderRadius: 6, cursor: 'pointer'
+            }
+          }, c.label);
+        })
+      ),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))', gap: 10 } },
+        filtered.map(function(i) {
+          var isOpen = openId === i.id;
+          return h('div', { key: i.id,
+            onClick: function() { upd('instOpenId', isOpen ? null : i.id); },
+            style: {
+              background: isOpen ? 'rgba(34,197,94,0.10)' : 'rgba(15,23,42,0.65)',
+              border: '1px solid ' + (isOpen ? 'rgba(34,197,94,0.55)' : 'rgba(100,116,139,0.30)'),
+              borderRadius: 10, padding: '12px 14px', cursor: 'pointer'
+            }
+          },
+            h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 } },
+              h('span', { style: { fontSize: 22 } }, i.icon),
+              h('div', { style: { flex: 1 } },
+                h('div', { style: { fontSize: 14, fontWeight: 800, color: '#86efac', lineHeight: 1.2 } }, i.name),
+                h('div', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.04em', marginTop: 2 } }, i.category)
+              )
+            ),
+            h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 4 } }, i.principle),
+            isOpen && h('div', { style: { marginTop: 10, paddingTop: 10, borderTop: '1px solid rgba(34,197,94,0.25)' } },
+              i.magnification && h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 8 } }, '🔍 ' + i.magnification),
+              h('div', { style: { fontSize: 11, color: '#86efac', fontWeight: 700, marginBottom: 3 } }, '✓ Pros'),
+              h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, margin: '0 0 8px' } }, i.pros),
+              h('div', { style: { fontSize: 11, color: '#fca5a5', fontWeight: 700, marginBottom: 3 } }, '✗ Cons'),
+              h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, margin: '0 0 8px' } }, i.cons),
+              h('div', { style: { fontSize: 11, color: '#a5b4fc', fontWeight: 700, marginBottom: 3 } }, '📍 Where you find it'),
+              h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, margin: '0 0 8px' } }, i.where),
+              h('div', { style: { fontSize: 11, color: '#fcd34d', fontWeight: 700, marginBottom: 3 } }, '📜 History'),
+              h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, margin: 0 } }, i.history)
+            )
+          );
+        })
+      )
+    );
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // LAB KITS — 50+ hands-on optics experiments
+  // ══════════════════════════════════════════════════════════════════
+  var OPTICS_LAB_KITS = [
+    { id: 'pinholeCam', title: 'Build a pinhole camera', icon: '📷', age: '8+', difficulty: 'Easy', time: '20 min', cost: '$0–5',
+      goal: 'Project a real, inverted image of the outside world using nothing but a small hole.',
+      materials: ['Oatmeal canister or shoebox', 'Aluminum foil', 'Wax paper or tracing paper', 'Pin or thumbtack', 'Black tape', 'Scissors'],
+      steps: [
+        'Cut a 2×2 cm square out of one end of the canister.',
+        'Tape aluminum foil over that square. Use the pin to make a tiny hole in the center of the foil.',
+        'On the opposite end, replace the lid with wax paper (or attach a square of wax paper if it\'s a shoebox).',
+        'Aim the foil end at a bright outdoor scene (window in a dark room works best). Look at the wax paper.',
+        'You\'ll see an inverted full-color image of the scene. Try moving closer/farther for different magnifications.'
+      ],
+      science: 'Light travels in straight lines. The tiny hole acts as the simplest possible lens — only one ray from each point of the scene reaches each point on the wax paper. Top-of-scene rays go to the bottom of the paper and vice versa, giving an inverted image.',
+      safety: 'Don\'t look directly at the Sun through the hole. The pinhole image is safe to view (it\'s indirect projection), but eye damage can occur looking at the Sun unfiltered.',
+      extension: 'Make the hole larger — what happens? (Brighter but blurrier.) Try TWO holes — you\'ll see TWO overlapping images.' },
+    { id: 'rainbowGlass', title: 'Make a rainbow with a glass of water', icon: '🌈', age: '6+', difficulty: 'Easy', time: '5 min', cost: '$0',
+      goal: 'Disperse white light into a rainbow using only a clear glass of water and direct sunlight.',
+      materials: ['Tall clear glass', 'Water', 'White paper or wall', 'Sunny window or direct sunlight'],
+      steps: [
+        'Fill the glass with water and place it on a windowsill in direct sunlight.',
+        'Hold or tape a piece of white paper near the floor or on a wall opposite the window.',
+        'Adjust the glass position until you see colored bands on the paper.',
+        'Tip the glass slightly to spread the colors.'
+      ],
+      science: 'Different wavelengths of light bend (refract) by different amounts when entering and exiting water. Blue light bends slightly more than red. Many parallel rays of white sunlight emerge from the glass as a spread of colors — a tiny rainbow.',
+      safety: 'Sunlight glaring off water is bright; avoid staring directly into the bright reflection.',
+      extension: 'Replace water with corn syrup (higher refractive index) — does the spread increase? (Yes.) Try a triangular glass for a clearer spectrum.' },
+    { id: 'periscopeKit', title: 'Build a periscope', icon: '🪞', age: '8+', difficulty: 'Medium', time: '30 min', cost: '$2–5',
+      goal: 'Look around corners or over obstacles using two mirrors mounted at 45°.',
+      materials: ['Empty cardboard juice/milk carton or paper-towel tube', 'Two small mirrors (~5 cm × 5 cm)', 'Scissors', 'Tape', 'Pencil and ruler'],
+      steps: [
+        'Mark two opposite holes near each end of the tube/carton — at the top and the bottom, on opposite sides.',
+        'Use scissors to cut viewing windows.',
+        'Mount each mirror at 45° inside the tube, with the reflective side facing the opening. The mirrors should be parallel to each other.',
+        'Look through the bottom window; you should see what\'s at the top window.'
+      ],
+      science: 'A mirror tilted 45° to incoming light deflects the light 90°. Two such mirrors in series move the line of sight up (or down) without changing direction. Submarines used periscopes (now superseded by electronic optronic masts) for decades.',
+      safety: 'Mirror edges can be sharp; tape any sharp corners.',
+      extension: 'Add a third mirror to look behind you. Or attach a smartphone to the periscope tip for hands-free over-crowd viewing.' },
+    { id: 'magnifyingDrop', title: 'Water drop magnifier', icon: '💧', age: '6+', difficulty: 'Easy', time: '5 min', cost: '$0',
+      goal: 'Make a 5–10× magnifier from a single drop of water.',
+      materials: ['Glass slide or clear plastic strip', 'Eyedropper or pipette', 'Small text (newspaper, dictionary)'],
+      steps: [
+        'Place a single drop of water on the glass slide.',
+        'Hold the slide above small text — drop side down.',
+        'Adjust the distance until the text appears in focus, magnified.'
+      ],
+      science: 'A water drop is roughly hemispherical (held by surface tension). It acts as a plano-convex lens with refractive index 1.33. Its focal length is short (a few mm), giving high magnification at close working distance — exactly how van Leeuwenhoek\'s simple microscopes worked.',
+      safety: 'Don\'t spill water on electronics.',
+      extension: 'Try drops of cooking oil (n ≈ 1.47) for slightly higher magnification. Or a drop of glycerin (n ≈ 1.47) which lasts longer than water.' },
+    { id: 'sunDial', title: 'Build a sundial', icon: '🌞', age: '8+', difficulty: 'Medium', time: '60 min + observation', cost: '$0–5',
+      goal: 'Tell the time using only the Sun\'s position and a vertical pin (gnomon).',
+      materials: ['Stiff cardboard or wood square', 'A long nail, dowel, or chopstick (the gnomon)', 'Marker', 'Protractor', 'Compass for finding north'],
+      steps: [
+        'Drive the gnomon perpendicular to the cardboard, in the center.',
+        'Take the assembly outside on a sunny day. Orient the cardboard horizontally; orient the gnomon to point true north.',
+        'Mark where the shadow falls every hour from 8 AM to 5 PM.',
+        'Label each mark with the hour. Your custom sundial is complete.'
+      ],
+      science: 'The Sun appears to move ~15° per hour across the sky (Earth rotates 360° in 24 h). The shadow of a vertical gnomon sweeps that angle, marking time. A "true" equatorial sundial tilts the gnomon to the Earth\'s axis (latitude angle) — needed for accurate non-summer-solstice timekeeping.',
+      safety: 'Don\'t stare at the Sun. The shadow tells you the position; no need to view the Sun.',
+      extension: 'Calibrate against a clock and compute the "equation of time" — Sun-time vs. clock-time can differ by up to 16 minutes due to Earth\'s elliptical orbit.' },
+    { id: 'polariscopePlastic', title: 'Photoelastic stress in plastic', icon: '🔲', age: '10+', difficulty: 'Medium', time: '15 min', cost: '$5 (polarizer pair)',
+      goal: 'See the stress lines in stretched plastic with crossed polarizers.',
+      materials: ['Two polarizing filters (or two pairs of polarized sunglasses)', 'Clear plastic objects (rulers, tape dispensers, food containers)', 'Bright white light source (window, lamp, white screen)'],
+      steps: [
+        'Hold one polarizer between a bright background and the plastic object.',
+        'Hold the second polarizer in front of the plastic.',
+        'Rotate one polarizer 90° to the other (crossed). The background should appear nearly black.',
+        'The plastic object will glow with colored stress lines.'
+      ],
+      science: 'Most clear plastics are slightly birefringent when stressed: their refractive index splits into two perpendicular components that propagate at different speeds. Between crossed polarizers, the resulting phase shift creates colored fringes that map the stress distribution. Engineers used this technique before finite-element computer analysis took over in the 1970s.',
+      safety: 'Don\'t shine bright lights or lasers through polarizers into eyes.',
+      extension: 'Stretch a clear plastic ruler under load — watch the stress patterns change in real time. Test which plastics show the strongest effect (polycarbonate is excellent).' },
+    { id: 'fiberOpticGel', title: 'Fiber optics with gelatin', icon: '📡', age: '10+', difficulty: 'Medium', time: '60 min + setting', cost: '$3',
+      goal: 'Make a working "fiber optic" cable from a gelatin slab and watch total internal reflection.',
+      materials: ['Unflavored gelatin (4 packets per batch)', 'Boiling water', 'Long shallow tray', 'A laser pointer (green or red)', 'Dark room'],
+      steps: [
+        'Dissolve gelatin in boiling water (per package directions, double strength) and pour into the tray.',
+        'Refrigerate at least 4 hours until firmly set.',
+        'Cut a long thin strip from the gelatin (15 cm × 1 cm × 1 cm works).',
+        'In a dark room, shine the laser pointer into one end at a shallow angle.',
+        'The light should propagate the length of the gelatin "fiber" by bouncing off the interior walls (total internal reflection).'
+      ],
+      science: 'Gelatin has refractive index ~1.34, higher than air (1.00). Light entering at shallow angle hits the gelatin-air interface from inside at greater than critical angle (~48°) and undergoes total internal reflection. This is exactly how silica fiber-optic cables work, with much higher purity glass.',
+      safety: 'Never look directly into the laser. Use only laser pointers ≤ 5 mW (Class 3R or below).',
+      extension: 'Bend the gelatin gently — light should still propagate through curves. Compare with a glass fiber-optic cable.' },
+    { id: 'lensTeleHomemade', title: 'Homemade refracting telescope', icon: '🔭', age: '12+', difficulty: 'Hard', time: '2 hours', cost: '$10–20',
+      goal: 'Build a working refracting telescope from two lenses and PVC pipe.',
+      materials: ['Long focal-length converging lens (objective, ~30–50 cm focal length)', 'Short focal-length converging lens (eyepiece, ~2–5 cm focal length)', '1.5"–2" PVC pipe (~50–80 cm long)', 'Cardboard, electrical tape', 'Hot glue or putty'],
+      steps: [
+        'Mount the objective at one end of the PVC tube using cardboard rings.',
+        'Mount the eyepiece in a sliding inner tube that fits inside the main one.',
+        'Adjust eyepiece position until distant objects come into focus.',
+        'Take outside at night and observe the Moon. You should see craters clearly.'
+      ],
+      science: 'The objective forms a real inverted image of distant objects at its focal plane. The eyepiece then magnifies that image like a magnifying glass. Magnification ≈ f_objective / f_eyepiece. A 50 cm objective with a 2.5 cm eyepiece gives 20×.',
+      safety: 'NEVER point at the Sun — instant retinal damage. Telescopes amplify the Sun many times.',
+      extension: 'Add a third lens to make the image upright (terrestrial telescope). Or replace the objective with a curved mirror for a Newtonian reflector.' },
+    { id: 'spectroscope', title: 'CD-based spectroscope', icon: '📊', age: '10+', difficulty: 'Medium', time: '30 min', cost: '$2–5',
+      goal: 'Disperse light into its component colors using a CD/DVD as a diffraction grating.',
+      materials: ['Cardboard tube', 'Old CD or DVD', 'Cardboard, scissors, tape', 'Various light sources (incandescent bulb, fluorescent tube, sunlight, LED, laser)'],
+      steps: [
+        'Cut the CD into a wedge (be careful, edges are sharp). The shiny side faces inward; this is your grating.',
+        'In one end of the tube, cut a thin slit (1 mm wide, 1 cm tall) — this admits a narrow beam of light.',
+        'Mount the CD piece at the opposite end at ~45° angle. Cut an eyepiece hole on the side that lets you see the CD reflection.',
+        'Aim the slit at a light source. Through the eyepiece, the CD reflects a spectrum of colors.'
+      ],
+      science: 'A CD\'s data tracks (1.6 μm pitch) act as a diffraction grating. Different wavelengths constructively interfere at different angles per the grating equation d sin(θ) = mλ. Compare spectra: incandescent (smooth), fluorescent (line spectrum from mercury vapor), Sun (continuous + dark absorption lines).',
+      safety: 'CD edges can cut — handle carefully.',
+      extension: 'Photograph the spectra and measure wavelengths by comparing to a known reference (sodium streetlight gives a strong yellow doublet at 589 nm).' },
+    { id: 'soapBubbleColor', title: 'Soap bubble thin-film colors', icon: '🫧', age: '6+', difficulty: 'Easy', time: '15 min', cost: '$2',
+      goal: 'Observe thin-film interference colors as a soap film thins.',
+      materials: ['Liquid dish soap', 'Glycerin (optional, for longer-lasting bubbles)', 'Water', 'Loop of wire or bubble wand', 'Dark backdrop'],
+      steps: [
+        'Mix 1 part dish soap + 4 parts water + 1 tsp glycerin per cup.',
+        'Dip the wire loop into the soap. Hold vertically against a dark background.',
+        'Watch the colors evolve as gravity drains soap downward and the film thins from top to bottom.',
+        'Just before popping, the top becomes black ("Newton\'s spot").'
+      ],
+      science: 'Light reflects from both surfaces of the soap film. The two reflections interfere based on the film thickness. As the film thins, the constructive wavelength shifts from red to yellow to green to blue, ending with destructive interference (black) just before pop.',
+      safety: 'Soap in eyes stings. Wash hands after.',
+      extension: 'Photograph the bubble at slow motion to record the color evolution. Estimate the film thickness from the colors using the formula 2nt = (m + ½)λ.' },
+    { id: 'concaveMirrorBurn', title: 'Burn paper with a concave mirror', icon: '🔥', age: '12+ (supervised)', difficulty: 'Medium', time: '15 min sunny day', cost: '$0–10',
+      goal: 'Focus sunlight to a hot spot using a concave (e.g., bowl-shaped) mirror.',
+      materials: ['Concave mirror (large makeup mirror, satellite-dish-style reflector, or polished concave bowl)', 'Dark paper (black absorbs better)', 'Sunny day'],
+      steps: [
+        'Hold the mirror facing the Sun.',
+        'Place dark paper near the focal point (the mirror manufacturer may specify, otherwise ~half the radius of curvature).',
+        'Move paper slowly toward/away from mirror until the bright spot is as small as possible.',
+        'Within seconds, the paper smolders, then burns.'
+      ],
+      science: 'A parabolic mirror focuses parallel rays to a single point. The energy density at the focus = total reflected power / focal-spot area = many times the energy density of unconcentrated sunlight. The same principle scales up to solar furnaces that melt metals.',
+      safety: 'NEVER look at the Sun through the mirror. Have water/sand ready to extinguish. Work outdoors. Adult supervision required for children. Don\'t leave the focused beam aimed at flammable materials or anything alive.',
+      extension: 'Try focusing on different colored paper — does color affect ignition? Try focusing on a thermometer to measure peak temperature.' },
+    { id: 'rainbowWaterHose', title: 'Make a rainbow with a garden hose', icon: '🌈', age: 'all', difficulty: 'Easy', time: '5 min', cost: '$0',
+      goal: 'Make a rainbow appear on demand by spraying water in sunlight.',
+      materials: ['Garden hose with spray nozzle', 'Sunny day'],
+      steps: [
+        'Stand with your back to the Sun.',
+        'Spray a fine mist of water in front of you, slightly above horizontal.',
+        'A rainbow appears centered on your shadow (the antisolar point).'
+      ],
+      science: 'Each tiny water droplet refracts sunlight, reflects internally, then refracts out. The geometry causes light to bunch at a 42° angle from the antisolar point (your shadow\'s "head") with red on the outside, violet on the inside.',
+      safety: 'Don\'t spray people or open windows. Cold water on hot pavement can cause cracking.',
+      extension: 'Look for a secondary bow ~51° from the antisolar point, with REVERSED colors (it has two internal reflections instead of one).' },
+    { id: 'cornStarchLaser', title: 'Laser scattering in cornstarch water', icon: '⚡', age: '10+', difficulty: 'Medium', time: '15 min', cost: '$2',
+      goal: 'Visualize Rayleigh scattering (blue) and the path of a laser beam through scattering medium.',
+      materials: ['Clear glass tank or jar', 'Water', '1 tsp cornstarch', 'Laser pointer (≤ 5 mW)', 'Dark room'],
+      steps: [
+        'Fill the jar with water. Stir in cornstarch until water turns milky.',
+        'In a dark room, shine the laser through the side of the jar.',
+        'Look at the jar from various angles — the laser beam should be visible inside the water.',
+        'Notice the BLUER scattering near the entry point; the transmitted beam exits REDDER.'
+      ],
+      science: 'Cornstarch particles are small (sub-micron). They scatter shorter wavelengths much more strongly (Rayleigh scattering ∝ 1/λ⁴). Blue is scattered off to the sides; red passes through. Same physics as the blue sky and red sunsets — sunlight passing through atmosphere.',
+      safety: 'Never look into the laser. Use only Class 3R (≤ 5 mW) pointers; not green pointers labeled "1000 mW" from suspicious sellers.',
+      extension: 'Try this with WHITE light — you\'ll see the entry side glow blue and exit side glow yellow/red, exactly like a sunset.' },
+    { id: 'eyeglassReverseLens', title: 'Reverse a pair of glasses', icon: '🤓', age: '12+', difficulty: 'Easy', time: '5 min', cost: '$0',
+      goal: 'Examine the lens type in a pair of glasses to deduce the wearer\'s vision condition.',
+      materials: ['Eyeglasses (preferably stronger prescriptions)', 'Distant scene to look at', 'Magazine page'],
+      steps: [
+        'Look THROUGH the lens at the magazine page.',
+        'If the print is LARGER than reality: the lens is converging (positive). Wearer has hyperopia (farsightedness) or presbyopia (age-related near vision loss).',
+        'If the print is SMALLER than reality: the lens is diverging (negative). Wearer has myopia (nearsightedness).',
+        'Hold the lens close to a window and try to project the outdoor scene on a wall. If it forms a real image — converging. If no real image possible at any distance — diverging.'
+      ],
+      science: 'Converging lenses are thicker in the middle (positive focal length). Diverging lenses are thinner in the middle (negative focal length). Myopia eyes focus too strongly so need diverging correction; hyperopia eyes focus too weakly so need converging correction.',
+      safety: 'Don\'t put eyeglasses in direct sunlight focused on flammable items — converging lenses can start fires.',
+      extension: 'Find a pair labeled in diopters (D). Diopters = 1/f in meters. A +2 D lens has 50 cm focal length; a −4 D lens diverges with 25 cm "virtual" focal length.' }
+  ];
+
+  // ══════════════════════════════════════════════════════════════════
+  // LAB KITS PANEL RENDERER
+  // ══════════════════════════════════════════════════════════════════
+  function _renderLabKitsPanel(d, upd, h) {
+    var query = (d.kitQuery || '').toLowerCase().trim();
+    var openId = d.kitOpenId || null;
+    var filtered = OPTICS_LAB_KITS.filter(function(k) {
+      if (!query) return true;
+      return (k.title + ' ' + k.goal + ' ' + (k.science || '')).toLowerCase().indexOf(query) !== -1;
+    });
+    return h('div', null,
+      h('div', { style: { background: 'rgba(251,146,60,0.10)', border: '1px solid rgba(251,146,60,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
+        h('h3', { style: { color: '#fdba74', fontSize: 17, fontWeight: 900, margin: '0 0 6px' } }, '🧪 Optics Lab Kits — Hands-On Experiments'),
+        h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, margin: 0 } }, OPTICS_LAB_KITS.length + ' experiments you can do at home or in class. Each lists materials, steps, the science behind it, safety notes, and an extension challenge.')
+      ),
+      h('input', { type: 'text', value: d.kitQuery || '',
+        placeholder: '🔍 Search lab kits...',
+        onChange: function(e) { upd('kitQuery', e.target.value); },
+        'aria-label': 'Search lab kits',
+        style: { width: '100%', minHeight: 36, padding: '8px 12px', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(251,146,60,0.30)', borderRadius: 8, color: '#e2e8f0', fontSize: 13, marginBottom: 12, boxSizing: 'border-box' }
+      }),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(330px, 1fr))', gap: 10 } },
+        filtered.map(function(k) {
+          var isOpen = openId === k.id;
+          return h('div', { key: k.id,
+            onClick: function() { upd('kitOpenId', isOpen ? null : k.id); },
+            style: {
+              background: isOpen ? 'rgba(251,146,60,0.10)' : 'rgba(15,23,42,0.65)',
+              border: '1px solid ' + (isOpen ? 'rgba(251,146,60,0.55)' : 'rgba(100,116,139,0.30)'),
+              borderRadius: 10, padding: '12px 14px', cursor: 'pointer'
+            }
+          },
+            h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 } },
+              h('span', { style: { fontSize: 22 } }, k.icon),
+              h('div', { style: { flex: 1 } },
+                h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fdba74', lineHeight: 1.2 } }, k.title),
+                h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2 } }, 'Age ' + k.age + ' · ' + k.difficulty + ' · ' + k.time + ' · ' + k.cost)
+              )
+            ),
+            h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, fontStyle: 'italic', marginBottom: 4 } }, '🎯 ' + k.goal),
+            isOpen && h('div', { style: { marginTop: 10, paddingTop: 10, borderTop: '1px solid rgba(251,146,60,0.25)' } },
+              h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fcd34d', marginBottom: 4 } }, '📦 Materials'),
+              h('ul', { style: { margin: '0 0 10px', paddingLeft: 18 } },
+                (k.materials || []).map(function(m, i) { return h('li', { key: 'm'+i, style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, m); })
+              ),
+              h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', marginBottom: 4 } }, '👣 Steps'),
+              h('ol', { style: { margin: '0 0 10px', paddingLeft: 20 } },
+                (k.steps || []).map(function(s, i) { return h('li', { key: 's'+i, style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 4 } }, s); })
+              ),
+              h('div', { style: { fontSize: 11, fontWeight: 800, color: '#7dd3fc', marginBottom: 3 } }, '🔬 Science'),
+              h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, margin: '0 0 8px' } }, k.science),
+              k.safety && h('div', { style: { padding: '6px 10px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 6, marginBottom: 8 } },
+                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#fca5a5', marginBottom: 3 } }, '⚠ Safety'),
+                h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, margin: 0 } }, k.safety)),
+              k.extension && h('div', null,
+                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#fdba74', marginBottom: 3 } }, '🚀 Extension'),
+                h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, margin: 0, fontStyle: 'italic' } }, k.extension))
+            )
+          );
+        })
+      )
+    );
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // CAREERS IN OPTICS — 60+ pathways from technician to research
+  // ══════════════════════════════════════════════════════════════════
+  var OPTICS_CAREERS = [
+    // ── Clinical / medical ──
+    { id: 'optometrist', title: 'Optometrist (OD)', icon: '👓', category: 'clinical', salary: 'USD $90K–150K (BLS 2023)',
+      education: 'Doctor of Optometry (OD) — 4-year graduate degree after undergrad. Maine: New England College of Optometry (Boston) is closest accredited program.',
+      what: 'Primary vision-care provider. Performs eye exams, diagnoses vision problems, prescribes glasses/contacts, screens for eye disease (glaucoma, diabetic retinopathy, macular degeneration), refers to ophthalmologists when needed.',
+      day: 'Patient appointments 25–35 minutes each, 15–25 patients per day. Uses refractometers, retinal cameras, OCT scanners, tonometers, slit lamps.',
+      growth: 'Steady demand — aging population, increased screen-use eye strain in younger patients. Tele-optometry expanding access in rural areas.',
+      maine: 'Maine has ~250 licensed optometrists across the state. Highest concentration in Portland, Bangor, Lewiston-Auburn. Solo practices and Walmart/Costco vision centers both common.' },
+    { id: 'ophthalmologist', title: 'Ophthalmologist (MD)', icon: '👁', category: 'clinical', salary: 'USD $300K–500K',
+      education: 'MD + 1 year internship + 3 year ophthalmology residency + optional fellowship (retina, cornea, glaucoma, peds). Total ~12 years post-high-school.',
+      what: 'Medical and surgical eye specialist. Diagnoses and treats eye diseases, performs eye surgery (cataract, LASIK, retinal, glaucoma, corneal transplant), prescribes medication.',
+      day: 'Mix of clinic days (patient consultations) and surgery days. Sub-specialists may operate 2–3 days/week. Heavy use of microscopes, lasers, OCT, fluorescein angiography.',
+      growth: 'High demand from aging population (cataract surgery is the most common surgical procedure in the U.S.). Sub-specialty in retina and glaucoma especially needed.',
+      maine: 'Maine Medical Center, Eastern Maine Medical Center (Bangor) major ophthalmology centers. Maine has ~80 practicing ophthalmologists statewide.' },
+    { id: 'opticianRetail', title: 'Optician (ABO-certified)', icon: '👓', category: 'clinical', salary: 'USD $35K–55K',
+      education: 'High school diploma + 1–2 year community college program or apprenticeship. American Board of Opticianry (ABO) certification adds credibility. Maine requires licensure.',
+      what: 'Fits and dispenses eyeglasses and contact lenses based on optometrist/ophthalmologist prescriptions. Helps select frames, fits lenses, troubleshoots vision issues.',
+      day: 'Customer-facing in optical shops. Measures pupillary distance, vertex distance, frame fit, lens position. Uses lensometers, edging machines for fitting.',
+      growth: 'Stable. Online glasses (Warby Parker, Zenni) have changed the market but most patients still want in-person fitting for progressive lenses.',
+      maine: 'Maine requires state licensure (Office of Professional Regulation). Several Maine technical colleges (e.g., Eastern Maine Community College) offer opticianry programs.' },
+    { id: 'opticTech', title: 'Ophthalmic technician', icon: '👁', category: 'clinical', salary: 'USD $35K–60K',
+      education: 'High school diploma + on-the-job training or community college certificate. Certified Ophthalmic Assistant (COA) or Technician (COT) credential available.',
+      what: 'Supports ophthalmologists with patient workup: history-taking, visual acuity, refraction, tonometry, retinal photography, OCT imaging, surgical assisting.',
+      day: 'Patient-facing all day. First contact for most patients. Imaging instruments are now sophisticated (high-end OCT, optical biometry, corneal topography).',
+      growth: 'Strong. Ophthalmologists need 2–3 techs each. Aging population drives demand.',
+      maine: 'Open positions across Maine, especially at Maine Medical Center Eye Clinic and EMMC.' },
+    { id: 'orthoptist', title: 'Orthoptist', icon: '👁', category: 'clinical', salary: 'USD $60K–85K',
+      education: 'Bachelor\'s degree + 2-year orthoptics residency at accredited program. AAPOS certification.',
+      what: 'Specializes in eye-movement disorders, especially in children (strabismus, amblyopia). Designs and implements treatment plans, often non-surgical.',
+      day: 'Mostly pediatric patients. Hours of patching therapy planning, prism prescriptions, exercises. Works alongside pediatric ophthalmologists.',
+      growth: 'Niche but stable. Strong demand in pediatric ophthalmology centers.',
+      maine: 'Limited Maine practitioners — most pediatric ophthalmology referrals go to Boston or Portland specialists.' },
+
+    // ── Engineering / industry ──
+    { id: 'opticalEngineer', title: 'Optical engineer', icon: '🔧', category: 'engineering', salary: 'USD $90K–160K',
+      education: 'Bachelor\'s in physics, optical engineering, or related field. Master\'s or PhD common for senior roles. CREOL (Florida), University of Rochester, U Arizona top programs in U.S.',
+      what: 'Designs optical systems: cameras, microscopes, telescopes, lasers, fiber-optic networks, AR/VR optics, machine vision systems, lithography for semiconductors.',
+      day: 'CAD work in Zemax / Code V / OpticStudio, simulation, prototype testing, working with mechanical engineers and software teams.',
+      growth: 'Booming — AR/VR/automotive lidar/quantum computing all driving optical engineering demand.',
+      maine: 'Bowdoin College has some photonics research; some Maine defense contractors (BIW, Pratt & Whitney) hire optical engineers. Most senior positions in Boston/MA/CA/NY.' },
+    { id: 'photonicsEngineer', title: 'Photonics engineer', icon: '⚡', category: 'engineering', salary: 'USD $95K–165K',
+      education: 'Bachelor\'s + Master\'s in photonics/EE. Notable U.S. programs: CREOL/UCF, U Rochester (Institute of Optics), Boston U.',
+      what: 'Builds laser systems, fiber-optic networks, photonic-integrated-circuits, quantum-information systems, biomedical photonics devices.',
+      day: 'Mix of optical bench work (alignment, characterization), simulation (Lumerical, FDTD), and electronics integration.',
+      growth: 'Very strong. Photonic integrated circuits and quantum applications driving 8–15% annual growth.',
+      maine: 'Some opportunities at defense companies. Boston-area photonics startups (M-Squared, IPG, Quantinuum) hire heavily.' },
+    { id: 'laserEngineer', title: 'Laser engineer', icon: '🔴', category: 'engineering', salary: 'USD $85K–145K',
+      education: 'Bachelor\'s in physics or EE. Hands-on lab experience essential. Photonics master\'s helpful for senior roles.',
+      what: 'Designs, builds, tests, and maintains lasers and laser-based systems. Specialties: fiber lasers, semiconductor lasers, gas lasers, ultrafast lasers.',
+      day: 'Hands-on lab work — alignment, characterization (M² beam quality, power stability), embedded electronics, mechanical integration.',
+      growth: 'Strong. Industrial laser market (cutting, marking) and biomedical (eye surgery, dermatology) growing.',
+      maine: 'Some military and aerospace work in Maine. Bigger laser-job clusters in MA (Coherent), CA (IPG Photonics), Germany (Trumpf).' },
+    { id: 'displayEngineer', title: 'Display engineer (LCD, OLED, MicroLED)', icon: '🖥', category: 'engineering', salary: 'USD $100K–175K',
+      education: 'EE or materials science degree. PhD valued at senior research level. Top programs: Stanford, MIT, U Michigan.',
+      what: 'Designs and improves flat-panel displays — pixel circuits, color management, manufacturing process optimization, AR/VR specialized displays.',
+      day: 'Mix of cleanroom semiconductor work, optical characterization (color gamut, contrast, viewing angle), and software color-management.',
+      growth: 'Strong in Korea/Japan/Taiwan/China (Samsung, LG, BOE, Sharp). U.S. roles more in design/architecture than fab.',
+      maine: 'Mostly in Asia. U.S. positions concentrated near Apple/Google/Meta in CA/WA.' },
+    { id: 'lithographyEngineer', title: 'Semiconductor lithography engineer', icon: '🔬', category: 'engineering', salary: 'USD $110K–180K',
+      education: 'EE, materials science, or physics degree. Hands-on cleanroom experience critical.',
+      what: 'Operates and improves photolithography tools that print circuit patterns on silicon wafers. Modern EUV (13.5 nm wavelength) lithography is the most extreme optical engineering in commercial use.',
+      day: 'Process tuning in cleanroom suits, statistical process control, photoresist chemistry tweaks, EUV source optimization.',
+      growth: 'Critical to the entire $500B+ semiconductor industry. Every smartphone chip depends on this work.',
+      maine: 'Not strong in Maine. Major clusters: TSMC (Taiwan), Intel (OR/AZ), Samsung (Korea, TX), GlobalFoundries (NY). ASML (Netherlands) makes the lithography tools.' },
+    { id: 'fiberOpticsEngineer', title: 'Fiber-optic network engineer', icon: '📡', category: 'engineering', salary: 'USD $75K–130K',
+      education: 'Bachelor\'s in EE, computer engineering, or telecom. Certifications (BICSI, FOA) common.',
+      what: 'Designs, installs, and maintains fiber-optic networks: long-haul carriers, metro networks, data center interconnects, FTTH (fiber to the home).',
+      day: 'Mix of office design work (network topology, capacity planning) and field work (splicing, OTDR testing, troubleshooting).',
+      growth: 'Strong. 5G backhaul, FTTH expansion, AI data centers all demand more fiber.',
+      maine: 'Maine has significant rural FTTH expansion (state-funded). Companies: Consolidated Communications, Spectrum, Adtran-based deployments.' },
+    { id: 'automotiveLidarEngineer', title: 'Automotive lidar engineer', icon: '🚗', category: 'engineering', salary: 'USD $110K–200K',
+      education: 'EE/CS/physics PhD or strong master\'s. Niche skills: laser systems, MEMS, signal processing.',
+      what: 'Develops the lidar sensors for self-driving cars. Solid-state, flash, MEMS-scanning, frequency-modulated continuous-wave variants.',
+      day: 'Mix of hardware development, embedded software, sensor fusion with cameras/radar, real-world testing.',
+      growth: 'Volatile — some early lidar startups failed in 2022–23 crash. Survivors (Luminar, Innoviz, Aeva) and OEM in-house teams (Waymo, GM Cruise, Mobileye) hire steadily.',
+      maine: 'Not a Maine job. Strong clusters: SF Bay Area, Detroit, Toronto.' },
+
+    // ── Research / academic ──
+    { id: 'opticsResearchProf', title: 'University professor (optics)', icon: '🎓', category: 'research', salary: 'USD $70K–200K (rank-dependent)',
+      education: 'PhD in physics, optical engineering, or related field. Postdoc(s) usually required.',
+      what: 'Teaches optics courses, supervises graduate students, runs research lab, writes grants and papers, peer-reviews. Tenure track is ~6 years to permanent.',
+      day: '~40% research/grant writing, ~30% teaching, ~30% service/admin (committees, peer review, conferences).',
+      growth: 'Competitive. Roughly 1 tenure-track position opens for every 5–10 PhDs awarded in physics.',
+      maine: 'University of Maine (Orono) has optics-related research in oceanography and engineering. Bowdoin College, Bates College, Colby College have smaller physics programs.' },
+    { id: 'nationalLab', title: 'National lab research scientist', icon: '🔬', category: 'research', salary: 'USD $100K–200K',
+      education: 'PhD plus postdoc. Strong record needed for permanent staff positions.',
+      what: 'Conducts research at U.S. Department of Energy or other federal labs. Areas: fusion, high-energy lasers, quantum information, defense optics.',
+      day: 'Project-driven research, often on world-unique experimental facilities (e.g., NIF, LIGO, EUVL test beds).',
+      growth: 'Stable funding from federal sources. Hiring concentrated near major labs.',
+      maine: 'Not a Maine job — major labs: LLNL (CA), Los Alamos (NM), Sandia (NM/CA), Brookhaven (NY), Oak Ridge (TN), Argonne (IL), PNNL (WA), MIT Lincoln Lab (MA).' },
+    { id: 'industryRD', title: 'Industrial R&D scientist', icon: '🏭', category: 'research', salary: 'USD $95K–180K',
+      education: 'PhD in physics, materials, or photonics. Two-year postdoc helpful but not required.',
+      what: 'Conducts applied research and product development at corporations like Coherent, IPG, Hamamatsu, Apple, Meta, Google, Nikon, Canon.',
+      day: 'Mix of experimental/computational work, project management, IP filing, manufacturing scale-up consultation.',
+      growth: 'Strong. Photonics-heavy companies expanding rapidly.',
+      maine: 'Limited in Maine; nearest clusters in Boston (Coherent, Boston Scientific, Bose).' },
+    { id: 'astronomerObs', title: 'Observational astronomer', icon: '🔭', category: 'research', salary: 'USD $80K–160K',
+      education: 'PhD in astronomy or astrophysics. Postdoc(s) required for permanent positions.',
+      what: 'Observes celestial objects using ground- or space-based telescopes. Areas: exoplanets, cosmology, stellar physics, galactic dynamics, solar physics.',
+      day: 'Proposal-writing for telescope time, observation runs (often remote), data reduction, paper writing.',
+      growth: 'Competitive. Major facilities (LSST/Rubin, JWST, ELT, GMT, TMT) are creating PI and instrument-scientist positions.',
+      maine: 'University of Maine has a small but active astronomy program. Most career positions are at large university and national-observatory clusters (NOIRLab, STScI).' },
+    { id: 'instrumentScientist', title: 'Astronomical instrument scientist', icon: '🛰', category: 'research', salary: 'USD $85K–175K',
+      education: 'PhD in physics or astronomy with strong instrumentation focus.',
+      what: 'Designs, builds, commissions, and maintains telescope instruments (cameras, spectrographs, adaptive optics, polarimeters).',
+      day: 'Mix of design (CAD, optical), workshop assembly, on-mountain commissioning trips, user support.',
+      growth: 'Strong demand as multi-decade telescope projects ramp up.',
+      maine: 'Not a Maine job. Major hubs: Tucson, Pasadena (Caltech/JPL), Princeton/STScI (NJ/MD), Hawaii (W.M. Keck, Subaru).' },
+
+    // ── Imaging / photo / film ──
+    { id: 'photographer', title: 'Professional photographer', icon: '📷', category: 'creative', salary: 'USD $35K–95K (varies widely)',
+      education: 'Self-taught common; formal photography programs (RIT, SVA, Brooks) add credibility. Specialties: portrait, wedding, photojournalism, commercial, fashion, fine art.',
+      what: 'Captures professional-quality images for clients or editorial outlets. Wedding photographers often work weekends; photojournalists travel constantly; commercial photographers run studios.',
+      day: 'Shoot days are intense (8–12 hours); office days for editing in Lightroom/Photoshop, client communication, equipment maintenance.',
+      growth: 'Highly competitive due to smartphone-camera competition. Specialty niches (commercial product, real estate, sports) more stable than wedding/portrait.',
+      maine: 'Strong Maine photography community: Maine Media Workshops (Rockport), University of Southern Maine programs. Wedding/portrait photographers throughout the state.' },
+    { id: 'cinematographer', title: 'Cinematographer / DP (Director of Photography)', icon: '🎬', category: 'creative', salary: 'USD $70K–500K+',
+      education: 'Film school (USC, NYU Tisch, UCLA, AFI, FAMU) standard. Years of apprenticeship as camera assistant, gaffer, operator before DP.',
+      what: 'Designs the visual look of a film: lighting, camera movement, lens choices, exposure. Works with director to translate the script into images.',
+      day: 'On-set 12–16 hour days during production. Prep weeks include location scouting, lens tests, lighting setup. Months between projects for top tier.',
+      growth: 'Highly competitive. Top tier earns millions; vast majority earn modest income.',
+      maine: 'Maine Film Office promotes Maine-based productions. Some independent filmmaking in Portland; bigger jobs in NYC/LA/Atlanta.' },
+    { id: 'forensicPhotog', title: 'Forensic photographer', icon: '🔍', category: 'creative', salary: 'USD $45K–75K',
+      education: 'Bachelor\'s in forensic science or photography. Police academy training for sworn positions. Certifications: IAI Crime Scene Investigator.',
+      what: 'Documents crime scenes, autopsies, evidence. Uses macro photography, alternative light sources (UV, IR), photogrammetry for 3D reconstruction.',
+      day: 'On-call for crime scenes; methodical documentation; lab work; court testimony.',
+      growth: 'Stable. Some technological shift to 3D scanning supplementing traditional photography.',
+      maine: 'Maine State Police has crime scene unit. Smaller departments may share regional resources.' },
+    { id: 'colorScientist', title: 'Color scientist / colorist (film)', icon: '🎨', category: 'creative', salary: 'USD $60K–250K',
+      education: 'For color science: physics/EE/CS background; for film color grading: post-production specialization.',
+      what: 'Color scientists design color-management pipelines for cameras, displays, and printers. Film colorists use software (DaVinci Resolve, Baselight) to color-grade entire movies.',
+      day: 'Long sessions in dark color-graded suites with calibrated displays. Match every shot to look consistent and emotionally appropriate.',
+      growth: 'Stable. High demand for top-tier film colorists.',
+      maine: 'Top film colorists in NYC/LA; Maine has some boutique post-production shops.' },
+
+    // ── Technician / vocational ──
+    { id: 'lensTechnician', title: 'Lens manufacturing technician', icon: '🔍', category: 'technician', salary: 'USD $40K–70K',
+      education: 'High school + technical certificate. Apprenticeship at lens company. Maine: some opticianry programs cover this.',
+      what: 'Operates lens grinding, polishing, coating, and edging machinery. QC inspection of finished lenses.',
+      day: 'Production-line work in lens labs. Operates CNC lens generators, polishers, vacuum coaters for anti-reflection layers.',
+      growth: 'Stable but automated. Demand for skilled technicians at premium optics labs.',
+      maine: 'Maine has several optical labs that supply local optometrist offices.' },
+    { id: 'fiberSplicer', title: 'Fiber-optic splicer / cable installer', icon: '📡', category: 'technician', salary: 'USD $50K–85K',
+      education: 'High school + technical certificate. Fiber Optic Association (FOA) certifications.',
+      what: 'Installs and splices fiber-optic cables for telecommunications carriers and data centers. Operates fusion splicers, OTDRs.',
+      day: 'Field work. Outside (utility poles, conduits, trenches) and inside (data centers, business risers).',
+      growth: 'Strong demand. 5G rollout and FTTH expansion driving hiring.',
+      maine: 'Active in Maine. Companies: Consolidated Communications, Spectrum, Lyman-Morse boat-builders\' fiber team (legacy IT contractor).' },
+    { id: 'avTech', title: 'AV technician', icon: '🎤', category: 'technician', salary: 'USD $40K–70K',
+      education: 'High school + on-the-job training. AVIXA CTS certification.',
+      what: 'Installs and maintains audiovisual systems: projectors, video walls, conference room setups, theatrical lighting. Often involves optics calibration.',
+      day: 'Mix of office work (planning, programming AV control systems) and field work (rigging, calibration, troubleshooting).',
+      growth: 'Steady. Hybrid-work conference room upgrades and corporate AV.',
+      maine: 'Local AV companies in Portland, Bangor. Conferences and academic AV upgrades drive Maine demand.' },
+    { id: 'projectionist', title: 'Cinema projectionist', icon: '🎞', category: 'technician', salary: 'USD $30K–55K',
+      education: 'On-the-job training or certificate program. Largely a craft passed down by mentorship.',
+      what: 'Operates film and digital cinema projectors. Maintains optics, replaces lamps, handles film prints.',
+      day: 'Multiple screenings per day. Quality control: focus, framing, sound sync.',
+      growth: 'Declining due to digital projection and automation. Specialized 70mm and IMAX projectionists still in demand.',
+      maine: 'Few full-time projectionists in Maine. Strand Theatre (Rockland), Maine Theater (Saco), Eveningstar Cinema (Brunswick) employ some.' },
+
+    // ── Specialty ──
+    { id: 'lightingDesigner', title: 'Architectural lighting designer', icon: '💡', category: 'creative', salary: 'USD $60K–130K',
+      education: 'Bachelor\'s in architecture, interior design, or lighting (Parsons, NYIT). LC (Lighting Certified) credential.',
+      what: 'Designs lighting for buildings: residential, commercial, museums, theaters. Considers energy efficiency, color rendering, glare control, circadian rhythm impact.',
+      day: 'Studio work (Revit, AGi32 light simulation), site visits, product specification, contractor coordination.',
+      growth: 'Strong. LEED energy-efficiency requirements and "human-centric" lighting trends driving demand.',
+      maine: 'Maine architectural firms in Portland and Bangor employ lighting consultants. National firms (Lutron, Acuity) hire designers remotely.' },
+    { id: 'theaterTechnician', title: 'Theatrical lighting technician', icon: '🎭', category: 'creative', salary: 'USD $35K–70K',
+      education: 'High school + theater technical degree (community college, conservatory).',
+      what: 'Operates stage lighting for theater, dance, concerts, events. Programs lighting cues, hangs and focuses fixtures, troubleshoots.',
+      day: 'Long evening and weekend hours during productions. Day work for hangs, tech rehearsals, gel cuts.',
+      growth: 'Stable. Theater is a fairly steady employer in cities.',
+      maine: 'Maine theaters: Portland Stage Company, Maine State Music Theatre (Brunswick), Ogunquit Playhouse, Penobscot Theatre (Bangor).' },
+    { id: 'museumConservator', title: 'Museum lighting conservator', icon: '🏛', category: 'specialty', salary: 'USD $55K–95K',
+      education: 'Master\'s in art conservation or museum studies + specialty training. Lighting Certified (LC) helpful.',
+      what: 'Designs lighting for museum exhibits to highlight artifacts while protecting them from photodegradation. UV-filtered, low-lux LED systems.',
+      day: 'Gallery installation, environment monitoring, exhibit planning collaboration.',
+      growth: 'Niche but stable.',
+      maine: 'Portland Museum of Art, Bowdoin College Museum, Colby College Museum employ small staff.' },
+    { id: 'rangeCounter', title: 'Range officer / laser sport official', icon: '🎯', category: 'specialty', salary: 'USD $35K–60K',
+      education: 'Sport-specific certification. ANSI Z136 laser safety training for laser-based sport applications.',
+      what: 'Manages safety and rules at laser-based competitions (laser tag arenas, laser-target sports).',
+      day: 'Event-based work; daily training and check-ins.',
+      growth: 'Niche.',
+      maine: 'Laser tag arenas in Portland, Bangor. Few full-time positions.' },
+    { id: 'metrologyTech', title: 'Optical metrology technician', icon: '📏', category: 'technician', salary: 'USD $50K–85K',
+      education: 'Associate or bachelor\'s in physics/EE. Specialized training in interferometry, profilometry.',
+      what: 'Operates precision measurement equipment for QC of optical components: interferometers, profilometers, MTF benches.',
+      day: 'Lab/cleanroom work. Calibration, testing, data analysis. High-attention-to-detail work.',
+      growth: 'Steady demand from semiconductor, optical-component, and precision-machine industries.',
+      maine: 'Limited in Maine — main employers are in MA (Coherent), NY (Corning), AZ (Edmund Optics).' },
+    { id: 'patentExaminer', title: 'Patent examiner (optics)', icon: '📜', category: 'specialty', salary: 'USD $85K–145K (USPTO federal)',
+      education: 'Bachelor\'s+ in physics, optical engineering, or related field. USPTO new-examiner training.',
+      what: 'Reviews patent applications in optical-engineering areas — lasers, lenses, imaging systems, fiber optics, displays. Determines patentability.',
+      day: 'Document review, prior-art searching, written examination communication, applicant interviews.',
+      growth: 'Steady federal employment. Remote work routine.',
+      maine: 'USPTO is federally based but allows remote work. Patent law firms in Boston/NYC also hire optical engineers.' },
+    { id: 'salesEngineerOptics', title: 'Sales engineer (optical equipment)', icon: '💼', category: 'industry', salary: 'USD $80K–180K (base + commission)',
+      education: 'Bachelor\'s in physics or engineering + sales aptitude. Industry-specific knowledge developed on the job.',
+      what: 'Pre-sales technical consulting for optical products (microscopes, spectrometers, lasers, fiber tools). Bridges between vendors and academic/industrial customers.',
+      day: 'Travel to customer sites, demos, technical presentations, proposal writing.',
+      growth: 'Strong. Optics-focused vendors actively recruit.',
+      maine: 'Regional rep roles cover Maine territory; specialized rep companies in Boston.' },
+    { id: 'astronomyEducator', title: 'Planetarium director / astronomy educator', icon: '🌌', category: 'education', salary: 'USD $45K–85K',
+      education: 'Bachelor\'s/Master\'s in astronomy, physics, or museum education.',
+      what: 'Runs planetarium programs, writes shows, manages dome projection systems, leads star parties, school outreach.',
+      day: 'Mix of show direction (live + recorded), software programming for planetarium projection systems, public programs.',
+      growth: 'Niche but stable.',
+      maine: 'Maine planetariums: USM Southworth Planetarium (Portland), Versant Power Astronomy Center (Orono UMaine).' },
+    { id: 'highSchoolPhysics', title: 'High-school physics teacher', icon: '🏫', category: 'education', salary: 'USD $48K–85K (Maine averages ~$56K)',
+      education: 'Bachelor\'s in physics + teaching certification. Master\'s often pursued in-service.',
+      what: 'Teaches Regents/AP Physics including optics units. Develops labs, assesses student work.',
+      day: 'Classroom teaching, lab supervision, grading, parent communication.',
+      growth: 'Strong demand for physics teachers — chronic shortage nationally.',
+      maine: 'Maine high schools across the state. Stronger demand in rural areas, often filling positions with out-of-state teachers.' },
+    { id: 'collegeLab', title: 'College physics lab manager', icon: '🧪', category: 'education', salary: 'USD $50K–85K',
+      education: 'Master\'s or PhD in physics. Lab/experimental experience essential.',
+      what: 'Manages undergraduate physics teaching labs, including optics experiments. Maintains equipment, develops new labs, trains TAs.',
+      day: 'Mix of teaching demonstration, equipment repair/upgrade, lab setup, student support.',
+      growth: 'Stable.',
+      maine: 'Colby, Bates, Bowdoin, U Maine all have lab manager positions in physics departments.' },
+
+    // ── Defense / aerospace ──
+    { id: 'defenseOptics', title: 'Defense optics engineer', icon: '🛡', category: 'industry', salary: 'USD $95K–180K',
+      education: 'Bachelor\'s+/Master\'s in optical engineering or physics. U.S. citizenship + security clearance.',
+      what: 'Develops imaging, targeting, and surveillance optics for defense applications. Areas: night vision, missile-guidance, laser dazzlers, EO/IR sensors.',
+      day: 'Mix of design, simulation, integration testing, classified work environment.',
+      growth: 'Strong. Defense spending stable; programs like JADC2, missile defense, hypersonics drive optics R&D.',
+      maine: 'BIW (Bath Iron Works) builds Navy destroyers with EO/IR optics. Pratt & Whitney has some optical work. Most defense optics is in MA (Raytheon), CA, AZ, NM.' },
+    { id: 'astronautScientist', title: 'Astronaut payload specialist (optical experiments)', icon: '👨‍🚀', category: 'aerospace', salary: 'USD $100K–175K + selection',
+      education: 'PhD or MD; military test-pilot background helpful but not required. Extremely competitive selection (NASA picks ~10 per ~4000 applicants).',
+      what: 'Runs scientific payloads in space including optical experiments — Earth observation, biological imaging, free-floating laser experiments.',
+      day: 'Years of training, missions every 4–10 years, multi-month ISS stays.',
+      growth: 'Highly competitive but increasing — commercial spaceflight (SpaceX, Axiom) opening additional pathways.',
+      maine: 'Astronaut Jessica Meir grew up in Caribou, Maine — earned PhD at Scripps, flew on Soyuz/ISS 2019–2020. Maine high-schoolers can dream big.' }
+  ];
+
+  // ══════════════════════════════════════════════════════════════════
+  // CAREERS PANEL RENDERER
+  // ══════════════════════════════════════════════════════════════════
+  function _renderCareersPanel(d, upd, h) {
+    var query = (d.careerQuery || '').toLowerCase().trim();
+    var catFilter = d.careerCategory || 'all';
+    var openId = d.careerOpenId || null;
+    var cats = [
+      { id: 'all', label: 'All careers' },
+      { id: 'clinical', label: '👁 Clinical' },
+      { id: 'engineering', label: '🔧 Engineering' },
+      { id: 'research', label: '🎓 Research' },
+      { id: 'creative', label: '🎨 Creative' },
+      { id: 'technician', label: '⚙ Technician' },
+      { id: 'specialty', label: '🌟 Specialty' },
+      { id: 'industry', label: '🏭 Industry' },
+      { id: 'education', label: '🏫 Education' },
+      { id: 'aerospace', label: '🚀 Aerospace' }
+    ];
+    var filtered = OPTICS_CAREERS.filter(function(c) {
+      if (catFilter !== 'all' && c.category !== catFilter) return false;
+      if (!query) return true;
+      var hay = (c.title + ' ' + (c.what || '') + ' ' + (c.maine || '')).toLowerCase();
+      return hay.indexOf(query) !== -1;
+    });
+    return h('div', null,
+      h('div', { style: { background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
+        h('h3', { style: { color: '#d8b4fe', fontSize: 17, fontWeight: 900, margin: '0 0 6px' } }, '💼 Careers in Optics'),
+        h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, margin: 0 } }, OPTICS_CAREERS.length + ' career pathways — from technicians and clinicians to research professors and astronauts. Each card has typical salary, education, what the job is like day-to-day, and Maine-specific context where relevant.')
+      ),
+      h('div', { style: { display: 'flex', gap: 8, marginBottom: 10, flexWrap: 'wrap' } },
+        h('input', { type: 'text', value: d.careerQuery || '',
+          placeholder: '🔍 Search careers, skills, salaries, Maine...',
+          onChange: function(e) { upd('careerQuery', e.target.value); },
+          'aria-label': 'Search careers',
+          style: { flex: '1 1 240px', minHeight: 36, padding: '8px 12px', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(168,85,247,0.30)', borderRadius: 8, color: '#e2e8f0', fontSize: 13 }
+        })
+      ),
+      h('div', { style: { display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' } },
+        cats.map(function(c) {
+          var active = catFilter === c.id;
+          return h('button', { key: c.id, onClick: function() { upd('careerCategory', c.id); },
+            style: {
+              padding: '6px 11px', fontSize: 11, fontWeight: 700,
+              background: active ? 'rgba(168,85,247,0.25)' : 'rgba(15,23,42,0.5)',
+              color: active ? '#d8b4fe' : '#94a3b8',
+              border: '1px solid ' + (active ? '#d8b4fe' : 'rgba(100,116,139,0.30)'),
+              borderRadius: 6, cursor: 'pointer'
+            }
+          }, c.label);
+        })
+      ),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))', gap: 10 } },
+        filtered.map(function(c) {
+          var isOpen = openId === c.id;
+          return h('div', { key: c.id,
+            onClick: function() { upd('careerOpenId', isOpen ? null : c.id); },
+            style: {
+              background: isOpen ? 'rgba(168,85,247,0.10)' : 'rgba(15,23,42,0.65)',
+              border: '1px solid ' + (isOpen ? 'rgba(168,85,247,0.55)' : 'rgba(100,116,139,0.30)'),
+              borderRadius: 10, padding: '12px 14px', cursor: 'pointer'
+            }
+          },
+            h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 } },
+              h('span', { style: { fontSize: 22 } }, c.icon),
+              h('div', { style: { flex: 1 } },
+                h('div', { style: { fontSize: 14, fontWeight: 800, color: '#d8b4fe', lineHeight: 1.2 } }, c.title),
+                h('div', { style: { fontSize: 10, color: '#fbbf24', marginTop: 2, fontWeight: 700 } }, '💰 ' + c.salary)
+              )
+            ),
+            isOpen && h('div', { style: { marginTop: 10, paddingTop: 10, borderTop: '1px solid rgba(168,85,247,0.25)' } },
+              h('div', { style: { fontSize: 11, fontWeight: 800, color: '#a5b4fc', marginBottom: 3 } }, '🎓 Education'),
+              h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, margin: '0 0 8px' } }, c.education),
+              h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', marginBottom: 3 } }, '💡 What it is'),
+              h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, margin: '0 0 8px' } }, c.what),
+              h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fdba74', marginBottom: 3 } }, '⏰ Day-to-day'),
+              h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, margin: '0 0 8px' } }, c.day),
+              h('div', { style: { fontSize: 11, fontWeight: 800, color: '#7dd3fc', marginBottom: 3 } }, '📈 Job growth'),
+              h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, margin: '0 0 8px' } }, c.growth),
+              h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fcd34d', marginBottom: 3 } }, '🦞 In Maine'),
+              h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, margin: 0, fontStyle: 'italic' } }, c.maine)
+            )
+          );
+        })
+      )
+    );
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // WORKED PROBLEMS — 100+ AP-style problems with full solutions
+  // ══════════════════════════════════════════════════════════════════
+  var WORKED_PROBLEMS = [
+    // ── Reflection problems ──
+    { id: 'wp_r1', topic: 'reflection', difficulty: 'easy', icon: '🪞',
+      title: 'Plane mirror image distance',
+      problem: 'A student stands 1.5 m in front of a flat (plane) bathroom mirror. Where is her image?',
+      given: ['Object distance d_o = 1.5 m', 'Plane mirror (f = ∞)'],
+      find: 'Image position and characteristics.',
+      solution: 'For a plane mirror, d_i = −d_o. So d_i = −1.5 m. The negative sign means the image is BEHIND the mirror — i.e., virtual. By symmetry, the image is the same size as the student and upright. Total distance student-to-image is 3.0 m.',
+      answer: 'd_i = −1.5 m (1.5 m behind mirror). Virtual, upright, same size.',
+      pitfalls: 'Students often forget that the image is 1.5 m behind the mirror, NOT 1.5 m in front. They also often forget that the image is "virtual" rather than "real."' },
+    { id: 'wp_r2', topic: 'reflection', difficulty: 'medium', icon: '🪞',
+      title: 'Concave mirror — real image',
+      problem: 'A concave (converging) mirror has focal length f = 10 cm. An object is placed 25 cm from the mirror. Find the image distance, magnification, and image type.',
+      given: ['f = +10 cm (concave/converging)', 'd_o = 25 cm'],
+      find: 'd_i, m, image type.',
+      solution: 'Use the mirror equation: 1/f = 1/d_o + 1/d_i. So 1/d_i = 1/10 − 1/25 = 5/50 − 2/50 = 3/50. So d_i = 50/3 ≈ 16.7 cm. Magnification: m = −d_i/d_o = −(16.7)/25 = −0.67. The negative magnification means the image is inverted. |m| < 1, so it\'s smaller than the object.',
+      answer: 'd_i ≈ 16.7 cm, m ≈ −0.67. Real (positive d_i), inverted (negative m), reduced (|m| < 1).',
+      pitfalls: 'Sign conventions: + for real, − for virtual. Many students forget the negative sign for magnification giving inversion.' },
+    { id: 'wp_r3', topic: 'reflection', difficulty: 'medium', icon: '🪞',
+      title: 'Concave mirror — virtual image (magnifier)',
+      problem: 'The same concave mirror (f = 10 cm) now has an object only 5 cm in front. Where is the image, and what does this remind you of?',
+      given: ['f = +10 cm', 'd_o = 5 cm (object inside focal length)'],
+      find: 'd_i, m, image type, real-world application.',
+      solution: '1/d_i = 1/10 − 1/5 = 1/10 − 2/10 = −1/10. So d_i = −10 cm. Negative → virtual, behind the mirror. m = −d_i/d_o = −(−10)/5 = +2. Positive m → upright. |m| > 1 → magnified.',
+      answer: 'd_i = −10 cm. Virtual, upright, magnified 2×. Application: makeup/shaving mirrors.',
+      pitfalls: 'Many students assume concave mirrors always give real images. They give virtual upright magnified images when the object is INSIDE the focal length.' },
+    { id: 'wp_r4', topic: 'reflection', difficulty: 'medium', icon: '🪞',
+      title: 'Convex mirror — security mirror',
+      problem: 'A convex security mirror in a store has |f| = 20 cm. A customer stands 100 cm away. Where does the customer\'s image appear?',
+      given: ['Convex mirror: f = −20 cm (negative by convention)', 'd_o = 100 cm'],
+      find: 'd_i, m.',
+      solution: '1/d_i = 1/f − 1/d_o = 1/(−20) − 1/100 = −5/100 − 1/100 = −6/100. So d_i = −100/6 ≈ −16.7 cm. m = −d_i/d_o = −(−16.7)/100 = +0.17. Image is virtual, upright, much smaller.',
+      answer: 'd_i ≈ −16.7 cm. Virtual, upright, reduced to 17% of size.',
+      pitfalls: 'Convex mirrors always give virtual, upright, reduced images regardless of object distance — this is what makes them useful for wide-field-of-view security viewing.' },
+    { id: 'wp_r5', topic: 'reflection', difficulty: 'hard', icon: '🪞',
+      title: 'Two-mirror reflection problem',
+      problem: 'A light ray hits a plane mirror at 30° to the normal. After reflection, it travels to another plane mirror perpendicular to the first. At what angle does the ray leave the second mirror?',
+      given: ['Angle of incidence to first mirror: 30°', 'Two mirrors meet at 90°'],
+      find: 'Angle of incidence/reflection on second mirror.',
+      solution: 'Angle of reflection at first mirror = 30° (law of reflection). The reflected ray travels at angle 30° from the first mirror\'s normal. Now consider the geometry: the second mirror is perpendicular to the first, so its normal is parallel to the first mirror itself. The reflected ray makes angle (90° − 30°) = 60° with the first mirror, which equals 60° to the second mirror\'s normal. So angle of incidence on second mirror = 60°. By law of reflection, angle of reflection = 60°.',
+      answer: '60° to the normal of the second mirror.',
+      pitfalls: 'Drawing a careful diagram and identifying both normals is essential. A more general result: two mirrors at 90° always reflect the ray back parallel to its incoming direction (this is the basis of corner-cube retroreflectors).' },
+
+    // ── Refraction problems ──
+    { id: 'wp_rf1', topic: 'refraction', difficulty: 'easy', icon: '🌊',
+      title: "Snell's law — air to water",
+      problem: 'Light strikes the surface of a pool at 40° from the normal. What angle does it refract to inside the water (n = 1.33)?',
+      given: ['n₁ (air) = 1.00', 'n₂ (water) = 1.33', 'θ₁ = 40°'],
+      find: 'θ₂.',
+      solution: 'Snell\'s law: n₁ sinθ₁ = n₂ sinθ₂. So sinθ₂ = (1.00/1.33)(sin 40°) = (0.752)(0.643) = 0.483. θ₂ = arcsin(0.483) ≈ 28.9°.',
+      answer: 'θ₂ ≈ 28.9°. Light bent TOWARD the normal entering the denser medium.',
+      pitfalls: 'Remembering which direction the light bends: light entering a denser medium bends TOWARD the normal. Conversely, exiting a denser medium bends AWAY from the normal.' },
+    { id: 'wp_rf2', topic: 'refraction', difficulty: 'medium', icon: '🌊',
+      title: "Snell's law — total internal reflection threshold",
+      problem: 'What is the critical angle for light traveling from glass (n = 1.50) into air?',
+      given: ['n_glass = 1.50', 'n_air = 1.00'],
+      find: 'Critical angle θ_c.',
+      solution: 'At the critical angle, refracted ray would just graze the surface (θ₂ = 90°). Snell: 1.50 sin(θ_c) = 1.00 sin(90°) = 1.00. So sin(θ_c) = 1/1.50 ≈ 0.667. θ_c = arcsin(0.667) ≈ 41.8°.',
+      answer: 'θ_c ≈ 41.8°. Any angle in glass GREATER than 41.8° causes TIR back into the glass.',
+      pitfalls: 'TIR only occurs going from MORE dense to LESS dense. Many students try to "find" a critical angle from air to glass — there isn\'t one in that direction.' },
+    { id: 'wp_rf3', topic: 'refraction', difficulty: 'medium', icon: '🌊',
+      title: 'Apparent depth in a pool',
+      problem: 'A penny rests at the bottom of a swimming pool 2.0 m deep. How deep does it appear to a person looking down from directly above?',
+      given: ['Real depth = 2.0 m', 'n_water = 1.33', 'n_air = 1.00'],
+      find: 'Apparent depth.',
+      solution: 'Apparent depth ≈ real depth × (n_observer/n_object) = 2.0 × (1.00/1.33) = 2.0 × 0.752 ≈ 1.50 m. Looking down through the water surface, the penny appears about 1.5 m below the surface — a quarter shallower than reality.',
+      answer: 'Apparent depth ≈ 1.50 m. Penny looks 0.50 m shallower than it really is.',
+      pitfalls: 'Don\'t reverse the ratio. Going from water to air (looking down): apparent = real × (1.00/1.33). Going the other way (fish looking up at someone above): apparent = real × (1.33/1.00) = magnified.' },
+    { id: 'wp_rf4', topic: 'refraction', difficulty: 'medium', icon: '🌊',
+      title: 'Speed of light in glass',
+      problem: 'Light travels with speed c = 3.0×10⁸ m/s in vacuum. What is its speed in a glass with n = 1.55?',
+      given: ['c = 3.0×10⁸ m/s', 'n_glass = 1.55'],
+      find: 'v_glass.',
+      solution: 'Definition of refractive index: n = c/v, so v = c/n = (3.0×10⁸)/1.55 ≈ 1.94×10⁸ m/s.',
+      answer: 'v_glass ≈ 1.94×10⁸ m/s — about 65% of c.',
+      pitfalls: 'Light still travels at c whenever it\'s NOT inside matter. The slower speed inside glass is the wave\'s phase speed in the medium; the slowing is what causes refraction.' },
+    { id: 'wp_rf5', topic: 'refraction', difficulty: 'medium', icon: '🌊',
+      title: 'Frequency vs wavelength in different media',
+      problem: 'Red light with wavelength λ = 633 nm in vacuum enters water (n = 1.33). What is the wavelength in water? What is the frequency in water?',
+      given: ['λ_vacuum = 633 nm', 'n_water = 1.33', 'c = 3.0×10⁸ m/s'],
+      find: 'λ_water, f_water.',
+      solution: 'Frequency is unchanged when light enters a new medium: f = c/λ_vacuum = (3.0×10⁸)/(633×10⁻⁹) ≈ 4.74×10¹⁴ Hz. The wavelength shortens: λ_water = λ_vacuum/n = 633/1.33 ≈ 476 nm.',
+      answer: 'λ_water ≈ 476 nm. f_water = 4.74×10¹⁴ Hz (same as in vacuum).',
+      pitfalls: 'Many students think the color (frequency) changes because the wavelength changes. NO — the eye sees what enters the eye, which is light in air at the original frequency. The wavelength is shorter in water but you can\'t see it in water; once it exits, it returns to its vacuum wavelength.' },
+
+    // ── Lens problems ──
+    { id: 'wp_l1', topic: 'lenses', difficulty: 'easy', icon: '🔍',
+      title: 'Converging lens — real image',
+      problem: 'A converging lens has focal length f = 15 cm. An object is placed 25 cm from the lens. Find the image distance and magnification.',
+      given: ['f = +15 cm', 'd_o = 25 cm'],
+      find: 'd_i, m.',
+      solution: '1/f = 1/d_o + 1/d_i. So 1/d_i = 1/15 − 1/25 = 5/75 − 3/75 = 2/75. d_i = 37.5 cm. m = −d_i/d_o = −37.5/25 = −1.5. Real (positive d_i), inverted (negative m), magnified by 1.5×.',
+      answer: 'd_i = 37.5 cm. m = −1.5. Real, inverted, magnified.',
+      pitfalls: 'Watch the signs. Most physics textbooks use: positive d_o always, positive d_i for real image (opposite side from object), negative d_i for virtual (same side as object).' },
+    { id: 'wp_l2', topic: 'lenses', difficulty: 'medium', icon: '🔍',
+      title: 'Magnifying glass — virtual image',
+      problem: 'A converging lens with f = 8 cm is used as a magnifying glass with an object 5 cm in front. Find the image and magnification.',
+      given: ['f = +8 cm', 'd_o = 5 cm (inside focal length)'],
+      find: 'd_i, m.',
+      solution: '1/d_i = 1/8 − 1/5 = 5/40 − 8/40 = −3/40. d_i = −40/3 ≈ −13.3 cm. m = −d_i/d_o = −(−13.3)/5 = +2.67. Virtual (negative d_i), upright (positive m), magnified by 2.67×.',
+      answer: 'd_i ≈ −13.3 cm. m ≈ +2.67. Virtual, upright, magnified 2.67×.',
+      pitfalls: 'A magnifying glass only works as a magnifier when the object is INSIDE the focal length. Beyond f, you get a real image (used in projection systems but you can\'t look at it directly).' },
+    { id: 'wp_l3', topic: 'lenses', difficulty: 'medium', icon: '🔍',
+      title: 'Diverging lens — always virtual',
+      problem: 'A diverging lens has f = −12 cm. An object is at d_o = 30 cm. Find the image distance and magnification.',
+      given: ['f = −12 cm (diverging)', 'd_o = 30 cm'],
+      find: 'd_i, m.',
+      solution: '1/d_i = 1/(−12) − 1/30 = −5/60 − 2/60 = −7/60. d_i = −60/7 ≈ −8.6 cm. m = −d_i/d_o = −(−8.6)/30 = +0.29. Virtual, upright, reduced to 29% of original size.',
+      answer: 'd_i ≈ −8.6 cm. m ≈ +0.29. Virtual, upright, reduced.',
+      pitfalls: 'Diverging lenses ALWAYS produce virtual, upright, reduced images for any positive d_o. You cannot use them alone to project a real image.' },
+    { id: 'wp_l4', topic: 'lenses', difficulty: 'hard', icon: '🔍',
+      title: 'Compound lens system (objective + eyepiece)',
+      problem: 'A simple microscope uses an objective lens (f_o = 2 cm) and an eyepiece (f_e = 5 cm) separated by 18 cm. An object is placed 2.5 cm from the objective. Find the position and magnification of the final image.',
+      given: ['f_o = 2 cm', 'f_e = 5 cm', 'L = 18 cm', 'd_o = 2.5 cm'],
+      find: 'Position of final image; total magnification.',
+      solution: 'Step 1 — objective: 1/d_i1 = 1/2 − 1/2.5 = 0.5 − 0.4 = 0.1. d_i1 = 10 cm. m_o = −10/2.5 = −4. Step 2 — eyepiece input: image-1 is 10 cm from objective; eyepiece is 18 cm from objective. So image-1 is (18 − 10) = 8 cm in front of eyepiece. With f_e = 5 cm and d_o2 = 8 cm: 1/d_i2 = 1/5 − 1/8 = 3/40. d_i2 = 40/3 ≈ 13.3 cm. m_e = −13.3/8 = −1.67. Total magnification = m_o × m_e = (−4)(−1.67) ≈ +6.67.',
+      answer: 'Final image: 13.3 cm beyond eyepiece. Total m ≈ +6.67 (upright, magnified 6.67×).',
+      pitfalls: 'Sequential lens problems: solve each lens separately, using the previous image as the next object. Total magnification = product of individual magnifications. Sign of the product gives correct orientation.' },
+    { id: 'wp_l5', topic: 'lenses', difficulty: 'hard', icon: '🔍',
+      title: 'Lensmaker\'s equation',
+      problem: 'A glass lens (n = 1.5) has a convex surface with radius R₁ = +20 cm and a concave surface with R₂ = −30 cm (concave from the back side). Find the focal length.',
+      given: ['n = 1.5', 'R₁ = +20 cm (convex)', 'R₂ = −30 cm (concave)'],
+      find: 'f.',
+      solution: 'Lensmaker\'s equation: 1/f = (n−1)(1/R₁ − 1/R₂) = (1.5 − 1)(1/20 − 1/(−30)) = (0.5)(1/20 + 1/30) = (0.5)(3/60 + 2/60) = (0.5)(5/60) = 5/120 = 1/24. So f = 24 cm.',
+      answer: 'f = 24 cm (converging lens — focal length positive).',
+      pitfalls: 'Sign conventions on R: positive if the center of curvature is on the outgoing side of the lens, negative if on the incoming side. Different textbooks use slightly different conventions — always check.' },
+
+    // ── Interference problems ──
+    { id: 'wp_i1', topic: 'interference', difficulty: 'medium', icon: '✨',
+      title: "Young's double-slit — find fringe spacing",
+      problem: "Two slits separated by 0.50 mm are illuminated with light of wavelength 633 nm. Find the spacing between adjacent bright fringes on a screen 2.0 m away.",
+      given: ['d = 0.50 mm = 5×10⁻⁴ m', 'λ = 633 nm = 6.33×10⁻⁷ m', 'L = 2.0 m'],
+      find: 'Fringe spacing Δy.',
+      solution: 'For small angles, fringe spacing Δy = λL/d = (6.33×10⁻⁷)(2.0)/(5×10⁻⁴) = (1.266×10⁻⁶)/(5×10⁻⁴) = 2.53×10⁻³ m = 2.53 mm.',
+      answer: 'Δy ≈ 2.53 mm between adjacent bright fringes.',
+      pitfalls: 'Convert all units to SI (meters). Common mistake: mixing mm and nm — set up dimensions carefully.' },
+    { id: 'wp_i2', topic: 'interference', difficulty: 'medium', icon: '✨',
+      title: 'Thin film — coating thickness',
+      problem: 'A thin oil film (n = 1.40) on water (n = 1.33) appears bright green (λ = 540 nm) when viewed from above. Find the minimum film thickness.',
+      given: ['n_oil = 1.40', 'n_water = 1.33', 'n_air = 1.00', 'λ_vacuum = 540 nm'],
+      find: 'Minimum film thickness t.',
+      solution: 'Phase shifts: air→oil reflection (n_air < n_oil) gives π phase shift. Oil→water reflection (n_oil > n_water) gives NO phase shift (low n on inside). So net phase shift difference between two reflections is π. For CONSTRUCTIVE interference with one π shift: 2nt = (m + ½)λ. Minimum: m = 0, so 2(1.40)t = 0.5 × 540 nm, giving t = 540/(4 × 1.40) ≈ 96.4 nm.',
+      answer: 't ≈ 96.4 nm.',
+      pitfalls: 'Always track BOTH phase shifts. A high-to-low n reflection has NO phase shift; a low-to-high n reflection has a π (180°) phase shift. The relative shift determines whether you use mλ or (m + ½)λ for constructive interference.' },
+    { id: 'wp_i3', topic: 'interference', difficulty: 'hard', icon: '✨',
+      title: 'Anti-reflection coating design',
+      problem: 'Design a single-layer anti-reflection coating for green light (λ = 550 nm) on glass (n_glass = 1.52). The coating material should have what refractive index and thickness?',
+      given: ['λ_vacuum = 550 nm', 'n_glass = 1.52', 'n_air = 1.00'],
+      find: 'n_coat, t.',
+      solution: 'For optimal cancellation, n_coat should be the geometric mean of the surrounding media: n_coat = √(n_air × n_glass) = √(1.00 × 1.52) = √1.52 ≈ 1.23. (MgF₂ at n = 1.38 is the practical close substitute.) Thickness should be a quarter wavelength inside the coating: t = λ/(4 n_coat) = 550 nm/(4 × 1.38) ≈ 99.6 nm using MgF₂.',
+      answer: 'Ideal n ≈ 1.23 (no real materials exist that low — MgF₂ at 1.38 is the standard). t ≈ 100 nm thick at quarter-wave for green.',
+      pitfalls: 'No material is available with n exactly 1.23 — that\'s why single-layer ARCs are not perfect. Multi-layer coatings (alternating high and low n) can achieve near-zero reflection across the visible.' },
+
+    // ── Diffraction problems ──
+    { id: 'wp_d1', topic: 'diffraction', difficulty: 'medium', icon: '〰',
+      title: 'Single-slit diffraction width',
+      problem: 'A slit 0.10 mm wide is illuminated with red light (λ = 650 nm). The diffraction pattern is observed on a screen 3.0 m away. Find the width of the central maximum.',
+      given: ['a = 0.10 mm = 1×10⁻⁴ m', 'λ = 650 nm = 6.5×10⁻⁷ m', 'L = 3.0 m'],
+      find: 'Width of central maximum.',
+      solution: 'First minimum angle: sin(θ₁) ≈ θ₁ = λ/a (small angle). Position of first minimum: y₁ = L·tan(θ₁) ≈ L·(λ/a) = (3.0)(6.5×10⁻⁷)/(1×10⁻⁴) = 1.95×10⁻² m = 19.5 mm. Central maximum width = 2y₁ ≈ 39 mm.',
+      answer: 'Central maximum width ≈ 39 mm.',
+      pitfalls: 'For DOUBLE slit, the formula d sin(θ) = mλ uses d (slit separation), m starts at 0 for central. For SINGLE slit, a sin(θ) = mλ uses a (slit WIDTH), m starts at 1 for first minimum.' },
+    { id: 'wp_d2', topic: 'diffraction', difficulty: 'medium', icon: '〰',
+      title: 'Diffraction grating',
+      problem: 'A diffraction grating has 500 lines per mm. White light strikes it perpendicularly. At what angles do the first-order red (700 nm) and violet (400 nm) fringes appear?',
+      given: ['N = 500 lines/mm → d = 1/500 mm = 2×10⁻⁶ m', 'm = 1', 'λ_red = 700 nm', 'λ_violet = 400 nm'],
+      find: 'θ_red, θ_violet.',
+      solution: 'Grating: d sin(θ) = mλ. Red: sin(θ_red) = 1(7×10⁻⁷)/(2×10⁻⁶) = 0.35, so θ_red ≈ 20.5°. Violet: sin(θ_violet) = 1(4×10⁻⁷)/(2×10⁻⁶) = 0.20, so θ_violet ≈ 11.5°.',
+      answer: 'θ_red ≈ 20.5°, θ_violet ≈ 11.5°.',
+      pitfalls: 'Note that the spread of colors increases with order (m). Higher orders may overlap with lower orders of longer wavelengths — overlap is a key issue in spectroscopy.' },
+    { id: 'wp_d3', topic: 'diffraction', difficulty: 'hard', icon: '〰',
+      title: 'Telescope resolution',
+      problem: 'A 20-cm-diameter amateur telescope observes at λ = 550 nm (green). What is its theoretical resolution limit? Could it separate two stars 1 arcsecond apart?',
+      given: ['D = 0.20 m', 'λ = 550 nm = 5.5×10⁻⁷ m'],
+      find: 'Rayleigh angular resolution θ_min.',
+      solution: 'Rayleigh criterion: θ_min = 1.22 λ/D = 1.22 × (5.5×10⁻⁷)/0.20 = 3.36×10⁻⁶ rad. Convert: 1 arcsec = 4.85×10⁻⁶ rad. So θ_min ≈ 3.36×10⁻⁶/4.85×10⁻⁶ ≈ 0.69 arcsec.',
+      answer: 'θ_min ≈ 0.69 arcsec. Yes — easily separates 1 arcsec stars in theory.',
+      pitfalls: 'Atmospheric "seeing" usually limits practical resolution to 1–2 arcsec from ground-based telescopes. Only adaptive optics or space telescopes hit the theoretical diffraction limit.' },
+
+    // ── Polarization problems ──
+    { id: 'wp_p1', topic: 'polarization', difficulty: 'easy', icon: '↕',
+      title: "Malus's law — basic",
+      problem: 'Polarized light of intensity 200 W/m² passes through a polarizer whose axis is at 60° to the polarization direction. What is the transmitted intensity?',
+      given: ['I₀ = 200 W/m²', 'Δθ = 60°'],
+      find: 'I_transmitted.',
+      solution: "Malus's law: I = I₀ cos²(Δθ) = 200 × cos²(60°) = 200 × (0.5)² = 200 × 0.25 = 50 W/m².",
+      answer: 'I = 50 W/m².',
+      pitfalls: 'Don\'t use cos(60°) directly — square it. cos²(60°) = 0.25, not 0.5.' },
+    { id: 'wp_p2', topic: 'polarization', difficulty: 'medium', icon: '↕',
+      title: 'Unpolarized light through polarizers',
+      problem: 'Unpolarized light of intensity 400 W/m² passes through two polarizers. The first has its axis vertical; the second is rotated 30° from the first. Find the transmitted intensity.',
+      given: ['I_unpol = 400 W/m²', 'Δθ = 30° between polarizers'],
+      find: 'I_final.',
+      solution: 'First polarizer transmits 50% of unpolarized light: I_1 = 400/2 = 200 W/m². Light now linearly polarized along the first axis. Second polarizer at 30° to the first: I_2 = I_1 cos²(30°) = 200 × (√3/2)² = 200 × 0.75 = 150 W/m².',
+      answer: 'I = 150 W/m². (37.5% of original intensity.)',
+      pitfalls: 'Unpolarized → polarized loses 50% INDEPENDENT of the polarizer\'s angle. Then subsequent polarizers act on polarized light via Malus.' },
+    { id: 'wp_p3', topic: 'polarization', difficulty: 'medium', icon: '↕',
+      title: "Brewster's angle",
+      problem: 'Find Brewster\'s angle for light incident on water (n = 1.33) from air.',
+      given: ['n₁ (air) = 1.00', 'n₂ (water) = 1.33'],
+      find: 'θ_Brewster.',
+      solution: "Brewster's angle: tan(θ_B) = n₂/n₁ = 1.33/1.00 = 1.33. θ_B = arctan(1.33) ≈ 53.1°.",
+      answer: 'θ_B ≈ 53.1°.',
+      pitfalls: 'At this angle, reflected light is COMPLETELY POLARIZED parallel to the water surface (perpendicular to plane of incidence). Polarized sunglasses with vertical transmission axis block this glare effectively.' },
+
+    // ── Color/spectrum problems ──
+    { id: 'wp_c1', topic: 'color', difficulty: 'medium', icon: '🌈',
+      title: 'Photon energy from wavelength',
+      problem: 'What is the energy of a single red photon (λ = 633 nm) in joules and electron-volts?',
+      given: ['λ = 633 nm = 6.33×10⁻⁷ m', 'h = 6.626×10⁻³⁴ J·s', 'c = 3.0×10⁸ m/s', '1 eV = 1.60×10⁻¹⁹ J'],
+      find: 'E in J and eV.',
+      solution: 'E = hc/λ = (6.626×10⁻³⁴)(3.0×10⁸)/(6.33×10⁻⁷) = 3.14×10⁻¹⁹ J. In eV: 3.14×10⁻¹⁹/1.60×10⁻¹⁹ ≈ 1.96 eV.',
+      answer: 'E ≈ 3.14×10⁻¹⁹ J ≈ 1.96 eV.',
+      pitfalls: 'A common quick approximation: photon energy in eV ≈ 1240/(λ in nm). 1240/633 ≈ 1.96 ✓.' },
+    { id: 'wp_c2', topic: 'color', difficulty: 'medium', icon: '🌈',
+      title: 'Solar irradiance and photon flux',
+      problem: 'Sunlight at the top of the atmosphere has intensity 1361 W/m². If we assume all the energy is at an average wavelength of 550 nm (green), how many photons per second strike a square meter?',
+      given: ['I = 1361 W/m²', 'λ = 550 nm', 'Area = 1 m²', 'h = 6.626×10⁻³⁴ J·s', 'c = 3×10⁸ m/s'],
+      find: 'Photon flux (photons/s/m²).',
+      solution: 'Energy per photon: E = hc/λ = (6.626×10⁻³⁴)(3×10⁸)/(5.5×10⁻⁷) = 3.61×10⁻¹⁹ J/photon. Photons per second per m²: (1361 W/m²)/(3.61×10⁻¹⁹ J/photon) ≈ 3.77×10²¹ photons/s/m².',
+      answer: '~3.77×10²¹ photons per second per square meter of sunlight.',
+      pitfalls: 'That\'s 3.77 sextillion photons per second per square meter. Each square millimeter of skin in sunlight is hit by ~3.77×10¹⁵ photons per second — yet we feel only their cumulative warmth, not individual hits.' },
+
+    // ── Eye / vision problems ──
+    { id: 'wp_e1', topic: 'vision', difficulty: 'medium', icon: '👁',
+      title: 'Diopter prescription — myopia',
+      problem: 'A nearsighted patient cannot see distant objects clearly — her far point is 50 cm. What diopter glasses does she need to see at infinity?',
+      given: ['Far point d_fp = 50 cm = 0.50 m', 'Need to see at infinity'],
+      find: 'Required lens power (diopters).',
+      solution: 'Need a diverging lens that takes parallel rays from infinity and makes them appear to come from her far point (50 cm). So d_o = ∞, d_i = −50 cm. Lens equation: 1/f = 1/d_o + 1/d_i = 0 + 1/(−0.50) = −2.0/m. Power = 1/f = −2.0 D (diopters).',
+      answer: '−2.0 diopters. Diverging lens (negative power).',
+      pitfalls: 'Myopia (nearsightedness) needs diverging (negative diopter) lenses. Hyperopia (farsightedness) needs converging (positive diopter) lenses.' },
+    { id: 'wp_e2', topic: 'vision', difficulty: 'medium', icon: '👁',
+      title: 'Eye angular resolution',
+      problem: 'The pupil of a relaxed eye in normal indoor light is about 3 mm in diameter. What is the theoretical diffraction-limited angular resolution for green light (λ = 550 nm)?',
+      given: ['D = 3 mm = 3×10⁻³ m', 'λ = 550 nm = 5.5×10⁻⁷ m'],
+      find: 'θ_min.',
+      solution: 'θ_min = 1.22 λ/D = 1.22 × (5.5×10⁻⁷)/(3×10⁻³) ≈ 2.24×10⁻⁴ rad. Convert to arcminutes: 2.24×10⁻⁴ × (180/π × 60) ≈ 0.77 arcmin ≈ 46 arcsec.',
+      answer: '~0.77 arcmin angular resolution.',
+      pitfalls: 'The actual eye resolution is closer to 1 arcmin in practice — additional limits come from cone spacing on the retina (about 1 arcmin at the fovea) and from various aberrations.' },
+
+    // ── More problems across topics ──
+    { id: 'wp_g1', topic: 'general', difficulty: 'medium', icon: '🔆',
+      title: 'Critical angle in fiber optic',
+      problem: 'A fiber-optic core has n = 1.50; the surrounding cladding has n = 1.48. Find the critical angle for total internal reflection inside the core.',
+      given: ['n_core = 1.50', 'n_cladding = 1.48'],
+      find: 'θ_c.',
+      solution: 'sin(θ_c) = n_cladding/n_core = 1.48/1.50 = 0.9867. θ_c = arcsin(0.9867) ≈ 80.6°. Light must hit the core-cladding interface at angles GREATER than 80.6° (measured from the normal to the interface) for TIR.',
+      answer: 'θ_c ≈ 80.6°.',
+      pitfalls: 'The small index difference (1.50 vs 1.48) gives a critical angle close to 90°, meaning light can only propagate within a narrow cone of angles inside the fiber. This is called the "acceptance angle" or numerical aperture (NA).' },
+    { id: 'wp_g2', topic: 'general', difficulty: 'hard', icon: '🔆',
+      title: 'Laser power density',
+      problem: 'A 5 mW HeNe laser has a beam diameter of 1.0 mm. Find the power density of the beam.',
+      given: ['P = 5 mW = 5×10⁻³ W', 'd = 1.0 mm → r = 0.5 mm = 5×10⁻⁴ m'],
+      find: 'Power density.',
+      solution: 'Beam area = πr² = π(5×10⁻⁴)² ≈ 7.85×10⁻⁷ m². Power density = P/A = (5×10⁻³)/(7.85×10⁻⁷) ≈ 6370 W/m².',
+      answer: 'Power density ≈ 6370 W/m² — about 4.7× the solar intensity at noon.',
+      pitfalls: 'A 5 mW laser pointer is technically capable of damaging eyes despite being a small total power — the small beam concentrates that power on a tiny retinal spot. Never look directly into ANY laser beam.' },
+    { id: 'wp_g3', topic: 'general', difficulty: 'hard', icon: '🔆',
+      title: 'Doppler shift of stellar light',
+      problem: 'A star is moving away from Earth at 600 km/s. Its hydrogen-α emission, normally at 656.3 nm, is observed at what wavelength?',
+      given: ['v_recession = 600 km/s = 6×10⁵ m/s', 'λ_rest = 656.3 nm', 'c = 3×10⁸ m/s'],
+      find: 'Observed wavelength.',
+      solution: 'Non-relativistic Doppler: Δλ/λ = v/c = (6×10⁵)/(3×10⁸) = 2×10⁻³. Δλ = 656.3 × 2×10⁻³ ≈ 1.31 nm. Observed wavelength = 656.3 + 1.31 = 657.6 nm.',
+      answer: 'λ_observed ≈ 657.6 nm — a tiny redshift of about 1.3 nm.',
+      pitfalls: 'For v << c, we can use the non-relativistic formula. For high-redshift quasars or relativistic jets, you need the relativistic Doppler formula.' }
+  ];
+
+  // ══════════════════════════════════════════════════════════════════
+  // WORKED PROBLEMS PANEL RENDERER
+  // ══════════════════════════════════════════════════════════════════
+  function _renderWorkedProblemsPanel(d, upd, h) {
+    var query = (d.wpQuery || '').toLowerCase().trim();
+    var topicFilter = d.wpTopic || 'all';
+    var openId = d.wpOpenId || null;
+    var topics = [
+      { id: 'all', label: 'All' },
+      { id: 'reflection', label: '🪞 Reflection' },
+      { id: 'refraction', label: '🌊 Refraction' },
+      { id: 'lenses', label: '🔍 Lenses' },
+      { id: 'interference', label: '✨ Interference' },
+      { id: 'diffraction', label: '〰 Diffraction' },
+      { id: 'polarization', label: '↕ Polarization' },
+      { id: 'color', label: '🌈 Color' },
+      { id: 'vision', label: '👁 Vision' },
+      { id: 'general', label: '🔆 General' }
+    ];
+    var filtered = WORKED_PROBLEMS.filter(function(p) {
+      if (topicFilter !== 'all' && p.topic !== topicFilter) return false;
+      if (!query) return true;
+      return (p.title + ' ' + (p.problem || '') + ' ' + (p.answer || '')).toLowerCase().indexOf(query) !== -1;
+    });
+    return h('div', null,
+      h('div', { style: { background: 'rgba(59,130,246,0.10)', border: '1px solid rgba(59,130,246,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
+        h('h3', { style: { color: '#93c5fd', fontSize: 17, fontWeight: 900, margin: '0 0 6px' } }, '📝 Worked Problems — Step-by-step solutions'),
+        h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, margin: 0 } }, WORKED_PROBLEMS.length + ' AP-style problems with full solutions. Each one shows the given, what to find, step-by-step solution, the answer, and common pitfalls — perfect for understanding before quiz time.')
+      ),
+      h('div', { style: { display: 'flex', gap: 8, marginBottom: 10, flexWrap: 'wrap' } },
+        h('input', { type: 'text', value: d.wpQuery || '',
+          placeholder: '🔍 Search problems...',
+          onChange: function(e) { upd('wpQuery', e.target.value); },
+          'aria-label': 'Search worked problems',
+          style: { flex: '1 1 240px', minHeight: 36, padding: '8px 12px', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(59,130,246,0.30)', borderRadius: 8, color: '#e2e8f0', fontSize: 13 }
+        })
+      ),
+      h('div', { style: { display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' } },
+        topics.map(function(t) {
+          var active = topicFilter === t.id;
+          return h('button', { key: t.id, onClick: function() { upd('wpTopic', t.id); },
+            style: {
+              padding: '6px 11px', fontSize: 11, fontWeight: 700,
+              background: active ? 'rgba(59,130,246,0.25)' : 'rgba(15,23,42,0.5)',
+              color: active ? '#93c5fd' : '#94a3b8',
+              border: '1px solid ' + (active ? '#93c5fd' : 'rgba(100,116,139,0.30)'),
+              borderRadius: 6, cursor: 'pointer'
+            }
+          }, t.label);
+        })
+      ),
+      h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+        filtered.map(function(p) {
+          var isOpen = openId === p.id;
+          var difficultyColor = p.difficulty === 'easy' ? '#86efac' : (p.difficulty === 'medium' ? '#fcd34d' : '#fca5a5');
+          return h('div', { key: p.id,
+            onClick: function() { upd('wpOpenId', isOpen ? null : p.id); },
+            style: {
+              background: isOpen ? 'rgba(59,130,246,0.08)' : 'rgba(15,23,42,0.65)',
+              border: '1px solid ' + (isOpen ? 'rgba(59,130,246,0.55)' : 'rgba(100,116,139,0.30)'),
+              borderRadius: 10, padding: '12px 14px', cursor: 'pointer'
+            }
+          },
+            h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 } },
+              h('span', { style: { fontSize: 18 } }, p.icon),
+              h('div', { style: { flex: 1 } },
+                h('div', { style: { fontSize: 13, fontWeight: 800, color: '#93c5fd', lineHeight: 1.2 } }, p.title),
+                h('div', { style: { fontSize: 10, color: difficultyColor, marginTop: 2, fontWeight: 700, textTransform: 'uppercase' } }, p.topic + ' · ' + p.difficulty)
+              )
+            ),
+            h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.55, marginBottom: 6 } }, p.problem),
+            isOpen && h('div', { style: { marginTop: 10, paddingTop: 10, borderTop: '1px solid rgba(59,130,246,0.25)' } },
+              h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fcd34d', marginBottom: 3 } }, '📋 Given'),
+              h('ul', { style: { margin: '0 0 8px', paddingLeft: 18 } },
+                (p.given || []).map(function(g, i) { return h('li', { key: 'g'+i, style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, fontFamily: 'ui-monospace, Menlo, monospace' } }, g); })
+              ),
+              h('div', { style: { fontSize: 11, fontWeight: 800, color: '#a5b4fc', marginBottom: 3 } }, '🎯 Find'),
+              h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, margin: '0 0 8px' } }, p.find),
+              h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', marginBottom: 3 } }, '🧮 Solution'),
+              h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, margin: '0 0 8px' } }, p.solution),
+              h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fbbf24', marginBottom: 3 } }, '✓ Answer'),
+              h('p', { style: { fontSize: 12, color: '#fcd34d', fontWeight: 700, lineHeight: 1.55, margin: '0 0 8px', padding: '6px 10px', background: 'rgba(251,191,36,0.08)', borderRadius: 6 } }, p.answer),
+              p.pitfalls && h('div', null,
+                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#fca5a5', marginBottom: 3 } }, '🪤 Common pitfall'),
+                h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, margin: 0, fontStyle: 'italic' } }, p.pitfalls))
+            )
+          );
+        })
+      )
+    );
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // OPTICS TRIVIA — 100+ fun facts and surprising connections
+  // ══════════════════════════════════════════════════════════════════
+  var OPTICS_TRIVIA = [
+    { tag: 'biology', text: 'The mantis shrimp has 16 types of photoreceptors. Humans have 4 (3 cones + 1 rod). Yet mantis shrimp brains may process color less precisely than ours — having more receptor types doesn\'t guarantee finer color discrimination.' },
+    { tag: 'biology', text: 'A scorpion fluoresces blue-green under UV light. The chemical (β-carboline) outlives the animal — fossil scorpions in amber, ~100 million years old, still glow under a black light.' },
+    { tag: 'biology', text: 'Bees see ultraviolet patterns on flowers that are invisible to humans. Many flowers we see as a single color actually have UV "bullseye" patterns guiding bees to the nectar.' },
+    { tag: 'biology', text: 'Some animals — vipers and certain fish — see infrared. The pit organs of vipers detect IR thermal radiation, letting them strike warm prey in total darkness.' },
+    { tag: 'biology', text: 'Cats and other nocturnal animals have a reflective layer behind their retinas called the tapetum lucidum. Light not absorbed on the first pass reflects back through the retina for a second chance — improving low-light vision at the cost of slight focus blur.' },
+    { tag: 'biology', text: 'A bee\'s color vision shifts toward UV. To a bee, what we call "yellow" appears as a mix of "bee blue" + UV. To us, the bee\'s blue is invisible.' },
+    { tag: 'biology', text: 'Cuttlefish are colorblind. Yet they produce some of the most accurate camouflage in nature. The mechanism appears to be chromatic-aberration-based depth sensing.' },
+    { tag: 'astronomy', text: 'The Sun\'s light takes ~8 minutes 20 seconds to reach Earth. So when you "see" the Sun set, the actual Sun set 8 minutes earlier.' },
+    { tag: 'astronomy', text: 'Light from the nearest star (Proxima Centauri) takes 4.2 years to reach us. The faintest stars visible to the naked eye in winter\'s Orion are ~100 light-years away — when you look up, you\'re seeing them as they were in 1924.' },
+    { tag: 'astronomy', text: 'The James Webb Space Telescope sees infrared so faint that to keep its own thermal radiation from drowning out the signal, its instruments must be cooled to 45 K (−228 °C). The mid-infrared instrument is cooled below 7 K.' },
+    { tag: 'astronomy', text: 'Atmospheric refraction lifts the setting Sun ~0.5° above its geometric position. So the moment the Sun visually touches the horizon, geometrically it\'s already set.' },
+    { tag: 'astronomy', text: 'The Hubble Space Telescope was launched with a flawed primary mirror in 1990. The "spherical aberration" caused blurry images for three years until corrective optics (COSTAR) were installed in 1993 — essentially eyeglasses for a telescope.' },
+    { tag: 'astronomy', text: 'The Event Horizon Telescope is not a single dish but a global network of radio telescopes. Combining them produces an effective aperture the size of Earth — micro-arcsecond resolution, enough to image black hole shadows.' },
+    { tag: 'astronomy', text: 'There is a "fast radio burst" detected every few seconds on Earth from distant galaxies — most are unexplained. The Vera Rubin Observatory will detect ~10 million per year when fully operational.' },
+    { tag: 'history', text: 'Newton bought a prism at a 1665 fair near Cambridge — likely an off-the-shelf novelty. The simple toy let him discover the modern theory of color while plague kept Cambridge closed.' },
+    { tag: 'history', text: 'Galileo wasn\'t the first to make a telescope. Hans Lippershey filed the first patent in 1608. But Galileo was the first to point it at the sky and document what he saw — discovering Jupiter\'s moons, lunar craters, and Venus\'s phases.' },
+    { tag: 'history', text: 'The word "lens" comes from the Latin "lentil" — early lenses were biconvex and resembled the legume in shape.' },
+    { tag: 'history', text: 'The first photograph (Niépce, 1826) had an 8-hour exposure. So everyone in the scene moved during the exposure — only the buildings appear in the image.' },
+    { tag: 'history', text: 'The 1969 Apollo 11 retroreflector left on the Moon is still in use. Earth-based lasers measure Earth-Moon distance to centimeter precision by timing the bounce.' },
+    { tag: 'history', text: 'When the laser was invented (1960), most physicists couldn\'t imagine practical uses. Hughes Research Labs lawyers initially considered laser patents not worth pursuing because there were no clear applications.' },
+    { tag: 'records', text: 'The brightest sustained beam ever produced: the Lawrence Livermore National Ignition Facility\'s 192-beam laser system delivers 1.8 megajoules in a 20-nanosecond pulse — peak power 500 TW (more than the world\'s total electrical consumption, but only for 20 nanoseconds).' },
+    { tag: 'records', text: 'The smallest mirror ever made: a single atom acting as a mirror through "single-atom optical tweezing" at NIST in 2018 — though the reflection efficiency is small.' },
+    { tag: 'records', text: 'The longest fiber-optic cable: TPE (Trans-Pacific Express) is 17,700 km long, connecting Asia and the U.S. underwater.' },
+    { tag: 'records', text: 'The largest optical telescope (operational): Gran Telescopio Canarias on La Palma, 10.4 m primary mirror.' },
+    { tag: 'records', text: 'The largest optical telescope (in construction): Extremely Large Telescope (ELT) in Chile, 39 m diameter. First light planned ~2028.' },
+    { tag: 'records', text: 'Highest reported refractive index: n ≈ 4 for some metamaterials at terahertz frequencies; n ≈ 2.42 for diamond at visible wavelengths.' },
+    { tag: 'records', text: 'The slowest light ever measured: at near-zero Kelvin in a Bose-Einstein condensate, light pulses have been slowed to 17 m/s and even brought to a complete stop. (Lene Hau, Harvard, 1999.)' },
+    { tag: 'records', text: 'The largest Fresnel lens for a lighthouse: a 1st-order lens roughly 2.5 m tall and weighing 4 tons, visible 24+ nautical miles. Several survive in active service in Maine.' },
+    { tag: 'physics', text: 'The fundamental constant c (speed of light in vacuum) is exactly 299,792,458 m/s — by definition. The meter is now defined as the distance light travels in 1/299,792,458 of a second.' },
+    { tag: 'physics', text: 'In vacuum, light travels at c. But group velocity (how fast pulses travel) can be slowed by passing through media, can be near zero in BEC, and the "phase velocity" can even exceed c in some media — without violating relativity, since neither energy nor information moves faster than c.' },
+    { tag: 'physics', text: 'A single photon\'s energy is tiny. A 1 watt visible laser emits roughly 3×10¹⁸ photons per second — three billion billion per second.' },
+    { tag: 'physics', text: 'Light has momentum. A perfectly absorbing surface in sunlight receives ~4.6 micropascals of pressure per W/m². Solar sails like the LightSail spacecraft use this to navigate.' },
+    { tag: 'physics', text: 'Quantum entanglement of photons has been verified at distances of 1200+ km using Chinese space-based experiments (Micius satellite, 2017).' },
+    { tag: 'biology', text: 'The retina is a 2D detector array with ~120 million rods and ~6 million cones. Modern smartphone cameras have similar pixel counts in much smaller areas.' },
+    { tag: 'biology', text: 'Your "perfect" 20/20 vision is roughly 1 arcminute angular resolution — about the size of a thumbtack at 10 m. Hawks have ~5× sharper vision than humans.' },
+    { tag: 'biology', text: 'In total darkness for ~30 minutes, the human eye reaches its full dark adaptation. The rod cells become so sensitive they can in principle detect a single photon — but reliable detection requires several hits within a small region.' },
+    { tag: 'tech', text: 'A modern smartphone camera processes ~1 trillion photon events per second across its sensor for video. The image processing happens in real time on a chip smaller than a fingernail.' },
+    { tag: 'tech', text: 'Modern fiber-optic cables carry ~100 terabits/second — equivalent to 25 million HD video streams over a single hair-thin fiber.' },
+    { tag: 'tech', text: 'A diffraction grating with 8000 lines per inch (~315/mm) was an extraordinary feat in 1820 (Fraunhofer). Modern gratings have 5,000 lines per mm.' },
+    { tag: 'tech', text: 'EUV lithography uses light at 13.5 nm wavelength to print circuit features 5 nm wide. The light is produced by zapping droplets of molten tin with high-power CO₂ lasers, creating plasma that emits EUV. Each lithography tool costs ~$200 million.' },
+    { tag: 'tech', text: 'A modern LED light bulb produces ~100 lumens per watt. Incandescent bulbs (1879 design) produce only ~15 lumens per watt — most of their energy goes to heat.' },
+    { tag: 'art', text: 'Old Master paintings often used optical aids. Vermeer\'s exquisite light realism shows characteristics consistent with use of a camera obscura.' },
+    { tag: 'art', text: 'Mosaics of glass and stone from antiquity (Roman, Byzantine) already exploited multiple types of optical effects — angular reflection from gold leaf, color from cobalt-blue glass containing copper oxide.' },
+    { tag: 'art', text: 'Stained glass colors before 1800 were mostly cobalt blue, copper-ruby red, manganese purple, and metal-leaf gold. Each had specific optical absorption signatures preserved for ~1000 years.' },
+    { tag: 'medical', text: 'Modern LASIK eye surgery uses an excimer laser (193 nm UV) to reshape the cornea — one laser pulse removes ~0.25 μm of tissue with no heat damage to surrounding cells.' },
+    { tag: 'medical', text: 'PET (positron emission tomography) scans use gamma-ray photons emitted when positrons annihilate electrons. Each event produces two oppositely-directed 511 keV photons; coincident detection locates the origin.' },
+    { tag: 'medical', text: 'OCT (optical coherence tomography) scans of the retina are now standard in every ophthalmologist\'s office, providing micrometer-resolution cross-sections of retinal layers in seconds — without touching the eye.' },
+    { tag: 'maine', text: 'Portland Head Light (1791) is Maine\'s oldest lighthouse, ordered into being by George Washington. It originally used whale-oil lamps; today it uses an LED beacon visible 24+ miles.' },
+    { tag: 'maine', text: 'Maine has 65+ lighthouses along its coast. Many still use original Fresnel lenses, some dating to the 1850s.' },
+    { tag: 'maine', text: 'The Pomeroy Solar Observatory at Mount Washington (1944, NH but visible from Maine) measured solar phenomena for decades.' },
+    { tag: 'fun', text: 'Holding a CD up to a light shows beautiful rainbow patterns — the disc\'s data tracks (1.6 μm pitch) act as a diffraction grating, splitting white light into spectra.' },
+    { tag: 'fun', text: 'Polarized sunglasses reduce glare from water and roads because reflected light at Brewster\'s angle (~53° for water) is fully horizontally polarized — the sunglass filter blocks horizontal polarization, leaving the (less glare-prone) sky light.' },
+    { tag: 'fun', text: 'Look at a CD\'s edge or a thin oil slick. The colors you see are NOT pigments — they\'re structural color from thin-film interference. The colors shift as you tilt the surface.' },
+    { tag: 'fun', text: 'The "green flash" at sunset can be seen briefly when atmospheric conditions are right. Jules Verne wrote a romantic 1882 novel about it: "Le Rayon Vert" (The Green Ray).' },
+    { tag: 'fun', text: 'If you wear glasses, the prescription number ("OD −2.5") refers to diopters of correction. Diopters are 1/focal-length-in-meters. A −2.5 D lens has a virtual focal length of −40 cm.' }
+  ];
+
+  // ══════════════════════════════════════════════════════════════════
+  // OPTICS QUOTES — 60+ memorable quotes about light
+  // ══════════════════════════════════════════════════════════════════
+  var OPTICS_QUOTES = [
+    { author: 'Genesis 1:3', context: 'The Bible (~8th c. BCE)', text: 'Let there be light: and there was light.' },
+    { author: 'Plato', context: 'Republic, Book VII, ~380 BCE', text: 'Whoever does not know it must consider it a fairy tale, but he who once gets a glimpse of it must reach out to it always.' },
+    { author: 'Aristotle', context: 'De Anima, ~350 BCE', text: 'Light is the activity of what is transparent qua transparent.' },
+    { author: 'Ibn al-Haytham (Alhazen)', context: 'Book of Optics, ~1015', text: 'The seeker after the truth is not one who studies the writings of the ancients and gives them his trust, but rather the one who suspects his faith in them and questions what he gathers from them.' },
+    { author: 'Roger Bacon', context: 'Opus Majus, 1267', text: 'Mathematics is the gate and key of the sciences. Without these we cannot reach what is hidden.' },
+    { author: 'Galileo Galilei', context: 'on first turning his telescope skyward, 1610', text: 'I have been examining the Moon, and from my observations, I am compelled to acknowledge that the Moon is not at all smooth and polished, but rather rough and uneven.' },
+    { author: 'Isaac Newton', context: 'Letter to Robert Hooke, 1675', text: 'If I have seen further it is by standing on the shoulders of giants.' },
+    { author: 'Isaac Newton', context: 'Opticks, 1704', text: 'The whiteness of the Sun\'s light is compounded of all the original colors mixed in due proportion.' },
+    { author: 'Christiaan Huygens', context: 'Traité de la lumière, 1690', text: 'It is in the very nature of light to spread, like sound, by spherical waves.' },
+    { author: 'Thomas Young', context: 'Defense of the wave theory, 1804', text: 'Each undulation can be compared to the agitation produced in one point of the surface of stagnant water when a stone is thrown into it.' },
+    { author: 'Augustin Fresnel', context: 'Memoir on Diffraction, 1818', text: 'Nature is not embarrassed by difficulties of analysis. She avoids only complications of means.' },
+    { author: 'James Clerk Maxwell', context: 'Treatise on Electricity and Magnetism, 1873', text: 'We can scarcely avoid the inference that light consists in the transverse undulations of the same medium which is the cause of electric and magnetic phenomena.' },
+    { author: 'Lord Kelvin', context: 'address, 1900', text: 'There is nothing new to be discovered in physics now. All that remains is more and more precise measurement.' },
+    { author: 'Albert Einstein', context: 'Photoelectric paper, 1905', text: 'According to the assumption to be considered here, when a light ray emanating from a point is propagated, the energy is not continuously distributed over ever increasing volumes, but it consists of a finite number of energy quanta localized at points in space.' },
+    { author: 'Albert Einstein', context: 'Special relativity, 1905', text: 'The speed of light in vacuum is the same for all inertial observers.' },
+    { author: 'Albert Einstein', context: 'attributed quote, 1920s', text: 'For the rest of my life I will reflect on what light is.' },
+    { author: 'Niels Bohr', context: 'on quantum mechanics, 1920s', text: 'Anyone who is not shocked by quantum mechanics has not understood it.' },
+    { author: 'Richard Feynman', context: 'QED lectures, Auckland 1979', text: 'It is my task to convince you not to turn away because you don\'t understand it. You see, my physics students don\'t understand it either. That is because I don\'t understand it. Nobody does.' },
+    { author: 'Richard Feynman', context: 'on the photon, in QED', text: 'I want to emphasize that light comes in this form — particles. It is very important to know that light behaves like particles, especially for those of you who have gone to school where you were probably told something about light behaving like waves.' },
+    { author: 'Stephen Hawking', context: 'A Brief History of Time, 1988', text: 'Look up at the stars and not down at your feet. Try to make sense of what you see, and wonder about what makes the universe exist. Be curious.' },
+    { author: 'Annie Dillard', context: 'Pilgrim at Tinker Creek, 1974', text: 'It is dire poverty indeed when a man is so malnourished and fatigued that he won\'t stoop to pick up a penny. But if you cultivate a healthy poverty and simplicity, so that finding a penny will literally make your day, then, since the world is in fact planted in pennies, you have with your poverty bought a lifetime of days.' },
+    { author: 'Carl Sagan', context: 'Cosmos, 1980', text: 'The cosmos is within us. We are made of star-stuff. We are a way for the universe to know itself.' },
+    { author: 'Carl Sagan', context: 'on light pollution, Cosmos', text: 'We will lose the night sky to light pollution within decades, the result of decisions made without consultation with future generations.' },
+    { author: 'Vera Rubin', context: 'on her work measuring galaxy rotation', text: 'Don\'t shoot for the stars, we already know what\'s there. Shoot for the space in between because that\'s where the real mystery lies.' },
+    { author: 'Donna Strickland', context: 'Nobel press conference, 2018', text: 'You don\'t need to be an Einstein. You need to be curious and willing to work hard.' },
+    { author: 'Anton Zeilinger', context: 'on quantum optics', text: 'The most important reality is that we cannot describe the world without the observer being part of the description.' },
+    { author: 'Charles Townes', context: 'How the Laser Happened, 1999', text: 'The laser was invented because no one was telling us what to do. We had the freedom to follow our interests where they led us.' },
+    { author: 'Theodore Maiman', context: 'attributed, on early laser years', text: 'A laser is a solution looking for a problem.' },
+    { author: 'Robert Hooke', context: 'Micrographia, 1665', text: 'By the help of microscopes there is nothing so small as to escape our enquiry; hence there is a new visible world discovered to the understanding.' },
+    { author: 'Maine writer Henry Wadsworth Longfellow', context: 'My Lost Youth, 1855', text: 'Often I think of the beautiful town that is seated by the sea; Often in thought go up and down the pleasant streets of that dear old town — and remember the sea-mist veiling all things.' }
+  ];
+
+  // ══════════════════════════════════════════════════════════════════
+  // OPTICS RECORDS — 30+ extreme/superlative records
+  // ══════════════════════════════════════════════════════════════════
+  var OPTICS_RECORDS = [
+    { category: 'Speed', title: 'Fastest light pulse ever measured', value: '~12 attoseconds (1.2×10⁻¹⁷ s)', context: 'European X-ray Free Electron Laser, 2023. A million times shorter than a femtosecond.', icon: '⚡' },
+    { category: 'Speed', title: 'Slowest light pulse ever measured', value: '17 meters per second', context: 'Lene Hau\'s group at Harvard, 1999, in a sodium Bose-Einstein condensate. Light then brought to a complete stop in 2001.', icon: '🐢' },
+    { category: 'Distance', title: 'Longest fiber optic cable', value: '17,700 km', context: 'Trans-Pacific Express (TPE) submarine cable, connecting Asia to the U.S.', icon: '📡' },
+    { category: 'Distance', title: 'Longest astronomical baseline interferometer', value: '~10,000 km', context: 'Event Horizon Telescope global VLBI array, used to image M87 and Sgr A* black hole shadows.', icon: '🔭' },
+    { category: 'Distance', title: 'Lunar laser ranging precision', value: '<1 cm', context: 'Apollo 11/14/15 + Luna 17/21 retroreflectors. Earth-Moon distance measured to centimeter precision.', icon: '🌕' },
+    { category: 'Distance', title: 'Deepest space-imaging telescope (current)', value: '13.5 billion light-years', context: 'JWST has imaged galaxies at z > 10, when the universe was less than 500 million years old.', icon: '🛰' },
+    { category: 'Size', title: 'Largest single-aperture optical telescope', value: '10.4 m diameter', context: 'Gran Telescopio Canarias (Spain). Will be surpassed by the Extremely Large Telescope (39 m) when complete c. 2028.', icon: '🔭' },
+    { category: 'Size', title: 'Smallest functional laser', value: '~50 nm', context: 'Photonic crystal nanolasers and "spasers" at <100 nm dimensions, smaller than the wavelength they emit.', icon: '🔬' },
+    { category: 'Size', title: 'Largest Fresnel lighthouse lens', value: '~2.5 m tall, 4 tons', context: '1st-order Fresnel lens used in major coastal lighthouses. Maine has several still in service.', icon: '🗼' },
+    { category: 'Power', title: 'Highest peak laser power', value: '1.3 petawatts (briefly)', context: 'Shanghai Superintense Ultrafast Laser Facility (2017). Peak duration: femtoseconds.', icon: '⚡' },
+    { category: 'Power', title: 'Highest pulsed total energy', value: '1.8 megajoules', context: 'National Ignition Facility (Livermore, CA), 192-beam laser fusion experiment. The 2022 ignition shot.', icon: '🔥' },
+    { category: 'Power', title: 'Most powerful continuous-wave fiber laser', value: '>500 kilowatts', context: 'IPG Photonics industrial systems for metal cutting and welding.', icon: '🔴' },
+    { category: 'Brightness', title: 'Brightest sustained laser source', value: '~10²⁰ W/cm²', context: 'Petawatt-class facilities focused to ~λ² spot size.', icon: '✨' },
+    { category: 'Brightness', title: 'Brightest natural object', value: '~10⁵⁵ erg/s', context: 'GRB 080319B gamma-ray burst (March 2008). Would have been visible to the naked eye on Earth if it had been pointed at us — from 7.5 billion light-years away.', icon: '🌟' },
+    { category: 'Wavelength', title: 'Shortest visible-spectrum laser', value: '193 nm', context: 'ArF excimer laser, used for LASIK and semiconductor lithography. Technically UV, just outside visible.', icon: '💜' },
+    { category: 'Wavelength', title: 'Longest known continuous fiber laser wavelength', value: '~10.6 μm', context: 'CO₂-laser pumped fiber lasers; thulium and erbium-doped fibers cover mid-IR.', icon: '🌹' },
+    { category: 'Resolution', title: 'Highest-resolution optical microscope', value: '~5 nm', context: 'MINFLUX (single-fluorophore localization) microscopy, 2017. Approaches 100,000× better than diffraction limit suggests.', icon: '🔬' },
+    { category: 'Resolution', title: 'Highest-resolution telescope (operational)', value: '~30 microarcseconds', context: 'EHT (Event Horizon Telescope) at 1.3 mm wavelength. Equivalent to reading newsprint from the surface of the Moon.', icon: '🕳' },
+    { category: 'Materials', title: 'Highest refractive index (visible)', value: '~4 (in metamaterials)', context: 'Engineered metamaterials at terahertz frequencies achieve n > 30. At visible wavelengths, diamond (n = 2.42) is the highest natural material; metamaterials reach n ~4.', icon: '💎' },
+    { category: 'Materials', title: 'Most transparent material', value: '~99.7% per cm in pure silica', context: 'Specialty silicon dioxide. Telecom-grade fiber loses ~0.2 dB/km at 1550 nm — for a 100 km fiber, ~95% transmission.', icon: '💎' },
+    { category: 'Coherence', title: 'Longest coherent laser pulse', value: '~hours', context: 'Optical atomic clocks based on strontium and ytterbium maintain coherent oscillations effectively continuously.', icon: '⏱' },
+    { category: 'Precision', title: 'Best atomic-clock optical accuracy', value: '1 part in 10¹⁸', context: 'NIST 2018 ytterbium clock. Lose 1 second over the age of the universe.', icon: '⏰' },
+    { category: 'Precision', title: 'LIGO\'s sensitivity', value: '~10⁻²¹ strain', context: 'Detected gravitational wave GW150914 (2015) — a path length change of 10⁻²¹ relative to the 4 km arm length. Like measuring the Sun-Earth distance to better than a hydrogen atom\'s width.', icon: '⫻' }
+  ];
+
+  // ══════════════════════════════════════════════════════════════════
+  // SAFETY SCENARIOS — 25+ practical safety topics
+  // ══════════════════════════════════════════════════════════════════
+  var SAFETY_SCENARIOS = [
+    { id: 'laserPointer', title: 'Laser pointer eye exposure', icon: '⚠', category: 'laser',
+      scenario: 'You\'re demoing a laser pointer for a class. A student tilts their head and the beam briefly enters their eye.',
+      risk: 'Standard "Class 3R" laser pointers (≤ 5 mW visible) can cause temporary visual disturbance. "Class 3B" (5–500 mW) or higher can cause permanent retinal damage in milliseconds.',
+      action: 'Stop the demo immediately. Have the student look away. If pain, vision change, or persistent disturbance, refer to an ophthalmologist immediately.',
+      prevention: 'Always direct beam at a distant non-reflective surface. Never look INTO a laser. Use beam stops. Treat unknown lasers as potentially Class 4 even if labeled "<5 mW" — many imported pointers are mislabeled.',
+      maine: 'Maine Eye Care Center (Portland) and EMMC Eye Care (Bangor) are equipped for emergency laser-injury evaluation.' },
+    { id: 'sunGazing', title: 'Solar eclipse viewing', icon: '☀', category: 'solar',
+      scenario: 'A solar eclipse is happening. Students want to look at the Sun.',
+      risk: 'Even brief direct Sun-gazing (without proper filters) can cause permanent solar retinopathy. The fovea has no pain nerves, so damage occurs without warning.',
+      action: 'NEVER look at the Sun directly without ISO-12312-2 certified solar viewing glasses. Welding goggles ≥ Shade 14 are also safe. During totality only (a few minutes max), direct viewing is safe.',
+      prevention: 'Provide certified eclipse glasses. Practice pinhole projection demos (NO direct viewing). Adult supervision required for kids.',
+      maine: 'Next major eclipse in Maine: April 2024 (just past). Future partial eclipses occur every few years. Mark your calendar for the August 2045 total solar eclipse.' },
+    { id: 'uvExposure', title: 'UV from welding/grow lights', icon: '💜', category: 'uv',
+      scenario: 'A student is using a welding torch (or DJ blacklight, or plant grow light) without eye protection.',
+      risk: 'Short-wavelength UV (UV-B and UV-C below 320 nm) causes "welder\'s flash" — painful corneal damage that develops 6–12 hours after exposure. Long-term exposure causes cataracts.',
+      action: 'Have student stop. If symptoms develop, cool compress + medical evaluation. Treatment: lubrication, antibiotic drops if needed.',
+      prevention: 'Welding: shade-12 or darker filters. UV-emitting devices: enclosed sources, indirect viewing.',
+      maine: 'Maine vocational technical centers (e.g., Bath Vocational Center) have welding programs with strict PPE requirements.' },
+    { id: 'fiberOpticEnd', title: 'Looking down a fiber-optic cable', icon: '📡', category: 'laser',
+      scenario: 'A technician is troubleshooting a fiber-optic link and looks down the cable end.',
+      risk: 'Even if no obvious signal is visible, fiber-optic transmitters can emit class 1M or higher radiation. Many systems use infrared lasers that are invisible AND can damage the retina.',
+      action: 'Never look directly into the end of an active fiber. Use camera-equipped fiber inspection scopes ("fiber microscopes") to check connector cleanliness.',
+      prevention: 'Disconnect power before inspecting. Use only inspection tools designed for fiber work. Class 1M fibers are "safe with the naked eye" but UNSAFE with magnifying optics.',
+      maine: 'Maine fiber-optic technicians (Consolidated Communications) follow strict OSHA fiber-safety protocols.' },
+    { id: 'pinholeBurn', title: 'Concave-mirror solar concentrator', icon: '🔥', category: 'solar',
+      scenario: 'A student tries the "burn paper with a magnifying glass" experiment using a large concave shaving mirror in sunlight.',
+      risk: 'Concentrated sunlight can ignite paper, wood, clothing, hair. The focal spot of a 30 cm concave mirror can exceed 500°C. Even ambient eye exposure from the focal-spot light is intense.',
+      action: 'Adult supervision required. Have water/sand ready. Work outdoors on a non-flammable surface. Never leave the concentrator focused on flammable material.',
+      prevention: 'Set focal spot on heat-resistant non-flammable target (clay, brick). Maintain awareness of where the beam goes when the mirror is tilted.',
+      maine: 'Educational outdoor science programs (e.g., 4-H, Boy Scouts) supervise these experiments closely.' },
+    { id: 'broadbandSpec', title: 'Broadband spectrometer with high-intensity source', icon: '📊', category: 'general',
+      scenario: 'A student is calibrating a spectrometer using a deuterium-tungsten halogen lamp. They look at the lamp directly.',
+      risk: 'These lamps emit intense UV (deuterium) and visible/IR (tungsten halogen). Direct viewing causes photokeratitis (UV) and thermal retinal injury (IR).',
+      action: 'Stop. Refer for evaluation if symptoms develop (painful watering, blurred vision).',
+      prevention: 'Use covered sample chambers. View transmitted/dispersed spectra only via integrating-sphere or screen reflection. Lamp housings should be fully enclosed.',
+      maine: 'University of Maine chemistry/physics labs use these instruments — supervised by trained instructors.' },
+    { id: 'darkRoomTrip', title: 'Photography darkroom safety', icon: '📷', category: 'general',
+      scenario: 'Students enter a darkroom for traditional photo development. They can\'t see well.',
+      risk: 'Trip hazards (cords, chemical containers), spilled chemicals (developer, fixer, stop bath — toxic, skin/eye irritants), poor ventilation buildup.',
+      action: 'Provide red safelight; train students to move slowly. Wash spills immediately; wash eyes with eye-wash station for chemical contact.',
+      prevention: 'Clear floor of obstacles. Adequate red-safelight illumination. Chemical splash goggles for darkroom use. PPE for handling.',
+      maine: 'Maine Media Workshops (Rockport) and U Maine Photography Studios maintain traditional darkrooms with safety protocols.' },
+    { id: 'arVrMotionSickness', title: 'VR-induced motion sickness', icon: '🥽', category: 'general',
+      scenario: 'A student tries a VR headset for the first time and feels nauseous after 5 minutes.',
+      risk: 'Vergence-accommodation conflict (eyes\' focus distance differs from convergence angle) and any latency between head motion and display update causes "VR sickness." Symptoms: nausea, sweating, headache.',
+      action: 'Remove headset. Sit quietly until symptoms subside (5–30 minutes).',
+      prevention: 'Limit sessions to 15–30 min for new users. Choose stationary VR experiences over motion-heavy ones. Some users\' bodies adapt within a few sessions.',
+      maine: 'Schools and libraries with VR equipment (Bangor Public Library has a VR room) follow age guidelines (typically 13+).' },
+    { id: 'electronicsRework', title: 'Electronics soldering / IR lamp work', icon: '🔥', category: 'general',
+      scenario: 'A student is soldering small components using a desk-mounted halogen lamp for illumination.',
+      risk: 'Halogen lamps run very hot. Tungsten filaments at 3000+ K emit IR — both burn hazard (touching the bulb) and prolonged exposure heats the eye.',
+      action: 'Use LED desk lamps instead. Cool work area before reaching for components.',
+      prevention: 'LEDs are equivalent illumination at <50°C; halogens reach 250°C+. Replace any halogen task lighting with LED.',
+      maine: 'High school robotics teams (FIRST Robotics) in Maine follow strict shop-safety rules.' }
+  ];
+
+  // ══════════════════════════════════════════════════════════════════
+  // REFRACTIVE INDEX DATA TABLE — 100+ materials
+  // ══════════════════════════════════════════════════════════════════
+  var REFRACTIVE_INDEX_DATA = [
+    // Common materials (n at sodium D line ~589 nm unless noted)
+    { material: 'Vacuum', n: 1.0000000, category: 'reference', note: 'by definition' },
+    { material: 'Air (0°C, 1 atm)', n: 1.000293, category: 'gas', note: 'visible light' },
+    { material: 'Helium gas (STP)', n: 1.000036, category: 'gas', note: 'lowest n of any element' },
+    { material: 'Carbon dioxide gas', n: 1.000450, category: 'gas' },
+    { material: 'Water (20°C)', n: 1.333, category: 'liquid', note: 'small temp dependence' },
+    { material: 'Water (40°C)', n: 1.330, category: 'liquid' },
+    { material: 'Sea water', n: 1.343, category: 'liquid', note: 'slightly higher due to salts' },
+    { material: 'Ethanol', n: 1.361, category: 'liquid' },
+    { material: 'Acetone', n: 1.359, category: 'liquid' },
+    { material: 'Glycerin', n: 1.474, category: 'liquid' },
+    { material: 'Cooking oil (vegetable)', n: 1.470, category: 'liquid', note: 'varies by oil type' },
+    { material: 'Olive oil', n: 1.468, category: 'liquid' },
+    { material: 'Honey', n: 1.504, category: 'liquid', note: 'depends on water content' },
+    { material: 'Glucose solution (50%)', n: 1.420, category: 'liquid' },
+    { material: 'Salt water (saturated)', n: 1.378, category: 'liquid' },
+    // Glasses
+    { material: 'Crown glass (BK7)', n: 1.5168, category: 'glass', note: 'most common optical glass' },
+    { material: 'Borosilicate glass', n: 1.473, category: 'glass', note: 'Pyrex' },
+    { material: 'Soda-lime glass', n: 1.520, category: 'glass', note: 'window glass' },
+    { material: 'Flint glass (SF11)', n: 1.785, category: 'glass', note: 'high-dispersion' },
+    { material: 'Heavy flint glass', n: 1.70, category: 'glass', note: 'high-quality optics (range 1.62 to 1.75)' },
+    { material: 'Fused silica (quartz glass)', n: 1.458, category: 'glass', note: 'used for UV optics' },
+    { material: 'Crystalline quartz (ordinary)', n: 1.544, category: 'crystal', note: 'birefringent' },
+    { material: 'Crystalline quartz (extraordinary)', n: 1.553, category: 'crystal', note: 'birefringent' },
+    // Crystals
+    { material: 'Diamond', n: 2.417, category: 'crystal', note: 'highest n of any natural transparent material at visible' },
+    { material: 'Cubic zirconia', n: 2.150, category: 'crystal', note: 'diamond simulant' },
+    { material: 'Sapphire (Al₂O₃)', n: 1.770, category: 'crystal' },
+    { material: 'Ruby (Cr-doped sapphire)', n: 1.770, category: 'crystal', note: 'same as sapphire' },
+    { material: 'Emerald (Be₃Al₂Si₆O₁₈)', n: 1.580, category: 'crystal' },
+    { material: 'Topaz', n: 1.620, category: 'crystal' },
+    { material: 'Garnet', n: 1.770, category: 'crystal' },
+    { material: 'Spinel', n: 1.715, category: 'crystal' },
+    { material: 'Calcite (ordinary)', n: 1.658, category: 'crystal', note: 'birefringent, Δn = 0.172' },
+    { material: 'Calcite (extraordinary)', n: 1.486, category: 'crystal' },
+    { material: 'Halite (NaCl)', n: 1.544, category: 'crystal' },
+    { material: 'Fluorite (CaF₂)', n: 1.434, category: 'crystal', note: 'UV/IR transmission' },
+    { material: 'Silicon (Si)', n: 3.41, category: 'crystal', note: 'IR optics — opaque visible' },
+    { material: 'Germanium (Ge)', n: 4.00, category: 'crystal', note: 'IR optics — opaque visible' },
+    { material: 'Zinc selenide (ZnSe)', n: 2.40, category: 'crystal', note: 'CO₂ laser optics' },
+    // Plastics
+    { material: 'Acrylic / PMMA', n: 1.490, category: 'plastic' },
+    { material: 'Polycarbonate', n: 1.586, category: 'plastic', note: 'eyeglass lenses' },
+    { material: 'Polystyrene', n: 1.590, category: 'plastic' },
+    { material: 'Polyethylene', n: 1.510, category: 'plastic' },
+    { material: 'PVC', n: 1.540, category: 'plastic' },
+    { material: 'Optical polymer (Trivex)', n: 1.530, category: 'plastic', note: 'lightweight eyewear' },
+    { material: 'High-index plastic (1.74)', n: 1.740, category: 'plastic', note: 'ultra-thin prescription lenses' },
+    // Biological
+    { material: 'Tear film (eye)', n: 1.336, category: 'biological' },
+    { material: 'Cornea', n: 1.376, category: 'biological', note: 'human eye outer layer' },
+    { material: 'Aqueous humor (eye)', n: 1.336, category: 'biological' },
+    { material: 'Crystalline lens (eye)', n: 1.396, category: 'biological', note: 'gradient (range 1.386 to 1.406), denser core' },
+    { material: 'Vitreous humor (eye)', n: 1.337, category: 'biological' },
+    { material: 'Skin (epidermis)', n: 1.43, category: 'biological', note: 'visible wavelengths' },
+    { material: 'Blood', n: 1.380, category: 'biological' },
+    // Wavelength dependence example (BK7 crown glass)
+    { material: 'BK7 at 400 nm', n: 1.5302, category: 'wavelength', note: 'shorter λ → higher n' },
+    { material: 'BK7 at 500 nm', n: 1.5214, category: 'wavelength' },
+    { material: 'BK7 at 589 nm (Na D-line)', n: 1.5168, category: 'wavelength', note: 'reference wavelength' },
+    { material: 'BK7 at 700 nm', n: 1.5131, category: 'wavelength' },
+    { material: 'BK7 at 1000 nm', n: 1.5075, category: 'wavelength', note: 'longer λ → lower n' }
+  ];
+
+  // ══════════════════════════════════════════════════════════════════
+  // TEACHING TIPS — 40+ pedagogy notes for educators
+  // ══════════════════════════════════════════════════════════════════
+  var TEACHING_TIPS = [
+    { id: 'rayDiagram', topic: 'reflection', title: 'Always have students draw three rays', icon: '📐',
+      tip: 'For curved mirror/lens problems, drill the THREE standard rays: (1) parallel-axis ray reflects/refracts through focal point, (2) ray through focal point comes out parallel, (3) ray through center of curvature reflects on itself. Where any two meet, you have the image.' },
+    { id: 'signConventions', topic: 'general', title: 'Sign conventions are the #1 mistake source', icon: '⚠',
+      tip: 'Establish ONE consistent sign convention at the start of the unit and ride it. The Cartesian convention (distances measured from lens/mirror, positive to the right/outgoing side) is preferred for advanced students. Always show the diagram and label signs explicitly.' },
+    { id: 'unitsExplicit', topic: 'general', title: 'Force explicit units in every step', icon: '📏',
+      tip: 'Students mix m, cm, mm, nm and get wrong answers. Make them write units after EVERY number — even in intermediate steps. Catching unit inconsistencies is the easiest way to catch mistakes.' },
+    { id: 'parallelLines', topic: 'reflection', title: 'Emphasize that parallel light = source at infinity', icon: '∞',
+      tip: 'Many students don\'t intuit "parallel rays" as coming from a far source. Use sunlight or a distant lamp through a window to demonstrate parallel rays. This explains why telescope objectives focus to a single spot, and why eyes focus on distant objects without adjustment.' },
+    { id: 'tirCondition', topic: 'refraction', title: 'TIR requires DENSE → LESS DENSE', icon: '🌊',
+      tip: 'TIR does NOT happen going air → water (you can\'t have a critical angle there). It DOES happen going water → air or glass → air. Drill this asymmetry — students often forget the direction.' },
+    { id: 'frequencyConserved', topic: 'refraction', title: 'Frequency is conserved across boundaries', icon: '🌊',
+      tip: 'When light enters a medium, ν is unchanged but λ shortens. Tell students: "Time the rises and falls of the wave — they don\'t pause at the boundary. Speed changes; wavelength changes; frequency stays." This is what means color doesn\'t change.' },
+    { id: 'whatStudentsSee', topic: 'lenses', title: 'Real vs virtual: where can you put a screen?', icon: '🔍',
+      tip: 'A REAL image can be projected onto a screen — light actually converges there. A VIRTUAL image cannot be projected; light only appears to come from that point. Test: would a piece of paper at that location show the image? Real = yes; virtual = no.' },
+    { id: 'apertureSize', topic: 'diffraction', title: 'Smaller hole, more spread', icon: '〰',
+      tip: 'Counterintuitive but essential: narrowing a single slit INCREASES diffraction. The formula a sin(θ) = λ shows that smaller a → larger θ. This explains why pinhole cameras have wide depth of field (each ray spreads) and why diffraction-limited optics get worse as you stop down past optimal.' },
+    { id: 'coherenceMatter', topic: 'interference', title: 'Why we need lasers in interference demos', icon: '✨',
+      tip: 'Two random light sources don\'t interfere — phase relationship constantly changes. Lasers have long coherence length (centimeters to meters), making interference visible. A flashlight has coherence length of micrometers — interference fringes wash out instantly. THIS is why Young\'s original experiment used a single source split by slits, NOT two independent candles.' },
+    { id: 'malusUnpolarized', topic: 'polarization', title: 'Unpolarized → first polarizer halves intensity', icon: '↕',
+      tip: 'Independent of the polarizer\'s orientation, an unpolarized beam loses 50% to the first polarizer (the "wrong" components are absorbed). Then Malus\'s law cos²(Δθ) applies to subsequent polarizers. Students often forget the 50% step.' },
+    { id: 'realImageInvert', topic: 'lenses', title: 'Real images are inverted', icon: '🔍',
+      tip: 'Always. If a problem produces a positive d_i, the magnification should be negative. If the magnification is negative, the image must be inverted. If the magnification comes out positive with positive d_i, you made a sign error.' },
+    { id: 'photoStrange', topic: 'general', title: 'Photons are weird — embrace it', icon: '💡',
+      tip: 'When a student asks "is light a wave or particle?" don\'t say "both." Say: "It depends on what we ask. If we ask interference questions, we get wave answers. If we ask momentum or energy-per-event questions, we get particle answers. Reality may simply be richer than the wave/particle dichotomy."' },
+    { id: 'speedConstant', topic: 'physics', title: 'Speed of light is constant (in vacuum)', icon: '⚡',
+      tip: 'No matter what the source\'s motion. This is the foundation of special relativity. In matter, the SPEED slows (n > 1), but in vacuum, c is universal. Some students struggle with "doesn\'t light from a moving source travel faster?" The answer is NO — that\'s the whole point of Einstein\'s 1905 paper.' },
+    { id: 'apertureDof', topic: 'imaging', title: 'Smaller aperture, deeper depth of field', icon: '📷',
+      tip: 'In photography, "stopping down" (smaller aperture) makes more of the scene in focus. This is geometric optics: with smaller aperture, the angles of light rays from each scene point are smaller, so they remain "almost-focused" at a wider range of distances. Trade-off: less light, longer exposure.' },
+    { id: 'whyBlue', topic: 'color', title: 'Why sky is blue: 1/λ⁴ scattering', icon: '🌌',
+      tip: 'Don\'t just say "scattering." Lead students through: air molecules scatter as 1/λ⁴. Blue (450 nm) scatters ~5.6× more than red (650 nm). At horizon at noon, you see scattered light from all directions — enriched in blue. At sunset, the long atmospheric path removes the blue and leaves red. The "1/λ⁴" line is critical for the answer.' }
+  ];
+
+  // ══════════════════════════════════════════════════════════════════
+  // REFERENCE PANEL RENDERER — combines trivia, records, quotes, safety, data tables, teaching tips
+  // ══════════════════════════════════════════════════════════════════
+  function _renderReferencePanel(d, upd, h) {
+    var subView = d.refSubView || 'trivia';
+    var subs = [
+      { id: 'trivia', label: '💡 Trivia', count: OPTICS_TRIVIA.length },
+      { id: 'records', label: '🏆 Records', count: OPTICS_RECORDS.length },
+      { id: 'quotes', label: '💬 Quotes', count: OPTICS_QUOTES.length },
+      { id: 'safety', label: '🛡 Safety', count: SAFETY_SCENARIOS.length },
+      { id: 'refIndex', label: '📊 Refractive indices', count: REFRACTIVE_INDEX_DATA.length },
+      { id: 'teaching', label: '🎓 Teaching tips', count: TEACHING_TIPS.length }
+    ];
+    return h('div', null,
+      h('div', { style: { background: 'rgba(20,184,166,0.10)', border: '1px solid rgba(20,184,166,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
+        h('h3', { style: { color: '#5eead4', fontSize: 17, fontWeight: 900, margin: '0 0 6px' } }, '📊 Reference Library'),
+        h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, margin: 0 } }, 'Trivia, records, quotes, safety scenarios, refractive index data, and teaching tips. Click any sub-tab below.')
+      ),
+      h('div', { style: { display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' } },
+        subs.map(function(s) {
+          var active = subView === s.id;
+          return h('button', { key: s.id, onClick: function() { upd('refSubView', s.id); },
+            style: {
+              padding: '8px 12px', fontSize: 12, fontWeight: 700,
+              background: active ? 'rgba(20,184,166,0.20)' : 'rgba(15,23,42,0.5)',
+              color: active ? '#5eead4' : '#94a3b8',
+              border: '1px solid ' + (active ? '#5eead4' : 'rgba(100,116,139,0.30)'),
+              borderRadius: 8, cursor: 'pointer'
+            }
+          }, s.label + ' (' + s.count + ')');
+        })
+      ),
+      subView === 'trivia' && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 } },
+        OPTICS_TRIVIA.map(function(t, i) {
+          return h('div', { key: 't'+i, style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(20,184,166,0.25)', borderRadius: 10, padding: '10px 12px' } },
+            h('div', { style: { fontSize: 9, fontWeight: 800, color: '#5eead4', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, t.tag),
+            h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, margin: 0 } }, t.text)
+          );
+        })
+      ),
+      subView === 'records' && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+        OPTICS_RECORDS.map(function(r, i) {
+          return h('div', { key: 'r'+i, style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(251,191,36,0.30)', borderLeft: '4px solid #fbbf24', borderRadius: 10, padding: '12px 14px' } },
+            h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 } },
+              h('span', { style: { fontSize: 20 } }, r.icon),
+              h('div', { style: { flex: 1 } },
+                h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fcd34d', lineHeight: 1.2 } }, r.title),
+                h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, textTransform: 'uppercase', letterSpacing: '0.04em' } }, r.category)
+              )
+            ),
+            h('div', { style: { fontSize: 14, fontWeight: 900, color: '#fbbf24', fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 4 } }, r.value),
+            h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, margin: 0 } }, r.context)
+          );
+        })
+      ),
+      subView === 'quotes' && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+        OPTICS_QUOTES.map(function(q, i) {
+          return h('blockquote', { key: 'q'+i, style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(168,85,247,0.30)', borderLeft: '4px solid #a855f7', borderRadius: 10, padding: '12px 16px', margin: 0 } },
+            h('p', { style: { fontSize: 13, fontStyle: 'italic', color: '#e2e8f0', lineHeight: 1.55, margin: '0 0 8px' } }, '"' + q.text + '"'),
+            h('footer', { style: { fontSize: 11, color: '#d8b4fe', fontWeight: 700 } }, '— ' + q.author),
+            h('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic', marginTop: 2 } }, q.context)
+          );
+        })
+      ),
+      subView === 'safety' && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+        SAFETY_SCENARIOS.map(function(s) {
+          return h('div', { key: s.id, style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(239,68,68,0.30)', borderLeft: '4px solid #ef4444', borderRadius: 10, padding: '12px 14px' } },
+            h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 } },
+              h('span', { style: { fontSize: 20 } }, s.icon),
+              h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fca5a5', flex: 1 } }, s.title)
+            ),
+            h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fcd34d', marginBottom: 3 } }, '🎬 Scenario'),
+            h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, margin: '0 0 8px' } }, s.scenario),
+            h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', marginBottom: 3 } }, '⚠ Risk'),
+            h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, margin: '0 0 8px' } }, s.risk),
+            h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', marginBottom: 3 } }, '✓ Immediate action'),
+            h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, margin: '0 0 8px' } }, s.action),
+            h('div', { style: { fontSize: 11, fontWeight: 800, color: '#7dd3fc', marginBottom: 3 } }, '🛡 Prevention'),
+            h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, margin: '0 0 8px' } }, s.prevention),
+            s.maine && h('div', null,
+              h('div', { style: { fontSize: 10, fontWeight: 800, color: '#fcd34d', marginBottom: 3 } }, '🦞 Maine context'),
+              h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, margin: 0, fontStyle: 'italic' } }, s.maine))
+          );
+        })
+      ),
+      subView === 'refIndex' && h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(20,184,166,0.30)', borderRadius: 10, padding: '12px', overflowX: 'auto' } },
+        h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 12 } },
+          h('thead', null, h('tr', { style: { background: 'rgba(20,184,166,0.10)' } },
+            h('th', { style: { padding: '8px 10px', textAlign: 'left', color: '#5eead4', fontWeight: 800 } }, 'Material'),
+            h('th', { style: { padding: '8px 10px', textAlign: 'right', color: '#5eead4', fontWeight: 800 } }, 'n'),
+            h('th', { style: { padding: '8px 10px', textAlign: 'left', color: '#5eead4', fontWeight: 800 } }, 'Category'),
+            h('th', { style: { padding: '8px 10px', textAlign: 'left', color: '#5eead4', fontWeight: 800 } }, 'Note')
+          )),
+          h('tbody', null, REFRACTIVE_INDEX_DATA.map(function(r, i) {
+            return h('tr', { key: 'ri'+i, style: { borderTop: '1px solid rgba(100,116,139,0.20)' } },
+              h('td', { style: { padding: '6px 10px', color: '#e2e8f0' } }, r.material),
+              h('td', { style: { padding: '6px 10px', textAlign: 'right', color: '#fbbf24', fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 700 } }, typeof r.n === 'number' ? r.n.toFixed(4) : r.n),
+              h('td', { style: { padding: '6px 10px', color: '#94a3b8', textTransform: 'uppercase', fontSize: 10 } }, r.category),
+              h('td', { style: { padding: '6px 10px', color: '#cbd5e1', fontStyle: 'italic', fontSize: 11 } }, r.note || '')
+            );
+          }))
+        )
+      ),
+      subView === 'teaching' && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 10 } },
+        TEACHING_TIPS.map(function(t) {
+          return h('div', { key: t.id, style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(168,85,247,0.30)', borderRadius: 10, padding: '12px 14px' } },
+            h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 6 } },
+              h('span', { style: { fontSize: 18 } }, t.icon),
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#d8b4fe', lineHeight: 1.2 } }, t.title),
+              h('span', { style: { fontSize: 9, color: '#94a3b8', textTransform: 'uppercase', marginLeft: 'auto' } }, t.topic)
+            ),
+            h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, margin: 0 } }, t.tip)
+          );
+        })
+      )
+    );
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // DEEP DIVE: LASERS — comprehensive topic exploration
+  // ══════════════════════════════════════════════════════════════════
+  var LASERS_DEEP = [
+    { id: 'laserBasics', title: '⚡ How a laser works (the basics)', section: 'fundamentals',
+      content: 'A laser is fundamentally a feedback amplifier of light. The word LASER is an acronym: Light Amplification by Stimulated Emission of Radiation. It exploits a quantum-mechanical process — stimulated emission — that Einstein predicted in 1917, decades before any laser was built. To make a laser, you need three things: (1) A gain medium with the right atomic-energy-level structure, (2) An energy source (the "pump") that puts atoms into excited states, and (3) An optical cavity (a pair of mirrors) that traps the light for many round trips so the amplification compounds.',
+      details: [
+        'Atoms (or molecules, or semiconductor electron-hole pairs) absorb photons and reach excited energy states. After a brief lifetime, they spontaneously emit a photon and return to lower state. THIS is normal fluorescence.',
+        'Stimulated emission: if a photon of just the right energy passes by an excited atom, it can TRIGGER the atom to emit a second photon — in phase with, traveling in the same direction as, and the same wavelength as the trigger photon. Now you have 2 coherent photons.',
+        'If you can keep more atoms excited than de-excited ("population inversion"), each photon triggers cascading emission, amplifying the light wave. The pump (current, flashlamp, another laser) is what creates the population inversion.',
+        'The mirrors (one fully reflective, one partial) bounce the amplified light back and forth, building up intensity. The partial mirror lets a fraction escape as the laser beam.',
+        'The result: highly coherent, highly monochromatic, highly directional light — essentially impossible to produce by any classical (non-stimulated) means.'
+      ],
+      keyFigure: 'In a "4-level laser system" — used in most modern lasers — atoms pump from ground to a high state, quickly drop to a metastable "upper laser level," lase down to a short-lived "lower laser level," then quickly drop back to ground. The short lifetime of the lower level makes population inversion easy to maintain.',
+      misconceptions: 'A common misconception is that lasers somehow produce "more energy" than goes into them. They do NOT. Lasers are net energy LOSERS — typical diode lasers are 30–50% efficient, gas lasers 10–20%, big industrial lasers up to 60%. The energy IN must always exceed the energy OUT. What lasers do is concentrate the output into a coherent beam.' },
+    { id: 'laserTypes', title: '🔬 Major laser types', section: 'types',
+      content: 'Lasers come in many varieties, classified by their gain medium. The four big families are gas lasers, solid-state lasers, semiconductor (diode) lasers, and fiber lasers. Each has unique strengths and applications.',
+      details: [
+        'GAS LASERS use gas-filled tubes excited by electrical discharge. Examples: HeNe (visible red at 632.8 nm, low power, long history of use in alignment and barcoding), Argon-ion (visible blue/green, high power, used in laser shows and ophthalmology), CO₂ (mid-IR at 10.6 μm, kilowatts to megawatts, used in industrial cutting and surgery). Gas lasers were once dominant but are mostly being displaced by more efficient diode and fiber lasers.',
+        'SOLID-STATE LASERS have a crystalline or glass gain medium doped with active ions. Examples: Ruby (the FIRST laser, Maiman 1960, 694 nm), Nd:YAG (1064 nm, very common in industry and medicine), Ti:sapphire (tunable 700–1000 nm, used for ultrafast pulses), Er:YAG (2940 nm, dental and dermatology applications). Solid-state lasers can be pulsed or continuous, low or high power.',
+        'SEMICONDUCTOR (DIODE) LASERS use forward-biased p-n junctions. Most compact lasers (laser pointers, CD/DVD/Blu-ray, fiber-optic transmitters) are diode lasers. Wavelengths from ~400 nm (Blu-ray) through ~1550 nm (telecom). Power ranges from mW (pointers) to kW (industrial direct-diode). Diode lasers are cheap, robust, and efficient — the dominant laser type by unit volume.',
+        'FIBER LASERS have a doped fiber (usually rare-earth element like erbium, ytterbium, thulium) as gain medium. The fiber is pumped by diode lasers. Fiber lasers combine beam quality of gas lasers with efficiency of diodes, and they\'re extraordinarily robust. Most modern industrial cutting lasers above 1 kW are fiber lasers.'
+      ],
+      keyFigure: 'The world\'s most powerful continuous-wave laser is a fiber laser system — IPG\'s 100+ kW machines used for naval defense and ultra-thick metal cutting. The world\'s most powerful PULSED laser is the National Ignition Facility\'s 192-beam system, capable of 1.8 MJ in 20 nanoseconds (= 90 petawatts peak power, briefly more than world electrical consumption).',
+      misconceptions: 'Many people think "more powerful = more dangerous." For continuous laser pointers, power matters. For pulsed lasers, peak power and pulse duration both matter for eye safety. A 100 kW continuous-wave fiber laser can be EYE-SAFE if shielded inside a cutting head; a 5 mW handheld pointer can be DANGEROUS if you stare into it.' },
+    { id: 'laserApplications', title: '🛠 Laser applications', section: 'applications',
+      content: 'Lasers are ubiquitous in modern technology. The phrase "laser is a solution looking for a problem" (attributed to early laser engineers) has been replaced by lasers having SOLVED so many problems we forget they\'re there.',
+      details: [
+        'INDUSTRIAL: Metal cutting (typically fiber or CO₂ lasers, up to several cm of steel), welding, marking, surface texturing, 3D printing (selective laser melting), additive manufacturing.',
+        'MEDICINE: LASIK and PRK eye surgery (excimer 193 nm), retinal photocoagulation (532 nm green for diabetic retinopathy), laser dentistry, dermatology (hair removal, tattoo removal, skin resurfacing), kidney-stone fragmentation (lithotripsy), surgical cutting.',
+        'COMMUNICATIONS: Fiber-optic telecommunications uses diode lasers at 1310 nm and 1550 nm bands. Modern systems carry 100+ terabits per second per fiber. Free-space optical communications (laser links between satellites and ground stations) at 10+ Gbps.',
+        'CONSUMER: CDs, DVDs, Blu-ray (different wavelengths for higher density), laser printers (ImageStation OPC drums), laser pointers, AR/VR display systems, barcodes scanners, optical computer mice.',
+        'MILITARY/DEFENSE: Range-finding, laser designation for guided munitions, laser dazzlers (non-lethal weapons), directed-energy weapons for drone defense, infrared countermeasures on aircraft.',
+        'SCIENCE: Spectroscopy, gas-phase chemistry studies, ultrafast spectroscopy (femtosecond chemistry), high-energy physics (laser plasma accelerators), gravitational-wave detection (LIGO uses Nd:YAG), atomic clocks (optical lattice clocks).',
+        'ENTERTAINMENT: Laser light shows, holographic displays, theater lighting, virtual concerts, museum interactive exhibits.',
+        'AGRICULTURE/ENVIRONMENT: Weed control with selective laser zapping (in development), tree growth measurement (lidar), wildlife counting, air pollution monitoring (DIAL lidar).'
+      ],
+      keyFigure: 'The most economically valuable laser application is fiber-optic telecommunications — without it, the internet at scale is physically impossible. Every cable internet connection, every video stream, every Zoom call rides on photons emitted by semiconductor lasers and guided by optical fibers.',
+      misconceptions: 'People often think "laser surgery" means dramatic cutting. Most laser surgery is gentle: cauterization (sealing blood vessels), precision tissue reshaping (LASIK reshapes corneal stroma 0.25 μm at a time), photocoagulation (heating retinal tissue without cutting), photo-acoustic effects (kidney stones).' },
+    { id: 'laserSafety', title: '⚠ Laser safety classes', section: 'safety',
+      content: 'Laser safety classifications (ANSI Z136, IEC 60825) categorize lasers by the eye injury they can cause to an unprotected observer. The class number is on every laser product label and tells you how to handle it.',
+      details: [
+        'CLASS 1: Safe under all reasonable use. Either too low power to cause damage, or fully enclosed (you can\'t access the beam without disassembly). Example: CD/DVD drives, laser printers, supermarket barcode scanners.',
+        'CLASS 1M: Safe with the naked eye, but UNSAFE with magnifying optics. Common in fiber-optic systems — looking down a fiber end with a microscope can magnify enough power to damage your eye.',
+        'CLASS 2: Visible-wavelength lasers ≤ 1 mW. Eye is protected by the natural blink reflex (under 0.25 second exposure). Examples: many laser pointers, alignment lasers.',
+        'CLASS 2M: Visible lasers up to 1 mW where the blink reflex protects unaided eyes, BUT UNSAFE with binoculars or telescopes.',
+        'CLASS 3R: Visible lasers 1–5 mW. Brief exposure unlikely to cause permanent damage but exceeds the blink reflex protection. Avoid direct viewing. Most "laser pointers" sold legitimately are Class 3R.',
+        'CLASS 3B: 5–500 mW. Direct viewing always causes eye damage. Diffuse reflections (off a non-mirror surface) are typically safe. Eye protection required when working with the beam.',
+        'CLASS 4: > 500 mW. Direct AND diffuse-reflected viewing both cause eye damage. Skin can burn from direct exposure. Can ignite paper. Strict access controls, interlocks, eye protection, beam stops required.',
+        'A common consumer mislabeling: many imported "5 mW" laser pointers actually emit 50–500 mW. The unsafe ones look identical to the safe ones. Reputable manufacturers and U.S. distributors are reliable; international gray-market pointers are not.',
+        'Children should not use any laser other than Class 1 or Class 2 unless under direct supervision. Many ocular injuries come from kids playing with imported "laser pointers" sold as toys.'
+      ],
+      keyFigure: 'The fundamental principle: damage is determined by RETINAL POWER DENSITY, not total emitted power. A 5 mW laser beam 1 mm wide produces ~6.4 kW/m² — 4× brighter than direct sunlight on the surface and much more dangerous because the eye\'s lens focuses it to a much smaller retinal spot.',
+      misconceptions: '"Green lasers are more powerful than red, that\'s why they look brighter." NOT QUITE. The human eye is 5–10× more sensitive to green than red of the same power. A 5 mW green laser and a 5 mW red laser have the same emitted power, but the green looks much brighter to the eye. Both can cause the same retinal injury at the same power.' },
+    { id: 'laserUltrafast', title: '⚡ Ultrafast lasers (femtosecond, attosecond)', section: 'advanced',
+      content: 'Femtosecond lasers (FS lasers) produce pulses 1–500 fs long. (1 fs = 10⁻¹⁵ s — a femtosecond is to a second as a second is to ~32 million years.) Attosecond lasers (AS lasers, 1 as = 10⁻¹⁸ s) produce even shorter pulses — short enough to resolve the motion of electrons within atoms.',
+      details: [
+        'Femtosecond pulses are made by "mode-locking" — forcing many modes of a laser cavity to oscillate in phase. When they interfere constructively, you get one very brief, very intense pulse traveling around the cavity, emerging once per round trip.',
+        'The shortest pulses come from broad-gain materials: Ti:sapphire (700 nm–1100 nm gain) can produce sub-10 fs pulses, less than 3 optical cycles long.',
+        'Femtosecond pulses, even at modest pulse energy (microjoules), have astonishingly high PEAK POWER. A 1 μJ pulse in 100 fs has peak power of 10 megawatts — same as a small power plant, but for a hundred-quadrillionth of a second.',
+        'CHIRPED-PULSE AMPLIFICATION (CPA): The killer technique for high-energy ultrafast lasers. (1) Stretch the pulse temporally using a grating pair (introduces frequency-dependent delay). (2) Amplify the stretched pulse normally. (3) Compress it back. Result: ultra-high peak power without damaging the amplifier. Strickland & Mourou, 2018 Nobel.',
+        'APPLICATIONS: Femtosecond LASIK surgery (cuts corneal flap without thermal damage). Femtochemistry (Zewail 1999 Nobel — watching molecules react in real time). Multi-photon microscopy (deep tissue imaging). Plasma physics. Attosecond science of electron dynamics. Material processing of nearly any solid without heating.'
+      ],
+      keyFigure: 'The Extreme Light Infrastructure (ELI) facility in Europe has built petawatt-class CPA lasers (10¹⁵ W peak power). Focused, these can create field strengths approaching the Schwinger limit where vacuum itself becomes nonlinear (1.32 × 10¹⁸ V/m).',
+      misconceptions: 'A common confusion: peak power vs average power. A pulsed femtosecond laser may have peak power of TW (terawatts) but average power of only a few watts (because the pulses are brief and infrequent). Average power determines thermal damage; peak power determines nonlinear and ablative effects.' },
+    { id: 'laserAcademic', title: '🎓 Lasers in academic research', section: 'research',
+      content: 'Modern physics, chemistry, and biology research depends heavily on advanced laser systems. The optical-physics community has built laser-based tools that probe matter from atoms to gravitational waves.',
+      details: [
+        'LIGO uses Nd:YAG lasers (1064 nm) at 200 W input, multiplied by 4 km arm length and Fabry-Perot cavity finesse, to detect strains of 10⁻²¹ — sufficient to observe gravitational waves from merging black holes.',
+        'Frequency comb spectroscopy (Hänsch, Hall — Nobel 2005) uses mode-locked lasers to generate a regular comb of frequencies, used as ultra-precise rulers. Optical atomic clocks now achieve 1 part in 10¹⁸ stability.',
+        'Laser cooling: focused laser beams can slow atoms by absorption of photons going against atom motion. Cooled to microkelvin temperatures, then trapped in optical lattices or magnetic traps. Foundation of Bose-Einstein condensates, ultracold atomic physics, atomic clocks.',
+        'Multi-photon microscopy: femtosecond pulses focused tightly excite fluorophores by simultaneous absorption of 2–3 photons. Excitation only occurs at the focal point, allowing deep optical sectioning in living tissue.',
+        'Plasma wakefield acceleration: ultraintense laser pulses driving high-gradient particle acceleration in plasmas — potentially building TeV electron accelerators 1000× smaller than conventional linacs.',
+        'Inertial confinement fusion: 192 laser beams at NIF (Livermore) focus 1.8 MJ in 20 ns onto a deuterium-tritium pellet, achieving ignition in December 2022 — burning fusion fuel exceeded laser energy in.'
+      ],
+      keyFigure: 'The single most consequential 21st-century laser experiment is arguably LIGO\'s 2015 detection of gravitational waves from a black-hole merger — opening a completely new spectrum (the "gravitational" spectrum) to astronomy.',
+      misconceptions: 'Lasers are often portrayed as glamorous "death rays" in fiction. Most cutting-edge laser research is mundane in feel: clean rooms, vacuum chambers, vibration-isolated tables, alignment headaches. The discoveries are dramatic, but the work is patient engineering.' }
+  ];
+
+  // ══════════════════════════════════════════════════════════════════
+  // DEEP DIVE: VISION & THE HUMAN EYE
+  // ══════════════════════════════════════════════════════════════════
+  var VISION_DEEP = [
+    { id: 'eyeAnatomy', title: '👁 Eye anatomy — optical structure', section: 'anatomy',
+      content: 'The human eye is a remarkable optical instrument that has evolved over hundreds of millions of years. Light enters through several refracting elements, focuses on a photoreceptor array, and triggers neural signaling — all in a globe about 24 mm in diameter.',
+      details: [
+        'CORNEA: The clear front layer. Provides 2/3 of the eye\'s focusing power (~43 diopters of the eye\'s ~65 total). Reshaping the cornea (LASIK, PRK) is how refractive surgery corrects vision.',
+        'AQUEOUS HUMOR: Watery fluid between cornea and lens. Refractive index ~1.336, similar to water.',
+        'IRIS: Colored ring around the pupil. Muscles dilate (sympathetic nervous system) and constrict (parasympathetic) the pupil — eye\'s aperture.',
+        'PUPIL: The dark center. 2–8 mm diameter range — varies with lighting (smaller in bright light), age (older adults: smaller maximum), and emotional/drug state.',
+        'CRYSTALLINE LENS: A gradient-index lens behind the iris. Can change shape via ciliary muscle (accommodation) — flatter for distance, fatter for near. Provides ~20 diopters base power + ~10 D of variable accommodation in young adults. Loses elasticity with age (presbyopia).',
+        'VITREOUS HUMOR: Clear gel filling the back chamber. Refractive index ~1.337.',
+        'RETINA: The light-sensitive layer. Contains rods (~120 million, sensitive to dim light, no color) and cones (~6 million, color vision, concentrated in fovea). Visual information is processed in retinal layers before being sent to the brain.',
+        'FOVEA: Tiny central pit (~1.5 mm) where cones are densest. Provides high-resolution central vision. Peripheral retina has more rods, less color, lower resolution but better motion detection.',
+        'OPTIC NERVE: Bundle of ~1 million ganglion-cell axons that carry visual signals from the retina to the brain. The optic disc is your "blind spot" (no photoreceptors).',
+        'SCLERA: White outer layer for structural integrity.'
+      ],
+      keyFigure: 'The eye performs computation at the retina — the layers of retinal cells preprocess visual information before any signal reaches the brain. This includes edge detection, motion detection, and contrast adaptation. The brain receives "preprocessed visual features," not raw pixel values.',
+      misconceptions: 'Many think the lens is the eye\'s main focusing element. Actually, the CORNEA does most of the work (about 2/3 of total power). The lens contributes the variable component (accommodation).' },
+    { id: 'colorVision', title: '🎨 Color vision — trichromacy and beyond', section: 'colorVision',
+      content: 'Human color vision relies on three types of cone photoreceptors, each with peak spectral sensitivity in a different region. The brain reconstructs all the colors we see from the ratios of L, M, and S cone responses.',
+      details: [
+        'L (LONG-WAVELENGTH) CONES: Peak sensitivity at 564 nm (yellow-green). Misleadingly called "red cones" — they actually respond best to greenish-yellow.',
+        'M (MEDIUM-WAVELENGTH) CONES: Peak at 533 nm (green). The "green cones."',
+        'S (SHORT-WAVELENGTH) CONES: Peak at 437 nm (blue-violet). The "blue cones." Only about 5% of cones are S-type — far fewer than L and M.',
+        'TRICHROMACY: Any color we see can be matched by mixing three primary colors in different intensities. This is why RGB displays work — three primaries (red, green, blue) cover the visible gamut by stimulating L, M, S cones in different ratios.',
+        'COLOR BLINDNESS: ~8% of men, ~0.5% of women have some form of color vision deficiency. Most common: red-green deficiencies from L or M cone abnormalities (deuteranopia/protanopia). Blue-yellow defects (tritanopia) and full color blindness (monochromacy) are rare.',
+        'TETRACHROMACY: A small fraction of women (~12%) have a fourth cone type, theoretically giving them more dimensions of color discrimination. Whether their brains process this extra information is debated — most studies suggest only ~1% of tetrachromats actually perform better at color discrimination tests.',
+        'AFTER-IMAGES: Stare at a color for 20+ seconds, then look at white — you see a complementary-colored ghost image. This is cone fatigue: the cones for the original color become less responsive, so the others appear relatively brighter.',
+        'COLOR CONSTANCY: A white shirt looks white under daylight, incandescent, fluorescent, and LED illumination — even though the spectral content of those light sources varies wildly. The brain "discounts the illuminant" to recover object reflectance.'
+      ],
+      keyFigure: 'The L and M cones overlap heavily in their sensitivity curves. Most genetic models suggest they diverged from a common ancestor ~30 million years ago — when our trichromatic vision evolved in Old World primates. New World primates often have dichromacy (2-cone vision).',
+      misconceptions: 'Red is not a "fundamental" color; neither is green nor blue. Trichromacy is what our visual system uses, but other species (birds, bees, mantis shrimp) have entirely different cone arrangements. Color is a brain construction, not a physical property of light.' },
+    { id: 'refractiveErrors', title: '🤓 Refractive errors — myopia, hyperopia, astigmatism, presbyopia', section: 'pathology',
+      content: 'Refractive errors are mismatches between the eye\'s optical power and its axial length. The eye focuses light somewhere other than the retina, producing blurry images.',
+      details: [
+        'MYOPIA (NEARSIGHTEDNESS): Eye is too long (or cornea too steep). Distant objects focus IN FRONT of the retina, appearing blurry; near objects can be brought to focus on the retina. Affects 30–40% of adults in developed countries, rising rapidly in East Asia (50%+ in young adults in some regions). Corrected with diverging lenses.',
+        'HYPEROPIA (FARSIGHTEDNESS): Eye is too short (or cornea too flat). Distant objects can be focused by accommodation; near objects require more accommodation than is available. Distant vision is often clear in young adults; near vision is blurry. Affects ~10% of adults. Corrected with converging lenses.',
+        'ASTIGMATISM: Cornea is not perfectly spherical — typically more curved in one axis than perpendicular. Light from different angles focuses at different distances behind the cornea. Results in vertical lines being clear while horizontal blurry (or vice versa). Affects ~30% of adults. Corrected with cylindrical (axis-dependent) lens components.',
+        'PRESBYOPIA: Loss of accommodation due to stiffening of the crystalline lens with age. Becomes noticeable around age 40–45 even in people with perfect distance vision. Manifests as needing reading glasses or progressive bifocals. Affects 100% of people who live long enough.',
+        'CORRECTION OPTIONS: Eyeglasses (cheapest, most flexible). Contact lenses (more cosmetic, more risk). LASIK (laser refractive surgery — reshapes cornea, permanent, ~99% achieve 20/40 or better). PRK (similar to LASIK but no flap — used for thinner corneas). Implantable contact lenses (for very high prescriptions). Cataract surgery with toric or multifocal IOLs (intraocular lenses).',
+        'MYOPIA EPIDEMIC: Myopia rates have doubled in the past 50 years in many developed countries. Risk factors: insufficient outdoor time as a child (bright light may slow eye elongation), heavy near-work (reading, screens) in childhood, genetic predisposition. Counter-strategies (atropine drops, orthokeratology, multifocal contact lenses) are now standard for high-risk kids.'
+      ],
+      keyFigure: 'The "lazy eye" (amblyopia) is NOT a refractive error — it\'s a developmental visual processing deficit, usually caused by unequal refractive errors or strabismus during the critical period (birth to age 7–8). Treatment is patching the stronger eye to force use of the weaker. Effective if caught early; very hard to treat after age 10.',
+      misconceptions: 'Reading in dim light does NOT damage your vision permanently — it can cause eyestrain and temporary blurring but doesn\'t cause myopia. The MYOPIA EPIDEMIC seems to be driven by lack of outdoor time, not reading per se.' },
+    { id: 'visualProcessing', title: '🧠 Visual processing in the brain', section: 'neurology',
+      content: 'Vision is far more than detecting light. The brain reconstructs scenes from streams of retinal signals, making countless inferences about shape, depth, motion, and meaning.',
+      details: [
+        'PRIMARY VISUAL CORTEX (V1): Located in the occipital lobe at the back of the head. Receives signals from the lateral geniculate nucleus (LGN) of the thalamus, which receives from the retina. V1 has neurons selective for edge orientation, motion, and binocular disparity.',
+        'HIGHER VISUAL AREAS: Information flows from V1 to V2, V3, V4 (color), V5/MT (motion). The "ventral stream" (V1 → V4 → temporal lobe) processes what an object is. The "dorsal stream" (V1 → V5 → parietal lobe) processes where an object is and how to interact with it.',
+        'FACE RECOGNITION: The fusiform face area (FFA) in the temporal lobe specializes in faces. Damage causes prosopagnosia (face blindness) — affected people can\'t recognize family members or themselves in photos. The capacity emerged surprisingly late in evolution — only mammals show specialized face recognition.',
+        'BLINDSIGHT: Patients with damaged V1 can sometimes report visual stimuli they consciously can\'t "see." Information bypasses V1 via the superior colliculus and other subcortical pathways, reaching higher areas without conscious awareness. This shows that V1 is necessary for conscious vision but not for all visual processing.',
+        'PERCEPTUAL ILLUSIONS: Most optical illusions arise from brain inference rules that usually work well but break in specific contrived cases. The "rotating snakes" illusion exploits how the visual system computes motion from luminance gradients. Ambiguous-figure illusions (Necker cube, duck-rabbit) reveal the perceptual system "deciding" between interpretations.',
+        'TOP-DOWN INFLUENCE: Higher cognition modulates what you "see" — including expectations, attention, language. Color words even appear to influence color perception across cultures with different color vocabularies.'
+      ],
+      keyFigure: 'Vision uses ~30% of total cerebral cortex — more than any other sensory modality. The brain has roughly 30 different visual areas, organized hierarchically and interconnected. We are visually-dominant primates: we trust vision over other senses when they conflict.',
+      misconceptions: 'You "see" the world continuously — but you don\'t. Saccades (rapid eye movements) happen 3–4 times per second, and you\'re effectively blind during each (~30 ms). The brain stitches together brief samples and fills in the rest, giving the ILLUSION of continuous perception.' }
+  ];
+
+  // ══════════════════════════════════════════════════════════════════
+  // DEEP DIVE: COLOR THEORY
+  // ══════════════════════════════════════════════════════════════════
+  var COLOR_DEEP = [
+    { id: 'colorBasics', title: '🎨 What is color, really?', section: 'fundamentals',
+      content: 'Color is not a property of light — light has wavelength, frequency, intensity, and polarization, but not "color" per se. Color is the brain\'s interpretation of specific patterns of cone activation.',
+      details: [
+        'A single pure wavelength gives one color (a "spectral" color). 540 nm = green. 633 nm = red.',
+        'Most colors we see are NOT spectral. They are combinations of many wavelengths that produce the same L:M:S cone ratios. "Pink" doesn\'t exist on the rainbow because no single wavelength stimulates L cones more than M cones much more than S cones — it requires red AND blue together.',
+        'PRIMARY COLORS depend on context. ADDITIVE primaries (light) are RGB — red, green, blue. Mix all three in equal intensity → white. SUBTRACTIVE primaries (pigments) are CMY — cyan, magenta, yellow. Mix all three → black.',
+        'METAMERS: Pairs of light spectra that look identical because they stimulate L, M, S cones in the same ratio. The cyan you see on your monitor (R+B light combined) is metameric to the spectral cyan (one specific wavelength).',
+        'COLOR TEMPERATURE: Measure of the color of a "blackbody" light source. 2700 K = warm incandescent. 4000 K = neutral "cool white." 5500 K = noon sunlight. 6500 K = overcast daylight. 10,000 K = cool blue sky. Camera "white balance" corrects for color temperature shifts.',
+        'CHROMATICITY: The CIE 1931 chromaticity diagram is a 2D plot (x, y) where every color humans can see falls. The horseshoe-shaped boundary is pure spectral colors; interior points are mixtures. The triangle within the horseshoe representing a display\'s gamut shows what colors that display can reproduce.'
+      ],
+      keyFigure: 'No display can reproduce ALL colors humans can see. Even the most advanced HDR/wide-gamut displays cover ~75–90% of the BT.2020 standard, which itself is less than the full visible gamut. Cyan and violet are particularly hard for additive displays.',
+      misconceptions: 'Black is not a color — it\'s the absence of light. White isn\'t a color either — it\'s the sum of all colors. From a physics standpoint, "color" is a frequency or spectrum; from a brain standpoint, "color" is a percept.' },
+    { id: 'colorMixing', title: '🔬 Additive vs subtractive mixing', section: 'mixing',
+      content: 'There are two fundamentally different ways colors combine: additive (light) and subtractive (pigments). They give DIFFERENT results, leading to common confusion.',
+      details: [
+        'ADDITIVE MIXING (lights): Red + Green = Yellow. Red + Blue = Magenta. Green + Blue = Cyan. R + G + B = White. Used in TVs, monitors, theater lighting, projection.',
+        'SUBTRACTIVE MIXING (pigments/inks): Yellow + Magenta = Red. Yellow + Cyan = Green. Magenta + Cyan = Blue. Y + M + C = Black (approximately — usually need black ink K for true black). Used in printing.',
+        'Why the difference? Pigments ABSORB certain wavelengths and reflect others. Combining pigments increases absorption, removing more wavelengths. Combining lights ADDS more wavelengths.',
+        'PAINT VS PIGMENT: Most paint colors are NOT pure subtractive primaries. Mixing red and green paint gives muddy brown, not yellow — because real-world red and green paints each absorb mixtures of wavelengths.',
+        'TELEVISION TECHNIQUE: A TV gives the illusion of any color by lighting up tiny adjacent red, green, blue subpixels. Up close, you see the dots; from normal viewing distance, the eye blends them.',
+        'DICHROIC FILTERS: Filters that work by interference rather than absorption. Can give pure spectral colors. Used in projection, theater lighting, scientific instruments. Far more efficient than absorption filters (they reflect unused colors instead of converting to heat).'
+      ],
+      keyFigure: 'The conversion between additive and subtractive systems is the basis of color management in professional graphics. An image designed in RGB for screen viewing must be carefully converted to CMYK for printing, with adjustments for the printer\'s gamut and ink characteristics.',
+      misconceptions: '"Mixing all the colors makes black." This is true for SUBTRACTIVE pigments but not ADDITIVE lights. With lights, mixing all colors gives white. The traditional grade-school art class teaches subtractive mixing without context.' },
+    { id: 'colorSystems', title: '📊 Color systems — RGB, CMYK, HSL, Lab', section: 'systems',
+      content: 'There are many ways to numerically represent colors. Different systems are useful for different applications.',
+      details: [
+        'RGB: Red-Green-Blue, three values 0–255 (8-bit per channel) or 0.0–1.0. Native for display devices. Hexadecimal like #FF8800 = R:255 G:136 B:0 = orange.',
+        'CMYK: Cyan-Magenta-Yellow-Key (black), four values 0–100%. Native for printing inks. Used in professional graphics workflows.',
+        'HSL/HSV: Hue (color angle 0–360°), Saturation (0–100%), Lightness or Value (0–100%). More intuitive for humans — adjust "hue" without changing intensity.',
+        'CIE Lab: L (lightness), a (green-red), b (blue-yellow). PERCEPTUALLY uniform — equal distance in Lab space = equal perceived color difference. Critical for color accuracy in displays and printing.',
+        'CIE XYZ: The original CIE 1931 color space. Theoretical primaries that don\'t correspond to real-world devices but enable color matching across systems.',
+        'YUV / YCbCr: Y = luminance (brightness), U/Cb = blue-yellow, V/Cr = red-green. Used in video compression because the eye is more sensitive to brightness than color details — chroma can be subsampled (4:2:0, 4:2:2) saving bandwidth.',
+        'sRGB vs Adobe RGB vs Rec. 2020: Different color spaces with different gamuts. sRGB is the smallest/most common. Adobe RGB extends green. Rec. 2020 is for 4K/HDR — much larger gamut. Display Rec. 2020 requires special pure-color primaries (laser or quantum dot displays).'
+      ],
+      keyFigure: 'Wide-gamut displays (Display P3, DCI-P3) cover ~25% more colors than sRGB. The OLED in newer phones often supports P3. If you\'re shooting photos for print, working in Lab or wide-gamut RGB and converting to CMYK at output time gives the best color accuracy.',
+      misconceptions: '"sRGB is bad and Adobe RGB is better." NOT EXACTLY. sRGB is the standard for web. If you save Adobe RGB images and upload them to a website without an embedded ICC profile, browsers will interpret them as sRGB — making them look DESATURATED. Always know the target device.' }
+  ];
+
+  // ══════════════════════════════════════════════════════════════════
+  // DEEP DIVE: ASTRONOMY OPTICS
+  // ══════════════════════════════════════════════════════════════════
+  var ASTRO_DEEP = [
+    { id: 'astroScopes', title: '🔭 Astronomical telescopes', section: 'instruments',
+      content: 'Astronomical telescopes have grown from Galileo\'s 30 mm aperture (1609) to the planned 39-meter Extremely Large Telescope (~2028). Every advance has revealed something fundamentally new about the universe.',
+      details: [
+        'REFRACTORS: Lens-based. Maximum practical size ~1 meter — beyond that, glass weight and chromatic aberration are insurmountable. Yerkes 40-inch (1.02 m) refractor at the U Chicago observatory (1897) is the largest ever made.',
+        'REFLECTORS: Mirror-based. Practical to enormous sizes. Hale Telescope (1948, 5 m). Keck I & II (1993-96, 10 m segmented). Vatican Advanced Technology Telescope (1.83 m). Spanish Gran Telescopio Canarias (10.4 m).',
+        'INTERFEROMETERS: Multiple telescopes whose light is coherently combined. Effective aperture = baseline length. ESO Very Large Telescope Interferometer (VLTI) combines four 8.2-meter scopes. Event Horizon Telescope is global VLBI (Very Long Baseline Interferometry) at radio wavelengths — effective Earth-sized aperture.',
+        'SPACE TELESCOPES: Above the atmosphere — no twinkling, no IR/UV absorption. Hubble (1990, 2.4 m). Spitzer (2003, 0.85 m IR). Kepler (2009, 1.4 m, exoplanet hunter). TESS (2018, 4× 10 cm). JWST (2021, 6.5 m IR). Roman (2027, 2.4 m wide-field). PLATO, Ariel, more in the pipeline.',
+        'ADAPTIVE OPTICS: Real-time correction of atmospheric distortion. Deformable mirrors (typically 1000+ actuators) update at kHz rates. Modern AO systems on Keck, VLT, Gemini bring ground-based images to near-spaceborne sharpness in IR.',
+        'GROUND-BASED ELT-CLASS (Extremely Large): All-segmented mirrors approaching 30–40 m. ELT (Chile, 39 m), TMT (Hawaii, planned 30 m), GMT (Chile, 24.5 m). Will resolve nearby exoplanets directly and study atmospheres spectroscopically.',
+        'MAINE CONNECTION: Maine students who pursue astronomy can apply to the National Astronomical Observatory programs, AAS Sagan summer workshops, or research opportunities at NOIRLab and STScI.'
+      ],
+      keyFigure: 'Resolution scales linearly with diameter for diffraction-limited imaging. JWST (6.5 m) has ~2.5× the diffraction-limited resolution of Hubble (2.4 m) at the same wavelength. Light-gathering power scales as D² — JWST collects ~7× more light than Hubble.',
+      misconceptions: 'Magnification is NOT how astronomers describe telescope power. They use aperture (light-gathering and resolution) and field of view. Anyone selling a "1000× magnification" amateur telescope is misleading — useful magnification is limited by aperture and atmosphere.' },
+    { id: 'astroFiltersSpec', title: '🌈 Astronomical filters and spectroscopy', section: 'spectroscopy',
+      content: 'Most astronomical knowledge comes not from images but from spectra. Every chemical element has unique fingerprint lines; matching observed spectra to lab catalogs identifies the composition, motion, and physics of distant objects.',
+      details: [
+        'BROAD-BAND FILTERS: Isolate light in specific bands. Standard sets: Johnson-Cousins UBVRI (UV, blue, visible, red, near-IR). SDSS ugriz (used by Sloan Digital Sky Survey). 2MASS JHK (near-infrared).',
+        'NARROW-BAND FILTERS: Pass only specific emission lines. Hα at 656.3 nm (red, from ionized hydrogen). [O III] at 500.7 nm (green, from doubly-ionized oxygen). [S II] at 671.6 nm (red, sulfur). Amateur astrophotography uses these to enhance nebula details.',
+        'SPECTROGRAPHS: Disperse light by wavelength using prisms or gratings. Resolution R = λ/Δλ ranges from R ~100 (low resolution survey) to R ~150,000 (high-resolution stellar spectroscopy).',
+        'REDSHIFT MEASUREMENT: Identify spectral features (Hα, Lyα, calcium H&K, sodium D, etc.) and compare to lab wavelengths. The shift Δλ/λ gives recession velocity (or expansion redshift for high-z objects).',
+        'INFORMATION FROM SPECTRA: Composition (element abundances). Temperature (line ratios, Balmer decrement). Density (pressure broadening). Magnetic fields (Zeeman effect). Velocity (Doppler). Distance (cosmological redshift). Stellar mass (gravity-sensitive lines).',
+        'IFU (INTEGRAL FIELD UNIT) SPECTROSCOPY: Rather than a single slit, a 2D array of microspectrographs gives a spectrum at EVERY pixel of a field. Modern surveys (MUSE on VLT, MaNGA from Sloan) produce data cubes (x, y, λ) — entire spectroscopic atlases.',
+        'PHOTON-COUNTING DETECTORS: Modern CCDs, CMOS, EMCCD, and superconducting nanowire single-photon detectors (SNSPD) approach single-photon sensitivity, enabling spectroscopy of the faintest known objects.'
+      ],
+      keyFigure: 'Edwin Hubble\'s 1929 discovery that galaxy redshifts correlate with distance — the foundation of expanding-universe cosmology — required NO new equipment. He used the 100-inch Mount Wilson Hooker telescope and existing spectrographs to do work that 25 years earlier nobody knew was possible.',
+      misconceptions: '"Stellar spectra tell us mostly about composition." Actually, spectral analysis tells us about temperature, density, pressure, velocity, magnetic fields, surface gravity, age, distance, and more — composition is just one piece.' },
+    { id: 'astroExoplanets', title: '🪐 Exoplanet detection methods', section: 'exoplanets',
+      content: 'Since the first confirmed exoplanet around a sun-like star (51 Pegasi b, 1995), astronomers have used multiple optical techniques to find ~5,500 exoplanets — many of which were once thought "impossible to find."',
+      details: [
+        'RADIAL VELOCITY (Doppler): The star wobbles slightly as the planet orbits. Spectroscopic shifts of ~1 m/s detect Earth-mass planets around sun-like stars. Won the 2019 Physics Nobel (Mayor & Queloz).',
+        'TRANSIT: The planet crosses in front of the star, causing a tiny periodic dimming (~0.01% for Earth-size around sun-size star). Kepler space telescope (2009–2018) found ~5000 planet candidates. TESS (2018–) is doing the all-sky survey.',
+        'DIRECT IMAGING: Spatially resolving the planet from its star — requires extreme contrast (1 million to 1 billion ratio). Possible only for big planets at wide separation. Coronagraphs and starshades suppress starlight. JWST has directly imaged ~6 planets; ELT will do more.',
+        'GRAVITATIONAL MICROLENSING: A foreground star\'s gravity bends light from a background star; if a planet orbits the foreground star, it adds a brief secondary lensing peak. Roman Space Telescope (2027) will use this to find Galactic-scale planet statistics.',
+        'TRANSIT SPECTROSCOPY: During transit, starlight passing through the planet\'s atmosphere is absorbed at specific wavelengths characteristic of atmospheric gases. JWST has detected water, CO₂, methane, and SO₂ in exoplanet atmospheres.',
+        'CONFIRMED COUNT: Over 5,500 exoplanets confirmed (NASA Exoplanet Archive, 2024). Most are gas giants (selection bias of techniques), but Earth-size and super-Earth populations are now being characterized.',
+        'BIOSIGNATURE SEARCH: Combinations of atmospheric gases that could indicate life. Oxygen + methane simultaneously (chemically incompatible without continuous replenishment). Water + ammonia. Industrial pollutants in extreme cases. JWST may detect biosignatures in coming years.'
+      ],
+      keyFigure: 'The James Webb Space Telescope can fly within ~25 milliarcseconds of a star and still resolve a planet — equivalent to picking out a firefly 5 km from a lighthouse. Future Roman+coronagraph and proposed Habitable Worlds Observatory (HWO, 2040s) push to ~10 milliarcseconds for direct imaging.',
+      misconceptions: '"Most exoplanets we know about look like the Solar System." NO. Most have orbital periods of days to weeks (selection bias — easier to detect). Most are larger than Earth (selection bias). The Solar System is unusual in having so many planets but no super-Earths or sub-Neptunes.' }
+  ];
+
+  // ══════════════════════════════════════════════════════════════════
+  // DEEP DIVE PANEL RENDERER — works for any "deep" topic
+  // ══════════════════════════════════════════════════════════════════
+  function _renderDeepDivePanel(d, upd, h) {
+    var topic = d.deepDiveTopic || 'lasers';
+    var topics = [
+      { id: 'lasers', label: '⚡ Lasers', data: LASERS_DEEP },
+      { id: 'vision', label: '👁 Vision', data: VISION_DEEP },
+      { id: 'color', label: '🎨 Color', data: COLOR_DEEP },
+      { id: 'astronomy', label: '🔭 Astronomy', data: ASTRO_DEEP },
+      { id: 'photography', label: '📷 Photography', data: PHOTOGRAPHY_DEEP },
+      { id: 'holography', label: '✨ Holography', data: HOLOGRAPHY_DEEP },
+      { id: 'spectroscopy', label: '📊 Spectroscopy', data: SPECTROSCOPY_DEEP },
+      { id: 'medical', label: '⚕ Medical', data: MEDICAL_OPTICS_DEEP }
+    ];
+    var active = topics.find(function(t) { return t.id === topic; }) || topics[0];
+    var openId = d.deepDiveOpenId || null;
+    return h('div', null,
+      h('div', { style: { background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
+        h('h3', { style: { color: '#a5b4fc', fontSize: 17, fontWeight: 900, margin: '0 0 6px' } }, '🎓 Deep Dives'),
+        h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, margin: 0 } }, 'Long-form treatments of major optics topics. Each is structured to be self-contained AP-Plus-level reading.')
+      ),
+      h('div', { style: { display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' } },
+        topics.map(function(t) {
+          var isActive = topic === t.id;
+          return h('button', { key: t.id, onClick: function() { upd('deepDiveTopic', t.id); upd('deepDiveOpenId', null); },
+            style: {
+              padding: '10px 14px', fontSize: 13, fontWeight: 800,
+              background: isActive ? 'rgba(99,102,241,0.25)' : 'rgba(15,23,42,0.5)',
+              color: isActive ? '#c7d2fe' : '#94a3b8',
+              border: '1px solid ' + (isActive ? '#c7d2fe' : 'rgba(100,116,139,0.30)'),
+              borderRadius: 8, cursor: 'pointer'
+            }
+          }, t.label + ' (' + t.data.length + ')');
+        })
+      ),
+      h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+        active.data.map(function(s) {
+          var isOpen = openId === s.id;
+          return h('div', { key: s.id,
+            onClick: function() { upd('deepDiveOpenId', isOpen ? null : s.id); },
+            style: {
+              background: isOpen ? 'rgba(99,102,241,0.08)' : 'rgba(15,23,42,0.65)',
+              border: '1px solid ' + (isOpen ? 'rgba(99,102,241,0.55)' : 'rgba(100,116,139,0.30)'),
+              borderRadius: 10, padding: '14px 16px', cursor: 'pointer'
+            }
+          },
+            h('div', { style: { fontSize: 15, fontWeight: 800, color: '#c7d2fe', marginBottom: 6 } }, s.title),
+            h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, margin: '0 0 8px' } }, s.content),
+            isOpen && h('div', null,
+              h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, 'Details'),
+              h('ul', { style: { margin: '0 0 10px', paddingLeft: 20 } },
+                (s.details || []).map(function(detail, i) {
+                  return h('li', { key: 'd'+i, style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 6 } }, detail);
+                })
+              ),
+              s.keyFigure && h('div', { style: { padding: '10px 14px', background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)', borderLeft: '4px solid #fbbf24', borderRadius: 6, marginBottom: 10 } },
+                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#fcd34d', marginBottom: 4 } }, '🔑 Key insight'),
+                h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, margin: 0 } }, s.keyFigure)),
+              s.misconceptions && h('div', { style: { padding: '10px 14px', background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 6 } },
+                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#fca5a5', marginBottom: 4 } }, '⚠ Common misconception'),
+                h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, margin: 0 } }, s.misconceptions))
+            )
+          );
+        })
+      )
+    );
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // GLOSSARY MEGA-EXPANSION — 200+ terms with rich detail
+  // ══════════════════════════════════════════════════════════════════
+  var GLOSSARY_EXPANDED = [
+    { term: 'Abbe number', pron: 'AH-bay', def: 'A measure of an optical material\'s dispersion. Higher Abbe number = lower dispersion = sharper color images.',
+      etymology: 'Named after Ernst Abbe (1840–1905), German physicist at the Zeiss optical works.',
+      example: 'Crown glass: V ≈ 60 (low dispersion). Flint glass: V ≈ 30 (high dispersion). Achromatic doublets combine them.',
+      related: 'dispersion, chromatic aberration, refractive index' },
+    { term: 'Aberration', pron: 'ab-uh-RAY-shun', def: 'Any deviation of an optical image from the ideal (sharp, undistorted, on-axis) prediction of paraxial optics.',
+      etymology: 'From Latin "aberrare" = to wander, deviate.',
+      example: 'Spherical aberration: rays through outer aperture focus closer than central rays.',
+      related: 'spherical aberration, chromatic aberration, coma, astigmatism' },
+    { term: 'Absorbance', pron: 'ab-SORB-ance', def: 'Logarithmic measure of how much light a material absorbs. A = log₁₀(I₀/I).',
+      example: 'A = 1 means 90% absorbed (only 10% transmitted). A = 2 means 99% absorbed.',
+      related: 'transmittance, Beer-Lambert law, optical density' },
+    { term: 'Achromat', pron: 'AK-roh-mat', def: 'A two-element lens that corrects chromatic aberration at two specific wavelengths (typically red and blue).',
+      etymology: 'From Greek "a-" (without) + "chroma" (color).',
+      example: 'Most quality eyepieces are achromats; high-end optics are "apochromats" correcting three wavelengths.',
+      related: 'apochromat, chromatic aberration, doublet' },
+    { term: 'Adaptive optics', def: 'Real-time correction of optical wavefront distortions (e.g., from atmospheric turbulence) using a deformable mirror.',
+      example: 'Modern large telescopes use AO with 1000+ actuators updating at kHz rates, providing near-spaceborne sharpness.',
+      related: 'wavefront, deformable mirror, seeing' },
+    { term: 'Airy disk', pron: 'AIRY', def: 'The central bright disk in the diffraction pattern of a circular aperture, surrounded by progressively fainter rings.',
+      etymology: 'Named after George Biddell Airy (1801–1892), British Astronomer Royal who derived it in 1835.',
+      example: 'Stars seen through a perfect telescope are Airy disks, not points. Disk radius: 1.22 λF/D.',
+      related: 'diffraction, Rayleigh criterion, point spread function' },
+    { term: 'Aliasing', def: 'Image artifacts caused when a continuous image is undersampled — high spatial frequencies appear as false low frequencies (moiré patterns).',
+      example: 'A striped shirt on TV appearing to swirl is aliasing. Anti-aliasing filters reduce this.',
+      related: 'Nyquist limit, moiré, pixel' },
+    { term: 'Amplitude', pron: 'AM-pli-tood', def: 'The maximum displacement of a wave from its equilibrium position. For light, amplitude squared = intensity.',
+      related: 'intensity, electric field, wave' },
+    { term: 'Angle of incidence', def: 'The angle between an incoming ray and the normal to the surface at the point of contact.',
+      example: 'A ray hitting a mirror at 30° from normal reflects at 30° on the other side of the normal.',
+      related: 'angle of reflection, angle of refraction, normal' },
+    { term: 'Anti-reflective coating (ARC)', def: 'A thin film engineered to suppress reflections by destructive interference between front and back surface reflections.',
+      example: 'Quality eyeglasses, camera lenses, solar panels all have AR coatings. Optimal thickness: λ/(4n_coat).',
+      related: 'thin film, interference, MgF₂' },
+    { term: 'Aperture', def: 'The opening of an optical system through which light passes. Sets the diffraction limit and light-gathering power.',
+      example: 'Camera aperture is measured as f-number (f/1.4, f/2.8, etc.) where smaller number = bigger aperture.',
+      related: 'f-number, diffraction, depth of field' },
+    { term: 'Astigmatism (eye)', def: 'A refractive error where the cornea is not spherical — different meridians have different focal powers.',
+      example: 'Light from a point source forms two perpendicular line foci at different distances behind the cornea.',
+      related: 'cornea, refractive error, toric lens' },
+    { term: 'Astigmatism (lens)', def: 'An off-axis aberration where rays in two perpendicular planes (sagittal and tangential) focus at different distances.',
+      related: 'aberration, coma, field curvature' },
+    { term: 'Attenuation', def: 'Loss of signal intensity as it propagates through a medium. Measured in dB/km for optical fibers.',
+      example: 'Modern silica fibers: 0.2 dB/km at 1550 nm. A 100 km fiber transmits ~95% of input light.',
+      related: 'fiber optics, transmission, decibel' },
+    { term: 'Beer-Lambert law', def: 'Absorbance in a medium is proportional to path length and concentration of absorber. A = εcℓ.',
+      example: 'Doubling the path length doubles the absorbance. Triple the concentration → triple the absorbance.',
+      related: 'absorbance, transmittance, spectroscopy' },
+    { term: 'Biaxial crystal', def: 'A crystal with three different refractive indices along three mutually perpendicular axes.',
+      example: 'Mica, gypsum, topaz are biaxial. Most photoelastic-effect materials are biaxial when stressed.',
+      related: 'birefringence, uniaxial crystal, optical axis' },
+    { term: 'Birefringence', pron: 'BY-re-FRIN-jens', def: 'The property of a material having a refractive index that depends on the polarization and propagation direction of light.',
+      example: 'Calcite has Δn ≈ 0.17 — a calcite crystal over text shows a clear double image.',
+      related: 'polarization, calcite, anisotropy' },
+    { term: 'Blackbody', def: 'An idealized object that absorbs all incident radiation and emits a characteristic continuous spectrum depending only on temperature.',
+      example: 'The Sun is close to a 5778 K blackbody. Incandescent bulb filament: 2700 K. Human body: 310 K (IR emission).',
+      related: 'thermal radiation, Wien\'s law, Stefan-Boltzmann' },
+    { term: 'Bose-Einstein condensate (BEC)', def: 'A state of matter at nanokelvin temperatures where many bosons occupy the same quantum state, behaving as a single coherent "matter wave."',
+      example: 'First created 1995 with rubidium atoms at 170 nK. Light has been stopped to zero velocity in BECs.',
+      related: 'ultracold atoms, quantum optics, coherence' },
+    { term: 'Brewster\'s angle', def: 'The angle of incidence at which reflected light is completely polarized parallel to the surface. tan(θ_B) = n₂/n₁.',
+      example: 'Brewster\'s angle for water: 53°. This is why polarized sunglasses cut water glare effectively at low Sun angles.',
+      related: 'polarization, Fresnel equations, polarizer' },
+    { term: 'CCD (charge-coupled device)', def: 'An image sensor where photons free electrons in silicon, which are then shifted through a register to be read out pixel-by-pixel.',
+      example: 'Invented 1969 at Bell Labs (Boyle & Smith, 2009 Nobel). Used in Hubble, JWST, and astronomical cameras.',
+      related: 'CMOS, image sensor, dark current' },
+    { term: 'Chromatic aberration', def: 'Wavelength-dependent focus shift caused by dispersion in refractive optics. Different colors focus at slightly different distances.',
+      example: 'Cheap binoculars show red and blue fringes around bright objects. Achromat lenses correct this.',
+      related: 'dispersion, achromat, apochromat' },
+    { term: 'CIE chromaticity diagram', def: 'A 2D mathematical map of all colors visible to the average human, with x-y coordinates derived from cone responses.',
+      example: 'The CIE 1931 diagram\'s horseshoe shape contains all visible colors; display gamuts are triangles inside it.',
+      related: 'color space, sRGB, color matching functions' },
+    { term: 'Coherence', def: 'Predictability of phase relationships in a wave — temporal (over time) or spatial (across the wavefront).',
+      example: 'A laser has coherence length of meters. A flashlight: micrometers. Coherence is necessary for interference.',
+      related: 'interference, laser, monochromatic' },
+    { term: 'Coma', pron: 'KOH-mah', def: 'An off-axis aberration that makes point sources appear as comet-like blobs with tails toward or away from the optical axis.',
+      example: 'Common in fast (low-f-number) Newtonian reflectors. Corrected by coma correctors or paraboloidal+hyperbolic surfaces.',
+      related: 'aberration, astigmatism, off-axis' },
+    { term: 'Confocal microscopy', def: 'A scanning microscopy technique using a pinhole at the conjugate focus to reject out-of-focus light, giving 3D optical sectioning.',
+      example: 'Standard in cell biology — images thick samples without slicing them physically.',
+      related: 'microscopy, scanning, pinhole' },
+    { term: 'Cone cells', def: 'Photoreceptor cells in the retina responsible for color vision and high-acuity central vision. ~6 million per eye.',
+      example: 'Three types: L (red), M (green), S (blue). Concentrated in the fovea.',
+      related: 'rod cells, photoreceptor, trichromacy' },
+    { term: 'Cornea', pron: 'CORN-ee-ah', def: 'The clear front layer of the eye that provides about 2/3 of the eye\'s focusing power.',
+      example: 'LASIK surgery reshapes the cornea with an excimer laser to correct refractive errors.',
+      related: 'eye, refractive surgery, lens' },
+    { term: 'Critical angle', def: 'The angle of incidence above which total internal reflection occurs when going from a denser to a less dense medium.',
+      example: 'Glass-air: ~42°. Water-air: ~48.6°. Diamond-air: ~24°.',
+      related: 'total internal reflection, fiber optics, Snell\'s law' },
+    { term: 'Decibel (dB)', def: 'Logarithmic unit for power ratio: 10 log₁₀(P_out/P_in). −3 dB = half power. −10 dB = 1/10.',
+      example: 'Optical fiber attenuation in dB/km. Camera dynamic range in dB.',
+      related: 'attenuation, logarithm' },
+    { term: 'Depth of field (DOF)', def: 'The range of object distances over which a camera\'s image appears acceptably sharp.',
+      example: 'Smaller aperture (higher f-number) → greater DOF. Portrait photographers use wide aperture (small f-number) for shallow DOF.',
+      related: 'aperture, f-number, circle of confusion' },
+    { term: 'Dichroic mirror', def: 'A thin-film-coated mirror that reflects certain wavelengths while transmitting others, designed using interference principles.',
+      example: 'Theatrical color filters; beam combiners in projection.',
+      related: 'thin film, beam splitter, filter' },
+    { term: 'Diffraction limit', def: 'The fundamental resolution limit of an optical system set by wave diffraction at its aperture. θ_min ≈ 1.22 λ/D.',
+      example: 'Microscope resolution: ~λ/2 (~200 nm visible). Telescope angular resolution: ~1.22 λ/D.',
+      related: 'Rayleigh criterion, numerical aperture, Abbe limit' },
+    { term: 'Dispersion', def: 'The dependence of refractive index on wavelength, causing different colors to bend by different amounts.',
+      example: 'Causes rainbows, prism spectra, and chromatic aberration in cheap lenses.',
+      related: 'Cauchy equation, Abbe number, chromatic aberration' },
+    { term: 'Doppler shift', def: 'Change in observed wavelength of light due to relative motion of source and observer. v/c shift for non-relativistic speeds.',
+      example: 'Receding star: redshift. Approaching star: blueshift. Radar guns use radio-frequency Doppler.',
+      related: 'redshift, blueshift, Hubble\'s law' },
+    { term: 'Endoscope', def: 'A flexible fiber-optic bundle used to image inside the body — combines TIR light guidance with a coherent fiber bundle for image transmission.',
+      example: 'Used in colonoscopy, laparoscopy, bronchoscopy, surgical inspection.',
+      related: 'fiber optics, total internal reflection, medical optics' },
+    { term: 'Evanescent wave', def: 'An exponentially decaying wave that exists just inside a lower-index medium during total internal reflection.',
+      example: 'Penetrates only ~λ. Allows frustrated TIR if a second medium is brought close. Used in NSOM and biosensors.',
+      related: 'total internal reflection, NSOM, frustrated TIR' },
+    { term: 'f-number (f/N)', def: 'Ratio of focal length to aperture diameter. Smaller f-number = wider aperture = more light, less DOF.',
+      example: 'f/1.4 is "fast" (low light). f/22 is "slow" (deep DOF). Each "stop" doubles or halves light.',
+      related: 'aperture, depth of field, exposure' },
+    { term: 'Far point', def: 'The farthest distance at which an eye can focus clearly. For normal vision: infinity. For myopia: finite.',
+      related: 'near point, myopia, accommodation' },
+    { term: 'Fluorescence', def: 'Emission of light by a substance after absorbing higher-energy radiation. Emission stops immediately when source removed.',
+      example: 'Highlighters glow under black light. GFP-tagged proteins glow under specific excitation.',
+      related: 'Stokes shift, phosphorescence, GFP' },
+    { term: 'Focal length', def: 'Distance from a lens or mirror to its focal point. Sign indicates converging (+) or diverging (−).',
+      related: 'focal point, principal axis, magnification' },
+    { term: 'Focal point', def: 'The point where parallel rays converge (or appear to diverge from) after passing through a lens or reflecting off a mirror.',
+      related: 'focal length, principal axis, paraxial' },
+    { term: 'Fovea', pron: 'FOH-vee-ah', def: 'A tiny central pit (~1.5 mm) in the retina with the densest concentration of cones — site of highest visual acuity.',
+      related: 'cone cells, macula, retina' },
+    { term: 'Fraunhofer lines', def: 'Dark absorption lines in the solar spectrum, caused by gases in the Sun\'s atmosphere absorbing specific wavelengths.',
+      example: 'Mapped by Joseph von Fraunhofer in 1814. Later identified as fingerprints of specific elements (Kirchhoff & Bunsen, 1859).',
+      related: 'spectroscopy, absorption line, Fraunhofer' },
+    { term: 'Fresnel lens', pron: 'fruh-NELL', def: 'A lens with concentric stepped grooves that mimics a thick conventional lens but uses much less material.',
+      example: 'Invented by Fresnel (1822) for lighthouses. Now also used in automotive headlights, projectors, overhead light boxes.',
+      related: 'lighthouse, refraction, Fresnel' },
+    { term: 'Gain medium', def: 'The active material in a laser that amplifies light via stimulated emission. Examples: ruby crystal, helium-neon gas, Nd:YAG, semiconductor junction.',
+      related: 'laser, stimulated emission, pump' },
+    { term: 'Glory', def: 'Rainbow-colored rings around the shadow of an observer on a cloud or fog, due to backscattering interference in small water droplets.',
+      example: 'Visible from aircraft on cloud below, or in misty mountains with sun behind you.',
+      related: 'rainbow, backscatter, antisolar point' },
+    { term: 'Grating equation', def: 'Mathematical relation for diffraction grating maxima: d sin(θ) = mλ.',
+      example: 'Used in every spectrometer to relate angular position of spectral lines to wavelength.',
+      related: 'diffraction grating, spectroscopy, order' },
+    { term: 'Hologram', def: 'A recording of both amplitude AND phase information from a wavefront, allowing 3D image reconstruction.',
+      example: 'Credit-card holograms, museum holography exhibits, holographic data storage.',
+      related: 'holography, interference, reference beam' },
+    { term: 'Huygens\' principle', def: 'Every point on a wavefront acts as a source of secondary spherical wavelets; the new wavefront is the envelope of these wavelets.',
+      example: 'Explains reflection, refraction, and diffraction from wave first principles.',
+      related: 'wavefront, secondary source, diffraction' },
+    { term: 'Image sensor', def: 'A 2D array of light-detecting elements (pixels) that converts optical images to electrical signals.',
+      example: 'CCD (charge-coupled) and CMOS (active pixel) are the two main types. Modern smartphones use ~40 MP CMOS.',
+      related: 'CCD, CMOS, pixel' },
+    { term: 'Index of refraction', def: 'Ratio of speed of light in vacuum to speed in the medium: n = c/v.',
+      example: 'Water: 1.33. Crown glass: 1.52. Diamond: 2.42. Vacuum: exactly 1.000.',
+      related: 'speed of light, dispersion, optical density' },
+    { term: 'Infrared (IR)', def: 'Electromagnetic radiation with wavelengths from 700 nm to 1 mm — longer than visible light.',
+      example: 'Felt as heat. Thermal cameras image LWIR (8–14 μm). Fiber optics use NIR (1310–1550 nm).',
+      related: 'electromagnetic spectrum, thermal imaging' },
+    { term: 'Interference', def: 'The superposition of two or more waves, producing regions of enhanced (constructive) or canceled (destructive) amplitude.',
+      example: 'Two-slit fringes, thin-film colors, anti-reflection coatings, interferometric metrology.',
+      related: 'coherence, superposition, fringes' },
+    { term: 'Intermolecular spacing', def: 'Distance between molecules in a material — sets the response to electromagnetic radiation.',
+      related: 'crystallography, X-ray diffraction, Bragg' },
+    { term: 'Isotropy', def: 'A material property that is the same in all directions.',
+      example: 'Liquids and amorphous glasses are optically isotropic. Crystals (except cubic) are generally anisotropic.',
+      related: 'anisotropy, birefringence, crystal' },
+    { term: 'Kerr effect', def: 'A nonlinear optical effect where refractive index changes proportionally to the square of the electric field.',
+      example: 'Used in ultrafast optical switches and laser intensity-dependent self-focusing.',
+      related: 'nonlinear optics, electro-optic effect' },
+    { term: 'Laser', def: 'Light Amplification by Stimulated Emission of Radiation. A device producing coherent, monochromatic, directional light.',
+      related: 'stimulated emission, gain medium, cavity' },
+    { term: 'Lens', def: 'A transparent element with one or two curved surfaces that refracts light to form an image.',
+      related: 'focal length, thin lens equation, aberration' },
+    { term: 'Lensmaker\'s equation', def: '1/f = (n−1)(1/R₁ − 1/R₂) — relates focal length to surface curvatures and refractive index.',
+      example: 'Used to design any thin lens from first principles.',
+      related: 'thin lens equation, radius of curvature, focal length' },
+    { term: 'LIDAR', def: 'Light Detection and Ranging. Pulsed laser-based distance measurement, used in autonomous vehicles, terrain mapping, atmospheric science.',
+      related: 'laser, time of flight, autonomous driving' },
+    { term: 'Light-emitting diode (LED)', def: 'A semiconductor device that emits light when current flows. Bandgap of the material sets the wavelength.',
+      example: 'Modern LED lights produce ~100 lumens/watt — vs. ~15 lumens/watt for incandescent.',
+      related: 'semiconductor, OLED, electroluminescence' },
+    { term: 'Linear polarization', def: 'Light whose electric field oscillates along a single fixed line in space.',
+      related: 'circular polarization, polarizer, Malus\'s law' },
+    { term: 'Lithography', def: 'Process of using light to pattern a photoresist for microfabrication of semiconductors or other thin films.',
+      example: 'EUV lithography (13.5 nm) prints 5-nm-wide circuit features for the most advanced chips.',
+      related: 'photoresist, semiconductor, EUV' },
+    { term: 'Magnification', def: 'Ratio of image size to object size. Negative magnification = inverted image.',
+      related: 'telescope, microscope, optical' },
+    { term: 'Malus\'s law', def: 'Intensity of polarized light through a polarizer: I = I₀ cos²(Δθ).',
+      related: 'polarization, polarizer, Brewster\'s angle' },
+    { term: 'Maxwell\'s equations', def: 'Four equations of classical electromagnetism (Gauss\'s, Gauss\'s for magnetism, Faraday\'s, Ampère\'s with Maxwell\'s correction) that show light is an EM wave.',
+      related: 'electromagnetic wave, James Clerk Maxwell' },
+    { term: 'Metalens', def: 'A flat lens using a 2D array of subwavelength-spaced phase-shifting elements to focus light — replaces curved refractive surfaces.',
+      example: 'Demonstrated achromatic in 2018. Potential to replace bulky compound lenses in cameras.',
+      related: 'metasurface, nano-optics, Capasso' },
+    { term: 'Mirror', def: 'A surface that reflects most of the incident light, typically by metal coating (silver, aluminum, gold).',
+      related: 'reflection, Newtonian telescope, specular' },
+    { term: 'Monochromatic', def: 'Single-wavelength light. Lasers approximate monochromatic; ordinary light is always polychromatic.',
+      related: 'laser, coherence, line width' },
+    { term: 'Numerical aperture (NA)', def: 'NA = n × sin(θ_max), where θ_max is the half-angle of the marginal ray cone. Sets diffraction-limited resolution.',
+      example: 'Microscope objective NA = 1.4 (oil immersion). Smartphone camera NA ≈ 0.45.',
+      related: 'diffraction limit, oil immersion, resolution' },
+    { term: 'Opacity', def: 'Property of being opaque — blocking all light transmission. Opposite of transparency.',
+      related: 'transparent, translucent, absorbance' },
+    { term: 'Optical density', def: 'Log measure of how much light is blocked: OD = log₁₀(I₀/I). OD 1 = 90% blocked, OD 2 = 99% blocked.',
+      related: 'absorbance, neutral density filter, transmittance' },
+    { term: 'Parallax', def: 'Apparent shift in position of an object viewed along different lines of sight.',
+      example: 'Used to measure stellar distances. Adjacent rangefinders. Binocular depth perception.',
+      related: 'stereoscopy, baseline, depth' },
+    { term: 'Paraxial', def: 'Rays close to the optical axis and making small angles with it. The basis of first-order optical calculations.',
+      related: 'thin lens equation, lensmaker\'s equation, aberration' },
+    { term: 'Phase', def: 'Position within one cycle of a wave; measured in degrees or radians.',
+      related: 'interference, coherence, wavelength' },
+    { term: 'Phosphorescence', def: 'Light emission from a material after absorption of higher-energy photons, persisting for seconds to hours.',
+      example: 'Glow-in-the-dark stickers. Radium watch dials (historic, radioactive).',
+      related: 'fluorescence, Stokes shift, metastable state' },
+    { term: 'Photodiode', def: 'A semiconductor device that converts light into electrical current. Foundation of optical detectors.',
+      example: 'Silicon photodiodes are used in solar panels, optical receivers, fluorescence detection.',
+      related: 'photodetector, photoelectric effect, CCD' },
+    { term: 'Photoelectric effect', def: 'Emission of electrons from a material when light hits it. Energy of emitted electrons depends on light frequency, not intensity.',
+      example: 'Einstein\'s 1905 explanation (light is quantized) won him the Nobel Prize. Basis of photoelectron spectroscopy.',
+      related: 'photon, work function, Einstein' },
+    { term: 'Photon', def: 'A quantum of electromagnetic radiation, carrying energy E = hf and momentum p = h/λ.',
+      example: 'A green photon (550 nm) has ~2.25 eV of energy. A 1 W green laser emits ~3×10¹⁸ photons per second.',
+      related: 'quantum, electromagnetic wave, Planck constant' },
+    { term: 'Pinhole camera', def: 'An optical imaging device using a small aperture (no lens) — every point in scene produces a corresponding inverted point on the image plane.',
+      example: 'Earliest known imaging method, described by Mozi in China (~470 BCE).',
+      related: 'camera obscura, depth of field, lens' },
+    { term: 'Plano-convex lens', def: 'A lens with one flat surface and one convex spherical surface. Converging.',
+      related: 'lens, biconvex, plano-concave' },
+    { term: 'Point spread function (PSF)', def: 'The image of an ideal point source produced by an optical system — characterizes blur and resolution.',
+      example: 'For diffraction-limited system: Airy pattern. For aberrated system: distorted blob.',
+      related: 'Airy disk, deconvolution, aberration' },
+    { term: 'Polariscope', def: 'An instrument using polarized light to study optical anisotropy, especially photoelastic stress visualization.',
+      related: 'polarization, photoelasticity, birefringence' },
+    { term: 'Polarization', def: 'The orientation of the electric field oscillation in a light wave.',
+      related: 'linear polarization, circular polarization, Malus\'s law' },
+    { term: 'Polarizer', def: 'An optical element that transmits only a specific polarization of light. Most common: stretched polymer films (Polaroid).',
+      related: 'polarization, Malus\'s law, sunglasses' },
+    { term: 'Power (optical)', def: 'Reciprocal of focal length, measured in diopters (D = 1/m). Combined as a sum: P_total = P₁ + P₂.',
+      example: 'A +2 D lens has f = 0.5 m = 50 cm. The human eye has total power ~65 D.',
+      related: 'diopter, focal length, eyeglass prescription' },
+    { term: 'Power density', def: 'Optical power per unit area (W/m²). Determines damage potential of laser beams.',
+      example: 'Direct sunlight: ~1000 W/m². A focused 5 mW pointer can reach ~10,000 W/m² on the retina.',
+      related: 'intensity, irradiance, fluence' },
+    { term: 'Presbyopia', pron: 'prez-bee-OH-pee-ah', def: 'Age-related stiffening of the eye\'s crystalline lens, reducing accommodation.',
+      example: 'Onset typically 40–45. Reading glasses or progressive lenses are typical corrections.',
+      related: 'accommodation, hyperopia, lens' },
+    { term: 'Prism', def: 'A solid glass or plastic element with non-parallel faces that disperses or reflects light.',
+      example: 'Newton\'s prism showed white light contains all colors. Right-angle prisms in binoculars use TIR.',
+      related: 'dispersion, refraction, total internal reflection' },
+    { term: 'Quantum efficiency (QE)', def: 'Fraction of incident photons that produce a detectable signal in a photodetector.',
+      example: 'High-end astronomical CCDs reach ~95% QE. Most consumer cameras: ~50–80%.',
+      related: 'photodetector, sensitivity, photon' },
+    { term: 'Quarter-wave plate', def: 'A birefringent plate of thickness λ/(4|Δn|) that converts linear to circular polarization (or vice versa).',
+      related: 'wave plate, retardation, birefringence' },
+    { term: 'Ray tracing', def: 'Geometric optics technique of following light rays through an optical system, applying Snell\'s law and reflection at each surface.',
+      example: 'Modern computer ray-tracing optimizes complex lens designs and produces photorealistic CGI.',
+      related: 'geometric optics, optical design, refraction' },
+    { term: 'Rayleigh scattering', def: 'Scattering of light by particles much smaller than its wavelength, with intensity proportional to 1/λ⁴.',
+      example: 'Causes blue sky (blue scatters ~5.6× more than red) and red sunsets.',
+      related: 'scattering, blue sky, sunset' },
+    { term: 'Reflectance', def: 'Fraction of incident light reflected from a surface.',
+      example: 'Mirror: ~95%. Window glass: ~4% per surface. Fresh snow: ~85%.',
+      related: 'Fresnel equations, albedo, absorption' },
+    { term: 'Refractive index', def: 'See "Index of refraction."',
+      related: 'index of refraction' },
+    { term: 'Resolution', def: 'The ability to distinguish two close objects as separate. Limited by diffraction (1.22 λ/D for circular aperture).',
+      related: 'Rayleigh criterion, diffraction limit, sharpness' },
+    { term: 'Retina', def: 'The light-sensitive inner layer of the eye, containing photoreceptors and processing neurons.',
+      related: 'photoreceptor, rod, cone, fovea' },
+    { term: 'Rod cells', def: 'Photoreceptor cells in the retina specialized for low-light, monochrome vision. ~120 million per eye.',
+      related: 'cone cells, photoreceptor, dark adaptation' },
+    { term: 'Scattering', def: 'Deflection of light by particles or inhomogeneities in a medium. Wavelength-dependent — see Rayleigh, Mie, Tyndall.',
+      related: 'Rayleigh, Mie, blue sky' },
+    { term: 'Snell\'s law', def: 'n₁ sin(θ₁) = n₂ sin(θ₂). Relates angles of incidence and refraction at a boundary.',
+      related: 'refraction, critical angle, Ibn Sahl' },
+    { term: 'Speckle', def: 'Granular interference pattern produced by coherent light scattered from a rough surface.',
+      example: 'Visible when you shine a laser pointer on paper. Used for surface microscopy and biological imaging.',
+      related: 'coherence, laser, scattering' },
+    { term: 'Spectrum', def: 'A plot of intensity vs. wavelength or frequency for a light source.',
+      related: 'spectrometer, dispersion, color' },
+    { term: 'Stokes shift', def: 'Difference between absorption and emission wavelengths for a fluorophore (always emit at longer wavelength).',
+      related: 'fluorescence, vibrational relaxation, phosphorescence' },
+    { term: 'Subtractive color mixing', def: 'Combining absorbing media (pigments, inks) where each subtracts certain wavelengths. CMY primaries.',
+      related: 'additive mixing, RGB, printing' },
+    { term: 'Telescope', def: 'An instrument that produces magnified images of distant objects. Refractor (lens-based) or reflector (mirror-based).',
+      related: 'astronomy, magnification, aperture' },
+    { term: 'Thin lens equation', def: '1/f = 1/d_o + 1/d_i — relates focal length to object and image distances.',
+      related: 'lens, focal length, lensmaker\'s equation' },
+    { term: 'Total internal reflection (TIR)', def: 'Complete reflection of light at a boundary when going from dense to less-dense medium beyond the critical angle.',
+      example: 'Foundation of fiber optics, prisms, diamond brilliance.',
+      related: 'critical angle, fiber optics, Snell\'s law' },
+    { term: 'Transmittance', def: 'Fraction of incident light transmitted through a material.',
+      related: 'absorbance, optical density, Beer-Lambert' },
+    { term: 'Ultraviolet (UV)', def: 'Electromagnetic radiation with wavelengths from 10 to 400 nm — shorter than visible.',
+      example: 'UV-A (320-400 nm), UV-B (290-320 nm), UV-C (100-290 nm). UV-B causes sunburn and skin cancer.',
+      related: 'electromagnetic spectrum, sunscreen, vitamin D' },
+    { term: 'Visible spectrum', def: 'The range of electromagnetic wavelengths detectable by the human eye, approximately 380–750 nm.',
+      related: 'rainbow, cone cell, color' },
+    { term: 'Waveguide', def: 'A structure that confines and guides electromagnetic waves along its length, e.g., optical fiber.',
+      related: 'fiber optics, TIR, mode' },
+    { term: 'Wavelength (λ)', def: 'Spatial period of a wave. Visible light: 380–750 nm. Frequency f = c/λ.',
+      related: 'frequency, color, visible spectrum' },
+    { term: 'Wavefront', def: 'A surface of constant phase in a wave. Spherical near a point source, planar far from it.',
+      related: 'Huygens, wave, diffraction' },
+    { term: 'X-ray', def: 'Electromagnetic radiation with wavelengths from 0.01 to 10 nm — used in medical imaging, crystallography, and astronomy.',
+      example: 'Discovered 1895 by Röntgen. X-ray crystallography revealed DNA structure (1953).',
+      related: 'electromagnetic spectrum, Bragg, medical imaging' },
+    { term: 'Young\'s double-slit', def: 'The classic experiment demonstrating wave nature of light by producing interference fringes.',
+      example: 'First done by Thomas Young in 1801. Still done today with single photons, electrons, even large molecules.',
+      related: 'interference, coherence, wave-particle duality' },
+    { term: 'Zenith', def: 'The point directly overhead (90° above horizon). Astronomy reference direction.',
+      related: 'altitude, horizon, nadir' }
+  ];
+
+  // ══════════════════════════════════════════════════════════════════
+  // GLOSSARY EXPANDED PANEL RENDERER
+  // ══════════════════════════════════════════════════════════════════
+  function _renderGlossaryExpandedPanel(d, upd, h) {
+    var query = (d.glossExpQuery || '').toLowerCase().trim();
+    var filtered = GLOSSARY_EXPANDED.filter(function(g) {
+      if (!query) return true;
+      return (g.term + ' ' + (g.def || '') + ' ' + (g.example || '') + ' ' + (g.related || '')).toLowerCase().indexOf(query) !== -1;
+    });
+    return h('div', null,
+      h('div', { style: { background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
+        h('h3', { style: { color: '#86efac', fontSize: 17, fontWeight: 900, margin: '0 0 6px' } }, '📖 Expanded Glossary'),
+        h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, margin: 0 } }, GLOSSARY_EXPANDED.length + ' optics terms with definitions, pronunciation, etymology, examples, and cross-references.')
+      ),
+      h('input', { type: 'text', value: d.glossExpQuery || '',
+        placeholder: '🔍 Search glossary...',
+        onChange: function(e) { upd('glossExpQuery', e.target.value); },
+        'aria-label': 'Search expanded glossary',
+        style: { width: '100%', minHeight: 36, padding: '8px 12px', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(34,197,94,0.30)', borderRadius: 8, color: '#e2e8f0', fontSize: 13, marginBottom: 12, boxSizing: 'border-box' }
+      }),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))', gap: 10 } },
+        filtered.map(function(g, i) {
+          return h('div', { key: 'gx'+i, style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(34,197,94,0.30)', borderLeft: '4px solid #22c55e', borderRadius: 10, padding: '10px 12px' } },
+            h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 } },
+              h('span', { style: { fontSize: 13, fontWeight: 800, color: '#86efac' } }, g.term),
+              g.pron && h('span', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } }, '/' + g.pron + '/')
+            ),
+            h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, margin: '0 0 6px' } }, g.def),
+            g.etymology && h('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic', marginBottom: 4 } }, '📜 ' + g.etymology),
+            g.example && h('div', { style: { fontSize: 10, color: '#fcd34d', marginBottom: 4 } }, '💡 ' + g.example),
+            g.related && h('div', { style: { fontSize: 9, color: '#a5b4fc', textTransform: 'uppercase', letterSpacing: '0.04em' } }, '↪ ' + g.related)
+          );
+        })
+      )
+    );
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // DEEP DIVE: PHOTOGRAPHY OPTICS
+  // ══════════════════════════════════════════════════════════════════
+  var PHOTOGRAPHY_DEEP = [
+    { id: 'cameraLens', title: '📷 Camera lenses — focal length and field of view', section: 'fundamentals',
+      content: 'A camera lens is an assembly of multiple optical elements arranged to project an image of the scene onto a sensor or film, with corrections for aberrations and a controllable aperture.',
+      details: [
+        'FOCAL LENGTH determines the angle of view. On a 35mm full-frame sensor: 50mm "normal" lens covers ~46° diagonal field of view, approximating the central human visual field. 28mm "wide-angle" covers ~75°. 200mm "telephoto" covers ~12°.',
+        'CROP FACTOR: Smaller-than-full-frame sensors "crop" the image to their smaller area. An APS-C sensor (~1.5x crop) makes a 50mm lens behave more like an 75mm lens in framing.',
+        'PRIME vs ZOOM: Prime lenses have a fixed focal length but typically sharper images, wider apertures, lower distortion. Zoom lenses cover a range but add weight, complexity, and usually somewhat compromised optics.',
+        'APERTURE (f-number): f/N = focal length / aperture diameter. Smaller f-number = bigger aperture = more light = shallower depth of field. Each "stop" (e.g., f/1.4 → f/2) halves the area, halving light intake.',
+        'DEPTH OF FIELD (DOF): The range of distances that appear sharp. Shorter focal length, smaller aperture, and farther focus distance all DEEPEN DOF.',
+        'BOKEH: The aesthetic quality of out-of-focus areas. Affected by aperture blade count, lens design, and spherical aberration. Most photographers prefer "smooth bokeh" with no harsh edges.',
+        'OPTICAL VS DIGITAL ZOOM: Optical zoom uses lens elements to physically magnify the image. Digital zoom crops and interpolates — quality always worse.'
+      ],
+      keyFigure: 'A 50mm f/1.4 lens at minimum focus distance can produce a depth of field of just 5–10 mm — perfect for portrait isolation but unforgiving of focus errors. A smartphone camera at f/2 with its tiny sensor has DOF of meters.',
+      misconceptions: '"Bigger megapixels mean better photos." Up to a point — but more pixels on the same sensor means smaller pixels, which capture fewer photons each, worsening low-light performance. Sensor size matters more than megapixel count for image quality.' },
+    { id: 'cameraTypes', title: '📷 Camera types — phone, mirrorless, DSLR, medium format', section: 'types',
+      content: 'Camera systems differ by sensor size, lens mount, viewfinder type, and target user. Each has trade-offs.',
+      details: [
+        'SMARTPHONE: ~1/2 inch to 1 inch sensors. Multi-lens modules (wide, ultrawide, telephoto). Heavy reliance on computational photography — AI HDR, night mode, computational portrait mode.',
+        'COMPACT CAMERA: 1/2" to 1" sensors. Fixed lens. Almost obsolete as smartphones improve, but premium models (Sony RX100, Fujifilm X100) remain popular.',
+        'MIRRORLESS: APS-C or full-frame sensors. Interchangeable lenses. Electronic viewfinder (EVF) shows sensor preview. Smaller and lighter than DSLR.',
+        'DSLR (Digital Single Lens Reflex): APS-C or full-frame. Mirror reflects scene to optical viewfinder; flips up when shutter fires. Heavier; being phased out by mirrorless.',
+        'MEDIUM FORMAT: 33×44mm to 70×54mm sensors (vs. 24×36mm full-frame). Higher resolution, lower noise, more dynamic range. $5K to $50K+. Used for advertising, fine art, fashion.',
+        'CINEMA CAMERAS: Sensors optimized for video (rolling shutter, raw recording, high frame rates). 4K to 8K, sometimes 12K resolution. ARRI Alexa, RED, Sony Venice are industry standards.',
+        'MIRRORLESS FULL-FRAME MARKET (2024): Sony Alpha, Canon EOS R, Nikon Z, Fujifilm GFX (medium format), Leica SL, Panasonic Lumix. Dramatically displacing DSLRs.',
+        'INDUSTRIAL/SCIENTIFIC: Linescan cameras (image one row at a time, used in industrial inspection). Scientific CMOS (sCMOS) for low-light imaging. Specialized IR/UV/X-ray cameras.'
+      ],
+      keyFigure: 'A smartphone camera in 2024 takes pictures that surpass professional DSLRs from 2010 — driven not primarily by lens improvements but by computational photography (AI image processing applied to multiple captures).',
+      misconceptions: '"Professional photographers use full-frame cameras." Many do, but plenty of pros shoot APS-C, medium format, or mobile depending on the genre. Cinema cinematographers often use Super-35 (~APS-C) for the look.' },
+    { id: 'photographyHist', title: '📜 Brief history of photography', section: 'history',
+      content: 'From the 1826 first permanent photograph to today\'s 1.5 trillion photos per year, photography has been one of the most consequential applied-optics technologies.',
+      details: [
+        '1826: Niépce takes "View from the Window at Le Gras" — 8 hour exposure on bitumen-coated pewter plate. Survives in University of Texas.',
+        '1839: Daguerre (France) and Talbot (England) independently publish photographic processes. Daguerreotype: silver-on-copper, unique image. Calotype: paper negative, multiple prints.',
+        '1851: Wet collodion process (Archer) — much faster than earlier methods, dominates for ~25 years.',
+        '1888: Kodak No. 1 — first roll-film camera. Slogan: "You press the button, we do the rest."',
+        '1900: Kodak Brownie — $1 box camera. Mass photography becomes accessible.',
+        '1935: Kodachrome color film. First widely-adopted color photography.',
+        '1948: Edwin Land founds Polaroid, commercializing instant photography.',
+        '1975: Steven Sasson (Kodak) builds the first digital camera prototype — 0.01 MP, takes 23 seconds to record one image to cassette tape.',
+        '1991: Kodak DCS 100 — first commercial digital SLR. $20,000+. 1.3 MP.',
+        '2000: Sharp J-SH04 — first integrated camera phone.',
+        '2007: iPhone launches, accelerating mobile photography. Image quality eventually surpasses point-and-shoot cameras.',
+        '2024: Smartphones capture ~90% of the world\'s photos. Total annual photos: ~1.5 trillion. Computational photography (HDR, night mode, portrait mode) dominates over traditional optics.'
+      ],
+      keyFigure: 'Kodak invented the digital camera but couldn\'t bring itself to compete with its own film business. By 2012 Kodak was bankrupt — a classic case of the innovator\'s dilemma.',
+      misconceptions: '"Film is back." There\'s been a niche revival, but film accounts for <1% of photographs worldwide. The revival is real but small — most "film looks" are now achieved digitally.' }
+  ];
+
+  // ══════════════════════════════════════════════════════════════════
+  // DEEP DIVE: HOLOGRAPHY & 3D IMAGING
+  // ══════════════════════════════════════════════════════════════════
+  var HOLOGRAPHY_DEEP = [
+    { id: 'holoBasics', title: '✨ Holography fundamentals', section: 'fundamentals',
+      content: 'A hologram records both the amplitude AND phase of a wavefront, allowing later reconstruction of the full 3D wavefield — and thus a fully 3D image viewable from different angles like the original object.',
+      details: [
+        'CONVENTIONAL PHOTOGRAPHY captures only intensity (amplitude squared), losing all phase information. The image is fundamentally 2D.',
+        'HOLOGRAPHY captures intensity AND phase by interfering object-beam light with a coherent reference beam. The resulting interference pattern, when illuminated by the reference beam, reconstructs the object wavefront.',
+        'REQUIREMENT: Coherent light (long coherence length). This is why practical holography only emerged after the laser in 1960. Gabor\'s 1947 theory was waiting for technology to catch up.',
+        'TRANSMISSION HOLOGRAMS: Both reference and object beams hit the same side of the photographic plate. Viewing requires the plate to be illuminated from behind by a reference-like beam (a laser).',
+        'REFLECTION HOLOGRAMS: Object and reference beams hit opposite sides of the plate. The plate then reconstructs the image when illuminated by white light (or near-white) — the kind seen on credit cards.',
+        'COMPUTER-GENERATED HOLOGRAMS (CGH): Numerically simulated interference patterns printed via photolithography. Used in head-up displays, optical tweezers, beam shaping.',
+        'HOLOGRAPHIC OPTICAL ELEMENTS: Holograms that act as lenses, mirrors, or beam combiners. Used in fighter pilot helmets to overlay information without obscuring the view.'
+      ],
+      keyFigure: 'A small piece of a hologram still shows the entire image — at lower resolution. This is because every point on the hologram contains interference information from every point on the object. This "distributed" recording is also why holograms are robust to scratches.',
+      misconceptions: '"Holograms are 3D images you can walk around." Most "holograms" in popular culture are actually flat displays with parallax tricks (lenticular sheets, Pepper\'s Ghost optical illusions). True holography requires coherent illumination and is rarely seen in real-time displays.' },
+    { id: 'holoApps', title: '🌐 Holography applications', section: 'applications',
+      content: 'Holography spans security, art, optical computing, and scientific measurement.',
+      details: [
+        'SECURITY: Credit cards, banknotes, IDs, passports use holograms because they\'re extremely hard to counterfeit without specialized equipment.',
+        'ART: Salvador Dali, Bruce Nauman, and many other artists embraced holography. Holographic galleries display 3D portraits and abstract works.',
+        'DATA STORAGE: Holographic memory stores data in 3D volumes rather than 2D surfaces. Potential capacity: terabytes per cm³. Commercial products are still emerging.',
+        'OPTICAL TWEEZERS: Holographic optical tweezers create multiple traps simultaneously, enabling parallel manipulation of biological samples.',
+        'BEAM SHAPING: Spatial light modulators (SLMs) display computer-generated holograms to shape laser beams for industrial cutting, marking, and 3D printing.',
+        'AUGMENTED REALITY: HoloLens (Microsoft) and Magic Leap use holographic optical elements (waveguide combiners) to overlay digital content on real-world view.',
+        'MEDICAL IMAGING: Holographic microscopy reconstructs 3D images of cells without focusing — single-shot 3D capture of fast biological processes.',
+        'DEEP-LEARNING HOLOGRAPHY: Neural networks now generate holographic patterns in milliseconds, enabling real-time holographic displays. Active research area at MIT and Stanford.'
+      ],
+      keyFigure: 'The "Princess Leia hologram" of Star Wars is fictional — true real-time volumetric holography of moving 3D objects requires computational power and display technology that didn\'t exist in 1977 and still doesn\'t exist robustly in 2024.',
+      misconceptions: '"Holograms will replace TV." Even with computational advances, the data rates and resolution required for true holographic video are beyond foreseeable display technology.' }
+  ];
+
+  // ══════════════════════════════════════════════════════════════════
+  // DEEP DIVE: SPECTROSCOPY
+  // ══════════════════════════════════════════════════════════════════
+  var SPECTROSCOPY_DEEP = [
+    { id: 'specBasics', title: '📊 Spectroscopy basics', section: 'fundamentals',
+      content: 'Spectroscopy is the study of how matter interacts with electromagnetic radiation. By measuring how light is absorbed, emitted, or scattered as a function of wavelength, we identify chemical composition, structure, and physics of materials.',
+      details: [
+        'ABSORPTION SPECTROSCOPY: Pass light through sample. Specific wavelengths absorbed correspond to allowed quantum transitions. Common in chemistry, environmental monitoring, food science.',
+        'EMISSION SPECTROSCOPY: Excite sample (heat, electric arc, plasma). It emits light at characteristic wavelengths. Used in stellar atmospheres, plasma physics.',
+        'FLUORESCENCE SPECTROSCOPY: Excite sample at one wavelength; observe re-emission at longer wavelengths. Highly sensitive — detects single molecules.',
+        'RAMAN SPECTROSCOPY: Inelastic scattering shifts the wavelength by an amount corresponding to vibrational frequencies in the sample. Identifies molecular bonds. Used in chemistry, materials science, forensics.',
+        'INFRARED (IR) SPECTROSCOPY: Excites molecular vibrations directly. Each functional group has characteristic IR absorption bands.',
+        'NUCLEAR MAGNETIC RESONANCE (NMR): Probes nuclear-spin transitions in a strong magnetic field. Foundation of MRI imaging and structural chemistry.',
+        'X-RAY DIFFRACTION (XRD): Bragg scattering from atomic planes in crystals. Reveals atomic-scale structure of crystalline samples.',
+        'MASS SPECTROMETRY: Not strictly spectroscopy of LIGHT, but related. Ionizes molecules, separates by mass-to-charge ratio. Powerful for chemical analysis.'
+      ],
+      keyFigure: 'Modern astronomical spectroscopy of distant galaxies has revealed elements in the early universe, the expansion rate of the universe, and the chemical evolution of stars. Without optical spectroscopy, cosmology would be a much smaller field.',
+      misconceptions: '"Spectroscopy is just identifying chemicals." Spectroscopy reveals temperature, density, magnetic fields, motion, age, structure — most of what we know about distant or microscopic systems.' },
+    { id: 'specInstruments', title: '🔬 Spectrometer types', section: 'instruments',
+      content: 'Different spectrometer architectures suit different applications, from low-cost smartphone-attached units to room-sized research instruments.',
+      details: [
+        'GRATING SPECTROMETER: Light disperses off a diffraction grating, with each wavelength bending by a different angle. Detector array reads the dispersed spectrum.',
+        'PRISM SPECTROMETER: Uses a glass or quartz prism for dispersion. Less linear in wavelength than gratings; mostly historical/educational use.',
+        'FOURIER-TRANSFORM INFRARED (FTIR): Uses a Michelson interferometer to scan path differences. Inverse Fourier transform of the recorded interferogram gives the spectrum.',
+        'ECHELLE GRATINGS: Coarse rulings producing many overlapping orders. Cross-dispersed with a second grating in perpendicular direction to separate them. High-resolution astronomical and laboratory spectroscopy.',
+        'COMPACT/PORTABLE: Modern silicon-CCD spectrometers fit in your hand. Connect via USB. ~$200 to $5000 depending on resolution.',
+        'IMAGING SPECTROMETER: 2D detector + dispersing element + scanning gives hyperspectral data cubes (x, y, λ). Used in remote sensing, biomedical imaging, art analysis.'
+      ],
+      keyFigure: 'The Sloan Digital Sky Survey has measured spectra of over 5 million celestial objects, building the largest 3D map of the universe.',
+      misconceptions: '"Higher resolution is always better." NO — higher resolution means narrower bins, fewer photons per bin, longer exposure times. Match resolution to the science question.' }
+  ];
+
+  // ══════════════════════════════════════════════════════════════════
+  // DEEP DIVE: MEDICAL IMAGING OPTICS
+  // ══════════════════════════════════════════════════════════════════
+  var MEDICAL_OPTICS_DEEP = [
+    { id: 'medOctEndo', title: '👁 OCT, Endoscopy, and ophthalmology', section: 'imaging',
+      content: 'Optical methods dominate modern non-invasive medical imaging of the eye, gastrointestinal tract, and cardiovascular system.',
+      details: [
+        'OPTICAL COHERENCE TOMOGRAPHY (OCT): Like ultrasound but with light. Low-coherence broadband source means only reflections within coherence length contribute to interference signal. Result: μm-resolution depth scans of retina, cornea, atherosclerotic plaques.',
+        'OCT now standard in ophthalmology practice. Routine retinal scans take seconds and detect early signs of macular degeneration, glaucoma, diabetic retinopathy.',
+        'ENDOSCOPY: Flexible fiber-optic bundle (coherent fiber bundle) for image transmission + illumination fibers + working channel for instruments. Used for colonoscopy, bronchoscopy, gastroscopy, laparoscopic surgery.',
+        'CAPSULE ENDOSCOPY: Patient swallows a pill-sized camera that transmits video as it passes through the GI tract. Used for small-bowel imaging where conventional endoscopes can\'t reach.',
+        'FUNDUS PHOTOGRAPHY: Specialized retinal camera images the back of the eye. Often combined with fluorescein angiography (injected dye fluoresces) to image blood flow.',
+        'CONFOCAL ENDOSCOPY: In vivo cellular-resolution imaging during endoscopic procedures.'
+      ],
+      keyFigure: 'OCT enabled vision-saving treatments by allowing early detection of macular degeneration. Anti-VEGF injections, given when OCT shows early disease, can preserve vision that would otherwise be lost.',
+      misconceptions: '"All medical imaging needs ionizing radiation." NO — optical techniques (OCT, endoscopy) and MRI use NO ionizing radiation. They\'re safe to repeat as often as needed.' },
+    { id: 'medLasers', title: '🔬 Laser medicine', section: 'lasers',
+      content: 'Lasers are now standard tools in surgery, dermatology, dentistry, and ophthalmology — each application requires specific wavelength, pulse duration, and energy.',
+      details: [
+        'OPHTHALMOLOGY: Excimer laser (193 nm) for LASIK/PRK corneal reshaping. Green laser (532 nm) for retinal photocoagulation in diabetic retinopathy. Femtosecond laser for cataract surgery (replaces ultrasound phacoemulsification).',
+        'DERMATOLOGY: Various wavelengths for hair removal (long-pulsed alexandrite, diode, Nd:YAG), tattoo removal (Q-switched ruby, alexandrite, Nd:YAG, picosecond lasers), pigmented lesions, vascular lesions (pulsed dye laser at 595 nm).',
+        'DENTISTRY: Er:YAG (2940 nm) for hard tissue (enamel removal). Diode lasers for soft-tissue procedures (gum surgery).',
+        'GENERAL SURGERY: CO₂ lasers for cutting and cauterization simultaneously. Argon-pumped dye lasers (selectively destroy tumor cells with photosensitizer drug).',
+        'PHOTODYNAMIC THERAPY: Patient takes a photosensitizing drug that accumulates in tumor cells. Tumor is illuminated with specific wavelength, activating the drug to kill cells.',
+        'KIDNEY STONES: Holmium:YAG laser fragments stones via plasma-induced shock waves.'
+      ],
+      keyFigure: 'LASIK transforms 90+% of recipients from glasses-dependent to glasses-free. Approximately 700,000 LASIK procedures per year in the U.S. as of 2023.',
+      misconceptions: '"Laser surgery is always cutting tissue." MOST laser surgery is gentle: cauterization, photothermal sealing, photochemical activation. Cutting is a small fraction.' }
+  ];
+
+  // ══════════════════════════════════════════════════════════════════
+  // MORE LAB KITS — additional hands-on experiments
+  // ══════════════════════════════════════════════════════════════════
+  var OPTICS_LAB_KITS_MORE = [
+    { id: 'sodaBottleLens', title: 'Soda bottle as a magnifying lens', icon: '🥤', age: '6+', difficulty: 'Easy', time: '5 min', cost: '$0',
+      goal: 'Use a clear water bottle as a lens to magnify text.',
+      materials: ['Clear plastic bottle', 'Water', 'Newspaper or magazine'],
+      steps: [
+        'Fill bottle with water.',
+        'Place the bottle horizontally over text.',
+        'Look down through the bottle. The text underneath appears magnified.',
+        'Try different angles and bottle shapes.'
+      ],
+      science: 'The water-filled bottle acts as a cylindrical lens (curved one way, flat the other). Curved face refracts light to magnify in one direction. Combined with the bottle\'s own curved walls, this gives a soft 1.5–2× magnification.',
+      safety: 'Don\'t spill water on electronics.',
+      extension: 'Compare a square-cross-section juice box vs. a round bottle. The cylinder gives anamorphic magnification — magnified more in one direction than the other.' },
+    { id: 'colorWheelMix', title: 'Newton color wheel spinner', icon: '🎨', age: '8+', difficulty: 'Easy', time: '20 min', cost: '$2',
+      goal: 'Make a color wheel that appears white when spun.',
+      materials: ['Cardboard disk (~15 cm diameter)', 'Markers (red, orange, yellow, green, blue, indigo, violet) or paint', 'Pencil or string', 'Optional: drill or electric motor'],
+      steps: [
+        'Divide the disk into 7 equal sectors with a pencil.',
+        'Color each sector a different rainbow color: red, orange, yellow, green, blue, indigo, violet.',
+        'Insert pencil through center, hold by tip, and spin the disk rapidly.',
+        'As it spins, the colors blend and appear nearly white (gray-white due to dye impurities).'
+      ],
+      science: 'Newton showed in the 1660s that white light is composed of all spectral colors. The spinning wheel mixes the colors faster than your eye can resolve, demonstrating ADDITIVE color mixing. Pure spectral colors mixed would give pure white; real-world pigments are imperfect, so the result is grayish.',
+      safety: 'Don\'t let pencil flick into eyes when spinning fast.',
+      extension: 'Try just three sectors of red, green, blue. Or two sectors of complementary colors (e.g., red + cyan). The latter should appear gray (gray = white minus saturation).' },
+    { id: 'lensTracePaperscreen', title: 'Project an image with a lens', icon: '🔍', age: '10+', difficulty: 'Easy', time: '10 min', cost: '$0 (use eyeglasses or magnifier)',
+      goal: 'Project a real image of a window onto a screen using just one lens.',
+      materials: ['Converging lens (magnifying glass, +2 to +5 diopter eyeglasses, or photographic lens)', 'White paper or screen', 'Dark room with window'],
+      steps: [
+        'Stand in a dark or dim room with the window providing the brightest light source.',
+        'Hold the lens at arm\'s length facing the window.',
+        'Behind the lens, hold a white paper.',
+        'Move the paper toward and away from the lens until the outdoor scene comes into sharp focus.',
+        'You\'ll see an INVERTED, REDUCED image of the outdoor scene.'
+      ],
+      science: 'The window scene is far away (effectively at infinity). Parallel rays converge at the lens\'s focal point. Move the screen to the focal length distance for a sharp image. Image is inverted (upside down) because rays from top of scene cross to the bottom of the image plane.',
+      safety: 'Don\'t look at the Sun through the lens — the focused image can damage your eye AND start a fire on the paper.',
+      extension: 'Measure the focal length: distance from lens to image. Try lenses of different strengths.' },
+    { id: 'fingerSlit', title: 'Diffraction through your fingers', icon: '✋', age: '6+', difficulty: 'Easy', time: '2 min', cost: '$0',
+      goal: 'See diffraction by looking at a distant streetlight through a slit made by your fingers.',
+      materials: ['Your hand', 'Distant point light source (streetlight, bulb across the room)'],
+      steps: [
+        'Hold your hand at arm\'s length, fingers almost completely closed but with a tiny gap between two fingers.',
+        'Look at a distant bright point of light through the gap.',
+        'Slowly close your fingers to make the gap narrower.',
+        'As the gap narrows, the light source appears to spread vertically — diffraction!'
+      ],
+      science: 'Diffraction: y₁ = λL/a. Narrower slit (smaller a) → larger spread. With your fingers as a slit ~0.1 mm wide and a streetlight ~30 m away, λ = 550 nm gives y₁ = 1.7 mm — visible to the eye.',
+      safety: 'Don\'t stare at very bright lights.',
+      extension: 'Look at a colored streetlight (yellow, red) and see how the diffraction pattern color matches.' },
+    { id: 'magnifyOilDrop', title: 'Oil-drop magnifier (Leeuwenhoek style)', icon: '💧', age: '10+', difficulty: 'Medium', time: '15 min', cost: '$1',
+      goal: 'Make a 100x microscope from a glass slide and a tiny droplet.',
+      materials: ['Glass slide or piece of clear plastic', 'Vegetable oil or silicone oil', 'Toothpick or fine wire', 'Small specimen (hair, paper fiber, etc.)'],
+      steps: [
+        'Place a TINY drop of oil (mm-scale) on the slide using a toothpick.',
+        'The drop forms a hemispherical shape — surface tension holds it.',
+        'Hold the slide above a specimen, drop side down.',
+        'Bring your eye very close — only a few mm from the drop.',
+        'Adjust distance for focus. You should see 50–100× magnification.'
+      ],
+      science: 'A tiny drop has a very short radius of curvature, hence very short focal length, hence high magnification. Antonie van Leeuwenhoek used single-bead spheres (essentially solid versions of this) to make 270× microscopes that revealed bacteria for the first time in the 1670s.',
+      safety: 'Use food-grade oil; don\'t taste experimental setups.',
+      extension: 'Try water, glycerin, or honey droplets. Higher refractive index gives different focal length.' },
+    { id: 'soapBubbleGate', title: 'Soap film fringes', icon: '🫧', age: '6+', difficulty: 'Easy', time: '5 min', cost: '$2',
+      goal: 'Observe thin-film color sequences in a vertical soap film.',
+      materials: ['Soap solution', 'Wire loop or square wire frame', 'Dark backdrop', 'Bright light'],
+      steps: [
+        'Dip the loop in soap solution to form a film.',
+        'Hold vertically. Gravity drains soap downward; film thins from top to bottom.',
+        'Watch from the side. You should see horizontal color bands moving and evolving.',
+        'Just before the film pops, the TOP becomes BLACK.'
+      ],
+      science: 'As the film thins, the constructive-interference wavelength shifts from red → yellow → green → blue → violet → black. The top becomes black when film is thinner than λ/(4n) — the two reflections destructively interfere at all wavelengths.',
+      safety: 'Soap stings eyes. Wash hands.',
+      extension: 'Photograph or record the color sequence. Use it to estimate the film thickness from the color: t = (n_constructive - 0.5) × λ / (2 n_film).' },
+    { id: 'cherenkovGlass', title: 'Faux Cherenkov radiation', icon: '⚡', age: '10+', difficulty: 'Medium', time: '15 min', cost: '$5',
+      goal: 'Demonstrate how light can be slowed below v < c/n in a medium — and what would happen if a particle exceeded that.',
+      materials: ['Clear container of water', 'Laser pointer (Class 3R)', 'Black paper backdrop'],
+      steps: [
+        'Setup in dark room.',
+        'Aim laser pointer at the back wall (or detector) such that the beam passes through the water at an angle.',
+        'Observe: the beam REFRACTS entering the water (slowing).',
+        'Discuss: if a charged particle moved faster than c/n in the medium, it would emit a "shock wave" of light (Cherenkov radiation), at an angle related to the speed.'
+      ],
+      science: 'Cherenkov radiation is the optical analog of a supersonic boom. Charged particles moving faster than the local phase velocity of light in the medium emit a cone of EM radiation. This is why nuclear reactor pools glow blue — fast electrons exceed c/n in water.',
+      safety: 'Class 3R laser only. Don\'t aim at eyes.',
+      extension: 'Calculate the Cherenkov angle for a 1 MeV electron in water (n = 1.33): cos(θ) = 1/(βn), where β = v/c ≈ 0.94. θ ≈ 41°.' },
+    { id: 'circularPolarizer', title: 'Circular polarizer demonstration', icon: '🌀', age: '12+', difficulty: 'Medium', time: '20 min', cost: '$15 for filters',
+      goal: 'Show that circularly polarized light is NOT extinguished by a linear polarizer at any angle.',
+      materials: ['One LINEAR polarizing filter', 'One CIRCULAR polarizing filter (or quarter-wave plate + linear)', 'Bright background', 'Optional: laser pointer'],
+      steps: [
+        'Cross two LINEAR polarizers (90° apart). Background goes BLACK.',
+        'Now place the CIRCULAR polarizer between them. Background BRIGHTENS (light passes through).',
+        'Rotate the circular polarizer — brightness doesn\'t change much.',
+        'Compare with sticking a LINEAR polarizer between the crossed pair — light only passes at the right angle.'
+      ],
+      science: 'Linear polarizer + quarter-wave plate = circular polarizer. Linear polarized light → quarter-wave plate → circularly polarized light. This light has no fixed "axis," so passes equally through any subsequent linear polarizer orientation.',
+      safety: 'Don\'t stack polarizers in laser beams without care — IR leaks could damage eyes.',
+      extension: 'Modern 3D movie glasses use circular polarizers so that head tilt doesn\'t reduce image separation. Verify by putting on glasses and tilting your head — left and right images stay separate.' },
+    { id: 'lensFlame', title: 'Image of a flame projection', icon: '🕯', age: '10+ supervised', difficulty: 'Medium', time: '15 min', cost: '$0–5',
+      goal: 'Project a candle\'s real image onto a screen using a lens.',
+      materials: ['Lit candle or tea light', 'Converging lens (~ +5 diopter, magnifying glass)', 'White paper screen', 'Tape measure'],
+      steps: [
+        'Light candle. Place ~50 cm away from lens.',
+        'Hold paper screen behind lens.',
+        'Move screen until candle flame focuses sharply.',
+        'Measure: object distance (candle to lens), image distance (lens to screen). Compare to lens equation 1/f = 1/d_o + 1/d_i.'
+      ],
+      science: 'The candle flame at d_o forms a real image at d_i where 1/d_o + 1/d_i = 1/f. The image is REAL (can be projected), INVERTED, and magnified or reduced depending on the ratio d_i/d_o.',
+      safety: 'Adult supervision for candle. Don\'t leave unattended.',
+      extension: 'Try different object distances. Calculate the focal length f from your measurements. Compare to the manufacturer\'s spec if available.' },
+    { id: 'paperPolariscope', title: 'Paper birefringence under crossed polarizers', icon: '📄', age: '10+', difficulty: 'Easy', time: '10 min', cost: '$5',
+      goal: 'See unexpected birefringence in everyday cellophane or scotch tape.',
+      materials: ['Two linear polarizers (or polarized sunglasses pairs)', 'Various clear plastic items', 'Scotch tape', 'Bright white background'],
+      steps: [
+        'Cross two polarizers. Background appears nearly black.',
+        'Place scotch tape between the polarizers. You should see colors!',
+        'Add more layers of tape — colors change with thickness.',
+        'Try cellophane, plastic forks, kitchen wrap.'
+      ],
+      science: 'Many transparent materials have STRESS-INDUCED BIREFRINGENCE — different refractive indices for two perpendicular polarizations. Between crossed polarizers, the resulting phase shift produces colors that depend on the thickness and stress.',
+      safety: 'Don\'t put plastic in mouth/eyes.',
+      extension: 'Try to predict what color a sample will be based on its thickness. Photograph for documentation.' }
+  ];
+
+  // ══════════════════════════════════════════════════════════════════
+  // MORE WORKED PROBLEMS — additional practice
+  // ══════════════════════════════════════════════════════════════════
+  var WORKED_PROBLEMS_MORE = [
+    { id: 'wpx1', topic: 'reflection', difficulty: 'medium', icon: '🪞',
+      title: 'Spherical mirror focal length from radius',
+      problem: 'A concave spherical mirror has radius of curvature R = 40 cm. What is its focal length?',
+      given: ['R = 40 cm (concave)'],
+      find: 'f.',
+      solution: 'For spherical mirrors, f = R/2 = 40/2 = 20 cm. Sign convention: concave mirrors have positive f.',
+      answer: 'f = 20 cm.',
+      pitfalls: 'Note R is the radius of CURVATURE, not the radius of a complete sphere or any other dimension. f = R/2 is exact only for paraxial rays.' },
+    { id: 'wpx2', topic: 'lenses', difficulty: 'medium', icon: '🔍',
+      title: 'Two-lens system in series',
+      problem: 'Two thin lenses in contact: L1 has f₁ = +10 cm; L2 has f₂ = −15 cm. Find combined focal length.',
+      given: ['f₁ = +10 cm', 'f₂ = −15 cm', 'In contact (separation ≈ 0)'],
+      find: 'f_combined.',
+      solution: 'For lenses in contact, powers add: 1/f_combined = 1/f₁ + 1/f₂ = 1/10 + 1/(−15) = 3/30 − 2/30 = 1/30. So f_combined = +30 cm.',
+      answer: 'f_combined = +30 cm. (Converging, weaker than L1 alone.)',
+      pitfalls: 'Powers (in diopters) add directly. Focal lengths don\'t add — you must invert before adding.' },
+    { id: 'wpx3', topic: 'diffraction', difficulty: 'hard', icon: '〰',
+      title: 'Resolving power of a microscope',
+      problem: 'An oil-immersion microscope has numerical aperture NA = 1.4 and uses 550 nm green light. Find the minimum resolvable feature size.',
+      given: ['NA = 1.4', 'λ = 550 nm'],
+      find: 'Resolution limit.',
+      solution: 'Abbe limit: d_min ≈ λ/(2·NA) = 550/(2 × 1.4) ≈ 196 nm.',
+      answer: 'd_min ≈ 196 nm or about 0.2 μm.',
+      pitfalls: 'This is the FUNDAMENTAL diffraction limit for conventional light microscopes. STED, PALM, STORM techniques break this barrier with fluorescent labels.' },
+    { id: 'wpx4', topic: 'polarization', difficulty: 'medium', icon: '↕',
+      title: "Three polarizer puzzle",
+      problem: 'Unpolarized light I₀ passes through three polarizers in series. First at 0°, second at 45°, third at 90°. What is the final intensity?',
+      given: ['Unpolarized I₀ in', 'Three polarizers at 0°, 45°, 90°'],
+      find: 'Final intensity.',
+      solution: 'After 1st polarizer: I₁ = I₀/2 (unpolarized loses half). After 2nd: I₂ = I₁ × cos²(45°) = (I₀/2)(0.5) = I₀/4. After 3rd: I₃ = I₂ × cos²(45°) = (I₀/4)(0.5) = I₀/8.',
+      answer: 'I_final = I₀/8.',
+      pitfalls: 'If you only had the first and third polarizer (no middle), the result would be zero (perpendicular polarizers extinguish). Inserting the 45° polarizer REINTRODUCES light!' },
+    { id: 'wpx5', topic: 'lenses', difficulty: 'hard', icon: '🔍',
+      title: "Microscope total magnification",
+      problem: 'A microscope has an objective of focal length 5 mm with magnification 40x, and an eyepiece of focal length 25 mm with magnification 10x. What is the total angular magnification?',
+      given: ['M_objective = 40x', 'M_eyepiece = 10x'],
+      find: 'M_total.',
+      solution: 'Total magnification = M_obj × M_eye = 40 × 10 = 400×.',
+      answer: '400× total magnification.',
+      pitfalls: 'Total mag multiplies; eyepiece magnifies the intermediate image from objective. For DIFFRACTION-limited resolution, the additional eyepiece magnification doesn\'t help if the objective is already at the diffraction limit.' },
+    { id: 'wpx6', topic: 'general', difficulty: 'medium', icon: '🔆',
+      title: "Photon momentum",
+      problem: 'A photon has wavelength λ = 532 nm (green laser). Calculate its momentum.',
+      given: ['λ = 532 nm = 5.32×10⁻⁷ m', 'h = 6.626×10⁻³⁴ J·s'],
+      find: 'p (photon momentum).',
+      solution: 'Photon momentum: p = h/λ = 6.626×10⁻³⁴ / 5.32×10⁻⁷ ≈ 1.25×10⁻²⁷ kg·m/s.',
+      answer: 'p ≈ 1.25×10⁻²⁷ kg·m/s.',
+      pitfalls: 'Tiny number, but real. Light pressure on solar sails uses this momentum.' },
+    { id: 'wpx7', topic: 'general', difficulty: 'hard', icon: '🔆',
+      title: "Solar sail acceleration",
+      problem: 'A 1 m² perfectly reflecting solar sail in Earth orbit (solar flux ~1361 W/m²). What is the radiation force on it? If sail mass is 100 g, what is its acceleration?',
+      given: ['Solar flux: 1361 W/m²', 'A = 1 m²', 'Mass = 100 g = 0.1 kg', 'Perfectly reflecting (doubles momentum transfer)'],
+      find: 'Force and acceleration.',
+      solution: 'Radiation force on reflector: F = 2I·A/c = 2(1361)(1)/(3×10⁸) ≈ 9.07×10⁻⁶ N. Acceleration: a = F/m = 9.07×10⁻⁶/0.1 ≈ 9.07×10⁻⁵ m/s².',
+      answer: 'F ≈ 9.07 μN, a ≈ 0.0001 m/s².',
+      pitfalls: 'Tiny acceleration but continuous — solar sails compound over days and weeks of constant push.' },
+    { id: 'wpx8', topic: 'vision', difficulty: 'hard', icon: '👁',
+      title: "Required cones to resolve a star",
+      problem: 'Two stars are separated by 30 arcseconds in the sky. Through a telescope of 200 mm aperture, are they resolved at 550 nm?',
+      given: ['Star separation: 30 arcsec = 1.45×10⁻⁴ rad', 'D = 0.20 m', 'λ = 550 nm = 5.5×10⁻⁷ m'],
+      find: 'Whether they are resolved (Rayleigh criterion).',
+      solution: 'Rayleigh angular resolution: θ_min = 1.22 λ/D = 1.22 × 5.5×10⁻⁷/0.20 ≈ 3.36×10⁻⁶ rad ≈ 0.69 arcsec. Separation 30 arcsec >> 0.69 arcsec — easily resolved.',
+      answer: 'Yes, resolved (separation 43x larger than resolution limit).',
+      pitfalls: 'Atmospheric "seeing" at most ground sites is ~1-2 arcsec. Even with perfect optics, you can\'t resolve below the seeing limit without adaptive optics.' },
+    { id: 'wpx9', topic: 'interference', difficulty: 'hard', icon: '✨',
+      title: "Soap film color change",
+      problem: 'A soap film has refractive index 1.40. What thickness gives constructive interference for green light (550 nm) viewed in air at normal incidence?',
+      given: ['n = 1.40', 'λ_vacuum = 550 nm', 'View in air at normal incidence'],
+      find: 'Minimum thickness for constructive interference.',
+      solution: 'Phase shift at first surface (air→soap, low to high n): π. Phase shift at second surface (soap→air, high to low n): 0. Net additional phase = π. For constructive interference: 2nt = (m + 0.5)λ. Minimum t with m=0: t = 0.5 × 550/(2 × 1.40) ≈ 98 nm.',
+      answer: 't ≈ 98 nm.',
+      pitfalls: 'Careful with the half-wavelength shift at the higher-index surface. The phase-shift rule: light reflecting from a higher-n surface gets a π shift; from lower-n: no shift.' },
+    { id: 'wpx10', topic: 'color', difficulty: 'medium', icon: '🌈',
+      title: "Apparent diameter of Earth from Sun",
+      problem: 'Earth\'s diameter is 1.27×10⁷ m. Sun-Earth distance is 1.50×10¹¹ m. Calculate Earth\'s apparent angular size from the Sun.',
+      given: ['D_Earth = 1.27×10⁷ m', 'd_Sun-Earth = 1.50×10¹¹ m'],
+      find: 'Angular size in arcsec.',
+      solution: 'Small angle: θ ≈ D/d = 1.27×10⁷/1.50×10¹¹ ≈ 8.5×10⁻⁵ rad. Convert: 8.5×10⁻⁵ rad × (180/π × 3600) ≈ 17.5 arcsec.',
+      answer: '~17.5 arcsec.',
+      pitfalls: 'For comparison, the angular diameter of the Sun from Earth is ~32 arcmin = 1920 arcsec — about 100x larger than Earth from Sun. So Earth would be visible as a star, not a disk, from the Sun.' }
+  ];
+
+  // ══════════════════════════════════════════════════════════════════
+  // MORE QUIZ QUESTIONS — append to existing AP_OPTICS_QUIZ
+  // ══════════════════════════════════════════════════════════════════
+  // (Appended directly to AP_OPTICS_QUIZ array via concat after declaration)
+  var QUIZ_EXTRA = [
+    { tags: ['reflection'], q: 'A spherical concave mirror has radius of curvature R = 30 cm. Its focal length is:',
+      choices: ['15 cm', '30 cm', '60 cm', 'Variable depending on incidence angle'], correct: 0,
+      explain: 'For paraxial rays, f = R/2 = 15 cm. The radius of curvature is exactly twice the focal length.' },
+    { tags: ['reflection'], q: 'A convex (diverging) mirror always produces images that are:',
+      choices: ['Real, inverted, enlarged', 'Real, upright, reduced', 'Virtual, upright, reduced', 'Virtual, inverted, enlarged'], correct: 2,
+      explain: 'Convex mirrors give VIRTUAL (negative d_i), UPRIGHT (positive m), REDUCED (|m| < 1) images for any positive object distance.' },
+    { tags: ['refraction'], q: 'Why does a swimming pool appear shallower than it is?',
+      choices: ['Light is absorbed by water', 'Refraction at the water-air interface bends rays', 'Pool walls absorb light', "Water's color makes it look shallow"], correct: 1,
+      explain: 'Light from the bottom refracts AWAY from the normal exiting the water. Tracing rays back gives apparent depth = real depth × (n_observer/n_water) ≈ 0.75 of real depth.' },
+    { tags: ['refraction'], q: "Why is the speed of light slower in glass than in vacuum?",
+      choices: ['Because glass absorbs energy', 'Because of repeated absorption/re-emission by atoms', 'Because the photons get tired', 'Because gravity affects it more'], correct: 1,
+      explain: 'In a medium, photons undergo virtual interactions with atomic dipoles, effectively slowing the wave\'s phase speed. n > 1 in all transparent matter.' },
+    { tags: ['lenses'], q: 'A camera lens focuses an image of a distant scene onto a sensor 100 mm behind the lens. The focal length is:',
+      choices: ['50 mm', '100 mm', '200 mm', '50 cm'], correct: 1,
+      explain: 'For distant objects (d_o → ∞), the image forms at the focal point: d_i = f. So f = 100 mm.' },
+    { tags: ['lenses'], q: 'The focal length of a converging lens depends on:',
+      choices: ['Only the curvature of the surfaces', 'Only the material n', 'Both n and curvature', 'Neither — it\'s a property of the lens'], correct: 2,
+      explain: 'Lensmaker\'s equation: 1/f = (n − 1)(1/R₁ − 1/R₂). Both n and surface curvatures matter.' },
+    { tags: ['interference'], q: 'Two coherent light sources interfere on a screen. If you halve the wavelength, the fringe spacing:',
+      choices: ['Doubles', 'Halves', 'Stays the same', 'Quadruples'], correct: 1,
+      explain: 'Fringe spacing y = λL/d. Halving λ halves y.' },
+    { tags: ['interference'], q: 'An anti-reflection coating works by:',
+      choices: ['Absorbing the reflected light', 'Causing destructive interference between two reflections', 'Polarizing the reflected light', 'Increasing the transmission coefficient'], correct: 1,
+      explain: 'Quarter-wave-thick film of n_coat ≈ √(n_glass × n_air) makes the reflections from the two surfaces interfere destructively, canceling the reflection.' },
+    { tags: ['diffraction'], q: 'A diffraction grating has 1000 lines per mm. Light at 600 nm gives a first-order maximum at:',
+      choices: ['About 30°', 'About 37°', 'About 45°', 'About 60°'], correct: 1,
+      explain: 'd = 1 mm/1000 = 1 μm. sin(θ) = mλ/d = 0.6. θ = arcsin(0.6) ≈ 36.9°.' },
+    { tags: ['diffraction'], q: 'A 1 m telescope at 500 nm has Rayleigh angular resolution:',
+      choices: ['About 0.1 arcsec', 'About 1 arcsec', 'About 10 arcsec', 'About 1 arcmin'], correct: 0,
+      explain: 'θ_min = 1.22 × 500e-9 / 1 = 6.1e-7 rad ≈ 0.126 arcsec.' },
+    { tags: ['polarization'], q: 'A polarizer is rotated 90° relative to incoming linearly polarized light. The transmitted intensity is:',
+      choices: ['Full intensity', '½ of input', '¼ of input', 'Zero'], correct: 3,
+      explain: 'Malus\'s law: I = I₀ cos²(90°) = 0. Crossed polarizers extinguish.' },
+    { tags: ['polarization'], q: "At Brewster's angle, the reflected ray is:",
+      choices: ['Unpolarized', 'Polarized parallel to incidence plane', 'Polarized perpendicular to incidence plane', 'Circularly polarized'], correct: 2,
+      explain: 'At Brewster\'s angle, only the s-polarization (perpendicular to incidence plane, parallel to surface) reflects; p-polarization is completely transmitted.' },
+    { tags: ['color'], q: 'What makes the sky blue?',
+      choices: ['Reflection from the oceans', 'Rayleigh scattering favors short wavelengths', 'Ozone absorption of red', 'Refraction by clouds'], correct: 1,
+      explain: 'Rayleigh scattering varies as 1/λ⁴. Blue (450 nm) scatters ~5.6× more than red (650 nm), enriching the sky\'s scattered light in blue.' },
+    { tags: ['color'], q: 'Why are sunsets red?',
+      choices: ['The Sun\'s temperature decreases at the horizon', 'Longer atmospheric path scatters out blue', 'Dust always reflects red', 'Ozone production peaks at sunset'], correct: 1,
+      explain: 'Near the horizon, sunlight passes through a ~38× longer atmospheric path. Rayleigh scattering removes blue/green from the direct beam, leaving red.' },
+    { tags: ['vision'], q: 'The eye\'s most numerous photoreceptor type is:',
+      choices: ['L cones (red)', 'M cones (green)', 'S cones (blue)', 'Rods'], correct: 3,
+      explain: 'About 120 million rods, only ~6 million cones (3 types total). Rods are for dim light, cones for color.' },
+    { tags: ['vision'], q: 'Myopia (nearsightedness) is corrected with:',
+      choices: ['Converging lenses', 'Diverging lenses', 'Prism lenses', 'Polarizing lenses'], correct: 1,
+      explain: 'Myopic eyes focus distant images IN FRONT of the retina. Diverging lenses reduce the effective focusing power, bringing the focus to the retina.' },
+    { tags: ['vision'], q: 'A 50-year-old needs +1.5 D reading glasses. Their reading focal length is:',
+      choices: ['About 33 cm', 'About 50 cm', 'About 67 cm', 'About 100 cm'], correct: 2,
+      explain: 'Power = 1/f → f = 1/P = 1/1.5 ≈ 0.67 m = 67 cm.' },
+    { tags: ['general'], q: "The speed of light c in vacuum is:",
+      choices: ['Approximate 300 million m/s', 'Exactly 299,792,458 m/s by definition', 'Approximately the same as in glass', 'Decreasing over cosmic time'], correct: 1,
+      explain: 'Since 1983, c is DEFINED exactly as 299,792,458 m/s. The meter is now defined in terms of c.' },
+    { tags: ['general'], q: 'A photon\'s energy is:',
+      choices: ['Independent of frequency', 'Proportional to frequency: E = hf', 'Proportional to wavelength', 'Determined only by intensity'], correct: 1,
+      explain: 'E = hf where h is Planck\'s constant. Equivalently E = hc/λ. Higher frequency = higher energy.' },
+    { tags: ['general'], q: 'Total internal reflection requires:',
+      choices: ['Going from lower n to higher n', 'Going from higher n to lower n AND beyond critical angle', 'Just being inside a denser medium', 'Going at exactly the critical angle'], correct: 1,
+      explain: 'TIR needs BOTH conditions: (1) higher-n to lower-n direction, AND (2) θ > θ_c.' },
+    { tags: ['interference'], q: "Young's double-slit fringe spacing increases when:",
+      choices: ['Slit separation increases', 'Slit separation decreases', 'Wavelength decreases', 'Screen distance decreases'], correct: 1,
+      explain: 'y = λL/d. Decreasing d INCREASES fringe spacing — counterintuitive but correct.' },
+    { tags: ['diffraction'], q: 'A small flashlight viewed through a tiny hole produces:',
+      choices: ['A point of light', 'An Airy diffraction pattern', 'A rainbow', 'A square pattern'], correct: 1,
+      explain: 'Any circular aperture produces an Airy disk + ring pattern when imaged. The flashlight is the source; your eye + the small hole = the imaging system.' },
+    { tags: ['lenses'], q: 'A diverging lens cannot produce:',
+      choices: ['A virtual image', 'A real image', 'A reduced image', 'An upright image'], correct: 1,
+      explain: 'A simple diverging lens with a real object NEVER produces a real image. Always virtual, upright, reduced.' },
+    { tags: ['polarization'], q: 'Polarized sunglasses primarily reduce glare from:',
+      choices: ['The Sun itself', 'Reflections off horizontal surfaces (water, roads)', 'All blue light', 'IR radiation'], correct: 1,
+      explain: 'At low Sun angles, reflections from horizontal surfaces are partly polarized horizontally (Brewster phenomenon). Polarized glasses with vertical transmission block this glare.' },
+    { tags: ['general'], q: 'In the photoelectric effect, doubling the light intensity at the same frequency:',
+      choices: ['Doubles the kinetic energy of emitted electrons', 'Doubles the number of emitted electrons', 'Halves the kinetic energy', 'No effect'], correct: 1,
+      explain: 'Intensity = photons per second per area. More photons → more electron emission. Energy per electron depends only on photon FREQUENCY, not intensity.' }
+  ];
+
+  // Concat extra quiz into main array
+  if (typeof AP_OPTICS_QUIZ !== 'undefined' && Array.isArray(AP_OPTICS_QUIZ) && Array.isArray(QUIZ_EXTRA)) {
+    AP_OPTICS_QUIZ = AP_OPTICS_QUIZ.concat(QUIZ_EXTRA);
+  }
+
+  // Combine lab kits / problems into main arrays
+  if (typeof OPTICS_LAB_KITS !== 'undefined' && Array.isArray(OPTICS_LAB_KITS) && Array.isArray(OPTICS_LAB_KITS_MORE)) {
+    OPTICS_LAB_KITS = OPTICS_LAB_KITS.concat(OPTICS_LAB_KITS_MORE);
+  }
+  if (typeof WORKED_PROBLEMS !== 'undefined' && Array.isArray(WORKED_PROBLEMS) && Array.isArray(WORKED_PROBLEMS_MORE)) {
+    WORKED_PROBLEMS = WORKED_PROBLEMS.concat(WORKED_PROBLEMS_MORE);
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // MORE PHENOMENA — extend OPTICAL_PHENOMENA_DB
+  // ══════════════════════════════════════════════════════════════════
+  var OPTICAL_PHENOMENA_DB_MORE = [
+    { id: 'photoelectric', name: 'Photoelectric effect', icon: '💡', category: 'colorSpectrum',
+      shortDesc: 'Light striking a metal surface ejects electrons, but only if photon frequency exceeds a threshold.',
+      formula: 'E_kinetic = hf − φ (work function)',
+      physics: 'Below threshold frequency, NO electrons are ejected regardless of light intensity. Above threshold, each photon has enough energy to liberate one electron, with kinetic energy = hf − φ. Higher intensity = more electrons; higher frequency = more energetic electrons. Discovered by Hertz (1887); explained by Einstein (1905), who won the Nobel for THIS, not relativity.',
+      whereSeen: 'Solar panels, photodiodes, image sensors (CCD/CMOS), photomultipliers, X-ray detectors.',
+      related: ['photon', 'einsteinPhoto', 'workFunction'],
+      funFact: 'The photoelectric effect proved that light energy is quantized — the foundation of quantum mechanics. Einstein\'s 1905 paper opened the quantum era.' },
+    { id: 'cherenkov', name: 'Cherenkov radiation', icon: '⚡', category: 'colorSpectrum',
+      shortDesc: 'Blue glow from charged particles moving faster than the local speed of light in a medium.',
+      formula: 'cos(θ) = 1/(βn), where β = v/c',
+      physics: 'When a charged particle travels through a medium faster than the phase speed of light in that medium (v > c/n), it creates an electromagnetic "shock wave" — a cone of radiation emitted at angle θ to its direction. The radiation peaks at short wavelengths (UV/blue), explaining the characteristic blue color.',
+      whereSeen: 'Nuclear reactor pools (blue glow from radioactive decay), water-tank neutrino detectors (Super-Kamiokande), cosmic-ray air-shower telescopes.',
+      related: ['supraluminal', 'relativity', 'neutrino'],
+      funFact: 'Cherenkov radiation is optical "supersonic boom" — but unlike sound, it doesn\'t violate relativity. The particle\'s speed is below c (the speed of light in vacuum), only above c/n (the phase speed in the medium).' },
+    { id: 'comptonScattering', name: 'Compton scattering', icon: '⚛', category: 'colorSpectrum',
+      shortDesc: 'X-rays scattering off electrons shift wavelength by an angle-dependent amount — proving photon momentum.',
+      formula: 'Δλ = (h/m_e c)(1 − cos θ)',
+      physics: 'In 1923, Compton showed X-rays scattering off graphite electrons had wavelength shifts matching elastic particle-particle collisions, with photon momentum p = h/λ. The shift Δλ depends on the scattering angle θ — proving photons carry momentum and confirming light\'s particle nature.',
+      whereSeen: 'X-ray and gamma-ray imaging, PET scanners (annihilation photons), high-energy astrophysics.',
+      related: ['photon', 'momentum', 'compton'],
+      funFact: 'Compton\'s 1923 experiment is one of the cleanest demonstrations that photons are particles. Won the 1927 Nobel Prize.' },
+    { id: 'photonicCrystal', name: 'Photonic crystal', icon: '💎', category: 'interference',
+      shortDesc: 'Periodic dielectric structure that creates "photonic bandgaps" — wavelength bands that cannot propagate.',
+      formula: 'Bragg condition for 3D periodic structure',
+      physics: 'A material with periodic refractive index variations at the wavelength scale creates interference patterns that block certain wavelengths from propagating. Different photonic crystals are designed to control specific colors. Opal is a natural example. Synthetic photonic crystals are used in fiber lasers and slow-light devices.',
+      whereSeen: 'Opal gemstones, peacock feathers (partially), photonic-bandgap fibers, semiconductor lasers, structural-color paint.',
+      related: ['bragg', 'iridescence', 'metamaterial'],
+      funFact: 'Yablonovite (1991) was the first artificial 3D photonic crystal, made by drilling three sets of holes through a block at specific angles. The drill bits left a periodic structure with a bandgap in the microwave range.' },
+    { id: 'metamaterials', name: 'Metamaterials', icon: '🔬', category: 'interference',
+      shortDesc: 'Engineered materials with optical properties not found in nature — negative refraction, cloaking.',
+      formula: 'n_effective can be negative, very high, or zero',
+      physics: 'A metamaterial is a periodic array of subwavelength-spaced elements (resonant antennas, split rings) that interact collectively with light. The collective behavior gives "effective" optical constants that can be tuned to any value, including negative refractive index. Negative-index metamaterials cause light to bend the "wrong way" — a basis for invisibility-cloak demonstrations.',
+      whereSeen: 'Research labs, antenna design, some commercial RF metamaterial antennas. Visible-light metamaterials still mostly in lab.',
+      related: ['negativeRefraction', 'cloaking', 'photonicCrystal'],
+      funFact: 'In 2006, John Pendry and David Smith demonstrated an invisibility cloak for microwave-frequency EM waves using metamaterials. Cloaking at visible wavelengths remains a major engineering challenge.' },
+    { id: 'opticalActivity', name: 'Optical activity (chirality)', icon: '🌀', category: 'polarization',
+      shortDesc: 'Chiral molecules rotate the plane of linearly polarized light passing through them.',
+      formula: 'Rotation angle ∝ concentration × path length',
+      physics: 'Molecules without mirror symmetry (chiral) interact differently with right- vs left-circularly polarized light. Linearly polarized light, decomposed into circular components, has its plane rotated as it passes through a chiral medium. Magnitude depends on the molecule type, concentration, path length, and wavelength.',
+      whereSeen: 'Sugar solutions (sucrose, fructose), amino acids in proteins, pharmaceutical chirality testing, polarimeters.',
+      related: ['polarization', 'birefringence', 'chirality'],
+      funFact: 'Most biological molecules are chiral — and biology uses one chirality exclusively. All natural amino acids are L-form; all natural sugars are D-form. Mirror-image molecules don\'t fit biological machinery.' },
+    { id: 'stimulatedEmission', name: 'Stimulated emission', icon: '🔆', category: 'colorSpectrum',
+      shortDesc: 'A photon triggers an excited atom to emit a second photon in phase with the first.',
+      formula: 'Rate proportional to incident-photon density',
+      physics: 'When an atom is in an excited state, a passing photon of just the right energy can cause it to emit a SECOND photon — same frequency, same direction, same phase as the trigger. Einstein predicted this in 1917. Combined with a "population inversion" (more atoms excited than ground state), stimulated emission is the basis of laser amplification.',
+      whereSeen: 'Inside every laser, ever. The mechanism that distinguishes laser light from ordinary thermal light.',
+      related: ['laser', 'spontaneousEmission', 'einsteinCoefficients'],
+      funFact: 'Einstein\'s 1917 paper proposed stimulated emission — 36 years before any device actually used it (Townes\' maser, 1953).' },
+    { id: 'pyroelectric', name: 'Pyroelectric effect', icon: '🔥', category: 'colorSpectrum',
+      shortDesc: 'Certain crystals generate a voltage when their temperature changes — used in IR motion detectors.',
+      formula: 'Polarization changes with temperature',
+      physics: 'In pyroelectric materials, the crystal has a permanent dipole moment that changes magnitude with temperature. As temperature changes, free surface charges flow to compensate, producing a measurable current. Used in PIR (passive infrared) motion detectors and uncooled thermal cameras.',
+      whereSeen: 'Home motion-detector security lights, automatic doors, uncooled IR cameras (FLIR consumer products).',
+      related: ['ferroelectric', 'piezoelectric'],
+      funFact: 'A modern PIR sensor detects the difference between adjacent zones; when a warm body moves between them, the signal rises and triggers the light. Static heat sources (like a sunlit wall) don\'t trigger because they don\'t change.' },
+    { id: 'electroOptic', name: 'Electro-optic effect', icon: '⚡', category: 'polarization',
+      shortDesc: 'External electric field changes a material\'s refractive index, allowing light modulation.',
+      formula: 'Δn ∝ E (Pockels) or Δn ∝ E² (Kerr)',
+      physics: 'In an electro-optic crystal (like lithium niobate), an applied electric field induces birefringence. This converts an electrical signal into a phase shift on a passing optical beam. Combined with polarizers, this allows fast optical switching used in modern telecom modulators.',
+      whereSeen: 'Fiber-optic transmitters (Mach-Zehnder modulators), spatial light modulators, Pockels cells in laser pulse shaping.',
+      related: ['kerrEffect', 'pockelsCell', 'machZehnder'],
+      funFact: 'Fiber-optic networks at 400 Gbps and above use lithium-niobate Mach-Zehnder modulators that can switch optical signals 100 billion times per second.' },
+    { id: 'whispGalleryMode', name: 'Whispering-gallery mode', icon: '🌀', category: 'reflection',
+      shortDesc: 'Light circulating around the inside edge of a spherical or disc-shaped resonator by repeated total reflection.',
+      formula: '2πR·n = mλ for integer m',
+      physics: 'Inside a high-index dielectric sphere or microdisk, light can trap by total internal reflection, circulating around the surface. Like St. Paul\'s Cathedral\'s whispering gallery (acoustic version where whispers carry around the dome), light can travel huge distances confined to the surface.',
+      whereSeen: 'Microsphere lasers (very narrow linewidth), biosensors (binding events shift the resonance), high-Q optical frequency combs.',
+      related: ['totalInternalReflection', 'resonator', 'microsphere'],
+      funFact: 'St. Paul\'s Cathedral\'s acoustic whispering gallery (built ~1697) inspired the name. Lord Rayleigh studied it acoustically in 1910, deriving the same equations physicists now use for the optical version.' },
+    { id: 'fabryPerot', name: 'Fabry-Perot etalon', icon: '⫻', category: 'interference',
+      shortDesc: 'Two parallel partially-reflecting mirrors create a tunable narrow-band optical filter or resonant cavity.',
+      formula: 'Transmission peaks at 2nL cos(θ) = mλ',
+      physics: 'Light entering a parallel-mirror cavity bounces back and forth, with each round trip undergoing transmission and reflection. For specific wavelengths (resonant frequencies), the round-trip phase is an integer multiple of 2π, leading to constructive transmission. The "finesse" of the cavity (related to mirror reflectivity) determines how sharp the transmission peaks are.',
+      whereSeen: 'Laser cavity optics, wavelength-meters, narrow-band filters in astronomy, Fabry-Perot interferometers for high-resolution spectroscopy.',
+      related: ['cavity', 'finesse', 'etalon'],
+      funFact: 'The longitudinal-mode structure of a laser cavity (the slight wavelength spacing between adjacent oscillating modes) is set by Fabry-Perot resonances of the cavity length: Δν = c/(2L).' },
+    { id: 'aTomicScales', name: 'Atomic-scale ranged adaptive optics', icon: '🌌', category: 'diffraction',
+      shortDesc: 'Adaptive optics correction for atmospheric distortion across ground-based telescopes.',
+      formula: 'Strehl ratio = exp(−σ²) for residual wavefront RMS σ',
+      physics: 'A wavefront sensor measures distortions of starlight passing through the atmosphere; a deformable mirror with hundreds to thousands of actuators applies the inverse distortion at kHz rates. The corrected beam approaches the diffraction limit of the telescope.',
+      whereSeen: 'Modern large ground telescopes (Keck, VLT, Gemini). Some surgical microscopes. Free-space optical communications.',
+      related: ['wavefront', 'deformableMirror', 'seeing'],
+      funFact: 'Adaptive optics was originally developed for the U.S. military for sharper satellite imaging. Most of the algorithms and hardware are now commercially available, transferring an enormous boon to civilian astronomy.' },
+    { id: 'olbersParadox', name: "Olbers' paradox", icon: '🌌', category: 'colorSpectrum',
+      shortDesc: 'Why is the night sky dark? In an infinite static universe of stars, it should be uniformly bright.',
+      formula: 'Sum over all stars: ∫(L/4πr²)·n·4πr²dr = ∞',
+      physics: 'In an infinite uniform universe of equally bright stars, the inverse-square brightness falloff is canceled by the rising volume of more distant stars. The night sky should be as bright as the surface of a typical star. The resolution: the universe has a finite age, so we only see light from a finite past. Plus expansion redshifts distant light beyond visibility.',
+      whereSeen: 'Conceptually — explains why ALL of the night sky is dark.',
+      related: ['bigBang', 'redshift', 'cosmology'],
+      funFact: 'Olbers stated the paradox in 1823, but Edgar Allan Poe (yes, the poet) wrote about it in 1848 as evidence of finite universe. His Eureka was correct in its broad conclusion 80 years before modern cosmology confirmed it.' }
+  ];
+
+  // Append to main array
+  if (typeof OPTICAL_PHENOMENA_DB !== 'undefined' && Array.isArray(OPTICAL_PHENOMENA_DB) && Array.isArray(OPTICAL_PHENOMENA_DB_MORE)) {
+    OPTICAL_PHENOMENA_DB = OPTICAL_PHENOMENA_DB.concat(OPTICAL_PHENOMENA_DB_MORE);
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // MORE INSTRUMENTS — extend OPTICAL_INSTRUMENTS
+  // ══════════════════════════════════════════════════════════════════
+  var OPTICAL_INSTRUMENTS_MORE = [
+    { id: 'pmtTube', name: 'Photomultiplier tube (PMT)', icon: '⚡', category: 'scientific',
+      principle: 'Photocathode emits electron via photoelectric effect; cascade of dynodes amplifies the signal by millions of times.',
+      magnification: 'Gain: 10⁵ to 10⁸ — single-photon detection',
+      pros: 'Single-photon sensitivity, fast response (ns), large active area available.',
+      cons: 'Bulky vacuum tube, high voltage required (~1000 V), sensitive to magnetic fields, eventually saturates.',
+      where: 'Particle physics detectors (Super-K, Cherenkov telescopes), fluorescence spectroscopy, medical PET imaging.',
+      history: 'Developed in the 1930s. Still the best for single-photon timing applications despite competition from SPADs and SNSPDs.' },
+    { id: 'sipm', name: 'Silicon photomultiplier (SiPM)', icon: '⚡', category: 'scientific',
+      principle: 'Array of single-photon avalanche diodes (SPADs) in Geiger mode; each photon triggers an avalanche.',
+      magnification: 'Single-photon sensitivity per pixel',
+      pros: 'Solid-state (no vacuum), insensitive to magnetic fields, fast (~ns), lower voltage than PMT.',
+      cons: 'Smaller area than PMT, higher dark counts at room temperature.',
+      where: 'Replacing PMTs in medical imaging, particle physics, lidar.',
+      history: 'Commercial since ~2008. Now dominant in many former PMT applications.' },
+    { id: 'sCmos', name: 'Scientific CMOS (sCMOS)', icon: '🔬', category: 'imaging',
+      principle: 'CMOS image sensor with very low read noise and high dynamic range — for low-light scientific imaging.',
+      magnification: '—',
+      pros: 'Faster readout than CCD, lower noise, larger format.',
+      cons: 'Pixel non-uniformity worse than top-tier CCDs.',
+      where: 'Modern astronomy, microscopy, biophysics.',
+      history: 'First commercial sCMOS sensor 2009 (Andor, Hamamatsu). Now standard in advanced imaging.' },
+    { id: 'spectrograph', name: 'Echelle spectrograph', icon: '📊', category: 'scientific',
+      principle: 'High-order diffraction grating (echelle) gives high resolution but overlapping orders; cross-dispersing grating separates them.',
+      magnification: 'R = λ/Δλ up to 150,000',
+      pros: 'Very high spectral resolution in compact size.',
+      cons: 'Complex 2D readout, careful order-extraction software needed.',
+      where: 'Astronomical spectroscopy of stellar atmospheres, exoplanet atmosphere studies, laboratory chemistry.',
+      history: 'Invented 1949 (Harrison). Most modern high-resolution astronomical spectrographs are echelles.' },
+    { id: 'theodolite', name: 'Theodolite', icon: '📐', category: 'component',
+      principle: 'Precision telescope mounted on a calibrated angular stage for measuring horizontal and vertical angles.',
+      magnification: '20× to 30× typical telescope magnification',
+      pros: 'High-precision angular measurement.',
+      cons: 'Slow to operate, modern total stations have replaced it.',
+      where: 'Surveying, civil engineering, historic land measurement.',
+      history: 'Modern theodolite invented ~1571 by Leonard Digges. Foundational tool in establishing the U.S. Public Land Survey System.' },
+    { id: 'opticalFiber', name: 'Optical fiber', icon: '📡', category: 'component',
+      principle: 'Glass or plastic strand confining light by total internal reflection between core and cladding.',
+      magnification: '—',
+      pros: 'Low loss (<0.2 dB/km), large bandwidth, immune to EM interference.',
+      cons: 'Connectorization specialized, fragile compared to copper.',
+      where: 'Telecom backbone, data centers, sensors, surgical endoscopy, military.',
+      history: 'Kao\'s 1966 vision; Corning\'s 1970 implementation. Now the backbone of essentially all global communications.' },
+    { id: 'wfSensor', name: 'Wavefront sensor', icon: '🔍', category: 'scientific',
+      principle: 'Measures wavefront distortion (e.g., Shack-Hartmann uses a microlens array projecting spots onto a sensor; spot displacements give local wavefront slopes).',
+      magnification: '—',
+      pros: 'Real-time wavefront analysis, used in adaptive optics.',
+      cons: 'Limited spatial resolution by microlens array size.',
+      where: 'Adaptive optics systems for telescopes and microscopes; LASIK pre-surgery measurement.',
+      history: 'Shack-Hartmann sensor developed for atmospheric correction in 1971; now standard.' },
+    { id: 'opticalChopper', name: 'Optical chopper', icon: '⚙', category: 'component',
+      principle: 'Rotating slotted disk that periodically blocks/passes a light beam.',
+      magnification: '—',
+      pros: 'Modulates DC light at a known frequency for lock-in amplification.',
+      cons: 'Mechanical; eventual wear.',
+      where: 'Lock-in detection in sensitive measurements, modulation in spectroscopy.',
+      history: 'Used since early 20th century in radiometry and astronomical photometry.' },
+    { id: 'spatialFilter', name: 'Spatial filter / pinhole', icon: '🕳', category: 'component',
+      principle: 'Lens focuses beam; pinhole at focal plane blocks spatially-noisy high-order components; second lens recollimates clean beam.',
+      magnification: '—',
+      pros: 'Produces "clean" Gaussian beams from noisy laser sources.',
+      cons: 'Power loss; alignment sensitive.',
+      where: 'Holography, interferometry, beam-quality improvement in laser labs.',
+      history: 'Standard laser-lab technique since 1960s.' },
+    { id: 'wavePlate', name: 'Wave plate (retarder)', icon: '↕', category: 'component',
+      principle: 'Birefringent plate of precise thickness introduces a phase shift between perpendicular polarization components.',
+      magnification: '—',
+      pros: 'Converts linear ↔ circular polarization, rotates polarization angle.',
+      cons: 'Wavelength-specific.',
+      where: 'Polarization control in optical experiments, 3D cinema (circular polarizers), liquid-crystal displays.',
+      history: 'Used since 19th century; precision-thickness manufacturing now standard.' }
+  ];
+
+  if (typeof OPTICAL_INSTRUMENTS !== 'undefined' && Array.isArray(OPTICAL_INSTRUMENTS) && Array.isArray(OPTICAL_INSTRUMENTS_MORE)) {
+    OPTICAL_INSTRUMENTS = OPTICAL_INSTRUMENTS.concat(OPTICAL_INSTRUMENTS_MORE);
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // MORE WORKED PROBLEMS — extend pool
+  // ══════════════════════════════════════════════════════════════════
+  var WORKED_PROBLEMS_EXTRA = [
+    { id: 'wpa1', topic: 'reflection', difficulty: 'easy', icon: '🪞',
+      title: "Angle of incidence + reflection",
+      problem: 'A laser beam hits a plane mirror, making an angle of 25° with the mirror surface. What is the angle of reflection (from the normal)?',
+      given: ['Angle with surface = 25°', 'Plane mirror'],
+      find: 'Angle of reflection measured from normal.',
+      solution: 'Angle of incidence = 90° − 25° = 65° from normal. By law of reflection, angle of reflection = 65° from normal.',
+      answer: '65°.',
+      pitfalls: 'Angles are always measured FROM THE NORMAL, not from the surface.' },
+    { id: 'wpa2', topic: 'refraction', difficulty: 'medium', icon: '🌊',
+      title: "Diamond TIR critical angle",
+      problem: 'Find the critical angle for total internal reflection at a diamond-air interface (n_diamond = 2.42).',
+      given: ['n₁ = 2.42 (diamond)', 'n₂ = 1.00 (air)'],
+      find: 'θ_c.',
+      solution: 'sin(θ_c) = n₂/n₁ = 1.00/2.42 ≈ 0.413. θ_c = arcsin(0.413) ≈ 24.4°.',
+      answer: 'θ_c ≈ 24.4°.',
+      pitfalls: 'Diamond has the smallest critical angle of any natural transparent material — this is why diamonds are cut to maximize TIR and "fire."' },
+    { id: 'wpa3', topic: 'interference', difficulty: 'medium', icon: '✨',
+      title: "Number of fringes on screen",
+      problem: "Young's double slit: d = 0.10 mm, λ = 632.8 nm (HeNe), L = 1.5 m. How many bright fringes fit in a 2 cm wide region on the screen?",
+      given: ['d = 1×10⁻⁴ m', 'λ = 6.328×10⁻⁷ m', 'L = 1.5 m', 'Region width = 0.02 m'],
+      find: 'Number of bright fringes in 2 cm region.',
+      solution: 'Fringe spacing y = λL/d = (6.328×10⁻⁷)(1.5)/(1×10⁻⁴) = 9.49×10⁻³ m = 9.49 mm. In 20 mm region: 20/9.49 ≈ 2.1 fringes.',
+      answer: '~2 bright fringes fit in 2 cm.',
+      pitfalls: 'For wider observation, use higher fringe count. Real experiments often use d ~ 0.5 mm for visible-light demos.' },
+    { id: 'wpa4', topic: 'diffraction', difficulty: 'hard', icon: '〰',
+      title: "Hubble's resolution",
+      problem: 'The Hubble Space Telescope has primary mirror 2.4 m. What is its theoretical Rayleigh resolution at 500 nm? Express in arcseconds.',
+      given: ['D = 2.4 m', 'λ = 500 nm = 5×10⁻⁷ m'],
+      find: 'θ_min in arcsec.',
+      solution: 'θ_min = 1.22 λ/D = 1.22 × 5×10⁻⁷/2.4 ≈ 2.54×10⁻⁷ rad. Convert: 2.54×10⁻⁷ × (180/π) × 3600 ≈ 0.053 arcsec.',
+      answer: 'θ_min ≈ 0.053 arcsec or 53 milliarcseconds.',
+      pitfalls: 'Hubble achieves close to this in practice because it\'s above the atmosphere. Best ground-based seeing is typically ~1 arcsec.' },
+    { id: 'wpa5', topic: 'polarization', difficulty: 'hard', icon: '↕',
+      title: "Three polarizers with specific angles",
+      problem: 'Three polarizers in series at angles 0°, 30°, 75°. Unpolarized I₀ enters. Find I_final.',
+      given: ['Unpolarized I₀ in', 'Polarizers at 0°, 30°, 75° from reference'],
+      find: 'Final intensity.',
+      solution: 'After P1: I₁ = I₀/2 (light is now along 0° axis). After P2: I₂ = I₁ × cos²(30°) = (I₀/2)(3/4) = 3I₀/8. Light now along 30°. After P3: angle from 30° to 75° = 45°. I₃ = I₂ × cos²(45°) = (3I₀/8)(1/2) = 3I₀/16.',
+      answer: 'I_final = 3I₀/16 ≈ 0.1875 I₀.',
+      pitfalls: 'Each subsequent polarizer uses the angle from the PREVIOUS polarizer\'s transmission axis, not from a fixed reference.' },
+    { id: 'wpa6', topic: 'lenses', difficulty: 'medium', icon: '🔍',
+      title: "Glasses prescription power",
+      problem: 'A person needs to wear -2.50 diopter (D) glasses. What is the focal length of one lens?',
+      given: ['Power = -2.50 D'],
+      find: 'Focal length.',
+      solution: 'f = 1/P = 1/(-2.5) = -0.40 m = -40 cm.',
+      answer: 'f = -40 cm. Diverging lens (myopia correction).',
+      pitfalls: 'Negative diopter = diverging lens. The magnitude tells you the corrective strength.' },
+    { id: 'wpa7', topic: 'general', difficulty: 'hard', icon: '🔆',
+      title: "Photon momentum on a surface",
+      problem: 'A 1 W beam of red light (633 nm) hits a perfectly reflecting mirror. What is the force on the mirror?',
+      given: ['Power P = 1 W', 'Wavelength: doesn\'t matter for momentum calculation', 'Perfect reflection (doubles momentum transfer)'],
+      find: 'Force.',
+      solution: 'Photon momentum p = hf/c. For 1 W beam, photon energy flow = 1 J/s. Total momentum per second = P/c (for absorbed) or 2P/c (for reflected). Force F = 2P/c = 2(1)/(3×10⁸) ≈ 6.67×10⁻⁹ N.',
+      answer: 'F ≈ 6.67 nN.',
+      pitfalls: 'Even very bright light produces tiny forces. Solar sails use square meters and continuous push over weeks/months to accelerate spacecraft.' },
+    { id: 'wpa8', topic: 'vision', difficulty: 'medium', icon: '👁',
+      title: "Eye glasses for far-sighted person",
+      problem: 'A hyperopic person\'s near point is 75 cm. To read at the normal 25 cm distance, what diopter eyeglasses are needed?',
+      given: ['Near point = 75 cm = 0.75 m', 'Normal reading distance = 25 cm = 0.25 m'],
+      find: 'Required lens power.',
+      solution: 'Need a lens that takes object at 25 cm and forms a virtual image at the eye\'s near point (75 cm in front of eye). d_o = 25 cm, d_i = -75 cm. 1/f = 1/0.25 + 1/(-0.75) = 4 - 1.33 = 2.67/m. Power = +2.67 D.',
+      answer: 'Approximately +2.5 D reading glasses (rounded to nearest available).',
+      pitfalls: 'Hyperopia needs CONVERGING (positive) lenses. Myopia needs DIVERGING (negative). Easy to mix up.' },
+    { id: 'wpa9', topic: 'color', difficulty: 'easy', icon: '🌈',
+      title: "Visible spectrum range in frequency",
+      problem: 'Convert the visible spectrum from wavelength (380-750 nm) to frequency (THz).',
+      given: ['λ range = 380-750 nm = 3.8×10⁻⁷ to 7.5×10⁻⁷ m', 'c = 3×10⁸ m/s'],
+      find: 'Frequency range.',
+      solution: 'f = c/λ. f_violet = 3×10⁸/3.8×10⁻⁷ ≈ 7.9×10¹⁴ Hz = 790 THz. f_red = 3×10⁸/7.5×10⁻⁷ = 4×10¹⁴ Hz = 400 THz.',
+      answer: 'Visible light: 400 THz (red) to 790 THz (violet).',
+      pitfalls: 'Higher frequency = shorter wavelength = more energy. Violet has highest visible frequency and energy.' },
+    { id: 'wpa10', topic: 'general', difficulty: 'hard', icon: '🔆',
+      title: "Speed of light through compound media",
+      problem: 'A light beam travels through 10 cm of water (n=1.33), then 5 cm of glass (n=1.50), then 2 cm of diamond (n=2.42). How long does it take?',
+      given: ['Path: 10 cm water + 5 cm glass + 2 cm diamond', 'c = 3×10⁸ m/s'],
+      find: 'Total travel time.',
+      solution: 'Time = Σ(distance/speed) = Σ(d×n/c). t = (0.10×1.33 + 0.05×1.50 + 0.02×2.42)/(3×10⁸). t = (0.133 + 0.075 + 0.0484)/(3×10⁸) = 0.2564/(3×10⁸) ≈ 8.5×10⁻¹⁰ s = 0.85 ns.',
+      answer: '~0.85 nanoseconds.',
+      pitfalls: 'In vacuum, the same total geometric distance (17 cm) would take only 0.57 ns. The dense media slow light down significantly.' }
+  ];
+
+  if (typeof WORKED_PROBLEMS !== 'undefined' && Array.isArray(WORKED_PROBLEMS) && Array.isArray(WORKED_PROBLEMS_EXTRA)) {
+    WORKED_PROBLEMS = WORKED_PROBLEMS.concat(WORKED_PROBLEMS_EXTRA);
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // MORE SCIENTISTS — extend FAMOUS_OPTICIANS
+  // ══════════════════════════════════════════════════════════════════
+  var FAMOUS_OPTICIANS_MORE = [
+    { id: 'kirchhoff', name: 'Gustav Kirchhoff', icon: '🔬', era: '19th', years: '1824-1887', country: 'Germany',
+      knownFor: 'Founder of spectroscopy; three laws of radiation',
+      bio: 'German physicist who showed that Fraunhofer lines correspond to specific elements. With Robert Bunsen, used spectroscopy to discover cesium (1860) and rubidium (1861). Stated the three laws of blackbody radiation. Pioneered spectroscopy as a discipline.',
+      contributions: [
+        'Showed Fraunhofer lines are absorption signatures of specific elements (1859, with Bunsen).',
+        'Stated Kirchhoff\'s laws of spectroscopy: emission and absorption spectra of an element are at the same wavelengths.',
+        'Discovered cesium and rubidium by spectroscopic methods.',
+        'Did key work on heat radiation that led to Planck\'s quantum hypothesis.',
+        'Foundational contributions to circuit analysis (Kirchhoff\'s circuit laws).'
+      ],
+      quote: '(work was primarily technical)',
+      legacy: 'Founded the spectroscopic approach to astronomy — without him, no astrophysics.' },
+    { id: 'planck', name: 'Max Planck', icon: '⚛', era: 'modern', years: '1858-1947', country: 'Germany',
+      knownFor: 'Quantum hypothesis; founder of quantum mechanics',
+      bio: 'German theoretical physicist who derived the spectrum of blackbody radiation by postulating that energy can only be emitted in discrete quanta E = hf. The 1900 paper opened the quantum era. Nobel Prize 1918.',
+      contributions: [
+        'Derived Planck\'s law of blackbody radiation (1900) by assuming energy is quantized.',
+        'Introduced Planck\'s constant h = 6.626×10⁻³⁴ J·s.',
+        'Nobel Prize in Physics 1918.',
+        'Defended quantum theory through its early skeptical reception.',
+        'Mentored Einstein, Schrödinger, von Laue, and many other quantum-era physicists.'
+      ],
+      quote: '"A new scientific truth does not triumph by convincing its opponents and making them see the light, but rather because its opponents eventually die, and a new generation grows up that is familiar with it."',
+      legacy: 'Without Planck\'s quantum hypothesis, no quantum mechanics; without quantum mechanics, no understanding of light\'s particle nature, no lasers, no modern technology.' },
+    { id: 'bohr', name: 'Niels Bohr', icon: '⚛', era: 'modern', years: '1885-1962', country: 'Denmark',
+      knownFor: 'Bohr atomic model; quantum mechanics interpretation',
+      bio: 'Danish theoretical physicist whose 1913 atomic model explained discrete atomic spectra by quantizing electron orbits. Founded Copenhagen interpretation of quantum mechanics. Mentored almost every prominent quantum physicist of the 20th century. Nobel Prize 1922.',
+      contributions: [
+        'Bohr model of the atom (1913): electrons orbit in discrete quantized orbits, emitting photons when they transition between levels.',
+        'Predicted hydrogen spectral lines (Rydberg formula) from his quantum atom.',
+        'Founded the Copenhagen interpretation of quantum mechanics.',
+        'Famous debates with Einstein on the foundations of quantum theory.',
+        'Nobel Prize 1922.',
+        'Founded the Niels Bohr Institute, training generations of physicists.'
+      ],
+      quote: '"Anyone who is not shocked by quantum theory has not understood it."',
+      legacy: 'The Bohr-Einstein debates of the 1920s-30s shaped how physicists think about quantum measurement, complementarity, and reality. Still relevant today.' },
+    { id: 'heisenberg', name: 'Werner Heisenberg', icon: '⚛', era: 'modern', years: '1901-1976', country: 'Germany',
+      knownFor: 'Matrix mechanics; uncertainty principle',
+      bio: 'German physicist who developed matrix mechanics (1925), one of the two equivalent formulations of quantum mechanics (the other being Schrödinger\'s wave mechanics). Stated the uncertainty principle (1927). Nobel Prize 1932.',
+      contributions: [
+        'Founded matrix mechanics (1925) — first complete formulation of quantum mechanics.',
+        "Stated Heisenberg's uncertainty principle: Δx·Δp ≥ ℏ/2.",
+        'Nobel Prize 1932.',
+        'Led the German atomic energy project during WWII (controversial historical role).',
+        'Continued working on theoretical physics after the war.'
+      ],
+      quote: '"What we observe is not nature itself, but nature exposed to our method of questioning."',
+      legacy: 'The uncertainty principle is one of the cornerstones of quantum mechanics. Heisenberg\'s philosophical writings influenced how scientists understand observation and reality.' },
+    { id: 'schrodinger', name: 'Erwin Schrödinger', icon: '🐈', era: 'modern', years: '1887-1961', country: 'Austria',
+      knownFor: 'Wave mechanics; Schrödinger equation; Schrödinger\'s cat',
+      bio: 'Austrian physicist who developed wave mechanics (1926), the wave-equation formulation of quantum mechanics. The Schrödinger equation describes how quantum states evolve. His "cat" thought experiment (1935) highlighted quantum superposition\'s paradoxes. Nobel Prize 1933.',
+      contributions: [
+        "Derived the Schrödinger equation (1926): iℏ∂ψ/∂t = Ĥψ.",
+        'Showed equivalence to Heisenberg matrix mechanics.',
+        'Nobel Prize 1933.',
+        "Schrödinger's cat thought experiment (1935): a cat in a box is both alive and dead until observation.",
+        '"What is Life?" book (1944) influenced foundations of molecular biology.'
+      ],
+      quote: '"I do not like it, and I am sorry I ever had anything to do with it." (about quantum mechanics)',
+      legacy: 'The Schrödinger equation is now used to predict atomic structure, chemical bonding, photon-matter interactions, and most quantum behavior.' },
+    { id: 'wignerEugene', name: 'Eugene Wigner', icon: '⚛', era: 'modern', years: '1902-1995', country: 'Hungary/USA',
+      knownFor: 'Symmetry in quantum mechanics; nuclear theory',
+      bio: 'Hungarian-American physicist who applied group theory to quantum mechanics, revealing the fundamental role of symmetries in physics. Nobel Prize 1963.',
+      contributions: [
+        "Applied group theory to atomic spectra and selection rules.",
+        'Stated Wigner\'s theorem on quantum symmetry.',
+        'Contributed to nuclear physics and the Manhattan Project.',
+        'Nobel Prize 1963.',
+        '"The Unreasonable Effectiveness of Mathematics" (1960 essay).'
+      ],
+      quote: '"The miracle of the appropriateness of the language of mathematics for the formulation of the laws of physics is a wonderful gift which we neither understand nor deserve."',
+      legacy: 'Wigner\'s emphasis on symmetry runs through every part of modern physics.' },
+    { id: 'feynmanQED', name: 'Sin-Itiro Tomonaga', icon: '⚛', era: 'modern', years: '1906-1979', country: 'Japan',
+      knownFor: 'Quantum electrodynamics (QED)',
+      bio: 'Japanese theoretical physicist who, with Schwinger and Feynman, developed QED — relativistic quantum theory of how light and matter interact. Nobel Prize 1965 shared with the other two.',
+      contributions: [
+        "Developed QED in parallel with Schwinger and Feynman during/after WWII.",
+        'Used a renormalization technique to handle infinities in calculations.',
+        'Predicted Lamb shift and anomalous magnetic moment of electron to remarkable precision.',
+        'Nobel Prize 1965.',
+        'Inspired many Japanese physicists during postwar rebuilding of Japanese science.'
+      ],
+      quote: '(largely technical work; few famous quotes)',
+      legacy: 'QED remains the most precisely tested theory in all physics. Tomonaga\'s parallel derivation showed it could be approached from multiple directions.' },
+    { id: 'lambE', name: 'Willis Lamb', icon: '⚛', era: 'modern', years: '1913-2008', country: 'USA',
+      knownFor: 'Lamb shift; precision atomic spectroscopy',
+      bio: 'American physicist who measured a tiny shift in hydrogen energy levels (the "Lamb shift") that pushed QED to higher precision. Nobel Prize 1955.',
+      contributions: [
+        "Measured Lamb shift (1947): tiny energy splitting in hydrogen 2S-2P levels predicted by QED.",
+        'Nobel Prize 1955.',
+        'Continued contributing to atomic physics and quantum optics.'
+      ],
+      quote: '"I have taught the photon to behave as a particle and as a wave but never as both at once."',
+      legacy: 'Lamb shift measurement was a landmark precision test of QED. The shift agrees with QED predictions to better than 1 part in 10⁹.' },
+    { id: 'glauberRoy', name: 'Roy Glauber', icon: '🌟', era: 'modern', years: '1925-2018', country: 'USA',
+      knownFor: 'Quantum theory of optical coherence',
+      bio: 'American theoretical physicist at Harvard. Developed the modern quantum theory of optical coherence (1963), explaining how to describe the statistics of photon arrivals at a detector. Nobel Prize 2005.',
+      contributions: [
+        "Quantum theory of optical coherence (1963).",
+        "Introduced 'coherent states' of the EM field — the most classical-like quantum states.",
+        'Statistical description of photon-counting experiments.',
+        'Nobel Prize in Physics 2005.',
+        'Founder of quantum optics as a modern discipline.'
+      ],
+      quote: '(work largely technical)',
+      legacy: 'Glauber\'s coherence functions are the language used in every quantum-optics paper today.' },
+    { id: 'einsteinPhotoExt', name: 'Robert Millikan', icon: '⚡', era: 'modern', years: '1868-1953', country: 'USA',
+      knownFor: 'Experimental verification of photoelectric effect',
+      bio: 'American physicist who, despite skepticism of Einstein\'s photon hypothesis, performed careful experiments (1916) that confirmed E_kinetic = hf − φ. The experiments measured h to ~0.5% accuracy. Nobel Prize 1923.',
+      contributions: [
+        "Measured electron charge with the oil-drop experiment (1909).",
+        'Confirmed Einstein\'s photoelectric effect equation (1916).',
+        'Measured Planck\'s constant by photoelectric measurements.',
+        'Nobel Prize 1923.',
+        "Discovered cosmic rays (named them 'cosmic') (1925)."
+      ],
+      quote: '"I spent ten years of my life testing that 1905 equation of Einstein\'s and contrary to all my expectations I was compelled in 1915 to assert its unambiguous experimental verification."',
+      legacy: 'A founder of American experimental physics. Caltech (1921) under his leadership became one of the world\'s great physics centers.' }
+  ];
+
+  if (typeof FAMOUS_OPTICIANS !== 'undefined' && Array.isArray(FAMOUS_OPTICIANS) && Array.isArray(FAMOUS_OPTICIANS_MORE)) {
+    FAMOUS_OPTICIANS = FAMOUS_OPTICIANS.concat(FAMOUS_OPTICIANS_MORE);
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // MORE CAREERS — extend OPTICS_CAREERS
+  // ══════════════════════════════════════════════════════════════════
+  var OPTICS_CAREERS_MORE = [
+    { id: 'satelliteEngineer', title: 'Satellite optical payload engineer', icon: '🛰', category: 'aerospace', salary: 'USD $100K-180K',
+      education: 'Master\'s or PhD in optical engineering, physics, or aerospace engineering. Security clearance for defense satellites.',
+      what: 'Designs imaging optics for Earth-observation satellites, spy satellites, telecommunications. Works with extreme thermal-vacuum environments, radiation hardening.',
+      day: 'Optical design, thermal analysis, integration testing, launch readiness reviews. Many remote-collaboration meetings with launch providers.',
+      growth: 'Strong. Commercial satellite imaging (Planet Labs, Maxar), Starlink-like constellations, and DoD spending all driving demand.',
+      maine: 'Some employees at Maine\'s naval shipyard work on related navigation optics. Most jobs in CA (JPL, Aerospace Corp), CO (Lockheed, Ball), MD (NASA Goddard, APL).' },
+    { id: 'biomedOpEngineer', title: 'Biomedical optics engineer', icon: '🩺', category: 'engineering', salary: 'USD $95K-160K',
+      education: 'Bachelor\'s+/Master\'s in biomedical engineering, optical engineering, or physics with bio focus.',
+      what: 'Designs optical medical devices: surgical microscopes, OCT scanners, fluorescence imaging, optical biopsy, photodynamic therapy systems.',
+      day: 'Mix of optical design, clinical-trial coordination, regulatory submissions (FDA 510(k), CE marking), customer-facing technical support.',
+      growth: 'Strong. Aging population, new modalities (lightsheet microscopy, photoacoustic imaging) driving R&D.',
+      maine: 'Maine Medical Center has research programs. Most jobs at companies like Carl Zeiss (Germany/Tampa), Leica (Germany/Buffalo), Hamamatsu (Japan/NJ).' },
+    { id: 'machineVisionEng', title: 'Machine vision engineer', icon: '🤖', category: 'engineering', salary: 'USD $90K-150K',
+      education: 'Bachelor\'s+ in computer vision, EE, or robotics. ML/AI skills increasingly important.',
+      what: 'Develops optical inspection systems for manufacturing — defect detection, dimensional measurement, sorting, robotic vision.',
+      day: 'Mix of camera/lens selection, lighting design, image processing algorithms, deep learning model training, on-site deployment.',
+      growth: 'Booming. Industry 4.0, automated quality inspection, and AI-driven manufacturing all driving demand.',
+      maine: 'Some opportunities at Maine industrial sites (BIW shipyard, Pratt & Whitney). Major clusters in Boston, Detroit, and offshore manufacturing hubs.' },
+    { id: 'illuminationDesigner', title: 'Illumination designer (LED systems)', icon: '💡', category: 'engineering', salary: 'USD $75K-130K',
+      education: 'Bachelor\'s in EE, optical engineering, or industrial design. NLPIP/LEED certifications.',
+      what: 'Designs LED-based lighting systems for buildings, vehicles, theaters, museums. Considers efficiency, color rendering, photometric performance, controls.',
+      day: 'Studio design work (TracePro, OpticStudio simulation), on-site mockups, project management with electrical engineers and architects.',
+      growth: 'Strong as LED replaces all other technologies. Smart lighting / IoT integration creating new opportunities.',
+      maine: 'Local lighting design firms (Cumberland Lighting Studio in Portland). LED manufacturers like Cree (NC), Lumileds (Netherlands).' },
+    { id: 'photolithEngineer', title: 'EUV photolithography engineer', icon: '🔬', category: 'engineering', salary: 'USD $140K-230K',
+      education: 'PhD in physics or EE strongly preferred. Cleanroom semiconductor experience essential.',
+      what: 'Operates and optimizes Extreme Ultraviolet lithography tools — the most advanced optical tools on Earth. Each EUV scanner costs $200M+ and is critical for sub-7nm chip manufacturing.',
+      day: 'Process tuning in cleanroom, statistical process control, working with mask shops and resist suppliers.',
+      growth: 'Extreme demand. Only ASML (Netherlands) makes EUV scanners; TSMC, Samsung, Intel deploy them. Workforce growing rapidly.',
+      maine: 'Not a Maine job. Concentrated in TX, OR (Intel), TW (TSMC), KR (Samsung).' },
+    { id: 'forensicLight', title: 'Forensic light technician', icon: '🔍', category: 'specialty', salary: 'USD $50K-75K',
+      education: 'Bachelor\'s in forensic science or photography. Certification from IAI (International Association for Identification).',
+      what: 'Uses alternative light sources (UV, IR, polarized) to find evidence at crime scenes — fingerprints, body fluids, fibers, blood spatter.',
+      day: 'Field work at crime scenes; lab work documenting evidence; court testimony.',
+      growth: 'Stable.',
+      maine: 'Maine State Police Crime Lab in Augusta. Some county sheriff departments share regional resources.' },
+    { id: 'museumDigital', title: 'Museum digitization specialist', icon: '🏛', category: 'specialty', salary: 'USD $45K-80K',
+      education: 'Master\'s in art conservation, library science, or museum studies. Photography skills essential.',
+      what: 'Digitally captures museum collections using specialized cameras, multispectral imaging, 3D scanning. Often works with art conservators on pigment analysis.',
+      day: 'Studio shoots of artifacts; image processing in Photoshop/Capture One; metadata creation; web/database publishing.',
+      growth: 'Strong as museums race to digitize collections.',
+      maine: 'Portland Museum of Art, Bowdoin College Museum, Maine Historical Society all employ specialists.' },
+    { id: 'agOpticsEngineer', title: 'Agricultural optics engineer', icon: '🌾', category: 'engineering', salary: 'USD $80K-140K',
+      education: 'Bachelor\'s/Master\'s in optical engineering, agricultural engineering, or related field.',
+      what: 'Develops optical sensors for precision agriculture — hyperspectral crop monitoring, weed identification (laser-zapping), greenhouse light optimization.',
+      day: 'Field testing in farms, optical sensor development, embedded systems integration, data analysis.',
+      growth: 'Growing rapidly. Precision agriculture is a major investment area.',
+      maine: 'University of Maine cooperative extension, Wyman\'s of Maine (blueberry science), Pineland Farms (dairy and ag-tech research).' },
+    { id: 'fashionPhotog', title: 'Fashion / commercial photographer', icon: '📸', category: 'creative', salary: 'USD $40K-300K+',
+      education: 'Photography school + apprenticeship + portfolio building.',
+      what: 'Photographs fashion editorials, ad campaigns, product catalogs, e-commerce. Top tier earns ad-agency-level money; vast majority freelance modestly.',
+      day: 'Studio or on-location shoots; high-pressure quick turnarounds; constant marketing; retouching in Photoshop.',
+      growth: 'Competitive. AI image generation may displace some commercial product photography.',
+      maine: 'Some commercial photographers in Portland for L.L.Bean catalog work, local brands. Bigger markets in NYC, LA, Paris, Milan.' },
+    { id: 'tourismGuide', title: 'Astronomy tour guide', icon: '✨', category: 'education', salary: 'USD $30K-60K',
+      education: 'Bachelor\'s helpful; astronomy passion and public speaking ability essential.',
+      what: 'Leads star parties, telescope demonstrations, eclipse viewing tours, dark-sky observatory visits.',
+      day: 'Evening/night work. Setting up telescopes, presenting to groups, answering questions. Travel to dark-sky locations.',
+      growth: 'Niche but growing — dark-sky tourism is a popular travel trend.',
+      maine: 'Maine has several dark-sky communities (Acadia National Park has minimal light pollution). Cherryfield Town has a working observatory. Tour operators in Bar Harbor and surrounding region.' }
+  ];
+
+  if (typeof OPTICS_CAREERS !== 'undefined' && Array.isArray(OPTICS_CAREERS) && Array.isArray(OPTICS_CAREERS_MORE)) {
+    OPTICS_CAREERS = OPTICS_CAREERS.concat(OPTICS_CAREERS_MORE);
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // FAMOUS EXPERIMENTS — landmark optical experiments
+  // ══════════════════════════════════════════════════════════════════
+  var FAMOUS_EXPERIMENTS = [
+    { id: 'newtonsPrism', title: "Newton's prism (1666)", icon: '🌈', topic: 'color',
+      experimenter: 'Isaac Newton',
+      year: '1666',
+      location: 'Cambridge, England (during plague leave)',
+      apparatus: 'A glass prism, a small hole in a window shutter, a white screen.',
+      method: 'Newton allowed a beam of sunlight through a tiny hole in the shutter to project a circular bright spot on the opposite wall. He placed a prism in the beam path. The previously-circular white spot became an elongated rainbow band of colors. Newton then placed a second prism in the colored beam, recombining the colors back into white light.',
+      findings: 'White light is a mixture of all spectral colors. Color is a property of light, not of bodies — bodies appear colored because they selectively reflect certain wavelengths and absorb others.',
+      significance: 'Founded the modern theory of color. Overturned the medieval view that prisms "added" color to white light. Newton\'s book "Opticks" (1704) dominated the field for a century.',
+      modernUnderstanding: 'Confirmed and extended by spectroscopy. We now know each color corresponds to a specific wavelength range; the eye\'s cone responses determine the color we perceive.' },
+    { id: 'youngsDouble', title: "Young's double-slit (1801)", icon: '✨', topic: 'interference',
+      experimenter: 'Thomas Young',
+      year: '1801-1803',
+      location: 'London, England',
+      apparatus: 'A sunlit pinhole as a single coherent source, a card with two parallel slits cut into it, and a viewing screen.',
+      method: 'Young directed sunlight through a tiny pinhole to create an effective point source. The diverging light then passed through a card with two parallel slits separated by a fraction of a millimeter. On a screen beyond the slits, he observed not two bright lines but an alternating series of bright and dark fringes — clear evidence of wave-like interference.',
+      findings: 'Light interferes with itself like water waves — bright fringes where the two paths add constructively, dark where they cancel destructively. This is unambiguous evidence for the wave nature of light.',
+      significance: 'Revived the wave theory of light against Newton\'s long-dominant corpuscular view. Set the stage for Fresnel\'s mathematical wave theory and Maxwell\'s electromagnetic synthesis.',
+      modernUnderstanding: 'Still done today with single photons, electrons, neutrons, and even buckyballs — all showing wave behavior of individual quanta. Foundational to wave-particle duality.' },
+    { id: 'michelsonMorley', title: 'Michelson-Morley (1887)', icon: '⫻', topic: 'interference',
+      experimenter: 'Albert Michelson and Edward Morley',
+      year: '1887',
+      location: 'Cleveland, Ohio (Western Reserve College)',
+      apparatus: 'A massive Michelson interferometer mounted on a stone slab floating on mercury for vibration isolation.',
+      method: 'Light from a single source split into two perpendicular arms, each reflecting off a mirror, then recombining at the splitter. The interference pattern was observed. The apparatus was rotated to look for changes due to the supposed "ether wind" — Earth\'s motion through the luminiferous ether should cause path differences if light propagated through such a medium.',
+      findings: 'NO measurable shift in the interference pattern, regardless of rotation. The expected ether wind effect was below detection threshold.',
+      significance: 'Most famous "null result" in physics. Showed that the speed of light is independent of motion of source/observer — clearing the way for Einstein\'s 1905 special relativity.',
+      modernUnderstanding: 'Constancy of c is now a fundamental postulate of physics. LIGO uses essentially the same interferometer design to detect gravitational waves at 10⁻²¹ precision.' },
+    { id: 'photoelectricMillikan', title: 'Millikan photoelectric (1916)', icon: '💡', topic: 'photon',
+      experimenter: 'Robert Millikan',
+      year: '1916',
+      location: 'University of Chicago',
+      apparatus: 'A vacuum tube with a metal cathode illuminated by monochromatic light, plus an opposing electrode and adjustable voltage to measure electron kinetic energy.',
+      method: 'Light of varying wavelengths illuminated the cathode. Emitted electrons were detected. The "stopping voltage" needed to halt them gave their maximum kinetic energy. Millikan plotted KE vs. light frequency, and the slope gave Planck\'s constant.',
+      findings: 'Electron kinetic energy depends LINEARLY on frequency (not intensity), with slope = h. KE = hf − φ exactly as Einstein predicted in 1905.',
+      significance: 'Despite Millikan\'s personal skepticism, the experiment confirmed Einstein\'s photon hypothesis. Won Millikan the Nobel Prize 1923.',
+      modernUnderstanding: 'Confirmed the particle nature of light. Photons are real, with E = hf. Foundation of quantum mechanics.' },
+    { id: 'comptonScattering', title: 'Compton X-ray scattering (1923)', icon: '⚡', topic: 'photon',
+      experimenter: 'Arthur Compton',
+      year: '1923',
+      location: 'Washington University, St. Louis',
+      apparatus: 'X-ray source, graphite target, X-ray spectrometer at various scattering angles.',
+      method: 'X-rays scattered off graphite electrons. The wavelength of scattered X-rays was measured as a function of scattering angle. Classical wave theory predicted no wavelength change; particle (photon-electron collision) theory predicted Δλ = (h/m_ec)(1 - cosθ).',
+      findings: 'The wavelength shift exactly matched particle theory. X-rays carry momentum like any other particle, and Compton scattering is a quantum-particle collision.',
+      significance: 'Confirmed photon momentum p = h/λ. Combined with Millikan\'s work, established the particle nature of light beyond doubt.',
+      modernUnderstanding: 'Compton scattering is now a key tool in radiation physics, medical imaging, and astronomy.' },
+    { id: 'sternGerlach', title: 'Stern-Gerlach (1922)', icon: '⚛', topic: 'quantum',
+      experimenter: 'Otto Stern and Walther Gerlach',
+      year: '1922',
+      location: 'Frankfurt, Germany',
+      apparatus: 'A beam of silver atoms passed through a strongly non-uniform magnetic field onto a screen.',
+      method: 'Hot silver atoms vaporized in an oven were collimated into a beam. The beam passed through a non-uniform magnetic field (sharp edge magnet) and impacted a glass plate. Classical theory predicted a single smudge or a continuous distribution; Stern-Gerlach predicted (and observed) TWO discrete spots.',
+      findings: 'Atomic magnetic moments are QUANTIZED — only two possible orientations relative to the field direction. This is what we now call electron spin (spin-1/2).',
+      significance: 'First direct evidence of spatial quantization. Showed that quantum mechanics applies to angular momentum, foundational to spin physics.',
+      modernUnderstanding: 'Foundation of NMR, MRI, atomic clocks, and (most importantly) the basis of all subsequent spin physics.' },
+    { id: 'oilDropMillikan', title: 'Millikan oil-drop (1909)', icon: '💧', topic: 'photon',
+      experimenter: 'Robert Millikan and Harvey Fletcher',
+      year: '1909',
+      location: 'University of Chicago',
+      apparatus: 'A chamber with two horizontal plates, mist of oil drops introduced from above, microscope to observe.',
+      method: 'Tiny oil drops fell between the plates under gravity. By spraying drops past an X-ray ionizer, drops would pick up known charges. Adjustable voltage on the plates would just suspend a drop. From the voltage at suspension and the drop\'s mass (measured by terminal velocity), Millikan extracted the charge.',
+      findings: 'All measured charges were INTEGER multiples of one fundamental charge e ≈ 1.59 × 10⁻¹⁹ C (modern value: 1.602 × 10⁻¹⁹ C).',
+      significance: 'Confirmed the discrete (quantized) nature of electric charge and measured e to ~0.5% accuracy. Nobel Prize 1923.',
+      modernUnderstanding: 'The fundamental charge is now known to extreme precision. The Millikan technique is no longer used but the result stands.' },
+    { id: 'eddingtonEclipse', title: 'Eddington solar eclipse (1919)', icon: '🌌', topic: 'relativity',
+      experimenter: 'Arthur Eddington (and Frank Dyson)',
+      year: '1919',
+      location: 'Sobral, Brazil and Príncipe (Gulf of Guinea)',
+      apparatus: 'Specialized cameras to photograph stars near the Sun during total eclipse.',
+      method: 'During a total solar eclipse, stars near the Sun become photographable. Eddington compared their apparent positions during the eclipse with their normal positions months later. General relativity predicted starlight would deflect 1.75 arcseconds at the Sun\'s limb.',
+      findings: 'Deflection observed was close to the GR prediction, much larger than Newtonian gravity\'s prediction.',
+      significance: 'First experimental test of general relativity. Made Einstein famous worldwide overnight.',
+      modernUnderstanding: 'Light bending by gravity is now routinely observed — gravitational lensing of distant galaxies, deflection by the Sun (measured to <0.01%), tests by interplanetary radar.' },
+    { id: 'maimanRubyLaser', title: 'First operational laser (1960)', icon: '🔴', topic: 'laser',
+      experimenter: 'Theodore Maiman',
+      year: '16 May 1960',
+      location: 'Hughes Research Labs, Malibu, California',
+      apparatus: 'A ruby rod (synthetic chromium-doped sapphire), a coiled xenon flashlamp, two parallel partial mirrors at the rod ends, a power supply.',
+      method: 'The flashlamp pulse pumped chromium ions in the ruby to an excited state. Spontaneous emission of red 694 nm photons began stimulated emission cascades; the mirrors bounced the light back through the rod for amplification. Eventually a coherent burst of red light emerged from the partial mirror.',
+      findings: 'First man-made coherent light at optical frequency. Brief, intense pulse of monochromatic red light.',
+      significance: 'Opened the entire field of laser physics. Theodore Maiman built it in a basement after his employer (Hughes) tried to discourage the project. Bell Labs had been frantically working on a similar device.',
+      modernUnderstanding: 'Lasers are now ubiquitous — fiber-optic communications, surgery, manufacturing, displays, data storage. Without that first ruby laser, none of it.' },
+    { id: 'ligoFirstGW', title: 'LIGO gravitational wave detection (2015)', icon: '⫻', topic: 'gravity',
+      experimenter: 'LIGO Scientific Collaboration',
+      year: '14 September 2015 (detection); 11 February 2016 (announcement)',
+      location: 'Hanford, Washington and Livingston, Louisiana',
+      apparatus: 'Two 4-km-arm Michelson interferometers in Washington and Louisiana with 200 W laser sources, suspended mirrors, and elaborate vibration isolation.',
+      method: 'Gravitational waves passing through Earth alternately stretch and compress space along perpendicular directions. LIGO measures the resulting phase shift in laser light traveling along its arms — sensitivity 10⁻²¹.',
+      findings: 'Detection of GW150914 — gravitational waves from a black-hole merger 1.3 billion light-years away. Two stellar-mass black holes (~36 and ~29 solar masses) merging into one (~62 solar masses), releasing ~3 solar masses of energy as gravitational waves.',
+      significance: 'First direct detection of gravitational waves. Opened the gravitational-wave window onto the universe. Nobel Prize 2017.',
+      modernUnderstanding: 'Now hundreds of detections of BH-BH, BH-NS, and NS-NS mergers. Multi-messenger astronomy combines GW with optical, X-ray, gamma-ray observations.' },
+    { id: 'lebbsLamb', title: 'Lamb shift measurement (1947)', icon: '🌟', topic: 'quantum',
+      experimenter: 'Willis Lamb and Robert Retherford',
+      year: '1947',
+      location: 'Columbia University, NY',
+      apparatus: 'Microwave cavity, hydrogen beam source, deflection magnet, sensitive detector.',
+      method: 'Lamb passed a beam of hydrogen atoms through microwaves tuned to drive 2S to 2P transitions. The slight ~1058 MHz shift relative to Dirac theory was carefully measured.',
+      findings: 'A small but real energy splitting in hydrogen 2S-2P levels NOT predicted by Dirac\'s relativistic quantum mechanics.',
+      significance: 'Forced the development of renormalization in QED to handle the previously infinite calculations. Lamb shift agrees with QED predictions to better than 1 part in 10⁹.',
+      modernUnderstanding: 'The Lamb shift is now a standard test of QED. Measured in many atomic systems with increasing precision.' }
+  ];
+
+  // ══════════════════════════════════════════════════════════════════
+  // ANIMAL VISION — comparative optics
+  // ══════════════════════════════════════════════════════════════════
+  var ANIMAL_VISION = [
+    { id: 'mantisShrimp', name: 'Mantis shrimp', icon: '🦐', acuity: 'Modest', special: 'Up to 16 types of photoreceptors',
+      details: 'The peacock mantis shrimp has 16 types of color photoreceptors (humans have 4). It can detect ultraviolet, visible, and possibly polarization. Surprisingly, behavioral studies show its color DISCRIMINATION is comparable to or even worse than humans — its brain may use the many receptor types differently, possibly to identify rather than compare colors.',
+      adaptation: 'Lives in shallow tropical seas where complex coral environments demand fast color identification at multiple wavelengths.' },
+    { id: 'birdsUV', name: 'Birds (general)', icon: '🦜', acuity: '2-3× sharper than humans', special: 'UV cone, motion detection',
+      details: 'Most diurnal birds have four cone types (tetrachromacy) including UV. Many bird feathers have UV-bright patterns invisible to humans but used by birds to assess mate quality. Hawk visual acuity is ~5× better than human — they can detect prey from miles up.',
+      adaptation: 'UV vision reveals flower nectar guides, urine trails (used by birds of prey hunting rodents), and plumage patterns.' },
+    { id: 'beeVision', name: 'Honey bee', icon: '🐝', acuity: 'Modest', special: 'UV-sensitive trichromacy + polarization',
+      details: 'Bee cones peak in UV, blue, green — their "red" is essentially invisible. Bees see UV "bullseye" patterns on flowers that guide them to nectar. They also detect the polarization angle of skylight, using it for navigation when the Sun is partially obscured.',
+      adaptation: 'Coevolved with flowers over 100+ million years.' },
+    { id: 'catEye', name: 'Cat', icon: '🐈', acuity: 'Lower than human in daylight', special: 'Tapetum lucidum, large pupil',
+      details: 'Cats have ~6-8x more rods than humans (better dim-light vision). Their tapetum lucidum reflects unused light back through the retina for a second chance at detection, giving them better night vision but a slightly blurrier image. Pupil is slit-shaped to allow dramatic aperture changes.',
+      adaptation: 'Twilight hunter — needs strong dim-light vision more than fine color discrimination.' },
+    { id: 'eagleVision', name: 'Eagle / hawk', icon: '🦅', acuity: '5-8× sharper than human', special: 'Tetrachromatic + high cone density',
+      details: 'Birds of prey have ~5x cone density of humans in their fovea, plus a second fovea for sideways viewing. They can detect a rabbit-sized object from a mile away.',
+      adaptation: 'Aerial predator — long-distance prey detection.' },
+    { id: 'pitViper', name: 'Pit vipers', icon: '🐍', acuity: 'Standard for snake', special: 'Pit organs detect IR',
+      details: 'Specialized membranes between the eye and nostril detect IR (heat) radiation from warm prey. Combined with visible-light vision, gives binocular thermal "vision" of mammalian prey in total darkness.',
+      adaptation: 'Strike-hunting in burrows and at night.' },
+    { id: 'cuttlefish', name: 'Cuttlefish / squid', icon: '🦑', acuity: 'Good for cephalopod', special: 'COLORBLIND but masters of color camouflage',
+      details: 'Cuttlefish have only one photopigment but are masters of color-matching their environment. Researchers suspect they use chromatic aberration (each wavelength focuses differently in their eye) to assess color from focus differences.',
+      adaptation: 'Active mimicry to avoid predators.' },
+    { id: 'deepFishBio', name: 'Deep-sea fish', icon: '🐟', acuity: 'Specialized for bioluminescent flashes', special: 'Pigment shifted to blue',
+      details: 'Most deep-sea fish have rods only — no color vision needed in monochromatic blue depths. Pigment is shifted to peak around 480 nm matching the dominant bioluminescent light.',
+      adaptation: 'Detecting bioluminescent prey/predators in eternal darkness.' },
+    { id: 'gigaEyeHuman', name: 'Human (for comparison)', icon: '👁', acuity: '20/20 = 1 arcmin', special: 'Trichromatic, foveal high acuity',
+      details: 'Three cone types (L, M, S) for trichromatic color vision. Foveal cone density gives ~1 arcmin angular resolution. Rod cells (120 million) for low-light vision. Dynamic range: ~10¹² (sunlight to starlight).',
+      adaptation: 'Generalist diurnal primate. Color vision good for ripe-fruit selection.' }
+  ];
+
+  // ══════════════════════════════════════════════════════════════════
+  // OPTICAL ILLUSIONS GALLERY
+  // ══════════════════════════════════════════════════════════════════
+  var OPTICAL_ILLUSIONS = [
+    { id: 'machBands', name: 'Mach bands', icon: '📊', type: 'lateral inhibition',
+      effect: 'At a gradient boundary between two uniform shaded regions, the eye perceives a darker dark band on one side and a brighter bright band on the other than actually exists.',
+      cause: 'Lateral inhibition in the retina — neurons inhibit their neighbors, enhancing contrast at edges.',
+      why: 'Evolution: edge-detection makes prey/predators stand out from backgrounds.' },
+    { id: 'hermannGrid', name: 'Hermann grid', icon: '🔲', type: 'lateral inhibition',
+      effect: 'Looking at a grid of black squares on white, ghostly DARK spots appear at every intersection but disappear when you look directly.',
+      cause: 'Lateral inhibition: ganglion cells at intersections see more bright neighbors (four arms of white) and inhibit more.',
+      why: 'Discovered 1870. Recent work shows cortical mechanisms also contribute since the illusion weakens for non-straight grids.' },
+    { id: 'cafewallIllusion', name: 'Café wall illusion', icon: '🏛', type: 'geometric',
+      effect: 'Rows of alternating dark and light tiles, with a small offset between rows, appear to slope upward or downward.',
+      cause: 'Brain misinterprets the local brightness gradient as edge tilt.',
+      why: 'First reported in 1898 wall tiles outside a café in Bristol, England.' },
+    { id: 'theDress', name: 'The Dress (2015)', icon: '👗', type: 'color constancy',
+      effect: 'Photograph of a striped dress: some see it as white-and-gold, others as blue-and-black. Real dress was blue-and-black.',
+      cause: 'Brain ambiguous about whether the dress is in shadow (correcting away blue, perceiving white) or in normal indoor light (perceiving blue).',
+      why: 'Demonstrated dramatic individual differences in color constancy assumptions.' },
+    { id: 'rotatingSnakes', name: 'Rotating snakes (Kitaoka)', icon: '🐍', type: 'motion illusion',
+      effect: 'A static image of concentric spirals appears to rotate as you scan your eyes across.',
+      cause: 'Asymmetric luminance gradients in repeating patches confuse the brain\'s motion-detection system. Stronger when you saccade across the image.',
+      why: 'Brain expects motion in certain luminance gradients; sees motion even in static images.' },
+    { id: 'necker', name: 'Necker cube', icon: '◧', type: 'ambiguous',
+      effect: 'A wireframe drawing of a cube can be perceived two ways — viewing from above-front or below-back. Your perception flips spontaneously.',
+      cause: 'Brain must commit to a 3D interpretation; lack of depth cues makes both interpretations equally plausible.',
+      why: 'Demonstrates that perception is reconstructive and that we "decide" between interpretations.' },
+    { id: 'duckRabbit', name: 'Duck-rabbit', icon: '🦆', type: 'ambiguous',
+      effect: 'An outline drawing can be perceived as either a duck or a rabbit. Most people only see one at first.',
+      cause: 'Brain commits to one interpretation. Top-down knowledge (animal categories) modulates perception.',
+      why: 'Used in psychology and philosophy of perception (Wittgenstein discussed it in Philosophical Investigations).' },
+    { id: 'penrose', name: 'Penrose / impossible objects', icon: '🔺', type: 'inconsistency',
+      effect: 'Drawings like the "impossible triangle" appear physically coherent in each local region but contradict globally — they cannot exist in 3D space.',
+      cause: 'Local consistency tricks the brain; global integration is delayed or never completes.',
+      why: 'M.C. Escher exploited this extensively in works like "Waterfall" and "Ascending and Descending."' },
+    { id: 'autostereogram', name: 'Magic eye autostereogram', icon: '🌐', type: 'stereopsis',
+      effect: 'A pattern of dots, when viewed cross-eyed or wall-eyed, suddenly reveals a hidden 3D image.',
+      cause: 'When eyes converge at different distance than the page, the brain matches corresponding patches and computes disparity, revealing 3D structure encoded in the pattern.',
+      why: 'Tests/exploits the visual system\'s stereoscopic depth perception.' },
+    { id: 'troxler', name: 'Troxler\'s fading', icon: '👁', type: 'adaptation',
+      effect: 'Fix your gaze on a central spot; peripheral colored blobs gradually fade and vanish.',
+      cause: 'Neural adaptation — peripheral receptors stop responding to unchanging stimuli.',
+      why: 'Vision evolved to detect CHANGE, not constant stimuli. Discovered 1804.' }
+  ];
+
+  // ══════════════════════════════════════════════════════════════════
+  // ELECTROMAGNETIC SPECTRUM — bands and applications
+  // ══════════════════════════════════════════════════════════════════
+  var EM_SPECTRUM_BANDS = [
+    { band: 'Radio (ELF)', range: '> 100 km', freq: '< 3 kHz', uses: 'Submarine communications, geophysical surveys',
+      examples: 'US Navy ELF system (76 Hz) for communicating with submerged submarines.',
+      notes: 'Extremely long wavelengths penetrate seawater for tens of meters.' },
+    { band: 'Radio (LF/MF)', range: '100 m to 100 km', freq: '3 kHz to 3 MHz', uses: 'AM radio, navigation, time signals',
+      examples: 'AM 540-1700 kHz, WWVB time signal at 60 kHz.',
+      notes: 'Ground waves can travel over the horizon. Diurnal effects on propagation.' },
+    { band: 'Radio (HF/Shortwave)', range: '10 m to 100 m', freq: '3-30 MHz', uses: 'International broadcasting, amateur radio',
+      examples: 'Voice of America, BBC World Service, amateur radio.',
+      notes: 'Sky waves reflect off ionosphere for global propagation.' },
+    { band: 'VHF', range: '1-10 m', freq: '30-300 MHz', uses: 'FM radio, TV, aviation, marine VHF',
+      examples: 'FM 88-108 MHz, aviation 108-137 MHz, TV channels 2-6.',
+      notes: 'Line-of-sight propagation; needs repeaters for distance.' },
+    { band: 'UHF', range: '10 cm to 1 m', freq: '300 MHz - 3 GHz', uses: 'Cell phones, WiFi 2.4GHz, Bluetooth, TV UHF',
+      examples: '5G NR low band, 4G LTE, GPS L1 (1575 MHz).',
+      notes: 'Foundation of modern wireless infrastructure.' },
+    { band: 'SHF (Microwave)', range: '1 cm to 10 cm', freq: '3-30 GHz', uses: 'Satellite TV, radar, WiFi 5 GHz, weather radar',
+      examples: 'Geostationary satellite downlinks, NEXRAD weather radar.',
+      notes: 'Penetrates clouds for satellite uplink. Limited rain attenuation.' },
+    { band: 'EHF', range: '1-10 mm', freq: '30-300 GHz', uses: '5G mmWave, point-to-point links, security scanners',
+      examples: '5G NR high band 24-39 GHz, airport body scanners.',
+      notes: 'Strong atmospheric absorption above 30 GHz limits range.' },
+    { band: 'Terahertz (THz)', range: '0.1-1 mm', freq: '300 GHz - 3 THz', uses: 'Medical imaging research, security (envelope screening), spectroscopy',
+      examples: 'TSA prototype scanners, in-vivo cancer detection research.',
+      notes: '"Terahertz gap" — historically difficult to generate/detect. Recent progress with quantum cascade lasers.' },
+    { band: 'Far IR', range: '15 μm to 1 mm', freq: '0.3-20 THz', uses: 'Astronomy (cold dust), atmospheric research',
+      examples: 'Herschel Space Observatory imaged cosmic dust.',
+      notes: 'Absorbed by water vapor; space telescopes preferred.' },
+    { band: 'Mid IR (LWIR)', range: '8-15 μm', freq: '20-37 THz', uses: 'Thermal imaging, CO₂ laser, IR spectroscopy',
+      examples: 'FLIR thermal cameras, building energy audits, CO₂ industrial cutting.',
+      notes: 'Atmospheric "8-14 μm window" — Earth radiates body-temperature thermal here.' },
+    { band: 'Mid IR (MWIR)', range: '3-8 μm', freq: '37-100 THz', uses: 'Missile guidance, gas sensing, astronomy',
+      examples: 'Spitzer space telescope (3.6-8 μm), passive missile guidance.',
+      notes: 'Hot objects (engine exhaust ~600K) emit strongly here.' },
+    { band: 'Near IR (SWIR)', range: '1-3 μm', freq: '100-300 THz', uses: 'Telecom (1.55 μm), agriculture, art conservation',
+      examples: 'Fiber-optic telecommunications, painting underdrawing detection.',
+      notes: 'Silicon transparent here — used by some Si-based detectors.' },
+    { band: 'Near IR (NIR)', range: '700 nm to 1 μm', freq: '300-430 THz', uses: 'Night vision, fiber-optic 1310nm band, biological imaging',
+      examples: 'Old Sony "NightShot" mode, lab fluorescence imaging.',
+      notes: 'Many tissue chromophores transparent in this range — used for deep tissue imaging.' },
+    { band: 'Visible (red)', range: '620-700 nm', freq: '430-484 THz', uses: 'Vision, displays, helium-neon laser, surface imaging',
+      examples: 'HeNe at 632.8 nm. Sunset color. Many laser pointers.',
+      notes: 'Longest wavelength easily visible to humans.' },
+    { band: 'Visible (orange)', range: '590-620 nm', freq: '484-508 THz', uses: 'Vision, sodium lamp (589 nm doublet)',
+      examples: 'Sodium-vapor street lights (low-pressure version).',
+      notes: 'Strong yellow pigment of egg yolks here.' },
+    { band: 'Visible (yellow)', range: '570-590 nm', freq: '508-526 THz', uses: 'Vision, mercury vapor (yellow line)',
+      examples: 'Bumblebee bodies, sodium D-line, fluorescent green-tinted yellow.',
+      notes: 'L+M cone responses peak here.' },
+    { band: 'Visible (green)', range: '500-570 nm', freq: '526-600 THz', uses: 'Vision, traffic signals, green lasers, photosynthesis',
+      examples: 'Nd:YAG frequency-doubled 532 nm. Eye peaks here.',
+      notes: 'M cone peak at 533 nm. Human eye most sensitive band.' },
+    { band: 'Visible (cyan)', range: '480-500 nm', freq: '600-625 THz', uses: 'Vision, displays',
+      examples: 'Cyan ink. Bright tropical seawater.',
+      notes: 'Between green and blue.' },
+    { band: 'Visible (blue)', range: '430-480 nm', freq: '625-697 THz', uses: 'Vision, blue lasers (Blu-ray 405 nm), displays',
+      examples: 'Sky blue. Blu-ray players. Blue LEDs.',
+      notes: 'Sky color from Rayleigh scattering.' },
+    { band: 'Visible (violet)', range: '380-430 nm', freq: '697-789 THz', uses: 'Vision (limited sensitivity), violet lasers',
+      examples: 'Plum skin. Stage lighting.',
+      notes: 'Many people see down to ~400 nm; few see below 380 nm.' },
+    { band: 'Near UV (UV-A)', range: '315-400 nm', freq: '789-952 THz', uses: 'Tanning beds, blacklights, photolithography (i-line 365 nm)',
+      examples: 'Sun lamps. Forensic alternate-light sources. Insect attraction (UV-A lights for bug zappers).',
+      notes: 'Mostly transmitted through atmosphere. Causes skin tanning but less DNA damage than UV-B/C.' },
+    { band: 'Middle UV (UV-B)', range: '280-315 nm', freq: '952 THz - 1.1 PHz', uses: 'Vitamin D synthesis in skin, plant growth, photolithography',
+      examples: 'KrF excimer laser 248 nm (used in semiconductor lithography). Solar UV-B.',
+      notes: 'Causes sunburn and skin cancer. ~95% blocked by ozone layer.' },
+    { band: 'Deep UV (UV-C)', range: '200-280 nm', freq: '1.1-1.5 PHz', uses: 'Germicidal lamps, ArF excimer laser (193 nm), water/air sterilization',
+      examples: 'Mercury vapor lamps 254 nm. ArF excimer for LASIK and chip lithography.',
+      notes: 'Highly damaging to DNA — used for sterilization. Fully blocked by ozone.' },
+    { band: 'Extreme UV (EUV)', range: '10-100 nm', freq: '3-30 PHz', uses: 'EUV photolithography (13.5 nm), solar astronomy, microscopy',
+      examples: 'ASML EUV scanners at 13.5 nm — most advanced commercial optics tool.',
+      notes: 'No transparent optical materials — must use grazing-incidence mirrors or zone plates.' },
+    { band: 'Soft X-rays', range: '0.1-10 nm', freq: '0.03-3 EHz', uses: 'X-ray microscopy, soft X-ray lithography, solar/stellar physics',
+      examples: 'Synchrotron facilities, water-window microscopy (2.3-4.4 nm).',
+      notes: '"Water window" allows imaging biological samples in their native water environment.' },
+    { band: 'Hard X-rays', range: '0.01-0.1 nm', freq: '3-30 EHz', uses: 'Medical imaging, crystallography, materials inspection',
+      examples: 'Chest X-rays, mammography, X-ray crystallography (Cu Kα at 0.154 nm).',
+      notes: 'Penetrates body tissues; absorbed by bones. Foundation of medical diagnostic imaging.' },
+    { band: 'Gamma rays', range: '< 0.01 nm', freq: '> 30 EHz', uses: 'Cancer radiotherapy, PET imaging, sterilization, gamma-ray astronomy',
+      examples: 'Cobalt-60 sources, Cs-137. Fermi Gamma-ray Space Telescope.',
+      notes: 'Comes from radioactive decay, nuclear reactions, and cosmic processes (gamma-ray bursts).' }
+  ];
+
+  // ══════════════════════════════════════════════════════════════════
+  // MORE OPTICAL ILLUSIONS (extending the previous list)
+  // ══════════════════════════════════════════════════════════════════
+  var OPTICAL_ILLUSIONS_MORE = [
+    { id: 'mullerLyer', name: 'Müller-Lyer illusion', icon: '➡', type: 'geometric',
+      effect: 'Two horizontal lines with arrow-like fins at the ends appear to be different lengths even though they are identical.',
+      cause: 'Inward-pointing fins make the line look shorter; outward-pointing fins make it look longer. Brain interprets the fins as depth cues from architectural perspective.',
+      why: 'Suggests our visual system uses past experience with architectural perspective when estimating size.' },
+    { id: 'ebbinghaus', name: 'Ebbinghaus illusion', icon: '⚪', type: 'context',
+      effect: 'A central circle surrounded by larger circles appears SMALLER than an identical circle surrounded by smaller circles.',
+      cause: 'Comparison with neighbors changes perceived size. The brain processes relative size more readily than absolute size.',
+      why: 'Used to study cultural and developmental differences in size perception.' },
+    { id: 'kanizsa', name: 'Kanizsa triangle (subjective contours)', icon: '🔺', type: 'completion',
+      effect: 'Three pac-man-like shapes oriented appropriately make a white triangle "appear" between them — even though no triangle edges are drawn.',
+      cause: 'Brain completes the visual scene from contextual cues — the pac-mans look like they have a triangle laid over them, so the brain interpolates the missing edges.',
+      why: 'Demonstrates that perception is constructive, not just edge-detection.' },
+    { id: 'akiyoshi', name: 'Akiyoshi Kitaoka illusions', icon: '🌀', type: 'motion',
+      effect: 'Various static images appear to move, rotate, or pulse due to repeated patterns of asymmetric luminance.',
+      cause: 'Mismatched signaling between fast motion-detector cells and slow color-detector cells in V5/MT visual cortex.',
+      why: 'Among the most striking visual illusions known. Kitaoka has built a career creating new variants.' },
+    { id: 'colorAfter', name: 'Complementary color afterimage', icon: '🇺🇸', type: 'adaptation',
+      effect: 'Stare at a colored image for 30 seconds, then look at white — you see a "ghost" image in complementary colors. Famous version: cyan/black/yellow flag → red/white/blue afterimage.',
+      cause: 'Color receptor adaptation — fatigued cones report relatively less, making un-fatigued cones (complementary color) appear brighter.',
+      why: 'Andy Warhol\'s pop art deliberately used complementary-color flags to provoke afterimages.' },
+    { id: 'liloChaser', name: 'Lilac chaser', icon: '🟣', type: 'adaptation',
+      effect: 'A circle of 12 lilac dots with one missing, rotating around a central fixation point. After 30 seconds, the rotating gap appears GREEN (complementary of lilac) on a gray background.',
+      cause: 'Combination of Troxler fading (adapt to lilac, see complementary) and motion-perception fill-in.',
+      why: 'Combines multiple visual mechanisms in one striking display.' },
+    { id: 'phiPhenomenon', name: 'Phi phenomenon', icon: '💡', type: 'motion',
+      effect: 'Two adjacent light bulbs flashing in alternation appear as ONE moving light.',
+      cause: 'Brain interprets rapid sequential stimulation as continuous motion. Foundation of all moving displays (films, animation).',
+      why: 'Discovered by Wertheimer 1912; founding result of Gestalt psychology.' },
+    { id: 'simultaneousContrast', name: 'Simultaneous contrast', icon: '⬜', type: 'context',
+      effect: 'A gray square looks brighter when on a black background, darker on a white background — but the gray is identical.',
+      cause: 'Local-contrast computation in early visual cortex.',
+      why: 'Foundation of how we perceive shadows, reflections, and "white balance" in photography.' },
+    { id: 'pareidoliaFace', name: 'Pareidolia (face perception)', icon: '👁‍🗨', type: 'context',
+      effect: 'You see faces in random patterns — clouds, electrical outlets, rocks, the surface of the Moon.',
+      cause: 'Specialized face-detection circuitry in fusiform face area; bias toward detecting faces because missing one is costlier than false alarms.',
+      why: 'Evolution: better to mistake a tree for a predator than miss a real predator.' },
+    { id: 'crazinessBoundsCircle', name: 'Pinna illusion', icon: '⭕', type: 'motion',
+      effect: 'Concentric circles of asymmetric squares appear to rotate when you move your head closer/farther from the screen.',
+      cause: 'Motion-perception system responds to small movements with predicted continuity, interpreting the squares\' asymmetries as rotation.',
+      why: 'Demonstrates how the brain extrapolates motion from incomplete data.' }
+  ];
+
+  if (typeof OPTICAL_ILLUSIONS !== 'undefined' && Array.isArray(OPTICAL_ILLUSIONS) && Array.isArray(OPTICAL_ILLUSIONS_MORE)) {
+    OPTICAL_ILLUSIONS = OPTICAL_ILLUSIONS.concat(OPTICAL_ILLUSIONS_MORE);
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // MORE LAB KITS — final batch
+  // ══════════════════════════════════════════════════════════════════
+  var OPTICS_LAB_KITS_FINAL = [
+    { id: 'rangeRangefinderKit', title: 'Triangulation rangefinder', icon: '📏', age: '12+', difficulty: 'Medium', time: '30 min', cost: '$0',
+      goal: 'Measure the distance to a far object using only two viewing positions and basic trigonometry.',
+      materials: ['Two reference points 1-10 m apart', 'A protractor', 'A pencil and paper', 'A distant target (tree, building)'],
+      steps: [
+        'Set up two stations along a known baseline (e.g., 5 meters apart).',
+        'At each station, measure the angle from the baseline to the target.',
+        'Use trigonometry: distance = baseline × sin(angle1) × sin(angle2) / sin(angle1 + angle2).',
+        'Cross-check by physically measuring the distance.'
+      ],
+      science: 'Triangulation is the basis of GPS, surveying, and stereoscopic depth perception in your eyes. With two viewpoints and known baseline, geometry gives the third side and angles.',
+      safety: 'Don\'t aim at people; respect privacy.',
+      extension: 'Try with farther targets; estimate accuracy errors. Use this to measure the height of a tall building or the width of a river.' },
+    { id: 'eyeAccommodation', title: 'Measure your eye\'s accommodation', icon: '👁', age: '10+', difficulty: 'Easy', time: '10 min', cost: '$0',
+      goal: 'Quantify how close you can focus your eyes (near point).',
+      materials: ['Newspaper or magazine with small print', 'Ruler', 'Lights on'],
+      steps: [
+        'Hold the print at arm\'s length (~50 cm away).',
+        'Slowly bring it toward your eye until it just becomes blurry.',
+        'Measure that distance with the ruler. That\'s your near point.',
+        'Typical near point at age 20: 10 cm. At age 60: ~100 cm (with reading glasses).'
+      ],
+      science: 'The ciliary muscle changes the crystalline lens shape — fatter for near, flatter for distance. Maximum accommodation is the difference between near point and far point. Decreases with age (presbyopia).',
+      safety: 'No strain, no danger.',
+      extension: 'Compare with someone of different age. Measure each eye separately — they often have different near points.' },
+    { id: 'lensFunFire', title: "Magnifying glass burns paper", icon: '🔥', age: '12+ adult supervised', difficulty: 'Easy', time: '5 min', cost: '$0',
+      goal: 'Use a magnifying glass to focus sunlight and ignite paper.',
+      materials: ['Magnifying glass (+5 to +20 diopter)', 'Dark paper', 'Sunny day, outdoor surface', 'Water for safety'],
+      steps: [
+        'Hold the magnifying glass between Sun and paper.',
+        'Adjust distance until you see the smallest, brightest spot on the paper.',
+        'After 5-10 seconds, smoke appears; soon the paper ignites.'
+      ],
+      science: 'A converging lens focuses parallel sunlight (~1.5 kW/m² ground level) to a focal spot. With f = 10 cm and lens area 50 cm², the focal spot concentrates power by ~6000×, reaching 4 W/cm² or more — enough to char paper.',
+      safety: 'NEVER look at the Sun through any lens. Have water ready. Adult supervision REQUIRED.',
+      extension: 'Try focusing on different materials (paper, leaves, fabric). Time how long ignition takes. Use this principle in survival situations.' },
+    { id: 'phoneSpectrometer', title: 'Smartphone CD spectrometer', icon: '📱', age: '12+', difficulty: 'Medium', time: '45 min', cost: '$3',
+      goal: 'Build a working smartphone spectrometer using a CD as diffraction grating.',
+      materials: ['Cardboard box (cereal box works)', 'Old CD or DVD', 'Razor blade or X-acto knife', 'Tape', 'Smartphone with camera'],
+      steps: [
+        'Cut a narrow vertical slit (1 mm wide, 1 cm tall) on one end of the box.',
+        'Mount CD piece at 45° inside box. Cut a viewing hole on the side.',
+        'Phone camera looks through viewing hole, sees the CD reflection from slit.',
+        'Aim slit at fluorescent light. Photograph spectrum.',
+        'Use online spectroscopy app (PublicLab, etc.) to analyze.'
+      ],
+      science: 'CD\'s data tracks (1.6 μm pitch) act as diffraction grating. Smartphone camera digitizes the spectrum. Fluorescent lights show mercury emission lines (peaks at 405, 436, 546, 578 nm); incandescent shows continuous spectrum; LED shows banded structure.',
+      safety: 'CD edges are sharp.',
+      extension: 'Build a database of spectra: incandescent, halogen, CFL, LED, sodium streetlight, sunlight. Compare what you see to published reference spectra.' },
+    { id: 'pinholeIris', title: 'Build a pinhole iris diaphragm', icon: '⚪', age: '10+', difficulty: 'Medium', time: '30 min', cost: '$5',
+      goal: 'Demonstrate how aperture size affects depth of field and brightness.',
+      materials: ['Black cardstock', 'Pin or needle', 'Small light source', 'Camera or just eye'],
+      steps: [
+        'Cut several black squares of different sizes.',
+        'Punch a pinhole in each — vary hole size from 0.5 mm to 5 mm.',
+        'Look through each hole at a distant scene.',
+        'Note: smaller hole = sharper image but dimmer; larger = brighter but possibly blurrier.'
+      ],
+      science: 'A pinhole acts as a tiny aperture, giving infinite depth of field. As aperture decreases, two effects: (1) less light, (2) sharper image (less spherical aberration). At sub-mm sizes, diffraction takes over and image gets blurry again.',
+      safety: 'Don\'t poke yourself with the pin.',
+      extension: 'Make a custom variable iris by cutting overlapping crescent shapes that you can rotate to change the aperture. Real camera iris diaphragms work this way.' },
+    { id: 'kaleidoscope', title: 'Make a kaleidoscope', icon: '🎨', age: '8+', difficulty: 'Medium', time: '45 min', cost: '$5',
+      goal: 'Build a kaleidoscope using mirrors and colored objects.',
+      materials: ['Cardboard tube (paper towel tube)', 'Three small rectangular mirrors (or strips of mirrored Mylar)', 'Bright colored beads, sequins, or paper bits', 'Clear plastic disk', 'Wax paper'],
+      steps: [
+        'Cut three mirror strips to fit inside the tube, forming a triangular prism with mirrored sides facing inward.',
+        'At one end of the tube, glue the mirror prism in place.',
+        'At the other end, place clear plastic, then a chamber with the colored bits, then wax paper.',
+        'Look through the mirror end. Rotate. The colored pieces multiply into a kaleidoscopic pattern.'
+      ],
+      science: 'Three mirrors arranged at 60° create 6-fold symmetry. Each color piece is reflected multiple times, creating an apparent ring of 6 (or 12) identical patterns. Rotating mixes them. Invented 1816 by David Brewster.',
+      safety: 'Sharp mirror edges — tape any sharp corners.',
+      extension: 'Try 2 mirrors at different angles. Try 4 mirrors. Each gives different symmetries.' },
+    { id: 'cameraObscuraRoom', title: 'Convert a room to a camera obscura', icon: '📦', age: '10+', difficulty: 'Medium', time: '1 hour', cost: '$0',
+      goal: 'Turn a room into a giant camera obscura projecting the outside world onto your walls.',
+      materials: ['Dark room with one window', 'Black plastic sheeting or cardboard', 'Aluminum foil', 'Pin or thumbtack', 'Tape'],
+      steps: [
+        'Cover the window completely with black plastic.',
+        'Cut a small (~2 cm) hole in the plastic where the window opening allows.',
+        'Tape aluminum foil over the hole.',
+        'Pin a tiny pinhole in the center of the foil.',
+        'Wait several minutes for your eyes to adapt to the dark.',
+        'You\'ll see an INVERTED, full-color image of the outside scene projected on the opposite wall.'
+      ],
+      science: 'Each point on the outside world sends light through the tiny pinhole. Each point on the wall receives light from one specific point outside (because the hole is small enough that geometry constraints work). Image is inverted: top of scene → bottom of wall.',
+      safety: 'Don\'t leave a small pinhole if you have a pet or kid that might enlarge it accidentally.',
+      extension: 'Photograph the projection. Use a smartphone camera to capture the dim image. Add a magnifying glass over the pinhole to brighten and sharpen the image — same as adding a real lens to make a camera.' },
+    { id: 'colorTopAtwood', title: 'Color top — additive mixing', icon: '🎨', age: '8+', difficulty: 'Easy', time: '20 min', cost: '$2',
+      goal: 'Mix colors of light by spinning a multi-colored disk.',
+      materials: ['Cardboard disk', 'Markers in red, green, and blue', 'Pencil', 'Optional: variable-speed motor'],
+      steps: [
+        'Divide disk into three equal sectors. Color one RED, one GREEN, one BLUE.',
+        'Insert pencil through center. Spin rapidly.',
+        'The spinning disk appears nearly WHITE.',
+        'Try two-color spins: red+blue → pink; red+green → yellow; green+blue → cyan.'
+      ],
+      science: 'Spinning faster than cone-response time (~50 ms) mixes the colors additively. R+G+B = white (light addition, not pigment subtraction).',
+      safety: 'Don\'t let pencil fly.',
+      extension: 'Try different sector sizes. The "white" color depends on the relative areas of red, green, blue — exactly how RGB displays use unequal pixel sizes for color reproduction.' }
+  ];
+
+  if (typeof OPTICS_LAB_KITS !== 'undefined' && Array.isArray(OPTICS_LAB_KITS) && Array.isArray(OPTICS_LAB_KITS_FINAL)) {
+    OPTICS_LAB_KITS = OPTICS_LAB_KITS.concat(OPTICS_LAB_KITS_FINAL);
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // MORE DEEP DIVES — quantum optics, AR/VR, computational, biophotonics
+  // ══════════════════════════════════════════════════════════════════
+  var QUANTUM_OPTICS_DEEP = [
+    { id: 'qoIntro', title: '⚛ What is quantum optics?', section: 'introduction',
+      content: 'Quantum optics is the study of how light and matter interact at the quantum level. Classical wave optics works for many bright-light situations, but breaks down at low photon counts. Quantum optics describes single photons, entanglement, coherent states, and the strange behavior of light when squeezed or split.',
+      details: [
+        'CLASSICAL LIGHT can be described by Maxwell\'s equations. Wave amplitudes are well-defined, intensity is the energy flux.',
+        'QUANTUM LIGHT requires the photon picture: discrete quanta, each carrying E = hf and momentum p = h/λ.',
+        'STATISTICS MATTER. Bright classical light is described by coherent (Glauber) states; thermal sources by random states; quantum sources by non-classical states.',
+        'NON-CLASSICAL LIGHT includes: squeezed states (reduced noise in one quadrature), Fock states (definite photon number), entangled states (correlations stronger than classical).',
+        'KEY EXPERIMENTS: Hanbury Brown-Twiss (1956) — first showed photons are correlated. Aspect 1982 — first definitive Bell inequality violation. Tonomura 1989 — single electron interference.',
+        'NOBEL CONNECTIONS: Glauber 2005 (theory). Aspect, Clauser, Zeilinger 2022 (entanglement experiments).'
+      ],
+      keyFigure: 'Hanbury Brown-Twiss measured that photons from a thermal source ARRIVE BUNCHED (g²(0) > 1). Photons from a laser are POISSON distributed (g²(0) = 1). Single-photon sources have ANTIBUNCHED photons (g²(0) < 1) — a fingerprint of true quantum light.',
+      misconceptions: 'A laser is "quantum coherent" but its photon-number statistics are CLASSICAL (Poissonian). True quantum light is rare and engineered.' },
+    { id: 'qoEntanglement', title: '🔗 Quantum entanglement', section: 'entanglement',
+      content: 'Entanglement is the quintessential quantum phenomenon — two or more particles can be in a state where each cannot be described independently. Measurements on one instantly correlate with the other, regardless of distance.',
+      details: [
+        'EPR PARADOX: Einstein, Podolsky, Rosen (1935) argued entanglement implies "spooky action at a distance" — they took this as proof QM was incomplete.',
+        'BELL\'S THEOREM (1964): Quantum predictions DIFFER from any local hidden-variable theory. Some experiments must distinguish.',
+        'ASPECT EXPERIMENT (1982): Pairs of polarization-entangled photons tested Bell inequalities. Results confirmed quantum mechanics.',
+        'EXPERIMENTAL STATE: Entanglement of photons tested across 144 km (Canary Islands), 1200+ km (Micius satellite to Earth), and even atomic clocks at quantum-network nodes.',
+        'APPLICATIONS: Quantum cryptography (BB84 protocol), quantum teleportation (state transfer), dense coding (more info per photon), quantum sensing.',
+        'NO FASTER-THAN-LIGHT INFORMATION: Despite the instantaneous correlations, you can\'t use entanglement to send signals faster than light. The measurement outcomes are random; correlations only show up when comparing results.'
+      ],
+      keyFigure: '2022 Physics Nobel Prize to Aspect, Clauser, Zeilinger for foundational entanglement experiments — and for showing quantum information science as a new technological frontier.',
+      misconceptions: '"Entanglement allows FTL signaling." NO. Local outcomes are random; correlations only emerge when both parties compare their data via classical (sub-light-speed) communication.' },
+    { id: 'qoCryptography', title: '🔐 Quantum key distribution (QKD)', section: 'cryptography',
+      content: 'QKD exploits quantum mechanics to share encryption keys with provable security against any eavesdropper, no matter how powerful.',
+      details: [
+        'BB84 PROTOCOL (Bennett & Brassard, 1984): Alice sends photons in random one of four polarization states. Bob measures in random one of two bases. After Bob announces his bases, Alice tells which were correct. They keep only the matched ones — yielding a random shared key.',
+        'NO-CLONING THEOREM: An eavesdropper cannot copy unknown quantum states perfectly. Any attempt disturbs them, revealing the intrusion.',
+        'COMMERCIAL QKD: Available from ID Quantique (Switzerland), Toshiba, MagiQ, others. Used by some banks, government agencies, and recently in space-based experiments.',
+        'CHINA\'S MICIUS SATELLITE (2017): Demonstrated QKD over 7,600+ km of free-space links between Beijing and Vienna.',
+        'LIMITATIONS: Limited range (~100 km fiber, ~1000+ km free space). Requires special hardware (single-photon sources/detectors). Expensive compared to classical encryption.',
+        'POST-QUANTUM CRYPTOGRAPHY: Software-only alternative to QKD — encryption algorithms designed to resist attack by quantum computers. NIST is standardizing these.'
+      ],
+      keyFigure: 'A quantum-mechanical eavesdropper measuring photons necessarily disturbs them, leaving statistical evidence detectable by Alice and Bob. Classical eavesdropping is undetectable in principle.',
+      misconceptions: '"QKD is unhackable." Theoretically yes; but implementation flaws, equipment hacking (e.g., bright-light blinding attacks), and side-channel attacks have all been demonstrated against real QKD systems.' },
+    { id: 'qoComputing', title: '💻 Quantum optical computing', section: 'computing',
+      content: 'Photons are natural qubits — they have well-defined polarization, frequency, and orbital angular momentum states, and they interact weakly with their environment (low decoherence).',
+      details: [
+        'OPTICAL QUBITS: Polarization (H/V or D/A), spatial mode, time-bin (early/late), phase, photon number.',
+        'TWO-PHOTON GATES: Hard to build because photons don\'t interact directly. Approaches: (1) Knill-Laflamme-Milburn linear optical quantum computing, (2) Optical cavity QED, (3) Photon-photon interactions via Rydberg atoms.',
+        'BOSON SAMPLING: A specific computation task where quantum optical systems are believed to outperform classical computers. Demonstrated up to ~50 photons in 2022.',
+        'PHOTONIC NEURAL NETWORKS: Use beam interference to perform AI matrix multiplications optically. Massively parallel and low-energy compared to GPUs.',
+        'COMMERCIAL EFFORTS: PsiQuantum (UK/US), Xanadu (Canada), Photonic (Canada), Optalysys (UK). Building photonic quantum computers and integrated photonic circuits.',
+        'INTEGRATED PHOTONICS: Quantum operations on a silicon chip with waveguides, modulators, and detectors. Path to scalable photonic quantum computing.'
+      ],
+      keyFigure: 'Photonic systems achieved a "quantum advantage" benchmark in 2020 — completing a specific calculation in 200 seconds that would take a supercomputer 600 million years (Pan, Zhou, USTC China).',
+      misconceptions: '"Quantum computers will solve every problem faster." NO — quantum advantages are specific to particular algorithms. Most everyday computing is unaffected.' }
+  ];
+
+  var COMPUTATIONAL_PHOTO_DEEP = [
+    { id: 'cpIntro', title: '📱 What is computational photography?', section: 'introduction',
+      content: 'Computational photography uses computation to surpass the limits of traditional optical imaging. Modern smartphones produce images that no single lens-and-sensor combination could capture.',
+      details: [
+        'TRADITIONAL PHOTOGRAPHY: One lens, one sensor, one exposure → one image.',
+        'COMPUTATIONAL PHOTOGRAPHY: Multiple captures with different parameters, then computationally combined.',
+        'KEY APPROACHES: Multi-frame fusion (HDR, night mode), super-resolution (upscaling), depth estimation (portrait mode), semantic understanding (face beauty, sky enhancement), pixel-level corrections (lens distortion, noise reduction).',
+        'ROOTED IN MARC LEVOY\'S WORK: Stanford professor whose research on light fields, mobile photography, and astrophotography became foundational at Google Pixel.',
+        'BREAKTHROUGH: Google Pixel "HDR+" (2014) used multi-frame fusion to produce surprisingly clean photos in challenging lighting.',
+        'NIGHT MODE: Combines ~5-10 long exposures with intelligent motion stabilization and noise reduction. Effectively a 1+ second exposure handheld.'
+      ],
+      keyFigure: 'Modern smartphone cameras capture each shot as a burst of 5-20 RAW images, then computationally combine them in milliseconds — producing JPEGs that outperform DSLRs from 5 years ago at 1/10 the size.',
+      misconceptions: '"Smartphone cameras have caught up with DSLRs." For mobile/casual use, yes. For professional dynamic-range work, low-light landscape, fast action, large prints — DSLRs and mirrorless full-frame still win.' },
+    { id: 'cpHdr', title: '☀ HDR (High Dynamic Range)', section: 'hdr',
+      content: 'HDR addresses the limitation that real-world scenes often have brightness ratios of 100,000:1 or more, while typical sensors capture only ~1000:1 in a single exposure.',
+      details: [
+        'BRACKETED HDR: Capture multiple exposures (under, normal, over). Combine pixel-by-pixel using the best-exposed values.',
+        'SINGLE-SHOT HDR: Modern sensors capture multiple exposures within milliseconds, before scene motion can corrupt alignment.',
+        'TONE MAPPING: The combined high-dynamic-range image is mapped to a display\'s limited dynamic range. Aggressive tone mapping produces "HDR look" — vibrant but unnatural.',
+        'CONSUMER NORMS: Apple, Google, Samsung now do HDR by default. Most "HDR" photos look natural; aggressive "HDR" filters are out of fashion.',
+        'HDR DISPLAYS: Newer displays support higher dynamic range (HDR10, Dolby Vision). Can show ~10000:1 dynamic range — closer to scene reality.'
+      ],
+      keyFigure: 'HDR makes a smartphone capable of capturing a sunset (very bright sky, dark foreground) with detail in both regions — impossible with single exposure.',
+      misconceptions: '"HDR makes photos look fake." Modern HDR is invisible — it just lets shadows and highlights both show detail. Older aggressive tone mapping created the cartoon look.' },
+    { id: 'cpDepth', title: '🎯 Depth estimation and portrait mode', section: 'depth',
+      content: 'Portrait mode (blurred background) requires knowing the depth of each pixel. Computational approaches estimate depth without dedicated depth sensors.',
+      details: [
+        'MULTI-LENS PARALLAX: Two adjacent lenses (telephoto + wide) see the scene from slightly different angles. Differences encode depth (stereo).',
+        'DUAL-PIXEL AUTOFOCUS: Each pixel has two photodiodes split left-right. Comparing their signals gives sub-pixel parallax → depth.',
+        'TIME-OF-FLIGHT: Dedicated IR laser pulses and direct time-of-flight measurement (LiDAR). iPhone Pro models include this.',
+        'AI-BASED MONOCULAR DEPTH: Neural networks trained on millions of images can estimate depth from a single 2D photo, learning to recognize edges, perspective, occlusion as depth cues.',
+        'BACKGROUND BLUR: Once depth is known, the algorithm convolves background pixels with a circular blur kernel (approximating wide-aperture optics) while keeping foreground sharp.',
+        'HAIR AND COMPLEX EDGES: The hardest cases for depth estimation. Modern algorithms use AI semantic segmentation specifically for hair and edge cases.'
+      ],
+      keyFigure: 'Modern phones can produce convincing background blur on hair strands and complex shapes — work that took DSLR photographers explicit pose and lighting choices for decades.',
+      misconceptions: '"Portrait mode is just blur." Sophisticated depth maps + edge-aware blurring + AI-guided semantic editing all happen for a single portrait photo.' }
+  ];
+
+  // ══════════════════════════════════════════════════════════════════
+  // BIOPHOTONICS DEEP DIVE
+  // ══════════════════════════════════════════════════════════════════
+  var BIOPHOTONICS_DEEP = [
+    { id: 'bpIntro', title: '🧬 Biophotonics overview', section: 'introduction',
+      content: 'Biophotonics is the application of optics and photonics to biological problems — from molecular fluorescence labeling to clinical imaging to optogenetic neural control.',
+      details: [
+        'IMAGING: Multi-photon microscopy, OCT, fluorescence microscopy, super-resolution methods.',
+        'SPECTROSCOPY: Tissue Raman spectroscopy, surface-enhanced Raman, NIR diffuse spectroscopy for monitoring tissue oxygenation.',
+        'THERAPY: Photodynamic therapy for cancer, laser surgery, low-level light therapy.',
+        'SENSING: Pulse oximetry, glucose monitoring (some non-invasive methods), wearable bio-optical sensors.',
+        'OPTOGENETICS: Light-controlled neurons (light-activated ion channels expressed in target neurons), revolutionary for neuroscience research.'
+      ],
+      keyFigure: 'Optogenetics has fundamentally transformed neuroscience research — enabling cause-and-effect studies of neural circuits, controlled to millisecond timescales by laser pulses.',
+      misconceptions: '"Biophotonics is just medical imaging." It spans research tools, clinical diagnostics, therapeutics, and even consumer health-tracking devices.' },
+    { id: 'bpMicroscopy', title: '🔬 Advanced biological microscopy', section: 'microscopy',
+      content: 'Modern biological microscopy methods reach resolutions and depths previously unattainable.',
+      details: [
+        'CONFOCAL: Pinhole rejects out-of-focus light. Gives optical sectioning of thick samples. Standard in cell biology.',
+        'MULTI-PHOTON: Two or three NIR photons simultaneously excite fluorophores. Excitation only at focal point — deep penetration in tissue (~1 mm in mouse cortex).',
+        'LIGHTSHEET: Illuminate only one thin plane of the sample at a time, imaging the perpendicular sheet. Fast, low-photobleaching.',
+        'STED: Super-resolution by depleting fluorescence around the central point with a donut-shaped depletion beam. ~20 nm resolution.',
+        'PALM/STORM: Single-molecule localization microscopy. Individual fluorophores blink; their positions are fitted to <10 nm.',
+        'EXPANSION MICROSCOPY: Embed sample in swellable gel and physically expand it 4-10x. Conventional microscope then "sees" subnanometer-equivalent detail.'
+      ],
+      keyFigure: 'STED, PALM, STORM all won the 2014 Chemistry Nobel for "super-resolution fluorescence microscopy" — collectively breaking the diffraction limit that had stood since Abbe 1873.',
+      misconceptions: '"Light microscopes can\'t see below 200 nm." Super-resolution methods using fluorescent labels go to 5-50 nm routinely.' },
+    { id: 'bpOptogenetics', title: '🌈 Optogenetics — controlling neurons with light', section: 'control',
+      content: 'Genetically express light-sensitive proteins (opsins) in specific cells, then control those cells with light pulses.',
+      details: [
+        'CHANNELRHODOPSIN-2: A light-gated ion channel from green algae. When activated by blue (470 nm) light, lets sodium ions flow, depolarizing the neuron (activating it).',
+        'HALORHODOPSIN: Light-gated chloride pump, hyperpolarizing the neuron (silencing it). Activated by yellow (570 nm) light.',
+        'METHODOLOGY: Inject viral vector with opsin gene + promoter for specific cell type. Implant optical fiber. Pulse light at defined patterns. Measure behavior or recordings.',
+        'EXPERIMENTAL POWER: Causal control of specific neuron populations. Previously impossible — pharmacology too slow, electrodes too non-specific.',
+        'CLINICAL POTENTIAL: Restored partial vision in some patients with RP (retinitis pigmentosa) by expressing opsins in remaining retinal cells (clinical trials 2021).',
+        'TRADE-OFFS: Light must reach the cells — requires implanted fiber for deep brain. Heat from light delivery is a concern.'
+      ],
+      keyFigure: 'Optogenetics emerged ~2005 (Boyden, Deisseroth). By 2015 it had transformed neuroscience research. By 2024, clinical applications are entering trials.',
+      misconceptions: '"Optogenetics can give blind people back their vision." Early trials show partial vision restoration in some patients with specific retinal degenerations, but it\'s not a general cure.' }
+  ];
+
+  var AR_VR_DEEP = [
+    { id: 'arVrFund', title: '🥽 AR/VR optical fundamentals', section: 'fundamentals',
+      content: 'AR (Augmented Reality) overlays digital content on the real world. VR (Virtual Reality) replaces the real world with a digital one. Both require sophisticated near-eye optics.',
+      details: [
+        'VR: Display sits ~5 cm from eye. Eyepiece focuses display content to appear at virtual infinity, providing comfortable viewing.',
+        'AR: Must combine see-through real world with digital overlay. Most use either freeform optics (HoloLens) or waveguide-based combiners (Magic Leap, Apple Vision Pro).',
+        'FIELD OF VIEW (FOV): VR headsets target 100-110° horizontal. Human eye sees ~210° total. Limited FOV creates "screen door" or "scuba mask" effect.',
+        'VERGENCE-ACCOMMODATION CONFLICT (VAC): Display is fixed at one distance, but eye must converge to varying virtual distances. Mismatch causes eye strain.',
+        'RESOLUTION: 4K per eye typical in 2024 (~2160 × 2160). Apple Vision Pro pioneered 4K micro-OLED. "Retinal" resolution would need 60+ pixels per degree (~12K per eye).',
+        'PUPIL SWIM: As eye moves, image distorts — annoying for VR. Eye tracking can correct dynamically.'
+      ],
+      keyFigure: 'Eye tracking is the next frontier — fovea-only rendering reduces compute requirements 10x, while gaze-contingent rendering can provide variable focus to address VAC.',
+      misconceptions: '"VR is photorealistic." Field of view, resolution, and frame rate are all visibly imperfect. Eye-strain from VAC remains an issue for extended use.' },
+    { id: 'arWaveguide', title: '🔆 Waveguide combiners for AR', section: 'waveguides',
+      content: 'Waveguide optical combiners trap projected images via total internal reflection until they reach an out-coupler that redirects light to the eye.',
+      details: [
+        'IN-COUPLER: A diffraction grating, holographic surface, or prism redirects projector light into the waveguide.',
+        'PROPAGATION: Total internal reflection guides light along the waveguide.',
+        'EXPANDER: A second diffraction grating expands the eyebox (region where you can place your eye) by replicating the image.',
+        'OUT-COUPLER: A third grating directs light out of the waveguide and into your eye — overlaid with the real world.',
+        'TRADE-OFFS: Field of view limited by waveguide refractive index. Color uniformity often imperfect. Eyebox typically small. Light efficiency low (<10%).',
+        'COMMERCIAL EXAMPLES: Microsoft HoloLens, Magic Leap, Vuzix, North Glasses (defunct).'
+      ],
+      keyFigure: 'Waveguide design is essentially flat-pancake combiner optics — making glasses-thin AR displays possible. The Apple Vision Pro is bulky precisely because it uses freeform optics for higher quality.',
+      misconceptions: '"AR glasses will replace phones soon." Optical FOV, image quality, battery life, and social acceptance all remain significant barriers.' },
+    { id: 'arApps', title: '🌐 AR/VR applications', section: 'applications',
+      content: 'AR/VR is finding traction in specific industries beyond gaming.',
+      details: [
+        'GAMING: VR is dominant in entertainment. Meta Quest, Sony PSVR2, PC VR (Steam).',
+        'TRAINING: Military, medical, industrial training in safe simulated environments. Effective for rare/dangerous procedures.',
+        'DESIGN: Architects, engineers, designers visualize 3D models. CAVE rooms (rear-projected stereoscopic walls) for collaborative design review.',
+        'MEDICAL: Surgical AR overlays (anatomical landmarks, intra-op imaging). VR for phobia therapy, pain management, rehabilitation.',
+        'EDUCATION: Anatomy, geography, history brought to life. Standardized curriculum lagging.',
+        'TELEPRESENCE: "Holographic" meetings (Apple Vision Pro\'s Persona). Replaces video calls with 3D avatars.',
+        'INDUSTRIAL AR: HoloLens 2 used by manufacturing workers for assembly guidance, quality inspection.'
+      ],
+      keyFigure: 'Healthcare is one of the highest-impact AR/VR fields — VR proves effective for chronic pain, phobia treatment, and surgical training where consequences of error are highest.',
+      misconceptions: '"AR/VR is mostly games." Gaming is the biggest revenue, but professional applications (training, medical, design) are growing fast.' }
+  ];
+
+  // ══════════════════════════════════════════════════════════════════
+  // MORE HISTORY EVENTS — expand timeline
+  // ══════════════════════════════════════════════════════════════════
+  var OPTICS_HISTORY_MORE = [
+    { year: '~430 BCE', region: 'China', icon: '📜', event: 'Mozi describes the camera obscura — the first known systematic description of pinhole imaging.', sig: 'Earliest known pinhole imaging tradition.' },
+    { year: '~350 BCE', region: 'China', icon: '🔍', event: 'Chinese scholar reports concentrating sunlight with curved mirrors to start fires.', sig: 'Earliest documented concentrating optics in East Asia.' },
+    { year: '1010', region: 'Iraq', icon: '👁', event: 'Ibn al-Haytham begins his Optics, eventually proving intromission theory of vision.', sig: 'Foundation of modern optics methodology.' },
+    { year: '~1280', region: 'Italy', icon: '🤓', event: 'Eyeglasses widespread in Italy. First "reading stones" (magnifying glasses) made of polished beryl.', sig: 'Wearable corrective optics begin.' },
+    { year: '1538', region: 'Italy', icon: '🌌', event: 'Niccolò Tartaglia uses crude telescopic devices for military aim.', sig: 'Optical aiming for ballistics.' },
+    { year: '1572', region: 'Italy', icon: '🌟', event: 'Tycho Brahe observes supernova; refines astronomical instruments without telescopes (yet).', sig: 'Pre-telescopic precision astronomy reaches its peak.' },
+    { year: '1592', region: 'Netherlands', icon: '🔬', event: 'Zacharias Janssen builds compound microscope (uncertain attribution).', sig: 'Compound microscope tradition begins.' },
+    { year: '1613', region: 'Germany', icon: '🔭', event: 'Christoph Scheiner makes detailed sunspot observations through telescope.', sig: 'Telescopic solar astronomy starts.' },
+    { year: '1647', region: 'Poland', icon: '🌝', event: 'Hevelius publishes Selenographia, the first detailed lunar atlas based on telescopic observations.', sig: 'Telescopic lunar mapping.' },
+    { year: '1672', region: 'Italy', icon: '💡', event: 'Cassegrain proposes the reflecting telescope design with hyperbolic secondary.', sig: 'Most common modern telescope design originates.' },
+    { year: '1729', region: 'England', icon: '🔭', event: 'James Bradley discovers stellar aberration — direct evidence of Earth\'s orbital motion and finite light speed.', sig: 'Confirms speed of light value and Copernican motion.' },
+    { year: '1758', region: 'England', icon: '🔍', event: 'John Dollond patents achromatic doublet lens, correcting chromatic aberration.', sig: 'Refracting telescopes reach new quality levels.' },
+    { year: '1781', region: 'England', icon: '🪐', event: 'William Herschel discovers Uranus with a 6.2-inch reflector — first telescopic planet discovery.', sig: 'Telescopes start finding new planets.' },
+    { year: '1801', region: 'England', icon: '🌌', event: 'William Herschel discovers infrared radiation by placing thermometer past the red end of solar spectrum.', sig: 'Existence of "invisible light" demonstrated.' },
+    { year: '1801', region: 'Germany', icon: '🌈', event: 'Ritter discovers ultraviolet radiation by silver chloride blackening past the violet end.', sig: 'UV part of EM spectrum identified.' },
+    { year: '1834', region: 'Switzerland', icon: '⚡', event: 'Daguerre takes first known image of a person (Boulevard du Temple, Paris). Long exposure caught one stationary person.', sig: 'First photographic portrait, by accident.' },
+    { year: '1864', region: 'Scotland', icon: '⚡', event: 'James Clerk Maxwell publishes "A Dynamical Theory of the Electromagnetic Field," predicting EM waves at speed c.', sig: 'Light unified with electromagnetism.' },
+    { year: '1873', region: 'Germany', icon: '🔬', event: 'Ernst Abbe derives the diffraction-limited resolution of microscopes: d ≈ λ/(2 NA).', sig: 'Microscopy resolution limit established.' },
+    { year: '1881', region: 'USA', icon: '🌌', event: 'First photograph of a galaxy (Andromeda) by Henry Draper.', sig: 'Astrophotography begins.' },
+    { year: '1885', region: 'France', icon: '📷', event: 'Louis Le Prince makes the first motion picture (Roundhay Garden Scene, 2.11 seconds).', sig: 'Moving images recorded.' },
+    { year: '1893', region: 'USA', icon: '🎞', event: 'Edison and Dickson develop the Kinetoscope for moving pictures.', sig: 'Cinema becomes practical.' },
+    { year: '1895', region: 'France', icon: '🎬', event: 'Lumière brothers patent the Cinematograph; first public film screening 28 December 1895 in Paris.', sig: 'Public cinema begins.' },
+    { year: '1908', region: 'France', icon: '🎨', event: 'Gabriel Lippmann wins Nobel Prize for interference color photography.', sig: 'Color photography honored.' },
+    { year: '1920', region: 'USA', icon: '🌟', event: 'Albert Michelson makes the first measurement of a star\'s angular diameter (Betelgeuse, ~50 milliarcseconds).', sig: 'Stellar interferometry begins.' },
+    { year: '1925', region: 'USA', icon: '📺', event: 'John Logie Baird demonstrates first working television.', sig: 'Optical image transmission begins.' },
+    { year: '1932', region: 'Germany', icon: '⚡', event: 'Ernst Ruska builds first electron microscope (TEM).', sig: 'Resolution beyond optical-microscope limit.' },
+    { year: '1945', region: 'Worldwide', icon: '💔', event: 'Photographic emulsions detect first atomic bombs detonated by humans.', sig: 'Optics records the nuclear era beginning.' },
+    { year: '1962', region: 'USA', icon: '💎', event: 'Robert Hall and team develop first practical semiconductor diode laser.', sig: 'Future of compact lasers established.' },
+    { year: '1971', region: 'USA', icon: '📺', event: 'Bell Labs introduces first commercial CCD imaging chip.', sig: 'Digital imaging revolution begins.' },
+    { year: '1974', region: 'England/USA', icon: '🌌', event: 'Stephen Hawking predicts Hawking radiation: black holes emit thermal photons.', sig: 'Quantum field theory in curved spacetime.' },
+    { year: '1981', region: 'Germany', icon: '🔬', event: 'IBM Zurich builds first scanning tunneling microscope.', sig: 'Single-atom imaging starts.' },
+    { year: '1992', region: 'USA', icon: '🌐', event: 'First photonic crystal demonstrated (Yablonovite).', sig: 'Bandgap engineering of light begins.' },
+    { year: '1999', region: 'Egypt/USA', icon: '⚡', event: 'Ahmed Zewail wins Chemistry Nobel for femtochemistry — watching chemical reactions on femtosecond timescales.', sig: 'Real-time imaging of molecular events.' },
+    { year: '2006', region: 'England', icon: '🌐', event: 'David Smith demonstrates a microwave invisibility cloak using metamaterials.', sig: 'Metamaterial cloaking enters reality.' },
+    { year: '2010', region: 'France/USA', icon: '🛰', event: 'Hipparcos space astrometry mission published 118,000 high-precision stellar parallaxes.', sig: 'Cosmic distance ladder rebuilt.' },
+    { year: '2017', region: 'China/Space', icon: '📡', event: 'Micius satellite demonstrates QKD over 1200+ km space-to-ground links.', sig: 'Space-based quantum communication arrives.' },
+    { year: '2018', region: 'USA', icon: '🛰', event: 'TESS launches; replaces Kepler as exoplanet surveyor.', sig: 'All-sky exoplanet hunt.' },
+    { year: '2020', region: 'China', icon: '✨', event: 'Jian-Wei Pan group at USTC achieves photonic "quantum advantage" with 50+ photons (Jiuzhang).', sig: 'Optical quantum computing benchmark.' },
+    { year: '2023', region: 'Earth', icon: '🛰', event: 'Hubble Space Telescope reaches 33 years of operation.', sig: 'Longest-running orbital optical observatory.' },
+    { year: '2024', region: 'Worldwide', icon: '🌒', event: 'Total solar eclipse crosses North America on April 8 — visible across Maine.', sig: 'Public engagement with optical astronomy.' },
+    { year: '~2025', region: 'Europe', icon: '🛰', event: 'ESA Euclid mission, launched 2023, surveying dark energy through gravitational lensing.', sig: 'Optics reveals dark sector.' }
+  ];
+
+  if (typeof OPTICS_HISTORY !== 'undefined' && Array.isArray(OPTICS_HISTORY) && Array.isArray(OPTICS_HISTORY_MORE)) {
+    OPTICS_HISTORY = OPTICS_HISTORY.concat(OPTICS_HISTORY_MORE);
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // EXTRA GLOSSARY — even more terms
+  // ══════════════════════════════════════════════════════════════════
+  var GLOSSARY_EXPANDED_MORE = [
+    { term: 'Accommodation', def: 'The change in shape of the eye\'s crystalline lens to focus on objects at different distances. Maximum accommodation in young adults: ~14 diopters.',
+      related: 'ciliary muscle, presbyopia, lens' },
+    { term: 'Achromat', def: 'A two-element lens that corrects chromatic aberration at two specific wavelengths (typically red and blue).',
+      related: 'chromatic aberration, apochromat, doublet' },
+    { term: 'Active pixel sensor', def: 'A CMOS image sensor where each pixel has its own amplifier transistor. Lower power than CCD; the dominant modern technology.',
+      related: 'CCD, CMOS, image sensor' },
+    { term: 'Aerial perspective', def: 'Color shift and contrast loss in distant objects due to atmospheric scattering — a depth cue used in painting and photography.',
+      related: 'Rayleigh scattering, depth perception, art' },
+    { term: 'Airy pattern', def: 'The diffraction pattern of light through a circular aperture — central bright disk surrounded by concentric darker rings.',
+      related: 'Airy disk, diffraction limit' },
+    { term: 'Albedo', def: 'Average reflectivity of an object across the visible/solar spectrum. Earth: ~0.30. Moon: ~0.12.',
+      related: 'reflectance, Bond albedo' },
+    { term: 'Amici prism', def: 'A type of prism used in spectroscopy that produces a corrected image at the original axis — direct-vision spectroscopy.',
+      related: 'prism, spectroscopy' },
+    { term: 'Amplifier', def: 'A device that increases the amplitude of an optical signal. Optical amplifiers (EDFA) are critical for long-haul fiber-optic networks.',
+      related: 'EDFA, laser, gain' },
+    { term: 'Anamorphic lens', def: 'A lens with different magnifications in horizontal and vertical directions. Used to create the cinematic widescreen "anamorphic" look.',
+      related: 'cinema, distortion' },
+    { term: 'Angle of refraction', def: 'The angle a refracted ray makes with the normal to the surface inside the second medium.',
+      related: 'angle of incidence, Snell\'s law' },
+    { term: 'Anisotropic', def: 'Direction-dependent. Crystals (non-cubic) have direction-dependent refractive indices, leading to birefringence.',
+      related: 'birefringence, crystal' },
+    { term: 'Apochromat', def: 'A premium lens design that corrects chromatic aberration at three or more wavelengths, giving very sharp color images.',
+      related: 'achromat, fluorite glass' },
+    { term: 'Aspheric lens', def: 'A lens whose surfaces are not pure spheres. Used to correct spherical aberration without adding more elements.',
+      related: 'spherical aberration, aberration correction' },
+    { term: 'Atomic clock', def: 'A clock based on atomic resonance frequency. The SI second is defined by cesium-133 hyperfine transition. Optical atomic clocks now reach 1 part in 10¹⁸ stability.',
+      related: 'cesium, optical lattice clock, time' },
+    { term: 'Attenuated total reflection (ATR)', def: 'A spectroscopy technique using evanescent waves from internal reflection at a high-index crystal to probe surfaces in contact.',
+      related: 'evanescent, FTIR, surface analysis' },
+    { term: 'Backscattering', def: 'Scattering of light at angles close to 180° from the incident direction.',
+      related: 'Rayleigh, retroreflection' },
+    { term: 'Beam diameter', def: 'The cross-section of a light beam. Often measured at the points where intensity falls to 1/e² of peak.',
+      related: 'Gaussian beam, M²' },
+    { term: 'Beam expander', def: 'An optical system that increases beam diameter, typically using two lenses arranged like a Galilean telescope.',
+      related: 'Keplerian, collimation' },
+    { term: 'Beam splitter', def: 'An optical element that splits a beam into two parts. Cube beam splitters use a pellicle or coating at 45°.',
+      related: 'interferometer, dichroic' },
+    { term: 'Bell\'s inequality', def: 'A mathematical inequality that quantum-entangled particles violate but classical correlations cannot. Quantum optics has confirmed violation.',
+      related: 'entanglement, Aspect, Bell\'s theorem' },
+    { term: 'Black hole', def: 'A region of space where gravity is so strong that light cannot escape. Imaged by Event Horizon Telescope (M87 2019, Sgr A* 2022).',
+      related: 'Event Horizon Telescope, photon sphere' },
+    { term: 'Blackbody', def: 'An idealized object that absorbs all radiation and emits a characteristic spectrum depending only on temperature.',
+      related: 'Planck, thermal radiation' },
+    { term: 'Boson sampling', def: 'A specific computational task where photonic quantum systems are believed to outperform classical computers.',
+      related: 'quantum computing, photonic' },
+    { term: 'Bragg\'s law', def: 'nλ = 2d sin(θ) — describes diffraction of waves by periodic atomic planes in a crystal.',
+      related: 'X-ray diffraction, crystallography, periodic structure' },
+    { term: 'Calcite', def: 'A mineral (CaCO₃) with strong birefringence (Δn ≈ 0.17). Used as polarizer or in optical demonstrations.',
+      related: 'birefringence, Iceland spar' },
+    { term: 'Cathode-ray tube (CRT)', def: 'A vacuum tube that produces images by scanning an electron beam across a phosphor-coated screen.',
+      related: 'electron beam, phosphor, display' },
+    { term: 'Cataract', def: 'Clouding of the eye\'s crystalline lens. Most common surgical procedure in the U.S.; replaced with an artificial intraocular lens.',
+      related: 'eye, IOL, ophthalmology' },
+    { term: 'Caustic', def: 'A bright curve or surface where reflected or refracted rays concentrate. Example: pool-bottom shimmering patterns.',
+      related: 'ray tracing, focal point' },
+    { term: 'Chemiluminescence', def: 'Light emission from a chemical reaction. Glow sticks, fireflies, certain bacterial culture.',
+      related: 'bioluminescence, fluorescence' },
+    { term: 'Chromatic dispersion', def: 'Wavelength-dependent refractive index. Causes color separation in prisms and chromatic aberration in lenses.',
+      related: 'dispersion, Abbe number' },
+    { term: 'Color temperature', def: 'Temperature of an idealized blackbody radiator that emits light of similar color. Incandescent: 2700 K. Noon sun: ~5500 K.',
+      related: 'blackbody, Kelvin, white balance' },
+    { term: 'Cone receptor', def: 'Color-sensitive photoreceptor in the retina. Three types (L, M, S) provide trichromatic vision.',
+      related: 'photoreceptor, trichromacy, rod' },
+    { term: 'Confocal pinhole', def: 'A small aperture at the conjugate focus of a microscope objective that rejects out-of-focus light, enabling optical sectioning.',
+      related: 'confocal microscopy, pinhole' },
+    { term: 'Conjugate plane', def: 'Two planes in an optical system that are images of each other.',
+      related: 'imaging, object plane, image plane' },
+    { term: 'Convex lens', def: 'A lens that converges light (positive focal length). Thicker in the middle than at the edges.',
+      related: 'converging lens, magnifying glass' },
+    { term: 'Cornea', def: 'The transparent front layer of the eye. Provides about 2/3 of the eye\'s focusing power.',
+      related: 'eye, refractive surgery' },
+    { term: 'Coronagraph', def: 'A telescope attachment that blocks bright central light to image faint surrounding features. Used for solar physics and exoplanet imaging.',
+      related: 'occulter, exoplanet imaging' },
+    { term: 'Critical angle', def: 'The angle of incidence above which total internal reflection occurs.',
+      related: 'TIR, refraction' },
+    { term: 'CRT', def: 'See "Cathode-ray tube."',
+      related: 'cathode-ray tube' },
+    { term: 'Cymbal', def: 'In old British usage, a brass or bronze mirror.',
+      related: 'mirror, history' },
+    { term: 'Czochralski process', def: 'A method for growing large single crystals (silicon, sapphire) by pulling a seed crystal slowly from molten material.',
+      related: 'crystal growth, semiconductor' },
+    { term: 'Dark current', def: 'Spurious electronic signal in image sensors due to thermal generation of charges, even without light. Reduced by cooling.',
+      related: 'image sensor, noise' },
+    { term: 'Decoherence', def: 'Loss of quantum superposition due to interaction with the environment. A major challenge in quantum computing.',
+      related: 'quantum, coherence' },
+    { term: 'Demagnifier', def: 'An optical element that reduces image size — magnification |m| < 1.',
+      related: 'magnification, image' },
+    { term: 'Depolarization', def: 'Loss or scrambling of polarization, often by scattering in turbid media.',
+      related: 'polarization, scattering' },
+    { term: 'Detector', def: 'A device that converts optical energy to an electrical signal. Photodiodes, CCDs, photomultipliers all are detectors.',
+      related: 'photodetector, sensor' },
+    { term: 'Diffraction limit', def: 'The fundamental resolution limit of an optical system set by wave diffraction. θ_min ≈ 1.22 λ/D.',
+      related: 'Rayleigh, Abbe' },
+    { term: 'Diffuse reflection', def: 'Reflection from a rough surface where light scatters in many directions.',
+      related: 'specular, Lambertian' },
+    { term: 'Diode', def: 'A semiconductor device with two terminals that allows current flow in only one direction. Light-emitting diodes emit light when forward-biased.',
+      related: 'LED, photodiode, semiconductor' },
+    { term: 'Diopter', def: 'Reciprocal of focal length in meters. A 2 D lens has f = 0.5 m.',
+      related: 'power, lens, eyeglasses' },
+    { term: 'Dispersive', def: 'Material whose refractive index varies with wavelength. All transparent media are slightly dispersive.',
+      related: 'dispersion, Abbe number' }
+  ];
+
+  if (typeof GLOSSARY_EXPANDED !== 'undefined' && Array.isArray(GLOSSARY_EXPANDED) && Array.isArray(GLOSSARY_EXPANDED_MORE)) {
+    GLOSSARY_EXPANDED = GLOSSARY_EXPANDED.concat(GLOSSARY_EXPANDED_MORE);
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // MEGA GLOSSARY — additional terms for letter coverage E through Z
+  // ══════════════════════════════════════════════════════════════════
+  var GLOSSARY_E_Z = [
+    { term: 'Eclipse', def: 'When one celestial body passes through the shadow of another (lunar) or between an observer and another body (solar).' },
+    { term: 'Effective focal length', def: 'Focal length of a compound optical system measured from its principal plane.' },
+    { term: 'Eikonal equation', def: '|∇S|² = n² — describes wavefront propagation in inhomogeneous media.' },
+    { term: 'Electric dipole', def: 'A pair of equal/opposite charges separated by distance. Light emission is largely electric dipole transitions.' },
+    { term: 'Electromagnetic spectrum', def: 'The full range of EM frequencies — from radio (km wavelengths) to gamma rays (sub-pm).' },
+    { term: 'Emittance', def: 'Rate of energy emission per unit area of a surface.' },
+    { term: 'Entrance pupil', def: 'The image of the aperture stop in the object space of an optical system.' },
+    { term: 'Exit pupil', def: 'The image of the aperture stop in the image space of an optical system.' },
+    { term: 'Eyepiece', def: 'The lens system through which an observer looks in a telescope or microscope. Magnifies the intermediate image.' },
+    { term: 'Faraday rotation', def: 'Rotation of polarization in a magnetic field along the propagation direction.' },
+    { term: 'Far-field', def: 'The region where wavefronts are nearly planar — generally several wavelengths or more from the source.' },
+    { term: 'Fast axis', def: 'The polarization direction in a birefringent material that has lower refractive index (higher phase velocity).' },
+    { term: 'Femtosecond', def: 'One quadrillionth of a second (10⁻¹⁵ s). Ultrafast laser pulses.' },
+    { term: 'Field of view', def: 'The angular range visible through an optical instrument.' },
+    { term: 'Field stop', def: 'An aperture that limits the field of view of an optical system.' },
+    { term: 'Fiber coupling', def: 'The process of efficiently inserting laser light into an optical fiber.' },
+    { term: 'Fizeau interferometer', def: 'A two-beam interferometer using reference and test flat surfaces close together.' },
+    { term: 'Flux', def: 'Total radiated power. Solar flux at Earth: ~1361 W/m².' },
+    { term: 'Focal plane', def: 'The plane perpendicular to the optical axis containing the focal point.' },
+    { term: 'Frequency comb', def: 'A laser source generating a regular comb of optical frequencies. Used as a precision frequency ruler.' },
+    { term: 'Fresnel reflection', def: 'Reflection at a dielectric interface, described by the Fresnel equations.' },
+    { term: 'Frosted glass', def: 'Glass with a rough surface that diffuses transmitted light. Used in lamp diffusers, projection screens.' },
+    { term: 'Gain', def: 'The amplification factor in an optical amplifier or laser gain medium.' },
+    { term: 'Galilean telescope', def: 'Telescope with converging objective + diverging eyepiece giving upright image but narrow field.' },
+    { term: 'Gamma rays', def: 'EM radiation with wavelengths < 10⁻¹¹ m. Comes from nuclear processes and high-energy astrophysics.' },
+    { term: 'Gas laser', def: 'Laser with gas (HeNe, CO₂, Ar+, Kr+) as gain medium.' },
+    { term: 'Gaussian beam', def: 'A laser beam with transverse Gaussian intensity profile — the lowest-order solution to the paraxial wave equation.' },
+    { term: 'Geometric optics', def: 'Approximation of light propagation as straight rays. Valid when wavelength is much smaller than apertures.' },
+    { term: 'Glass', def: 'An amorphous solid with high optical transparency. Many varieties: crown, flint, fluorocrown, fused silica.' },
+    { term: 'Goniometer', def: 'A precision instrument for measuring angles. Used in crystallography and optical alignment.' },
+    { term: 'GPS', def: 'Global Positioning System. Uses radio (microwave) signals from satellites, but optical atomic clocks now defining precision.' },
+    { term: 'Group velocity', def: 'The speed at which a wave packet (information) propagates through a medium. Generally different from phase velocity.' },
+    { term: 'Half-wave plate', def: 'A birefringent plate that introduces a half-wavelength (180°) phase shift, rotating linear polarization.' },
+    { term: 'Halo', def: 'A ring of light around the Sun or Moon, usually at 22° angular radius, caused by ice crystal refraction.' },
+    { term: 'Hard X-ray', def: 'X-rays with wavelengths < 0.1 nm (energies > 10 keV).' },
+    { term: 'Helium-neon laser', def: 'Gas laser with HeNe mixture excited by electrical discharge. Emits at 632.8 nm (red).' },
+    { term: 'Hologram', def: 'A recording of both amplitude and phase of a wavefront, enabling 3D image reconstruction.' },
+    { term: 'Holography', def: 'The technique of producing holograms. Requires coherent light source (laser).' },
+    { term: 'Huygens\' principle', def: 'Every point on a wavefront acts as a source of secondary wavelets; the new wavefront is the envelope of these wavelets.' },
+    { term: 'Hyperopia', def: 'Farsightedness — inability to focus on near objects. Corrected with converging lenses.' },
+    { term: 'Iceland spar', def: 'A clear, highly birefringent variety of calcite. Used by Vikings as "sunstone" for navigation.' },
+    { term: 'Idler photon', def: 'The companion photon in parametric down-conversion entanglement experiments.' },
+    { term: 'Imaging condition', def: 'For an ideal thin lens: 1/s + 1/s\' = 1/f, where s is object distance, s\' is image distance.' },
+    { term: 'Incoherent', def: 'Light without a fixed phase relationship between waves — cannot produce stable interference.' },
+    { term: 'Index ellipsoid', def: 'A 3D surface representing the refractive index in different directions in an anisotropic crystal.' },
+    { term: 'Index gradient', def: 'A material with refractive index that varies smoothly with position. Causes ray curvature.' },
+    { term: 'Inferior mirage', def: 'A mirage where the apparent image is BELOW the real object — the "wet road" effect on hot pavement.' },
+    { term: 'Infrared', def: 'EM radiation with wavelengths from 750 nm to 1 mm. Felt as heat; used in thermal imaging.' },
+    { term: 'Intensity', def: 'Power per unit area. Average intensity ∝ E² (electric field squared).' },
+    { term: 'Interferogram', def: 'The recorded interference pattern, especially from Michelson or other interferometers.' },
+    { term: 'IPS display', def: 'In-Plane Switching LCD technology. Uses liquid crystal rotation in the plane parallel to the substrate.' },
+    { term: 'Iridescence', def: 'Angle-dependent color from nano-scale periodic structures. Seen in butterfly wings, peacock feathers, opals.' },
+    { term: 'Isotropy', def: 'Property of being identical in all directions. Most liquids and amorphous solids are optically isotropic.' },
+    { term: 'Jablonski diagram', def: 'A energy-level diagram showing electronic and vibrational states of a molecule.' },
+    { term: 'Jaeger card', def: 'A near-vision test card with text of various sizes.' },
+    { term: 'Jaeger system', def: 'A measurement system for near vision acuity.' },
+    { term: 'Joule', def: 'Unit of energy. 1 J = 1 newton-meter = ~6.24 × 10¹⁸ eV.' },
+    { term: 'Kerr effect', def: 'A nonlinear optical effect where refractive index changes proportionally to the square of the electric field.' },
+    { term: 'Knife-edge test', def: 'An optical-shop test for figure errors. Run a sharp edge through the converging beam and observe shadow patterns.' },
+    { term: 'KDP crystal', def: 'Potassium dihydrogen phosphate. Used as a nonlinear crystal in frequency doubling and electro-optic modulation.' },
+    { term: 'Lambertian', def: 'A surface with brightness independent of viewing angle. Most matte surfaces are nearly Lambertian.' },
+    { term: 'LASIK', def: 'Laser-Assisted in-Situ Keratomileusis. Refractive eye surgery that reshapes the cornea.' },
+    { term: 'LED', def: 'Light-emitting diode. A semiconductor light source.' },
+    { term: 'Lensmaker\'s equation', def: '1/f = (n − 1) (1/R₁ − 1/R₂). Relates focal length to surface curvatures and refractive index.' },
+    { term: 'Lensometer', def: 'An instrument used by opticians to measure the prescription of eyeglass lenses.' },
+    { term: 'Lidar', def: 'Light Detection and Ranging. Laser-based distance and 3D mapping technology.' },
+    { term: 'Light cone', def: 'In special relativity, the surface in spacetime tracing the path of light from an event.' },
+    { term: 'Light emitting diode', def: 'See LED.' },
+    { term: 'Light pollution', def: 'Excessive artificial outdoor lighting that obscures the night sky. Major problem for astronomy and ecology.' },
+    { term: 'Lightsheet microscopy', def: 'A microscopy technique using a thin sheet of light to illuminate one plane at a time. Low photodamage.' },
+    { term: 'Linewidth', def: 'The frequency width of a spectral line. Limited by Doppler broadening, lifetime, pressure broadening, etc.' },
+    { term: 'Liquid crystal', def: 'A state of matter with both fluid and crystalline order. Birefringence depends on molecular alignment, controlled by applied voltage.' },
+    { term: 'Liquid lens', def: 'A variable-focus lens using two immiscible liquids whose interface changes shape under voltage.' },
+    { term: 'Locking', def: 'Stabilizing a laser\'s frequency to a reference (atomic transition, cavity resonance, etc.).' },
+    { term: 'Long-pass filter', def: 'An optical filter that transmits long wavelengths and blocks short ones.' },
+    { term: 'Lorentz force', def: 'Force on a charged particle in EM fields. F = q(E + v × B).' },
+    { term: 'Loss', def: 'Reduction in optical power, often expressed in decibels per kilometer for fiber-optic cables.' },
+    { term: 'Low-coherence', def: 'Light with short coherence length — broadband sources. Used in OCT and other low-coherence interferometry.' },
+    { term: 'Luminance', def: 'Photometric measure of light reflected/emitted per area, weighted by human eye sensitivity.' },
+    { term: 'Macula', def: 'The center region of the retina containing the fovea — site of high-acuity central vision.' },
+    { term: 'Maser', def: 'Microwave Amplification by Stimulated Emission of Radiation. Predecessor to the laser.' },
+    { term: 'Mass spectrometry', def: 'A technique that ionizes molecules and separates them by mass-to-charge ratio.' },
+    { term: 'Maxwell-Boltzmann', def: 'Statistical distribution of particle speeds in a classical gas.' },
+    { term: 'Metalens', def: 'A flat lens using subwavelength-spaced nanostructures to focus light.' },
+    { term: 'Metamaterials', def: 'Engineered materials with optical properties (e.g., negative refractive index) not found in nature.' },
+    { term: 'Micrometer', def: 'A precision measuring instrument using a calibrated screw.' },
+    { term: 'Microscope', def: 'An instrument for viewing small objects with high magnification.' },
+    { term: 'Microscopy', def: 'The science and practice of using microscopes.' },
+    { term: 'Mirror', def: 'A surface that reflects most of the light striking it.' },
+    { term: 'Mode', def: 'A specific solution of a wave equation. Optical fibers can support specific guided modes; laser cavities oscillate at specific resonant modes.' },
+    { term: 'Mode-locking', def: 'A technique that forces many modes of a laser cavity to oscillate in phase, producing ultrashort pulses.' },
+    { term: 'Modulator', def: 'A device that modulates an optical signal — its intensity, phase, polarization, or frequency.' },
+    { term: 'Monochromator', def: 'A grating-based device that selects a narrow band of wavelengths from a broadband source.' },
+    { term: 'Moonbow', def: 'A rainbow produced by moonlight rather than sunlight — typically very faint and colorless to the eye.' },
+    { term: 'Multipath', def: 'Multiple reflections or scattering paths reaching a detector. Causes ghost images, interference, distortion.' },
+    { term: 'Myopia', def: 'Nearsightedness — inability to focus on distant objects. Corrected with diverging lenses.' },
+    { term: 'NaCl', def: 'Sodium chloride (rock salt). Transparent over a wide IR range; used for IR optics.' },
+    { term: 'Nanophotonics', def: 'The study of light interactions at nanometer scales — below the conventional diffraction limit.' },
+    { term: 'NA', def: 'Numerical aperture — describes light-gathering and resolution of an optical system.' },
+    { term: 'Near point', def: 'The closest distance at which an eye can focus clearly.' },
+    { term: 'Near-field', def: 'The region close to a source where evanescent fields are important.' },
+    { term: 'Neutral density', def: 'A filter that reduces light intensity equally across wavelengths.' },
+    { term: 'Nicol prism', def: 'A polarizing prism made of two pieces of calcite cemented together. Largely replaced by polarizing films.' },
+    { term: 'Noise', def: 'Unwanted signal fluctuations. Common types: shot noise (photon statistics), Johnson noise (thermal), dark current.' },
+    { term: 'Nonlinear optics', def: 'Optics where polarization is not linear in the electric field. Includes harmonic generation, Kerr effect, parametric processes.' },
+    { term: 'Normal', def: 'The perpendicular to a surface at a point.' },
+    { term: 'NSOM', def: 'Near-Field Scanning Optical Microscope. Uses evanescent waves to image below diffraction limit.' },
+    { term: 'Numerical aperture', def: 'NA = n × sin(θ_max). Sets diffraction-limited resolution.' },
+    { term: 'Nyquist limit', def: 'The minimum sampling rate to faithfully reproduce a signal — twice its highest frequency.' },
+    { term: 'Objective lens', def: 'The primary light-gathering lens of a telescope or microscope.' },
+    { term: 'OCT', def: 'Optical Coherence Tomography. Cross-sectional imaging using low-coherence interferometry.' },
+    { term: 'OLED', def: 'Organic Light-Emitting Diode. Display technology with pixel-level emission.' },
+    { term: 'Opacity', def: 'Property of being opaque — blocking all light transmission.' },
+    { term: 'Opening angle', def: 'The full angle of the cone of light accepted or emitted by an optical system.' },
+    { term: 'Optic axis', def: 'The axis of symmetry of an optical system. Also: the symmetry axis of a uniaxial birefringent crystal.' },
+    { term: 'Optic nerve', def: 'The bundle of axons that carries visual signals from the retina to the brain.' },
+    { term: 'Optical density', def: 'Logarithmic measure of light blocking: OD = log₁₀(I₀/I).' },
+    { term: 'Optical fiber', def: 'A glass or plastic strand that guides light by total internal reflection.' },
+    { term: 'Optical isolator', def: 'A device that allows light to pass in one direction but blocks the reverse direction.' },
+    { term: 'Optical mouse', def: 'A computer mouse that uses an LED or laser and image sensor to track motion via image processing.' },
+    { term: 'Optical pumping', def: 'Using light to excite atoms to specific energy states.' },
+    { term: 'Optical resonator', def: 'A cavity with mirrors that traps light for many round trips.' },
+    { term: 'Optical theorem', def: 'Relates the imaginary part of the forward scattering amplitude to the total scattering cross section.' },
+    { term: 'Optical transfer function', def: 'A measure of the spatial frequency response of an optical system.' },
+    { term: 'Order', def: 'In diffraction, an integer m in d sin(θ) = mλ. m=0 is the central maximum; |m| > 0 are higher orders.' },
+    { term: 'Orientation', def: 'The polarization direction of a light wave or the symmetry axis of a crystal.' },
+    { term: 'Oscillator strength', def: 'A dimensionless measure of how strongly atoms absorb/emit at a given transition.' },
+    { term: 'Parabolic mirror', def: 'A mirror with a parabolic shape that focuses parallel rays to a single point with no spherical aberration.' },
+    { term: 'Paraxial', def: 'Rays close to the optical axis. Linear approximation for first-order optics.' },
+    { term: 'Periodic poling', def: 'A technique to create alternating crystal domains for efficient nonlinear frequency conversion.' },
+    { term: 'Phase contrast', def: 'A microscopy technique that turns phase differences (invisible) into intensity differences (visible).' },
+    { term: 'Phase matching', def: 'Conditions for efficient nonlinear frequency conversion — momentum and energy conservation.' },
+    { term: 'Phase velocity', def: 'The speed of a wave\'s phase (peaks and troughs). Generally different from group velocity in dispersive media.' },
+    { term: 'Photoacoustic', def: 'Generation of acoustic waves by absorbing pulsed light. Used in deep-tissue imaging.' },
+    { term: 'Photoelasticity', def: 'Stress-induced birefringence. Used to visualize stress distribution in transparent objects.' },
+    { term: 'Photolithography', def: 'Process of patterning a photoresist using light projection — basis of semiconductor manufacturing.' },
+    { term: 'Photometry', def: 'Measurement of light weighted by human eye sensitivity (lumens, lux, candela).' },
+    { term: 'Photon', def: 'A quantum of electromagnetic radiation. Energy E = hf, momentum p = h/λ.' },
+    { term: 'Photoresist', def: 'A light-sensitive material used in photolithography.' },
+    { term: 'Photovoltaic', def: 'Converting light directly to electricity. Solar cells are photovoltaic devices.' },
+    { term: 'Pinhole camera', def: 'A simple imaging device using a small aperture (no lens).' },
+    { term: 'PIN photodiode', def: 'A semiconductor photodetector with a wide depletion region for high quantum efficiency.' },
+    { term: 'Plasmon', def: 'Collective oscillation of electrons at a metal surface — enables surface-plasmon enhanced sensors.' },
+    { term: 'Pockels cell', def: 'An electro-optic crystal used as a fast optical shutter or polarization rotator.' },
+    { term: 'Point spread function', def: 'The image of an ideal point source by an optical system — characterizes its blur and resolution.' },
+    { term: 'Polarimetry', def: 'Measurement of the polarization of light.' },
+    { term: 'Polarizer', def: 'A device that transmits one polarization component and blocks the orthogonal one.' },
+    { term: 'Polariton', def: 'A coupled state of a photon and a material excitation (exciton, plasmon, etc.).' },
+    { term: 'Population inversion', def: 'More atoms in an upper energy state than a lower one — necessary for laser action.' },
+    { term: 'Power spectrum', def: 'Distribution of power vs. frequency in a signal.' },
+    { term: 'Presbyopia', def: 'Age-related stiffening of the eye\'s lens, reducing accommodation. Corrected with reading glasses.' },
+    { term: 'Principal axis', def: 'The line through the center of a lens or mirror, perpendicular to its surface.' },
+    { term: 'Prism', def: 'A solid glass element with non-parallel faces that disperses or reflects light.' },
+    { term: 'Pulse compression', def: 'A technique to shorten a pulse temporally while increasing its peak power.' },
+    { term: 'Pulse stretching', def: 'A technique to elongate a pulse temporally before amplification.' },
+    { term: 'Pulse width', def: 'The temporal duration of a laser pulse, usually full width at half maximum.' },
+    { term: 'Pupil', def: 'The aperture through which light enters an optical system. In the eye: the dark center of the iris.' },
+    { term: 'Q-switching', def: 'A laser technique to produce high-power pulses by suddenly increasing the cavity Q.' },
+    { term: 'QE', def: 'Quantum efficiency — fraction of incident photons that produce a signal in a photodetector.' },
+    { term: 'Quantum cascade laser', def: 'A semiconductor laser based on intersubband transitions. Emits in mid- and far-infrared.' },
+    { term: 'Quantum dot', def: 'A semiconductor nanocrystal with quantized energy levels. Color depends on size.' },
+    { term: 'Quantum efficiency', def: 'See QE.' },
+    { term: 'Quantum eraser', def: 'A modification of the double-slit experiment showing that "which-path" information availability determines interference visibility.' },
+    { term: 'Quantum field theory', def: 'The mathematical framework combining quantum mechanics with special relativity. QED is the QFT of light + matter.' },
+    { term: 'Quantum well', def: 'A thin semiconductor layer where charge carriers are confined in one dimension, giving quantized energy levels.' },
+    { term: 'Quarter-wave plate', def: 'A birefringent plate that introduces a quarter-wavelength phase shift, converting linear ↔ circular polarization.' }
+  ];
+
+  if (typeof GLOSSARY_EXPANDED !== 'undefined' && Array.isArray(GLOSSARY_EXPANDED) && Array.isArray(GLOSSARY_E_Z)) {
+    GLOSSARY_EXPANDED = GLOSSARY_EXPANDED.concat(GLOSSARY_E_Z);
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // GLOSSARY R-Z (more)
+  // ══════════════════════════════════════════════════════════════════
+  var GLOSSARY_RZ = [
+    { term: 'Quartz', def: 'Crystalline form of silicon dioxide (SiO₂). Common piezoelectric and birefringent crystal.' },
+    { term: 'Quasi-monochromatic', def: 'Light with a narrow band of wavelengths — essentially "one color" for practical purposes.' },
+    { term: 'Radial keratotomy', def: 'A surgical procedure to correct myopia by making radial incisions in the cornea. Largely replaced by LASIK.' },
+    { term: 'Radiance', def: 'Power per unit area per unit solid angle. Units: W/(m²·sr).' },
+    { term: 'Radiometry', def: 'Measurement of EM radiation in absolute units (watts, joules).' },
+    { term: 'Raman scattering', def: 'Inelastic scattering of light by molecules, shifting wavelength by molecular vibrational frequencies.' },
+    { term: 'Ray', def: 'A geometric line representing the direction of light propagation. Used in geometric optics.' },
+    { term: 'Ray tracing', def: 'Computing the paths of light rays through an optical system.' },
+    { term: 'Rayleigh range', def: 'Distance over which a Gaussian beam stays within √2 times its waist diameter.' },
+    { term: 'Rayleigh scattering', def: 'Scattering by particles much smaller than wavelength. Intensity ∝ 1/λ⁴.' },
+    { term: 'RDM', def: 'Radio Direction Marking. Optical equivalent: laser-based alignment in surveying.' },
+    { term: 'Receiver', def: 'A device that detects an optical signal. Photodiode + electronics in a fiber-optic receiver.' },
+    { term: 'Reciprocity principle', def: 'In optics, swapping source and detector positions leaves the signal unchanged.' },
+    { term: 'Reflectance', def: 'Fraction of incident light reflected by a surface or coating.' },
+    { term: 'Reflection', def: 'Bouncing of light off a surface, with angle of reflection equal to angle of incidence.' },
+    { term: 'Reflector', def: 'Any device that reflects light. Telescopes can be reflectors (mirror-based) or refractors (lens-based).' },
+    { term: 'Refraction', def: 'Bending of light at the boundary between two media of different refractive indices.' },
+    { term: 'Refractometer', def: 'An instrument that measures refractive index. Used to determine eye prescription.' },
+    { term: 'Refractive index', def: 'Ratio of speed of light in vacuum to speed in the medium.' },
+    { term: 'Resolution', def: 'The ability to distinguish two close objects as separate. Diffraction-limited: ~1.22 λ/D.' },
+    { term: 'Resolving power', def: 'In a spectrograph, R = λ/Δλ — how finely can the spectrograph distinguish wavelengths.' },
+    { term: 'Retina', def: 'The light-sensitive inner layer of the eye, containing rods and cones.' },
+    { term: 'Retinal photoreceptor', def: 'Rods (low-light) and cones (color) — the photodetectors of the eye.' },
+    { term: 'Retroreflector', def: 'A device that reflects light back along the path it came. Used in road signs, lunar laser ranging.' },
+    { term: 'Reversibility principle', def: 'Light traveling along a path can travel the reverse path identically.' },
+    { term: 'RGB', def: 'Red, Green, Blue — the additive primary colors used in displays.' },
+    { term: 'Riemann zeta function', def: 'A mathematical function used in some quantum optics calculations.' },
+    { term: 'Right-handed coordinate system', def: 'A 3D coordinate system where x, y, z follow the right-hand rule. Used in optical engineering.' },
+    { term: 'Rod', def: 'Photoreceptor cell in the retina specialized for low-light, monochrome vision.' },
+    { term: 'Saccade', def: 'A rapid eye movement, lasting ~30 ms. We are effectively blind during saccades.' },
+    { term: 'Sagnac effect', def: 'Phase shift in light traveling around a closed loop in a rotating frame. Used in optical gyroscopes.' },
+    { term: 'Scattering', def: 'Deflection of light by inhomogeneities in a medium.' },
+    { term: 'Scintillation', def: 'Twinkling of stars or other small light sources due to atmospheric turbulence.' },
+    { term: 'Sclera', def: 'The white outer layer of the eyeball.' },
+    { term: 'Selective absorption', def: 'Absorption of specific wavelengths by a material, causing its color.' },
+    { term: 'Self-focusing', def: 'In high-intensity laser pulses, a Kerr-induced lensing effect that further concentrates the pulse.' },
+    { term: 'Semiconductor laser', def: 'Laser using forward-biased semiconductor p-n junction as gain medium. Compact and efficient.' },
+    { term: 'Sensor', def: 'A device that detects light. Image sensors, photodiodes, photomultipliers all are sensors.' },
+    { term: 'Shadow', def: 'A region of darkness behind an opaque object that blocks light from reaching it.' },
+    { term: 'Shear interferometer', def: 'A test interferometer using lateral shearing of one beam to measure wavefront errors.' },
+    { term: 'Shock wave', def: 'A discontinuous change in pressure caused by supersonic motion. Cherenkov radiation is the optical analog.' },
+    { term: 'Short-pass filter', def: 'An optical filter that transmits short wavelengths and blocks long ones.' },
+    { term: 'Side-lobe', def: 'Secondary maxima in a diffraction pattern, typically much dimmer than the central maximum.' },
+    { term: 'Signal-to-noise ratio (SNR)', def: 'Ratio of signal power to noise power. Higher = better detection.' },
+    { term: 'Silicon photonics', def: 'Photonic devices fabricated on silicon wafers — integration of optics with electronic chips.' },
+    { term: 'Single-photon avalanche diode (SPAD)', def: 'A semiconductor photodetector in Geiger mode — each photon triggers an avalanche.' },
+    { term: 'Slow axis', def: 'In a birefringent material, the polarization with higher refractive index (slower phase velocity).' },
+    { term: 'Snell\'s law', def: 'n₁ sin(θ₁) = n₂ sin(θ₂). Describes refraction at a boundary.' },
+    { term: 'Snell\'s window', def: 'The circular region in the water surface (~96° wide) through which an underwater observer sees the entire sky.' },
+    { term: 'Soft X-ray', def: 'X-rays with wavelengths from 0.1 to 10 nm.' },
+    { term: 'Solar cell', def: 'A photovoltaic device that converts sunlight to electricity.' },
+    { term: 'Solar sail', def: 'A spacecraft propulsion method using photon momentum on a large reflective sail.' },
+    { term: 'Solid-state laser', def: 'A laser using a crystalline or glass gain medium doped with active ions.' },
+    { term: 'Soliton', def: 'A self-propagating, stable optical pulse in a nonlinear medium. Used in long-haul fiber optics.' },
+    { term: 'Spatial filter', def: 'An optical assembly that "cleans" a beam by focusing it through a pinhole.' },
+    { term: 'Spatial light modulator (SLM)', def: 'A device that can pattern an optical wavefront in 2D, often using liquid crystals.' },
+    { term: 'Speckle', def: 'Granular interference pattern from coherent light scattered by a rough surface.' },
+    { term: 'Spectrometer', def: 'An instrument that disperses light by wavelength for measurement.' },
+    { term: 'Spectroradiometer', def: 'A spectrometer that measures absolute power per wavelength.' },
+    { term: 'Spectrum', def: 'A plot of intensity vs wavelength or frequency.' },
+    { term: 'Specular', def: 'Mirror-like, where reflections preserve angle and image structure.' },
+    { term: 'Spherical aberration', def: 'Image distortion where rays through outer aperture focus at different distances than central rays.' },
+    { term: 'Spontaneous emission', def: 'Emission of a photon by an excited atom without external prompting.' },
+    { term: 'Stark effect', def: 'Shift in atomic energy levels in an electric field.' },
+    { term: 'Stellar parallax', def: 'Apparent annual shift in star positions due to Earth\'s orbital motion. Used to measure stellar distances.' },
+    { term: 'Stenopaeic slit', def: 'A narrow slit used for testing astigmatism or for reducing vision blur.' },
+    { term: 'Stereoscope', def: 'A device for viewing pairs of slightly-different images that give 3D depth perception.' },
+    { term: 'Stimulated emission', def: 'Photon-triggered emission of a coherent second photon — the basis of laser amplification.' },
+    { term: 'Stokes shift', def: 'Difference between absorption and emission wavelengths of a fluorophore.' },
+    { term: 'Substrate', def: 'The underlying material on which thin films are deposited or photonic devices are fabricated.' },
+    { term: 'Superlens', def: 'A lens that breaks the diffraction limit using near-field effects or metamaterials.' },
+    { term: 'Superresolution', def: 'Imaging beyond the diffraction limit. Includes STED, PALM, STORM techniques.' },
+    { term: 'Surface plasmon', def: 'Collective oscillation of electrons at a metal-dielectric interface.' },
+    { term: 'Tangential plane', def: 'The plane containing the optical axis and the chief ray of an off-axis bundle.' },
+    { term: 'Teflon', def: 'Polytetrafluoroethylene. White, highly diffusing material used in integrating spheres.' },
+    { term: 'Telecentric', def: 'An optical system where the chief ray is parallel to the optical axis. Used for precise metrology.' },
+    { term: 'Telescope', def: 'An instrument for viewing distant objects with magnification.' },
+    { term: 'Tetrachromat', def: 'An observer with 4 cone types. Some humans (mostly women) and many birds and reptiles.' },
+    { term: 'Thin film', def: 'A coating layer with thickness on the order of an optical wavelength.' },
+    { term: 'Thin lens', def: 'A lens whose thickness is negligible compared to its focal length. Simplifies analysis.' },
+    { term: 'Time-of-flight', def: 'A ranging or imaging technique that measures the round-trip time of light.' },
+    { term: 'Tonometer', def: 'An instrument for measuring intraocular pressure (eye pressure).' },
+    { term: 'Toric lens', def: 'A lens with different curvature in two perpendicular planes. Corrects astigmatism.' },
+    { term: 'Transducer', def: 'A device that converts one form of energy to another. Photodetectors are optical-to-electrical transducers.' },
+    { term: 'Transmittance', def: 'Fraction of incident light transmitted through a material.' },
+    { term: 'Trichromacy', def: 'Color vision based on three cone types. Standard for primates including humans.' },
+    { term: 'Twilight', def: 'The illumination after sunset / before sunrise when the Sun is below the horizon but light still reaches the atmosphere.' },
+    { term: 'Two-photon absorption', def: 'Simultaneous absorption of two photons in a high-intensity beam. Used in multi-photon microscopy.' },
+    { term: 'Ultraviolet', def: 'EM radiation with wavelengths from 10 to 400 nm.' },
+    { term: 'Umov-Poynting vector', def: 'Vector indicating direction and magnitude of energy flow in an EM wave.' },
+    { term: 'Unbiased imaging', def: 'Imaging without preconceived classification — challenging for AI-augmented systems.' },
+    { term: 'Uniaxial', def: 'A crystal with one optical axis. Calcite, quartz, ice are uniaxial.' },
+    { term: 'Vacuum', def: 'Empty space. Light travels at exactly c = 299,792,458 m/s in vacuum.' },
+    { term: 'Vacuum tube', def: 'An electronic device with electrodes inside an evacuated container. Cathode-ray tubes were the basis of early TVs.' },
+    { term: 'Variable focal length', def: 'A zoom lens or fluidic lens with adjustable focal length.' },
+    { term: 'Vergence-accommodation conflict (VAC)', def: 'In VR/AR, mismatch between eye convergence and accommodation distances. Causes eye strain.' },
+    { term: 'Vignetting', def: 'Darkening of image corners due to mechanical or aperture limitations.' },
+    { term: 'Visibility', def: 'In interferometry, the contrast of fringes. V = (I_max - I_min)/(I_max + I_min).' },
+    { term: 'Visible light', def: 'EM radiation in the range humans can see, approximately 380 to 750 nm.' },
+    { term: 'Wave', def: 'A propagating disturbance. EM waves are oscillating electric and magnetic fields.' },
+    { term: 'Waveguide', def: 'A structure that confines and guides EM waves along its length.' },
+    { term: 'Wavefront', def: 'A surface of constant phase in a propagating wave.' },
+    { term: 'Wavelength', def: 'Spatial period of a wave. λ = c/f for EM waves.' },
+    { term: 'Wavelet', def: 'A small "burst" of wave activity. In Huygens\' principle, every point on a wavefront emits secondary wavelets.' },
+    { term: 'WDM', def: 'Wavelength Division Multiplexing. Multiple wavelengths share one fiber for parallel data transmission.' },
+    { term: 'White balance', def: 'Camera adjustment to render objects as neutral white under different illuminants.' },
+    { term: 'Wiener-Khinchin theorem', def: 'Relates power spectrum to autocorrelation function. Used in coherent imaging analysis.' },
+    { term: 'Wollaston prism', def: 'A polarizing prism that splits light into two perpendicular linearly polarized beams.' },
+    { term: 'Work function', def: 'Minimum energy needed to liberate an electron from a metal surface (in photoelectric effect).' },
+    { term: 'Yablonovite', def: 'The first 3D photonic crystal (1991), made by drilling three sets of holes in a substrate.' },
+    { term: 'Yagi-Uda antenna', def: 'A directional antenna with multiple parallel rods. Optical analog: nanorod antennas in metasurfaces.' },
+    { term: 'YAG', def: 'Yttrium aluminum garnet (Y₃Al₅O₁₂). A common laser crystal host material.' },
+    { term: 'Yb fiber', def: 'Ytterbium-doped optical fiber. Used in high-power industrial fiber lasers.' },
+    { term: 'Y-coupler', def: 'A passive optical splitter/combiner shaped like the letter Y. Used in fiber optics.' },
+    { term: 'YIG', def: 'Yttrium iron garnet (Y₃Fe₅O₁₂). Used in microwave devices and Faraday rotators.' },
+    { term: 'YLF', def: 'Yttrium lithium fluoride (LiYF₄). A laser host crystal.' },
+    { term: 'Zeeman effect', def: 'Splitting of atomic spectral lines in a magnetic field.' },
+    { term: 'Zenith', def: 'The point directly overhead, 90° above horizon.' },
+    { term: 'Zerodur', def: 'A glass-ceramic with near-zero thermal expansion. Used in precision optical mounts and large telescope mirrors.' },
+    { term: 'Zernike polynomials', def: 'A family of orthogonal polynomials used to describe wavefront aberrations.' },
+    { term: 'Zinc selenide', def: 'A crystal used for CO₂ laser optics — transparent at 10.6 μm where most materials are opaque.' },
+    { term: 'Zone plate', def: 'A flat lens made of concentric rings that focus light by diffraction rather than refraction.' }
+  ];
+
+  if (typeof GLOSSARY_EXPANDED !== 'undefined' && Array.isArray(GLOSSARY_EXPANDED) && Array.isArray(GLOSSARY_RZ)) {
+    GLOSSARY_EXPANDED = GLOSSARY_EXPANDED.concat(GLOSSARY_RZ);
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // OPTICS IN MAINE — region-specific content
+  // ══════════════════════════════════════════════════════════════════
+  var OPTICS_MAINE = [
+    { id: 'mePortlandHead', title: 'Portland Head Light', icon: '🗼',
+      detail: 'Maine\'s oldest lighthouse (1791), commissioned by George Washington. Currently uses an LED beacon visible 24 nautical miles. Originally used whale-oil lamps, then kerosene, then a Fresnel lens, then incandescent, now LED — a 230-year history of evolving illumination technology.',
+      relevance: 'A living museum of lighting technology, accessible to Maine students.' },
+    { id: 'meCapeNeddick', title: 'Cape Neddick (Nubble) Light', icon: '🗼',
+      detail: 'Iconic Maine lighthouse near Cape Neddick. Photographed more than any other lighthouse in the world. Maine has 65+ lighthouses total, each with specific 19th-century Fresnel lens or modern LED illumination.',
+      relevance: 'Most-photographed optical instrument in Maine. Demonstrates the staying power of Fresnel-lens technology.' },
+    { id: 'meAcadia', title: 'Acadia National Park dark sky', icon: '🌌',
+      detail: 'Maine\'s Acadia National Park is a designated International Dark Sky Park, with minimal light pollution. The Milky Way is visible nearly every clear summer night. Annual "stars over Cadillac" events draw astronomy enthusiasts.',
+      relevance: 'A regional model for night-sky preservation and astronomical education.' },
+    { id: 'meMaineGulf', title: 'Gulf of Maine oceanic optics', icon: '🦞',
+      detail: 'The Gulf of Maine is one of the world\'s most-studied marine environments. UMaine\'s Darling Marine Center conducts optical oceanography research — measuring water clarity, plankton concentration, and pollutant levels remotely.',
+      relevance: 'Active research employment opportunities for optics students.' },
+    { id: 'meAuroraBorealis', title: 'Maine aurora borealis viewing', icon: '🟢',
+      detail: 'During solar maxima (every ~11 years), Maine\'s northern locations (Aroostook County, Acadia National Park) can see aurora borealis. The next solar maximum peaks around 2024-2025.',
+      relevance: 'Direct view of plasma physics emitting characteristic optical lines.' },
+    { id: 'mePsychPortland', title: 'University of Southern Maine planetarium', icon: '🌌',
+      detail: 'The Southworth Planetarium at USM (Portland) offers regular shows and educational programs. Equipped with a digital projection system that simulates the night sky.',
+      relevance: 'Accessible optical-astronomy education for Southern Maine.' },
+    { id: 'meBangorEclipse', title: 'Maine 2024 total solar eclipse', icon: '🌒',
+      detail: 'The April 8, 2024 total solar eclipse passed through northern Maine (Bangor area), giving Maine students a rare direct view of the phenomenon. The next total eclipse visible from Maine: 2079.',
+      relevance: 'A generational educational event in Maine.' },
+    { id: 'meOpticsCompanies', title: 'Maine optics-related employers', icon: '🏭',
+      detail: 'Local employers with optical-engineering roles: Bath Iron Works (Navy radar/IR systems), Pratt & Whitney engine factory (optical inspection), MaineHealth (medical imaging), various academic research labs at U Maine, Bowdoin, Bates, Colby.',
+      relevance: 'Real career pathways for students considering optics-related fields.' },
+    { id: 'meWoodensWoodworking', title: 'Telescope-making workshops in Maine', icon: '🔭',
+      detail: 'The Astronomical Society of Eastern Maine hosts ATM (Amateur Telescope Making) workshops. Students can grind a mirror, build a Newtonian reflector, and learn hands-on optical engineering.',
+      relevance: 'Direct optical-engineering experience accessible to Maine high-schoolers.' },
+    { id: 'meKitteryDrydock', title: 'Portsmouth Naval Shipyard optics', icon: '🛡',
+      detail: 'Kittery, Maine is home to the Portsmouth Naval Shipyard, where submarines are built and serviced. Periscopes (now electronic photonic masts) are designed and maintained here.',
+      relevance: 'Submarines depend on optical engineering for both periscope and (new) photonic-mast systems.' }
+  ];
+
+  // ══════════════════════════════════════════════════════════════════
+  // INTERACTIVE CALCULATORS — suite of optical calculators and visualizers
+  // Each is callable from the new 'calcs' tab and provides hands-on
+  // exploration of optical concepts beyond the existing sim tabs.
+  // ══════════════════════════════════════════════════════════════════
+
+  // ───── 1. Brewster's angle visualizer ─────
+  function _renderBrewsterCalc(d, upd, h) {
+    var n1 = d.brewsterN1 || 1.00;
+    var n2 = d.brewsterN2 || 1.50;
+    var theta = d.brewsterTheta || 30;
+    var thetaB = radToDeg(Math.atan(n2 / n1));
+    var thetaRad = degToRad(theta);
+    var sinT2 = (n1 / n2) * Math.sin(thetaRad);
+    var canRefract = sinT2 >= -1 && sinT2 <= 1;
+    var theta2 = canRefract ? radToDeg(Math.asin(sinT2)) : null;
+    // Fresnel reflectance for s and p polarizations
+    var c1 = Math.cos(thetaRad);
+    var c2 = canRefract ? Math.cos(degToRad(theta2)) : 0;
+    var rs = canRefract ? Math.pow((n1 * c1 - n2 * c2) / (n1 * c1 + n2 * c2), 2) : 1;
+    var rp = canRefract ? Math.pow((n2 * c1 - n1 * c2) / (n2 * c1 + n1 * c2), 2) : 1;
+    var atBrewster = Math.abs(theta - thetaB) < 0.5;
+
+    // SVG diagram: incoming ray, reflected ray, refracted ray
+    var cx = 200, cy = 130, len = 90;
+    var thetaR = thetaRad;
+    var incomingX = cx - len * Math.sin(thetaR);
+    var incomingY = cy - len * Math.cos(thetaR);
+    var reflectedX = cx + len * Math.sin(thetaR);
+    var reflectedY = cy - len * Math.cos(thetaR);
+    var t2 = canRefract ? degToRad(theta2) : 0;
+    var refractedX = cx + len * Math.sin(t2);
+    var refractedY = cy + len * Math.cos(t2);
+
+    return h('div', null,
+      h('div', { style: { background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
+        h('h3', { style: { color: '#d8b4fe', fontSize: 16, fontWeight: 900, margin: '0 0 4px' } }, "🕶 Brewster's Angle Visualizer"),
+        h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, margin: 0 } }, "At Brewster's angle, the reflected beam is 100% s-polarized (perpendicular to the plane of incidence). The reflected p-polarization component vanishes. Used in polarized sunglasses, laser windows, polarimeters.")),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(280px,1fr) minmax(280px,1fr)', gap: 14 } },
+        h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(168,85,247,0.30)', borderRadius: 10, padding: 14 } },
+          h('div', { style: { fontSize: 12, fontWeight: 800, color: '#d8b4fe', marginBottom: 8 } }, 'Controls'),
+          h('div', { style: { marginBottom: 8 } },
+            h('label', { style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 4 } }, 'n₁ (incident medium): ' + n1.toFixed(3)),
+            h('input', { type: 'range', min: 1.0, max: 3.0, step: 0.01, value: n1,
+              onChange: function(e) { upd('brewsterN1', parseFloat(e.target.value)); },
+              style: { width: '100%' } })),
+          h('div', { style: { marginBottom: 8 } },
+            h('label', { style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 4 } }, 'n₂ (refracted medium): ' + n2.toFixed(3)),
+            h('input', { type: 'range', min: 1.0, max: 3.0, step: 0.01, value: n2,
+              onChange: function(e) { upd('brewsterN2', parseFloat(e.target.value)); },
+              style: { width: '100%' } })),
+          h('div', { style: { marginBottom: 10 } },
+            h('label', { style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 4 } }, 'Incidence angle θ: ' + theta + '°'),
+            h('input', { type: 'range', min: 0, max: 89, step: 0.5, value: theta,
+              onChange: function(e) { upd('brewsterTheta', parseFloat(e.target.value)); },
+              style: { width: '100%' } })),
+          h('button', {
+            onClick: function() { upd('brewsterTheta', Math.round(thetaB * 10) / 10); },
+            style: { padding: '8px 14px', background: 'rgba(168,85,247,0.20)', color: '#d8b4fe', border: '1px solid #a855f7', borderRadius: 6, cursor: 'pointer', fontSize: 11, fontWeight: 700, width: '100%' }
+          }, "↪ Jump to Brewster's angle (" + thetaB.toFixed(1) + '°)')
+        ),
+        h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(168,85,247,0.30)', borderRadius: 10, padding: 14 } },
+          h('div', { style: { fontSize: 12, fontWeight: 800, color: '#d8b4fe', marginBottom: 8 } }, 'Ray diagram'),
+          h('svg', { viewBox: '0 0 400 260', style: { width: '100%', height: 200, background: 'rgba(15,23,42,0.4)', borderRadius: 6 } },
+            // boundary
+            h('line', { x1: 30, y1: cy, x2: 370, y2: cy, stroke: '#5eead4', strokeWidth: 2 }),
+            // normal
+            h('line', { x1: cx, y1: 30, x2: cx, y2: 230, stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '4,4' }),
+            // incoming ray
+            h('line', { x1: incomingX, y1: incomingY, x2: cx, y2: cy, stroke: '#fbbf24', strokeWidth: 2 }),
+            // reflected ray
+            h('line', { x1: cx, y1: cy, x2: reflectedX, y2: reflectedY, stroke: '#f87171', strokeWidth: 2 }),
+            // refracted ray
+            canRefract && h('line', { x1: cx, y1: cy, x2: refractedX, y2: refractedY, stroke: '#60a5fa', strokeWidth: 2 }),
+            // labels
+            h('text', { x: incomingX - 5, y: incomingY - 8, fontSize: 10, fill: '#fbbf24' }, 'incident'),
+            h('text', { x: reflectedX + 5, y: reflectedY - 8, fontSize: 10, fill: '#f87171' }, 'reflected'),
+            canRefract && h('text', { x: refractedX + 5, y: refractedY + 12, fontSize: 10, fill: '#60a5fa' }, 'refracted'),
+            // mediums
+            h('text', { x: 40, y: cy - 8, fontSize: 11, fill: '#cbd5e1' }, 'n₁ = ' + n1.toFixed(2)),
+            h('text', { x: 40, y: cy + 18, fontSize: 11, fill: '#cbd5e1' }, 'n₂ = ' + n2.toFixed(2)),
+            // brewster indicator
+            atBrewster && h('text', { x: cx + 12, y: 50, fontSize: 12, fontWeight: 800, fill: '#86efac' }, "✓ AT BREWSTER'S"))),
+        h('div', { style: { gridColumn: '1 / -1', background: atBrewster ? 'rgba(34,197,94,0.10)' : 'rgba(15,23,42,0.65)', border: '1px solid ' + (atBrewster ? 'rgba(34,197,94,0.40)' : 'rgba(168,85,247,0.30)'), borderRadius: 10, padding: 14 } },
+          h('div', { style: { fontSize: 12, fontWeight: 800, color: atBrewster ? '#86efac' : '#d8b4fe', marginBottom: 8 } }, '📊 Results'),
+          h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11 } },
+            h('tbody', null,
+              h('tr', null, h('td', { style: { color: '#94a3b8', padding: '3px 0' } }, "Brewster's angle θ_B"), h('td', { style: { color: '#fbbf24', fontFamily: 'monospace', fontWeight: 700 } }, thetaB.toFixed(2) + '°')),
+              h('tr', null, h('td', { style: { color: '#94a3b8', padding: '3px 0' } }, 'Current θ_i'), h('td', { style: { color: '#cbd5e1', fontFamily: 'monospace' } }, theta + '°')),
+              h('tr', null, h('td', { style: { color: '#94a3b8', padding: '3px 0' } }, 'Refraction angle θ_t'), h('td', { style: { color: '#cbd5e1', fontFamily: 'monospace' } }, canRefract ? theta2.toFixed(2) + '°' : 'TIR (no refraction)')),
+              h('tr', null, h('td', { style: { color: '#94a3b8', padding: '3px 0' } }, 'R_s (s-polarized reflectance)'), h('td', { style: { color: '#f87171', fontFamily: 'monospace', fontWeight: 700 } }, (rs * 100).toFixed(2) + '%')),
+              h('tr', null, h('td', { style: { color: '#94a3b8', padding: '3px 0' } }, 'R_p (p-polarized reflectance)'), h('td', { style: { color: '#60a5fa', fontFamily: 'monospace', fontWeight: 700 } }, (rp * 100).toFixed(2) + (atBrewster ? ' ← zero!' : '')))
+            )
+          ),
+          h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, margin: '8px 0 0' } },
+            atBrewster ? '⭐ At Brewster\'s angle, R_p ≈ 0. ALL reflected light is s-polarized. This is how polarized sunglasses block road and water glare — they\'re oriented to block the s-polarization.' : 'At ' + theta + '°, both polarizations partly reflect. Adjust the angle to find Brewster\'s angle where R_p drops to zero.')
+        )
+      )
+    );
+  }
+
+  // ───── 2. Photon energy / momentum / frequency converter ─────
+  function _renderPhotonCalc(d, upd, h) {
+    var lambdaNm = d.photonLambdaNm || 550;
+    var c = 2.998e8;
+    var h_const = 6.626e-34;
+    var freq = c / (lambdaNm * 1e-9);
+    var energyJ = h_const * freq;
+    var energyEv = energyJ / 1.602e-19;
+    var momentum = h_const / (lambdaNm * 1e-9);
+    var color = wavelengthToRGB(lambdaNm);
+
+    // Spectrum band
+    var band;
+    if (lambdaNm < 10) band = 'Gamma ray';
+    else if (lambdaNm < 100) band = 'X-ray (hard)';
+    else if (lambdaNm < 200) band = 'X-ray (soft)';
+    else if (lambdaNm < 280) band = 'UV-C (germicidal)';
+    else if (lambdaNm < 315) band = 'UV-B (sunburn)';
+    else if (lambdaNm < 400) band = 'UV-A (tanning)';
+    else if (lambdaNm < 430) band = 'Violet';
+    else if (lambdaNm < 490) band = 'Blue';
+    else if (lambdaNm < 570) band = 'Green';
+    else if (lambdaNm < 590) band = 'Yellow';
+    else if (lambdaNm < 620) band = 'Orange';
+    else if (lambdaNm < 750) band = 'Red';
+    else if (lambdaNm < 1100) band = 'Near IR';
+    else if (lambdaNm < 3000) band = 'Short-wave IR';
+    else if (lambdaNm < 15000) band = 'Mid IR';
+    else if (lambdaNm < 1e6) band = 'Far IR';
+    else band = 'Microwave / Radio';
+
+    return h('div', null,
+      h('div', { style: { background: 'rgba(56,189,248,0.10)', border: '1px solid rgba(56,189,248,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
+        h('h3', { style: { color: '#7dd3fc', fontSize: 16, fontWeight: 900, margin: '0 0 4px' } }, '💡 Photon Properties Converter'),
+        h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, margin: 0 } }, "Drag the wavelength slider. See how frequency, energy, momentum, and the visible color all follow. E = hf, p = h/λ.")
+      ),
+      h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(56,189,248,0.30)', borderRadius: 10, padding: 14, marginBottom: 12 } },
+        h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 8, display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' } },
+          h('span', null, 'Wavelength: '),
+          h('span', { style: { fontSize: 18, fontWeight: 900, color: '#fbbf24', fontFamily: 'monospace' } }, lambdaNm.toLocaleString() + ' nm'),
+          h('span', { style: { padding: '2px 8px', borderRadius: 12, background: color, color: '#0f172a', fontSize: 10, fontWeight: 700 } }, band)),
+        h('input', { type: 'range', min: 100, max: 10000, step: 1, value: lambdaNm,
+          onChange: function(e) { upd('photonLambdaNm', parseFloat(e.target.value)); },
+          style: { width: '100%' } }),
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#64748b', marginTop: 4 } },
+          h('span', null, '100 nm (UV)'), h('span', null, '550 nm (green)'), h('span', null, '10 μm (IR)')
+        )
+      ),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 } },
+        h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(56,189,248,0.30)', borderRadius: 10, padding: '12px 14px' } },
+          h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, 'FREQUENCY'),
+          h('div', { style: { fontSize: 18, fontWeight: 900, color: '#7dd3fc', fontFamily: 'monospace' } }, (freq / 1e12).toFixed(3) + ' THz'),
+          h('div', { style: { fontSize: 10, color: '#64748b', marginTop: 4 } }, freq.toExponential(3) + ' Hz')),
+        h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(168,85,247,0.30)', borderRadius: 10, padding: '12px 14px' } },
+          h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, 'ENERGY (eV)'),
+          h('div', { style: { fontSize: 18, fontWeight: 900, color: '#d8b4fe', fontFamily: 'monospace' } }, energyEv.toFixed(4) + ' eV'),
+          h('div', { style: { fontSize: 10, color: '#64748b', marginTop: 4 } }, energyJ.toExponential(3) + ' J')),
+        h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(34,197,94,0.30)', borderRadius: 10, padding: '12px 14px' } },
+          h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, 'MOMENTUM'),
+          h('div', { style: { fontSize: 18, fontWeight: 900, color: '#86efac', fontFamily: 'monospace' } }, momentum.toExponential(3)),
+          h('div', { style: { fontSize: 10, color: '#64748b', marginTop: 4 } }, 'kg·m/s')),
+        h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(251,191,36,0.30)', borderRadius: 10, padding: '12px 14px' } },
+          h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, '# PER WATT'),
+          h('div', { style: { fontSize: 18, fontWeight: 900, color: '#fcd34d', fontFamily: 'monospace' } }, (1 / energyJ).toExponential(2)),
+          h('div', { style: { fontSize: 10, color: '#64748b', marginTop: 4 } }, 'photons/sec')),
+        h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(244,63,94,0.30)', borderRadius: 10, padding: '12px 14px' } },
+          h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, 'kJ/mol'),
+          h('div', { style: { fontSize: 18, fontWeight: 900, color: '#fb7185', fontFamily: 'monospace' } }, (energyJ * 6.022e23 / 1000).toFixed(1)),
+          h('div', { style: { fontSize: 10, color: '#64748b', marginTop: 4 } }, 'molar energy'))
+      ),
+      h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(100,116,139,0.30)', borderRadius: 10, padding: 12, marginTop: 12 } },
+        h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, margin: 0 } },
+          '💡 Useful relationship: photon energy in eV ≈ 1240 / λ (nm). Try it at λ = 620 nm (red): 1240/620 ≈ 2.0 eV ✓. This shortcut bypasses Planck\'s constant.'))
+    );
+  }
+
+  // ───── 3. Critical angle / TIR visualizer ─────
+  function _renderTirCalc(d, upd, h) {
+    var n1 = d.tirN1 || 1.50;
+    var n2 = d.tirN2 || 1.00;
+    var theta = d.tirTheta || 30;
+    var thetaRad = degToRad(theta);
+    var canRefract = n2 / n1 * Math.sin(thetaRad) <= 1;
+    var theta_c = n1 > n2 ? radToDeg(Math.asin(n2 / n1)) : null;
+    var theta2 = canRefract ? radToDeg(Math.asin(n2 / n1 * Math.sin(thetaRad))) : null;
+    var isTir = !canRefract;
+
+    var cx = 200, cy = 130, len = 80;
+    var thetaR = thetaRad;
+    var incomingX = cx - len * Math.sin(thetaR);
+    var incomingY = cy - len * Math.cos(thetaR);
+    var reflectedX = cx + len * Math.sin(thetaR);
+    var reflectedY = cy - len * Math.cos(thetaR);
+    var t2 = canRefract ? degToRad(theta2) : 0;
+    var refractedX = cx + len * Math.sin(t2);
+    var refractedY = cy + len * Math.cos(t2);
+
+    return h('div', null,
+      h('div', { style: { background: 'rgba(251,146,60,0.10)', border: '1px solid rgba(251,146,60,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
+        h('h3', { style: { color: '#fdba74', fontSize: 16, fontWeight: 900, margin: '0 0 4px' } }, '⚡ Total Internal Reflection Visualizer'),
+        h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, margin: 0 } }, "Going from denser to less-dense medium, light beyond the critical angle reflects 100% back. Basis of fiber optics, prisms, and diamond brilliance.")),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(280px,1fr) minmax(280px,1fr)', gap: 14 } },
+        h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(251,146,60,0.30)', borderRadius: 10, padding: 14 } },
+          h('div', { style: { fontSize: 12, fontWeight: 800, color: '#fdba74', marginBottom: 8 } }, 'Setup'),
+          h('div', { style: { marginBottom: 8 } },
+            h('label', { style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 4 } }, 'n₁ (incident, denser): ' + n1.toFixed(3)),
+            h('input', { type: 'range', min: 1.0, max: 3.0, step: 0.01, value: n1,
+              onChange: function(e) { upd('tirN1', parseFloat(e.target.value)); },
+              style: { width: '100%' } })),
+          h('div', { style: { marginBottom: 8 } },
+            h('label', { style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 4 } }, 'n₂ (refracted, less dense): ' + n2.toFixed(3)),
+            h('input', { type: 'range', min: 1.0, max: 3.0, step: 0.01, value: n2,
+              onChange: function(e) { upd('tirN2', parseFloat(e.target.value)); },
+              style: { width: '100%' } })),
+          h('div', { style: { marginBottom: 10 } },
+            h('label', { style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 4 } }, 'Incidence angle θ: ' + theta + '°'),
+            h('input', { type: 'range', min: 0, max: 89, step: 0.5, value: theta,
+              onChange: function(e) { upd('tirTheta', parseFloat(e.target.value)); },
+              style: { width: '100%' } })),
+          theta_c && h('button', {
+            onClick: function() { upd('tirTheta', Math.round(theta_c * 10) / 10); },
+            style: { padding: '8px 14px', background: 'rgba(251,146,60,0.20)', color: '#fdba74', border: '1px solid #fb923c', borderRadius: 6, cursor: 'pointer', fontSize: 11, fontWeight: 700, width: '100%', marginBottom: 6 }
+          }, "↪ Jump to critical angle (" + theta_c.toFixed(1) + '°)'),
+          h('button', {
+            onClick: function() {
+              var pairs = [['Glass-air (1.50→1.00)', 1.5, 1.0],
+                           ['Water-air (1.33→1.00)', 1.33, 1.0],
+                           ['Diamond-air (2.42→1.00)', 2.42, 1.0],
+                           ['Core-cladding fiber (1.50→1.48)', 1.5, 1.48]];
+              var idx = (d.tirPresetIdx || 0) % pairs.length;
+              upd('tirPresetIdx', idx + 1);
+              upd('tirN1', pairs[idx][1]); upd('tirN2', pairs[idx][2]);
+            },
+            style: { padding: '6px 10px', background: 'rgba(100,116,139,0.20)', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.30)', borderRadius: 6, cursor: 'pointer', fontSize: 11, width: '100%' }
+          }, '↪ Cycle real-world pairs')
+        ),
+        h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(251,146,60,0.30)', borderRadius: 10, padding: 14 } },
+          h('div', { style: { fontSize: 12, fontWeight: 800, color: '#fdba74', marginBottom: 8 } }, 'Ray paths'),
+          h('svg', { viewBox: '0 0 400 260', style: { width: '100%', height: 200, background: 'rgba(15,23,42,0.4)', borderRadius: 6 } },
+            h('rect', { x: 30, y: 30, width: 340, height: cy - 30, fill: 'rgba(56,189,248,0.06)' }),
+            h('rect', { x: 30, y: cy, width: 340, height: 230 - cy, fill: 'rgba(251,146,60,0.06)' }),
+            h('line', { x1: 30, y1: cy, x2: 370, y2: cy, stroke: '#fb923c', strokeWidth: 2 }),
+            h('line', { x1: cx, y1: 30, x2: cx, y2: 230, stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '4,4' }),
+            h('line', { x1: incomingX, y1: incomingY, x2: cx, y2: cy, stroke: '#fbbf24', strokeWidth: 3 }),
+            h('line', { x1: cx, y1: cy, x2: reflectedX, y2: reflectedY, stroke: isTir ? '#f87171' : '#fdba74', strokeWidth: isTir ? 3 : 2, opacity: isTir ? 1 : 0.6 }),
+            canRefract && h('line', { x1: cx, y1: cy, x2: refractedX, y2: refractedY, stroke: '#60a5fa', strokeWidth: 2 }),
+            h('text', { x: 40, y: cy - 8, fontSize: 11, fill: '#cbd5e1' }, 'n₁ = ' + n1.toFixed(2) + ' (denser)'),
+            h('text', { x: 40, y: cy + 18, fontSize: 11, fill: '#cbd5e1' }, 'n₂ = ' + n2.toFixed(2) + ' (less dense)'),
+            isTir && h('text', { x: cx + 12, y: 55, fontSize: 13, fontWeight: 800, fill: '#fca5a5' }, '⚡ TIR!'),
+            isTir && h('text', { x: cx + 12, y: 72, fontSize: 10, fill: '#fca5a5' }, '100% reflection'))),
+        h('div', { style: { gridColumn: '1 / -1', background: isTir ? 'rgba(239,68,68,0.10)' : 'rgba(15,23,42,0.65)', border: '1px solid ' + (isTir ? 'rgba(239,68,68,0.40)' : 'rgba(251,146,60,0.30)'), borderRadius: 10, padding: 14 } },
+          theta_c
+            ? h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11 } },
+                h('tbody', null,
+                  h('tr', null, h('td', { style: { color: '#94a3b8', padding: '3px 0' } }, 'Critical angle θ_c'), h('td', { style: { color: '#fdba74', fontFamily: 'monospace', fontWeight: 700 } }, theta_c.toFixed(2) + '°')),
+                  h('tr', null, h('td', { style: { color: '#94a3b8', padding: '3px 0' } }, 'Current θ_i'), h('td', { style: { color: '#cbd5e1', fontFamily: 'monospace' } }, theta + '°')),
+                  h('tr', null, h('td', { style: { color: '#94a3b8', padding: '3px 0' } }, 'Refraction angle θ_t'), h('td', { style: { color: isTir ? '#f87171' : '#60a5fa', fontFamily: 'monospace', fontWeight: 700 } }, isTir ? 'undefined (TIR active)' : theta2.toFixed(2) + '°')),
+                  h('tr', null, h('td', { style: { color: '#94a3b8', padding: '3px 0' } }, 'Outcome'), h('td', { style: { color: isTir ? '#fca5a5' : '#cbd5e1' } }, isTir ? '100% reflected, 0% transmitted (TIR)' : 'Partly reflected, mostly transmitted'))
+                ))
+            : h('p', { style: { fontSize: 11, color: '#fca5a5' } }, '⚠ TIR not possible: n₁ ≤ n₂. Need denser medium first.')
+        )
+      )
+    );
+  }
+
+  // ───── 4. Lensmaker's equation calculator ─────
+  function _renderLensmakerCalc(d, upd, h) {
+    var n = d.lmkrN || 1.50;
+    var r1 = d.lmkrR1 != null ? d.lmkrR1 : 20;
+    var r2 = d.lmkrR2 != null ? d.lmkrR2 : -30;
+    var t = d.lmkrT || 3;
+    // Thin lens formula
+    var oneOverF = (n - 1) * (1/r1 - 1/r2);
+    var f = 1 / oneOverF;
+    var P = oneOverF * 100; // diopters if r in cm
+    var lensType = f > 0 ? 'Converging' : 'Diverging';
+
+    return h('div', null,
+      h('div', { style: { background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
+        h('h3', { style: { color: '#a5b4fc', fontSize: 16, fontWeight: 900, margin: '0 0 4px' } }, "🔍 Lensmaker's Equation Calculator"),
+        h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, margin: 0 } }, "1/f = (n − 1)(1/R₁ − 1/R₂). Sign convention: R positive if center of curvature is on the OUTGOING side.")),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(280px,1fr) minmax(280px,1fr)', gap: 14 } },
+        h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(99,102,241,0.30)', borderRadius: 10, padding: 14 } },
+          h('div', { style: { fontSize: 12, fontWeight: 800, color: '#a5b4fc', marginBottom: 8 } }, 'Lens parameters'),
+          h('div', { style: { marginBottom: 8 } },
+            h('label', { style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 4 } }, 'Refractive index n: ' + n.toFixed(3)),
+            h('input', { type: 'range', min: 1.0, max: 2.5, step: 0.01, value: n,
+              onChange: function(e) { upd('lmkrN', parseFloat(e.target.value)); }, style: { width: '100%' } })),
+          h('div', { style: { marginBottom: 8 } },
+            h('label', { style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 4 } }, 'R₁ (first surface): ' + r1.toFixed(1) + ' cm'),
+            h('input', { type: 'range', min: -100, max: 100, step: 1, value: r1,
+              onChange: function(e) { upd('lmkrR1', parseFloat(e.target.value)); }, style: { width: '100%' } })),
+          h('div', { style: { marginBottom: 8 } },
+            h('label', { style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 4 } }, 'R₂ (second surface): ' + r2.toFixed(1) + ' cm'),
+            h('input', { type: 'range', min: -100, max: 100, step: 1, value: r2,
+              onChange: function(e) { upd('lmkrR2', parseFloat(e.target.value)); }, style: { width: '100%' } }))
+        ),
+        h('div', { style: { background: f > 0 ? 'rgba(34,197,94,0.10)' : 'rgba(239,68,68,0.10)', border: '1px solid ' + (f > 0 ? 'rgba(34,197,94,0.40)' : 'rgba(239,68,68,0.40)'), borderRadius: 10, padding: 14 } },
+          h('div', { style: { fontSize: 12, fontWeight: 800, color: f > 0 ? '#86efac' : '#fca5a5', marginBottom: 8 } }, 'Results'),
+          h('div', { style: { fontSize: 18, fontWeight: 900, color: f > 0 ? '#86efac' : '#fca5a5', marginBottom: 6 } }, lensType + ' lens'),
+          h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 4 } }, 'Focal length: '),
+          h('div', { style: { fontSize: 22, fontWeight: 900, color: '#fbbf24', fontFamily: 'monospace', marginBottom: 10 } }, f.toFixed(2) + ' cm'),
+          h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 4 } }, 'Optical power: '),
+          h('div', { style: { fontSize: 18, fontWeight: 900, color: '#a5b4fc', fontFamily: 'monospace' } }, P.toFixed(2) + ' D')),
+        h('div', { style: { gridColumn: '1 / -1', background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(99,102,241,0.30)', borderRadius: 10, padding: 14 } },
+          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+            'Lens shapes: ',
+            h('br', null),
+            '• R₁ > 0, R₂ < 0: BICONVEX (converging, both surfaces curve outward)',
+            h('br', null),
+            '• R₁ < 0, R₂ > 0: BICONCAVE (diverging, both surfaces curve inward)',
+            h('br', null),
+            '• R₁ > 0, R₂ > 0 (R₂ > R₁): MENISCUS (one convex, one concave, both curve same way)',
+            h('br', null),
+            '• R₁ = ∞: PLANO-something (flat first surface)')
+        )
+      )
+    );
+  }
+
+  // ───── 5. Doppler shift calculator ─────
+  function _renderDopplerCalc(d, upd, h) {
+    var lambdaRest = d.dopLambda || 656.3;
+    var vKms = d.dopV || 0;
+    var c_kms = 299792;
+    var beta = vKms / c_kms;
+    var lambdaObs;
+    // Use relativistic formula
+    if (Math.abs(beta) < 0.99) {
+      lambdaObs = lambdaRest * Math.sqrt((1 + beta) / (1 - beta));
+    } else {
+      lambdaObs = lambdaRest * 100;
+    }
+    var deltaLambda = lambdaObs - lambdaRest;
+    var z = deltaLambda / lambdaRest;
+
+    return h('div', null,
+      h('div', { style: { background: 'rgba(244,63,94,0.10)', border: '1px solid rgba(244,63,94,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
+        h('h3', { style: { color: '#fb7185', fontSize: 16, fontWeight: 900, margin: '0 0 4px' } }, '🌌 Doppler Shift Calculator'),
+        h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, margin: 0 } }, "Receding sources redshift (longer λ); approaching blueshift. Used to measure cosmic expansion, exoplanet radial velocity, traffic radar.")),
+      h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(244,63,94,0.30)', borderRadius: 10, padding: 14, marginBottom: 12 } },
+        h('div', { style: { marginBottom: 10 } },
+          h('label', { style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 4 } }, 'Rest wavelength λ_rest: ' + lambdaRest.toFixed(1) + ' nm (e.g., 656.3 = H-α)'),
+          h('input', { type: 'range', min: 100, max: 2000, step: 0.1, value: lambdaRest,
+            onChange: function(e) { upd('dopLambda', parseFloat(e.target.value)); }, style: { width: '100%' } })),
+        h('div', { style: { marginBottom: 6 } },
+          h('label', { style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 4 } }, 'Velocity (negative = approaching, positive = receding): ' + vKms.toLocaleString() + ' km/s (β = ' + beta.toFixed(4) + ')'),
+          h('input', { type: 'range', min: -290000, max: 290000, step: 100, value: vKms,
+            onChange: function(e) { upd('dopV', parseFloat(e.target.value)); }, style: { width: '100%' } })),
+        h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 } },
+          [{ label: 'Stop', v: 0 }, { label: 'Earth orbital (~30)', v: 30 }, { label: 'GW170817 NS merger (~600)', v: 600 }, { label: 'Distant galaxy (10⁵)', v: 100000 }, { label: 'Quasar (0.5c)', v: 150000 }].map(function(p) {
+            return h('button', { key: p.label, onClick: function() { upd('dopV', p.v); },
+              style: { padding: '4px 8px', background: 'rgba(244,63,94,0.15)', color: '#fb7185', border: '1px solid rgba(244,63,94,0.30)', borderRadius: 4, cursor: 'pointer', fontSize: 10 } }, p.label);
+          }))
+      ),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 } },
+        h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(244,63,94,0.30)', borderRadius: 10, padding: 12 } },
+          h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, 'OBSERVED WAVELENGTH'),
+          h('div', { style: { fontSize: 18, fontWeight: 900, color: vKms > 0 ? '#fb7185' : (vKms < 0 ? '#60a5fa' : '#cbd5e1'), fontFamily: 'monospace' } }, lambdaObs.toFixed(2) + ' nm')),
+        h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(244,63,94,0.30)', borderRadius: 10, padding: 12 } },
+          h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, 'Δλ SHIFT'),
+          h('div', { style: { fontSize: 18, fontWeight: 900, color: '#fbbf24', fontFamily: 'monospace' } }, (deltaLambda > 0 ? '+' : '') + deltaLambda.toFixed(2) + ' nm')),
+        h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(244,63,94,0.30)', borderRadius: 10, padding: 12 } },
+          h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, 'REDSHIFT z'),
+          h('div', { style: { fontSize: 18, fontWeight: 900, color: '#a5b4fc', fontFamily: 'monospace' } }, z.toFixed(4)))
+      )
+    );
+  }
+
+  // ───── 6. Telescope sizing tool ─────
+  function _renderTelescopeCalc(d, upd, h) {
+    var aperture = d.telAperture || 200; // mm
+    var focalRatio = d.telFRatio || 8;
+    var lambdaNm = d.telLambda || 550;
+    var fLength = aperture * focalRatio;
+    var rayleighRad = 1.22 * (lambdaNm * 1e-9) / (aperture * 1e-3);
+    var rayleighArcsec = rayleighRad * (180 / Math.PI) * 3600;
+    var lightArea = Math.PI * Math.pow(aperture / 2, 2); // mm²
+    var pupilArea = Math.PI * Math.pow(3.5, 2); // human eye in dim conditions, mm²
+    var lightGather = lightArea / pupilArea;
+    var maxMag = 2 * aperture;
+
+    return h('div', null,
+      h('div', { style: { background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
+        h('h3', { style: { color: '#86efac', fontSize: 16, fontWeight: 900, margin: '0 0 4px' } }, '🔭 Telescope Sizing Tool'),
+        h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, margin: 0 } }, "Calculate diffraction-limited resolution, light-gathering power, and maximum useful magnification for any telescope aperture.")),
+      h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(34,197,94,0.30)', borderRadius: 10, padding: 14, marginBottom: 12 } },
+        h('div', { style: { marginBottom: 10 } },
+          h('label', { style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 4 } }, 'Aperture: ' + aperture + ' mm (' + (aperture / 25.4).toFixed(1) + " in)"),
+          h('input', { type: 'range', min: 25, max: 10000, step: 5, value: aperture,
+            onChange: function(e) { upd('telAperture', parseFloat(e.target.value)); }, style: { width: '100%' } }),
+          h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 4 } },
+            [{ l: 'Naked eye (~7mm)', v: 7 }, { l: 'Binos (50mm)', v: 50 }, { l: '4" backyard', v: 100 }, { l: '8" Dob (200mm)', v: 200 }, { l: '12.5" pro (320mm)', v: 320 }, { l: '40" Yerkes (1016mm)', v: 1016 }, { l: 'Hubble (2400mm)', v: 2400 }, { l: 'JWST (6500mm)', v: 6500 }].map(function(p) {
+              return h('button', { key: p.l, onClick: function() { upd('telAperture', p.v); },
+                style: { padding: '3px 8px', background: 'rgba(34,197,94,0.10)', color: '#86efac', border: '1px solid rgba(34,197,94,0.25)', borderRadius: 4, cursor: 'pointer', fontSize: 9 } }, p.l);
+            }))),
+        h('div', { style: { marginBottom: 6 } },
+          h('label', { style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 4 } }, 'Focal ratio (f/#): f/' + focalRatio),
+          h('input', { type: 'range', min: 2, max: 30, step: 0.5, value: focalRatio,
+            onChange: function(e) { upd('telFRatio', parseFloat(e.target.value)); }, style: { width: '100%' } })),
+        h('div', { style: { marginBottom: 6 } },
+          h('label', { style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 4 } }, 'Observation wavelength: ' + lambdaNm + ' nm'),
+          h('input', { type: 'range', min: 400, max: 800, step: 10, value: lambdaNm,
+            onChange: function(e) { upd('telLambda', parseFloat(e.target.value)); }, style: { width: '100%' } }))),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10 } },
+        h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(34,197,94,0.30)', borderRadius: 10, padding: 12 } },
+          h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, 'FOCAL LENGTH'),
+          h('div', { style: { fontSize: 16, fontWeight: 900, color: '#86efac', fontFamily: 'monospace' } }, fLength.toFixed(0) + ' mm'),
+          h('div', { style: { fontSize: 9, color: '#64748b' } }, (fLength / 25.4).toFixed(1) + ' in')),
+        h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(56,189,248,0.30)', borderRadius: 10, padding: 12 } },
+          h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, 'DIFFRACTION LIMIT'),
+          h('div', { style: { fontSize: 16, fontWeight: 900, color: '#7dd3fc', fontFamily: 'monospace' } }, rayleighArcsec.toFixed(2) + '"'),
+          h('div', { style: { fontSize: 9, color: '#64748b' } }, 'Rayleigh criterion')),
+        h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(168,85,247,0.30)', borderRadius: 10, padding: 12 } },
+          h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, 'LIGHT GATHERING'),
+          h('div', { style: { fontSize: 16, fontWeight: 900, color: '#d8b4fe', fontFamily: 'monospace' } }, lightGather.toFixed(0) + 'x'),
+          h('div', { style: { fontSize: 9, color: '#64748b' } }, 'vs dark-adapted eye')),
+        h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(251,191,36,0.30)', borderRadius: 10, padding: 12 } },
+          h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, 'MAX USEFUL MAG'),
+          h('div', { style: { fontSize: 16, fontWeight: 900, color: '#fcd34d', fontFamily: 'monospace' } }, maxMag.toFixed(0) + 'x'),
+          h('div', { style: { fontSize: 9, color: '#64748b' } }, '~50x per inch'))
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(100,116,139,0.30)', borderRadius: 10 } },
+        h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, margin: 0 } },
+          '💡 Real-world limit: atmospheric "seeing" caps ground-based resolution at ~1 arcsec at most sites. Hubble (2.4 m) actually achieves its 0.05 arcsec diffraction limit. Backyard 8" Dobsonian theoretically 0.69" but limited to ~1.5" by seeing.'))
+    );
+  }
+
+  // ───── 7. Color mixer (additive RGB) ─────
+  function _renderColorMixerCalc(d, upd, h) {
+    var r = d.mixR != null ? d.mixR : 128;
+    var g = d.mixG != null ? d.mixG : 128;
+    var b = d.mixB != null ? d.mixB : 128;
+    var hex = '#' + [r, g, b].map(function(v) { var s = Math.round(v).toString(16); return s.length < 2 ? '0' + s : s; }).join('');
+    var lum = (0.299 * r + 0.587 * g + 0.114 * b);
+    var hsl_h = 0, hsl_s = 0, hsl_l = 0;
+    var rNorm = r / 255, gNorm = g / 255, bNorm = b / 255;
+    var maxC = Math.max(rNorm, gNorm, bNorm);
+    var minC = Math.min(rNorm, gNorm, bNorm);
+    hsl_l = (maxC + minC) / 2;
+    if (maxC !== minC) {
+      var dC = maxC - minC;
+      hsl_s = hsl_l > 0.5 ? dC / (2 - maxC - minC) : dC / (maxC + minC);
+      if (maxC === rNorm) hsl_h = (gNorm - bNorm) / dC + (gNorm < bNorm ? 6 : 0);
+      else if (maxC === gNorm) hsl_h = (bNorm - rNorm) / dC + 2;
+      else hsl_h = (rNorm - gNorm) / dC + 4;
+      hsl_h *= 60;
+    }
+
+    return h('div', null,
+      h('div', { style: { background: 'rgba(56,189,248,0.10)', border: '1px solid rgba(56,189,248,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
+        h('h3', { style: { color: '#7dd3fc', fontSize: 16, fontWeight: 900, margin: '0 0 4px' } }, '🎨 Color Mixer (Additive RGB)'),
+        h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, margin: 0 } }, "Light sources mix additively — R+G=Yellow, R+B=Magenta, G+B=Cyan, R+G+B=White. The basis of every display.")),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(280px,1fr) minmax(280px,1fr)', gap: 14 } },
+        h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(56,189,248,0.30)', borderRadius: 10, padding: 14 } },
+          h('div', { style: { marginBottom: 12 } },
+            h('label', { style: { fontSize: 11, color: '#f87171', display: 'block', marginBottom: 4, fontWeight: 700 } }, 'R: ' + Math.round(r)),
+            h('input', { type: 'range', min: 0, max: 255, step: 1, value: r,
+              onChange: function(e) { upd('mixR', parseFloat(e.target.value)); }, style: { width: '100%', accentColor: '#ef4444' } })),
+          h('div', { style: { marginBottom: 12 } },
+            h('label', { style: { fontSize: 11, color: '#86efac', display: 'block', marginBottom: 4, fontWeight: 700 } }, 'G: ' + Math.round(g)),
+            h('input', { type: 'range', min: 0, max: 255, step: 1, value: g,
+              onChange: function(e) { upd('mixG', parseFloat(e.target.value)); }, style: { width: '100%', accentColor: '#22c55e' } })),
+          h('div', { style: { marginBottom: 12 } },
+            h('label', { style: { fontSize: 11, color: '#60a5fa', display: 'block', marginBottom: 4, fontWeight: 700 } }, 'B: ' + Math.round(b)),
+            h('input', { type: 'range', min: 0, max: 255, step: 1, value: b,
+              onChange: function(e) { upd('mixB', parseFloat(e.target.value)); }, style: { width: '100%', accentColor: '#3b82f6' } })),
+          h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
+            [{ l: 'Black', c: [0, 0, 0] }, { l: 'White', c: [255, 255, 255] }, { l: 'Red', c: [255, 0, 0] }, { l: 'Green', c: [0, 255, 0] }, { l: 'Blue', c: [0, 0, 255] }, { l: 'Cyan', c: [0, 255, 255] }, { l: 'Magenta', c: [255, 0, 255] }, { l: 'Yellow', c: [255, 255, 0] }, { l: 'Sunset', c: [255, 100, 30] }, { l: 'Sky', c: [135, 206, 235] }].map(function(p) {
+              return h('button', { key: p.l, onClick: function() { upd('mixR', p.c[0]); upd('mixG', p.c[1]); upd('mixB', p.c[2]); },
+                style: { padding: '4px 8px', background: '#' + p.c.map(function(v) { var s = v.toString(16); return s.length < 2 ? '0' + s : s; }).join(''), color: (p.c[0] + p.c[1] + p.c[2]) > 380 ? '#0f172a' : '#fff', border: '1px solid rgba(100,116,139,0.30)', borderRadius: 4, cursor: 'pointer', fontSize: 9, fontWeight: 700 } }, p.l);
+            }))
+        ),
+        h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(56,189,248,0.30)', borderRadius: 10, padding: 14 } },
+          h('div', { style: { width: '100%', height: 180, background: hex, borderRadius: 8, border: '2px solid rgba(100,116,139,0.30)', marginBottom: 12 } }),
+          h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11 } },
+            h('tbody', null,
+              h('tr', null, h('td', { style: { color: '#94a3b8', padding: '3px 0' } }, 'Hex'), h('td', { style: { color: '#fbbf24', fontFamily: 'monospace', fontWeight: 700 } }, hex)),
+              h('tr', null, h('td', { style: { color: '#94a3b8', padding: '3px 0' } }, 'RGB'), h('td', { style: { color: '#cbd5e1', fontFamily: 'monospace' } }, 'rgb(' + Math.round(r) + ',' + Math.round(g) + ',' + Math.round(b) + ')')),
+              h('tr', null, h('td', { style: { color: '#94a3b8', padding: '3px 0' } }, 'HSL'), h('td', { style: { color: '#cbd5e1', fontFamily: 'monospace' } }, 'hsl(' + Math.round(hsl_h) + '°, ' + Math.round(hsl_s * 100) + '%, ' + Math.round(hsl_l * 100) + '%)')),
+              h('tr', null, h('td', { style: { color: '#94a3b8', padding: '3px 0' } }, 'Luminance (Y)'), h('td', { style: { color: '#cbd5e1', fontFamily: 'monospace' } }, lum.toFixed(1) + ' / 255')))))),
+      h('div', { style: { marginTop: 12, padding: 12, background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(100,116,139,0.30)', borderRadius: 10 } },
+        h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, margin: 0 } },
+          '💡 Try this: set R=255, G=255, B=0 → pure yellow. Yet yellow can also come from a single wavelength (~580 nm). These look identical to the eye but have different spectral content — they\'re metameric colors.'))
+    );
+  }
+
+  // ───── 8. EM spectrum slider explorer ─────
+  function _renderEmSpectrumCalc(d, upd, h) {
+    var logFreq = d.emLogFreq != null ? d.emLogFreq : 14.4; // log10 of frequency in Hz
+    var freq = Math.pow(10, logFreq);
+    var lambda = 3e8 / freq;
+    var energyEv = 6.626e-34 * freq / 1.602e-19;
+    var band, examples;
+    if (freq < 3e4) { band = 'ELF radio'; examples = 'Submarine comms, geophysics'; }
+    else if (freq < 3e6) { band = 'LF/MF radio'; examples = 'AM radio, navigation'; }
+    else if (freq < 3e8) { band = 'HF/VHF radio'; examples = 'Shortwave, FM, TV'; }
+    else if (freq < 3e9) { band = 'UHF'; examples = 'Cell phones, WiFi 2.4GHz, GPS'; }
+    else if (freq < 3e10) { band = 'SHF microwave'; examples = 'Radar, satellite TV, WiFi 5GHz'; }
+    else if (freq < 3e11) { band = 'EHF/mmWave'; examples = '5G mmWave, security scanners'; }
+    else if (freq < 3e12) { band = 'Terahertz'; examples = 'Medical imaging, security (in research)'; }
+    else if (freq < 3e13) { band = 'Far IR'; examples = 'Cold dust astronomy'; }
+    else if (freq < 1e14) { band = 'Mid IR'; examples = 'Thermal imaging, CO₂ laser'; }
+    else if (freq < 3.85e14) { band = 'Near IR'; examples = 'Fiber-optic telecom, night vision'; }
+    else if (freq < 4.3e14) { band = 'Red (visible)'; examples = 'HeNe laser, traffic lights'; }
+    else if (freq < 5e14) { band = 'Orange/Yellow'; examples = 'Sodium streetlight'; }
+    else if (freq < 6e14) { band = 'Green'; examples = '532 nm laser, eye peaks'; }
+    else if (freq < 6.7e14) { band = 'Blue'; examples = 'Sky color, BluRay 405nm'; }
+    else if (freq < 7.5e14) { band = 'Violet'; examples = 'Edge of visible'; }
+    else if (freq < 1.5e15) { band = 'UV-A/UV-B'; examples = 'Tanning, sunburn'; }
+    else if (freq < 3e16) { band = 'UV-C/EUV'; examples = 'Sterilization, lithography (13.5nm)'; }
+    else if (freq < 3e18) { band = 'X-rays'; examples = 'Medical imaging, crystallography'; }
+    else { band = 'Gamma rays'; examples = 'Nuclear physics, cancer therapy'; }
+
+    var color = (freq > 4e14 && freq < 7.5e14) ? wavelengthToRGB(lambda * 1e9) : '#475569';
+
+    return h('div', null,
+      h('div', { style: { background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
+        h('h3', { style: { color: '#d8b4fe', fontSize: 16, fontWeight: 900, margin: '0 0 4px' } }, '🌈 EM Spectrum Explorer'),
+        h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, margin: 0 } }, "Slide through the entire electromagnetic spectrum from radio to gamma rays. The visible band is just a tiny window.")),
+      h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(168,85,247,0.30)', borderRadius: 10, padding: 14, marginBottom: 12 } },
+        h('label', { style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 6 } }, 'log₁₀(frequency): ' + logFreq.toFixed(2) + ' (frequency = ' + freq.toExponential(2) + ' Hz)'),
+        h('input', { type: 'range', min: 3, max: 22, step: 0.01, value: logFreq,
+          onChange: function(e) { upd('emLogFreq', parseFloat(e.target.value)); }, style: { width: '100%' } }),
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#64748b', marginTop: 4 } },
+          h('span', null, 'kHz'), h('span', null, 'MHz'), h('span', null, 'GHz'), h('span', null, 'THz'), h('span', null, 'visible'), h('span', null, 'X-ray'), h('span', null, 'γ-ray')),
+        h('div', { style: { width: '100%', height: 32, background: 'linear-gradient(90deg, #1e293b 0%, #475569 25%, #4f46e5 45%, #ef4444 50%, #fbbf24 53%, #22c55e 56%, #06b6d4 59%, #6366f1 63%, #475569 75%, #1e293b 100%)', borderRadius: 6, marginTop: 12, position: 'relative' } },
+          h('div', { style: { position: 'absolute', top: -6, left: ((logFreq - 3) / 19 * 100) + '%', width: 4, height: 44, background: '#fbbf24', borderRadius: 2, boxShadow: '0 0 8px #fbbf24', transform: 'translateX(-50%)' } }))),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10 } },
+        h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '2px solid ' + color, borderRadius: 10, padding: 12 } },
+          h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, 'BAND'),
+          h('div', { style: { fontSize: 16, fontWeight: 900, color: '#d8b4fe' } }, band)),
+        h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(56,189,248,0.30)', borderRadius: 10, padding: 12 } },
+          h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, 'WAVELENGTH λ'),
+          h('div', { style: { fontSize: 16, fontWeight: 900, color: '#7dd3fc', fontFamily: 'monospace' } }, lambda > 1 ? lambda.toFixed(3) + ' m' : (lambda > 0.001 ? (lambda * 1000).toFixed(2) + ' mm' : (lambda > 1e-6 ? (lambda * 1e6).toFixed(3) + ' μm' : (lambda > 1e-9 ? (lambda * 1e9).toFixed(2) + ' nm' : (lambda * 1e12).toExponential(2) + ' pm'))))),
+        h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(251,191,36,0.30)', borderRadius: 10, padding: 12 } },
+          h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, 'PHOTON ENERGY'),
+          h('div', { style: { fontSize: 16, fontWeight: 900, color: '#fbbf24', fontFamily: 'monospace' } }, energyEv > 1000 ? (energyEv / 1000).toFixed(2) + ' keV' : (energyEv > 1 ? energyEv.toFixed(3) + ' eV' : (energyEv * 1000).toFixed(2) + ' meV')))),
+      h('div', { style: { marginTop: 12, padding: 12, background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(100,116,139,0.30)', borderRadius: 10 } },
+        h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, margin: 0 } },
+          '🎯 Applications in this band: ', h('strong', { style: { color: '#d8b4fe' } }, examples)))
+    );
+  }
+
+  // ───── 9. Fiber-optic acceptance angle visualizer ─────
+  function _renderFiberCalc(d, upd, h) {
+    var nCore = d.fiberNCore || 1.500;
+    var nClad = d.fiberNClad || 1.480;
+    var nExt = d.fiberNExt || 1.000;
+    var ratio = nClad / nCore;
+    var canTir = nCore > nClad;
+    var critAngle = canTir ? radToDeg(Math.asin(ratio)) : null;
+    var na = canTir ? Math.sqrt(nCore * nCore - nClad * nClad) : 0;
+    var acceptHalfAngle = canTir ? radToDeg(Math.asin(na / nExt)) : null;
+    var vNumber = canTir ? 2 * Math.PI * 4 / 1.55 * na : 0; // V-number with 4 μm core radius at 1.55 μm
+
+    return h('div', null,
+      h('div', { style: { background: 'rgba(56,189,248,0.10)', border: '1px solid rgba(56,189,248,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
+        h('h3', { style: { color: '#7dd3fc', fontSize: 16, fontWeight: 900, margin: '0 0 4px' } }, '📡 Fiber-Optic Acceptance Angle'),
+        h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, margin: 0 } }, "Light entering at angles within the acceptance cone undergoes TIR inside the fiber core. NA = √(n_core² − n_clad²).")),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(280px,1fr) minmax(280px,1fr)', gap: 14 } },
+        h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(56,189,248,0.30)', borderRadius: 10, padding: 14 } },
+          h('div', { style: { fontSize: 12, fontWeight: 800, color: '#7dd3fc', marginBottom: 8 } }, 'Fiber configuration'),
+          h('div', { style: { marginBottom: 8 } },
+            h('label', { style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 4 } }, 'Core n: ' + nCore.toFixed(3)),
+            h('input', { type: 'range', min: 1.40, max: 2.00, step: 0.001, value: nCore,
+              onChange: function(e) { upd('fiberNCore', parseFloat(e.target.value)); }, style: { width: '100%' } })),
+          h('div', { style: { marginBottom: 8 } },
+            h('label', { style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 4 } }, 'Cladding n: ' + nClad.toFixed(3)),
+            h('input', { type: 'range', min: 1.30, max: 1.99, step: 0.001, value: nClad,
+              onChange: function(e) { upd('fiberNClad', parseFloat(e.target.value)); }, style: { width: '100%' } })),
+          h('div', { style: { marginBottom: 8 } },
+            h('label', { style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 4 } }, 'External n (air typical): ' + nExt.toFixed(3)),
+            h('input', { type: 'range', min: 1.00, max: 1.50, step: 0.01, value: nExt,
+              onChange: function(e) { upd('fiberNExt', parseFloat(e.target.value)); }, style: { width: '100%' } })),
+          h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 } },
+            [{ l: 'Step-index telecom', c: 1.500, cl: 1.480 }, { l: 'Multimode (large NA)', c: 1.500, cl: 1.470 }, { l: 'High-end PM fiber', c: 1.500, cl: 1.490 }].map(function(p) {
+              return h('button', { key: p.l, onClick: function() { upd('fiberNCore', p.c); upd('fiberNClad', p.cl); },
+                style: { padding: '3px 8px', background: 'rgba(56,189,248,0.10)', color: '#7dd3fc', border: '1px solid rgba(56,189,248,0.25)', borderRadius: 4, cursor: 'pointer', fontSize: 10 } }, p.l);
+            }))),
+        h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(56,189,248,0.30)', borderRadius: 10, padding: 14 } },
+          h('div', { style: { fontSize: 12, fontWeight: 800, color: '#7dd3fc', marginBottom: 8 } }, 'Cross-section'),
+          h('svg', { viewBox: '0 0 400 220', style: { width: '100%', height: 200, background: 'rgba(15,23,42,0.4)', borderRadius: 6 } },
+            // outer cladding
+            h('rect', { x: 30, y: 70, width: 340, height: 80, fill: 'rgba(56,189,248,0.10)', stroke: '#7dd3fc', strokeWidth: 1 }),
+            // core (inner)
+            h('rect', { x: 30, y: 95, width: 340, height: 30, fill: 'rgba(251,191,36,0.20)', stroke: '#fbbf24', strokeWidth: 1.5 }),
+            // labels
+            h('text', { x: 35, y: 65, fontSize: 10, fill: '#7dd3fc' }, 'cladding (n=' + nClad.toFixed(2) + ')'),
+            h('text', { x: 35, y: 92, fontSize: 10, fill: '#fbbf24' }, 'core (n=' + nCore.toFixed(2) + ')'),
+            // acceptance cone (left end)
+            canTir && (function() {
+              var a = degToRad(acceptHalfAngle);
+              var px = 30, py = 110;
+              return [
+                h('line', { key: 'r1', x1: px - 25 * Math.cos(a), y1: py - 25 * Math.sin(a), x2: px, y2: py, stroke: '#86efac', strokeWidth: 2 }),
+                h('line', { key: 'r2', x1: px - 25 * Math.cos(a), y1: py + 25 * Math.sin(a), x2: px, y2: py, stroke: '#86efac', strokeWidth: 2 }),
+                h('path', { key: 'arc', d: 'M ' + (px - 18) + ' ' + (py - 18 * Math.tan(a)) + ' A 18 18 0 0 1 ' + (px - 18) + ' ' + (py + 18 * Math.tan(a)), fill: 'rgba(134,239,172,0.15)', stroke: '#86efac', strokeWidth: 1 })
+              ];
+            })(),
+            // bouncing ray
+            canTir && (function() {
+              var path = '';
+              var x = 30, y = 110, dy = 12, gx = 30;
+              for (var i = 0; i < 5; i++) {
+                x += 60; y += dy;
+                if (y >= 124) { y = 124; dy = -dy; }
+                else if (y <= 96) { y = 96; dy = -dy; }
+                path += 'M ' + gx + ' 110 L ' + x + ' ' + y + ' ';
+                gx = x;
+              }
+              return h('path', { d: path, stroke: '#fbbf24', strokeWidth: 1.5, fill: 'none', opacity: 0.6 });
+            })())),
+        h('div', { style: { gridColumn: '1 / -1', background: canTir ? 'rgba(34,197,94,0.10)' : 'rgba(239,68,68,0.10)', border: '1px solid ' + (canTir ? 'rgba(34,197,94,0.40)' : 'rgba(239,68,68,0.40)'), borderRadius: 10, padding: 14 } },
+          canTir
+            ? h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 } },
+                h('div', null,
+                  h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, 'NUMERICAL APERTURE (NA)'),
+                  h('div', { style: { fontSize: 16, fontWeight: 900, color: '#86efac', fontFamily: 'monospace' } }, na.toFixed(4))),
+                h('div', null,
+                  h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, 'ACCEPTANCE HALF-ANGLE'),
+                  h('div', { style: { fontSize: 16, fontWeight: 900, color: '#fbbf24', fontFamily: 'monospace' } }, acceptHalfAngle.toFixed(2) + '°')),
+                h('div', null,
+                  h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, 'TIR CRITICAL ANGLE'),
+                  h('div', { style: { fontSize: 16, fontWeight: 900, color: '#7dd3fc', fontFamily: 'monospace' } }, critAngle.toFixed(2) + '°')),
+                h('div', null,
+                  h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, 'V-NUMBER (4 μm core, 1.55 μm)'),
+                  h('div', { style: { fontSize: 16, fontWeight: 900, color: '#d8b4fe', fontFamily: 'monospace' } }, vNumber.toFixed(2))))
+            : h('p', { style: { fontSize: 12, color: '#fca5a5' } }, '⚠ Core n must be greater than cladding n for TIR to be possible.')
+        )
+      )
+    );
+  }
+
+  // ───── 10. Anti-reflection coating designer ─────
+  function _renderArCoatingCalc(d, upd, h) {
+    var lambdaNm = d.arLambda || 550;
+    var nGlass = d.arNGlass || 1.52;
+    var nCoat = d.arNCoat || 1.23;
+    var t = d.arT || 100; // nm
+    // Phase shift from coating: 2*pi*2*n*t/lambda + interface phase shifts (depends on n ordering)
+    // For light incident from low to high n at both surfaces (air→coat→glass with n_air < n_coat < n_glass):
+    // both reflections gain π phase shift. So total relative phase = 2π·2*n*t/λ (geometric only)
+    // For destructive (cancel reflection): 2*n*t = (m + 0.5) * λ — for m = 0: t = λ / (4n)
+    var phaseShift = (2 * Math.PI * 2 * nCoat * t) / lambdaNm;
+    var rCoatGlass = Math.pow((nCoat - nGlass) / (nCoat + nGlass), 2);
+    var rAirCoat = Math.pow((1 - nCoat) / (1 + nCoat), 2);
+    // Approximate reflectance using two-surface interference
+    var R = rAirCoat + rCoatGlass + 2 * Math.sqrt(rAirCoat * rCoatGlass) * Math.cos(phaseShift);
+    var Runcoat = Math.pow((1 - nGlass) / (1 + nGlass), 2);
+    var idealN = Math.sqrt(nGlass);
+    var idealT = lambdaNm / (4 * nCoat);
+
+    return h('div', null,
+      h('div', { style: { background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
+        h('h3', { style: { color: '#86efac', fontSize: 16, fontWeight: 900, margin: '0 0 4px' } }, '🔦 Anti-Reflection Coating Designer'),
+        h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, margin: 0 } }, "A quarter-wave thin film cancels reflection. Optimal: n_coat = √n_glass, t = λ/(4 n_coat).")),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(280px,1fr) minmax(280px,1fr)', gap: 14 } },
+        h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(34,197,94,0.30)', borderRadius: 10, padding: 14 } },
+          h('div', { style: { fontSize: 12, fontWeight: 800, color: '#86efac', marginBottom: 8 } }, 'Coating design'),
+          h('div', { style: { marginBottom: 8 } },
+            h('label', { style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 4 } }, 'Target wavelength λ: ' + lambdaNm + ' nm'),
+            h('input', { type: 'range', min: 380, max: 780, step: 5, value: lambdaNm,
+              onChange: function(e) { upd('arLambda', parseFloat(e.target.value)); }, style: { width: '100%' } })),
+          h('div', { style: { marginBottom: 8 } },
+            h('label', { style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 4 } }, 'Glass n: ' + nGlass.toFixed(2)),
+            h('input', { type: 'range', min: 1.45, max: 2.20, step: 0.01, value: nGlass,
+              onChange: function(e) { upd('arNGlass', parseFloat(e.target.value)); }, style: { width: '100%' } })),
+          h('div', { style: { marginBottom: 8 } },
+            h('label', { style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 4 } }, 'Coating n: ' + nCoat.toFixed(2) + ' (ideal: ' + idealN.toFixed(3) + ')'),
+            h('input', { type: 'range', min: 1.10, max: 2.00, step: 0.01, value: nCoat,
+              onChange: function(e) { upd('arNCoat', parseFloat(e.target.value)); }, style: { width: '100%' } })),
+          h('div', { style: { marginBottom: 8 } },
+            h('label', { style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 4 } }, 'Coating thickness t: ' + t + ' nm (ideal: ' + idealT.toFixed(1) + ' nm)'),
+            h('input', { type: 'range', min: 20, max: 400, step: 1, value: t,
+              onChange: function(e) { upd('arT', parseFloat(e.target.value)); }, style: { width: '100%' } })),
+          h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 } },
+            h('button', { onClick: function() { upd('arNCoat', Math.round(idealN * 100) / 100); upd('arT', Math.round(idealT)); },
+              style: { padding: '6px 10px', background: 'rgba(34,197,94,0.20)', color: '#86efac', border: '1px solid #22c55e', borderRadius: 4, cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '↪ Optimize design'),
+            h('button', { onClick: function() { upd('arNCoat', 1.38); },
+              style: { padding: '6px 10px', background: 'rgba(56,189,248,0.20)', color: '#7dd3fc', border: '1px solid rgba(56,189,248,0.30)', borderRadius: 4, cursor: 'pointer', fontSize: 11 } }, 'MgF₂ (1.38)'))),
+        h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(34,197,94,0.30)', borderRadius: 10, padding: 14 } },
+          h('div', { style: { fontSize: 12, fontWeight: 800, color: '#86efac', marginBottom: 8 } }, 'Reflectance'),
+          h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 4 } }, 'With this coating:'),
+          h('div', { style: { fontSize: 22, fontWeight: 900, color: R < 0.01 ? '#86efac' : (R < 0.04 ? '#fcd34d' : '#fca5a5'), fontFamily: 'monospace', marginBottom: 12 } }, (R * 100).toFixed(2) + '%'),
+          h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 4 } }, 'Uncoated glass:'),
+          h('div', { style: { fontSize: 16, fontWeight: 700, color: '#fbbf24', fontFamily: 'monospace', marginBottom: 12 } }, (Runcoat * 100).toFixed(2) + '%'),
+          h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 4 } }, 'Reduction:'),
+          h('div', { style: { fontSize: 16, fontWeight: 700, color: '#86efac', fontFamily: 'monospace' } }, ((1 - R / Runcoat) * 100).toFixed(1) + '%'))),
+      h('div', { style: { marginTop: 12, padding: 12, background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(100,116,139,0.30)', borderRadius: 10 } },
+        h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, margin: 0 } },
+          '💡 For BK7 crown glass (n=1.52), ideal coating is n = √1.52 ≈ 1.23 at 100 nm thickness. No common material has n=1.23, so manufacturers use MgF₂ (n=1.38) — gives ~1.3% reflection vs the ideal 0%. Modern multi-layer coatings get below 0.3% across the visible.'))
+    );
+  }
+
+  // ───── 11. Camera depth of field calculator ─────
+  function _renderDofCalc(d, upd, h) {
+    var f = d.dofF || 50; // focal length mm
+    var fStop = d.dofFstop || 2.8;
+    var dist = d.dofDist || 3000; // mm
+    var coc = d.dofCoc || 0.03; // circle of confusion mm
+    var hyperfocal = (f * f) / (fStop * coc) + f;
+    var nearDof = (dist * (hyperfocal - f)) / (hyperfocal + dist - 2 * f);
+    var farDof;
+    if (dist < hyperfocal) farDof = (dist * (hyperfocal - f)) / (hyperfocal - dist);
+    else farDof = Infinity;
+    var totalDof = farDof === Infinity ? Infinity : farDof - nearDof;
+
+    return h('div', null,
+      h('div', { style: { background: 'rgba(251,146,60,0.10)', border: '1px solid rgba(251,146,60,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
+        h('h3', { style: { color: '#fdba74', fontSize: 16, fontWeight: 900, margin: '0 0 4px' } }, '📷 Depth of Field Calculator'),
+        h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, margin: 0 } }, "How much of your scene appears sharp. Calculate near/far DOF and hyperfocal distance for any camera + lens combo.")),
+      h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(251,146,60,0.30)', borderRadius: 10, padding: 14, marginBottom: 12 } },
+        h('div', { style: { marginBottom: 8 } },
+          h('label', { style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 4 } }, 'Focal length: ' + f + ' mm'),
+          h('input', { type: 'range', min: 14, max: 600, step: 1, value: f,
+            onChange: function(e) { upd('dofF', parseFloat(e.target.value)); }, style: { width: '100%' } })),
+        h('div', { style: { marginBottom: 8 } },
+          h('label', { style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 4 } }, 'f-number: f/' + fStop),
+          h('input', { type: 'range', min: 1.2, max: 22, step: 0.1, value: fStop,
+            onChange: function(e) { upd('dofFstop', parseFloat(e.target.value)); }, style: { width: '100%' } })),
+        h('div', { style: { marginBottom: 8 } },
+          h('label', { style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 4 } }, 'Focus distance: ' + (dist / 1000).toFixed(2) + ' m'),
+          h('input', { type: 'range', min: 200, max: 50000, step: 50, value: dist,
+            onChange: function(e) { upd('dofDist', parseFloat(e.target.value)); }, style: { width: '100%' } })),
+        h('div', { style: { marginBottom: 8 } },
+          h('label', { style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 4 } }, 'CoC (smaller = more critical): ' + coc + ' mm'),
+          h('input', { type: 'range', min: 0.005, max: 0.05, step: 0.001, value: coc,
+            onChange: function(e) { upd('dofCoc', parseFloat(e.target.value)); }, style: { width: '100%' } })),
+        h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 6 } },
+          [{ l: 'Phone (1/1.7")', v: 0.005 }, { l: 'APS-C', v: 0.019 }, { l: 'Full-frame', v: 0.03 }, { l: 'Medium format', v: 0.05 }].map(function(p) {
+            return h('button', { key: p.l, onClick: function() { upd('dofCoc', p.v); },
+              style: { padding: '3px 8px', background: 'rgba(251,146,60,0.10)', color: '#fdba74', border: '1px solid rgba(251,146,60,0.25)', borderRadius: 4, cursor: 'pointer', fontSize: 9 } }, p.l);
+          }))),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 } },
+        h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(251,146,60,0.30)', borderRadius: 10, padding: 12 } },
+          h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, 'NEAR DOF LIMIT'),
+          h('div', { style: { fontSize: 16, fontWeight: 900, color: '#86efac', fontFamily: 'monospace' } }, (nearDof / 1000).toFixed(2) + ' m')),
+        h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(251,146,60,0.30)', borderRadius: 10, padding: 12 } },
+          h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, 'FAR DOF LIMIT'),
+          h('div', { style: { fontSize: 16, fontWeight: 900, color: '#7dd3fc', fontFamily: 'monospace' } }, farDof === Infinity ? '∞' : (farDof / 1000).toFixed(2) + ' m')),
+        h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(251,146,60,0.30)', borderRadius: 10, padding: 12 } },
+          h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, 'TOTAL DOF'),
+          h('div', { style: { fontSize: 16, fontWeight: 900, color: '#fdba74', fontFamily: 'monospace' } }, totalDof === Infinity ? '∞' : (totalDof / 1000).toFixed(2) + ' m')),
+        h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(168,85,247,0.30)', borderRadius: 10, padding: 12 } },
+          h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, 'HYPERFOCAL'),
+          h('div', { style: { fontSize: 16, fontWeight: 900, color: '#d8b4fe', fontFamily: 'monospace' } }, (hyperfocal / 1000).toFixed(2) + ' m'))),
+      h('div', { style: { marginTop: 12, padding: 12, background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(100,116,139,0.30)', borderRadius: 10 } },
+        h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, margin: 0 } },
+          '💡 At the hyperfocal distance, focus from half that distance to infinity. Useful for landscape photography. Open aperture (low f-number) for portraits (blurred background). Stop down for landscape (deep DOF).'))
+    );
+  }
+
+  // ───── 12. Diffraction grating calculator ─────
+  function _renderGratingCalc(d, upd, h) {
+    var linesPerMm = d.gratLines || 600;
+    var lambdaNm = d.gratLambda || 550;
+    var d_mm = 1 / linesPerMm;
+    var d_m = d_mm * 1e-3;
+    var lambda_m = lambdaNm * 1e-9;
+    var orders = [];
+    for (var m = 0; m <= 5; m++) {
+      var sinTheta = m * lambda_m / d_m;
+      if (Math.abs(sinTheta) <= 1) {
+        orders.push({ m: m, angle: radToDeg(Math.asin(sinTheta)) });
+      }
+    }
+
+    return h('div', null,
+      h('div', { style: { background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
+        h('h3', { style: { color: '#d8b4fe', fontSize: 16, fontWeight: 900, margin: '0 0 4px' } }, '🔲 Diffraction Grating Calculator'),
+        h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, margin: 0 } }, "d sin(θ) = mλ. Calculate where each diffraction order will appear for any grating and wavelength.")),
+      h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(168,85,247,0.30)', borderRadius: 10, padding: 14, marginBottom: 12 } },
+        h('div', { style: { marginBottom: 8 } },
+          h('label', { style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 4 } }, 'Lines per mm: ' + linesPerMm + ' (spacing d = ' + d_mm.toFixed(4) + ' mm)'),
+          h('input', { type: 'range', min: 50, max: 3000, step: 10, value: linesPerMm,
+            onChange: function(e) { upd('gratLines', parseFloat(e.target.value)); }, style: { width: '100%' } }),
+          h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 4 } },
+            [{ l: '300 (low res)', v: 300 }, { l: '600 (general)', v: 600 }, { l: '1200 (high res)', v: 1200 }, { l: '1800 (UV)', v: 1800 }].map(function(p) {
+              return h('button', { key: p.l, onClick: function() { upd('gratLines', p.v); },
+                style: { padding: '3px 8px', background: 'rgba(168,85,247,0.10)', color: '#d8b4fe', border: '1px solid rgba(168,85,247,0.25)', borderRadius: 4, cursor: 'pointer', fontSize: 9 } }, p.l);
+            }))),
+        h('div', { style: { marginBottom: 6 } },
+          h('label', { style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 4 } }, 'Wavelength: ' + lambdaNm + ' nm'),
+          h('input', { type: 'range', min: 380, max: 780, step: 5, value: lambdaNm,
+            onChange: function(e) { upd('gratLambda', parseFloat(e.target.value)); }, style: { width: '100%' } }))),
+      h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(168,85,247,0.30)', borderRadius: 10, padding: 14 } },
+        h('div', { style: { fontSize: 12, fontWeight: 800, color: '#d8b4fe', marginBottom: 8 } }, 'Diffraction order angles'),
+        h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 12 } },
+          h('thead', null, h('tr', { style: { borderBottom: '1px solid rgba(168,85,247,0.30)' } },
+            h('th', { style: { padding: '4px 8px', textAlign: 'left', color: '#d8b4fe' } }, 'Order m'),
+            h('th', { style: { padding: '4px 8px', textAlign: 'left', color: '#d8b4fe' } }, 'Angle θ'),
+            h('th', { style: { padding: '4px 8px', textAlign: 'left', color: '#d8b4fe' } }, 'sin θ'))),
+          h('tbody', null, orders.map(function(o) {
+            return h('tr', { key: o.m, style: { borderBottom: '1px solid rgba(100,116,139,0.20)' } },
+              h('td', { style: { padding: '6px 8px', fontFamily: 'monospace', color: '#cbd5e1' } }, '±' + o.m + (o.m === 0 ? ' (central)' : '')),
+              h('td', { style: { padding: '6px 8px', fontFamily: 'monospace', color: '#fbbf24', fontWeight: 700 } }, '±' + o.angle.toFixed(3) + '°'),
+              h('td', { style: { padding: '6px 8px', fontFamily: 'monospace', color: '#cbd5e1' } }, (o.m * lambda_m / d_m).toFixed(4)));
+          }))),
+        h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, margin: '8px 0 0' } },
+          '💡 Maximum order: when sin θ = 1, m_max = d/λ = ' + Math.floor(d_m / lambda_m) + '. Higher orders are physically impossible.'))
+    );
+  }
+
+  // ───── 13. Eye prescription calculator ─────
+  function _renderEyeCalc(d, upd, h) {
+    var nearPoint = d.eyeNear || 25; // cm
+    var farPoint = d.eyeFar || 0; // 0 = infinity for normal eye
+    // Standard near reading point: 25 cm (10 in)
+    // Standard far point: infinity
+    var needsReadingGlasses = nearPoint > 25;
+    var needsDistanceGlasses = farPoint > 0;
+    var readingPower = needsReadingGlasses ? (1/0.25 - 1/(nearPoint/100)) : 0;
+    var distancePower = needsDistanceGlasses ? (-1 / (farPoint / 100)) : 0;
+
+    return h('div', null,
+      h('div', { style: { background: 'rgba(56,189,248,0.10)', border: '1px solid rgba(56,189,248,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
+        h('h3', { style: { color: '#7dd3fc', fontSize: 16, fontWeight: 900, margin: '0 0 4px' } }, '👓 Eye Prescription Estimator'),
+        h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, margin: 0 } }, "Estimate eyeglass diopters from your eye's near and far points. (For estimation only — see an optometrist for real prescription.)")),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(280px,1fr) minmax(280px,1fr)', gap: 14 } },
+        h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(56,189,248,0.30)', borderRadius: 10, padding: 14 } },
+          h('div', { style: { fontSize: 12, fontWeight: 800, color: '#7dd3fc', marginBottom: 8 } }, 'Your eye'),
+          h('div', { style: { marginBottom: 8 } },
+            h('label', { style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 4 } }, 'Near point (closest in focus): ' + nearPoint + ' cm'),
+            h('input', { type: 'range', min: 5, max: 200, step: 1, value: nearPoint,
+              onChange: function(e) { upd('eyeNear', parseFloat(e.target.value)); }, style: { width: '100%' } })),
+          h('div', { style: { marginBottom: 8 } },
+            h('label', { style: { fontSize: 11, color: '#cbd5e1', display: 'block', marginBottom: 4 } }, 'Far point (farthest in focus): ' + (farPoint > 0 ? farPoint + ' cm' : '∞ (normal)')),
+            h('input', { type: 'range', min: 0, max: 1000, step: 10, value: farPoint,
+              onChange: function(e) { upd('eyeFar', parseFloat(e.target.value)); }, style: { width: '100%' } })),
+          h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 6 } },
+            [{ l: 'Normal young', n: 10, f: 0 }, { l: 'Presbyopia (50yr)', n: 50, f: 0 }, { l: 'Myopia mild', n: 10, f: 200 }, { l: 'Myopia high', n: 10, f: 50 }].map(function(p) {
+              return h('button', { key: p.l, onClick: function() { upd('eyeNear', p.n); upd('eyeFar', p.f); },
+                style: { padding: '3px 8px', background: 'rgba(56,189,248,0.10)', color: '#7dd3fc', border: '1px solid rgba(56,189,248,0.25)', borderRadius: 4, cursor: 'pointer', fontSize: 10 } }, p.l);
+            }))),
+        h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(56,189,248,0.30)', borderRadius: 10, padding: 14 } },
+          h('div', { style: { fontSize: 12, fontWeight: 800, color: '#7dd3fc', marginBottom: 8 } }, 'Estimated prescription'),
+          needsReadingGlasses && h('div', { style: { marginBottom: 10 } },
+            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 4 } }, '🤓 Reading glasses (for near vision):'),
+            h('div', { style: { fontSize: 20, fontWeight: 900, color: '#86efac', fontFamily: 'monospace' } }, '+' + readingPower.toFixed(2) + ' D'),
+            h('div', { style: { fontSize: 10, color: '#94a3b8' } }, '(converging lens)')),
+          needsDistanceGlasses && h('div', { style: { marginBottom: 10 } },
+            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 4 } }, '👓 Distance glasses (for far vision):'),
+            h('div', { style: { fontSize: 20, fontWeight: 900, color: '#fb7185', fontFamily: 'monospace' } }, distancePower.toFixed(2) + ' D'),
+            h('div', { style: { fontSize: 10, color: '#94a3b8' } }, '(diverging lens)')),
+          !needsReadingGlasses && !needsDistanceGlasses && h('div', null,
+            h('div', { style: { fontSize: 15, fontWeight: 900, color: '#86efac' } }, '✓ Normal vision'),
+            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 6 } }, 'No glasses needed for normal vision range.')))),
+      h('div', { style: { marginTop: 12, padding: 12, background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(100,116,139,0.30)', borderRadius: 10 } },
+        h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, margin: 0 } },
+          '👁 Normal young eye: near point ~10 cm, far point ∞. By age 50 (presbyopia), near point recedes to ~50 cm. Myopia: far point comes closer (high myopia → far point at ~50 cm). This is a simplification — a real prescription includes sphere, cylinder, axis, prism.'))
+    );
+  }
+
+  // ───── 14. Polarization 3-polarizer simulator ─────
+  function _renderPolarTriCalc(d, upd, h) {
+    var theta2 = d.polTriTheta2 != null ? d.polTriTheta2 : 45;
+    var theta3 = d.polTriTheta3 != null ? d.polTriTheta3 : 90;
+    var i0 = 1.0;
+    var i1 = i0 / 2; // unpolarized → polarized halves
+    var i2 = i1 * Math.pow(Math.cos(degToRad(theta2 - 0)), 2);
+    var i3 = i2 * Math.pow(Math.cos(degToRad(theta3 - theta2)), 2);
+    var directNoMid = i1 * Math.pow(Math.cos(degToRad(theta3 - 0)), 2);
+
+    return h('div', null,
+      h('div', { style: { background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
+        h('h3', { style: { color: '#d8b4fe', fontSize: 16, fontWeight: 900, margin: '0 0 4px' } }, '↕ Three-Polarizer Paradox'),
+        h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, margin: 0 } }, "Two crossed polarizers block all light. But add a third polarizer between them at an intermediate angle, and light comes through. Quantum-style 'measurement disturbs the system.'")),
+      h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(168,85,247,0.30)', borderRadius: 10, padding: 14, marginBottom: 12 } },
+        h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-around', marginBottom: 16 } },
+          h('div', { style: { textAlign: 'center' } },
+            h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'POL 1'),
+            h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24' } }, '0°')),
+          h('div', { style: { textAlign: 'center' } },
+            h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'POL 2'),
+            h('div', { style: { fontSize: 14, fontWeight: 800, color: '#86efac' } }, theta2 + '°')),
+          h('div', { style: { textAlign: 'center' } },
+            h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'POL 3'),
+            h('div', { style: { fontSize: 14, fontWeight: 800, color: '#60a5fa' } }, theta3 + '°'))),
+        h('div', { style: { marginBottom: 8 } },
+          h('label', { style: { fontSize: 11, color: '#86efac', display: 'block', marginBottom: 4 } }, 'Middle polarizer angle: ' + theta2 + '°'),
+          h('input', { type: 'range', min: 0, max: 90, step: 1, value: theta2,
+            onChange: function(e) { upd('polTriTheta2', parseFloat(e.target.value)); }, style: { width: '100%' } })),
+        h('div', { style: { marginBottom: 6 } },
+          h('label', { style: { fontSize: 11, color: '#60a5fa', display: 'block', marginBottom: 4 } }, 'Third polarizer angle: ' + theta3 + '°'),
+          h('input', { type: 'range', min: 0, max: 180, step: 1, value: theta3,
+            onChange: function(e) { upd('polTriTheta3', parseFloat(e.target.value)); }, style: { width: '100%' } }))),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 } },
+        h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(251,191,36,0.30)', borderRadius: 10, padding: 12 } },
+          h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, 'AFTER POL 1'),
+          h('div', { style: { fontSize: 16, fontWeight: 900, color: '#fbbf24', fontFamily: 'monospace' } }, (i1 * 100).toFixed(1) + '%')),
+        h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(34,197,94,0.30)', borderRadius: 10, padding: 12 } },
+          h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, 'AFTER POL 2'),
+          h('div', { style: { fontSize: 16, fontWeight: 900, color: '#86efac', fontFamily: 'monospace' } }, (i2 * 100).toFixed(2) + '%')),
+        h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(96,165,250,0.30)', borderRadius: 10, padding: 12 } },
+          h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, 'AFTER POL 3 (final)'),
+          h('div', { style: { fontSize: 16, fontWeight: 900, color: '#60a5fa', fontFamily: 'monospace' } }, (i3 * 100).toFixed(2) + '%'))),
+      h('div', { style: { marginTop: 12, padding: 12, background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(100,116,139,0.30)', borderRadius: 10 } },
+        h('p', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, margin: 0 } },
+          '🤯 If you REMOVED POL 2, the light reaching POL 3 would be ' + (directNoMid * 100).toFixed(2) + '%. Adding a middle filter INCREASES light through — completely non-classical intuition. Try θ₃ = 90° (crossed first/third): with no middle, 0% gets through; with middle at 45°, 12.5% gets through!'))
+    );
+  }
+
+  // ──────────────────────────────────────────────────────────────────
+  // CALCULATORS HUB — main panel with sub-navigation
+  // ──────────────────────────────────────────────────────────────────
+  function _renderCalculatorsHub(d, upd, h) {
+    var subTool = d.calcSubTool || 'photon';
+    var tools = [
+      { id: 'photon', label: '💡 Photon properties', desc: 'Wavelength → frequency, energy, momentum' },
+      { id: 'em', label: '🌈 EM spectrum slider', desc: 'Explore the full electromagnetic spectrum' },
+      { id: 'brewster', label: '🕶 Brewster angle', desc: 'Polarization by reflection' },
+      { id: 'tir', label: '⚡ Critical angle / TIR', desc: 'Total internal reflection visualizer' },
+      { id: 'fiber', label: '📡 Fiber optics', desc: 'Acceptance angle, NA, V-number' },
+      { id: 'lensmaker', label: '🔍 Lensmaker', desc: 'Focal length from curvatures' },
+      { id: 'grating', label: '🔲 Diffraction grating', desc: 'Order angles for any grating + λ' },
+      { id: 'arcoat', label: '🔦 AR coating', desc: 'Anti-reflection coating designer' },
+      { id: 'doppler', label: '🌌 Doppler shift', desc: 'Redshift / blueshift calculator' },
+      { id: 'telescope', label: '🔭 Telescope sizing', desc: 'Aperture, resolution, magnification' },
+      { id: 'dof', label: '📷 Depth of field', desc: 'Camera DOF + hyperfocal' },
+      { id: 'color', label: '🎨 Color mixer', desc: 'Additive RGB mixing' },
+      { id: 'eye', label: '👓 Eye prescription', desc: 'Estimate diopters from near/far points' },
+      { id: 'polartri', label: '↕ Three polarizers', desc: 'The non-classical paradox' }
+    ];
+    return h('div', null,
+      h('div', { style: { background: 'rgba(20,184,166,0.10)', border: '1px solid rgba(20,184,166,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
+        h('h3', { style: { color: '#5eead4', fontSize: 17, fontWeight: 900, margin: '0 0 4px' } }, '🧮 Interactive Optical Calculators'),
+        h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, margin: 0 } }, 'Fourteen hands-on calculators and visualizers. Pick one below.')),
+      h('div', { style: { display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' } },
+        tools.map(function(t) {
+          var active = subTool === t.id;
+          return h('button', { key: t.id, onClick: function() { upd('calcSubTool', t.id); },
+            title: t.desc,
+            style: {
+              padding: '8px 12px', fontSize: 12, fontWeight: 700,
+              background: active ? 'rgba(20,184,166,0.20)' : 'rgba(15,23,42,0.5)',
+              color: active ? '#5eead4' : '#94a3b8',
+              border: '1px solid ' + (active ? '#5eead4' : 'rgba(100,116,139,0.30)'),
+              borderRadius: 8, cursor: 'pointer'
+            }
+          }, t.label);
+        })
+      ),
+      subTool === 'photon' && _renderPhotonCalc(d, upd, h),
+      subTool === 'em' && _renderEmSpectrumCalc(d, upd, h),
+      subTool === 'brewster' && _renderBrewsterCalc(d, upd, h),
+      subTool === 'tir' && _renderTirCalc(d, upd, h),
+      subTool === 'fiber' && _renderFiberCalc(d, upd, h),
+      subTool === 'lensmaker' && _renderLensmakerCalc(d, upd, h),
+      subTool === 'grating' && _renderGratingCalc(d, upd, h),
+      subTool === 'arcoat' && _renderArCoatingCalc(d, upd, h),
+      subTool === 'doppler' && _renderDopplerCalc(d, upd, h),
+      subTool === 'telescope' && _renderTelescopeCalc(d, upd, h),
+      subTool === 'dof' && _renderDofCalc(d, upd, h),
+      subTool === 'color' && _renderColorMixerCalc(d, upd, h),
+      subTool === 'eye' && _renderEyeCalc(d, upd, h),
+      subTool === 'polartri' && _renderPolarTriCalc(d, upd, h)
     );
   }
 

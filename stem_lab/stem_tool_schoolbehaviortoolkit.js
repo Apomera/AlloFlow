@@ -1395,9 +1395,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
         background:
           'radial-gradient(ellipse 70% 50% at 50% 0%, rgba(20,184,166,0.16), transparent 70%), ' +
           sbtGrainSvg + ', ' +
-          'linear-gradient(135deg, #0f172a 0%, #134e4a 50%, #0f172a 100%)',
+          'linear-gradient(135deg, #0f172a 0%, #122624 50%, #0f172a 100%)',
         backgroundRepeat: 'no-repeat, repeat, no-repeat',
-        backgroundAttachment: 'fixed, scroll, scroll',
+        backgroundAttachment: 'fixed, scroll, fixed',
         borderRadius: 16,
         minHeight: '70vh',
         padding: 0,

@@ -1270,7 +1270,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         'radial-gradient(ellipse 75% 50% at 50% 0%, rgba(96, 165, 250, 0.18), transparent 70%), ' +
         'radial-gradient(ellipse 90% 55% at 50% 100%, rgba(251, 146, 60, 0.16), transparent 75%), ' +
         'url("' + ceGrainSvg + '"), ' +
-        'linear-gradient(135deg, #064e3b 0%, #0f172a 50%, #064e3b 100%)';
+        'linear-gradient(135deg, #0d2922 0%, #0f172a 50%, #0d2922 100%)';
       return el('div', {
         style: {
           background: ceBgLayers,
