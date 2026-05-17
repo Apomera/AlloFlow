@@ -10611,7 +10611,41 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           X: "M 60 60 L 260 260 M 260 60 L 60 260",
           Y: "M 60 60 L 160 160 L 160 260 M 260 60 L 160 160",
           Z: "M 60 60 L 260 60 L 60 260 L 260 260",
+          // ── Digraphs and trigraphs ──
+          // The canvas draws these as multi-character strings via strokeText()
+          // (which natively handles 2- and 3-character strings); the M
+          // coordinates below are used only as start-dot anchors for the
+          // animated hand. The mask-search loop snaps each anchor to the
+          // nearest filled stroke pixel within a 40px radius, so these only
+          // need to land near the first letter's expected position when
+          // the digraph is rendered centered at (width/2, height/2 + 20)
+          // with the auto-scaled font (150px for 2-char, 110px for 3-char).
+          // For a 320px canvas at 150px font, two chars span roughly x=80–240.
+          sh:  "M 130 130",   // top of 's' in "sh"
+          ch:  "M 130 130",   // top arc of 'c' in "ch"
+          th:  "M 100 80",    // top of 't' in "th"
+          wh:  "M 80 140",    // top-left of 'w' in "wh"
+          ng:  "M 100 140",   // top of 'n' in "ng"
+          ck:  "M 100 140",   // top arc of 'c' in "ck"
+          ph:  "M 90 110",    // top of 'p' in "ph"
+          qu:  "M 120 110",   // top of 'q' in "qu"
+          // Trigraphs (rendered at 110px font; spans roughly x=80–240)
+          igh: "M 130 140",   // top of 'i' in "igh"
+          tch: "M 100 90",    // top of 't' in "tch"
+          dge: "M 120 100",   // top of 'd' in "dge"
         };
+
+        // Render-font-size selector: scales down for multi-character graphemes
+        // so digraphs (sh, ch, th, wh, ng, ck, ph, qu) and trigraphs (igh,
+        // tch, dge) fit within the 320×320 canvas with comfortable margin.
+        function _wsTraceFontSize(text) {
+          if (!text) return 200;
+          const len = String(text).length;
+          if (len <= 1) return 200;
+          if (len === 2) return 150;
+          if (len === 3) return 110;
+          return 90;
+        }
         const samplePathPoints = React.useMemo(() => {
           return (pathD, numPoints = 40) => {
             const ns = "http://www.w3.org/2000/svg";
@@ -10721,14 +10755,22 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           const mCtx = mask.getContext("2d");
           ctx.clearRect(0, 0, width, height);
           mCtx.clearRect(0, 0, width, height);
+          // Multi-character graphemes (sh, ch, th, wh, ng, ck, ph, qu, igh,
+          // tch, dge) auto-scale the font down so the digraph/trigraph fits
+          // inside the 320×320 canvas. Single letters keep the original 200px.
+          const _wsFontPx = _wsTraceFontSize(letter);
           const font =
-            'bold 200px "Comic Sans MS", "Chalkboard SE", sans-serif';
+            'bold ' + _wsFontPx + 'px "Comic Sans MS", "Chalkboard SE", sans-serif';
+          // Stroke widths also scale proportionally so visual + hit-area
+          // detection stay consistent across grapheme lengths.
+          const _wsVisStroke  = Math.max(14, Math.round(25 * (_wsFontPx / 200)));
+          const _wsMaskStroke = Math.max(20, Math.round(35 * (_wsFontPx / 200)));
           ctx.font = font;
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
           ctx.fillStyle = "#ffffff";
           ctx.strokeStyle = "#e2e8f0";
-          ctx.lineWidth = 25;
+          ctx.lineWidth = _wsVisStroke;
           ctx.setLineDash([15, 15]);
           ctx.lineCap = "round";
           ctx.lineJoin = "round";
@@ -10738,7 +10780,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           mCtx.textBaseline = "middle";
           mCtx.fillStyle = "#000000";
           mCtx.strokeStyle = "#ff0000";
-          mCtx.lineWidth = 35;
+          mCtx.lineWidth = _wsMaskStroke;
           mCtx.setLineDash([]);
           mCtx.lineCap = "round";
           mCtx.lineJoin = "round";
