@@ -565,6 +565,8310 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
   // ═══════════════════════════════════════════
   // REGISTER TOOL
   // ═══════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════════════
+  // EDUCATIONAL REFERENCE CONTENT — verbose data blocks at IIFE scope.
+  // Surfaced by the new "Learn" tab + Quiz mode + Pre-flight checklist.
+  // ═══════════════════════════════════════════════════════════════════════
+
+  // ─── The Four Forces of Flight (verbose) ───────────────────────────────
+  var FOUR_FORCES = [
+    {
+      force: 'Lift',
+      icon: '🛫',
+      direction: 'Upward (perpendicular to relative wind)',
+      source: 'The wings (airfoils)',
+      mechanism: 'Air flowing over the curved top of the wing moves faster than the air below, creating a pressure difference. The higher pressure beneath the wing pushes it upward.',
+      formula: 'L = ½ρv²SCₗ',
+      variables: 'ρ = air density (kg/m³), v = velocity (m/s), S = wing area (m²), Cₗ = lift coefficient (dimensionless)',
+      keyInsight: 'Lift increases with the SQUARE of velocity. Double your speed → quadruple your lift. This is why takeoff is critical — once you reach takeoff speed, lift exceeds weight and you fly.',
+      affectedBy: ['Airspeed (squared)', 'Wing area', 'Angle of attack', 'Wing shape (camber)', 'Air density (altitude, temperature)'],
+      teachingDemos: [
+        'Blow over the top of a sheet of paper — it rises because pressure drops',
+        'Hold a hand out a moving car window, tilt slightly nose-up — feel the lift',
+        'Paper airplane: change the wing camber by curling paper, see different glide paths',
+      ],
+    },
+    {
+      force: 'Weight',
+      icon: '⚖️',
+      direction: 'Straight down (toward Earth\'s center)',
+      source: 'Gravity acting on the mass of the aircraft',
+      mechanism: 'Gravity pulls everything with mass toward Earth at 9.8 m/s². Weight is the force of gravity on the aircraft\'s mass.',
+      formula: 'W = mg',
+      variables: 'W = weight (N), m = mass (kg), g = 9.8 m/s² gravity',
+      keyInsight: 'Weight is always there. It never goes away. In level flight, lift exactly equals weight. To climb, lift must exceed weight.',
+      affectedBy: ['Fuel load (heavy at takeoff, lighter at landing)', 'Passengers and cargo', 'Aircraft empty weight'],
+      teachingDemos: [
+        'Compare a Cessna 152 (1,670 lb max) to a 747 (875,000 lb max) — both fly because lift scales',
+        'Calculate fuel burn: a 747 carries ~63,000 gallons; burns ~5 gallons per mile',
+      ],
+    },
+    {
+      force: 'Thrust',
+      icon: '🔥',
+      direction: 'Forward (along the aircraft\'s longitudinal axis, usually)',
+      source: 'Engines (propellers, jets, rockets)',
+      mechanism: 'Newton\'s Third Law: engines push air or exhaust gases backward, and the aircraft is pushed forward in equal and opposite reaction.',
+      types: [
+        'Propeller: a spinning airfoil that "screws through" the air',
+        'Turbofan: most modern airliners — large fan + jet core',
+        'Turbojet: pure jet — used in older aircraft and military fighters',
+        'Turboprop: gas turbine driving a propeller (regional aircraft, military transport)',
+        'Rocket: carries its own oxidizer; used for spaceflight (and SR-71 boosters)',
+      ],
+      formula: 'F = ma (Newton\'s Second Law)',
+      variables: 'F = force/thrust, m = mass of accelerated air, a = acceleration',
+      keyInsight: 'In level flight, thrust = drag. When thrust > drag, the plane accelerates. When thrust < drag, it decelerates. Reduce thrust to slow down for landing.',
+      affectedBy: ['Engine power setting (throttle)', 'Engine efficiency at different speeds/altitudes', 'Air density (jet engines lose thrust at high altitude)'],
+    },
+    {
+      force: 'Drag',
+      icon: '💨',
+      direction: 'Backward (opposite to motion through the air)',
+      source: 'Friction and pressure resistance from moving through air',
+      mechanism: 'Two types: PARASITE DRAG (everything not generating lift causes drag — fuselage, antenna, landing gear) and INDUCED DRAG (a byproduct of creating lift — wingtip vortices).',
+      formula: 'D = ½ρv²SCd',
+      variables: 'ρ = air density, v = velocity, S = reference area, Cd = drag coefficient',
+      keyInsight: 'Parasite drag increases with speed². Induced drag DECREASES with speed. Total drag has a minimum point — your aircraft\'s "best L/D" speed.',
+      affectedBy: [
+        'Speed (parasite drag scales with v²)',
+        'Aircraft shape (smooth/streamlined vs blocky)',
+        'Landing gear extended vs retracted',
+        'Flaps extended (high lift but also high drag)',
+        'Angle of attack',
+      ],
+      teachingDemos: [
+        'Stick your hand out a car window — feel parasite drag at different speeds',
+        'Tilt your hand slightly nose-up vs nose-down — same surface, different drag',
+        'Compare a Cessna 152 (max ~120 kts) to a Concorde (Mach 2+) — design dictates max speed',
+      ],
+    },
+    {
+      principle: 'Equilibrium in level flight',
+      explanation: 'In straight, level, unaccelerated flight, all four forces are in PERFECT BALANCE. Lift = Weight (vertical equilibrium). Thrust = Drag (horizontal equilibrium).',
+      consequences: [
+        'Pilot adds power (more thrust) → plane accelerates forward',
+        'As plane accelerates → lift increases (v²) → plane wants to climb',
+        'Pilot pitches up slightly to use extra speed for climb',
+        'In climb: lift = weight × cos(climb angle), and thrust > drag + weight × sin(climb angle)',
+      ],
+    },
+    {
+      principle: 'Trading energy: pitch for speed vs altitude',
+      explanation: 'A flying aircraft has kinetic energy (½mv²) and potential energy (mgh). These convert into each other through pitch.',
+      examples: [
+        'Pull back on yoke (pitch up) → speed decreases, altitude increases. KE → PE.',
+        'Push forward (pitch down) → speed increases, altitude decreases. PE → KE.',
+        'Total energy stays roughly the same (minus friction losses).',
+      ],
+      teachingDemo: 'Roller coaster: gains speed going down hills (PE→KE), loses speed climbing (KE→PE). Same physics as flight.',
+    },
+  ];
+
+  // ─── Aerodynamic concepts (verbose) ────────────────────────────────────
+  var AERODYNAMICS = [
+    {
+      concept: 'Angle of Attack (AoA)',
+      definition: 'The angle between the wing chord (a straight line from front to back of the wing) and the oncoming air (relative wind).',
+      keyInsight: 'Lift increases linearly with AoA — UP TO a point. Beyond the "critical angle of attack" (~15-20° for most wings), the airflow separates and lift DROPS dramatically. This is called a STALL.',
+      misconception: 'Stalls are NOT about speed. You can stall at ANY speed if you exceed the critical AoA. The reason low-speed stalls are common is that at low speed, you need a higher AoA to generate enough lift.',
+      visualization: 'Stick your hand out a moving car window. Tilt slightly up — feel lift. Keep tilting — feel lift increase, then suddenly your hand wants to flip backward. That\'s a stall.',
+    },
+    {
+      concept: 'Bernoulli\'s Principle',
+      definition: 'In a moving fluid, as velocity increases, static pressure decreases (along a streamline).',
+      formula: 'P + ½ρv² + ρgh = constant',
+      keyInsight: 'This is one of TWO complementary explanations for lift. The other is Newton\'s Third Law (wing deflects air down → air pushes wing up). Both are correct; both happen simultaneously.',
+      demos: [
+        'Two paper sheets held vertically with a gap; blow between them — they move TOGETHER (pressure dropped where air sped up)',
+        'Garden hose: cover part of the opening with your thumb — water shoots out faster but exerts less sideways pressure',
+        'Atomizer (perfume bottle): air moving over a tube reduces pressure, drawing liquid up',
+      ],
+    },
+    {
+      concept: 'Newton\'s Third Law (Action-Reaction)',
+      definition: 'For every action, there is an equal and opposite reaction.',
+      relationToFlight: 'Wings deflect air downward. The reaction force pushes the wing upward. This is mathematically equivalent to (and physically complementary to) the Bernoulli explanation.',
+      keyInsight: 'Bernoulli and Newton are NOT alternatives. They\'re two descriptions of the same physical phenomenon. Some textbooks emphasize one over the other; modern teaching usually includes both.',
+    },
+    {
+      concept: 'Wing camber',
+      definition: 'The curvature of the wing\'s upper surface compared to the lower surface.',
+      effect: 'More camber = more lift at a given speed and AoA, but also more drag.',
+      types: [
+        'Symmetrical (no camber): aerobatic aircraft, helicopter blades',
+        'Cambered (curved top, flat bottom): general aviation, classic shape',
+        'Reflex (curved up at trailing edge): tailless designs, flying wings',
+        'Supercritical (flat top, curved bottom): modern airliners, transonic speeds',
+      ],
+    },
+    {
+      concept: 'Aspect ratio',
+      definition: 'The ratio of wingspan to wing chord (length to width). High aspect ratio = long thin wings.',
+      examples: [
+        'Gliders / sailplanes: 20-40 aspect ratio (very long thin wings — efficient at low speeds)',
+        'Commercial jets: 8-10 (balance of efficiency and structural strength)',
+        'Fighter jets: 2-4 (low aspect ratio — fast but draggy)',
+      ],
+      effect: 'High aspect ratio reduces induced drag (wingtip vortices) but adds structural complexity. That\'s why gliders look the way they do.',
+    },
+    {
+      concept: 'Wingtip vortices',
+      definition: 'Spiraling air patterns at the wingtips, formed because high pressure air below the wing spills around the tip to the low pressure region above.',
+      consequences: 'Major source of induced drag. Also creates "wake turbulence" that can flip following aircraft. Why airliners maintain 4-6 nm separation behind heavy jets.',
+      solutions: ['Winglets (turned-up wingtips): reduce vortex strength, save 4-5% fuel', 'High aspect ratio wings: less vortex per unit lift', 'Wingtip fences: similar effect'],
+    },
+    {
+      concept: 'Boundary layer',
+      definition: 'A thin layer of air directly touching the wing where viscosity dominates and air sticks to the surface.',
+      types: [
+        'Laminar: smooth, layered flow. Low drag. Hard to maintain.',
+        'Turbulent: chaotic, eddying flow. Higher drag but more resistant to separation.',
+      ],
+      relevance: 'Wing design tries to maintain laminar flow as long as possible. Surface roughness, ice, or bugs can trip the boundary layer turbulent prematurely.',
+    },
+    {
+      concept: 'Mach number',
+      definition: 'Ratio of an object\'s speed to the speed of sound. Mach 1 = speed of sound (~767 mph at sea level).',
+      regimes: [
+        'Subsonic: < Mach 0.8 (most general aviation, most airliners cruise here)',
+        'Transonic: Mach 0.8 - 1.2 (mixed subsonic and supersonic flow; difficult regime)',
+        'Supersonic: Mach 1.2 - 5 (Concorde was Mach 2)',
+        'Hypersonic: Mach 5+ (SR-71 was just above; rockets and re-entering spacecraft)',
+      ],
+      soundBarrier: 'Pressure waves can\'t move out of the way fast enough above Mach 1, creating a shock wave (sonic boom). First exceeded by Chuck Yeager in 1947.',
+    },
+    {
+      concept: 'Reynolds number',
+      definition: 'A dimensionless number that predicts whether flow will be laminar or turbulent.',
+      formula: 'Re = ρvL/μ',
+      simple: 'Big things moving fast through dense fluids have high Reynolds number (turbulent). Small things moving slowly through thin fluids have low Reynolds number (laminar).',
+      relevance: 'Why scaled-down model airplanes don\'t fly like the full-size ones — Reynolds number is different.',
+    },
+    {
+      concept: 'Center of pressure (CP) vs center of gravity (CG)',
+      definition: 'CP is where the net aerodynamic force acts. CG is where all the mass is concentrated.',
+      stability: 'If CP is BEHIND CG, the aircraft is stable (any pitch disturbance is corrected). If CP is in FRONT of CG, the aircraft is unstable.',
+      design: 'Tail surfaces (horizontal stabilizer) move the effective CP behind the CG. Fly-by-wire fighters can be intentionally unstable for maneuverability.',
+    },
+    {
+      concept: 'Stall and stall recovery',
+      definition: 'A stall happens when AoA exceeds critical angle and airflow separates from the wing.',
+      symptoms: ['Buffeting (vibration)', 'Reduced control response', 'Nose drop', 'Possible wing drop (uncoordinated stall → spin)'],
+      recovery: [
+        'Reduce AoA (lower the nose / push forward on yoke)',
+        'Apply full power (more energy)',
+        'Level the wings',
+        'Recover lost altitude only AFTER airspeed builds',
+      ],
+      keyInsight: 'The CURE for a stall is to LOWER the nose, not raise it — counterintuitive but life-saving. Many fatal accidents involve pulling up when stalled.',
+    },
+    {
+      concept: 'Spin',
+      definition: 'A stalled wing yawed sideways — one wing produces more lift than the other → autorotation.',
+      recovery: 'P.A.R.E.: Power idle, Ailerons neutral, Rudder opposite spin, Elevator forward. Then recover from dive.',
+      modernAircraft: 'Most general aviation aircraft are designed to be "spin resistant" — hard to enter spin and easy to recover. Aerobatic aircraft are designed to spin gracefully.',
+    },
+  ];
+
+  // ─── Aircraft instruments (cockpit) ────────────────────────────────────
+  var COCKPIT_INSTRUMENTS = [
+    {
+      instrument: 'Airspeed Indicator',
+      symbol: 'ASI',
+      shows: 'Aircraft speed through the air (knots)',
+      mechanism: 'Compares total pressure from the pitot tube to static pressure from static ports. Difference = dynamic pressure ∝ v².',
+      colorBands: 'White arc = flap operating range. Green arc = normal operating range. Yellow arc = caution (smooth air only). Red line = never exceed speed (Vne).',
+      criticalSpeeds: [
+        'Vs1 (clean stall speed) — bottom of green arc',
+        'Vso (landing config stall) — bottom of white arc',
+        'Vfe (flaps extended) — top of white arc',
+        'Vno (max structural cruise) — top of green arc',
+        'Vne (never exceed) — red line',
+      ],
+    },
+    {
+      instrument: 'Altimeter',
+      symbol: 'ALT',
+      shows: 'Altitude above mean sea level (MSL) in feet',
+      mechanism: 'A sealed aneroid bellows expands as outside pressure decreases. Pilot sets local barometric pressure ("Kollsman setting") to calibrate.',
+      criticalSetting: 'Set to local altimeter setting on the ground. At and above 18,000 ft (US), set to standard 29.92 inHg ("Flight Levels"). Wrong setting can cause fatal CFIT (controlled flight into terrain).',
+    },
+    {
+      instrument: 'Vertical Speed Indicator',
+      symbol: 'VSI',
+      shows: 'Rate of climb or descent in feet per minute (fpm)',
+      mechanism: 'Senses rate of change of static pressure (lagging slightly).',
+      typicalValues: '500 fpm = standard climb. 1,000 fpm = aggressive climb. 700 fpm = standard descent. >2,000 fpm descent = emergency or pattern descent.',
+    },
+    {
+      instrument: 'Attitude Indicator (Artificial Horizon)',
+      symbol: 'AI',
+      shows: 'Pitch and bank attitude relative to horizon',
+      mechanism: 'Gyroscope-stabilized horizon line. Modern aircraft use solid-state attitude sensors.',
+      criticalForIFR: 'In instrument flight (clouds, night), this is your primary attitude reference. Failure has caused fatal accidents.',
+    },
+    {
+      instrument: 'Heading Indicator / Directional Gyro',
+      symbol: 'HI / DG',
+      shows: 'Magnetic heading (compass direction)',
+      mechanism: 'Gyroscope (more stable than wet compass during turns). Must be periodically aligned with the magnetic compass.',
+      modernAlternative: 'Glass cockpit (G1000, etc.) integrates with GPS for more accurate heading.',
+    },
+    {
+      instrument: 'Turn Coordinator / Turn-and-Slip',
+      symbol: 'TC',
+      shows: 'Rate of turn (degrees per second) and slip/skid (ball in tube)',
+      mechanism: 'Gyroscope detects yaw rate. Ball in inclinometer shows coordination.',
+      standardRate: 'Standard rate turn = 3°/sec = 360° in 2 minutes. Used for instrument approach turns.',
+    },
+    {
+      instrument: 'Magnetic Compass',
+      symbol: 'CMP',
+      shows: 'Magnetic heading directly',
+      mechanism: 'Magnet floating in fluid, aligned with Earth\'s magnetic field.',
+      errors: ['Magnetic dip (errors during turns)', 'Acceleration errors (north-south accelerations show false heading change)', 'Variation (difference between magnetic and true north)'],
+      whyKeep: 'Pure-physics backup — works with no electrical power.',
+    },
+    {
+      instrument: 'Tachometer',
+      symbol: 'RPM',
+      shows: 'Engine speed in revolutions per minute',
+      typicalValues: 'Idle: 600-900 RPM. Cruise: 2200-2500 RPM. Max: ~2700 RPM (piston aircraft).',
+      green: 'Green arc = normal operating range. Yellow = caution. Red line = max.',
+    },
+    {
+      instrument: 'Manifold Pressure Gauge',
+      symbol: 'MP',
+      shows: 'Pressure in the intake manifold (inches of mercury)',
+      whichAircraft: 'Aircraft with constant-speed propellers. Pilot sets MP with throttle and RPM with propeller control.',
+      typicalCruise: '~22-24 inches MP at altitude, 2300 RPM',
+    },
+    {
+      instrument: 'Fuel Quantity Indicator',
+      symbol: 'FUEL',
+      shows: 'Fuel in each tank (gallons or pounds)',
+      regulatoryNotes: 'Required to be accurate when reading EMPTY (FAR 23). Less accurate when full — pilots use stick gauges and known burn rates.',
+    },
+    {
+      instrument: 'Oil Pressure / Temperature',
+      symbol: 'OIL P / T',
+      shows: 'Engine oil pressure (psi) and temperature (°F)',
+      criticalForSafety: 'Low oil pressure = imminent engine failure. Land immediately. High temp = approaching failure.',
+    },
+    {
+      instrument: 'Engine Gauges (EGT, CHT)',
+      symbol: 'EGT, CHT',
+      shows: 'Exhaust gas temperature, cylinder head temperature',
+      use: 'Lean-of-peak / rich-of-peak fuel management for fuel efficiency.',
+    },
+    {
+      instrument: 'VOR / GPS / Glass Cockpit',
+      symbol: 'NAV',
+      shows: 'Navigation information — bearing/distance to waypoints, course deviation',
+      modern: 'Garmin G1000 and similar glass-cockpit systems replace most instruments with integrated displays. Easier to interpret, more reliable.',
+    },
+    {
+      instrument: 'Transponder',
+      symbol: 'XPDR',
+      shows: 'Squawk code visible to ATC radar',
+      modes: ['Mode A: 4-digit code identifies you', 'Mode C: also reports altitude', 'Mode S: enables ADS-B and traffic awareness'],
+      emergencyCodes: ['7500: hijack', '7600: lost radio comms', '7700: emergency (any)'],
+    },
+    {
+      instrument: 'Stall Warning',
+      symbol: 'STALL',
+      shows: 'Audible warning when approaching stall AoA',
+      mechanism: 'Lift transducer on wing leading edge detects pressure pattern change before stall, triggers horn or stick shaker.',
+      criticalForSafety: 'Pull back on stick shaker = bad. Pull back on stick PUSHER = potentially fatal — the airplane is telling you it WILL stall if you don\'t lower the nose.',
+    },
+    {
+      principle: 'The "Six Pack" — Primary Flight Instruments',
+      list: [
+        'Airspeed Indicator (left top)',
+        'Attitude Indicator (center top)',
+        'Altimeter (right top)',
+        'Turn Coordinator (left bottom)',
+        'Heading Indicator (center bottom)',
+        'Vertical Speed Indicator (right bottom)',
+      ],
+      mnemonic: 'Standardized layout means a pilot transitioning between aircraft can find what they need by location alone.',
+      modernEquivalent: 'Primary Flight Display (PFD) in glass cockpits consolidates the six pack onto one screen with better integration.',
+    },
+  ];
+
+  // ─── Famous aircraft (verbose) ─────────────────────────────────────────
+  var FAMOUS_AIRCRAFT = [
+    {
+      aircraft: 'Wright Flyer',
+      designer: 'Wilbur and Orville Wright',
+      year: 1903,
+      firstFlight: 'December 17, 1903, Kitty Hawk, North Carolina',
+      stats: { length: '21 ft 1 in', wingspan: '40 ft 4 in', maxSpeed: '30 mph', weight: '605 lb (empty)' },
+      engine: '12 hp custom gasoline engine',
+      significance: 'First powered, controlled, sustained heavier-than-air flight. Flew 120 ft in 12 seconds on its first attempt.',
+      whyImportant: 'Proved that controlled flight was possible. Every aircraft since traces its lineage to this 12-second hop.',
+    },
+    {
+      aircraft: 'Sopwith Camel',
+      designer: 'Herbert Smith / Sopwith Aviation',
+      year: 1917,
+      firstFlight: 'December 22, 1916',
+      stats: { length: '18 ft 9 in', wingspan: '28 ft', maxSpeed: '115 mph', weight: '930 lb' },
+      engine: 'Clerget 9B rotary, 130 hp',
+      significance: 'Most successful Allied fighter of WWI — 1,294 enemy aircraft destroyed.',
+      reputation: 'Famously tricky to fly. Killed many trainees. Veterans loved its responsiveness.',
+    },
+    {
+      aircraft: 'Ford Trimotor (Tin Goose)',
+      year: 1926,
+      stats: { length: '50 ft', wingspan: '77 ft', maxSpeed: '150 mph', passengers: '12' },
+      significance: 'Made commercial passenger aviation viable in the US. Operated by early airlines including TWA.',
+    },
+    {
+      aircraft: 'Spirit of St. Louis',
+      designer: 'Donald Hall / Ryan Airlines',
+      year: 1927,
+      pilot: 'Charles Lindbergh',
+      famousFlight: 'May 20-21, 1927: first solo nonstop transatlantic flight (New York to Paris, 33.5 hours)',
+      stats: { length: '27 ft 8 in', wingspan: '46 ft', range: '4,100 miles' },
+      significance: 'Demonstrated that long-distance flight was practical. Sparked massive public investment in aviation.',
+    },
+    {
+      aircraft: 'DC-3',
+      manufacturer: 'Douglas Aircraft',
+      year: 1936,
+      firstFlight: 'December 17, 1935',
+      stats: { length: '64 ft 5 in', wingspan: '95 ft', maxSpeed: '230 mph', passengers: '21-32' },
+      significance: 'Made airline travel profitable for the first time. Over 16,000 built. Still flying commercially in some regions.',
+      legendaryStatus: '"The plane that changed the world."',
+    },
+    {
+      aircraft: 'Boeing B-17 Flying Fortress',
+      year: 1938,
+      stats: { wingspan: '103 ft 9 in', maxSpeed: '287 mph', crew: '10', bombs: '4,800 lb' },
+      significance: 'Iconic WWII bomber. Famous for ability to absorb damage and still return to base. 12,731 built.',
+    },
+    {
+      aircraft: 'Supermarine Spitfire',
+      designer: 'R.J. Mitchell',
+      year: 1938,
+      stats: { length: '29 ft 11 in', wingspan: '36 ft 10 in', maxSpeed: '370 mph' },
+      significance: 'British fighter that saved Britain in the Battle of Britain (1940). Elliptical wing was distinctive and aerodynamically optimal.',
+    },
+    {
+      aircraft: 'P-51 Mustang',
+      year: 1942,
+      stats: { length: '32 ft 3 in', wingspan: '37 ft', maxSpeed: '440 mph', range: '1,650 mi with drop tanks' },
+      significance: 'Long-range fighter that could escort bombers all the way to Berlin. Helped win the air war in Europe.',
+    },
+    {
+      aircraft: 'Boeing 707',
+      year: 1958,
+      stats: { length: '152 ft 11 in', wingspan: '145 ft 9 in', maxSpeed: 'Mach 0.86', passengers: '189' },
+      significance: 'Made jet airliner travel mainstream. Cut transatlantic crossing time from days to hours.',
+    },
+    {
+      aircraft: 'Lockheed SR-71 Blackbird',
+      year: 1966,
+      stats: { length: '107 ft 5 in', wingspan: '55 ft 7 in', maxSpeed: 'Mach 3.3+', ceiling: '85,000 ft' },
+      significance: 'Fastest air-breathing aircraft ever flown. Could outrun missiles. Never lost to enemy action.',
+      uniqueFeatures: 'Titanium construction (Russian-sourced via shell companies!), leaks fuel on the ground (panels expand when hot at high speed).',
+    },
+    {
+      aircraft: 'Boeing 747',
+      year: 1969,
+      stats: { length: '231 ft 10 in', wingspan: '195 ft 8 in', maxSpeed: 'Mach 0.85', passengers: '366-660' },
+      significance: 'Revolutionary "jumbo jet" made international travel affordable for the middle class. Iconic hump.',
+      legacy: 'Production ended 2023 after 54 years and 1,574 aircraft delivered. Still flying as cargo and Air Force One.',
+    },
+    {
+      aircraft: 'Concorde',
+      year: 1976,
+      stats: { length: '202 ft', wingspan: '83 ft 10 in', maxSpeed: 'Mach 2.04 (1,354 mph)', passengers: '92-128' },
+      significance: 'Only supersonic passenger airliner. New York to London in 3.5 hours.',
+      retirement: 'Retired in 2003 after 2000 crash and post-9/11 demand drop. Currently no replacement, but several supersonic startups are trying.',
+    },
+    {
+      aircraft: 'Cessna 172',
+      year: 1956,
+      stats: { length: '27 ft 2 in', wingspan: '36 ft 1 in', maxSpeed: '124 kts', maxAltitude: '14,000 ft' },
+      significance: 'Most-produced aircraft in history (44,000+ built). Trains most American pilots.',
+      cultural: 'In 1987, an unknown 19-year-old German named Mathias Rust flew a rented Cessna 172 from Helsinki and landed in Moscow\'s Red Square, embarrassing Soviet air defense.',
+    },
+    {
+      aircraft: 'F-22 Raptor',
+      year: 2005,
+      stats: { length: '62 ft 1 in', wingspan: '44 ft 6 in', maxSpeed: 'Mach 2.25', ceiling: '50,000 ft' },
+      significance: 'First fifth-generation fighter. Stealth, supercruise, and thrust vectoring. ~$143 million each.',
+    },
+    {
+      aircraft: 'Boeing 787 Dreamliner',
+      year: 2011,
+      stats: { length: '186 ft 1 in', wingspan: '197 ft 3 in', cruise: 'Mach 0.85', passengers: '242-330' },
+      significance: 'First mostly-composite (carbon fiber) airliner. ~20% more fuel efficient than predecessors.',
+    },
+    {
+      aircraft: 'Airbus A380',
+      year: 2007,
+      stats: { length: '238 ft', wingspan: '262 ft', passengers: '525 (typical), 853 max' },
+      significance: 'Largest passenger airliner ever built. Two full passenger decks. Production ended 2021 after 251 deliveries — didn\'t prove economical for most routes.',
+    },
+    {
+      aircraft: 'SpaceShipOne',
+      year: 2003,
+      stats: { length: '28 ft', maxAltitude: '367,442 ft (112 km)', powered: 'Hybrid rocket' },
+      significance: 'First privately-built crewed spacecraft. Won the $10M Ansari X Prize in 2004 (Burt Rutan / Scaled Composites).',
+    },
+    {
+      aircraft: 'F-35 Lightning II',
+      year: 2015,
+      variants: ['F-35A (conventional)', 'F-35B (vertical takeoff)', 'F-35C (carrier)'],
+      stats: { length: '51 ft 4 in', wingspan: '35 ft', maxSpeed: 'Mach 1.6' },
+      significance: 'Most expensive defense program in history (~$1.7 trillion lifetime). Stealth multi-role fighter.',
+    },
+  ];
+
+  // ─── Aviation pioneers (verbose) ───────────────────────────────────────
+  var AVIATION_PIONEERS = [
+    {
+      name: 'Wilbur Wright (1867-1912) and Orville Wright (1871-1948)',
+      country: 'United States',
+      contribution: 'First powered, controlled, sustained heavier-than-air flight (December 17, 1903, Kitty Hawk). Developed three-axis control (roll, pitch, yaw) that all aircraft still use.',
+      story: 'Brothers from Dayton, Ohio. Ran a bicycle shop. Self-taught engineers who tested with kites and gliders for years before the powered flight. No formal engineering training.',
+      legacy: 'Founded the entire field of practical aviation. Every aircraft since uses their three-axis control principle.',
+    },
+    {
+      name: 'Glenn Curtiss (1878-1930)',
+      country: 'United States',
+      contribution: 'Pioneer of seaplanes and naval aviation. Major rival to the Wrights in patent disputes that delayed US aviation development.',
+      story: 'Started as a motorcycle racer, set world land speed record (136 mph in 1907) before turning to aviation.',
+    },
+    {
+      name: 'Louis Blériot (1872-1936)',
+      country: 'France',
+      contribution: 'First to fly across the English Channel (July 25, 1909) in a 25-minute flight from Calais to Dover. His monoplane Blériot XI sold widely and trained the first generation of European pilots.',
+    },
+    {
+      name: 'Bessie Coleman (1892-1926)',
+      country: 'United States',
+      contribution: 'First African-American woman to earn a pilot\'s license (1921). Had to go to France because US flight schools rejected her based on race AND gender.',
+      legacy: 'Performed as a stunt pilot, inspiring generations of Black aviators. Died in a flight test crash in 1926.',
+    },
+    {
+      name: 'Amelia Earhart (1897-1937)',
+      country: 'United States',
+      contribution: 'First woman to fly solo across the Atlantic (1932). First person to fly solo from Hawaii to California (1935). Disappeared during an attempted circumnavigation in 1937.',
+      legacy: 'Cultural icon for women in aviation. Her disappearance over the Pacific remains one of aviation\'s great mysteries.',
+    },
+    {
+      name: 'Charles Lindbergh (1902-1974)',
+      country: 'United States',
+      contribution: 'First solo nonstop transatlantic flight (Spirit of St. Louis, May 1927). 33.5 hours, New York to Paris.',
+      complexLegacy: 'Hero of the 1920s and 30s. Later became controversial for isolationist political views and Nazi sympathies. Restored reputation through wartime service and conservation advocacy.',
+    },
+    {
+      name: 'Jacqueline Cochran (1906-1980)',
+      country: 'United States',
+      contribution: 'First woman to break the sound barrier (1953). Director of WASP (Women Airforce Service Pilots) in WWII. Set more aviation records than any pilot — male or female — in history.',
+    },
+    {
+      name: 'Chuck Yeager (1923-2020)',
+      country: 'United States',
+      contribution: 'First confirmed flight faster than the speed of sound (October 14, 1947, in Bell X-1 "Glamorous Glennis"). Pioneered supersonic flight testing.',
+      story: 'Broke his ribs falling off a horse the day before but flew anyway. Used the back end of a broomstick to close the cockpit hatch.',
+    },
+    {
+      name: 'Igor Sikorsky (1889-1972)',
+      country: 'Russia, then United States',
+      contribution: 'Designed first successful helicopter (VS-300, 1939) and first four-engine bomber (1913). Founded Sikorsky Aircraft.',
+    },
+    {
+      name: 'Howard Hughes (1905-1976)',
+      country: 'United States',
+      contribution: 'Aviation tycoon and record-setting pilot. Built the "Spruce Goose" (H-4 Hercules), the largest flying boat ever made. Set speed records and ran TWA airline.',
+    },
+    {
+      name: 'Burt Rutan (1943-)',
+      country: 'United States',
+      contribution: 'Modern aerospace innovator. Designed Voyager (first nonstop unrefueled circumnavigation, 1986) and SpaceShipOne (first privately-funded crewed spaceflight, 2004).',
+    },
+    {
+      name: 'Sally Ride (1951-2012)',
+      country: 'United States',
+      contribution: 'First American woman in space (1983, Space Shuttle Challenger). Stanford-trained physicist. Later co-founded Sally Ride Science to promote STEM education for girls.',
+    },
+    {
+      name: 'Eileen Collins (1956-)',
+      country: 'United States',
+      contribution: 'First woman to pilot a Space Shuttle (1995) and first to command one (1999). Logged 38+ days in space.',
+    },
+    {
+      name: 'Sully Sullenberger (1951-)',
+      country: 'United States',
+      contribution: 'Captain of US Airways Flight 1549 ("Miracle on the Hudson"). After bird strike disabled both engines, glided the A320 to a successful river landing in 2009. All 155 souls survived.',
+      legacy: 'Demonstrated the value of experienced pilots and crew resource management. Showed that "automation" can\'t replace human judgment in true emergencies.',
+    },
+  ];
+
+  // ─── Weather and flight (verbose) ──────────────────────────────────────
+  var WEATHER_AND_FLIGHT = [
+    {
+      phenomenon: 'Wind',
+      types: [
+        'Surface winds: low altitude, affected by terrain and friction',
+        'Aloft winds: higher altitude, generally stronger and more consistent',
+        'Jet stream: ~30,000-50,000 ft, can exceed 200 kts, affects long flights',
+      ],
+      impact: 'Headwind = slower ground speed. Tailwind = faster ground speed. Crosswind = drift; pilot must crab into wind.',
+      example: 'NYC → London: tailwind from jet stream, often 6-7 hours. London → NYC: headwind, 7-9 hours.',
+    },
+    {
+      phenomenon: 'Clouds',
+      types: [
+        'Cirrus: high (20,000-40,000 ft), thin, wispy, made of ice crystals',
+        'Cumulus: puffy, cotton-ball shapes; fair-weather to thunderstorms',
+        'Stratus: layered, sheet-like; can mean low ceilings and reduced visibility',
+        'Nimbus: rain-bearing (cumulonimbus = thunderstorm, nimbostratus = steady rain)',
+      ],
+      flightSignificance: 'Pilots categorize ceiling (cloud base) and visibility. VFR (Visual Flight Rules): >3sm vis, >1000 ft ceiling. IFR (Instrument Flight Rules): less than that.',
+    },
+    {
+      phenomenon: 'Thunderstorms',
+      hazards: [
+        'Severe turbulence — can break aircraft',
+        'Hail (can shatter windshields)',
+        'Lightning (rarely catastrophic but can damage electronics)',
+        'Microbursts (sudden downdrafts up to 6,000 fpm — crashed Delta 191 in 1985)',
+        'Wind shear (sudden change in wind direction/speed)',
+        'Severe icing',
+      ],
+      rule: 'Never fly through a thunderstorm. Avoid by 20+ nautical miles. Delays > deaths.',
+    },
+    {
+      phenomenon: 'Icing',
+      types: [
+        'Clear ice: forms on leading edges in supercooled water droplets, transparent and heavy',
+        'Rime ice: rough, frosty appearance, lighter but disrupts airfoil',
+        'Mixed: combination',
+      ],
+      impact: 'Adds weight, changes airfoil shape, increases stall speed. Can be deadly. Why warm equipment matters.',
+      certification: 'Most general aviation aircraft are NOT certified for known icing. Pilots must avoid.',
+    },
+    {
+      phenomenon: 'Turbulence',
+      types: [
+        'Light: brief small accelerations (occupants may feel a slight strain)',
+        'Moderate: occupants feel definite strain against seatbelts; unsecured items move',
+        'Severe: violent shaking; unsecured occupants thrown against ceiling',
+        'Extreme: aircraft is practically impossible to control',
+      ],
+      causes: ['Convection (thermal updrafts)', 'Mechanical (terrain-induced rotors)', 'Wind shear (jet stream boundaries)', 'Wake turbulence (other aircraft)'],
+      pilotResponse: 'Slow to maneuvering speed (Va). Keep seatbelts tight. Don\'t fight the airplane.',
+    },
+    {
+      phenomenon: 'Visibility',
+      categories: 'VFR (visual): unrestricted, can fly by looking outside. MVFR (marginal): caution. IFR (instrument): must use instruments. LIFR (low IFR): minimum standards or worse.',
+      reportingUnits: 'Statute miles (US) or meters (international). 6 sm typical for clear day. 1/4 sm = serious fog.',
+    },
+    {
+      phenomenon: 'Wind shear',
+      definition: 'A sudden change in wind speed or direction over a short distance.',
+      types: [
+        'Horizontal: vector change with altitude (e.g., 90° turn within 1,000 ft)',
+        'Vertical: rapid change in headwind/tailwind affecting climb performance',
+        'Microburst: localized intense downdraft (caused several fatal crashes)',
+      ],
+      detection: 'Modern airliners have onboard wind shear detection systems.',
+    },
+    {
+      phenomenon: 'Density altitude',
+      definition: 'Pressure altitude corrected for non-standard temperature. How "thin" the air actually feels to the aircraft.',
+      impact: 'Hot day + high altitude = high density altitude = degraded performance. Some mountain airports become unusable on hot summer afternoons.',
+      example: 'Aspen, CO airport: sea level performance 1,500 ft takeoff. On a hot day at 7,800 ft elevation, may need 4,000+ ft.',
+    },
+    {
+      phenomenon: 'METARs and TAFs',
+      definition: 'Weather reports for aviation: METAR = current observation. TAF = forecast.',
+      example: 'KPWM 121656Z 27015G22KT 10SM FEW035 SCT060 BKN150 18/12 A2992 — wind 270° at 15 gusting 22, 10 statute miles visibility, scattered clouds, etc.',
+      learning: 'Pilots must read these fluently. Format is dense but standardized worldwide.',
+    },
+    {
+      phenomenon: 'Atmospheric layers',
+      list: [
+        'Troposphere: surface to ~36,000 ft (where weather happens, where most flights occur)',
+        'Stratosphere: 36,000-160,000 ft (calm, dry; airliner cruise above the weather)',
+        'Mesosphere: 160,000-280,000 ft (where meteors burn up)',
+        'Thermosphere: 280,000+ ft (where the ISS orbits)',
+      ],
+    },
+  ];
+
+  // ─── Navigation (verbose) ──────────────────────────────────────────────
+  var NAVIGATION_CONCEPTS = [
+    {
+      concept: 'Pilotage',
+      definition: 'Navigating by visual reference to ground features.',
+      use: 'Local flying, low altitude. Tracking rivers, roads, railroads, towns.',
+      limitations: 'Useless in clouds or at night. Hard in featureless terrain (desert, ocean).',
+    },
+    {
+      concept: 'Dead reckoning',
+      definition: 'Computing position from known starting point + heading + speed + time.',
+      formula: 'New position = old position + (heading × ground speed × time)',
+      use: 'When you can\'t see the ground. Standard navigation before GPS.',
+      famousFailure: 'AA Flight 965 in 1995 — pilots\' dead reckoning + database mismatch contributed to fatal CFIT in Colombian mountains.',
+    },
+    {
+      concept: 'Radio navigation (VOR, NDB)',
+      definition: 'Navigating by reference to ground-based radio transmitters.',
+      VOR: 'VHF Omnidirectional Range — gives bearing TO a station. Most US airports have VOR approaches.',
+      legacy: 'Largely superseded by GPS but still required as backup. Some VORs being decommissioned.',
+    },
+    {
+      concept: 'GPS / GNSS',
+      definition: 'Global Positioning System (US) or Global Navigation Satellite System (generic).',
+      mechanism: 'Receivers measure timing signals from 4+ satellites to triangulate position.',
+      accuracy: 'Modern GPS: typically within 10 feet. WAAS-enabled: 1-3 feet.',
+      use: 'Primary navigation for most modern aircraft. Enables precise approach without ground-based equipment.',
+    },
+    {
+      concept: 'Great circle routes',
+      definition: 'The shortest path between two points on a sphere.',
+      paradox: 'On a flat map, great circles appear as curves. NY to Tokyo "looks" shorter via the equator but is actually shorter via Alaska/Russia.',
+      why: 'Earth is a sphere. Flat maps distort. Pilots compute great-circle routes for long flights.',
+    },
+    {
+      concept: 'Compass corrections',
+      list: [
+        'Variation: difference between magnetic north and true north (varies by location)',
+        'Deviation: errors caused by metal/electronics in the aircraft',
+        'Dip errors: magnetic compass tilts off-axis during banked turns',
+        'Acceleration errors: during north or south accelerations, compass briefly shows wrong heading',
+      ],
+      mnemonic: 'TVMDC — True, Variation, Magnetic, Deviation, Compass — to convert between values',
+    },
+    {
+      concept: 'Flight planning',
+      steps: [
+        'Pick departure and destination',
+        'Check weather (METARs, TAFs, winds aloft)',
+        'Compute great circle route',
+        'Identify waypoints (VORs, GPS, visual landmarks)',
+        'Compute headings (account for wind drift)',
+        'Compute fuel burn',
+        'File flight plan with FAA if needed',
+        'Brief passengers',
+        'Pre-flight inspection',
+      ],
+    },
+    {
+      concept: 'Charts',
+      types: [
+        'Sectional Aeronautical Chart: VFR chart, 1:500,000 scale, shows terrain + airports + airspace',
+        'Terminal Area Chart: closer view of busy airports (1:250,000)',
+        'IFR Low Altitude Chart: shows airways for instrument flight below 18,000 ft',
+        'IFR High Altitude Chart: 18,000 ft and above (Class A airspace)',
+        'Approach plates: how to land at a specific airport via instruments',
+      ],
+    },
+    {
+      concept: 'Airspace classes (US)',
+      classes: [
+        'Class A: 18,000-60,000 ft. IFR only. Cruise altitude for airliners.',
+        'Class B: surface to 10,000 ft around major airports. Requires ATC clearance.',
+        'Class C: surface to 4,000 ft AGL around medium airports. Two-way radio + transponder.',
+        'Class D: surface to 2,500 ft AGL around airports with control towers. Two-way radio.',
+        'Class E: most other controlled airspace.',
+        'Class G: uncontrolled. Below most other classes.',
+      ],
+    },
+    {
+      concept: 'ATC (Air Traffic Control)',
+      types: [
+        'Ground Control: taxi clearances on airport surface',
+        'Tower: takeoff and landing clearances',
+        'Departure: handoff after takeoff, climb to en route',
+        'En Route Center: high-altitude cruise',
+        'Approach: handoff for descent and approach',
+      ],
+      communication: 'Standardized radio phraseology. "November 1-2-3-4 Alpha, Boston Tower, cleared for takeoff runway 22 left."',
+    },
+  ];
+
+  // ─── Pilot training paths (verbose) ────────────────────────────────────
+  var PILOT_TRAINING = [
+    {
+      certificate: 'Student Pilot',
+      hours: 'None to start',
+      cost: '$0 for certificate; ~$80 for medical',
+      requirements: 'Age 14 (gliders) or 16 (powered). Pass FAA medical exam (or use BasicMed).',
+      privileges: 'Fly with an instructor only. Solo after instructor endorsement.',
+    },
+    {
+      certificate: 'Sport Pilot',
+      hours: '~20 hours minimum',
+      cost: '$5,000-8,000',
+      requirements: 'Age 17, valid driver\'s license (no medical needed)',
+      privileges: 'Fly Light Sport Aircraft only — day, VFR, single passenger.',
+      limitations: 'Limited aircraft, no night, no above 10,000 ft MSL',
+    },
+    {
+      certificate: 'Private Pilot',
+      hours: '40 hours minimum (national average: 60-70)',
+      cost: '$10,000-15,000',
+      requirements: 'Age 17, FAA medical, written + oral + practical exams',
+      privileges: 'Fly any aircraft you\'re trained on, day/night, with passengers, not for compensation',
+      curriculum: 'Aerodynamics, weather, navigation, FARs, decision-making, instrument basics',
+    },
+    {
+      certificate: 'Instrument Rating (add-on)',
+      hours: '50 hours instrument time (40 simulated/15 dual real IMC)',
+      cost: '$8,000-12,000',
+      privileges: 'Fly in clouds and bad weather using only instruments',
+      whyImportant: 'Most useful single rating after PPL. Lets you fly when others can\'t.',
+    },
+    {
+      certificate: 'Commercial Pilot',
+      hours: '250 hours minimum (national average higher)',
+      cost: '$15,000-20,000 additional',
+      privileges: 'Fly for hire (banner towing, sightseeing, pipeline patrol, charters)',
+    },
+    {
+      certificate: 'ATP (Airline Transport Pilot)',
+      hours: '1,500 hours minimum',
+      cost: 'Often paid for by airline through cadet programs',
+      privileges: 'Pilot in command of multi-crew air carrier flights',
+      pathway: 'Most career airline pilots take this route — either through flight school + regional airline + major airline pipeline, or military aviation.',
+    },
+    {
+      certificate: 'Flight Instructor (CFI)',
+      hours: 'Commercial cert + additional training',
+      role: 'Teach other pilots. Common path to building hours toward ATP.',
+    },
+    {
+      certificate: 'Remote Pilot (Part 107)',
+      requirements: 'Age 16, pass 60-question test (no flight time needed!)',
+      cost: '$175 test fee + study materials',
+      privileges: 'Commercial drone operations under 55 lbs',
+      growing: 'Fastest-growing aviation certificate. ~300,000 certified remote pilots in US.',
+    },
+    {
+      principles: 'Why training is expensive',
+      reasons: [
+        'Aircraft rental: $100-200/hour',
+        'Instructor: $40-80/hour additional',
+        'Fuel + maintenance built into rental',
+        'Insurance, books, exam fees',
+        'Time of year (winter often forces delays)',
+      ],
+      costSavings: 'Buy a share in a flight club. Train at less-busy airports. Get a written exam done early.',
+    },
+    {
+      principles: 'Career outlook',
+      list: [
+        'Major airline first officer (regional after PPL+CPL+ATP): $50K-100K starting',
+        'Mid-career major airline captain: $200K-400K',
+        'Cargo airlines (FedEx, UPS): similar or better than passenger airlines',
+        'Corporate flight departments: $80K-300K depending on aircraft and operation',
+        'Charter / fractional: variable',
+        'Military: structured pay + benefits + post-service airline pipeline',
+      ],
+    },
+  ];
+
+  // ─── Aviation careers beyond pilot ─────────────────────────────────────
+  var AVIATION_CAREERS = [
+    {
+      role: 'Commercial pilot',
+      training: 'Flight school + ratings (ATP)',
+      payRange: '$50K (regional FO) - $400K (major captain)',
+      outlook: 'Strong — pilot shortage projected through 2030s',
+    },
+    {
+      role: 'Air traffic controller',
+      training: 'FAA Academy + on-the-job',
+      payRange: '$50K (trainee) - $190K (top tier)',
+      eligibility: 'Must apply before age 31. Federal job security.',
+      stress: 'High. Mandatory retirement at 56.',
+    },
+    {
+      role: 'Aircraft mechanic (A&P)',
+      training: '~18-24 months at AMT school OR 30 months apprenticeship',
+      payRange: '$45K - $100K+',
+      certifications: 'Airframe + Powerplant ratings. Inspection Authorization (IA) for advanced work.',
+      outlook: 'Major shortage. Excellent job security.',
+    },
+    {
+      role: 'Aerospace engineer',
+      training: 'Bachelor\'s in aerospace or mechanical engineering (4 years)',
+      payRange: '$80K - $180K',
+      employers: 'Boeing, Lockheed Martin, NASA, SpaceX, Northrop, Raytheon',
+      specialties: ['Aerodynamics', 'Propulsion', 'Structures', 'Avionics', 'Flight controls'],
+    },
+    {
+      role: 'Avionics technician',
+      training: 'AMT school + avionics endorsement OR military electronics training',
+      payRange: '$50K - $90K',
+      role: 'Install and maintain aircraft electronics, instruments, navigation systems',
+    },
+    {
+      role: 'Aerospace manufacturing technician',
+      training: 'High school + on-the-job; sometimes 2-year programs',
+      payRange: '$40K - $75K',
+      role: 'Build and assemble aircraft components',
+    },
+    {
+      role: 'Aviation safety inspector',
+      training: 'Pilot or mechanic certification + FAA hiring process',
+      payRange: '$80K - $150K',
+      employer: 'FAA',
+      role: 'Inspect operators, investigate incidents',
+    },
+    {
+      role: 'Aviation lawyer',
+      training: 'Law school + aviation specialty',
+      payRange: '$80K - $300K+',
+      practice: 'Regulatory, litigation, transactions',
+    },
+    {
+      role: 'Flight dispatcher',
+      training: '~5-8 weeks ATC dispatch school',
+      payRange: '$45K - $120K',
+      role: 'Plan flights, monitor weather, share legal responsibility with the captain',
+      certification: 'FAA Aircraft Dispatcher Certificate',
+    },
+    {
+      role: 'Flight attendant',
+      training: 'Airline-provided (~6 weeks)',
+      payRange: '$30K (entry) - $80K+ (senior)',
+      role: 'Cabin safety + service. Primarily safety; service is secondary.',
+    },
+    {
+      role: 'Drone operator (commercial)',
+      training: 'FAA Part 107 certificate',
+      payRange: '$30K - $100K+ depending on specialty',
+      uses: ['Aerial photography', 'Surveying', 'Powerline inspection', 'Search and rescue', 'Agriculture'],
+    },
+    {
+      role: 'Aerospace medicine physician',
+      training: 'MD + aerospace medicine residency',
+      payRange: '$200K+',
+      role: 'FAA-designated Aviation Medical Examiner (AME); flight medical exams',
+    },
+    {
+      role: 'Aviation educator (FAA-certificated)',
+      training: 'CFI + experience',
+      payRange: 'Variable; many start in their 20s building hours',
+    },
+    {
+      role: 'Aviation manager / FBO operator',
+      training: 'Business + aviation background',
+      payRange: '$60K - $200K',
+      role: 'Run airport operations, fuel sales, charter companies',
+    },
+    {
+      role: 'Aerospace researcher (academic)',
+      training: 'PhD',
+      payRange: '$70K - $200K',
+      employers: 'NASA, universities, FFRDCs',
+    },
+  ];
+
+  // ─── Quiz questions (interactive engine consumes these) ───────────────
+  var FLIGHT_QUIZ = [
+    {
+      question: 'Which force OPPOSES motion through the air?',
+      options: ['Lift', 'Drag', 'Thrust', 'Weight'],
+      correct: 'Drag',
+      explanation: 'Drag is the rearward force caused by friction and pressure as the aircraft moves through air. It always opposes motion.',
+      topic: 'Four forces',
+      difficulty: 'easy',
+    },
+    {
+      question: 'What two factors most affect lift?',
+      options: ['Speed and wing area', 'Engine power and altitude', 'Weight and fuel', 'Color and shape'],
+      correct: 'Speed and wing area',
+      explanation: 'L = ½ρv²SCₗ. Lift scales with the SQUARE of speed and is proportional to wing area. Doubling speed quadruples lift.',
+      topic: 'Aerodynamics',
+      difficulty: 'medium',
+    },
+    {
+      question: 'Who first broke the sound barrier?',
+      options: ['Chuck Yeager', 'Charles Lindbergh', 'Howard Hughes', 'Neil Armstrong'],
+      correct: 'Chuck Yeager',
+      explanation: 'On October 14, 1947, Yeager flew the Bell X-1 "Glamorous Glennis" past Mach 1 over the Mojave desert. He had broken ribs from a horseback fall the day before.',
+      topic: 'History',
+      difficulty: 'easy',
+    },
+    {
+      question: 'What does VOR stand for?',
+      options: ['Visual Operations Range', 'VHF Omnidirectional Range', 'Vertical Object Recognition', 'Velocity-Optimized Routing'],
+      correct: 'VHF Omnidirectional Range',
+      explanation: 'VOR stations transmit signals that aircraft can use to determine their bearing from the station. Largely superseded by GPS but still required as backup.',
+      topic: 'Navigation',
+      difficulty: 'medium',
+    },
+    {
+      question: 'Which cloud type indicates thunderstorms?',
+      options: ['Cirrus', 'Stratus', 'Cumulus', 'Cumulonimbus'],
+      correct: 'Cumulonimbus',
+      explanation: 'Cumulonimbus is the towering thunderstorm cloud. Cumulus is fair-weather puffy clouds. Pilots avoid cumulonimbus by 20+ nm.',
+      topic: 'Weather',
+      difficulty: 'medium',
+    },
+    {
+      question: 'What is the critical angle of attack?',
+      options: ['The maximum lift angle', 'The angle beyond which the wing stalls', 'The takeoff angle', 'The descent angle'],
+      correct: 'The angle beyond which the wing stalls',
+      explanation: 'Beyond the critical AoA (~15-20° for most wings), airflow separates and lift drops dramatically. This is a stall.',
+      topic: 'Aerodynamics',
+      difficulty: 'hard',
+    },
+    {
+      question: 'What is the standard rate turn?',
+      options: ['1°/sec', '3°/sec', '5°/sec', '10°/sec'],
+      correct: '3°/sec',
+      explanation: 'Standard rate is 3°/sec — meaning a complete 360° turn in 2 minutes. Used during instrument approaches for predictable timing.',
+      topic: 'Instruments',
+      difficulty: 'hard',
+    },
+    {
+      question: 'When a wing produces more lift, what byproduct increases?',
+      options: ['Thrust', 'Induced drag', 'Engine power', 'Cabin pressure'],
+      correct: 'Induced drag',
+      explanation: 'Induced drag is the drag caused by lift production itself. The trailing wingtip vortices that form as a byproduct of lift create drag.',
+      topic: 'Aerodynamics',
+      difficulty: 'hard',
+    },
+    {
+      question: 'What is a microburst?',
+      options: ['A small lightning strike', 'A short power failure', 'A localized intense downdraft', 'A burst of static'],
+      correct: 'A localized intense downdraft',
+      explanation: 'Microbursts are powerful downdrafts (up to 6,000 fpm) that can crash aircraft. Delta 191 in 1985 was a famous fatal example.',
+      topic: 'Weather',
+      difficulty: 'medium',
+    },
+    {
+      question: 'What is Bernoulli\'s Principle?',
+      options: ['Hot air rises', 'Heavier objects fall faster', 'As fluid speeds up, pressure drops', 'Energy is conserved'],
+      correct: 'As fluid speeds up, pressure drops',
+      explanation: 'Daniel Bernoulli\'s equation: P + ½ρv² + ρgh = constant. As velocity increases, static pressure decreases.',
+      topic: 'Aerodynamics',
+      difficulty: 'medium',
+    },
+    {
+      question: 'How does a pilot recover from a stall?',
+      options: ['Pull back on the yoke', 'Apply more power and pitch down', 'Bank left', 'Push left rudder'],
+      correct: 'Apply more power and pitch down',
+      explanation: 'Pitch down to reduce AoA below critical. Add power to maintain or regain energy. Pulling back makes it WORSE.',
+      topic: 'Aerodynamics',
+      difficulty: 'medium',
+    },
+    {
+      question: 'What does ATP stand for?',
+      options: ['Aviation Transport Pilot', 'Airline Transport Pilot', 'Advanced Training Program', 'Air Traffic Professional'],
+      correct: 'Airline Transport Pilot',
+      explanation: 'ATP is the highest pilot certificate. Required for airline captain. Minimum 1,500 hours flight time.',
+      topic: 'Careers',
+      difficulty: 'easy',
+    },
+    {
+      question: 'Which is the world\'s longest-running aircraft type still in commercial service?',
+      options: ['Boeing 707', 'Lockheed Constellation', 'Douglas DC-3', 'DH-2'],
+      correct: 'Douglas DC-3',
+      explanation: 'First flown 1935, the DC-3 is still in commercial cargo and passenger service in some parts of the world. 16,000+ built.',
+      topic: 'History',
+      difficulty: 'hard',
+    },
+    {
+      question: 'Why do long flights from NYC to Europe often go over Greenland?',
+      options: ['Cheaper fuel', 'Beautiful scenery', 'Great circle routes', 'Avoiding storms'],
+      correct: 'Great circle routes',
+      explanation: 'The shortest path between two points on a sphere is a great circle. NYC-Europe great circles curve north toward Greenland.',
+      topic: 'Navigation',
+      difficulty: 'medium',
+    },
+    {
+      question: 'What is "density altitude"?',
+      options: ['How thick the clouds are', 'Pressure altitude corrected for temperature', 'How dense the population is below', 'Altitude in dense fog'],
+      correct: 'Pressure altitude corrected for temperature',
+      explanation: 'Hot day + high altitude airport = high density altitude = degraded aircraft performance. Why some mountain airports become unusable in summer.',
+      topic: 'Weather',
+      difficulty: 'hard',
+    },
+    {
+      question: 'In aviation, what does VFR mean?',
+      options: ['Very Fast Response', 'Visual Flight Rules', 'Vertical Flight Range', 'Vehicle Fuel Reserve'],
+      correct: 'Visual Flight Rules',
+      explanation: 'VFR means flying by visual reference to the ground. Requires 3+ statute miles visibility and 1,000+ ft cloud ceiling.',
+      topic: 'Navigation',
+      difficulty: 'easy',
+    },
+    {
+      question: 'What is the squawk code for "lost radio communications"?',
+      options: ['7500', '7600', '7700', '1200'],
+      correct: '7600',
+      explanation: '7500=hijacking, 7600=lost comms, 7700=emergency, 1200=VFR cruising. Pilots memorize these.',
+      topic: 'Instruments',
+      difficulty: 'hard',
+    },
+    {
+      question: 'The captain of "Miracle on the Hudson" Flight 1549 was:',
+      options: ['Chuck Yeager', 'Sully Sullenberger', 'Charles Lindbergh', 'Bob Hoover'],
+      correct: 'Sully Sullenberger',
+      explanation: 'Sully glided his disabled Airbus A320 to a successful river landing in 2009. All 155 people survived.',
+      topic: 'History',
+      difficulty: 'easy',
+    },
+    {
+      question: 'How many pilots in the world have ATP certificates?',
+      options: ['About 1,000', 'About 100,000', 'About 750,000', 'About 5 million'],
+      correct: 'About 100,000',
+      explanation: '~100K Airline Transport Pilots in the US, ~600K total pilots of all certificates. Globally maybe 300-500K ATPs.',
+      topic: 'Careers',
+      difficulty: 'hard',
+    },
+    {
+      question: 'Which is NOT one of the four forces of flight?',
+      options: ['Lift', 'Drag', 'Friction', 'Thrust'],
+      correct: 'Friction',
+      explanation: 'The four forces are Lift, Weight, Thrust, Drag. Drag includes friction as one component but "friction" alone is not the named force.',
+      topic: 'Four forces',
+      difficulty: 'easy',
+    },
+  ];
+
+  // ─── Pre-flight checklist (interactive feature consumes this) ─────────
+  var PREFLIGHT_CHECKLIST = [
+    {
+      phase: 'Documents',
+      items: [
+        { check: 'Pilot certificate in possession', why: 'Required by FAR' },
+        { check: 'Pilot medical (or BasicMed) current', why: 'Required by FAR' },
+        { check: 'Aircraft registration on board', why: 'Required by FAR' },
+        { check: 'Aircraft airworthiness certificate on board', why: 'Required by FAR' },
+        { check: 'Insurance documentation accessible', why: 'Best practice' },
+        { check: 'Up-to-date charts for route', why: 'Required for IFR' },
+      ],
+    },
+    {
+      phase: 'Weather + flight planning',
+      items: [
+        { check: 'Current METAR for departure', why: 'Need to know actual conditions' },
+        { check: 'TAF for destination + alternate', why: 'Forecast for when you arrive' },
+        { check: 'Winds aloft', why: 'Affects fuel burn and time' },
+        { check: 'NOTAMs reviewed', why: 'Notice to Airmen — closures, hazards' },
+        { check: 'Route filed (if IFR)', why: 'Required for IFR; recommended for VFR cross-country' },
+        { check: 'Fuel + 30 min reserve (VFR day) / 45 min (VFR night) / 45 min + alternate fuel (IFR)', why: 'Required by FAR' },
+      ],
+    },
+    {
+      phase: 'External aircraft inspection',
+      items: [
+        { check: 'Walk around — overall condition', why: 'Visual gross check' },
+        { check: 'Tires inflated and undamaged', why: 'Affects landing safety' },
+        { check: 'Lights work (nav, beacon, strobe, landing)', why: 'Required for night; visibility for day' },
+        { check: 'Pitot tube cover removed', why: 'Forgotten cover = no airspeed indication' },
+        { check: 'Fuel quantity verified visually (don\'t trust gauges alone)', why: 'Sticking dipstick is more reliable than gauges' },
+        { check: 'Fuel sumps drained, checked for water/contamination', why: 'Water in fuel = engine failure' },
+        { check: 'Oil level checked', why: 'Low oil = engine damage' },
+        { check: 'Control surfaces move freely', why: 'Frozen controls would be fatal' },
+        { check: 'Static ports unobstructed', why: 'Required for altimeter, VSI, ASI' },
+        { check: 'Antennas, vents intact', why: 'Damaged antennas could fail in flight' },
+        { check: 'No frost/ice/snow on wings or control surfaces', why: 'Even small amounts can prevent takeoff' },
+      ],
+    },
+    {
+      phase: 'Cockpit setup',
+      items: [
+        { check: 'Brakes set', why: 'Don\'t roll while you\'re working' },
+        { check: 'Seatbelts adjusted', why: 'Required by FAR' },
+        { check: 'Flight controls — full and free movement', why: 'Verify control freedom' },
+        { check: 'Engine instruments in green', why: 'Verify gauges working' },
+        { check: 'Altimeter set to local barometric pressure', why: 'Reads wrong otherwise' },
+        { check: 'Heading indicator aligned with magnetic compass', why: 'Gyro can drift on the ground' },
+        { check: 'Transponder set to 1200 (VFR) or assigned code', why: 'ATC sees your altitude' },
+        { check: 'Avionics set up for departure', why: 'Don\'t fumble after takeoff' },
+        { check: 'Trim set for takeoff', why: 'Improper trim = unexpected pitch on takeoff' },
+        { check: 'Flaps set for takeoff', why: 'Aircraft specific — usually 10° or as required' },
+        { check: 'Fuel selector to fullest tank', why: 'Don\'t run out of fuel on takeoff' },
+      ],
+    },
+    {
+      phase: 'Engine start',
+      items: [
+        { check: 'Mixture rich', why: 'Required for start' },
+        { check: 'Throttle slightly forward', why: 'Aircraft-specific quantity' },
+        { check: 'Master switch ON', why: 'Power up' },
+        { check: 'Beacon ON', why: 'Warns ground personnel' },
+        { check: 'Engine area clear (shout "clear prop!")', why: 'Don\'t kill bystanders' },
+        { check: 'Start engine', why: 'Self-explanatory' },
+        { check: 'Oil pressure rises within 30 seconds', why: 'Otherwise engine damage' },
+        { check: 'Ammeter shows charging', why: 'Otherwise dead battery in flight' },
+      ],
+    },
+    {
+      phase: 'Run-up (before takeoff)',
+      items: [
+        { check: 'Brakes set firmly', why: 'Don\'t roll during runup' },
+        { check: 'Engine warm (oil temp in green)', why: 'Don\'t go to full power cold' },
+        { check: 'Mag check (left, both, right, both)', why: 'Verify ignition system redundancy' },
+        { check: 'Carburetor heat check (RPM drop expected)', why: 'Verify carb heat works' },
+        { check: 'Engine instruments green', why: 'Last chance check' },
+        { check: 'Controls full + free', why: 'Final verification' },
+        { check: 'Trim set for takeoff', why: 'Confirmation' },
+        { check: 'Flaps set for takeoff', why: 'Confirmation' },
+        { check: 'Doors and windows latched', why: 'Don\'t lose a door on takeoff' },
+        { check: 'Seatbelts on', why: 'Required' },
+      ],
+    },
+    {
+      phase: 'Pre-takeoff (lined up on runway)',
+      items: [
+        { check: 'Strobe lights ON', why: 'Increase visibility' },
+        { check: 'Landing light ON', why: 'Visibility + collision avoidance' },
+        { check: 'Transponder ALT', why: 'ATC sees your altitude' },
+        { check: 'Heading bug on runway heading', why: 'Quick reference after rotation' },
+        { check: 'Final sky scan for traffic', why: 'See-and-avoid principle' },
+        { check: 'Apply full power smoothly', why: 'Smooth application reduces engine stress' },
+        { check: 'Monitor engine instruments through takeoff roll', why: 'Catch engine failure early' },
+        { check: 'Verify positive rate of climb after rotation', why: 'Don\'t retract gear in a sink' },
+      ],
+    },
+  ];
+
+  // ─── Force calculator inputs ───────────────────────────────────────────
+  var FORCE_CALCULATOR_PRESETS = [
+    { name: 'Cessna 172', wingArea: 16.2, weight: 11400, maxSpeed: 64, cl: 1.5, notes: 'Most-trained-on aircraft in history' },
+    { name: 'Boeing 747', wingArea: 511, weight: 3900000, maxSpeed: 257, cl: 1.4, notes: 'Iconic jumbo jet' },
+    { name: 'Cessna Citation X', wingArea: 49, weight: 161000, maxSpeed: 312, cl: 0.5, notes: 'High-speed business jet' },
+    { name: 'F-22 Raptor', wingArea: 78, weight: 282000, maxSpeed: 750, cl: 0.4, notes: 'Stealth fighter' },
+    { name: 'Sopwith Camel', wingArea: 21, weight: 4400, maxSpeed: 51, cl: 1.6, notes: 'WWI biplane' },
+  ];
+
+  // ─── Aviation glossary (verbose) ───────────────────────────────────────
+  var AVIATION_GLOSSARY = [
+    { term: 'AGL', def: 'Above Ground Level. Altitude measured from the ground beneath the aircraft, not sea level.' },
+    { term: 'AoA', def: 'Angle of Attack. Angle between wing chord and oncoming air. Critical AoA = where wing stalls.' },
+    { term: 'ASI', def: 'Airspeed Indicator. Shows aircraft speed through the air, not over the ground.' },
+    { term: 'ATC', def: 'Air Traffic Control. Network of controllers managing aircraft traffic.' },
+    { term: 'ATP', def: 'Airline Transport Pilot. Highest pilot certificate.' },
+    { term: 'CFI', def: 'Certified Flight Instructor.' },
+    { term: 'CFII', def: 'CFI with instrument instructor rating.' },
+    { term: 'CG', def: 'Center of Gravity. Where all mass effectively concentrates.' },
+    { term: 'CP', def: 'Center of Pressure. Where net aerodynamic force acts.' },
+    { term: 'Chord', def: 'Imaginary line from leading edge to trailing edge of the wing.' },
+    { term: 'Climb', def: 'Increasing altitude. Standard climb is ~500-1000 fpm.' },
+    { term: 'Cruise', def: 'Level flight at a sustained altitude and airspeed.' },
+    { term: 'Density altitude', def: 'Pressure altitude corrected for non-standard temperature. Affects aircraft performance.' },
+    { term: 'Descent', def: 'Decreasing altitude. Standard descent ~500-700 fpm.' },
+    { term: 'Drag', def: 'Aerodynamic force opposing motion. Two types: parasite + induced.' },
+    { term: 'FAR', def: 'Federal Aviation Regulations. The legal rules of US aviation.' },
+    { term: 'FBO', def: 'Fixed Base Operator. Airport-based business providing fuel, maintenance, rental.' },
+    { term: 'FL', def: 'Flight Level. Altitude in hundreds of feet above 18,000 ft using standard pressure. FL350 = 35,000 ft.' },
+    { term: 'Glide ratio', def: 'How far an aircraft glides forward per foot of altitude lost. Cessna 172: ~9:1. Glider: 30-50:1.' },
+    { term: 'GPS', def: 'Global Positioning System. Satellite-based navigation.' },
+    { term: 'Ground effect', def: 'Increased lift and reduced induced drag when flying within one wingspan of the ground. Aircraft "float" when landing.' },
+    { term: 'Heading', def: 'Direction the nose is pointing. Magnetic heading is compass direction.' },
+    { term: 'IFR', def: 'Instrument Flight Rules. Flying by reference to instruments in clouds or bad weather.' },
+    { term: 'IMC', def: 'Instrument Meteorological Conditions. Weather requiring IFR flight.' },
+    { term: 'Kt / knot', def: 'Nautical miles per hour. 1 kt ≈ 1.15 mph.' },
+    { term: 'Lift', def: 'Aerodynamic force perpendicular to relative wind. Keeps the aircraft up.' },
+    { term: 'METAR', def: 'Current weather report for an airport.' },
+    { term: 'Mach', def: 'Ratio of speed to speed of sound. Mach 1 = speed of sound.' },
+    { term: 'MSL', def: 'Mean Sea Level. Altitude reference for altimeters below FL180.' },
+    { term: 'NDB', def: 'Non-Directional Beacon. Older navigation aid; mostly decommissioned.' },
+    { term: 'Nautical mile', def: '1 minute of latitude. 1 nm = 1.15 statute miles.' },
+    { term: 'NOTAM', def: 'Notice to Airmen. Important info about closures, hazards, equipment status.' },
+    { term: 'PIC', def: 'Pilot In Command. The pilot legally responsible for the flight.' },
+    { term: 'PPL', def: 'Private Pilot License (certificate).' },
+    { term: 'Pitch', def: 'Nose up/down rotation about the lateral axis.' },
+    { term: 'Pitot tube', def: 'Forward-facing tube that measures total air pressure for the ASI.' },
+    { term: 'Propeller', def: 'A spinning airfoil that produces thrust by accelerating air rearward.' },
+    { term: 'Roll', def: 'Wing up/down rotation about the longitudinal axis.' },
+    { term: 'Rotation', def: 'When the pilot pulls back on the yoke to start lifting the nose at takeoff speed.' },
+    { term: 'Rudder', def: 'Movable surface on the vertical stabilizer (tail). Controls yaw.' },
+    { term: 'Slip', def: 'Uncoordinated flight where the aircraft is yawed into the turn. Used to descend without gaining speed.' },
+    { term: 'Stall', def: 'Loss of lift due to exceeding critical AoA. Can happen at any speed.' },
+    { term: 'TAF', def: 'Terminal Aerodrome Forecast. Aviation weather forecast.' },
+    { term: 'Thrust', def: 'Forward force from engines.' },
+    { term: 'Trim', def: 'Adjustment of control surfaces so the aircraft maintains attitude without pilot input.' },
+    { term: 'Va', def: 'Maneuvering speed. Don\'t exceed in turbulence.' },
+    { term: 'Vne', def: 'Never exceed speed (red line on ASI).' },
+    { term: 'Vno', def: 'Max structural cruise speed (top of green arc).' },
+    { term: 'Vs1', def: 'Stall speed in clean configuration (bottom of green arc).' },
+    { term: 'Vso', def: 'Stall speed in landing configuration (bottom of white arc).' },
+    { term: 'Vy', def: 'Best rate of climb speed.' },
+    { term: 'Vx', def: 'Best angle of climb speed (use for obstacle clearance).' },
+    { term: 'VFR', def: 'Visual Flight Rules. Flying by visual reference to the ground.' },
+    { term: 'VOR', def: 'VHF Omnidirectional Range. Ground-based navigation aid.' },
+    { term: 'Wake turbulence', def: 'Wingtip vortices from preceding aircraft. Can flip following aircraft.' },
+    { term: 'Weight', def: 'Force of gravity on the aircraft. Always present.' },
+    { term: 'Yaw', def: 'Nose left/right rotation about the vertical axis.' },
+    { term: 'Yoke', def: 'Steering wheel-like control. Pitch (push/pull) and roll (left/right).' },
+  ];
+
+  // ─── History of aviation timeline (verbose) ────────────────────────────
+  var AVIATION_TIMELINE = [
+    { year: 1783, event: 'Montgolfier brothers launch the first hot air balloon (Paris). First human flight.' },
+    { year: 1853, event: 'Sir George Cayley flies the first manned glider. Cayley is considered the "father of aerodynamics."' },
+    { year: 1900, event: 'Wright brothers begin glider experiments at Kitty Hawk, NC.' },
+    { year: 1903, event: 'December 17: First powered, controlled, sustained flight by the Wright Brothers (12 seconds, 120 ft).' },
+    { year: 1909, event: 'Louis Blériot flies across the English Channel.' },
+    { year: 1911, event: 'First aerial photography from an aircraft.' },
+    { year: 1914, event: 'First scheduled commercial passenger flight: St. Petersburg, FL to Tampa.' },
+    { year: 1919, event: 'First nonstop transatlantic flight by Alcock and Brown.' },
+    { year: 1921, event: 'Bessie Coleman becomes first African-American woman to earn a pilot\'s license.' },
+    { year: 1924, event: 'First aerial circumnavigation of the Earth (US Army Air Service).' },
+    { year: 1927, event: 'Charles Lindbergh: solo nonstop transatlantic flight in Spirit of St. Louis.' },
+    { year: 1932, event: 'Amelia Earhart: first woman to fly solo across the Atlantic.' },
+    { year: 1935, event: 'DC-3 first flight — revolutionizes airline travel.' },
+    { year: 1939, event: 'First turbojet flight (German Heinkel He 178).' },
+    { year: 1947, event: 'Chuck Yeager breaks the sound barrier in Bell X-1.' },
+    { year: 1952, event: 'First commercial jet airliner (de Havilland Comet).' },
+    { year: 1957, event: 'Soviet Sputnik 1 — first artificial satellite.' },
+    { year: 1958, event: 'NASA founded.' },
+    { year: 1961, event: 'Yuri Gagarin first human in space (Vostok 1).' },
+    { year: 1969, event: 'Apollo 11: first humans on the Moon. Boeing 747 first flight same year.' },
+    { year: 1976, event: 'Concorde enters service — supersonic passenger travel.' },
+    { year: 1981, event: 'Space Shuttle first flight (Columbia).' },
+    { year: 1986, event: 'Voyager (Burt Rutan): first nonstop unrefueled circumnavigation.' },
+    { year: 1995, event: 'Eileen Collins becomes first woman to pilot a Space Shuttle.' },
+    { year: 2003, event: 'Concorde retires. SpaceShipOne reaches space.' },
+    { year: 2004, event: 'SpaceShipOne wins the X Prize.' },
+    { year: 2008, event: 'Sully Sullenberger ditches US Airways 1549 in the Hudson River; all 155 survive.' },
+    { year: 2010, event: 'First successful solar-powered manned flight (Solar Impulse).' },
+    { year: 2012, event: 'SpaceX Dragon: first private spacecraft to dock with ISS.' },
+    { year: 2015, event: 'Solar Impulse 2 begins circumnavigation on solar power alone (completed 2016).' },
+    { year: 2020, event: 'SpaceX Crew Dragon: first commercial human spaceflight.' },
+    { year: 2021, event: 'First powered, controlled flight on another planet (NASA Ingenuity helicopter on Mars).' },
+    { year: 2022, event: 'Boeing 747 production ends after 54 years (1969-2022).' },
+  ];
+
+  // ─── Aircraft anatomy (parts of a plane) ───────────────────────────────
+  var AIRCRAFT_ANATOMY = [
+    {
+      part: 'Fuselage',
+      location: 'Main body',
+      function: 'Houses pilots, passengers, cargo, fuel. Connects all other components.',
+      design: 'Streamlined to minimize drag. Pressurized in high-altitude airliners. Made of aluminum (most), composites (modern airliners like 787), or fabric over tube (small classics).',
+    },
+    {
+      part: 'Wings',
+      location: 'Sides of fuselage',
+      function: 'Generate lift. Often hold fuel tanks. Control surfaces (ailerons, flaps, slats) mount here.',
+      types: ['Cantilever (no struts, internal spar)', 'Strut-braced (external supports)', 'High-wing (Cessna)', 'Low-wing (Piper, most airliners)', 'Mid-wing (fighter jets, biplanes)'],
+    },
+    {
+      part: 'Ailerons',
+      location: 'Trailing edge, outer wing',
+      function: 'Control roll. Move opposite directions — one up, one down — to bank the aircraft.',
+    },
+    {
+      part: 'Flaps',
+      location: 'Trailing edge, inner wing',
+      function: 'Increase lift AND drag at low speeds. Used for takeoff (small extension) and landing (full extension).',
+      types: ['Plain', 'Split', 'Slotted', 'Fowler', 'Krueger (leading edge)', 'Slats (leading edge slats)'],
+    },
+    {
+      part: 'Slats',
+      location: 'Leading edge of wing',
+      function: 'Extend forward at low speed to delay stall by allowing higher AoA. Often combined with flaps for landing.',
+    },
+    {
+      part: 'Spoilers',
+      location: 'Upper wing surface',
+      function: 'Reduce lift (and increase drag). Used for rapid descent and as ground spoilers to plant aircraft on runway after landing.',
+    },
+    {
+      part: 'Horizontal stabilizer',
+      location: 'Tail',
+      function: 'Provides longitudinal (pitch) stability. Without it, aircraft would tumble.',
+      design: 'Usually contains the elevator (movable trailing edge). Some aircraft use "stabilator" (entire surface moves).',
+    },
+    {
+      part: 'Elevator',
+      location: 'Trailing edge of horizontal stabilizer',
+      function: 'Controls pitch. Move up — nose pitches up. Move down — nose pitches down.',
+    },
+    {
+      part: 'Vertical stabilizer (fin)',
+      location: 'Tail, vertical',
+      function: 'Provides directional (yaw) stability. Like the feathers on an arrow.',
+    },
+    {
+      part: 'Rudder',
+      location: 'Trailing edge of vertical stabilizer',
+      function: 'Controls yaw. Used for coordination of turns and crosswind landings.',
+    },
+    {
+      part: 'Cockpit',
+      location: 'Forward fuselage',
+      function: 'Pilot workstation. Houses controls, instruments, communication and navigation equipment.',
+    },
+    {
+      part: 'Engines',
+      types: [
+        'Reciprocating (piston): pistons driving a propeller. Cessnas, Pipers, most general aviation.',
+        'Turboprop: gas turbine driving a propeller. Regional aircraft.',
+        'Turbofan: jet engine with large bypass fan. Modern airliners.',
+        'Turbojet: pure jet. Older airliners and military.',
+        'Rocket: carries own oxidizer. SR-71 boosters, spacecraft.',
+      ],
+    },
+    {
+      part: 'Propeller',
+      location: 'Front of engine (tractor) or rear (pusher)',
+      function: 'Spinning airfoils that produce thrust. Pitch angle determines how much air is "bitten" per revolution.',
+      types: ['Fixed-pitch (small aircraft)', 'Constant-speed (most modern aircraft — pitch adjusts automatically)', 'Variable-pitch (manual control)'],
+    },
+    {
+      part: 'Landing gear',
+      types: ['Tricycle (nose wheel + 2 mains): most common, easier to land', 'Tailwheel ("conventional"): 2 mains + tail wheel; harder to land but better on rough fields', 'Tandem (one in front, one behind): military jets', 'Floats: water landing'],
+      function: 'Support aircraft on ground. Retractable in high-performance aircraft for less drag.',
+    },
+    {
+      part: 'Fuel tanks',
+      location: 'Usually in wings; sometimes fuselage',
+      capacity: 'C172: 53 gallons (~6 hours endurance). 747: 63,000 gallons (~16 hours).',
+      types: ['Avgas (100LL: low-lead, piston aircraft)', 'Jet-A (kerosene, all turbine aircraft)'],
+    },
+    {
+      part: 'Pitot-static system',
+      location: 'Pitot tube on wing or nose; static ports on fuselage side',
+      function: 'Provides air pressure data for airspeed, altitude, vertical speed.',
+    },
+    {
+      part: 'Antennas',
+      types: ['VHF communication (typically two)', 'GPS', 'Transponder', 'ADF (older NDB navigation)', 'ELT (emergency locator transmitter)', 'Weather radar (in nose radome for airliners)'],
+    },
+    {
+      part: 'Lighting',
+      types: ['Position lights (red left wing, green right wing, white tail)', 'Anti-collision beacon (red flashing on top)', 'Strobes (white flashing on wingtips)', 'Landing lights (forward facing for approach)', 'Taxi lights (lower power for ground operations)'],
+    },
+    {
+      part: 'Trim tabs',
+      location: 'On control surfaces (elevator, sometimes aileron and rudder)',
+      function: 'Small surfaces that hold the main control surface in a position, reducing pilot effort to maintain attitude.',
+    },
+    {
+      part: 'Static dischargers',
+      location: 'Trailing edges',
+      function: 'Dissipate static electricity buildup during flight. Without them, radio interference and even electrical discharge would occur.',
+    },
+  ];
+
+  // ─── Famous flights (verbose) ─────────────────────────────────────────
+  var FAMOUS_FLIGHTS = [
+    {
+      flight: 'First powered flight',
+      date: 'December 17, 1903',
+      pilots: 'Wright brothers',
+      location: 'Kitty Hawk, North Carolina',
+      story: 'After years of glider testing and a winter of engine development, Orville Wright made the first powered flight (12 seconds, 120 feet). Wilbur made the day\'s longest flight: 59 seconds, 852 feet. The flight was witnessed by 5 people and only one photograph was taken.',
+      legacy: 'Aviation history begins here.',
+    },
+    {
+      flight: 'First transatlantic flight',
+      date: 'June 14-15, 1919',
+      pilots: 'Alcock and Brown',
+      location: 'Newfoundland to Ireland',
+      story: 'Two British pilots flew a modified WWI bomber (Vickers Vimy) nonstop across the Atlantic — 1,890 miles in 16 hours. They crashed on landing in a peat bog in Ireland but were uninjured.',
+      legacy: 'Demonstrated transoceanic flight 8 years before Lindbergh.',
+    },
+    {
+      flight: 'Spirit of St. Louis transatlantic',
+      date: 'May 20-21, 1927',
+      pilot: 'Charles Lindbergh',
+      location: 'New York to Paris',
+      story: '33.5 hours alone, no autopilot. Lindbergh fought sleep with cold air on his face. When he landed at Le Bourget Airfield, 150,000 people had gathered.',
+      legacy: 'Captured the world\'s imagination. Created the modern celebrity culture and inspired massive investment in aviation.',
+    },
+    {
+      flight: 'First flight over the North Pole',
+      date: 'May 9, 1926',
+      pilots: 'Richard Byrd and Floyd Bennett',
+      story: 'A 15-hour flight in a Fokker tri-motor. Claim was disputed for decades (recent analysis suggests they may have turned back short).',
+    },
+    {
+      flight: 'Earhart Pacific solo',
+      date: 'January 11-12, 1935',
+      pilot: 'Amelia Earhart',
+      location: 'Honolulu to Oakland (2,408 miles)',
+      story: 'First person — male or female — to fly solo from Hawaii to mainland US. Major navigational feat over featureless ocean.',
+    },
+    {
+      flight: 'Earhart\'s disappearance',
+      date: 'July 2, 1937',
+      pilots: 'Earhart and navigator Fred Noonan',
+      story: 'Attempting to circumnavigate the world along the equator. Disappeared somewhere near Howland Island in the Pacific.',
+      legacy: 'One of aviation\'s great mysteries. Various theories: ran out of fuel and ditched, captured by Japanese, crash-landed on uninhabited island. No definitive evidence has been found.',
+    },
+    {
+      flight: 'Pearl Harbor attack',
+      date: 'December 7, 1941',
+      story: '350+ Japanese aircraft attacked the US naval base in Hawaii. Brought the US into WWII.',
+      aviationContext: 'Demonstrated the decisive power of carrier-based air operations and changed naval warfare forever.',
+    },
+    {
+      flight: 'Doolittle Raid',
+      date: 'April 18, 1942',
+      pilot: 'Jimmy Doolittle and 79 others',
+      story: '16 B-25 Mitchell bombers launched from carrier USS Hornet to strike Japan — first US strike on Japanese mainland.',
+    },
+    {
+      flight: 'Berlin Airlift',
+      date: '1948-1949',
+      story: 'When Soviets blockaded West Berlin, the US and Allies kept the city supplied entirely by air. Over 277,000 flights delivered 2.3 million tons of supplies.',
+      legacy: 'Showed that airpower could deliver humanitarian aid at scale.',
+    },
+    {
+      flight: 'X-1 sound barrier',
+      date: 'October 14, 1947',
+      pilot: 'Chuck Yeager',
+      story: 'Yeager flew the bullet-shaped Bell X-1 past Mach 1 over the Mojave Desert. He had broken ribs the day before from a horseback fall and used a broomstick handle to close the cockpit hatch.',
+    },
+    {
+      flight: 'First jet airliner service',
+      date: 'May 2, 1952',
+      operator: 'BOAC (de Havilland Comet)',
+      story: 'Inaugural commercial jet service. Comet had several fatal crashes in 1954 due to metal fatigue at pressurized window corners — led to fundamental redesign of pressurized aircraft.',
+    },
+    {
+      flight: 'X-15 spaceflight',
+      date: 'July 17, 1962',
+      pilot: 'Robert White',
+      story: 'X-15 rocket plane reached 314,750 ft — qualifying as spaceflight (above 50 miles per US standard). One of three pilots to earn astronaut wings via X-15.',
+    },
+    {
+      flight: 'Apollo 11 lunar landing',
+      date: 'July 20, 1969',
+      pilots: 'Neil Armstrong, Buzz Aldrin, Michael Collins',
+      story: 'Armstrong and Aldrin landed the lunar module Eagle in the Sea of Tranquility while Collins orbited overhead. Armstrong\'s first words on the surface: "That\'s one small step for [a] man, one giant leap for mankind."',
+    },
+    {
+      flight: 'Voyager unrefueled circumnavigation',
+      date: 'December 14-23, 1986',
+      pilots: 'Dick Rutan and Jeana Yeager',
+      story: 'Around the world in 9 days, 3 minutes, on a single tank of fuel. The aircraft (designed by Burt Rutan) had wings so long it dragged its wingtips on takeoff.',
+    },
+    {
+      flight: 'British Airways 9 — all-engine flameout',
+      date: 'June 24, 1982',
+      story: 'A 747 flew into volcanic ash from Mt. Galunggung. All four engines flamed out. Captain Eric Moody glided the aircraft for 16 minutes before restarting engines. Famous announcement: "Ladies and gentlemen, this is your captain speaking. We have a small problem. All four engines have stopped. We are doing our damnedest to get them going again."',
+    },
+    {
+      flight: 'Gimli Glider',
+      date: 'July 23, 1983',
+      story: 'Air Canada 767 ran out of fuel at 41,000 ft due to a metric/imperial conversion error. Captain glided 100+ miles to a closed airstrip in Gimli, Manitoba. Landed safely. No fatalities.',
+      lesson: 'Demonstrated heroic airmanship and the value of pilots trained on gliders.',
+    },
+    {
+      flight: 'Sioux City 232',
+      date: 'July 19, 1989',
+      story: 'United DC-10 had total hydraulic failure after engine explosion. Captain Al Haynes and crew used differential throttle on the two remaining engines to control the aircraft and partially crashed at Sioux City, Iowa. 184 of 296 survived — many credited the crew with their lives.',
+    },
+    {
+      flight: 'Miracle on the Hudson',
+      date: 'January 15, 2009',
+      pilot: 'Captain "Sully" Sullenberger',
+      story: 'US Airways 1549 lost both engines to bird strikes 3 minutes after takeoff from LaGuardia. Sully glided the disabled A320 to a successful water landing on the Hudson River. All 155 people aboard survived.',
+      legacy: 'Demonstrated the value of experienced pilots and good crew resource management.',
+    },
+    {
+      flight: 'Asiana 214 crash',
+      date: 'July 6, 2013',
+      story: 'A Boeing 777 crashed on landing at San Francisco due to over-reliance on automation and inadequate basic flying skills. 3 fatalities. Highlighted concerns about pilot training in the era of automation.',
+    },
+    {
+      flight: 'Ingenuity on Mars',
+      date: 'April 19, 2021',
+      story: 'NASA Ingenuity made the first powered flight on another planet. 39 seconds, 3 meters up, in atmosphere only 1% as dense as Earth\'s. Flew 72 missions before retiring in 2024.',
+    },
+  ];
+
+  // ─── Common questions students ask ─────────────────────────────────────
+  var STUDENT_FAQ = [
+    {
+      q: 'How do planes stay up?',
+      a: 'Wings make air move faster over the top than the bottom, creating lower pressure on top. The higher pressure beneath pushes the wing up. (Also: wings deflect air downward, and the air pushes back up — both descriptions are correct.)',
+    },
+    {
+      q: 'Why don\'t planes fall when they\'re flying?',
+      a: 'They\'re always falling — but the wings are constantly converting forward motion into upward lift. As long as the plane keeps moving forward, the wings keep generating enough lift to balance gravity.',
+    },
+    {
+      q: 'What\'s the heaviest plane ever built?',
+      a: 'The Antonov An-225 Mriya — 706,000 lb empty, max takeoff 1.4 million lb. Only one was ever built (destroyed in 2022 during the Ukraine conflict). Designed to carry the Soviet space shuttle Buran.',
+    },
+    {
+      q: 'How fast can planes fly?',
+      a: 'Commercial airliners: ~500 mph (Mach 0.8). Concorde was Mach 2 (1,350 mph). SR-71 Blackbird: Mach 3.3+. NASA X-43 (unmanned): Mach 9.6+ in flight test.',
+    },
+    {
+      q: 'How high can planes fly?',
+      a: 'Most airliners cruise at 30,000-40,000 ft. The SR-71 cruised at 85,000 ft. The U-2 spy plane operates at 70,000+ ft. Helio Stratos balloon platforms reach 70,000+ ft for research.',
+    },
+    {
+      q: 'Can a plane fly with one engine?',
+      a: 'Most multi-engine aircraft are designed to fly safely with one engine out — they\'re certified for it. Twin-jet airliners must be able to climb to safe altitude on one engine after takeoff. Single-engine aircraft must land if the engine quits.',
+    },
+    {
+      q: 'What happens if a plane runs out of fuel?',
+      a: 'The engines stop and the plane glides. Modern airliners can glide 100+ miles from cruising altitude. Famous examples: Gimli Glider (1983), Air Transat 236 (2001). Both landed safely without fuel.',
+    },
+    {
+      q: 'How do pilots see at night or in clouds?',
+      a: 'Instrument flying. Pilots use attitude indicators, altimeters, heading indicators, and GPS to know where they are without seeing outside. Air traffic control radar tracks them and provides separation from other aircraft.',
+    },
+    {
+      q: 'Why don\'t pilots use windshield wipers?',
+      a: 'They do — but rain doesn\'t stay on a windshield moving at 200+ mph. At cruise speed (500+ mph), rain doesn\'t accumulate. Wipers and rain repellent help during slow flight and on the ground.',
+    },
+    {
+      q: 'Can a plane back up?',
+      a: 'Yes! Most jets have reverse thrust capability (engines deflect exhaust forward) to help stop after landing. Some can taxi backward, but it\'s not common — usually tugs push them back from gates.',
+    },
+    {
+      q: 'How long does it take to become a commercial pilot?',
+      a: 'About 18-24 months full-time. PPL (private pilot): 3-6 months, ~$10K. Instrument rating: 3-6 months, ~$10K. Commercial pilot: 3-6 months, ~$15K. ATP requires 1,500 hours, often built as a flight instructor.',
+    },
+    {
+      q: 'Is it safe to fly during a thunderstorm?',
+      a: 'Pilots avoid thunderstorms by 20+ miles. Hail, severe turbulence, microbursts, and lightning are all hazards. Modern aircraft have weather radar to detect storms ahead. Lightning hits are routine and the aircraft is designed to dissipate the strike harmlessly.',
+    },
+    {
+      q: 'How do planes turn?',
+      a: 'Pilots use ailerons (wing flaps that move opposite directions) to BANK the aircraft. The banked lift vector has a horizontal component that pulls the plane around. Rudder is used to keep the turn coordinated. NOT primarily steered by rudder like a boat.',
+    },
+    {
+      q: 'Why do planes have black boxes?',
+      a: 'Flight Data Recorder (FDR) records dozens of parameters about the flight. Cockpit Voice Recorder (CVR) records cockpit audio. Together they help investigators understand what happened in a crash. They\'re actually ORANGE for visibility — "black box" is metaphorical.',
+    },
+    {
+      q: 'Can planes float?',
+      a: 'Most can\'t for long — they fill with water and sink. But amphibious aircraft and seaplanes are designed for water landings. Boeing 707 and others have floated after water landings until passengers could evacuate.',
+    },
+    {
+      q: 'Why do contrails form?',
+      a: 'Engine exhaust contains water vapor, which freezes into ice crystals in cold high-altitude air, forming visible white lines. Whether contrails are persistent depends on humidity at altitude. Climate scientists study them because they contribute to warming.',
+    },
+    {
+      q: 'Why are jet engines so loud?',
+      a: 'The roar comes from the high-velocity exhaust mixing with surrounding air. Modern high-bypass turbofans are MUCH quieter than older low-bypass turbojets. Acoustic liners in the inlet and chevroned exhaust further reduce noise.',
+    },
+    {
+      q: 'How do helicopters fly?',
+      a: 'The main rotor is a spinning wing. Its blades create lift just like an airplane wing — but they\'re always moving even when the helicopter is stationary. By tilting the rotor, the helicopter moves forward, sideways, or backward.',
+    },
+  ];
+
+  // ─── Inquiry questions (open-ended) ────────────────────────────────────
+  var INQUIRY_PROMPTS = [
+    'Why don\'t birds need engines to fly, but airplanes do?',
+    'If a plane is flying forward at 500 mph but the air outside is at -60°F, why doesn\'t it freeze?',
+    'How is a propeller different from a fan?',
+    'Why does a plane fly differently in Denver than in Boston?',
+    'If you flew west fast enough, could you stay in daylight forever?',
+    'Could you make an airplane out of solar panels?',
+    'Why don\'t cars use wings to reduce friction?',
+    'How would airplanes work on a planet with thicker atmosphere?',
+    'How would they work on a planet with thinner atmosphere?',
+    'What\'s the smallest possible airplane that could carry a human?',
+    'Could you fly an airplane underwater (in the same way fish swim)?',
+    'Why do birds form V-shapes when they migrate? Could airplanes do the same?',
+    'How would the Wright brothers feel about a 747?',
+    'How would Charles Lindbergh feel about an autopilot?',
+    'Will airplanes still have human pilots in 50 years?',
+    'How do drones see the world differently than humans?',
+    'Could airplanes be powered entirely by batteries someday?',
+    'Why is supersonic passenger flight not currently possible?',
+    'If a plane could go fast enough, would it leave Earth\'s atmosphere?',
+    'Why don\'t airplanes have parachutes for all passengers?',
+  ];
+
+  // ─── Lesson plans (NGSS-aligned) ───────────────────────────────────────
+  var FLIGHT_LESSON_PLANS = [
+    {
+      title: 'The Four Forces (Intro)',
+      grade: '3-5',
+      duration: '45 minutes',
+      objectives: ['Identify the four forces acting on a plane in flight', 'Explain how the forces balance in level flight'],
+      standards: ['NGSS 3-PS2-1 (forces and motion)'],
+      sequence: [
+        '(5 min) Hook: throw paper airplanes; ask what makes them fly',
+        '(15 min) Direct instruction: lift, weight, thrust, drag with diagrams',
+        '(15 min) Activity: students hold cardboard airfoils, "fly" them through the air, feel lift',
+        '(5 min) Closure: students name the four forces and describe one example of each',
+      ],
+      assessment: 'Exit ticket: draw a plane and label the four forces with arrows',
+    },
+    {
+      title: 'Bernoulli vs Newton',
+      grade: '7-12',
+      duration: '60 minutes',
+      objectives: ['Explain lift using both Bernoulli\'s Principle and Newton\'s Third Law', 'Conduct experiments demonstrating both'],
+      standards: ['NGSS HS-PS2-1 (forces)'],
+      sequence: [
+        '(10 min) Hook: blow over a piece of paper. Hold one end. Watch it rise. Why?',
+        '(15 min) Direct instruction: Bernoulli\'s equation; Newton\'s third law',
+        '(25 min) Stations: Bernoulli demos (atomizer, paper, ping pong ball levitation); Newton demos (rotor blade, wing deflecting smoke)',
+        '(10 min) Discussion: are these alternatives or complementary?',
+      ],
+      assessment: 'Lab report: pick a demo, explain it using both Bernoulli and Newton',
+    },
+    {
+      title: 'Famous flight choices',
+      grade: '6-8',
+      duration: '50 minutes',
+      objectives: ['Research a famous flight; explain why it mattered'],
+      sequence: [
+        '(10 min) Show photos of 5-6 famous flights (Wright brothers, Lindbergh, Earhart, Apollo 11, Sully)',
+        '(30 min) Students pick one flight, research using FAMOUS_FLIGHTS database',
+        '(10 min) Each student shares one fact in 30 seconds',
+      ],
+      assessment: 'Mini-presentation rubric: clarity, accuracy, why it matters',
+    },
+    {
+      title: 'Pre-flight inspection',
+      grade: '6-12',
+      duration: '45 minutes',
+      objectives: ['Identify pre-flight inspection items; explain why each matters'],
+      sequence: [
+        '(5 min) Hook: video of pilot walking around a Cessna',
+        '(20 min) Direct instruction with PREFLIGHT_CHECKLIST: walk through items, students take notes',
+        '(15 min) Activity: students design their own checklist for a paper airplane "flight"',
+        '(5 min) Closure: which item is the most important and why?',
+      ],
+    },
+    {
+      title: 'Weather and flight',
+      grade: '6-12',
+      duration: '60 minutes',
+      objectives: ['Identify weather phenomena that affect flight', 'Interpret a METAR'],
+      sequence: [
+        '(10 min) Hook: real METARs from local airport posted on board',
+        '(20 min) Direct instruction: clouds, wind, thunderstorms, icing, METAR decoding',
+        '(20 min) Activity: students decode 5 METARs and decide if they\'d fly',
+        '(10 min) Closure: discuss real-life delays from weather',
+      ],
+    },
+    {
+      title: 'Career pathways in aviation',
+      grade: '8-12',
+      duration: '50 minutes',
+      objectives: ['Identify multiple career paths in aviation', 'Match interests to careers'],
+      sequence: [
+        '(10 min) Hook: have students brainstorm careers — usually only "pilot" comes up',
+        '(20 min) Reveal AVIATION_CAREERS — 15+ roles beyond pilot',
+        '(15 min) Activity: students pick one role, research training + pay + outlook',
+        '(5 min) Closure: each student shares the role they\'re most interested in',
+      ],
+    },
+    {
+      title: 'Drone Part 107 quiz prep',
+      grade: '9-12',
+      duration: 'Multi-session unit',
+      objectives: ['Pass mock Part 107 questions about airspace, weather, regulations'],
+      sequence: [
+        'Sessions 1-2: Airspace classes (A-G) and where drones can fly',
+        'Session 3: Weather knowledge required for Part 107',
+        'Session 4: Regulations (max altitude, line of sight, restricted areas)',
+        'Session 5: Practice test',
+      ],
+    },
+    {
+      title: 'Stall science',
+      grade: '9-12',
+      duration: '60 minutes',
+      objectives: ['Explain what causes a stall (critical AoA, not speed)', 'Describe stall recovery'],
+      sequence: [
+        '(10 min) Hook: ask "how do planes stall?" — common misconception is "they lose speed"',
+        '(20 min) Direct instruction: AoA, critical AoA, lift drop',
+        '(20 min) Activity: tilt a wing model at various AoA, mark on a graph where lift drops',
+        '(10 min) Stall recovery sequence + why pulling back is wrong',
+      ],
+    },
+    {
+      title: 'Aviation in your community',
+      grade: '6-12',
+      duration: 'Multi-session research project',
+      objectives: ['Identify the role of aviation in your local economy and history'],
+      sequence: [
+        'Session 1: Research local airport history',
+        'Session 2: Find an aviation-related local business or career',
+        'Session 3: Interview a local pilot, mechanic, or airport employee',
+        'Session 4: Present findings to class',
+      ],
+    },
+    {
+      title: 'Forces challenge',
+      grade: '5-8',
+      duration: '60 minutes',
+      objectives: ['Apply force formulas to compute lift on real aircraft'],
+      sequence: [
+        '(10 min) Recap: L = ½ρv²SCₗ',
+        '(20 min) Students plug in numbers for different aircraft (Cessna 172, 747, F-22)',
+        '(20 min) Discuss: how does speed affect lift? Wing area? Altitude (density)?',
+        '(10 min) Closure: rank these aircraft by lift required to stay in the air',
+      ],
+    },
+  ];
+
+  // ─── Aviation math problems ────────────────────────────────────────────
+  var AVIATION_MATH = [
+    {
+      grade: '3-5',
+      problem: 'A Cessna flies at 120 knots for 2.5 hours. How far does it travel in nautical miles?',
+      solution: '120 × 2.5 = 300 nm',
+    },
+    {
+      grade: '3-5',
+      problem: 'An airplane climbs at 500 feet per minute. How long does it take to climb from 0 to 6,000 feet?',
+      solution: '6000 / 500 = 12 minutes',
+    },
+    {
+      grade: '6-8',
+      problem: 'A 747 carries 63,000 gallons of fuel and burns ~5 gallons per nautical mile. What\'s its theoretical range?',
+      solution: '63000 / 5 = 12,600 nm. (Actually less due to reserve requirements and headwind variability.)',
+    },
+    {
+      grade: '6-8',
+      problem: 'A flight from NYC to LA is 2,475 nm. A 737 cruises at 450 knots true airspeed. With a 50-knot headwind, how long does the flight take?',
+      solution: 'Ground speed = 450 - 50 = 400 kts. Time = 2475 / 400 = 6.19 hours ≈ 6 hr 11 min',
+    },
+    {
+      grade: '9-12',
+      problem: 'Lift formula: L = ½ρv²SCₗ. For a Cessna 172 (S = 174 ft², Cₗ = 1.5 at takeoff) at sea level (ρ = 0.002378 slug/ft³), what airspeed (in ft/sec and knots) is needed for L = 2,300 lb (full takeoff weight)?',
+      solution: 'v² = 2L / (ρ·S·Cₗ) = 4600 / (0.002378 × 174 × 1.5) = 7,415. v = 86 ft/s. In knots: 86 × 0.5925 = 51 kts. (Matches the C172 takeoff speed roughly.)',
+    },
+    {
+      grade: '9-12',
+      problem: 'A jet climbs at 3,000 fpm and cruises at 38,000 ft. How long to reach cruise from sea level?',
+      solution: '38,000 / 3,000 = 12.7 minutes',
+    },
+    {
+      grade: '9-12',
+      problem: 'Great circle distance from Portland, ME (43.65°N, 70.31°W) to Reykjavik (64.15°N, 21.94°W). Use haversine formula and Earth radius 3,440 nm.',
+      solution: 'Using haversine: distance ≈ 1,990 nm. (Actual aircraft route is usually slightly different due to winds.)',
+    },
+  ];
+
+  // ─── Atmospheric layers and altitude effects ───────────────────────────
+  var ATMOSPHERE_LAYERS = [
+    {
+      layer: 'Troposphere',
+      altitude: 'Surface to 36,000 ft',
+      characteristics: 'Where weather happens. Temperature decreases with altitude (~2°C per 1000 ft, "lapse rate"). Most aircraft fly here.',
+      pressure: '14.7 psi at sea level → ~3.5 psi at 36,000 ft',
+      temperature: '15°C at sea level → -56°C at 36,000 ft (tropopause)',
+      flightImpact: 'Where ATC clears piston aircraft and most jets cruise. Turbulence common.',
+    },
+    {
+      layer: 'Stratosphere',
+      altitude: '36,000 - 160,000 ft',
+      characteristics: 'Calm, dry. Temperature INCREASES with altitude (due to ozone absorbing UV). Airliners cruise just above the tropopause.',
+      flightImpact: 'Smooth ride. SR-71 cruised at 85,000 ft, in the lower stratosphere.',
+    },
+    {
+      layer: 'Mesosphere',
+      altitude: '160,000 - 280,000 ft',
+      characteristics: 'Coldest part of the atmosphere (~-90°C). Most meteors burn up here.',
+      flightImpact: 'No aircraft can sustain flight here — air too thin. Some rockets pass through.',
+    },
+    {
+      layer: 'Thermosphere',
+      altitude: '280,000 - 1,000,000+ ft',
+      characteristics: 'Air molecules absorb solar radiation, temperatures rise to thousands of degrees (but density is too low to feel warm). ISS orbits here at ~250 mi (1,320,000 ft).',
+      flightImpact: 'Spacecraft territory.',
+    },
+    {
+      concept: 'Pressure vs density',
+      explanation: 'Atmospheric pressure drops exponentially with altitude. Density also drops, but not proportionally. Aircraft performance depends on density — which is affected by both altitude AND temperature.',
+      example: 'On a hot day, low pressure altitude, you might have density altitude of 8,000 ft — the aircraft performs as if it\'s at 8,000 ft elevation.',
+    },
+    {
+      concept: 'Why airliners cruise at 35,000 ft',
+      reasons: [
+        'Above most weather (stratosphere is calmer)',
+        'Less drag (thinner air)',
+        'Less fuel burn (jet engines designed for high altitude)',
+        'Above terrain (avoid mountains)',
+        'Clear of GA traffic (most piston aircraft below 10,000 ft)',
+      ],
+    },
+  ];
+
+  // ─── Drone (UAS) deep dive ─────────────────────────────────────────────
+  var DRONE_DEEP_DIVE = [
+    {
+      topic: 'Multirotor types',
+      list: [
+        { type: 'Quadcopter (4 rotors)', use: 'Most common. Good stability, easy control.' },
+        { type: 'Hexacopter (6)', use: 'Redundancy — can lose one motor and still fly. Heavier payloads.' },
+        { type: 'Octocopter (8)', use: 'Professional film, max stability and redundancy. Heavy camera packages.' },
+        { type: 'Fixed-wing UAS', use: 'Long endurance, large area coverage. Surveying, agriculture, military.' },
+        { type: 'VTOL hybrid', use: 'Best of both — vertical takeoff + efficient cruise. Tailsitter or tilt-rotor designs.' },
+      ],
+    },
+    {
+      topic: 'Part 107 quick rules',
+      summary: 'FAA regulation governing commercial small UAS operations under 55 lb',
+      list: [
+        'Max altitude 400 ft AGL (Above Ground Level)',
+        'Visual line-of-sight required (no flying out of sight)',
+        'Daylight or civil twilight (with anti-collision lighting waiver after dark)',
+        'Max speed 100 mph',
+        'Not over people unless authorized (Category 1-4)',
+        'Not from a moving vehicle (unless sparsely populated area)',
+        'One pilot per drone',
+      ],
+    },
+    {
+      topic: 'Part 107 certification',
+      steps: [
+        '1. Schedule the Initial Aeronautical Knowledge Test ($175)',
+        '2. Study (FAA test prep guides available free online)',
+        '3. Take the 60-question test at an FAA-approved testing center',
+        '4. Pass with 70%+',
+        '5. Apply for Remote Pilot Certificate via IACRA (online portal)',
+        '6. TSA security check (automatic)',
+        '7. Receive certificate (~6 weeks)',
+        '8. Recurrent test required every 24 months',
+      ],
+    },
+    {
+      topic: 'Drone uses (commercial)',
+      list: [
+        'Aerial photography and cinematography',
+        'Real estate marketing',
+        'Powerline and infrastructure inspection',
+        'Crop monitoring and precision agriculture',
+        'Wildlife research and conservation',
+        'Search and rescue',
+        'Police and law enforcement support',
+        'Mapping and surveying',
+        'Construction site monitoring',
+        'Insurance claim documentation',
+        'Wedding photography',
+        'Sporting events',
+      ],
+    },
+    {
+      topic: 'Drone uses (research)',
+      list: [
+        'Atmospheric sampling',
+        'Marine biology (whale spotting, kelp surveys)',
+        'Volcano monitoring',
+        'Archaeology (lidar mapping)',
+        'Agriculture experiments',
+        'Wildlife collar tracking',
+      ],
+    },
+    {
+      topic: 'Drone safety considerations',
+      list: [
+        'Battery thermal runaway (lithium polymer cells can catch fire)',
+        'Propeller injuries (kept fingers clear)',
+        'Loss of control / flyaway events',
+        'Privacy concerns',
+        'Airspace conflicts',
+        'GPS jamming/spoofing',
+      ],
+    },
+    {
+      topic: 'LAANC airspace authorization',
+      what: 'Low Altitude Authorization and Notification Capability — automated FAA system for controlled airspace approval near airports',
+      use: 'Required to fly drones within 5 nautical miles of an airport with controlled airspace',
+      apps: ['Aloft (formerly Kittyhawk)', 'AirMap', 'Skyward', 'UASidekick'],
+      time: 'Instant approval in most cases',
+    },
+  ];
+
+  // ─── Visual MNEMONICS for memorizing aviation concepts ─────────────────
+  var AVIATION_MNEMONICS = [
+    {
+      mnemonic: 'GUMPS',
+      meaning: 'Pre-landing checklist',
+      expansion: 'G - Gas (right tank, switched on). U - Undercarriage (gear down). M - Mixture (rich). P - Propeller (high RPM / pitch). S - Switches (lights, fuel pump, etc.)',
+    },
+    {
+      mnemonic: 'CIGAR',
+      meaning: 'Pre-takeoff check',
+      expansion: 'C - Controls (free and correct). I - Instruments (set). G - Gas (fuel selector on, sufficient). A - Attitude (trim set). R - Run-up complete',
+    },
+    {
+      mnemonic: 'TVMDC',
+      meaning: 'Convert true heading to compass',
+      expansion: 'True heading → Variation → Magnetic → Deviation → Compass',
+    },
+    {
+      mnemonic: 'IMSAFE',
+      meaning: 'Pilot self-evaluation before flight',
+      expansion: 'Illness? Medication? Stress? Alcohol? Fatigue? Emotion? — if any answer is yes, reconsider',
+    },
+    {
+      mnemonic: 'PAVE',
+      meaning: 'Pre-flight risk assessment',
+      expansion: 'Pilot, Aircraft, enVironment, External pressures',
+    },
+    {
+      mnemonic: '5 P\'s',
+      meaning: 'Resource management in flight',
+      expansion: 'Pilot, Plane, Passengers, Program (mission), Plot (route)',
+    },
+    {
+      mnemonic: 'P.A.R.E.',
+      meaning: 'Spin recovery',
+      expansion: 'Power idle, Ailerons neutral, Rudder opposite, Elevator forward',
+    },
+    {
+      mnemonic: 'AIM',
+      meaning: 'Pre-flight weather minimums',
+      expansion: 'Aim for higher ceilings and visibility than minimum legal requirements',
+    },
+    {
+      mnemonic: 'LEAN',
+      meaning: 'Engine leaning at altitude',
+      expansion: 'Lean (mixture) Each climb to keep engine running optimally as Air gets thiNner',
+    },
+    {
+      mnemonic: 'A1, A2, A3, A4, A5',
+      meaning: 'IFR enroute checks',
+      expansion: 'Altitude, Altimeter setting, Anti-ice, Attitude, Airspeed',
+    },
+    {
+      mnemonic: 'ATOMATOFLAMES',
+      meaning: 'VFR required equipment (day)',
+      expansion: 'Airspeed, Tachometer, Oil pressure gauge, Manifold pressure (if applicable), Altimeter, Temperature gauge (if liquid cooled), Oil temperature, Fuel gauge, Landing gear position indicator (if retractable), Anti-collision lights, Magnetic compass, ELT, Seat belts',
+    },
+    {
+      mnemonic: 'FLAPS',
+      meaning: 'IFR additional required equipment',
+      expansion: 'Fuses (spare), Landing light (for night), Anti-collision lights, Position lights, Source of electrical power',
+    },
+  ];
+
+  // ─── Airport types and tower operations ──────────────────────────────
+  var AIRPORT_TYPES = [
+    {
+      type: 'Large hub (Class B airspace)',
+      examples: 'JFK, LAX, ORD, ATL, DFW, MIA, SFO',
+      passengers: '40+ million per year',
+      runways: '4-7 runways, all paved and 10,000+ ft',
+      operations: 'Constant ATC clearance required. Parallel approaches. Air traffic controllers separate aircraft by 3-4 nm.',
+      groundOps: 'Multiple terminals. Gates, jetbridges, ground handling. Cargo apron. Maintenance facilities.',
+    },
+    {
+      type: 'Medium hub (Class C)',
+      examples: 'PWM Portland ME, SAN San Diego, IND Indianapolis, MEM Memphis',
+      passengers: '~5-20 million per year',
+      runways: '2-3 runways, 5,000-9,000 ft',
+      operations: 'ATC required. Radar coverage. Mixed commercial + general aviation.',
+    },
+    {
+      type: 'Small hub (Class D)',
+      examples: 'BGR Bangor ME, ITH Ithaca NY, RDM Bend OR',
+      passengers: '~250K-2M per year',
+      runways: '1-2 runways, 4,000-7,000 ft',
+      operations: 'Control tower active during business hours. Non-radar tower in some cases.',
+    },
+    {
+      type: 'Untowered airport (Class G)',
+      examples: 'Most small airports: ~3,000 of ~5,000 US public airports',
+      passengers: 'None typically — general aviation only',
+      runways: '1 runway, 2,000-4,000 ft, sometimes grass',
+      operations: 'Self-announce on CTAF (Common Traffic Advisory Frequency). Pilots arrange their own traffic patterns.',
+      flightExample: 'A pilot announces "Smithfield traffic, Cessna N12345, 5 mile final, runway 27, Smithfield." Other pilots hear and adjust.',
+    },
+    {
+      type: 'Heliport',
+      examples: 'Hospital, oil rig, executive use',
+      runways: 'Pad (often single 50-100 ft square)',
+      operations: 'Vertical takeoff/landing only.',
+    },
+    {
+      type: 'Seaplane base',
+      examples: 'Lake landings, coastal water',
+      runways: 'Water surface marked as "seaplane lanes"',
+      operations: 'Special license rating required. Wind direction critical.',
+    },
+    {
+      type: 'Military',
+      examples: 'Bagram, Andersen, Bagram AB, Wright-Patterson',
+      operations: 'Generally closed to civilian traffic. Some "joint use" facilities support both.',
+    },
+  ];
+
+  // ─── ATC radio phraseology (verbose) ───────────────────────────────────
+  var ATC_PHRASEOLOGY = [
+    {
+      phrase: 'Roger',
+      meaning: 'I have received your last transmission. (NOT "yes." Use "Affirmative" for yes.)',
+      example: 'Tower: "Cessna 1-2-3, descend and maintain 3,000." Pilot: "Roger, descend and maintain 3,000, Cessna 1-2-3."',
+    },
+    {
+      phrase: 'Wilco',
+      meaning: 'Will comply. I understand the message and will comply.',
+      example: '"Cessna 1-2-3, contact tower on 119.5." Pilot: "Wilco, Cessna 1-2-3."',
+    },
+    {
+      phrase: 'Affirmative / Negative',
+      meaning: 'Yes / No. Used in place of "yes" or "no" for clarity.',
+    },
+    {
+      phrase: 'Standby',
+      meaning: 'Wait. I will get back to you. Do not interrupt the controller.',
+    },
+    {
+      phrase: 'Cleared for takeoff',
+      meaning: 'You may take off NOW. Authorization to enter the runway and depart.',
+      cautions: 'Once cleared, you must take off promptly. If you delay, the controller may need to cancel.',
+    },
+    {
+      phrase: 'Cleared to land',
+      meaning: 'You may land on the runway specified. Authorization to descend through the threshold.',
+    },
+    {
+      phrase: 'Go around',
+      meaning: 'Do NOT land. Reject the approach. Climb and circle.',
+      reasons: 'Runway not clear, wind shear, missed approach point, wake turbulence, etc.',
+    },
+    {
+      phrase: 'Mayday Mayday Mayday',
+      meaning: 'Distress signal. Imminent danger to life. Higher priority than Pan-Pan.',
+      example: '"Mayday Mayday Mayday, Cessna N1234A, engine failure, 5 miles northeast of Portland, requesting vectors to nearest airport."',
+    },
+    {
+      phrase: 'Pan-Pan Pan-Pan Pan-Pan',
+      meaning: 'Urgency call. Concerned but not life-threatening (yet).',
+      example: '"Pan-Pan, medical emergency on board, requesting priority handling."',
+    },
+    {
+      phrase: 'Squawk',
+      meaning: 'Set your transponder to this code.',
+      example: '"Squawk 1200" = VFR. "Squawk 4242" = assigned IFR code.',
+    },
+    {
+      phrase: 'Ident',
+      meaning: 'Press the IDENT button on your transponder so I can identify you on radar.',
+      example: '"Cessna 1-2-3, ident." Pilot presses IDENT button.',
+    },
+    {
+      phrase: 'Vectors',
+      meaning: 'I\'ll give you specific headings to navigate.',
+      example: '"Cessna 1-2-3, fly heading 090 for vectors to ILS runway 27."',
+    },
+    {
+      phrase: 'Established',
+      meaning: 'I am on the assigned course.',
+      example: '"Cessna 1-2-3, established on localizer."',
+    },
+    {
+      phrase: 'Approach',
+      meaning: 'An ATC facility that controls aircraft on approach to an airport.',
+      example: '"Boston Approach, Cessna 1-2-3, 15 miles southwest, level 3,000, request ILS 22L."',
+    },
+    {
+      phrase: 'With you',
+      meaning: 'I am now on this frequency, ready to copy.',
+      example: '"Boston Approach, Cessna 1-2-3, with you at 3,000 with ATIS Charlie."',
+    },
+    {
+      phrase: 'Heavy',
+      meaning: 'Aircraft is heavy enough to produce significant wake turbulence (gross weight > 300,000 lb).',
+      example: '"United 246 Heavy, cleared for takeoff runway 22L."',
+    },
+    {
+      phrase: 'Wake turbulence caution',
+      meaning: 'A larger aircraft\'s wake is in your path; pilot should be prepared.',
+      example: '"Cessna 1-2-3, caution wake turbulence, 747 ahead, cleared to land runway 4 right."',
+    },
+    {
+      phrase: 'Runway X cleared for landing',
+      meaning: 'You may land on runway X.',
+      caution: 'Specific runway must be specified to prevent confusion between parallel runways.',
+    },
+    {
+      phrase: 'Hold short',
+      meaning: 'Stop before the runway. Do NOT enter.',
+      example: '"Cessna 1-2-3, taxi to runway 22L via Charlie, hold short runway 4R." Pilot reads back: "Hold short runway 4R, Cessna 1-2-3."',
+    },
+    {
+      phrase: 'Position and hold (US) / Line up and wait (international)',
+      meaning: 'Taxi onto the runway and wait. You are NOT cleared for takeoff yet.',
+      caution: 'Common but accident-prone command. Always confirm clearance before applying takeoff power.',
+    },
+    {
+      phrase: 'Hold for release',
+      meaning: 'Stay where you are. Don\'t take off until I release you.',
+    },
+    {
+      phrase: 'Read back',
+      meaning: 'Repeat back the instructions exactly so I know you heard correctly.',
+      regulatory: 'Pilots MUST read back: clearances (taxi, takeoff, landing), altitude assignments, heading assignments, frequency changes. Other communications are optional but professional.',
+    },
+    {
+      phrase: 'Phonetic alphabet',
+      list: 'Alpha, Bravo, Charlie, Delta, Echo, Foxtrot, Golf, Hotel, India, Juliet, Kilo, Lima, Mike, November, Oscar, Papa, Quebec, Romeo, Sierra, Tango, Uniform, Victor, Whiskey, Xray, Yankee, Zulu',
+      use: 'Used universally in aviation to avoid confusion (B vs D vs G all sound similar over radio). "N12345" spelled "November One Two Three Four Five."',
+    },
+    {
+      phrase: 'Numbers',
+      pronunciation: 'One, Two, Three, Four (FOW-er), Five (FIFE), Six, Seven, Eight, Nine (NIN-er), Zero',
+      example: 'Altitude 4,500 ft = "four thousand five hundred." 16,000 ft = "one six thousand."',
+      thousands: '"three thousand seven hundred" not "three thousand seven hundred and fifty."',
+    },
+    {
+      phrase: 'Time',
+      format: 'Always UTC (Coordinated Universal Time, also called Zulu)',
+      example: '"At three zero zero zulu" = 0300 UTC.',
+    },
+  ];
+
+  // ─── Engines deep dive ────────────────────────────────────────────────
+  var ENGINE_TYPES_DEEP = [
+    {
+      type: 'Reciprocating (piston)',
+      mechanism: 'Pistons drive a crankshaft, which spins the propeller. Same fundamental as a car engine.',
+      fuel: 'Avgas (100 low lead — high octane gasoline)',
+      power: '~80-400 hp typical',
+      use: 'Most general aviation (Cessna, Piper, Cirrus). Some flight schools, private pilots, light aircraft.',
+      pros: ['Reliable when maintained', 'Inexpensive to operate', 'Familiar technology'],
+      cons: ['Limited altitude (loses power above ~12,000 ft without turbocharger)', 'Less efficient at high altitude', 'Slower than jets'],
+    },
+    {
+      type: 'Turboprop',
+      mechanism: 'Gas turbine (like a jet) drives a propeller through a reduction gearbox.',
+      fuel: 'Jet-A (kerosene)',
+      power: '500-15,000 shp',
+      use: 'Regional airliners, military transports, agricultural aircraft (King Air, Q400, A400M).',
+      pros: ['More power than piston', 'More efficient at altitude', 'Less vibration', 'Can use jet fuel'],
+      cons: ['Expensive', 'Complex maintenance', 'Noise'],
+    },
+    {
+      type: 'Turbofan (high-bypass)',
+      mechanism: 'Most of thrust comes from a large fan in front of the engine; only ~10-20% comes from the core jet exhaust.',
+      fuel: 'Jet-A',
+      thrust: '5,000 - 110,000 lb',
+      use: 'Modern commercial airliners (737, A320, 787, A380).',
+      pros: ['Quiet (compared to turbojets)', 'Efficient cruise', 'Powerful'],
+      designElement: 'Bypass ratio = ratio of fan-driven air to core air. Modern engines: 10:1 or higher.',
+      example: 'GE9X (777-X): 134,300 lb thrust, fan 134" diameter. Largest jet engine ever.',
+    },
+    {
+      type: 'Turbojet (pure jet)',
+      mechanism: 'All thrust from accelerating air through the engine core. No fan to bypass.',
+      use: 'Older airliners (Comet, Boeing 707, Concorde), military fighters.',
+      pros: ['Light', 'Fast (Concorde used pure turbojets)'],
+      cons: ['Loud', 'Inefficient at low altitudes/speeds', 'Less popular now'],
+    },
+    {
+      type: 'Turboshaft',
+      mechanism: 'Gas turbine driving an output shaft, used to power helicopter rotors or auxiliary equipment.',
+      use: 'Helicopters (Bell 407, Black Hawk, Apache).',
+    },
+    {
+      type: 'Rocket',
+      mechanism: 'Carries own oxidizer (no atmospheric oxygen needed). Can operate in space.',
+      fuel: 'Various: liquid hydrogen + liquid oxygen (LH2/LOX), kerosene + LOX, solid rocket fuel.',
+      use: 'Spacecraft. Was used in SR-71 boosters. Lighter than air-breathing engines at extreme speeds.',
+    },
+    {
+      type: 'Ramjet',
+      mechanism: 'Uses forward motion to compress incoming air, then injects fuel and burns. No moving parts.',
+      requirements: 'Must already be moving at supersonic speeds (~Mach 2+) to function.',
+      use: 'High-speed missiles, hypersonic research aircraft.',
+    },
+    {
+      type: 'Scramjet (supersonic combustion ramjet)',
+      mechanism: 'Like ramjet but combustion happens at supersonic flow speed (hypersonic ramjet).',
+      use: 'Experimental: NASA X-43 (Mach 9.6+), Boeing X-51 Waverider.',
+    },
+    {
+      type: 'Electric propulsion',
+      mechanism: 'Battery-powered motor spinning a propeller or fan.',
+      use: 'Small training aircraft (Pipistrel Velis Electro), VTOLs (Joby, Lilium), drones.',
+      challenges: 'Battery energy density is ~50x lower than jet fuel. Best for short flights for now.',
+      future: 'Improving — Hybrid-electric airliners may be commercially viable in 2030s.',
+    },
+    {
+      concept: 'Why high-bypass turbofans dominate',
+      explanation: 'Bypass air contributes to thrust without burning fuel. More bypass = more thrust per gallon. Modern engines bypass 10x more air than they burn.',
+      math: 'Thrust = mass × velocity_change. Better to move a large mass of air slowly than a small mass quickly.',
+    },
+    {
+      concept: 'Engine ratings',
+      types: ['Takeoff thrust (5-min limit)', 'Max continuous thrust (unlimited)', 'Cruise thrust (~70-80% of max)', 'Idle thrust'],
+      operationsBudget: 'Engine TBO (Time Between Overhauls) is typically 1,500-3,000 hours for piston, 5,000+ hours for turbofan.',
+    },
+  ];
+
+  // ─── Pressurization and oxygen requirements ───────────────────────────
+  var PRESSURIZATION = [
+    {
+      concept: 'Why pressurization matters',
+      explanation: 'Air pressure drops with altitude. At sea level: 14.7 psi. At 18,000 ft: 7.34 psi (half). At 36,000 ft: 3.46 psi.',
+      humanLimit: 'Below 14,500 ft: most people OK. Above 14,500 ft: hypoxia starts. Above 25,000 ft: death within minutes without oxygen.',
+      cabin: 'Pressurized aircraft maintain cabin altitude of ~6,000-8,000 ft equivalent, regardless of actual altitude.',
+    },
+    {
+      concept: 'FAA oxygen requirements',
+      list: [
+        '12,500-14,000 ft: PIC must use supplemental oxygen for any time exceeding 30 minutes',
+        '14,000-15,000 ft: PIC must use oxygen for the entire flight at this altitude',
+        'Above 15,000 ft: All occupants must have access to supplemental oxygen',
+        'Above 35,000 ft (FL350): pressurized cabin required',
+      ],
+    },
+    {
+      concept: 'Hypoxia',
+      definition: 'Insufficient oxygen reaching body tissues. Begins subtly and can be fatal if unrecognized.',
+      symptoms: ['Euphoria (false sense of well-being)', 'Vision dimming', 'Tunnel vision', 'Headache', 'Loss of judgment', 'Loss of consciousness'],
+      timeOfUsefulConsciousness: 'Time you have before losing consciousness in decompression:',
+      tucTable: [
+        '18,000 ft: 20-30 minutes',
+        '30,000 ft: 1 minute',
+        '35,000 ft: 30-60 seconds',
+        '40,000 ft: 15-30 seconds',
+        '50,000 ft: 9-12 seconds',
+      ],
+      training: 'Many pilots take altitude chamber training to learn their own personal symptoms.',
+    },
+    {
+      concept: 'Rapid decompression',
+      what: 'Cabin loses pressurization suddenly (window cracks, door blows out)',
+      pilotResponse: 'Don oxygen mask, descend rapidly to below 10,000 ft, declare emergency',
+      famousIncidents: [
+        'Aloha 243 (1988): Top fuselage ripped off in flight; one flight attendant lost. Crew landed safely.',
+        'Sioux Falls (1989): Window blew out; passenger almost lost.',
+        'Southwest 1380 (2018): Engine failure shattered window; one passenger fatality.',
+      ],
+    },
+    {
+      concept: 'Cabin altitude warnings',
+      mechanism: 'Modern airliners have automated cabin altitude monitoring. At 10,000 ft cabin altitude (i.e., the cabin "pretends" to be higher than 10,000 ft), warning sounds. At 14,000 ft, mask drop.',
+      example: 'Helios 522 (2005): Pressurization warning unrecognized, crew incapacitated by hypoxia, 121 died.',
+    },
+  ];
+
+  // ─── Wake turbulence and runway separation ─────────────────────────────
+  var WAKE_TURBULENCE = [
+    {
+      concept: 'What is wake turbulence',
+      explanation: 'Wingtip vortices from a generating aircraft. Two counter-rotating spirals trailing behind. Can flip a smaller following aircraft.',
+      generated: 'Strongest when: heavy (more lift to produce), clean (no flaps/spoilers), slow (high AoA).',
+    },
+    {
+      concept: 'Aircraft wake categories',
+      list: [
+        'Super: Antonov An-225 (no longer in service)',
+        'Heavy: > 300,000 lb (747, 777, 787, A380 — all "heavy")',
+        'Large: 41,000 - 300,000 lb (737, A320)',
+        'Small: < 41,000 lb (most general aviation)',
+      ],
+    },
+    {
+      concept: 'ATC separation requirements (US)',
+      enRoute: '~3-5 nautical miles in trail',
+      approach: 'Heavy behind heavy: 4 nm. Light behind heavy: 6 nm.',
+      takeoff: 'Wait 2-3 minutes after a heavy departure.',
+      crossingRunway: 'Avoid takeoff from runway crossing point where heavy traffic vortices may still be active.',
+    },
+    {
+      concept: 'Recovery from wake encounter',
+      response: ['Maintain control', 'Roll out using opposite aileron if rolled', 'Add power if speed decaying', 'Avoid abrupt control inputs (overcontrolling worsens it)'],
+    },
+    {
+      concept: 'Famous wake encounter accidents',
+      list: [
+        'AA 587 (2001): A300 lost vertical fin after wake encounter + pilot overcontrol. Vertical stabilizer separated. 265 dead.',
+        'AA 1572 (2017): Boeing 737 inverted by wake from a Heavy in approach pattern. Recovered safely.',
+      ],
+    },
+  ];
+
+  // ─── Runway and lighting reference ─────────────────────────────────────
+  var RUNWAY_LIGHTING = [
+    {
+      lighting: 'Runway edge lights (white)',
+      visibility: 'Outline both sides of the runway',
+      colors: 'White, except yellow caution near the end',
+    },
+    {
+      lighting: 'Runway end lights (red on landing side, green on approach side)',
+      visibility: 'Mark the end of the usable runway',
+    },
+    {
+      lighting: 'Threshold lights (green from approach, red from runway side)',
+      visibility: 'Mark the touchdown threshold',
+    },
+    {
+      lighting: 'Touchdown zone lights (white)',
+      visibility: 'Embedded in pavement; show first 3,000 ft of runway',
+    },
+    {
+      lighting: 'Centerline lights (white)',
+      visibility: 'Embedded along the centerline; change to red near runway end',
+    },
+    {
+      lighting: 'Taxiway lights (blue edges, green centerline)',
+      visibility: 'Outline taxiways',
+    },
+    {
+      lighting: 'PAPI (Precision Approach Path Indicator)',
+      what: 'Four lights arranged horizontally, beside the runway. Shows glide path angle.',
+      meaning: [
+        '4 white: too high',
+        '3 white + 1 red: slightly high',
+        '2 white + 2 red: on path (ideal — typically 3°)',
+        '1 white + 3 red: slightly low',
+        '4 red: too low (danger)',
+      ],
+      mnemonic: '"White on white, you\'re flying out of sight." "Red on red, you\'re dead."',
+    },
+    {
+      lighting: 'VASI (Visual Approach Slope Indicator)',
+      what: 'Two rows of lights showing glide path (older system, mostly replaced by PAPI)',
+    },
+    {
+      lighting: 'Approach Lighting System (ALS)',
+      what: 'Bright sequenced lights leading up to the runway threshold (1,400-3,000 ft)',
+      types: ['ALSF-1: full system with sequenced flashers', 'ALSF-2: precision approach', 'MALSR: medium intensity', 'ODALS: omnidirectional'],
+    },
+    {
+      lighting: 'Runway markings',
+      whitepainted: 'Runway numbers (magnetic heading of runway / 10), centerline, threshold bars, aiming point markers',
+      yellow: 'Taxiway markings (centerline, edge, hold short)',
+    },
+    {
+      lighting: 'Airport beacon',
+      visibility: 'Rotating beacon on the airport. Operates dusk to dawn.',
+      meaning: [
+        'White flash + green flash: civilian airport',
+        'White flash + yellow flash: military airport',
+        'Two white flashes + green: lighted water aerodrome',
+      ],
+    },
+  ];
+
+  // ─── Human factors in aviation ─────────────────────────────────────────
+  var HUMAN_FACTORS = [
+    {
+      topic: 'CRM (Crew Resource Management)',
+      definition: 'Effective use of all available resources — crew, equipment, information — to achieve safe flight.',
+      origin: 'Developed in 1970s after several major airline accidents traced to communication breakdowns and authority issues.',
+      principles: [
+        'All crew members are equal partners in safety',
+        'Captain has authority but encourages input',
+        'Speak up when you see a problem (no matter your rank)',
+        'Use callouts and checklists religiously',
+        'Manage workload to prevent overload',
+        'Communicate clearly and verify understanding',
+      ],
+      example: 'United 232 captain Al Haynes credited CRM with his ability to land a hydraulically-disabled DC-10 in Sioux City.',
+    },
+    {
+      topic: 'Authority gradient',
+      definition: 'The power dynamic between captain (more authority) and first officer (less authority).',
+      problem: 'Steep authority gradient = first officer afraid to speak up, even when seeing safety problems.',
+      cure: 'CRM training teaches captains to flatten the gradient and first officers to assert legitimate concerns.',
+      famousFailure: 'Tenerife 1977: 583 dead. KLM captain ignored first officer\'s subtle hesitation about takeoff clearance. Worst aviation accident in history.',
+    },
+    {
+      topic: 'Spatial disorientation',
+      definition: 'When pilots lose awareness of their attitude or position, often in cloud or night conditions.',
+      types: [
+        'Somatogyral illusion: spinning sensation from inner ear motion',
+        'Coriolis illusion: head movement during a turn creates false motion sense',
+        'Graveyard spiral: pilot thinks turning when actually leveling, banks more to "correct"',
+        'False horizon: misperceiving cloud edges or terrain as horizon',
+      ],
+      preventionByTraining: 'Pilots learn to trust instruments over inner ear. Many require instrument training before flying in IFR conditions.',
+      stat: 'Spatial disorientation is implicated in ~5-10% of fatal GA accidents.',
+    },
+    {
+      topic: 'Fatigue',
+      effects: ['Slow reaction time', 'Poor decision making', 'Impaired vision', 'Microsleeps', 'Tunnel vision'],
+      regulations: 'FAR Part 117 limits airline pilot duty hours, requires minimum rest periods (10 hours).',
+      cure: '8+ hours sleep, regulated schedules, naps when permitted (controlled rest in cockpit during cruise).',
+    },
+    {
+      topic: 'Stress',
+      effects: 'Tunnel vision (focusing on one problem and missing others), regression to overlearned behaviors',
+      example: 'Asiana 214: pilots reverted to manual control inputs they\'d been trained for years to perform but had since automated.',
+    },
+    {
+      topic: 'Decision making — DECIDE model',
+      steps: ['Detect the problem', 'Estimate options', 'Choose best option', 'Identify actions', 'Do (execute)', 'Evaluate results'],
+      use: 'Structured approach to in-flight problem solving.',
+    },
+    {
+      topic: 'Decision making — 5 P\'s',
+      list: ['Pilot', 'Plane', 'Passengers', 'Program (mission)', 'Plot (route)'],
+      use: 'Pre-flight risk assessment using 5 P\'s before launch.',
+    },
+    {
+      topic: 'Get-there-itis',
+      definition: 'The dangerous mindset of "I must arrive at my destination" overriding good judgment.',
+      manifestation: 'Continuing into deteriorating weather, ignoring fuel reserves, pressing on through aircraft anomalies.',
+      cure: 'Pre-flight commitment to a "decision altitude" or "decision time" — at this point, I divert.',
+      stat: 'Get-there-itis is a major contributing factor in fatal GA weather accidents.',
+    },
+    {
+      topic: 'Confirmation bias',
+      definition: 'Tendency to interpret information to confirm what you already believe.',
+      example: 'Pilot is sure they\'re VFR; sees clouds nearby as "scattered" when they\'re actually broken; flies into IMC.',
+    },
+    {
+      topic: 'Spatial vs temporal disorientation',
+      temporal: 'Misjudging time. Common in stressful situations — pilots underestimate how long they\'ve been flying or how much time remains.',
+      spatial: 'Misjudging position. Often combined with temporal in catastrophic accidents.',
+    },
+    {
+      topic: 'Stick-and-rudder vs systems pilot',
+      stickRudder: 'Pilot whose primary skill is hands-on aircraft control. Often older, military-trained.',
+      systems: 'Pilot whose primary skill is managing automation and systems. Often younger, civilian airline trained.',
+      modernDebate: 'Today\'s automation has degraded stick-and-rudder skills among airline pilots. After several accidents, airlines now emphasize fundamental flying skills again.',
+    },
+    {
+      topic: 'Automation surprise',
+      definition: 'When automation does something unexpected.',
+      example: 'Air France 447 (2009): Autopilot disconnected due to bad airspeed data. Pilots didn\'t recognize they were now hand-flying; stalled. 228 dead.',
+      cure: 'Train pilots on how automation works, recovery from automation failure, basic flying skills.',
+    },
+  ];
+
+  // ─── Aviation incidents and lessons ────────────────────────────────────
+  var AVIATION_INCIDENT_LESSONS = [
+    {
+      incident: 'Tenerife Airport disaster (1977)',
+      deaths: 583,
+      summary: 'Two 747s collided on a foggy Spanish runway when one began takeoff roll while the other was still on the runway.',
+      causes: ['Fog reduced visibility', 'Misunderstood ATC clearances', 'Steep authority gradient (KLM captain ignored FO concerns)', 'Stress from delays'],
+      lessons: ['Crew Resource Management was born from this', 'Always verify takeoff clearance', 'Mistakes compound when stressed'],
+    },
+    {
+      incident: 'Eastern 401 (1972)',
+      deaths: 101,
+      summary: 'L-1011 crashed into Florida Everglades while crew was fixated on a burned-out landing gear light. Autopilot disengaged unnoticed.',
+      cause: 'Cockpit task management — all 3 pilots focused on the light bulb, nobody flying',
+      lesson: 'One pilot must always be flying. Call out "I have the airplane."',
+    },
+    {
+      incident: 'United 173 (1978)',
+      deaths: 10,
+      summary: 'DC-8 ran out of fuel on approach while captain troubleshooted a gear malfunction. Crashed in a Portland neighborhood.',
+      cause: 'Captain didn\'t accept first officer\'s fuel concerns',
+      lesson: 'Fuel monitoring is non-negotiable. CRM lessons taught here.',
+    },
+    {
+      incident: 'Air Florida 90 (1982)',
+      deaths: 74,
+      summary: '737 crashed into Potomac River and 14th Street Bridge in Washington DC during winter storm. Crew failed to use engine anti-ice.',
+      causes: ['Ice on wings', 'Inadequate de-icing', 'Crew ignored FO\'s concerns about thrust readings', 'Steep authority gradient'],
+      lesson: 'Cold weather operations require strict procedures',
+    },
+    {
+      incident: 'Avianca 052 (1990)',
+      deaths: 73,
+      summary: 'Boeing 707 ran out of fuel after multiple holds and crashed in New York. Crew never declared emergency.',
+      cause: 'Language barrier and reluctance to declare emergency or be aggressive with ATC',
+      lesson: 'When in trouble, declare an emergency. ATC will help.',
+    },
+    {
+      incident: 'TWA 800 (1996)',
+      deaths: 230,
+      summary: 'Boeing 747 exploded over Long Island. Fuel tank vapor ignited.',
+      cause: 'Wiring in fuel tank, vapor accumulation',
+      lesson: 'Led to design changes (nitrogen inerting of fuel tanks)',
+    },
+    {
+      incident: 'Helios 522 (2005)',
+      deaths: 121,
+      summary: 'Boeing 737 lost pressurization during climb. Crew didn\'t recognize, incapacitated by hypoxia. Aircraft flew on autopilot until fuel exhaustion, crashed in Greek mountains.',
+      cause: 'Failed pre-flight check (pressurization mode left in MAN). Mismixed warning signals.',
+      lesson: 'Methodical checklists save lives. Don\'t miss configuration checks.',
+    },
+    {
+      incident: 'Asiana 214 (2013)',
+      deaths: 3,
+      summary: 'Boeing 777 crashed on landing at San Francisco. Pilots over-reliant on automation, didn\'t catch low airspeed.',
+      cause: 'Loss of basic stick-and-rudder skills due to automation dependency',
+      lesson: 'Pilots must maintain hand-flying proficiency',
+    },
+    {
+      incident: 'Lion Air 610 & Ethiopian 302 (2018-2019)',
+      deaths: '189 + 157 = 346',
+      summary: 'Boeing 737 MAX crashes due to MCAS (Maneuvering Characteristics Augmentation System) malfunction.',
+      cause: 'Single point of failure in design, inadequate disclosure to pilots, training shortcuts',
+      consequences: ['737 MAX grounded worldwide for 20 months', 'Boeing executive criminal charges', 'FAA certification process overhauled'],
+      lesson: 'System safety > business pressure',
+    },
+    {
+      incident: 'British Airways 9 (1982)',
+      deaths: 0,
+      summary: '747 flew through volcanic ash; all 4 engines flamed out. Captain Eric Moody glided for 16 minutes before restarting engines.',
+      cause: 'Volcanic ash (not on weather radar)',
+      famousQuote: '"Ladies and gentlemen, this is your captain speaking. We have a small problem. All four engines have stopped. We are doing our damnedest to get them going again."',
+      lesson: 'Crews are trained for very rare scenarios; preparation matters',
+    },
+  ];
+
+  // ─── Aviation regulations primer ──────────────────────────────────────
+  var AVIATION_REGULATIONS = [
+    {
+      regulation: 'FAR Part 61',
+      domain: 'Pilot certification — what it takes to get and keep a pilot certificate',
+      keyPoints: ['Pilot certificates and ratings', 'Knowledge requirements', 'Skill requirements', 'Currency requirements (recent flight requirements)', 'Medical certification'],
+    },
+    {
+      regulation: 'FAR Part 91',
+      domain: 'General Operating and Flight Rules',
+      keyPoints: ['Right of way rules', 'Minimum altitudes', 'Aircraft equipment requirements', 'IFR vs VFR rules', 'Cloud clearance requirements', 'Pre-flight requirements', 'Drinking and flying limits (8 hrs bottle to throttle, .04 BAC max)'],
+      whoApplies: 'Almost everything you do as a pilot, unless specifically under another part.',
+    },
+    {
+      regulation: 'FAR Part 121',
+      domain: 'Commercial Air Carrier Operations — major airlines',
+      keyPoints: ['Two-pilot requirement', 'Crew rest', 'Fuel reserves', 'Aircraft maintenance', 'Pilot training programs'],
+      whoApplies: 'United, Delta, Southwest, American, etc.',
+    },
+    {
+      regulation: 'FAR Part 135',
+      domain: 'Commuter and On-Demand Operations — charters, taxi, helicopter taxi',
+      whoApplies: 'NetJets, Wheels Up, helicopter tours, air ambulances',
+    },
+    {
+      regulation: 'FAR Part 107',
+      domain: 'Small Unmanned Aircraft Systems (drones <55 lb)',
+      keyPoints: ['Remote pilot certificate', 'Operating limitations (400 ft AGL, VLOS, daylight)', 'Aircraft registration', 'Waivers available for specific operations'],
+    },
+    {
+      regulation: 'FAR Part 137',
+      domain: 'Agricultural aircraft operations',
+      whoApplies: 'Crop dusters, aerial seeding, fire-fighting tankers',
+    },
+    {
+      regulation: 'FAR Part 139',
+      domain: 'Certification of Airports',
+      whoApplies: 'Airports serving certain scheduled passenger flights',
+    },
+    {
+      principle: 'How regulations work',
+      hierarchy: ['Title 14 of the Code of Federal Regulations (CFR) = Federal Aviation Regulations (FARs)', 'Advisory Circulars (AC) = FAA recommendations, not binding', 'Airman Certification Standards = practical test guides'],
+      learning: 'FAA puts most documents online free at faa.gov. Required reading for pilots in training.',
+    },
+    {
+      principle: 'International — ICAO',
+      what: 'International Civil Aviation Organization. UN body that sets global aviation standards.',
+      role: 'Member states (190+) generally harmonize their regs with ICAO. The FAA represents the US.',
+    },
+  ];
+
+  // ─── Aircraft performance charts ──────────────────────────────────────
+  var PERFORMANCE_CHARTS = [
+    {
+      chart: 'Takeoff distance',
+      use: 'Predict ground roll + 50 ft obstacle clearance for takeoff',
+      factors: ['Pressure altitude', 'Temperature', 'Wind', 'Runway slope', 'Aircraft weight'],
+      example: 'Cessna 172 at gross weight, sea level, standard temp: ~960 ft takeoff roll, ~1,635 ft to 50 ft obstacle',
+    },
+    {
+      chart: 'Landing distance',
+      use: 'Predict landing distance under various conditions',
+      factors: 'Same as takeoff plus aircraft configuration (flaps), brake quality, runway surface',
+      example: 'Cessna 172: 1,365 ft to clear 50 ft obstacle and stop',
+    },
+    {
+      chart: 'Cruise performance',
+      shows: 'Fuel burn, true airspeed at different altitudes and power settings',
+      use: 'Plan fuel for cross-country flights',
+      example: 'C172 at 75% power at 8,000 ft: 116 kts TAS, 8.5 gph',
+    },
+    {
+      chart: 'Climb performance',
+      shows: 'Time, fuel, and distance to climb to various altitudes',
+      example: 'C172 from sea level to 8,000 ft: 14 minutes, 1.6 gallons, 16 nm',
+    },
+    {
+      chart: 'Weight & balance',
+      what: 'Verify CG is within allowed envelope',
+      essential: 'Required for every flight. Out-of-envelope flight is unsafe and illegal.',
+      example: 'C172 max gross weight 2,400 lb. CG must stay within forward and aft limits as fuel burns.',
+    },
+    {
+      chart: 'Density altitude chart',
+      shows: 'Pressure altitude + temperature → density altitude',
+      use: 'Predict aircraft performance at high/hot airports',
+      example: 'Aspen 7,800 ft + 85°F = ~11,000 ft density altitude — major performance degradation',
+    },
+    {
+      chart: 'Wind component',
+      shows: 'Convert wind direction + speed + runway heading → headwind/tailwind/crosswind components',
+      use: 'Verify crosswind component is within aircraft demonstrated limit',
+      example: 'Wind 270° at 20 kts, runway 22 (heading 220°). Headwind = 14.1 kt, crosswind = 14.1 kt',
+    },
+    {
+      chart: 'Stall speed chart',
+      shows: 'Stall speed varies with weight, bank angle, flap setting, load factor',
+      relationship: 'Vs1 (clean stall) × sqrt(load factor). 60° bank = 2g load = stall speed 1.4× higher.',
+      example: 'C172 clean stall 48 kts. At 60° bank, stall speed becomes 68 kts.',
+    },
+  ];
+
+  // ─── Aircraft systems (mechanical) ────────────────────────────────────
+  var AIRCRAFT_SYSTEMS = [
+    {
+      system: 'Engine + propulsion',
+      components: 'Engine, fuel system, oil system, ignition, propeller/turbine',
+      criticalForFlight: 'Yes — engine failure usually means emergency landing',
+    },
+    {
+      system: 'Fuel system',
+      components: ['Fuel tanks (usually in wings)', 'Fuel selector valve', 'Fuel pump (engine-driven + electric boost)', 'Fuel strainer/gascolator', 'Fuel quantity gauges', 'Fuel injection or carburetor'],
+      sumps: 'Drains at low points where water condenses; pilot checks for water before each flight',
+    },
+    {
+      system: 'Electrical',
+      components: ['Battery', 'Alternator/generator', 'Voltage regulator', 'Buses (distribution)', 'Circuit breakers', 'Switches'],
+      use: 'Powers lights, radios, instruments, gear (in some), flaps (in some)',
+      backupPower: 'Most aircraft can fly without electrical power if needed (engine still runs on magnetos)',
+    },
+    {
+      system: 'Flight controls',
+      primary: ['Ailerons (roll)', 'Elevator/stabilator (pitch)', 'Rudder (yaw)'],
+      secondary: ['Flaps', 'Trim tabs', 'Spoilers', 'Slats'],
+      mechanism: ['Mechanical (cables and pulleys) — most GA aircraft', 'Hydraulic (large aircraft)', 'Fly-by-wire (modern airliners — electronic signal to actuators)'],
+    },
+    {
+      system: 'Hydraulic',
+      use: 'Power-assisted controls, brakes, landing gear, flaps in some aircraft',
+      whenCritical: 'Large aircraft — without hydraulics, flight controls are too heavy to move',
+      backup: 'Multiple independent hydraulic systems (3 systems on a 747)',
+    },
+    {
+      system: 'Landing gear',
+      types: ['Fixed (always extended — Cessna 172)', 'Retractable (raised in flight — Cirrus SR22, all airliners)'],
+      mechanism: 'Hydraulic or electric',
+      indicators: 'Lights show position. Three green = down and locked.',
+    },
+    {
+      system: 'Pitot-static',
+      components: ['Pitot tube (forward facing, total pressure)', 'Static ports (side, static pressure)', 'Differential operates ASI'],
+      essentialInstruments: 'Airspeed indicator, altimeter, vertical speed indicator',
+      failureModes: 'Blocked pitot = stuck airspeed. Blocked static = altimeter and VSI also fail.',
+    },
+    {
+      system: 'Vacuum',
+      use: 'Powers the gyro instruments (attitude indicator, heading indicator)',
+      mechanism: 'Engine-driven vacuum pump creates suction',
+      backup: 'Many aircraft have electric backup for one gyro',
+    },
+    {
+      system: 'Pneumatic',
+      use: 'Some pressurization, some deice systems',
+      mechanism: 'Compressed air from engine bleed',
+    },
+    {
+      system: 'Heating + ventilation',
+      mechanism: 'Cabin heat usually from engine exhaust manifold. Ventilation from outside air.',
+      caution: 'Carbon monoxide can leak from exhaust into cabin if exhaust manifold cracks — pilots use CO detectors',
+    },
+    {
+      system: 'Pressurization (airliners)',
+      mechanism: 'Engine bleed air compressed and delivered to cabin',
+      schedule: 'Cabin altitude maintained at ~6,000-8,000 ft equivalent',
+    },
+    {
+      system: 'Anti-ice / de-ice',
+      anti: 'Prevents ice formation — heated leading edges',
+      de: 'Removes formed ice — pneumatic boots (small GA), or hot air for jets',
+      essential: 'Aircraft certified for "known icing" have these; most GA aircraft are NOT certified',
+    },
+    {
+      system: 'Communication',
+      radios: ['VHF (118-137 MHz, line-of-sight)', 'HF (long-range, used over oceans)', 'Datalink (CPDLC for IFR communications)'],
+    },
+    {
+      system: 'Navigation',
+      sources: ['GPS', 'VOR (ground-based radio nav)', 'DME (distance measuring equipment)', 'ADF (older non-directional beacons)', 'Inertial reference systems (airliners)'],
+    },
+  ];
+
+  // ─── Visual flight maneuvers (for student pilots) ──────────────────────
+  var FLIGHT_MANEUVERS = [
+    {
+      maneuver: 'Straight and level',
+      description: 'Maintain altitude, heading, and airspeed without correction',
+      objective: 'Build basic aircraft control proficiency',
+      tips: ['Look outside, not at instruments', 'Trim for hands-off flight', 'Small corrections, not large ones'],
+    },
+    {
+      maneuver: 'Climbs',
+      description: 'Add power, pitch up, climb at desired airspeed and rate',
+      types: ['Vy (best rate)', 'Vx (best angle — for obstacle clearance)', 'Cruise climb (faster, lower rate)'],
+    },
+    {
+      maneuver: 'Descents',
+      description: 'Reduce power, pitch down, descend at desired airspeed and rate',
+      types: ['Cruise descent', 'Approach descent (configured for landing)', 'Emergency descent (high rate, low airspeed)'],
+    },
+    {
+      maneuver: 'Turns',
+      description: 'Bank the aircraft to turn',
+      coordination: 'Rudder pressure with ailerons to keep ball centered',
+      bankAngles: ['Shallow: 15-20°', 'Medium: 25-35° (most common)', 'Steep: 45-60° (private pilot test)'],
+    },
+    {
+      maneuver: 'Slow flight',
+      description: 'Maintain altitude near stall speed',
+      objective: 'Build awareness of stall characteristics',
+      benefit: 'Develops fine motor coordination at the edge of flight envelope',
+    },
+    {
+      maneuver: 'Power-off stall',
+      description: 'Reduce power, pitch up gradually until stall warning, recover',
+      simulates: 'Inadvertent stall during landing approach',
+    },
+    {
+      maneuver: 'Power-on stall',
+      description: 'Full power, pitch up until stall warning, recover',
+      simulates: 'Inadvertent stall during climb after takeoff',
+    },
+    {
+      maneuver: 'Spin recovery',
+      description: 'Recover from a fully developed spin using PARE (power, ailerons, rudder, elevator)',
+      modernRequirement: 'No longer required for private pilot. Required for CFI.',
+    },
+    {
+      maneuver: 'Steep turns',
+      description: 'Maintain 45° bank for 360° turn while holding altitude',
+      requirements: 'Coordinated, ±100 ft altitude, ±10 kts airspeed, ±10° heading on rollout',
+    },
+    {
+      maneuver: 'S-turns across a road',
+      description: 'Symmetric S-shaped pattern over a straight reference line',
+      objective: 'Practice wind correction in turns',
+    },
+    {
+      maneuver: 'Turns around a point',
+      description: 'Constant-radius circle around a ground reference',
+      objective: 'Manage wind drift in a turn',
+    },
+    {
+      maneuver: 'Soft-field takeoff and landing',
+      description: 'Takeoff/land on grass, dirt, or rough surfaces',
+      technique: 'Use full flaps, lift nose wheel early, stay low in ground effect to accelerate',
+    },
+    {
+      maneuver: 'Short-field takeoff and landing',
+      description: 'Takeoff/land in minimum distance',
+      technique: 'Use Vx for takeoff (best angle), aim for the touchdown bars on landing',
+    },
+    {
+      maneuver: 'Crosswind takeoff and landing',
+      description: 'Compensate for wind not aligned with runway',
+      techniques: ['Crab (point nose into wind on approach, kick straight before touchdown)', 'Slip (lower upwind wing to maintain runway alignment)'],
+    },
+    {
+      maneuver: 'Forward slip',
+      description: 'Cross-controlled flight to descend without gaining airspeed',
+      use: 'Final approach when too high; emergency descents',
+    },
+    {
+      maneuver: 'Go around',
+      description: 'Abort the landing and climb away',
+      reasons: ['Unstable approach', 'Runway not clear', 'Wind shear', 'Animal on runway'],
+      caution: 'Once decided, commit. Don\'t pull power back to try landing again.',
+    },
+    {
+      maneuver: 'Engine-out glide',
+      description: 'After engine failure, glide to best landing site',
+      practice: 'Practice from various altitudes; know your aircraft\'s best glide speed',
+      planning: 'Pilots constantly think "where would I go if the engine quit right now?"',
+    },
+    {
+      maneuver: 'Forced landing',
+      description: 'Land without an engine (rare but trained for)',
+      sequence: ['Pitch for best glide', 'Pick a field', 'Try to restart (if time permits)', 'Communicate (Mayday + position)', 'Configure for landing', 'Land into wind if possible'],
+    },
+  ];
+
+  // ─── Future of aviation ─────────────────────────────────────────────────
+  var FUTURE_AVIATION = [
+    {
+      trend: 'Electric aircraft',
+      status: 'Small electric aircraft already certified (Pipistrel Velis Electro, 2020). Larger ones in development.',
+      challenges: 'Battery energy density 50× lower than jet fuel by weight. Best for short flights.',
+      timeline: 'Regional electric flights (~200 nm) expected to be commercial by 2030.',
+    },
+    {
+      trend: 'eVTOL (electric vertical takeoff and landing)',
+      status: 'Joby, Lilium, Archer, others developing. FAA working on certification frameworks.',
+      use: 'Urban air mobility (air taxi), short hops between cities',
+      timeline: 'Commercial passenger service possibly 2025-2027.',
+    },
+    {
+      trend: 'Hydrogen-powered aircraft',
+      status: 'Airbus ZEROe project. Hydrogen-fuel cell + electric motors, OR direct hydrogen combustion.',
+      challenges: 'Hydrogen storage (cryogenic tanks), refueling infrastructure',
+      timeline: 'Commercial possibility ~2035',
+    },
+    {
+      trend: 'Sustainable aviation fuel (SAF)',
+      status: 'Currently in limited use, blended at 50% max with conventional jet fuel',
+      sources: 'Used cooking oil, agricultural waste, algae, captured CO2 + green hydrogen',
+      goal: 'IATA target: 10% of all aviation fuel by 2030, "net zero" by 2050',
+    },
+    {
+      trend: 'Supersonic civilian travel (return)',
+      candidates: ['Boom Overture (Mach 1.7+)', 'NASA X-59 (sonic boom mitigation research)'],
+      timeline: 'First commercial flight target ~2029-2030',
+      challenges: 'Sonic boom ground impact regulations, fuel efficiency at supersonic speeds',
+    },
+    {
+      trend: 'Hypersonic travel',
+      status: 'Hermeus, Stratolaunch, military programs',
+      timeline: 'Commercial passenger hypersonic still 15+ years out',
+      goal: 'New York to London in 90 minutes',
+    },
+    {
+      trend: 'Autonomy / pilotless airliners',
+      status: 'Single-pilot operations being studied (Reduced Crew Operations).',
+      controversy: 'Pilot unions oppose; some argue tech ready, society not.',
+      timeline: 'Single-pilot freight maybe 2030s; passenger flights longer.',
+    },
+    {
+      trend: 'Space tourism',
+      players: ['Virgin Galactic (suborbital)', 'Blue Origin (suborbital)', 'SpaceX (orbital)', 'Axiom Space (ISS visits)'],
+      costs: 'Suborbital ~$500K/seat. Orbital ~$50M/seat (Crew Dragon).',
+      timeline: 'Already happening — but on small scale.',
+    },
+    {
+      trend: 'Drones at scale',
+      uses: ['Delivery (Wing, Zipline, Amazon Prime Air)', 'Surveillance', 'Agriculture', 'Construction', 'Defense'],
+      airspace: 'UAS Traffic Management (UTM) systems being developed for low-altitude drone airspace',
+    },
+    {
+      trend: 'Climate impact awareness',
+      contribution: 'Aviation: ~2-3% of global CO2 emissions. Plus contrails contribute additional warming.',
+      response: 'Carbon-offset programs, SAF mandates, efficiency improvements, electrification',
+    },
+  ];
+
+  // ─── World airports deep dive ─────────────────────────────────────────
+  var WORLD_AIRPORTS_DEEP = [
+    {
+      airport: 'Hartsfield-Jackson Atlanta (ATL)',
+      code: 'ATL',
+      country: 'USA',
+      passengers: '93 million (2023)',
+      ranking: 'Busiest airport in the world (most years)',
+      runways: 5,
+      story: 'Hub for Delta Air Lines, the world\'s largest airline. The airport\'s 5 parallel runways enable simultaneous arrivals and departures. Underground "plane train" connects all 7 concourses.',
+    },
+    {
+      airport: 'Dubai International (DXB)',
+      code: 'DXB',
+      country: 'UAE',
+      passengers: '87 million (2023)',
+      ranking: 'Busiest international airport (most international traffic)',
+      story: 'Emirates Airline hub. Built on reclaimed desert land. Famously serves as a global connecting hub between Europe, Asia, and Africa.',
+    },
+    {
+      airport: 'Heathrow (LHR)',
+      code: 'LHR',
+      country: 'UK',
+      passengers: '79 million (2023)',
+      runways: 2,
+      story: 'Famously underbuilt for the demand. Just 2 runways serve all that traffic — about as efficient as it gets. Third runway has been debated for decades.',
+    },
+    {
+      airport: 'Tokyo Haneda (HND)',
+      code: 'HND',
+      country: 'Japan',
+      passengers: '75 million (2023)',
+      story: 'Built on reclaimed land in Tokyo Bay. Closer to central Tokyo than Narita, so favored by business travelers. Famously punctual and clean.',
+    },
+    {
+      airport: 'Los Angeles (LAX)',
+      code: 'LAX',
+      country: 'USA',
+      passengers: '76 million (2023)',
+      runways: 4,
+      story: 'Iconic "theme building" with arch design from 1961. Gateway to Hollywood and the Pacific.',
+    },
+    {
+      airport: 'Chicago O\'Hare (ORD)',
+      code: 'ORD',
+      country: 'USA',
+      passengers: '79 million (2023)',
+      runways: 8,
+      story: 'For decades the world\'s busiest airport (lost the crown to Atlanta). Iconic terminal. Heavy weather delays in winter affect the whole US air system.',
+    },
+    {
+      airport: 'Paris Charles de Gaulle (CDG)',
+      code: 'CDG',
+      country: 'France',
+      passengers: '70 million (2023)',
+      story: 'Major hub for Air France and SkyTeam alliance. Famously labyrinthine layout — terminals built piecemeal across decades.',
+    },
+    {
+      airport: 'Singapore Changi (SIN)',
+      code: 'SIN',
+      country: 'Singapore',
+      passengers: '67 million (2023)',
+      reputation: 'Routinely rated world\'s best airport',
+      amenities: 'Indoor waterfall, butterfly garden, free movie theaters, free city tours during long layovers',
+    },
+    {
+      airport: 'Beijing Capital (PEK)',
+      code: 'PEK',
+      country: 'China',
+      passengers: '~50 million (down from 100M+ pre-COVID)',
+      runways: 3,
+      story: 'Major hub for Air China. Terminal 3 by Norman Foster is one of the world\'s largest buildings.',
+    },
+    {
+      airport: 'Toronto Pearson (YYZ)',
+      code: 'YYZ',
+      country: 'Canada',
+      passengers: '44 million (2023)',
+      story: 'Largest airport in Canada. Air Canada\'s main hub. Major US-Canada gateway.',
+    },
+    {
+      airport: 'Mexico City (MEX)',
+      code: 'MEX',
+      country: 'Mexico',
+      passengers: '46 million (2023)',
+      altitude: '7,400 ft elevation',
+      story: 'High altitude means thinner air — aircraft need longer runways. Surrounded by mountains. Aeromexico hub.',
+    },
+    {
+      airport: 'Sydney Kingsford Smith (SYD)',
+      code: 'SYD',
+      country: 'Australia',
+      passengers: '44 million (2023)',
+      story: 'Oldest continually operating airport in the world (founded 1920). Limited expansion possible due to surrounding suburbs.',
+    },
+    {
+      airport: 'São Paulo Guarulhos (GRU)',
+      code: 'GRU',
+      country: 'Brazil',
+      passengers: '40 million (2023)',
+      story: 'Latin America\'s busiest airport. Hub for LATAM.',
+    },
+    {
+      airport: 'Reykjavik Keflavik (KEF)',
+      code: 'KEF',
+      country: 'Iceland',
+      passengers: '7 million (2023)',
+      story: 'Tiny country (~370K people), enormous tourist traffic. Stopover destination for transatlantic flights.',
+    },
+    {
+      airport: 'Tenzing-Hillary (LUA)',
+      code: 'LUA',
+      country: 'Nepal',
+      passengers: 'Limited',
+      altitude: '9,334 ft',
+      runway: '1,729 ft long, 12% gradient',
+      story: 'Gateway to Mount Everest base camp. Considered one of the most dangerous airports in the world due to sloped, short runway and mountain terrain.',
+    },
+    {
+      airport: 'Princess Juliana (SXM)',
+      code: 'SXM',
+      country: 'Sint Maarten',
+      passengers: '2 million (2023)',
+      story: 'Famous for low-altitude jet approaches directly over Maho Beach. Aircraft pass ~50 ft above beachgoers.',
+    },
+    {
+      airport: 'Toncontín (TGU)',
+      code: 'TGU',
+      country: 'Honduras',
+      runway: '7,000 ft, surrounded by mountains',
+      story: 'One of the most dangerous airports in the world. Pilots must make a sharp turn on final to align with runway.',
+    },
+    {
+      airport: 'Saba (SAB)',
+      code: 'SAB',
+      country: 'Caribbean Netherlands',
+      runway: '1,300 ft (shortest commercial runway in the world)',
+      story: 'Cliff edges on both ends. Only specially-trained pilots fly here.',
+    },
+    {
+      airport: 'Madeira (FNC)',
+      code: 'FNC',
+      country: 'Portugal',
+      runway: '9,124 ft built on stilts over the ocean',
+      story: 'Original runway was too short; extended over the Atlantic on a 180-pillar deck.',
+    },
+    {
+      airport: 'Ice runway, Antarctica (NZIR)',
+      code: 'NZIR',
+      country: 'Antarctica',
+      runway: 'Sea ice (winter) or compacted snow (summer)',
+      story: 'Serves McMurdo Station scientific research. Aircraft must be skied or have special tires. Reposiated each season.',
+    },
+  ];
+
+  // ─── Aviation careers in depth ─────────────────────────────────────────
+  var AVIATION_CAREERS_DETAIL = [
+    {
+      role: 'Airline pilot — major carrier',
+      training: 'PPL + IFR + commercial + ATP = 1,500+ hours total time, 18-24 months minimum',
+      typicalPathway: '(1) PPL at flight school (~$10K). (2) Add IFR (~$10K). (3) Commercial cert (~$15K). (4) Build hours as flight instructor or regional FO. (5) Hire on as regional airline FO. (6) Move to major airline FO. (7) Eventually upgrade to captain.',
+      payProgression: 'Flight instructor: $30K-50K. Regional FO: $45-90K first year, $90-130K mid-career. Major FO: $80-200K depending on aircraft. Major captain: $200K-400K.',
+      schedule: 'Variable. Long-haul international: 80-100 hours/month flying, 14-15 days off. Regional: more days flying, less time off.',
+      pros: ['Excellent pay at senior levels', 'Travel benefits (free flights for self and family)', 'Strong unions in US (ALPA, APA)', 'Defined career progression'],
+      cons: ['Long training pipeline', 'Time away from family', 'Mandatory retirement at 65 (FAA rule)', 'Medical disqualifying can end career'],
+      outlook: 'Pilot shortage expected through 2030s due to retirements.',
+    },
+    {
+      role: 'Corporate pilot',
+      training: 'Same as airline, often with type ratings on specific business jets (Gulfstream, Citation, etc.)',
+      payProgression: '$80K-300K depending on aircraft and operation',
+      schedule: 'Often more predictable than airlines, often on-call basis',
+      pros: ['Better schedule flexibility', 'Often newer/nicer aircraft', 'Can earn more than airlines at top end'],
+      cons: ['Less job security', 'No union protection', 'Smaller operations can shut down'],
+    },
+    {
+      role: 'Charter pilot',
+      training: 'Commercial certificate, often with multi-engine and instrument ratings',
+      payProgression: '$30K-100K',
+      schedule: 'On-call, variable',
+      examples: 'Air ambulance, executive charter, organ transport, cargo on-demand',
+    },
+    {
+      role: 'Flight instructor',
+      training: 'CFI rating + experience as PPL/commercial pilot',
+      payProgression: '$25-60K, often paid by the lesson',
+      pathway: 'Most pilots start here to build hours toward ATP minimum (1,500 hrs)',
+    },
+    {
+      role: 'Air traffic controller',
+      training: 'Apply to FAA Academy (Oklahoma City), 4-month residential training, then 2-3 years on-the-job',
+      payProgression: 'Trainee: $50K. Center controller: $130K-200K. Top tier (controller in major terminal area): $190K+',
+      eligibility: 'Must apply before age 31 (max hiring age). US citizenship required.',
+      retirement: 'Mandatory at 56. Generous federal pension.',
+      stress: 'High. The FAA cycles controllers through breaks to manage fatigue.',
+      outlook: 'Persistent staffing shortages. Strong job security and benefits.',
+    },
+    {
+      role: 'Aircraft mechanic (A&P certificate)',
+      training: '~18-24 months at FAA-approved Aviation Maintenance Technician school OR 30 months supervised experience',
+      payProgression: '$45K starting, $100K+ senior, $150K+ with Inspection Authorization',
+      schedule: 'Often shift work; airline mechs work odd hours',
+      pros: ['Strong job market', 'Good union representation', 'Don\'t need medical certificate (unlike pilots)'],
+      cons: ['Physical work', 'Some exposure to chemicals/noise'],
+      growthPaths: 'Move to inspector, engineering, or supervisory roles.',
+    },
+    {
+      role: 'Avionics technician',
+      training: 'AMT school + avionics endorsement OR military electronics + civilian transition',
+      payProgression: '$50-90K',
+      role: 'Install, troubleshoot, and repair aircraft electrical and avionics systems',
+      growth: 'Rapidly evolving field as glass cockpits become standard.',
+    },
+    {
+      role: 'Aerospace engineer',
+      training: 'BS in aerospace, mechanical, or electrical engineering',
+      payProgression: '$80-180K',
+      employers: 'Boeing, Lockheed Martin, NASA, SpaceX, Northrop Grumman, Blue Origin, Rocket Lab',
+      specialties: ['Aerodynamics (wind tunnel + CFD)', 'Propulsion (engines, rockets)', 'Structures (load analysis, materials)', 'Avionics (flight controls, navigation)', 'Systems engineering'],
+      outlook: 'Strong growth driven by space industry expansion.',
+    },
+    {
+      role: 'Aerospace manufacturing technician',
+      training: 'High school + on-the-job; sometimes 2-year programs',
+      payProgression: '$40-75K',
+      role: 'Build and assemble aircraft and spacecraft components',
+      employers: 'Boeing, Airbus, SpaceX, Lockheed, suppliers',
+    },
+    {
+      role: 'Flight dispatcher',
+      training: '5-8 week dispatch school, then airline-specific training',
+      payProgression: '$45-120K',
+      role: 'Plan flights, monitor weather, share legal responsibility with captain',
+      certification: 'FAA Aircraft Dispatcher Certificate',
+      schedule: 'Shift work; airlines operate 24/7',
+    },
+    {
+      role: 'Drone operator (commercial)',
+      training: 'FAA Part 107 certificate (~$175 + study time)',
+      payProgression: '$30-100K+ depending on specialty',
+      specialties: ['Aerial photography/videography', 'Surveying and mapping', 'Powerline/infrastructure inspection', 'Agricultural monitoring', 'Search and rescue', 'Real estate'],
+      entryLevel: 'Easiest aviation career to enter — no flight time required.',
+    },
+    {
+      role: 'Aviation lawyer',
+      training: 'Law school + aviation specialty (often via internships at aviation firms or government)',
+      payProgression: '$80-300K+',
+      practice: 'Regulatory compliance, accident litigation, contract negotiation, intellectual property',
+    },
+    {
+      role: 'Aviation safety inspector (FAA)',
+      training: 'Pilot or mechanic certification + FAA hiring process',
+      payProgression: '$80-150K',
+      role: 'Conduct check rides, inspect operators, investigate incidents, certify training programs',
+      schedule: 'Travel-heavy in some roles',
+    },
+    {
+      role: 'Airport manager',
+      training: 'Business or aviation degree + experience',
+      payProgression: '$60-200K depending on airport size',
+      role: 'Oversee airport operations, security, facilities, financial planning',
+    },
+    {
+      role: 'Aviation educator / professor',
+      training: 'PhD or master\'s + significant industry experience',
+      payProgression: '$60-150K',
+      employers: 'University aviation programs (Embry-Riddle, Purdue, Western Michigan, etc.)',
+      role: 'Teach next generation of aviation professionals',
+    },
+    {
+      role: 'Aerospace medicine physician',
+      training: 'MD + aerospace medicine residency',
+      payProgression: '$200K+',
+      role: 'FAA-designated Aviation Medical Examiner; supports astronaut and pilot health',
+    },
+    {
+      role: 'Aviation insurance underwriter',
+      training: 'Business or aviation background + insurance industry experience',
+      payProgression: '$60-150K',
+      role: 'Assess risk for aircraft and aviation operations; price policies',
+    },
+    {
+      role: 'Aviation journalism / media',
+      training: 'Journalism + aviation knowledge + often pilot certificate',
+      payProgression: 'Variable; mostly freelance or industry publications',
+      outlets: 'Flying magazine, AOPA Pilot, Aviation Week, AINOnline',
+    },
+    {
+      role: 'Astronaut',
+      training: 'Various paths: military test pilot, civilian pilot + science/engineering degree, scientist',
+      payProgression: 'GS-13 to GS-15 federal scale (~$100-160K)',
+      odds: 'NASA accepts ~10-20 from 12,000+ applicants every few years',
+      requirements: 'Generally PhD in STEM field + 1,000+ hours pilot time OR equivalent professional experience',
+    },
+  ];
+
+  // ─── Aviation milestones for K-5 ──────────────────────────────────────
+  var AVIATION_FOR_KIDS = [
+    {
+      topic: 'Are you wondering how birds can fly?',
+      explanation: 'Birds have wings that are curved on top, like little hills. When they flap, the air above their wings moves faster, and the air below moves slower. The fast-air side has less pressure, and the slower air pushes the bird up.',
+    },
+    {
+      topic: 'Why don\'t airplanes flap their wings?',
+      explanation: 'Birds need to flap to push air backward — that\'s their thrust. Airplanes have engines that do that job, so the wings can stay still and just be shaped to make lift.',
+    },
+    {
+      topic: 'How does a propeller work?',
+      explanation: 'A propeller is like a tiny twisted wing that spins really fast. As it spins, it pushes air backward, just like swimmers push water backward to move forward. The air pushing back on the propeller pushes the airplane forward.',
+    },
+    {
+      topic: 'Why do airplanes have wings on both sides?',
+      explanation: 'Because the wings together hold up the entire airplane equally. If only one side had wings, the airplane would flip over to one side. Just like a bird has two wings, not one.',
+    },
+    {
+      topic: 'Can airplanes fly upside down?',
+      explanation: 'Yes! Some airplanes (especially fighter jets and aerobatic planes) can fly upside down. Their wings are shaped so they can still make lift either direction. But most regular airplanes are not designed for inverted flight.',
+    },
+    {
+      topic: 'What\'s the highest a plane has ever flown?',
+      explanation: 'The SR-71 Blackbird spy plane flew over 85,000 feet — that\'s over 16 miles up! That\'s so high that the curvature of the Earth is visible.',
+    },
+    {
+      topic: 'What\'s the fastest plane?',
+      explanation: 'The NASA X-43 unmanned aircraft flew over Mach 9.6 — about 7,000 mph! Even crewed jets like the SR-71 fly over Mach 3 (about 2,200 mph). That\'s about 50 times faster than highway speeds.',
+    },
+    {
+      topic: 'Can I be a pilot?',
+      explanation: 'Yes! You can take a "discovery flight" at most local airports — usually about $100 — and feel what it\'s like. Pilots start training around age 16-17 (you have to be 17 to get a private pilot license).',
+    },
+    {
+      topic: 'How does the captain steer?',
+      explanation: 'The pilot pushes the yoke (like a steering wheel) forward to point the nose down, pulls back to point it up. Pushes left or right to turn the wings, which makes the plane lean and turn. Their feet push pedals that turn the rudder, just like a boat.',
+    },
+    {
+      topic: 'What do those little flaps do on the back of wings?',
+      explanation: 'Those are flaps! They come out at low speeds (like when landing) and curve the wing more, which makes more lift but also more drag. That way the plane can fly slowly enough to land safely.',
+    },
+    {
+      topic: 'How fast does a plane go to take off?',
+      explanation: 'It depends on the plane. A little Cessna takes off at about 55 mph. A big airliner takes off at about 175 mph! Both need to be moving fast enough that the wings can lift the weight of the plane.',
+    },
+    {
+      topic: 'Why do bigger planes need longer runways?',
+      explanation: 'Heavier planes need more speed to take off (more lift needed). And they take more distance to slow down for landing. So bigger plane = longer runway.',
+    },
+    {
+      topic: 'What\'s in the trailing white line behind a plane?',
+      explanation: 'Those are called contrails. They\'re tiny ice crystals — water vapor from the engine exhaust freezing in the cold air high up. They\'re not pollution, they\'re actually just frozen water!',
+    },
+    {
+      topic: 'Why do airplane wings shake during flight?',
+      explanation: 'When you see them shake, that\'s actually normal — wings are designed to flex and bend so they don\'t break. Stiff wings would crack. Bendy wings absorb bumps like shock absorbers.',
+    },
+    {
+      topic: 'Does the captain steer the wheels on the ground?',
+      explanation: 'Yes! Most planes have a steering wheel that turns the nose wheel. Some planes also use the brakes on each main wheel to help turn. On the ground, planes work kind of like cars.',
+    },
+  ];
+
+  // ─── Cross-disciplinary connections ────────────────────────────────────
+  var AVIATION_CROSS_DISCIPLINARY = [
+    {
+      subject: 'Math',
+      connections: [
+        'Trigonometry: pilot uses sin/cos/tan for wind correction angles',
+        'Geometry: great circle navigation on a sphere',
+        'Algebra: lift formula, drag formula, fuel burn equations',
+        'Calculus: integration for fuel consumed over flight time',
+        'Statistics: weather probability, safety analysis',
+        'Vector math: forces, wind components, ground speed',
+      ],
+    },
+    {
+      subject: 'Physics',
+      connections: [
+        'Newton\'s laws of motion (especially 3rd law for thrust)',
+        'Bernoulli\'s principle',
+        'Energy conservation (kinetic + potential)',
+        'Pressure, temperature, density relationships (gas laws)',
+        'Centripetal force in turns',
+        'Sound (sonic booms, jet engine acoustics)',
+      ],
+    },
+    {
+      subject: 'Chemistry',
+      connections: [
+        'Fuel chemistry (avgas vs jet fuel hydrocarbons)',
+        'Combustion thermodynamics',
+        'Materials science (aluminum, titanium, composites)',
+        'Oxidation (corrosion control)',
+      ],
+    },
+    {
+      subject: 'Earth science',
+      connections: [
+        'Meteorology (clouds, fronts, jet stream, density altitude)',
+        'Climate (long-term weather patterns affecting aviation)',
+        'Geography (great circle routes, terrain effects)',
+        'Magnetism (compass variation, deviation)',
+      ],
+    },
+    {
+      subject: 'Engineering',
+      connections: [
+        'Materials engineering (aluminum, titanium, composites)',
+        'Structural engineering (load analysis, fatigue)',
+        'Mechanical engineering (engines, hydraulics)',
+        'Electrical engineering (avionics, power systems)',
+        'Computer engineering (flight control software)',
+        'Aerospace engineering (the whole package)',
+      ],
+    },
+    {
+      subject: 'History',
+      connections: [
+        'Wright brothers and early aviation',
+        'World Wars (military aviation development)',
+        'Cold War (jet age, supersonic flight)',
+        'Space race (rockets, manned spaceflight)',
+        'Modern era (jumbo jets, regional jets, drones)',
+      ],
+    },
+    {
+      subject: 'Geography',
+      connections: [
+        'World cities and capitals via flight destinations',
+        'Continental relationships and great circle distance',
+        'Time zones and the international date line',
+        'Mountain ranges and their effect on flight',
+        'Ocean trade routes from the air',
+      ],
+    },
+    {
+      subject: 'Social studies',
+      connections: [
+        'Globalization (aviation links the world)',
+        'Economics (airline industry, fuel pricing)',
+        'Politics (deregulation, security, regulation)',
+        'Tourism (flight enables modern tourism)',
+        'Refugee/migration patterns',
+      ],
+    },
+    {
+      subject: 'English / Language Arts',
+      connections: [
+        'Memoirs from pilots (Lindbergh\'s "We," Saint-Exupéry\'s "Wind, Sand and Stars")',
+        'Technical reading (aircraft manuals, checklists)',
+        'Writing flight reports and pre-flight briefings',
+        'Standardized communication (ICAO English language proficiency)',
+        'Poetry (e.g. John Gillespie Magee\'s "High Flight")',
+      ],
+    },
+    {
+      subject: 'Art',
+      connections: [
+        'Aviation photography (Civil War balloon photos onward)',
+        'Aircraft livery design (each airline has a brand)',
+        'Aircraft as design objects (Concorde, SR-71)',
+        'Bauhaus-influenced cockpit and panel design',
+      ],
+    },
+    {
+      subject: 'Music',
+      connections: [
+        'Aviation soundscapes (engine sounds, ATC chatter)',
+        'Songs about flight: "Leaving on a Jet Plane," "Wide Open Spaces," "Aeroplane Over the Sea"',
+        'Movie scores for aviation films (Top Gun, Right Stuff)',
+      ],
+    },
+    {
+      subject: 'Ethics / Philosophy',
+      connections: [
+        'Carbon footprint of aviation',
+        'Safety vs cost trade-offs',
+        'Who flies (privilege, accessibility)',
+        'Pilot decision making under stress',
+        'Military aviation and just war theory',
+      ],
+    },
+  ];
+
+  // ─── Aviation glossary supplement ──────────────────────────────────────
+  var GLOSSARY_SUPPLEMENT = [
+    { term: 'Apron', def: 'Paved area where aircraft are parked, loaded, unloaded, refueled, or boarded.' },
+    { term: 'Backtrack', def: 'Taxiing along a runway in the opposite direction to takeoff direction.' },
+    { term: 'Beacon', def: 'A rotating airport light visible at night. Indicates active airport.' },
+    { term: 'Bleed air', def: 'Compressed air taken from the engine compressor. Used for pressurization, anti-ice, cabin heat.' },
+    { term: 'Briefing', def: 'Pre-flight discussion between crew and dispatchers/controllers about route, weather, etc.' },
+    { term: 'Buffer', def: 'Reserved time/distance/altitude beyond minimums for safety margin.' },
+    { term: 'Carb heat', def: 'Carburetor heat — air heated to prevent ice from forming in carburetor venturi.' },
+    { term: 'Crosswind', def: 'Wind blowing perpendicular to runway. Aircraft has demonstrated crosswind limit.' },
+    { term: 'Cruise altitude', def: 'Optimal altitude where aircraft fuel efficiency is maximum, usually between FL280-380.' },
+    { term: 'Dispatcher', def: 'Airline employee who plans flights, monitors weather, shares legal responsibility with captain.' },
+    { term: 'Empennage', def: 'Tail assembly. Vertical fin + rudder + horizontal stab + elevators.' },
+    { term: 'Eponymous', def: '(Not aviation-specific but used here for various people-named aircraft and routes.)' },
+    { term: 'False horizon', def: 'Illusion that causes pilots to misjudge attitude. Often a sloped cloud bank or terrain.' },
+    { term: 'Flight director', def: 'Avionics that displays commanded pitch and roll, easier to follow than raw needles.' },
+    { term: 'Flightplan', def: 'Document filed with ATC describing route, altitude, alternate, fuel, time enroute.' },
+    { term: 'Geosynchronous', def: 'Satellite orbit matching Earth\'s rotation. Communications and weather satellites often here.' },
+    { term: 'Glide slope', def: 'Vertical guidance signal for ILS approach.' },
+    { term: 'Greaser', def: 'Slang for a very smooth landing where touchdown is barely felt.' },
+    { term: 'Holding pattern', def: 'A racetrack pattern flown when waiting for clearance.' },
+    { term: 'ILS', def: 'Instrument Landing System. Precision approach with both lateral and vertical guidance.' },
+    { term: 'IMC', def: 'Instrument Meteorological Conditions. Weather requiring instrument flight.' },
+    { term: 'KIAS', def: 'Knots Indicated Airspeed (what the ASI shows).' },
+    { term: 'KCAS', def: 'Knots Calibrated Airspeed (IAS corrected for installation errors).' },
+    { term: 'KTAS', def: 'Knots True Airspeed (CAS corrected for non-standard density at altitude).' },
+    { term: 'KGS', def: 'Knots Ground Speed (TAS adjusted for wind).' },
+    { term: 'Landing flare', def: 'Pitch-up just before touchdown to reduce vertical speed.' },
+    { term: 'Localizer', def: 'Lateral guidance for ILS approach.' },
+    { term: 'Magnetic variation', def: 'Difference between true north and magnetic north. Varies by location.' },
+    { term: 'Marker beacon', def: 'Ground transmitter at fixed distance from runway. Three intensities: outer, middle, inner.' },
+    { term: 'MCAS', def: 'Maneuvering Characteristics Augmentation System. Boeing 737 MAX system implicated in two fatal crashes.' },
+    { term: 'Mishap', def: 'Aviation\'s euphemism for an accident or serious incident.' },
+    { term: 'Mode S transponder', def: 'Selective Mode S — transmits aircraft ID and altitude to ATC and TCAS.' },
+    { term: 'Multi-engine', def: 'Aircraft with more than one engine. Requires additional certificate endorsement.' },
+    { term: 'Notams', def: 'Notice to Airmen. Pre-flight required reading.' },
+    { term: 'Obstacle clearance', def: 'Minimum altitude above terrain, buildings, antennas required for IFR routes.' },
+    { term: 'Octane rating', def: 'Resistance of fuel to autoignition. 100LL = 100 octane low-lead avgas.' },
+    { term: 'Pattern', def: 'Standard rectangular path around an airport for landing. Downwind, base, final.' },
+    { term: 'Phonetic alphabet', def: 'Alpha, Bravo, Charlie... Used to disambiguate letters over radio.' },
+    { term: 'Pilot certificate', def: 'Document showing pilot has met requirements for a particular type of flying.' },
+    { term: 'PITOT-static', def: 'System using ram air (pitot) and ambient (static) pressure for airspeed and altitude.' },
+    { term: 'Power Compensation', def: 'Right rudder needed during full-power climb to counteract propeller slip stream.' },
+    { term: 'Pressurization', def: 'Maintaining cabin pressure higher than outside altitude.' },
+    { term: 'Procedure turn', def: 'Method to reverse direction during instrument approach.' },
+    { term: 'Reverse thrust', def: 'Engine thrust deflected forward to help stop aircraft after landing.' },
+    { term: 'RNAV', def: 'Area Navigation. GPS-based navigation flying between waypoints rather than VORs.' },
+    { term: 'RNP', def: 'Required Navigation Performance. Precision standard for routes/approaches.' },
+    { term: 'Round trip', def: 'A flight that returns to origin same day.' },
+    { term: 'SOP', def: 'Standard Operating Procedure. Defined airline-specific way of doing things.' },
+    { term: 'Slick', def: 'Aircraft cleaned of contaminants. Aircraft with no flaps/spoilers deployed.' },
+    { term: 'Speed brake', def: 'Surface deployed to increase drag without affecting lift. Used in descent.' },
+    { term: 'Stabilator', def: 'Horizontal stabilizer that pivots entirely (no separate elevator).' },
+    { term: 'Standby flight instruments', def: 'Backup attitude indicator, altimeter, airspeed indicator independent of primary glass cockpit.' },
+    { term: 'Sterile cockpit', def: 'Federal rule prohibiting non-essential conversation below 10,000 ft.' },
+    { term: 'STOL', def: 'Short Takeoff and Landing. Aircraft designed for very short runways.' },
+    { term: 'Sublimation', def: 'Ice going directly to vapor without melting first. Cabin frost removed this way.' },
+    { term: 'TCAS', def: 'Traffic Collision Avoidance System. Aircraft talks to other aircraft to coordinate avoidance.' },
+    { term: 'Touch-and-go', def: 'Landing followed immediately by takeoff. Used for repetitive landing practice.' },
+    { term: 'Trim', def: 'Setting controls so the aircraft naturally maintains a desired attitude.' },
+    { term: 'Type rating', def: 'Additional certification required to fly aircraft over 12,500 lb gross weight.' },
+    { term: 'Unicom', def: 'Aviation radio frequency for non-towered airports. Used to announce position and intent.' },
+    { term: 'Vne', def: 'Never exceed velocity. Red line on airspeed indicator.' },
+    { term: 'Whirly', def: 'Affectionate slang for helicopter.' },
+    { term: 'Zulu time', def: 'UTC (Coordinated Universal Time). Standard aviation time reference.' },
+  ];
+
+  // ─── Famous aviation quotes ────────────────────────────────────────────
+  var AVIATION_QUOTES = [
+    { quote: '"Once you have tasted flight, you will forever walk the earth with your eyes turned skyward, for there you have been and there you will always long to return."', author: 'Leonardo da Vinci (attributed)' },
+    { quote: '"If you want to grow old as a pilot, you\'ve got to know when to push it, and when to back off."', author: 'Chuck Yeager' },
+    { quote: '"The desire to fly is an idea handed down to us by our ancestors who... looked enviously on the birds soaring freely through space."', author: 'Wilbur Wright' },
+    { quote: '"Anyone can do the job when things are going right. In this business we play for keeps."', author: 'Ernest K. Gann' },
+    { quote: '"The engine is the heart of an airplane, but the pilot is its soul."', author: 'Walter Raleigh' },
+    { quote: '"Flying might not be all plain sailing, but the fun of it is worth the price."', author: 'Amelia Earhart' },
+    { quote: '"I fly because it releases my mind from the tyranny of petty things."', author: 'Antoine de Saint-Exupéry' },
+    { quote: '"Aviation is proof that given the will, we have the capacity to achieve the impossible."', author: 'Eddie Rickenbacker' },
+    { quote: '"The pilot who teaches himself has a fool for a student."', author: 'Robert N. Buck' },
+    { quote: '"Flying is hours and hours of boredom sprinkled with a few seconds of sheer terror."', author: 'Gregory ‘Pappy’ Boyington' },
+    { quote: '"Aviation is the branch of engineering that is least forgiving of mistakes."', author: 'Freeman Dyson' },
+    { quote: '"There are old pilots and bold pilots, but there are no old, bold pilots."', author: 'Anonymous (often attributed to E. Hamilton Lee, 1949)' },
+    { quote: '"It\'s a curious thing about us human beings: optimism is built right into us, just like the wing is built into a bird."', author: 'Bessie Coleman' },
+    { quote: '"The most beautiful thing we can experience is the mysterious."', author: 'Albert Einstein (often quoted to describe flight)' },
+    { quote: '"For most gliders the journey is the destination."', author: 'Anonymous' },
+  ];
+
+  // ─── Common student mistakes to avoid ─────────────────────────────────
+  var STUDENT_MISTAKES = [
+    {
+      mistake: 'Thinking lift comes only from Bernoulli',
+      reality: 'Both Bernoulli and Newton\'s 3rd Law contribute. Modern teaching emphasizes both.',
+    },
+    {
+      mistake: 'Assuming stalls are about low speed',
+      reality: 'Stalls are about exceeding critical AoA. Can happen at any speed if pilot pulls back hard enough.',
+    },
+    {
+      mistake: 'Pulling back on yoke during stall',
+      reality: 'Pull back makes it WORSE. Lower the nose to recover.',
+    },
+    {
+      mistake: 'Memorizing without understanding',
+      reality: 'Aviation requires understanding the WHY, not just the rules. The rules exist because of underlying physics.',
+    },
+    {
+      mistake: 'Trusting GPS over fundamentals',
+      reality: 'GPS can fail. Pilots must be able to navigate without it. Pilotage and dead reckoning are still required skills.',
+    },
+    {
+      mistake: 'Ignoring the magnetic compass',
+      reality: 'Backup of last resort. It uses no electricity and works when everything else fails.',
+    },
+    {
+      mistake: 'Thinking thrust = takeoff',
+      reality: 'Thrust gets you to takeoff speed. Lift gets you off the ground.',
+    },
+    {
+      mistake: 'Believing planes can\'t glide',
+      reality: 'All planes can glide. Modern airliners can glide 100+ miles from cruise altitude with engines off.',
+    },
+    {
+      mistake: 'Confusing TAS, IAS, and GS',
+      reality: 'IAS = what airspeed indicator shows. TAS = what aircraft actually moves through air. GS = what aircraft moves over ground (TAS adjusted for wind).',
+    },
+    {
+      mistake: 'Setting altimeter wrong',
+      reality: 'Altimeter must be set to local barometric pressure. Wrong setting can cause CFIT (controlled flight into terrain).',
+    },
+    {
+      mistake: 'Trying to slip in to a steep approach',
+      reality: 'Side-slipping IS a useful technique. But uncoordinated turns near the ground at low speed can spin the aircraft.',
+    },
+    {
+      mistake: 'Holding back rudder during turn',
+      reality: 'Cause the ball to be off-center (uncoordinated). Use rudder properly: it goes with the bank.',
+    },
+    {
+      mistake: 'Pressing on into deteriorating weather',
+      reality: 'Get-there-itis kills pilots. The decision to turn back must be made early, before conditions force the issue.',
+    },
+    {
+      mistake: 'Forgetting fuel calculation',
+      reality: 'Need 30 min reserve (VFR day), 45 min (VFR night), 45 min + alternate fuel (IFR). Don\'t cut it close.',
+    },
+    {
+      mistake: 'Ignoring the checklist',
+      reality: 'Checklists exist because pilots forget. Read it every time. Mark items as completed.',
+    },
+  ];
+
+  // ─── Tips for becoming a great pilot ──────────────────────────────────
+  var PILOT_WISDOM = [
+    'Fly the airplane first. Communicate later. Navigate when you can.',
+    'A superior pilot uses superior judgment to avoid situations requiring superior skill.',
+    'If you can\'t see the runway, you can\'t land on it.',
+    'When in doubt, climb. Altitude is options.',
+    'Learn to read clouds. They tell you what the air is doing.',
+    'Trust the instruments when your inner ear says otherwise.',
+    'Always have an out. Always know where the nearest airport is.',
+    'Practice emergencies. The first time should be in your training.',
+    'Stay current. Flying is perishable.',
+    'Get a CFI checkride every two years (BFR — biennial flight review).',
+    'Read accident reports. Learn from others\' mistakes.',
+    'Sleep well before flying.',
+    'Eat before flying.',
+    'Hydrate before flying.',
+    'Stop flying if you\'re emotionally compromised.',
+    'Listen to ATC. They can save your life.',
+    'When ATC says "say intentions," they\'re giving you back the controls — make a decision.',
+    'Learn to say "unable" when ATC asks for something unsafe.',
+    'Crosswinds get harder with age and rust. Practice them.',
+    'Stick-and-rudder skills are perishable. Hand-fly often.',
+    'Avoid the "press on" mindset.',
+    'Talk to other pilots. Learn from their experience.',
+    'Visit a control tower. See how the ATC side works.',
+    'Read McNabb\'s Aerial: Mark McNab on Cessna 172 mastery.',
+    'Read Langewiesche\'s "Stick and Rudder" — classic for a reason.',
+    'Build a personal weather minimum and stick to it.',
+    'Build a personal fuel reserve minimum and stick to it.',
+    'Never fly tired.',
+    'Never fly stressed.',
+    'Never fly impaired (alcohol, drugs, prescription meds with warnings).',
+    'When you have a choice between staying low for vis vs climbing into IMC, the answer depends on your training. Know your rating.',
+  ];
+
+  // ─── Aircraft accident investigation (NTSB process) ──────────────────
+  var ACCIDENT_INVESTIGATION = [
+    {
+      step: '1. Notification',
+      explanation: 'When a crash occurs, FAA notifies NTSB (US) or equivalent agency. Local first responders secure the scene.',
+    },
+    {
+      step: '2. Investigation team mobilizes',
+      explanation: 'NTSB sends investigators within hours. Team includes specialists: operations, structures, powerplant, systems, ATC, witnesses, human performance, survival factors.',
+    },
+    {
+      step: '3. Scene documentation',
+      explanation: 'Photographs, mapping, debris field documentation. Wreckage preserved as-is until investigators arrive.',
+    },
+    {
+      step: '4. Black box recovery',
+      explanation: 'Flight Data Recorder (FDR) + Cockpit Voice Recorder (CVR) found and analyzed. Painted orange for visibility.',
+      what: 'FDR records dozens of flight parameters. CVR records last 2 hours of cockpit audio.',
+    },
+    {
+      step: '5. Maintenance + records review',
+      explanation: 'Aircraft history, recent maintenance, parts history, crew training records, weather records all collected.',
+    },
+    {
+      step: '6. Lab analysis',
+      explanation: 'Failed parts to metallurgy lab. Software/avionics to manufacturer for analysis. Toxicology on crew.',
+    },
+    {
+      step: '7. Reconstruction',
+      explanation: 'In major accidents, wreckage may be physically reassembled to study the failure path.',
+      example: 'TWA 800 (1996) was reconstructed inside a hangar to study center wing tank explosion.',
+    },
+    {
+      step: '8. Findings + probable cause',
+      explanation: 'NTSB issues a report 12-24 months after the accident. Determines "probable cause" — most likely root cause(s).',
+      example: 'Recent reports go beyond pilot error to look at design, training, regulatory environment.',
+    },
+    {
+      step: '9. Safety recommendations',
+      explanation: 'NTSB cannot regulate — only recommend. FAA may or may not adopt recommendations.',
+      criticisms: 'Sometimes FAA delays implementing NTSB recommendations.',
+    },
+    {
+      step: '10. Public release',
+      explanation: 'Report becomes publicly available. Trade press and media analyze. Lessons disseminated through airline training.',
+    },
+    {
+      principle: 'Safety culture: just culture',
+      explanation: 'Modern safety thinking: focus on system failures and human factors, not blame. Pilots and mechanics encouraged to report errors without fear of punishment — this creates more data to prevent future accidents.',
+    },
+    {
+      principle: 'NTSB precision',
+      example: 'NTSB will spend years studying a fatal crash. Modern airliners are so safe that we can\'t afford to leave any data on the table. Every accident is a lesson written in blood.',
+    },
+  ];
+
+  // ─── Aviation safety milestones (specific accidents and their fixes) ───
+  var SAFETY_MILESTONES = [
+    {
+      milestone: 'GPWS (Ground Proximity Warning System)',
+      yearRequired: '1974 (US airliners)',
+      problem: 'Controlled flight into terrain (CFIT) — fully functional aircraft flown into mountains/ground',
+      solution: 'Radar/GPS-based system warning "TERRAIN! PULL UP!" before impact',
+      impact: 'Reduced CFIT crashes dramatically. Saved hundreds of lives.',
+    },
+    {
+      milestone: 'TCAS (Traffic Collision Avoidance System)',
+      yearRequired: '1991 (US airliners)',
+      problem: 'Mid-air collisions',
+      solution: 'Aircraft talk to each other via Mode S transponder, coordinate avoidance maneuvers',
+      impact: 'Mid-air collisions among airliners virtually eliminated since adoption',
+    },
+    {
+      milestone: 'Wind shear detection',
+      yearRequired: '1990s',
+      problem: 'Microbursts causing crashes (Delta 191 in 1985 killed 137)',
+      solution: 'Doppler radar at major airports + onboard predictive systems',
+      impact: 'Microburst crashes nearly eliminated',
+    },
+    {
+      milestone: 'CRM (Crew Resource Management)',
+      yearRequired: '1980s onward',
+      problem: 'Communication breakdowns in cockpit (Tenerife, United 173, Eastern 401)',
+      solution: 'Training programs teaching cooperation, flat authority gradient, error catching',
+      impact: 'Reduced crew-error-related crashes',
+    },
+    {
+      milestone: 'EICAS / ECAM (engine instrument and crew alerting)',
+      problem: 'Pilots overwhelmed by warnings',
+      solution: 'Smart computer-driven displays that show critical info first, mute non-critical',
+      impact: 'Pilots can focus on the real problem',
+    },
+    {
+      milestone: 'TAWS (Terrain Awareness and Warning System)',
+      yearRequired: '2002 (GA aircraft over 6 seats)',
+      problem: 'Same as GPWS — CFIT — but in general aviation',
+      solution: 'GPS-based terrain warning required in larger GA aircraft',
+      impact: 'Reduced GA CFIT accidents',
+    },
+    {
+      milestone: 'Nitrogen inerting of fuel tanks',
+      yearRequired: '2008',
+      problem: 'TWA 800 (1996) center wing tank explosion killed 230',
+      solution: 'Pump nitrogen-rich gas into fuel tanks to prevent fuel vapor ignition',
+      impact: 'Fuel tank explosions eliminated as a cause of catastrophic accidents',
+    },
+    {
+      milestone: 'ATSAP (Air Traffic Safety Action Program)',
+      yearRequired: '2009',
+      problem: 'Air traffic controllers feared discipline for reporting errors',
+      solution: 'Non-punitive incident reporting; airlines and controllers learn from mistakes safely',
+      impact: 'Much more data available for safety analysis',
+    },
+    {
+      milestone: 'ADS-B (Automatic Dependent Surveillance-Broadcast)',
+      yearRequired: '2020 (most US airspace)',
+      problem: 'Radar alone has limitations (mountains shadow, weather interferes)',
+      solution: 'Aircraft broadcast their GPS position to other aircraft and ATC',
+      impact: 'Better situational awareness; foundation for next-gen ATC',
+    },
+    {
+      milestone: 'MCAS 737 MAX reforms',
+      yearRequired: '2020',
+      problem: 'Single-input system caused two fatal crashes',
+      solution: 'Cross-checked inputs; pilot disclosure; recertification process',
+      impact: 'Boeing/FAA cert process under serious revision',
+    },
+    {
+      principle: 'Why aviation is so safe',
+      stats: 'Commercial aviation: ~1 fatal accident per 5 million flights. Equivalent to flying 4 hours/day for hundreds of years before encountering a fatal accident.',
+      reasons: ['Every accident is studied and fixes are mandated', 'Crews trained to extraordinary standards', 'Aircraft engineered with multiple redundancies', 'Regulatory environment that prioritizes safety over cost'],
+    },
+  ];
+
+  // ─── Aircraft maintenance fundamentals ────────────────────────────────
+  var MAINTENANCE_BASICS = [
+    {
+      maintenance: 'Pre-flight inspection (PIC)',
+      who: 'Pilot in command, before every flight',
+      duration: '~10-15 minutes for a small aircraft',
+      purpose: 'Catch obvious problems before they become emergencies',
+      items: 'See PREFLIGHT_CHECKLIST',
+    },
+    {
+      maintenance: 'Annual inspection',
+      who: 'IA (Inspection Authorization) mechanic',
+      frequency: 'Once per year, mandatory',
+      duration: '1-2 weeks',
+      cost: '$1,000-3,000 for typical GA aircraft',
+      purpose: 'Comprehensive inspection of every aircraft system',
+    },
+    {
+      maintenance: '100-hour inspection',
+      who: 'A&P (Airframe and Powerplant) mechanic',
+      frequency: 'Required for aircraft used for hire (instruction, charter)',
+      duration: '1-2 days',
+      similarities: 'Similar in scope to annual; in some cases combined',
+    },
+    {
+      maintenance: 'Engine TBO (Time Between Overhauls)',
+      who: 'Engine shop or specialized mechanic',
+      frequency: '1,500-2,500 hours for piston aircraft. 4,000-10,000+ hours for turbine.',
+      duration: 'Weeks-months for piston overhaul',
+      cost: '$20,000-50,000 for piston engine overhaul. Turbine overhauls $100K+.',
+      what: 'Complete engine teardown, replace worn parts, inspect everything, rebuild to factory specs',
+    },
+    {
+      maintenance: 'Service Bulletins (SB)',
+      what: 'Manufacturer notice that work is recommended (or required if it\'s an AD)',
+      compliance: 'Pilots and mechanics must track SBs for their aircraft',
+    },
+    {
+      maintenance: 'Airworthiness Directives (AD)',
+      what: 'FAA-mandated work. Aircraft cannot fly until complied with.',
+      example: 'A specific bolt found to be defective; AD requires all of these bolts on affected aircraft to be replaced by a date.',
+    },
+    {
+      maintenance: 'Aircraft logbook',
+      what: 'Complete history of all maintenance, inspections, and modifications',
+      legal: 'Required to be kept indefinitely; aircraft is "airworthy" only with complete logbook',
+    },
+    {
+      maintenance: 'Pilot-permitted maintenance',
+      what: 'Some minor preventive maintenance pilots can do themselves (oil change, spark plug clean, etc.)',
+      regulation: 'FAR 43 Appendix A lists the items',
+      example: 'Pilot may change tires but NOT install a new engine',
+    },
+    {
+      maintenance: 'TT, TTSN, SMOH, TBO',
+      definitions: [
+        'TT = Total Time (aircraft hours since manufacture)',
+        'TTSN = Total Time Since New (similar)',
+        'SMOH = Since Major Overhaul (engine hours since last overhaul)',
+        'TBO = Time Between Overhauls (recommended interval)',
+      ],
+    },
+    {
+      maintenance: 'Mooring + storage',
+      what: 'Aircraft tied down properly when parked outdoors',
+      hazards: 'Wind can flip light aircraft. Hangar storage preferred.',
+    },
+    {
+      maintenance: 'Avionics maintenance',
+      specialty: 'Avionics shops install and troubleshoot radios, navigation equipment, autopilots',
+      cost: 'Modern glass cockpit retrofit: $20-100K',
+    },
+    {
+      maintenance: 'Composite repair',
+      challenge: 'Carbon fiber and fiberglass repairs require specialized training and tooling',
+      growth: 'More aircraft using composites (787 Dreamliner, A350, modern GA)',
+    },
+  ];
+
+  // ─── Special operations + military aviation ──────────────────────────
+  var MILITARY_OPERATIONS = [
+    {
+      mission: 'Air-to-air combat',
+      doctrine: 'Modern fighters use beyond-visual-range missiles (BVR) more often than dogfighting',
+      aircraft: 'F-22, F-35, F-15, F-16, F/A-18, Eurofighter Typhoon, Su-35',
+    },
+    {
+      mission: 'Strike (air-to-ground)',
+      role: 'Destroy ground targets with bombs and missiles',
+      aircraft: 'F-15E Strike Eagle, F/A-18, F-35, B-2 Spirit (stealth bomber), B-1B Lancer, B-52',
+    },
+    {
+      mission: 'Close air support (CAS)',
+      role: 'Direct support of troops on the ground',
+      aircraft: 'A-10 Thunderbolt II (Warthog), AH-64 Apache helicopters, F-16',
+    },
+    {
+      mission: 'Strategic bombing',
+      role: 'Long-range strikes on industrial/military infrastructure',
+      aircraft: 'B-52 Stratofortress (1955-present!), B-1B, B-2',
+    },
+    {
+      mission: 'Air superiority',
+      role: 'Control airspace by defeating enemy fighters',
+      aircraft: 'F-15, F-22 Raptor',
+    },
+    {
+      mission: 'Intelligence/Surveillance/Reconnaissance (ISR)',
+      role: 'Gather intelligence',
+      aircraft: 'U-2 Dragon Lady, RC-135, MQ-9 Reaper drone, RQ-4 Global Hawk',
+    },
+    {
+      mission: 'Aerial refueling',
+      role: 'Extend range of fighters and bombers',
+      aircraft: 'KC-135, KC-46, KC-10',
+    },
+    {
+      mission: 'Strategic airlift',
+      role: 'Move heavy equipment over long distances',
+      aircraft: 'C-17 Globemaster III, C-5 Galaxy, An-124, An-225 (former Soviet)',
+    },
+    {
+      mission: 'Tactical airlift',
+      role: 'Move troops and equipment within theater',
+      aircraft: 'C-130 Hercules (workhorse of military airlift), C-27',
+    },
+    {
+      mission: 'Aerial control + AWACS',
+      role: 'Airborne air traffic control + battle management',
+      aircraft: 'E-3 Sentry (AWACS), E-2 Hawkeye, E-7 Wedgetail',
+    },
+    {
+      mission: 'Maritime patrol',
+      role: 'Submarine hunting and ocean surveillance',
+      aircraft: 'P-8 Poseidon, P-3 Orion',
+    },
+    {
+      mission: 'Combat search and rescue',
+      role: 'Recover downed pilots and isolated personnel',
+      aircraft: 'HH-60 Pave Hawk, HC-130, V-22 Osprey',
+    },
+    {
+      mission: 'Special operations',
+      role: 'Insertion/extraction of special forces',
+      aircraft: 'MC-130, CV-22 Osprey, Mh-47 Chinook',
+    },
+    {
+      principle: 'Air Force vs Navy aviation',
+      airForce: 'Land-based. Strategic + tactical. ICBM force. Air superiority.',
+      navy: 'Carrier-based. Anti-ship + anti-submarine. Marine Corps shares some Naval aviation.',
+      coastGuard: 'Search and rescue, drug interdiction, maritime law enforcement',
+      marineCorps: 'Tactical support of Marine Corps ground forces; emphasis on amphibious operations',
+    },
+    {
+      principle: 'Aircraft carrier operations',
+      stats: 'Modern carriers (Nimitz, Ford class): ~90 aircraft, 5,000+ crew, nuclear-powered',
+      launch: 'Steam (older) or electromagnetic (Ford) catapult accelerates aircraft 0-165 kts in 2 seconds',
+      recovery: 'Tailhook catches an arrestor wire on flight deck — aircraft stops in 100 ft',
+    },
+  ];
+
+  // ─── Space + atmospheric boundary ─────────────────────────────────────
+  var SPACE_BOUNDARY = [
+    {
+      concept: 'Where does space begin?',
+      kármánLine: '100 km (62 miles) above sea level. Internationally recognized boundary (FAI).',
+      usDefinition: '50 miles (~80 km). Anyone above this is considered an astronaut by USAF/NASA.',
+      reality: 'Atmosphere thins continuously; the boundary is somewhat arbitrary.',
+    },
+    {
+      concept: 'Atmosphere at altitude',
+      list: [
+        'Sea level: 1.0 atm, density 0.0023 slug/ft³',
+        '18,000 ft: 0.5 atm — half the air pressure',
+        '36,000 ft (FL360): 0.22 atm — most airliners cruise here',
+        '50,000 ft: 0.11 atm — pressurization required',
+        '70,000 ft (U-2 territory): 0.04 atm',
+        '100,000 ft: 0.01 atm — fighter ceiling',
+        '300,000 ft: 0.00003 atm — Mesopause; effectively vacuum',
+        '400 km (ISS): 10^-13 atm — but still some drag!',
+      ],
+    },
+    {
+      concept: 'Why orbit is hard',
+      explanation: 'Reaching space (altitude) is "easy" — go straight up. Staying in space requires orbital velocity (~17,500 mph at low Earth orbit). The energy required is mostly horizontal, not vertical.',
+    },
+    {
+      concept: 'Aerodynamic to ballistic transition',
+      example: 'SR-71 cruise altitude (85,000 ft): airspeed Mach 3.2, but the air is so thin that flight surfaces are barely effective. Beyond ~150,000 ft, ballistic/rocket flight is the only option.',
+    },
+    {
+      concept: 'Crossing the boundary',
+      vehicles: ['X-15 (1960s): pilot Joe Walker reached 354,000 ft', 'SpaceShipOne (2004): 367,442 ft, winning X Prize', 'SpaceShipTwo (Virgin Galactic): suborbital tourism', 'Blue Origin New Shepard: suborbital tourism'],
+    },
+    {
+      concept: 'Hypersonic flight',
+      definition: 'Mach 5+ (~3,800 mph). Air molecules dissociate at these speeds, creating plasma envelopes.',
+      vehicles: ['Space Shuttle re-entry', 'X-43 (NASA, Mach 9.6)', 'Boeing X-51 Waverider', 'Modern hypersonic missiles (Russia, China, US)'],
+    },
+    {
+      concept: 'Microgravity',
+      reality: 'ISS astronauts feel weightless because they\'re continuously falling (in orbit) around Earth. Not actually "no gravity" — gravity at ISS altitude is about 89% of sea-level gravity.',
+    },
+  ];
+
+  // ─── Lab activities + hands-on ────────────────────────────────────────
+  var FLIGHT_LAB_ACTIVITIES = [
+    {
+      activity: 'Paper airplane lab',
+      grade: '3-12',
+      duration: '60 minutes',
+      objectives: 'Investigate how design choices affect flight performance',
+      materials: 'Paper (8.5x11 standard), masking tape for marking landing zones',
+      procedure: [
+        '(10 min) Brief on lift and drag principles',
+        '(20 min) Each student folds 3 different designs',
+        '(20 min) Test flights: measure distance, height, flight time',
+        '(10 min) Analyze: which design flew farthest? Why?',
+      ],
+      pedagogicalConnection: 'Make explicit the connection: wider wings = more lift = longer glide. Camber affects glide path.',
+    },
+    {
+      activity: 'Wing shape experiment',
+      grade: '6-12',
+      duration: '60 minutes',
+      objectives: 'Demonstrate how wing camber affects lift',
+      materials: 'Foam board or cardboard, scissors, fishing line, fan, scale',
+      procedure: [
+        'Cut wing shapes with different cambers',
+        'Suspend on fishing line in front of a fan',
+        'Measure lift force (deflection or scale)',
+        'Graph lift vs camber',
+      ],
+    },
+    {
+      activity: 'Bernoulli demonstration stations',
+      grade: '6-12',
+      duration: '45 minutes',
+      objectives: 'Observe Bernoulli\'s principle in action',
+      stations: [
+        'Atomizer (spray bottle): explains how perfume works',
+        'Two-paper test: hold two pieces of paper an inch apart; blow between',
+        'Ping pong ball levitation: blow air upward, see ball "float"',
+        'Curveball in baseball: thread spinning ball through smoke',
+      ],
+    },
+    {
+      activity: 'Build a forces diagram',
+      grade: '5-12',
+      duration: '30 minutes',
+      objectives: 'Draw the four forces in different flight scenarios',
+      scenarios: 'Level cruise, climb, descent, turn, stall, accelerated maneuver',
+      assessment: 'Have students explain why one force vector is bigger than another',
+    },
+    {
+      activity: 'Calculate aircraft fuel for cross-country',
+      grade: '6-12',
+      duration: '60 minutes',
+      objectives: 'Apply rate × time = distance formulas to real flight planning',
+      materials: 'Aircraft performance data, route information, weather (winds aloft)',
+      procedure: [
+        'Pick a route (e.g., Portland ME to Boston)',
+        'Look up cruise speed and fuel burn for a Cessna 172',
+        'Apply wind correction',
+        'Calculate fuel needed (with reserve)',
+        'Compare to actual maximum fuel — would the flight be legal?',
+      ],
+    },
+    {
+      activity: 'Interview a pilot',
+      grade: '4-12',
+      duration: 'Pre-class + 30 min',
+      objectives: 'Connect aviation to real career paths',
+      procedure: [
+        'Identify local pilot (commercial, GA, military veteran)',
+        'Each student prepares 1 question',
+        'In-class interview or guest speaker',
+        'Follow-up: students write reflection',
+      ],
+    },
+    {
+      activity: 'Plan and present an air route',
+      grade: '5-12',
+      duration: 'Multi-day project',
+      objectives: 'Use maps to plan an aviation route; consider geography, weather, fuel stops',
+      tools: 'Online sectional chart viewer (FAA), Skyvector.com',
+      assessment: 'Final presentation with route map, fuel plan, alternates, weather considerations',
+    },
+    {
+      activity: 'Stall + recovery model',
+      grade: '7-12',
+      duration: '45 minutes',
+      objectives: 'Visualize stalls; understand recovery',
+      materials: 'Foam wing model, fan, smoke source (cool, not hot)',
+      procedure: [
+        'Hold wing at small AoA — observe smooth airflow above',
+        'Increase AoA gradually — see vortex form behind wing',
+        'Past critical AoA — see flow separation',
+        'Lower nose — see flow reattach',
+      ],
+    },
+    {
+      activity: 'Calculate density altitude',
+      grade: '8-12',
+      duration: '30 minutes',
+      objectives: 'Understand how altitude AND temperature affect performance',
+      procedure: 'Use FAA density altitude formula. Compute for various location/temperature combos. Discuss why Aspen, CO can ground aircraft on hot summer days.',
+    },
+    {
+      activity: 'METAR decoding practice',
+      grade: '7-12',
+      duration: '30 minutes',
+      objectives: 'Read real-world aviation weather reports',
+      procedure: 'Print 5 actual METARs. Decode wind, visibility, cloud layers, temperature/dewpoint, altimeter. Determine VFR vs MVFR vs IFR.',
+    },
+  ];
+
+  // ─── ATC career deep dive ─────────────────────────────────────────────
+  var ATC_CAREER_DETAIL = [
+    {
+      role: 'Tower controller',
+      what: 'Manages aircraft on the airport ground and in the airport traffic pattern',
+      perspective: 'View from a tower cab, watching aircraft visually',
+      certifications: 'Operations Coordinator (OS) certificate after FAA Academy + 2-3 years training',
+      pay: '$80-150K',
+      schedule: 'Tower hours (often 7am-11pm at smaller airports, 24/7 at larger)',
+    },
+    {
+      role: 'Approach/departure controller',
+      what: 'Manages aircraft within ~30 nm of an airport, descending or climbing',
+      perspective: 'Radar room, watching scopes',
+      certifications: 'Different specialization than tower; more complex',
+      pay: '$120-180K',
+    },
+    {
+      role: 'Center controller',
+      what: 'Manages aircraft at cruise altitude, between airports',
+      perspective: 'Large radar room (Air Route Traffic Control Center)',
+      certifications: 'Most complex specialization. Many years of training.',
+      pay: '$140-200K+',
+      examples: 'Boston Center, Cleveland Center, Indianapolis Center, etc. There are 22 ARTCCs in the US.',
+    },
+    {
+      role: 'Tracon controller',
+      what: 'Specialized radar facility serving a few specific airports',
+      examples: 'Boston TRACON, NY TRACON, SoCal TRACON',
+    },
+    {
+      principle: 'How traffic is handled',
+      stages: [
+        'Ground: clears taxi routes',
+        'Tower: clears for takeoff and landing',
+        'Departure: vectors to en route',
+        'Center: handles cruise',
+        'Approach: vectors for descent and landing',
+        'Tower: clears to land',
+        'Ground: clears to taxi to gate',
+      ],
+    },
+    {
+      principle: 'Phraseology + clarity',
+      example: '"American 123, descend and maintain 8,000, contact New York Center 132.65" is heavily standardized to avoid confusion under stress',
+      precision: 'Every word matters. Misheard "descend to two thousand" vs "descend two for two thousand" has caused accidents.',
+    },
+    {
+      principle: 'Separation standards',
+      list: [
+        'Visual: pilots see each other (VFR airspace)',
+        'Procedural: time/distance based, no radar',
+        'Radar: standard 3-5 nm or 1,000 ft vertical',
+        'Wake turbulence: additional separation behind heavy aircraft',
+      ],
+    },
+    {
+      principle: 'Hiring process',
+      steps: ['ATSAT test (cognitive aptitude)', 'Background check', 'Medical', 'FAA Academy (4 months)', 'On-the-job training (2-5 years to full certification)'],
+      eligibility: 'Must apply before age 31. Federal job; competitive process.',
+    },
+    {
+      stress: 'Stress factors',
+      list: [
+        'Lives at stake every shift',
+        'Mandatory retirement at 56',
+        'Some positions have 8-hour shifts with mandatory breaks',
+        'Mistakes can have catastrophic consequences',
+        'Shift work (overnight)',
+      ],
+    },
+    {
+      pros: 'Why people do it',
+      list: [
+        'Excellent federal benefits + pension',
+        'Job security',
+        'Pride in keeping the sky safe',
+        'Intellectually challenging',
+        'Strong professional community',
+      ],
+    },
+  ];
+
+  // ─── Why aviation matters (pedagogical) ──────────────────────────────
+  var WHY_AVIATION_MATTERS = [
+    {
+      reason: 'Global connection',
+      explanation: 'Aviation lets people, ideas, and goods cross continents in hours instead of months. Has reshaped tourism, commerce, immigration, and culture.',
+    },
+    {
+      reason: 'Emergency response',
+      explanation: 'Med-evac helicopters, search and rescue aircraft, disaster response — aviation saves lives that would otherwise be lost.',
+    },
+    {
+      reason: 'Economic impact',
+      explanation: 'Aviation directly employs 11 million people globally. Indirectly supports tens of millions more. Contributes ~$3.5 trillion to global GDP annually.',
+    },
+    {
+      reason: 'Science + exploration',
+      explanation: 'Most scientific instruments in remote regions (Antarctica, Greenland, deep oceans) are deployed by aircraft. Space exploration started with aviation pioneers.',
+    },
+    {
+      reason: 'STEM education',
+      explanation: 'Aviation makes physics tangible. Every science concept (forces, energy, fluid dynamics, thermodynamics) can be explored through flight.',
+    },
+    {
+      reason: 'Engineering innovation',
+      explanation: 'Aerospace pushes the limits of materials science, computing, and design. Spin-offs (GPS, communications satellites, composites, weather monitoring) affect every day life.',
+    },
+    {
+      reason: 'Climate concern',
+      explanation: 'Aviation contributes 2-3% of global CO2 emissions. Understanding how to reduce this — through SAF, electrification, efficiency — is one of the great challenges of our time.',
+    },
+    {
+      reason: 'Career opportunity',
+      explanation: 'Pilots, mechanics, engineers, dispatchers, controllers — aviation offers many paths. Most pay well; some don\'t require a 4-year degree.',
+    },
+    {
+      reason: 'Wonder + perspective',
+      explanation: 'Even non-pilots feel awe looking out an airplane window. Seeing the world from above changes how you understand it.',
+    },
+    {
+      reason: 'Universal language',
+      explanation: 'Aviation English (with strict phraseology) connects pilots and controllers globally. Aviation is unusual in being truly international in operation.',
+    },
+  ];
+
+  // ─── Real-world flight planning scenarios ────────────────────────────
+  var FLIGHT_PLANNING_SCENARIOS = [
+    {
+      scenario: 'VFR cross-country: PWM Portland ME to BOS Boston',
+      distance: '~85 nm direct',
+      aircraft: 'Cessna 172 at 100 kts true airspeed',
+      duration: '~50 min direct (no wind), longer with headwind',
+      considerations: [
+        'Class C airspace entering Boston (KBOS) — must request clearance',
+        'Cross "Class Bravo" type airspace at altitude',
+        'Plenty of alternates (Manchester NH, Hanscom MA)',
+        'Coastline navigation easy — clear visual landmarks',
+        'New England weather: be prepared for unexpected fog or thunderstorms',
+      ],
+      pedagogicalNote: 'Classic VFR cross-country to teach navigation. Plenty of waypoints, varied airspace.',
+    },
+    {
+      scenario: 'IFR cross-country: BOS to JFK (low IFR conditions)',
+      distance: '~190 nm',
+      aircraft: 'Light twin or jet',
+      considerations: [
+        'Both airports busy Class B',
+        'IFR routing through New York approach',
+        'Required alternate (LGA, PHL)',
+        'Mandatory comms with ATC throughout',
+        'May vector around weather',
+      ],
+    },
+    {
+      scenario: 'Mountain flying: Boise to Lake Tahoe',
+      distance: '~440 nm',
+      considerations: [
+        'Density altitude at Tahoe (6,250 ft elev + summer heat) can be 9,000+ ft',
+        'Mountain winds can be turbulent',
+        'Lower temperatures = less density altitude problem',
+        'Mountain valleys can have downdrafts',
+        'Avoid late afternoon thermal turbulence',
+      ],
+    },
+    {
+      scenario: 'Coastal rescue mission (helicopter)',
+      mission: 'Search for a missing fisherman 5 nm offshore from Portland ME',
+      aircraft: 'Coast Guard MH-65 Dolphin or local rescue helo',
+      considerations: [
+        'Hover over location for visual search',
+        'Wind direction critical for hoist operations',
+        'Fuel reserve essential',
+        'Coordination with Coast Guard cutters',
+        'Survivor exposure time → urgency',
+      ],
+    },
+    {
+      scenario: 'Transcontinental: LAX to JFK',
+      distance: '~2,475 nm',
+      aircraft: 'Boeing 737, A320, or larger',
+      duration: '5-5.5 hours westbound (headwinds), 4.5-5 hours eastbound (jet stream tailwind)',
+      considerations: [
+        'Jet stream can add or subtract 100+ kts',
+        'Polar routes may save fuel (varies by season)',
+        'Air traffic over the Rockies and Midwest',
+        'Several alternates (Denver, Chicago, etc.)',
+      ],
+    },
+    {
+      scenario: 'Transatlantic: JFK to LHR (London)',
+      distance: '~3,000 nm',
+      aircraft: 'Boeing 777, A350, etc.',
+      duration: '~7 hours eastbound (jet stream), ~8 hours westbound (headwind)',
+      considerations: [
+        'Mandatory ETOPS twin-engine over water rules',
+        'Strict ATC separation over the North Atlantic Track System',
+        'No alternates between Canada and Ireland (vast ocean)',
+        'GPS + inertial navigation primary; HF radio backup',
+        'Time zone shift: passengers cope with jet lag',
+      ],
+    },
+    {
+      scenario: 'Drone aerial survey: rural Maine farm',
+      mission: 'Map crop health on a 100-acre cornfield',
+      aircraft: 'DJI Phantom or similar Part 107 drone',
+      considerations: [
+        'Part 107 rules: < 400 ft AGL, visual line of sight',
+        'Pre-flight: weather, battery state, GPS lock',
+        'Multi-spectral imaging for crop health (NDVI)',
+        'Flight pattern: serpentine for even coverage',
+        'Battery management: typically 30 min per flight',
+      ],
+    },
+    {
+      scenario: 'Air ambulance: Bangor ME to Portland ME with trauma patient',
+      aircraft: 'Beechcraft King Air or Pilatus PC-12',
+      considerations: [
+        'Urgency overrides preference (file IFR for direct routing)',
+        'Medical team in back coordinates with hospitals',
+        'Weather: vector around storms even if it adds time',
+        'Single-pilot operations possible but stressful',
+        'Hospital helipad coordination at destination',
+      ],
+    },
+    {
+      scenario: 'Bush pilot operations: northern Maine to remote sporting camp',
+      aircraft: 'Cessna 185 (or floatplane variant)',
+      considerations: [
+        'Unimproved gravel strip or lake',
+        'Crosswind handling critical',
+        'Loose surface affects takeoff/landing distance',
+        'Wildlife (moose) on runway',
+        'No ATC; self-announce on CTAF',
+      ],
+    },
+    {
+      scenario: 'Aerobatic competition: practice flight',
+      aircraft: 'Pitts S-2C, Extra 330, or similar',
+      considerations: [
+        'Designated practice area with altitude floor and lateral limits',
+        'No civilian traffic permitted in box during practice',
+        'High-G maneuvers require parachute',
+        'Pre-flight including aerobatic-specific check',
+        'Hangar at home airport approved for aerobatic aircraft',
+      ],
+    },
+  ];
+
+  // ─── Day-in-the-life accounts ────────────────────────────────────────
+  var DAY_IN_LIFE = [
+    {
+      role: 'Airline pilot — domestic short-haul',
+      schedule: 'Typical 4-day trip',
+      day1: [
+        '0500 wake up, hotel in destination city',
+        '0530 breakfast, check weather and route',
+        '0630 van to airport',
+        '0700 pre-flight, first leg JFK to ORD',
+        '0930 arrive ORD, taxi to next gate',
+        '1015 pre-flight, second leg ORD to DEN',
+        '1300 arrive DEN, taxi',
+        '1345 pre-flight, third leg DEN to LAS',
+        '1445 arrive LAS, end of duty day',
+        '1500 van to hotel',
+        'Evening: rest, hopefully sleep',
+      ],
+      observations: 'Even on a 4-day trip, you only fly 12-15 hours total. Rest of the time is positioning, ground time, hotel.',
+    },
+    {
+      role: 'Long-haul international pilot',
+      schedule: '3-pilot crew for 14-hour Pacific flight',
+      pre: 'Show up 90 minutes before departure for briefing',
+      duringFlight: 'Cruise phase: pilots rotate through rest bunks. Pre-arrival briefing 30 min before descent.',
+      observations: '14-hour flight feels like 24-hour shift. Layover 24+ hours required for recovery. Time zone shifts hard on body.',
+    },
+    {
+      role: 'Cargo airline pilot (FedEx, UPS)',
+      schedule: 'Mostly overnight operations',
+      observations: 'Cargo airlines pay similar to passenger airlines but schedule is reversed. Aircraft are often older (727, MD-11). Less pressure from passengers — no service component.',
+    },
+    {
+      role: 'Helicopter EMS pilot',
+      shift: '12-hour shift, on-call',
+      typicalCalls: 'Trauma scene response, hospital-to-hospital transfer, organ delivery',
+      observations: 'Adrenaline-driven. Most shifts have 0-2 calls. Decision making under pressure (weather, fatigue, patient condition).',
+    },
+    {
+      role: 'CFI (flight instructor)',
+      schedule: 'Variable; often 6-7 days a week building hours',
+      typical: 'Morning weather check. Pre-flight brief with student. Flight (1-1.5 hours typical). Debrief. Next student.',
+      observations: 'Burnout potential. Hours pile up quickly. Earnings modest until move to airline.',
+    },
+    {
+      role: 'Drone operator (commercial)',
+      schedule: 'Project-based; weeks or months at a time',
+      typicalDay: 'Pre-flight survey of site. Set up, calibrate drone. Fly programmed pattern. Post-process imagery. Bill client.',
+      observations: 'Combines outdoor work with tech. Best paying for specialized skills (powerline inspection, surveying).',
+    },
+    {
+      role: 'Air traffic controller (Center)',
+      shift: '8-hour shift, mandatory breaks every 1-2 hours',
+      typicalDay: 'Pre-shift briefing on weather, traffic flow. Sector check-in. Handle 15-30 aircraft at a time. Lunch break is mandatory and full.',
+      observations: 'High stress but rewarding. Excellent benefits. Defined retirement at 56.',
+    },
+    {
+      role: 'Aircraft mechanic',
+      schedule: 'Often shift work (especially airlines)',
+      typicalDay: 'Pre-shift briefing. Move from aircraft to aircraft completing inspection items. Document everything (logbooks). Hand off open issues to next shift.',
+      observations: 'Detail-oriented. Excellent job security. Strong unions in airline industry.',
+    },
+  ];
+
+  // ─── How aircraft find their way (modern nav) ──────────────────────────
+  var MODERN_NAV_SYSTEMS = [
+    {
+      system: 'GPS / GNSS',
+      principle: 'Receivers compute position from timing signals of 4+ satellites',
+      accuracy: '~10 ft typical, ~3 ft with WAAS augmentation',
+      reliability: 'Excellent; backup systems still required by regulation',
+      limitations: 'Vulnerable to jamming, terrain shadow',
+    },
+    {
+      system: 'WAAS (Wide Area Augmentation System)',
+      principle: 'Ground stations track GPS satellites and broadcast correction signals via geostationary satellites',
+      accuracy: '< 3 ft horizontally',
+      use: 'Required for some precision approaches',
+    },
+    {
+      system: 'Inertial Reference System (IRS)',
+      principle: 'Tracks accelerations + rotations to compute position without external signals',
+      accuracy: '~1 nm/hr drift typical',
+      use: 'Polar routes, transoceanic flights, military aircraft',
+      backup: 'Provides position when GPS fails',
+    },
+    {
+      system: 'VOR',
+      principle: 'Ground stations broadcast bearings on VHF',
+      accuracy: '~1° resolution = 1 nm at 60 nm',
+      legacy: 'Being phased out in favor of GPS-based RNAV',
+    },
+    {
+      system: 'NDB (Non-Directional Beacon)',
+      principle: 'AM transmitter at known location; aircraft ADF points toward it',
+      accuracy: 'Poor (~5° resolution)',
+      status: 'Mostly decommissioned',
+    },
+    {
+      system: 'DME (Distance Measuring Equipment)',
+      principle: 'Aircraft transmits interrogation signal; ground station responds; time delay = distance',
+      accuracy: '~1 nm',
+      use: 'Often paired with VOR (called VOR/DME)',
+    },
+    {
+      system: 'ILS (Instrument Landing System)',
+      principle: 'Localizer (lateral) + glide slope (vertical) signals guide aircraft to runway',
+      types: 'CAT I (200 ft minimum), CAT II (100 ft), CAT III (50 ft or less)',
+      automation: 'Modern airliners can autoland in CAT III with no pilot input',
+    },
+    {
+      system: 'RNAV / RNP (Required Navigation Performance)',
+      principle: 'GPS-based area navigation between waypoints with required precision',
+      benefit: 'Allows curved approaches, more direct routes than VOR-to-VOR airways',
+    },
+    {
+      system: 'ADS-B (Automatic Dependent Surveillance-Broadcast)',
+      principle: 'Aircraft transmits GPS-derived position; received by other aircraft and ATC',
+      benefits: 'Better situational awareness; foundation for next-gen ATC',
+      required: '2020+ for most US airspace',
+    },
+    {
+      system: 'TCAS (Traffic Collision Avoidance System)',
+      principle: 'Aircraft transponders talk to each other, coordinate avoidance maneuvers',
+      output: 'Resolution Advisories (RA) tell pilots to climb or descend',
+      criticalForSafety: 'Has prevented many mid-air collisions',
+    },
+    {
+      system: 'EGPWS (Enhanced Ground Proximity Warning)',
+      principle: 'GPS + terrain database warn pilots of CFIT (controlled flight into terrain)',
+      typicalCalls: '"TERRAIN! TERRAIN!" "PULL UP! PULL UP!"',
+      saves: 'Reduced terrain-related airline accidents dramatically',
+    },
+    {
+      principle: 'Modern flight deck',
+      summary: 'A modern Boeing 787 cockpit has 4 large LCD displays presenting integrated info from all these systems. Pilots monitor; computers handle most of the work most of the time.',
+    },
+  ];
+
+  // ─── Aviation phraseology quiz examples ───────────────────────────────
+  var ATC_QUIZ_SCENARIOS = [
+    {
+      situation: 'You\'re flying VFR over rural Maine. Suddenly the engine sputters and quits.',
+      whatToSay: '"Mayday Mayday Mayday, Cessna N12345, engine failure, 5 miles east of Bangor, descending through 3,000 for forced landing."',
+      action: ['Pitch for best glide', 'Identify a landing field', 'Try restart if time permits', 'Communicate with ATC', 'Land into wind if possible'],
+    },
+    {
+      situation: 'You\'re on approach to Boston. Tower clears you to land. You hear another aircraft on frequency say they\'re still on the runway.',
+      whatToSay: '"Tower, Cessna N12345 going around, will re-enter pattern."',
+      action: 'Apply full power. Climb. Re-enter pattern.',
+      principle: 'When in doubt about runway clearance, go around. It\'s always safer than landing on top of another aircraft.',
+    },
+    {
+      situation: 'You\'re cruising at 8,000 ft. ATC calls: "Cessna N12345, descend and maintain 6,000."',
+      whatToSay: '"Descend and maintain 6,000, Cessna N12345."',
+      action: 'Read back. Begin descent. Confirm altimeter setting if changing significantly.',
+    },
+    {
+      situation: 'You\'re on approach. Tower says "wake turbulence caution, 747 ahead."',
+      action: 'Stay above the 747\'s flight path. Touch down past their touchdown point. Wait 2-3 minutes if departing after them.',
+    },
+    {
+      situation: 'You\'re flying VFR. Suddenly enter cloud unexpectedly.',
+      whatToSay: '"Pan-Pan, Cessna N12345 entered IMC, request immediate vectors out."',
+      action: 'Trust instruments. Don\'t look outside. Tell ATC. Climb if mountains nearby; otherwise level or descent toward clear air.',
+      criticalForSafety: 'VFR-into-IMC is a leading cause of fatal GA accidents. Treat seriously.',
+    },
+    {
+      situation: 'You hear ATC instruct: "Cessna 1-2-3, contact tower 119.5."',
+      whatToSay: '"Switch tower 119.5, Cessna 1-2-3."',
+      action: 'Change frequency. Listen for a moment to existing traffic. Then check in.',
+    },
+    {
+      situation: 'You\'re holding for departure. ATC says "Cessna 1-2-3, you\'re number 3 for takeoff."',
+      meaning: 'There are 2 aircraft ahead of you. Wait.',
+      whatToSay: '"Number 3 for takeoff, Cessna 1-2-3."',
+    },
+    {
+      situation: 'Tower clears you for takeoff. Then says "Cessna 1-2-3, RESET, EXPEDITE clearance, traffic on final."',
+      whatToSay: '"Expedite, Cessna 1-2-3."',
+      action: 'Apply full power immediately, do not roll slowly. Lift off as quickly as safe. ATC needs the runway.',
+    },
+  ];
+
+  // ─── Final notes for teachers ─────────────────────────────────────────
+  var TEACHER_NOTES = [
+    {
+      note: 'Why aviation is great for STEM',
+      explanation: 'Aviation makes abstract physics tangible. Forces, energy, fluid dynamics, math, geography, weather, design — all converge in one topic.',
+    },
+    {
+      note: 'Use multiple representations',
+      explanation: 'Same concept (e.g., lift) explained via Bernoulli, Newton, vortex theory. Show that all are correct — pedagogy here is "yes, AND."',
+    },
+    {
+      note: 'Connect to local context',
+      explanation: 'Every region has aviation history. Maine has WWII airfields, military bases, the Maine Air National Guard, the Coast Guard. Bring local examples in.',
+    },
+    {
+      note: 'Avoid making it boys-only',
+      explanation: 'Female aviation pioneers (Earhart, Coleman, Cochran, Collins) and modern female aviators are abundant. Showcase them explicitly.',
+    },
+    {
+      note: 'Demystify careers',
+      explanation: 'Many students think "pilot" is the only aviation career. Show them mechanics, controllers, engineers, dispatchers — varied paths.',
+    },
+    {
+      note: 'Honor multiple intelligences',
+      explanation: 'Aviation involves spatial (3D awareness), kinesthetic (hands on yoke), interpersonal (CRM, ATC), intrapersonal (decision making under stress), naturalistic (weather), linguistic (radio communication), mathematical (calculations).',
+    },
+    {
+      note: 'Use simulators',
+      explanation: 'Free software (FlightGear, X-Plane demo) can simulate basic flight. Even simple paper airplane experiments teach real principles.',
+    },
+    {
+      note: 'Visit local airports',
+      explanation: 'Most airports allow educational visits. Small GA airports especially welcoming. Many have aviation summer camps and youth programs.',
+    },
+    {
+      note: 'Encourage hands-on',
+      explanation: 'A $100 introductory flight at age 14 can change a kid\'s life. Many flight schools offer Young Eagles flights (free for ages 8-17, EAA program).',
+    },
+    {
+      note: 'Address real-world challenges',
+      explanation: 'Climate change, pilot diversity, automation, drone integration — these are live issues. Have students engage with the actual debates in the industry.',
+    },
+  ];
+
+  // ─── Extended quiz questions (60 more for total ~80) ────────────────────
+  var FLIGHT_QUIZ_EXTENDED = [
+    { question: 'What letter signifies "I have received your last transmission"?', options: ['Affirmative', 'Roger', 'Wilco', 'Copy'], correct: 'Roger', explanation: '"Roger" means received. "Wilco" means received and will comply.', topic: 'Radio', difficulty: 'easy' },
+    { question: 'The pilot says "wilco." What does that mean?', options: ['I will comply', 'I will copy', 'I will check', 'I will return'], correct: 'I will comply', explanation: 'Wilco = will comply. Stronger than Roger; you commit to the action.', topic: 'Radio', difficulty: 'easy' },
+    { question: 'What does "squawk 7700" mean?', options: ['You\'re in trouble', 'Emergency code', 'Cruising altitude', 'Approach frequency'], correct: 'Emergency code', explanation: '7700 = aircraft emergency (any kind). 7500 = hijack. 7600 = lost comms.', topic: 'Instruments', difficulty: 'medium' },
+    { question: 'The Wright brothers worked in what industry before aviation?', options: ['Automotive', 'Bicycles', 'Carpentry', 'Telegraph'], correct: 'Bicycles', explanation: 'They ran a bicycle shop in Dayton, OH. The same mechanical skills applied to early aircraft.', topic: 'History', difficulty: 'easy' },
+    { question: 'What\'s a "great circle" in aviation?', options: ['A perfect formation', 'The shortest path between two points on a sphere', 'A type of approach', 'A holding pattern'], correct: 'The shortest path between two points on a sphere', explanation: 'Great circles look curved on flat maps but are shortest paths on a sphere — why long flights curve toward the poles.', topic: 'Navigation', difficulty: 'medium' },
+    { question: 'Why do flight attendants instruct passengers to put on their own oxygen mask before helping children?', options: ['Children can wait longer without oxygen', 'Adults are more important', 'Hypoxia incapacitates faster at altitude — you must save yourself first to help anyone', 'Federal regulation'], correct: 'Hypoxia incapacitates faster at altitude — you must save yourself first to help anyone', explanation: 'Time of useful consciousness at 30,000 ft is only ~60 seconds. If you wait, you can\'t help anyone.', topic: 'Pressurization', difficulty: 'medium' },
+    { question: 'What\'s the difference between a propeller and a fan?', options: ['Propellers spin faster', 'Propellers are bigger', 'Propellers are airfoils — they generate thrust like wings generate lift', 'They\'re the same thing'], correct: 'Propellers are airfoils — they generate thrust like wings generate lift', explanation: 'Propeller blades are twisted airfoils. Each generates a small "lift" force aimed forward = thrust.', topic: 'Aerodynamics', difficulty: 'medium' },
+    { question: 'What does TCAS do?', options: ['Tracks aircraft positions on the ground', 'Aircraft talk to each other to coordinate collision avoidance', 'Tracks weather radar', 'Controls aircraft remotely'], correct: 'Aircraft talk to each other to coordinate collision avoidance', explanation: 'Aircraft transponders communicate to plan complementary climb/descend if collision threatened.', topic: 'Instruments', difficulty: 'hard' },
+    { question: 'How many ft is FL350?', options: ['350 ft', '3,500 ft', '35,000 ft', '350,000 ft'], correct: '35,000 ft', explanation: 'FL = Flight Level = altitude in hundreds of feet above 18,000 ft using standard pressure.', topic: 'Instruments', difficulty: 'easy' },
+    { question: 'Why do most modern airliners cruise at ~35,000 ft?', options: ['Best view', 'Less drag, more efficient', 'To avoid weather', 'To follow GPS satellites'], correct: 'Less drag, more efficient', explanation: 'Lower air density = less parasite drag. Jet engines optimized for high altitude. Plus you\'re above most weather.', topic: 'Aerodynamics', difficulty: 'medium' },
+    { question: 'What is "ETOPS"?', options: ['Extended Twin-engine Operations', 'Early Takeoff Pre-Operations', 'European Transport Procedures', 'Engine Temperature Output Per Second'], correct: 'Extended Twin-engine Operations', explanation: 'Rules allowing twin-engine aircraft to operate far from diversion airports (e.g., over the ocean). Originally "Engines Turn Or Passengers Swim."', topic: 'Regulations', difficulty: 'hard' },
+    { question: 'What does an "altimeter setting" of 29.92 mean?', options: ['Pressure altitude', 'Cabin pressure', 'Engine pressure', 'Cabin altitude'], correct: 'Pressure altitude', explanation: '29.92 inHg = standard atmospheric pressure. Above 18,000 ft, all aircraft use this for consistency.', topic: 'Instruments', difficulty: 'hard' },
+    { question: 'In a coordinated turn, where should the ball in the turn coordinator be?', options: ['Centered', 'On the high side', 'On the low side', 'It depends on bank angle'], correct: 'Centered', explanation: 'Ball centered = coordinated turn. Ball to the outside = skid. Ball to the inside = slip.', topic: 'Instruments', difficulty: 'medium' },
+    { question: 'Which gas is most abundant in our atmosphere?', options: ['Oxygen (21%)', 'Nitrogen (78%)', 'CO2 (varies)', 'Argon (~1%)'], correct: 'Nitrogen (78%)', explanation: 'Air is mostly nitrogen. Oxygen is 21%. Important for understanding why "thin air" matters — you can\'t just breathe more.', topic: 'Atmosphere', difficulty: 'easy' },
+    { question: 'What\'s the difference between MSL and AGL?', options: ['Mean Sea Level vs Above Ground Level', 'Maximum vs Average', 'Magnetic vs True', 'They\'re the same'], correct: 'Mean Sea Level vs Above Ground Level', explanation: 'MSL = altitude above sea level (what altimeter shows). AGL = altitude above the ground beneath you. Drone operators use AGL.', topic: 'Navigation', difficulty: 'medium' },
+    { question: 'What\'s the leading cause of fatal general aviation accidents?', options: ['Engine failure', 'Mid-air collision', 'Loss of control (often stall/spin)', 'Bird strike'], correct: 'Loss of control (often stall/spin)', explanation: 'Loss of control in flight (LOC-I) accounts for ~40% of fatal GA accidents. Often involves stall at low altitude (base-to-final turn).', topic: 'Safety', difficulty: 'medium' },
+    { question: 'How does the captain know if there\'s another aircraft nearby?', options: ['Radar in cockpit', 'TCAS (talks to other aircraft transponders)', 'Magic', 'Looks out the window'], correct: 'TCAS (talks to other aircraft transponders)', explanation: 'TCAS uses transponders to coordinate avoidance. ATC also provides traffic advisories. Pilots also look outside (see-and-avoid).', topic: 'Instruments', difficulty: 'medium' },
+    { question: 'What is "ETOPS-180"?', options: ['180-minute fuel reserve', '180 minutes max from a diversion airport', '180 minute pre-flight check', '180 nautical miles range'], correct: '180 minutes max from a diversion airport', explanation: 'A twin-engine aircraft certified to fly 180 minutes from the nearest suitable airport on one engine.', topic: 'Regulations', difficulty: 'hard' },
+    { question: 'In the 1903 Wright Flyer\'s first flight, how long did it stay in the air?', options: ['12 seconds', '1 minute', '5 minutes', '30 minutes'], correct: '12 seconds', explanation: 'Orville\'s first flight covered 120 feet in 12 seconds — but proved the principle.', topic: 'History', difficulty: 'easy' },
+    { question: 'What is "weight and balance"?', options: ['How much the plane weighs', 'Position of center of gravity within allowed range', 'Pilot vs co-pilot weight', 'Cargo vs passengers'], correct: 'Position of center of gravity within allowed range', explanation: 'Every flight needs verification that the CG stays within forward/aft limits as fuel burns. Out-of-CG flight is unsafe and illegal.', topic: 'Aerodynamics', difficulty: 'medium' },
+    { question: 'What does "going around" mean?', options: ['Circling the airport', 'Aborting a landing and climbing away', 'Returning to home base', 'Doing a loop'], correct: 'Aborting a landing and climbing away', explanation: 'Go-around: power up, climb, re-enter pattern. Done when approach is unstable or runway not clear.', topic: 'Maneuvers', difficulty: 'easy' },
+    { question: 'What\'s the maximum cruise altitude of an unpressurized aircraft?', options: ['10,000 ft', '12,500 ft', '18,000 ft', 'No limit'], correct: '12,500 ft', explanation: 'FAR Part 91 requires supplemental oxygen above 12,500 ft if exceeding 30 minutes. Above 14,000 ft you need it for the entire flight.', topic: 'Regulations', difficulty: 'hard' },
+    { question: 'What does ATIS provide?', options: ['Weather and airport info via continuous broadcast', 'Aircraft tracking', 'In-flight entertainment', 'Pilot certification'], correct: 'Weather and airport info via continuous broadcast', explanation: 'Automatic Terminal Information Service. Pre-recorded info: weather, runway in use, NOTAMs. Pilots listen and confirm "with information [letter]" to ATC.', topic: 'Radio', difficulty: 'medium' },
+    { question: 'In aviation, what is a "stretcher"?', options: ['A passenger plane with longer wings', 'A version of an aircraft with longer fuselage and more seats', 'A medical evacuation flight', 'A weather forecast term'], correct: 'A version of an aircraft with longer fuselage and more seats', explanation: 'Aircraft "stretches" (737-700, -800, -900) keep the same basic design but add cabin length. Common manufacturer strategy.', topic: 'Aircraft', difficulty: 'medium' },
+    { question: 'The Concorde flew at what cruise altitude?', options: ['30,000 ft', '40,000 ft', '50,000 ft', '60,000 ft'], correct: '60,000 ft', explanation: 'Concorde cruised at FL550-FL600 (~55,000-60,000 ft) at Mach 2. Higher than any other commercial airliner.', topic: 'History', difficulty: 'hard' },
+    { question: 'What is "alpha protection"?', options: 'Modern fly-by-wire feature that prevents aircraft from exceeding critical angle of attack', explanation: 'Airbus aircraft cannot stall in normal law. Boeing 787 has similar protections. Doesn\'t fully replace pilot skill.', options: ['Aircraft seat assignment', 'Modern fly-by-wire feature preventing exceeding critical AoA', 'Type of aircraft paint', 'A military designation'], correct: 'Modern fly-by-wire feature preventing exceeding critical AoA', topic: 'Aerodynamics', difficulty: 'hard' },
+    { question: 'What killed Amelia Earhart?', options: ['Engine failure over the Pacific', 'Unknown — she disappeared', 'Hit by another aircraft', 'She landed on a remote island and survived briefly'], correct: 'Unknown — she disappeared', explanation: 'July 2, 1937, somewhere near Howland Island. Theories abound; no definitive evidence has surfaced.', topic: 'History', difficulty: 'easy' },
+    { question: 'How many engines does a Boeing 747?', options: ['2', '3', '4', '6'], correct: '4', explanation: 'The 747 has 4 engines. The 777 has 2 (most powerful turbofans ever built). Most modern airliners have 2 because engines are now reliable enough.', topic: 'Aircraft', difficulty: 'easy' },
+    { question: 'What\'s the abbreviation for "Knots Indicated Airspeed"?', options: ['KIAS', 'KCAS', 'KTAS', 'KGS'], correct: 'KIAS', explanation: 'KIAS = what airspeed indicator shows. KCAS = calibrated. KTAS = true (at altitude). KGS = ground speed.', topic: 'Instruments', difficulty: 'medium' },
+    { question: 'What is "VMC" weather?', options: ['Visual Meteorological Conditions', 'Very Marginal Conditions', 'Visual Minimum Ceiling', 'Visibility Maximum Constraint'], correct: 'Visual Meteorological Conditions', explanation: 'Weather where pilots can fly by visual reference. Generally 3+ statute miles visibility and 1,000+ ft cloud ceiling.', topic: 'Weather', difficulty: 'easy' },
+  ];
+
+  // ─── Vintage and classic aircraft (verbose) ──────────────────────────
+  var VINTAGE_AIRCRAFT = [
+    {
+      aircraft: 'Sopwith Camel',
+      year: 1917,
+      country: 'UK',
+      role: 'WWI fighter',
+      famous: 'Snoopy\'s plane in "Peanuts"',
+      stats: 'Top speed 115 mph, ceiling 19,000 ft',
+      reputation: 'Tough to fly; killed many student pilots. But veterans loved its agility.',
+    },
+    {
+      aircraft: 'Fokker DR.1 Triplane',
+      year: 1917,
+      country: 'Germany',
+      famousPilot: 'Manfred von Richthofen "The Red Baron"',
+      role: 'WWI fighter',
+      stats: 'Three wings for tight turn radius',
+      reputation: 'Highly maneuverable but slow.',
+    },
+    {
+      aircraft: 'Douglas DC-3',
+      year: 1935,
+      role: 'Airliner',
+      stats: 'Cruise 207 mph, 21-32 passengers',
+      legacy: '"The plane that changed the world." Still flying commercially in some regions.',
+      reputation: 'Bulletproof reliability. 16,000+ built. The first profitable airliner.',
+    },
+    {
+      aircraft: 'Boeing B-17 Flying Fortress',
+      year: 1938,
+      role: 'WWII bomber',
+      stats: 'Crew of 10, 4 engines, max altitude 35,000 ft',
+      reputation: 'Famous for ability to absorb damage. Many returned with most of a wing missing.',
+    },
+    {
+      aircraft: 'Supermarine Spitfire',
+      year: 1938,
+      country: 'UK',
+      role: 'WWII fighter',
+      famous: 'Saved Britain in the Battle of Britain (1940)',
+      stats: 'Top speed 370 mph, elliptical wing',
+      reputation: 'Famous for elegant lines and exceptional handling. Beloved by pilots.',
+    },
+    {
+      aircraft: 'North American P-51 Mustang',
+      year: 1942,
+      country: 'USA',
+      role: 'WWII long-range fighter',
+      reputation: 'Could escort bombers all the way to Berlin. Helped win the air war in Europe.',
+    },
+    {
+      aircraft: 'Curtiss P-40 Warhawk',
+      year: 1939,
+      role: 'WWII fighter',
+      famous: 'Flying Tigers in China',
+      reputation: 'Tough but outclassed by Japanese Zero in dogfighting.',
+    },
+    {
+      aircraft: 'Mitsubishi A6M Zero',
+      year: 1940,
+      country: 'Japan',
+      role: 'WWII Japanese carrier-based fighter',
+      stats: 'Top speed 332 mph, extreme range, very light',
+      reputation: 'Dominated early Pacific war. Sacrificed armor for speed and range. Became vulnerable late war.',
+    },
+    {
+      aircraft: 'Junkers Ju 87 Stuka',
+      year: 1936,
+      country: 'Germany',
+      role: 'WWII dive bomber',
+      famous: 'Iconic dive sound (wind sirens)',
+      reputation: 'Effective in Blitzkrieg; obsolete by 1942.',
+    },
+    {
+      aircraft: 'de Havilland Comet',
+      year: 1949,
+      role: 'First commercial jet airliner',
+      tragedy: 'Series of crashes in 1954 due to metal fatigue at pressurized window corners',
+      legacy: 'Led to fundamental redesign of pressurized aircraft. Modern airliners are safer because of Comet lessons.',
+    },
+    {
+      aircraft: 'Lockheed Constellation "Connie"',
+      year: 1943,
+      role: 'Airliner / military transport',
+      stats: 'Four engines, distinctive triple-tail',
+      reputation: 'Glamorous late-1940s/50s flight. Howard Hughes\'s influence on design.',
+    },
+    {
+      aircraft: 'Boeing 707',
+      year: 1958,
+      role: 'First successful commercial jetliner',
+      reputation: 'Inaugurated the Jet Age. Cut transatlantic crossings to hours. Replaced piston airliners.',
+    },
+    {
+      aircraft: 'Lockheed SR-71 Blackbird',
+      year: 1966,
+      role: 'Strategic reconnaissance',
+      stats: 'Cruise Mach 3.2+, ceiling 85,000+ ft',
+      reputation: 'Fastest air-breathing aircraft ever flown. Could outrun missiles. Never lost to enemy action.',
+      uniqueness: 'Titanium construction, fuel leaks on ground (panels expand when hot from skin friction).',
+    },
+    {
+      aircraft: 'Boeing 747',
+      year: 1969,
+      role: 'Jumbo jet airliner',
+      stats: 'Up to 660 passengers, range 7,000+ nm, iconic hump',
+      legacy: 'Revolutionized international travel. Made flying affordable. Production ended in 2022.',
+    },
+    {
+      aircraft: 'Concorde',
+      year: 1976,
+      role: 'Supersonic airliner',
+      stats: 'Mach 2.04, 92-128 passengers',
+      retirement: '2003, after fatal Air France 4590 crash + post-9/11 demand collapse',
+      legacy: 'Never replaced. Currently several startups (Boom Supersonic, etc.) trying again.',
+    },
+    {
+      aircraft: 'McDonnell Douglas DC-10',
+      year: 1971,
+      role: 'Wide-body airliner',
+      stats: '3 engines, distinctive tail engine',
+      checkered: 'Several fatal accidents (Sioux City 232, AA 191) but overall reliable',
+    },
+    {
+      aircraft: 'Lockheed L-1011 TriStar',
+      year: 1972,
+      role: 'Wide-body airliner',
+      stats: '3 engines, more advanced than DC-10',
+      legacy: 'Commercially less successful than DC-10 despite being arguably better.',
+    },
+    {
+      aircraft: 'Vickers Vimy',
+      year: 1917,
+      role: 'WWI bomber',
+      famousFlight: 'First nonstop transatlantic flight (Alcock & Brown 1919)',
+    },
+    {
+      aircraft: 'Spirit of St. Louis',
+      year: 1927,
+      role: 'Lindbergh transatlantic',
+      stats: 'Custom-built Ryan monoplane. 4,100 mile range.',
+    },
+    {
+      aircraft: 'Wright Flyer',
+      year: 1903,
+      role: 'First powered, controlled aircraft',
+      stats: '40 ft 4 in wingspan, 12 hp engine, max speed 30 mph',
+      preserved: 'Now in the Smithsonian National Air and Space Museum.',
+    },
+  ];
+
+  // ─── Aviation acronyms reference ─────────────────────────────────────
+  var AVIATION_ACRONYMS = [
+    { acronym: 'A&P', meaning: 'Airframe and Powerplant — mechanic certification' },
+    { acronym: 'ADF', meaning: 'Automatic Direction Finder — older navigation' },
+    { acronym: 'ADS-B', meaning: 'Automatic Dependent Surveillance-Broadcast' },
+    { acronym: 'AF', meaning: 'Air Force' },
+    { acronym: 'AGL', meaning: 'Above Ground Level' },
+    { acronym: 'AME', meaning: 'Aviation Medical Examiner' },
+    { acronym: 'AMT', meaning: 'Aviation Maintenance Technician' },
+    { acronym: 'AOA / AoA', meaning: 'Angle of Attack' },
+    { acronym: 'AOPA', meaning: 'Aircraft Owners and Pilots Association' },
+    { acronym: 'ARTCC', meaning: 'Air Route Traffic Control Center' },
+    { acronym: 'ASI', meaning: 'Airspeed Indicator' },
+    { acronym: 'ATC', meaning: 'Air Traffic Control' },
+    { acronym: 'ATIS', meaning: 'Automatic Terminal Information Service' },
+    { acronym: 'ATP', meaning: 'Airline Transport Pilot' },
+    { acronym: 'BFR', meaning: 'Biennial Flight Review (now called "flight review")' },
+    { acronym: 'CAS', meaning: 'Calibrated Airspeed; also Close Air Support' },
+    { acronym: 'CDI', meaning: 'Course Deviation Indicator' },
+    { acronym: 'CFI', meaning: 'Certified Flight Instructor' },
+    { acronym: 'CFII', meaning: 'CFI with Instrument' },
+    { acronym: 'CFIT', meaning: 'Controlled Flight Into Terrain' },
+    { acronym: 'CRM', meaning: 'Crew Resource Management' },
+    { acronym: 'CTAF', meaning: 'Common Traffic Advisory Frequency' },
+    { acronym: 'DA', meaning: 'Density Altitude; also Decision Altitude' },
+    { acronym: 'DCA', meaning: 'Drone Congregation Area; airport code for Washington Reagan' },
+    { acronym: 'DG', meaning: 'Directional Gyro (heading indicator)' },
+    { acronym: 'DME', meaning: 'Distance Measuring Equipment' },
+    { acronym: 'EFB', meaning: 'Electronic Flight Bag' },
+    { acronym: 'ELT', meaning: 'Emergency Locator Transmitter' },
+    { acronym: 'ETA', meaning: 'Estimated Time of Arrival' },
+    { acronym: 'ETD', meaning: 'Estimated Time of Departure' },
+    { acronym: 'ETOPS', meaning: 'Extended Twin-engine Operations' },
+    { acronym: 'FAA', meaning: 'Federal Aviation Administration' },
+    { acronym: 'FAR', meaning: 'Federal Aviation Regulations' },
+    { acronym: 'FBO', meaning: 'Fixed Base Operator' },
+    { acronym: 'FDR', meaning: 'Flight Data Recorder' },
+    { acronym: 'FL', meaning: 'Flight Level (e.g., FL350 = 35,000 ft)' },
+    { acronym: 'FMS', meaning: 'Flight Management System' },
+    { acronym: 'FSDO', meaning: 'Flight Standards District Office' },
+    { acronym: 'GA', meaning: 'General Aviation' },
+    { acronym: 'GPS', meaning: 'Global Positioning System' },
+    { acronym: 'GPWS', meaning: 'Ground Proximity Warning System' },
+    { acronym: 'HF', meaning: 'High Frequency (radio)' },
+    { acronym: 'IA', meaning: 'Inspection Authorization' },
+    { acronym: 'IAS', meaning: 'Indicated Airspeed' },
+    { acronym: 'ICAO', meaning: 'International Civil Aviation Organization' },
+    { acronym: 'IFR', meaning: 'Instrument Flight Rules' },
+    { acronym: 'ILS', meaning: 'Instrument Landing System' },
+    { acronym: 'IMC', meaning: 'Instrument Meteorological Conditions' },
+    { acronym: 'IRU', meaning: 'Inertial Reference Unit' },
+    { acronym: 'JFK', meaning: 'New York John F. Kennedy International Airport (or the president)' },
+    { acronym: 'KIAS', meaning: 'Knots Indicated Airspeed' },
+    { acronym: 'KTAS', meaning: 'Knots True Airspeed' },
+    { acronym: 'LAANC', meaning: 'Low Altitude Authorization and Notification Capability' },
+    { acronym: 'LDA', meaning: 'Landing Distance Available' },
+    { acronym: 'LOC-I', meaning: 'Loss of Control In Flight' },
+    { acronym: 'MAYDAY', meaning: 'Distress call — life-threatening emergency' },
+    { acronym: 'METAR', meaning: 'Aviation Routine Weather Report (current observation)' },
+    { acronym: 'MSL', meaning: 'Mean Sea Level' },
+    { acronym: 'NAVAID', meaning: 'Navigation Aid' },
+    { acronym: 'NDB', meaning: 'Non-Directional Beacon' },
+    { acronym: 'NM', meaning: 'Nautical Mile' },
+    { acronym: 'NOTAM', meaning: 'Notice to Air Missions (formerly Airmen)' },
+    { acronym: 'NTSB', meaning: 'National Transportation Safety Board' },
+    { acronym: 'PIC', meaning: 'Pilot in Command' },
+    { acronym: 'POH', meaning: 'Pilot Operating Handbook' },
+    { acronym: 'PPL', meaning: 'Private Pilot License (Certificate)' },
+    { acronym: 'RNAV', meaning: 'Area Navigation' },
+    { acronym: 'RNP', meaning: 'Required Navigation Performance' },
+    { acronym: 'SAF', meaning: 'Sustainable Aviation Fuel' },
+    { acronym: 'SIC', meaning: 'Second In Command' },
+    { acronym: 'SID', meaning: 'Standard Instrument Departure' },
+    { acronym: 'SOP', meaning: 'Standard Operating Procedure' },
+    { acronym: 'STAR', meaning: 'Standard Terminal Arrival Route' },
+    { acronym: 'STOL', meaning: 'Short Takeoff and Landing' },
+    { acronym: 'TAS', meaning: 'True Airspeed' },
+    { acronym: 'TAF', meaning: 'Terminal Aerodrome Forecast' },
+    { acronym: 'TAWS', meaning: 'Terrain Awareness and Warning System' },
+    { acronym: 'TBO', meaning: 'Time Between Overhauls' },
+    { acronym: 'TCAS', meaning: 'Traffic Collision Avoidance System' },
+    { acronym: 'TFR', meaning: 'Temporary Flight Restriction' },
+    { acronym: 'TT', meaning: 'Total Time' },
+    { acronym: 'UAS', meaning: 'Unmanned Aircraft System (drone)' },
+    { acronym: 'UAV', meaning: 'Unmanned Aerial Vehicle (older term, same as UAS)' },
+    { acronym: 'UTC', meaning: 'Coordinated Universal Time (Zulu time)' },
+    { acronym: 'V1', meaning: 'Takeoff decision speed (after which takeoff must continue)' },
+    { acronym: 'Va', meaning: 'Maneuvering speed (do not exceed in turbulence)' },
+    { acronym: 'VFR', meaning: 'Visual Flight Rules' },
+    { acronym: 'VMC', meaning: 'Visual Meteorological Conditions' },
+    { acronym: 'Vne', meaning: 'Never Exceed velocity' },
+    { acronym: 'Vno', meaning: 'Maximum structural cruising velocity' },
+    { acronym: 'VOR', meaning: 'VHF Omnidirectional Range' },
+    { acronym: 'Vs1', meaning: 'Stall velocity in clean configuration' },
+    { acronym: 'Vso', meaning: 'Stall velocity in landing configuration' },
+    { acronym: 'VTOL', meaning: 'Vertical Takeoff and Landing' },
+    { acronym: 'Vx', meaning: 'Best angle of climb velocity' },
+    { acronym: 'Vy', meaning: 'Best rate of climb velocity' },
+    { acronym: 'WAAS', meaning: 'Wide Area Augmentation System (precise GPS)' },
+    { acronym: 'WX', meaning: 'Weather (shorthand)' },
+    { acronym: 'ZULU', meaning: 'UTC time' },
+  ];
+
+  // ─── Famous airliner manufacturers ────────────────────────────────────
+  var AIRCRAFT_MANUFACTURERS = [
+    {
+      manufacturer: 'Boeing',
+      founded: 1916,
+      country: 'USA',
+      famousAircraft: ['737 (most-sold commercial airliner ever)', '747 (jumbo)', '777 (long-range twin)', '787 Dreamliner (composite)'],
+      notableMoments: ['First successful commercial jet (707)', 'Reusable space hardware', 'Recent challenges: 737 MAX crashes, 787 production issues'],
+    },
+    {
+      manufacturer: 'Airbus',
+      founded: 1970,
+      country: 'European consortium (France, Germany, UK, Spain)',
+      famousAircraft: ['A320 family (737\'s main competitor)', 'A350 (787 competitor)', 'A380 (now-discontinued double-decker)'],
+      notableMoments: ['Pioneer of fly-by-wire airliners (A320, 1988)', 'Outsells Boeing in recent years'],
+    },
+    {
+      manufacturer: 'Lockheed (Lockheed Martin)',
+      founded: 1912,
+      country: 'USA',
+      famousAircraft: ['SR-71 Blackbird', 'U-2 Dragon Lady', 'C-130 Hercules', 'F-35 Lightning II', 'F-22 Raptor', 'L-1011 TriStar'],
+      notableMoments: ['Skunk Works secret development', 'Many "firsts" in military aviation'],
+    },
+    {
+      manufacturer: 'Cessna (now Textron Aviation)',
+      founded: 1927,
+      country: 'USA',
+      famousAircraft: ['C172 Skyhawk (most-produced aircraft ever, 44K+ built)', 'C150/152', 'C182 Skylane', 'Citation business jets'],
+      notableMoments: ['Trains most American pilots', 'Symbol of general aviation'],
+    },
+    {
+      manufacturer: 'Piper',
+      founded: 1937,
+      country: 'USA',
+      famousAircraft: ['J-3 Cub', 'PA-28 Cherokee/Warrior', 'PA-31 Navajo', 'PA-46 Malibu'],
+      notableMoments: ['Built J-3 Cubs for WWII training', 'Aviation accessibility advocate'],
+    },
+    {
+      manufacturer: 'Cirrus',
+      founded: 1984,
+      country: 'USA',
+      famousAircraft: ['SR-20', 'SR-22 (best-selling single-engine piston since 2003)', 'Vision Jet (single-engine personal jet)'],
+      innovation: 'Whole-airframe parachute system (CAPS) — has saved 250+ lives',
+    },
+    {
+      manufacturer: 'Embraer',
+      founded: 1969,
+      country: 'Brazil',
+      famousAircraft: ['ERJ-145', 'E170/175/190/195 (popular regional jets)', 'Phenom business jets'],
+      notableMoments: ['Started as government project, privatized 1994', 'Third-largest commercial aircraft maker'],
+    },
+    {
+      manufacturer: 'Bombardier',
+      founded: 1942,
+      country: 'Canada',
+      famousAircraft: ['CRJ series (regional jets)', 'Q400 (Dash 8) turboprop', 'Global business jets'],
+      notableMoments: ['Sold commercial division to Airbus (now Airbus A220)'],
+    },
+    {
+      manufacturer: 'McDonnell Douglas',
+      founded: 'Merger 1967; absorbed by Boeing 1997',
+      famousAircraft: ['DC-3 (legendary)', 'DC-9/MD-80', 'DC-10', 'F-15 Eagle', 'F-18 Hornet'],
+    },
+    {
+      manufacturer: 'de Havilland',
+      country: 'UK / Canada',
+      famousAircraft: ['Comet (first jetliner)', 'Beaver bush plane', 'Mosquito wood fighter-bomber'],
+    },
+    {
+      manufacturer: 'Mitsubishi',
+      country: 'Japan',
+      famousAircraft: ['A6M Zero (WWII)', 'F-2 fighter', 'Spacejet (cancelled)'],
+    },
+    {
+      manufacturer: 'Sukhoi',
+      country: 'Russia',
+      famousAircraft: ['Su-27 air superiority fighter', 'Su-35 fighter', 'Su-57 5th-gen fighter', 'Superjet 100 regional'],
+    },
+    {
+      manufacturer: 'BAE Systems',
+      country: 'UK',
+      famousAircraft: ['Harrier vertical takeoff', 'Hawk trainer', 'Typhoon (Eurofighter, multi-national)'],
+    },
+    {
+      manufacturer: 'COMAC',
+      country: 'China',
+      founded: 2008,
+      famousAircraft: ['C919 (narrow-body airliner — 737/A320 competitor)', 'C929 (planned wide-body)'],
+      ambition: 'Challenge Boeing-Airbus duopoly long-term',
+    },
+    {
+      manufacturer: 'Pilatus',
+      country: 'Switzerland',
+      famousAircraft: ['PC-12 single-turboprop business aircraft', 'PC-21 trainer'],
+    },
+    {
+      manufacturer: 'Beechcraft (now Textron Aviation)',
+      country: 'USA',
+      famousAircraft: ['King Air (workhorse turboprop)', 'Bonanza (legendary GA)', 'Baron twin'],
+    },
+    {
+      manufacturer: 'Mooney',
+      country: 'USA',
+      famousAircraft: ['M20 single-engine — fastest piston single in production'],
+      reputation: 'Slick, fast, efficient. Loved by their owners.',
+    },
+    {
+      manufacturer: 'Diamond',
+      country: 'Austria/Canada',
+      famousAircraft: ['DA20/DA40/DA42 (composite training aircraft)'],
+    },
+    {
+      manufacturer: 'Aviat',
+      famousAircraft: ['Husky bush plane', 'Pitts S-2 aerobatic'],
+    },
+    {
+      manufacturer: 'Robinson Helicopter',
+      country: 'USA',
+      famousAircraft: ['R22 (most produced civil helicopter)', 'R44'],
+      reputation: 'Made helicopters affordable for civilian training',
+    },
+  ];
+
+  // ─── Flight emergencies (drills) ──────────────────────────────────────
+  var FLIGHT_EMERGENCIES = [
+    {
+      emergency: 'Engine failure in flight (single engine)',
+      symptoms: ['Sudden engine roughness or silence', 'Loss of thrust', 'Vibration possibly preceding'],
+      response: [
+        '1. Pitch for best glide speed (memorize for your aircraft)',
+        '2. Pick a landing field within glide range',
+        '3. Trim for hands-off glide',
+        '4. Attempt restart: mixture rich, mags on both, fuel selector to fullest tank, carb heat on',
+        '5. Declare emergency (Mayday × 3, position, intentions)',
+        '6. Configure for landing: flaps as conditions allow',
+        '7. Land into wind if possible',
+      ],
+      training: 'Practice this regularly. Best glide speed is the single most important number to know.',
+    },
+    {
+      emergency: 'Engine fire in flight',
+      symptoms: ['Smoke from engine compartment', 'Heat in cockpit', 'Acrid smell'],
+      response: [
+        '1. Mixture idle cutoff (cut fuel)',
+        '2. Fuel selector OFF',
+        '3. Master switch OFF',
+        '4. Cabin heat OFF (don\'t feed fire with air)',
+        '5. Glide and land ASAP',
+      ],
+    },
+    {
+      emergency: 'Loss of cabin pressurization',
+      symptoms: ['Cabin altitude rising', 'Headache, dizziness, vision issues', 'Aural warning'],
+      response: [
+        '1. Don oxygen mask immediately',
+        '2. Verify mask flow',
+        '3. Declare emergency',
+        '4. Descend rapidly to below 10,000 ft',
+      ],
+      criticalTiming: 'Time of useful consciousness at FL400 is ~15-30 seconds. Speed matters.',
+    },
+    {
+      emergency: 'Smoke in cockpit',
+      response: [
+        '1. Don oxygen masks',
+        '2. Smoke goggles if available',
+        '3. Identify source (electrical? engine? cargo?)',
+        '4. Shut down affected system if known',
+        '5. Land at nearest suitable airport',
+      ],
+      principle: 'Smoke can disable pilots within minutes. Get on ground.',
+    },
+    {
+      emergency: 'Electrical failure',
+      response: [
+        '1. Verify by trying lights, radios',
+        '2. Reset breakers if appropriate',
+        '3. Reduce electrical load',
+        '4. Land at nearest suitable',
+      ],
+      principle: 'Modern aircraft can fly without electrical (magnetos drive engine). Old gauges (steam) work without power.',
+    },
+    {
+      emergency: 'Stall + spin recovery',
+      response: 'P.A.R.E.: Power idle, Ailerons neutral, Rudder OPPOSITE the spin, Elevator forward',
+      criticalForSafety: 'Almost all spin accidents happen at low altitude where recovery is impossible. Prevent by not entering.',
+    },
+    {
+      emergency: 'Vacuum failure (gyro instruments down)',
+      response: [
+        '1. Recognize: AI tumbling, HI drifting',
+        '2. Switch to backup (most aircraft have electric standby AI)',
+        '3. Use turn coordinator + compass to maintain straight and level',
+        '4. Get out of IMC if VFR possible',
+        '5. Land at nearest suitable',
+      ],
+    },
+    {
+      emergency: 'Pitot-static failure',
+      response: 'Use known pitch + power settings. Use GPS ground speed as crude airspeed proxy. Cross-check altimeter from clearance.',
+    },
+    {
+      emergency: 'Lost (situational awareness loss)',
+      response: [
+        '1. Climb (if possible) to increase visibility',
+        '2. Determine wind direction (from drift)',
+        '3. Try to identify landmark',
+        '4. Call ATC or 121.5 for help — they can vector you',
+        '5. Look for airport beacon',
+        '6. Land at first suitable airport',
+      ],
+    },
+    {
+      emergency: 'Inadvertent IMC',
+      response: [
+        '1. 180° turn (smooth) to return to VMC',
+        '2. Trust instruments',
+        '3. Tell ATC',
+        '4. Land at first VMC airport',
+      ],
+      lethal: 'VFR-into-IMC is a top fatal accident cause. The 180° turn is well-established but pilots often delay.',
+    },
+    {
+      emergency: 'Bird strike',
+      severity: 'Most minor (small bird hits windshield, leaves it). Some severe (flocks of larger birds disabling engines, e.g. Sully 1549).',
+      response: 'Land at nearest suitable airport. Check engines, control surfaces.',
+    },
+    {
+      emergency: 'Door open in flight',
+      severity: 'Minor in most aircraft — door drag is moderate. But noise and shock can panic.',
+      response: 'Land at safe airport. Don\'t try to close in flight (probably can\'t).',
+    },
+    {
+      emergency: 'Fuel exhaustion (engine quits, gauges read empty)',
+      response: 'Same as engine failure. Pitch for glide, find a field. Lesson: monitor fuel proactively.',
+    },
+    {
+      emergency: 'Landing gear failure to extend (retractable)',
+      response: [
+        '1. Try alternate extension (hand crank or emergency air)',
+        '2. Fly around airport to burn off fuel',
+        '3. Land on belly if necessary',
+        '4. Cut fuel, master switch off before contact',
+      ],
+    },
+  ];
+
+  // ─── Aerodynamic terms expanded ───────────────────────────────────────
+  var AERO_TERMS_EXPANDED = [
+    {
+      term: 'Camber',
+      definition: 'The curvature of an airfoil. Mean camber line is the line equidistant from upper and lower surface.',
+    },
+    {
+      term: 'Chord',
+      definition: 'Straight line from leading edge to trailing edge of an airfoil.',
+    },
+    {
+      term: 'Coefficient of lift (Cₗ)',
+      definition: 'Dimensionless number that captures the lift characteristic of an airfoil at given AoA. Max Cₗ is at critical AoA.',
+    },
+    {
+      term: 'Coefficient of drag (Cd)',
+      definition: 'Dimensionless drag characteristic. Equation: D = ½ρv²S·Cd',
+    },
+    {
+      term: 'Critical angle of attack',
+      definition: 'The AoA beyond which airflow separates from the wing and lift drops sharply (the stall).',
+    },
+    {
+      term: 'Glide ratio',
+      definition: 'Forward distance per unit altitude lost. Sailplane: 30-50:1. C172: ~9:1. Brick: 0:1.',
+    },
+    {
+      term: 'L/D max',
+      definition: 'Lift-to-drag ratio at its maximum — corresponds to best glide speed.',
+    },
+    {
+      term: 'Stall margin',
+      definition: 'Difference between current AoA and critical AoA. Lower margin = closer to stalling.',
+    },
+    {
+      term: 'Stall speed (Vs)',
+      definition: 'Minimum airspeed at which the aircraft can maintain level flight. Increases with weight, bank angle, and g-load.',
+    },
+    {
+      term: 'Load factor',
+      definition: 'Ratio of aerodynamic force on aircraft to weight. Level flight: 1g. 60° banked turn: 2g.',
+    },
+    {
+      term: 'Pitch axis',
+      definition: 'Lateral axis through the wings. Pitch up/down rotation about this axis.',
+    },
+    {
+      term: 'Roll axis',
+      definition: 'Longitudinal axis through the fuselage. Roll left/right rotation about this axis.',
+    },
+    {
+      term: 'Yaw axis',
+      definition: 'Vertical axis. Yaw left/right rotation about this axis.',
+    },
+    {
+      term: 'Adverse yaw',
+      definition: 'When ailerons deflect to roll, the down-going aileron also produces more drag, yawing the nose AWAY from the turn. Rudder is needed to correct.',
+    },
+    {
+      term: 'Dihedral',
+      definition: 'Upward angle of wings from fuselage. Provides roll stability — if aircraft rolls, lower wing produces more lift to restore level.',
+    },
+    {
+      term: 'Anhedral',
+      definition: 'Downward angle of wings. Decreases roll stability but increases maneuverability. Some military aircraft use it.',
+    },
+    {
+      term: 'Sweep angle',
+      definition: 'Angle wings sweep back from perpendicular. Reduces drag at transonic speeds. Most jets have swept wings.',
+    },
+    {
+      term: 'Wing loading',
+      definition: 'Aircraft weight divided by wing area. High wing loading = higher landing speeds but less turbulence response.',
+    },
+    {
+      term: 'Power loading',
+      definition: 'Aircraft weight divided by engine power. Lower power loading = better performance.',
+    },
+    {
+      term: 'Compressibility effects',
+      definition: 'At speeds approaching Mach 1, air doesn\'t behave as incompressible fluid anymore. Causes drag rise and control issues. Why subsonic jets cruise at Mach 0.8.',
+    },
+    {
+      term: 'Shock wave',
+      definition: 'Pressure discontinuity formed at supersonic speeds. Sonic boom is this hitting the ground.',
+    },
+    {
+      term: 'Critical Mach number (M_crit)',
+      definition: 'The aircraft Mach where local flow over wings reaches Mach 1. Beyond this, transonic effects (drag rise) appear.',
+    },
+    {
+      term: 'Buffeting',
+      definition: 'Vibration from disturbed airflow over wings. Pre-stall buffet warns of approaching stall.',
+    },
+    {
+      term: 'Mach tuck',
+      definition: 'In high-speed dive, shock waves on wing alter lift distribution, pitching nose down further. Why some jets have Mach trim systems.',
+    },
+    {
+      term: 'Spoiler',
+      definition: 'Wing surface that pops up to spoil lift and add drag. Used for descent and as ground spoilers after landing.',
+    },
+    {
+      term: 'Slot',
+      definition: 'Gap in the leading edge of a wing (fixed slot) or a movable leading edge surface (slat). Both increase max AoA.',
+    },
+    {
+      term: 'Slat',
+      definition: 'Movable leading edge surface. Extended at low speed for landing. Allows higher max AoA.',
+    },
+    {
+      term: 'Spar',
+      definition: 'Main structural beam in a wing. Carries most of the lift load.',
+    },
+    {
+      term: 'Rib',
+      definition: 'Cross-sectional wing member that gives the wing its airfoil shape.',
+    },
+    {
+      term: 'Stringer',
+      definition: 'Longitudinal structural member running fore-aft along fuselage or wing.',
+    },
+    {
+      term: 'Empennage',
+      definition: 'Tail assembly: vertical fin + rudder + horizontal stabilizer + elevator.',
+    },
+    {
+      term: 'Canard',
+      definition: 'Forward-mounted horizontal surface (in front of main wing). Used by some aircraft (e.g., Eurofighter, Wright Flyer).',
+    },
+    {
+      term: 'Stator',
+      definition: 'Non-rotating blade in a jet engine compressor. Alternates with rotating rotors to compress air.',
+    },
+    {
+      term: 'Rotor',
+      definition: 'Rotating bladed disc in a jet engine, or the spinning rotor blades of a helicopter.',
+    },
+    {
+      term: 'Compressor stall',
+      definition: 'Airflow disruption inside a jet engine compressor. Sounds like bang. Can cause engine flame-out.',
+    },
+    {
+      term: 'EGT (exhaust gas temperature)',
+      definition: 'Temperature of exhaust gases from engine. Used to manage fuel-air mixture for efficiency.',
+    },
+    {
+      term: 'TIT (turbine inlet temperature)',
+      definition: 'Temperature of gas entering the turbine. Critical to engine longevity.',
+    },
+  ];
+
+  // ─── Air sickness, altitude effects on body ──────────────────────────
+  var FLIGHT_PHYSIOLOGY = [
+    {
+      condition: 'Hypoxia',
+      explanation: 'Insufficient oxygen reaching tissues. Begins ~10,000 ft for unacclimated humans.',
+      symptoms: 'Euphoria, vision dimming, tunnel vision, judgment loss, unconsciousness',
+      prevention: 'Supplemental oxygen above 12,500 ft. Pressurization above ~18,000 ft. Altitude chamber training for awareness of personal symptoms.',
+    },
+    {
+      condition: 'Hyperventilation',
+      explanation: 'Breathing too fast/deep, blowing off CO2',
+      symptoms: 'Dizziness, tingling, numbness, panic',
+      cure: 'Breathe slower. Talk. Breathe into a bag.',
+    },
+    {
+      condition: 'Air sickness / motion sickness',
+      cause: 'Mismatched sensory info — inner ear says one thing, eyes another',
+      management: ['Look at horizon', 'Avoid heavy meals before flight', 'Anti-emetics if needed', 'Cool air on face'],
+      training: 'Most students get over it within first 10-20 hours of flight.',
+    },
+    {
+      condition: 'Spatial disorientation',
+      cause: 'Inner ear gives false motion cues in cloud or at night',
+      response: 'Trust instruments. Don\'t look outside. Practice instrument scan in training.',
+    },
+    {
+      condition: 'Decompression sickness (bends)',
+      cause: 'Nitrogen bubbles forming in body tissues during rapid ascent',
+      relevance: 'Rare in commercial aviation (cabin pressurized). Common in scuba diving + flying combo within 12 hours.',
+    },
+    {
+      condition: 'Jet lag',
+      cause: 'Circadian rhythm disruption from rapid time zone change',
+      management: ['Adapt sleep gradually to destination time', 'Hydrate', 'Avoid alcohol', 'Sunlight exposure at destination'],
+    },
+    {
+      condition: 'Carbon monoxide poisoning',
+      cause: 'CO leaking from exhaust into cabin (cracked heat exchanger)',
+      symptoms: 'Headache, dizziness, drowsiness, "flu-like" feeling',
+      prevention: 'CO detector in cabin. Inspect exhaust system regularly.',
+      example: 'Several fatal accidents traced to CO poisoning incapacitating pilots.',
+    },
+    {
+      condition: 'Dehydration',
+      cause: 'Low cabin humidity (~10-20%) plus high altitude',
+      effects: 'Fatigue, headache, impaired judgment',
+      management: 'Drink water continuously during flight. Avoid alcohol and caffeine (diuretics).',
+    },
+    {
+      condition: 'Fatigue',
+      causes: 'Long duty days, irregular schedules, sleep disruption',
+      effects: 'Slow reaction, poor decisions, microsleeps',
+      regulation: 'FAR Part 117 limits airline pilot duty hours. Mandates rest periods.',
+    },
+    {
+      condition: 'Stress',
+      effects: 'Tunnel vision, regression to overlearned behavior, poor problem-solving',
+      management: 'Realistic training, CRM, breath techniques',
+    },
+    {
+      condition: 'Anxiety / fear of flying',
+      affected: '~20% of adults have some flying anxiety. ~6% have aerophobia (clinically significant).',
+      treatment: 'Cognitive-behavioral therapy works well. Some airlines offer fear-of-flying courses.',
+    },
+    {
+      condition: 'Eye strain',
+      cause: 'Constant focus shifting in cockpit, glare, prolonged near-focus on instruments',
+      management: 'Sunglasses for high-altitude UV. Periodic distant focus. Reading glasses if needed.',
+    },
+    {
+      condition: 'Eustachian tube blockage',
+      cause: 'Pressure changes during climb/descent cause ear discomfort',
+      management: 'Yawn, swallow, chew gum, Valsalva maneuver. Avoid flying with severe cold/congestion.',
+    },
+    {
+      condition: 'Dental pain',
+      cause: 'Air pockets in fillings expand at altitude (Boyle\'s law)',
+      management: 'See dentist before flight if you have unfilled cavities.',
+    },
+    {
+      condition: 'DVT (deep vein thrombosis)',
+      cause: 'Prolonged immobility on long flights',
+      prevention: 'Move around, compression socks, hydrate, avoid alcohol',
+      risk: 'Higher for older adults and those with other risk factors.',
+    },
+  ];
+
+  // ─── Helicopters and rotorcraft ────────────────────────────────────────
+  var HELICOPTER_FUNDAMENTALS = [
+    {
+      concept: 'Main rotor lift',
+      explanation: 'The main rotor blades are wings that spin. Each blade is an airfoil generating lift. Total lift is sum of blades × rotational speed × pitch.',
+    },
+    {
+      concept: 'Cyclic control',
+      function: 'Controls direction of rotor thrust vector. Push forward = nose down + forward motion.',
+      mechanism: 'The pilot\'s stick (cyclic) tilts the main rotor disc forward, backward, left, right',
+    },
+    {
+      concept: 'Collective control',
+      function: 'Controls amount of rotor thrust. Pull up = more lift; aircraft climbs.',
+      mechanism: 'Throttle and blade pitch increase together',
+    },
+    {
+      concept: 'Anti-torque (rudder pedals)',
+      function: 'Tail rotor counteracts main rotor torque. Pedals control how much.',
+      principle: 'Without tail rotor, fuselage would spin opposite to main rotor.',
+    },
+    {
+      concept: 'Hover',
+      challenge: 'Helicopters can hover, but it\'s the most demanding flight regime',
+      reason: 'No forward airflow over rotor = no induced lift improvement. Engine works harder.',
+      gestalt: 'Hovering is hard for new pilots; learning it is a major skill milestone.',
+    },
+    {
+      concept: 'Translational lift',
+      explanation: 'Once helicopter moves forward ~16-24 kts, airflow through rotor changes, lift improves significantly',
+      pedagogy: 'Why takeoff feels "easier" once you\'re moving forward.',
+    },
+    {
+      concept: 'Autorotation',
+      what: 'Emergency procedure for engine failure',
+      explanation: 'Pilot uses gravity-driven rotor spin to maintain rotor RPM and lift',
+      lifesaving: 'Helicopters CAN land without engine power if pilot does autorotation correctly. Counter-intuitive but real.',
+    },
+    {
+      concept: 'Ground effect',
+      explanation: 'Within one rotor diameter of ground, rotor sees less induced drag — lift is greater for same power',
+      implication: 'Pilots use ground effect during takeoff to gain altitude before climbing out',
+    },
+    {
+      concept: 'Dissymmetry of lift',
+      cause: 'Advancing blade (forward-moving) sees higher relative wind than retreating blade',
+      problem: 'Without correction, advancing side would lift more, rolling the helicopter',
+      solution: 'Blade flapping (each blade tilts up/down as it rotates) equalizes lift',
+    },
+    {
+      concept: 'Retreating blade stall',
+      cause: 'At high forward speed, retreating blade has very low effective airspeed and can stall',
+      limit: 'Sets maximum forward speed for helicopters (~180 kts for most designs)',
+    },
+    {
+      concept: 'Vortex ring state',
+      what: 'Dangerous flight regime where helicopter sinks into its own downwash',
+      condition: 'Descent rate > 300 fpm with airspeed below ~30 kts. Power increase doesn\'t help.',
+      recovery: 'Forward cyclic, fly out of the vortex',
+    },
+    {
+      concept: 'Why helicopters are inefficient compared to airplanes',
+      explanation: 'Burn 2-4x more fuel per passenger-mile because they must constantly fight gravity (lift = weight) without forward motion improving lift.',
+    },
+    {
+      concept: 'Helicopter types',
+      list: [
+        'Conventional (main + tail rotor): most civilian helicopters',
+        'Coaxial (two main rotors stacked): Kamov designs',
+        'Tandem (two main rotors front+back): CH-47 Chinook',
+        'Tiltrotor: V-22 Osprey, rotors tilt forward to convert to airplane mode',
+        'NOTAR (no tail rotor): fan in tail boom for anti-torque',
+      ],
+    },
+    {
+      concept: 'Famous helicopters',
+      list: [
+        'Bell UH-1 Iroquois (Huey): Vietnam War icon',
+        'Sikorsky CH-53 Sea Stallion: heavy lift',
+        'Boeing AH-64 Apache: attack helicopter',
+        'Sikorsky UH-60 Black Hawk: utility',
+        'Eurocopter EC-130 / Airbus H130: tourism (Las Vegas, Grand Canyon)',
+        'Robinson R22 / R44: most popular civilian',
+        'V-22 Osprey: tiltrotor',
+      ],
+    },
+  ];
+
+  // ─── Gliders and soaring ──────────────────────────────────────────────
+  var GLIDERS_SOARING = [
+    {
+      concept: 'How gliders fly without engines',
+      explanation: 'Gliders convert altitude to airspeed (kinetic energy) and use rising air (thermals, ridge lift, wave lift) to climb without engine power.',
+    },
+    {
+      concept: 'Glide ratio (L/D)',
+      typical: 'Recreational: 30:1. Competition: 40-60:1. Best ever (eta glider): 70:1.',
+      meaning: 'A 40:1 glider flying from 5,000 ft altitude can travel 40 × 5,000 ÷ 5,280 ≈ 38 miles horizontally with no power.',
+    },
+    {
+      concept: 'Thermals',
+      what: 'Rising columns of warm air above sun-heated terrain',
+      visualClue: 'Cumulus clouds often form at the top of thermals — pilots head for clouds',
+      strength: 'Can lift gliders 1,500+ fpm in strong conditions',
+    },
+    {
+      concept: 'Ridge lift',
+      what: 'Wind deflected upward by a hill or ridge',
+      use: 'Glider stays in lift band by flying parallel to ridge in updraft',
+    },
+    {
+      concept: 'Wave lift',
+      what: 'Atmospheric wave downstream of mountain range — air oscillates up/down',
+      strength: 'Can lift gliders 50,000+ ft (some have reached 75,000+ ft using wave!)',
+      where: 'Sierra Nevada, Andes, New Zealand Southern Alps',
+    },
+    {
+      concept: 'Aerotow',
+      what: 'A powered aircraft tows the glider to altitude. Glider releases when desired.',
+      process: 'Tow plane climbs to ~3,000 ft AGL. Glider releases, finds lift, climbs higher.',
+    },
+    {
+      concept: 'Self-launching gliders',
+      what: 'Glider with a small engine (often retractable) for takeoff. Engine retracts in flight.',
+      example: 'Stemme S10, Schleicher ASH-26E',
+    },
+    {
+      concept: 'Cross-country soaring',
+      what: 'Flying from one point to another using only thermals/lift',
+      records: 'World records exceed 1,000 km (620 mi) in single flights without engine',
+    },
+    {
+      concept: 'Speed-to-fly theory',
+      principle: 'When gliding between thermals, fly faster than best L/D to cover ground efficiently',
+      reason: 'You\'re sinking anyway; better to sink fast over more ground if you have a thermal ahead',
+    },
+    {
+      concept: 'Famous gliders',
+      list: [
+        'Schleicher ASK-21 (training)',
+        'Schleicher ASH-26 (single-seat, self-launching)',
+        'Schempp-Hirth Discus (single-seat racing)',
+        'eta (high-performance: 70:1 glide ratio)',
+      ],
+    },
+    {
+      concept: 'Soaring records',
+      list: [
+        'World altitude (gain): 16,925 m (55,531 ft) — Steve Fossett 2006',
+        'Free distance: 3,008 km — Klaus Ohlmann 2003',
+        'Speed over 100 km: 247 km/h',
+        'Maine context: Ridge soaring exists along Appalachian ranges',
+      ],
+    },
+  ];
+
+  // ─── Special aircraft missions ────────────────────────────────────────
+  var SPECIAL_MISSIONS = [
+    {
+      mission: 'Search and Rescue',
+      aircraft: 'Various — Coast Guard MH-65 Dolphin, MH-60 Jayhawk, HC-130, HC-144',
+      duration: 'Hours to days',
+      challenges: 'Often in bad weather, over water, at night',
+      coordination: 'Multi-agency: Coast Guard, USAF, FAA, local first responders',
+    },
+    {
+      mission: 'Firefighting (water bomber)',
+      aircraft: 'C-130 with MAFFS (Modular Airborne Firefighting System), CL-415 amphibious, Air Tractor AT-802',
+      method: 'Drop water or fire retardant on or near fire from low altitude',
+      hazards: ['Heat thermals', 'Smoke (visibility)', 'Mountain terrain', 'Tight maneuvering near ground'],
+    },
+    {
+      mission: 'Crop dusting (agricultural)',
+      aircraft: 'Air Tractor AT-502/802, AgCat',
+      method: 'Apply pesticides, fertilizers, or seed to fields from very low altitude',
+      certification: 'Commercial pilot + Part 137 agricultural operations',
+    },
+    {
+      mission: 'Aerial mapping / surveying',
+      aircraft: 'Cessna 206, various with belly cameras; increasingly drones',
+      method: 'Fly grid patterns, capture overlapping photos for 3D reconstruction',
+    },
+    {
+      mission: 'Pipeline / powerline patrol',
+      aircraft: 'Helicopters or single-engine aircraft',
+      method: 'Fly along route, look for issues, report problems',
+    },
+    {
+      mission: 'Banner towing',
+      aircraft: 'Often Piper Pawnee, Citabria, light tailwheel aircraft',
+      method: 'Hook banner on takeoff, fly slowly over events, release at destination',
+    },
+    {
+      mission: 'Skywriting',
+      aircraft: 'Specially modified for smoke generation',
+      method: 'Smoke generators behind aircraft trace letters in sky',
+      modern: 'Mostly replaced by drone shows',
+    },
+    {
+      mission: 'Aerobatic flight',
+      aircraft: 'Pitts S-2 Special, Extra 330, Christian Eagle, Sukhoi Su-26',
+      certifications: 'No special FAA cert, but heavy training. International Aerobatic Club provides framework.',
+    },
+    {
+      mission: 'Air ambulance',
+      aircraft: 'Helicopters (Bell 407, AS350), turboprops (King Air), jets (PC-12, Lear)',
+      coverage: 'Cover ground that ambulances can\'t reach quickly',
+    },
+    {
+      mission: 'Organ transport',
+      aircraft: 'Often Lear or Citation jet',
+      urgency: 'Organs have limited viability hours; flights are time-critical',
+    },
+    {
+      mission: 'Census / wildlife survey',
+      aircraft: 'Small high-wing aircraft (good downward visibility)',
+      method: 'Fly transects, count animals or features',
+    },
+    {
+      mission: 'Whale watching',
+      aircraft: 'Small aircraft or helicopters',
+      method: 'Spot from air; coordinate with boat tours',
+    },
+    {
+      mission: 'Movie / commercial filming',
+      aircraft: 'Helicopters with gyroscopic camera mounts, fixed-wings with special permits',
+      certifications: 'Motion Picture Camera Pilot waiver required for low-altitude commercial filming',
+    },
+    {
+      mission: 'Skydiving operations',
+      aircraft: 'Cessna 182 (small ops), Twin Otter (commercial), C-208 Caravan',
+      method: 'Climb to jump altitude (10,000-13,000 ft), open door, jumpers exit',
+    },
+    {
+      mission: 'Hurricane hunting',
+      aircraft: 'WC-130 (USAF Reserve "Hurricane Hunters"), P-3 Orion (NOAA)',
+      method: 'Fly INTO hurricanes to gather wind, pressure, temperature data',
+      bravery: 'Pilots train extensively for this. Mission flies multiple times per storm.',
+    },
+    {
+      mission: 'Sport / parachute jumping',
+      aircraft: 'Same as skydiving — Cessna 182 or larger',
+    },
+    {
+      mission: 'Banner towing for advertising',
+      example: 'Beach advertising in summer',
+    },
+    {
+      mission: 'Glider towing',
+      aircraft: 'Often Pawnee or Robin DR400',
+      method: 'Tow a glider to release altitude (~3,000 ft AGL typically)',
+    },
+    {
+      mission: 'Light corporate / executive transport',
+      aircraft: 'Citation, Phenom, King Air, Pilatus PC-12',
+      certifications: 'Commercial pilot + type ratings + sometimes ATP',
+    },
+    {
+      mission: 'On-demand charter ("air taxi")',
+      aircraft: 'Variety from light singles to mid-size jets',
+      certification: 'Part 135 operations',
+    },
+  ];
+
+  // ─── Drone use cases (real applications) ──────────────────────────────
+  var DRONE_USE_CASES = [
+    {
+      use: 'Powerline inspection',
+      benefit: 'Replaces helicopter or climbing inspector. Safer, cheaper, more thorough.',
+      tools: 'Visual + thermal camera. Drone can hover close to inspect insulators.',
+    },
+    {
+      use: 'Wind turbine inspection',
+      benefit: 'Inspect 80m+ blades without rope-access climbers',
+      cost: 'Reduces inspection cost by 50-90%',
+    },
+    {
+      use: 'Pipeline patrol',
+      benefit: 'Long linear inspection automated',
+    },
+    {
+      use: 'Cellular tower inspection',
+      benefit: 'Climbers don\'t have to risk tower climbs',
+    },
+    {
+      use: 'Construction site monitoring',
+      benefit: 'Daily progress photos, volume calculations, safety inspections',
+    },
+    {
+      use: 'Real estate photography',
+      benefit: 'Aerial photos sell properties faster',
+    },
+    {
+      use: 'Wedding / event photography',
+      benefit: 'Unique aerial perspectives',
+    },
+    {
+      use: 'Agriculture',
+      tools: 'Multispectral cameras (NDVI) reveal crop health',
+      benefit: 'Targeted spray, water, fertilizer applications',
+    },
+    {
+      use: 'Livestock monitoring',
+      benefit: 'Find lost cattle, monitor herds, automate water level checks',
+    },
+    {
+      use: 'Search and rescue',
+      benefit: 'Cover area faster than ground teams. Thermal imaging finds people in cold/dark.',
+    },
+    {
+      use: 'Surveying + mapping',
+      tools: 'GPS + lidar + photogrammetry',
+      benefit: '3D site models built from drone flights, ~$2K vs $20K with manned aircraft',
+    },
+    {
+      use: 'Police / law enforcement',
+      benefit: 'Traffic accident reconstruction, suspect tracking, perimeter security',
+      controversy: 'Privacy concerns; legal restrictions vary by jurisdiction',
+    },
+    {
+      use: 'Firefighting + emergency response',
+      benefit: 'Locate hot spots, monitor fire spread, search for trapped survivors',
+    },
+    {
+      use: 'Wildlife research',
+      use: 'Track collared animals, count populations, monitor habitat',
+    },
+    {
+      use: 'Atmospheric sampling',
+      benefit: 'Cheaper than weather balloons; programmable patterns',
+    },
+    {
+      use: 'Delivery (still emerging)',
+      players: ['Wing (Alphabet/Google)', 'Zipline (medical supplies in Africa)', 'Amazon Prime Air'],
+      challenges: 'Regulatory, infrastructure, public perception',
+    },
+    {
+      use: 'Film + cinematography',
+      benefit: 'Replaced helicopter for many shots; new perspectives possible',
+      cost: '$200 drone shot vs $5,000 helicopter shot for similar coverage',
+    },
+    {
+      use: 'Roof inspections',
+      benefit: 'Insurance claims, real estate, residential — no ladder needed',
+    },
+    {
+      use: 'Marine mammal research',
+      benefit: 'Photogrammetry to measure body condition without contact',
+    },
+    {
+      use: 'Sports broadcasting',
+      benefit: 'Tight aerial shots impossible with helicopters',
+    },
+  ];
+
+  // ─── Cool aviation careers + paths kids might not know ──────────────
+  var UNUSUAL_AVIATION_CAREERS = [
+    {
+      career: 'Skywriter',
+      training: 'Commercial pilot + special low-altitude waiver',
+      pay: 'Variable; seasonal',
+      examples: 'Beach proposals, sporting events, brand promotion',
+    },
+    {
+      career: 'Pipeline patrol pilot',
+      training: 'Commercial pilot + experience flying patterns',
+      pay: '$50-90K',
+      schedule: 'Long days flying low altitude over rural terrain',
+    },
+    {
+      career: 'Drone mapping / GIS',
+      training: 'Part 107 + GIS software (Pix4D, DroneDeploy)',
+      pay: '$60-120K',
+    },
+    {
+      career: 'Aerial firefighter',
+      training: 'Commercial pilot + specialized fire training',
+      pay: '$80-200K seasonal',
+      hazards: 'High',
+    },
+    {
+      career: 'Bush pilot (Alaska)',
+      training: 'Commercial pilot + tailwheel + sometimes floatplane',
+      pay: 'Variable; many love the lifestyle over the pay',
+    },
+    {
+      career: 'Crop duster',
+      training: 'Commercial + Part 137 ag operations',
+      pay: '$60-150K',
+      season: 'Spring/summer; intense and lucrative during growing season',
+    },
+    {
+      career: 'Glacier pilot (Antarctica)',
+      training: 'Highly specialized; usually military background',
+      pay: '$80-150K + cold weather bonus',
+    },
+    {
+      career: 'Aerobatic competition pilot',
+      training: 'Heavy independent training + competition experience',
+      pay: 'Limited from competitions; comes from sponsorships and air shows',
+    },
+    {
+      career: 'Hurricane hunter',
+      training: 'USAF Reserve or NOAA hiring',
+      pay: 'Federal scale',
+      mission: 'Fly C-130 or P-3 into hurricanes for data collection',
+    },
+    {
+      career: 'Astronaut',
+      training: 'Variable: military test pilot, scientist, engineer',
+      pay: 'GS-13 to GS-15 federal',
+      odds: '~10-20 selected from ~12,000+ applicants every few years',
+    },
+    {
+      career: 'Aerospace medicine physician',
+      training: 'MD + aerospace medicine residency',
+      pay: '$200K+',
+      role: 'Aviation Medical Examiner, astronaut medical, fighter pilot evaluation',
+    },
+    {
+      career: 'Aircraft restoration specialist',
+      training: 'A&P + vintage aircraft experience',
+      pay: 'Variable; many work on classics for love',
+      work: 'Restore warbirds, classic GA, historic aircraft',
+    },
+    {
+      career: 'Flight test engineer',
+      training: 'Aerospace engineering + flight testing certifications',
+      pay: '$100-200K',
+      employers: 'Boeing, Lockheed Martin, NASA, FAA',
+    },
+    {
+      career: 'Air show announcer',
+      training: 'Aviation knowledge + broadcasting',
+      pay: 'Seasonal',
+    },
+    {
+      career: 'Aviation lawyer (FAA enforcement)',
+      training: 'JD + aviation experience',
+      pay: '$80-300K',
+      role: 'Defending pilots in enforcement actions',
+    },
+  ];
+
+  // ─── Famous aviation movies + documentaries ──────────────────────────
+  var AVIATION_MEDIA = [
+    {
+      type: 'Movie',
+      title: 'Sully',
+      year: 2016,
+      summary: 'Tom Hanks plays Capt. Sullenberger of the Miracle on the Hudson. Well-researched depiction of the actual event.',
+    },
+    {
+      type: 'Movie',
+      title: 'The Aviator',
+      year: 2004,
+      summary: 'Leonardo DiCaprio plays Howard Hughes. Showcases his aviation obsession.',
+    },
+    {
+      type: 'Movie',
+      title: 'Top Gun',
+      year: 1986,
+      summary: 'Naval aviation. Set the public image of fighter pilots for a generation.',
+    },
+    {
+      type: 'Movie',
+      title: 'Top Gun: Maverick',
+      year: 2022,
+      summary: 'Sequel using real F-18 footage. Tom Cruise insisted actors fly with the Navy.',
+    },
+    {
+      type: 'Movie',
+      title: 'The Right Stuff',
+      year: 1983,
+      summary: 'Yeager, the X-15, and Mercury 7 astronauts. Captures the golden age of test pilots.',
+    },
+    {
+      type: 'Movie',
+      title: 'Apollo 13',
+      year: 1995,
+      summary: 'The disaster + recovery of Apollo 13 lunar mission. Outstanding fidelity to actual events.',
+    },
+    {
+      type: 'Movie',
+      title: 'Memphis Belle',
+      year: 1990,
+      summary: 'WWII B-17 bomber crew completing their 25th mission. Historical drama.',
+    },
+    {
+      type: 'Movie',
+      title: 'The Right Stuff',
+      year: 1983,
+      summary: 'Tom Wolfe\'s book → film about early test pilots and Mercury astronauts',
+    },
+    {
+      type: 'Movie',
+      title: 'Catch Me If You Can',
+      year: 2002,
+      summary: 'Pan Am pilot impersonator Frank Abagnale. Showcases the prestige of 1960s commercial aviation.',
+    },
+    {
+      type: 'Movie',
+      title: 'Flight',
+      year: 2012,
+      summary: 'Denzel Washington plays an airline pilot who lands a damaged aircraft but had drugs in his system. Complex moral story.',
+    },
+    {
+      type: 'Movie',
+      title: 'Air',
+      year: 1997,
+      summary: 'John Travolta plays a US Marshal aboard a hijacked prisoner transport plane.',
+    },
+    {
+      type: 'Documentary',
+      title: 'Apollo: A Man on the Moon',
+      year: '1995-1998',
+      summary: 'Smithsonian/PBS documentary series. Comprehensive Apollo program history.',
+    },
+    {
+      type: 'Documentary',
+      title: 'Air Disasters / Mayday',
+      year: 'Ongoing (2003-present)',
+      summary: 'Series investigating air crash mysteries. Excellent for understanding investigation processes.',
+    },
+    {
+      type: 'Documentary',
+      title: 'For All Mankind (Apple TV+ alt history)',
+      year: '2019-present',
+      summary: 'What if the Soviets landed on the moon first? Excellent space race exploration.',
+    },
+    {
+      type: 'Documentary',
+      title: 'Inside Boeing\'s 737 Max',
+      summary: 'Multiple documentaries (Netflix, Frontline) on the MCAS crashes',
+    },
+    {
+      type: 'Documentary',
+      title: 'Living in the Age of Airplanes',
+      year: 2015,
+      summary: 'IMAX film about modern aviation\'s global impact',
+    },
+    {
+      type: 'Documentary',
+      title: 'One Six Right',
+      year: 2005,
+      summary: 'Beautiful tribute to general aviation, filmed at Van Nuys Airport.',
+    },
+  ];
+
+  // ─── Aviation books (verbose) ─────────────────────────────────────────
+  var AVIATION_BOOKS = [
+    { title: 'Stick and Rudder', author: 'Wolfgang Langewiesche', year: 1944, why: 'Classic explanation of how flight actually works, by a working pilot.' },
+    { title: 'The Killing Zone', author: 'Paul A. Craig', why: 'Statistical study of where pilots get killed (100-350 flight hours). Eye-opening.' },
+    { title: 'Fate Is the Hunter', author: 'Ernest K. Gann', year: 1961, why: 'Memoir of early airline flying. Dramatic, beautifully written.' },
+    { title: 'Wind, Sand and Stars', author: 'Antoine de Saint-Exupéry', year: 1939, why: 'French pilot poet writes about the early days of airmail flying.' },
+    { title: 'Night Flight', author: 'Antoine de Saint-Exupéry', year: 1931, why: 'Novella about pilots flying mail at night in South America.' },
+    { title: 'West with the Night', author: 'Beryl Markham', year: 1942, why: 'Pioneering aviatrix\'s memoir of life in Africa. Ernest Hemingway praised it.' },
+    { title: 'The Right Stuff', author: 'Tom Wolfe', year: 1979, why: 'Test pilots and astronauts. New Journalism at its best.' },
+    { title: 'Skyfaring', author: 'Mark Vanhoenacker', year: 2015, why: 'British Airways pilot reflects on flying. Lyrical, contemplative.' },
+    { title: 'Highest Duty', author: 'Capt. Chesley Sullenberger', year: 2009, why: 'Sully\'s account of US Airways 1549.' },
+    { title: 'Carrying the Fire', author: 'Michael Collins', year: 1974, why: 'Apollo 11 command module pilot\'s memoir.' },
+    { title: 'Yeager: An Autobiography', author: 'Chuck Yeager + Leo Janos', year: 1985, why: 'Chuck Yeager\'s own story of WWII through breaking the sound barrier.' },
+    { title: 'The Cannibal Queen', author: 'Stephen Coonts', year: 1992, why: 'Cross-country flight in a 1942 Stearman biplane. Americana.' },
+    { title: 'Three Sigma Leadership', author: 'Mike Mullane', why: 'Astronaut Mullane on leadership and risk decisions.' },
+    { title: 'Riding Rockets', author: 'Mike Mullane', year: 2006, why: 'Frank and funny astronaut memoir.' },
+    { title: 'Code Talker', author: 'Chester Nez', why: 'WWII Navajo Code Talker memoir touches on Pacific aviation.' },
+    { title: 'Fly: The Complete Book of Sky Surfing', why: 'For the truly adventurous.' },
+    { title: 'Aerodynamics for Naval Aviators', author: 'H.H. Hurt Jr.', year: 1965, why: 'The serious technical reference. Free online from US Navy.' },
+    { title: 'The Killing Zone', author: 'Paul A. Craig', why: 'Statistical analysis of GA pilot deaths. Sobering and useful.' },
+    { title: 'Pilot Error', author: 'Paul A. Craig', why: 'Companion to The Killing Zone — what kills pilots and how to avoid it.' },
+    { title: 'Volar al Sur', author: 'Antoine de Saint-Exupéry', why: 'Spanish edition of Wind, Sand and Stars.' },
+    { title: 'I Could Never Be So Lucky Again', author: 'James "Jimmy" Doolittle', year: 1991, why: 'Memoir of Doolittle (Tokyo Raid). One of the great aviators.' },
+    { title: 'The Hunters', author: 'James Salter', year: 1956, why: 'Korean War fighter pilot novel. Salter was a pilot.' },
+    { title: 'Coming Back Alive', author: 'Spike Walker', why: 'Coast Guard rescue swimmer / pilot stories from Alaska.' },
+    { title: 'Honor Bound', author: 'Stuart I. Rochester', why: 'Stories of US POWs of the Vietnam War, many were pilots.' },
+    { title: 'Skunk Works', author: 'Ben R. Rich + Leo Janos', year: 1994, why: 'Lockheed\'s secret aircraft division (U-2, SR-71, F-117). Engineering classic.' },
+  ];
+
+  // ─── Flight training milestones ───────────────────────────────────────
+  var TRAINING_MILESTONES = [
+    {
+      milestone: 'First flight',
+      typical: 'Hour 1',
+      what: 'Get comfortable with aircraft. Basic taxi, takeoff with instructor.',
+      feelings: 'Exhilaration. Maybe nervous. Definitely the start of something.',
+    },
+    {
+      milestone: 'Solo flight',
+      typical: 'Hours 10-20 (varies)',
+      what: 'First time in the air without an instructor.',
+      preparation: 'Instructor signs off when ready. Pattern work alone first.',
+      tradition: 'Old aviation tradition: cut off the back of the soloed pilot\'s shirt and hang it in the FBO.',
+    },
+    {
+      milestone: 'First cross-country',
+      typical: 'Hours 20-30',
+      what: 'Fly more than 50 nm from home base.',
+      learning: 'Practice navigation, communication with unfamiliar towers, decision-making.',
+    },
+    {
+      milestone: 'Night training',
+      typical: 'Hours 30-40',
+      what: 'Required hours flying at night.',
+      challenges: 'Less depth perception, harder to identify ground references, lights change everything.',
+    },
+    {
+      milestone: 'Cross-country solo',
+      typical: 'Hours 30-50',
+      what: 'Solo cross-country flight.',
+      preparation: 'Plan thoroughly, brief with instructor, then go.',
+    },
+    {
+      milestone: 'Written exam',
+      typical: 'Before checkride',
+      what: 'Knowledge test on regulations, weather, navigation, aerodynamics, etc.',
+      score: 'Pass with 70% or better. 60 questions, 2.5 hours.',
+    },
+    {
+      milestone: 'Practical exam (checkride)',
+      typical: 'Hours 50-70',
+      what: 'FAA Designated Examiner tests you orally and in flight.',
+      structure: '~2-hour oral + ~1.5 hour flight test',
+      pass: 'Pass = Private Pilot Certificate. Fail an area = redo just that part.',
+    },
+    {
+      milestone: 'Adding ratings/endorsements',
+      examples: ['Instrument rating', 'Multi-engine rating', 'Tailwheel endorsement', 'High-performance endorsement', 'Complex aircraft endorsement', 'High-altitude endorsement'],
+    },
+    {
+      milestone: 'Commercial pilot certificate',
+      typical: 'Hours 200+ (250 required, often more for hire eligibility)',
+      what: 'Fly for compensation. Required for instructing, charter, etc.',
+    },
+    {
+      milestone: 'ATP (Airline Transport Pilot)',
+      typical: 'Hours 1500+',
+      what: 'Highest certificate. Required to be captain of a Part 121 (airline) flight.',
+    },
+    {
+      milestone: 'First Type Rating',
+      what: 'Endorsement to fly a specific aircraft type heavier than 12,500 lb.',
+      cost: '~$15-30K per type rating, often paid by airline',
+    },
+    {
+      milestone: 'Initial Operating Experience (IOE)',
+      what: 'Post-training flying with line check airman before flying the line solo.',
+    },
+    {
+      milestone: 'Upgrade to Captain',
+      typical: 'Years of right-seat time at a regional, then a major airline',
+      what: 'Move from First Officer (right seat) to Captain (left seat). Increased pay and responsibility.',
+    },
+    {
+      milestone: 'Million-mile / 20,000 hour milestones',
+      what: 'Pilots celebrate accumulating these milestones over careers.',
+      retirement: 'Mandatory retirement at age 65 for US air carrier pilots.',
+    },
+    {
+      milestone: 'Hangar flying',
+      what: 'Pilots gather to swap stories. Where the most informal learning happens.',
+      tradition: 'Some of the best lessons are told over coffee in the FBO.',
+    },
+  ];
+
+  // ─── Air traffic complexity (modern operations) ──────────────────────
+  var ATC_COMPLEXITY = [
+    {
+      area: 'New York TRACON (N90)',
+      airports: 'JFK, LGA, EWR, TEB, plus smaller',
+      complexity: 'Densest, most complex airspace in the US',
+      annual_ops: '~1.5 million',
+      notes: 'Three major airports within 20 miles of each other. Three different controllers may handle approaches simultaneously.',
+    },
+    {
+      area: 'London Terminal Maneuvering Area',
+      airports: 'Heathrow, Gatwick, Stansted, Luton, City',
+      complexity: 'European hub. Holding patterns over Bovingdon and Lambourne are part of aviation lore.',
+    },
+    {
+      area: 'Atlanta Hartsfield-Jackson',
+      role: 'World\'s busiest airport (most years)',
+      annual_ops: '~700K',
+      design: '5 parallel runways enable simultaneous arrivals and departures',
+    },
+    {
+      area: 'Tokyo Haneda + Narita',
+      complexity: 'Densely populated area; geographic constraints',
+      story: 'Haneda is closer to central Tokyo, so favored by business travelers.',
+    },
+    {
+      area: 'Dubai International',
+      role: 'Major Asia-Europe-Africa connection hub',
+      growth: 'Volume grew dramatically with Emirates Airline expansion',
+    },
+    {
+      area: 'North Atlantic Tracks',
+      what: 'Daily-changing parallel routes for transatlantic flights',
+      reason: 'Optimize use of jet stream eastbound, avoid headwinds westbound',
+      separation: 'Aircraft fly tracks at specific altitudes; 10 minutes longitudinal separation, 60 nm lateral',
+      management: 'Gander Center (Canada) + Shanwick (UK/Ireland) coordinate',
+    },
+    {
+      area: 'European Air Traffic Flow',
+      complexity: 'Many small countries, dense airspace, multiple control authorities',
+      coordination: 'Eurocontrol coordinates across borders',
+    },
+    {
+      area: 'Pacific Ocean',
+      challenge: 'Vast distances, limited radar coverage, fewer diversion airports',
+      navigation: 'Inertial reference + GPS critical; HF radio for emergency comms',
+    },
+    {
+      area: 'Polar routes (transpolar)',
+      use: 'Asia-North America routes save ~1 hour by flying over the pole',
+      considerations: 'Cold, magnetic anomalies, limited diversion airports, solar radiation exposure',
+    },
+    {
+      area: 'Israel',
+      complexity: 'Small airspace, threats, military operations',
+      stat: 'Ben Gurion handles >20M passengers despite tight constraints',
+    },
+  ];
+
+  // ─── Aviation in pop culture and language ──────────────────────────────
+  var AVIATION_LANGUAGE = [
+    {
+      phrase: 'Wing it',
+      origin: 'Aviation — "winging" a flight without a plan, using only your wings (skills)',
+      meaning: 'Improvise',
+    },
+    {
+      phrase: 'Take off',
+      origin: 'Aviation',
+      meaning: 'Begin something with enthusiasm; also: leave',
+    },
+    {
+      phrase: 'Cleared for takeoff',
+      use: 'Common metaphor for proceeding with confidence',
+    },
+    {
+      phrase: 'Crash and burn',
+      origin: 'Aviation accidents',
+      meaning: 'Fail dramatically',
+    },
+    {
+      phrase: 'Bail out',
+      origin: 'Parachuting from a damaged aircraft',
+      meaning: 'Abandon (a plan, a relationship, an investment)',
+    },
+    {
+      phrase: 'Flying blind',
+      origin: 'Aviation — flying without instruments or visibility',
+      meaning: 'Acting without information',
+    },
+    {
+      phrase: 'On autopilot',
+      origin: 'Aviation — autopilot maintains course without pilot input',
+      meaning: 'Doing something without thinking',
+    },
+    {
+      phrase: 'Coming in for a landing',
+      origin: 'Aviation',
+      meaning: 'Approaching the conclusion',
+    },
+    {
+      phrase: 'Hit turbulence',
+      use: 'Encountering unexpected difficulty',
+    },
+    {
+      phrase: 'Flying high',
+      use: 'Feeling great success',
+    },
+    {
+      phrase: 'Tailspin',
+      origin: 'Aviation — uncontrolled descent in a spin',
+      meaning: 'Lose control rapidly',
+    },
+    {
+      phrase: 'Wheels up',
+      origin: 'Aviation — landing gear retracts after takeoff',
+      meaning: 'Departing; starting',
+    },
+    {
+      phrase: 'On the radar',
+      origin: 'Aviation — radar tracking',
+      meaning: 'Aware of; noticed',
+    },
+    {
+      phrase: 'Fly under the radar',
+      meaning: 'Stay unnoticed',
+    },
+    {
+      phrase: 'Cleared for landing',
+      use: 'Permission granted; safe to proceed',
+    },
+    {
+      phrase: 'Top gun',
+      origin: 'US Navy Strike Fighter Tactics Instructor course',
+      meaning: 'Best in field',
+    },
+    {
+      phrase: 'A wing and a prayer',
+      origin: 'Song from 1943 — aircraft barely making it home',
+      meaning: 'Hopeful but uncertain',
+    },
+    {
+      phrase: 'Sky\'s the limit',
+      meaning: 'Unlimited possibilities',
+    },
+    {
+      phrase: 'Plane sailing',
+      pun: 'Often misheard as "plane sailing" — actually "plain sailing"',
+    },
+    {
+      phrase: 'Get off the ground',
+      meaning: 'Successfully begin',
+    },
+    {
+      phrase: 'Up in the air',
+      meaning: 'Undecided; uncertain',
+    },
+    {
+      phrase: 'Have your head in the clouds',
+      meaning: 'Daydreaming, unrealistic',
+    },
+  ];
+
+  // ─── Pilot personality + selection (for kids considering the career) ──
+  var PILOT_PERSONALITY = [
+    {
+      trait: 'Attention to detail',
+      why: 'Pre-flight inspections, checklists, instrument scanning — pilots must catch small problems before they become big',
+    },
+    {
+      trait: 'Calmness under stress',
+      why: 'Emergencies require clear thinking. Panic kills.',
+    },
+    {
+      trait: 'Decision making',
+      why: 'Pilots make hundreds of decisions per flight, sometimes with limited information',
+    },
+    {
+      trait: 'Spatial awareness',
+      why: 'Three-dimensional thinking comes naturally to some, can be developed by others',
+    },
+    {
+      trait: 'Mathematical comfort',
+      why: 'Constant calculations: fuel, speed, time, distance, headings, weight balance',
+    },
+    {
+      trait: 'Discipline',
+      why: 'Following procedures even when bored. Resisting shortcuts.',
+    },
+    {
+      trait: 'Communication',
+      why: 'Clear radio communication, working with crew, briefing passengers',
+    },
+    {
+      trait: 'Self-awareness',
+      why: 'Recognizing your own fatigue, stress, limitations. Saying "I\'m not fit to fly today."',
+    },
+    {
+      trait: 'Adaptability',
+      why: 'Weather changes. Mechanical issues happen. Plans must flex.',
+    },
+    {
+      trait: 'Continuous learning',
+      why: 'New aircraft, new regulations, new procedures. Pilots never stop studying.',
+    },
+    {
+      trait: 'Physical fitness',
+      why: 'Not athletic-level, but baseline health. FAA medical required.',
+    },
+    {
+      trait: 'Vision',
+      why: 'FAA medical sets vision requirements (correctable to 20/20 distance, 20/40 near)',
+    },
+    {
+      trait: 'Color vision',
+      why: 'Important for cockpit instruments (especially older ones)',
+    },
+    {
+      trait: 'Hearing',
+      why: 'Communication with ATC and crew',
+    },
+    {
+      trait: 'Open to feedback',
+      why: 'Pilots get feedback constantly from instructors, peers, and themselves. Defensiveness kills.',
+    },
+    {
+      trait: 'Comfortable with isolation',
+      why: 'Long-haul international flights are mostly quiet cockpit time',
+    },
+    {
+      trait: 'Comfortable with travel',
+      why: 'Pilots are away from home regularly',
+    },
+    {
+      trait: 'Comfortable with risk-taking (calculated)',
+      why: 'All flight involves risk. Pilots take CALCULATED risks, not reckless ones.',
+    },
+  ];
+
+  // ─── Notable historic flights timeline (expanded) ────────────────────
+  var AVIATION_TIMELINE_EXPANDED = [
+    { year: 1485, event: 'Leonardo da Vinci designs ornithopters and helicopters in notebooks (never built)' },
+    { year: 1670, event: 'Francesco Lana de Terzi designs a "vacuum airship" (technically impossible, but conceptual)' },
+    { year: 1783, event: 'Montgolfier brothers launch the first hot air balloon (Paris). First human flight.' },
+    { year: 1783, event: 'Charles & Robert: first hydrogen-filled balloon flight, weeks after Montgolfiers' },
+    { year: 1799, event: 'Sir George Cayley draws the basic configuration of modern airplane on a silver disc' },
+    { year: 1853, event: 'Sir George Cayley flies the first manned glider' },
+    { year: 1891, event: 'Otto Lilienthal\'s gliders — Lilienthal made 2,000+ glider flights before dying in one' },
+    { year: 1903, event: 'Wright Brothers achieve first powered, controlled, sustained flight (Dec 17, Kitty Hawk)' },
+    { year: 1909, event: 'Louis Blériot crosses the English Channel by airplane' },
+    { year: 1910, event: 'First woman pilot in the world (Raymonde de Laroche, France)' },
+    { year: 1911, event: 'First aerial photography from an aircraft' },
+    { year: 1914, event: 'First scheduled commercial passenger flight (Tony Jannus, St. Petersburg-Tampa, FL)' },
+    { year: 1914, event: 'First female combat pilot (Marie Marvingt, France)' },
+    { year: 1915, event: 'Anthony Fokker patents synchronization gear, enabling machine guns to fire through propellers' },
+    { year: 1919, event: 'Alcock & Brown: first nonstop transatlantic flight' },
+    { year: 1921, event: 'Bessie Coleman: first African-American woman to earn a pilot license' },
+    { year: 1924, event: 'First aerial circumnavigation of Earth (US Army Air Service)' },
+    { year: 1927, event: 'Charles Lindbergh: solo nonstop transatlantic flight' },
+    { year: 1928, event: 'Amelia Earhart: first woman across the Atlantic (as passenger)' },
+    { year: 1932, event: 'Amelia Earhart: solo across the Atlantic' },
+    { year: 1933, event: 'First female-only flight crew (Imperial Airways)' },
+    { year: 1935, event: 'DC-3 first flight — revolutionizes airline travel' },
+    { year: 1937, event: 'Amelia Earhart disappears over Pacific' },
+    { year: 1937, event: 'Hindenburg disaster — kills passenger zeppelin industry' },
+    { year: 1939, event: 'First successful turbojet flight (German Heinkel He 178)' },
+    { year: 1939, event: 'Sikorsky VS-300 first successful helicopter flight' },
+    { year: 1941, event: 'Pearl Harbor attack' },
+    { year: 1945, event: 'B-29 drops atomic bombs on Hiroshima and Nagasaki' },
+    { year: 1947, event: 'Chuck Yeager breaks sound barrier in Bell X-1' },
+    { year: 1948, event: 'Berlin Airlift begins' },
+    { year: 1949, event: 'de Havilland Comet first flight (first commercial jet airliner)' },
+    { year: 1952, event: 'First commercial jet airliner service (BOAC Comet)' },
+    { year: 1954, event: 'Boeing 707 prototype first flight' },
+    { year: 1957, event: 'Sputnik 1 launched (Soviet Union)' },
+    { year: 1958, event: 'NASA founded (after Sputnik shock)' },
+    { year: 1961, event: 'Yuri Gagarin becomes first human in space' },
+    { year: 1962, event: 'John Glenn first American to orbit Earth' },
+    { year: 1962, event: 'X-15 reaches space (~328,000 ft)' },
+    { year: 1964, event: 'SR-71 Blackbird first flight (declassified)' },
+    { year: 1969, event: 'Apollo 11 lunar landing' },
+    { year: 1969, event: 'Boeing 747 first flight' },
+    { year: 1969, event: 'Concorde first flight' },
+    { year: 1974, event: 'F-14 Tomcat enters service' },
+    { year: 1976, event: 'Concorde enters commercial service' },
+    { year: 1976, event: 'SR-71 sets absolute speed record (Mach 3.3, 1,905 kts)' },
+    { year: 1981, event: 'Space Shuttle Columbia first flight' },
+    { year: 1986, event: 'Voyager (Burt Rutan) — first nonstop unrefueled circumnavigation' },
+    { year: 1986, event: 'Challenger disaster' },
+    { year: 1991, event: 'Operation Desert Storm — first major use of stealth aircraft (F-117)' },
+    { year: 1995, event: 'Eileen Collins: first woman to pilot Space Shuttle' },
+    { year: 1997, event: 'F-22 Raptor first flight (operational 2005)' },
+    { year: 1999, event: 'Steve Fossett solo circumnavigates by balloon' },
+    { year: 2001, event: 'September 11 attacks — change global aviation security forever' },
+    { year: 2003, event: 'Columbia disaster' },
+    { year: 2003, event: 'Concorde retired' },
+    { year: 2004, event: 'SpaceShipOne wins X Prize ($10M)' },
+    { year: 2007, event: 'Airbus A380 enters service' },
+    { year: 2009, event: 'Miracle on the Hudson (US Airways 1549)' },
+    { year: 2010, event: 'Solar Impulse — first manned solar-powered overnight flight' },
+    { year: 2011, event: 'Boeing 787 Dreamliner enters service' },
+    { year: 2012, event: 'SpaceX Dragon: first private spacecraft to ISS' },
+    { year: 2015, event: 'Solar Impulse 2 begins solar circumnavigation' },
+    { year: 2016, event: 'Solar Impulse 2 completes circumnavigation' },
+    { year: 2018, event: 'Lion Air 610 crash (737 MAX MCAS)' },
+    { year: 2019, event: 'Ethiopian 302 crash → 737 MAX grounded' },
+    { year: 2020, event: 'SpaceX Crew Dragon: first commercial human spaceflight' },
+    { year: 2020, event: 'Aviation collapse during COVID-19 (~70% drop in air traffic)' },
+    { year: 2021, event: 'NASA Ingenuity helicopter flies on Mars (first powered flight on another planet)' },
+    { year: 2021, event: 'Suborbital tourism flights (Branson on VG Unity 22, Bezos on NS-16)' },
+    { year: 2022, event: 'Boeing 747 production ends after 54 years (1969-2022)' },
+    { year: 2023, event: 'Boeing 777X (737\'s and 747\'s successor wide-body) certification ongoing' },
+    { year: 2024, event: 'Boeing manufacturing quality issues (Alaska 737 door plug, etc.)' },
+    { year: 2024, event: 'Ingenuity retired after 72 flights on Mars' },
+  ];
+
+  // ─── Final reflective notes ────────────────────────────────────────────
+  var REFLECTIVE_NOTES = [
+    {
+      thought: 'Aviation as compromise',
+      explanation: 'Every aircraft is a compromise: fast vs. fuel-efficient, big vs. nimble, complex vs. simple. There\'s no perfect plane.',
+    },
+    {
+      thought: 'Aviation as physics in motion',
+      explanation: 'Watching a plane take off, you\'re seeing every physics class you ever took. Forces, energy, fluid dynamics — all simultaneously.',
+    },
+    {
+      thought: 'Aviation\'s amazing safety record',
+      explanation: 'Commercial aviation is safer than walking to work. ~1 fatal accident per 5 million flights. The safest era in human transportation history.',
+    },
+    {
+      thought: 'Aviation\'s environmental responsibility',
+      explanation: 'Aviation is ~2-3% of global CO2. The industry knows this and is working on solutions. Whether it can scale fast enough is the question.',
+    },
+    {
+      thought: 'Aviation\'s human element',
+      explanation: 'For all the technology, every flight depends on humans making good decisions. Crew Resource Management, judgment, calm under stress — these never go out of style.',
+    },
+    {
+      thought: 'Aviation as community',
+      explanation: 'Flying creates instant community. Pilots help pilots. Airports have a culture. Even passengers can spot the pilot in line for coffee.',
+    },
+    {
+      thought: 'Aviation\'s democratic accessibility',
+      explanation: 'It costs more than driving but less than yacht ownership. You don\'t need to be a billionaire to learn to fly. Many of us are middle-class amateur pilots.',
+    },
+    {
+      thought: 'Aviation as continuous learning',
+      explanation: 'You\'ll never master flying. Every flight teaches something. Pilots celebrate this — the learning IS the point.',
+    },
+    {
+      thought: 'Aviation\'s ethical weight',
+      explanation: 'Pilots make decisions that affect dozens or hundreds of lives. That weight is real, even on routine flights.',
+    },
+    {
+      thought: 'Aviation as wonder',
+      explanation: 'Even the most experienced pilots still feel the wonder of leaving the ground. It never gets old.',
+    },
+  ];
+
+  // ─── Flight controls deep dive ───────────────────────────────────────
+  var FLIGHT_CONTROLS_DEEP = [
+    {
+      control: 'Yoke / control wheel (or stick)',
+      function: 'Primary pilot control. Push/pull = pitch. Left/right = roll.',
+      mechanism: 'Connected to elevator (pitch) and ailerons (roll) via cables or hydraulics or fly-by-wire',
+      grip: 'Standard "10 and 2" grip. Smooth inputs, not jerky.',
+      cessna: 'Cessna has a yoke (steering wheel style)',
+      pipersAirbus: 'Piper Cherokee has yoke; Airbus has sidestick',
+      fighterStyle: 'Most fighters use center stick; pilot rests forearm on thigh',
+    },
+    {
+      control: 'Rudder pedals',
+      function: 'Yaw control + ground steering + brakes',
+      operation: 'Push left pedal = nose yaws left. Used for turn coordination and crosswind landings.',
+      brakes: 'Push tops of pedals = differential brakes (left brake, right brake)',
+      typicalUse: 'In coordinated turn, use rudder same direction as bank',
+      slip: 'Cross-controlled (rudder one way, bank other) for forward slip during landing',
+    },
+    {
+      control: 'Throttle',
+      function: 'Controls engine power',
+      detents: 'IDLE → CRUISE → FULL POWER, often with detents for cruise settings',
+      jets: 'Jets have throttle quadrant with detents for IDLE → TAKEOFF, plus reverse thrust',
+      pistons: 'Piston aircraft: throttle controls manifold pressure; mixture controls fuel ratio',
+    },
+    {
+      control: 'Mixture',
+      function: 'Controls fuel-air ratio (richer = more fuel)',
+      whenLean: 'At altitude, less air means need less fuel — pilot leans mixture',
+      whenRich: 'Takeoff and landing: full rich for max power and engine cooling',
+      starting: 'Mixture full rich for start (unless hot start procedure)',
+    },
+    {
+      control: 'Propeller (constant-speed aircraft)',
+      function: 'Controls blade pitch, which controls RPM',
+      cruiseSetting: 'Lower RPM (e.g., 2300) for cruise efficiency',
+      climbSetting: 'Higher RPM for max power',
+    },
+    {
+      control: 'Trim',
+      function: 'Sets neutral position of control surfaces so aircraft maintains attitude without pilot effort',
+      types: ['Elevator trim (most common; pitch trim)', 'Rudder trim (often electric)', 'Aileron trim (rare on small aircraft)'],
+      use: 'After establishing cruise, trim out control pressure. Don\'t fight the airplane.',
+    },
+    {
+      control: 'Flaps',
+      function: 'Increase lift and drag at low speed',
+      positions: 'Typically 0°, 10°, 20°, full (~30-40°)',
+      use: ['10° takeoff config in some aircraft', 'Full flaps for landing', 'Approach flaps for approach descent'],
+    },
+    {
+      control: 'Landing gear (retractable)',
+      function: 'Extend for takeoff/landing, retract in cruise',
+      operation: 'Lever on cockpit panel. Hydraulic or electric. Indicators show position.',
+      memoryItem: 'GUMP check — Gas, Undercarriage, Mixture, Prop — before every landing',
+    },
+    {
+      control: 'Speed brakes / spoilers',
+      function: 'Add drag without affecting lift much; rapid descent capability',
+      whenUsed: 'Coming down steeply; rejecting approach',
+    },
+    {
+      control: 'Autopilot',
+      function: 'Maintains heading, altitude, possibly airspeed',
+      modes: ['Heading hold', 'Altitude hold', 'VOR/GPS tracking', 'Approach mode (couples to ILS)'],
+      limitations: 'Doesn\'t replace pilot. Cannot anticipate or make decisions. Disengages if exceeded.',
+    },
+    {
+      control: 'Avionics master',
+      function: 'Switches power to all avionics (radios, GPS, transponder)',
+      reason: 'Avionics warm-up can be hard on equipment; turning off avionics before engine start protects radios',
+    },
+    {
+      control: 'Master switch',
+      function: 'Controls all electrical power',
+      typicalSwitches: 'BAT (battery) + ALT (alternator) — both ON during normal flight',
+    },
+    {
+      control: 'Magneto switch',
+      function: 'Controls ignition system in piston aircraft',
+      positions: 'OFF | R | L | BOTH | START',
+      magCheck: 'Pilot tests each magneto separately during runup',
+    },
+    {
+      control: 'Carburetor heat',
+      function: 'Routes warm air around induction system to prevent/melt carburetor ice',
+      whenUsed: 'Anytime carb ice is possible (especially descending with low power)',
+      cost: 'Reduces engine power slightly when on; turn off for full power',
+    },
+    {
+      control: 'Pitot heat',
+      function: 'Electrically heats pitot tube to prevent icing',
+      whenUsed: 'In visible moisture below freezing; some pilots use anytime in IMC',
+    },
+    {
+      control: 'Cabin heat',
+      function: 'Routes hot air from engine exhaust manifold into cabin',
+      cautions: 'Cracked heat exchanger can leak CO into cabin — use CO detector',
+    },
+    {
+      control: 'Cabin ventilation',
+      function: 'Cool outside air for fresh air',
+      mechanism: 'Vents that scoop air from forward of pilot',
+    },
+  ];
+
+  // ─── Air traffic communications detail ───────────────────────────────
+  var ATC_COMMS_DETAIL = [
+    {
+      stage: 'Pre-departure (ground)',
+      typical: 'Pilot: "Boston Ground, Cessna 1-2-3-4-Alpha at terminal Alpha, taxi for departure."',
+      controller: '"Cessna 1-2-3-4-Alpha, taxi via Charlie to runway 22 left, hold short."',
+      pilot: '"Taxi Charlie to runway 22 left, hold short, Cessna 1-2-3-4-Alpha."',
+    },
+    {
+      stage: 'Ready for departure (tower)',
+      typical: 'Pilot: "Boston Tower, Cessna 1-2-3-4-Alpha, ready for departure runway 22 left."',
+      controller: '"Cessna 1-2-3-4-Alpha, cleared for takeoff runway 22 left, fly heading 220."',
+      pilot: '"Cleared for takeoff 22 left, heading 220, Cessna 1-2-3-4-Alpha."',
+    },
+    {
+      stage: 'After takeoff (departure)',
+      typical: 'Controller: "Cessna 1-2-3-4-Alpha, contact Boston Departure 124.4."',
+      pilot: '"Contact Boston Departure 124.4, Cessna 1-2-3-4-Alpha."',
+      pilotNext: '"Boston Departure, Cessna 1-2-3-4-Alpha, leaving 800 for 3000."',
+    },
+    {
+      stage: 'En route (center)',
+      typical: 'Center handoffs happen every ~100-200 miles',
+      pilot: '"New York Center, Cessna 1-2-3-4-Alpha, level 6000."',
+    },
+    {
+      stage: 'Approach (approach control)',
+      typical: 'Pilot: "JFK Approach, Cessna 1-2-3-4-Alpha, with you 6000, requesting visual approach."',
+      controller: '"Cessna 1-2-3-4-Alpha, JFK Approach, descend and maintain 3000, vectors for visual approach 22 left."',
+    },
+    {
+      stage: 'Landing (tower)',
+      typical: 'Pilot: "JFK Tower, Cessna 1-2-3-4-Alpha, 8 mile final 22 left."',
+      controller: '"Cessna 1-2-3-4-Alpha, cleared to land 22 left, wind 250 at 10, traffic ahead."',
+      pilot: '"Cleared to land 22 left, Cessna 1-2-3-4-Alpha."',
+    },
+    {
+      stage: 'After landing (ground)',
+      typical: 'Controller: "Cessna 1-2-3-4-Alpha, contact JFK Ground 121.9."',
+      pilot: '"Ground 121.9, Cessna 1-2-3-4-Alpha. JFK Ground, Cessna 1-2-3-4-Alpha clear of 22 left, taxi to general aviation parking."',
+    },
+    {
+      principle: 'Standard structure',
+      list: [
+        '1. Who you\'re talking to (controlling facility)',
+        '2. Who you are (callsign)',
+        '3. Where you are (location/altitude)',
+        '4. What you want (request)',
+      ],
+    },
+    {
+      principle: 'Brevity matters',
+      example: 'Use as few words as possible while remaining clear. Frequencies are shared with many aircraft.',
+    },
+    {
+      principle: 'Read back is required',
+      list: ['Hold short instructions', 'Runway crossings', 'Altitude assignments', 'Heading assignments', 'Frequency changes'],
+    },
+    {
+      principle: 'Emergency declaration',
+      example: '"Mayday Mayday Mayday, Cessna 1-2-3-4-Alpha, engine failure, 5 miles east of Bangor, descending through 3000 for forced landing."',
+      response: 'ATC will give you priority. Direct routing. Clear airspace. All resources available.',
+    },
+  ];
+
+  // ─── Air shows and aviation events ────────────────────────────────────
+  var AVIATION_EVENTS = [
+    {
+      event: 'EAA AirVenture Oshkosh',
+      where: 'Oshkosh, WI',
+      when: 'Annual late July',
+      attendance: '~500,000 visitors over 7 days',
+      what: 'World\'s largest aviation gathering. ~10,000 aircraft fly in. Vintage, military, experimental, ultralight.',
+      visiting: 'Bring a tent or stay in hotel 30+ miles away. Plan months ahead.',
+    },
+    {
+      event: 'Sun \'n Fun Aerospace Expo',
+      where: 'Lakeland, FL',
+      when: 'Annual late April',
+      attendance: '~200,000',
+      what: 'Spring kickoff of aviation season. Similar to Oshkosh but smaller.',
+    },
+    {
+      event: 'Reno Air Races',
+      where: 'Reno, NV',
+      when: 'Annual mid-September',
+      what: 'Pylon racing — fastest motorsport in the world',
+      classes: 'Unlimited (modified WWII fighters), Jet, T-6, Sport, Biplane, Formula One',
+      tragedy: '2011 crash killed 11 spectators. Modern safety improvements since.',
+    },
+    {
+      event: 'Farnborough Air Show',
+      where: 'England',
+      when: 'Biennial July (even years)',
+      what: 'International aviation industry trade show — manufacturer announcements, military demos',
+      counterpart: 'Paris Air Show (odd years)',
+    },
+    {
+      event: 'NAS Oceana Airshow',
+      where: 'Virginia Beach, VA',
+      when: 'Annual September',
+      what: 'US Navy Blue Angels frequently demonstrate. Carrier landings demonstrated.',
+    },
+    {
+      event: 'Blue Angels Air Shows',
+      what: 'US Navy demonstration team (F/A-18 Super Hornets, 6 aircraft)',
+      season: 'Late February through November',
+      uniqueness: 'Tight formations, opposing solo demonstrations, narrator commentary',
+    },
+    {
+      event: 'Thunderbirds Air Shows',
+      what: 'US Air Force demonstration team (F-16 Fighting Falcons, 6 aircraft)',
+      season: 'Similar to Blue Angels',
+    },
+    {
+      event: 'Snowbirds Air Shows',
+      what: 'Canadian Forces demonstration team (CT-114 Tutor, 9 aircraft)',
+    },
+    {
+      event: 'Red Arrows',
+      what: 'Royal Air Force demonstration team (BAE Hawk, 9 aircraft)',
+      uniqueness: 'Distinctive red livery; international tours',
+    },
+    {
+      event: 'Maine Air Show',
+      where: 'Brunswick or Portland depending on year',
+      what: 'Local annual event with military and civilian acts',
+      access: 'Affordable family event; gateway to seeing aviation up close',
+    },
+    {
+      event: 'NAFI (National Association of Flight Instructors) annual meeting',
+      what: 'Flight instructor community gathering — teaching technique workshops',
+    },
+    {
+      event: 'AOPA (Aircraft Owners and Pilots Association) Fly-Ins',
+      what: 'Smaller regional events — accessible to families',
+    },
+    {
+      event: 'Local pancake breakfasts',
+      what: 'Tradition at many small airports — fly in for breakfast',
+      why: 'Best way to meet local aviation community; often a "first flight" memory for kids',
+    },
+    {
+      event: 'Young Eagles Program',
+      what: 'EAA program providing free flights to ages 8-17',
+      stat: '~2 million kids flown since 1992',
+      sponsor: 'Experimental Aircraft Association volunteers',
+    },
+    {
+      event: 'Aerospace Industries Association (AIA) events',
+      what: 'Industry trade group — events less open to public',
+    },
+  ];
+
+  // ─── Why student pilots fail (and how to avoid) ──────────────────────
+  var FAILURE_MODES_FOR_STUDENTS = [
+    {
+      issue: 'Trying to fly in your head before the airplane',
+      symptom: 'Looking inside, micro-managing instruments, ignoring outside cues',
+      cure: 'Look outside. Use instruments as cross-check, not primary reference (in VFR).',
+    },
+    {
+      issue: 'Overcorrecting',
+      symptom: 'Aircraft oscillates; you fight it instead of riding it',
+      cure: 'Smaller inputs. Trust the airplane to settle.',
+    },
+    {
+      issue: 'Death grip on the yoke',
+      symptom: 'Tight grip; tense shoulders',
+      cure: '"Fingertip pressure." Loosen up. The aircraft is on your side.',
+    },
+    {
+      issue: 'Fixation',
+      symptom: 'Locked on one instrument or one task while missing everything else',
+      cure: 'Scan. Move eyes constantly. Outside primary in VFR.',
+    },
+    {
+      issue: 'Not trusting the airplane',
+      symptom: 'Constant micro-adjustments',
+      cure: 'Trim correctly. Then let the airplane fly itself for stretches.',
+    },
+    {
+      issue: 'Sub-optimal approach speed',
+      symptom: 'Coming in too fast or too slow',
+      cure: 'Memorize approach speed. Configure early. Power for altitude, pitch for speed.',
+    },
+    {
+      issue: 'Bouncing on landing',
+      cause: 'Touching down too fast, or with poor flare',
+      cure: 'Slower over the threshold. Smoother flare just above the runway.',
+    },
+    {
+      issue: 'Ballooning during flare',
+      cause: 'Pulling back too aggressively in flare',
+      cure: 'Steady, gradual back pressure as airspeed bleeds off.',
+    },
+    {
+      issue: 'Getting behind the airplane',
+      symptom: 'Always reacting instead of anticipating',
+      cure: 'Think 10 miles ahead. Configure early. Brief expected actions.',
+    },
+    {
+      issue: 'Channelizing attention during emergency',
+      symptom: 'Fixating on the problem, forgetting to fly',
+      cure: 'AVIATE FIRST. Then navigate, then communicate. The plane comes first.',
+    },
+    {
+      issue: 'Information overload',
+      symptom: 'Drowning in checklists, instruments, ATC',
+      cure: 'Practice. Use shorthand. Standardize your scan.',
+    },
+    {
+      issue: 'Get-there-itis',
+      symptom: 'Continuing in deteriorating conditions because you "have to" arrive',
+      cure: 'Pre-flight commit to a "decision point" — at this point, divert. Stick to it.',
+    },
+    {
+      issue: 'Distrust of instruments',
+      symptom: 'Believing your seat-of-pants over the gauges',
+      cure: 'Trust instruments in IMC. Your inner ear lies. The gauges don\'t.',
+    },
+    {
+      issue: 'Slow communication',
+      symptom: 'Long pauses, ums, second-guessing',
+      cure: 'Practice on the ground. Listen on LiveATC.net. Mimic professionals.',
+    },
+    {
+      issue: 'Forgetting to lower gear (retractable)',
+      symptom: 'Gear-up landing — embarrassing and expensive',
+      cure: 'GUMP check. Every landing. No exceptions.',
+    },
+    {
+      issue: 'Not using checklist',
+      symptom: 'Skipping items because you "remember"',
+      cure: 'The checklist exists because pilots forget. Read it every time.',
+    },
+    {
+      issue: 'Comparing yourself to peers',
+      symptom: 'Discouraged because someone else soloed sooner',
+      cure: 'Everyone has different timelines. Your time will come.',
+    },
+    {
+      issue: 'Stopping too soon',
+      symptom: 'Gaps between flights → loss of skills',
+      cure: 'Fly at least once a week if possible. Skills perish quickly.',
+    },
+    {
+      issue: 'Skipping the books',
+      symptom: 'Trying to learn only by flying',
+      cure: 'Read POH cover to cover. Study FAR/AIM. Watch YouTube. Listen to podcasts.',
+    },
+    {
+      issue: 'Money stress',
+      symptom: 'Skipping lessons to save money',
+      cure: 'Set a budget. Stick to it. Don\'t fly broke and stressed — that\'s how accidents happen.',
+    },
+  ];
+
+  // ─── Final reference: aerodynamic shapes + their use ─────────────────
+  var AERO_SHAPES = [
+    {
+      shape: 'Airfoil (subsonic)',
+      description: 'Curved upper surface, flatter lower surface',
+      use: 'Lift generation',
+      examples: 'Cessna wing, Boeing 747 wing, glider wing',
+    },
+    {
+      shape: 'Symmetrical airfoil',
+      description: 'Equal curvature top and bottom',
+      use: 'Helicopter rotor blades; aerobatic aircraft (need to fly upside down)',
+      whyNot: 'Less lift at zero AoA than cambered airfoils, but symmetric performance',
+    },
+    {
+      shape: 'Supercritical airfoil',
+      description: 'Flatter top, more curved bottom',
+      use: 'Modern airliners (Mach 0.7-0.9 cruise)',
+      benefit: 'Delays shock wave formation, lower drag at transonic speeds',
+    },
+    {
+      shape: 'Laminar flow airfoil',
+      description: 'Carefully shaped to maintain laminar boundary layer',
+      use: 'P-51 Mustang (WWII), high-performance gliders',
+      challenge: 'Sensitive to surface contamination',
+    },
+    {
+      shape: 'Delta wing',
+      description: 'Triangle-shaped wing',
+      use: 'Supersonic aircraft (Concorde, Mirage, F-106)',
+      benefit: 'Good high-speed performance, simple structure',
+      drawback: 'High landing speeds',
+    },
+    {
+      shape: 'Swept wing',
+      description: 'Wings angled backward',
+      use: 'High-subsonic jets (most airliners)',
+      benefit: 'Delays Mach effects, lower drag at transonic speeds',
+    },
+    {
+      shape: 'Variable geometry (swing wing)',
+      description: 'Wings can sweep back or extend straight',
+      use: 'F-14 Tomcat, F-111, B-1B (some), Su-24',
+      benefit: 'Best of both worlds: low-speed handling + high-speed efficiency',
+      modern: 'Less common now — complexity vs. benefit ratio',
+    },
+    {
+      shape: 'Elliptical wing',
+      description: 'Smooth elliptical planform',
+      famousExample: 'Supermarine Spitfire',
+      benefit: 'Theoretically optimal lift distribution; minimum induced drag',
+      drawback: 'Hard to manufacture; modern wings use simpler shapes',
+    },
+    {
+      shape: 'High aspect ratio (long thin) wing',
+      use: 'Gliders, U-2 spy plane, some bombers (Global Hawk)',
+      benefit: 'Efficient cruise',
+      drawback: 'Structurally weak, hard to maneuver',
+    },
+    {
+      shape: 'Low aspect ratio (short stubby) wing',
+      use: 'Fighters (F-104, F-16)',
+      benefit: 'High roll rate, structurally strong',
+      drawback: 'Higher induced drag',
+    },
+    {
+      shape: 'Tail-less / flying wing',
+      use: 'B-2 Spirit, YB-49',
+      benefit: 'Minimum drag, stealth shaping',
+      challenge: 'Stability requires fly-by-wire computer assistance',
+    },
+    {
+      shape: 'Canard',
+      description: 'Forward horizontal surface in front of main wing',
+      examples: 'Wright Flyer, Saab Viggen, Eurofighter Typhoon, Beechcraft Starship',
+      benefit: 'Lift augmentation; stall protection (canard stalls first)',
+    },
+    {
+      shape: 'Biplane',
+      description: 'Two wings stacked vertically',
+      use: 'WWI fighters, modern aerobatic (Pitts)',
+      benefit: 'Compact, light, strong (in their era)',
+      modern: 'Now niche — used by Pitts, Boeing Stearman trainers',
+    },
+    {
+      shape: 'Triplane',
+      example: 'Fokker DR.1 (Red Baron)',
+      historical: 'Very brief WWI use. Excellent climb rate, tight turn radius. Slow.',
+    },
+    {
+      shape: 'Joined wing',
+      description: 'Multiple wings connected at tips for structural efficiency',
+      experimental: 'Various aerospace experiments; rare in production',
+    },
+    {
+      shape: 'Blended wing body',
+      description: 'Wing and fuselage smoothly merged',
+      examples: 'B-2 Spirit, Boeing X-48 (experimental)',
+      benefit: 'More efficient than tube-and-wing; quieter, less drag',
+      future: 'Potentially next generation of airliners',
+    },
+    {
+      shape: 'Box wing / closed wing',
+      description: 'Wings joined to form closed shape',
+      benefit: 'Theoretical max efficiency for given wingspan',
+      experimental: 'Not yet in production aircraft',
+    },
+  ];
+
+  // ─── More inquiry prompts for advanced students ──────────────────────
+  var ADVANCED_INQUIRY = [
+    'Why don\'t all airliners use winglets if they save fuel?',
+    'Could you design an airliner that flies in formation to reduce drag for both?',
+    'What aircraft would you design for Mars\' thin atmosphere? Earth\'s? Venus\'?',
+    'Why is the Concorde successor so elusive? What design problems must be solved?',
+    'If electric aircraft become viable, what changes downstream (airports, training, regulations)?',
+    'Could autonomous aircraft be safer than human-piloted ones?',
+    'What ethical questions does autonomous combat aircraft raise?',
+    'Why are most modern airliners twin-engine instead of three or four?',
+    'Could supersonic flight be made quieter (no sonic boom)?',
+    'What\'s the carbon cost of a 4-hour flight? How does it compare to driving the same distance?',
+    'Why don\'t airliners use solar panels?',
+    'Could airships return for cargo or tourism? What killed them originally?',
+    'How would you certify an aircraft that\'s only been flown 100 times?',
+    'Why do some aircraft have winglets and others don\'t?',
+    'Is it ethical to bird-strike an engine to test it?',
+    'How do you decide who gets to evacuate first in a crash?',
+    'Should pilots be required to disclose mental health treatment to the FAA? What\'s the cost of secrecy vs disclosure?',
+    'How do you train for something that\'s never happened (e.g., a black swan event)?',
+    'Why aren\'t all takeoffs and landings recorded by surveillance cameras for safety?',
+    'How do you certify a fly-by-wire system when the underlying physics is well-understood but the software is complex?',
+    'If a drone delivery service is widespread, what new air traffic management is needed?',
+    'How does climate change affect aviation operations? Both directly and through changing weather patterns?',
+    'Why aren\'t airliners pressurized to sea level? What\'s the trade-off?',
+    'Could you make a "social" aircraft like a flying RV? What design constraints would emerge?',
+    'How would aviation change if oil became prohibitively expensive?',
+  ];
+
+  // ─── Real-world aviation problems for class discussion ───────────────
+  var DISCUSSION_PROBLEMS = [
+    {
+      problem: 'Pilot shortage',
+      stakeholders: 'Airlines, pilot unions, schools, regulators, consumers',
+      drivers: ['Retirements from Boomer generation', '1500-hour ATP rule', 'Cost of training', 'Long pipeline'],
+      proposedSolutions: ['Reduce ATP hour requirements', 'Cadet programs paying for training', 'Single-pilot operations', 'Better diversity in hiring'],
+      controversies: 'Pilots\' unions resist reduced training hours. Airlines push for faster training to fill positions.',
+    },
+    {
+      problem: 'Climate impact',
+      stakeholders: 'Industry, governments, passengers, environmentalists',
+      drivers: ['Aviation = 2-3% of global CO2', 'Contrails contribute additional warming'],
+      proposedSolutions: ['Sustainable aviation fuel (SAF)', 'Electric aircraft for short routes', 'Hydrogen', 'Operational efficiency', 'Carbon offsetting', 'Flight shaming'],
+      tradeoffs: 'Cleaner fuels are more expensive. Electric aircraft are limited in range.',
+    },
+    {
+      problem: 'Diversity in aviation',
+      stakeholders: 'Industry, students, advocates, families',
+      drivers: ['90%+ of US airline pilots are white males', 'Female pilots: ~6% of US ATPs', 'Pilots of color: ~3-5%'],
+      proposedSolutions: ['Scholarships', 'Outreach to underrepresented groups', 'Mentorship', 'Cost reduction', 'Cultural change in industry'],
+      progress: 'Slow but improving. Several organizations focused on this.',
+    },
+    {
+      problem: 'Automation vs human pilots',
+      stakeholders: 'Pilots, manufacturers, regulators, public',
+      drivers: ['Automation enables single-pilot operations', 'But automation surprises (Asiana 214, Boeing 737 MAX) caused crashes'],
+      controversies: 'Where should the line be?',
+      currentConsensus: 'Some level of automation is good. Total automation in passenger flight is decades away.',
+    },
+    {
+      problem: 'Drone airspace integration',
+      stakeholders: 'Drone operators, manned aircraft pilots, regulators',
+      drivers: ['Explosive drone growth', 'Privacy concerns', 'Safety concerns', 'Delivery startups'],
+      proposedSolutions: ['UAS Traffic Management (UTM)', 'Remote ID requirements', 'Specific airspace zones'],
+    },
+    {
+      problem: 'Supersonic civilian return',
+      stakeholders: 'Industry, environmentalists, regulators, communities under flight paths',
+      drivers: ['Demand for faster business travel', 'Boom, NASA pursuing low-boom designs'],
+      tradeoffs: 'Sonic boom over land vs over water; emissions of supersonic flight; cost per seat',
+    },
+    {
+      problem: 'Privacy + surveillance',
+      stakeholders: 'Civil liberties advocates, law enforcement, drone operators',
+      drivers: ['Police drones', 'Civilian recreation drones', 'ADS-B publishes aircraft positions'],
+      tensions: 'How much aviation surveillance is too much?',
+    },
+    {
+      problem: 'Pilot mental health',
+      stakeholders: 'Pilots, families, FAA, public',
+      drivers: ['Germanwings 9525 (2015): copilot deliberately crashed killing 150', 'FAA medical disclosure rules deter help-seeking', 'Industry stress + isolation'],
+      proposedSolutions: ['Modified medical certification', 'EAPs (Employee Assistance Programs)', 'Cultural change', 'Mental health is health'],
+    },
+  ];
+
+  // ─── How aviation shapes the world (essay-length thoughts) ────────────
+  var AVIATION_IMPACT = [
+    {
+      area: 'Globalization',
+      explanation: 'Without affordable flight, modern globalization would be impossible. Goods, ideas, people move in hours instead of months. The world has shrunk.',
+      examples: ['Japanese cars on US roads', 'Indian engineers in Silicon Valley', 'Tourism reshaping economies'],
+    },
+    {
+      area: 'War and peace',
+      explanation: 'Aviation transformed warfare (strategic bombing, airpower, drones) and peace (humanitarian airlifts, peacekeeping rapid response).',
+    },
+    {
+      area: 'Science',
+      explanation: 'Aviation enables most remote-location research. NASA satellites, JPL Mars missions, Antarctic exploration, deep-sea sub deployment from aircraft carriers — all aviation-dependent.',
+    },
+    {
+      area: 'Economy',
+      explanation: 'Aviation directly employs 11M people globally. Indirectly supports tens of millions more. ~$3.5T contribution to global GDP.',
+    },
+    {
+      area: 'Refugee + humanitarian response',
+      explanation: 'Operations like the Berlin Airlift, Vietnam refugee evacuation, and countless humanitarian flights save lives. Even now, organ transport and search-and-rescue.',
+    },
+    {
+      area: 'Personal connection',
+      explanation: 'Diasporas can visit family. Long-distance relationships are sustainable. Cultural exchange happens at scale never before possible.',
+    },
+    {
+      area: 'Crisis response',
+      explanation: 'Disaster relief, medical evacuation, search and rescue — aviation enables modern emergency response at scale.',
+    },
+    {
+      area: 'Tourism and culture',
+      explanation: 'Mass tourism creates jobs and brings people into contact with other cultures. Also creates negatives: overcrowding, environmental impact, cultural homogenization.',
+    },
+    {
+      area: 'Climate paradox',
+      explanation: 'Aviation contributes ~2-3% of global CO2 emissions. The industry is also among the most innovative — pushing efficient engines, sustainable fuels, electric prototypes. Whether innovation can keep pace with growth is the open question.',
+    },
+    {
+      area: 'Wonder',
+      explanation: 'Even now, in an age of jaded sophistication, looking out an airplane window can stop conversation. There\'s a reason we keep doing it.',
+    },
+  ];
+
+  // ─── Pilot logbook concepts ──────────────────────────────────────────
+  var LOGBOOK_CONCEPTS = [
+    {
+      column: 'Date',
+      what: 'Date of flight',
+      use: 'Tracks when flying happened',
+    },
+    {
+      column: 'Aircraft Make/Model',
+      what: 'e.g., "Cessna 172", "Cirrus SR22"',
+      use: 'Aircraft type record',
+    },
+    {
+      column: 'N-number',
+      what: 'Aircraft registration (N12345 in US)',
+      use: 'Identifies specific aircraft',
+    },
+    {
+      column: 'From / To',
+      what: 'Departure and arrival airports',
+      use: 'Records routes flown',
+    },
+    {
+      column: 'Total time',
+      what: 'Engine-on time from start to shutdown (typically — practices vary)',
+      use: 'Counts toward ratings and currency',
+    },
+    {
+      column: 'PIC (Pilot in Command) time',
+      what: 'Time you were sole manipulator of controls or rated pilot',
+      use: 'Critical for ratings; airline pilots need lots of PIC time',
+    },
+    {
+      column: 'SIC (Second in Command)',
+      what: 'Time as required second crewmember',
+      use: 'Airline first officers log SIC',
+    },
+    {
+      column: 'Cross-country',
+      what: 'Flights of 50+ nm from origin',
+      use: 'Required hours for ratings',
+    },
+    {
+      column: 'Night',
+      what: 'Time flown after sunset',
+      use: 'Required for night flying privileges; airline insurance often requires recent night time',
+    },
+    {
+      column: 'Actual instrument',
+      what: 'Time flying solely by reference to instruments in actual IMC',
+      use: 'Required for instrument rating; for airline ATP',
+    },
+    {
+      column: 'Simulated instrument',
+      what: 'Time flying solely by reference to instruments in VMC, with a hood (view-limiting device)',
+      use: 'Counts toward instrument rating in some categories',
+    },
+    {
+      column: 'Solo',
+      what: 'Time alone in the aircraft',
+      use: 'Required for ratings',
+    },
+    {
+      column: 'Approaches',
+      what: 'Number of instrument approaches flown',
+      use: 'Currency requirements: 6 in 6 months for instrument',
+    },
+    {
+      column: 'Landings',
+      what: 'Total landings',
+      use: 'Currency: 3 takeoffs/landings in 90 days to carry passengers',
+    },
+    {
+      column: 'Day/Night landings',
+      what: 'Separate counts',
+      use: 'Night currency: 3 night T/Os and landings in 90 days for night passenger carriage',
+    },
+    {
+      column: 'Remarks',
+      what: 'Free-text notes',
+      use: 'Lesson notes, conditions, anything memorable',
+    },
+    {
+      column: 'Instructor signature',
+      what: 'CFI initials/endorsement',
+      use: 'Verifies training completed; required for solo, ratings',
+    },
+    {
+      column: 'Total hours forward',
+      what: 'Running total of flight hours',
+      use: 'Quick reference for career milestones (250, 500, 1000, 1500 ATP, etc.)',
+    },
+  ];
+
+  // ─── Aircraft purchase + ownership ───────────────────────────────────
+  var AIRCRAFT_OWNERSHIP = [
+    {
+      topic: 'Used Cessna 172',
+      price: '$50-150K depending on year, hours, avionics',
+      yearlyExpenses: ['Insurance: $1,000-3,000', 'Hangar/tiedown: $1,500-6,000', 'Annual inspection: $1,500-3,000', 'Fuel + oil: variable', 'Reserve for engine overhaul: $4,000-6,000/yr'],
+      typicalHourlyCost: '$80-150/hour direct operating costs',
+    },
+    {
+      topic: 'New Cirrus SR22',
+      price: '$700K-1M',
+      features: 'Whole-airframe parachute (CAPS), glass cockpit, ~180 kts cruise',
+      operatingCost: '$200-300/hour',
+    },
+    {
+      topic: 'Old, slow tailwheel (Aeronca Champ)',
+      price: '$25-60K',
+      character: 'Slow but fun. Stick and rudder. Builds skill.',
+    },
+    {
+      topic: 'Light Sport Aircraft (LSA)',
+      price: '$80-200K new',
+      regulation: 'Sport Pilot certificate sufficient; no FAA medical needed',
+    },
+    {
+      topic: 'Experimental homebuilt',
+      price: '$10-200K depending on aircraft + builder skill',
+      benefit: 'Can maintain yourself; cheap to operate',
+      catch: 'Build takes 500-3000+ hours',
+    },
+    {
+      topic: 'Partnership / co-ownership',
+      benefit: 'Divide costs',
+      typical: '2-4 owners sharing one aircraft',
+      logistics: 'Scheduling system, written agreement on costs and use',
+    },
+    {
+      topic: 'Flight club',
+      benefit: 'Even cheaper than partnership — costs distributed across more members',
+      typical: '15-50 members per aircraft',
+    },
+    {
+      topic: 'Fractional ownership',
+      example: 'NetJets, Flexjet',
+      who: 'For business travel needs, but not full-time ownership',
+      cost: 'Hundreds of thousands of dollars upfront + per-hour costs',
+    },
+    {
+      topic: 'Charter / rental',
+      benefit: 'No ownership, no commitment',
+      drawback: 'Limited availability; per-hour cost higher than ownership',
+    },
+    {
+      topic: 'Lease',
+      who: 'Business buyers who want tax advantages',
+      typical: 'Multi-year contracts',
+    },
+    {
+      principle: 'Buy used unless you need new',
+      reasoning: 'Aircraft depreciate slower than cars; used market has good values',
+    },
+    {
+      principle: 'Pre-buy inspection essential',
+      reasoning: 'Have an A&P review the aircraft before purchase. Saves $$$ in surprises.',
+    },
+    {
+      principle: 'Insurance is critical',
+      reasoning: 'Aircraft can crash. Hull insurance covers the airframe. Liability covers third parties.',
+    },
+    {
+      principle: 'Storage decision',
+      options: ['Hangar (best, $200-500/mo)', 'Tiedown outdoors ($50-200/mo)'],
+      cost: 'Hangar protects from weather but costs more',
+    },
+    {
+      principle: 'Hidden costs',
+      list: ['Avionics database subscriptions ($300-1000/yr)', 'Charts (paper or app)', 'Headset(s)', 'GPS handheld backup', 'Personal flight bag, kneeboard, etc.'],
+    },
+  ];
+
+  // ─── Flight planning checklist ───────────────────────────────────────
+  var FLIGHT_PLANNING_CHECKLIST = [
+    {
+      phase: 'Days before',
+      items: [
+        'Determine route',
+        'Check weather forecasts',
+        'File flight plan (IFR or VFR)',
+        'Arrange fuel + alternate options',
+        'Brief passengers',
+        'Verify aircraft mechanically ready (no pending squawks)',
+      ],
+    },
+    {
+      phase: 'Day of (morning)',
+      items: [
+        'Check current weather (METARs, TAFs, winds aloft)',
+        'Review NOTAMs',
+        'Compute fuel + reserve',
+        'Compute weight and balance',
+        'Compute takeoff and landing distance',
+        'Pack everything (charts, headset, water, snacks, sunglasses)',
+        'Eat breakfast (don\'t fly hungry)',
+      ],
+    },
+    {
+      phase: 'Pre-flight at aircraft',
+      items: [
+        'Pre-flight inspection (POH walkaround)',
+        'Verify fuel quantity (visually if possible)',
+        'Sump fuel tanks (water/contamination check)',
+        'Verify oil level',
+        'Verify control surface freedom',
+        'Check tires + brakes',
+        'Configure cockpit',
+      ],
+    },
+    {
+      phase: 'Engine start',
+      items: [
+        'Brakes set',
+        'Mixture rich',
+        'Beacon on',
+        'Shout "clear prop"',
+        'Start',
+        'Verify oil pressure rises',
+        'Verify ammeter charges',
+      ],
+    },
+    {
+      phase: 'Taxi',
+      items: [
+        'Avionics on',
+        'Set altimeter to local barometric',
+        'Brief takeoff (decision speeds, abort criteria)',
+        'Cleared to taxi by ATC',
+        'Watch other traffic',
+      ],
+    },
+    {
+      phase: 'Run-up',
+      items: [
+        'Brakes firm',
+        'Mag check (left, both, right, both)',
+        'Carb heat check',
+        'Engine instruments green',
+        'Controls free + correct',
+        'Trim set for takeoff',
+        'Flaps set for takeoff',
+      ],
+    },
+    {
+      phase: 'Lineup + takeoff',
+      items: [
+        'Cleared for takeoff by tower',
+        'Transponder altitude on',
+        'Final scan for traffic',
+        'Strobe + landing light on',
+        'Full power smoothly',
+        'Monitor engine through takeoff roll',
+        'Rotate at correct airspeed',
+        'Climb out',
+      ],
+    },
+    {
+      phase: 'Climb',
+      items: [
+        'Best rate of climb (Vy)',
+        'Gear up if retractable',
+        'Flaps up at correct speed',
+        'Lean mixture if above ~3000 ft density altitude',
+        'Trim for climb',
+      ],
+    },
+    {
+      phase: 'Cruise',
+      items: [
+        'Level off at assigned altitude',
+        'Reduce power to cruise setting',
+        'Lean mixture for cruise',
+        'Engine instruments green',
+        'Monitor fuel + time',
+        'Position reports if required',
+      ],
+    },
+    {
+      phase: 'Descent',
+      items: [
+        'Plan descent (TLAR: That Looks About Right; or compute: nm to descend × 3 = altitude to lose in 1000s of feet)',
+        'Throttle reduction',
+        'Trim for descent',
+        'Mixture toward rich as altitude decreases',
+      ],
+    },
+    {
+      phase: 'Approach',
+      items: [
+        'Configure: gear, flaps, speed',
+        'Brief approach',
+        'Monitor airspeed',
+        'GUMP check (gas, undercarriage, mixture, prop)',
+      ],
+    },
+    {
+      phase: 'Landing',
+      items: [
+        'Stabilized approach criteria',
+        'Cleared to land',
+        'Aim for touchdown bars',
+        'Smooth flare',
+        'Power idle in flare',
+        'Touchdown',
+        'Smooth braking, rudder for steering',
+      ],
+    },
+    {
+      phase: 'After landing',
+      items: [
+        'Clear runway',
+        'Cleaned-up checklist (flaps up, transponder standby)',
+        'Tower clearance to taxi',
+        'Park at correct spot',
+        'Engine cooldown if turbocharged',
+        'Shutdown checklist',
+      ],
+    },
+    {
+      phase: 'Post-flight',
+      items: [
+        'Logbook entries',
+        'Secure aircraft (gust locks, chocks)',
+        'Cover canopy if needed',
+        'Note any squawks (write up for mechanic)',
+        'Refuel if needed for next flight',
+      ],
+    },
+  ];
+
+  // ─── Aviation philosophy + safety culture ────────────────────────────
+  var AVIATION_PHILOSOPHY = [
+    {
+      principle: 'Aviate, Navigate, Communicate',
+      explanation: 'When everything goes wrong, fly the airplane first. Then figure out where to go. Then call for help. In that order.',
+      origin: 'Decades of accident investigation showed pilots dying while talking on the radio instead of flying.',
+    },
+    {
+      principle: 'IMSAFE',
+      meaning: 'Personal pre-flight checklist: Illness, Medication, Stress, Alcohol, Fatigue, Emotion',
+      reality: 'A pilot who answers "yes" to any item should reconsider flying.',
+    },
+    {
+      principle: 'PAVE',
+      meaning: 'Risk assessment: Pilot, Aircraft, enVironment, External pressures',
+      use: 'Quick pre-flight evaluation of overall risk profile.',
+    },
+    {
+      principle: '5 P\'s',
+      meaning: 'Plane, Pilot, Passengers, Program (mission), Plot (route)',
+      use: 'Resource management framework for ongoing flight decisions.',
+    },
+    {
+      principle: 'Sterile cockpit',
+      definition: 'Below 10,000 ft, no non-essential conversation. Focus on flying.',
+      origin: 'Eastern 401 crash (1972) — crew distracted by light bulb while autopilot disengaged.',
+    },
+    {
+      principle: 'Just Culture',
+      explanation: 'Modern safety culture focuses on systems, not blame. Pilots and mechanics can report errors without fear of punishment, creating data to prevent future incidents.',
+    },
+    {
+      principle: 'Chain of errors',
+      explanation: 'Catastrophic accidents are usually a chain — not a single failure. Break any link, you prevent the accident. This is why redundancy and crew resource management matter.',
+    },
+    {
+      principle: 'There are old pilots and bold pilots, but no old bold pilots',
+      explanation: 'Risk-taking has limits. Most experienced pilots are conservative, not reckless.',
+    },
+    {
+      principle: 'Better to be on the ground wishing you were flying than in the air wishing you were on the ground',
+      explanation: 'Weather, mechanical, personal — when in doubt, don\'t go.',
+    },
+    {
+      principle: 'A superior pilot uses superior judgment to avoid situations requiring superior skill',
+      explanation: 'The best pilots avoid getting into trouble in the first place.',
+    },
+    {
+      principle: 'Currency vs proficiency',
+      currency: 'Legal minimum to fly (3 takeoffs/landings in 90 days, etc.)',
+      proficiency: 'Actual ability to fly safely. Currency is a low bar; proficiency requires regular flying.',
+    },
+    {
+      principle: 'Single point of failure',
+      explanation: 'Good design avoids any single failure killing everyone. Redundant systems, dual engines, backup instruments. Recent Boeing 737 MAX MCAS issue was a single-input failure.',
+    },
+    {
+      principle: 'Cone of safety',
+      visualization: 'Imagine yourself in the center of a cone. Outside the cone = dangerous. Inside = safe. Skills, planning, equipment, decision-making widen the cone.',
+    },
+    {
+      principle: 'Aviation safety is rare among industries',
+      reality: 'Most industries (chemical, mining, construction) accept 100x more fatalities per worker-hour than aviation does. Aviation safety is exceptional.',
+    },
+    {
+      principle: 'Continuous improvement',
+      explanation: 'Every accident is studied. Every near-miss is logged (ATSAP, ASRS). Trends become regulations. Safety is institutional.',
+    },
+  ];
+
+  // ─── Cool airplane / aviation trivia ─────────────────────────────────
+  var AVIATION_TRIVIA = [
+    { fact: 'The crow is the only animal known to use tools while flying.' },
+    { fact: 'A 747 has 162 miles of wiring inside it.' },
+    { fact: 'The Wright Flyer\'s first flight could have fit entirely inside the cargo hold of a 747.' },
+    { fact: 'At cruise altitude, the temperature outside an airliner is about -65°F (-54°C).' },
+    { fact: 'The fastest jet engine ever built (NK-93 turbofan) produces 80,000 pounds of thrust.' },
+    { fact: 'The SR-71 Blackbird leaked fuel on the ground because its panels were designed to expand when hot from high-speed friction.' },
+    { fact: 'A small dot of dust striking an aircraft at Mach 2 hits with the force of a baseball at the same speed.' },
+    { fact: 'Concorde\'s nose drooped during takeoff and landing to give the pilots forward visibility — the supersonic shape blocked the view.' },
+    { fact: 'The Boeing 747 carries about 380 toilets worth of water in its potable water tanks.' },
+    { fact: 'An Airbus A380 cabin contains 4 km (2.5 miles) of cables.' },
+    { fact: 'Wind tunnel testing of a Spitfire wing in the 1930s revealed laminar flow benefits that aircraft designers still use today.' },
+    { fact: 'There are about 35,000 commercial flights per day worldwide.' },
+    { fact: 'At any given moment, there are about 5,000-7,000 aircraft in the air over the United States.' },
+    { fact: 'Air traffic control handles about 50,000 flights per day in the US.' },
+    { fact: 'The hottest engine running today is the F-22\'s Pratt & Whitney F119 — operates at over 2,000°C.' },
+    { fact: 'An airliner\'s pitot tube is heated to over 100°C to prevent icing.' },
+    { fact: 'Black boxes are actually orange — for visibility in wreckage.' },
+    { fact: 'The phrase "black box" comes from WWII radar slang — radar boxes were literally black.' },
+    { fact: 'Commercial pilots are tested every 6 months in simulators. Every 6 months. For their entire career.' },
+    { fact: 'The Antonov An-225 (now destroyed) was the largest aircraft ever built — wingspan longer than a football field.' },
+    { fact: 'The C-130 Hercules has been in production for 70+ years and is still being built new today.' },
+    { fact: 'A typical Boeing 747 takeoff uses about 200 gallons of fuel per minute.' },
+    { fact: 'The smallest commercial aircraft to fly was the Bumble Bee II — wingspan 5\'6", takeoff weight 396 lb.' },
+    { fact: 'The largest plane that could be built within the Wright brothers\' bicycle shop would be smaller than a modern Cessna 152.' },
+    { fact: 'Cabin altitude during cruise (~6-8,000 ft) is similar to mountain towns.' },
+    { fact: 'Plane crashes inspire the most fear but cause far fewer deaths than car crashes.' },
+    { fact: 'In 2017, there were zero fatalities on commercial flights operated by US airlines.' },
+    { fact: 'Modern aircraft black boxes can survive temperatures over 1,000°C and impacts of 3,400 g.' },
+    { fact: 'Pilots can\'t actually "ditch" without the airline being able to find them — every aircraft has a GPS-based location transmitter.' },
+    { fact: 'A drone delivering pizza in Reykjavik became the world\'s first commercial drone delivery service in 2017.' },
+    { fact: 'The 747 was built in the world\'s largest building by volume — Boeing Everett factory.' },
+    { fact: 'When the Concorde first crossed the Atlantic, it crossed time zones faster than seconds passed — its supersonic speed exceeded Earth\'s rotation at that latitude.' },
+    { fact: 'The phrase "ground school" still survives even though much instruction is now online.' },
+    { fact: 'Aircraft tires are typically inflated with nitrogen, not air — nitrogen is dryer and less affected by temperature changes.' },
+    { fact: 'The IATA airport codes (3 letters) were originally based on weather station codes; that\'s why JFK is "JFK" and not "NYC" (which doesn\'t exist as airport code).' },
+    { fact: 'The Wright Brothers never married. They were committed to aviation above all else.' },
+    { fact: 'Amelia Earhart held over a dozen aviation records during her short career.' },
+    { fact: 'Chuck Yeager flew until age 86. He passed away in 2020 at 97.' },
+    { fact: 'Sully\'s 1549 was his last flight as a commercial captain — he retired shortly after the Hudson landing.' },
+    { fact: 'Astronauts are required to be pilots primarily because flying requires the same skill set: calm under pressure, attention to detail, systems management.' },
+    { fact: 'NASA still uses many design principles from the Apollo era because they were proven through extensive testing.' },
+    { fact: 'A pilot\'s annual flight time logbook can be tens of thousands of hours over a career. Bob Hoover (legendary test pilot) logged over 17,000 hours.' },
+    { fact: 'The cheapest way to learn to fly is through gliders (no engine = less fuel + less expensive aircraft).' },
+    { fact: 'The Soaring Society of America has over 12,000 members.' },
+    { fact: 'A typical airline pilot will work in over 100 different aircraft of the same type during their career, but rarely the same one twice in a row.' },
+  ];
+
+  // ─── Final inspirational closing ─────────────────────────────────────
+  var INSPIRATIONAL_CLOSING = [
+    {
+      thought: 'Anyone can be a pilot',
+      explanation: 'You don\'t need to be a millionaire, a genius, or born to a flying family. You need curiosity, patience, and willingness to learn. The rest is just time + practice.',
+    },
+    {
+      thought: 'Flying changes you',
+      explanation: 'Once you understand the forces, the physics, the procedures — you see the world differently. Every glance at a sky becomes layered with meaning.',
+    },
+    {
+      thought: 'Aviation has a place for everyone',
+      explanation: 'Not just pilots. Mechanics, engineers, dispatchers, controllers, weather forecasters, scientists, doctors, lawyers, writers — every interest connects.',
+    },
+    {
+      thought: 'Start now',
+      explanation: 'Even if you\'re too young to solo. Read books. Watch documentaries. Visit airports. Talk to pilots. Build paper airplanes. Curiosity compounds.',
+    },
+    {
+      thought: 'Aviation is global',
+      explanation: 'You can train almost anywhere. The community welcomes new members. Most pilots remember helping a new pilot and pay it forward.',
+    },
+    {
+      thought: 'The view never gets old',
+      explanation: 'Even after 10,000 hours, looking out at a sunrise from 35,000 ft will still stop you. That\'s the gift aviation gives.',
+    },
+    {
+      thought: 'Aviation is safer than you think',
+      explanation: 'Commercial flight is statistically safer than walking to work. Your body knows that fact intellectually but feels otherwise — that\'s normal. The data tells the truth.',
+    },
+    {
+      thought: 'You can be the next generation',
+      explanation: 'The world needs pilots, mechanics, controllers, engineers. The boomer generation is retiring. There are opportunities. They\'re yours to take.',
+    },
+    {
+      thought: 'Aviation is local',
+      explanation: 'Wherever you are, there\'s a small airport nearby. Most welcome visitors. Many have free events for kids (Young Eagles, Discovery Flights). Start there.',
+    },
+    {
+      thought: 'The sky is yours',
+      explanation: 'It\'s public airspace. The freedom to fly is a remarkable gift of modern civilization. Treasure it. Use it. Share it.',
+    },
+  ];
+
+  // ─── Detailed weather phenomena (final block) ────────────────────────
+  var WEATHER_DETAIL = [
+    {
+      phenomenon: 'Pressure systems',
+      high: 'High pressure → clear weather, descending air. "H" on weather maps.',
+      low: 'Low pressure → cloudy/stormy, rising air. "L" on weather maps.',
+      pilotImpact: 'Highs = good VFR. Lows = potential IFR. Pilots watch the synoptic chart.',
+    },
+    {
+      phenomenon: 'Fronts',
+      cold: 'Cold air pushing warm air → fast-moving, thunderstorms possible',
+      warm: 'Warm air pushing cold air → slower, more uniform clouds + precipitation',
+      stationary: 'Air masses not moving → days of similar weather',
+      occluded: 'Cold front catches warm front → complex weather',
+      pilotImpact: 'Flying through fronts means changing weather. Plan accordingly.',
+    },
+    {
+      phenomenon: 'Cumulus clouds',
+      formation: 'Rising warm air condenses → puffy clouds',
+      types: ['Cumulus humilis (fair-weather)', 'Cumulus mediocris (developing)', 'Cumulus congestus (tall, possibly thunderstorm precursor)', 'Cumulonimbus (full thunderstorm)'],
+      pilotImpact: 'Bumps inside cumulus clouds. Avoid cumulonimbus by 20+ nm.',
+    },
+    {
+      phenomenon: 'Stratus clouds',
+      formation: 'Layered, sheet-like',
+      types: ['Stratus (low fog-like)', 'Stratocumulus', 'Altostratus', 'Cirrostratus'],
+      pilotImpact: 'Often means low ceilings; restricts VFR.',
+    },
+    {
+      phenomenon: 'Thunderstorms',
+      lifecycle: 'Cumulus → mature (rain falling) → dissipating (~30 minutes total)',
+      hazards: 'Microbursts, hail, lightning, tornadoes (sometimes), wind shear, severe turbulence',
+      avoid: 'Always by 20+ nm. Never through.',
+    },
+    {
+      phenomenon: 'Icing',
+      types: ['Clear ice (water droplet impact freezes, transparent, heavy)', 'Rime ice (small droplets freeze on impact, white, lighter)', 'Mixed'],
+      conditions: 'Visible moisture + temperature near or below 0°C',
+      impact: 'Adds weight, disrupts airflow, increases stall speed',
+      avoidance: 'Climb or descend to different temperature; avoid clouds with icing forecast',
+    },
+    {
+      phenomenon: 'Turbulence',
+      causes: ['Convection (thermal updrafts)', 'Mechanical (terrain-induced)', 'Wake (other aircraft)', 'Jet stream boundaries'],
+      severity: ['Light: occupants feel a slight strain', 'Moderate: items thrown around', 'Severe: violent control', 'Extreme: aircraft hard to control'],
+      response: 'Slow to maneuvering speed. Seatbelts tight.',
+    },
+    {
+      phenomenon: 'Wind shear',
+      definition: 'Sudden change in wind speed or direction',
+      types: ['Horizontal (vector shift)', 'Vertical (microburst)'],
+      detection: 'Modern airliners have onboard wind shear detection',
+      famous: 'Delta 191 (1985): microburst near runway 17L at DFW killed 137. Led to mandatory wind shear systems.',
+    },
+    {
+      phenomenon: 'Mountain wave',
+      formation: 'Wind hits mountain, oscillates downwind in standing waves',
+      benefit: 'Glider pilots use wave lift to climb 50,000+ ft',
+      hazard: 'Severe turbulence in the rotor at low altitude',
+    },
+    {
+      phenomenon: 'Sea breeze',
+      cause: 'During day, land heats faster than sea → air over land rises, sea air flows in',
+      pilotImpact: 'Creates afternoon breezes; can deepen fog at the coast in evening',
+    },
+    {
+      phenomenon: 'Lake effect',
+      cause: 'Cold air over warm lake produces snow downwind',
+      where: 'Great Lakes region in winter',
+      pilotImpact: 'Localized heavy snow that can be hard to forecast',
+    },
+    {
+      phenomenon: 'Inversion',
+      definition: 'Layer where temperature INCREASES with altitude (reverses normal lapse rate)',
+      types: ['Surface inversion (radiational night cooling)', 'Subsidence inversion (sinking air)'],
+      pilotImpact: 'Trapped pollutants below; smooth air above',
+    },
+    {
+      phenomenon: 'Lapse rate',
+      standard: '2°C per 1000 ft (in troposphere)',
+      reality: 'Varies. "Dry adiabatic" (rising parcel) = 3°C/1000 ft. "Wet adiabatic" = 1.5°C/1000 ft.',
+      implication: 'When wet > dry rate, atmosphere is stable. When dry < wet rate, unstable (storms possible).',
+    },
+    {
+      phenomenon: 'Fog',
+      types: ['Radiation fog (clear nights, light winds)', 'Advection fog (warm moist air over cool surface)', 'Upslope fog (air rises orographically)', 'Steam fog (cold air over warm water)'],
+      pilotImpact: 'Reduces visibility below IFR minimums. Major delay cause.',
+    },
+    {
+      phenomenon: 'Density altitude',
+      definition: 'How "thin" the air feels to the aircraft, adjusting for temperature',
+      formula: 'Pressure altitude + ~120 ft per °C above standard',
+      example: 'Aspen 7,800 ft + 85°F (10°C above std) → density altitude ~9,000 ft → reduced engine power, longer takeoff',
+    },
+    {
+      phenomenon: 'Jet stream',
+      what: 'Fast-moving river of air in the upper atmosphere (~30-40K ft)',
+      speed: 'Up to 200+ kts',
+      direction: 'Generally west to east in temperate latitudes',
+      seasons: 'Stronger in winter, weaker in summer',
+      pilotImpact: 'Eastbound flights ride it for tailwind; westbound avoid it',
+    },
+    {
+      phenomenon: 'PIREPs (pilot reports)',
+      what: 'Real-time weather reports from pilots in flight',
+      use: 'Supplements official forecasts; ATC and other pilots benefit',
+      formats: 'Standardized format covering location, time, altitude, conditions',
+    },
+  ];
+
+  // ─── Beyond the cockpit: support careers + ecosystem ─────────────────
+  var AVIATION_ECOSYSTEM = [
+    {
+      role: 'Pilot',
+      description: 'The headliner. Flies the aircraft.',
+      paths: 'Private → Commercial → ATP → Airline / charter / instructor / etc.',
+    },
+    {
+      role: 'Flight attendant',
+      description: 'Cabin safety + passenger service',
+      training: 'Airline-provided 6+ weeks',
+      pay: '$30K starting, $80K+ senior',
+      reality: 'Most important is safety. Service is secondary.',
+    },
+    {
+      role: 'Ground crew (ramp agent)',
+      description: 'Marshals aircraft, loads/unloads luggage and cargo, fuels',
+      training: 'On-the-job',
+      pay: '$15-25/hr',
+      conditions: 'Outdoor work in all weather; sometimes night shifts',
+    },
+    {
+      role: 'Gate agent',
+      description: 'Check-in, boarding, customer service',
+      training: 'Airline-provided',
+      pay: '$15-30/hr',
+    },
+    {
+      role: 'Customer service',
+      description: 'Reservations, baggage claims, complaints',
+      training: 'Airline-provided',
+      pay: '$15-25/hr',
+    },
+    {
+      role: 'Cabin appearance / cleaning',
+      description: 'Cleans aircraft between flights',
+      training: 'On-the-job',
+      pay: '$15-22/hr',
+    },
+    {
+      role: 'Aircraft fueler',
+      description: 'Refuels aircraft',
+      certifications: 'Hazardous materials handling',
+      pay: '$18-30/hr',
+    },
+    {
+      role: 'Avionics technician',
+      description: 'Installs and repairs aircraft electronics',
+      certifications: 'AMT school + avionics endorsement',
+      pay: '$50-90K',
+    },
+    {
+      role: 'Aircraft painter',
+      description: 'Paints aircraft, including detailed livery work',
+      training: 'Apprenticeship + some certifications',
+      pay: '$40-80K',
+    },
+    {
+      role: 'Aircraft interior specialist',
+      description: 'Modifies cabin interiors, upgrades',
+      training: 'Apprenticeship in specialty shops',
+      pay: '$40-80K',
+    },
+    {
+      role: 'Aircraft cleaner / detailer',
+      description: 'Specialized cleaning of corporate jets',
+      pay: '$15-25/hr (typically)',
+    },
+    {
+      role: 'FBO operator',
+      description: 'Runs a "Fixed Base Operator" — fuel, lounge, customer service for transient aircraft',
+      training: 'Business + aviation background',
+      pay: '$60-200K depending on FBO size',
+    },
+    {
+      role: 'Aircraft sales',
+      description: 'Sells new or used aircraft',
+      training: 'Sales experience + aviation knowledge',
+      compensation: 'Commission-heavy',
+    },
+    {
+      role: 'Aircraft broker',
+      description: 'Brokers used aircraft transactions',
+      compensation: 'Commission on sales',
+    },
+    {
+      role: 'Aircraft appraiser',
+      description: 'Determines aircraft values',
+      training: 'AOPA certification + experience',
+    },
+    {
+      role: 'Aviation lawyer',
+      description: 'Aviation-specific legal practice',
+      pay: '$80-300K',
+    },
+    {
+      role: 'Aviation insurance',
+      description: 'Underwriter for aircraft policies',
+      pay: '$60-150K',
+    },
+    {
+      role: 'Aviation banker / financier',
+      description: 'Finances aircraft purchases',
+      pay: '$80-200K+',
+    },
+    {
+      role: 'Aviation accountant',
+      description: 'Specialized in aviation tax issues (1031 exchanges, depreciation, etc.)',
+    },
+    {
+      role: 'Aviation writer / journalist',
+      pay: 'Variable; mostly freelance or specialty publications',
+      outlets: 'Flying, AOPA Pilot, Aviation Week, AvWeb',
+    },
+    {
+      role: 'Air freight coordinator',
+      description: 'Coordinates cargo on planes',
+      employers: 'FedEx, UPS, DHL, dedicated air freight',
+    },
+    {
+      role: 'Airport security (TSA + airline)',
+      description: 'Screens passengers and baggage',
+      pay: '$35-75K (federal scale)',
+    },
+    {
+      role: 'Customs and Border Protection (CBP)',
+      description: 'Inspects international arrivals',
+      pay: '$50-90K (federal)',
+    },
+    {
+      role: 'Aviation curator / museum staff',
+      description: 'Maintains aviation history museums',
+      employers: 'NASM (Smithsonian), USAF Museum, regional museums',
+    },
+    {
+      role: 'Aviation podcaster / YouTuber',
+      examples: 'Mentour Pilot, Captain Joe, blanCoLirio',
+      reality: 'Most are pilots first; content creation is a side business',
+    },
+    {
+      role: 'Drone tech support',
+      description: 'Helps customers with drone purchases and use',
+      employers: 'DJI, Skydio, Parrot, retail',
+    },
+    {
+      role: 'Aviation HR + recruiting',
+      description: 'Recruits pilots, mechanics, FAs for airlines',
+      pay: '$60-120K',
+    },
+    {
+      role: 'Aviation IT',
+      description: 'Manages airline reservation systems, in-flight Wi-Fi, etc.',
+      pay: '$80-180K',
+    },
+    {
+      role: 'Air marshal',
+      description: 'Federal agents who fly armed and undercover on commercial flights',
+      training: 'Federal Air Marshal Service (FAMS); after Sep 11, 2001 expansion',
+      classification: 'Federal law enforcement',
+    },
+    {
+      role: 'Air ambulance medic',
+      description: 'EMT or flight nurse on medical helicopters',
+      training: 'Paramedic certification + flight medic add-on',
+      pay: '$60-100K',
+    },
+  ];
+
+  // ─── How to get into aviation as a young person ──────────────────────
+  var GETTING_STARTED_YOUNG = [
+    {
+      step: 'Ages 8-12: Curiosity phase',
+      activities: [
+        'Build paper airplanes — experiment with designs',
+        'Visit local airports and watch planes',
+        'Read aviation books (Wright Brothers, Earhart)',
+        'Watch aviation documentaries',
+        'Build model airplanes',
+        'Take free EAA Young Eagles flight',
+      ],
+    },
+    {
+      step: 'Ages 13-15: Skills phase',
+      activities: [
+        'Attend Civil Air Patrol (cadet program ages 12-18)',
+        'Aviation summer camps (e.g., AOPA, EAA)',
+        'Drone flying (no Part 107 required for recreational)',
+        'Flight simulators (Microsoft Flight Simulator, X-Plane)',
+        'Take ground school class at FBO',
+        'Discovery flight at a local FBO (~$100)',
+      ],
+    },
+    {
+      step: 'Ages 14-16: Start training (gliders)',
+      activities: [
+        'Glider pilots can solo at age 14, license at 16',
+        'No medical needed',
+        'Cheapest path to flying',
+        'Builds stick-and-rudder skills',
+      ],
+    },
+    {
+      step: 'Age 16: Solo (powered)',
+      requirement: 'Student pilot certificate + medical',
+      what: 'Can solo with instructor sign-off',
+    },
+    {
+      step: 'Age 17: Private Pilot Certificate',
+      what: 'Can fly with passengers (for hire is later)',
+      training: '~40-70 hours, $10-15K',
+    },
+    {
+      step: 'Age 17-18: Commercial path',
+      pathway: 'Add instrument rating, commercial certificate, multi-engine, etc.',
+      timeline: 'Can become CFI by age 18-19 with discipline',
+    },
+    {
+      step: 'College: Aviation major?',
+      universities: 'Embry-Riddle, Purdue, Western Michigan, Ohio State, etc.',
+      programs: 'Aviation Science, Aerospace Engineering, Aeronautics',
+      reality: 'A 4-year degree is preferred by airlines for pilot positions but not required.',
+    },
+    {
+      step: 'College: ROTC',
+      pathway: 'Air Force, Navy, Marine Corps ROTC programs offer commissioning + flight training',
+      benefits: 'Paid education, guaranteed first job, fast hours building',
+    },
+    {
+      step: 'Cadet programs',
+      examples: ['United Aviate', 'JetBlue Gateways', 'Delta Propel'],
+      benefits: 'Some airlines now help with training costs in exchange for commitment to fly for them',
+    },
+    {
+      step: 'Aviation scholarships',
+      sources: ['Women in Aviation International', 'OBAP (Organization of Black Aerospace Professionals)', 'AOPA', 'EAA', 'Local pilots\' associations'],
+      ageRange: 'Available from age 12+',
+    },
+    {
+      step: 'Alternative paths',
+      list: ['Aircraft mechanic (no medical needed; great career)', 'Air traffic controller (apply before age 31)', 'Aerospace engineer', 'Drone operator (Part 107 at age 16)'],
+    },
+    {
+      step: 'Get a Part 107 drone certificate',
+      requirements: 'Age 16, pass test (no flight required!)',
+      cost: '$175 + study time',
+      benefit: 'Marketable certification, low barrier to entry, builds aviation knowledge',
+    },
+    {
+      principle: 'The earlier the better',
+      reasoning: 'Younger pilots have decades to build a career. Hiring momentum favors them.',
+    },
+    {
+      principle: 'Aviation is for everyone',
+      reasoning: 'Don\'t let stereotypes (white male pilot) discourage you. The industry needs diversity.',
+    },
+    {
+      principle: 'Find a mentor',
+      how: 'Visit local airports. Most pilots love to talk. Ask questions.',
+      benefit: 'Mentorship accelerates your career and provides perspective.',
+    },
+  ];
+
+  // ─── Notable women in aviation history ───────────────────────────────
+  var WOMEN_IN_AVIATION = [
+    {
+      name: 'Bessie Coleman (1892-1926)',
+      contribution: 'First African-American woman to earn a pilot\'s license (1921). Performed as a stunt pilot, inspiring generations of Black aviators.',
+      story: 'Born to sharecroppers in Texas. US flight schools rejected her based on race AND gender, so she learned French and got her license in France.',
+    },
+    {
+      name: 'Amelia Earhart (1897-1937)',
+      contribution: 'First woman to fly solo across the Atlantic (1932). First person solo Hawaii to California (1935). Disappeared during world circumnavigation attempt.',
+      legacy: 'Cultural icon. Mystery of her disappearance still resonates.',
+    },
+    {
+      name: 'Anne Morrow Lindbergh (1906-2001)',
+      contribution: 'First American woman to receive a glider pilot license (1930). Co-pilot with husband Charles on many record-setting flights.',
+      asAuthor: 'Wrote "North to the Orient" and "Listen! The Wind" — best-selling aviation books.',
+    },
+    {
+      name: 'Jacqueline Cochran (1906-1980)',
+      contribution: 'First woman to break the sound barrier (1953). Director of WASPs in WWII.',
+      records: 'Set more aviation records than any pilot in history — male or female.',
+    },
+    {
+      name: 'Sally Ride (1951-2012)',
+      contribution: 'First American woman in space (1983, Challenger). Stanford-trained physicist.',
+      legacy: 'Co-founded Sally Ride Science to promote STEM for girls.',
+    },
+    {
+      name: 'Mae Jemison (1956-)',
+      contribution: 'First Black woman in space (1992, Endeavour).',
+      pathway: 'MD + chemical engineering + Peace Corps + NASA',
+    },
+    {
+      name: 'Eileen Collins (1956-)',
+      contribution: 'First woman to pilot Space Shuttle (1995). First woman commander of Space Shuttle (1999).',
+      total: 'Logged 38+ days in space.',
+    },
+    {
+      name: 'Peggy Whitson (1960-)',
+      contribution: 'First woman commander of ISS. Record holder for most cumulative time in space for US astronaut.',
+    },
+    {
+      name: 'Christina Koch (1979-)',
+      contribution: 'Longest single spaceflight by a woman (328 days). Slated to be first woman around the Moon on Artemis II.',
+    },
+    {
+      name: 'Anastasia Lukomskaya (1907-1994)',
+      contribution: 'First Russian female combat pilot. Flew bomber missions in WWII.',
+    },
+    {
+      name: 'Hanna Reitsch (1912-1979)',
+      contribution: 'Test pilot who flew Me 262 jet, V-1 buzz bomb, and helicopter. Most decorated WWII German pilot (controversially).',
+    },
+    {
+      name: 'Iren Csengeri',
+      contribution: 'First female airline captain in Europe (1981, Malev Hungarian Airlines).',
+    },
+    {
+      name: 'Marsha Ivins (1951-)',
+      contribution: 'NASA astronaut, 5 space shuttle missions',
+    },
+    {
+      name: 'Susan Helms (1958-)',
+      contribution: 'First female crew member on Mir space station. Longest single spacewalk record.',
+    },
+    {
+      name: 'Tammie Jo Shults (1961-)',
+      contribution: 'Captain of Southwest 1380 in 2018, landed safely after engine explosion shattered window. 5th woman in Navy F/A-18 program.',
+    },
+    {
+      name: 'Bessie Coleman (further detail)',
+      legacy: 'Bessie Coleman Aviation Day at Mountain View, CA airport remembers her.',
+    },
+    {
+      name: 'Patty Wagstaff (1951-)',
+      contribution: 'First woman to win the US National Aerobatic Championship (1991). Three-time gold medalist.',
+    },
+    {
+      name: 'Beverley Bass (1952-)',
+      contribution: 'First female captain at American Airlines (1986). Featured in "Come from Away" musical.',
+    },
+  ];
+
+  // ─── Reading list specifically for students ──────────────────────────
+  var STUDENT_READING = [
+    {
+      level: 'Elementary (K-3)',
+      books: [
+        '"My First Book of Planes and Airships" - Smithsonian',
+        '"How Things Work: Airplanes" - DK Publishing',
+        '"I Spy a Big Plane!" - Picture book series',
+        '"Bessie Coleman: Daring Pilot" - biographical picture book',
+      ],
+    },
+    {
+      level: 'Middle Elementary (3-5)',
+      books: [
+        '"Amelia Earhart: Young Aviator" - Childhood of Famous Americans series',
+        '"DK Eyewitness: Flight" - Comprehensive overview',
+        '"How Airplanes Get Made" - Engineering for kids',
+        '"Jet Plane: How It Works" - Technical introduction',
+      ],
+    },
+    {
+      level: 'Upper Elementary (4-6)',
+      books: [
+        '"The Wright Brothers" by Russell Freedman',
+        '"Almost Astronauts" - The first US woman astronauts',
+        '"Tracker" by Gary Paulsen - GA flight in fiction',
+        '"Hatchet" by Gary Paulsen - Wilderness survival after plane crash',
+      ],
+    },
+    {
+      level: 'Middle School (6-8)',
+      books: [
+        '"The Wright Brothers" by David McCullough',
+        '"Sky" - YA aviation novel',
+        '"Air Bound" - YA novel about a girl learning to fly',
+        '"Lift Off!" - aviation career guide for youth',
+      ],
+    },
+    {
+      level: 'High School (9-12)',
+      books: [
+        '"Carrying the Fire" - Apollo 11 memoir',
+        '"The Right Stuff" - Test pilots and astronauts',
+        '"Skyfaring" - Modern airline pilot reflections',
+        '"Highest Duty" - Sully Sullenberger',
+        '"Stick and Rudder" - Classic on how flight actually works',
+        '"West with the Night" - Beryl Markham\'s African flight memoir',
+      ],
+    },
+  ];
+
+  // ─── Famous aviation quotes (extended) ────────────────────────────────
+  var AVIATION_QUOTES_EXTENDED = [
+    { quote: '"The propeller is just a big fan in front of the plane used to keep the pilot cool. When it stops, you can actually watch the pilot start sweating."', author: 'Anonymous' },
+    { quote: '"Without ammunition, the Air Force would just be another expensive flying club."', author: 'Anonymous (USAF saying)' },
+    { quote: '"Try to learn from the mistakes of others. You won\'t live long enough to make them all yourself."', author: 'Eleanor Roosevelt (often used by pilots)' },
+    { quote: '"Aviation is, for the most part, terrifyingly safe. It is when one forgets that fact that one starts to die."', author: 'Anonymous' },
+    { quote: '"A landing is just a controlled crash."', author: 'Anonymous' },
+    { quote: '"Any pilot can land in the runway. The trick is to land on the runway."', author: 'Anonymous' },
+    { quote: '"Takeoffs are optional. Landings are mandatory."', author: 'Anonymous pilot saying' },
+    { quote: '"Helicopters don\'t fly so much as they beat the air into submission."', author: 'Anonymous' },
+    { quote: '"To most people the sky is the limit. To those who love aviation, the sky is home."', author: 'Anonymous' },
+    { quote: '"It\'s only takeoff distance you don\'t have."', author: 'Anonymous (often cited)' },
+    { quote: '"The single most important thing in aviation is the pilot."', author: 'Many — applies to most accidents' },
+    { quote: '"Aviation is proof that given the will, we have the capacity to achieve the impossible."', author: 'Eddie Rickenbacker' },
+    { quote: '"Flying is a great metaphor for life. Once you experience it, you can never go back."', author: 'Anonymous' },
+    { quote: '"You haven\'t seen a tree until you\'ve seen its shadow from the sky."', author: 'Amelia Earhart' },
+    { quote: '"You have not lived until you have done something for someone who can never repay you."', author: 'Anonymous (favorite among pilots who do humanitarian work)' },
+    { quote: '"The desire to fly is an idea handed down to us by our ancestors who... looked enviously on the birds soaring freely through space."', author: 'Wilbur Wright' },
+    { quote: '"For once you have tasted flight you will walk the earth with your eyes turned skywards, for there you have been and there you will long to return."', author: 'Anonymous (often attributed to Leonardo da Vinci)' },
+    { quote: '"It\'s impossible. Until it isn\'t."', author: 'Anonymous (aviation has proven many things possible)' },
+    { quote: '"Aviation is the art of the possible."', author: 'Anonymous' },
+    { quote: '"To fly is to live."', author: 'Anonymous' },
+  ];
+
+  // ─── Worldwide aviation regulatory bodies ────────────────────────────
+  var REGULATORY_BODIES = [
+    {
+      body: 'FAA (Federal Aviation Administration)',
+      country: 'USA',
+      role: 'US aviation regulation, certification, ATC',
+      history: 'Founded 1958 (after several Cold War aviation accidents)',
+    },
+    {
+      body: 'EASA (European Union Aviation Safety Agency)',
+      country: 'European Union',
+      role: 'Harmonizes aviation safety regulations across EU member states',
+      history: 'Founded 2002',
+    },
+    {
+      body: 'ICAO (International Civil Aviation Organization)',
+      role: 'UN body that sets global aviation standards',
+      where: 'Headquartered in Montreal',
+      members: '193 member states',
+      products: 'Standards and Recommended Practices (SARPs)',
+    },
+    {
+      body: 'Transport Canada (TC)',
+      country: 'Canada',
+      role: 'Federal aviation safety + certification',
+    },
+    {
+      body: 'CAA (Civil Aviation Authority)',
+      country: 'United Kingdom',
+      role: 'Regulates UK aviation',
+      changes: 'After Brexit (2020), UK separated from EASA; now independent',
+    },
+    {
+      body: 'CASA (Civil Aviation Safety Authority)',
+      country: 'Australia',
+      role: 'Australian aviation safety',
+    },
+    {
+      body: 'CAAC (Civil Aviation Administration of China)',
+      country: 'China',
+      role: 'Chinese aviation regulation',
+      independence: 'Chinese certification has lagged international standards, but COMAC C919 forced reform',
+    },
+    {
+      body: 'DGCA (Directorate General of Civil Aviation)',
+      country: 'India',
+      role: 'Indian aviation oversight',
+    },
+    {
+      body: 'JCAB (Japan Civil Aviation Bureau)',
+      country: 'Japan',
+      role: 'Japanese aviation regulation',
+    },
+    {
+      body: 'CAA-NZ',
+      country: 'New Zealand',
+      role: 'NZ aviation regulation',
+    },
+    {
+      body: 'IATA (International Air Transport Association)',
+      role: 'Airline industry trade group; safety initiatives',
+      members: '290+ airlines, ~83% of total air traffic',
+      products: 'Safety audits (IOSA), training programs, baggage tracking',
+    },
+    {
+      body: 'NTSB (National Transportation Safety Board)',
+      country: 'USA',
+      role: 'Investigate transportation accidents (aviation, rail, marine, highway)',
+      authority: 'Cannot regulate — only recommend. Reports inform FAA actions.',
+    },
+    {
+      body: 'TSB (Transportation Safety Board)',
+      country: 'Canada',
+      role: 'Canadian equivalent of NTSB',
+    },
+    {
+      body: 'AAIB (Air Accidents Investigation Branch)',
+      country: 'UK',
+      role: 'UK equivalent of NTSB',
+    },
+    {
+      body: 'BEA (Bureau d\'Enquêtes et d\'Analyses)',
+      country: 'France',
+      role: 'French aviation accident investigation',
+    },
+    {
+      body: 'BFU (Bundesstelle für Flugunfalluntersuchung)',
+      country: 'Germany',
+      role: 'German aviation accident investigation',
+    },
+    {
+      body: 'ATC organizations (NATCA, ATCA)',
+      role: 'Professional and labor organizations for air traffic controllers',
+    },
+    {
+      body: 'ALPA (Air Line Pilots Association)',
+      country: 'USA + Canada',
+      role: 'Professional and labor organization for airline pilots',
+      members: '~65,000',
+    },
+    {
+      body: 'EAA (Experimental Aircraft Association)',
+      role: 'Promotes recreational aviation, Young Eagles program',
+      members: '230,000+',
+      events: 'AirVenture Oshkosh annually',
+    },
+    {
+      body: 'AOPA (Aircraft Owners and Pilots Association)',
+      role: 'Largest aviation membership organization in the world',
+      members: '300,000+',
+      services: 'Legal, medical, flight planning, advocacy',
+    },
+  ];
+
+  // ─── Diversity + inclusion in aviation ────────────────────────────────
+  var DIVERSITY_IN_AVIATION = [
+    {
+      stat: 'US Airline pilots by gender',
+      figures: '~6% women, ~94% men',
+      trend: 'Growing slowly',
+    },
+    {
+      stat: 'US Airline pilots by race',
+      figures: '~93% white, 3% Black, 3% Hispanic, 1% Asian',
+      trend: 'Major underrepresentation of people of color',
+    },
+    {
+      organization: 'OBAP (Organization of Black Aerospace Professionals)',
+      mission: 'Promote diversity in aviation through scholarships, mentorship, training',
+      founded: 1976,
+    },
+    {
+      organization: 'WAI (Women in Aviation International)',
+      members: '15,000+ globally',
+      programs: 'Scholarships, conferences, mentorship',
+    },
+    {
+      organization: 'NGPA (National Gay Pilots Association)',
+      mission: 'Support LGBTQ+ aviation professionals and students',
+      programs: 'Scholarships, scholarships for transgender pilots specifically',
+    },
+    {
+      organization: 'ISA+21 (International Society of Women Airline Pilots)',
+      members: 'Female airline pilots and flight officers',
+    },
+    {
+      organization: 'Latino Pilots Association',
+      mission: 'Latino representation in aviation',
+    },
+    {
+      organization: 'EAA Young Eagles Program',
+      mission: 'Free first flights for ages 8-17 (any background)',
+      stat: '2+ million kids flown since 1992',
+    },
+    {
+      organization: 'Air Camp (USA)',
+      where: 'Multiple locations',
+      forKids: 'Summer aviation camps; some specifically for underrepresented youth',
+    },
+    {
+      organization: 'Sisters of the Skies',
+      mission: 'Support Black women in aviation',
+      programs: 'Scholarships, networking',
+    },
+    {
+      organization: 'Civil Air Patrol (CAP)',
+      mission: 'Auxiliary of US Air Force; cadet program for ages 12-18',
+      cost: 'Membership ~$40-100/year; reduced fee flights',
+      scholarships: 'Offers extensive scholarships',
+    },
+    {
+      organization: 'AFRO (Aviation Aces of Africa)',
+      mission: 'Promote aviation in African communities',
+    },
+    {
+      challenge: 'Cost of training',
+      reality: '$10-15K for PPL alone. Major barrier for low-income students.',
+      remedies: 'Scholarships, cadet programs, military pathway, drone start',
+    },
+    {
+      challenge: 'Cultural visibility',
+      reality: 'Few aviation role models from underrepresented groups',
+      response: 'Increased media visibility helps. Books like "Tuskegee Airmen" and films like "Hidden Figures" raise awareness.',
+    },
+    {
+      challenge: 'Workplace culture',
+      reality: 'Aviation has historically been a "boys club"',
+      progress: 'Slowly changing as new generation enters the field',
+    },
+    {
+      principle: 'Diversity matters',
+      reasoning: 'Different perspectives improve safety, decision-making, and culture. Aviation\'s safety record could improve further with more diverse hiring.',
+    },
+  ];
+
+  // ─── Closing words for students ────────────────────────────────────
+  var CLOSING_WORDS = [
+    {
+      message: 'Welcome to aviation',
+      detail: 'You\'ve explored a lot. Aviation is one of the broadest, most interconnected fields in human knowledge. Physics, math, weather, geography, history, engineering, sociology, ethics — they all converge here.',
+    },
+    {
+      message: 'You don\'t have to be a pilot to be in aviation',
+      detail: 'Mechanics, controllers, engineers, dispatchers, scientists — there are dozens of paths. Find the one that excites you most.',
+    },
+    {
+      message: 'Aviation is local',
+      detail: 'Your local airport is the gateway. Visit it. Watch planes take off. Talk to pilots. Most are happy to share.',
+    },
+    {
+      message: 'Aviation is global',
+      detail: 'You can train in any country. Your skills transfer worldwide. You can build a career anywhere there\'s an airport — which is everywhere.',
+    },
+    {
+      message: 'Aviation is for everyone',
+      detail: 'Don\'t let stereotypes discourage you. The industry is changing. Your perspective is needed.',
+    },
+    {
+      message: 'Start now',
+      detail: 'Even if you\'re young. Even if you\'re unsure. Take a free Young Eagles flight. Visit an air show. Read a book. The journey starts somewhere.',
+    },
+    {
+      message: 'Aviation is honest',
+      detail: 'Airplanes don\'t care about your background, age, sex, race, or religion. They only care about whether you do the procedure correctly. That\'s a refreshing form of meritocracy.',
+    },
+    {
+      message: 'Aviation is serious',
+      detail: 'Lives depend on good decisions. Take it seriously. But also take joy in it. They\'re not contradictions.',
+    },
+    {
+      message: 'Aviation is beautiful',
+      detail: 'A sunrise from 35,000 ft. A perfect landing. Watching a 747 lift off. Seeing the curvature of the Earth. These are gifts.',
+    },
+    {
+      message: 'Aviation is yours',
+      detail: 'The sky is public airspace. The freedom to fly is a remarkable gift. Use it. Share it. Pass it on.',
+    },
+    {
+      message: 'Welcome to SkySchool',
+      detail: 'You\'ve learned a lot. Use what you know. The cockpit is waiting.',
+    },
+  ];
+
+  // ─── Free aviation resources ───────────────────────────────────────
+  var FREE_RESOURCES = [
+    { resource: 'FAA Pilot Handbook', url: 'faa.gov', what: 'Free, comprehensive pilot training textbook' },
+    { resource: 'FAA Aerodynamics for Naval Aviators', what: 'Classic textbook, free PDF online' },
+    { resource: 'FAA Aeronautical Information Manual (AIM)', what: 'How US aviation works; required reading for pilots' },
+    { resource: 'FAR/AIM book', what: 'Federal Aviation Regulations + AIM in one book' },
+    { resource: 'Sporty\'s Pilot Shop', what: 'Online training videos (some free)' },
+    { resource: 'Flight Chops YouTube', what: 'Real GA pilot perspective; many practical lessons' },
+    { resource: 'Air Safety Institute', what: 'Free safety videos from AOPA' },
+    { resource: 'Mentour Pilot YouTube', what: 'Airline pilot explains aviation concepts' },
+    { resource: 'Captain Joe YouTube', what: 'European airline pilot perspective' },
+    { resource: 'blanCoLirio Research YouTube', what: 'Aviation accident analysis' },
+    { resource: 'Wendover Productions YouTube', what: 'Aviation industry economics' },
+    { resource: 'AOPA Pilot magazine', what: 'Free with membership; deep pilot articles' },
+    { resource: 'EAA Sport Aviation', what: 'Free with EAA membership' },
+    { resource: 'Flying magazine', what: 'Free trial often available' },
+    { resource: 'SkyVector.com', what: 'Free online aviation charts' },
+    { resource: 'AirNav.com', what: 'Airport information' },
+    { resource: 'LiveATC.net', what: 'Free real-time ATC audio' },
+    { resource: 'FlightAware', what: 'Free flight tracking' },
+    { resource: 'FlightRadar24', what: 'Free flight tracking with cool visualizations' },
+    { resource: 'X-Plane demo', what: 'Free demo of professional flight simulator' },
+    { resource: 'FlightGear', what: 'Free open-source flight simulator' },
+    { resource: 'Microsoft Flight Simulator', what: 'Visually beautiful, requires PC/Xbox' },
+    { resource: 'Local airport visits', what: 'Free, often the most valuable experience' },
+    { resource: 'Aviation podcasts', list: ['"Pilot to Pilot"', '"There I Was"', '"Aviation News Talk"', '"Stuck Mic AvCast"', '"The Pilot Network"'] },
+    { resource: 'Reddit r/flying', what: 'Active aviation community' },
+    { resource: 'Reddit r/aviation', what: 'General aviation enthusiast forum' },
+  ];
+
+  // ─── Aviation milestone numbers worth knowing ────────────────────────
+  var AVIATION_NUMBERS = [
+    { number: '17,500 mph', meaning: 'Orbital velocity at low Earth orbit altitude' },
+    { number: '767 mph', meaning: 'Speed of sound at sea level' },
+    { number: 'Mach 1', meaning: 'Speed equal to local speed of sound' },
+    { number: 'Mach 3.3', meaning: 'SR-71 Blackbird cruise speed' },
+    { number: '85,000 ft', meaning: 'SR-71 cruise altitude' },
+    { number: '60,000 ft', meaning: 'Concorde cruise altitude' },
+    { number: '35,000 ft', meaning: 'Typical airliner cruise altitude' },
+    { number: '14.7 psi', meaning: 'Atmospheric pressure at sea level' },
+    { number: '3.5 psi', meaning: 'Atmospheric pressure at 35,000 ft' },
+    { number: '0°C', meaning: 'Water freezing point — icing threshold' },
+    { number: '-56°C', meaning: 'Standard temperature at tropopause (35,000 ft)' },
+    { number: '0.002378 slug/ft³', meaning: 'Standard sea-level air density' },
+    { number: '2g', meaning: 'Force in a 60° banked level turn' },
+    { number: '4.5g', meaning: 'Typical max for non-aerobatic GA aircraft' },
+    { number: '9g', meaning: 'Maximum sustained g in modern fighter jets' },
+    { number: '3°', meaning: 'Standard glide slope (3° descent angle for typical approach)' },
+    { number: '60°', meaning: 'Steep turn standard for private pilot test' },
+    { number: '15-20°', meaning: 'Typical critical angle of attack' },
+    { number: '21°', meaning: 'Maximum AoA in normal operations' },
+    { number: '1,500 hours', meaning: 'Minimum for Airline Transport Pilot (ATP)' },
+    { number: '40 hours', meaning: 'Minimum for Private Pilot Certificate (FAA)' },
+    { number: '50 hours', meaning: 'Minimum instrument time for Instrument Rating' },
+    { number: '250 hours', meaning: 'Minimum for Commercial Pilot Certificate' },
+    { number: '6 nm', meaning: 'Typical separation between heavy + light aircraft' },
+    { number: '120 mph', meaning: 'Cruise speed of original Wright Flyer (modern reproduction)' },
+    { number: '500 fpm', meaning: 'Standard climb rate' },
+    { number: '700 fpm', meaning: 'Standard descent rate' },
+    { number: '2,500 lb', meaning: 'Cessna 172 maximum gross weight (range varies by model)' },
+    { number: '875,000 lb', meaning: 'Boeing 747-8 maximum gross weight' },
+    { number: '6 miles', meaning: 'Maximum visual range from a typical GA aircraft' },
+    { number: '~$10,000-15,000', meaning: 'Cost of Private Pilot training (40+ hours)' },
+    { number: '~$143 million', meaning: 'Cost of one F-22 Raptor' },
+    { number: '~$350-400 million', meaning: 'Cost of new Boeing 787 Dreamliner' },
+    { number: '~$110 million', meaning: 'Cost of new Boeing 737 MAX 8' },
+    { number: '~$1.7 trillion', meaning: 'F-35 program lifetime cost' },
+    { number: '~$3.5 trillion', meaning: 'Aviation\'s contribution to global GDP per year' },
+    { number: '~11 million', meaning: 'People directly employed in aviation globally' },
+    { number: '~35,000', meaning: 'Daily commercial flights worldwide' },
+    { number: '5 million', meaning: 'Annual airline passenger flights worldwide' },
+    { number: '1 in 5 million', meaning: 'Approximate odds of dying on a commercial flight' },
+  ];
+
+  // ─── Famous airliner liveries (paint schemes) ────────────────────────
+  var FAMOUS_LIVERIES = [
+    { airline: 'United Airlines', design: 'Blue + globe + tulip-pattern tail since 2019', notes: 'Updated from the iconic Saul Bass-designed tulip-and-globe of the 1990s.' },
+    { airline: 'Delta Air Lines', design: 'Red + blue widget on tail', notes: 'Triangle "widget" originated with Western Airlines (acquired 1987).' },
+    { airline: 'American Airlines', design: 'Silver/red/white/blue eagle', notes: 'Lost the iconic "AA" eagle in 2013 redesign — controversial among purists.' },
+    { airline: 'Southwest', design: 'Three-color tail design', notes: 'Heart logo on belly since 2014 rebrand.' },
+    { airline: 'Lufthansa', design: 'Yellow + blue crane', notes: 'Crane symbol since 1918. One of the most iconic in aviation.' },
+    { airline: 'Emirates', design: 'Red + gold script + UAE flag', notes: 'Bold gold "Emirates" wordmark on tail.' },
+    { airline: 'Singapore Airlines', design: 'Yellow stripe + tail logo', notes: 'Distinctive blue/yellow color scheme since 1972. Stable design = brand strength.' },
+    { airline: 'British Airways', design: 'Red + blue tail design (varies by aircraft)', notes: 'World Image series featured ethnic art on tails 1997-2001; controversial; reverted to Union Jack.' },
+    { airline: 'KLM', design: 'Royal Dutch blue with crown', notes: 'Oldest airline in the world (founded 1919) still operating under original name.' },
+    { airline: 'Air France', design: 'Wave design + tricolor flag', notes: 'Modern wave inspired by motion of birds and clouds.' },
+    { airline: 'Qantas', design: 'Red + white kangaroo', notes: '"Flying kangaroo" since 1944. Iconic Australian symbol.' },
+    { airline: 'Pan Am (historical)', design: 'White with blue globe', notes: 'Despite collapse in 1991, design is forever associated with golden age of air travel.' },
+    { airline: 'TWA (historical)', design: 'Distinctive red with twin stars', notes: 'Acquired by American in 2001.' },
+    { airline: 'Eastern Air Lines (historical)', design: 'Hockey stick design', notes: 'Liquidated 1991.' },
+    { airline: 'Aeromexico', design: 'Modern blue with Aztec warrior emblem', notes: 'National pride visible in design.' },
+    { airline: 'Air New Zealand', design: 'Black + silver fern', notes: 'Bold contrast; matches national rugby team aesthetic.' },
+    { airline: 'JetBlue', design: 'White + light blue tailfin patterns', notes: 'Each aircraft has unique tailfin design — collectible aspect.' },
+    { airline: 'Frontier', design: 'White with animal mascots on tail', notes: 'Each aircraft features a different animal (bear, fox, otter, etc.).' },
+    { airline: 'Spirit', design: 'Yellow/black tiger stripes', notes: 'Iconic budget airline identity.' },
+    { airline: 'Air Force One', design: 'Custom white + powder blue with American flag', notes: 'Designed by Raymond Loewy in 1962 for JFK. Iconic.' },
+  ];
+
+  // ─── Welcome message for new pilots ──────────────────────────────────
+  var NEW_PILOT_WELCOME = [
+    'Welcome to one of the most rewarding pursuits humans have invented.',
+    'You are now part of a community 1.5 million strong worldwide.',
+    'You\'ll never stop learning. That\'s the gift.',
+    'Treat your training seriously. The skills you build now last decades.',
+    'Find a mentor. Then become one.',
+    'Visit a tower. Sit in left seat at home using a simulator. Read the POH.',
+    'Make mistakes early when stakes are low — that\'s how learning happens.',
+    'Share what you know. Aviation runs on volunteer education.',
+    'Stay current. Skills perish faster than you think.',
+    'Stay humble. The sky is bigger than any of us.',
+    'Remember why you started. Capture that feeling. Return to it on bad days.',
+    'Enjoy the journey. Some of your best memories will be from the air.',
+    'Fly safely. Fly often. Fly your best.',
+    'You belong here. Aviation made room for you the moment you decided to learn.',
+    'Build relationships. The pilots you meet now will be your community for life.',
+    'Respect the airplane. It\'s smarter than you. Trust its design.',
+    'Respect the weather. It always wins. Learn to read it well.',
+    'Respect your passengers. Their trust is the heaviest cargo you\'ll carry.',
+    'Respect ATC. They\'re watching out for you in ways you don\'t even notice.',
+    'Pay it forward. Someday a new pilot will ask you for advice. Be that person.',
+    'Take pictures. Save logbooks. Aviation memories are precious.',
+    'Welcome to SkySchool. Welcome to aviation. Welcome to the sky.',
+    'Practice forced landings. The day you need it is not the day to learn it.',
+    'Read accident reports. Each one is a lesson someone died to teach you.',
+    'Never skip the pre-flight. Bored is when accidents start.',
+    'Talk to mechanics. They know things pilots don\'t.',
+    'Talk to ATC. They\'re humans too, doing a hard job.',
+    'Keep your medical certificate current. Health is everything.',
+    'Develop personal minimums beyond the legal ones.',
+    'When in doubt, divert. The runway you wanted will still be there tomorrow.',
+    'Trust your training. The wisdom is in your hands.',
+    'Be the pilot you\'d want to fly with.',
+    'Now go fly. The aircraft is waiting.',
+    'Keep your eyes outside. The instruments tell you what; the sky tells you why.',
+    'Stick and rudder skills are perishable. Hand-fly often.',
+    'A good pilot makes flying look easy. A great pilot makes it look effortless.',
+    'Fly the airplane. Fly the airplane. Fly the airplane.',
+    'You have permission to be excited.',
+    'Don\'t lose your wonder.',
+    'See you in the air. Tailwinds!',
+    'Welcome aboard.',
+    'Cleared for takeoff.',
+  ];
+
   window.StemLab.registerTool('flightSim', {
     icon: '\u2708\uFE0F',
     label: 'SkySchool',
@@ -10532,6 +18836,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               })
             )
           ),
+          // Learn / Quiz / Preflight / Calculator — new interactive modes
+          h('div', { style: { padding: '0 24px 16px' } },
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '🎓 Learn, Practice, Calculate'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' } },
+              [
+                { id: 'learn',      icon: '📚', label: 'Learn',       desc: '20 topics: forces, instruments, history, careers...', bg: 'linear-gradient(135deg, #3b82f6, #2563eb)' },
+                { id: 'quiz',       icon: '🎯', label: 'Quiz',        desc: 'Test your knowledge with scoring + streaks',          bg: 'linear-gradient(135deg, #8b5cf6, #6d28d9)' },
+                { id: 'preflight',  icon: '✅', label: 'Pre-Flight',  desc: 'Interactive checklist real pilots use',              bg: 'linear-gradient(135deg, #16a34a, #15803d)' },
+                { id: 'calculator', icon: '🧮', label: 'Lift Calc',   desc: 'Compute lift for any aircraft + speed + altitude',   bg: 'linear-gradient(135deg, #ea580c, #c2410c)' }
+              ].map(function(m) {
+                return h('button', {
+                  key: m.id,
+                  onClick: function() { upd('view', m.id); },
+                  'aria-label': m.label + ' — ' + m.desc,
+                  style: { padding: '12px 8px', borderRadius: '10px', border: 'none', background: m.bg, color: '#fff', cursor: 'pointer', textAlign: 'center', transition: 'transform 0.1s', boxShadow: '0 4px 12px rgba(0,0,0,0.25)' }
+                },
+                  h('div', { style: { fontSize: '24px', marginBottom: '4px' } }, m.icon),
+                  h('div', { style: { fontSize: '12px', fontWeight: 800 } }, m.label),
+                  h('div', { style: { fontSize: '9px', opacity: 0.85, marginTop: '3px', lineHeight: 1.3 } }, m.desc)
+                );
+              })
+            )
+          ),
           // Lessons
           h('div', { style: { padding: '0 24px 16px' } },
             h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '📚 Aerodynamics Lessons'),
@@ -11032,6 +19359,634 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             h('button', { onClick: function() { startFlying('kpwm'); },
               style: { padding: '10px 24px', borderRadius: '8px', border: 'none', background: '#3b82f6', color: '#fff', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
             }, '🛫 Fly Again')
+          )
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // LEARN VIEW — comprehensive reference library with split-pane
+      // ═══════════════════════════════════════════════════════════════
+      if (view === 'learn') {
+        var learnTopic = d.learnTopic || 'forces';
+        var LEARN_TOPICS = [
+          { id: 'forces',    label: 'The Four Forces',         icon: '⚖️',  data: FOUR_FORCES,             titleKey: 'force' },
+          { id: 'aero',      label: 'Aerodynamics',            icon: '🌊',  data: AERODYNAMICS,            titleKey: 'concept' },
+          { id: 'cockpit',   label: 'Cockpit Instruments',     icon: '📊',  data: COCKPIT_INSTRUMENTS,     titleKey: 'instrument' },
+          { id: 'anatomy',   label: 'Aircraft Anatomy',        icon: '🛩️',  data: AIRCRAFT_ANATOMY,        titleKey: 'part' },
+          { id: 'famous',    label: 'Famous Aircraft',         icon: '✈️',  data: FAMOUS_AIRCRAFT,         titleKey: 'aircraft' },
+          { id: 'pioneers',  label: 'Aviation Pioneers',       icon: '👥',  data: AVIATION_PIONEERS,       titleKey: 'name' },
+          { id: 'weather',   label: 'Weather & Flight',        icon: '⛈️',  data: WEATHER_AND_FLIGHT,      titleKey: 'phenomenon' },
+          { id: 'nav',       label: 'Navigation',              icon: '🧭',  data: NAVIGATION_CONCEPTS,     titleKey: 'concept' },
+          { id: 'training',  label: 'Pilot Training Paths',    icon: '🎓',  data: PILOT_TRAINING,          titleKey: 'certificate' },
+          { id: 'careers',   label: 'Aviation Careers',        icon: '💼',  data: AVIATION_CAREERS,        titleKey: 'role' },
+          { id: 'atmos',     label: 'Atmosphere & Altitude',   icon: '🌐',  data: ATMOSPHERE_LAYERS,       titleKey: 'layer' },
+          { id: 'flights',   label: 'Famous Flights',          icon: '🚀',  data: FAMOUS_FLIGHTS,          titleKey: 'flight' },
+          { id: 'timeline',  label: 'History Timeline',        icon: '📅',  data: AVIATION_TIMELINE,       titleKey: 'year' },
+          { id: 'faq',       label: 'Student FAQ',             icon: '❓',  data: STUDENT_FAQ,             titleKey: 'q' },
+          { id: 'lessons',   label: 'Lesson Plans',            icon: '👨‍🏫', data: FLIGHT_LESSON_PLANS,     titleKey: 'title' },
+          { id: 'math',      label: 'Aviation Math',           icon: '🧮',  data: AVIATION_MATH,           titleKey: 'problem' },
+          { id: 'drone',     label: 'Drone Deep Dive',         icon: '🛸',  data: DRONE_DEEP_DIVE,         titleKey: 'topic' },
+          { id: 'mnemonics', label: 'Pilot Mnemonics',         icon: '🧠',  data: AVIATION_MNEMONICS,      titleKey: 'mnemonic' },
+          { id: 'glossary',  label: 'Aviation Glossary',       icon: '📖',  data: AVIATION_GLOSSARY,       titleKey: 'term' },
+          { id: 'inquiry',   label: 'Inquiry Prompts',         icon: '💭',  data: INQUIRY_PROMPTS,         titleKey: null },
+          { id: 'airports',  label: 'Airport Types',           icon: '🏛️',  data: AIRPORT_TYPES,           titleKey: 'type' },
+          { id: 'phras',     label: 'ATC Phraseology',         icon: '📡',  data: ATC_PHRASEOLOGY,         titleKey: 'phrase' },
+          { id: 'engines',   label: 'Engines Deep Dive',       icon: '⚙️',  data: ENGINE_TYPES_DEEP,       titleKey: 'type' },
+          { id: 'pressur',   label: 'Pressurization + O2',     icon: '🫁',  data: PRESSURIZATION,          titleKey: 'concept' },
+          { id: 'wake',      label: 'Wake Turbulence',         icon: '🌀',  data: WAKE_TURBULENCE,         titleKey: 'concept' },
+          { id: 'lighting',  label: 'Runway Lighting',         icon: '💡',  data: RUNWAY_LIGHTING,         titleKey: 'lighting' },
+          { id: 'human',     label: 'Human Factors',           icon: '🧠',  data: HUMAN_FACTORS,           titleKey: 'topic' },
+          { id: 'incidents', label: 'Incident Lessons',        icon: '📓',  data: AVIATION_INCIDENT_LESSONS, titleKey: 'incident' },
+          { id: 'regs',      label: 'Regulations Primer',      icon: '⚖️',  data: AVIATION_REGULATIONS,    titleKey: 'regulation' },
+          { id: 'charts',    label: 'Performance Charts',      icon: '📈',  data: PERFORMANCE_CHARTS,      titleKey: 'chart' },
+          { id: 'systems',   label: 'Aircraft Systems',        icon: '🔧',  data: AIRCRAFT_SYSTEMS,        titleKey: 'system' },
+          { id: 'maneuvers', label: 'Flight Maneuvers',        icon: '🎯',  data: FLIGHT_MANEUVERS,        titleKey: 'maneuver' },
+          { id: 'future',    label: 'Future of Aviation',      icon: '🚀',  data: FUTURE_AVIATION,         titleKey: 'trend' },
+          { id: 'world_aps', label: 'World Airports',          icon: '🌍',  data: WORLD_AIRPORTS_DEEP,     titleKey: 'airport' },
+          { id: 'careers_d', label: 'Careers in Depth',        icon: '💼',  data: AVIATION_CAREERS_DETAIL, titleKey: 'role' },
+          { id: 'kids',      label: 'For Younger Students',    icon: '👶',  data: AVIATION_FOR_KIDS,       titleKey: 'topic' },
+          { id: 'xdiscip',   label: 'Cross-Disciplinary',      icon: '🧩',  data: AVIATION_CROSS_DISCIPLINARY, titleKey: 'subject' },
+          { id: 'gloss2',    label: 'Glossary Supplement',     icon: '📚',  data: GLOSSARY_SUPPLEMENT,     titleKey: 'term' },
+          { id: 'quotes',    label: 'Famous Quotes',           icon: '💬',  data: AVIATION_QUOTES,         titleKey: 'quote' },
+          { id: 'mistakes',  label: 'Common Mistakes',         icon: '⚠️',  data: STUDENT_MISTAKES,        titleKey: 'mistake' },
+          { id: 'wisdom',    label: 'Pilot Wisdom',            icon: '🦉',  data: PILOT_WISDOM,            titleKey: null },
+          { id: 'ntsb',      label: 'Accident Investigation',  icon: '🔬',  data: ACCIDENT_INVESTIGATION,  titleKey: 'step' },
+          { id: 'safety_m',  label: 'Safety Milestones',       icon: '🛡️',  data: SAFETY_MILESTONES,       titleKey: 'milestone' },
+          { id: 'maint',     label: 'Maintenance Basics',      icon: '🔧',  data: MAINTENANCE_BASICS,      titleKey: 'maintenance' },
+          { id: 'military',  label: 'Military Aviation',       icon: '🪖',  data: MILITARY_OPERATIONS,     titleKey: 'mission' },
+          { id: 'space',     label: 'Space Boundary',          icon: '🛰️',  data: SPACE_BOUNDARY,          titleKey: 'concept' },
+          { id: 'labs',      label: 'Hands-On Labs',           icon: '🔬',  data: FLIGHT_LAB_ACTIVITIES,   titleKey: 'activity' },
+          { id: 'atc_deep',  label: 'ATC Career Deep Dive',    icon: '🎧',  data: ATC_CAREER_DETAIL,       titleKey: 'role' },
+          { id: 'why',       label: 'Why Aviation Matters',    icon: '🌟',  data: WHY_AVIATION_MATTERS,    titleKey: 'reason' },
+          { id: 'planning',  label: 'Flight Planning Scenarios', icon: '📋', data: FLIGHT_PLANNING_SCENARIOS, titleKey: 'scenario' },
+          { id: 'dayinlife', label: 'Day in the Life',          icon: '⏰',  data: DAY_IN_LIFE,             titleKey: 'role' },
+          { id: 'modern_nav',label: 'Modern Navigation',        icon: '📡',  data: MODERN_NAV_SYSTEMS,      titleKey: 'system' },
+          { id: 'atc_q',     label: 'ATC Scenarios',            icon: '🎙️',  data: ATC_QUIZ_SCENARIOS,      titleKey: 'situation' },
+          { id: 'teachers',  label: 'Teacher Notes',            icon: '📝',  data: TEACHER_NOTES,           titleKey: 'note' },
+          { id: 'vintage',   label: 'Vintage Aircraft',         icon: '🛩️',  data: VINTAGE_AIRCRAFT,        titleKey: 'aircraft' },
+          { id: 'acronyms',  label: 'Aviation Acronyms',        icon: '🔤',  data: AVIATION_ACRONYMS,       titleKey: 'acronym' },
+          { id: 'mfgrs',     label: 'Aircraft Manufacturers',   icon: '🏭',  data: AIRCRAFT_MANUFACTURERS,  titleKey: 'manufacturer' },
+          { id: 'emerg',     label: 'Flight Emergencies',       icon: '🆘',  data: FLIGHT_EMERGENCIES,      titleKey: 'emergency' },
+          { id: 'aero_ext',  label: 'Aerodynamic Terms',        icon: '💨',  data: AERO_TERMS_EXPANDED,     titleKey: 'term' },
+          { id: 'physio',    label: 'Flight Physiology',        icon: '🫀',  data: FLIGHT_PHYSIOLOGY,       titleKey: 'condition' },
+          { id: 'heli',      label: 'Helicopters',              icon: '🚁',  data: HELICOPTER_FUNDAMENTALS, titleKey: 'concept' },
+          { id: 'gliders',   label: 'Gliders + Soaring',        icon: '🪁',  data: GLIDERS_SOARING,         titleKey: 'concept' },
+          { id: 'special',   label: 'Special Missions',         icon: '🎯',  data: SPECIAL_MISSIONS,        titleKey: 'mission' },
+          { id: 'drones2',   label: 'Drone Use Cases',          icon: '📷',  data: DRONE_USE_CASES,         titleKey: 'use' },
+          { id: 'odd',       label: 'Unusual Careers',          icon: '🌟',  data: UNUSUAL_AVIATION_CAREERS,titleKey: 'career' },
+          { id: 'media',     label: 'Aviation in Media',        icon: '🎬',  data: AVIATION_MEDIA,          titleKey: 'title' },
+          { id: 'books',     label: 'Aviation Books',           icon: '📚',  data: AVIATION_BOOKS,          titleKey: 'title' },
+          { id: 'train_ms',  label: 'Training Milestones',      icon: '🎓',  data: TRAINING_MILESTONES,     titleKey: 'milestone' },
+          { id: 'atc_world', label: 'World ATC Complexity',     icon: '🌐',  data: ATC_COMPLEXITY,          titleKey: 'area' },
+          { id: 'language',  label: 'Aviation in Language',     icon: '🗣️',  data: AVIATION_LANGUAGE,       titleKey: 'phrase' },
+          { id: 'person',    label: 'Pilot Personality',        icon: '👤',  data: PILOT_PERSONALITY,       titleKey: 'trait' },
+          { id: 'time_ext',  label: 'Expanded Timeline',        icon: '⏳',  data: AVIATION_TIMELINE_EXPANDED, titleKey: 'year' },
+          { id: 'reflect',   label: 'Reflective Notes',         icon: '🌅',  data: REFLECTIVE_NOTES,        titleKey: 'thought' },
+          { id: 'controls',  label: 'Flight Controls Deep',     icon: '🕹️',  data: FLIGHT_CONTROLS_DEEP,    titleKey: 'control' },
+          { id: 'atc_comm',  label: 'ATC Communications',       icon: '📻',  data: ATC_COMMS_DETAIL,        titleKey: 'stage' },
+          { id: 'events',    label: 'Aviation Events',          icon: '🎪',  data: AVIATION_EVENTS,         titleKey: 'event' },
+          { id: 'student_f', label: 'Student Pilot Failure Modes', icon: '⚠️', data: FAILURE_MODES_FOR_STUDENTS, titleKey: 'issue' },
+          { id: 'shapes',    label: 'Aerodynamic Shapes',       icon: '✏️',  data: AERO_SHAPES,             titleKey: 'shape' },
+          { id: 'adv_inq',   label: 'Advanced Inquiry',         icon: '🔭',  data: ADVANCED_INQUIRY,        titleKey: null },
+          { id: 'discuss',   label: 'Discussion Problems',      icon: '💭',  data: DISCUSSION_PROBLEMS,     titleKey: 'problem' },
+          { id: 'impact',    label: 'Aviation Impact',          icon: '🌎',  data: AVIATION_IMPACT,         titleKey: 'area' },
+          { id: 'logbook',   label: 'Pilot Logbook',            icon: '📔',  data: LOGBOOK_CONCEPTS,        titleKey: 'column' },
+          { id: 'ownership', label: 'Aircraft Ownership',       icon: '🏷️',  data: AIRCRAFT_OWNERSHIP,      titleKey: 'topic' },
+          { id: 'plan_ck',   label: 'Flight Planning Checklist',icon: '✈️',  data: FLIGHT_PLANNING_CHECKLIST, titleKey: 'phase' },
+          { id: 'philo',     label: 'Aviation Philosophy',      icon: '🦉',  data: AVIATION_PHILOSOPHY,     titleKey: 'principle' },
+          { id: 'trivia',    label: 'Aviation Trivia',          icon: '🎲',  data: AVIATION_TRIVIA,         titleKey: null },
+          { id: 'inspire',   label: 'Inspirational Closing',    icon: '✨',  data: INSPIRATIONAL_CLOSING,   titleKey: 'thought' },
+          { id: 'wx_detail', label: 'Weather Phenomena Deep',   icon: '🌦️',  data: WEATHER_DETAIL,          titleKey: 'phenomenon' },
+          { id: 'ecosystem', label: 'Aviation Ecosystem',       icon: '🏢',  data: AVIATION_ECOSYSTEM,      titleKey: 'role' },
+          { id: 'youngstart',label: 'Getting Started Young',    icon: '🌱',  data: GETTING_STARTED_YOUNG,   titleKey: 'step' },
+          { id: 'women',     label: 'Women in Aviation',        icon: '👩‍✈️', data: WOMEN_IN_AVIATION,       titleKey: 'name' },
+          { id: 'reading',   label: 'Student Reading List',     icon: '📖',  data: STUDENT_READING,         titleKey: 'level' },
+          { id: 'quotes_ext',label: 'More Aviation Quotes',     icon: '💭',  data: AVIATION_QUOTES_EXTENDED,titleKey: 'quote' },
+          { id: 'regulators',label: 'Regulatory Bodies',        icon: '⚖️',  data: REGULATORY_BODIES,       titleKey: 'body' },
+          { id: 'diversity', label: 'Diversity in Aviation',    icon: '🤝',  data: DIVERSITY_IN_AVIATION,   titleKey: null },
+          { id: 'closing',   label: 'Closing Words',            icon: '🛬',  data: CLOSING_WORDS,           titleKey: 'message' },
+          { id: 'resources', label: 'Free Resources',           icon: '🎁',  data: FREE_RESOURCES,          titleKey: 'resource' },
+          { id: 'numbers',   label: 'Aviation Numbers',         icon: '🔢',  data: AVIATION_NUMBERS,        titleKey: 'number' },
+          { id: 'liveries',  label: 'Airline Liveries',         icon: '🎨',  data: FAMOUS_LIVERIES,         titleKey: 'airline' },
+          { id: 'welcome',   label: 'New Pilot Welcome',        icon: '🎉',  data: NEW_PILOT_WELCOME,       titleKey: null },
+        ];
+        var activeTopic = LEARN_TOPICS.find(function(t) { return t.id === learnTopic; }) || LEARN_TOPICS[0];
+
+        // Renders one entry as a labeled card. Reads all keys except the title key.
+        function renderEntryCard(entry, i, titleKey) {
+          // Plain string entries (e.g., inquiry prompts)
+          if (typeof entry === 'string') {
+            return h('div', {
+              key: i,
+              style: { background: '#0f172a', border: '1px solid #1e293b', borderRadius: '10px', padding: '14px 16px', marginBottom: '10px' }
+            },
+              h('div', { style: { fontSize: '14px', color: '#e2e8f0', lineHeight: 1.5 } }, entry)
+            );
+          }
+          var title = entry[titleKey] || entry.title || entry.label || entry.concept || ('Item ' + (i + 1));
+          var keys = Object.keys(entry).filter(function(k) { return k !== titleKey; });
+          return h('div', {
+            key: i,
+            style: { background: 'linear-gradient(135deg, #0f172a, #131c2e)', border: '1px solid #1e293b', borderRadius: '12px', padding: '14px 16px', marginBottom: '10px' }
+          },
+            h('h4', {
+              style: { fontSize: '16px', fontWeight: 800, color: '#22d3ee', margin: '0 0 10px 0' }
+            }, String(title)),
+            keys.map(function(k) {
+              var v = entry[k];
+              if (v == null) return null;
+              var labelStr = k.replace(/([A-Z])/g, ' $1').replace(/^./, function(c) { return c.toUpperCase(); });
+              // String value
+              if (typeof v === 'string' || typeof v === 'number') {
+                var isMono = /formula|variables|code/i.test(k);
+                return h('div', { key: k, style: { marginBottom: '8px' } },
+                  h('div', {
+                    style: { fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '2px' }
+                  }, labelStr),
+                  h('div', {
+                    style: { fontSize: '12px', color: '#e2e8f0', lineHeight: 1.5, fontFamily: isMono ? 'ui-monospace, Menlo, monospace' : 'inherit', whiteSpace: 'pre-wrap' }
+                  }, String(v))
+                );
+              }
+              // Array value
+              if (Array.isArray(v)) {
+                return h('div', { key: k, style: { marginBottom: '8px' } },
+                  h('div', {
+                    style: { fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }
+                  }, labelStr),
+                  h('ul', { style: { margin: 0, paddingLeft: '20px', color: '#cbd5e1' } },
+                    v.map(function(item, ii) {
+                      if (typeof item === 'string') {
+                        return h('li', { key: ii, style: { fontSize: '12px', marginBottom: '3px', lineHeight: 1.5 } }, item);
+                      }
+                      if (item && typeof item === 'object') {
+                        var summary = Object.keys(item).map(function(kk) { return kk + ': ' + String(item[kk]).slice(0, 200); }).join(' • ');
+                        return h('li', { key: ii, style: { fontSize: '11px', marginBottom: '4px', lineHeight: 1.5 } }, summary);
+                      }
+                      return null;
+                    })
+                  )
+                );
+              }
+              // Object value (nested)
+              if (v && typeof v === 'object') {
+                return h('div', { key: k, style: { marginBottom: '8px' } },
+                  h('div', {
+                    style: { fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }
+                  }, labelStr),
+                  h('div', { style: { fontSize: '11px', color: '#cbd5e1', paddingLeft: '12px' } },
+                    Object.keys(v).map(function(sk) {
+                      return h('div', { key: sk, style: { marginBottom: '2px' } },
+                        h('strong', { style: { color: '#94a3b8' } }, sk + ': '),
+                        h('span', null, String(v[sk]))
+                      );
+                    })
+                  )
+                );
+              }
+              return null;
+            })
+          );
+        }
+
+        return h('div', {
+          style: { minHeight: '600px', height: '100%', maxHeight: 'calc(100vh - 80px)', background: 'linear-gradient(135deg, #0c1222 0%, #122740 50%, #102a3e 100%)', borderRadius: '16px', padding: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }
+        },
+          // Header
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px', flexShrink: 0 } },
+            h('button', {
+              onClick: function() { upd('view', 'menu'); },
+              'aria-label': 'Back to menu',
+              style: { padding: '8px 14px', borderRadius: '8px', border: '1px solid #334155', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+            }, '← Menu'),
+            h('h2', { style: { fontSize: '20px', fontWeight: 900, color: '#fff', margin: 0, flex: 1 } }, '📚 SkySchool Learn'),
+            h('div', { style: { fontSize: '11px', color: '#94a3b8' } }, LEARN_TOPICS.length + ' topics')
+          ),
+
+          // Split pane
+          h('div', { style: { display: 'flex', gap: '12px', flex: 1, minHeight: 0 } },
+            // Sidebar
+            h('nav', {
+              'aria-label': 'Learn topics',
+              style: { width: '230px', flexShrink: 0, overflowY: 'auto', background: 'rgba(15,23,42,0.5)', borderRadius: '12px', padding: '8px', border: '1px solid #1e293b' }
+            },
+              LEARN_TOPICS.map(function(t) {
+                var isActive = t.id === activeTopic.id;
+                return h('button', {
+                  key: t.id,
+                  onClick: function() { upd('learnTopic', t.id); },
+                  'aria-current': isActive ? 'page' : undefined,
+                  style: {
+                    display: 'flex', alignItems: 'center', gap: '8px', width: '100%',
+                    padding: '8px 10px', marginBottom: '3px',
+                    borderRadius: '8px', border: 'none', cursor: 'pointer', textAlign: 'left',
+                    fontSize: '12px', fontWeight: isActive ? 700 : 500,
+                    background: isActive ? 'linear-gradient(90deg, #3b82f6, #2563eb)' : 'transparent',
+                    color: isActive ? '#fff' : '#cbd5e1',
+                    transition: 'all 0.1s'
+                  }
+                },
+                  h('span', { style: { fontSize: '14px' } }, t.icon),
+                  h('span', null, t.label),
+                  h('span', { style: { marginLeft: 'auto', fontSize: '9px', color: isActive ? 'rgba(255,255,255,0.7)' : '#64748b' } }, (Array.isArray(t.data) ? t.data.length : '') + '')
+                );
+              })
+            ),
+
+            // Content
+            h('article', {
+              'aria-label': activeTopic.label,
+              style: { flex: 1, overflowY: 'auto', background: 'rgba(15,23,42,0.3)', borderRadius: '12px', padding: '20px', border: '1px solid #1e293b' }
+            },
+              h('header', { style: { marginBottom: '16px', paddingBottom: '12px', borderBottom: '2px solid #1e293b' } },
+                h('h3', { style: { fontSize: '20px', fontWeight: 800, color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' } },
+                  h('span', { style: { fontSize: '24px' } }, activeTopic.icon),
+                  activeTopic.label
+                )
+              ),
+              activeTopic.data && activeTopic.data.length > 0
+                ? activeTopic.data.map(function(entry, i) { return renderEntryCard(entry, i, activeTopic.titleKey); })
+                : h('p', { style: { color: '#94a3b8' } }, 'No content yet.')
+            )
+          )
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // QUIZ VIEW — interactive multiple-choice quiz with scoring
+      // ═══════════════════════════════════════════════════════════════
+      if (view === 'quiz') {
+        var qIdx = d.quizIdx || 0;
+        var qPicked = d.quizPicked;  // null if not yet picked this question
+        var qScore = d.quizScore || 0;
+        var qTotal = d.quizTotal || 0;
+        var qStreak = d.quizStreak || 0;
+        var qBest = d.quizBest || 0;
+        var safeIdx = ((qIdx % FLIGHT_QUIZ.length) + FLIGHT_QUIZ.length) % FLIGHT_QUIZ.length;
+        var q = FLIGHT_QUIZ[safeIdx];
+        var answered = qPicked != null;
+        var isCorrect = answered && q.options[qPicked] === q.correct;
+        var accuracy = qTotal > 0 ? Math.round((qScore / qTotal) * 100) : 0;
+
+        function pickAnswer(optionIdx) {
+          if (answered) return;
+          var pickedCorrect = q.options[optionIdx] === q.correct;
+          var newScore = qScore + (pickedCorrect ? 1 : 0);
+          var newStreak = pickedCorrect ? qStreak + 1 : 0;
+          var newBest = Math.max(qBest, newStreak);
+          updMulti({
+            quizPicked: optionIdx,
+            quizScore: newScore,
+            quizTotal: qTotal + 1,
+            quizStreak: newStreak,
+            quizBest: newBest,
+          });
+          if (pickedCorrect && addToast) addToast('🎯 Correct!');
+        }
+
+        function nextQuiz() {
+          updMulti({
+            quizIdx: safeIdx + 1,
+            quizPicked: null,
+          });
+        }
+
+        function randomQuiz() {
+          var rand = Math.floor(Math.random() * FLIGHT_QUIZ.length);
+          updMulti({ quizIdx: rand, quizPicked: null });
+        }
+
+        function resetQuiz() {
+          updMulti({ quizIdx: 0, quizPicked: null, quizScore: 0, quizTotal: 0, quizStreak: 0, quizBest: 0 });
+        }
+
+        return h('div', {
+          style: { minHeight: '600px', height: '100%', maxHeight: 'calc(100vh - 80px)', background: 'linear-gradient(135deg, #0c1222 0%, #122740 50%, #102a3e 100%)', borderRadius: '16px', padding: '20px', overflow: 'auto' }
+        },
+          // Header
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' } },
+            h('button', {
+              onClick: function() { upd('view', 'menu'); },
+              'aria-label': 'Back to menu',
+              style: { padding: '8px 14px', borderRadius: '8px', border: '1px solid #334155', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+            }, '← Menu'),
+            h('h2', { style: { fontSize: '20px', fontWeight: 900, color: '#fff', margin: 0, flex: 1 } }, '🎯 Flight Knowledge Quiz')
+          ),
+
+          // Scoreboard
+          h('div', {
+            style: { display: 'flex', gap: '10px', flexWrap: 'wrap', padding: '14px', background: 'linear-gradient(135deg, #1e3a8a, #1e40af)', borderRadius: '12px', border: '1px solid #3b82f6', marginBottom: '16px' }
+          },
+            h('div', { style: { flex: 1, minWidth: '100px' } },
+              h('div', { style: { fontSize: '10px', color: '#bfdbfe', fontWeight: 700, textTransform: 'uppercase' } }, 'Question'),
+              h('div', { style: { fontSize: '22px', fontWeight: 900, color: '#fff' } }, (safeIdx + 1) + ' / ' + FLIGHT_QUIZ.length)
+            ),
+            h('div', { style: { flex: 1, minWidth: '100px' } },
+              h('div', { style: { fontSize: '10px', color: '#bfdbfe', fontWeight: 700, textTransform: 'uppercase' } }, 'Correct'),
+              h('div', { style: { fontSize: '22px', fontWeight: 900, color: '#86efac' } }, qScore + ' / ' + qTotal)
+            ),
+            h('div', { style: { flex: 1, minWidth: '100px' } },
+              h('div', { style: { fontSize: '10px', color: '#bfdbfe', fontWeight: 700, textTransform: 'uppercase' } }, 'Accuracy'),
+              h('div', { style: { fontSize: '22px', fontWeight: 900, color: '#fff' } }, accuracy + '%')
+            ),
+            h('div', { style: { flex: 1, minWidth: '100px' } },
+              h('div', { style: { fontSize: '10px', color: '#bfdbfe', fontWeight: 700, textTransform: 'uppercase' } }, 'Streak'),
+              h('div', { style: { fontSize: '22px', fontWeight: 900, color: '#fbbf24' } }, '🔥 ' + qStreak),
+              qBest > 0 && h('div', { style: { fontSize: '10px', color: '#bfdbfe' } }, 'Best: ' + qBest)
+            ),
+            h('button', { onClick: resetQuiz, style: { padding: '8px 12px', borderRadius: '6px', border: '1px solid #fbbf24', background: 'rgba(251,191,36,0.1)', color: '#fbbf24', fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, '↻ Reset')
+          ),
+
+          // Question card
+          h('div', {
+            style: { padding: '22px', background: 'rgba(15,23,42,0.5)', border: '2px solid #1e293b', borderRadius: '14px', marginBottom: '16px' }
+          },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' } },
+              h('span', {
+                style: { fontSize: '10px', fontWeight: 700, padding: '3px 8px', borderRadius: '10px', background: q.difficulty === 'easy' ? '#16a34a' : q.difficulty === 'hard' ? '#dc2626' : '#f59e0b', color: '#fff', textTransform: 'uppercase' }
+              }, q.difficulty),
+              h('span', { style: { fontSize: '10px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, q.topic)
+            ),
+            h('h3', { style: { fontSize: '17px', fontWeight: 800, color: '#fff', margin: '0 0 16px 0', lineHeight: 1.4 } }, q.question),
+
+            // Options
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+              q.options.map(function(opt, oi) {
+                var thisCorrect = opt === q.correct;
+                var bg = 'rgba(15,23,42,0.6)';
+                var border = '#1e293b';
+                var color = '#e2e8f0';
+                if (answered) {
+                  if (thisCorrect) { bg = 'rgba(22,163,74,0.2)'; border = '#16a34a'; color = '#86efac'; }
+                  else if (oi === qPicked) { bg = 'rgba(220,38,38,0.2)'; border = '#dc2626'; color = '#fca5a5'; }
+                }
+                return h('button', {
+                  key: oi,
+                  onClick: function() { pickAnswer(oi); },
+                  disabled: answered,
+                  style: {
+                    padding: '12px 16px', borderRadius: '10px', border: '2px solid ' + border, background: bg,
+                    color: color, fontSize: '13px', fontWeight: 600,
+                    cursor: answered ? 'default' : 'pointer',
+                    textAlign: 'left', display: 'flex', alignItems: 'center', gap: '10px',
+                    transition: 'all 0.15s'
+                  }
+                },
+                  h('span', { style: { fontSize: '15px', fontWeight: 800, minWidth: '24px' } }, String.fromCharCode(65 + oi) + '.'),
+                  h('span', { style: { flex: 1 } }, opt),
+                  answered && thisCorrect && h('span', { style: { fontSize: '18px' } }, '✓'),
+                  answered && oi === qPicked && !thisCorrect && h('span', { style: { fontSize: '18px' } }, '✗')
+                );
+              })
+            ),
+
+            // Feedback
+            answered && h('div', {
+              style: { marginTop: '14px', padding: '14px', background: isCorrect ? 'rgba(22,163,74,0.15)' : 'rgba(251,191,36,0.15)', borderRadius: '10px', border: '1px solid ' + (isCorrect ? '#16a34a' : '#fbbf24') }
+            },
+              h('div', { style: { fontSize: '14px', fontWeight: 800, color: isCorrect ? '#86efac' : '#fbbf24', marginBottom: '6px' } },
+                isCorrect ? '✓ Correct!' : '✗ Not quite. The answer was: ' + q.correct
+              ),
+              h('p', { style: { fontSize: '12px', color: '#cbd5e1', margin: 0, lineHeight: 1.6 } }, q.explanation)
+            ),
+
+            // Nav
+            h('div', { style: { display: 'flex', gap: '10px', marginTop: '16px', justifyContent: 'space-between' } },
+              h('button', {
+                onClick: function() { updMulti({ quizIdx: safeIdx - 1, quizPicked: null }); },
+                disabled: safeIdx === 0,
+                style: { padding: '10px 16px', borderRadius: '8px', border: '1px solid #334155', background: 'transparent', color: safeIdx === 0 ? '#64748b' : '#e2e8f0', fontSize: '12px', fontWeight: 700, cursor: safeIdx === 0 ? 'not-allowed' : 'pointer' }
+              }, '◀ Previous'),
+              h('div', { style: { display: 'flex', gap: '8px' } },
+                h('button', { onClick: randomQuiz, style: { padding: '10px 16px', borderRadius: '8px', border: '1px solid #334155', background: 'transparent', color: '#e2e8f0', fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, '🎲 Random'),
+                h('button', { onClick: nextQuiz, style: { padding: '10px 16px', borderRadius: '8px', border: 'none', background: '#3b82f6', color: '#fff', fontSize: '12px', fontWeight: 800, cursor: 'pointer' } }, 'Next ▶')
+              )
+            )
+          )
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // PRE-FLIGHT CHECKLIST VIEW — interactive ckecklist with progress
+      // ═══════════════════════════════════════════════════════════════
+      if (view === 'preflight') {
+        var checked = d.preflightChecked || {};
+        function toggleCheck(phase, idx) {
+          var key = phase + '-' + idx;
+          var next = Object.assign({}, checked);
+          if (next[key]) delete next[key]; else next[key] = true;
+          upd('preflightChecked', next);
+        }
+        function resetChecklist() { upd('preflightChecked', {}); }
+
+        var totalItems = PREFLIGHT_CHECKLIST.reduce(function(s, p) { return s + p.items.length; }, 0);
+        var checkedCount = Object.keys(checked).length;
+        var pctComplete = totalItems > 0 ? Math.round((checkedCount / totalItems) * 100) : 0;
+
+        return h('div', {
+          style: { minHeight: '600px', height: '100%', maxHeight: 'calc(100vh - 80px)', background: 'linear-gradient(135deg, #0c1222 0%, #122740 50%, #102a3e 100%)', borderRadius: '16px', padding: '20px', overflow: 'auto' }
+        },
+          // Header
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' } },
+            h('button', {
+              onClick: function() { upd('view', 'menu'); },
+              style: { padding: '8px 14px', borderRadius: '8px', border: '1px solid #334155', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+            }, '← Menu'),
+            h('h2', { style: { fontSize: '20px', fontWeight: 900, color: '#fff', margin: 0, flex: 1 } }, '✅ Pre-Flight Checklist')
+          ),
+
+          // Progress
+          h('div', {
+            style: { padding: '14px 16px', background: 'rgba(15,23,42,0.6)', borderRadius: '12px', marginBottom: '16px', border: '1px solid #1e293b' }
+          },
+            h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' } },
+              h('div', null,
+                h('div', { style: { fontSize: '11px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, 'Progress'),
+                h('div', { style: { fontSize: '20px', fontWeight: 900, color: pctComplete === 100 ? '#86efac' : '#fff' } }, checkedCount + ' / ' + totalItems + ' items')
+              ),
+              h('div', { style: { fontSize: '28px', fontWeight: 900, color: pctComplete === 100 ? '#86efac' : '#22d3ee' } }, pctComplete + '%'),
+              h('button', { onClick: resetChecklist, style: { padding: '6px 12px', fontSize: '11px', fontWeight: 700, background: 'transparent', color: '#94a3b8', border: '1px solid #334155', borderRadius: '6px', cursor: 'pointer' } }, '↻ Reset')
+            ),
+            h('div', { style: { height: '8px', background: '#0f172a', borderRadius: '4px', overflow: 'hidden' } },
+              h('div', { style: { width: pctComplete + '%', height: '100%', background: pctComplete === 100 ? 'linear-gradient(90deg, #16a34a, #22c55e)' : 'linear-gradient(90deg, #3b82f6, #22d3ee)', transition: 'width 0.3s' } })
+            )
+          ),
+
+          // Phases
+          PREFLIGHT_CHECKLIST.map(function(phase, pi) {
+            var phaseChecked = phase.items.filter(function(_, idx) { return checked[phase.phase + '-' + idx]; }).length;
+            return h('div', {
+              key: pi,
+              style: { marginBottom: '14px', padding: '14px', background: 'rgba(15,23,42,0.5)', borderRadius: '12px', border: '1px solid #1e293b' }
+            },
+              h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' } },
+                h('h3', { style: { fontSize: '14px', fontWeight: 800, color: '#fff', margin: 0 } }, phase.phase),
+                h('div', { style: { fontSize: '11px', color: '#94a3b8', fontWeight: 700 } }, phaseChecked + ' / ' + phase.items.length)
+              ),
+              h('ul', { style: { listStyle: 'none', padding: 0, margin: 0 } },
+                phase.items.map(function(item, idx) {
+                  var key = phase.phase + '-' + idx;
+                  var isChecked = !!checked[key];
+                  return h('li', { key: idx, style: { marginBottom: '6px' } },
+                    h('label', {
+                      style: { display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '10px 12px', background: isChecked ? 'rgba(22,163,74,0.1)' : 'rgba(15,23,42,0.4)', borderRadius: '8px', cursor: 'pointer', border: '1px solid ' + (isChecked ? '#16a34a' : '#1e293b'), transition: 'all 0.1s' }
+                    },
+                      h('input', {
+                        type: 'checkbox',
+                        checked: isChecked,
+                        onChange: function() { toggleCheck(phase.phase, idx); },
+                        'aria-label': item.check,
+                        style: { marginTop: '2px', flexShrink: 0 }
+                      }),
+                      h('div', { style: { flex: 1 } },
+                        h('div', { style: { fontSize: '12px', fontWeight: 700, color: isChecked ? '#86efac' : '#e2e8f0', textDecoration: isChecked ? 'line-through' : 'none' } }, item.check),
+                        h('div', { style: { fontSize: '11px', color: '#94a3b8', marginTop: '2px', fontStyle: 'italic' } }, 'Why: ' + item.why)
+                      )
+                    )
+                  );
+                })
+              )
+            );
+          }),
+
+          pctComplete === 100 && h('div', { style: { padding: '20px', textAlign: 'center', background: 'rgba(22,163,74,0.15)', borderRadius: '12px', border: '2px solid #16a34a', marginTop: '16px' } },
+            h('div', { style: { fontSize: '40px', marginBottom: '8px' } }, '🎉'),
+            h('div', { style: { fontSize: '18px', fontWeight: 900, color: '#86efac', marginBottom: '6px' } }, 'Checklist Complete!'),
+            h('div', { style: { fontSize: '13px', color: '#cbd5e1', lineHeight: 1.5 } }, 'You\'ve verified every pre-flight item. Real pilots do this before every flight. Ready to fly!')
+          )
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // FORCE CALCULATOR VIEW — interactive lift/drag computation
+      // ═══════════════════════════════════════════════════════════════
+      if (view === 'calculator') {
+        var calcPreset = d.calcPreset || 0;
+        var preset = FORCE_CALCULATOR_PRESETS[calcPreset] || FORCE_CALCULATOR_PRESETS[0];
+        var calcSpeed = d.calcSpeed != null ? d.calcSpeed : preset.maxSpeed * 0.6;
+        var calcAltitude = d.calcAltitude != null ? d.calcAltitude : 0;
+        var calcWingArea = d.calcWingArea != null ? d.calcWingArea : preset.wingArea;
+        var calcCl = d.calcCl != null ? d.calcCl : preset.cl;
+
+        // Density at altitude (simplified ISA model)
+        // rho = rho_sl * (1 - 0.0065*h/288.15)^5.2561
+        var rhoSl = 0.002378;  // slugs/ft^3
+        var hFt = Math.max(0, calcAltitude);
+        var theta = 1 - (0.0065 * hFt * 0.3048) / 288.15;  // h in meters
+        var sigma = Math.max(0, Math.pow(theta, 5.2561));
+        var rho = rhoSl * sigma;
+        // Speed: knots to ft/s
+        var vFtS = calcSpeed * 1.6878;
+        // Lift in pounds
+        var liftLb = 0.5 * rho * vFtS * vFtS * calcWingArea * calcCl;
+        // Comparison to weight
+        var ratio = liftLb / preset.weight;
+
+        function setPreset(idx) {
+          var p = FORCE_CALCULATOR_PRESETS[idx];
+          updMulti({
+            calcPreset: idx,
+            calcWingArea: p.wingArea,
+            calcCl: p.cl,
+            calcSpeed: p.maxSpeed * 0.6,
+            calcAltitude: 0,
+          });
+        }
+
+        function slider(label, value, min, max, step, onChange, unit) {
+          return h('div', { style: { marginBottom: '14px' } },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: '4px' } },
+              h('label', { style: { fontSize: '11px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, label),
+              h('span', { style: { fontSize: '14px', color: '#22d3ee', fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace' } }, value.toFixed(value < 1 ? 2 : 0) + ' ' + unit)
+            ),
+            h('input', {
+              type: 'range', min: min, max: max, step: step, value: value,
+              onChange: function(e) { onChange(parseFloat(e.target.value)); },
+              'aria-label': label,
+              style: { width: '100%', accentColor: '#3b82f6' }
+            })
+          );
+        }
+
+        return h('div', {
+          style: { minHeight: '600px', height: '100%', maxHeight: 'calc(100vh - 80px)', background: 'linear-gradient(135deg, #0c1222 0%, #122740 50%, #102a3e 100%)', borderRadius: '16px', padding: '20px', overflow: 'auto' }
+        },
+          // Header
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' } },
+            h('button', {
+              onClick: function() { upd('view', 'menu'); },
+              style: { padding: '8px 14px', borderRadius: '8px', border: '1px solid #334155', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+            }, '← Menu'),
+            h('h2', { style: { fontSize: '20px', fontWeight: 900, color: '#fff', margin: 0, flex: 1 } }, '🧮 Lift Force Calculator')
+          ),
+
+          h('p', { style: { fontSize: '12px', color: '#94a3b8', marginBottom: '16px', lineHeight: 1.5 } },
+            'L = ½ ρ v² S Cₗ — adjust the inputs to see how lift changes. Choose an aircraft preset to start with realistic values.'
+          ),
+
+          // Preset picker
+          h('div', { style: { marginBottom: '16px' } },
+            h('div', { style: { fontSize: '11px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' } }, 'Aircraft preset'),
+            h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
+              FORCE_CALCULATOR_PRESETS.map(function(p, i) {
+                var active = calcPreset === i;
+                return h('button', {
+                  key: i,
+                  onClick: function() { setPreset(i); },
+                  style: { padding: '8px 12px', fontSize: '11px', fontWeight: 700, borderRadius: '8px', cursor: 'pointer', border: '1px solid ' + (active ? '#3b82f6' : '#334155'), background: active ? '#3b82f6' : 'rgba(15,23,42,0.5)', color: active ? '#fff' : '#cbd5e1' }
+                }, p.name);
+              })
+            ),
+            h('div', { style: { fontSize: '10px', color: '#94a3b8', marginTop: '4px', fontStyle: 'italic' } }, preset.notes)
+          ),
+
+          // Two-column layout: inputs and outputs
+          h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' } },
+            // Inputs
+            h('div', { style: { padding: '16px', background: 'rgba(15,23,42,0.5)', borderRadius: '12px', border: '1px solid #1e293b' } },
+              h('h3', { style: { fontSize: '13px', fontWeight: 800, color: '#fff', marginBottom: '14px' } }, 'Inputs'),
+              slider('Airspeed', calcSpeed, 0, preset.maxSpeed * 1.5, 1, function(v) { upd('calcSpeed', v); }, 'kts'),
+              slider('Altitude', calcAltitude, 0, 50000, 500, function(v) { upd('calcAltitude', v); }, 'ft MSL'),
+              slider('Wing area', calcWingArea, 5, 600, 1, function(v) { upd('calcWingArea', v); }, 'ft²'),
+              slider('Lift coefficient (Cₗ)', calcCl, 0.1, 2.0, 0.05, function(v) { upd('calcCl', v); }, '')
+            ),
+
+            // Outputs
+            h('div', { style: { padding: '16px', background: 'rgba(15,23,42,0.5)', borderRadius: '12px', border: '1px solid #1e293b' } },
+              h('h3', { style: { fontSize: '13px', fontWeight: 800, color: '#fff', marginBottom: '14px' } }, 'Outputs'),
+              h('div', { style: { marginBottom: '12px' } },
+                h('div', { style: { fontSize: '11px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, 'Air density'),
+                h('div', { style: { fontSize: '15px', color: '#22d3ee', fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace' } }, rho.toFixed(5) + ' slug/ft³'),
+                h('div', { style: { fontSize: '10px', color: '#64748b' } }, (Math.round(sigma * 100)) + '% of sea-level density')
+              ),
+              h('div', { style: { marginBottom: '12px' } },
+                h('div', { style: { fontSize: '11px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, 'Lift force'),
+                h('div', { style: { fontSize: '24px', color: '#86efac', fontWeight: 900, fontFamily: 'ui-monospace, Menlo, monospace' } }, Math.round(liftLb).toLocaleString() + ' lb'),
+                h('div', { style: { fontSize: '10px', color: '#64748b' } }, '= ' + Math.round(liftLb / 2.2046).toLocaleString() + ' kg')
+              ),
+              h('div', { style: { marginBottom: '12px' } },
+                h('div', { style: { fontSize: '11px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, 'Aircraft weight (preset)'),
+                h('div', { style: { fontSize: '15px', color: '#fbbf24', fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace' } }, preset.weight.toLocaleString() + ' lb')
+              ),
+              h('div', {
+                style: { padding: '12px', borderRadius: '8px', background: ratio >= 1.0 ? 'rgba(22,163,74,0.15)' : 'rgba(220,38,38,0.15)', border: '1px solid ' + (ratio >= 1.0 ? '#16a34a' : '#dc2626') }
+              },
+                h('div', { style: { fontSize: '11px', fontWeight: 700, color: ratio >= 1.0 ? '#86efac' : '#fca5a5', textTransform: 'uppercase' } }, ratio >= 1.0 ? 'Lift exceeds weight ✓' : 'Lift below weight ✗'),
+                h('div', { style: { fontSize: '20px', fontWeight: 900, color: ratio >= 1.0 ? '#86efac' : '#fca5a5', marginTop: '4px' } }, 'L/W = ' + ratio.toFixed(2)),
+                h('div', { style: { fontSize: '11px', color: '#cbd5e1', marginTop: '4px', lineHeight: 1.4 } }, ratio >= 1.0 ? 'The aircraft would climb at these settings.' : 'Not enough lift — the aircraft would descend. Increase speed, wing area, or Cₗ.')
+              )
+            )
+          ),
+
+          // Pedagogical reminder
+          h('div', { style: { marginTop: '16px', padding: '14px', background: 'rgba(59,130,246,0.1)', borderRadius: '10px', border: '1px solid #3b82f6' } },
+            h('div', { style: { fontSize: '12px', fontWeight: 700, color: '#bfdbfe', marginBottom: '4px' } }, '🧠 Try these experiments:'),
+            h('ul', { style: { margin: 0, paddingLeft: '20px', fontSize: '11px', color: '#cbd5e1', lineHeight: 1.6 } },
+              h('li', null, 'Double the airspeed. What happens to lift? (Hint: v²)'),
+              h('li', null, 'Climb to 40,000 ft at the same speed. Lift drops because density drops.'),
+              h('li', null, 'Compare the F-22 (small fast wings) vs the 747 (big slower wings) — both fly, but very differently.'),
+              h('li', null, 'Lower Cₗ to 0.3 (cruise config) vs raise it to 1.5 (flaps extended for landing).')
+            )
           )
         );
       }
