@@ -5042,6 +5042,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [annotationMode, setAnnotationMode] = useState('');
   const [noteColor, setNoteColor] = useState('yellow');
   const [highlightColor, setHighlightColor] = useState('yellow');
+  // Phase 9: drawing tool — freehand SVG strokes as a new annotation kind.
+  // Color + width are picked from the toolbar; DrawingCapture renders the
+  // active stroke; createDrawingFromStroke commits it as a 'draw' annotation.
+  const [drawColor, setDrawColor] = useState('red');
+  const [drawWidth, setDrawWidth] = useState(4);
   // Phase 7: note templates. Empty string = freeform (inline editor opens).
   // Non-empty = pre-filled content; stays "sticky" across multiple clicks
   // so a teacher can rapid-fire the same feedback when grading a class set.
@@ -22384,12 +22389,16 @@ ${_toolList}
                                 noteColor: noteColor,
                                 highlightColor: highlightColor,
                                 noteTemplate: noteTemplate,
+                                drawColor: drawColor,
+                                drawWidth: drawWidth,
                                 isTeacher: isTeacherMode,
                                 onSetMode: setAnnotationMode,
                                 onPickType: setStickerType,
                                 onPickNoteColor: setNoteColor,
                                 onPickHighlightColor: setHighlightColor,
                                 onPickTemplate: setNoteTemplate,
+                                onPickDrawColor: setDrawColor,
+                                onPickDrawWidth: setDrawWidth,
                                 onClear: clearStickers,
                                 t: t,
                             });
@@ -22522,6 +22531,34 @@ ${_toolList}
                     onVoiceDelete: (id) => {
                         if (_m.removeAnnotation) {
                             setStickers(prev => _m.removeAnnotation(prev, id));
+                        }
+                    },
+                    onDrawDelete: (id) => {
+                        if (_m.removeAnnotation) {
+                            setStickers(prev => _m.removeAnnotation(prev, id));
+                        }
+                    },
+                });
+            })()}
+            {/* Drawing capture overlay — only mounts when draw mode is active.
+                Pointer events get captured here, the in-progress stroke renders
+                live, and pointerup commits via createDrawingFromStroke. */}
+            {annotationMode === 'draw' && (() => {
+                const _m = window.AlloModules && window.AlloModules.AnnotationSuite;
+                if (!_m || !_m.DrawingCapture || !_m.createDrawingFromStroke) return null;
+                const authorName = studentNickname || studentProjectSettings?.nickname || '';
+                return React.createElement(_m.DrawingCapture, {
+                    active: true,
+                    color: drawColor,
+                    width: drawWidth,
+                    onCommit: (stroke) => {
+                        const next = _m.createDrawingFromStroke(stroke, {
+                            isTeacher: isTeacherMode,
+                            authorName: authorName,
+                        });
+                        if (next) {
+                            setStickers(prev => [...prev, next]);
+                            playSound('click');
                         }
                     },
                 });
