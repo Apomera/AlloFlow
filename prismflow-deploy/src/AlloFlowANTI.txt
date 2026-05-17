@@ -1274,13 +1274,49 @@ export const LanguageProvider = ({ children }) => {
   useEffect(() => {
     const isRtl = isRtlLang(currentUiLanguage);
     document.documentElement.dir = isRtl ? 'rtl' : 'ltr';
-    if (isRtl) {
-        if (currentUiLanguage === 'Arabic') document.documentElement.lang = 'ar';
-        else if (currentUiLanguage === 'Hebrew') document.documentElement.lang = 'he';
-    } else {
-        document.documentElement.lang = 'en';
+    // Set <html lang> to the full BCP-47 code for the current UI language (WCAG 3.1.1).
+    // Falls back to 'en' if the language isn't in the map. Uses getSpeechLangCode
+    // which carries the full 47-language map already used elsewhere for TTS.
+    try {
+      const bcp47 = (typeof getSpeechLangCode === 'function' ? getSpeechLangCode(currentUiLanguage) : null) || 'en-US';
+      document.documentElement.lang = bcp47.split('-')[0]; // primary subtag only for <html lang>
+    } catch (_) {
+      document.documentElement.lang = 'en';
     }
   }, [currentUiLanguage]);
+  // ── window.AlloFlowLang — global helper for inline foreign-language markup (WCAG 3.1.2) ──
+  // Modules use:
+  //   const lang = window.AlloFlowLang.bcp47('Spanish'); // → 'es'
+  //   <span lang={lang}>{vocabWord}</span>
+  // Or use the ready-made wrapper component:
+  //   <window.AlloFlowLang.Span lang="Spanish">hola</window.AlloFlowLang.Span>
+  useEffect(() => {
+    if (window.AlloFlowLang) return;
+    window.AlloFlowLang = {
+      bcp47(friendlyName) {
+        try {
+          if (typeof getSpeechLangCode !== 'function') return 'en';
+          const full = getSpeechLangCode(friendlyName) || 'en-US';
+          // Return the language subtag only (e.g. 'es' from 'es-ES') for <span lang>.
+          return full.split('-')[0];
+        } catch (_) { return 'en'; }
+      },
+      // Returns the full BCP-47 tag including region (e.g. 'es-ES').
+      bcp47Full(friendlyName) {
+        try {
+          if (typeof getSpeechLangCode !== 'function') return 'en-US';
+          return getSpeechLangCode(friendlyName) || 'en-US';
+        } catch (_) { return 'en-US'; }
+      },
+      // Helper React element factory — modules without JSX can call:
+      //   AlloFlowLang.span('Spanish', 'hola', { className: '...' })
+      span(friendlyName, text, extraProps) {
+        const code = this.bcp47(friendlyName);
+        const props = Object.assign({ lang: code }, extraProps || {});
+        return React.createElement('span', props, text);
+      },
+    };
+  }, []);
   const value = {
     currentUiLanguage,
     setUiLanguage,
@@ -3672,6 +3708,53 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // safety net for other components.
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
+    // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
+    // Persisted to localStorage so the user can extend API/audio timeouts
+    // beyond the defaults if their connection is slow. Modules read these
+    // values via window.AlloFlowConfig.timeouts.* and fall back to defaults
+    // if config not present.
+    if (!window.AlloFlowConfig) {
+      let _userCfg = {};
+      try { _userCfg = JSON.parse(localStorage.getItem('alloflow_user_config') || '{}') || {}; } catch (_) {}
+      const _defaults = {
+        timeouts: {
+          aiTextMs: 120000,        // 2 min — AI text generation
+          aiImageMs: 180000,       // 3 min — image gen
+          aiOptimizeMs: 90000,     // 90s — image optimization
+          audioLoadMs: 15000,      // 15s — audio file load
+          webSearchMs: 15000,      // 15s — web search proxy
+          contentEngineOptimizeMs: 90000, // 90s — content engine optimization
+        },
+      };
+      const _userTimeouts = (_userCfg && typeof _userCfg.timeouts === 'object') ? _userCfg.timeouts : {};
+      window.AlloFlowConfig = {
+        timeouts: Object.assign({}, _defaults.timeouts, _userTimeouts),
+        // Update a single timeout value and persist. Accepts ms; floors to 1000ms.
+        setTimeout(name, ms) {
+          if (typeof name !== 'string' || typeof ms !== 'number' || !isFinite(ms) || ms < 1000) return false;
+          this.timeouts[name] = Math.floor(ms);
+          try {
+            const cfg = JSON.parse(localStorage.getItem('alloflow_user_config') || '{}') || {};
+            cfg.timeouts = cfg.timeouts || {};
+            cfg.timeouts[name] = this.timeouts[name];
+            localStorage.setItem('alloflow_user_config', JSON.stringify(cfg));
+          } catch (_) {}
+          return true;
+        },
+        // Restore defaults (single name or all). Persists removal.
+        resetTimeout(name) {
+          try {
+            const cfg = JSON.parse(localStorage.getItem('alloflow_user_config') || '{}') || {};
+            if (cfg.timeouts) {
+              if (name) delete cfg.timeouts[name]; else delete cfg.timeouts;
+              localStorage.setItem('alloflow_user_config', JSON.stringify(cfg));
+            }
+            if (name) this.timeouts[name] = _defaults.timeouts[name];
+            else Object.assign(this.timeouts, _defaults.timeouts);
+          } catch (_) {}
+        },
+      };
+    }
     const loadModule = (name, url) => {
       console.log('[CDN] Attempting to load ' + name + ' from: ' + url);
       const prevOnError = window.onerror;
