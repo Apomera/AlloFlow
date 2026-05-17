@@ -1049,7 +1049,8 @@ const useTranslation = (targetLanguage, apiKey) => {
   }, []);
   const exportLanguagePack = useCallback(() => {
     if (!languagePack) {
-      alert(t('language_selector.no_data_export'));
+      if (window.AlloFlowUX) window.AlloFlowUX.toast(t('language_selector.no_data_export'), 'warning');
+      else alert(t('language_selector.no_data_export'));
       return;
     }
     const dataStr = JSON.stringify(languagePack, null, 2);
@@ -1075,11 +1076,13 @@ const useTranslation = (targetLanguage, apiKey) => {
           setIsTranslating(false);
           setIsTranslating(false);
         } else {
-          alert(t('language_selector.alert_invalid_json'));
+          if (window.AlloFlowUX) window.AlloFlowUX.toast(t('language_selector.alert_invalid_json'), 'error');
+          else alert(t('language_selector.alert_invalid_json'));
         }
       } catch (err) {
         warnLog("Import failed", err);
-        alert(t('language_selector.alert_parse_error'));
+        if (window.AlloFlowUX) window.AlloFlowUX.toast(t('language_selector.alert_parse_error'), 'error');
+        else alert(t('language_selector.alert_parse_error'));
       }
     };
     reader.readAsText(file);
@@ -1781,7 +1784,8 @@ const useAudioRecorder = () => {
       setIsRecording(true);
     } catch (err) {
       warnLog("Error accessing microphone:", err);
-      alert(t('errors.microphone_access_denied'));
+      if (window.AlloFlowUX) window.AlloFlowUX.toast(t('errors.microphone_access_denied'), 'error');
+      else alert(t('errors.microphone_access_denied'));
     }
   };
   const stopRecording = () => {
@@ -21283,6 +21287,48 @@ ${_toolList}
           t, updateDoc, warnLog
       })}
       <style>{`
+        /* ── Polish pass May 2026: global a11y baselines ── */
+        /* Respect prefers-reduced-motion across all CDN tools that animate. */
+        @media (prefers-reduced-motion: reduce) {
+          *, *::before, *::after {
+            animation-duration: 0.001ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.001ms !important;
+            scroll-behavior: auto !important;
+          }
+        }
+        /* Stronger keyboard focus ring for sighted keyboard users.
+           Mouse clicks still get the default; only :focus-visible (kbd focus) gets the high-vis ring. */
+        button:focus-visible,
+        a:focus-visible,
+        [role="button"]:focus-visible,
+        [role="tab"]:focus-visible,
+        [role="link"]:focus-visible,
+        [role="menuitem"]:focus-visible,
+        [role="option"]:focus-visible,
+        [tabindex]:focus-visible:not([tabindex="-1"]),
+        input:focus-visible,
+        select:focus-visible,
+        textarea:focus-visible,
+        summary:focus-visible {
+          outline: 3px solid #6366f1 !important;
+          outline-offset: 2px !important;
+          border-radius: 6px;
+        }
+        /* App-level skeleton shimmer for loading states */
+        @keyframes alloflow-skeleton-shimmer {
+          0%   { background-position: -400px 0; }
+          100% { background-position: 400px 0; }
+        }
+        .alloflow-skeleton {
+          background: linear-gradient(90deg, #e2e8f0 0%, #f1f5f9 50%, #e2e8f0 100%);
+          background-size: 800px 100%;
+          animation: alloflow-skeleton-shimmer 1.4s infinite linear;
+          border-radius: 6px;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .alloflow-skeleton { animation: none; }
+        }
         @media print {
           .no-print { display: none !important; }
           .print-only { display: block !important; }
