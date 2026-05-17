@@ -4786,16 +4786,16 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       setIsVennPlaying(false);
       if (!isTeacherMode) setIsInteractiveVenn(false);
   }, [isTeacherMode]);
-  const closeCESort = useCallback(() => setIsCESortPlaying(false), []);
-  const closePipeline = useCallback(() => setIsPipelinePlaying(false), []);
-  const closeTChart = useCallback(() => setIsTChartPlaying(false), []);
-  const closeConceptMapSort = useCallback(() => setIsConceptMapSortPlaying(false), []);
-  const closeOutlineSort = useCallback(() => setIsOutlineSortPlaying(false), []);
-  const closeFishboneSort = useCallback(() => setIsFishboneSortPlaying(false), []);
-  const closeProblemSolutionSort = useCallback(() => setIsProblemSolutionSortPlaying(false), []);
-  const closeFrayerSort = useCallback(() => setIsFrayerSortPlaying(false), []);
-  const closeSeeThinkWonderSort = useCallback(() => setIsSeeThinkWonderSortPlaying(false), []);
-  const closeStoryMapSort = useCallback(() => setIsStoryMapSortPlaying(false), []);
+  const closeCESort = useCallback(() => { setIsCESortPlaying(false); if (!isTeacherMode) setIsInteractiveCESort(false); }, [isTeacherMode]);
+  const closePipeline = useCallback(() => { setIsPipelinePlaying(false); if (!isTeacherMode) setIsInteractivePipeline(false); }, [isTeacherMode]);
+  const closeTChart = useCallback(() => { setIsTChartPlaying(false); if (!isTeacherMode) setIsInteractiveTChart(false); }, [isTeacherMode]);
+  const closeConceptMapSort = useCallback(() => { setIsConceptMapSortPlaying(false); if (!isTeacherMode) setIsInteractiveConceptMapSort(false); }, [isTeacherMode]);
+  const closeOutlineSort = useCallback(() => { setIsOutlineSortPlaying(false); if (!isTeacherMode) setIsInteractiveOutlineSort(false); }, [isTeacherMode]);
+  const closeFishboneSort = useCallback(() => { setIsFishboneSortPlaying(false); if (!isTeacherMode) setIsInteractiveFishboneSort(false); }, [isTeacherMode]);
+  const closeProblemSolutionSort = useCallback(() => { setIsProblemSolutionSortPlaying(false); if (!isTeacherMode) setIsInteractiveProblemSolutionSort(false); }, [isTeacherMode]);
+  const closeFrayerSort = useCallback(() => { setIsFrayerSortPlaying(false); if (!isTeacherMode) setIsInteractiveFrayerSort(false); }, [isTeacherMode]);
+  const closeSeeThinkWonderSort = useCallback(() => { setIsSeeThinkWonderSortPlaying(false); if (!isTeacherMode) setIsInteractiveSeeThinkWonderSort(false); }, [isTeacherMode]);
+  const closeStoryMapSort = useCallback(() => { setIsStoryMapSortPlaying(false); if (!isTeacherMode) setIsInteractiveStoryMapSort(false); }, [isTeacherMode]);
     React.useEffect(() => {
         if (!user || !db || !appId) return;
         const cleanExpiredImages = async () => {
@@ -6915,6 +6915,17 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [isFrayerSortPlaying, setIsFrayerSortPlaying] = useState(false);
   const [isSeeThinkWonderSortPlaying, setIsSeeThinkWonderSortPlaying] = useState(false);
   const [isStoryMapSortPlaying, setIsStoryMapSortPlaying] = useState(false);
+  // Teacher-armed interactive flags. When teacher arms, students see the game until finished.
+  const [isInteractiveTChart, setIsInteractiveTChart] = useState(false);
+  const [isInteractiveCESort, setIsInteractiveCESort] = useState(false);
+  const [isInteractivePipeline, setIsInteractivePipeline] = useState(false);
+  const [isInteractiveConceptMapSort, setIsInteractiveConceptMapSort] = useState(false);
+  const [isInteractiveOutlineSort, setIsInteractiveOutlineSort] = useState(false);
+  const [isInteractiveFishboneSort, setIsInteractiveFishboneSort] = useState(false);
+  const [isInteractiveProblemSolutionSort, setIsInteractiveProblemSolutionSort] = useState(false);
+  const [isInteractiveFrayerSort, setIsInteractiveFrayerSort] = useState(false);
+  const [isInteractiveSeeThinkWonderSort, setIsInteractiveSeeThinkWonderSort] = useState(false);
+  const [isInteractiveStoryMapSort, setIsInteractiveStoryMapSort] = useState(false);
   useEffect(() => {
       if (generatedContent?.type === 'outline' && generatedContent?.data) {
           const { main, branches, challenge, nodes: savedNodes, edges: savedEdges } = generatedContent?.data;
@@ -19081,6 +19092,17 @@ ${_toolList}
         isStoryMapSortPlaying,
         setIsStoryMapSortPlaying,
         closeStoryMapSort,
+        // Teacher-armed interactive flags for organizer-sort games
+        isInteractiveTChart, setIsInteractiveTChart,
+        isInteractiveCESort, setIsInteractiveCESort,
+        isInteractivePipeline, setIsInteractivePipeline,
+        isInteractiveConceptMapSort, setIsInteractiveConceptMapSort,
+        isInteractiveOutlineSort, setIsInteractiveOutlineSort,
+        isInteractiveFishboneSort, setIsInteractiveFishboneSort,
+        isInteractiveProblemSolutionSort, setIsInteractiveProblemSolutionSort,
+        isInteractiveFrayerSort, setIsInteractiveFrayerSort,
+        isInteractiveSeeThinkWonderSort, setIsInteractiveSeeThinkWonderSort,
+        isInteractiveStoryMapSort, setIsInteractiveStoryMapSort,
         handleGenerateFrayerImage,
         handleRemoveFrayerImage,
       });
