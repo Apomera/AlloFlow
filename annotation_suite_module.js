@@ -39,6 +39,23 @@ const DRAW_COLORS = {
 };
 const DRAW_COLOR_KEYS = ["red", "blue", "green", "yellow", "black"];
 const DRAW_WIDTHS = [2, 4, 6, 10];
+const DRAW_SHAPES = ["free", "line", "arrow", "rect", "circle", "erase"];
+const DRAW_SHAPE_LABELS = {
+  free: "Freehand",
+  line: "Line",
+  arrow: "Arrow",
+  rect: "Rectangle",
+  circle: "Circle",
+  erase: "Eraser"
+};
+const DRAW_SHAPE_ICONS = {
+  free: "\u270F\uFE0F",
+  line: "\u2571",
+  arrow: "\u279C",
+  rect: "\u25AD",
+  circle: "\u25CB",
+  erase: "\u{1F9FD}"
+};
 const VOICE_MAX_SECONDS = 60;
 const VOICE_MAX_BYTES = 500 * 1024;
 (function injectAnnotationSuiteStyles() {
@@ -541,44 +558,93 @@ function HighlightOverlay({ a, onDelete }) {
   ));
 }
 function DrawingOverlay({ a, onDelete }) {
-  if (!a || !Array.isArray(a.points) || a.points.length < 2) return null;
+  if (!a) return null;
+  const shape = a.shape || "free";
   const stroke = DRAW_COLORS[a.color] || "#dc2626";
   const w = typeof a.width === "number" ? a.width : 4;
   let bbx = a.x, bby = a.y, bbw = a.w, bbh = a.h;
   if (bbx == null || bby == null || bbw == null || bbh == null) {
-    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-    for (let i = 0; i < a.points.length; i++) {
-      const p = a.points[i];
-      if (p.x < minX) minX = p.x;
-      if (p.y < minY) minY = p.y;
-      if (p.x > maxX) maxX = p.x;
-      if (p.y > maxY) maxY = p.y;
+    if (Array.isArray(a.points) && a.points.length > 0) {
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      for (let i = 0; i < a.points.length; i++) {
+        const p = a.points[i];
+        if (p.x < minX) minX = p.x;
+        if (p.y < minY) minY = p.y;
+        if (p.x > maxX) maxX = p.x;
+        if (p.y > maxY) maxY = p.y;
+      }
+      bbx = minX - w;
+      bby = minY - w;
+      bbw = maxX - minX + w * 2;
+      bbh = maxY - minY + w * 2;
+    } else {
+      return null;
     }
-    bbx = minX - w;
-    bby = minY - w;
-    bbw = maxX - minX + w * 2;
-    bbh = maxY - minY + w * 2;
   }
-  const pad = w + 2;
+  const pad = w + 6;
   const svgX = bbx - pad, svgY = bby - pad;
   const svgW = bbw + pad * 2, svgH = bbh + pad * 2;
-  let d = "";
-  for (let i = 0; i < a.points.length; i++) {
-    const p = a.points[i];
-    const px = (p.x - svgX).toFixed(1);
-    const py = (p.y - svgY).toFixed(1);
-    d += (i === 0 ? "M" : " L") + px + " " + py;
+  const localX = (worldX) => (worldX - svgX).toFixed(1);
+  const localY = (worldY) => (worldY - svgY).toFixed(1);
+  let shapeNode = null;
+  if (shape === "free") {
+    if (!Array.isArray(a.points) || a.points.length < 2) return null;
+    let d = "";
+    for (let i = 0; i < a.points.length; i++) {
+      d += (i === 0 ? "M" : " L") + localX(a.points[i].x) + " " + localY(a.points[i].y);
+    }
+    shapeNode = /* @__PURE__ */ React.createElement("path", { d, fill: "none", stroke, strokeWidth: w, strokeLinecap: "round", strokeLinejoin: "round" });
+  } else if (shape === "line" || shape === "arrow") {
+    const sx = a.start && a.start.x != null ? a.start.x : bbx;
+    const sy = a.start && a.start.y != null ? a.start.y : bby;
+    const ex = a.end && a.end.x != null ? a.end.x : bbx + bbw;
+    const ey = a.end && a.end.y != null ? a.end.y : bby + bbh;
+    const lineEl = /* @__PURE__ */ React.createElement("line", { x1: localX(sx), y1: localY(sy), x2: localX(ex), y2: localY(ey), stroke, strokeWidth: w, strokeLinecap: "round" });
+    if (shape === "arrow") {
+      const dx = ex - sx, dy = ey - sy;
+      const len = Math.sqrt(dx * dx + dy * dy) || 1;
+      const ux = dx / len, uy = dy / len;
+      const px = -uy, py = ux;
+      const ah = Math.max(8, Math.min(24, w * 3));
+      const tipX = ex, tipY = ey;
+      const baseX = ex - ux * ah, baseY = ey - uy * ah;
+      const v1x = baseX + px * (ah * 0.5), v1y = baseY + py * (ah * 0.5);
+      const v2x = baseX - px * (ah * 0.5), v2y = baseY - py * (ah * 0.5);
+      shapeNode = /* @__PURE__ */ React.createElement(React.Fragment, null, lineEl, /* @__PURE__ */ React.createElement(
+        "polygon",
+        {
+          points: [
+            localX(tipX) + "," + localY(tipY),
+            localX(v1x) + "," + localY(v1y),
+            localX(v2x) + "," + localY(v2y)
+          ].join(" "),
+          fill: stroke,
+          stroke,
+          strokeWidth: 1,
+          strokeLinejoin: "round"
+        }
+      ));
+    } else {
+      shapeNode = lineEl;
+    }
+  } else if (shape === "rect") {
+    shapeNode = /* @__PURE__ */ React.createElement("rect", { x: localX(bbx + w), y: localY(bby + w), width: Math.max(1, bbw - w * 2), height: Math.max(1, bbh - w * 2), fill: "none", stroke, strokeWidth: w, strokeLinejoin: "round" });
+  } else if (shape === "circle") {
+    const cx = bbx + bbw / 2, cy = bby + bbh / 2;
+    const rx = Math.max(1, (bbw - w * 2) / 2);
+    const ry = Math.max(1, (bbh - w * 2) / 2);
+    shapeNode = /* @__PURE__ */ React.createElement("ellipse", { cx: localX(cx), cy: localY(cy), rx, ry, fill: "none", stroke, strokeWidth: w });
   }
-  const title = buildStickerTitle(a) || "Drawing";
+  const title = buildStickerTitle(a) || (DRAW_SHAPE_LABELS[shape] || "Drawing");
   return /* @__PURE__ */ React.createElement(
     "div",
     {
       className: "absolute pointer-events-none z-40",
       style: { top: svgY, left: svgX, width: svgW, height: svgH },
-      "aria-label": "Drawing: " + title,
+      "aria-label": (DRAW_SHAPE_LABELS[shape] || "Drawing") + ": " + title,
       title
     },
-    /* @__PURE__ */ React.createElement("svg", { width: svgW, height: svgH, style: { display: "block", overflow: "visible" }, "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("path", { d, fill: "none", stroke, strokeWidth: w, strokeLinecap: "round", strokeLinejoin: "round" })),
+    /* @__PURE__ */ React.createElement("svg", { width: svgW, height: svgH, style: { display: "block", overflow: "visible" }, "aria-hidden": "true" }, shapeNode),
     typeof onDelete === "function" && /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -618,74 +684,198 @@ function DrawingOverlay({ a, onDelete }) {
     )
   );
 }
-function DrawingCapture({ active, color, width, onCommit }) {
+const ERASER_RADIUS = 18;
+function _annotationHit(a, px, py, radius) {
+  if (!a) return false;
+  const r = radius || ERASER_RADIUS;
+  if (a.kind === "draw") {
+    const shape = a.shape || "free";
+    if (shape === "free" && Array.isArray(a.points)) {
+      for (let i = 0; i < a.points.length; i++) {
+        const p = a.points[i];
+        const dx = px - p.x, dy = py - p.y;
+        if (dx * dx + dy * dy <= r * r) return true;
+      }
+      return false;
+    }
+  }
+  if (a.kind === "highlight" && Array.isArray(a.rects)) {
+    for (let i = 0; i < a.rects.length; i++) {
+      const rect = a.rects[i];
+      if (px >= rect.x - r && px <= rect.x + rect.w + r && py >= rect.y - r && py <= rect.y + rect.h + r) return true;
+    }
+    return false;
+  }
+  if (a.kind === "sticker" || a.kind === "note" || a.kind === "voice") {
+    const cx = a.x || 0, cy = a.y || 0;
+    const dx = px - cx, dy = py - cy;
+    return Math.sqrt(dx * dx + dy * dy) <= 18 + r;
+  }
+  if (a.kind === "draw" && a.x != null && a.y != null && a.w != null && a.h != null) {
+    return px >= a.x - r && px <= a.x + a.w + r && py >= a.y - r && py <= a.y + a.h + r;
+  }
+  return false;
+}
+function DrawingCapture({ active, color, width, shape, onCommit, onErase, annotations }) {
   const [stroke, setStroke] = React.useState(null);
+  const [eraseCursor, setEraseCursor] = React.useState(null);
   const hostRef = React.useRef(null);
   const drawingRef = React.useRef(false);
+  const sh = shape || "free";
+  const isErase = sh === "erase";
   if (!active) return null;
   const c = DRAW_COLORS[color] || "#dc2626";
+  function getXY(e, host) {
+    const rect = host.getBoundingClientRect();
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  }
+  function performErase(x, y) {
+    if (!Array.isArray(annotations) || typeof onErase !== "function") return;
+    for (let i = 0; i < annotations.length; i++) {
+      const a = annotations[i];
+      if (_annotationHit(a, x, y, ERASER_RADIUS)) {
+        onErase(a.id);
+      }
+    }
+  }
   function pointerDown(e) {
     if (e.button !== 0 && e.pointerType === "mouse") return;
     e.preventDefault();
     e.stopPropagation();
     drawingRef.current = true;
     const host = e.currentTarget;
-    const rect = host.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    setStroke({ points: [{ x, y }], color, width });
+    const { x, y } = getXY(e, host);
     try {
       host.setPointerCapture(e.pointerId);
     } catch (_) {
     }
+    if (isErase) {
+      setEraseCursor({ x, y });
+      performErase(x, y);
+      return;
+    }
+    if (sh === "free") {
+      setStroke({ shape: "free", points: [{ x, y }], color, width });
+    } else {
+      setStroke({ shape: sh, start: { x, y }, end: { x, y }, color, width });
+    }
   }
   function pointerMove(e) {
-    if (!drawingRef.current) return;
     const host = e.currentTarget;
-    const rect = host.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const { x, y } = getXY(e, host);
+    if (isErase) {
+      setEraseCursor({ x, y });
+      if (drawingRef.current) performErase(x, y);
+      return;
+    }
+    if (!drawingRef.current) return;
     setStroke(function(prev) {
       if (!prev) return prev;
-      const last = prev.points[prev.points.length - 1];
-      if (last && Math.abs(last.x - x) < 1.2 && Math.abs(last.y - y) < 1.2) return prev;
-      return { points: prev.points.concat([{ x, y }]), color: prev.color, width: prev.width };
+      if (prev.shape === "free") {
+        const last = prev.points[prev.points.length - 1];
+        if (last && Math.abs(last.x - x) < 1.2 && Math.abs(last.y - y) < 1.2) return prev;
+        return Object.assign({}, prev, { points: prev.points.concat([{ x, y }]) });
+      }
+      return Object.assign({}, prev, { end: { x, y } });
     });
   }
   function pointerUp(e) {
-    if (!drawingRef.current) return;
+    if (!drawingRef.current) {
+      if (isErase) setEraseCursor(null);
+      return;
+    }
     drawingRef.current = false;
     try {
       e.currentTarget.releasePointerCapture(e.pointerId);
     } catch (_) {
     }
+    if (isErase) {
+      return;
+    }
     setStroke(function(prev) {
-      if (prev && prev.points.length >= 2 && typeof onCommit === "function") {
+      if (!prev || typeof onCommit !== "function") return null;
+      if (prev.shape === "free") {
+        if (prev.points.length < 2) return null;
+        onCommit(prev);
+      } else {
+        const dx = prev.end.x - prev.start.x, dy = prev.end.y - prev.start.y;
+        if (Math.abs(dx) < 2 && Math.abs(dy) < 2) return null;
         onCommit(prev);
       }
       return null;
     });
   }
-  let d = "";
-  if (stroke && stroke.points.length > 0) {
-    for (let i = 0; i < stroke.points.length; i++) {
-      const p = stroke.points[i];
-      d += (i === 0 ? "M" : " L") + p.x.toFixed(1) + " " + p.y.toFixed(1);
-    }
+  function pointerLeave() {
+    if (isErase) setEraseCursor(null);
   }
+  const renderPreview = () => {
+    if (!stroke) return null;
+    if (stroke.shape === "free") {
+      let d = "";
+      for (let i = 0; i < stroke.points.length; i++) {
+        const p = stroke.points[i];
+        d += (i === 0 ? "M" : " L") + p.x.toFixed(1) + " " + p.y.toFixed(1);
+      }
+      return /* @__PURE__ */ React.createElement("path", { d, fill: "none", stroke: c, strokeWidth: width, strokeLinecap: "round", strokeLinejoin: "round" });
+    }
+    const sx = stroke.start.x, sy = stroke.start.y, ex = stroke.end.x, ey = stroke.end.y;
+    if (stroke.shape === "line") {
+      return /* @__PURE__ */ React.createElement("line", { x1: sx, y1: sy, x2: ex, y2: ey, stroke: c, strokeWidth: width, strokeLinecap: "round" });
+    }
+    if (stroke.shape === "arrow") {
+      const dx = ex - sx, dy = ey - sy;
+      const len = Math.sqrt(dx * dx + dy * dy) || 1;
+      const ux = dx / len, uy = dy / len, qx = -uy, qy = ux;
+      const ah = Math.max(8, Math.min(24, width * 3));
+      const baseX = ex - ux * ah, baseY = ey - uy * ah;
+      const v1x = baseX + qx * (ah * 0.5), v1y = baseY + qy * (ah * 0.5);
+      const v2x = baseX - qx * (ah * 0.5), v2y = baseY - qy * (ah * 0.5);
+      return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("line", { x1: sx, y1: sy, x2: ex, y2: ey, stroke: c, strokeWidth: width, strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("polygon", { points: ex + "," + ey + " " + v1x + "," + v1y + " " + v2x + "," + v2y, fill: c, stroke: c, strokeWidth: 1 }));
+    }
+    if (stroke.shape === "rect") {
+      const rx = Math.min(sx, ex), ry = Math.min(sy, ey);
+      const rw = Math.abs(ex - sx), rh = Math.abs(ey - sy);
+      return /* @__PURE__ */ React.createElement("rect", { x: rx, y: ry, width: rw, height: rh, fill: "none", stroke: c, strokeWidth: width });
+    }
+    if (stroke.shape === "circle") {
+      const cx = (sx + ex) / 2, cy = (sy + ey) / 2;
+      const rx = Math.abs(ex - sx) / 2, ry = Math.abs(ey - sy) / 2;
+      return /* @__PURE__ */ React.createElement("ellipse", { cx, cy, rx, ry, fill: "none", stroke: c, strokeWidth: width });
+    }
+    return null;
+  };
+  const cursorStyle = isErase ? "cell" : "crosshair";
   return /* @__PURE__ */ React.createElement(
     "div",
     {
       ref: hostRef,
       className: "absolute inset-0 z-[60]",
-      style: { cursor: "crosshair", touchAction: "none" },
+      style: { cursor: cursorStyle, touchAction: "none" },
       onPointerDown: pointerDown,
       onPointerMove: pointerMove,
       onPointerUp: pointerUp,
       onPointerCancel: pointerUp,
-      "aria-label": "Drawing surface"
+      onPointerLeave: pointerLeave,
+      "aria-label": isErase ? "Eraser surface" : "Drawing surface"
     },
-    stroke && /* @__PURE__ */ React.createElement("svg", { width: "100%", height: "100%", style: { display: "block", position: "absolute", inset: 0, overflow: "visible", pointerEvents: "none" }, "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("path", { d, fill: "none", stroke: c, strokeWidth: width, strokeLinecap: "round", strokeLinejoin: "round" }))
+    stroke && /* @__PURE__ */ React.createElement("svg", { width: "100%", height: "100%", style: { display: "block", position: "absolute", inset: 0, overflow: "visible", pointerEvents: "none" }, "aria-hidden": "true" }, renderPreview()),
+    isErase && eraseCursor ? /* @__PURE__ */ React.createElement(
+      "div",
+      {
+        "aria-hidden": "true",
+        style: {
+          position: "absolute",
+          top: eraseCursor.y - ERASER_RADIUS,
+          left: eraseCursor.x - ERASER_RADIUS,
+          width: ERASER_RADIUS * 2,
+          height: ERASER_RADIUS * 2,
+          border: "2px dashed #ef4444",
+          borderRadius: "50%",
+          background: "rgba(239,68,68,0.08)",
+          pointerEvents: "none"
+        }
+      }
+    ) : null
   );
 }
 function Overlay({ annotations, mode, isTeacher, onNoteChange, onNoteDelete, onHighlightDelete, onVoiceDelete, onDrawDelete, onMove }) {
@@ -743,9 +933,12 @@ function Toolbar(props) {
   const isTeacher = !!props.isTeacher;
   const drawColor = props.drawColor || "red";
   const drawWidth = typeof props.drawWidth === "number" ? props.drawWidth : 4;
+  const drawShape = props.drawShape || "free";
   const onPickDrawColor = props.onPickDrawColor || function() {
   };
   const onPickDrawWidth = props.onPickDrawWidth || function() {
+  };
+  const onPickDrawShape = props.onPickDrawShape || function() {
   };
   const templateSet = isTeacher ? TEACHER_NOTE_TEMPLATES : STUDENT_NOTE_TEMPLATES;
   const onToggleMode = props.onToggleMode;
@@ -909,7 +1102,23 @@ function Toolbar(props) {
       "aria-label": "Clear all annotations"
     },
     Trash2 ? /* @__PURE__ */ React.createElement(Trash2, { size: 12 }) : /* @__PURE__ */ React.createElement("span", null, "\u{1F5D1}")
-  )), mode === "draw" && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 animate-in slide-in-from-left-2 duration-200 border-l border-slate-200 pl-1" }, DRAW_COLOR_KEYS.map(function(key) {
+  )), mode === "draw" && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 animate-in slide-in-from-left-2 duration-200 border-l border-slate-200 pl-1" }, DRAW_SHAPES.map(function(sh) {
+    const isErase = sh === "erase";
+    return /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        key: sh,
+        "aria-label": DRAW_SHAPE_LABELS[sh] || sh,
+        onClick: function() {
+          onPickDrawShape(sh);
+        },
+        className: "flex items-center justify-center rounded transition-transform hover:scale-125 " + (drawShape === sh ? isErase ? "ring-2 ring-red-500 scale-110 bg-red-50" : "ring-2 ring-fuchsia-500 scale-110 bg-fuchsia-50" : "opacity-70 hover:opacity-100"),
+        style: { width: 24, height: 24, fontSize: 14 },
+        title: DRAW_SHAPE_LABELS[sh]
+      },
+      /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, DRAW_SHAPE_ICONS[sh])
+    );
+  }), drawShape !== "erase" ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "w-px h-4 bg-slate-200 mx-1" }), DRAW_COLOR_KEYS.map(function(key) {
     const c = DRAW_COLORS[key];
     return /* @__PURE__ */ React.createElement(
       "button",
@@ -939,7 +1148,7 @@ function Toolbar(props) {
       },
       /* @__PURE__ */ React.createElement("span", { style: { display: "inline-block", width: 12, height: w, borderRadius: w / 2, background: "#374151" } })
     );
-  }), /* @__PURE__ */ React.createElement("div", { className: "w-px h-4 bg-slate-200 mx-1" }), /* @__PURE__ */ React.createElement(
+  })) : null, /* @__PURE__ */ React.createElement("div", { className: "w-px h-4 bg-slate-200 mx-1" }), /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: onClear,
@@ -999,32 +1208,53 @@ function createNoteFromClick(hostEl, evt, opts) {
   };
 }
 function createDrawingFromStroke(stroke, opts) {
-  if (!stroke || !Array.isArray(stroke.points) || stroke.points.length < 2) return null;
+  if (!stroke) return null;
   const o = opts || {};
-  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-  for (let i = 0; i < stroke.points.length; i++) {
-    const p = stroke.points[i];
-    if (p.x < minX) minX = p.x;
-    if (p.y < minY) minY = p.y;
-    if (p.x > maxX) maxX = p.x;
-    if (p.y > maxY) maxY = p.y;
-  }
+  const shape = stroke.shape || "free";
   const w = typeof stroke.width === "number" ? stroke.width : 4;
-  return {
+  const color = stroke.color || "red";
+  const base = {
     id: Date.now(),
     kind: "draw",
-    points: stroke.points.slice(),
-    color: stroke.color || "red",
+    shape,
+    color,
     width: w,
-    // Bounding box used by DrawingOverlay for SVG sizing + delete button placement
-    x: minX - w,
-    y: minY - w,
-    w: maxX - minX + w * 2,
-    h: maxY - minY + w * 2,
     author: o.isTeacher ? "teacher" : "student",
     authorName: !o.isTeacher ? o.authorName || "" : "",
     createdAt: (/* @__PURE__ */ new Date()).toISOString()
   };
+  if (shape === "free") {
+    if (!Array.isArray(stroke.points) || stroke.points.length < 2) return null;
+    let minX2 = Infinity, minY2 = Infinity, maxX2 = -Infinity, maxY2 = -Infinity;
+    for (let i = 0; i < stroke.points.length; i++) {
+      const p = stroke.points[i];
+      if (p.x < minX2) minX2 = p.x;
+      if (p.y < minY2) minY2 = p.y;
+      if (p.x > maxX2) maxX2 = p.x;
+      if (p.y > maxY2) maxY2 = p.y;
+    }
+    return Object.assign(base, {
+      points: stroke.points.slice(),
+      x: minX2 - w,
+      y: minY2 - w,
+      w: maxX2 - minX2 + w * 2,
+      h: maxY2 - minY2 + w * 2
+    });
+  }
+  if (!stroke.start || !stroke.end) return null;
+  const sx = stroke.start.x, sy = stroke.start.y;
+  const ex = stroke.end.x, ey = stroke.end.y;
+  if (Math.abs(ex - sx) < 2 && Math.abs(ey - sy) < 2) return null;
+  const minX = Math.min(sx, ex), minY = Math.min(sy, ey);
+  const maxX = Math.max(sx, ex), maxY = Math.max(sy, ey);
+  return Object.assign(base, {
+    start: { x: sx, y: sy },
+    end: { x: ex, y: ey },
+    x: minX - w,
+    y: minY - w,
+    w: maxX - minX + w * 2,
+    h: maxY - minY + w * 2
+  });
 }
 function createVoicePlaceholder(hostEl, evt, opts) {
   if (!hostEl || !evt) return null;
@@ -1370,6 +1600,10 @@ window.AlloModules.AnnotationSuite = {
   DRAW_COLORS,
   DRAW_COLOR_KEYS,
   DRAW_WIDTHS,
+  DRAW_SHAPES,
+  DRAW_SHAPE_LABELS,
+  DRAW_SHAPE_ICONS,
+  ERASER_RADIUS,
   TEACHER_NOTE_TEMPLATES,
   STUDENT_NOTE_TEMPLATES,
   VOICE_MAX_SECONDS,

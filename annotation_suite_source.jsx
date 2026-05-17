@@ -49,6 +49,18 @@ const DRAW_COLORS = {
 };
 const DRAW_COLOR_KEYS = ['red', 'blue', 'green', 'yellow', 'black'];
 const DRAW_WIDTHS = [2, 4, 6, 10];
+// Drawing-tool shapes. 'free' is the original freehand pen. The rest are
+// straight-line + bounded primitives, useful for diagram annotations + math.
+// 'erase' is a special non-drawing mode — cursor becomes a hit-test radius
+// that removes any annotation it crosses.
+const DRAW_SHAPES = ['free', 'line', 'arrow', 'rect', 'circle', 'erase'];
+const DRAW_SHAPE_LABELS = {
+  free: 'Freehand', line: 'Line', arrow: 'Arrow',
+  rect: 'Rectangle', circle: 'Circle', erase: 'Eraser',
+};
+const DRAW_SHAPE_ICONS = {
+  free: '✏️', line: '╱', arrow: '➜', rect: '▭', circle: '○', erase: '🧽',
+};
 
 // Voice-note recording cap. Mirrors a reasonable audio-clip length for
 // teacher feedback or student reflection. Enforced at recording-start
@@ -617,49 +629,108 @@ function HighlightOverlay({ a, onDelete }) {
   );
 }
 
-// DrawingOverlay: renders a single freehand stroke as an SVG path.
-// Stroke is stored as a `points` array on the annotation: [{x,y}, ...].
-// Bounding box (x, y, w, h) is precomputed at commit-time for hit testing.
-// Tiny hover-revealed delete X at the top-right of the bounding box.
+// DrawingOverlay: renders one committed drawing annotation as SVG.
+// Branches on `shape`: 'free' (default) is a path through points; 'line'
+// and 'arrow' are start→end straight strokes (arrow adds a triangle head);
+// 'rect' and 'circle' use the (x,y,w,h) bounding box. All shapes share the
+// stored bounding box (x,y,w,h) so the hover-revealed delete X lands in
+// a predictable spot regardless of shape.
 function DrawingOverlay({ a, onDelete }) {
-  if (!a || !Array.isArray(a.points) || a.points.length < 2) return null;
+  if (!a) return null;
+  const shape = a.shape || 'free';
   const stroke = DRAW_COLORS[a.color] || '#dc2626';
   const w = typeof a.width === 'number' ? a.width : 4;
   // Bounding box (fall back to computing from points if not stored)
   let bbx = a.x, bby = a.y, bbw = a.w, bbh = a.h;
   if (bbx == null || bby == null || bbw == null || bbh == null) {
-    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-    for (let i = 0; i < a.points.length; i++) {
-      const p = a.points[i];
-      if (p.x < minX) minX = p.x;
-      if (p.y < minY) minY = p.y;
-      if (p.x > maxX) maxX = p.x;
-      if (p.y > maxY) maxY = p.y;
+    if (Array.isArray(a.points) && a.points.length > 0) {
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      for (let i = 0; i < a.points.length; i++) {
+        const p = a.points[i];
+        if (p.x < minX) minX = p.x;
+        if (p.y < minY) minY = p.y;
+        if (p.x > maxX) maxX = p.x;
+        if (p.y > maxY) maxY = p.y;
+      }
+      bbx = minX - w; bby = minY - w; bbw = (maxX - minX) + w * 2; bbh = (maxY - minY) + w * 2;
+    } else {
+      return null;
     }
-    bbx = minX - w; bby = minY - w; bbw = (maxX - minX) + w * 2; bbh = (maxY - minY) + w * 2;
   }
   // Pad SVG so the stroke isn't clipped
-  const pad = w + 2;
+  const pad = w + 6;
   const svgX = bbx - pad, svgY = bby - pad;
   const svgW = bbw + pad * 2, svgH = bbh + pad * 2;
-  // Build the path d-string relative to the SVG origin
-  let d = '';
-  for (let i = 0; i < a.points.length; i++) {
-    const p = a.points[i];
-    const px = (p.x - svgX).toFixed(1);
-    const py = (p.y - svgY).toFixed(1);
-    d += (i === 0 ? 'M' : ' L') + px + ' ' + py;
+  // Translate world coords → SVG-local
+  const localX = (worldX) => (worldX - svgX).toFixed(1);
+  const localY = (worldY) => (worldY - svgY).toFixed(1);
+  // Build shape geometry
+  let shapeNode = null;
+  if (shape === 'free') {
+    if (!Array.isArray(a.points) || a.points.length < 2) return null;
+    let d = '';
+    for (let i = 0; i < a.points.length; i++) {
+      d += (i === 0 ? 'M' : ' L') + localX(a.points[i].x) + ' ' + localY(a.points[i].y);
+    }
+    shapeNode = <path d={d} fill="none" stroke={stroke} strokeWidth={w} strokeLinecap="round" strokeLinejoin="round" />;
+  } else if (shape === 'line' || shape === 'arrow') {
+    // start/end stored on the annotation
+    const sx = (a.start && a.start.x != null) ? a.start.x : bbx;
+    const sy = (a.start && a.start.y != null) ? a.start.y : bby;
+    const ex = (a.end && a.end.x != null) ? a.end.x : (bbx + bbw);
+    const ey = (a.end && a.end.y != null) ? a.end.y : (bby + bbh);
+    const lineEl = <line x1={localX(sx)} y1={localY(sy)} x2={localX(ex)} y2={localY(ey)} stroke={stroke} strokeWidth={w} strokeLinecap="round" />;
+    if (shape === 'arrow') {
+      // Triangle arrowhead at (ex, ey) pointing along (sx,sy)→(ex,ey)
+      const dx = ex - sx, dy = ey - sy;
+      const len = Math.sqrt(dx * dx + dy * dy) || 1;
+      const ux = dx / len, uy = dy / len;
+      // Perpendicular
+      const px = -uy, py = ux;
+      // Arrowhead size scales with stroke width but capped
+      const ah = Math.max(8, Math.min(24, w * 3));
+      // Three triangle vertices
+      const tipX = ex, tipY = ey;
+      const baseX = ex - ux * ah, baseY = ey - uy * ah;
+      const v1x = baseX + px * (ah * 0.5), v1y = baseY + py * (ah * 0.5);
+      const v2x = baseX - px * (ah * 0.5), v2y = baseY - py * (ah * 0.5);
+      shapeNode = (
+        <React.Fragment>
+          {lineEl}
+          <polygon
+            points={[
+              localX(tipX) + ',' + localY(tipY),
+              localX(v1x) + ',' + localY(v1y),
+              localX(v2x) + ',' + localY(v2y),
+            ].join(' ')}
+            fill={stroke}
+            stroke={stroke}
+            strokeWidth={1}
+            strokeLinejoin="round"
+          />
+        </React.Fragment>
+      );
+    } else {
+      shapeNode = lineEl;
+    }
+  } else if (shape === 'rect') {
+    shapeNode = <rect x={localX(bbx + w)} y={localY(bby + w)} width={Math.max(1, bbw - w * 2)} height={Math.max(1, bbh - w * 2)} fill="none" stroke={stroke} strokeWidth={w} strokeLinejoin="round" />;
+  } else if (shape === 'circle') {
+    const cx = bbx + bbw / 2, cy = bby + bbh / 2;
+    const rx = Math.max(1, (bbw - w * 2) / 2);
+    const ry = Math.max(1, (bbh - w * 2) / 2);
+    shapeNode = <ellipse cx={localX(cx)} cy={localY(cy)} rx={rx} ry={ry} fill="none" stroke={stroke} strokeWidth={w} />;
   }
-  const title = buildStickerTitle(a) || 'Drawing';
+  const title = buildStickerTitle(a) || (DRAW_SHAPE_LABELS[shape] || 'Drawing');
   return (
     <div
       className="absolute pointer-events-none z-40"
       style={{ top: svgY, left: svgX, width: svgW, height: svgH }}
-      aria-label={'Drawing: ' + title}
+      aria-label={(DRAW_SHAPE_LABELS[shape] || 'Drawing') + ': ' + title}
       title={title}
     >
       <svg width={svgW} height={svgH} style={{ display: 'block', overflow: 'visible' }} aria-hidden="true">
-        <path d={d} fill="none" stroke={stroke} strokeWidth={w} strokeLinecap="round" strokeLinejoin="round" />
+        {shapeNode}
       </svg>
       {typeof onDelete === 'function' && (
         <button
@@ -687,78 +758,235 @@ function DrawingOverlay({ a, onDelete }) {
   );
 }
 
-// DrawingCapture: invisible overlay layer that captures pointer events when
-// the toolbar is in `draw` mode. Tracks active stroke as a points array;
-// renders the in-progress stroke as a temporary SVG path; on pointerup,
-// calls onCommit with the finished stroke. The host then appends it to
-// the annotations array as a new {kind:'draw', points, color, width, ...}.
-function DrawingCapture({ active, color, width, onCommit }) {
-  const [stroke, setStroke] = React.useState(null); // {points, color, width} | null
+// Eraser radius — how close the cursor must get to an annotation's
+// geometry for it to be considered "hit." Larger = easier to delete, but
+// less precise. 18px is a good middle ground for finger-on-tablet.
+const ERASER_RADIUS = 18;
+
+// Pure helper: does point (px, py) sit within `radius` of annotation `a`?
+// For each annotation kind we use its bounding box (rendered on screen)
+// as the hit region. Drawings with explicit point lists test each segment.
+function _annotationHit(a, px, py, radius) {
+  if (!a) return false;
+  const r = radius || ERASER_RADIUS;
+  // 'draw' kind has shape-specific geometry
+  if (a.kind === 'draw') {
+    const shape = a.shape || 'free';
+    if (shape === 'free' && Array.isArray(a.points)) {
+      // Hit if cursor is within radius of ANY segment
+      for (let i = 0; i < a.points.length; i++) {
+        const p = a.points[i];
+        const dx = px - p.x, dy = py - p.y;
+        if (dx * dx + dy * dy <= r * r) return true;
+      }
+      return false;
+    }
+    // Other draw shapes — use bounding box (inflated by radius)
+  }
+  // Highlights have a rects array — check each line-rect
+  if (a.kind === 'highlight' && Array.isArray(a.rects)) {
+    for (let i = 0; i < a.rects.length; i++) {
+      const rect = a.rects[i];
+      if (px >= rect.x - r && px <= rect.x + rect.w + r &&
+          py >= rect.y - r && py <= rect.y + rect.h + r) return true;
+    }
+    return false;
+  }
+  // Stickers + notes + voice bubbles + draw-with-bbox: 28x28 default size
+  if (a.kind === 'sticker' || a.kind === 'note' || a.kind === 'voice') {
+    const cx = a.x || 0, cy = a.y || 0;
+    const dx = px - cx, dy = py - cy;
+    return Math.sqrt(dx * dx + dy * dy) <= 18 + r;
+  }
+  // Drawings with bbox (line/arrow/rect/circle)
+  if (a.kind === 'draw' && a.x != null && a.y != null && a.w != null && a.h != null) {
+    return px >= a.x - r && px <= a.x + a.w + r &&
+           py >= a.y - r && py <= a.y + a.h + r;
+  }
+  return false;
+}
+
+// DrawingCapture: invisible overlay layer that captures pointer events
+// when annotation mode === 'draw'. Behavior depends on the active shape:
+//
+//   'free'       — original freehand pen, builds a points array
+//   'line'       — straight line from start to current
+//   'arrow'      — line with triangle head at the end
+//   'rect'       — rectangle defined by start + current as opposite corners
+//   'circle'     — ellipse inscribed in that same bounding box
+//   'erase'      — no drawing; hit-tests annotations within ERASER_RADIUS
+//                  of the cursor and calls onErase(id) for each. Drags
+//                  continuously hit-test, so you can swipe to delete.
+//
+// On pointerup, drawing shapes call onCommit with the stroke; eraser
+// commits nothing (deletions happen live during the drag).
+function DrawingCapture({ active, color, width, shape, onCommit, onErase, annotations }) {
+  const [stroke, setStroke] = React.useState(null); // active drawing shape | null
+  const [eraseCursor, setEraseCursor] = React.useState(null); // {x,y} | null
   const hostRef = React.useRef(null);
   const drawingRef = React.useRef(false);
+  const sh = shape || 'free';
+  const isErase = sh === 'erase';
   if (!active) return null;
   const c = DRAW_COLORS[color] || '#dc2626';
+
+  function getXY(e, host) {
+    const rect = host.getBoundingClientRect();
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  }
+  function performErase(x, y) {
+    if (!Array.isArray(annotations) || typeof onErase !== 'function') return;
+    for (let i = 0; i < annotations.length; i++) {
+      const a = annotations[i];
+      if (_annotationHit(a, x, y, ERASER_RADIUS)) {
+        onErase(a.id);
+      }
+    }
+  }
   function pointerDown(e) {
     if (e.button !== 0 && e.pointerType === 'mouse') return; // left only
     e.preventDefault();
     e.stopPropagation();
     drawingRef.current = true;
     const host = e.currentTarget;
-    const rect = host.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    setStroke({ points: [{ x, y }], color, width });
+    const { x, y } = getXY(e, host);
     try { host.setPointerCapture(e.pointerId); } catch (_) {}
+    if (isErase) {
+      setEraseCursor({ x, y });
+      performErase(x, y);
+      return;
+    }
+    if (sh === 'free') {
+      setStroke({ shape: 'free', points: [{ x, y }], color, width });
+    } else {
+      setStroke({ shape: sh, start: { x, y }, end: { x, y }, color, width });
+    }
   }
   function pointerMove(e) {
-    if (!drawingRef.current) return;
     const host = e.currentTarget;
-    const rect = host.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const { x, y } = getXY(e, host);
+    if (isErase) {
+      setEraseCursor({ x, y });
+      if (drawingRef.current) performErase(x, y);
+      return;
+    }
+    if (!drawingRef.current) return;
     setStroke(function (prev) {
       if (!prev) return prev;
-      // Skip near-duplicate points (smoothing)
-      const last = prev.points[prev.points.length - 1];
-      if (last && Math.abs(last.x - x) < 1.2 && Math.abs(last.y - y) < 1.2) return prev;
-      return { points: prev.points.concat([{ x, y }]), color: prev.color, width: prev.width };
+      if (prev.shape === 'free') {
+        const last = prev.points[prev.points.length - 1];
+        if (last && Math.abs(last.x - x) < 1.2 && Math.abs(last.y - y) < 1.2) return prev;
+        return Object.assign({}, prev, { points: prev.points.concat([{ x, y }]) });
+      }
+      return Object.assign({}, prev, { end: { x, y } });
     });
   }
   function pointerUp(e) {
-    if (!drawingRef.current) return;
+    if (!drawingRef.current) {
+      // Eraser hover: just clear the cursor preview
+      if (isErase) setEraseCursor(null);
+      return;
+    }
     drawingRef.current = false;
     try { e.currentTarget.releasePointerCapture(e.pointerId); } catch (_) {}
+    if (isErase) {
+      // Eraser deletions happen live during pointermove — nothing to commit
+      return;
+    }
     setStroke(function (prev) {
-      if (prev && prev.points.length >= 2 && typeof onCommit === 'function') {
+      if (!prev || typeof onCommit !== 'function') return null;
+      // Reject zero-area drawings
+      if (prev.shape === 'free') {
+        if (prev.points.length < 2) return null;
+        onCommit(prev);
+      } else {
+        const dx = prev.end.x - prev.start.x, dy = prev.end.y - prev.start.y;
+        if (Math.abs(dx) < 2 && Math.abs(dy) < 2) return null;
         onCommit(prev);
       }
       return null;
     });
   }
-  // Render in-progress stroke as an SVG path inside the capture layer
-  let d = '';
-  if (stroke && stroke.points.length > 0) {
-    for (let i = 0; i < stroke.points.length; i++) {
-      const p = stroke.points[i];
-      d += (i === 0 ? 'M' : ' L') + p.x.toFixed(1) + ' ' + p.y.toFixed(1);
-    }
+  function pointerLeave() {
+    if (isErase) setEraseCursor(null);
   }
+  // Render preview of the in-progress shape
+  const renderPreview = () => {
+    if (!stroke) return null;
+    if (stroke.shape === 'free') {
+      let d = '';
+      for (let i = 0; i < stroke.points.length; i++) {
+        const p = stroke.points[i];
+        d += (i === 0 ? 'M' : ' L') + p.x.toFixed(1) + ' ' + p.y.toFixed(1);
+      }
+      return <path d={d} fill="none" stroke={c} strokeWidth={width} strokeLinecap="round" strokeLinejoin="round" />;
+    }
+    const sx = stroke.start.x, sy = stroke.start.y, ex = stroke.end.x, ey = stroke.end.y;
+    if (stroke.shape === 'line') {
+      return <line x1={sx} y1={sy} x2={ex} y2={ey} stroke={c} strokeWidth={width} strokeLinecap="round" />;
+    }
+    if (stroke.shape === 'arrow') {
+      const dx = ex - sx, dy = ey - sy;
+      const len = Math.sqrt(dx * dx + dy * dy) || 1;
+      const ux = dx / len, uy = dy / len, qx = -uy, qy = ux;
+      const ah = Math.max(8, Math.min(24, width * 3));
+      const baseX = ex - ux * ah, baseY = ey - uy * ah;
+      const v1x = baseX + qx * (ah * 0.5), v1y = baseY + qy * (ah * 0.5);
+      const v2x = baseX - qx * (ah * 0.5), v2y = baseY - qy * (ah * 0.5);
+      return (
+        <React.Fragment>
+          <line x1={sx} y1={sy} x2={ex} y2={ey} stroke={c} strokeWidth={width} strokeLinecap="round" />
+          <polygon points={ex + ',' + ey + ' ' + v1x + ',' + v1y + ' ' + v2x + ',' + v2y} fill={c} stroke={c} strokeWidth={1} />
+        </React.Fragment>
+      );
+    }
+    if (stroke.shape === 'rect') {
+      const rx = Math.min(sx, ex), ry = Math.min(sy, ey);
+      const rw = Math.abs(ex - sx), rh = Math.abs(ey - sy);
+      return <rect x={rx} y={ry} width={rw} height={rh} fill="none" stroke={c} strokeWidth={width} />;
+    }
+    if (stroke.shape === 'circle') {
+      const cx = (sx + ex) / 2, cy = (sy + ey) / 2;
+      const rx = Math.abs(ex - sx) / 2, ry = Math.abs(ey - sy) / 2;
+      return <ellipse cx={cx} cy={cy} rx={rx} ry={ry} fill="none" stroke={c} strokeWidth={width} />;
+    }
+    return null;
+  };
+  const cursorStyle = isErase ? 'cell' : 'crosshair';
   return (
     <div
       ref={hostRef}
       className="absolute inset-0 z-[60]"
-      style={{ cursor: 'crosshair', touchAction: 'none' }}
+      style={{ cursor: cursorStyle, touchAction: 'none' }}
       onPointerDown={pointerDown}
       onPointerMove={pointerMove}
       onPointerUp={pointerUp}
       onPointerCancel={pointerUp}
-      aria-label="Drawing surface"
+      onPointerLeave={pointerLeave}
+      aria-label={isErase ? 'Eraser surface' : 'Drawing surface'}
     >
       {stroke && (
         <svg width="100%" height="100%" style={{ display: 'block', position: 'absolute', inset: 0, overflow: 'visible', pointerEvents: 'none' }} aria-hidden="true">
-          <path d={d} fill="none" stroke={c} strokeWidth={width} strokeLinecap="round" strokeLinejoin="round" />
+          {renderPreview()}
         </svg>
       )}
+      {/* Eraser cursor ring — follows the pointer; visualizes the hit radius */}
+      {isErase && eraseCursor ? (
+        <div
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            top: eraseCursor.y - ERASER_RADIUS,
+            left: eraseCursor.x - ERASER_RADIUS,
+            width: ERASER_RADIUS * 2,
+            height: ERASER_RADIUS * 2,
+            border: '2px dashed #ef4444',
+            borderRadius: '50%',
+            background: 'rgba(239,68,68,0.08)',
+            pointerEvents: 'none',
+          }}
+        />
+      ) : null}
     </div>
   );
 }
@@ -836,11 +1064,13 @@ function Toolbar(props) {
   const onPickTemplate = props.onPickTemplate || function () {};
   const noteTemplate = props.noteTemplate || ''; // empty = freeform
   const isTeacher = !!props.isTeacher;
-  // Drawing tool props (Phase 9, May 2026)
+  // Drawing tool props (Phase 9 freehand, Phase 9b shapes + eraser)
   const drawColor = props.drawColor || 'red';
   const drawWidth = typeof props.drawWidth === 'number' ? props.drawWidth : 4;
+  const drawShape = props.drawShape || 'free';
   const onPickDrawColor = props.onPickDrawColor || function () {};
   const onPickDrawWidth = props.onPickDrawWidth || function () {};
+  const onPickDrawShape = props.onPickDrawShape || function () {};
   // Pick role-appropriate templates so students see reflection prompts
   // and teachers see grading-oriented feedback stamps.
   const templateSet = isTeacher ? TEACHER_NOTE_TEMPLATES : STUDENT_NOTE_TEMPLATES;
@@ -1017,37 +1247,60 @@ function Toolbar(props) {
           </button>
         </div>
       )}
-      {/* Draw sub-controls: color swatches + line-width picker */}
+      {/* Draw sub-controls: shape picker, then color + width (color/width
+          hidden in eraser mode since eraser has no fill). */}
       {mode === 'draw' && (
         <div className="flex items-center gap-1 animate-in slide-in-from-left-2 duration-200 border-l border-slate-200 pl-1">
-          {DRAW_COLOR_KEYS.map(function (key) {
-            const c = DRAW_COLORS[key];
+          {/* Shape picker */}
+          {DRAW_SHAPES.map(function (sh) {
+            const isErase = sh === 'erase';
             return (
               <button
-                key={key}
-                aria-label={'Draw color ' + key}
-                onClick={function () { onPickDrawColor(key); }}
-                className={'w-5 h-5 rounded-full transition-transform hover:scale-125 ' + (drawColor === key ? 'ring-2 ring-fuchsia-500 scale-110' : 'opacity-70 hover:opacity-100')}
-                style={{ background: c, border: '2px solid ' + c }}
-                title={key}
-              />
-            );
-          })}
-          <div className="w-px h-4 bg-slate-200 mx-1"></div>
-          {DRAW_WIDTHS.map(function (w) {
-            return (
-              <button
-                key={'w' + w}
-                aria-label={'Line width ' + w + 'px'}
-                onClick={function () { onPickDrawWidth(w); }}
-                className={'flex items-center justify-center rounded transition-transform hover:scale-125 ' + (drawWidth === w ? 'ring-2 ring-fuchsia-500 scale-110 bg-fuchsia-50' : 'opacity-70 hover:opacity-100')}
-                style={{ width: 22, height: 22 }}
-                title={w + 'px'}
+                key={sh}
+                aria-label={DRAW_SHAPE_LABELS[sh] || sh}
+                onClick={function () { onPickDrawShape(sh); }}
+                className={'flex items-center justify-center rounded transition-transform hover:scale-125 ' + (drawShape === sh ? (isErase ? 'ring-2 ring-red-500 scale-110 bg-red-50' : 'ring-2 ring-fuchsia-500 scale-110 bg-fuchsia-50') : 'opacity-70 hover:opacity-100')}
+                style={{ width: 24, height: 24, fontSize: 14 }}
+                title={DRAW_SHAPE_LABELS[sh]}
               >
-                <span style={{ display: 'inline-block', width: 12, height: w, borderRadius: w / 2, background: '#374151' }} />
+                <span aria-hidden="true">{DRAW_SHAPE_ICONS[sh]}</span>
               </button>
             );
           })}
+          {/* Color + width only relevant for non-eraser shapes */}
+          {drawShape !== 'erase' ? (
+            <React.Fragment>
+              <div className="w-px h-4 bg-slate-200 mx-1"></div>
+              {DRAW_COLOR_KEYS.map(function (key) {
+                const c = DRAW_COLORS[key];
+                return (
+                  <button
+                    key={key}
+                    aria-label={'Draw color ' + key}
+                    onClick={function () { onPickDrawColor(key); }}
+                    className={'w-5 h-5 rounded-full transition-transform hover:scale-125 ' + (drawColor === key ? 'ring-2 ring-fuchsia-500 scale-110' : 'opacity-70 hover:opacity-100')}
+                    style={{ background: c, border: '2px solid ' + c }}
+                    title={key}
+                  />
+                );
+              })}
+              <div className="w-px h-4 bg-slate-200 mx-1"></div>
+              {DRAW_WIDTHS.map(function (w) {
+                return (
+                  <button
+                    key={'w' + w}
+                    aria-label={'Line width ' + w + 'px'}
+                    onClick={function () { onPickDrawWidth(w); }}
+                    className={'flex items-center justify-center rounded transition-transform hover:scale-125 ' + (drawWidth === w ? 'ring-2 ring-fuchsia-500 scale-110 bg-fuchsia-50' : 'opacity-70 hover:opacity-100')}
+                    style={{ width: 22, height: 22 }}
+                    title={w + 'px'}
+                  >
+                    <span style={{ display: 'inline-block', width: 12, height: w, borderRadius: w / 2, background: '#374151' }} />
+                  </button>
+                );
+              })}
+            </React.Fragment>
+          ) : null}
           <div className="w-px h-4 bg-slate-200 mx-1"></div>
           <button
             onClick={onClear}
@@ -1127,37 +1380,60 @@ function createNoteFromClick(hostEl, evt, opts) {
 // finishes. Same safety filter as the other click factories (skip
 // interactive elements).
 // Helper: build a new drawing annotation from a DrawingCapture commit.
-// `stroke` is { points: [{x,y}], color, width }. Computes the bounding
-// box once at commit-time so DrawingOverlay can render + hit-test
-// without recomputing. Returns null if the stroke has <2 points.
+// Branches on `stroke.shape` to decide whether to store a points array
+// (free), start+end (line/arrow), or just a bounding box (rect/circle).
+// Computes the bounding box once at commit time so DrawingOverlay can
+// render + hit-test without recomputing. Returns null on degenerate
+// strokes (too few points or zero area).
 function createDrawingFromStroke(stroke, opts) {
-  if (!stroke || !Array.isArray(stroke.points) || stroke.points.length < 2) return null;
+  if (!stroke) return null;
   const o = opts || {};
-  // Bounding box
-  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-  for (let i = 0; i < stroke.points.length; i++) {
-    const p = stroke.points[i];
-    if (p.x < minX) minX = p.x;
-    if (p.y < minY) minY = p.y;
-    if (p.x > maxX) maxX = p.x;
-    if (p.y > maxY) maxY = p.y;
-  }
+  const shape = stroke.shape || 'free';
   const w = typeof stroke.width === 'number' ? stroke.width : 4;
-  return {
+  const color = stroke.color || 'red';
+  const base = {
     id: Date.now(),
     kind: 'draw',
-    points: stroke.points.slice(),
-    color: stroke.color || 'red',
+    shape: shape,
+    color: color,
     width: w,
-    // Bounding box used by DrawingOverlay for SVG sizing + delete button placement
-    x: minX - w,
-    y: minY - w,
-    w: (maxX - minX) + w * 2,
-    h: (maxY - minY) + w * 2,
     author: o.isTeacher ? 'teacher' : 'student',
     authorName: !o.isTeacher ? (o.authorName || '') : '',
     createdAt: new Date().toISOString(),
   };
+  if (shape === 'free') {
+    if (!Array.isArray(stroke.points) || stroke.points.length < 2) return null;
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (let i = 0; i < stroke.points.length; i++) {
+      const p = stroke.points[i];
+      if (p.x < minX) minX = p.x;
+      if (p.y < minY) minY = p.y;
+      if (p.x > maxX) maxX = p.x;
+      if (p.y > maxY) maxY = p.y;
+    }
+    return Object.assign(base, {
+      points: stroke.points.slice(),
+      x: minX - w,
+      y: minY - w,
+      w: (maxX - minX) + w * 2,
+      h: (maxY - minY) + w * 2,
+    });
+  }
+  // Bounded primitives — line, arrow, rect, circle
+  if (!stroke.start || !stroke.end) return null;
+  const sx = stroke.start.x, sy = stroke.start.y;
+  const ex = stroke.end.x, ey = stroke.end.y;
+  if (Math.abs(ex - sx) < 2 && Math.abs(ey - sy) < 2) return null;
+  const minX = Math.min(sx, ex), minY = Math.min(sy, ey);
+  const maxX = Math.max(sx, ex), maxY = Math.max(sy, ey);
+  return Object.assign(base, {
+    start: { x: sx, y: sy },
+    end: { x: ex, y: ey },
+    x: minX - w,
+    y: minY - w,
+    w: (maxX - minX) + w * 2,
+    h: (maxY - minY) + w * 2,
+  });
 }
 
 function createVoicePlaceholder(hostEl, evt, opts) {
@@ -1536,6 +1812,10 @@ window.AlloModules.AnnotationSuite = {
   DRAW_COLORS: DRAW_COLORS,
   DRAW_COLOR_KEYS: DRAW_COLOR_KEYS,
   DRAW_WIDTHS: DRAW_WIDTHS,
+  DRAW_SHAPES: DRAW_SHAPES,
+  DRAW_SHAPE_LABELS: DRAW_SHAPE_LABELS,
+  DRAW_SHAPE_ICONS: DRAW_SHAPE_ICONS,
+  ERASER_RADIUS: ERASER_RADIUS,
   TEACHER_NOTE_TEMPLATES: TEACHER_NOTE_TEMPLATES,
   STUDENT_NOTE_TEMPLATES: STUDENT_NOTE_TEMPLATES,
   VOICE_MAX_SECONDS: VOICE_MAX_SECONDS,
