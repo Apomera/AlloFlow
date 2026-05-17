@@ -1358,12 +1358,23 @@ const StudentSubmitModal = React.memo((props) => {
         </div>
     );
 });
-const useFocusTrap = (ref, isOpen) => {
+// useFocusTrap(ref, isOpen[, onEscape])
+//   ref       — React ref to the modal/dialog root element
+//   isOpen    — boolean; trap is only active when true
+//   onEscape  — OPTIONAL callback fired when user presses Escape. Pass this
+//               from modal-owning components so users can always escape via
+//               keyboard (WCAG 2.1.2 No Keyboard Trap). If omitted, Escape
+//               passes through to the component's own onKeyDown handler.
+const useFocusTrap = (ref, isOpen, onEscape) => {
   useEffect(() => {
     if (!isOpen || !ref.current) return;
     const previouslyFocused = document.activeElement;
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
+        if (typeof onEscape === 'function') {
+          e.preventDefault();
+          try { onEscape(); } catch (_) {}
+        }
         return;
       }
       if (e.key !== 'Tab') return;
@@ -1402,6 +1413,31 @@ const useFocusTrap = (ref, isOpen) => {
   }, [isOpen, ref]);
 };
 window.__alloHooks = { useFocusTrap };
+// ── Global keyboard-trap safety net (WCAG 2.1.2) ──
+// Last-resort Escape hatch. Runs in the BUBBLE phase so per-component
+// handlers fire first; only acts if no other handler already dismissed
+// the modal (we re-check the DOM 50ms later and only fire if the dialog
+// is still present and visible).
+if (typeof window !== 'undefined' && !window.__alloEscapeNetInstalled) {
+  window.__alloEscapeNetInstalled = true;
+  window.addEventListener('keydown', function(e) {
+    if (e.key !== 'Escape' || e.defaultPrevented) return;
+    setTimeout(function() {
+      const dialogs = document.querySelectorAll('[role="dialog"][aria-modal="true"]');
+      if (!dialogs.length) return;
+      const top = dialogs[dialogs.length - 1];
+      // Verify the dialog is still visible (per-component handler didn't dismiss).
+      const rect = top.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      // Find a close-button candidate inside it.
+      const closeBtn = top.querySelector('[data-alloflow-close-on-escape="true"]')
+        || top.querySelector('button[aria-label*="lose" i]')
+        || top.querySelector('button[aria-label*="ismiss" i]')
+        || top.querySelector('button[aria-label*="ancel" i]');
+      if (closeBtn) { try { closeBtn.click(); } catch (_) {} }
+    }, 50);
+  }, false /* bubble phase — per-component handlers fire first */);
+}
 window.UiLanguageSelector = UiLanguageSelector;
 window.APP_CONFIG = APP_CONFIG;
 window.warnLog = warnLog;
@@ -5903,7 +5939,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [showLedger, setShowLedger] = useState(false);
   const [selectedInventoryItem, setSelectedInventoryItem] = useState(null);
   const fluencyModalRef = useRef(null);
-  useFocusTrap(fluencyModalRef, isFluencyMode);
+  useFocusTrap(fluencyModalRef, isFluencyMode, () => setIsFluencyMode(false));
   const [enableFactionResources, setEnableFactionResources] = useState(false);
   const [factionResourceMode, setFactionResourceMode] = useState('ai');
   const [pendingFactionResources, setPendingFactionResources] = useState(null);
@@ -5911,9 +5947,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const adventureScrollRef = useRef(null);
   const [autoRemoveWords, setAutoRemoveWords] = useState(true);
   const xpModalRef = useRef(null);
-  useFocusTrap(xpModalRef, showXPModal);
+  useFocusTrap(xpModalRef, showXPModal, () => setShowXPModal(false));
   const studyTimerRef = useRef(null);
-  useFocusTrap(studyTimerRef, showStudyTimerModal);
+  useFocusTrap(studyTimerRef, showStudyTimerModal, () => setShowStudyTimerModal(false));
   const [saveFileName, setSaveFileName] = useState('');
   const [saveType, setSaveType] = useState(null);
   const [isStudentLinkMode, setIsStudentLinkMode] = useState(false);
@@ -21453,6 +21489,37 @@ ${_toolList}
           outline: 3px solid #6366f1 !important;
           outline-offset: 2px !important;
           border-radius: 6px;
+        }
+        /* ── WCAG 1.4.10 Reflow — let multi-panel STEM tools reflow at 320px / 400% zoom ── */
+        /* Any wide horizontal panel layout opts in to vertical-stacking via .allo-reflow.
+           At ≤640px (Tailwind sm breakpoint) panels stack and inner overflow becomes scrollable
+           instead of forcing a horizontal page scroll. */
+        @media (max-width: 640px) {
+          .allo-reflow,
+          .allo-reflow > * {
+            flex-direction: column !important;
+            grid-template-columns: 1fr !important;
+            min-width: 0 !important;
+          }
+          .allo-reflow [class*="grid-cols-2"],
+          .allo-reflow [class*="grid-cols-3"],
+          .allo-reflow [class*="grid-cols-4"],
+          .allo-reflow [class*="grid-cols-5"],
+          .allo-reflow [class*="grid-cols-6"] {
+            grid-template-columns: 1fr !important;
+          }
+          /* Wide pre/code/table elements inside reflow containers scroll internally */
+          .allo-reflow pre, .allo-reflow table, .allo-reflow code {
+            max-width: 100%;
+            overflow-x: auto;
+          }
+        }
+        /* WCAG 1.4.12 Text Spacing — let user-overridden line/letter/word/paragraph
+           spacing render without being clipped by fixed-height containers. The codebase
+           already uses Tailwind leading- and tracking- classes (rem units) which scale
+           naturally; this rule just ensures no inline height traps text overflow. */
+        .allo-textbox, .allo-textbox * {
+          line-height: inherit;
         }
         /* App-level skeleton shimmer for loading states */
         @keyframes alloflow-skeleton-shimmer {
