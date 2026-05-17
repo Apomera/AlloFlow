@@ -5052,6 +5052,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // active stroke; createDrawingFromStroke commits it as a 'draw' annotation.
   const [drawColor, setDrawColor] = useState('red');
   const [drawWidth, setDrawWidth] = useState(4);
+  // Phase 9b: shape primitives (line/arrow/rect/circle) + eraser. Default
+  // 'free' keeps existing behavior. 'erase' makes the cursor a hit-test
+  // radius that removes any annotation it crosses.
+  const [drawShape, setDrawShape] = useState('free');
   // Phase 7: note templates. Empty string = freeform (inline editor opens).
   // Non-empty = pre-filled content; stays "sticky" across multiple clicks
   // so a teacher can rapid-fire the same feedback when grading a class set.
@@ -22445,6 +22449,7 @@ ${_toolList}
                                 noteTemplate: noteTemplate,
                                 drawColor: drawColor,
                                 drawWidth: drawWidth,
+                                drawShape: drawShape,
                                 isTeacher: isTeacherMode,
                                 onSetMode: setAnnotationMode,
                                 onPickType: setStickerType,
@@ -22453,6 +22458,7 @@ ${_toolList}
                                 onPickTemplate: setNoteTemplate,
                                 onPickDrawColor: setDrawColor,
                                 onPickDrawWidth: setDrawWidth,
+                                onPickDrawShape: setDrawShape,
                                 onClear: clearStickers,
                                 t: t,
                             });
@@ -22596,7 +22602,9 @@ ${_toolList}
             })()}
             {/* Drawing capture overlay — only mounts when draw mode is active.
                 Pointer events get captured here, the in-progress stroke renders
-                live, and pointerup commits via createDrawingFromStroke. */}
+                live, and pointerup commits via createDrawingFromStroke. In
+                eraser mode (drawShape === 'erase'), no stroke commits — the
+                onErase callback fires once per annotation under the cursor. */}
             {annotationMode === 'draw' && (() => {
                 const _m = window.AlloModules && window.AlloModules.AnnotationSuite;
                 if (!_m || !_m.DrawingCapture || !_m.createDrawingFromStroke) return null;
@@ -22605,6 +22613,8 @@ ${_toolList}
                     active: true,
                     color: drawColor,
                     width: drawWidth,
+                    shape: drawShape,
+                    annotations: stickers,
                     onCommit: (stroke) => {
                         const next = _m.createDrawingFromStroke(stroke, {
                             isTeacher: isTeacherMode,
@@ -22613,6 +22623,11 @@ ${_toolList}
                         if (next) {
                             setStickers(prev => [...prev, next]);
                             playSound('click');
+                        }
+                    },
+                    onErase: (id) => {
+                        if (_m.removeAnnotation) {
+                            setStickers(prev => _m.removeAnnotation(prev, id));
                         }
                     },
                 });
