@@ -2839,6 +2839,7 @@
         d.mode === 'reference' && _renderReferencePanel(d, upd, h),
         d.mode === 'sleuth' && _renderSleuthPanel(d, upd, h, addToast),
         d.mode === 'quiz' && _renderQuizPanel(d, upd, h, addToast, awardXP, setOpCeleb),
+        d.mode === 'viz' && _renderVizPanel(d, upd, h),
         d.mode === 'mastery' && _renderMasteryPanel(d, upd, h),
         // Concept-mastery celebration overlay — fixed-position, top of screen,
         // self-clears after 3.5s. Renders on top of any view.
@@ -12252,6 +12253,7748 @@
     );
   }
 
+
+  // ══════════════════════════════════════════════════════════════════════
+  // VIZ PANEL — visual + interactive SVG optics mini-tools
+  // ══════════════════════════════════════════════════════════════════════
+  function _renderVizPanel(d, upd, h) {
+    return h('div', null,
+      h('div', { style: { background: 'rgba(20,184,166,0.10)', border: '1px solid rgba(20,184,166,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
+        h('h3', { style: { color: '#5eead4', fontSize: 17, fontWeight: 900, margin: '0 0 4px' } }, '🔬 Visual Optics Lab'),
+        h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, margin: 0 } }, 'Interactive SVG visualizations. Open + drag sliders, click to interact. Built for visual learners.')
+      ),
+      // === MINI-TOOL: SNELL'S LAW REFRACTION VISUALIZER ===
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🌊 Snell's Law Refraction Visualizer"),
+          h('button', {
+            onClick: function() { upd("vizShowSnell", !d.vizShowSnell); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowSnell ? '#0ea5e9' : 'rgba(20,184,166,0.15)', color: d.vizShowSnell ? '#fff' : '#5eead4' }
+          }, d.vizShowSnell ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Drag the incidence angle + the refractive indices. Watch the ray bend, and trigger TIR at the critical angle."),
+        d.vizShowSnell && h('div', { style: { marginTop: 8 } },
+          (function() {
+                      var th1 = d.vizSnellTh != null ? d.vizSnellTh : 30;
+                      var n1 = d.vizSnellN1 != null ? d.vizSnellN1 : 1.00;
+                      var n2 = d.vizSnellN2 != null ? d.vizSnellN2 : 1.52;
+                      var th1Rad = th1 * Math.PI / 180;
+                      var sinTh2 = n1 * Math.sin(th1Rad) / n2;
+                      var tir = Math.abs(sinTh2) > 1;
+                      var th2Rad = tir ? th1Rad : Math.asin(sinTh2);
+                      var th2Deg = th2Rad * 180 / Math.PI;
+                      var cx = 250, cy = 130, len = 100;
+                      return h('div', null,
+                        h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
+                          h('svg', { viewBox: '0 0 500 260', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, rgba(125,211,252,0.15) 0%, rgba(125,211,252,0.05) 50%, rgba(59,130,246,0.20) 50.1%, rgba(59,130,246,0.35) 100%)' } },
+                            h('line', { x1: 0, y1: 130, x2: 500, y2: 130, stroke: '#475569', strokeWidth: 1 }),
+                            h('line', { x1: cx, y1: 30, x2: cx, y2: 230, stroke: '#475569', strokeWidth: 0.5, strokeDasharray: '4,3' }),
+                            h('text', { x: 50, y: 90, fill: '#7dd3fc', fontSize: 11 }, 'n₁ = ' + n1.toFixed(2)),
+                            h('text', { x: 50, y: 175, fill: '#bfdbfe', fontSize: 11 }, 'n₂ = ' + n2.toFixed(2)),
+                            h('line', { x1: cx - Math.sin(th1Rad) * len, y1: cy - Math.cos(th1Rad) * len, x2: cx, y2: cy, stroke: '#fde047', strokeWidth: 2 }),
+                            h('polygon', { points: cx + ',' + cy + ' ' + (cx - 6) + ',' + (cy - 14) + ' ' + (cx + 6) + ',' + (cy - 14), fill: '#fde047' }),
+                            !tir && h('line', { x1: cx, y1: cy, x2: cx + Math.sin(th2Rad) * len, y2: cy + Math.cos(th2Rad) * len, stroke: '#fde047', strokeWidth: 2 }),
+                            !tir && h('polygon', { points: (cx + Math.sin(th2Rad) * len) + ',' + (cy + Math.cos(th2Rad) * len) + ' ' + (cx + Math.sin(th2Rad) * len - 5) + ',' + (cy + Math.cos(th2Rad) * len - 14) + ' ' + (cx + Math.sin(th2Rad) * len + 5) + ',' + (cy + Math.cos(th2Rad) * len - 14), fill: '#fde047' }),
+                            h('line', { x1: cx, y1: cy, x2: cx + Math.sin(th1Rad) * len, y2: cy - Math.cos(th1Rad) * len, stroke: '#fde047', strokeWidth: 1, strokeDasharray: '4,2', opacity: 0.5 }),
+                            h('path', { d: 'M ' + (cx - 30) + ' ' + cy + ' A 30 30 0 0 0 ' + (cx - 30 * Math.cos(Math.PI/2 - th1Rad)) + ' ' + (cy - 30 * Math.sin(Math.PI/2 - th1Rad)), fill: 'none', stroke: '#86efac', strokeWidth: 1.5 }),
+                            h('text', { x: cx - 45, y: cy - 5, fill: '#86efac', fontSize: 10, fontWeight: 'bold' }, 'θ₁=' + th1 + '°'),
+                            !tir && h('text', { x: cx + 5, y: cy + 30, fill: '#86efac', fontSize: 10, fontWeight: 'bold' }, 'θ₂=' + th2Deg.toFixed(1) + '°'),
+                            tir && h('text', { x: 250, y: 250, textAnchor: 'middle', fill: '#dc2626', fontSize: 12, fontWeight: 'bold' }, '⚡ TOTAL INTERNAL REFLECTION ⚡')
+                          )
+                        ),
+                        h('div', { style: { marginTop: 8, fontSize: 11, color: '#cbd5e1' } },
+                          'n₁ sin θ₁ = n₂ sin θ₂  →  ' + n1.toFixed(2) + ' × sin(' + th1 + '°) = ' + n2.toFixed(2) + ' × sin θ₂  →  θ₂ = ' + (tir ? '∞ (TIR)' : th2Deg.toFixed(1) + '°')
+                        ),
+                        h('div', { style: { display: 'flex', gap: 6, marginTop: 8, fontSize: 11, flexWrap: 'wrap' } },
+                          [{ l: 'Angle of incidence', k: 'vizSnellTh', v: th1, min: 0, max: 89, suf: '°' }, { l: 'n₁ (incident)', k: 'vizSnellN1', v: n1, min: 1, max: 2.5, suf: '', step: 0.01 }, { l: 'n₂ (refracted)', k: 'vizSnellN2', v: n2, min: 1, max: 2.5, suf: '', step: 0.01 }].map(function(s) {
+                            return h('div', { key: s.k, style: { flex: 1, minWidth: 130 } },
+                              h('div', { style: { color: '#cbd5e1', marginBottom: 2 } }, s.l + ': ' + s.v.toFixed(s.step ? 2 : 0) + s.suf),
+                              h('input', { type: 'range', min: s.min, max: s.max, step: s.step || 1, value: s.v, onChange: function(e) { upd(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
+                            );
+                          })
+                        ),
+                        h('div', { style: { display: 'flex', gap: 4, marginTop: 6, flexWrap: 'wrap' } },
+                          [['Air→water', 1.00, 1.33], ['Air→glass', 1.00, 1.52], ['Water→air', 1.33, 1.00], ['Glass→diamond', 1.52, 2.42]].map(function(p) {
+                            return h('button', { key: p[0], onClick: function() { upd('vizSnellN1', p[1]); upd('vizSnellN2', p[2]); }, style: { padding: '4px 8px', fontSize: 10, background: 'rgba(15,23,42,0.7)', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.30)', borderRadius: 6, cursor: 'pointer' } }, p[0]);
+                          })
+                        )
+                      );
+                    })()
+        )
+      ),
+
+      // === MINI-TOOL: LENS RAY TRACER (CONVEX + CONCAVE) ===
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🔍 Lens Ray Tracer (Convex + Concave)"),
+          h('button', {
+            onClick: function() { upd("vizShowLens", !d.vizShowLens); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowLens ? '#0ea5e9' : 'rgba(20,184,166,0.15)', color: d.vizShowLens ? '#fff' : '#5eead4' }
+          }, d.vizShowLens ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Drag object closer to a lens + watch ray diagram update. Converging vs diverging, real vs virtual."),
+        d.vizShowLens && h('div', { style: { marginTop: 8 } },
+          (function() {
+                      var f = d.vizLensF != null ? d.vizLensF : 60;
+                      var doDist = d.vizLensDo != null ? d.vizLensDo : 150;
+                      var hObj = d.vizLensH != null ? d.vizLensH : 40;
+                      var converging = (d.vizLensType || 'converging') === 'converging';
+                      var fSigned = converging ? f : -f;
+                      var di = 1 / (1/fSigned - 1/doDist);
+                      var m = -di / doDist;
+                      var hImg = m * hObj;
+                      var cx = 280, cy = 130;
+                      var objX = cx - doDist;
+                      var imgX = cx + di;
+                      var realImg = di > 0 && converging;
+                      return h('div', null,
+                        h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
+                          h('svg', { viewBox: '0 0 560 260', style: { width: '100%', display: 'block', background: '#0a0a18' } },
+                            h('line', { x1: 0, y1: 130, x2: 560, y2: 130, stroke: '#475569', strokeWidth: 1 }),
+                            h('line', { x1: cx - f, y1: 125, x2: cx - f, y2: 135, stroke: '#94a3b8', strokeWidth: 1 }),
+                            h('line', { x1: cx + f, y1: 125, x2: cx + f, y2: 135, stroke: '#94a3b8', strokeWidth: 1 }),
+                            h('text', { x: cx - f, y: 150, textAnchor: 'middle', fill: '#94a3b8', fontSize: 9 }, 'F'),
+                            h('text', { x: cx + f, y: 150, textAnchor: 'middle', fill: '#94a3b8', fontSize: 9 }, 'F'),
+                            converging ? h('path', { d: 'M ' + cx + ' ' + (cy - 75) + ' Q ' + (cx + 16) + ' ' + cy + ' ' + cx + ' ' + (cy + 75) + ' Q ' + (cx - 16) + ' ' + cy + ' ' + cx + ' ' + (cy - 75), fill: 'rgba(125,211,252,0.30)', stroke: '#7dd3fc', strokeWidth: 1.5 }) :
+                              h('path', { d: 'M ' + (cx - 7) + ' ' + (cy - 75) + ' Q ' + (cx + 5) + ' ' + cy + ' ' + (cx - 7) + ' ' + (cy + 75) + ' L ' + (cx + 7) + ' ' + (cy + 75) + ' Q ' + (cx - 5) + ' ' + cy + ' ' + (cx + 7) + ' ' + (cy - 75) + ' Z', fill: 'rgba(252,211,77,0.30)', stroke: '#fcd34d', strokeWidth: 1.5 }),
+                            h('line', { x1: objX, y1: cy, x2: objX, y2: cy - hObj, stroke: '#22c55e', strokeWidth: 3 }),
+                            h('polygon', { points: objX + ',' + (cy - hObj) + ' ' + (objX - 4) + ',' + (cy - hObj + 8) + ' ' + (objX + 4) + ',' + (cy - hObj + 8), fill: '#22c55e' }),
+                            h('line', { x1: objX, y1: cy - hObj, x2: cx, y2: cy - hObj, stroke: '#fde047', strokeWidth: 1.5 }),
+                            h('line', { x1: cx, y1: cy - hObj, x2: cx + (converging ? 250 : -150) * (hImg < 0 ? -1 : 1), y2: cy - hObj + (cx + (converging ? 250 : -150) * (hImg < 0 ? -1 : 1) - cx) * (hObj / fSigned), stroke: '#fde047', strokeWidth: 1.5 }),
+                            h('line', { x1: objX, y1: cy - hObj, x2: cx + 230, y2: cy - hObj + 230 * (hObj / doDist) + 0, stroke: '#f97316', strokeWidth: 1.5, opacity: 0.7 }),
+                            Math.abs(imgX - cx) < 250 && imgX > 0 && imgX < 560 && h('line', { x1: imgX, y1: cy, x2: imgX, y2: cy - hImg, stroke: realImg ? '#dc2626' : '#a78bfa', strokeWidth: 3, strokeDasharray: realImg ? 'none' : '4,2' }),
+                            h('text', { x: 280, y: 25, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, converging ? 'Converging Lens (' + (doDist > f ? 'real ' : 'virtual ') + 'image)' : 'Diverging Lens (always virtual image)'),
+                            h('text', { x: 280, y: 245, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 11 }, 'dᵢ=' + di.toFixed(1) + ' • m=' + m.toFixed(2) + ' • hᵢ=' + hImg.toFixed(1))
+                          )
+                        ),
+                        h('div', { style: { display: 'flex', gap: 6, marginTop: 8 } },
+                          ['converging', 'diverging'].map(function(t) {
+                            var active = (d.vizLensType || 'converging') === t;
+                            return h('button', { key: t, onClick: function() { upd('vizLensType', t); }, style: { padding: '4px 10px', fontSize: 11, background: active ? '#0ea5e9' : 'rgba(15,23,42,0.7)', color: active ? '#fff' : '#94a3b8', border: '1px solid rgba(100,116,139,0.30)', borderRadius: 6, cursor: 'pointer' } }, t);
+                          })
+                        ),
+                        h('div', { style: { display: 'flex', gap: 6, marginTop: 8, fontSize: 11, flexWrap: 'wrap' } },
+                          [{ l: 'Focal length', k: 'vizLensF', v: f, min: 20, max: 120 }, { l: 'Object distance', k: 'vizLensDo', v: doDist, min: 30, max: 260 }, { l: 'Object height', k: 'vizLensH', v: hObj, min: 10, max: 70 }].map(function(s) {
+                            return h('div', { key: s.k, style: { flex: 1, minWidth: 130 } },
+                              h('div', { style: { color: '#cbd5e1', marginBottom: 2 } }, s.l + ': ' + s.v),
+                              h('input', { type: 'range', min: s.min, max: s.max, value: s.v, onChange: function(e) { upd(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
+                            );
+                          })
+                        )
+                      );
+                    })()
+        )
+      ),
+
+      // === MINI-TOOL: PRISM DISPERSION ===
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🔺 Prism Dispersion"),
+          h('button', {
+            onClick: function() { upd("vizShowPrism", !d.vizShowPrism); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowPrism ? '#7e22ce' : 'rgba(20,184,166,0.15)', color: d.vizShowPrism ? '#fff' : '#5eead4' }
+          }, d.vizShowPrism ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "White light splits into a rainbow because shorter wavelengths refract more. Newton 1666 used this to prove sunlight contains all colors."),
+        d.vizShowPrism && h('div', { style: { marginTop: 8 } },
+          (function() {
+                      var angle = d.vizPrismAngle != null ? d.vizPrismAngle : 60;
+                      var nGlass = 1.52;
+                      var WAVELENGTHS = [{ nm: 400, c: '#7e22ce' }, { nm: 440, c: '#2563eb' }, { nm: 490, c: '#06b6d4' }, { nm: 550, c: '#22c55e' }, { nm: 590, c: '#facc15' }, { nm: 630, c: '#f97316' }, { nm: 700, c: '#dc2626' }];
+                      return h('div', null,
+                        h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
+                          h('svg', { viewBox: '0 0 500 280', style: { width: '100%', display: 'block', background: '#0a0a18' } },
+                            h('polygon', { points: '200,180 280,180 240,80', fill: 'rgba(125,211,252,0.20)', stroke: '#7dd3fc', strokeWidth: 1.5 }),
+                            h('line', { x1: 30, y1: 130, x2: 215, y2: 130, stroke: '#fff', strokeWidth: 2 }),
+                            h('text', { x: 30, y: 125, fill: '#fff', fontSize: 10 }, 'White light →'),
+                            WAVELENGTHS.map(function(w, wi) {
+                              var nLam = nGlass - (w.nm - 550) / 800 * 0.04;
+                              var bend = (nLam - 1) * 30;
+                              var startX = 270;
+                              var startY = 130;
+                              var endX = 460;
+                              var endY = 130 + bend * 3 + wi * 2;
+                              return h('line', { key: wi, x1: startX, y1: startY, x2: endX, y2: endY, stroke: w.c, strokeWidth: 2.5, opacity: 0.9 });
+                            }),
+                            h('text', { x: 240, y: 220, textAnchor: 'middle', fill: '#fff', fontSize: 11, fontWeight: 'bold' }, 'White light → spectrum'),
+                            h('text', { x: 480, y: 145, textAnchor: 'end', fill: '#7e22ce', fontSize: 9 }, '400nm violet'),
+                            h('text', { x: 480, y: 168, textAnchor: 'end', fill: '#dc2626', fontSize: 9 }, '700nm red'),
+                            h('text', { x: 250, y: 268, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Newton 1666: prism shows white = rainbow')
+                          )
+                        ),
+                        h('div', { style: { marginTop: 8 } },
+                          h('div', { style: { color: '#cbd5e1', marginBottom: 2, fontSize: 11 } }, 'Apex angle: ' + angle + '°'),
+                          h('input', { type: 'range', min: 30, max: 90, value: angle, onChange: function(e) { upd('vizPrismAngle', parseFloat(e.target.value)); }, style: { width: '100%' } })
+                        )
+                      );
+                    })()
+        )
+      ),
+
+      // === MINI-TOOL: MIRROR REFLECTION LAB ===
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🪞 Mirror Reflection Lab"),
+          h('button', {
+            onClick: function() { upd("vizShowMirror", !d.vizShowMirror); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowMirror ? '#0ea5e9' : 'rgba(20,184,166,0.15)', color: d.vizShowMirror ? '#fff' : '#5eead4' }
+          }, d.vizShowMirror ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Concave + convex mirror ray diagrams. Move the object + watch the image change."),
+        d.vizShowMirror && h('div', { style: { marginTop: 8 } },
+          (function() {
+                      var type = d.vizMirrType || 'concave';
+                      var f = d.vizMirrF != null ? d.vizMirrF : 50;
+                      var doDist = d.vizMirrDo != null ? d.vizMirrDo : 110;
+                      var hObj = d.vizMirrH != null ? d.vizMirrH : 40;
+                      var fSigned = type === 'concave' ? f : -f;
+                      var di = 1 / (1/fSigned - 1/doDist);
+                      var m = -di / doDist;
+                      var hImg = m * hObj;
+                      var mx = 420, my = 130;
+                      return h('div', null,
+                        h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
+                          h('svg', { viewBox: '0 0 500 260', style: { width: '100%', display: 'block', background: '#0a0a18' } },
+                            h('line', { x1: 0, y1: 130, x2: 500, y2: 130, stroke: '#475569', strokeWidth: 1 }),
+                            h('path', { d: 'M ' + mx + ' ' + (my - 80) + ' Q ' + (mx + (type === 'concave' ? -30 : 30)) + ' ' + my + ' ' + mx + ' ' + (my + 80), fill: 'none', stroke: '#cbd5e1', strokeWidth: 3 }),
+                            h('line', { x1: mx - f, y1: 125, x2: mx - f, y2: 135, stroke: '#94a3b8', strokeWidth: 1 }),
+                            h('text', { x: mx - f, y: 148, textAnchor: 'middle', fill: '#94a3b8', fontSize: 10 }, 'F'),
+                            h('line', { x1: mx - doDist, y1: my, x2: mx - doDist, y2: my - hObj, stroke: '#22c55e', strokeWidth: 3 }),
+                            h('polygon', { points: (mx - doDist) + ',' + (my - hObj) + ' ' + (mx - doDist - 4) + ',' + (my - hObj + 8) + ' ' + (mx - doDist + 4) + ',' + (my - hObj + 8), fill: '#22c55e' }),
+                            h('line', { x1: mx - doDist, y1: my - hObj, x2: mx, y2: my - hObj, stroke: '#fde047', strokeWidth: 1.5 }),
+                            h('line', { x1: mx, y1: my - hObj, x2: mx - 200, y2: my + (type === 'concave' ? (hObj * (mx - 200 - mx) / -f) : -(hObj * (mx - 200 - mx) / f)), stroke: '#fde047', strokeWidth: 1.5 }),
+                            di > 0 && di < 300 && h('line', { x1: mx - di, y1: my, x2: mx - di, y2: my - hImg, stroke: '#dc2626', strokeWidth: 3 }),
+                            h('text', { x: 250, y: 25, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, type === 'concave' ? 'Concave Mirror' : 'Convex Mirror'),
+                            h('text', { x: 250, y: 245, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 11 }, 'dᵢ=' + di.toFixed(1) + ' • m=' + m.toFixed(2))
+                          )
+                        ),
+                        h('div', { style: { display: 'flex', gap: 6, marginTop: 8 } },
+                          ['concave', 'convex'].map(function(t) {
+                            var active = type === t;
+                            return h('button', { key: t, onClick: function() { upd('vizMirrType', t); }, style: { padding: '4px 10px', fontSize: 11, background: active ? '#0ea5e9' : 'rgba(15,23,42,0.7)', color: active ? '#fff' : '#94a3b8', border: '1px solid rgba(100,116,139,0.30)', borderRadius: 6, cursor: 'pointer' } }, t);
+                          })
+                        ),
+                        h('div', { style: { display: 'flex', gap: 6, marginTop: 8, fontSize: 11, flexWrap: 'wrap' } },
+                          [{ l: 'Focal length', k: 'vizMirrF', v: f, min: 20, max: 100 }, { l: 'Object distance', k: 'vizMirrDo', v: doDist, min: 30, max: 200 }, { l: 'Object height', k: 'vizMirrH', v: hObj, min: 10, max: 60 }].map(function(s) {
+                            return h('div', { key: s.k, style: { flex: 1, minWidth: 130 } },
+                              h('div', { style: { color: '#cbd5e1', marginBottom: 2 } }, s.l + ': ' + s.v),
+                              h('input', { type: 'range', min: s.min, max: s.max, value: s.v, onChange: function(e) { upd(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
+                            );
+                          })
+                        )
+                      );
+                    })()
+        )
+      ),
+
+      // === MINI-TOOL: YOUNG'S DOUBLE-SLIT ===
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🌊 Young's Double-Slit"),
+          h('button', {
+            onClick: function() { upd("vizShowDS", !d.vizShowDS); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowDS ? '#7c3aed' : 'rgba(20,184,166,0.15)', color: d.vizShowDS ? '#fff' : '#5eead4' }
+          }, d.vizShowDS ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Two coherent light sources interfere — bright + dark fringes appear. Drag wavelength + slit separation to see spacing change."),
+        d.vizShowDS && h('div', { style: { marginTop: 8 } },
+          (function() {
+                      var lam = d.vizDsLam != null ? d.vizDsLam : 550;
+                      var slit = d.vizDsSlit != null ? d.vizDsSlit : 0.05;
+                      var L = d.vizDsL != null ? d.vizDsL : 1.0;
+                      var fringeSpacing = (lam * 1e-9) * L / (slit * 1e-3) * 1000;
+                      var fringes = [];
+                      for (var fi = 0; fi < 60; fi++) {
+                        var x = fi * 8;
+                        var phi = (x - 240) / 40 * Math.PI;
+                        var I = Math.cos(phi) * Math.cos(phi);
+                        fringes.push({ x: x, I: I });
+                      }
+                      function wlColor(w) { if (w < 440) return '#7e22ce'; if (w < 490) return '#2563eb'; if (w < 580) return '#22c55e'; if (w < 645) return '#facc15'; if (w < 700) return '#f97316'; return '#dc2626'; }
+                      return h('div', null,
+                        h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
+                          h('svg', { viewBox: '0 0 500 260', style: { width: '100%', display: 'block', background: '#000' } },
+                            h('rect', { x: 50, y: 110, width: 8, height: 14, fill: '#94a3b8' }),
+                            h('rect', { x: 50, y: 136, width: 8, height: 14, fill: '#94a3b8' }),
+                            h('text', { x: 30, y: 130, fill: '#cbd5e1', fontSize: 9, textAnchor: 'end' }, 'slits'),
+                            fringes.map(function(f, fi) {
+                              var op = f.I;
+                              return h('rect', { key: fi, x: 200 + fi * 5, y: 70, width: 5, height: 120, fill: wlColor(lam), opacity: op });
+                            }),
+                            h('rect', { x: 200, y: 70, width: 300, height: 120, fill: 'none', stroke: '#475569', strokeWidth: 1 }),
+                            h('text', { x: 350, y: 60, textAnchor: 'middle', fill: '#fff', fontSize: 11, fontWeight: 'bold' }, 'Young\'s Double-Slit Pattern'),
+                            h('text', { x: 350, y: 220, textAnchor: 'middle', fill: wlColor(lam), fontSize: 10 }, 'λ = ' + lam + ' nm • Fringe spacing: ' + fringeSpacing.toFixed(2) + ' mm')
+                          )
+                        ),
+                        h('div', { style: { display: 'flex', gap: 6, marginTop: 8, fontSize: 11, flexWrap: 'wrap' } },
+                          [{ l: 'Wavelength (nm)', k: 'vizDsLam', v: lam, min: 380, max: 750 }, { l: 'Slit sep (mm)', k: 'vizDsSlit', v: slit, min: 0.02, max: 0.5, step: 0.01 }, { l: 'Screen dist (m)', k: 'vizDsL', v: L, min: 0.3, max: 3, step: 0.1 }].map(function(s) {
+                            return h('div', { key: s.k, style: { flex: 1, minWidth: 130 } },
+                              h('div', { style: { color: '#cbd5e1', marginBottom: 2 } }, s.l + ': ' + s.v.toFixed(s.step ? 2 : 0)),
+                              h('input', { type: 'range', min: s.min, max: s.max, step: s.step || 1, value: s.v, onChange: function(e) { upd(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
+                            );
+                          })
+                        )
+                      );
+                    })()
+        )
+      ),
+
+      // === MINI-TOOL: POLARIZATION FILTER (MALUS'S LAW) ===
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "↕ Polarization Filter (Malus's Law)"),
+          h('button', {
+            onClick: function() { upd("vizShowPol", !d.vizShowPol); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowPol ? '#fbbf24' : 'rgba(20,184,166,0.15)', color: d.vizShowPol ? '#fff' : '#5eead4' }
+          }, d.vizShowPol ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Two polarizers in series. Light gets dimmer as filters rotate out of alignment. At 90° apart: total extinction."),
+        d.vizShowPol && h('div', { style: { marginTop: 8 } },
+          (function() {
+                      var th1 = d.vizPol1 != null ? d.vizPol1 : 0;
+                      var th2 = d.vizPol2 != null ? d.vizPol2 : 45;
+                      var diff = Math.abs(th2 - th1);
+                      var trans = Math.cos(diff * Math.PI / 180);
+                      var Itrans = trans * trans;
+                      return h('div', null,
+                        h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
+                          h('svg', { viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: '#0a0a18' } },
+                            h('rect', { x: 30, y: 70, width: 50, height: 70, fill: 'rgba(255,255,255,0.4)' }),
+                            h('text', { x: 55, y: 65, textAnchor: 'middle', fill: '#fff', fontSize: 10 }, 'Unpolarized'),
+                            h('circle', { cx: 150, cy: 105, r: 40, fill: 'none', stroke: '#7dd3fc', strokeWidth: 2 }),
+                            h('line', { x1: 150 + Math.cos((th1 + 90) * Math.PI / 180) * 35, y1: 105 + Math.sin((th1 + 90) * Math.PI / 180) * 35, x2: 150 - Math.cos((th1 + 90) * Math.PI / 180) * 35, y2: 105 - Math.sin((th1 + 90) * Math.PI / 180) * 35, stroke: '#7dd3fc', strokeWidth: 3 }),
+                            h('text', { x: 150, y: 165, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 10 }, 'P1: ' + th1 + '°'),
+                            h('circle', { cx: 290, cy: 105, r: 40, fill: 'none', stroke: '#fbbf24', strokeWidth: 2 }),
+                            h('line', { x1: 290 + Math.cos((th2 + 90) * Math.PI / 180) * 35, y1: 105 + Math.sin((th2 + 90) * Math.PI / 180) * 35, x2: 290 - Math.cos((th2 + 90) * Math.PI / 180) * 35, y2: 105 - Math.sin((th2 + 90) * Math.PI / 180) * 35, stroke: '#fbbf24', strokeWidth: 3 }),
+                            h('text', { x: 290, y: 165, textAnchor: 'middle', fill: '#fbbf24', fontSize: 10 }, 'P2: ' + th2 + '°'),
+                            h('rect', { x: 380, y: 70, width: 90, height: 70, fill: 'rgba(255,255,200,' + Itrans + ')' }),
+                            h('text', { x: 425, y: 65, textAnchor: 'middle', fill: '#fff', fontSize: 10 }, (Itrans * 100).toFixed(1) + '% transmitted'),
+                            h('text', { x: 250, y: 200, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 11 }, 'Δθ = ' + diff + '°  →  I/I₀ = cos²(Δθ) = ' + Itrans.toFixed(3) + ' (Malus\'s law)')
+                          )
+                        ),
+                        h('div', { style: { display: 'flex', gap: 6, marginTop: 8, fontSize: 11 } },
+                          [{ l: 'Polarizer 1', k: 'vizPol1', v: th1 }, { l: 'Polarizer 2', k: 'vizPol2', v: th2 }].map(function(s) {
+                            return h('div', { key: s.k, style: { flex: 1 } },
+                              h('div', { style: { color: '#cbd5e1', marginBottom: 2 } }, s.l + ': ' + s.v + '°'),
+                              h('input', { type: 'range', min: 0, max: 180, value: s.v, onChange: function(e) { upd(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
+                            );
+                          })
+                        )
+                      );
+                    })()
+        )
+      ),
+
+
+      // === MINI-TOOL: SINGLE-SLIT DIFFRACTION ===
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "〰 Single-Slit Diffraction"),
+          h('button', {
+            onClick: function() { upd("vizShowSS", !d.vizShowSS); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowSS ? '#22c55e' : 'rgba(20,184,166,0.15)', color: d.vizShowSS ? '#fff' : '#5eead4' }
+          }, d.vizShowSS ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "A narrow slit spreads light into a broad central peak with side lobes. The narrower the slit, the wider the pattern."),
+        d.vizShowSS && h('div', { style: { marginTop: 8 } },
+          (function() {
+                      var lam = d.vizSsLam != null ? d.vizSsLam : 550;
+                      var w = d.vizSsW != null ? d.vizSsW : 0.05;
+                      var pts = [];
+                      for (var i = -150; i <= 150; i++) {
+                        var x = i / 150;
+                        var alpha = (Math.PI * w * 1000 * x * 0.001 / (lam * 1e-9)) * 0.0001 + 0.0001;
+                        var I = Math.pow(Math.sin(alpha) / alpha, 2);
+                        pts.push({ x: 250 + i, I: Math.min(1, I) });
+                      }
+                      function wlColor(w) { if (w < 440) return '#7e22ce'; if (w < 490) return '#2563eb'; if (w < 580) return '#22c55e'; if (w < 645) return '#facc15'; if (w < 700) return '#f97316'; return '#dc2626'; }
+                      return h('div', null,
+                        h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
+                          h('svg', { viewBox: '0 0 500 200', style: { width: '100%', display: 'block', background: '#000' } },
+                            pts.map(function(p, pi) {
+                              return h('rect', { key: pi, x: p.x, y: 60, width: 1, height: 100, fill: wlColor(lam), opacity: p.I });
+                            }),
+                            h('text', { x: 250, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 11, fontWeight: 'bold' }, 'Single-slit diffraction'),
+                            h('text', { x: 250, y: 185, textAnchor: 'middle', fill: wlColor(lam), fontSize: 10 }, 'λ=' + lam + 'nm, slit=' + w.toFixed(3) + 'mm')
+                          )
+                        ),
+                        h('div', { style: { display: 'flex', gap: 6, marginTop: 8, fontSize: 11 } },
+                          [{ l: 'Wavelength', k: 'vizSsLam', v: lam, min: 380, max: 750 }, { l: 'Slit width (mm)', k: 'vizSsW', v: w, min: 0.01, max: 0.2, step: 0.01 }].map(function(s) {
+                            return h('div', { key: s.k, style: { flex: 1 } },
+                              h('div', { style: { color: '#cbd5e1', marginBottom: 2 } }, s.l + ': ' + s.v.toFixed(s.step ? 2 : 0)),
+                              h('input', { type: 'range', min: s.min, max: s.max, step: s.step || 1, value: s.v, onChange: function(e) { upd(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
+                            );
+                          })
+                        )
+                      );
+                    })()
+        )
+      ),
+
+      // === MINI-TOOL: THIN FILM INTERFERENCE ===
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🫧 Thin Film Interference"),
+          h('button', {
+            onClick: function() { upd("vizShowTF", !d.vizShowTF); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowTF ? '#06b6d4' : 'rgba(20,184,166,0.15)', color: d.vizShowTF ? '#fff' : '#5eead4' }
+          }, d.vizShowTF ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Soap bubbles + oil slicks show rainbow colors. Light reflects off both surfaces and interferes — different thicknesses reinforce different wavelengths."),
+        d.vizShowTF && h('div', { style: { marginTop: 8 } },
+          (function() {
+                      var thick = d.vizTfThick != null ? d.vizTfThick : 400;
+                      var n = d.vizTfN != null ? d.vizTfN : 1.33;
+                      var COLORS = [];
+                      for (var w = 400; w <= 700; w += 5) {
+                        var pathLen = 2 * n * thick / w;
+                        var phase = pathLen * 2 * Math.PI;
+                        var I = (1 + Math.cos(phase + Math.PI)) / 2;
+                        COLORS.push({ w: w, I: I });
+                      }
+                      function wlColor(w) { if (w < 440) return '#7e22ce'; if (w < 490) return '#2563eb'; if (w < 580) return '#22c55e'; if (w < 645) return '#facc15'; if (w < 700) return '#f97316'; return '#dc2626'; }
+                      var maxI = Math.max.apply(null, COLORS.map(function(c) { return c.I; }));
+                      var domW = COLORS.find(function(c) { return c.I === maxI; });
+                      return h('div', null,
+                        h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
+                          h('svg', { viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: '#0a0a18' } },
+                            h('rect', { x: 100, y: 90, width: 300, height: 30, fill: wlColor(domW.w), opacity: 0.7 }),
+                            h('rect', { x: 100, y: 90, width: 300, height: 30, fill: 'none', stroke: '#7dd3fc', strokeWidth: 1 }),
+                            h('text', { x: 250, y: 80, textAnchor: 'middle', fill: '#fff', fontSize: 10 }, 'Thin film (' + thick + ' nm)'),
+                            COLORS.map(function(c, ci) {
+                              return h('rect', { key: ci, x: 100 + ci * 5, y: 140, width: 5, height: 25, fill: wlColor(c.w), opacity: c.I });
+                            }),
+                            h('text', { x: 100, y: 130, fill: '#cbd5e1', fontSize: 9 }, 'Reflected spectrum'),
+                            h('text', { x: 250, y: 185, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Dominant: ' + domW.w + ' nm — visible color of the film'),
+                            h('text', { x: 250, y: 205, textAnchor: 'middle', fill: '#fbbf24', fontSize: 10 }, 'Path = 2nd = ' + (2 * n * thick).toFixed(0) + ' nm')
+                          )
+                        ),
+                        h('div', { style: { display: 'flex', gap: 6, marginTop: 8, fontSize: 11 } },
+                          [{ l: 'Thickness (nm)', k: 'vizTfThick', v: thick, min: 50, max: 1000 }, { l: 'Refractive index', k: 'vizTfN', v: n, min: 1.0, max: 2.5, step: 0.01 }].map(function(s) {
+                            return h('div', { key: s.k, style: { flex: 1 } },
+                              h('div', { style: { color: '#cbd5e1', marginBottom: 2 } }, s.l + ': ' + s.v.toFixed(s.step ? 2 : 0)),
+                              h('input', { type: 'range', min: s.min, max: s.max, step: s.step || 1, value: s.v, onChange: function(e) { upd(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
+                            );
+                          })
+                        )
+                      );
+                    })()
+        )
+      ),
+
+      // === MINI-TOOL: RAINBOW FORMATION ===
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🌈 Rainbow Formation"),
+          h('button', {
+            onClick: function() { upd("vizShowRb", !d.vizShowRb); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowRb ? '#7c3aed' : 'rgba(20,184,166,0.15)', color: d.vizShowRb ? '#fff' : '#5eead4' }
+          }, d.vizShowRb ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Light bends + reflects inside raindrops. Different wavelengths come out at slightly different angles → rainbow."),
+        d.vizShowRb && h('div', { style: { marginTop: 8 } },
+          (function() {
+                      var angle = d.vizRbAngle != null ? d.vizRbAngle : 42;
+                      var COLORS = [{ nm: 700, c: '#dc2626', a: 40.4 }, { nm: 600, c: '#f97316', a: 41 }, { nm: 580, c: '#fbbf24', a: 41.4 }, { nm: 540, c: '#22c55e', a: 41.8 }, { nm: 480, c: '#06b6d4', a: 42.0 }, { nm: 450, c: '#2563eb', a: 42.2 }, { nm: 420, c: '#7e22ce', a: 42.4 }];
+                      return h('div', null,
+                        h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
+                          h('svg', { viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #2563eb 0%, #06b6d4 80%, #22c55e 100%)' } },
+                            h('circle', { cx: 100, cy: 200, r: 60, fill: '#22c55e' }),
+                            COLORS.map(function(co, ci) {
+                              return h('path', { key: ci, d: 'M 100 200 A ' + (40 + ci * 8) + ' ' + (40 + ci * 8) + ' 0 0 1 ' + (100 + (40 + ci * 8) * Math.cos(Math.PI * (180 - co.a) / 180)) + ' ' + (200 - (40 + ci * 8) * Math.sin(Math.PI * (180 - co.a) / 180)), fill: 'none', stroke: co.c, strokeWidth: 4 });
+                            }),
+                            h('line', { x1: 380, y1: 200, x2: 480, y2: 100, stroke: '#fde047', strokeWidth: 2 }),
+                            h('circle', { cx: 480, cy: 80, r: 20, fill: '#fde047' }),
+                            h('text', { x: 480, y: 50, textAnchor: 'middle', fill: '#fff', fontSize: 10, fontWeight: 'bold' }, 'Sun'),
+                            h('rect', { x: 250, y: 100, width: 30, height: 50, fill: 'rgba(125,211,252,0.4)', rx: 15 }),
+                            h('text', { x: 265, y: 165, textAnchor: 'middle', fill: '#fff', fontSize: 9 }, 'raindrop'),
+                            h('text', { x: 250, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, 'Primary Rainbow — 42° from antisolar point')
+                          )
+                        ),
+                        h('div', { style: { marginTop: 8, fontSize: 11, color: '#cbd5e1' } },
+                          'Light enters raindrops, refracts (different angles for different colors), reflects off back, refracts again. 42° spread between red + violet.'
+                        )
+                      );
+                    })()
+        )
+      ),
+
+      // === MINI-TOOL: MIRAGE FORMATION ===
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🌅 Mirage Formation"),
+          h('button', {
+            onClick: function() { upd("vizShowMir", !d.vizShowMir); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowMir ? '#dc2626' : 'rgba(20,184,166,0.15)', color: d.vizShowMir ? '#fff' : '#5eead4' }
+          }, d.vizShowMir ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Hot air near ground has lower index of refraction. Light from above curves up → looks like puddles on a desert road."),
+        d.vizShowMir && h('div', { style: { marginTop: 8 } },
+          (function() {
+                      var heat = d.vizMirH != null ? d.vizMirH : 50;
+                      return h('div', null,
+                        h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
+                          h('svg', { viewBox: '0 0 500 200', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #fef3c7 0%, #fbbf24 40%, #f97316 70%, #dc2626 100%)' } },
+                            h('rect', { x: 0, y: 150, width: 500, height: 50, fill: '#7c2d12' }),
+                            h('rect', { x: 100, y: 50, width: 30, height: 50, fill: '#94a3b8' }),
+                            h('polygon', { points: '90,50 130,30 130,50', fill: '#dc2626' }),
+                            h('text', { x: 115, y: 110, textAnchor: 'middle', fill: '#1f2937', fontSize: 9 }, 'Actual building'),
+                            h('path', { d: 'M 130 100 Q 250 ' + (160 - heat * 0.3) + ' 400 ' + (180 - heat * 0.2), fill: 'none', stroke: '#fff', strokeWidth: 2, strokeDasharray: '5,3' }),
+                            h('rect', { x: 350, y: 165 - heat * 0.1, width: 30, height: 12, fill: '#94a3b8', opacity: heat / 100 }),
+                            h('polygon', { points: '340,165 380,150 380,165', fill: '#dc2626', opacity: heat / 100 }),
+                            h('text', { x: 365, y: 195, textAnchor: 'middle', fill: '#1f2937', fontSize: 9 }, 'Inferior mirage'),
+                            h('text', { x: 250, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, 'Hot desert → mirage')
+                          )
+                        ),
+                        h('div', { style: { marginTop: 8, fontSize: 11 } },
+                          h('div', { style: { color: '#cbd5e1', marginBottom: 2 } }, 'Heat intensity: ' + heat + '%'),
+                          h('input', { type: 'range', min: 0, max: 100, value: heat, onChange: function(e) { upd('vizMirH', parseFloat(e.target.value)); }, style: { width: '100%' } })
+                        )
+                      );
+                    })()
+        )
+      ),
+
+      // === MINI-TOOL: WHY IS THE SKY BLUE? ===
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🌌 Why is the Sky Blue?"),
+          h('button', {
+            onClick: function() { upd("vizShowSky", !d.vizShowSky); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowSky ? '#3b82f6' : 'rgba(20,184,166,0.15)', color: d.vizShowSky ? '#fff' : '#5eead4' }
+          }, d.vizShowSky ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Rayleigh scattering: short wavelengths scatter more than long. Noon = blue. Sunset = red."),
+        d.vizShowSky && h('div', { style: { marginTop: 8 } },
+          (function() {
+                      var alt = d.vizSkyAlt != null ? d.vizSkyAlt : 60;
+                      var skyColor = alt > 50 ? '#3b82f6' : alt > 20 ? '#fbbf24' : '#dc2626';
+                      var sunColor = alt > 50 ? '#fde047' : alt > 20 ? '#fbbf24' : '#dc2626';
+                      return h('div', null,
+                        h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
+                          h('svg', { viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: skyColor } },
+                            h('rect', { x: 0, y: 170, width: 500, height: 50, fill: '#22c55e' }),
+                            h('circle', { cx: 250, cy: 200 - alt * 2, r: 22, fill: sunColor, opacity: 0.4 }),
+                            h('circle', { cx: 250, cy: 200 - alt * 2, r: 15, fill: sunColor }),
+                            h('text', { x: 250, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, alt > 50 ? 'Noon — sky is blue' : alt > 20 ? 'Late afternoon' : 'Sunset — red')
+                          )
+                        ),
+                        h('div', { style: { marginTop: 8, fontSize: 11 } },
+                          h('div', { style: { color: '#cbd5e1', marginBottom: 2 } }, 'Sun altitude: ' + alt + '°'),
+                          h('input', { type: 'range', min: 0, max: 90, value: alt, onChange: function(e) { upd('vizSkyAlt', parseFloat(e.target.value)); }, style: { width: '100%' } })
+                        ),
+                        h('div', { style: { marginTop: 8, fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
+                          'Rayleigh scattering: shorter wavelengths (blue) scatter ~10× more than longer (red). At noon, scattered blue light comes from every direction — blue sky. At sunset, light passes through thicker atmosphere — blues are scattered away leaving red.'
+                        )
+                      );
+                    })()
+        )
+      ),
+
+      // === MINI-TOOL: WAVE-PARTICLE DUALITY ===
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "⚛ Wave-Particle Duality"),
+          h('button', {
+            onClick: function() { upd("vizShowWp", !d.vizShowWp); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowWp ? '#a855f7' : 'rgba(20,184,166,0.15)', color: d.vizShowWp ? '#fff' : '#5eead4' }
+          }, d.vizShowWp ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Each photon arrives as a particle. But the pattern of many photons is wave interference. Drag count to watch the pattern emerge."),
+        d.vizShowWp && h('div', { style: { marginTop: 8 } },
+          (function() {
+                      var nPhot = d.vizWpN != null ? d.vizWpN : 100;
+                      var dots = [];
+                      for (var i = 0; i < nPhot; i++) {
+                        var x = (i * 71 + 17) % 400;
+                        var phi = (x - 200) / 40 * Math.PI;
+                        var I = Math.cos(phi) * Math.cos(phi);
+                        if (Math.random() < I) {
+                          dots.push({ x: 50 + x, y: 30 + Math.random() * 140 });
+                        }
+                      }
+                      return h('div', null,
+                        h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
+                          h('svg', { viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: '#000' } },
+                            h('rect', { x: 50, y: 30, width: 400, height: 140, fill: 'none', stroke: '#475569' }),
+                            dots.map(function(p, pi) {
+                              return h('circle', { key: pi, cx: p.x, cy: p.y, r: 1.5, fill: '#fde047' });
+                            }),
+                            h('text', { x: 250, y: 200, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 11 }, nPhot + ' photons. Individual dots — but the pattern is wave interference.')
+                          )
+                        ),
+                        h('div', { style: { marginTop: 8, fontSize: 11 } },
+                          h('div', { style: { color: '#cbd5e1', marginBottom: 2 } }, 'Photons: ' + nPhot),
+                          h('input', { type: 'range', min: 10, max: 2000, value: nPhot, onChange: function(e) { upd('vizWpN', parseFloat(e.target.value)); }, style: { width: '100%' } })
+                        )
+                      );
+                    })()
+        )
+      ),
+      // === MINI-TOOL: PINHOLE CAMERA ===
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "📷 Pinhole Camera"),
+          h('button', {
+            onClick: function() { upd("vizShowPh", !d.vizShowPh); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowPh ? '#fbbf24' : 'rgba(20,184,166,0.15)', color: d.vizShowPh ? '#fff' : '#5eead4' }
+          }, d.vizShowPh ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "A tiny hole acts as a lens. Image is inverted. Smaller hole = sharper but dimmer image."),
+        d.vizShowPh && h('div', { style: { marginTop: 8 } },
+          (function() {
+                      var pSize = d.vizPhSize != null ? d.vizPhSize : 1;
+                      var dist = d.vizPhD != null ? d.vizPhD : 100;
+                      return h('div', null,
+                        h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
+                          h('svg', { viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: '#0a0a18' } },
+                            h('line', { x1: 80, y1: 60, x2: 80, y2: 160, stroke: '#22c55e', strokeWidth: 4 }),
+                            h('circle', { cx: 80, cy: 75, r: 6, fill: '#fde047' }),
+                            h('text', { x: 80, y: 175, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, 'Object'),
+                            h('line', { x1: 230, y1: 50, x2: 230, y2: 170, stroke: '#475569', strokeWidth: 2 }),
+                            h('rect', { x: 228, y: 105, width: 4, height: pSize * 6, fill: '#000' }),
+                            h('text', { x: 230, y: 195, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, 'Pinhole'),
+                            h('line', { x1: 80, y1: 75, x2: 230, y2: 110, stroke: '#fde047', strokeWidth: 1.5, strokeDasharray: '3,2' }),
+                            h('line', { x1: 230, y1: 110, x2: 230 + dist, y2: 150 + pSize * 2, stroke: '#fde047', strokeWidth: 1.5, strokeDasharray: '3,2' }),
+                            h('line', { x1: 80, y1: 75, x2: 230, y2: 115, stroke: '#fde047', strokeWidth: 1.5, strokeDasharray: '3,2' }),
+                            h('rect', { x: 230 + dist - 2, y: 50, width: 4, height: 120, fill: '#94a3b8' }),
+                            h('line', { x1: 230 + dist - 8, y1: 140 - pSize * 5, x2: 230 + dist - 8, y2: 130 + pSize * 5, stroke: '#22c55e', strokeWidth: 3 }),
+                            h('text', { x: 230 + dist, y: 195, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, 'Inverted image'),
+                            h('text', { x: 250, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 11, fontWeight: 'bold' }, 'Pinhole Camera — no lens needed!')
+                          )
+                        ),
+                        h('div', { style: { display: 'flex', gap: 6, marginTop: 8, fontSize: 11 } },
+                          [{ l: 'Pinhole size', k: 'vizPhSize', v: pSize, min: 0.5, max: 4, step: 0.1 }, { l: 'Image distance', k: 'vizPhD', v: dist, min: 50, max: 200 }].map(function(s) {
+                            return h('div', { key: s.k, style: { flex: 1 } },
+                              h('div', { style: { color: '#cbd5e1', marginBottom: 2 } }, s.l + ': ' + s.v.toFixed(s.step ? 1 : 0)),
+                              h('input', { type: 'range', min: s.min, max: s.max, step: s.step || 1, value: s.v, onChange: function(e) { upd(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
+                            );
+                          })
+                        )
+                      );
+                    })()
+        )
+      ),
+
+      // === MINI-TOOL: ADDITIVE COLOR MIXING ===
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🎨 Additive Color Mixing"),
+          h('button', {
+            onClick: function() { upd("vizShowCm", !d.vizShowCm); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowCm ? '#dc2626' : 'rgba(20,184,166,0.15)', color: d.vizShowCm ? '#fff' : '#5eead4' }
+          }, d.vizShowCm ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Computer screens + TVs use red, green, blue. Mix them in different proportions to make any color."),
+        d.vizShowCm && h('div', { style: { marginTop: 8 } },
+          (function() {
+                      var R = d.vizCmR != null ? d.vizCmR : 255;
+                      var G = d.vizCmG != null ? d.vizCmG : 255;
+                      var B = d.vizCmB != null ? d.vizCmB : 255;
+                      return h('div', null,
+                        h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
+                          h('svg', { viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: '#0a0a18' } },
+                            h('circle', { cx: 180, cy: 100, r: 60, fill: 'rgb(' + R + ',0,0)', opacity: R / 255 }),
+                            h('circle', { cx: 260, cy: 100, r: 60, fill: 'rgb(0,' + G + ',0)', opacity: G / 255 }),
+                            h('circle', { cx: 220, cy: 160, r: 60, fill: 'rgb(0,0,' + B + ')', opacity: B / 255 }),
+                            h('rect', { x: 360, y: 80, width: 100, height: 100, fill: 'rgb(' + R + ',' + G + ',' + B + ')', stroke: '#fff', strokeWidth: 1 }),
+                            h('text', { x: 410, y: 200, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'rgb(' + R + ',' + G + ',' + B + ')'),
+                            h('text', { x: 250, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, 'Additive RGB Color Mixing')
+                          )
+                        ),
+                        h('div', { style: { display: 'flex', gap: 6, marginTop: 8, fontSize: 11 } },
+                          [{ l: 'Red', k: 'vizCmR', v: R, c: '#dc2626' }, { l: 'Green', k: 'vizCmG', v: G, c: '#22c55e' }, { l: 'Blue', k: 'vizCmB', v: B, c: '#2563eb' }].map(function(s) {
+                            return h('div', { key: s.k, style: { flex: 1 } },
+                              h('div', { style: { color: s.c, marginBottom: 2, fontWeight: 700 } }, s.l + ': ' + s.v),
+                              h('input', { type: 'range', min: 0, max: 255, value: s.v, onChange: function(e) { upd(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
+                            );
+                          })
+                        )
+                      );
+                    })()
+        )
+      ),
+
+      // === MINI-TOOL: ATMOSPHERIC REFRACTION ===
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🌅 Atmospheric Refraction"),
+          h('button', {
+            onClick: function() { upd("vizShowAr", !d.vizShowAr); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowAr ? '#f97316' : 'rgba(20,184,166,0.15)', color: d.vizShowAr ? '#fff' : '#5eead4' }
+          }, d.vizShowAr ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Earth's atmosphere bends light. When the Sun looks like it's on the horizon, it's actually already set."),
+        d.vizShowAr && h('div', { style: { marginTop: 8 } },
+          (function() {
+                      var alt = d.vizArAlt != null ? d.vizArAlt : 5;
+                      return h('div', null,
+                        h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
+                          h('svg', { viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #0a0a18 0%, #4338ca 30%, #f97316 70%, #dc2626 100%)' } },
+                            h('rect', { x: 0, y: 180, width: 500, height: 40, fill: '#1f2937' }),
+                            h('circle', { cx: 250, cy: 200 - alt * 20, r: 18, fill: '#fbbf24' }),
+                            h('path', { d: 'M 100 ' + (200 - alt * 20) + ' Q 250 ' + (210 - alt * 20) + ' 400 ' + (200 - alt * 20), stroke: '#fbbf24', strokeWidth: 1.5, fill: 'none', strokeDasharray: '3,2', opacity: 0.6 }),
+                            h('text', { x: 250, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, alt < 2 ? 'Sun on horizon — squashed by refraction' : 'Sun high — round'),
+                            h('text', { x: 250, y: 50, textAnchor: 'middle', fill: '#fde047', fontSize: 10 }, 'Altitude: ' + alt + '°')
+                          )
+                        ),
+                        h('div', { style: { marginTop: 8, fontSize: 11 } },
+                          h('div', { style: { color: '#cbd5e1', marginBottom: 2 } }, 'Sun altitude: ' + alt + '°'),
+                          h('input', { type: 'range', min: 0, max: 30, value: alt, onChange: function(e) { upd('vizArAlt', parseFloat(e.target.value)); }, style: { width: '100%' } })
+                        ),
+                        h('div', { style: { marginTop: 8, fontSize: 11, color: '#cbd5e1' } },
+                          'Atmospheric refraction bends sunlight upward. The Sun on the horizon is actually BELOW it — but we see it. The Sun looks oval when low because the bottom is refracted more than the top.'
+                        )
+                      );
+                    })()
+        )
+      ),
+
+      // === MINI-TOOL: FRESNEL LENS ===
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "💡 Fresnel Lens"),
+          h('button', {
+            onClick: function() { upd("vizShowFl", !d.vizShowFl); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowFl ? '#0ea5e9' : 'rgba(20,184,166,0.15)', color: d.vizShowFl ? '#fff' : '#5eead4' }
+          }, d.vizShowFl ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Same lens function but flat + light. Used in lighthouses, headlights, solar concentrators."),
+        d.vizShowFl && h('div', { style: { marginTop: 8 } },
+          (function() {
+                      return h('div', null,
+                        h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
+                          h('svg', { viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: '#0a0a18' } },
+                            h('path', { d: 'M 80 100 Q 130 110 80 120 Z', fill: 'rgba(125,211,252,0.5)', stroke: '#7dd3fc', strokeWidth: 1 }),
+                            h('path', { d: 'M 80 80 Q 130 90 80 100 Z', fill: 'rgba(125,211,252,0.5)', stroke: '#7dd3fc', strokeWidth: 1 }),
+                            h('path', { d: 'M 80 120 Q 130 130 80 140 Z', fill: 'rgba(125,211,252,0.5)', stroke: '#7dd3fc', strokeWidth: 1 }),
+                            h('path', { d: 'M 80 60 Q 130 70 80 80 Z', fill: 'rgba(125,211,252,0.5)', stroke: '#7dd3fc', strokeWidth: 1 }),
+                            h('path', { d: 'M 80 140 Q 130 150 80 160 Z', fill: 'rgba(125,211,252,0.5)', stroke: '#7dd3fc', strokeWidth: 1 }),
+                            h('text', { x: 105, y: 180, textAnchor: 'middle', fill: '#fff', fontSize: 10, fontWeight: 'bold' }, 'Fresnel'),
+                            h('path', { d: 'M 250 60 Q 300 110 250 160 Q 220 110 250 60 Z', fill: 'rgba(125,211,252,0.5)', stroke: '#7dd3fc', strokeWidth: 1 }),
+                            h('text', { x: 260, y: 180, textAnchor: 'middle', fill: '#fff', fontSize: 10, fontWeight: 'bold' }, 'Regular'),
+                            h('text', { x: 380, y: 100, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 11 }, 'Same focal length'),
+                            h('text', { x: 380, y: 120, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 11 }, 'Same convergence'),
+                            h('text', { x: 380, y: 140, textAnchor: 'middle', fill: '#fde047', fontSize: 11, fontWeight: 'bold' }, '10× thinner!')
+                          )
+                        ),
+                        h('div', { style: { marginTop: 8, fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
+                          'Fresnel lenses break a thick lens into thin rings. Same focal length, much less material. Invented for lighthouses (1822). Now in headlights, overhead projectors, solar concentrators.'
+                        )
+                      );
+                    })()
+        )
+      ),
+
+      // === MINI-TOOL: TELESCOPE DESIGNS ===
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🔭 Telescope Designs"),
+          h('button', {
+            onClick: function() { upd("vizShowTel", !d.vizShowTel); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowTel ? '#7dd3fc' : 'rgba(20,184,166,0.15)', color: d.vizShowTel ? '#fff' : '#5eead4' }
+          }, d.vizShowTel ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Three classic telescope designs: refractor (Galileo), Newtonian, Cassegrain. Each has tradeoffs."),
+        d.vizShowTel && h('div', { style: { marginTop: 8 } },
+          (function() {
+                      var type = d.vizTelType || 'refractor';
+                      return h('div', null,
+                        h('div', { style: { display: 'flex', gap: 6, marginBottom: 8 } },
+                          ['refractor', 'newtonian', 'cassegrain'].map(function(t) {
+                            var active = type === t;
+                            return h('button', { key: t, onClick: function() { upd('vizTelType', t); }, style: { padding: '4px 10px', fontSize: 11, background: active ? '#0ea5e9' : 'rgba(15,23,42,0.7)', color: active ? '#fff' : '#94a3b8', border: '1px solid rgba(100,116,139,0.30)', borderRadius: 6, cursor: 'pointer' } }, t);
+                          })
+                        ),
+                        h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
+                          h('svg', { viewBox: '0 0 500 200', style: { width: '100%', display: 'block', background: '#0a0a18' } },
+                            type === 'refractor' ? h('g', null,
+                              h('rect', { x: 50, y: 80, width: 350, height: 40, fill: '#475569' }),
+                              h('ellipse', { cx: 60, cy: 100, rx: 8, ry: 20, fill: '#7dd3fc' }),
+                              h('ellipse', { cx: 390, cy: 100, rx: 5, ry: 14, fill: '#7dd3fc' }),
+                              h('circle', { cx: 420, cy: 100, r: 8, fill: '#fde047' }),
+                              h('text', { x: 250, y: 60, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, 'Refractor (Galileo)'),
+                              h('text', { x: 60, y: 140, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, 'Objective'),
+                              h('text', { x: 390, y: 140, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, 'Eyepiece')
+                            ) : type === 'newtonian' ? h('g', null,
+                              h('rect', { x: 50, y: 80, width: 350, height: 40, fill: '#475569' }),
+                              h('rect', { x: 380, y: 78, width: 8, height: 44, fill: '#cbd5e1' }),
+                              h('rect', { x: 350, y: 88, width: 5, height: 24, fill: '#cbd5e1', transform: 'rotate(-45 352 100)' }),
+                              h('rect', { x: 340, y: 35, width: 18, height: 50, fill: '#475569' }),
+                              h('rect', { x: 348, y: 20, width: 5, height: 18, fill: '#7dd3fc' }),
+                              h('circle', { cx: 350, cy: 10, r: 6, fill: '#fde047' }),
+                              h('text', { x: 250, y: 60, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, 'Newtonian Reflector')
+                            ) : h('g', null,
+                              h('rect', { x: 50, y: 80, width: 350, height: 40, fill: '#475569' }),
+                              h('rect', { x: 380, y: 78, width: 8, height: 44, fill: '#cbd5e1' }),
+                              h('rect', { x: 100, y: 95, width: 5, height: 14, fill: '#cbd5e1' }),
+                              h('rect', { x: 50, y: 95, width: 4, height: 14, fill: '#cbd5e1' }),
+                              h('circle', { cx: 60, cy: 100, r: 6, fill: '#fde047' }),
+                              h('text', { x: 250, y: 60, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, 'Cassegrain Reflector')
+                            )
+                          )
+                        ),
+                        h('div', { style: { marginTop: 8, fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
+                          type === 'refractor' ? 'Uses a lens. Simple but heavy. Hubble would have been too big.' : type === 'newtonian' ? 'Uses a curved mirror. Cheaper + bigger than refractors.' : 'Compact reflector with secondary mirror. Most large telescopes use this design.'
+                        )
+                      );
+                    })()
+        )
+      ),
+
+      // === MINI-TOOL: NEWTON'S RINGS ===
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "⭕ Newton's Rings"),
+          h('button', {
+            onClick: function() { upd("vizShowNr", !d.vizShowNr); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowNr ? '#fbbf24' : 'rgba(20,184,166,0.15)', color: d.vizShowNr ? '#fff' : '#5eead4' }
+          }, d.vizShowNr ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Curved lens on flat glass produces concentric rings of interference. Used to test optics quality."),
+        d.vizShowNr && h('div', { style: { marginTop: 8 } },
+          (function() {
+                      var lam = d.vizNrLam != null ? d.vizNrLam : 550;
+                      var rings = [];
+                      for (var i = 0; i < 8; i++) {
+                        rings.push({ r: Math.sqrt(i * lam * 0.001 * 1000) * 8, dark: i % 2 === 0 });
+                      }
+                      function wlColor(w) { if (w < 440) return '#7e22ce'; if (w < 490) return '#2563eb'; if (w < 580) return '#22c55e'; if (w < 645) return '#facc15'; if (w < 700) return '#f97316'; return '#dc2626'; }
+                      return h('div', null,
+                        h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
+                          h('svg', { viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: '#0a0a18' } },
+                            rings.map(function(r, ri) {
+                              return h('circle', { key: ri, cx: 250, cy: 110, r: r.r, fill: r.dark ? '#000' : wlColor(lam), opacity: r.dark ? 1 : 0.6 });
+                            }),
+                            h('text', { x: 250, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, 'Newton\'s Rings'),
+                            h('text', { x: 250, y: 200, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'λ = ' + lam + ' nm — thin-film interference in lens gap')
+                          )
+                        ),
+                        h('div', { style: { marginTop: 8, fontSize: 11 } },
+                          h('div', { style: { color: '#cbd5e1', marginBottom: 2 } }, 'Wavelength: ' + lam + ' nm'),
+                          h('input', { type: 'range', min: 380, max: 750, value: lam, onChange: function(e) { upd('vizNrLam', parseFloat(e.target.value)); }, style: { width: '100%' } })
+                        ),
+                        h('div', { style: { marginTop: 8, fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
+                          'Newton 1717 observed concentric rings when a curved lens sits on flat glass. Different gap heights produce constructive + destructive interference. Used to test lens quality.'
+                        )
+                      );
+                    })()
+        )
+      ),
+      // === MINI-TOOL: BREWSTER'S ANGLE ===
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "↔ Brewster's Angle"),
+          h('button', {
+            onClick: function() { upd("vizShowBr", !d.vizShowBr); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowBr ? '#22c55e' : 'rgba(20,184,166,0.15)', color: d.vizShowBr ? '#fff' : '#5eead4' }
+          }, d.vizShowBr ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "At Brewster's angle, reflected light is perfectly s-polarized. Why polarized sunglasses reduce glare from water + windshields."),
+        d.vizShowBr && h('div', { style: { marginTop: 8 } },
+          (function() {
+                      var n1 = d.vizBrN1 != null ? d.vizBrN1 : 1.00;
+                      var n2 = d.vizBrN2 != null ? d.vizBrN2 : 1.52;
+                      var brAng = Math.atan(n2 / n1) * 180 / Math.PI;
+                      var th = d.vizBrTh != null ? d.vizBrTh : brAng;
+                      var isBrew = Math.abs(th - brAng) < 1;
+                      var thR = th * Math.PI / 180;
+                      return h('div', null,
+                        h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
+                          h('svg', { viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, rgba(125,211,252,0.15) 0%, rgba(125,211,252,0.05) 50%, rgba(59,130,246,0.25) 50.1%, rgba(59,130,246,0.40) 100%)' } },
+                            h('line', { x1: 0, y1: 110, x2: 500, y2: 110, stroke: '#475569' }),
+                            h('line', { x1: 250 - Math.sin(thR) * 100, y1: 110 - Math.cos(thR) * 100, x2: 250, y2: 110, stroke: '#fde047', strokeWidth: 2 }),
+                            isBrew && h('line', { x1: 250, y1: 110, x2: 250 + Math.cos(thR) * 100, y2: 110 + Math.sin(thR) * 100, stroke: '#22c55e', strokeWidth: 1, strokeDasharray: '4,2', opacity: 0.5 }),
+                            !isBrew && h('line', { x1: 250, y1: 110, x2: 250 + Math.sin(thR) * 100, y2: 110 - Math.cos(thR) * 100, stroke: '#7dd3fc', strokeWidth: 2, opacity: 0.7 }),
+                            h('text', { x: 250, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, isBrew ? 'BREWSTER ANGLE — reflected light is 100% s-polarized' : 'Angle: ' + th.toFixed(1) + '°'),
+                            h('text', { x: 250, y: 200, textAnchor: 'middle', fill: '#fde047', fontSize: 11 }, 'θ_B = arctan(n₂/n₁) = ' + brAng.toFixed(1) + '°')
+                          )
+                        ),
+                        h('div', { style: { display: 'flex', gap: 6, marginTop: 8, fontSize: 11 } },
+                          [{ l: 'Angle', k: 'vizBrTh', v: th, min: 0, max: 89, step: 0.5 }, { l: 'n₂', k: 'vizBrN2', v: n2, min: 1, max: 2.5, step: 0.01 }].map(function(s) {
+                            return h('div', { key: s.k, style: { flex: 1 } },
+                              h('div', { style: { color: '#cbd5e1', marginBottom: 2 } }, s.l + ': ' + s.v.toFixed(s.step < 1 ? 2 : 1)),
+                              h('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: s.v, onChange: function(e) { upd(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
+                            );
+                          })
+                        ),
+                        h('button', { onClick: function() { upd('vizBrTh', brAng); }, style: { marginTop: 6, padding: '4px 10px', fontSize: 11, background: '#22c55e', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' } }, 'Set to Brewster angle')
+                      );
+                    })()
+        )
+      ),
+
+      // === MINI-TOOL: DIFFRACTION GRATING ===
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "┃ Diffraction Grating"),
+          h('button', {
+            onClick: function() { upd("vizShowDg", !d.vizShowDg); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowDg ? '#22c55e' : 'rgba(20,184,166,0.15)', color: d.vizShowDg ? '#fff' : '#5eead4' }
+          }, d.vizShowDg ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Many slits create sharp bright peaks at specific angles. Higher line density → wider spectrum."),
+        d.vizShowDg && h('div', { style: { marginTop: 8 } },
+          (function() {
+                      var lines = d.vizDgLines != null ? d.vizDgLines : 600;
+                      var lam = d.vizDgLam != null ? d.vizDgLam : 550;
+                      var d_grat = 1e-3 / lines;
+                      var maxOrder = Math.floor(d_grat / (lam * 1e-9));
+                      var orders = [];
+                      for (var n = 1; n <= maxOrder; n++) {
+                        var ang = Math.asin(n * lam * 1e-9 / d_grat) * 180 / Math.PI;
+                        orders.push({ n: n, ang: ang });
+                      }
+                      function wlColor(w) { if (w < 440) return '#7e22ce'; if (w < 490) return '#2563eb'; if (w < 580) return '#22c55e'; if (w < 645) return '#facc15'; if (w < 700) return '#f97316'; return '#dc2626'; }
+                      return h('div', null,
+                        h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
+                          h('svg', { viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: '#000' } },
+                            h('rect', { x: 50, y: 100, width: 8, height: 30, fill: '#94a3b8' }),
+                            h('line', { x1: 58, y1: 115, x2: 250, y2: 115, stroke: '#fff', strokeWidth: 2 }),
+                            orders.map(function(o, oi) {
+                              return h('g', { key: oi },
+                                h('line', { x1: 250, y1: 115, x2: 250 + Math.cos(o.ang * Math.PI / 180) * 200, y2: 115 - Math.sin(o.ang * Math.PI / 180) * 200, stroke: wlColor(lam), strokeWidth: 1.5 }),
+                                h('line', { x1: 250, y1: 115, x2: 250 + Math.cos(o.ang * Math.PI / 180) * 200, y2: 115 + Math.sin(o.ang * Math.PI / 180) * 200, stroke: wlColor(lam), strokeWidth: 1.5 }),
+                                h('text', { x: 240 + Math.cos(o.ang * Math.PI / 180) * 210, y: 110 - Math.sin(o.ang * Math.PI / 180) * 210, fill: wlColor(lam), fontSize: 9 }, 'n=' + o.n + ' (' + o.ang.toFixed(0) + '°)')
+                              );
+                            }),
+                            h('rect', { x: 250, y: 80, width: 5, height: 70, fill: '#475569' }),
+                            h('text', { x: 250, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 11, fontWeight: 'bold' }, 'Diffraction Grating'),
+                            h('text', { x: 250, y: 200, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, lines + ' lines/mm — ' + maxOrder + ' visible orders')
+                          )
+                        ),
+                        h('div', { style: { display: 'flex', gap: 6, marginTop: 8, fontSize: 11 } },
+                          [{ l: 'Lines/mm', k: 'vizDgLines', v: lines, min: 100, max: 2000, step: 50 }, { l: 'Wavelength', k: 'vizDgLam', v: lam, min: 380, max: 750 }].map(function(s) {
+                            return h('div', { key: s.k, style: { flex: 1 } },
+                              h('div', { style: { color: '#cbd5e1', marginBottom: 2 } }, s.l + ': ' + s.v),
+                              h('input', { type: 'range', min: s.min, max: s.max, step: s.step || 1, value: s.v, onChange: function(e) { upd(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
+                            );
+                          })
+                        )
+                      );
+                    })()
+        )
+      ),
+
+      // === MINI-TOOL: EYE ACCOMMODATION ===
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "👁 Eye Accommodation"),
+          h('button', {
+            onClick: function() { upd("vizShowEye", !d.vizShowEye); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowEye ? '#fbbf24' : 'rgba(20,184,166,0.15)', color: d.vizShowEye ? '#fff' : '#5eead4' }
+          }, d.vizShowEye ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Eye lens reshapes to focus near + far objects. With age, this flexibility fades → reading glasses needed."),
+        d.vizShowEye && h('div', { style: { marginTop: 8 } },
+          (function() {
+                      var focusDist = d.vizEyeF != null ? d.vizEyeF : 25;
+                      var lensThick = focusDist < 25 ? 'thicker' : focusDist > 100 ? 'thinner' : 'relaxed';
+                      return h('div', null,
+                        h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
+                          h('svg', { viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: '#0a0a18' } },
+                            h('ellipse', { cx: 350, cy: 110, rx: 90, ry: 70, fill: 'rgba(255,255,255,0.05)', stroke: '#cbd5e1', strokeWidth: 2 }),
+                            h('rect', { x: 260, y: 70, width: 16, height: 80, rx: 8, fill: 'rgba(125,211,252,0.5)', stroke: '#7dd3fc' }),
+                            h('text', { x: 268, y: 60, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 9 }, 'Cornea'),
+                            h('circle', { cx: 290, cy: 110, r: 18, fill: 'rgba(0,0,0,0.6)', stroke: '#475569', strokeWidth: 1 }),
+                            h('text', { x: 290, y: 160, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 9 }, 'Iris'),
+                            h('ellipse', { cx: 310, cy: 110, rx: (focusDist < 25 ? 14 : 8), ry: 24, fill: 'rgba(252,211,77,0.5)', stroke: '#fbbf24' }),
+                            h('text', { x: 310, y: 200, textAnchor: 'middle', fill: '#fbbf24', fontSize: 9 }, 'Lens (' + lensThick + ')'),
+                            h('path', { d: 'M 350 50 Q 440 110 350 180', fill: 'none', stroke: '#dc2626', strokeWidth: 2 }),
+                            h('text', { x: 440, y: 110, fill: '#dc2626', fontSize: 9 }, 'Retina'),
+                            h('line', { x1: 50, y1: 110, x2: 270, y2: 110, stroke: '#fde047', strokeWidth: 2 }),
+                            h('text', { x: 100, y: 100, fill: '#fde047', fontSize: 10 }, 'Object @ ' + focusDist + 'cm'),
+                            h('text', { x: 250, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, 'Human Eye — Accommodation')
+                          )
+                        ),
+                        h('div', { style: { marginTop: 8, fontSize: 11 } },
+                          h('div', { style: { color: '#cbd5e1', marginBottom: 2 } }, 'Object distance: ' + focusDist + ' cm'),
+                          h('input', { type: 'range', min: 10, max: 500, value: focusDist, onChange: function(e) { upd('vizEyeF', parseFloat(e.target.value)); }, style: { width: '100%' } })
+                        ),
+                        h('div', { style: { marginTop: 8, fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
+                          'The eye lens thickens to focus near objects + relaxes for distance. Accommodation. Loss of this flexibility (presbyopia) starts around age 40 — why reading glasses become necessary.'
+                        )
+                      );
+                    })()
+        )
+      ),
+
+      // === MINI-TOOL: CAMERA APERTURE + DOF ===
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "📸 Camera Aperture + DoF"),
+          h('button', {
+            onClick: function() { upd("vizShowCam", !d.vizShowCam); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowCam ? '#fbbf24' : 'rgba(20,184,166,0.15)', color: d.vizShowCam ? '#fff' : '#5eead4' }
+          }, d.vizShowCam ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Wide aperture (small f-number) blurs background for portraits. Narrow aperture (high f-number) keeps everything sharp."),
+        d.vizShowCam && h('div', { style: { marginTop: 8 } },
+          (function() {
+                      var fst = d.vizCamF != null ? d.vizCamF : 8;
+                      var dof = 1 / fst * 2;
+                      return h('div', null,
+                        h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
+                          h('svg', { viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #1f2937 0%, #0a0a18 100%)' } },
+                            h('rect', { x: 50, y: 70, width: 80, height: 80, fill: '#22c55e', opacity: dof > 0.5 ? 1 : 0.4 }),
+                            h('text', { x: 90, y: 165, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, 'Close'),
+                            h('rect', { x: 200, y: 80, width: 70, height: 70, fill: '#fbbf24' }),
+                            h('text', { x: 235, y: 165, textAnchor: 'middle', fill: '#fde047', fontSize: 9 }, 'In focus'),
+                            h('rect', { x: 340, y: 90, width: 60, height: 60, fill: '#7dd3fc', opacity: dof > 0.3 ? 1 : 0.4 }),
+                            h('text', { x: 370, y: 165, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, 'Far'),
+                            h('circle', { cx: 460, cy: 110, r: 30 / fst * 2, fill: 'none', stroke: '#fff', strokeWidth: 2 }),
+                            h('text', { x: 460, y: 165, textAnchor: 'middle', fill: '#fff', fontSize: 10 }, 'f/' + fst),
+                            h('text', { x: 250, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, fst < 4 ? 'Wide aperture — blurred background' : fst < 11 ? 'Medium aperture' : 'Narrow aperture — everything sharp')
+                          )
+                        ),
+                        h('div', { style: { marginTop: 8, fontSize: 11 } },
+                          h('div', { style: { color: '#cbd5e1', marginBottom: 2 } }, 'Aperture: f/' + fst),
+                          h('input', { type: 'range', min: 1.4, max: 22, step: 0.1, value: fst, onChange: function(e) { upd('vizCamF', parseFloat(e.target.value)); }, style: { width: '100%' } })
+                        )
+                      );
+                    })()
+        )
+      ),
+
+      // === MINI-TOOL: EM SPECTRUM EXPLORER ===
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🌐 EM Spectrum Explorer"),
+          h('button', {
+            onClick: function() { upd("vizShowEm", !d.vizShowEm); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowEm ? '#a78bfa' : 'rgba(20,184,166,0.15)', color: d.vizShowEm ? '#fff' : '#5eead4' }
+          }, d.vizShowEm ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "From gamma rays to radio waves — all electromagnetic radiation. Visible light is a tiny slice."),
+        d.vizShowEm && h('div', { style: { marginTop: 8 } },
+          (function() {
+                      var lam = d.vizEmLam != null ? d.vizEmLam : 550;
+                      var freq = 3e8 / (lam * 1e-9);
+                      var region = lam < 10 ? 'X-ray' : lam < 400 ? 'UV' : lam < 750 ? 'Visible' : lam < 1e6 ? 'Infrared' : lam < 1e9 ? 'Microwave' : 'Radio';
+                      function wlColor(w) { if (w < 10) return '#7e22ce'; if (w < 400) return '#a78bfa'; if (w < 440) return '#7e22ce'; if (w < 490) return '#2563eb'; if (w < 580) return '#22c55e'; if (w < 645) return '#facc15'; if (w < 700) return '#f97316'; if (w < 750) return '#dc2626'; if (w < 1e6) return '#b91c1c'; return '#1e40af'; }
+                      var lx = Math.log10(lam);
+                      return h('div', null,
+                        h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
+                          h('svg', { viewBox: '0 0 500 200', style: { width: '100%', display: 'block', background: '#0a0a18' } },
+                            h('rect', { x: 30, y: 60, width: 440, height: 40, fill: 'url(#grad)' }),
+                            h('defs', null, h('linearGradient', { id: 'grad', x1: '0%', x2: '100%' },
+                              h('stop', { offset: '0%', stopColor: '#a78bfa' }), h('stop', { offset: '15%', stopColor: '#a78bfa' }), h('stop', { offset: '30%', stopColor: '#7dd3fc' }), h('stop', { offset: '45%', stopColor: '#fde047' }), h('stop', { offset: '55%', stopColor: '#dc2626' }), h('stop', { offset: '70%', stopColor: '#7c2d12' }), h('stop', { offset: '100%', stopColor: '#1e40af' })
+                            )),
+                            h('line', { x1: 30 + Math.min(1, Math.max(0, lx / 12)) * 440, y1: 50, x2: 30 + Math.min(1, Math.max(0, lx / 12)) * 440, y2: 110, stroke: '#fff', strokeWidth: 2 }),
+                            h('text', { x: 250, y: 130, textAnchor: 'middle', fill: '#fff', fontSize: 13, fontWeight: 'bold' }, region + ' (' + lam.toExponential(1) + ' nm)'),
+                            h('text', { x: 250, y: 150, textAnchor: 'middle', fill: '#fde047', fontSize: 11 }, 'Frequency: ' + freq.toExponential(2) + ' Hz'),
+                            h('text', { x: 30, y: 180, fill: '#a78bfa', fontSize: 9 }, 'X-ray | UV'),
+                            h('text', { x: 200, y: 180, fill: '#fde047', fontSize: 9 }, 'Visible'),
+                            h('text', { x: 350, y: 180, fill: '#b91c1c', fontSize: 9 }, 'IR | Microwave'),
+                            h('text', { x: 460, y: 180, fill: '#1e40af', fontSize: 9, textAnchor: 'end' }, 'Radio')
+                          )
+                        ),
+                        h('div', { style: { marginTop: 8, fontSize: 11 } },
+                          h('div', { style: { color: '#cbd5e1', marginBottom: 2 } }, 'Wavelength: ' + lam.toExponential(1) + ' nm'),
+                          h('input', { type: 'range', min: 0, max: 12, step: 0.1, value: lx, onChange: function(e) { upd('vizEmLam', Math.pow(10, parseFloat(e.target.value))); }, style: { width: '100%' } })
+                        )
+                      );
+                    })()
+        )
+      ),
+
+      // === MINI-TOOL: HERMANN GRID ILLUSION ===
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🔵 Hermann Grid Illusion"),
+          h('button', {
+            onClick: function() { upd("vizShowIll", !d.vizShowIll); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowIll ? '#dc2626' : 'rgba(20,184,166,0.15)', color: d.vizShowIll ? '#fff' : '#5eead4' }
+          }, d.vizShowIll ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Stare at white space between dark squares. Ghost dots appear at every intersection — but only in peripheral vision."),
+        d.vizShowIll && h('div', { style: { marginTop: 8 } },
+          (function() {
+                      var GRID = 5;
+                      var cells = [];
+                      for (var i = 0; i < GRID; i++) for (var j = 0; j < GRID; j++) cells.push({ x: 100 + i * 50, y: 50 + j * 50 });
+                      return h('div', null,
+                        h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
+                          h('svg', { viewBox: '0 0 500 280', style: { width: '100%', display: 'block', background: '#fff' } },
+                            cells.map(function(c, ci) {
+                              return h('rect', { key: ci, x: c.x, y: c.y, width: 40, height: 40, fill: '#000' });
+                            }),
+                            h('text', { x: 250, y: 30, textAnchor: 'middle', fill: '#dc2626', fontSize: 13, fontWeight: 'bold' }, 'Hermann Grid — see ghost dots at intersections?'),
+                            h('text', { x: 250, y: 270, textAnchor: 'middle', fill: '#1f2937', fontSize: 11 }, 'Lateral inhibition in retinal cells creates phantom dots')
+                          )
+                        ),
+                        h('div', { style: { marginTop: 8, fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
+                          'Try not to stare at one spot. Your peripheral vision shows ghostly dark dots at intersections — but when you look directly, they vanish. Discovered Ludimar Hermann 1870.'
+                        )
+                      );
+                    })()
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "💎 Refractive Index Comparison"),
+          h('button', {
+            onClick: function() { upd("vizShowRi", !d.vizShowRi); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowRi ? '#7dd3fc' : 'rgba(20,184,166,0.15)', color: d.vizShowRi ? '#fff' : '#5eead4' }
+          }, d.vizShowRi ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Different materials slow light by different amounts. Diamond slows it most among common materials."),
+        d.vizShowRi && h('div', { style: { marginTop: 8 } },
+          (function() {
+                      var MATS = [['Vacuum', 1.000], ['Air', 1.0003], ['Water', 1.33], ['Ice', 1.31], ['Glass (crown)', 1.52], ['Glass (flint)', 1.62], ['Sapphire', 1.77], ['Cubic zirconia', 2.16], ['Diamond', 2.42], ['Silicon', 3.96]];
+                      return h('div', null,
+                        h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
+                          h('svg', { viewBox: '0 0 500 280', style: { width: '100%', display: 'block', background: '#0a0a18' } },
+                            MATS.map(function(m, mi) {
+                              var y = 30 + mi * 22;
+                              var w = Math.min(280, (m[1] - 1) * 90);
+                              return h('g', { key: mi },
+                                h('text', { x: 100, y: y + 4, textAnchor: 'end', fill: '#cbd5e1', fontSize: 10 }, m[0]),
+                                h('rect', { x: 110, y: y - 7, width: Math.max(2, w), height: 13, fill: '#7dd3fc' }),
+                                h('text', { x: 115 + w, y: y + 4, fill: '#fde047', fontSize: 10 }, 'n=' + m[1])
+                              );
+                            })
+                          )
+                        ),
+                        h('div', { style: { marginTop: 8, fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
+                          'Higher refractive index = light slows more. Diamond bends light so much it sparkles (n=2.42). Silicon used in IR optics.'
+                        )
+                      );
+                    })()
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "⚡ Light Speed Calculator"),
+          h('button', {
+            onClick: function() { upd("vizShowLs", !d.vizShowLs); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowLs ? '#fde047' : 'rgba(20,184,166,0.15)', color: d.vizShowLs ? '#fff' : '#5eead4' }
+          }, d.vizShowLs ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "v = c/n. Light slows in dense materials. In diamond, only 41% of vacuum speed."),
+        d.vizShowLs && h('div', { style: { marginTop: 8 } },
+          (function() {
+                      var n = d.vizLsN != null ? d.vizLsN : 1.5;
+                      var c = 299792458;
+                      var v = c / n;
+                      return h('div', null,
+                        h('div', { style: { padding: 16, borderRadius: 8, background: '#0a0a18', textAlign: 'center' } },
+                          h('div', { style: { fontSize: 24, fontWeight: 'bold', color: '#fde047' } }, (v / 1e8).toFixed(2) + ' × 10⁸ m/s'),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 4 } }, 'Speed of light in this material (n=' + n.toFixed(2) + ')'),
+                          h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 4 } }, '(vacuum: ' + (c / 1e8).toFixed(2) + ' × 10⁸ m/s)')
+                        ),
+                        h('div', { style: { marginTop: 8, fontSize: 11 } },
+                          h('div', { style: { color: '#cbd5e1', marginBottom: 2 } }, 'Refractive index: n = ' + n.toFixed(2)),
+                          h('input', { type: 'range', min: 1, max: 4, step: 0.01, value: n, onChange: function(e) { upd('vizLsN', parseFloat(e.target.value)); }, style: { width: '100%' } })
+                        )
+                      );
+                    })()
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "⚡ Photon Energy Calculator"),
+          h('button', {
+            onClick: function() { upd("vizShowPe", !d.vizShowPe); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowPe ? '#a78bfa' : 'rgba(20,184,166,0.15)', color: d.vizShowPe ? '#fff' : '#5eead4' }
+          }, d.vizShowPe ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Each photon carries energy E = hf. UV photons are energetic enough to damage DNA. IR photons just warm you up."),
+        d.vizShowPe && h('div', { style: { marginTop: 8 } },
+          (function() {
+                      var lam = d.vizPeLam != null ? d.vizPeLam : 550;
+                      var freq = 3e8 / (lam * 1e-9);
+                      var E = 4.136e-15 * freq;
+                      return h('div', null,
+                        h('div', { style: { padding: 16, borderRadius: 8, background: '#0a0a18', textAlign: 'center' } },
+                          h('div', { style: { fontSize: 24, fontWeight: 'bold', color: '#a78bfa' } }, E.toFixed(2) + ' eV'),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 4 } }, 'Photon energy at λ = ' + lam + ' nm'),
+                          h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 4 } }, 'frequency: ' + freq.toExponential(2) + ' Hz')
+                        ),
+                        h('div', { style: { marginTop: 8, fontSize: 11 } },
+                          h('div', { style: { color: '#cbd5e1', marginBottom: 2 } }, 'Wavelength: ' + lam + ' nm'),
+                          h('input', { type: 'range', min: 100, max: 2000, value: lam, onChange: function(e) { upd('vizPeLam', parseFloat(e.target.value)); }, style: { width: '100%' } })
+                        ),
+                        h('div', { style: { marginTop: 8, fontSize: 11, color: '#cbd5e1' } },
+                          'E = hf = hc/λ. UV (4eV) damages skin. Visible (2-3eV). IR (1-2eV) is heat. Reference: bandgap of silicon is 1.12eV.'
+                        )
+                      );
+                    })()
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "◯ Spherical Aberration"),
+          h('button', {
+            onClick: function() { upd("vizShowSa", !d.vizShowSa); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowSa ? '#dc2626' : 'rgba(20,184,166,0.15)', color: d.vizShowSa ? '#fff' : '#5eead4' }
+          }, d.vizShowSa ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Spherical lenses focus outer rays closer than central. Why telescopes use parabolic mirrors instead."),
+        d.vizShowSa && h('div', { style: { marginTop: 8 } },
+          (function() {
+                      var sa = d.vizSaAmt != null ? d.vizSaAmt : 30;
+                      return h('div', null,
+                        h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
+                          h('svg', { viewBox: '0 0 500 200', style: { width: '100%', display: 'block', background: '#0a0a18' } },
+                            h('path', { d: 'M 100 50 Q 130 100 100 150', fill: 'rgba(125,211,252,0.4)', stroke: '#7dd3fc', strokeWidth: 1 }),
+                            [60, 75, 90, 110, 125, 140].map(function(yy, i) {
+                              var marginal = Math.abs(yy - 100) > 25;
+                              var fLen = marginal ? 250 - sa : 270;
+                              return h('g', { key: i },
+                                h('line', { x1: 30, y1: yy, x2: 120, y2: yy, stroke: '#fde047', strokeWidth: 1.5 }),
+                                h('line', { x1: 120, y1: yy, x2: fLen, y2: 100, stroke: '#fde047', strokeWidth: 1.5, opacity: 0.7 })
+                              );
+                            }),
+                            h('circle', { cx: 250 + sa / 4, cy: 100, r: 3, fill: '#dc2626' }),
+                            h('circle', { cx: 270, cy: 100, r: 3, fill: '#22c55e' }),
+                            h('text', { x: 250, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, 'Spherical Aberration'),
+                            h('text', { x: 250, y: 180, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Outer rays focus closer than center → blurry image')
+                          )
+                        ),
+                        h('div', { style: { marginTop: 8, fontSize: 11 } },
+                          h('div', { style: { color: '#cbd5e1', marginBottom: 2 } }, 'Aberration amount: ' + sa + '%'),
+                          h('input', { type: 'range', min: 0, max: 100, value: sa, onChange: function(e) { upd('vizSaAmt', parseFloat(e.target.value)); }, style: { width: '100%' } })
+                        )
+                      );
+                    })()
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🌈 Chromatic Aberration"),
+          h('button', {
+            onClick: function() { upd("vizShowCa", !d.vizShowCa); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowCa ? '#dc2626' : 'rgba(20,184,166,0.15)', color: d.vizShowCa ? '#fff' : '#5eead4' }
+          }, d.vizShowCa ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Single lenses focus different colors at different points → color fringing. Solved by achromatic doublets."),
+        d.vizShowCa && h('div', { style: { marginTop: 8 } },
+          (function() {
+                      return h('div', null,
+                        h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
+                          h('svg', { viewBox: '0 0 500 200', style: { width: '100%', display: 'block', background: '#0a0a18' } },
+                            h('path', { d: 'M 130 50 Q 160 100 130 150', fill: 'rgba(125,211,252,0.4)', stroke: '#7dd3fc', strokeWidth: 1 }),
+                            ['#7e22ce', '#2563eb', '#22c55e', '#fde047', '#f97316', '#dc2626'].map(function(c, ci) {
+                              var foc = 240 + ci * 12;
+                              return h('g', { key: c },
+                                h('line', { x1: 50, y1: 100 - 20, x2: 150, y2: 100 - 20, stroke: c, strokeWidth: 1.5 }),
+                                h('line', { x1: 150, y1: 100 - 20, x2: foc, y2: 100, stroke: c, strokeWidth: 1.5, opacity: 0.7 }),
+                                h('line', { x1: 50, y1: 100 + 20, x2: 150, y2: 100 + 20, stroke: c, strokeWidth: 1.5 }),
+                                h('line', { x1: 150, y1: 100 + 20, x2: foc, y2: 100, stroke: c, strokeWidth: 1.5, opacity: 0.7 }),
+                                h('circle', { cx: foc, cy: 100, r: 3, fill: c })
+                              );
+                            }),
+                            h('text', { x: 250, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, 'Chromatic Aberration'),
+                            h('text', { x: 250, y: 180, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Different colors focus at different distances')
+                          )
+                        ),
+                        h('div', { style: { marginTop: 8, fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
+                          'Single lens disperses colors. Achromatic doublets combine crown + flint glass to cancel it. Why DSLR lenses cost thousands.'
+                        )
+                      );
+                    })()
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "⏱ Speed of Light History"),
+          h('button', {
+            onClick: function() { upd("vizShowLsh", !d.vizShowLsh); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowLsh ? '#fbbf24' : 'rgba(20,184,166,0.15)', color: d.vizShowLsh ? '#fff' : '#5eead4' }
+          }, d.vizShowLsh ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "How we figured out light has finite speed — from Rømer's 1676 Jupiter observations to today's exact value."),
+        d.vizShowLsh && h('div', { style: { marginTop: 8 } },
+          (function() {
+                      var EVENTS = [['~250 BCE', 'Aristarchus thinks light is instant'], ['1676', 'Rømer: Jupiter\'s moons → finite speed'], ['1729', 'Bradley: stellar aberration ~301,000 km/s'], ['1849', 'Fizeau: rotating wheel → 313,000 km/s'], ['1879', 'Michelson: rotating mirror → 299,910 km/s'], ['1907', 'Einstein: c is invariant in all frames'], ['1972', 'NIST: laser → 299,792,458 m/s (exact)'], ['1983', 'Meter redefined as distance light travels in fixed time']];
+                      return h('div', null,
+                        h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)', padding: 12 } },
+                          EVENTS.map(function(e, ei) {
+                            return h('div', { key: ei, style: { display: 'flex', gap: 12, padding: '6px 0', borderBottom: '1px solid rgba(100,116,139,0.20)' } },
+                              h('div', { style: { width: 80, fontFamily: 'monospace', color: '#fbbf24', fontSize: 11 } }, e[0]),
+                              h('div', { style: { flex: 1, fontSize: 11, color: '#cbd5e1' } }, e[1])
+                            );
+                          })
+                        )
+                      );
+                    })()
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🧮 Wave Frequency vs Wavelength"),
+          h('button', {
+            onClick: function() { upd("vizShowWf", !d.vizShowWf); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowWf ? '#06b6d4' : 'rgba(20,184,166,0.15)', color: d.vizShowWf ? '#fff' : '#5eead4' }
+          }, d.vizShowWf ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "When light enters water: frequency stays same, wavelength + speed both decrease."),
+        d.vizShowWf && h('div', { style: { marginTop: 8 } },
+          (function() {
+                      return h('div', null,
+                        h('div', { style: { padding: 12, borderRadius: 8, background: '#0a0a18' } },
+                          h('div', { style: { color: '#cbd5e1', fontSize: 11, lineHeight: 1.6 } },
+                            'In any medium: ',
+                            h('br', null),
+                            h('span', { style: { fontFamily: 'monospace', color: '#fde047' } }, 'v = c / n = λ × f'),
+                            h('br', null), h('br', null),
+                            'When light enters a medium:',
+                            h('br', null),
+                            '• Frequency f stays the SAME (set by source)',
+                            h('br', null),
+                            '• Speed v DECREASES (slower in denser medium)',
+                            h('br', null),
+                            '• Wavelength λ DECREASES (compressed)',
+                            h('br', null), h('br', null),
+                            'This is why color (frequency-based) doesn\'t change underwater.'
+                          )
+                        )
+                      );
+                    })()
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🕶 Polarized Sunglasses"),
+          h('button', {
+            onClick: function() { upd("vizShowPs", !d.vizShowPs); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowPs ? '#06b6d4' : 'rgba(20,184,166,0.15)', color: d.vizShowPs ? '#fff' : '#5eead4' }
+          }, d.vizShowPs ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Toggle to see how polarized lenses cut horizontal glare from water + roads."),
+        d.vizShowPs && h('div', { style: { marginTop: 8 } },
+          (function() {
+                      var on = d.vizPsOn != null ? d.vizPsOn : false;
+                      return h('div', null,
+                        h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
+                          h('svg', { viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: on ? 'linear-gradient(180deg, #fef9c3 0%, #06b6d4 60%, #1e3a8a 100%)' : 'linear-gradient(180deg, #ffffff 0%, #fde047 60%, #fbbf24 100%)' } },
+                            h('rect', { x: 0, y: 130, width: 500, height: 30, fill: on ? '#1e40af' : '#7dd3fc' }),
+                            !on && h('rect', { x: 100, y: 130, width: 300, height: 5, fill: '#fde047', opacity: 0.8 }),
+                            !on && [120, 200, 280, 360].map(function(x) { return h('rect', { key: x, x: x, y: 132, width: 8, height: 2, fill: '#fff' }); }),
+                            h('text', { x: 250, y: 60, textAnchor: 'middle', fill: '#fff', fontSize: 14, fontWeight: 'bold' }, on ? '✓ Polarized — see beneath water' : 'No polarizer — glare blocks view')
+                          )
+                        ),
+                        h('div', { style: { marginTop: 8, fontSize: 11, textAlign: 'center' } },
+                          h('button', { onClick: function() { upd('vizPsOn', !on); }, style: { padding: '6px 16px', fontSize: 12, fontWeight: 700, background: on ? '#22c55e' : '#dc2626', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' } }, on ? 'Take off glasses' : 'Put on polarized glasses')
+                        ),
+                        h('div', { style: { marginTop: 8, fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
+                          'Reflected glare from water + windshields is horizontally polarized (Brewster effect). Polarized glasses have vertical filters → block glare.'
+                        )
+                      );
+                    })()
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🔬 Microscope Magnification"),
+          h('button', {
+            onClick: function() { upd("vizShowMs", !d.vizShowMs); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowMs ? '#7dd3fc' : 'rgba(20,184,166,0.15)', color: d.vizShowMs ? '#fff' : '#5eead4' }
+          }, d.vizShowMs ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Light microscopes top out around 1500×. Electron microscopes (200,000×) needed for atoms."),
+        d.vizShowMs && h('div', { style: { marginTop: 8 } },
+          (function() {
+                      var mag = d.vizMsMag != null ? d.vizMsMag : 400;
+                      return h('div', null,
+                        h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
+                          h('svg', { viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: '#0a0a18' } },
+                            h('circle', { cx: 250, cy: 100, r: 80, fill: 'rgba(125,211,252,0.20)', stroke: '#7dd3fc', strokeWidth: 2 }),
+                            mag < 100 && h('text', { x: 250, y: 105, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 11 }, 'Just a fuzzy blob'),
+                            mag >= 100 && mag < 400 && [220, 250, 280].map(function(x, i) {
+                              return h('circle', { key: i, cx: x, cy: 100 + (i % 2 ? 0 : 15), r: 8, fill: '#7dd3fc' });
+                            }),
+                            mag >= 400 && mag < 1000 && h('g', null,
+                              h('circle', { cx: 250, cy: 100, r: 50, fill: '#7dd3fc' }),
+                              h('circle', { cx: 240, cy: 90, r: 18, fill: '#2563eb' }),
+                              h('circle', { cx: 270, cy: 110, r: 8, fill: '#0a0a18' })
+                            ),
+                            mag >= 1000 && h('g', null,
+                              h('circle', { cx: 250, cy: 100, r: 60, fill: '#7dd3fc' }),
+                              h('circle', { cx: 240, cy: 90, r: 22, fill: '#fbbf24' }),
+                              h('text', { x: 240, y: 95, textAnchor: 'middle', fill: '#0a0a18', fontSize: 11 }, 'organelles')
+                            ),
+                            h('text', { x: 250, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, mag + '× magnification'),
+                            h('text', { x: 250, y: 200, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, mag < 100 ? 'See cells' : mag < 400 ? 'See cell groups' : mag < 1000 ? 'See organelles' : 'Approaching diffraction limit')
+                          )
+                        ),
+                        h('div', { style: { marginTop: 8, fontSize: 11 } },
+                          h('div', { style: { color: '#cbd5e1', marginBottom: 2 } }, 'Magnification: ' + mag + '×'),
+                          h('input', { type: 'range', min: 40, max: 1500, step: 20, value: mag, onChange: function(e) { upd('vizMsMag', parseFloat(e.target.value)); }, style: { width: '100%' } })
+                        )
+                      );
+                    })()
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "✨ Bioluminescence Spectra"),
+          h('button', {
+            onClick: function() { upd("vizShowBl", !d.vizShowBl); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowBl ? '#22c55e' : 'rgba(20,184,166,0.15)', color: d.vizShowBl ? '#fff' : '#5eead4' }
+          }, d.vizShowBl ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Living things emit specific wavelengths. Fireflies, anglerfish, glowworms — each evolved for its environment."),
+        d.vizShowBl && h('div', { style: { marginTop: 8 } },
+          (function() {
+                      var SOURCES = [['Firefly', '565 nm (yellow-green)', 'Best for ground visibility'], ['Anglerfish', '480 nm (cyan)', 'Best in deep ocean'], ['Glowworm cave', '510 nm (blue-green)', 'NZ + Australia caves'], ['Aequorea jellyfish (GFP)', '509 nm', 'Nobel Prize 2008']];
+                      return h('div', null,
+                        h('div', { style: { padding: 12, borderRadius: 8, background: '#0a0a18' } },
+                          SOURCES.map(function(s, si) {
+                            return h('div', { key: si, style: { padding: '8px 0', borderBottom: '1px solid rgba(100,116,139,0.20)' } },
+                              h('div', { style: { fontWeight: 700, color: '#22c55e', fontSize: 12 } }, '✨ ' + s[0]),
+                              h('div', { style: { fontFamily: 'monospace', color: '#fde047', fontSize: 11 } }, s[1]),
+                              h('div', { style: { fontSize: 11, color: '#cbd5e1' } }, s[2])
+                            );
+                          })
+                        ),
+                        h('div', { style: { marginTop: 8, fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
+                          'Bioluminescence is chemiluminescence in living cells. Wavelength varies by ecosystem — green visible in shallow water, blue penetrates deeper. Maine has bioluminescent dinoflagellates in salt marshes some summers.'
+                        )
+                      );
+                    })()
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "💡 Light Source Comparison"),
+          h('button', {
+            onClick: function() { upd("vizShowLi", !d.vizShowLi); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowLi ? '#fbbf24' : 'rgba(20,184,166,0.15)', color: d.vizShowLi ? '#fff' : '#5eead4' }
+          }, d.vizShowLi ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Incandescent, LED, laser, Sun — each has very different spectral properties."),
+        d.vizShowLi && h('div', { style: { marginTop: 8 } },
+          (function() {
+                      var type = d.vizLiType || 'led';
+                      var data = type === 'incandescent' ? { name: 'Incandescent bulb', spectrum: 'Continuous, peak at IR', eff: '~5% efficient', color: '#fef9c3' } : type === 'led' ? { name: 'White LED', spectrum: 'Blue + phosphor', eff: '~25% efficient', color: '#7dd3fc' } : type === 'laser' ? { name: 'Laser', spectrum: 'Single wavelength', eff: 'Highly directional', color: '#dc2626' } : { name: 'Sun', spectrum: 'Continuous + Fraunhofer dips', eff: 'Black-body 5778K', color: '#fde047' };
+                      return h('div', null,
+                        h('div', { style: { display: 'flex', gap: 6, marginBottom: 8 } },
+                          ['incandescent', 'led', 'laser', 'sun'].map(function(t) {
+                            var active = type === t;
+                            return h('button', { key: t, onClick: function() { upd('vizLiType', t); }, style: { padding: '4px 10px', fontSize: 11, background: active ? '#0ea5e9' : 'rgba(15,23,42,0.7)', color: active ? '#fff' : '#94a3b8', border: '1px solid rgba(100,116,139,0.30)', borderRadius: 6, cursor: 'pointer', textTransform: 'capitalize' } }, t);
+                          })
+                        ),
+                        h('div', { style: { padding: 16, borderRadius: 8, background: '#0a0a18', textAlign: 'center' } },
+                          h('div', { style: { fontSize: 16, fontWeight: 'bold', color: data.color } }, data.name),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 8 } }, 'Spectrum: ' + data.spectrum),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 4 } }, 'Property: ' + data.eff),
+                          h('div', { style: { marginTop: 12, height: 30, background: data.color, opacity: 0.5, borderRadius: 4 } })
+                        )
+                      );
+                    })()
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🔄 Coherent vs Incoherent Light"),
+          h('button', {
+            onClick: function() { upd("vizShowCi", !d.vizShowCi); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowCi ? '#fde047' : 'rgba(20,184,166,0.15)', color: d.vizShowCi ? '#fff' : '#5eead4' }
+          }, d.vizShowCi ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Laser light is coherent (all in phase). Sunlight + bulbs are incoherent (random phases)."),
+        d.vizShowCi && h('div', { style: { marginTop: 8 } },
+          (function() {
+                      var coh = d.vizCiCoh != null ? d.vizCiCoh : true;
+                      return h('div', null,
+                        h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
+                          h('svg', { viewBox: '0 0 500 200', style: { width: '100%', display: 'block', background: '#0a0a18' } },
+                            [0, 1, 2, 3, 4, 5].map(function(wi) {
+                              var off = coh ? 0 : (wi * 47) % 50;
+                              var y = 50 + wi * 22;
+                              var pts = [];
+                              for (var x = 0; x <= 460; x += 4) { pts.push((x + 30) + ',' + (y + Math.sin((x + off) / 20) * 6)); }
+                              return h('polyline', { key: wi, points: pts.join(' '), fill: 'none', stroke: '#fde047', strokeWidth: 1.5 });
+                            }),
+                            h('text', { x: 250, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, coh ? 'COHERENT — all waves in phase (laser)' : 'INCOHERENT — random phases (bulb)')
+                          )
+                        ),
+                        h('div', { style: { marginTop: 8, textAlign: 'center' } },
+                          h('button', { onClick: function() { upd('vizCiCoh', !coh); }, style: { padding: '6px 16px', fontSize: 12, fontWeight: 700, background: coh ? '#dc2626' : '#22c55e', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' } }, 'Toggle ' + (coh ? 'incoherent' : 'coherent'))
+                        )
+                      );
+                    })()
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "👨‍🔬 Famous Optics Pioneers"),
+          h('button', {
+            onClick: function() { upd("vizShowOps1", !d.vizShowOps1); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowOps1 ? '#a855f7' : 'rgba(20,184,166,0.15)', color: d.vizShowOps1 ? '#fff' : '#5eead4' }
+          }, d.vizShowOps1 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 scientists who shaped our understanding of light, from ancient Greece to quantum era."),
+        d.vizShowOps1 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Euclid (~300 BCE)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Wrote Optica — first geometric treatment of vision + reflection from mirrors.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Alhazen (965-1040)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Book of Optics. Proved vision is light entering the eye, not eyes emitting rays. Father of optics.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Snell (1621)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Discovered law of refraction (sine ratio = constant). Worked out empirically.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Descartes (1637)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Published Snell's law + first ray optics treatment. Explained rainbows.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Newton (1666)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Prism experiment: white light = mixture of colors. Wrote Opticks (1704).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Huygens (1678)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Wave theory of light (Treatise on Light). Wavelet construction principle.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Young (1801)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Double-slit experiment. Proved light is a wave (despite Newton's particle theory).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Fresnel (1818)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Wave equations + diffraction theory. Detailed Huygens' wavelets mathematically.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Maxwell (1865)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Showed light is an electromagnetic wave. Calculated c from electric + magnetic constants.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Einstein (1905)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Photoelectric effect: light is quanta (photons). Nobel Prize 1921 for this.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🌈 Natural Optical Phenomena"),
+          h('button', {
+            onClick: function() { upd("vizShowOps2", !d.vizShowOps2); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowOps2 ? '#fbbf24' : 'rgba(20,184,166,0.15)', color: d.vizShowOps2 ? '#fff' : '#5eead4' }
+          }, d.vizShowOps2 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 things happening in the sky + atmosphere right now."),
+        d.vizShowOps2 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Halos (22°)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Ice crystals in cirrus clouds refract sunlight into a 22° ring around the Sun or Moon. Indicates weather front approaching.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Sundogs"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Bright spots on the 22° halo, on the horizontal plane through the Sun. Hexagonal ice crystals at specific orientations.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Glory"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Colored rings around the shadow of an aircraft on clouds below. Backscattering by small droplets.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Brocken spectre"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Massive shadow of yourself surrounded by rainbow halo on cloud or mist. Climber's phenomenon.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Crepuscular rays"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Sunbeams visible through cloud gaps. Parallel rays appearing to diverge from perspective.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Green flash"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Brief green spot at the moment of sunset over a sharp horizon. Atmospheric refraction splits sunlight.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Aurora"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Solar wind particles colliding with atmospheric atoms. Green = oxygen (100km); red = oxygen (250km+); blue/purple = nitrogen.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Belt of Venus"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Pink band above the antisolar point at twilight. Backscattering of red sunlight by atmospheric dust.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Earth shadow"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Dark blue band on the antisolar horizon at sunrise/sunset. Earth's actual shadow on the atmosphere.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Tyndall effect"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Sunbeams visible through forest canopy due to scattering by particles in the air.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "👁 Eye + Vision Phenomena"),
+          h('button', {
+            onClick: function() { upd("vizShowOps3", !d.vizShowOps3); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowOps3 ? '#22c55e' : 'rgba(20,184,166,0.15)', color: d.vizShowOps3 ? '#fff' : '#5eead4' }
+          }, d.vizShowOps3 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 things about how your eyes process light."),
+        d.vizShowOps3 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Cones + Rods"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Cones (6-7M) see color in daylight. Rods (120M) see in dim light, only B&W. Cones cluster in fovea; rods peripheral.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Trichromacy"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Three cone types: S (blue ~440nm), M (green ~545nm), L (red ~565nm). All colors are 3 numbers.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Color blindness"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "~8% of men, ~0.5% of women lack one cone type. Red-green most common (deuteranopia).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Persistence of vision"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Image persists ~40ms on retina. Above 24fps, video looks smooth. Why movies + spinning lights work.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Dark adaptation"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Pupil dilates in seconds. Retinal chemistry adapts over 30+ min. After-image fades.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Floaters"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Vitreous humor proteins drifting in eye. Visible as moving spots against bright sky.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Phosphenes"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "See colors with eyes closed when rubbing them. Mechanical pressure activates retina.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Stereoscopic vision"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Two eyes give depth perception. Disparity processed in V1 visual cortex.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Accommodation lag"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Lens adjusts in ~250ms. Why focus changes have brief blur.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Astigmatism"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Non-spherical cornea creates blur. Corrected with cylindrical lenses.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "💻 Optical Technologies"),
+          h('button', {
+            onClick: function() { upd("vizShowOps4", !d.vizShowOps4); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowOps4 ? '#06b6d4' : 'rgba(20,184,166,0.15)', color: d.vizShowOps4 ? '#fff' : '#5eead4' }
+          }, d.vizShowOps4 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 technologies built on optics fundamentals."),
+        d.vizShowOps4 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Fiber optics"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Glass strands carry data via total internal reflection. Earth-spanning internet backbone.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Laser eye surgery"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Excimer laser (193nm UV) ablates corneal tissue precisely. Reshapes cornea to correct vision.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "CD/DVD/Blu-ray"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "780nm IR, 650nm red, 405nm blue lasers respectively. Shorter wavelength = denser storage.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "MRI"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Not really optical — uses radio waves. But uses gradient coils + similar principles.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "LED lighting"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "90% efficient at ideal phosphor mix. Saved 40% on global lighting electricity since 2010s.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Solar panels"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Silicon absorbs photons + frees electrons. ~22% efficiency commercial; ~47% multi-junction lab.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Optical mouse"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "1000+ photos/sec, processed in real time to track motion.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Barcode scanner"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Laser reflected off black/white bars. Phototransistor reads pattern.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Endoscopy"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Fiber bundle with imaging cores + illumination. Lets surgeons see inside body.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Lithography (chips)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "EUV (13.5nm) photolithography prints transistors smaller than wavelength of visible light.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "⚡ Photon Energy Reference"),
+          h('button', {
+            onClick: function() { upd("vizShowOps5", !d.vizShowOps5); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowOps5 ? '#fbbf24' : 'rgba(20,184,166,0.15)', color: d.vizShowOps5 ? '#fff' : '#5eead4' }
+          }, d.vizShowOps5 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "How much energy each kind of light photon carries (eV)."),
+        d.vizShowOps5 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Radio wave (10⁹ Hz)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "~ 0.000004 eV — too weak to do chemistry.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Microwave (10¹¹ Hz)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "~ 0.0004 eV — rotates water molecules → heat.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "IR thermal (10¹³ Hz)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "~ 0.04 eV — vibrates molecular bonds.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Visible (10¹⁴ Hz)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "~ 2-3 eV — electronic transitions in dyes + cones.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "UV-B (10¹⁵ Hz)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "~ 4-5 eV — breaks DNA bonds → sunburn, skin cancer.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "UV-C (10¹⁶ Hz)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "~ 10-100 eV — sterilizing, ionizing.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "X-ray (10¹⁸ Hz)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "~ 1000-100,000 eV — penetrates soft tissue.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Gamma (10²⁰ Hz)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "~ million eV+ — used in cancer therapy, made by nuclear decay.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Cosmic rays"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "~ 10¹⁹ eV (most energetic) — created in supernovae, AGN.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photovoltaic threshold"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Si bandgap = 1.12 eV → silicon solar cells only use photons > 1.12 eV.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🧪 Iconic Optics Experiments"),
+          h('button', {
+            onClick: function() { upd("vizShowOps6", !d.vizShowOps6); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowOps6 ? '#dc2626' : 'rgba(20,184,166,0.15)', color: d.vizShowOps6 ? '#fff' : '#5eead4' }
+          }, d.vizShowOps6 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 experiments that changed physics."),
+        d.vizShowOps6 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Newton's prism (1666)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Showed white light = spectrum. Used 2nd prism to recombine. Founded modern color theory.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Young's double slit (1801)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Proved light is a wave. Two slits give interference pattern.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Fizeau's rotating wheel (1849)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "First terrestrial measurement of speed of light. ~313,000 km/s.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Foucault's rotating mirror (1862)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Refined speed of light. ~298,000 km/s. Also showed light slower in water.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Michelson-Morley (1887)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "No ether wind found. Set stage for special relativity.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photoelectric effect (1887/1905)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Hertz observed; Einstein explained. Light = quanta. Nobel 1921.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Compton scattering (1923)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "X-rays scattering off electrons proved photons carry momentum.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Stern-Gerlach (1922)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Used optics methods to show electron spin is quantized.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Holography (1948)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Gabor records phase + amplitude of light wave. Nobel 1971.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Bell test (1972+)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Quantum entanglement experiments confirm spooky action at a distance. Nobel 2022.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🎓 Optics Career Paths"),
+          h('button', {
+            onClick: function() { upd("vizShowOps7", !d.vizShowOps7); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowOps7 ? '#22c55e' : 'rgba(20,184,166,0.15)', color: d.vizShowOps7 ? '#fff' : '#5eead4' }
+          }, d.vizShowOps7 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 careers built on optics knowledge."),
+        d.vizShowOps7 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Optical engineer"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Designs lenses, prisms, mirrors for cameras, microscopes, telescopes. BS-MS in physics or optical engineering. $90-150k typical.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Ophthalmologist"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Medical doctor (MD) treating eye disorders. 12+ years training. Performs surgery (LASIK, cataracts). $300k+ typical.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Optometrist"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "OD degree (4 years post-college). Prescribes glasses, treats eye diseases. $120-150k typical.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photonics engineer"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Lasers + fiber optics + LEDs. Telecom, defense, biomedical industries. MS-PhD. $100-180k typical.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Astronomer"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "PhD. Designs + uses telescopes. Academic + national observatories. $90-130k typical.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Spectroscopist"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Uses spectra to identify chemicals. Forensic + materials + astronomy. PhD typical.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Camera/optics designer"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "For phones, DSLRs, security cameras. Apple + Sony + Canon + Nikon. $130-200k.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Lithography engineer (semi)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "ASML, Nikon, Canon EUV systems. Bleeding-edge. $150-300k typical.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Microscopy specialist"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Cell biology research support. Academic + industry. $80-130k.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Lighting designer"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Architectural + film + theater. BS + portfolio. $60-130k.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🎯 Optics Quick Facts"),
+          h('button', {
+            onClick: function() { upd("vizShowOps8", !d.vizShowOps8); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowOps8 ? '#7c3aed' : 'rgba(20,184,166,0.15)', color: d.vizShowOps8 ? '#fff' : '#5eead4' }
+          }, d.vizShowOps8 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 surprising facts about light + optics."),
+        d.vizShowOps8 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Light is age-tagged"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Looking at a star is looking back in time. Sun: 8 min ago. Proxima: 4 years ago.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Black is just absence"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "No \"black\" light. Black surfaces absorb everything.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "White is everything"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "White light contains all visible wavelengths. Mix all the rainbow back: white.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Mirrors don't flip left/right"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "They flip front/back. Stand facing yourself; raise right hand → mirror raises hand on right side of frame.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Polaris isn't bright"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "It's the 48th-brightest star. Famous for being near pole, not for brightness.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Sun's surface is opaque"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Photosphere only ~500km thick. Light from inside takes 100,000 years to reach surface.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Most planets glow"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Reflected sunlight visible. Venus phase changes were Galileo's proof of heliocentrism.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Vacuum has color"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Quantum vacuum fluctuations produce Casimir effect — measurable force.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Snow scatters"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Each ice crystal refracts light → diffuse glow rather than mirror reflection.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Cherenkov radiation"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Particles faster than light in water emit blue glow. Visible in nuclear reactors.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "📏 Common Wavelengths Reference"),
+          h('button', {
+            onClick: function() { upd("vizShowL01", !d.vizShowL01); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL01 ? '#7dd3fc' : 'rgba(20,184,166,0.15)', color: d.vizShowL01 ? '#fff' : '#5eead4' }
+          }, d.vizShowL01 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Specific wavelengths in technology, biology, astronomy."),
+        d.vizShowL01 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "405 nm (violet)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Blu-ray laser diode. Also tans skin in tanning booths.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "488 nm (cyan)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Argon laser. Used in DNA sequencing, biology research.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "532 nm (green)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Doubled Nd:YAG laser. Bright green pointers; surgical use.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "589 nm (sodium D)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Sodium street lamps. Two close lines (D1 + D2). Most prominent stellar lines.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "632 nm (red)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Helium-neon laser. Classic red laser pointers.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "780 nm (CD)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Compact disc IR laser. Just past visible red.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "850 nm"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Most common IR-A LEDs (TV remotes, security cameras).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "1064 nm"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Nd:YAG laser fundamental — for welding, marking, dermatology.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "1550 nm"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Telecom C-band — fiber optic backbone. Lowest fiber loss.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "10.6 μm"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "CO2 laser — surgical + industrial cutting + engraving.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🎨 Color + Perception"),
+          h('button', {
+            onClick: function() { upd("vizShowL02", !d.vizShowL02); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL02 ? '#a855f7' : 'rgba(20,184,166,0.15)', color: d.vizShowL02 ? '#fff' : '#5eead4' }
+          }, d.vizShowL02 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "How colors mix, contrast, and trick our brain."),
+        d.vizShowL02 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Additive primary"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "RGB. Mix red + green + blue lights to make any color. Used in screens, projectors.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Subtractive primary"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "CMY (or CMYK). Used in printing. Mix removes wavelengths from white.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Complementary colors"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Opposite on color wheel. Red+cyan, green+magenta, blue+yellow. High contrast.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Color temperature"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Measured in Kelvin. 2700K = warm yellow (incandescent). 5500K = sunlight. 6500K = cool daylight.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Munsell color system"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Hue + value + chroma. Used by paint, art, soil science.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "CIE color space"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "1931 standard for objectively defining color. xy chromaticity diagram.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Pantone"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Trademark physical color reference. Universal language for designers.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Metamerism"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Two colors look identical under one light, different under another.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Color constancy"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Brain auto-corrects color under different lights. Why a banana looks yellow indoors + outdoors.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Opponent process"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Brain processes red-vs-green, blue-vs-yellow, light-vs-dark separately.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🌌 Astronomical Optics"),
+          h('button', {
+            onClick: function() { upd("vizShowL03", !d.vizShowL03); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL03 ? '#fbbf24' : 'rgba(20,184,166,0.15)', color: d.vizShowL03 ? '#fff' : '#5eead4' }
+          }, d.vizShowL03 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "How astronomers use light to study the universe."),
+        d.vizShowL03 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Telescope resolution"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Limited by diffraction: θ = 1.22λ/D. Bigger D = sharper. Or atmosphere ruins it.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Adaptive optics"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Computer adjusts mirror shape 1000x/sec to cancel atmospheric distortion.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Spectroscopy"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Splits starlight into wavelengths. Tells composition, temperature, velocity, age.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Doppler shift"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Moving stars have shifted spectral lines. Source of exoplanet discoveries.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Parallax"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Earth's orbit creates 2 AU baseline. Measures distances to nearby stars.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Type Ia supernovae"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Standard candles — all the same intrinsic brightness. Found dark energy 1998.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Hubble's law"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Recession velocity proportional to distance. Universe is expanding.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "CMB"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "380,000 years after Big Bang. Photons released when universe became transparent.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Gravitational lensing"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Massive objects bend light, magnify distant galaxies. Mapped dark matter distribution.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Black hole imaging"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Event Horizon Telescope used VLBI to image M87* (2019) + Sgr A* (2022).")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🔬 Laboratory Optics"),
+          h('button', {
+            onClick: function() { upd("vizShowL04", !d.vizShowL04); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL04 ? '#22c55e' : 'rgba(20,184,166,0.15)', color: d.vizShowL04 ? '#fff' : '#5eead4' }
+          }, d.vizShowL04 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Optics in research + diagnostic labs."),
+        d.vizShowL04 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Confocal microscopy"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Pinhole rejects out-of-focus light. Razor-sharp 3D imaging of cells.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Fluorescence microscopy"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Tag biomolecules with fluorophores. See specific proteins in cells.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "STED super-resolution"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Stimulated emission depletion. Breaks diffraction limit. Nobel 2014.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Atomic force microscopy"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Tiny probe scans surface. Sees individual atoms.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Scanning electron microscope"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Beam of electrons scans sample. 200,000× magnification.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Transmission EM (TEM)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Electrons pass through thin section. Sees inside cells at molecular scale.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Mass spectrometry"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Not optics — but pairs with it. Identifies molecules by mass/charge.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Flow cytometry"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Laser excites tagged cells flowing past. Counts + sorts cell types.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "NMR spectroscopy"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Uses radio waves — but principles similar. Identifies molecular structure.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Optical tweezers"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Focused laser traps individual cells, molecules. Nobel 2018.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🎬 Optics in Daily Life"),
+          h('button', {
+            onClick: function() { upd("vizShowL05", !d.vizShowL05); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL05 ? '#dc2626' : 'rgba(20,184,166,0.15)', color: d.vizShowL05 ? '#fff' : '#5eead4' }
+          }, d.vizShowL05 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Where you encounter optics every day."),
+        d.vizShowL05 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Eyeglasses"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Curved lens corrects focus. Concave for myopia, convex for hyperopia.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Camera phone"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Multiple lens elements + sensor. Computational optics now common.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Car headlights"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Parabolic reflector + lens. Modern LED matrix lights can shape beam.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Microwave oven"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Reflective walls; 2.45 GHz waves; standing waves heat water.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Barcode scanner"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Laser + photodetector reads pattern. Replaced cash registers globally.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Optical mouse"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "LED + tiny camera + DSP. Tracks surface motion 1000+ Hz.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "DVD/Blu-ray"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Laser reads pits + lands. Photodiode converts intensity to bits.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Fiber to home"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Single-mode optical fiber carries internet 100+ km without amplification.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "LED bulbs"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Solid-state lighting. Half a billion sold per year globally.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Touchscreens"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Mostly capacitive, but optical sensors detect proximity, ambient light.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "⚖ Conservation Laws in Optics"),
+          h('button', {
+            onClick: function() { upd("vizShowL06", !d.vizShowL06); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL06 ? '#06b6d4' : 'rgba(20,184,166,0.15)', color: d.vizShowL06 ? '#fff' : '#5eead4' }
+          }, d.vizShowL06 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Light obeys conservation rules."),
+        d.vizShowL06 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Conservation of energy"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Reflected + transmitted + absorbed = 100%. Energy can't vanish.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Conservation of momentum"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Photons carry p = h/λ. Light can push matter (radiation pressure).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Snell's law from least time"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Light takes path of least time → bends entering denser medium. Fermat 1657.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Time-reversal symmetry"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Most optics is reversible. Trace ray backward → same path.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Etendue"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "A geometrical conservation law. Can't shrink + collimate a beam beyond a certain limit.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Brightness theorem"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Optical system can't make image brighter than source (per unit area).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Parity"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Most optical interactions conserve parity (mirror symmetry).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Conservation of angular momentum"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Circularly polarized light carries spin angular momentum.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photon number"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "In linear optics, photons are neither created nor destroyed. Nonlinear breaks this.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Information"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "No-cloning theorem. Quantum information cannot be perfectly copied.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "⏰ Time-Scales of Light"),
+          h('button', {
+            onClick: function() { upd("vizShowL07", !d.vizShowL07); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL07 ? '#fde047' : 'rgba(20,184,166,0.15)', color: d.vizShowL07 ? '#fff' : '#5eead4' }
+          }, d.vizShowL07 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "How fast does light do things?"),
+        d.vizShowL07 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "1 second"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Light travels 300,000 km — 7.5× around Earth.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "1 millisecond"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Light goes 300 km — coast of Maine to NH.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "1 microsecond"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Light goes 300 m — about 3 football fields.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "1 nanosecond"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Light goes 30 cm — a foot. Useful unit for chip design.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "1 picosecond"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Light goes 0.3 mm. Time scale of chemical bond vibrations.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "1 femtosecond"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Light goes 300 nm — less than 1 wavelength. Time scale of electron motion in atoms.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "1 attosecond"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Light goes 0.3 nm — about 6 hydrogen atoms wide. Atomic-scale dynamics.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photon emission"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "~ns timescale for fluorescence; ~fs for stimulated emission.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Camera shutter"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "1/1000 s (1ms) typical — captures 300 km of light propagation.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Strobes"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Microseconds for high-speed photography. Edgerton's milk drop crown.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🏛 Optics in Architecture"),
+          h('button', {
+            onClick: function() { upd("vizShowL08", !d.vizShowL08); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL08 ? '#a855f7' : 'rgba(20,184,166,0.15)', color: d.vizShowL08 ? '#fff' : '#5eead4' }
+          }, d.vizShowL08 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "How buildings shape + are shaped by light."),
+        d.vizShowL08 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Gothic stained glass"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Pieces colored by metal oxides. Mostly absorbed light, only narrow wavelengths transmitted.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Skylights"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "North-facing best — diffuse light, no sun heat. Diffusers reduce glare.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Light shelves"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Horizontal surfaces bounce daylight deep into rooms. Saves electricity.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Solar tubes"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Pipe with mirror lining brings rooftop sunlight inside buildings.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Heliostat"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Moving mirror tracks sun, redirects beam to fixed target. Used in solar power towers.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Optic-thermal glazing"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Coatings reflect IR (heat) but pass visible. Saves cooling energy.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Mashrabiya"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Arabic geometric lattice screens. Diffuse light while preserving privacy.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Japanese paper screens (shoji)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Translucent paper diffuses light, softens contrast.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Roman concrete oculus"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Pantheon's opening (9m diameter) creates daily light path along walls.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Modern glass facades"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Energy challenge — vast windows. Smart glass tints electronically.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🎼 Light + Sound Analogies"),
+          h('button', {
+            onClick: function() { upd("vizShowL09", !d.vizShowL09); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL09 ? '#dc2626' : 'rgba(20,184,166,0.15)', color: d.vizShowL09 ? '#fff' : '#5eead4' }
+          }, d.vizShowL09 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Many physics concepts apply to both."),
+        d.vizShowL09 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Both are waves"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Light: EM transverse. Sound: longitudinal mechanical. But math is similar.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Frequency = pitch / color"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Both perceived by us nonlinearly (octaves / hue).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Amplitude = volume / brightness"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "How big the wave is. Energy ∝ amplitude².")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Doppler shift"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Both shift with relative motion. Train whistle drops; light reddens.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Diffraction"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Both bend around obstacles. Audible around buildings; light only at small slits.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Interference"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Both can interfere constructively + destructively. Noise-cancelling headphones use this.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Standing waves"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Both form in cavities. Musical instruments + laser cavities.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Resonance"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Both can amplify at specific frequencies. Singers shattering glass; LASER amplification.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Wave speed in media"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Sound: faster in solids. Light: slower in dense matter (opposite!).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "No coherence in sound"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Easy in laser light but unusual in sound (sound from speakers is incoherent).")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🌊 Physical Optics Concepts"),
+          h('button', {
+            onClick: function() { upd("vizShowL10", !d.vizShowL10); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL10 ? '#06b6d4' : 'rgba(20,184,166,0.15)', color: d.vizShowL10 ? '#fff' : '#5eead4' }
+          }, d.vizShowL10 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 wave-optics concepts beyond ray tracing."),
+        d.vizShowL10 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Wavefront"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Surface of constant phase. Spherical from point source, planar far away.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Huygens' principle"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Each point on wavefront acts as source of new wavelets. Wavelets sum to next wavefront.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Fresnel zones"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Concentric ring regions of wavefront. Path-length difference of λ/2.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Fraunhofer diffraction"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Far-field, parallel-ray diffraction. Source + screen at infinity.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Babinet's principle"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Diffraction pattern of complementary screens are equivalent (besides central beam).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Coherence length"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Distance over which phase relations remain. Laser: km. Sunlight: μm.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Coherence time"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Time over which phase is predictable. Inverse of bandwidth.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Spatial coherence"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Phase correlation across the beam. Determines fringe visibility.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Temporal coherence"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Phase correlation over time. Determines spectral purity.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Phase velocity vs group velocity"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "In dispersive media, phase + envelope move at different speeds.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🎯 Geometric Optics Quick Reference"),
+          h('button', {
+            onClick: function() { upd("vizShowL11", !d.vizShowL11); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL11 ? '#06b6d4' : 'rgba(20,184,166,0.15)', color: d.vizShowL11 ? '#fff' : '#5eead4' }
+          }, d.vizShowL11 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Ray-tracing rules + sign conventions."),
+        d.vizShowL11 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Real vs Virtual"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Real: rays actually converge. Virtual: rays appear to come from a point. Real images can be projected; virtual cannot.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Object distance positive"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "When object is on incoming side of lens/mirror.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Image distance sign"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Positive when image on outgoing side (real); negative when on same side as object (virtual).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Focal length sign"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Positive: converging (lens) or concave (mirror). Negative: diverging or convex.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Magnification"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "m = -di/do. Negative: inverted. Positive: upright. |m|>1 enlarged.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Lens equation"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "1/f = 1/do + 1/di. Same formula for all lenses + mirrors.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Thin lens"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Lens thickness negligible compared to focal length. Standard for intro physics.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Mirror equation"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Same as lens, with sign flipped: f = R/2 (R is radius of curvature).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Principal axis"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Line through center of lens/mirror + focal points. Reference for all calculations.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Optical center"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Lens point through which a ray passes undeflected.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🔬 AP Physics 2 Optics Topics"),
+          h('button', {
+            onClick: function() { upd("vizShowL12", !d.vizShowL12); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL12 ? '#a855f7' : 'rgba(20,184,166,0.15)', color: d.vizShowL12 ? '#fff' : '#5eead4' }
+          }, d.vizShowL12 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "College Board AP Physics 2 covers these optics topics."),
+        d.vizShowL12 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Geometric optics"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Reflection, refraction, mirrors, lenses. Ray-diagram skills.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Snell's law"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "n₁ sin θ₁ = n₂ sin θ₂. Be able to apply + manipulate.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Total internal reflection"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "When refracted angle ≥ 90°. Critical angle = sin⁻¹(n₂/n₁).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Mirror + lens equations"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "1/f = 1/do + 1/di. Sign conventions.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Magnification"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "m = -di/do = hi/ho. Sign tells orientation.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Wave-particle duality"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Light as photons + waves. Photoelectric effect.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Double-slit interference"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "d sin θ = mλ for bright fringes. Constructive vs destructive.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Single-slit diffraction"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "w sin θ = mλ for first minimum (m = 1).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Diffraction gratings"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "d sin θ = mλ. Multiple slits → sharper peaks.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Polarization"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Malus's law: I = I₀ cos²θ. EM wave concept.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "📡 Wave Properties of Light"),
+          h('button', {
+            onClick: function() { upd("vizShowL13", !d.vizShowL13); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL13 ? '#fde047' : 'rgba(20,184,166,0.15)', color: d.vizShowL13 ? '#fff' : '#5eead4' }
+          }, d.vizShowL13 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Light as electromagnetic wave."),
+        d.vizShowL13 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Transverse wave"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Electric + magnetic fields perpendicular to propagation direction.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "E and B perpendicular"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "They are also perpendicular to each other.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "c = 1/√(μ₀ε₀)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Maxwell showed light speed comes from electric + magnetic constants.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Polarization"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Direction of E field. Linear, circular, elliptical.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Speed in vacuum"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Exactly 299,792,458 m/s. Defines the meter.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Speed in medium"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "v = c/n. Less than c in all known materials.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Wavelength × frequency = speed"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "λ × f = v. Frequency invariant when entering medium.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Intensity"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Power per area. Proportional to amplitude squared.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Inverse-square law"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Intensity ∝ 1/r² for point sources in vacuum.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photon model"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Each photon energy hf, momentum h/λ. Light is both wave + particle.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "👁 Visual Disorders"),
+          h('button', {
+            onClick: function() { upd("vizShowL14", !d.vizShowL14); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL14 ? '#dc2626' : 'rgba(20,184,166,0.15)', color: d.vizShowL14 ? '#fff' : '#5eead4' }
+          }, d.vizShowL14 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Common vision problems + their optical corrections."),
+        d.vizShowL14 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Myopia (nearsighted)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Eyeball too long; image forms in front of retina. Concave lens corrects.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Hyperopia (farsighted)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Eyeball too short; image forms behind retina. Convex lens corrects.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Astigmatism"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Non-spherical cornea. Some directions in focus, others not. Cylindrical lens.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Presbyopia"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Age-related stiffening of lens. Lose near focus around 40s. Bifocals or reading glasses.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Cataracts"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Lens becomes cloudy. Surgical replacement with artificial intraocular lens.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Glaucoma"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Pressure damages optic nerve. Not directly optical but related to eye.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Macular degeneration"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Central retina deteriorates. Lose central vision. Major aging issue.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Diabetic retinopathy"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Blood vessel damage from diabetes. Laser photocoagulation treatment.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Strabismus"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Eyes don't align. Surgery + therapy.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Amblyopia (lazy eye)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Brain ignores one eye. Patching the strong eye in childhood.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🧮 Optics Math Reference"),
+          h('button', {
+            onClick: function() { upd("vizShowL15", !d.vizShowL15); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL15 ? '#22c55e' : 'rgba(20,184,166,0.15)', color: d.vizShowL15 ? '#fff' : '#5eead4' }
+          }, d.vizShowL15 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Key formulas."),
+        d.vizShowL15 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Snell's law"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "n₁ sin θ₁ = n₂ sin θ₂")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Critical angle"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "sin θc = n₂/n₁ (for n₁ > n₂)")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Brewster's angle"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "tan θB = n₂/n₁")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Lens/mirror equation"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "1/f = 1/do + 1/di")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Magnification"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "m = -di/do = hi/ho")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Lensmaker's equation"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "1/f = (n-1)(1/R₁ - 1/R₂)")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Double-slit bright fringes"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "d sin θ = mλ, m = 0, ±1, ±2, ...")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Single-slit first minimum"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "w sin θ = λ")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Diffraction grating"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "d sin θ = mλ")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Malus's law"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "I = I₀ cos²θ")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🎬 Optics in Film + Photography"),
+          h('button', {
+            onClick: function() { upd("vizShowL16", !d.vizShowL16); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL16 ? '#fbbf24' : 'rgba(20,184,166,0.15)', color: d.vizShowL16 ? '#fff' : '#5eead4' }
+          }, d.vizShowL16 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 techniques cinematographers + photographers use."),
+        d.vizShowL16 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Depth of field"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Range of sharp focus. Wide aperture = shallow DOF for isolating subject.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Hyperfocal distance"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Focus distance that puts everything from H/2 to infinity in focus.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Bokeh"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Aesthetic quality of out-of-focus areas. Round, hexagonal, swirly.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Lens compression"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Telephoto lenses compress depth. Background appears closer to subject.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Anamorphic"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Lenses that squeeze image. Iconic cinema wide-screen + lens flares.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Tilt-shift"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Lens tilts independently of sensor. Selective focus + miniature effect.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "ND filters"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Neutral density reduces light without changing color. For long exposures + video.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Polarizer"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "CPL filter rotates to cut reflections. Saturates blue sky.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Lens flare"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Internal reflections inside lens. Coatings minimize; filmmakers add intentionally.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Chromatic aberration"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Color fringing. Modern lenses use special glass to minimize.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🛰 Optics in Space Exploration"),
+          h('button', {
+            onClick: function() { upd("vizShowL17", !d.vizShowL17); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL17 ? '#7dd3fc' : 'rgba(20,184,166,0.15)', color: d.vizShowL17 ? '#fff' : '#5eead4' }
+          }, d.vizShowL17 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 ways optics enables space science."),
+        d.vizShowL17 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Solar panels"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Convert sunlight to electricity. ISS has 8 main arrays = 2500 m².")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Imaging spectrometers"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "JWST NIRSpec splits IR into 100+ bands. Find biosignatures.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Laser ranging"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Earth-Moon distance to mm precision via reflectors left by Apollo.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "LiDAR mapping"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Used on Mars + asteroid missions. Precise topography.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Adaptive optics"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Mountain telescopes match space telescope resolution.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Coronagraph"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Blocks star to see planets nearby. Both ground + space-based.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Diffraction-limited optics"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "JWST achieves theoretical resolution for its 6.5m mirror.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Sun-blocked thermal imaging"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "See ground heat through thin clouds. Used by satellites.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Star trackers"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Spacecraft attitude from star patterns. Optical reference frame.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Optical communication"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Lunar Laser Communications Demo: 622 Mbps Earth-Moon vs ~50 Mbps radio.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🏥 Medical Optics"),
+          h('button', {
+            onClick: function() { upd("vizShowL18", !d.vizShowL18); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL18 ? '#22c55e' : 'rgba(20,184,166,0.15)', color: d.vizShowL18 ? '#fff' : '#5eead4' }
+          }, d.vizShowL18 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 ways optics save lives."),
+        d.vizShowL18 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Fiber-optic endoscopy"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "See inside body without cutting. Bundle of fibers transmits image.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Laser eye surgery"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "193nm UV laser reshapes cornea. PRK or LASIK procedures.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photodynamic therapy"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Light-activated drugs kill cancer cells selectively.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Pulse oximetry"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "660nm red + 940nm IR LEDs through fingertip. Reads blood oxygen.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "OCT"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Optical coherence tomography. 3D imaging of retina + skin.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Confocal endomicroscopy"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "In-vivo cell-level imaging during endoscopy.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Phototherapy"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Blue light for jaundice newborns. UV-B for psoriasis.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Laser surgery"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "CO2 (10.6 μm) cuts; Nd:YAG cauterizes; KTP for prostate.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Fluorescence-guided surgery"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Tag tumor cells fluorescent. See edges during removal.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Near-infrared spectroscopy"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Brain oxygenation monitoring. Concussion + stroke.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🌱 Plants + Light"),
+          h('button', {
+            onClick: function() { upd("vizShowL19", !d.vizShowL19); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL19 ? '#22c55e' : 'rgba(20,184,166,0.15)', color: d.vizShowL19 ? '#fff' : '#5eead4' }
+          }, d.vizShowL19 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "How plants use light."),
+        d.vizShowL19 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photosynthesis"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Converts CO₂ + water to glucose + O₂. Powered by sunlight.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Chlorophyll a + b"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Absorbs red (~660nm) + blue (~450nm). Reflects green — why leaves look green.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photosystem II"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Splits water molecules using ~680nm photons.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photosystem I"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Uses ~700nm photons. Together I+II form Z-scheme.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Phototropism"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Plants bend toward light. Auxin hormone redistribution.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photoperiodism"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Day length triggers flowering. Some need long days, others short.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "UV absorbing pigments"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Anthocyanins protect leaves from UV. Why some leaves turn red.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "LED grow lights"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "450nm + 660nm for max efficiency. Saves 50%+ vs incandescent.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Shade avoidance"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Far-red/red ratio detects neighbors. Plants stretch toward open light.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "C4 photosynthesis"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Tropical plants use special anatomy + chemistry to fix CO₂ efficiently.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🎨 Art + Optics"),
+          h('button', {
+            onClick: function() { upd("vizShowL20", !d.vizShowL20); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL20 ? '#a855f7' : 'rgba(20,184,166,0.15)', color: d.vizShowL20 ? '#fff' : '#5eead4' }
+          }, d.vizShowL20 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "How artists use light."),
+        d.vizShowL20 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Vermeer's camera obscura"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Renaissance artists projected scenes onto canvas to trace.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Pointillism"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Tiny dots of color blend in viewer's eye. Seurat, Signac.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Impressionism"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Captured fleeting light effects. Monet's haystacks at different hours.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Anamorphic art"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Distorted unless viewed from correct angle. Holbein's skull in The Ambassadors.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Op art"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Vasarely, Bridget Riley — geometric patterns that vibrate.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Trompe l'oeil"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Photorealistic illusion of 3D on flat surface.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Olafur Eliasson"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Contemporary artist installs huge light experiences.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Dan Flavin"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Fluorescent tube sculptures.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "James Turrell"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Light-as-medium installations. Roden Crater observatory.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Stained glass cathedrals"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Use light + color for spiritual effect.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🌅 Twilight Phenomena"),
+          h('button', {
+            onClick: function() { upd("vizShowL21", !d.vizShowL21); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL21 ? '#f97316' : 'rgba(20,184,166,0.15)', color: d.vizShowL21 ? '#fff' : '#5eead4' }
+          }, d.vizShowL21 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 light phenomena in dawn + dusk."),
+        d.vizShowL21 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Civil twilight"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Sun 0-6° below horizon. Bright enough to do most outdoor activities without artificial light.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Nautical twilight"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Sun 6-12° below horizon. Horizon visible at sea. Stars + horizon both visible.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Astronomical twilight"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Sun 12-18° below horizon. Faintest astronomical observations possible.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Blue hour"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Period before sunrise/after sunset when sky is deep blue. Photographers love it.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Golden hour"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "First/last hour of direct sunlight. Warm, soft, long shadows.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Magic hour"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Synonym for golden hour in film.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Earth shadow"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Dark band on opposite horizon from sun. Earth's own shadow on its atmosphere.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Belt of Venus"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Pink band above earth shadow at twilight. Backscatter of red sunlight.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Alpenglow"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Pink/red glow on mountains opposite the sun. Light scattered from beyond horizon.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Crepuscular rays"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Beams of light through clouds appearing to converge at sun. Parallel rays, perspective.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🌃 Light Pollution"),
+          h('button', {
+            onClick: function() { upd("vizShowL22", !d.vizShowL22); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL22 ? '#a855f7' : 'rgba(20,184,166,0.15)', color: d.vizShowL22 ? '#fff' : '#5eead4' }
+          }, d.vizShowL22 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 things to know about light pollution."),
+        d.vizShowL22 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Bortle scale"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "1-9 darkness scale. 1=pristine. 5=suburban. 9=inner-city.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Skyglow"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Diffuse sky brightness from scattered city lights. Most pollution comes from upward-emitted light.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Light trespass"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Unwanted spill onto neighboring property. Affects sleep, wildlife.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Glare"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Disabling glare reduces visibility. Common from poorly-shielded fixtures.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Wildlife impact"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Sea turtles, migrating birds, insects all disrupted. Bird-window collisions, sea turtle disorientation.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Health impact"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Suppresses melatonin. Linked to circadian disruption, possibly cancer risks.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Dark Sky reserves"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "IDA-designated areas. Includes Acadia NP + other parks.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "LED migration"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Cool-white LEDs (4000K+) worsen pollution. Warm (2700-3000K) better.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Curfews"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Cities + parks turn off non-essential lighting at midnight. Reduces glow.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Astrotourism"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "People travel to dark sites for stargazing. Major economic driver in rural areas.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🌌 Cosmic Light Sources"),
+          h('button', {
+            onClick: function() { upd("vizShowL23", !d.vizShowL23); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL23 ? '#7c3aed' : 'rgba(20,184,166,0.15)', color: d.vizShowL23 ? '#fff' : '#5eead4' }
+          }, d.vizShowL23 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 things in the universe that emit light."),
+        d.vizShowL23 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Main-sequence stars"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Thermal blackbody radiation. Color = surface temperature. 99% of starlight.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Red giants"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Late-life expanded stars. Cooler but huge → very luminous.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Supernovae"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Brief but spectacular. Briefly outshine their galaxies.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Pulsars"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Rotating neutron stars. Lighthouse beams of radio + visible.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Quasars"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Active galactic nuclei. Powered by supermassive black holes accreting matter.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Gamma-ray bursts"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Stellar mergers + extreme supernovae. Brief, very energetic.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Reflection nebulae"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Dust clouds reflecting nearby starlight. Blue from Rayleigh scattering.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Emission nebulae"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Gas clouds excited by UV. Hydrogen-alpha 656nm gives red glow.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Planetary nebulae"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Gas shed by dying stars. Different elements glow at characteristic wavelengths.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Cosmic Microwave Background"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Leftover from Big Bang. Now microwave wavelengths after 13.8 billion years of expansion.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🔮 Lasers Around You"),
+          h('button', {
+            onClick: function() { upd("vizShowL24", !d.vizShowL24); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL24 ? '#dc2626' : 'rgba(20,184,166,0.15)', color: d.vizShowL24 ? '#fff' : '#5eead4' }
+          }, d.vizShowL24 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 types of lasers + common uses."),
+        d.vizShowL24 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Helium-Neon (HeNe)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "632.8 nm red. Classic visible laser. Holography, surveying, demos.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Argon ion"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "488 + 514 nm blue-green. Surgery, DNA sequencing, light shows.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Neodymium:YAG"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "1064 nm IR (often doubled to 532 green). Cutting metals, dermatology, military.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Carbon dioxide"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "10.6 μm IR. Industrial cutting + welding. Surgical scalpel.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Diode laser"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Compact, efficient. CDs, fiber optic communication, laser pointers.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Excimer laser"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "193 nm UV. LASIK, lithography for chip manufacturing.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Free-electron laser (FEL)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Tunable, intense. X-ray FELs probe atoms in motion.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Dye laser"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Continuously tunable across visible. Spectroscopy.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Fiber laser"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Doped fiber amplifier. Industrial marking + cutting; growing market.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Semiconductor laser"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Built into chips. Used everywhere from telecom to printers.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🌈 Color Across Cultures"),
+          h('button', {
+            onClick: function() { upd("vizShowL25", !d.vizShowL25); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL25 ? '#06b6d4' : 'rgba(20,184,166,0.15)', color: d.vizShowL25 ? '#fff' : '#5eead4' }
+          }, d.vizShowL25 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 ways cultures categorize color."),
+        d.vizShowL25 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Industrial Western"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "6+ basic colors (red orange yellow green blue purple). Greatest diversity in modern era.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Ancient Greek"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Limited words. Homer called sea \"wine-dark\". No common Greek word for blue.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Russian"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Two distinct words for blue (siniy + goluboy) — speakers distinguish faster.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Japanese (ao + midori)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Blue + green were one category. Modern Japanese has both.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Himba (Namibia)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Different category boundaries than English speakers. Brain processes color through language.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Universal terms (Berlin + Kay 1969)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Languages add color terms in fixed order: black/white → red → green/yellow → blue → brown → others.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Cool vs warm"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Northern Europe associates blue with cold, red with warm. Reversed in some equatorial cultures.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Mourning colors"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "White in many Asian cultures; black in West. Different cultural meanings.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Red across cultures"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Often passion, danger, luck (China), royalty. Strong but variable meaning.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Color blindness across cultures"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Same gene incidence (8% men). Different cultural impact based on what tasks matter.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🪞 Mirrors Through History"),
+          h('button', {
+            onClick: function() { upd("vizShowL26", !d.vizShowL26); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL26 ? '#94a3b8' : 'rgba(20,184,166,0.15)', color: d.vizShowL26 ? '#fff' : '#5eead4' }
+          }, d.vizShowL26 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 milestones in mirror making."),
+        d.vizShowL26 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Polished obsidian"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "6000 BCE — earliest mirrors. Çatalhöyük, Turkey + Mesoamerica.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Bronze + polished copper"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Egypt, China, Greece. Polished metal disks, not very reflective.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Roman glass mirrors"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "1st century CE. Glass over thin metal foil. Poor quality.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Venetian glass mirrors"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "~1450. Tin-mercury amalgam backing. Revolutionary clarity. State secret.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Silvered glass (Liebig 1835)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Silver nitrate chemistry. Cheaper + safer than mercury.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Modern aluminum mirrors"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Aluminum vapor-deposited in vacuum. Reflectivity ~92%.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Dielectric mirrors"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Multi-layer interference coatings. >99% reflectivity at specific wavelengths.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Hubble Space Telescope mirror"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "2.4 m diameter. Initially flawed, fixed 1993.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Extremely Large Telescope"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "39 m segmented mirror. Coming 2028. 798 hexagonal segments.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "JWST gold-coated beryllium"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "6.5 m segmented mirror. Gold coating for IR reflectivity.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🧬 Optics in Biology"),
+          h('button', {
+            onClick: function() { upd("vizShowL27", !d.vizShowL27); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL27 ? '#22c55e' : 'rgba(20,184,166,0.15)', color: d.vizShowL27 ? '#fff' : '#5eead4' }
+          }, d.vizShowL27 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 examples of how living things use optics."),
+        d.vizShowL27 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Mantis shrimp vision"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Up to 16 color receptors (humans have 3). Sees polarization too.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Compound eyes (insects)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Thousands of facets, each a tiny eye. Wide field, poor resolution.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Tapetum lucidum"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Reflective layer behind retina in cats, deer, dogs. Causes eyeshine.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Bioluminescence"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Fireflies, anglerfish, jellyfish. Chemical reaction emits light.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Iridescent feathers"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Peacocks + hummingbirds. Structural color via thin-film interference.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Octopus skin"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Color-changing without color vision. Uses chromatophore cells.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photoreceptors"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Rods + cones in vertebrates. Rhodopsin pigment.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Plant phototropism"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Auxin redistributes when blue light shifts. Stems bend toward light.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Sea creature transparency"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Glass squid, larval fish. Almost invisible in clear water.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "UV vision (birds + bees)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Many flowers have UV patterns invisible to humans but obvious to pollinators.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🌀 Quantum Optics Phenomena"),
+          h('button', {
+            onClick: function() { upd("vizShowL28", !d.vizShowL28); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL28 ? '#a855f7' : 'rgba(20,184,166,0.15)', color: d.vizShowL28 ? '#fff' : '#5eead4' }
+          }, d.vizShowL28 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 places where light is most quantum."),
+        d.vizShowL28 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photon counting"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "PMTs + APDs detect individual photons. Used in astronomy, biology.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Hong-Ou-Mandel effect"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Two identical photons at beamsplitter exit together. Pure quantum interference.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Entangled photons"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Created via SPDC. Polarization correlated across any distance.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Bell inequality violation"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Proves quantum nature of correlations. Nobel 2022 (Aspect, Clauser, Zeilinger).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Quantum cryptography"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "BB84 protocol uses single photons. Detected eavesdropping by quantum disturbance.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Quantum teleportation"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Sends quantum state via entanglement + classical bit. Not faster than light.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Squeezed light"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Below shot-noise quantum uncertainty. Enables LIGO precision.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photon antibunching"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Single emitters (like an excited atom) emit one at a time. Hallmark of quantum source.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Boson sampling"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Photons through interferometer. Solves classically hard problems.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Quantum imaging"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Sub-Rayleigh resolution. SPDC photon pairs reveal undetected fluorescence.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🌋 Nonlinear Optics"),
+          h('button', {
+            onClick: function() { upd("vizShowL29", !d.vizShowL29); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL29 ? '#dc2626' : 'rgba(20,184,166,0.15)', color: d.vizShowL29 ? '#fff' : '#5eead4' }
+          }, d.vizShowL29 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 effects where intense light changes the rules."),
+        d.vizShowL29 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Second harmonic generation (SHG)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Crystals double the frequency. Green laser pointers (532nm) come from 1064 doubled.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Sum/difference frequency"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Mix two beams to get new frequencies. Tunable lasers.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Self-focusing"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "High intensity changes refractive index → beam focuses itself.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Soliton"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Stable wave packet that doesn't spread. Used in long-distance fiber optics.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Stimulated Raman scattering"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Photon scatters off molecule, gives or gains vibrational quantum.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Optical Kerr effect"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Refractive index depends on intensity. Used for ultrafast lasers.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Four-wave mixing"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Three input photons + virtual state → new photon. Phase-conjugation.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Self-phase modulation"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Pulse modifies its own phase. Causes spectral broadening.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Saturable absorption"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Material becomes transparent at high intensity. Used in mode-locked lasers.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Two-photon absorption"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Sample absorbs only at focus. Used in 3D fluorescence microscopy.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "⏰ Ultrafast Optics"),
+          h('button', {
+            onClick: function() { upd("vizShowL30", !d.vizShowL30); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL30 ? '#fbbf24' : 'rgba(20,184,166,0.15)', color: d.vizShowL30 ? '#fff' : '#5eead4' }
+          }, d.vizShowL30 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 things you can do with femtosecond lasers."),
+        d.vizShowL30 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Femtosecond pulses"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "10⁻¹⁵ second. Shorter than atomic vibration period.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Attosecond pulses"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "10⁻¹⁸ second. Capture electron motion in atoms.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Mode-locked Ti:Sapphire"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Standard femtosecond source. ~800nm, ~100 fs typical.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Frequency comb"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Train of pulses → spectrum of evenly-spaced lines. Optical atomic clocks.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Coherent control"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Shape pulse to drive specific atomic transitions. Nobel 1999.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "LIDAR via femtosecond"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Centimeter precision over kilometer distances.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Materials processing"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Cold ablation — too fast for heat to spread. Clean cuts in any material.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Pump-probe spectroscopy"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "First pulse excites, second pulse probes. Time-resolved dynamics.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Optical clocks"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Sr or Yb atoms. Stable to 10⁻¹⁸. More precise than Cs atomic.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "High harmonic generation"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Drive intense IR pulses in noble gas → coherent EUV/X-ray pulses.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🌊 Wave Equation Reference"),
+          h('button', {
+            onClick: function() { upd("vizShowL31", !d.vizShowL31); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL31 ? '#06b6d4' : 'rgba(20,184,166,0.15)', color: d.vizShowL31 ? '#fff' : '#5eead4' }
+          }, d.vizShowL31 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Math of electromagnetic waves."),
+        d.vizShowL31 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Wave equation"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "∂²E/∂t² = c² ∇²E. Maxwell's equations in vacuum.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Plane wave solution"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "E = E₀ cos(kx - ωt). k = 2π/λ, ω = 2πf.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Wavenumber k"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Spatial frequency. Units rad/m. Inverse of wavelength × 2π.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Angular frequency ω"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Temporal frequency. Units rad/s.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Phase velocity"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "v = ω/k. Speed of waves of single frequency.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Group velocity"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "vg = dω/dk. Speed of wave packet (envelope). Can differ from phase velocity.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Dispersion"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "When v depends on λ. Causes wavepacket spreading.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Index of refraction"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "n = c/v. Frequency-dependent in real materials.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Wave impedance"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Z = √(μ/ε). For vacuum: 376.73 Ω.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Poynting vector"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "S = E × H. Energy flux per unit area. W/m².")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "📐 Lens Design Basics"),
+          h('button', {
+            onClick: function() { upd("vizShowL32", !d.vizShowL32); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL32 ? '#7dd3fc' : 'rgba(20,184,166,0.15)', color: d.vizShowL32 ? '#fff' : '#5eead4' }
+          }, d.vizShowL32 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 considerations for designing lenses."),
+        d.vizShowL32 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Spherical vs aspheric"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Spherical surfaces are easy to make but cause aberrations. Aspheric better but harder.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Glass selection"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Crown vs flint. Different dispersion. Combinations cancel chromatic aberration.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Achromatic doublet"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Two glasses cemented together. Cancels chromatic aberration at 2 wavelengths.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Apochromat"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Three or more elements. Cancels aberration at 3 wavelengths. Astronomy + photography.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Aperture stop"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Physical aperture limiting light. Determines f-number.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Field stop"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Aperture limiting field of view. Usually at intermediate image.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Vignetting"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Edges of image dimmer than center. Designed-in or unwanted artifact.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Coma"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Off-axis aberration. Stars look like comets with tails toward edge.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Distortion"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Pin-cushion or barrel. Lines should be straight but bend.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "MTF (Modulation Transfer Function)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Quantifies sharpness vs spatial frequency. Higher = sharper.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🔭 Telescope Types"),
+          h('button', {
+            onClick: function() { upd("vizShowL33", !d.vizShowL33); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL33 ? '#a855f7' : 'rgba(20,184,166,0.15)', color: d.vizShowL33 ? '#fff' : '#5eead4' }
+          }, d.vizShowL33 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 telescope designs."),
+        d.vizShowL33 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Refractor (Galileo 1609)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Lens objective. Simple, no central obstruction. Limited by chromatic aberration + size.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Newtonian (1668)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Concave primary mirror + flat secondary at 45°. Good beginner scope.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Cassegrain (1672)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Parabolic primary + hyperbolic secondary. Folded path. Compact for size.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Ritchey-Chrétien"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Modified Cassegrain. Hyperbolic primary + secondary. Wider aberration-free field. Used in Hubble, JWST.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Schmidt camera (1930)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Spherical mirror + corrector plate. Wide field. Photo + survey.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Maksutov"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Meniscus corrector + spherical primary. Easy to manufacture. Compact.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Dobsonian"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Newtonian on simple alt-az mount. Cheapest per inch of aperture.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Radio telescope"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Parabolic dish, focal feed. Arecibo, Green Bank, FAST (China).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Coudé focus"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Through equatorial mount to fixed instrument room.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Adaptive optics"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Deformable mirror corrects atmosphere in real time. Ground-based reach space-quality.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🎯 Optical Standards"),
+          h('button', {
+            onClick: function() { upd("vizShowL34", !d.vizShowL34); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL34 ? '#22c55e' : 'rgba(20,184,166,0.15)', color: d.vizShowL34 ? '#fff' : '#5eead4' }
+          }, d.vizShowL34 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 industry standards in optics."),
+        d.vizShowL34 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "ISO 4037"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Calibration of dosimeters for X + gamma radiation.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "CIE 1931 (xyY)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Standard for objectively defining color.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "CIE Standard Illuminants"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "D50, D55, D65 — reference daylights for color matching.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "ASTM E1331"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Reflectance factor measurement standards.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "IEC 60825"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Laser safety classification (1-4).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "IES files"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Photometric data for lighting fixtures.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "NA (Numerical Aperture)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Quantifies light-collecting power. Ranges 0-1.5 typically.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "f-number"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Ratio of focal length to aperture diameter.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Diopter"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "1/focal-length (m). Eyeglass prescription unit.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Magnification ×"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Telescope/microscope angular magnification. Object angle / image angle.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🔅 Solar Energy Optics"),
+          h('button', {
+            onClick: function() { upd("vizShowL35", !d.vizShowL35); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL35 ? '#fbbf24' : 'rgba(20,184,166,0.15)', color: d.vizShowL35 ? '#fff' : '#5eead4' }
+          }, d.vizShowL35 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 ways to harness sunlight."),
+        d.vizShowL35 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photovoltaic (PV)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Silicon converts photons to electrons. ~22% commercial efficiency.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Concentrated PV (CPV)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Lenses or mirrors focus sun on small, expensive cell. ~40%.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Solar thermal (parabolic trough)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Mirrors focus sun on pipe → steam → turbine.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Solar tower"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Heliostats redirect sun to central receiver. 1000+ °C achievable.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Stirling solar"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Solar-heated Stirling engine. Each unit ~30 kW.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Solar water heating"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Passive — black tubes heat water on roof.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Solar still"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Evaporates + condenses water. Off-grid drinking water.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Solar oven"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Concentrated sun cooks food. Reaches 200°C+.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Solar furnace"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Olympic-sized mirror at Odeillo, France. 4000°C achievable.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Multi-junction cells"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Stack different bandgaps. Each layer catches different wavelengths. 47% lab record.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🌌 Spectra Types"),
+          h('button', {
+            onClick: function() { upd("vizShowL36", !d.vizShowL36); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL36 ? '#a855f7' : 'rgba(20,184,166,0.15)', color: d.vizShowL36 ? '#fff' : '#5eead4' }
+          }, d.vizShowL36 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "3 spectral types + 10 examples."),
+        d.vizShowL36 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Continuous spectrum"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "All wavelengths. From hot dense bodies (Sun's photosphere, incandescent bulb).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Emission line spectrum"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Discrete bright lines. From hot, low-density gas. Hydrogen, helium, neon signs.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Absorption line spectrum"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Continuous with dark lines. From cool gas absorbing background continuum. Sun has Fraunhofer lines.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Balmer series (H)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "6563 (Hα red), 4861 (Hβ cyan), 4341 (Hγ violet) nm. Defining hydrogen spectrum.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Sodium D lines"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "589.0 + 589.6 nm. Yellow. Strong in solar spectrum, in salt lamps.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Helium"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Discovered 1868 in solar spectrum before found on Earth.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Iron lines"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Thousands of lines in solar spectrum. Reveals stellar composition.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Calcium H + K"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "393.4 + 396.8 nm UV. Strong in cool stars.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Hydrogen 21cm"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "1420 MHz radio. From hyperfine transition. Maps galaxy hydrogen.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Quasar spectra"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Highly redshifted hydrogen lines reveal distance + composition.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "⏰ Time Standards Using Light"),
+          h('button', {
+            onClick: function() { upd("vizShowL37", !d.vizShowL37); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL37 ? '#fde047' : 'rgba(20,184,166,0.15)', color: d.vizShowL37 ? '#fff' : '#5eead4' }
+          }, d.vizShowL37 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "How we measure time with photons."),
+        d.vizShowL37 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Quartz clock"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Piezoelectric crystal vibrates at 32,768 Hz. Used in watches.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Atomic clock (Cs)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Cs-133 microwave transition. Defines the second since 1967.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Optical clocks (Sr, Yb)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Atomic transitions in visible. 100× more stable than Cs.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Hydrogen maser"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Used for GPS + radio astronomy. Stable over short times.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "NIST-F2"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "US primary frequency standard. Loses 1 second in 300 million years.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "UTC"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Coordinated Universal Time. Civilian time standard.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "TAI"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "International Atomic Time. No leap seconds.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "GPS time"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "TAI + 19 seconds. No leap seconds added.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Sidereal time"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Based on stars, not Sun. About 4 min less per day than solar.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Solar noon"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Sun crosses meridian. Defines local solar time.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🌡 Color Temperature Reference"),
+          h('button', {
+            onClick: function() { upd("vizShowL38", !d.vizShowL38); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL38 ? '#f97316' : 'rgba(20,184,166,0.15)', color: d.vizShowL38 ? '#fff' : '#5eead4' }
+          }, d.vizShowL38 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "How K describes white light color."),
+        d.vizShowL38 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "1000 K"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Candle flame, low-pressure sodium street lamp. Very warm orange.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "1500-2000 K"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Sunrise/sunset. Tungsten incandescent (2700K typical).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "2700 K"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Soft warm white LED. Common indoor.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "3000 K"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Warm white LED. Cozy lighting.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "3500 K"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Neutral white. Office lighting.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "4000 K"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Cool white. Some office + retail.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "5000 K"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Bright cool white. Daylight balanced.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "5500 K"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Direct sun + photo flash. Photography standard.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "6500 K"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Overcast sky. Display whites (sRGB).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "10,000 K"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Clear blue sky northern hemisphere. Very cool color.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🌐 Internet Optical Fiber"),
+          h('button', {
+            onClick: function() { upd("vizShowL39", !d.vizShowL39); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL39 ? '#06b6d4' : 'rgba(20,184,166,0.15)', color: d.vizShowL39 ? '#fff' : '#5eead4' }
+          }, d.vizShowL39 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 facts about how the internet runs on light."),
+        d.vizShowL39 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Glass purity"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Modern fiber loses only 0.2 dB/km. Light can travel 100 km in pure fiber.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Wavelengths used"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "O-band 1310nm + C-band 1550nm (lowest loss). DWDM packs 80+ channels per fiber.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Speed in fiber"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "~200,000 km/s. About 2/3 of vacuum c.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Single mode vs multimode"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "SM (9μm core): long distance. MM (50μm): short.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Bandwidth-distance"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Modern fiber: terabits per second × hundreds of km.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Submarine cables"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "~400 cables carry 99% of intercontinental data. Each 6000-13000 km.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Repeaters"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Optical amplifiers (EDFA) every ~80 km. Pump 980 or 1480 nm.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Splicing"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Fusion splice with electric arc, 0.01 dB loss. Mechanical splice 0.5 dB.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Last mile"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "FTTH/FTTP brings fiber to home. Replacing copper telephone lines.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Total global fiber"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Over 1 billion km laid. Multiplies every few years.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🔥 Radiative Heat Transfer"),
+          h('button', {
+            onClick: function() { upd("vizShowL40", !d.vizShowL40); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL40 ? '#dc2626' : 'rgba(20,184,166,0.15)', color: d.vizShowL40 ? '#fff' : '#5eead4' }
+          }, d.vizShowL40 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "How light moves heat."),
+        d.vizShowL40 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Blackbody radiation"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Perfect absorber emits at all wavelengths. Spectrum depends only on T.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Stefan-Boltzmann"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "P = σ T⁴. Energy radiated quadruples temperature → 16× more power.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Wien displacement"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "λmax × T = 2898 μm·K. Hotter bodies peak at shorter wavelengths.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Emissivity"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Real bodies emit < perfect. ε = actual / blackbody.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Greenhouse effect"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Atmosphere transparent to visible, opaque to IR. Traps heat.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Radiative cooling"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Clear sky night cools surfaces below air temperature. Frost on car.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Sky temperature"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Effective T of sky depends on humidity. -30°C clear, -10°C humid.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Thermal imaging"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Cameras sense 8-14 μm IR from body heat. Used for surveillance, hunting, electrical inspection.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Solar constant"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "1361 W/m² above atmosphere. Less at surface due to scattering + absorption.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Earth's outgoing IR"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Average ~240 W/m² at top of atmosphere. Sets Earth's temperature.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🎬 Animation + Persistence"),
+          h('button', {
+            onClick: function() { upd("vizShowL41", !d.vizShowL41); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL41 ? '#fbbf24' : 'rgba(20,184,166,0.15)', color: d.vizShowL41 ? '#fff' : '#5eead4' }
+          }, d.vizShowL41 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 facts about how moving images work."),
+        d.vizShowL41 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Persistence of vision"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Retinal image lasts ~40ms. Above 24fps, motion looks smooth.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Phi phenomenon"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Brain perceives motion between separate flashes. Foundation of cinema.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Beta movement"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Apparent motion between rapidly displayed images.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Critical flicker frequency"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "60+ Hz to avoid flicker for most. CRT 60Hz works; LED 100Hz+ safer.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Film at 24fps"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Standard since 1927. Modern formats use 48 or 120fps for clarity.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Television 30/60Hz"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "30 fields/sec in NTSC. 60 in modern UHD.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Animation 12fps"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Hand-drawn animation uses 12fps with doubled frames.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Strobe effect"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Wheels appearing to spin backwards in flickering light.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Wagon-wheel effect"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Frame rate aliasing makes wheels appear to move backwards.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Motion blur"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Real-world motion blurs in finite exposure. Important for natural look.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🎨 Color Models"),
+          h('button', {
+            onClick: function() { upd("vizShowL42", !d.vizShowL42); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL42 ? '#a855f7' : 'rgba(20,184,166,0.15)', color: d.vizShowL42 ? '#fff' : '#5eead4' }
+          }, d.vizShowL42 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 ways to represent color."),
+        d.vizShowL42 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "RGB"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Red Green Blue. Additive. Screens, projectors. 0-255 each channel.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "CMYK"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Cyan Magenta Yellow Key (black). Subtractive. Printing. 0-100% each.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "HSL"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Hue Saturation Lightness. Intuitive for color picking.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "HSV/HSB"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Hue Saturation Value/Brightness. Similar to HSL but different brightness model.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "CIE XYZ"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "1931 colorimetry standard. Mathematical color space.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "CIE Lab"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Perceptually uniform. Used in color matching.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Pantone"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Proprietary set of inks. Used in branding.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "sRGB"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Standard RGB. Web + monitor default since 1996.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Adobe RGB"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Wider gamut. Photography + print preview.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "DCI-P3"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Cinema gamut. Now default on iPhones, displays. Larger than sRGB.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🛰 Satellite Imaging Bands"),
+          h('button', {
+            onClick: function() { upd("vizShowL43", !d.vizShowL43); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL43 ? '#06b6d4' : 'rgba(20,184,166,0.15)', color: d.vizShowL43 ? '#fff' : '#5eead4' }
+          }, d.vizShowL43 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 wavelength bands used by Earth-observation satellites."),
+        d.vizShowL43 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Coastal aerosol (~440nm)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Sees through haze. Coastal water studies.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Blue (~480nm)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Aerosols, sediments, vegetation classification.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Green (~560nm)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Plant health (green peak).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Red (~660nm)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Plant absorption (chlorophyll).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Red Edge (~705nm)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Vegetation stress detection.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Near-IR (~830nm)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Plant reflectance (cell walls). NDVI index.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "SWIR1 (~1610nm)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Soil moisture, snow vs cloud distinction.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "SWIR2 (~2190nm)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Mineral mapping, fire detection.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Thermal IR (10-12μm)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Land + sea surface temperature.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Microwave"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Radar penetrates clouds. Topography, deformation, soil moisture.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🌟 Famous Light Sources in Sci-Fi"),
+          h('button', {
+            onClick: function() { upd("vizShowL44", !d.vizShowL44); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL44 ? '#a855f7' : 'rgba(20,184,166,0.15)', color: d.vizShowL44 ? '#fff' : '#5eead4' }
+          }, d.vizShowL44 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 fictional optical technology + reality status."),
+        d.vizShowL44 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Lightsaber (Star Wars)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Plasma blade. Reality: impossible — plasma needs constraint, doesn't end at fixed length.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Phaser (Star Trek)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Energy weapon. Reality: directed energy weapons exist but bulky + low-power.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Teleporters"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Reality: quantum teleportation transfers states, not matter. No materializer.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Tractor beam"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Reality: optical tweezers exist for tiny things. Macroscopic version unlikely.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Cloaking device"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Reality: metamaterials cloak narrow frequencies/sizes. Real invisibility unsolved.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Holodeck (Star Trek)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Reality: VR + AR getting close. Volumetric displays exist but limited.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Force fields"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Reality: plasma confinement. Not solid barriers.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Death Star superlaser"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Reality: impossibly large power requirements.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Replicator"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Reality: 3D printing approaches it (matter form). Not from energy though.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Heisenberg compensator"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Reality: invented to make Trek transporter work. Pure plot device.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "⚗ Spectroscopy Techniques"),
+          h('button', {
+            onClick: function() { upd("vizShowL45", !d.vizShowL45); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL45 ? '#22c55e' : 'rgba(20,184,166,0.15)', color: d.vizShowL45 ? '#fff' : '#5eead4' }
+          }, d.vizShowL45 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 ways to use light to identify materials."),
+        d.vizShowL45 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "UV-Vis"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Absorption in 200-800nm. Chemistry, biology assays.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "IR spectroscopy"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Molecular vibrations. Identifies functional groups.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Raman"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Inelastic scattering. Complementary to IR. Identifies bonds.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "NMR"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Nuclear spins in magnetic field. Molecular structure.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Mass spectrometry"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Ionize + measure m/z. Identify molecules.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "XPS"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "X-ray photoelectron spectroscopy. Surface composition.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Mössbauer"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Resonant gamma absorption. Iron + tin in solids.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Fluorescence"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Emission after absorption. Common in cell biology.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Phosphorescence"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Delayed emission. Glow-in-dark materials.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photoacoustic"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Light absorption → acoustic wave. Subsurface imaging.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🌎 Climate + Optics"),
+          h('button', {
+            onClick: function() { upd("vizShowL46", !d.vizShowL46); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL46 ? '#22c55e' : 'rgba(20,184,166,0.15)', color: d.vizShowL46 ? '#fff' : '#5eead4' }
+          }, d.vizShowL46 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 optics-related climate facts."),
+        d.vizShowL46 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Earth albedo"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "~30%. Reflectivity of Earth seen from space.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Snow/ice albedo"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "~80-90%. Snow loss → more sunlight absorbed → warming.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Ocean albedo"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "~6%. Water absorbs nearly all sunlight.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Forest albedo"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "~15%. Mature forests are dark.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Aerosols + climate"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Scatter sunlight → cooling. Volcanic eruptions (Pinatubo 1991) cooled Earth 0.5°C.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Greenhouse gases"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "CO₂, CH₄, H₂O absorb IR (Earth's thermal emission).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Daylighting buildings"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Save lighting electricity by using natural light. Both energy + circadian benefits.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "White roofs"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Cool urban areas. Higher albedo reflects sunlight back to space.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Geoengineering"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Stratospheric aerosols would mimic volcanoes. Risky.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Solar dimming"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Pollution + clouds reduced sunlight ~3% in 20th century. Recovering as pollution decreases.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🏫 Optics in Maine Schools"),
+          h('button', {
+            onClick: function() { upd("vizShowL47", !d.vizShowL47); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL47 ? '#22c55e' : 'rgba(20,184,166,0.15)', color: d.vizShowL47 ? '#fff' : '#5eead4' }
+          }, d.vizShowL47 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 ways optics show up in Maine K-12 + colleges."),
+        d.vizShowL47 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "MSAD/RSU science"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Common framework: light + sound in 4th grade; waves in middle school; optics in HS physics.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "UMaine Orono"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Physics + EE programs. Optical engineering courses.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Bowdoin"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Physics + astronomy. Outstanding undergraduate research.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Bates"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Liberal arts physics. Good for premed.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Colby"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Strong physics. Telescope on campus.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "University of New England"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Pre-optometry. Path to optometric career.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Pingree Park Astronomy Camp"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "High school summer program. Telescope use.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Maine state science fair"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Many optics-themed projects each year.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Acadia Night Sky Festival"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Annual September stargazing event with workshops.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Cape Elizabeth Lighthouse"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Fresnel lens museum. Field trip destination.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🧠 Common Optics Misconceptions"),
+          h('button', {
+            onClick: function() { upd("vizShowL48", !d.vizShowL48); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL48 ? '#dc2626' : 'rgba(20,184,166,0.15)', color: d.vizShowL48 ? '#fff' : '#5eead4' }
+          }, d.vizShowL48 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 things many people get wrong about light."),
+        d.vizShowL48 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "\"Eyes emit light to see\""),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Ancient Greek belief. Actually, light enters eyes from external sources.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "\"Mirrors flip left-right\""),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "They flip front-back. You see yourself unflipped.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "\"Magnification is biggest factor\""),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "For telescopes + microscopes, aperture matters more than magnification.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "\"Sun is yellow\""),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Sun is white. Atmospheric scattering removes blue → yellow appearance at noon, red at sunset.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "\"Moon makes its own light\""),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "It only reflects sunlight. Albedo is just 12%.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "\"Faster than light is impossible always\""),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Phase velocity in plasma can exceed c. Causality holds because info-carrying group velocity doesn't.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "\"Light always travels straight\""),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "In matter, refraction bends it. In gravity, geodesics bend it.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "\"All light from a star travels parallel\""),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Approximately, after long distances. Near a source, light spreads in all directions.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "\"Lens makes things bigger\""),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "It changes apparent angle. Magnification can be < 1 (image smaller than object).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "\"Optics solved in 1900\""),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Quantum optics, nonlinear optics, metamaterials are 20th-21st century. Field is very active.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "⚡ Light + Energy Conversion"),
+          h('button', {
+            onClick: function() { upd("vizShowL49", !d.vizShowL49); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL49 ? '#fbbf24' : 'rgba(20,184,166,0.15)', color: d.vizShowL49 ? '#fff' : '#5eead4' }
+          }, d.vizShowL49 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 ways light becomes other forms of energy + vice versa."),
+        d.vizShowL49 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photovoltaic"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Light → electricity. Semiconductor electron excitation.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photosynthesis"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Light → chemical energy. Glucose from CO₂ + H₂O.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photoelectric effect"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Light → free electrons. Vacuum tubes, image sensors.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Thermal radiation"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Heat → light. All warm bodies emit IR.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Incandescence"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Heated filament glows. Inefficient but pure spectrum.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Fluorescence"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "UV photons → visible. Phosphor coatings.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Chemiluminescence"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Chemical reaction → light. Glow sticks.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Bioluminescence"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Living cells emit. Fireflies, deep-sea creatures.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Electroluminescence"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Current → light. LEDs.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Triboluminescence"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Friction/breaking → light. Crushed Wint-O-Green Lifesavers in dark.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🎓 Optics Resources for Students"),
+          h('button', {
+            onClick: function() { upd("vizShowL50", !d.vizShowL50); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL50 ? '#06b6d4' : 'rgba(20,184,166,0.15)', color: d.vizShowL50 ? '#fff' : '#5eead4' }
+          }, d.vizShowL50 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 places to learn more optics."),
+        d.vizShowL50 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "MIT OpenCourseWare 8.03"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Wave physics + optics. Free online lectures + problem sets.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Hecht \"Optics\" 5th ed"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Standard college optics textbook.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Pedrotti, Introduction to Optics"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Friendly intro for non-physics majors.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Walter Lewin lectures"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "MIT physics video classics. Online free.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Physics Girl YouTube"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Optics demos + experiments. Engaging.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Veritasium"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Many optics-themed videos. Mostly accessible.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "NASA Eyes"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Visualize JWST + space telescopes interactively.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "OSA (Optica)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Optical Society. Many free educational materials.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "IOP Light More Light"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Institute of Physics resources for K-12.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Khan Academy"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Free intro optics, AP-aligned.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🏆 Nobel Prizes in Optics"),
+          h('button', {
+            onClick: function() { upd("vizShowL51", !d.vizShowL51); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL51 ? '#fde047' : 'rgba(20,184,166,0.15)', color: d.vizShowL51 ? '#fff' : '#5eead4' }
+          }, d.vizShowL51 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 Nobel Prizes for optical work."),
+        d.vizShowL51 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "1907 Michelson"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "For interferometric methods used to measure speed of light.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "1908 Lippmann"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Color photography by interference method.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "1953 Zernike"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Phase contrast microscope.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "1971 Gabor"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Holography.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "1981 Bloembergen + Schawlow"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Laser spectroscopy.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "1997 Chu, Cohen-Tannoudji, Phillips"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Laser cooling of atoms.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "2005 Hänsch + Hall"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Optical frequency comb.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "2009 Kao, Boyle, Smith"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Fiber optics + CCD invention.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "2014 Akasaki, Amano, Nakamura"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Blue LEDs.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "2018 Ashkin, Mourou, Strickland"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Optical tweezers + chirped pulse amplification.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🔬 Quantum Information + Optics"),
+          h('button', {
+            onClick: function() { upd("vizShowL52", !d.vizShowL52); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL52 ? '#a855f7' : 'rgba(20,184,166,0.15)', color: d.vizShowL52 ? '#fff' : '#5eead4' }
+          }, d.vizShowL52 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 ways photons enable quantum information."),
+        d.vizShowL52 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Single-photon sources"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "NV centers, quantum dots, parametric down-conversion. Need exactly one photon.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Single-photon detectors"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "SPADs + superconducting nanowire SNSPDs. >90% efficient at 1550nm.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Quantum key distribution"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "BB84 + similar. Cannot be eavesdropped without disturbance.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "China micius satellite (2016)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "First space-to-ground QKD. Beijing-Vienna link.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Quantum random number generators"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "True randomness from photon arrival times.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Boson sampling"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Photons through linear interferometer. Hard to simulate classically.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Linear optical quantum computing"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "KLM scheme uses photons + measurements. Slow but scalable.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Quantum networking"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Entanglement distribution between nodes. Quantum internet.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Quantum repeaters"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Use entanglement swapping to extend distance.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photonic chips"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Integrated quantum optics. Scaling up.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🌎 Atmospheric Optics"),
+          h('button', {
+            onClick: function() { upd("vizShowL53", !d.vizShowL53); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL53 ? '#7dd3fc' : 'rgba(20,184,166,0.15)', color: d.vizShowL53 ? '#fff' : '#5eead4' }
+          }, d.vizShowL53 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 weather-related optical phenomena."),
+        d.vizShowL53 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Crepuscular rays"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Sunbeams through cloud gaps. Parallel; converge from perspective.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Sundogs (22° halo)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Hexagonal ice crystals refract sun. ~22° on each side.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Halos (46°)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Less common ring; ice crystals oriented differently.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Glory"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Concentric rings on cloud from droplets directly opposite sun.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Brocken spectre"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Massive shadow with glory ring. Climbers see at sunrise.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Green flash"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Brief green spot at sunset. Atmospheric refraction.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Mirages"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Hot ground → light bends up, mimics water.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Fata Morgana"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Multiple stacked mirage layers. Floating castles, distorted boats.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Heiligenschein"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Glory around your shadow on dewy grass.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Iridescent clouds"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Diffraction in thin clouds with uniform droplet size.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🎬 Hollywood Optics"),
+          h('button', {
+            onClick: function() { upd("vizShowL54", !d.vizShowL54); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL54 ? '#dc2626' : 'rgba(20,184,166,0.15)', color: d.vizShowL54 ? '#fff' : '#5eead4' }
+          }, d.vizShowL54 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 visual effects achievable with real optics."),
+        d.vizShowL54 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Blue/green screen"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Color keying isolates subject. Composited with new background.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Anamorphic lens"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Compresses 2.4:1 ratio onto 4:3 negative. Famous lens flares (J.J. Abrams).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Forced perspective"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Place small object near, larger far → looks same size. Lord of the Rings hobbits.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Practical effects"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "In-camera. Miniatures, prosthetics, real explosions.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Bullet time"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Array of cameras fired in sequence. Matrix sequence.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "IMAX"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Large 70mm horizontal film. Bigger negative = better resolution.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Stereoscopic 3D"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Two cameras at eye distance. Polarized or red-cyan filters.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Light-field cameras"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Plenoptic. Refocus after capture.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "HDR (high dynamic range)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Multiple exposures combined. Captures wider light range.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Motion control"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Computer-controlled cameras repeat exact moves for compositing.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "⚛ Atoms + Light"),
+          h('button', {
+            onClick: function() { upd("vizShowL55", !d.vizShowL55); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL55 ? '#a855f7' : 'rgba(20,184,166,0.15)', color: d.vizShowL55 ? '#fff' : '#5eead4' }
+          }, d.vizShowL55 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 quantum-mechanical interactions of light + atoms."),
+        d.vizShowL55 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Absorption"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Photon excites electron to higher energy level.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Spontaneous emission"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Excited atom decays randomly, emits photon.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Stimulated emission"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Photon triggers identical photon from excited atom. Laser principle.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Selection rules"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Some transitions forbidden by quantum numbers. Forbidden lines from low-density gas.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Fluorescence"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Absorbs UV, emits visible. Energy loss in vibrational levels.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Phosphorescence"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Long-lived excited state. Glow-in-dark.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Lamb shift"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Tiny shift of energy levels due to vacuum fluctuations. Foundation of QED.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Hyperfine structure"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Nuclear spin splits levels slightly. Hydrogen 21cm line.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Zeeman effect"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Magnetic field splits lines. Sun's magnetic field measured this way.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Stark effect"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Electric field splits lines. Less common but observable.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🔆 Optical Manufacturing"),
+          h('button', {
+            onClick: function() { upd("vizShowL56", !d.vizShowL56); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL56 ? '#fbbf24' : 'rgba(20,184,166,0.15)', color: d.vizShowL56 ? '#fff' : '#5eead4' }
+          }, d.vizShowL56 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 things involved in making optics."),
+        d.vizShowL56 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Lens grinding"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Curved tool + abrasive. Spherical surfaces easy; aspheric harder.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Lens polishing"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Cerium oxide + felt pad. Removes microscopic scratches.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Optical glass"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Schott (Germany), Ohara (Japan), Corning (US) — main suppliers.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Anti-reflection coatings"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Quarter-wavelength layers. MgF₂ classic; multi-layer modern.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Mirror coating"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Aluminum (~92%), silver (95%), gold for IR. Vacuum deposition.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Interferometric testing"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Compare to reference flat. Sub-wavelength precision required.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Cleanrooms"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Class 100 (100 particles/ft³). Required for lithography optics.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Ultra-low expansion glass"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Corning ULE, Zerodur. Used in space telescopes.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Diamond turning"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Precision lathe with diamond bit. Aspheric surfaces.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Mold + replicate"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Mass production. Plastic eyeglasses molded by millions per day.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🌌 JWST + Modern Astronomy"),
+          h('button', {
+            onClick: function() { upd("vizShowL57", !d.vizShowL57); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL57 ? '#7dd3fc' : 'rgba(20,184,166,0.15)', color: d.vizShowL57 ? '#fff' : '#5eead4' }
+          }, d.vizShowL57 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 facts about JWST optics."),
+        d.vizShowL57 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Primary mirror"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "6.5 m total. 18 hexagonal segments, each 1.32 m.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Mirror coating"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Gold (100 nm thick). High reflectivity for IR.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Thermal control"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Sun shield keeps mirrors at ~40K. Critical for IR sensitivity.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Wavelength range"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "0.6 - 28.5 μm. Mostly infrared, into mid-IR.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "NIRCam"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Near-IR imaging 0.6-5 μm. First images.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "MIRI"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Mid-IR 5-28 μm. Most distant galaxies + planet thermal emission.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "NIRSpec"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Spectroscopy 0.6-5 μm. Atmospheric composition of exoplanets.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Diffraction limit"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "For 6.5m at 2 μm: ~0.1 arcsec resolution. Sharper than Hubble at longer waves.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "L2 orbit"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "1.5 million km Earth-anti-sunward. Sun + Earth + Moon all in same direction.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "5+ year mission"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Fuel for 10+ years; instruments expected to last 5+.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🌍 Light Travel Times"),
+          h('button', {
+            onClick: function() { upd("vizShowL58", !d.vizShowL58); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL58 ? '#fde047' : 'rgba(20,184,166,0.15)', color: d.vizShowL58 ? '#fff' : '#5eead4' }
+          }, d.vizShowL58 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 light travel times to memorize."),
+        d.vizShowL58 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "1 foot"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "~1 nanosecond. Grace Hopper's famous demonstration.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Earth circumference"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "~133 milliseconds.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Earth to Moon"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "1.3 seconds. Round trip 2.6s.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Earth to Sun"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "8 min 19 sec.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Sun to Mars (avg)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "~12.5 minutes.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Sun to Jupiter"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "~43 minutes.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Sun to Pluto"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "~5.5 hours.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Sun to nearest star"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "4.24 years (Proxima Centauri).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Across Milky Way"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "~100,000 years.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "To Andromeda"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "~2.5 million years.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🔦 Beam Divergence"),
+          h('button', {
+            onClick: function() { upd("vizShowL59", !d.vizShowL59); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL59 ? '#06b6d4' : 'rgba(20,184,166,0.15)', color: d.vizShowL59 ? '#fff' : '#5eead4' }
+          }, d.vizShowL59 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 facts about laser + light beams spreading."),
+        d.vizShowL59 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Ideal collimation"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "A perfect plane wave never diverges. Real beams always do.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Gaussian beam"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Most natural laser mode. Beam waist + Rayleigh range.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Divergence angle"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "θ = λ/(π × w₀). Tighter waist → more divergence.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Earth-Moon laser"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Apollo retroreflectors: beam spreads to ~5km wide at Moon.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Laser pointer"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "~1 mrad divergence. 1 meter spread per km.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Sun beam"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "About 0.5° angular size at Earth. Why shadows have penumbras.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Star beam"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Nearly parallel rays from any star at Earth.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "LED lighting"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Wide divergence (~120°). Different from laser.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Collimator design"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Lens at focal distance from source. Output rays approximately parallel.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Spotlight"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Parabolic reflector with bulb at focus. Approximate beam.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🌐 Optics Industries"),
+          h('button', {
+            onClick: function() { upd("vizShowL60", !d.vizShowL60); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL60 ? '#a855f7' : 'rgba(20,184,166,0.15)', color: d.vizShowL60 ? '#fff' : '#5eead4' }
+          }, d.vizShowL60 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 industries using optics."),
+        d.vizShowL60 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Semiconductor lithography"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "EUV machines $200M each. Made by ASML (Netherlands).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Telecom fiber optics"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "$15B annual market. Glass fiber + lasers + transceivers.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Defense + aerospace"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Laser rangefinders, FLIR, targeting. Billions in budget.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photonics + lasers"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "$22B globally. Materials processing, medical, scientific.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Consumer cameras"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "iPhone + Sony + Canon + Nikon. $40B+ industry.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Microscopy"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "$8B research market. Olympus, Zeiss, Nikon, Leica.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Medical imaging"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "$40B+ MRI, CT, ultrasound, endoscopy, ophthalmology.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Solar power"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "$200B+ growing rapidly. Panel manufacturing + utility installation.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "LED lighting"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "$100B+ display + general illumination.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Optical metrology"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Quality control. Coordinate measurement, surface inspection.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🧮 Common Refractive Indices"),
+          h('button', {
+            onClick: function() { upd("vizShowL61", !d.vizShowL61); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL61 ? '#7dd3fc' : 'rgba(20,184,166,0.15)', color: d.vizShowL61 ? '#fff' : '#5eead4' }
+          }, d.vizShowL61 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Material refractive indices ranked."),
+        d.vizShowL61 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Vacuum"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "1.000 (by definition).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Air"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "1.0003 (essentially 1 at STP).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Water (20°C)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "1.333.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Ice"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "1.31.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Glycerin"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "1.473.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Crown glass"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "1.52.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Flint glass"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "1.58 to 1.62.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Acrylic (PMMA)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "1.49.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Polycarbonate"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "1.586.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Sapphire"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "1.77.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Cubic zirconia"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "2.16.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Diamond"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "2.42.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🎬 Cinema Optics"),
+          h('button', {
+            onClick: function() { upd("vizShowL62", !d.vizShowL62); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL62 ? '#dc2626' : 'rgba(20,184,166,0.15)', color: d.vizShowL62 ? '#fff' : '#5eead4' }
+          }, d.vizShowL62 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 things about projection + film."),
+        d.vizShowL62 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Aspect ratios"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "1.33:1 (old TV), 1.78:1 (HD), 2.35:1 (anamorphic film).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Frame rates"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "24 fps (cinema), 30 fps (TV), 60 fps (HFR), 120 fps (Hobbit).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Projector lumens"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Home: 1000-3000. Cinema: 30,000+.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "IMAX"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "15-perf 70mm horizontal. Largest commercial film format.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Digital cinema"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "4K (4096×2160) typical. 8K coming.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "HDR cinema"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Dolby Vision, HDR10. Wider brightness range.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Laser projection"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "RGB lasers. Wider color gamut than xenon lamps.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Stereoscopic 3D"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Polarized or RealD (circular polarization).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Cinerama (1952)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Three projectors on curved screen. Gimmick.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "ARRI Alexa, Sony Venice"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Modern digital cinema cameras.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🌋 Optics in Earth Science"),
+          h('button', {
+            onClick: function() { upd("vizShowL63", !d.vizShowL63); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL63 ? '#22c55e' : 'rgba(20,184,166,0.15)', color: d.vizShowL63 ? '#fff' : '#5eead4' }
+          }, d.vizShowL63 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 ways geologists use optics."),
+        d.vizShowL63 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Petrographic microscope"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Polarized light through thin sections. Identifies minerals.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Birefringence"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Anisotropic minerals split light. Gives interference colors.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Pleochroism"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Color changes with polarization direction. Diagnostic for some minerals.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Refractive index"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Each mineral has characteristic n. Used in gemology.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Reflected light microscope"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "For opaque ore minerals.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Cathodoluminescence"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Electron beam excites mineral luminescence. Mapping zoning.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "SEM/EDS"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Scanning electron microscope + X-ray spectroscopy. Element mapping.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Spectrometers in field"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Handheld XRF, Raman. Identify rocks on site.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Aerial photogrammetry"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Stereo aerial photos build 3D landscapes.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Mars rover cameras"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "MastCam + MAHLI + ChemCam. Detailed Mars imaging.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🧬 Optics in Genetics + Biology"),
+          h('button', {
+            onClick: function() { upd("vizShowL64", !d.vizShowL64); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL64 ? '#22c55e' : 'rgba(20,184,166,0.15)', color: d.vizShowL64 ? '#fff' : '#5eead4' }
+          }, d.vizShowL64 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 ways biologists use light."),
+        d.vizShowL64 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Fluorescence microscopy"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Tag proteins with fluorophores. See where they go.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "GFP"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Green Fluorescent Protein from jellyfish. Tag genes. Nobel 2008.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "FISH"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Fluorescent in-situ hybridization. Localize specific DNA.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "DNA sequencing (Sanger)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Fluorescent ddNTPs read by laser. Won Nobel 1980.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Next-gen sequencing"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Illumina platform: billions of fluorescent reads per run.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Optogenetics"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Light-activated channels in neurons. Control specific cells.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Flow cytometry"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Laser interrogates cells flowing through. Counts + sorts.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Confocal microscopy"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Optical sectioning of cells. 3D reconstructions.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Light sheet microscopy"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Illuminates one plane. Fast 3D imaging of developing embryos.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Cryo-electron tomography"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Frozen samples + electron beam. Sees molecular structures.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "⚡ Photoelectric Effect Details"),
+          h('button', {
+            onClick: function() { upd("vizShowL65", !d.vizShowL65); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL65 ? '#fbbf24' : 'rgba(20,184,166,0.15)', color: d.vizShowL65 ? '#fff' : '#5eead4' }
+          }, d.vizShowL65 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 facts about photons hitting metal."),
+        d.vizShowL65 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Work function"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Minimum photon energy to eject electron from metal.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Threshold frequency"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Below it, no electrons emitted no matter how bright.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Linear relation"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Photoelectron energy = hf - W (work function).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Hertz 1887"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "First observation.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Einstein 1905"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Explained with photons. Nobel 1921.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Millikan 1916"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Confirmed Einstein's equation experimentally. Nobel 1923.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photomultiplier tube"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Cascades photoelectrons to amplify by 10⁶+.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Solar cells"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "PV uses same principle: photons free electrons.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "CCD/CMOS sensors"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Pixel arrays of photodiodes. Phone cameras.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Night vision"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Photocathode + multiplier + phosphor screen.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🌅 Sky Color FAQ"),
+          h('button', {
+            onClick: function() { upd("vizShowL66", !d.vizShowL66); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL66 ? '#3b82f6' : 'rgba(20,184,166,0.15)', color: d.vizShowL66 ? '#fff' : '#5eead4' }
+          }, d.vizShowL66 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 sky color questions."),
+        d.vizShowL66 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Why is sky blue?"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Rayleigh scattering: short wavelengths scatter more.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Why is sunset red?"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Long path through atmosphere scatters away blue, leaves red.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Why does Mars sky look pink?"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Iron oxide dust suspends in atmosphere. Different scattering than blue Rayleigh.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Why is Mars sunset blue?"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Dust forward-scatters red. Around Sun is blue (less common photon path).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Why is Moon sky black?"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "No atmosphere → no scattering. Sun + stars on black.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Why is Venus sky orange?"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Thick CO₂ atmosphere. Lots of forward scattering.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Why is night sky dark?"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Olbers' paradox: should be bright. Solution: finite universe + expansion + age.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Why are clouds white?"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Mie scattering (droplet ~λ). All wavelengths scattered equally.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Why is sea blue?"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Water absorbs red strongly; transmits blue. Also reflects sky.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Why is fire orange?"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Black-body radiation at ~1000K. Wien displacement → orange peak.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🌡 Black Body Color Temp"),
+          h('button', {
+            onClick: function() { upd("vizShowL67", !d.vizShowL67); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL67 ? '#f97316' : 'rgba(20,184,166,0.15)', color: d.vizShowL67 ? '#fff' : '#5eead4' }
+          }, d.vizShowL67 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 things glowing at different temperatures."),
+        d.vizShowL67 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Room temp (290 K)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Emits in IR (peak ~10μm). Invisible to eye.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Human body (310 K)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Peak ~9.4μm. Why thermal cameras see us.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Fire (~1100 K)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Yellow-orange. Wien peak ~2.6 μm but visible tail.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Tungsten bulb (2700 K)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Warm white. ~1 μm peak.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Halogen lamp (3000 K)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Slightly cooler white.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Sun (5778 K)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "White light. Peak at 500 nm (green).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Spica (~22,400 K)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Blue star. UV peak.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Center of Sun (15 MK)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Gamma rays. Plasma + fusion.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Supernova core (10⁹ K)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Hard gamma + nuclear.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Planck temperature (10³² K)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Theoretical max. Quantum gravity territory.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "⚙ Optical Components Catalog"),
+          h('button', {
+            onClick: function() { upd("vizShowL68", !d.vizShowL68); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL68 ? '#cbd5e1' : 'rgba(20,184,166,0.15)', color: d.vizShowL68 ? '#fff' : '#5eead4' }
+          }, d.vizShowL68 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 common optical components."),
+        d.vizShowL68 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Plano-convex lens"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Flat on one side, curved on other. Most common.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Biconvex lens"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Curved both sides. More magnification per element.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Concave lens"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Curved inward. Diverging.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Meniscus lens"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Both sides curved same direction. Used in eyeglasses, corrector plates.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Cylindrical lens"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Curves in one direction. Astigmatism correction.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Right-angle prism"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "90° turning. Equivalent to 2 mirrors but easier to mount.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Pentaprism"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Used in DSLR viewfinders. 90° turn without inversion.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Beamsplitter"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Cube or plate. Splits beam into two paths.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Diffraction grating"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Many parallel slits. Disperses light by wavelength.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Spatial filter"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Pinhole at focal plane. Cleans up beam profile.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🚦 Traffic Light Optics"),
+          h('button', {
+            onClick: function() { upd("vizShowL69", !d.vizShowL69); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL69 ? '#dc2626' : 'rgba(20,184,166,0.15)', color: d.vizShowL69 ? '#fff' : '#5eead4' }
+          }, d.vizShowL69 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 things about traffic + emergency lights."),
+        d.vizShowL69 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "LED traffic lights"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Replaced incandescent. Last 50,000 hours vs 8000.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Color choices"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Red/yellow/green for visibility. Red is universal stop.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Visibility distance"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "900 ft (red) to 1500 ft (green). Designed for safety.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Diffraction pattern"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Fresnel lenses concentrate beam horizontally + spread vertically.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Solar glare"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Some new designs include hood + matte rim to reduce.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Emergency lights"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Strobe patterns. Visible at high distances.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Crosswalk countdown"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "White flashing → number countdown. ADA accessible audio.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Police flashing"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Random patterns. Detectable in peripheral vision.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Fire engine red"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Cultural standard. Studies show lime-yellow more visible.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Smart traffic"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "AI cameras read traffic. Adjust signals dynamically.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🎨 Painting + Light"),
+          h('button', {
+            onClick: function() { upd("vizShowL70", !d.vizShowL70); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL70 ? '#a855f7' : 'rgba(20,184,166,0.15)', color: d.vizShowL70 ? '#fff' : '#5eead4' }
+          }, d.vizShowL70 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 painters known for capturing light."),
+        d.vizShowL70 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Vermeer (1632-1675)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Used camera obscura. Mathematically precise light.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Caravaggio (1571-1610)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Chiaroscuro — extreme contrast. Theatrical lighting.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Rembrandt (1606-1669)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Light from upper left. Now standard portrait lighting.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Turner (1775-1851)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Atmospheric light. Painted sunsets + storms.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Monet (1840-1926)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Impressionism. Painted same scene at multiple times of day.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Sargent (1856-1925)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Outdoor sunlit portraits. Casual modern style.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Hopper (1882-1967)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Stark American light. Diner scenes + isolation.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Wyeth (1917-2009)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Cool muted Maine light.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Rothko (1903-1970)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Glowing color fields. Light from within paintings.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Hockney (1937-)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "California pool reflections. Wrote book on optical aids.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🎮 Optics in Video Games"),
+          h('button', {
+            onClick: function() { upd("vizShowL71", !d.vizShowL71); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL71 ? '#0ea5e9' : 'rgba(20,184,166,0.15)', color: d.vizShowL71 ? '#fff' : '#5eead4' }
+          }, d.vizShowL71 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 ways games render light."),
+        d.vizShowL71 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Ray tracing"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Trace each pixel's rays through scene. Real reflections + shadows.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Rasterization"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Project polygons. Fast but approximate lighting.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Phong shading"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Per-pixel lighting model. Smoother than flat shading.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Normal maps"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Texture encoding surface direction. Detail without geometry.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Bloom"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Bright pixels bleed. Mimics camera/eye glare.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Lens flare"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Internal reflections in virtual lens. Direction toward bright source.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Bokeh"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Out-of-focus circles. Depth of field simulation.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "HDR rendering"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Internal computation in high dynamic range, then tone-mapped.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Global illumination"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Indirect light bouncing between surfaces.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Path tracing"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Sample many random paths. Cleanest result but slow. Modern GPUs do real-time.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🎯 Aim + Sights"),
+          h('button', {
+            onClick: function() { upd("vizShowL72", !d.vizShowL72); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL72 ? '#fbbf24' : 'rgba(20,184,166,0.15)', color: d.vizShowL72 ? '#fff' : '#5eead4' }
+          }, d.vizShowL72 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 things about aiming with optics."),
+        d.vizShowL72 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Open sights"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Front + rear notch. Need to align 3 things.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Peep sight"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Rear small hole. Self-correcting alignment.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Red dot sight"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Reflex sight. Project dot onto lens. Both-eyes-open.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Magnified scope"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Standard rifle optic. 4-12× typical for hunting.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Holographic sight"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Holographic reticle. Stays sharp even at angles.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Parallax"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Reticle apparent shift when eye moves. Adjustable on high-end scopes.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Eye relief"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Distance between scope + eye. Too short = bruised brow.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Reticle types"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Crosshair, BDC (bullet drop compensator), mil-dot.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Night vision"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Image intensifier tube. Amplifies starlight by 30,000×.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Thermal scope"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Sees heat through total dark or vegetation.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🌌 Optical Phenomena Near Black Holes"),
+          h('button', {
+            onClick: function() { upd("vizShowL73", !d.vizShowL73); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL73 ? '#a855f7' : 'rgba(20,184,166,0.15)', color: d.vizShowL73 ? '#fff' : '#5eead4' }
+          }, d.vizShowL73 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 weird optics in extreme gravity."),
+        d.vizShowL73 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Gravitational redshift"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Light loses energy escaping gravity well. Confirmed at White Sands 1959.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Gravitational lensing"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Mass curves spacetime. Light bends around. Used to find dark matter.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Einstein ring"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Perfect alignment: distant source images around foreground mass.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photon sphere"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Photons can orbit at 1.5 Schwarzschild radii. Unstable.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Event horizon"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "No escape. Light at horizon redshifts to infinite wavelength.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Shadow"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "EHT imaged this — dark central region surrounded by accretion disk.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Doppler beaming"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Material moving toward us brighter; away dimmer.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Relativistic time dilation"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Time near BH slower. Photons accumulate.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Frame dragging"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Rotating BH drags spacetime. Light follows rotating geodesics.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Hawking radiation"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Quantum effect at horizon. Black holes evaporate (very slowly).")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "⚖ Polarization Types"),
+          h('button', {
+            onClick: function() { upd("vizShowL74", !d.vizShowL74); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL74 ? '#22c55e' : 'rgba(20,184,166,0.15)', color: d.vizShowL74 ? '#fff' : '#5eead4' }
+          }, d.vizShowL74 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 ways light can be polarized."),
+        d.vizShowL74 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Linear"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "E field oscillates in one direction. Most common artificial.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Vertical / horizontal"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Two orthogonal linear polarizations. Glasses block one.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Circular (right/left)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "E field rotates. Used in 3D movies.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Elliptical"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "In between linear + circular.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Random (unpolarized)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Mixture of all directions. Sunlight, light bulbs.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Partial polarization"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Some preferred direction but not 100%.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "s-polarized"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Perpendicular to plane of incidence.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "p-polarized"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Parallel to plane of incidence.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Stokes parameters"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Mathematical description of any polarization state.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Jones vector"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Complex vector for linear/circular states.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "⚛ Photons + Probability"),
+          h('button', {
+            onClick: function() { upd("vizShowL75", !d.vizShowL75); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL75 ? '#a855f7' : 'rgba(20,184,166,0.15)', color: d.vizShowL75 ? '#fff' : '#5eead4' }
+          }, d.vizShowL75 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 quantum-mechanical photon behaviors."),
+        d.vizShowL75 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Wave-particle duality"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Probability wave + particle simultaneously.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Square modulus → probability"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "|ψ|² is probability of detection.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Beamsplitter"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "50/50 BS: each photon randomly takes one path.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Mach-Zehnder"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Interferometer. Single photon interferes with itself.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Delayed-choice eraser"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Decide after measurement. Quantum weirdness intensifies.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "No-cloning"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Cannot perfectly copy unknown quantum state.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Bell test"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Entangled photons violate Bell inequality. No local hidden variables.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Bose-Einstein statistics"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Photons are bosons. Many can occupy same state.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Coherent state"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Laser quantum state. Most classical-like.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Squeezed state"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Reduced uncertainty in one quadrature. Enhanced precision.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🏔 Optics in Nature"),
+          h('button', {
+            onClick: function() { upd("vizShowL76", !d.vizShowL76); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL76 ? '#22c55e' : 'rgba(20,184,166,0.15)', color: d.vizShowL76 ? '#fff' : '#5eead4' }
+          }, d.vizShowL76 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 light phenomena in nature."),
+        d.vizShowL76 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Iridescent shells"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Mother-of-pearl. Layered structure.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Peacock feathers"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Photonic crystals. Structural color.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Morpho butterfly"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Microscopic ridges produce vivid blue.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Hummingbird throat"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Thin film interference. Bright at specific angles.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Beetle elytra"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Some show circular polarization. Bizarre.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Diamond shine"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "High refractive index + good cuts.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Opals"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Silica spheres arranged regularly. Diffraction.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Snow sparkle"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Single ice crystals reflect at specific angles.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Forest dapples"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Caustics — concentrated light from leaf gaps.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Aurora green"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Atomic oxygen 100 km up.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🧪 Holography Details"),
+          h('button', {
+            onClick: function() { upd("vizShowL77", !d.vizShowL77); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL77 ? '#fde047' : 'rgba(20,184,166,0.15)', color: d.vizShowL77 ? '#fff' : '#5eead4' }
+          }, d.vizShowL77 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 facts about holograms."),
+        d.vizShowL77 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Gabor 1948"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Invented to improve electron microscopes. Nobel 1971.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Reference + object beam"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Coherent laser splits into two paths. Interference recorded on film.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Reconstruction"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Illuminate hologram with reference beam. Object appears in 3D.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Transmission holograms"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Light passes through. Need same wavelength to reconstruct.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Reflection holograms"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Light bounces back. White light reconstruction possible.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Embossed holograms"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "On credit cards + currency. Surface relief.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Computer-generated holograms"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Synthetic. Used in HUDs + 3D displays.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Digital holography"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "CCD captures. Numerical reconstruction.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Hologram size"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Each tiny piece contains the whole image (lower quality).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "HUD aircraft"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Holographic combiner. Pilot sees data + outside world.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🎯 Optical Tools for Inspection"),
+          h('button', {
+            onClick: function() { upd("vizShowL78", !d.vizShowL78); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL78 ? '#06b6d4' : 'rgba(20,184,166,0.15)', color: d.vizShowL78 ? '#fff' : '#5eead4' }
+          }, d.vizShowL78 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 inspection technologies."),
+        d.vizShowL78 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Microscopy (light)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Standard biology + electronics inspection.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Stereo microscope"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "3D perception. Surgical + electronics work.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Interferometer"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Sub-wavelength surface accuracy.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Profilometer"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Surface roughness measurement.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Ellipsometer"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Thin film thickness via polarization changes.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Coordinate measuring machine"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Touch + optical probes. Industrial.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Optical coherence tomography"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "3D internal scans. Used in ophthalmology, manufacturing.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Schlieren imaging"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Visualizes density gradients in air. Used to see shockwaves.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Shadowgraph"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Simpler than Schlieren. Bullet flight, candle plume.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Particle image velocimetry"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Tracks particles in fluid flow.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "⚡ Light + Electricity"),
+          h('button', {
+            onClick: function() { upd("vizShowL79", !d.vizShowL79); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL79 ? '#fde047' : 'rgba(20,184,166,0.15)', color: d.vizShowL79 ? '#fff' : '#5eead4' }
+          }, d.vizShowL79 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 connections between light + electricity."),
+        d.vizShowL79 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Maxwell's equations"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Show electricity + magnetism unify into electromagnetic waves. Light is one.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photoelectric effect"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Light → electrons. Photovoltaic cells, photodiodes, image sensors.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Electroluminescence"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Voltage → light. LEDs, OLEDs.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Cherenkov radiation"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Charged particle faster than light in medium → emits visible cone of light.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Synchrotron radiation"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Accelerating electrons in magnetic field → broad spectrum.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Bremsstrahlung"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "\"Braking radiation.\" Decelerated electrons emit X-rays.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Faraday effect"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Magnetic field rotates polarization angle. Optical isolators.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Kerr effect"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Electric field changes refractive index. Used in modulators.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Pockels cell"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Voltage-controlled wave plate. Fast shutter for lasers.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photodiodes"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Photons free electron-hole pairs. Current proportional to light.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🔬 High-Resolution Microscopy"),
+          h('button', {
+            onClick: function() { upd("vizShowL80", !d.vizShowL80); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL80 ? '#06b6d4' : 'rgba(20,184,166,0.15)', color: d.vizShowL80 ? '#fff' : '#5eead4' }
+          }, d.vizShowL80 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 modern microscopy techniques."),
+        d.vizShowL80 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Confocal"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Pinhole rejects out-of-focus light. 3D imaging.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Two-photon"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Sample absorbs only at focus. Deep tissue imaging.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Light sheet"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Plane illumination. Fast 3D, low photodamage.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "STED"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Stimulated emission depletion. Below diffraction limit. Nobel 2014.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "PALM/STORM"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Single-molecule localization. Stochastic on/off blinking.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "SIM"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Structured illumination. ~2× resolution increase.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "MINFLUX"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Combines fluorescence + STED. Nanometer precision.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "CryoEM"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Cryo-electron microscopy. Sub-2 Å protein structures. Nobel 2017.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Atomic force microscopy"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Mechanical probe. Atomic resolution.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Scanning tunneling microscopy"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Quantum tunneling between tip + sample. Sees individual atoms. Nobel 1986.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🎈 Atmospheric Optics Field Guide"),
+          h('button', {
+            onClick: function() { upd("vizShowL81", !d.vizShowL81); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL81 ? '#7dd3fc' : 'rgba(20,184,166,0.15)', color: d.vizShowL81 ? '#fff' : '#5eead4' }
+          }, d.vizShowL81 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 atmospheric phenomena cycle."),
+        d.vizShowL81 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "When to see halo"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Cirrus clouds + sun/moon at right altitude. Common in cold weather.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "When to see sundogs"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "22° from sun, near horizon. Ice crystals oriented horizontally.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "When to see rainbow"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Sun behind, raindrops in front, 42° angle from antisolar point.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "When to see green flash"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Clean sea horizon, calm atmosphere, last 1-2 seconds at sunset.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "When to see glory"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Above clouds with sun behind you. Often from aircraft.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "When to see aurora"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "High latitude (50°+ for visibility). Solar storm.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "When to see noctilucent clouds"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Summer twilight, polar latitudes. Highest clouds (80km).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "When to see fog bow"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "White rainbow in fog. Droplets too small for color separation.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "When to see crepuscular rays"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Low sun + scattered clouds + clear air. Most common at sunrise/sunset.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "When to see corona"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Thin cloud near sun/moon. Bright rings of color.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🌊 Optics + Quantum"),
+          h('button', {
+            onClick: function() { upd("vizShowL82", !d.vizShowL82); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL82 ? '#a855f7' : 'rgba(20,184,166,0.15)', color: d.vizShowL82 ? '#fff' : '#5eead4' }
+          }, d.vizShowL82 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 quantum aspects of light."),
+        d.vizShowL82 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photon as quantum"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Energy quantized: E = hf. Cannot have half a photon.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Wave-particle duality"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Both. Different experiments show different aspects.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Heisenberg uncertainty"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Cannot precisely know both photon position + momentum.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Vacuum fluctuations"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Empty space has virtual photons. Casimir effect measures them.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Spontaneous parametric down-conversion"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Pump photon splits into entangled pair.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Squeezed light"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Sub-vacuum noise in one quadrature. LIGO uses.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Anti-bunching"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Single emitters never emit 2 photons simultaneously.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Single-photon interference"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Self-interference in Mach-Zehnder. Photon goes both paths.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Quantum erasure"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Information determines wave/particle behavior. Delayed-choice variants.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Bell test violations"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Confirmed quantum entanglement is real, not hidden variables.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🎬 Famous Optics Movies/Shows"),
+          h('button', {
+            onClick: function() { upd("vizShowL83", !d.vizShowL83); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL83 ? '#a855f7' : 'rgba(20,184,166,0.15)', color: d.vizShowL83 ? '#fff' : '#5eead4' }
+          }, d.vizShowL83 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 films + shows featuring optics."),
+        d.vizShowL83 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Interstellar (2014)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Wormhole + black hole renderings based on real physics. Kip Thorne consulted.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Arrival (2016)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Heptapod logograms designed by linguist + artists. Beautiful imagery.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Gravity (2013)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "ISS + Hubble. Mostly accurate orbital mechanics.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "2001: A Space Odyssey (1968)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Iconic + influential. Mostly hand-rendered space scenes.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Inception (2010)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Optical illusions in architecture. Penrose stairs.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Cosmos (2014 reboot)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Stunning visualizations of stars, galaxies, atoms.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Particle Fever (2013)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "LHC documentary. Includes detector physics.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Visions of Light (1992)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Doc about cinematography. Many optical techniques.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Light Years (2011)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "About William Herschel + telescopes.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Sungazer documentaries"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Multiple. About staring at the sun (dangerous!).")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🌍 Sustainability + Optics"),
+          h('button', {
+            onClick: function() { upd("vizShowL84", !d.vizShowL84); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL84 ? '#22c55e' : 'rgba(20,184,166,0.15)', color: d.vizShowL84 ? '#fff' : '#5eead4' }
+          }, d.vizShowL84 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 ways optics helps + harms environment."),
+        d.vizShowL84 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Solar power"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Optics-driven energy revolution. 25% of new electricity in US 2024.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "LED lighting"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Saves 75-90% vs incandescent. Massive global electricity savings.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Daylighting"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Architectural design. Reduces electric light needs.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Plastic eyeglasses"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "5 billion sold per year. End-of-life recycling difficult.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Glass recycling"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Optical glass cycled in industry. But specialty glass often landfilled.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Electronic waste"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Smartphones + cameras + sensors. Recycling improving.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Light pollution wastes electricity"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Up-lit unshielded fixtures waste 30% of energy.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photocatalysis"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "TiO₂ + UV cleans pollution. Self-cleaning windows.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Optical sorting"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Recycling plants use NIR to sort plastics.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Remote sensing"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Monitors deforestation, ice melt, ocean health.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🧵 Optics in Fabric + Fashion"),
+          h('button', {
+            onClick: function() { upd("vizShowL85", !d.vizShowL85); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL85 ? '#ec4899' : 'rgba(20,184,166,0.15)', color: d.vizShowL85 ? '#fff' : '#5eead4' }
+          }, d.vizShowL85 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 optical effects in clothing."),
+        d.vizShowL85 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Iridescent fabric"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Layered films or fibers. Color shifts with angle.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Glow in dark"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Phosphorescent yarns. Absorbs UV during day.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Retroreflective tape"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Glass beads or microprism. Returns light to source. Safety gear.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Spectral fibers"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Photonic crystal fibers can produce true non-pigment color.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "UV-blocking textiles"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Special weave + coatings. UPF rating like SPF.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Polarizing fashion"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Reflective fashion uses polarization tricks.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Color-changing fabrics"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Thermochromic + photochromic. Hypercolor 1990s.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Microfiber denier"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Smaller fibers = silkier shine.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Sequins + glitter"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Tiny mirrors + diffraction surfaces.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Anti-reflection in screens"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Matte LCD coatings work like fabric texture.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🍽 Optics + Food"),
+          h('button', {
+            onClick: function() { upd("vizShowL86", !d.vizShowL86); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL86 ? '#fbbf24' : 'rgba(20,184,166,0.15)', color: d.vizShowL86 ? '#fff' : '#5eead4' }
+          }, d.vizShowL86 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 ways food + light interact."),
+        d.vizShowL86 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Color = freshness"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Visual cue evolved for ripeness, decay detection.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Caramelization"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Maillard reaction. Browning = aromatic compounds.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photodegradation"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Light destroys vitamins (riboflavin, A, K). Why milk in cartons.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photosynthesis"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Solar energy + CO₂ + H₂O = sugar + O₂. Foundation of food chain.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "UV pasteurization"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "254nm UV-C kills bacteria. Used in milk, water, surfaces.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Sun-dried foods"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Traditional preservation. Loses some vitamins.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Optical sorting"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Real-time camera + AI sorts apples, blueberries, grain.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Bioluminescent food"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Some fungi glow. Mostly not edible.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Food photography"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Specialized lighting + props. Makes products look better.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Polarized inspection"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Detects stress in tempered glass for ovens.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🏈 Sports + Optics"),
+          h('button', {
+            onClick: function() { upd("vizShowL87", !d.vizShowL87); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL87 ? '#dc2626' : 'rgba(20,184,166,0.15)', color: d.vizShowL87 ? '#fff' : '#5eead4' }
+          }, d.vizShowL87 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 ways sports use optics."),
+        d.vizShowL87 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Hawk-Eye"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Multi-camera ball tracking. Tennis, cricket, soccer.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "VAR"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Video Assistant Referee. Soccer offsides.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Goal-line technology"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Cameras + magnetic chips. Resolves disputes instantly.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photo finish"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "High-speed camera at finish line. 1000+ fps.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Stadium lighting"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "20,000+ lux for HD broadcasting. LED arrays.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Reflective track lines"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Helps athletes + cameras follow.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Telescope-style mountaineering"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Long shadows reveal terrain detail at low angles.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Yellow tennis ball"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Optimized for TV visibility, not original.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Skateboard tricks tracked"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Multi-camera systems for X Games scoring.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Polarized golf glasses"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Reduce glare from grass + lake reflections.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "⚛ Famous Optics Experiments"),
+          h('button', {
+            onClick: function() { upd("vizShowL88", !d.vizShowL88); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL88 ? '#fde047' : 'rgba(20,184,166,0.15)', color: d.vizShowL88 ? '#fff' : '#5eead4' }
+          }, d.vizShowL88 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 more landmark experiments."),
+        d.vizShowL88 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Eratosthenes 240 BCE"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Used sun angle in two cities to measure Earth.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Snell 1621"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Measured refraction. Worked out the law empirically.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Newton's prism 1666"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Showed white light contains all colors.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Hooke + Huygens 1672"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Argued for wave theory of light.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Young 1801"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Double-slit proves wave nature.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Foucault pendulum 1851"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Demonstrates Earth's rotation. Adjacent to optics.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Bell test 1972+"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Quantum entanglement confirmed. Nobel 2022.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Hanbury Brown-Twiss 1956"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Intensity correlations. Measured star angular sizes.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Pound-Rebka 1959"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Gravitational redshift in lab. Used Mössbauer effect.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "LIGO 2015"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Detected gravitational waves. Sub-attometer interferometer precision.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🌌 Telescopes by Wavelength"),
+          h('button', {
+            onClick: function() { upd("vizShowL89", !d.vizShowL89); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL89 ? '#7dd3fc' : 'rgba(20,184,166,0.15)', color: d.vizShowL89 ? '#fff' : '#5eead4' }
+          }, d.vizShowL89 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Different telescopes for different wavelengths."),
+        d.vizShowL89 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Radio: Arecibo, FAST"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "305m (collapsed) + 500m. Pulsars, cosmology.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Microwave: Planck, COBE"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Cosmic Microwave Background.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "IR: JWST, Spitzer"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Cool objects, dust, early galaxies.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Visible: Hubble, Keck, VLT"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Galaxies, stars, planets.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "UV: Hubble, GALEX"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Hot stars, quasars.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "X-ray: Chandra, XMM"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Black hole accretion, neutron stars.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Gamma: Fermi, Swift"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Most energetic events. GRBs, blazars.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Cosmic ray: Pierre Auger"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Highest-energy particles.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Neutrino: IceCube"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Frozen detector at South Pole.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Gravitational wave: LIGO, Virgo"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Black hole + neutron star mergers.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🎨 Color Theory Reference"),
+          h('button', {
+            onClick: function() { upd("vizShowL90", !d.vizShowL90); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL90 ? '#a855f7' : 'rgba(20,184,166,0.15)', color: d.vizShowL90 ? '#fff' : '#5eead4' }
+          }, d.vizShowL90 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 color theory concepts."),
+        d.vizShowL90 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Color wheel"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Newton 1666 arranged hues in circle. Foundation of color theory.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Primary colors"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Cannot be made from others. Depends on system (RGB vs RYB vs CMY).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Secondary colors"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Mix two primaries: orange, green, purple.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Tertiary colors"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Mix primary + secondary. Yellow-orange, etc.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Complementary"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Opposite on wheel. High contrast pairs.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Analogous"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Adjacent on wheel. Harmonious schemes.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Triadic"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Three equidistant. Balanced.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Warm vs cool"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Red/orange/yellow vs blue/green/purple. Psychological effect.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Saturation"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Purity of color. Gray = 0%, pure pigment = 100%.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Value/lightness"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "How bright. Black to white scale independent of hue.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🎯 Modern Optics Trends 2024+"),
+          h('button', {
+            onClick: function() { upd("vizShowL91", !d.vizShowL91); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL91 ? '#06b6d4' : 'rgba(20,184,166,0.15)', color: d.vizShowL91 ? '#fff' : '#5eead4' }
+          }, d.vizShowL91 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 emerging areas."),
+        d.vizShowL91 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Metalenses"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Flat lenses using nanostructures. Smartphones eventual replacement.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Quantum optics chips"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Integrated photonic quantum computing.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Computational imaging"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Software replaces some optical components.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Optical AI accelerators"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Use light for matrix multiplication. Lower power than electronic.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Optical clocks for spacetime"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "NIST + JILA pushing 10⁻¹⁹ precision.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Adaptive optics 2.0"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Hyperfine pixel correction, faster, larger arrays.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Display tech"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "MicroLED, OLED, mini-LED. Brighter, higher contrast.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "LiDAR for autonomy"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Self-driving cars. Solid-state replacing spinning units.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Hyperspectral imaging"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Drones + satellites with 100+ bands. Agriculture, defense.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photonic neural networks"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Optical pattern matching. Recently demonstrated.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🎁 Optical Gadgets"),
+          h('button', {
+            onClick: function() { upd("vizShowL92", !d.vizShowL92); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL92 ? '#fbbf24' : 'rgba(20,184,166,0.15)', color: d.vizShowL92 ? '#fff' : '#5eead4' }
+          }, d.vizShowL92 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 fun optical devices."),
+        d.vizShowL92 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Kaleidoscope"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Mirrors + colored objects. Inventor: David Brewster 1816.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Camera obscura"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Pinhole projector. Ancient. Used by artists.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Stereoscope"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "3D viewer. Popular in Victorian era.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Magic lantern"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Early slide projector. 17th century.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Pepper's ghost"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Reflection illusion. Used in theater + theme parks.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Light meter"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Measures exposure. Photographers + filmmakers.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Periscope"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Submarines, tanks, photography.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Aurora glasses"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Cheap diffraction grating glasses. Concert use.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Light-up sneakers"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "LEDs in soles. Battery + accelerometer.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Glow sticks"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Chemiluminescence. Two chemicals mix when bent.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🌍 Global Optics Industry Hubs"),
+          h('button', {
+            onClick: function() { upd("vizShowL93", !d.vizShowL93); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL93 ? '#06b6d4' : 'rgba(20,184,166,0.15)', color: d.vizShowL93 ? '#fff' : '#5eead4' }
+          }, d.vizShowL93 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 cities where optics is huge."),
+        d.vizShowL93 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Jena, Germany"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Carl Zeiss + Schott. Historic + still active.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Tucson, Arizona"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "University of Arizona + Steward Observatory. Mirror manufacturing.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Rochester, NY"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Kodak history. Strong optics + photonics.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Tokyo, Japan"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Nikon, Canon, Olympus, Sony.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Eindhoven, Netherlands"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "ASML (EUV lithography).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Hangzhou + Shenzhen, China"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Massive electronics + optics manufacturing.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Suwon, S Korea"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Samsung electronics + displays.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Stuttgart, Germany"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Trumpf laser. Industrial optics.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Saint-Brieuc, France"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Photonics innovation.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Geneva, Switzerland"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "CERN + LHC. Particle physics + optics.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🎬 Optics in Sci-Fi (Realistic)"),
+          h('button', {
+            onClick: function() { upd("vizShowL94", !d.vizShowL94); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL94 ? '#a855f7' : 'rgba(20,184,166,0.15)', color: d.vizShowL94 ? '#fff' : '#5eead4' }
+          }, d.vizShowL94 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 sci-fi tech rooted in real optics."),
+        d.vizShowL94 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Tractor beams (limited)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Optical tweezers trap small objects.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Force fields"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Plasma can be magnetically confined.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Cloaking devices"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Metamaterial bending light. Limited bandwidth.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Holographic communication"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Volumetric displays exist (small).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Lightsabers"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Pure fiction — plasma needs containment.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Stunner guns"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Real Laser-Induced Plasma Effect (LIPE) used by some military.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Computer screens replacing newspapers"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Already happened (e-ink, OLED).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Self-tinting windows"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Electrochromic glass. Real.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Heads-up displays"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "In F-22 + many cars now.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Optical cloaking suits"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Limited research prototypes. Not yet \"Predator level.\"")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🌟 Famous Astronomical Optics"),
+          h('button', {
+            onClick: function() { upd("vizShowL95", !d.vizShowL95); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL95 ? '#fde047' : 'rgba(20,184,166,0.15)', color: d.vizShowL95 ? '#fff' : '#5eead4' }
+          }, d.vizShowL95 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 famous astronomy observations."),
+        d.vizShowL95 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Galileo's telescope 1609"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Discovers Jupiter's moons. Reshapes cosmology.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Hubble's nebula photos 1923"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Proves Andromeda is a separate galaxy.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Edwin Hubble redshift law"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Universe is expanding. 1929.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Penzias & Wilson CMB 1965"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Discovered Big Bang afterglow accidentally.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Mt. Wilson 100-inch"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "World's largest 1917-1948. Hubble used it.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Mauna Kea 4200m"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Major optical telescope site since 1968.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "VLA radio 1980"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "New Mexico. 27 antennas. SETI + black hole studies.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Hubble Deep Field 1995"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Tiny patch reveals 3000 galaxies. Deep + early universe.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "LIGO 2015"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "First detection of gravitational waves.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "EHT M87* 2019"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "First direct image of a black hole.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🌈 Optical Illusions Gallery"),
+          h('button', {
+            onClick: function() { upd("vizShowL96", !d.vizShowL96); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL96 ? '#dc2626' : 'rgba(20,184,166,0.15)', color: d.vizShowL96 ? '#fff' : '#5eead4' }
+          }, d.vizShowL96 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 famous optical illusions."),
+        d.vizShowL96 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Hermann grid"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Dark spots at white intersections. Lateral inhibition.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Müller-Lyer"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Same-length lines look different with arrow vs Y caps.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Ponzo"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Receding lines make objects look bigger. Used by photographers.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Necker cube"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Wireframe cube flips orientation. Bistable perception.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Penrose triangle"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "\"Impossible triangle.\" Can't exist in 3D.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Rotating snakes"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Akiyoshi Kitaoka. Static image appears to spin.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Café wall"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Parallel lines appear curved due to staggered tiles.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "McGurk effect"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Auditory + visual conflict. Light isn't the only sense fooled.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Checker shadow"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Adelson 1995. Two same-shade squares look very different.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Old/young woman"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Boring 1930. Same drawing can be seen two ways.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🎓 Optics Tools Vocabulary"),
+          h('button', {
+            onClick: function() { upd("vizShowL97", !d.vizShowL97); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL97 ? '#06b6d4' : 'rgba(20,184,166,0.15)', color: d.vizShowL97 ? '#fff' : '#5eead4' }
+          }, d.vizShowL97 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 essential vocab words."),
+        d.vizShowL97 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Aperture"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Opening that limits light passing through. Determines f-number + depth of field.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Focal point"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Point where parallel rays converge after passing through lens.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Focal length"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Distance from lens to focal point. Shorter = wider angle, more magnification.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Object"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "The thing you're imaging.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Image"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "The optical projection of the object.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Real image"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Light actually converges there. Can be projected on a screen.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Virtual image"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Light appears to come from there but doesn't actually converge.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Principal axis"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Reference axis through center of lens + focal points.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Optical axis"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Synonym for principal axis. The line through center of system.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Vertex"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Where the optical axis crosses the lens/mirror surface.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🔭 Beginner Observing Targets"),
+          h('button', {
+            onClick: function() { upd("vizShowL98", !d.vizShowL98); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL98 ? '#a855f7' : 'rgba(20,184,166,0.15)', color: d.vizShowL98 ? '#fff' : '#5eead4' }
+          }, d.vizShowL98 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 things to observe with cheap optics."),
+        d.vizShowL98 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "The Moon"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Even binoculars show craters + maria.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Jupiter + 4 Galilean moons"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Binoculars or any telescope. Tracking them is fun.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Saturn rings"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Small scope (60mm+). Major wow moment for first-time viewers.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Venus phases"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Especially around inferior conjunction. Like a tiny moon.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Pleiades"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Naked eye + binoculars best. Star cluster.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Orion Nebula (M42)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Visible in finder; spectacular in any scope.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Andromeda Galaxy (M31)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Visible naked-eye dark sky. Closest large galaxy.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Albireo (double star)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Beautiful color contrast — gold + blue.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Mizar + Alcor"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Naked-eye double in Big Dipper handle. Roman vision test.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "ISS"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Naked-eye flyby. Apps tell you when.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🧊 Ice Optics"),
+          h('button', {
+            onClick: function() { upd("vizShowL99", !d.vizShowL99); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL99 ? '#7dd3fc' : 'rgba(20,184,166,0.15)', color: d.vizShowL99 ? '#fff' : '#5eead4' }
+          }, d.vizShowL99 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 optical phenomena from ice."),
+        d.vizShowL99 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "22° halo"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Hexagonal ice crystals.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "46° halo"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Less common; refraction through 90° prism path.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Sundogs"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Horizontally oriented hex columns. ~22° from sun.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Sun pillars"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Vertical column. Flat plate crystals.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Circumzenithal arc"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "\"Smile in sky.\" Upside-down rainbow.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Light pillars"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Above city lights. Same plate-crystal mechanism.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Diamond dust"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Tiny ice crystals create haze. Cold + still air.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Snow crunch"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Bonus: ice contains tiny air pockets. Light scatters → white snow.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Hoar frost"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Bright crystals on cold surfaces. Sparkle from light scattering.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Frozen lake transparency"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "New clear ice can be remarkably transparent.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🎬 Final Reflection"),
+          h('button', {
+            onClick: function() { upd("vizShowL100", !d.vizShowL100); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL100 ? '#fbbf24' : 'rgba(20,184,166,0.15)', color: d.vizShowL100 ? '#fff' : '#5eead4' }
+          }, d.vizShowL100 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Wrapping up the Visual Optics Lab."),
+        d.vizShowL100 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Spectrum of approaches"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "From visual illustrations to mathematical rigor — optics has it all.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Geometric vs wave"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Choose your level. Both correct, different scales.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Quantum optics"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "The deepest, most counterintuitive layer. Photons + entanglement.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Applications everywhere"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "From your eyeglasses to JWST to silicon chips.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Career options"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Engineer, scientist, educator, designer — all need optics.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Free tools"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Stellarium, Python's optics packages, Khan Academy, MIT OCW.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Maine resources"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Cape Elizabeth Lighthouse museum, Bowdoin/UMaine/Colby, Acadia Night Sky Festival.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Hands-on activities"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Buy a prism. Build a pinhole camera. Try polarized films.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Stay curious"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "New optics discoveries happen weekly. Subscribe to OSA + Physics Today.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Thank you"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Built in Maine, USA. Educational use free. Share + keep learning.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🎬 Lighting in Cinema"),
+          h('button', {
+            onClick: function() { upd("vizShowL101", !d.vizShowL101); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL101 ? '#dc2626' : 'rgba(20,184,166,0.15)', color: d.vizShowL101 ? '#fff' : '#5eead4' }
+          }, d.vizShowL101 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 cinematic lighting setups."),
+        d.vizShowL101 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Three-point lighting"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Key + fill + back. Standard interview setup.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Rim light"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "From behind. Separates subject from background.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Practical light"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Visible in shot. Lamps, candles inside the scene.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Hard vs soft"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Hard: small source, sharp shadows. Soft: large source, gentle.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Side lighting"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Dramatic. Half face in shadow.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Backlit silhouette"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Subject black against bright background. Iconic.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "High key vs low key"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "High: bright, flat (sitcom). Low: dark, shadowy (noir).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Color temperature mixing"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Warm interior + cool exterior. Creates mood.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Motivated lighting"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Looks like it comes from a visible source.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Ratios"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Key-to-fill ratio: 2:1 natural, 4:1 dramatic, 8:1 noir.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🎓 Famous Optical Discoveries"),
+          h('button', {
+            onClick: function() { upd("vizShowL102", !d.vizShowL102); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL102 ? '#a855f7' : 'rgba(20,184,166,0.15)', color: d.vizShowL102 ? '#fff' : '#5eead4' }
+          }, d.vizShowL102 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 milestones."),
+        d.vizShowL102 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Speed of light measurable"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Rømer 1676. Used Jupiter's moons.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Wave nature confirmed"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Young 1801. Double-slit.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Polarization discovered"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Malus 1808. Reflected light from window.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Brewster's angle"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "1815. p-polarization is 100% transmitted at this angle.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photoelectric effect"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Einstein 1905. Showed light is quantized.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Compton scattering"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "1923. Photons have momentum.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "de Broglie waves"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "1924. Particles can also be waves.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "LASER invented"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "1960 by Maiman. Ruby + flash lamp.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Fiber optics breakthrough"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "1970 Corning low-loss fiber. Made internet possible.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Gravitational waves seen"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "2015 LIGO. Optical interferometry detects spacetime ripples.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "⚡ Light + Energy Forms"),
+          h('button', {
+            onClick: function() { upd("vizShowL103", !d.vizShowL103); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL103 ? '#fde047' : 'rgba(20,184,166,0.15)', color: d.vizShowL103 ? '#fff' : '#5eead4' }
+          }, d.vizShowL103 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 ways light interacts with energy."),
+        d.vizShowL103 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photon absorption"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Photon energy goes into matter as heat, chemical change, or electrical.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photoluminescence"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Absorbed light re-emitted as different wavelength (lower energy).")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photochemistry"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Photons drive chemical reactions. Plants, vision, photoresist.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photothermal effect"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Absorbed light becomes heat. Sunburn, asphalt warming.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photovoltaic effect"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Light directly generates electricity. Solar cells.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Cherenkov radiation"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Particle exceeds c/n → emits light. Blue glow in reactors.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Synchrotron radiation"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Magnetic curving of relativistic electrons → X-ray spectrum.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Free electron laser"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Driven by relativistic electron beam. Tunable hard X-rays.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photodynamic therapy"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Light + photosensitizer + oxygen → cell death. Cancer treatment.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photovoltaic effect (atomic)"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Photons promote electrons across bandgap in semiconductors.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🌐 Cloud Computing + Optics"),
+          h('button', {
+            onClick: function() { upd("vizShowL104", !d.vizShowL104); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL104 ? '#06b6d4' : 'rgba(20,184,166,0.15)', color: d.vizShowL104 ? '#fff' : '#5eead4' }
+          }, d.vizShowL104 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 ways optics powers the internet."),
+        d.vizShowL104 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Data centers"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Increasingly use optical interconnects vs copper. Less heat, more bandwidth.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "DWDM in fiber"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Dense Wavelength Division Multiplexing. 80+ channels per fiber.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Submarine cables"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "~400 cables carry 99% of intercontinental data.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "EDFAs"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Erbium-doped fiber amplifiers. Pump at 980 or 1480nm. Boost without converting to electrons.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "ROADM"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Reconfigurable Optical Add-Drop Multiplexer. Routes specific wavelengths.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Silicon photonics"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Integrated optics on silicon chips. Future of computing.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photonic AI accelerators"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Optical matrix multiplication. Lower power than electronic.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Optical clock distribution"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Synchronize global computing via optical clocks.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Free-space optical"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Air-to-air laser links. Used for inter-satellite + emergency comms.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Visible Light Communication"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "LiFi. Modulate LED rooms for wireless data.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🎓 Optics + Engineering"),
+          h('button', {
+            onClick: function() { upd("vizShowL105", !d.vizShowL105); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL105 ? '#a855f7' : 'rgba(20,184,166,0.15)', color: d.vizShowL105 ? '#fff' : '#5eead4' }
+          }, d.vizShowL105 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 optical engineering specialties."),
+        d.vizShowL105 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Lens designer"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Camera, telescope, microscope lenses. Software: Zemax, CodeV.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Optical fiber engineer"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Telecom. Splicing, attenuation, dispersion.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Laser engineer"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Industrial, medical, defense, scientific.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Display engineer"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "LCD, OLED, mini-LED, MicroLED.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Camera engineer"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Sensors + optics + image processing.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Optical coatings specialist"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "AR coatings, mirrors, filters. Vacuum deposition.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Astronomical optics"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Telescope mirrors. Mountain-top facilities.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photonics chip designer"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Integrated optics. Hot growing field.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Image processing engineer"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Algorithms. Computer vision. Often pairs with ML.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Optometric tech"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Vision testing equipment + fitting. Required for clinics.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🌍 Maine Light Pollution"),
+          h('button', {
+            onClick: function() { upd("vizShowL106", !d.vizShowL106); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL106 ? '#a855f7' : 'rgba(20,184,166,0.15)', color: d.vizShowL106 ? '#fff' : '#5eead4' }
+          }, d.vizShowL106 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 facts about Maine sky darkness."),
+        d.vizShowL106 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Acadia NP"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "International Dark Sky Park since 2014.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Mt. Katahdin"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Bortle 1-2 zone — pristine. Few people see darker.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Allagash Wilderness Waterway"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Federally designated dark sky region.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Cape Elizabeth"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Suburban sky — Bortle 5.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Portland city center"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Inner-city Bortle 8-9. Hard to see anything.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Vinalhaven Island"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Excellent dark sky. Boat trip to get there.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Aurora visibility"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Maine is far enough north to see auroras occasionally. Best in geomagnetic storms.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Lighting ordinances"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Some Maine towns adopting Dark Sky Friendly lighting.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Tourism"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Astrotourism growing. Maine guides + tours.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Conservation"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Maine Audubon + ASU light pollution advocacy.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🛡 Eye Safety + Light"),
+          h('button', {
+            onClick: function() { upd("vizShowL107", !d.vizShowL107); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL107 ? '#dc2626' : 'rgba(20,184,166,0.15)', color: d.vizShowL107 ? '#fff' : '#5eead4' }
+          }, d.vizShowL107 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 ways to protect eyes from light."),
+        d.vizShowL107 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Solar eclipse glasses"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "ISO 12312-2 certified. Block 99.999% of light. Throw away if scratched.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Welding shields"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Auto-darkening at arc start. Shade 10-13.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Laser safety goggles"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Specific wavelength absorption. OD rating.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "UV-blocking sunglasses"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "99-100% UV-A + UV-B. Critical for cataract + macular health.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Blue light filters"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Controversial. May reduce digital eye strain. Limited evidence.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Snow blindness prevention"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "UV reflection from snow. Sunglasses essential at altitude/Arctic.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Photokeratitis"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "\"Sun burn\" of cornea. Painful but heals in 48 hours usually.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Laser pointer hazard"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Even legal 5mW pointers cause permanent retinal damage if aimed at eye.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Sun-staring myth"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "\"Trick your retina\" trends are dangerous. Don't stare at sun.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Eye exam frequency"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Every 1-2 years. Detect glaucoma, retinal disease early.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(15,23,42,0.5)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+          h('span', { style: { fontWeight: 800, fontSize: 13, color: '#5eead4' } }, "🔬 Spectrograph Types"),
+          h('button', {
+            onClick: function() { upd("vizShowL108", !d.vizShowL108); },
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer', background: d.vizShowL108 ? '#06b6d4' : 'rgba(20,184,166,0.15)', color: d.vizShowL108 ? '#fff' : '#5eead4' }
+          }, d.vizShowL108 ? 'Hide' : 'Open')
+        ),
+        h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 ways to disperse light."),
+        d.vizShowL108 && h('div', { style: { marginTop: 8 } },
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Prism spectrograph"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Refraction. Variable dispersion across spectrum.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Grating spectrograph"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Diffraction. Linear dispersion.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Echelle grating"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "High-order, cross-dispersed. Compact + high resolution.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Fourier transform spectroscopy"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Michelson interferometer + FT. Wide spectrum, low cost.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Acousto-optic tunable filter"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Sound waves diffract light. Tunable.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Liquid crystal tunable filter"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Voltage selects wavelength. Slower but no moving parts.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Holographic gratings"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Made by interference of two laser beams. High quality.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Czerny-Turner"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Compact grating spectrograph. Modular.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Etalon"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Two parallel surfaces. Very high resolution, narrow range.")
+                        ),
+                        h('div', { style: { marginBottom: 8 } },
+                          h('div', { style: { fontWeight: 700, color: '#fbbf24', fontSize: 11, marginBottom: 2 } }, "Lyot filter"),
+                          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, "Birefringent stack. Narrow bandpass for solar imaging.")
+                        )
+                      )
+        )
+      ),
+      h('div', { style: { marginTop: 16, padding: 10, fontSize: 11, color: '#cbd5e1', background: 'rgba(15,23,42,0.7)', borderRadius: 8, border: '1px solid rgba(20,184,166,0.25)' } },
+        '🧪 More visualizations coming. Each tool is built to make abstract optics concepts visceral.'
+      )
+    );
+  }
   // Expose pure physics functions for reuse + testing
   window.AlloOptics = {
     thinLens: thinLens, snell: snell, criticalAngle: criticalAngle,
