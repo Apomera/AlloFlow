@@ -21,7 +21,28 @@ const UiLanguageSelector = () => {
   const { t, currentUiLanguage, setUiLanguage, isTranslating, progress, statusMessage, regenerateLanguage, exportLanguagePack, importLanguagePack } = useContext(LanguageContext);
   const [manualInput, setManualInput] = useState("");
   const fileInputRef = useRef(null);
-  const commonLanguages = ["English", "Spanish", "French", "Arabic", "Chinese (Mandarin)", "Vietnamese", "Russian", "Portuguese"];
+  // Common languages + regional variants. Variants in parentheses are passed
+  // through to the translation model so it picks the right vocabulary + register
+  // (e.g. ustedes vs vosotros, simplified vs traditional characters).
+  const commonLanguages = [
+    "English",
+    "Spanish (Latin America)",
+    "Spanish (Castilian)",
+    "French",
+    "French (Canadian)",
+    "Arabic",
+    "Chinese (Simplified)",
+    "Chinese (Traditional)",
+    "Vietnamese",
+    "Russian",
+    "Portuguese (Brazil)",
+    "Portuguese (Portugal)",
+    "Somali",
+    "Tagalog",
+    "Korean",
+    "Japanese",
+    "Haitian Creole"
+  ];
   const handleChange = (e) => {
     const val = e.target.value;
     if (val !== "Custom") {

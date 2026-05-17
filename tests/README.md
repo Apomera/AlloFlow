@@ -11,6 +11,7 @@ This directory holds **two complementary suites**:
 tests/
   # — Unit / clinical-logic tests (Node + vitest) —
   clinical_tests.js              # 111 tests across 3 tiers (Tier 1/2/3)
+  translation_pipeline.test.js   # 22 tests — DNT masking + glossary preamble + round-trip
   *.test.js                      # anchor_charts, glossary, math_helpers, etc.
   extracted_logic/
     clinical_logic.js            # Pure functions copied from source modules
@@ -41,7 +42,8 @@ tests/
 
 ### Unit tests (clinical logic)
 ```bash
-node tests/clinical_tests.js     # standalone (no deps)
+node tests/clinical_tests.js          # standalone (no deps)
+node tests/translation_pipeline.test.js  # standalone (no deps) — DNT + glossary
 npm test                          # all vitest tests
 ```
 

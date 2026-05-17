@@ -997,8 +997,134 @@ const getDifferentiationGrades = (targetGrade, range) => {
         .sort((a, b) => a - b)
         .map(idx => GRADE_ORDER[idx]);
 };
+// ─── Translation glossary (loaded once per session) ───
+// Single source of truth for do-not-translate terms + domain terminology.
+// Hot-fetched from GitHub then cached; falls back to an inline minimal list
+// if the fetch fails (so translation still works offline / pre-deploy).
+let _TRANSLATION_GLOSSARY = null;
+const _MIN_DNT_FALLBACK = [
+  'AlloFlow', 'AlloBot', 'AlloHaven', 'StoryForge', 'LitLab', 'PoetTree',
+  'SEL Hub', 'STEM Lab', 'UDL', 'SEL', 'RTI', 'IEP', 'FERPA',
+  'Tier 1', 'Tier 2', 'Tier 3', 'Common Core'
+];
+const _DNT_REGEX_PATTERNS = [
+  /\{[a-zA-Z_][a-zA-Z0-9_]*\}/g,                     // {placeholders}
+  /\d+(\.\d+)?(MB|KB|GB|cm|mm|km|kg|°C|°F|fps|Hz|ms|nm|μm|AU|ly)\b/g,  // 5MB, 24°C
+  /v\d+(\.\d+)?/g,                                   // v1, v2.3
+  /#[A-Fa-f0-9]{3,8}\b/g,                            // #fff, #f97316
+  /https?:\/\/[^\s\)\]]+/g                           // URLs
+];
+async function _loadTranslationGlossary() {
+  if (_TRANSLATION_GLOSSARY) return _TRANSLATION_GLOSSARY;
+  try {
+    const cached = typeof localStorage !== 'undefined' && localStorage.getItem('alloflow_translation_glossary_v1');
+    if (cached) {
+      _TRANSLATION_GLOSSARY = JSON.parse(cached);
+      return _TRANSLATION_GLOSSARY;
+    }
+  } catch (_) {}
+  try {
+    const resp = await fetch('https://raw.githubusercontent.com/Apomera/AlloFlow/main/translation_glossary.js');
+    if (resp.ok) {
+      const text = (await resp.text()).replace(/^\s*\/\/.*$/gm, '').trim();
+      _TRANSLATION_GLOSSARY = JSON.parse(text);
+      try { localStorage.setItem('alloflow_translation_glossary_v1', JSON.stringify(_TRANSLATION_GLOSSARY)); } catch (_) {}
+      return _TRANSLATION_GLOSSARY;
+    }
+  } catch (e) { warnLog('Translation glossary fetch failed; using minimal fallback:', e?.message); }
+  // Fallback: minimal inline glossary
+  _TRANSLATION_GLOSSARY = { version: 0, DO_NOT_TRANSLATE: _MIN_DNT_FALLBACK, DOMAIN_GLOSSARY: {} };
+  return _TRANSLATION_GLOSSARY;
+}
+// Escape a string for safe RegExp use
+function _escapeRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+// Wrap DNT terms with ‹dnt:N› tokens. Returns { masked, tokens } so we can
+// restore them verbatim after the model returns. The model is also told to
+// preserve any ‹dnt:N› tokens it sees, as a belt+suspenders measure.
+function _maskDNT(strings, glossary) {
+  const tokens = [];
+  const dntTerms = (glossary && glossary.DO_NOT_TRANSLATE) || _MIN_DNT_FALLBACK;
+  // Sort by length DESC so longer phrases match before shorter substrings
+  const sortedTerms = dntTerms.slice().sort((a, b) => b.length - a.length);
+  function maskOne(str) {
+    if (typeof str !== 'string') return str;
+    let masked = str;
+    // Pattern-based masking first (placeholders, units, URLs, hex)
+    _DNT_REGEX_PATTERNS.forEach((re) => {
+      masked = masked.replace(re, (match) => {
+        const id = tokens.length;
+        tokens.push(match);
+        return '‹dnt:' + id + '›';
+      });
+    });
+    // Term-based masking — word boundary on letters, case-insensitive
+    sortedTerms.forEach((term) => {
+      const re = new RegExp('\\b' + _escapeRe(term) + '\\b', 'gi');
+      masked = masked.replace(re, (match) => {
+        const id = tokens.length;
+        tokens.push(match);
+        return '‹dnt:' + id + '›';
+      });
+    });
+    return masked;
+  }
+  const result = {};
+  for (const k in strings) result[k] = maskOne(strings[k]);
+  return { masked: result, tokens };
+}
+function _unmaskDNT(strings, tokens) {
+  function unmaskOne(str) {
+    if (typeof str !== 'string') return str;
+    return str.replace(/‹dnt:(\d+)›/g, (m, id) => {
+      const tok = tokens[parseInt(id, 10)];
+      return tok !== undefined ? tok : m;
+    });
+  }
+  const result = {};
+  for (const k in strings) result[k] = unmaskOne(strings[k]);
+  return result;
+}
+// Build a glossary preamble of K-12 special-ed terminology. The model uses
+// this to keep terms consistent across chunks. Each chunk sees the same
+// preamble so chunk-3's "scaffold" matches chunk-47's "scaffold."
+function _buildGlossaryPreamble(glossary, targetLanguage) {
+  if (!glossary || !glossary.DOMAIN_GLOSSARY) return '';
+  const entries = [];
+  const groups = glossary.DOMAIN_GLOSSARY;
+  for (const groupKey in groups) {
+    for (const term in groups[groupKey]) {
+      entries.push('  - "' + term + '" — ' + groups[groupKey][term]);
+    }
+  }
+  if (entries.length === 0) return '';
+  return [
+    'DOMAIN GLOSSARY — translate these English terms consistently. Use the standard ' + targetLanguage + ' equivalent for K-12 special education. If a term is a proper noun, brand, or acronym, keep it verbatim.',
+    entries.join('\n'),
+    ''
+  ].join('\n');
+}
 const translateChunk = async (chunkData, targetLanguage, apiKey) => {
-  const prompt = `You are a UI Translator. Translate the values of this JSON object into ${targetLanguage}. Keep keys identical. Return ONLY valid JSON.\n\n${JSON.stringify(chunkData)}`;
+  const glossary = await _loadTranslationGlossary();
+  const { masked, tokens } = _maskDNT(chunkData, glossary);
+  const glossaryPreamble = _buildGlossaryPreamble(glossary, targetLanguage);
+  const prompt = [
+    'You are a UI translator for AlloFlow, a K-12 special-education web app that supports Universal Design for Learning (UDL), social-emotional learning (SEL), Response to Intervention (RTI), and Individualized Education Programs (IEP). Your audience is teachers, school psychologists, and students.',
+    '',
+    'TRANSLATE the JSON values into ' + targetLanguage + '. Use the locale\'s standard special-education and pedagogical terminology. Keep a clear, professional, learner-friendly tone — short imperatives for buttons (Save → Guardar / 保存), full sentences for help text.',
+    '',
+    'RULES — these are strict, the output will be auto-validated:',
+    '  1. Keep all JSON keys IDENTICAL. Do not translate keys.',
+    '  2. Preserve every ‹dnt:N› token EXACTLY as you see it. Do not translate, reorder, or modify these tokens. They mark do-not-translate values that will be restored after translation.',
+    '  3. Preserve all markdown syntax: **bold**, ### headings, * bullets, • bullets, line breaks (\\n), numbered lists, code in `backticks`. Translate the text inside the markdown, not the syntax itself.',
+    '  4. Preserve all parameter placeholders like {name}, {count}, {grade} EXACTLY. Do not translate the word inside the braces, do not add or remove braces.',
+    '  5. Preserve units (cm, °C, MB, fps) and version tags (v1, v2.3) and brand names verbatim.',
+    '  6. For UI controls (buttons, labels, menu items), prefer the shortest natural ' + targetLanguage + ' equivalent. Translated text should not be more than ~30% longer than the source.',
+    '  7. Return ONLY valid JSON. No prose, no markdown fences, no leading or trailing whitespace, no commentary.',
+    '',
+    glossaryPreamble,
+    'INPUT JSON:',
+    JSON.stringify(masked)
+  ].filter(Boolean).join('\n');
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.default}:generateContent${apiKey ? `?key=${apiKey}` : ''}`;
   const callApi = async (textInput) => {
       try {
@@ -1032,7 +1158,9 @@ const translateChunk = async (chunkData, targetLanguage, apiKey) => {
         const repairedText = await callApi(repairPrompt);
         parsed = safeJsonParse(repairedText);
     }
-    return parsed;
+    if (!parsed) return null;
+    // Restore DNT tokens to their original verbatim values
+    return _unmaskDNT(parsed, tokens);
   } catch (e) {
     warnLog(`translateChunk failed for ${targetLanguage}`, e);
     return null;
