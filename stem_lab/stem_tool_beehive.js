@@ -69,6 +69,2418 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
   function sfxTreat() { beeTone(200,0.15,"square",0.03); beeTone(280,0.12,"square",0.03); }
 
 
+  // ═══════════════════════════════════════════════════════════════════════
+  // EDUCATIONAL REFERENCE CONTENT — verbose data blocks consumed by the
+  // tool's reference panels. Defined at IIFE scope so the data loads once
+  // and the render function can read freely without re-allocation.
+  // ═══════════════════════════════════════════════════════════════════════
+
+  // ─── Bee species (verbose) ──────────────────────────────────────────────
+  var BEE_SPECIES = [
+    {
+      common: 'Western honey bee',
+      scientific: 'Apis mellifera',
+      range: 'Native to Europe, Africa, Western Asia; introduced worldwide for agriculture',
+      colonySize: '20,000-80,000 in peak summer',
+      role: 'Primary commercial honey producer and crop pollinator. Eusocial. Perennial colonies.',
+      lifespan: 'Worker: 6 weeks summer / 4-6 months winter. Queen: 2-5 years. Drone: ~90 days.',
+      notes: 'The species you simulate in this lab. Most studied bee in history. ~80 subspecies including Italian (gentle, light), Carniolan (cold-hardy), Russian (varroa-resistant).',
+      educationalValue: 'Best entry point for studying social insects, agriculture, and ecology.',
+    },
+    {
+      common: 'Asian honey bee',
+      scientific: 'Apis cerana',
+      range: 'Asia (China, India, Korea, Japan, Southeast Asia)',
+      colonySize: '6,000-7,000',
+      role: 'Smaller native cousin of A. mellifera. Coevolved with varroa mites and grooms them off.',
+      lifespan: 'Similar to A. mellifera but slightly shorter',
+      notes: 'The varroa mite originally parasitized this species; jumped to A. mellifera in the 1950s with catastrophic consequences.',
+      educationalValue: 'Compare-contrast example for coevolution and host-parasite dynamics.',
+    },
+    {
+      common: 'Giant honey bee',
+      scientific: 'Apis dorsata',
+      range: 'South and Southeast Asia',
+      colonySize: '60,000+',
+      role: 'Builds single massive comb hanging from trees or cliffs; does not nest in cavities',
+      lifespan: 'Migratory — colonies move seasonally',
+      notes: 'Honey hunters in Nepal climb 100m cliffs to harvest their honey. Cannot be domesticated.',
+      educationalValue: 'Illustrates that not all social bees use cavity nests; ecological niche variation.',
+    },
+    {
+      common: 'Dwarf honey bee',
+      scientific: 'Apis florea',
+      range: 'Southern Asia',
+      colonySize: '2,000-7,000',
+      role: 'Smallest honey bee; builds single horizontal comb in open',
+      lifespan: 'Similar pattern to other Apis',
+      notes: 'Performs the waggle dance on a horizontal surface, unlike A. mellifera which dances on vertical comb.',
+      educationalValue: 'Comparative behavior — same dance, different physical context.',
+    },
+    {
+      common: 'Bumblebees',
+      scientific: 'Bombus spp. (~250 species)',
+      range: 'Worldwide except sub-Saharan Africa and most of Asia',
+      colonySize: '50-400',
+      role: 'Crucial pollinators of tomatoes, blueberries, cranberries — buzz pollination unlocks tightly-held pollen',
+      lifespan: 'Annual colonies. Queens overwinter alone, found new colonies each spring.',
+      notes: 'Larger and fuzzier than honey bees. Can fly in cooler temps. In Maine, Bombus terricola (yellow-banded bumble bee) is endangered.',
+      educationalValue: 'Native pollinator example; teaches that honey bees are imported and natives need protection too.',
+    },
+    {
+      common: 'Carpenter bees',
+      scientific: 'Xylocopa spp.',
+      range: 'Worldwide',
+      colonySize: 'Solitary or small family groups',
+      role: 'Nest in wood (drilling tunnels). Important wild pollinators but sometimes a nuisance to wooden structures.',
+      lifespan: '~1 year',
+      notes: 'Often mistaken for bumblebees. Females have shiny black abdomens (bumblebees are fuzzy throughout).',
+      educationalValue: 'Solitary bee example; tunneling behavior is observable in spring.',
+    },
+    {
+      common: 'Mason bees',
+      scientific: 'Osmia spp.',
+      range: 'Northern Hemisphere',
+      colonySize: 'Solitary',
+      role: 'Spring orchard pollinators. Each female builds her own series of mud-walled brood cells in hollow stems or holes.',
+      lifespan: '1 year',
+      notes: 'Native blue orchard mason bee (Osmia lignaria) is more efficient per-bee than honey bees for apple orchards. Maine has 24+ Osmia species.',
+      educationalValue: 'Easy-to-host native pollinators; students can build mason bee houses.',
+    },
+    {
+      common: 'Leafcutter bees',
+      scientific: 'Megachile spp.',
+      range: 'Worldwide',
+      colonySize: 'Solitary',
+      role: 'Cut circular sections from leaves to build cigar-shaped brood cells. Important alfalfa pollinators.',
+      lifespan: '1 year',
+      notes: 'Look for perfectly round bite-marks on rose or redbud leaves — that\'s leafcutter work.',
+      educationalValue: 'Easy to observe in summer; teaches that "damage" can be construction.',
+    },
+    {
+      common: 'Sweat bees',
+      scientific: 'Halictidae family (1,000+ species)',
+      range: 'Worldwide',
+      colonySize: 'Solitary to small colonies',
+      role: 'Small, often metallic green or blue, attracted to human sweat for salt',
+      lifespan: '~1 year',
+      notes: 'Easy to overlook because they\'re small (~5mm). Most-overlooked native pollinator group.',
+      educationalValue: 'Demonstrates that "bee" doesn\'t always mean "yellow and black striped."',
+    },
+    {
+      common: 'Squash bees',
+      scientific: 'Peponapis pruinosa, Xenoglossa spp.',
+      range: 'North America',
+      colonySize: 'Solitary',
+      role: 'Specialist on Cucurbita (squash, pumpkin, zucchini, gourds). Active before honey bees in the morning.',
+      lifespan: '1 year',
+      notes: 'Coevolved with squash; the relationship is older than agriculture itself. Native Americans had squash bees pollinating their crops 9,000 years ago.',
+      educationalValue: 'Plant-pollinator coevolution example; ties into agriculture history.',
+    },
+    {
+      common: 'Stingless bees',
+      scientific: 'Meliponini tribe (~500 species)',
+      range: 'Tropics worldwide',
+      colonySize: '300-100,000 depending on species',
+      role: 'Highly social bees that produce honey but have no functional sting',
+      lifespan: 'Perennial colonies',
+      notes: 'Meliponiculture (stingless beekeeping) is ancient in Maya and Aztec cultures. Honey is often medicinal.',
+      educationalValue: 'Cultural and historical dimension; not all "bees that make honey" are honey bees.',
+    },
+    {
+      common: 'Africanized honey bee',
+      scientific: 'Apis mellifera scutellata x A. m. iberiensis hybrid',
+      range: 'Americas (escaped from a 1957 Brazilian breeding experiment)',
+      colonySize: 'Similar to A. mellifera',
+      role: 'Same as A. mellifera but with much higher defensive behavior',
+      lifespan: 'Similar',
+      notes: '"Killer bees" of headline fame. Stings are no more venomous than European honey bees, but the colony defends in larger numbers and pursues longer distances. Spreading north slowly.',
+      educationalValue: 'Honest discussion of behavioral genetics, unintended consequences of selective breeding, media sensationalism vs reality.',
+    },
+  ];
+
+  // ─── Colony roles + lifecycle (verbose) ─────────────────────────────────
+  var COLONY_ROLES = [
+    {
+      role: 'Queen',
+      population: '1 per colony (rarely 2 briefly during supersedure)',
+      job: 'Lay eggs (up to 2,000 per day in peak summer). Emit pheromones that regulate colony cohesion.',
+      lifecycle: 'Egg: 3 days. Larva: ~5.5 days. Pupa: ~7.5 days. Total dev time: 16 days. Adult lifespan: 2-5 years.',
+      reproduction: 'Mates with 10-20 drones during a single mating flight (1-3 days post-emergence). Stores sperm in her spermatheca for life — ~6 million sperm.',
+      morphology: 'Longest body in the colony. Stinger is smooth (can sting repeatedly) but rarely uses it except against rival queens.',
+      pheromones: 'Queen Mandibular Pheromone (QMP) is the primary "I\'m here" signal. When QMP drops below threshold, workers begin raising new queens (supersedure).',
+      replacement: 'Workers raise emergency queens from young worker larvae (<3 days old) when the queen dies suddenly. Also raise queens for natural swarming (May-June peak) and supersedure (when old queen is failing).',
+      educationalNote: 'The "queen" metaphor is misleading. She doesn\'t rule — she\'s essentially a reproductive organ for the superorganism. Workers control colony decisions.',
+    },
+    {
+      role: 'Worker',
+      population: '20,000-60,000 in summer; 5,000-15,000 overwintering',
+      job: 'Everything except egg-laying: cleaning, nursing brood, building comb, guarding entrance, foraging.',
+      lifecycle: 'Egg: 3 days. Larva: ~6 days. Pupa: ~12 days. Total dev time: 21 days. Adult lifespan: ~6 weeks in summer; 4-6 months for winter bees.',
+      jobsByAge: [
+        'Days 1-3: Cell cleaning (priming cells for new eggs)',
+        'Days 4-12: Nurse bee (feeding larvae royal jelly, then beebread)',
+        'Days 13-18: House bee (comb-building, food storage, hive maintenance)',
+        'Days 19-21: Guard bee (defending entrance)',
+        'Days 22-42: Forager (collecting nectar, pollen, water, propolis)',
+      ],
+      reproduction: 'Sterile females in queenright colonies. In queenless colonies, some workers may lay unfertilized (drone) eggs but cannot save the colony.',
+      morphology: 'Pollen baskets on hind legs (corbiculae). Wax glands on abdomen. Barbed stinger — single use, kills the bee.',
+      educationalNote: 'Age polyethism (changing jobs by age) is one of the most studied behavioral patterns in biology. The order can flex based on colony needs — a young bee can become a forager if needed.',
+    },
+    {
+      role: 'Drone',
+      population: '500-3,000 in summer; 0 in winter (kicked out in fall)',
+      job: 'Mate with virgin queens from other colonies. Otherwise: contribute warmth, eat honey, do nothing.',
+      lifecycle: 'Egg: 3 days. Larva: ~6.5 days. Pupa: ~14.5 days. Total dev time: 24 days. Adult lifespan: ~90 days max.',
+      reproduction: 'Drones gather at "drone congregation areas" (DCAs) — specific airspaces over open fields — and pursue virgin queens. The drone that mates dies (his genitals tear off).',
+      morphology: 'Larger than workers, with huge eyes (for spotting queens in flight). No stinger. No pollen baskets.',
+      genetics: 'Drones develop from unfertilized eggs (haploid — only 16 chromosomes vs 32 for queens/workers). This is haplodiploidy, which biologists think helps explain bee eusociality.',
+      educationalNote: 'In fall, workers stop feeding drones and physically push them out of the hive to die. This is brutal but rational: drones don\'t contribute to winter survival.',
+    },
+    {
+      stage: 'Egg',
+      duration: '3 days',
+      appearance: 'White, rice-grain-shaped, ~1.5mm, glued vertically to bottom of cell on day 1; tilts over by day 3',
+      notes: 'Queen lays one egg per cell. If she walks past empty cells, those go unfilled — workers must keep up with cell-priming.',
+    },
+    {
+      stage: 'Larva',
+      duration: 'Worker: 6 days; Drone: 6.5 days; Queen: 5.5 days',
+      appearance: 'C-shaped white grub, grows ~1500x its egg weight',
+      feeding: 'Days 1-3: All larvae fed royal jelly. Days 4-6: Workers and drones switched to "beebread" (fermented pollen + nectar). Queens stay on royal jelly throughout.',
+      notes: 'It\'s diet, not genetics, that determines queen vs worker. A worker larva less than 3 days old can be raised into a queen if workers begin feeding her royal jelly continuously.',
+    },
+    {
+      stage: 'Pupa',
+      duration: 'Worker: 12 days; Drone: 14.5 days; Queen: 7.5 days',
+      appearance: 'Larva pupates inside a wax-capped cell. Transforms from grub to adult bee shape over the pupation period.',
+      notes: 'Pupae cannot eat or move. They\'re the most vulnerable stage to chilling, varroa mites, and brood diseases.',
+    },
+    {
+      stage: 'Adult emergence',
+      duration: 'Worker: day 21; Drone: day 24; Queen: day 16',
+      appearance: 'Chews through wax cap, emerges fuzzy and wet',
+      notes: 'First task for a newly-emerged worker: clean herself, then start cleaning brood cells. She\'ll begin nursing within 4 days.',
+    },
+  ];
+
+  // ─── Waggle dance (verbose) ─────────────────────────────────────────────
+  var WAGGLE_DANCE_GUIDE = [
+    {
+      concept: 'What is the waggle dance?',
+      description: 'A figure-8 dance performed by returning foragers on vertical comb in the dark hive that encodes distance and direction to a food source (or new nest site).',
+      discoverer: 'Karl von Frisch, who shared the 1973 Nobel Prize in Physiology or Medicine for decoding it. He worked it out over decades of patient observation.',
+      significance: 'The only known example of symbolic communication in invertebrates. Bees abstract real-world distances and angles into dance choreography.',
+    },
+    {
+      concept: 'The dance components',
+      parts: [
+        'Waggle run: bee walks in a straight line while vibrating her abdomen side-to-side (~13 times per second) and emitting an audible buzz',
+        'Return run: bee loops back to the start, alternating right and left between each waggle run',
+        'Repetition: dance can continue for minutes, repeating up to ~100 cycles',
+      ],
+    },
+    {
+      concept: 'Distance encoding',
+      mechanism: 'Duration of the waggle run encodes distance. ~75ms of waggle = ~100m of flight.',
+      examples: [
+        '0.5 sec waggle ≈ 200m away',
+        '1.0 sec waggle ≈ 500m away',
+        '2.0 sec waggle ≈ 1000m away',
+        '4.0 sec waggle ≈ 2000m away (typical max forage range)',
+      ],
+      notes: 'Bees gauge distance by "optic flow" — how much the visual scene moves past them during flight. Bees flying into a headwind dance for longer because they expended more energy.',
+    },
+    {
+      concept: 'Direction encoding',
+      mechanism: 'The angle of the waggle run relative to vertical on the comb encodes the angle of the food source relative to the sun.',
+      examples: [
+        'Straight up = food is toward the sun',
+        'Straight down = food is away from the sun',
+        '45° right of vertical = food is 45° clockwise of sun (i.e., right of sun)',
+        '90° left of vertical = food is 90° counterclockwise of sun (i.e., left of sun)',
+      ],
+      notes: 'Bees compensate for sun movement during long dances — they continuously update the dance angle to account for the sun\'s changing position. They also have an "internal clock" so they can compensate even when the sun is occluded by clouds.',
+    },
+    {
+      concept: 'Round dance (close food)',
+      mechanism: 'For sources within ~50m, the dance is a simple circle with no waggle phase — just "go nearby and look around."',
+      transition: 'Between round and waggle: a "sickle dance" or "transition dance" for intermediate distances. Different races of bees have different threshold distances.',
+    },
+    {
+      concept: 'Quality of the source',
+      mechanism: 'Dance vigor (number of waggle runs, speed of return) encodes the desirability of the source. A rich nectar flow gets danced more enthusiastically.',
+      followers: 'Other foragers attend the dance. Some leave to investigate; others continue resting. The decision is partially individual.',
+    },
+    {
+      concept: 'Swarm site selection',
+      mechanism: 'When a colony is about to swarm, scouts return and dance for potential new nest sites. Multiple scouts may dance for different sites simultaneously.',
+      decision: 'Scouts gradually converge on one site through a "quorum sensing" process — once enough scouts back a single site, the swarm flies. Thomas Seeley\'s book "Honeybee Democracy" details this.',
+      educationalValue: 'Beautiful example of decentralized decision-making in a complex system.',
+    },
+    {
+      concept: 'Dialects',
+      mechanism: 'Different honey bee subspecies have slightly different distance encoding. An Italian bee dancing 1 second indicates a different distance than a Carniolan bee dancing 1 second.',
+      experiment: 'Researchers have mixed colonies of different races and shown that some translation errors do occur in mixed-race colonies.',
+    },
+    {
+      concept: 'Limits',
+      mechanism: 'Dance encodes a probability distribution, not a precise GPS. Follower bees often end up scattered around the actual source, finding it by following the general direction and then searching.',
+      whyImprecise: 'In nature, food sources are patchy, not points. A small range error doesn\'t matter if there are flowers throughout the area.',
+    },
+    {
+      concept: 'Modern controversies',
+      issue: 'In the 1960s, Adrian Wenner argued that bees might use scent rather than dance to find food. Decades of clever experiments (notably Riley\'s harmonic radar tracking in 2005) eventually confirmed that the dance does encode the information bees use to find sources.',
+      lesson: 'Scientific consensus changes through evidence. Von Frisch\'s original claim took 70 years to be fully proven.',
+    },
+    {
+      teachingNotes: 'Best lessons',
+      list: [
+        'Have students chart the dance angle as the sun moves across the sky to show the dynamic encoding',
+        'Have students mime the dance — they\'ll feel why it takes a developed nervous system',
+        'Compare to human GPS coordinates: latitude/longitude vs. distance/bearing',
+        'Tie to the broader question: "what counts as language?"',
+      ],
+    },
+  ];
+
+  // ─── Pollinator plants by region (verbose, Maine-focused) ───────────────
+  var POLLINATOR_PLANTS = [
+    {
+      season: 'Early spring (March-April)',
+      plants: [
+        { name: 'Pussy willow (Salix discolor)', notes: 'First major pollen source in Maine. Critical for queens building up brood.' },
+        { name: 'Red maple (Acer rubrum)', notes: 'Both pollen and nectar in late March/early April; one of Maine\'s most important early sources.' },
+        { name: 'Dandelion (Taraxacum officinale)', notes: 'Reliable. Don\'t mow the lawn in early May — let dandelions bloom for the bees.' },
+        { name: 'Bloodroot (Sanguinaria canadensis)', notes: 'Native woodland spring ephemeral; nectarless but provides pollen.' },
+        { name: 'Skunk cabbage (Symplocarpus foetidus)', notes: 'Heats its own flowers via thermogenesis; one of the first to bloom.' },
+        { name: 'Crocus', notes: 'Yard-friendly; plant bulbs in fall for early spring color and bee food.' },
+      ],
+    },
+    {
+      season: 'Spring (May-June)',
+      plants: [
+        { name: 'Apple (Malus domestica)', notes: 'Maine\'s commercial apple orchards depend on bee pollination. Bloom peaks ~third week of May.' },
+        { name: 'Wild blueberry (Vaccinium angustifolium)', notes: 'Maine\'s signature crop. Native bees including bumblebees do most of the work; honey bees are supplemental.' },
+        { name: 'Black locust (Robinia pseudoacacia)', notes: 'Heavy nectar flow; one of the most prized honey-producing trees.' },
+        { name: 'Basswood / linden (Tilia americana)', notes: 'Mid-June bloom; can produce huge honey crops in good years.' },
+        { name: 'Clover (Trifolium spp.)', notes: 'Lawn clover (T. repens) and red clover (T. pratense) are excellent. Stop mowing in June.' },
+        { name: 'Lupines', notes: 'Iconic Maine flower; primarily pollinated by bumblebees (honey bees can\'t buzz-pollinate them efficiently).' },
+        { name: 'Raspberry / blackberry', notes: 'Both wild and cultivated provide steady nectar.' },
+      ],
+    },
+    {
+      season: 'Summer (July-August)',
+      plants: [
+        { name: 'Goldenrod (Solidago spp.)', notes: 'Maine\'s main late-summer honey source. Often confused with allergenic ragweed (which is wind-pollinated, not bee-pollinated).' },
+        { name: 'Aster (Symphyotrichum spp.)', notes: 'New England aster and other species; critical for late-season pollen.' },
+        { name: 'Joe-Pye weed (Eutrochium spp.)', notes: 'Wet meadow native; bumblebees love it.' },
+        { name: 'Bee balm (Monarda spp.)', notes: 'Native garden plant; favored by hummingbirds and long-tongued bees.' },
+        { name: 'Sunflowers (Helianthus annuus)', notes: 'Massive pollen and nectar load; easy to grow with kids.' },
+        { name: 'Buckwheat (Fagopyrum esculentum)', notes: 'Commercial cover crop; dark, strong honey.' },
+        { name: 'Sumac (Rhus typhina)', notes: 'Often overlooked; provides reliable summer nectar.' },
+      ],
+    },
+    {
+      season: 'Late summer / fall (Sept-Oct)',
+      plants: [
+        { name: 'Goldenrod (continuing)', notes: 'The "last meal" before winter for Maine colonies. Honey gets capped and stored for winter food.' },
+        { name: 'Asters (continuing)', notes: 'New England aster blooms into October.' },
+        { name: 'Witch hazel (Hamamelis virginiana)', notes: 'Unusual fall bloomer; provides late-season nectar.' },
+        { name: 'Sedum / autumn joy', notes: 'Garden staple; bees flock to it on warm fall days.' },
+      ],
+    },
+    {
+      principles: 'What makes a "pollinator garden"',
+      list: [
+        'Sequence of bloom — something flowering March through October',
+        'Diversity of flower shapes — flat-topped umbels for short-tongued bees, tubular flowers for long-tongued bees',
+        'Native plants where possible — locally evolved pollinators recognize them',
+        'No pesticides — neonicotinoids in particular are devastating to bees',
+        'Leave some bare ground — many native bees nest underground',
+        'Leave plant stems standing in winter — many native bees overwinter in hollow stems',
+        'A water source — shallow dish with pebbles for bees to land on',
+      ],
+    },
+    {
+      planting: 'How to start',
+      steps: [
+        'Pick a sunny spot — most pollinator plants need 6+ hours of sun',
+        'Group plants in clusters (5+ of the same species) so bees can forage efficiently',
+        'Aim for at least 3 species blooming at any given time',
+        'Plan for ~half native species',
+        'Add a "host plant" or two for caterpillars (milkweed for monarchs, parsley for swallowtails) — pollinators include butterflies and moths too',
+      ],
+    },
+    {
+      resources: 'Maine-specific',
+      list: [
+        'University of Maine Cooperative Extension: pollinator-friendly plant lists',
+        'Maine State Beekeepers Association — local mentors',
+        'Pollinator Partnership planting guide (PDF, Maine zone)',
+        'Wild Seed Project (Maine native plant seeds + education)',
+        'Maine Master Gardener program',
+      ],
+    },
+  ];
+
+  // ─── Colony threats (verbose) ───────────────────────────────────────────
+  var COLONY_THREATS = [
+    {
+      threat: 'Varroa destructor',
+      type: 'Parasitic mite',
+      origin: 'Jumped from Apis cerana to A. mellifera in the 1950s; reached the US in 1987',
+      mechanism: 'Adult mites cling to adult bees and feed on their fat bodies (recently discovered — not "hemolymph" as previously thought). Reproductive mites enter brood cells just before they\'re capped and parasitize developing pupae.',
+      impact: 'Currently the #1 cause of overwinter losses globally. An untreated colony will collapse within ~2 years.',
+      damage: 'Mites also vector deformed wing virus (DWV) and other viruses. The virus damage often exceeds the direct parasitic damage.',
+      management: [
+        'Monitor with alcohol wash or sugar roll (3% threshold)',
+        'Treat with oxalic acid (vaporization), formic acid (Mite-Away Quick Strips), thymol-based (Apiguard), or hopguard',
+        'Apivar (amitraz) for resistant cases',
+        'Drone brood culling (remove drone cells)',
+        'Powdered sugar dusting (limited effect)',
+        'Long-term: breed for hygienic and varroa-sensitive hygiene (VSH) behavior',
+      ],
+      teachingValue: 'Real-world coevolution and pest management; the model "host jumps to new species" cause of population collapse.',
+    },
+    {
+      threat: 'Deformed wing virus (DWV)',
+      type: 'RNA virus',
+      origin: 'Endemic in honey bees globally; transmission amplified by varroa mites',
+      mechanism: 'Virus replicates in developing pupae. Mites act as both reservoir and vector, injecting virus when they feed.',
+      impact: 'Adult bees emerge with crumpled, useless wings and shortened lifespans. Often the proximate cause of colony death in heavily varroa-infested colonies.',
+      management: 'No direct treatment; controlling varroa controls DWV transmission.',
+    },
+    {
+      threat: 'American foulbrood (AFB)',
+      type: 'Bacterial disease (Paenibacillus larvae)',
+      origin: 'Worldwide, present in honey bees for centuries',
+      mechanism: 'Spores fed to larvae germinate in their gut, killing them. Dead larvae form a "ropy" mass that dries to scale; spores persist for 70+ years in equipment.',
+      impact: 'Highly contagious among colonies. In most US states, infected hives must be burned to destroy spores.',
+      diagnosis: 'Sunken, perforated brood caps; "ropy" test (insert toothpick into a suspect cell; if it pulls out a ropy strand, it\'s AFB).',
+      management: [
+        'Confirm diagnosis with state apiarist',
+        'Most states require burning of infected equipment',
+        'Antibiotics (oxytetracycline) can suppress symptoms but don\'t kill spores',
+        'Resistant queen lines (hygienic behavior — workers detect and remove infected larvae)',
+      ],
+    },
+    {
+      threat: 'European foulbrood (EFB)',
+      type: 'Bacterial disease (Melissococcus plutonius)',
+      mechanism: 'Larvae are infected and die before pupation. Less severe than AFB; colonies often recover with management.',
+      management: 'Re-queening with hygienic stock; antibiotic treatment in severe cases; stress reduction.',
+    },
+    {
+      threat: 'Nosema',
+      type: 'Microsporidian fungal parasites (Nosema apis, Nosema ceranae)',
+      mechanism: 'Spores ingested by adult bees damage gut lining; bees can\'t digest pollen properly, leading to malnutrition.',
+      impact: 'Reduced lifespan, dysentery (N. apis), weakened immune response. N. ceranae is now more common than the historic N. apis.',
+      management: 'Fumagillin treatment (limited efficacy against N. ceranae); good ventilation; spring cleansing flights; reduce moisture.',
+    },
+    {
+      threat: 'Small hive beetle',
+      type: 'Beetle (Aethina tumida)',
+      origin: 'Native to sub-Saharan Africa; in the US since 1996',
+      mechanism: 'Larvae burrow through comb and consume honey and pollen; produces a slimy mess that ferments and ruins honey.',
+      impact: 'Severe in warm climates (southeastern US); manageable in Maine because of cold winters.',
+      management: 'Strong colonies suppress beetles. Traps with vegetable oil. Don\'t leave dead colonies in the apiary.',
+    },
+    {
+      threat: 'Wax moth',
+      type: 'Moth (Galleria mellonella greater wax moth; Achroia grisella lesser wax moth)',
+      mechanism: 'Larvae tunnel through comb, eating wax and contaminating honey.',
+      impact: 'Primary risk is to STORED comb (drawn-out frames in storage) rather than active colonies. A strong colony defends its comb.',
+      management: 'Freeze comb before storage (24 hours at 0°F kills all stages). Para-moth crystals (paradichlorobenzene) for stored equipment (NEVER on active colonies). Keep colonies strong.',
+    },
+    {
+      threat: 'Tracheal mites',
+      type: 'Internal mite (Acarapis woodi)',
+      mechanism: 'Lives in the breathing tubes of bees, blocking airflow and feeding on hemolymph.',
+      impact: 'Less common since the 1990s thanks to resistant queen lines. Still occasionally a factor.',
+      management: 'Resistant breeding (Buckfast lines were originally developed for tracheal mite resistance). Menthol or formic acid.',
+    },
+    {
+      threat: 'Pesticides — neonicotinoids',
+      type: 'Systemic insecticides',
+      mechanism: 'Neonics bind to insect nicotinic acetylcholine receptors, causing paralysis. Systemic — absorbed by plants and present in pollen and nectar.',
+      impact: 'Sublethal doses cause foraging confusion, immune suppression, increased varroa susceptibility, and reduced overwinter survival.',
+      regulation: 'EU has banned outdoor use of imidacloprid, clothianidin, thiamethoxam since 2018. US still allows them; some states (Maine included) have restricted residential use.',
+      management: 'Locate apiary away from intensively-sprayed crops; talk to neighboring farmers; advocate for IPM (Integrated Pest Management) over preventive spraying.',
+    },
+    {
+      threat: 'Pesticides — fungicides',
+      type: 'Plant disease control',
+      mechanism: 'Fungicides themselves are usually non-toxic to bees but disrupt gut microbiome and synergistically increase neonicotinoid toxicity.',
+      example: 'Fungicide + low neonicotinoid dose can be 1000x more toxic than the neonicotinoid alone.',
+      management: 'Avoid spraying flowering plants. Use IPM thresholds, not calendar sprays.',
+    },
+    {
+      threat: 'Habitat loss',
+      type: 'Landscape-level',
+      mechanism: 'Monoculture agriculture, lawn-dominated suburbs, and pavement remove the diverse bloom sequence bees need.',
+      impact: 'Even where pesticides are absent, bees starve when nothing\'s blooming for weeks at a time.',
+      management: 'Pollinator gardens, wildflower meadows, less mowing, mixed-species cover crops on farms, hedgerows.',
+    },
+    {
+      threat: 'Climate change',
+      type: 'Long-term',
+      mechanism: 'Mismatched bloom timing (flowers blooming before bees emerge); range shifts; extreme weather (droughts, floods) disrupting forage; warmer winters allowing varroa to reproduce later into fall.',
+      impact: 'Already-observed in many regions. Maine is warming faster than the US average.',
+      management: 'Beyond individual control. Advocacy, climate-resilient management (insulation, water for hot summers, location selection).',
+    },
+    {
+      threat: 'Colony Collapse Disorder (CCD)',
+      type: 'Syndrome, not a single cause',
+      mechanism: 'Workers abandon the hive en masse, leaving queen and brood behind. Symptom of multiple converging stressors.',
+      contributingFactors: ['Varroa + DWV combination (primary)', 'Neonicotinoid exposure', 'Nosema ceranae', 'Nutritional stress', 'Pesticide cocktails'],
+      management: 'No single fix. Reduce all stressors that can be reduced; advocate for systemic change.',
+      historicalContext: 'Coined in 2006-2007 when US beekeepers reported losing 30-50% of colonies. Annual losses remain high (30-40%) though varies by region and management.',
+    },
+  ];
+
+  // ─── Honey types and varietals (verbose) ────────────────────────────────
+  var HONEY_VARIETALS = [
+    {
+      name: 'Wildflower (polyfloral)',
+      source: 'Mix of whatever\'s blooming during the flow',
+      color: 'Light amber to dark amber depending on what bees foraged',
+      flavor: 'Variable; often complex and floral',
+      crystallization: 'Variable',
+      notes: 'Most common type from backyard beekeepers; reflects the local landscape.',
+    },
+    {
+      name: 'Clover',
+      source: 'Trifolium repens (white clover), T. pratense (red clover)',
+      color: 'Very light, almost water-white',
+      flavor: 'Mild, slightly sweet, classic "honey" flavor',
+      crystallization: 'Fast (high glucose)',
+      notes: 'The honey most American kids grew up with; standard supermarket fare.',
+    },
+    {
+      name: 'Goldenrod',
+      source: 'Solidago spp.',
+      color: 'Medium amber',
+      flavor: 'Strong, slightly grassy or hay-like; mellows after a few months',
+      crystallization: 'Fast — usually crystallizes in a few weeks',
+      notes: 'Maine\'s primary fall honey. Smells like dirty socks while curing (don\'t worry — finished honey is delicious).',
+    },
+    {
+      name: 'Blueberry',
+      source: 'Wild blueberry (Vaccinium angustifolium)',
+      color: 'Medium amber with reddish tinge',
+      flavor: 'Slight fruity berry note',
+      notes: 'Maine specialty. Often produced by commercial pollination services for blueberry barrens.',
+    },
+    {
+      name: 'Buckwheat',
+      source: 'Fagopyrum esculentum',
+      color: 'Very dark, almost black',
+      flavor: 'Strong, malty, molasses-like; high antioxidant content',
+      crystallization: 'Slow',
+      notes: 'Polarizing — you love it or hate it. Excellent in tea or as a baker\'s honey.',
+    },
+    {
+      name: 'Basswood / Linden',
+      source: 'Tilia americana, T. cordata',
+      color: 'Pale to medium amber',
+      flavor: 'Distinct minty, slightly medicinal note',
+      notes: 'Sometimes called "lime tree" in Europe. Beloved by some, off-putting to others.',
+    },
+    {
+      name: 'Acacia',
+      source: 'Robinia pseudoacacia (called acacia in commerce; actually black locust)',
+      color: 'Very pale, water-white',
+      flavor: 'Delicate, slightly vanilla',
+      crystallization: 'Very slow (low glucose, high fructose) — stays liquid for years',
+      notes: 'Commercial "acacia" almost always comes from Europe; can be produced in eastern US in good locust years.',
+    },
+    {
+      name: 'Orange blossom',
+      source: 'Citrus aurantium',
+      color: 'Light golden',
+      flavor: 'Floral, citrusy',
+      notes: 'Florida and California specialty; not produced in Maine.',
+    },
+    {
+      name: 'Tupelo',
+      source: 'Nyssa ogeche',
+      color: 'Pale amber',
+      flavor: 'Distinct buttery quality',
+      crystallization: 'Very slow',
+      notes: 'Highly prized; Florida panhandle specialty. Diabetic-friendly because of high fructose:glucose ratio.',
+    },
+    {
+      name: 'Manuka',
+      source: 'Leptospermum scoparium (New Zealand)',
+      color: 'Dark amber',
+      flavor: 'Earthy, medicinal',
+      notes: 'Famous for antimicrobial properties (methylglyoxal content). Often labeled with a "UMF" (Unique Manuka Factor) rating.',
+    },
+    {
+      name: 'Eucalyptus',
+      source: 'Eucalyptus spp. (Australia, California)',
+      color: 'Medium amber',
+      flavor: 'Bold, slightly menthol',
+      notes: 'Multiple species produce honey with different flavors.',
+    },
+    {
+      name: 'Sourwood',
+      source: 'Oxydendrum arboreum',
+      color: 'Light amber with slight gray tinge',
+      flavor: 'Spicy, slightly anise',
+      notes: 'Southern Appalachians specialty; prized by aficionados.',
+    },
+    {
+      name: 'Heather',
+      source: 'Calluna vulgaris',
+      color: 'Reddish amber',
+      flavor: 'Strong, slightly bitter, almost smoky',
+      notes: 'Scottish specialty. Thixotropic (gels at rest but liquefies when stirred).',
+    },
+    {
+      name: 'Honeydew',
+      source: 'NOT from flowers — bees collect sugary excretions of aphids and other sap-feeding insects',
+      color: 'Very dark',
+      flavor: 'Earthy, less sweet, malty',
+      notes: 'Common in pine and fir forests of Europe. Considered a delicacy in some cultures.',
+    },
+    {
+      principle: 'Why color and flavor vary',
+      factors: [
+        'Plant species (different nectar chemistry)',
+        'Soil type at the source',
+        'Weather during the flow (water content affects evaporative concentration)',
+        'Time since harvest (some honeys mellow with age)',
+        'Storage (heat darkens honey)',
+        'Adulteration (industrial honey often blended with rice syrup; avoid suspiciously cheap honey)',
+      ],
+    },
+    {
+      principle: 'Crystallization',
+      explanation: 'Crystallization is natural and harmless. It happens because glucose has lower solubility than fructose; high-glucose honeys (clover, goldenrod) crystallize fast.',
+      reversal: 'Gentle warming (sub-95°F / 35°C water bath) liquefies crystallized honey without harming flavor or enzymes. Avoid microwaving.',
+    },
+    {
+      principle: 'Honey grading',
+      grades: [
+        'USDA Grade A: < 18.6% moisture, < 0.6% suspended solids, no fermentation, good flavor',
+        'USDA Grade B: < 18.6% moisture, < 1.0% suspended solids',
+        'USDA Grade C: < 20.0% moisture',
+      ],
+      colorScale: 'Pfund scale (mm of color depth): Water white < Extra white < White < Extra light amber < Light amber < Amber < Dark amber',
+    },
+  ];
+
+  // ─── Beekeeping glossary (verbose) ──────────────────────────────────────
+  var BEE_GLOSSARY = [
+    { term: 'Apiary', def: 'A place where bee colonies are kept. From Latin apis (bee).' },
+    { term: 'Apiarist', def: 'A beekeeper.' },
+    { term: 'Apiculture', def: 'The science and practice of beekeeping.' },
+    { term: 'Brood', def: 'Eggs, larvae, and pupae collectively. "Capped brood" means cells where larvae have pupated under wax caps.' },
+    { term: 'Brood box', def: 'The bottom hive box where the queen lays eggs. Usually a "deep" box.' },
+    { term: 'Burr comb', def: 'Comb built outside the normal frame structure. Often removed during inspections.' },
+    { term: 'Castes', def: 'The three types of bees in a colony: queen, worker, drone.' },
+    { term: 'Cell', def: 'A single hexagonal compartment of wax comb. Worker cells are smaller (5.4mm) than drone cells (6.6mm).' },
+    { term: 'Cluster', def: 'In winter, bees ball together in a tight cluster to maintain warmth. Outer "shell" of bees is around 50°F; core can reach 95°F.' },
+    { term: 'Comb', def: 'The hexagonal wax structure bees build. Used for raising brood and storing honey/pollen.' },
+    { term: 'Drone', def: 'Male bee. Has no stinger; only job is to mate with virgin queens.' },
+    { term: 'Drone congregation area (DCA)', def: 'Aerial location where drones gather waiting for queens. Same locations are used year after year, somehow remembered across drone generations.' },
+    { term: 'Extractor', def: 'Centrifuge used to spin honey out of frames without destroying the comb.' },
+    { term: 'Festooning', def: 'Bees hanging in chains across a gap, often while building new comb.' },
+    { term: 'Foundation', def: 'A sheet of beeswax or plastic embossed with a hexagonal pattern, placed in a frame to give bees a starting template for building comb.' },
+    { term: 'Foulbrood', def: 'Bacterial brood disease. American (AFB) is severe and requires destruction; European (EFB) is milder.' },
+    { term: 'Frame', def: 'Removable rectangular wooden or plastic structure that holds a sheet of comb.' },
+    { term: 'Hive', def: 'The structure (box) housing a bee colony. Often confused with the colony itself — the hive is the box, the colony is the bees.' },
+    { term: 'Hive tool', def: 'A flat metal pry-bar used to separate boxes and frames. Essential beekeeping equipment.' },
+    { term: 'Honey super', def: 'A hive box dedicated to honey production, placed above the brood box. Often a "medium" or "shallow" size for lighter weight.' },
+    { term: 'Inner cover', def: 'A flat lid that fits inside the outer cover; helps insulate and provides space for moisture management.' },
+    { term: 'Langstroth hive', def: 'The standard rectangular box hive invented by L.L. Langstroth in 1851, the first to use removable frames. Dominant design worldwide.' },
+    { term: 'Larva (plural: larvae)', def: 'The grub stage of bee development. C-shaped, white, no legs.' },
+    { term: 'Mead', def: 'Alcoholic beverage fermented from honey. Ancient origins; experiencing a revival.' },
+    { term: 'Mite', def: 'Usually refers to Varroa destructor in beekeeping contexts. The primary pest.' },
+    { term: 'Nuc (nucleus colony)', def: 'A small starter colony, usually 4-5 frames. Easier to install than a package and includes drawn comb.' },
+    { term: 'Nurse bee', def: 'Worker aged 4-12 days, primary job is feeding larvae royal jelly and beebread.' },
+    { term: 'Outer cover', def: 'The top of the hive. "Telescoping" covers wrap over the inner cover; "migratory" covers are flat.' },
+    { term: 'Package bees', def: 'A 3-lb screened box of bees with a caged queen, sold for starting new colonies. Common in spring.' },
+    { term: 'Pheromone', def: 'Chemical signal. Queen pheromone (QMP), alarm pheromone, brood pheromone, footprint pheromone, Nasonov pheromone, etc.' },
+    { term: 'Pollen', def: 'Protein source. Workers collect it in their corbiculae and pack it into cells where it ferments into "beebread."' },
+    { term: 'Propolis', def: '"Bee glue" — a resinous substance bees collect from tree buds. Antimicrobial; used to seal cracks and varnish the hive interior.' },
+    { term: 'Queen excluder', def: 'A metal or plastic grid placed between brood box and honey supers. Workers fit through; the larger queen doesn\'t. Keeps brood out of honey supers.' },
+    { term: 'Requeening', def: 'Replacing the queen — typically because she\'s old, failing, or has undesirable genetics.' },
+    { term: 'Royal jelly', def: 'A creamy white substance produced by glands in the heads of nurse bees. All larvae get it for 3 days; queen larvae get it for life.' },
+    { term: 'Smoker', def: 'A device that produces cool smoke, used to calm bees during inspections. Smoke triggers a "fire response" — bees gorge on honey and become less defensive.' },
+    { term: 'Supersedure', def: 'When workers raise a new queen to replace a failing existing queen. Often the old queen lives alongside her daughter briefly.' },
+    { term: 'Swarm', def: 'A reproductive process where the old queen leaves with roughly half the workers to found a new colony. Spring phenomenon (May-June peak).' },
+    { term: 'Swarm cell', def: 'A queen cell built on the bottom edge of frames; bees building these are preparing to swarm.' },
+    { term: 'Top bar hive', def: 'An alternative hive design — a long horizontal box with bars across the top; bees build comb hanging from the bars.' },
+    { term: 'Varroa', def: 'Varroa destructor — the parasitic mite that\'s the #1 cause of overwinter losses globally.' },
+    { term: 'Waggle dance', def: 'A figure-8 dance returning foragers perform to communicate distance and direction of food.' },
+    { term: 'Warré hive', def: 'A vertical top-bar hive designed by Émile Warré in early 20th century France. Aims to mimic natural cavity nests.' },
+    { term: 'Wax cap', def: 'The wax lid bees place on cells of finished honey. Cappings are scraped off before extraction.' },
+    { term: 'Winter bee', def: 'A long-lived worker bee produced in late summer/fall; has elevated fat body reserves and can live 4-6 months versus the 6-week summer bee.' },
+    { term: 'Worker', def: 'Female bee that performs all colony tasks except egg-laying. Sterile in queenright colonies.' },
+    { term: 'Foragers', def: 'The oldest workers (~3 weeks old onward) who fly out to collect nectar, pollen, water, propolis.' },
+    { term: 'Eusocial', def: 'A high level of social organization with overlapping generations, cooperative care of young, and division of labor with reproductive specialization (sterile workers). Bees, ants, termites, some wasps, naked mole rats.' },
+    { term: 'Superorganism', def: 'A colony where the collective functions as a single organism. No individual bee is viable alone — the colony is the unit of selection.' },
+    { term: 'Haplodiploidy', def: 'A genetic system where males develop from unfertilized (haploid) eggs and females from fertilized (diploid) eggs. May explain bee eusociality (sisters share 75% of genes, more than they\'d share with offspring).' },
+    { term: 'Bee space', def: '~3/8 inch (~9.5mm) gap that bees leave clear for passage. Gaps smaller than this get filled with propolis; larger gaps get filled with comb. Langstroth\'s discovery enabled the modern movable-frame hive.' },
+    { term: 'Beebread', def: 'Pollen packed into cells with nectar and saliva, fermented by lactic acid bacteria. Primary protein source for the colony.' },
+    { term: 'Honeyflow', def: 'A period when nectar is abundant and bees fill their supers rapidly. "Spring flow" and "fall flow" are seasonal pulses.' },
+    { term: 'Dearth', def: 'A period when little or no nectar is available. Late summer in Maine is often a dearth before the goldenrod begins.' },
+    { term: 'Robbing', def: 'When bees from one colony invade a weaker colony to steal honey. Triggered by dearth + exposed honey. Can destroy weak colonies fast.' },
+    { term: 'Absconding', def: 'When a colony abandons its hive entirely, queen and all. Different from swarming (which leaves half behind). Usually triggered by extreme stress.' },
+  ];
+
+  // ─── Seasonal beekeeping calendar (Maine-focused) ──────────────────────
+  var SEASONAL_GUIDE = [
+    {
+      month: 'January',
+      colonyStatus: 'Cluster tight at center of brood box. Queen may begin minimal egg-laying late month. Cluster gradually moves upward as it consumes stored honey.',
+      tasks: ['Heft hive (lift back to check weight) for stores assessment', 'Clear snow from entrance', 'Plan spring orders (packages, equipment)'],
+      avoid: 'Opening the hive unless absolutely necessary — breaking the cluster on a cold day can kill bees.',
+    },
+    {
+      month: 'February',
+      colonyStatus: 'Egg-laying ramps up; brood rearing consumes honey rapidly. Highest starvation risk window because the cluster needs more food but can\'t move far to reach it.',
+      tasks: ['Continue weight checks', 'Emergency fondant feeding if light', 'Inspect entrances after each cleansing flight'],
+    },
+    {
+      month: 'March',
+      colonyStatus: 'First cleansing flights on 50°F+ days. Drone-laying may begin. Pollen collection from pussy willow if warm.',
+      tasks: ['First quick inspection on a warm day (no smoke; just verify cluster + queen)', 'Begin pollen substitute if weak', 'Check for varroa load early'],
+    },
+    {
+      month: 'April',
+      colonyStatus: 'Rapid buildup as red maple blooms. Colony doubling weekly.',
+      tasks: ['Full inspection — assess queen, brood pattern, food stores', 'Reverse boxes if upper is empty and lower is full', 'First treatment window for varroa if needed', 'Add supers if space is tight'],
+      watchFor: 'Swarm preparations — queen cells on bottom of frames signal imminent swarming',
+    },
+    {
+      month: 'May',
+      colonyStatus: 'Peak swarming season. Apple, dandelion, locust blooms.',
+      tasks: ['Weekly inspections for swarm cells', 'Splits to prevent swarming', 'Capture/hive swarms (yours or others\')', 'First honey supers on'],
+      watchFor: 'Capped queen cells = colony will swarm within a week unless split',
+    },
+    {
+      month: 'June',
+      colonyStatus: 'Peak population. Basswood and clover flows. Drones at maximum.',
+      tasks: ['Maintain super space', 'Honey extraction begins late month for early flows', 'Mid-season varroa check'],
+    },
+    {
+      month: 'July',
+      colonyStatus: 'Beginning of summer dearth in much of Maine. Colony may slim down. Robbing risk increases.',
+      tasks: ['Monitor for robbing — reduce entrance if needed', 'Extract honey from spring flows', 'Watch for queen problems (workers raised to be drone-layers if queen fails)'],
+    },
+    {
+      month: 'August',
+      colonyStatus: 'Mid-dearth. Some buckwheat or sumac. Bees beginning to reduce drone-rearing.',
+      tasks: ['Varroa testing critical — late summer brood is the next generation of winter bees', 'Treatment window if mite load is high', 'Watch for hive beetles in stored equipment'],
+    },
+    {
+      month: 'September',
+      colonyStatus: 'Goldenrod flow begins. Workers fanning to evaporate nectar — distinctive "wet socks" smell.',
+      tasks: ['Last comprehensive inspection', 'Final varroa treatment (oxalic acid is ideal once brood is minimal)', 'Combine weak colonies (1 strong > 2 weak for winter)', 'Reduce entrances'],
+    },
+    {
+      month: 'October',
+      colonyStatus: 'Wrapping up the season. Asters and witch hazel late. Drones being ejected.',
+      tasks: ['Wrap hives if doing so (insulation, windbreaks)', 'Add mouse guards', 'Final hefting — should be 60-80 lbs in a 2-deep configuration', 'Feed 2:1 sugar syrup if light'],
+    },
+    {
+      month: 'November',
+      colonyStatus: 'Brood-rearing winding down. Cluster forming.',
+      tasks: ['Final winter prep: ventilation, moisture control', 'Top entrance for winter (escape hatch above cluster)', 'Inventory equipment for next season'],
+    },
+    {
+      month: 'December',
+      colonyStatus: 'Fully clustered. Minimal activity.',
+      tasks: ['Mid-winter oxalic acid dribble or vapor (broodless period)', 'Listen to hive — gentle ear against the box reveals cluster hum', 'Catch up on reading + planning'],
+    },
+  ];
+
+  // ─── Famous bee scientists + historical figures ─────────────────────────
+  var BEE_HISTORY = [
+    {
+      name: 'Aristotle',
+      lived: '384-322 BCE',
+      contribution: 'Wrote "Historia Animalium" describing bees and beekeeping. Got some things wrong (he thought the king bee — actually a queen — was male) but accurately described many behaviors.',
+    },
+    {
+      name: 'Lorenzo Langstroth',
+      lived: '1810-1895',
+      contribution: 'American beekeeper who discovered "bee space" in 1851 and invented the movable-frame hive. Foundation of modern commercial beekeeping. His book "The Hive and the Honey Bee" (1853) is still in print.',
+    },
+    {
+      name: 'Anton Janscha',
+      lived: '1734-1773',
+      contribution: 'Slovenian beekeeper considered the father of modern apiculture. First to describe drone mating flights and queen biology accurately.',
+    },
+    {
+      name: 'François Huber',
+      lived: '1750-1831',
+      contribution: 'Blind Swiss naturalist whose observations (recorded by his assistant) revolutionized bee biology. Confirmed the queen is the mother of the colony; described many behaviors for the first time.',
+    },
+    {
+      name: 'Karl von Frisch',
+      lived: '1886-1982',
+      contribution: 'Austrian ethologist who decoded the waggle dance. Shared the 1973 Nobel Prize in Physiology or Medicine. Showed that bees can see ultraviolet light and polarized light, and use them for navigation.',
+    },
+    {
+      name: 'Maurice Maeterlinck',
+      lived: '1862-1949',
+      contribution: 'Belgian playwright whose 1901 book "La Vie des Abeilles" (The Life of the Bee) brought bee biology to a popular audience. Lyrical, philosophical, sometimes overly anthropomorphic, but inspired generations.',
+    },
+    {
+      name: 'Charles Darwin',
+      lived: '1809-1882',
+      contribution: 'Recognized eusocial insects as a "problem" for natural selection (why do sterile workers exist?) and offered the explanation that selection can act on the colony level. Foundational for kin selection theory.',
+    },
+    {
+      name: 'W.D. Hamilton',
+      lived: '1936-2000',
+      contribution: 'Formalized kin selection theory in 1964 papers that explained how haplodiploidy in bees can favor altruism among sisters. Hamilton\'s rule: rB > C.',
+    },
+    {
+      name: 'E.O. Wilson',
+      lived: '1929-2021',
+      contribution: 'Sociobiologist who made bee/ant social behavior central to his theories of evolutionary biology. "The Insect Societies" (1971) is a landmark synthesis.',
+    },
+    {
+      name: 'Thomas Seeley',
+      lived: '1952-',
+      contribution: 'Cornell biologist whose decades of work decoded swarm-site selection (collective intelligence in superorganisms). Books: "Honeybee Democracy" (2010), "The Lives of Bees" (2019).',
+    },
+    {
+      name: 'May Berenbaum',
+      lived: '1953-',
+      contribution: 'Entomologist at University of Illinois who has led research on pollinator decline and public communication of bee science.',
+    },
+    {
+      name: 'Marla Spivak',
+      lived: '1955-',
+      contribution: 'University of Minnesota professor known for breeding "Minnesota Hygienic" bees — varroa-resistant lines selected for VSH (varroa-sensitive hygiene) behavior. MacArthur Fellow.',
+    },
+    {
+      name: 'Anna Comstock',
+      lived: '1854-1930',
+      contribution: 'American educator whose "Handbook of Nature Study" (1911) brought bee biology into elementary classrooms across the US.',
+    },
+  ];
+
+  // ─── Beekeeping tools (verbose) ─────────────────────────────────────────
+  var BEEKEEPING_TOOLS = [
+    {
+      tool: 'Hive tool',
+      purpose: 'Pry boxes and frames apart (bees glue everything with propolis); scrape comb and propolis off frames',
+      types: ['J-hook style (more leverage for pulling frames)', 'Flat 10" style (more general purpose)'],
+      cost: '$8-20',
+      essential: 'Yes — you cannot inspect without this',
+    },
+    {
+      tool: 'Smoker',
+      purpose: 'Produces cool smoke that calms bees (triggers a "fire response" — gorging on honey reduces defensive behavior)',
+      fuel: 'Pine needles, burlap, dried grass, wood pellets, sumac bobs',
+      cost: '$30-60',
+      tips: 'Light it well before you need it. A weak smoker is worse than no smoker.',
+      essential: 'Yes — especially for inspections of larger colonies',
+    },
+    {
+      tool: 'Bee suit / jacket',
+      purpose: 'Protect from stings',
+      types: ['Full suit (best protection)', 'Jacket only (cooler, popular)', 'Ventilated triple-layer (best for hot weather)'],
+      cost: '$60-300',
+      tips: 'Veil quality matters most — get one with stiff support so it can\'t collapse onto your face. Light colors and smooth fabrics reduce sting attraction.',
+    },
+    {
+      tool: 'Gloves',
+      purpose: 'Protect hands',
+      types: ['Goatskin (durable, less dexterous)', 'Nitrile disposable (more dexterity, less protection)'],
+      cost: '$10-40',
+      tips: 'Many experienced beekeepers work bare-handed for sensitivity. Bees can still sting through goatskin.',
+    },
+    {
+      tool: 'Bee brush',
+      purpose: 'Gently sweep bees off frames during inspections or harvest',
+      cost: '$5-12',
+      tips: 'Don\'t use a regular brush — soft horsehair bristles are designed not to crush bees.',
+    },
+    {
+      tool: 'Frame grip',
+      purpose: 'Hold a frame from the top bar to lift it out',
+      cost: '$10-25',
+      optional: 'Yes — many beekeepers just use fingers',
+    },
+    {
+      tool: 'Hive boxes (supers)',
+      purpose: 'House the colony',
+      types: ['Deep (9 5/8" — for brood)', 'Medium (6 5/8" — popular for honey, lighter weight)', 'Shallow (5 11/16" — older standard)'],
+      cost: '$25-50 per box',
+      tips: 'Standardize on one frame depth across all boxes — much more flexible.',
+    },
+    {
+      tool: 'Frames + foundation',
+      purpose: 'Provide a structure for bees to build comb on',
+      types: ['Wood frames with wax foundation (traditional)', 'Plastic frames + foundation (durable)', 'Foundationless (let bees build natural comb)'],
+      cost: '$2-4 per frame',
+    },
+    {
+      tool: 'Bottom board',
+      purpose: 'Floor of the hive',
+      types: ['Solid (warmer for winter)', 'Screened (allows varroa monitoring + better ventilation)'],
+      cost: '$15-30',
+    },
+    {
+      tool: 'Inner cover',
+      purpose: 'Lid inside the outer cover; provides bee space, ventilation, and a place to feed',
+      cost: '$10-20',
+    },
+    {
+      tool: 'Outer cover',
+      purpose: 'Top of the hive',
+      types: ['Telescoping (wraps over inner cover; popular)', 'Migratory (flat; for commercial transport)'],
+      cost: '$15-30',
+    },
+    {
+      tool: 'Queen excluder',
+      purpose: 'Grid that keeps queen out of honey supers (workers fit through; queen doesn\'t)',
+      types: ['Wire (durable, kinder on wings)', 'Plastic (cheaper, can damage wings)'],
+      cost: '$10-25',
+      controversial: 'Some beekeepers love them, others swear by going without and managing brood/honey separately.',
+    },
+    {
+      tool: 'Entrance reducer',
+      purpose: 'Narrow the hive entrance to prevent robbing and exclude mice in fall',
+      cost: '$2-5',
+      essential: 'For new colonies and winter',
+    },
+    {
+      tool: 'Mouse guard',
+      purpose: 'Metal grid over winter entrance to exclude mice while allowing bee passage',
+      cost: '$3-8',
+    },
+    {
+      tool: 'Extractor',
+      purpose: 'Centrifuge that spins honey out of frames without destroying comb',
+      types: ['Hand-crank (2-4 frame)', 'Motorized (4-20+ frame)'],
+      cost: '$200-3000+',
+      tip: 'Often shared among beekeepers via local clubs to defer this expense.',
+    },
+    {
+      tool: 'Uncapping knife / fork',
+      purpose: 'Remove wax cappings from finished honey before extracting',
+      types: ['Cold knife (slow, requires sharpness)', 'Heated knife (faster, plug-in)', 'Uncapping fork/scratcher (manual, low-cost)'],
+      cost: '$10-150',
+    },
+    {
+      tool: 'Refractometer',
+      purpose: 'Measure honey moisture content (target: <18.6%)',
+      cost: '$20-60',
+      necessity: 'Highly recommended for selling honey',
+    },
+    {
+      tool: 'Varroa monitoring kit',
+      purpose: 'Count varroa mites on a sample of bees',
+      options: [
+        'Alcohol wash (kills the sample; very accurate)',
+        'Sugar shake (preserves bees; slightly less accurate)',
+        'Sticky board (passive; tracks natural mite drop)',
+      ],
+      cost: '$10-30',
+    },
+    {
+      tool: 'Beekeeping journal',
+      purpose: 'Record inspections, treatments, harvest weights, colony performance',
+      tips: 'Paper notebook in a ziploc, or an app like BeePlus / HiveTracks / Beetight. Beats memory by month 6.',
+    },
+  ];
+
+  // ─── FAQ for students (verbose) ────────────────────────────────────────
+  var BEE_FAQ = [
+    {
+      q: 'Are all bees yellow and black?',
+      a: 'No! Many native bees are metallic green, blue, copper, or just brown. Bumblebees are fuzzier than honey bees. Mason bees are dark and shiny. The classic "yellow and black" image mostly fits honey bees and yellowjackets (which are wasps, not bees). About 4,000 species of bees live in North America alone.',
+    },
+    {
+      q: 'Will I get stung?',
+      a: 'Eventually, probably, but less than you fear. Honey bees only sting defensively — they\'re not aggressive when foraging. The bees you see on flowers in summer are very unlikely to sting unless you swat or step on them. Wasps and yellowjackets are more aggressive than bees. If you\'re severely allergic (anaphylaxis), talk to a doctor about an EpiPen and avoid working hives.',
+    },
+    {
+      q: 'Does a bee die after stinging me?',
+      a: 'Honey bee workers do — their stinger is barbed and rips out when they sting, killing them. The queen has a smooth stinger and can sting multiple times (but rarely does, and only at rival queens). Bumblebees and most wasps also have smooth stingers and survive stinging.',
+    },
+    {
+      q: 'How do bees make honey?',
+      a: 'Foragers sip nectar from flowers and store it in a special "honey stomach." Back at the hive, they pass it mouth-to-mouth to house bees, adding enzymes (mainly invertase, which splits sucrose into glucose and fructose). House bees deposit the honey-in-progress in cells and fan their wings to evaporate water from ~80% down to <18%. Once it\'s thick enough, they cap the cell with wax. The whole process takes a few days.',
+    },
+    {
+      q: 'Where does beeswax come from?',
+      a: 'Workers age 12-18 days have wax glands on the underside of their abdomens. They eat honey (lots of it — about 6 pounds of honey to make 1 pound of wax) and secrete tiny wax flakes that they chew and shape into comb. The hexagonal shape is the most efficient way to enclose space — least wax for the most cells.',
+    },
+    {
+      q: 'Why do bees dance?',
+      a: 'The waggle dance is how returning foragers tell sisters where to find food. The angle of the dance (relative to vertical) encodes direction relative to the sun. The duration of the "waggle" part encodes distance. Karl von Frisch decoded this in the 1940s and won a Nobel Prize for it.',
+    },
+    {
+      q: 'Why is the queen bigger than the workers?',
+      a: 'Diet. Worker larvae are fed royal jelly for 3 days and then beebread (fermented pollen). Queen larvae stay on royal jelly their entire larval stage. The hormonal effects of continuous royal jelly turn on different genes and produce a fully reproductive female with a longer abdomen and bigger ovaries. Genetically, queens and workers are identical.',
+    },
+    {
+      q: 'What\'s the difference between a bee and a wasp?',
+      a: 'Bees evolved from wasps about 130 million years ago when they switched from hunting other insects to eating pollen. Bees are vegetarian (mostly) and fuzzy. Wasps are predators (or scavengers like yellowjackets) and smooth/shiny. Bees pollinate; most wasps don\'t. Wasps can be aggressive around food (picnics); bees aren\'t.',
+    },
+    {
+      q: 'Why are honey bees in trouble?',
+      a: 'Many reasons stacking on top of each other: the varroa mite (a parasitic mite that arrived in the US in the 1980s and is the biggest killer), pesticides (especially neonicotinoids), habitat loss (less wild flowers, more pavement and monoculture farms), poor nutrition (when a whole landscape is one crop), and climate change disrupting the timing of when flowers bloom.',
+    },
+    {
+      q: 'How can I help bees?',
+      a: 'Plant pollinator-friendly flowers (lots of different ones, blooming at different times). Don\'t use pesticides. Don\'t mow the lawn so much — let dandelions and clover bloom. Leave bare patches of soil and dead plant stems (native bees nest in these). Buy local honey to support local beekeepers. Support policies that protect pollinators.',
+    },
+    {
+      q: 'Is honey vegan?',
+      a: 'This depends on your definition. Honey is an animal product (made by bees), so most strict vegans don\'t eat it. Some vegans accept honey from small ethical beekeepers because the bees aren\'t harmed. Beekeepers generally argue that managed honey bees are well-cared-for and that beekeeping is closer to gardening than to ranching. Reasonable people disagree.',
+    },
+    {
+      q: 'Can I keep bees in my backyard?',
+      a: 'Usually yes, depending on local laws. Check city ordinances and your state\'s requirements (many require registration). Talk to neighbors before installing hives. You\'ll need ~$300-500 to start, willingness to learn, and a flat sunny spot with morning sun and afternoon shade. Maine has a great network of local clubs and mentors.',
+    },
+    {
+      q: 'Do bees recognize people?',
+      a: 'Bees can recognize human faces in lab experiments — they distinguish photos of faces if rewarded with sugar. Whether they "recognize" their beekeeper specifically is debated; some beekeepers are sure their bees know them, and there\'s plausible mechanism (they recognize voices and patterns), but rigorous evidence is thin.',
+    },
+    {
+      q: 'How smart are bees?',
+      a: 'Surprisingly. Honey bees can learn complex associations, count to about 4, recognize symbols, navigate using landmarks and the sun, and (some experiments suggest) experience emotional states. Their brain has about 960,000 neurons (humans have 86 billion) but the connectivity is dense and efficient.',
+    },
+    {
+      q: 'Can bees see color?',
+      a: 'Yes, but their color vision is shifted toward ultraviolet. They can\'t see red (looks black to them) but can see UV patterns on flowers that are invisible to us. Many flowers have "honey guides" — UV-reflective patterns that direct bees to the nectar.',
+    },
+  ];
+
+  // ─── Cross-disciplinary connections ─────────────────────────────────────
+  var CROSS_DISCIPLINARY = [
+    {
+      subject: 'Math',
+      connections: [
+        'Hexagons: why they\'re the optimal shape for tiling and minimum-wax cell construction (Honeycomb Conjecture, proved 1999)',
+        'Combinatorics of waggle dance: encoding two continuous values (distance, angle) in a stochastic signal',
+        'Population dynamics: exponential brood growth, modeled by simple differential equations',
+        'Probability: rule-of-thumb mite counts vs. actual sampling distributions',
+        'Geometry: bee space, frame dimensions, super stacking',
+        'Statistics: how to know if a honey crop differs significantly between two apiaries',
+      ],
+    },
+    {
+      subject: 'Science',
+      connections: [
+        'Biology: eusocial insects, kin selection, haplodiploidy',
+        'Chemistry: pheromones, enzyme catalysis (invertase), wax chemistry',
+        'Physics: thermoregulation in the cluster, waggle dance acoustics',
+        'Ecology: pollination, ecosystem services, food webs',
+        'Environmental science: pesticides, habitat fragmentation, climate change',
+        'Genetics: haploid drones, diploid females, queen vs worker differential expression',
+        'Animal behavior: communication, learning, decision-making',
+      ],
+    },
+    {
+      subject: 'Social studies',
+      connections: [
+        'Agriculture: bees pollinate ~1/3 of human food crops',
+        'Economics: commercial pollination industry, almond migration',
+        'History: ancient Egyptian, Greek, Roman beekeeping; medieval mead culture',
+        'Geography: regional honey types reflect local flora',
+        'Civic engagement: pollinator protection policy, neonic bans',
+        'Indigenous knowledge: traditional Maya stingless beekeeping',
+      ],
+    },
+    {
+      subject: 'English Language Arts',
+      connections: [
+        'Etymology: "apis" / "apiary" / "apiculture" / "melli-" prefix',
+        'Idioms: "busy as a bee," "queen bee," "the bee\'s knees"',
+        'Literature: Maeterlinck "The Life of the Bee," Sylvia Plath "Bee" poems, Sue Monk Kidd "The Secret Life of Bees"',
+        'Writing: lab notebooks, observation journals, persuasive essay (should we keep bees?)',
+      ],
+    },
+    {
+      subject: 'Art',
+      connections: [
+        'Pattern: hexagonal tessellation in design',
+        'Drawing: bee anatomy from life',
+        'Photography: macro lens on flowers and bees',
+        'Sculpture: wax-casting (lost-wax method)',
+        'Design: hive painting (color-coded for queens; aesthetic choice for beekeepers)',
+      ],
+    },
+    {
+      subject: 'Music',
+      connections: [
+        'Rimsky-Korsakov "Flight of the Bumblebee"',
+        'Vivaldi (and many others) using bee imagery',
+        'Pitch of bee wing buzz (~250-300 Hz for worker bees)',
+        'Cluster hum as a winter "concert"',
+      ],
+    },
+    {
+      subject: 'Engineering',
+      connections: [
+        'Hive design as engineering problem (ventilation, insulation, modularity)',
+        'Apiary infrastructure (stands, scales, monitoring electronics)',
+        'IoT hive monitoring (BroodMinder, Arnia)',
+        'Bioinspired design (hexagonal structures in aerospace, packaging)',
+      ],
+    },
+  ];
+
+  // ─── Bee-related careers ────────────────────────────────────────────────
+  var BEE_CAREERS = [
+    {
+      role: 'Commercial beekeeper',
+      description: 'Owns and manages thousands of hives for honey production and/or pollination services',
+      training: 'Apprenticeship + business skills; some have agricultural degrees',
+      income: '$30K-$200K+ depending on scale and crop',
+      notes: 'Hard physical work; long hours during spring/summer. Many travel cross-country for almond pollination (~80% of US hives go to California in Feb).',
+    },
+    {
+      role: 'Hobbyist / sideliner beekeeper',
+      description: 'Keeps 1-50 hives for honey, pollination, education, or community service',
+      training: 'Local beekeeping clubs, books, mentors',
+      income: 'Usually a hobby; sideliners ($1-30K/year) can supplement income',
+      notes: 'Maine has thousands of hobbyist beekeepers; very welcoming community.',
+    },
+    {
+      role: 'Beekeeping inspector',
+      description: 'State or provincial position; inspects hives for diseases and certifies for sale/transport',
+      training: 'Agricultural science background; on-the-job training',
+      income: '$35K-$70K',
+      notes: 'Maine has a state apiarist program.',
+    },
+    {
+      role: 'Bee research scientist',
+      description: 'Studies bee biology, behavior, disease, or ecology',
+      training: 'PhD in entomology, biology, or ecology',
+      income: '$60K-$130K (academic); higher in industry',
+      notes: 'Universities and USDA labs are primary employers. Field is growing as pollinator decline gets policy attention.',
+    },
+    {
+      role: 'Pollination service operator',
+      description: 'Specializes in renting hives to farmers for crop pollination',
+      training: 'Commercial beekeeping experience',
+      income: 'Variable; almonds pay $200-$300/hive',
+      notes: 'Logistics-intensive; large operations move millions of hives.',
+    },
+    {
+      role: 'Honey processor / packer',
+      description: 'Bottles, blends, labels honey for retail sale',
+      training: 'Food safety / processing background',
+    },
+    {
+      role: 'Equipment manufacturer',
+      description: 'Designs and builds hives, extractors, and beekeeping supplies',
+      examples: 'Mann Lake, Dadant, Better Bee, Brushy Mountain',
+    },
+    {
+      role: 'Beekeeping educator',
+      description: 'Teaches beekeeping classes, runs Master Beekeeper programs, conducts youth outreach',
+      training: 'Master Beekeeper certification, teaching experience',
+    },
+    {
+      role: 'Agricultural extension agent',
+      description: 'Public-facing role at a university or state agency helping farmers and beekeepers',
+      training: 'Bachelor\'s or master\'s in agriculture',
+      example: 'University of Maine Cooperative Extension employs bee specialists',
+    },
+    {
+      role: 'Pollinator habitat consultant',
+      description: 'Helps landowners and municipalities design pollinator-friendly landscapes',
+      training: 'Ecology, landscape design',
+    },
+    {
+      role: 'Bee removal specialist',
+      description: 'Removes unwanted bee colonies from structures alive (cut-out work) for relocation',
+      training: 'Beekeeping plus structural/safety skills',
+    },
+    {
+      role: 'Mead maker',
+      description: 'Crafts honey-based alcoholic beverages',
+      training: 'Brewing/winemaking background',
+      notes: 'Maine has a growing mead industry.',
+    },
+    {
+      role: 'Bee-themed artist / writer',
+      description: 'Bee imagery in visual art, jewelry, books, photography, film',
+      notes: 'Niche but real; bees have universal cultural resonance.',
+    },
+  ];
+
+  // ─── Maine-specific beekeeping context ──────────────────────────────────
+  var MAINE_BEEKEEPING = [
+    {
+      topic: 'Why Maine is challenging',
+      points: [
+        'Long winters (Nov-Apr): colonies must overwinter with adequate stores',
+        'Short build-up window (May-July): bees have only a few months to build population AND store honey',
+        'Variable weather: late frosts can kill spring blossoms; cold rainy stretches in June ground bees during the prime flow',
+        'Wild blueberry pollination: huge demand but coincides with bees\' weakest moment (spring buildup)',
+      ],
+    },
+    {
+      topic: 'Why Maine is good for bees',
+      points: [
+        'Abundant goldenrod: the late-summer flow tops off winter stores',
+        'Less ag intensity than the Midwest: more diverse forage, less pesticide pressure',
+        'Active beekeeping community: clubs, mentors, the Maine State Beekeepers Association',
+        'Strong consumer market for local honey at farmers markets',
+        'Cold winters slow some pests (small hive beetle largely absent)',
+      ],
+    },
+    {
+      topic: 'Maine-specific resources',
+      list: [
+        'Maine State Apiarist (state employee): registration, inspection, disease consultation',
+        'Maine State Beekeepers Association (MSBA): local chapters, conferences, journal',
+        'University of Maine Cooperative Extension: classes, publications, research',
+        'Maine Beekeepers\' Insurance Cooperative',
+        'Local mentors at every county fair and farmers market',
+      ],
+    },
+    {
+      topic: 'Regulations',
+      points: [
+        'Maine requires registration of all colonies with the state apiarist',
+        'Honey sold commercially must be labeled (state and federal rules)',
+        'Some municipalities have urban beekeeping ordinances (Portland, Bangor)',
+        'Selling honey at farmers markets requires food handling certification in most counties',
+      ],
+    },
+    {
+      topic: 'Iconic Maine bee crops',
+      list: [
+        'Wild blueberries: Maine produces 90%+ of US wild blueberries; commercial pollination is the industry foundation',
+        'Apples: orchards in southern Maine depend on honey bees and native bees',
+        'Cranberries: smaller market but uses bee pollination',
+        'Maple syrup: not bee-pollinated but maples are huge nectar sources for spring buildup',
+      ],
+    },
+    {
+      topic: 'Best Maine beekeeping books',
+      list: [
+        'Tony Jadczak (former Maine State Apiarist) and Lincoln Sennett "Backyard Bees" — Maine-focused',
+        'Ross Conrad "Natural Beekeeping" — useful organic/treatment-free approach',
+        'Kim Flottum "Backyard Beekeeper" — general; very accessible',
+        'Tom Seeley "The Lives of Bees" — for those wanting deep biology',
+      ],
+    },
+  ];
+
+  // ─── Bee math problems (curriculum-ready) ───────────────────────────────
+  var BEE_MATH_PROBLEMS = [
+    {
+      grade: '3-5',
+      problem: 'A worker bee visits 50 flowers per trip. She makes 15 trips per day. How many flowers does she visit in a day? In a 6-week life?',
+      solution: '50 × 15 = 750/day. 750 × 42 days = 31,500 flowers.',
+      standards: 'NGSS 3-LS2-1 (group behavior in animals)',
+    },
+    {
+      grade: '3-5',
+      problem: 'A hive has 60,000 bees in summer. About 1/3 are foragers. How many foragers are there?',
+      solution: '60,000 / 3 = 20,000 foragers',
+    },
+    {
+      grade: '3-5',
+      problem: 'A pound of honey requires bees to visit 2 million flowers. If you eat a 12-ounce jar of honey, how many flowers were visited?',
+      solution: '12 oz = 0.75 lb. 0.75 × 2,000,000 = 1,500,000 flowers',
+    },
+    {
+      grade: '6-8',
+      problem: 'A queen bee can lay 1,500 eggs per day. If she lays for 200 days during the active season, and 90% develop into workers, how many workers does she produce in a year?',
+      solution: '1500 × 200 × 0.9 = 270,000 workers',
+    },
+    {
+      grade: '6-8',
+      problem: 'A waggle dance with a 2-second waggle indicates ~1000m. A waggle of 4 seconds indicates 2000m. If the relationship is linear and 0.5 sec waggle = 200m, what is the conversion rate (m per second of waggle)?',
+      solution: 'Slope = (1000-200) / (2-0.5) = 800 / 1.5 ≈ 533 m/sec waggle. (Approximate; real bees vary.)',
+    },
+    {
+      grade: '6-8',
+      problem: 'A colony stores 90 lbs of honey for winter. It consumes about 0.5 lb per day in deep winter. How many days will the stores last?',
+      solution: '90 / 0.5 = 180 days. Roughly 6 months, covering Nov-Apr in Maine.',
+    },
+    {
+      grade: '9-12',
+      problem: 'Mite counts: alcohol wash gives 6 mites per 300 bees. What\'s the infestation rate as a percentage? Is this above the 3% treatment threshold?',
+      solution: '6/300 = 2.0%. Below the 3% threshold but worth monitoring.',
+    },
+    {
+      grade: '9-12',
+      problem: 'A colony with 30,000 bees has 2% varroa infestation. Each capped brood cell averages 1.5 mites. If 5,000 brood cells will emerge in the next 12 days, what will the mite count be then (assuming no treatment)?',
+      solution: 'Current mites on adults: 30,000 × 0.02 = 600. Mites in emerging brood: 5,000 × 1.5 = 7,500. New total ≈ 8,100. New mite-to-bee ratio: 8,100 / 35,000 ≈ 23%. (Demonstrates exponential mite growth without treatment.)',
+    },
+    {
+      grade: '9-12',
+      problem: 'A bee\'s metabolism while flying produces about 80 watts per kilogram of body mass. A bee weighs ~0.1 g. What\'s her power output in milliwatts?',
+      solution: '80 W/kg × 0.0001 kg = 0.008 W = 8 mW. (Pound for pound, more than an Olympic athlete.)',
+    },
+    {
+      grade: '9-12',
+      problem: 'Honeycomb hexagons have side length 2.7mm. What\'s the area of one cell face? What\'s the wax-to-volume ratio compared to square cells of equal area? (Demonstrates Honeycomb Conjecture.)',
+      solution: 'Hexagon area = (3√3/2)(2.7)² ≈ 18.94 mm². Hexagon perimeter = 6(2.7) = 16.2 mm. Equivalent square: side ≈ 4.35 mm, perimeter = 17.4 mm. Hexagon saves ~7% wax for the same volume.',
+    },
+  ];
+
+  // ─── Lab activities / lesson hooks ─────────────────────────────────────
+  var LAB_ACTIVITIES = [
+    {
+      title: 'Pollinator garden design',
+      gradeRange: '3-12',
+      durationMins: '60 (planning) + ongoing maintenance',
+      objectives: 'Plan a bloom sequence that supports pollinators throughout the growing season',
+      materials: 'Plant lists (use POLLINATOR_PLANTS), graph paper, calendar template, optional: actual seeds/plants',
+      procedure: [
+        'Map a real or imaginary garden plot on graph paper',
+        'Pick 8-12 plant species representing all four seasons',
+        'Place plants in clusters of 3-5 (foraging efficiency)',
+        'Verify the bloom sequence has no >2-week gaps',
+        'Calculate total area, plant count, estimated cost',
+      ],
+      assessment: 'Justify each plant choice in writing; reflect on diversity vs. visual design tradeoffs',
+    },
+    {
+      title: 'Waggle dance reconstruction',
+      gradeRange: '6-12',
+      durationMins: '45',
+      objectives: 'Translate a waggle dance into compass direction and distance, and vice versa',
+      materials: 'Compass, schoolyard, stopwatch, masking tape',
+      procedure: [
+        'Outdoors: place a "hive" marker. Mark a "sun" direction.',
+        'Teacher demonstrates a waggle dance with set duration and angle',
+        'Students translate the dance to compass bearing + distance and walk to where they think the "food" is',
+        'Reveal the actual food location (a sticker, treat, etc.) — students see how close they got',
+        'Reverse: students mark a food location and a partner produces the matching dance',
+      ],
+      assessment: 'Have students explain why bees encode angle relative to the sun rather than absolute compass bearing',
+    },
+    {
+      title: 'Honey tasting + flavor description',
+      gradeRange: '3-12',
+      durationMins: '30',
+      objectives: 'Recognize that single-source honeys have distinct flavors and identify factors that contribute',
+      materials: '4-6 single-source honey samples (clover, wildflower, buckwheat, goldenrod, etc.), water, crackers, score sheets',
+      procedure: [
+        'Pour small amounts of each honey into numbered cups',
+        'Students taste in order from lightest to darkest',
+        'Score each on sweetness, complexity, aftertaste',
+        'Compare with the source plant\'s characteristics',
+      ],
+      crossCurricular: 'Builds vocabulary (descriptive writing), sensory science, agriculture awareness',
+      cautions: 'Check for allergies; some honeys can contain trace pollen',
+    },
+    {
+      title: 'Build a mason bee house',
+      gradeRange: '3-12',
+      durationMins: '90',
+      objectives: 'Provide nesting habitat for native solitary bees',
+      materials: 'Untreated wood blocks, drill with 5/16" bit, mounting hardware',
+      procedure: [
+        'Cut a 4×6" block of untreated wood (cedar or pine)',
+        'Drill 5/16" holes 5-6" deep (not all the way through)',
+        'Space holes about 3/4" apart',
+        'Mount under an eave facing south/southeast, 4-6 ft off the ground',
+        'Replace tunnels yearly to avoid parasite buildup',
+      ],
+    },
+    {
+      title: 'Hive math project',
+      gradeRange: '6-12',
+      durationMins: 'Multi-day',
+      objectives: 'Use real beekeeping data to practice quantitative reasoning',
+      materials: 'Spreadsheet, sample data from local beekeepers',
+      procedure: [
+        'Collect data (weights of colonies, honey yields, mite counts) from local club',
+        'Calculate averages, distributions, variances',
+        'Make graphs',
+        'Investigate questions: Is colony X really underperforming, or is it within normal variation?',
+      ],
+    },
+    {
+      title: 'Pollination simulation with toy bees',
+      gradeRange: 'K-3',
+      durationMins: '30',
+      objectives: 'Understand that bees transfer pollen between flowers',
+      materials: 'Cotton-ball "bees," construction-paper flowers, Cheerios (as "pollen")',
+      procedure: [
+        'Arrange paper flowers around the room',
+        'Put pollen (Cheerios) in some flowers; mark these with yellow stickers',
+        'Students "fly" their bees from flower to flower',
+        'After a few minutes, see how many flowers received transferred pollen',
+        'Connect: this is exactly what bees do in real life',
+      ],
+    },
+    {
+      title: 'Bee anatomy drawing from observation',
+      gradeRange: '3-8',
+      durationMins: '60',
+      objectives: 'Identify major bee body parts and their functions',
+      materials: 'Magnifying glasses, dead bee specimens (acquired from a beekeeper), drawing paper',
+      procedure: [
+        'Observe bees under magnification',
+        'Draw and label: head, thorax, abdomen, 3 pairs of legs, 2 pairs of wings, compound eyes, antennae, mouthparts, pollen baskets',
+        'Discuss function of each part',
+      ],
+      cautions: 'Use specimens from a beekeeper — never collect dying bees from outside as they may carry mites',
+    },
+    {
+      title: 'Investigate colony collapse',
+      gradeRange: '8-12',
+      durationMins: 'Multi-class research project',
+      objectives: 'Analyze a complex environmental problem with multiple contributing causes',
+      materials: 'Internet research, scientific paper reading, presentation tools',
+      procedure: [
+        'Students research one specific factor (varroa, neonics, habitat loss, etc.)',
+        'Read at least one scientific paper on it',
+        'Present findings to the class as expert',
+        'Class debates: which factor is most important? What policies would help?',
+      ],
+    },
+  ];
+
+  // ─── Inquiry questions ─────────────────────────────────────────────────
+  var INQUIRY_QUESTIONS = [
+    'Why do bees build hexagonal cells instead of square or round?',
+    'How does a colony "decide" anything when no individual is in charge?',
+    'Why do worker bees die when they sting, but queens don\'t?',
+    'How can a colony of 50,000 individuals all be sisters?',
+    'What makes a queen different from a worker if they have the same genes?',
+    'How do bees survive Maine winters when they can\'t hibernate individually?',
+    'Why are honey bees in trouble, and what would it take to save them?',
+    'Could humans live without bees? What would we lose?',
+    'How is a bee colony like a city? How is it different?',
+    'If the queen is just an egg-layer, who really runs the colony?',
+    'Why are some flowers more attractive to bees than others?',
+    'How does a bee remember where it came from when it\'s 2 miles from home?',
+    'Is beekeeping ethical? (Compare to dairy farming, pet ownership, wild horse management)',
+    'Why are there so many different kinds of bees? Why not just one?',
+    'Could we engineer crops to not need bees? Would that be a good idea?',
+    'What would happen to a colony with no queen? With two queens?',
+    'How do bees know what time of year it is?',
+    'Why do bees produce more honey than they need?',
+    'Why are wild blueberries pollinated mostly by native bees, not honey bees?',
+    'If global temperatures rise 2°C, what happens to Maine bees?',
+  ];
+
+  // ─── Standards alignment ───────────────────────────────────────────────
+  var STANDARDS_ALIGNMENT = [
+    {
+      framework: 'NGSS',
+      gradeBand: 'K-2',
+      standard: 'K-LS1-1 — Use observations to describe patterns of what plants and animals (including humans) need to survive.',
+      beehiveConnection: 'Bees need flowers; flowers need bees. Mutual dependence is observable.',
+    },
+    {
+      framework: 'NGSS',
+      gradeBand: '3-5',
+      standard: '3-LS2-1 — Construct an argument that some animals form groups that help members survive.',
+      beehiveConnection: 'Bee colonies are the textbook example of a group with division of labor.',
+    },
+    {
+      framework: 'NGSS',
+      gradeBand: '3-5',
+      standard: '3-LS4-3 — Construct an argument with evidence that in a particular habitat some organisms can survive well, some survive less well, and some cannot survive at all.',
+      beehiveConnection: 'Different bee species occupy different niches. Varroa-resistant strains survive where others fail.',
+    },
+    {
+      framework: 'NGSS',
+      gradeBand: '6-8',
+      standard: 'MS-LS2-1 — Analyze and interpret data to provide evidence for the effects of resource availability on organisms and populations of organisms in an ecosystem.',
+      beehiveConnection: 'Nectar dearths in summer; floral diversity matters; pollinator decline data.',
+    },
+    {
+      framework: 'NGSS',
+      gradeBand: '6-8',
+      standard: 'MS-LS2-2 — Construct an explanation that predicts patterns of interactions among organisms across multiple ecosystems.',
+      beehiveConnection: 'Pollination as mutualism; varroa as parasitism; pesticides as anthropogenic disruption.',
+    },
+    {
+      framework: 'NGSS',
+      gradeBand: '6-8',
+      standard: 'MS-LS2-4 — Construct an argument supported by empirical evidence that changes to physical or biological components of an ecosystem affect populations.',
+      beehiveConnection: 'Habitat loss → fewer pollinators → reduced wild plant reproduction. Documentable cascade.',
+    },
+    {
+      framework: 'NGSS',
+      gradeBand: '6-8',
+      standard: 'MS-LS4-4 — Construct an explanation based on evidence that describes how genetic variations of traits in a population increase some individuals\' probability of surviving and reproducing in a specific environment.',
+      beehiveConnection: 'Hygienic behavior in bees confers varroa resistance; breeding selects for it.',
+    },
+    {
+      framework: 'NGSS',
+      gradeBand: '9-12',
+      standard: 'HS-LS2-7 — Design, evaluate, and refine a solution for reducing the impacts of human activities on the environment and biodiversity.',
+      beehiveConnection: 'Pollinator habitat restoration, neonic policy, organic agriculture as solutions.',
+    },
+    {
+      framework: 'Common Core Math',
+      gradeBand: '3-5',
+      standard: '4.MD.A.2 — Use the four operations to solve word problems involving distances, intervals of time, liquid volumes, masses of objects, and money.',
+      beehiveConnection: 'Honey weight, hive distance to forage, time calculations for bee development.',
+    },
+    {
+      framework: 'Common Core Math',
+      gradeBand: '6-8',
+      standard: '6.RP.A.3 — Use ratio reasoning to solve real-world problems.',
+      beehiveConnection: 'Mite-to-bee ratio, foragers per colony, sugar-to-water ratios in feed.',
+    },
+    {
+      framework: 'Common Core ELA',
+      gradeBand: '3-5',
+      standard: 'CCSS.ELA-LITERACY.W.4.2 — Write informative/explanatory texts to examine a topic and convey ideas and information clearly.',
+      beehiveConnection: 'Research reports on a chosen bee species; how-to guides for pollinator gardens.',
+    },
+    {
+      framework: 'CCSS ELA',
+      gradeBand: '6-8',
+      standard: 'CCSS.ELA-LITERACY.RI.7.7 — Compare and contrast a text to an audio, video, or multimedia version.',
+      beehiveConnection: 'Read about waggle dance, then watch von Frisch\'s archival footage.',
+    },
+  ];
+
+  // ─── Bee anatomy (verbose) ──────────────────────────────────────────────
+  var BEE_ANATOMY = [
+    {
+      part: 'Head',
+      description: 'Houses brain, eyes, antennae, mouthparts',
+      details: 'Bee brain has ~960,000 neurons. Despite small size, capable of learning, memory, navigation, and abstract reasoning in some experiments.',
+    },
+    {
+      part: 'Compound eyes',
+      description: 'Two large compound eyes on either side of the head, made of ~6,900 ommatidia (individual photoreceptor units) in workers',
+      details: 'See ultraviolet but not red. Detect polarized light for navigation when sun is hidden. Can perceive movement very fast (200 frames/sec equivalent).',
+    },
+    {
+      part: 'Ocelli',
+      description: 'Three simple eyes on top of the head',
+      details: 'Detect light intensity and help with orientation during flight. Do not form images.',
+    },
+    {
+      part: 'Antennae',
+      description: 'Two segmented sensory antennae',
+      details: 'Detect odors (chemoreception), air currents, temperature, humidity, sound vibration, and CO2. Bee\'s primary "sensor array."',
+    },
+    {
+      part: 'Mandibles',
+      description: 'Jaws used for chewing wax, gripping objects, cell-cleaning, fighting',
+      details: 'Workers use mandibles to shape wax comb. Queens use them to bite open queen cells of rivals.',
+    },
+    {
+      part: 'Proboscis',
+      description: 'Tongue used to suck up nectar; folds under the head when not in use',
+      details: 'Italian bee proboscis: ~6.6mm. Specialist bees that visit deep flowers (like long-tongued bumblebees) have proboscises up to 19mm.',
+    },
+    {
+      part: 'Thorax',
+      description: 'Middle body section housing flight muscles and attaching wings/legs',
+      details: 'Bee thorax can heat itself independently — bees "warm up" thoracic muscles by isometric contractions before flight in cool weather.',
+    },
+    {
+      part: 'Forewings + hindwings',
+      description: 'Two pairs of wings; the front pair is larger',
+      details: 'Wings beat ~230 times per second. Hindwings hook onto forewings during flight via tiny hamuli (hooks), making them function as one airfoil.',
+    },
+    {
+      part: 'Legs',
+      description: 'Three pairs of legs, each adapted for specific tasks',
+      details: [
+        'Front legs: pollen brush + antenna cleaner (notch on the leg used to comb antennae)',
+        'Middle legs: spur for removing pollen baskets and prying wax',
+        'Hind legs: pollen baskets (corbiculae) — concave smooth surfaces fringed with hairs',
+      ],
+    },
+    {
+      part: 'Abdomen',
+      description: 'Posterior body section with digestive system, reproductive organs, wax glands, stinger',
+      details: 'Six visible segments. Last segment houses stinger apparatus.',
+    },
+    {
+      part: 'Wax glands',
+      description: 'Four pairs of glands on the underside of the abdomen of bees aged 12-18 days',
+      details: 'Produce wax in thin flakes about 3mm across. Bees chew and shape these into comb.',
+    },
+    {
+      part: 'Honey stomach (crop)',
+      description: 'Specialized expandable pouch in the abdomen for transporting nectar',
+      details: 'Foragers can carry ~70mg of nectar (about their body weight). Sealed off from the digestive stomach by a valve.',
+    },
+    {
+      part: 'Stinger',
+      description: 'Modified ovipositor (egg-laying organ) in workers and queens',
+      details: 'Worker stinger has barbs — gets stuck in mammalian skin and rips out, killing the worker. Queen stinger is smooth and reusable (mainly used against rival queens).',
+    },
+    {
+      part: 'Venom sac',
+      description: 'Reservoir behind the stinger that pumps melittin and other toxins',
+      details: 'Even after the stinger is detached from the bee, the venom sac continues to pump for ~30 seconds. Scrape, don\'t pinch, when removing a stinger from skin.',
+    },
+    {
+      part: 'Spiracles',
+      description: 'Openings on the abdomen and thorax that allow gas exchange',
+      details: 'Bees do not breathe through their mouths. Air enters through spiracles and circulates through internal tracheal tubes.',
+    },
+    {
+      part: 'Nasonov gland',
+      description: 'A scent gland on the abdomen used to release "I\'m here" pheromone',
+      details: 'When workers find a new home (after swarming) or want to recruit nestmates to a site, they expose this gland and fan their wings to disperse the scent.',
+    },
+    {
+      part: 'Mandibular glands',
+      description: 'Paired glands in the head producing alarm pheromone (in workers) or queen pheromone (in queens)',
+      details: 'When a worker stings, mandibular alarm pheromone is released, summoning more bees to attack. Smell: similar to banana.',
+    },
+    {
+      part: 'Hypopharyngeal glands',
+      description: 'Located in the head; produce royal jelly in young workers',
+      details: 'These glands are active in nurse bees (4-12 days old) and regress as the worker ages. Later in life they produce enzymes that convert nectar to honey.',
+    },
+  ];
+
+  // ─── Bee superpowers (engagement hooks for younger students) ───────────
+  var BEE_SUPERPOWERS = [
+    { power: 'UV vision', desc: 'Bees see ultraviolet patterns on flowers that we can\'t — like a flower\'s secret advertising in invisible ink' },
+    { power: 'Polarized light navigation', desc: 'Bees can find their way using the sun even when it\'s behind clouds, by detecting light polarization patterns in the sky' },
+    { power: 'Magnetic sense', desc: 'Bees have magnetite crystals in their abdomens and can detect Earth\'s magnetic field — possibly used for direction-finding' },
+    { power: 'Distance memory', desc: 'A forager can fly 2 miles to a food source and back, then communicate the exact location to her sisters' },
+    { power: 'Speed of perception', desc: 'Bees can resolve visual changes 5x faster than humans — useful when flying through complex environments' },
+    { power: 'Chemical language', desc: 'Bees use at least 15 different pheromones to communicate; we have nothing comparable' },
+    { power: 'Group thermoregulation', desc: 'Bees collectively maintain ~95°F brood temperature year-round despite Maine winters and summer heat waves' },
+    { power: 'Architectural mastery', desc: 'Bees build perfect hexagons without instructions — the most efficient shape mathematically proven possible' },
+    { power: 'Group democracy', desc: 'When choosing a new home, scout bees compare locations and vote through dance intensity. The colony picks the best site reliably.' },
+    { power: 'Voltage detection', desc: 'Bees can detect electric fields around flowers and use this to gauge whether a flower has been recently visited (visited flowers have weaker fields)' },
+    { power: 'Sleep-like states', desc: 'Bees rest, possibly dream, and exhibit memory consolidation similar to mammals during these states' },
+    { power: 'Symbolic communication', desc: 'The waggle dance encodes information about places not currently visible — the only known invertebrate symbolic communication system' },
+  ];
+
+  // ─── Pollination science deep dive ─────────────────────────────────────
+  var POLLINATION_SCIENCE = [
+    {
+      concept: 'What is pollination?',
+      explanation: 'Transfer of pollen from the anther (male part) of one flower to the stigma (female part) of another, enabling fertilization. The result is fruit/seed production.',
+    },
+    {
+      concept: 'Self-pollination vs cross-pollination',
+      explanation: 'Self-pollination: pollen from a flower reaches that same flower\'s stigma or another flower on the same plant. Often less robust offspring. Cross-pollination: pollen travels between different individuals, producing genetic diversity and stronger offspring.',
+      bees: 'Bees cross-pollinate by carrying pollen on their bodies from flower to flower as they forage for nectar.',
+    },
+    {
+      concept: 'Why flowers reward pollinators',
+      explanation: 'Plants spend energy producing nectar (sugar water) and excess pollen to attract and pay pollinators. This is cheaper than the genetic cost of self-pollination or the unreliability of wind/water pollination.',
+    },
+    {
+      concept: 'Coevolution',
+      explanation: 'Flowers and pollinators evolved together. Bee-pollinated flowers tend to be blue/purple/yellow (within bee color vision), often have UV nectar guides, are open during the day, and offer nectar that\'s sucrose-rich. Hummingbird-pollinated flowers are red, tubular, scentless, and have weak landing platforms.',
+    },
+    {
+      concept: 'Buzz pollination',
+      explanation: 'Some flowers (tomatoes, blueberries, cranberries, eggplants) hold pollen tightly inside tube-shaped anthers. Bumblebees and some solitary bees grab the anther and vibrate their flight muscles at the resonant frequency, shaking pollen loose. Honey bees cannot do this — they can pollinate buzz-pollinated crops but inefficiently.',
+    },
+    {
+      concept: 'Pollinator fidelity',
+      explanation: 'Individual foragers tend to specialize on one flower species per trip ("flower constancy"). This benefits plants (their pollen actually reaches another of the same species) and bees (motor pattern is optimized for one flower shape).',
+    },
+    {
+      concept: 'Pollen baskets',
+      explanation: 'Hind-leg concavities (corbiculae) where workers pack moistened pollen. A full pollen basket on each hind leg can weigh 30% of the bee\'s body weight.',
+    },
+    {
+      concept: 'Pollen as food',
+      explanation: 'Pollen provides protein (15-30%), fats, vitamins, and minerals. Honey bees fermenting pollen in cells with nectar and bacteria produce "beebread," the colony\'s primary protein source. Colonies need pollen continuously during brood-rearing.',
+    },
+    {
+      concept: 'How much pollination do bees do?',
+      stats: [
+        '$15-30 billion annual contribution to US agriculture',
+        '~1/3 of human food crops depend on bee pollination',
+        'Without bees: apples, blueberries, almonds, cherries, plums, watermelons, cucumbers, pumpkins, squash, and many others would fail or yield poorly',
+        'Wind-pollinated crops (corn, wheat, rice) don\'t need bees but make up the bulk of calories — though much of the variety and nutrition in our diet does',
+      ],
+    },
+    {
+      concept: 'Ecological services beyond agriculture',
+      list: [
+        'Wild plant reproduction (90%+ of flowering plants are animal-pollinated)',
+        'Forest regeneration (many trees are insect-pollinated)',
+        'Food web support (bees feed birds, mammals)',
+        'Honey production',
+        'Cultural and aesthetic value',
+      ],
+    },
+    {
+      concept: 'What happens if pollinators disappear?',
+      consequences: [
+        'Direct food impact: missing apples, almonds, berries, melons, squash',
+        'Indirect: crop substitution toward wind-pollinated staples = less dietary diversity = nutritional deficiencies',
+        'Ecosystem cascade: wild plants fail, dependent animals decline, forests change',
+        'Economic: $15+ billion annual US agricultural loss',
+        'Human alternative: hand-pollination is being done in parts of China where pesticides eliminated local bees. Labor-intensive and produces inferior crops.',
+      ],
+    },
+    {
+      concept: 'Native bees vs honey bees',
+      explanation: 'Honey bees are imported (from Europe). North America has 4,000+ native bee species. Many crops are pollinated by both, and some (wild blueberry, squash, pumpkins) primarily by native bees.',
+      implication: 'Conservation should support both. Honey bee management can sometimes compete with native bees for resources.',
+    },
+  ];
+
+  // ─── Apocrypha and trivia ─────────────────────────────────────────────
+  var BEE_TRIVIA = [
+    { fact: 'A bee\'s wing beats about 230 times per second, which is why they buzz at around 250-300 Hz (similar to the B note above middle C).' },
+    { fact: 'Honey has been found in 3,000-year-old Egyptian tombs and is still edible — its low water content and acidity prevent microbial growth.' },
+    { fact: 'A worker bee produces about 1/12 of a teaspoon of honey in her entire 6-week life.' },
+    { fact: 'A bee can fly about 15 mph and travel up to 6 miles from the hive (though typical foraging is 2-3 miles).' },
+    { fact: 'A colony of bees collectively consumes about 200 lbs of honey per year. They produce another ~100 lbs as surplus that the beekeeper can harvest.' },
+    { fact: 'Each cell in honeycomb is tilted up at a 13-degree angle — preventing honey from running out.' },
+    { fact: 'A bee\'s sense of smell is about 50 times more sensitive than a dog\'s.' },
+    { fact: 'Bees have been trained to detect explosives, drugs, cancer biomarkers, and tuberculosis through scent.' },
+    { fact: 'The largest bee in the world is Wallace\'s giant bee (Megachile pluto), with a wingspan of 2.5 inches. Rediscovered in 2019 after being thought extinct.' },
+    { fact: 'The smallest bee is Perdita minima, less than 2mm long — smaller than a grain of rice.' },
+    { fact: 'A bee\'s brain has fewer neurons than your laptop has transistors, yet performs more complex behavior than most AI systems.' },
+    { fact: 'Honey bees were brought to North America by European colonists in the 1620s. Native Americans called them "white man\'s flies."' },
+    { fact: 'When new queens hatch, they sometimes "pipe" — make a high-pitched sound. Unhatched queens still in cells "quack" in response. The exact purpose is debated.' },
+    { fact: 'A bee\'s six legs each have specialized parts: pollen brushes, antenna cleaners, wax-handling spurs. They\'re multi-tool Swiss army knives.' },
+    { fact: 'The amount of honey a colony stores for winter (60-100 lbs in Maine) represents the lifetime work of thousands of bees and millions of foraging trips.' },
+    { fact: 'Bees are warm-blooded in a sense — they generate heat through muscle contractions to maintain their cluster at 95°F.' },
+    { fact: 'Albert Einstein has been falsely quoted as saying "If the bee disappeared off the face of the Earth, man would only have four years left to live." There is no evidence he ever said this.' },
+    { fact: 'A typical hive has ~6 to 8 honey supers stacked on top in peak season, each holding 30-50 lbs of honey when full.' },
+    { fact: 'Beeswax has been used since antiquity for sealing wax, candles, polishes, cosmetics, and lost-wax casting in metalworking.' },
+    { fact: 'Propolis ("bee glue") has antimicrobial properties so strong that the hive interior is more sterile than a hospital operating room.' },
+    { fact: 'In ancient Egypt, the bee was a symbol of royalty — pharaohs were called "He of the Sedge and the Bee."' },
+    { fact: 'The drone has no father (since drones develop from unfertilized eggs) but does have a grandfather. Drone genetics is half as complex as it sounds and twice as complex as it sounds.' },
+    { fact: 'A queen bee can lay her own body weight in eggs every day.' },
+    { fact: 'Bees were the inspiration for hexagonal honeycomb structures in aerospace engineering — used in aircraft wings, satellite components, and the International Space Station for their strength-to-weight ratio.' },
+    { fact: 'The famous "killer bee" (Africanized honey bee) is no more venomous than European bees per sting — they\'re just more defensive and pursue intruders longer.' },
+  ];
+
+  // ─── Hive failure modes — what kills colonies ──────────────────────────
+  var FAILURE_MODES = [
+    {
+      mode: 'Starvation',
+      description: 'Colony runs out of stored honey before nectar flows resume',
+      season: 'Late winter / early spring (Feb-Apr)',
+      indicators: ['Dead bees head-first in empty cells (frozen mid-feed)', 'No honey adjacent to cluster', 'Cluster very small'],
+      prevention: 'Ensure 60-80 lbs of stored honey going into winter. Feed sugar fondant in emergency.',
+      bigPicture: 'The "starvation paradox" — colonies often die with food in the hive, but on the wrong side of the cluster. They can\'t leave the cluster to reach it on a cold day.',
+    },
+    {
+      mode: 'Queen failure',
+      description: 'Old, injured, or poorly-mated queen lays poorly or stops laying',
+      season: 'Any time, especially fall',
+      indicators: ['Spotty brood pattern', 'Drone-laying worker pattern (multiple eggs per cell, mostly drone brood)', 'Population declining', 'No fresh eggs visible'],
+      prevention: 'Requeen annually or biannually with a mated queen from a good source.',
+      bigPicture: 'A failing queen is the single most common requeening trigger.',
+    },
+    {
+      mode: 'Varroa + DWV',
+      description: 'Mite load reaches critical threshold; deformed wing virus crashes the brood',
+      season: 'Late summer / fall',
+      indicators: ['Crawling bees with crumpled wings in front of hive', 'Spotty brood', 'Capped brood that doesn\'t emerge', 'High mite counts in samples'],
+      prevention: 'Monitor mite counts; treat at 3% threshold; rotate treatment chemistries to prevent resistance.',
+      bigPicture: 'The number-one cause of overwintering loss in modern beekeeping. Even good colonies can collapse if mites aren\'t managed.',
+    },
+    {
+      mode: 'Absconding',
+      description: 'Entire colony — queen and all — abandons the hive',
+      season: 'Spring or after major disturbance',
+      indicators: ['Empty hive with no dead bees, often with honey still present'],
+      causes: 'Severe stress: pest infestation, repeated disturbance, environmental contamination, very poor location',
+      prevention: 'Choose a stable, undisturbed location. Manage pests aggressively. Avoid frequent unnecessary inspections.',
+    },
+    {
+      mode: 'Pesticide kill',
+      description: 'Acute pesticide exposure kills foragers',
+      season: 'During flowering crop sprays',
+      indicators: ['Large piles of dead bees at hive entrance', 'Twitching or convulsing bees', 'Sudden population crash with no other symptoms'],
+      prevention: 'Locate apiary away from intensively-sprayed crops. Communicate with neighboring farmers. Document and report kills to state apiarist.',
+      bigPicture: 'Acute kills are dramatic but sublethal exposure (foraging confusion, reduced immune function) is more common and harder to detect.',
+    },
+    {
+      mode: 'Robbing',
+      description: 'Bees from other colonies invade weak colonies to steal honey, ultimately destroying them',
+      season: 'Late summer dearth',
+      indicators: ['Fighting at entrance', 'Bees attempting to enter from all sides', 'Torn wax cappings on robbed comb', 'Rapid honey loss'],
+      prevention: 'Reduce entrances on weak colonies. Avoid spilling honey or sugar syrup near apiaries. Don\'t leave dead colonies in place.',
+    },
+    {
+      mode: 'Swarmed-out / queenless',
+      description: 'Colony swarmed but failed to raise a successor queen; or queen was lost during virgin mating flight',
+      season: 'Spring after a swarm',
+      indicators: ['No eggs or young larvae', 'No queen cells', 'Population declining', 'Workers may begin laying (drone-layer)'],
+      prevention: 'Monitor after a swarm; if no queen cells or new queen within 3 weeks, requeen.',
+    },
+    {
+      mode: 'Mouse damage',
+      description: 'Mice enter unguarded hives in fall and chew comb',
+      season: 'Late fall / winter',
+      indicators: ['Shredded comb', 'Mouse nests in hive corners', 'Strong urine smell'],
+      prevention: 'Install mouse guards at entrance before first hard frost. Reduce entrance.',
+    },
+    {
+      mode: 'Skunks',
+      description: 'Skunks scratch at hive entrances at night, eat bees that come out to investigate',
+      indicators: ['Scratched soil in front of hive', 'Bees acting defensive during day', 'Skunk tracks'],
+      prevention: 'Elevate hive 18+ inches. Use a "scratch board" with nails pointing up below entrance (forces skunk to expose vulnerable belly).',
+    },
+    {
+      mode: 'Bears',
+      description: 'Bears destroy hives for honey and brood; major problem in some Maine areas',
+      indicators: ['Hives torn apart, comb eaten', 'Bear tracks'],
+      prevention: 'Electric fence (2-3 wires; baited with bacon or honey for first lesson). The only reliable deterrent.',
+    },
+    {
+      mode: 'Cold + dampness',
+      description: 'Wet bees can\'t survive winter. Condensation dripping on cluster is deadly.',
+      season: 'Winter',
+      prevention: 'Top ventilation, insulated cover, slight tilt forward so condensation runs off rather than dripping.',
+    },
+    {
+      mode: 'Foulbrood (AFB)',
+      description: 'Bacterial brood disease; spores persist in equipment for 70+ years',
+      indicators: ['Sunken, perforated brood caps', 'Sour smell', 'Ropy test positive (toothpick pulls out a thread)'],
+      prevention: 'Buy bees only from reputable sources. Inspect new equipment. Re-queen with hygienic stock.',
+      response: 'Most states require burning of infected equipment. Call the state apiarist.',
+    },
+  ];
+
+  // ─── Lesson plan templates ────────────────────────────────────────────
+  var LESSON_PLAN_TEMPLATES = [
+    {
+      title: 'Why are bees disappearing?',
+      grade: '6-8',
+      duration: '50 minutes',
+      objectives: [
+        'Identify the major contributing factors to honey bee decline',
+        'Evaluate proposed solutions',
+        'Construct an argument supported by evidence',
+      ],
+      standards: ['NGSS MS-LS2-4'],
+      sequence: [
+        '(5 min) Hook: Show short video of a varroa mite on a bee. Have students react.',
+        '(10 min) Direct instruction: 5 major factors (varroa, pesticides, habitat loss, nutrition, climate)',
+        '(20 min) Small group: Each group researches one factor in depth',
+        '(10 min) Carousel share: Groups rotate, share findings',
+        '(5 min) Closure: Each student writes one sentence answer: "What\'s the most important thing we can do?"',
+      ],
+      assessment: 'Exit ticket — students must support their answer with at least one piece of evidence from group research',
+      materials: 'Internet access, research prompts, exit ticket forms',
+    },
+    {
+      title: 'The waggle dance: invertebrate communication',
+      grade: '7-12',
+      duration: '60 minutes',
+      objectives: [
+        'Decode a sample waggle dance into direction and distance',
+        'Explain how Karl von Frisch confirmed the dance carries information',
+        'Compare the waggle dance to human symbolic communication',
+      ],
+      standards: ['NGSS HS-LS1-1 (biological functions)', 'NGSS HS-LS2-8 (social interactions)'],
+      sequence: [
+        '(10 min) Show von Frisch archival footage with narration',
+        '(15 min) Direct instruction with diagrams: how angle and duration encode info',
+        '(20 min) Activity: Students translate sample dances on worksheet AND construct a dance for a teacher-given location',
+        '(15 min) Discussion: How is this similar to/different from human language? What counts as language?',
+      ],
+      assessment: 'Worksheet + discussion participation',
+    },
+    {
+      title: 'Pollinator garden design',
+      grade: '3-12',
+      duration: 'Multiple sessions over a unit',
+      objectives: [
+        'Design a garden that supports pollinators through the growing season',
+        'Apply ecological principles (diversity, succession, native species)',
+        'Possibly: plant the garden as a school project',
+      ],
+      standards: ['NGSS 3-LS2-1', 'NGSS MS-LS2-1'],
+      sequence: [
+        'Session 1: Identify a real or imaginary site; survey existing conditions',
+        'Session 2: Research plants for the region; build a sequence of bloom calendar',
+        'Session 3: Design layout on graph paper; consider sun, water, scale',
+        'Session 4: Present designs to class for peer feedback',
+        'Optional: Acquire plants and install the garden',
+      ],
+      assessment: 'Final design portfolio with justifications',
+    },
+    {
+      title: 'Hive math: real-world numbers',
+      grade: '4-7',
+      duration: '45 minutes',
+      objectives: [
+        'Use multiplication, division, and unit conversion to solve real-world problems',
+        'Recognize that math models can describe natural systems',
+      ],
+      sequence: [
+        '(5 min) Frame: "Honey bees do everything by the numbers. Let\'s do their math."',
+        '(30 min) Stations with different problems (from BEE_MATH_PROBLEMS): bee miles, honey weight, pollination counts, brood development',
+        '(10 min) Share strategies and answers',
+      ],
+      assessment: 'Math problem set with explanations of strategy',
+    },
+    {
+      title: 'Build a mason bee house',
+      grade: '3-12',
+      duration: '90 minutes',
+      objectives: [
+        'Provide nesting habitat for native solitary bees',
+        'Understand that not all bees live in colonies',
+      ],
+      sequence: [
+        '(15 min) Intro to native bees — diversity beyond honey bees',
+        '(60 min) Build (untreated wood, drill 5/16" holes 5-6" deep)',
+        '(15 min) Plan placement (south/southeast facing, 4-6 ft off ground)',
+      ],
+      crossCurricular: 'Math (measurement), shop skills, life science',
+    },
+    {
+      title: 'Honey tasting and sensory science',
+      grade: '3-8',
+      duration: '40 minutes',
+      objectives: [
+        'Use sensory observation to compare different honeys',
+        'Connect flavor differences to source plants',
+      ],
+      sequence: [
+        '(5 min) Intro: where honey comes from',
+        '(25 min) Tasting with score sheets (4-6 single-source honeys)',
+        '(10 min) Reveal sources; discuss why each tastes different',
+      ],
+      cautions: 'Check for allergies. No honey for kids under 12 months (botulism risk).',
+    },
+    {
+      title: 'From egg to bee: development timeline',
+      grade: '3-6',
+      duration: '45 minutes',
+      objectives: [
+        'Order the stages of bee development',
+        'Recognize that all insects undergo metamorphosis',
+      ],
+      sequence: [
+        '(5 min) Hook: show photos of egg, larva, pupa, adult',
+        '(15 min) Direct instruction: 21-day worker timeline',
+        '(20 min) Activity: students make a 21-day calendar showing what bees look like each day',
+        '(5 min) Closure: compare to butterfly metamorphosis',
+      ],
+    },
+    {
+      title: 'Eusociality: living as a superorganism',
+      grade: '9-12',
+      duration: '60 minutes',
+      objectives: [
+        'Define eusociality and identify its components',
+        'Explain how kin selection makes worker sterility evolutionarily stable',
+        'Apply concepts to other eusocial species (ants, termites, naked mole rats)',
+      ],
+      standards: ['NGSS HS-LS4-4 (selection and adaptation)'],
+      sequence: [
+        '(15 min) Direct instruction: definition + Hamilton\'s rule',
+        '(20 min) Activity: calculate relatedness in haplodiploidy. Sisters share 75% of genes with each other but only 50% with their own offspring — why does that make sterility favored?',
+        '(15 min) Compare eusociality across species',
+        '(10 min) Discussion: Is human society eusocial? Why or why not?',
+      ],
+    },
+  ];
+
+  // ─── Pollinator decline policy + advocacy ─────────────────────────────
+  var POLICY_ADVOCACY = [
+    {
+      action: 'Plant native flowers',
+      level: 'Individual',
+      impact: 'Supports local pollinators directly. Even a 4×8 ft patch helps.',
+    },
+    {
+      action: 'Stop using neonicotinoid pesticides',
+      level: 'Individual / community',
+      impact: 'Imidacloprid, clothianidin, thiamethoxam are devastating to bees. Check labels and avoid them.',
+    },
+    {
+      action: 'Reduce lawn area',
+      level: 'Individual',
+      impact: 'Lawns are pollinator deserts. Convert some lawn to meadow or pollinator garden.',
+    },
+    {
+      action: 'Leave bare soil patches',
+      level: 'Individual',
+      impact: '70% of native bees nest in soil; mulch everywhere prevents this.',
+    },
+    {
+      action: 'Buy local honey',
+      level: 'Individual',
+      impact: 'Supports local beekeepers, who in turn support local pollinator habitat.',
+    },
+    {
+      action: 'Support pollinator-friendly zoning',
+      level: 'Local government',
+      impact: 'Many cities have outdated ordinances against backyard beekeeping. Advocate for change.',
+    },
+    {
+      action: 'Push for IPM (Integrated Pest Management) in your municipality',
+      level: 'Local government',
+      impact: 'IPM uses targeted, threshold-based pesticide application rather than calendar spraying. Better for pollinators.',
+    },
+    {
+      action: 'Vote for pollinator-friendly state policies',
+      level: 'State',
+      impact: 'Several states (Maine, Maryland, Connecticut, New York) have restricted neonics. Federal action lags.',
+    },
+    {
+      action: 'Support the Pollinator Protection Act',
+      level: 'Federal',
+      impact: 'Federal legislation that would restrict neonics on federal lands and fund pollinator research.',
+    },
+    {
+      action: 'Donate to pollinator conservation organizations',
+      level: 'National',
+      examples: ['Xerces Society', 'Pollinator Partnership', 'Bee Informed Partnership', 'Pollinator.org'],
+    },
+    {
+      action: 'Educate others',
+      level: 'Personal / community',
+      impact: 'Sharing what you learn matters. Most people\'s "bee fear" comes from confusion with yellowjackets.',
+    },
+    {
+      action: 'Plant pollinator strips on farms',
+      level: 'Agricultural',
+      impact: 'Set-aside strips of native flowers along field edges support bees and provide natural pest control. NRCS cost-share programs are available.',
+    },
+    {
+      action: 'Encourage school pollinator gardens',
+      level: 'School',
+      impact: 'Combines education with habitat creation; engages a generation of kids.',
+    },
+    {
+      action: 'Get certified as a Bee Campus or Bee City',
+      level: 'Institution / municipality',
+      impact: 'Xerces Society certification program requiring pollinator commitments. Maine has several certified campuses.',
+    },
+  ];
+
+  // ─── Bee-themed art and culture ──────────────────────────────────────
+  var BEE_CULTURE = [
+    {
+      work: 'The Life of the Bee (book)',
+      author: 'Maurice Maeterlinck',
+      year: 1901,
+      notes: 'Belgian playwright\'s lyrical meditation on bee biology. Romantic and sometimes anthropomorphic, but inspired generations of naturalists.',
+    },
+    {
+      work: 'Honey from a Weed (book)',
+      author: 'Patience Gray',
+      year: 1986,
+      notes: 'Mediterranean food memoir with deep beekeeping connections.',
+    },
+    {
+      work: 'The Secret Life of Bees (novel)',
+      author: 'Sue Monk Kidd',
+      year: 2001,
+      notes: '1960s-era American South novel using beekeeping as central metaphor. Made into a film.',
+    },
+    {
+      work: 'Honeybee Democracy (book)',
+      author: 'Thomas Seeley',
+      year: 2010,
+      notes: 'Decades of swarm research; how 10,000 bees make a single decision. Used as a metaphor for collective intelligence in many fields.',
+    },
+    {
+      work: 'The Lives of Bees (book)',
+      author: 'Thomas Seeley',
+      year: 2019,
+      notes: 'How bees live in the wild, outside of managed hives. Foundational for thinking about natural beekeeping.',
+    },
+    {
+      work: 'The Beekeeper of Aleppo (novel)',
+      author: 'Christy Lefteri',
+      year: 2019,
+      notes: 'Syrian refugee story centered on beekeeping. Won 2020 Aspen Words Literary Prize.',
+    },
+    {
+      work: 'The Bee Movie (film)',
+      year: 2007,
+      notes: 'Jerry Seinfeld animated film. Loved by some, derided by others. Sparked many memes.',
+    },
+    {
+      work: 'More Than Honey (documentary)',
+      year: 2012,
+      notes: 'German-Swiss documentary on global beekeeping. Visually stunning, sobering.',
+    },
+    {
+      work: 'Vanishing of the Bees (documentary)',
+      year: 2009,
+      notes: 'Early documentary on CCD; widely shown in schools.',
+    },
+    {
+      work: 'Queen of the Sun (documentary)',
+      year: 2010,
+      notes: 'Film tackling pollinator crisis with focus on biodynamic and organic approaches.',
+    },
+    {
+      work: 'Flight of the Bumblebee (music)',
+      author: 'Nikolai Rimsky-Korsakov',
+      year: 1899,
+      notes: 'Orchestral interlude from "The Tale of Tsar Saltan." Demanding virtuoso piece, especially for solo instruments.',
+    },
+    {
+      work: 'Sylvia Plath bee poems',
+      year: 1962,
+      notes: 'Five-poem sequence in "Ariel" using beekeeping as personal and political metaphor. "The Bee Meeting," "The Arrival of the Bee Box," "Stings," "The Swarm," "Wintering."',
+    },
+    {
+      work: 'Beehive State (nickname)',
+      year: 'Historical',
+      notes: 'Utah\'s official state nickname. Comes from a Mormon use of "deseret" (beehive) as a symbol of industry. The state insect of Utah is the honey bee.',
+    },
+    {
+      work: 'Beehive hairstyle',
+      year: '1960s',
+      notes: 'Margaret Vinci Heldt invented the look in 1960 for Modern Beauty Shop magazine. Named for resemblance to a domed bee skep.',
+    },
+    {
+      work: 'Bees in heraldry',
+      notes: 'The Barberini family of Florence used three bees on their crest. Napoleon\'s imperial robes were embroidered with golden bees. Symbols of industry, royalty, and immortality across European heraldry.',
+    },
+    {
+      work: 'Bee in religion',
+      notes: 'In ancient Egypt, the bee was sacred to Ra. The Quran has a chapter named "The Bee" (An-Nahl). Honey is a symbol of paradise in many traditions. Christian art used beeswax candles symbolically (Easter Vigil paschal candle is pure beeswax).',
+    },
+    {
+      work: '"Busy as a bee" / "Queen bee" / "Drone"',
+      notes: 'English-language idioms reflect millennia of close human observation of bees. "Beeline," "honeyed words," "to bee or not to bee" (pun heritage long).',
+    },
+  ];
+
+  // ─── Common misconceptions to address ──────────────────────────────────
+  var BEE_MISCONCEPTIONS = [
+    {
+      myth: 'All bees can sting',
+      reality: 'Only female bees have stingers (modified ovipositors). Drones (males) cannot sting. Many native bees are too small to deliver a sting that penetrates human skin. Stingless bee species (Meliponini) have stingers that don\'t function.',
+    },
+    {
+      myth: 'Bees and wasps are the same thing',
+      reality: 'Bees evolved from wasps ~130 million years ago when they switched from hunting to pollen. Bees are fuzzy and vegetarian; wasps are smooth and predatory. Yellowjackets are wasps, not bees.',
+    },
+    {
+      myth: 'Bees aggressively chase humans',
+      reality: 'Honey bees only sting defensively. The bees foraging on flowers are not interested in you. Only if you swat at them or approach their hive will they defend. Africanized bees defend in larger numbers but the trigger is the same.',
+    },
+    {
+      myth: 'A queen rules the hive',
+      reality: 'The queen doesn\'t make decisions. She\'s the only egg-layer but workers control everything else, including raising new queens when she fails. The colony is decentralized.',
+    },
+    {
+      myth: 'Honey is bee vomit',
+      reality: 'Foragers carry nectar in a specialized honey crop (separate from their digestive stomach) and pass it mouth-to-mouth to house bees. The nectar is enzymatically processed and water-evaporated into honey. It\'s closer to "bee storage" than "bee vomit."',
+    },
+    {
+      myth: 'Bees only live a few weeks',
+      reality: 'Summer workers do live ~6 weeks. But winter workers can live 4-6 months. Queens live 2-5 years.',
+    },
+    {
+      myth: 'Local honey cures allergies',
+      reality: 'Mixed evidence at best. Most seasonal allergens are wind-pollinated plants (grasses, ragweed, tree pollens), not the flowers bees visit. Honey contains primarily insect-pollinated plant pollens. Some people report relief, but rigorous studies haven\'t supported the claim.',
+    },
+    {
+      myth: 'Saving honey bees will save pollinators',
+      reality: 'Honey bees are managed livestock — they\'re not threatened with extinction. Native pollinators are. Beekeeping is fine but isn\'t pollinator conservation in itself. Plant native flowers and reduce pesticides to help all pollinators.',
+    },
+    {
+      myth: 'Pesticides only kill bees on contact',
+      reality: 'Neonicotinoids are systemic — taken up by plants and present in nectar and pollen. Sublethal doses cause foraging confusion, immune suppression, and learning deficits. The damage is often invisible until colonies collapse.',
+    },
+    {
+      myth: 'Bees freeze in winter',
+      reality: 'Bees cluster and generate heat through muscle contractions. The cluster core stays at 90-95°F even when outside temperatures are below zero. Individual bees on the outer surface rotate inward to warm up.',
+    },
+    {
+      myth: 'Bees recognize their owner',
+      reality: 'Not proven. Bees can recognize human faces in lab experiments (when rewarded with sugar), and some experienced beekeepers feel their bees know them. But the evidence is thin. They probably do recognize the patterns of disturbance, smoke, and approach, not the person specifically.',
+    },
+    {
+      myth: 'Killer bees are deadlier than European bees',
+      reality: 'Africanized "killer" bees are more defensive and pursue intruders longer, but a single sting is no more venomous. Most fatalities involve large numbers of stings from a defending colony, not exceptional venom potency.',
+    },
+    {
+      myth: 'A bee dies right after stinging',
+      reality: 'True only for honey bee workers stinging into mammalian skin (barbed stinger pulls out). Honey bees can sting each other without dying. Queens have smooth stingers and can sting repeatedly. Bumblebees and most other bees can sting multiple times.',
+    },
+    {
+      myth: 'If you find a swarm, call exterminators',
+      reality: 'Call a local beekeeper instead! Swarms are gentle (no brood to defend, full bellies of honey) and welcome. Most beekeepers will collect a swarm for free. Most state beekeeping associations have swarm hotlines.',
+    },
+    {
+      myth: 'Honey is the same as sugar',
+      reality: 'Honey is ~80% sugar (fructose + glucose, plus minor sugars), 18% water, and 2% trace amounts of vitamins, minerals, enzymes, and antimicrobial compounds. Nutritionally similar to sugar but with additional bioactive components. Diabetics should treat it like sugar.',
+    },
+    {
+      myth: 'Bees can\'t fly mathematically',
+      reality: 'A persistent meme based on a 1934 calculation that assumed rigid wings and steady flow. Actual bee flight involves rapid wing rotation and dynamic stall, which generate plenty of lift. The myth dies hard but should.',
+    },
+  ];
+
+  // ─── Bee body parts illustrated reference ───────────────────────────
+  var BEE_PARTS_LABELED = [
+    { part: 'Antenna', count: 2, location: 'Head', function: 'Sense smell, taste, touch, sound, humidity' },
+    { part: 'Compound eye', count: 2, location: 'Head', function: 'See color, motion, polarized light, UV' },
+    { part: 'Ocellus (simple eye)', count: 3, location: 'Top of head', function: 'Detect light intensity and orient during flight' },
+    { part: 'Mandible', count: 2, location: 'Mouth', function: 'Chew wax, grip, fight' },
+    { part: 'Proboscis (tongue)', count: 1, location: 'Mouth', function: 'Suck nectar; folds when not in use' },
+    { part: 'Pharynx', count: 1, location: 'Inside head', function: 'Pump nectar to honey crop' },
+    { part: 'Forewing', count: 2, location: 'Thorax (top)', function: 'Primary flight surfaces' },
+    { part: 'Hindwing', count: 2, location: 'Thorax (top)', function: 'Couple to forewings via hamuli to make one continuous airfoil' },
+    { part: 'Front leg', count: 2, location: 'Thorax', function: 'Pollen brush + antenna cleaner notch' },
+    { part: 'Middle leg', count: 2, location: 'Thorax', function: 'Spur for cleaning pollen basket, prying wax' },
+    { part: 'Hind leg', count: 2, location: 'Thorax', function: 'Pollen basket (corbicula) for transporting pollen' },
+    { part: 'Wax gland', count: 8, location: 'Underside of abdomen (worker, age 12-18 days)', function: 'Produce wax flakes for comb building' },
+    { part: 'Honey stomach (crop)', count: 1, location: 'Abdomen', function: 'Transport nectar from forage site to hive' },
+    { part: 'True stomach', count: 1, location: 'Abdomen', function: 'Digest food for the bee herself' },
+    { part: 'Heart', count: 1, location: 'Abdomen', function: 'Pump hemolymph through tube-shaped circulatory system' },
+    { part: 'Spiracle', count: '~10 pairs', location: 'Thorax + abdomen', function: 'Breathing openings (bees don\'t breathe through mouth)' },
+    { part: 'Stinger', count: 1, location: 'Tip of abdomen (worker, queen)', function: 'Defense (worker barbed = single-use; queen smooth = reusable)' },
+    { part: 'Venom sac', count: 1, location: 'Behind stinger', function: 'Pump melittin and other toxins after stinging' },
+    { part: 'Nasonov gland', count: 1, location: 'Abdomen', function: 'Release "I\'m here" pheromone for swarming and orientation' },
+    { part: 'Mandibular gland', count: 2, location: 'Head', function: 'Produce alarm pheromone (worker) or queen pheromone (queen)' },
+    { part: 'Hypopharyngeal gland', count: 2, location: 'Head', function: 'Produce royal jelly (young workers) or honey-processing enzymes (older workers)' },
+  ];
+
+  // ─── Bee vocabulary by grade band ─────────────────────────────────────
+  var BEE_VOCABULARY = [
+    {
+      gradeBand: 'K-2',
+      words: ['bee', 'hive', 'honey', 'flower', 'pollen', 'nectar', 'wing', 'sting', 'queen', 'worker', 'buzz', 'beehive'],
+    },
+    {
+      gradeBand: '3-5',
+      words: ['colony', 'pollinate', 'pollination', 'beeswax', 'honeycomb', 'apiary', 'beekeeper', 'forager', 'drone', 'larva', 'pupa', 'metamorphosis', 'antenna', 'compound eye', 'pollen basket'],
+    },
+    {
+      gradeBand: '6-8',
+      words: ['superorganism', 'eusocial', 'waggle dance', 'pheromone', 'caste', 'haplodiploidy', 'varroa', 'colony collapse', 'mutualism', 'coevolution', 'monoculture', 'neonicotinoid', 'IPM', 'corbicula', 'beebread'],
+    },
+    {
+      gradeBand: '9-12',
+      words: ['kin selection', 'Hamilton\'s rule', 'inclusive fitness', 'altruism', 'reproductive division of labor', 'thermogenesis', 'invertase', 'melittin', 'thigmotropism', 'photoperiodism', 'supersedure', 'absconding', 'optic flow', 'ommatidium', 'thelytoky'],
+    },
+  ];
+
+  // ─── Bees and other ecosystems ─────────────────────────────────────────
+  var ECOSYSTEM_CONNECTIONS = [
+    {
+      ecosystem: 'Forest',
+      connections: [
+        'Tree pollination: maples, basswood, locust, tupelo, sourwood — major nectar trees',
+        'Cavity nesting: feral honey bee colonies often inhabit hollow trees',
+        'Understory plants depend on bees for reproduction',
+      ],
+    },
+    {
+      ecosystem: 'Grassland / meadow',
+      connections: [
+        'Floral diversity is highest in undisturbed meadows',
+        'Bumblebees especially favor meadow habitats',
+        'Ground-nesting bees benefit from sparse vegetation and bare soil patches',
+      ],
+    },
+    {
+      ecosystem: 'Agricultural',
+      connections: [
+        'Bee-pollinated crops: apples, almonds, blueberries, cherries, cucurbits, almost all fruit and many vegetables',
+        'Cover crops (clover, buckwheat) provide nectar between cash crops',
+        'Pesticide use threatens both managed honey bees and wild pollinators',
+      ],
+    },
+    {
+      ecosystem: 'Urban / suburban',
+      connections: [
+        'Cities can be surprisingly bee-rich due to floral diversity (gardens, parks)',
+        'Pollinator gardens transform yards into habitat',
+        'Urban beekeeping is growing globally',
+      ],
+    },
+    {
+      ecosystem: 'Wetland',
+      connections: [
+        'Aquatic plants (water lilies, pickerelweed) provide bee forage',
+        'Wet meadows favor bumblebees and other natives',
+        'Cattail flowering peak supports pollinators in late summer',
+      ],
+    },
+    {
+      ecosystem: 'Coastal',
+      connections: [
+        'Beach plum, beach pea, goldenrod — pollinator plants of coastal habitats',
+        'Salt marsh aster bloom for late-season foragers',
+        'Maine coastal islands once hosted feral honey bee colonies',
+      ],
+    },
+    {
+      ecosystem: 'Arctic / boreal',
+      connections: [
+        'Bumblebees are the dominant pollinators in subarctic and arctic regions',
+        'Bumblebee queens can warm up faster in cold air than honey bees can',
+        'Climate change is shifting bee ranges northward',
+      ],
+    },
+  ];
+
+  // ─── How to start beekeeping (practical guide) ────────────────────────
+  var STARTING_BEEKEEPING = [
+    {
+      step: '1. Read first',
+      details: [
+        'Read at least one general beekeeping book before buying any equipment',
+        'Suggested: "The Backyard Beekeeper" by Kim Flottum, "Natural Beekeeping" by Ross Conrad',
+        'Watch videos: University of Guelph YouTube channel, Bob Binnie, Frederick Dunn',
+      ],
+    },
+    {
+      step: '2. Find local mentors',
+      details: [
+        'Join your state beekeeping association (Maine: MSBA)',
+        'Attend meetings of your local beekeeping chapter',
+        'Find a mentor who has at least 3 years of experience',
+        'Mentors are the difference between losing your first colony and not',
+      ],
+    },
+    {
+      step: '3. Take a beginner class',
+      details: [
+        'Many universities and clubs offer winter classes for spring beekeepers',
+        'University of Maine Cooperative Extension is a Maine resource',
+        '~$50-150 for 6-8 sessions — best investment in beekeeping',
+      ],
+    },
+    {
+      step: '4. Check local regulations',
+      details: [
+        'Most US states require colony registration',
+        'Some municipalities have urban beekeeping rules (setbacks, hive limits)',
+        'Notify neighbors before installing hives — manage relationships proactively',
+      ],
+    },
+    {
+      step: '5. Pick a hive type',
+      details: [
+        '8-frame Langstroth (mediums) — recommended for beginners: easier on the back',
+        '10-frame Langstroth (deeps) — traditional but heavy',
+        'Top-bar hive — lower entry cost but unusual; harder to find local help',
+        'Warré hive — vertical top-bar; favored by some natural-beekeeping advocates',
+      ],
+    },
+    {
+      step: '6. Buy equipment in winter',
+      details: [
+        'For each hive: 2 brood boxes + 2-3 honey supers + frames + foundation + bottom board + inner + outer cover + entrance reducer + mouse guard',
+        'Personal gear: smoker, hive tool, suit/jacket, gloves, bee brush',
+        'Budget: $300-500 per hive for a complete starter setup',
+        'Buy from reputable suppliers (Mann Lake, Dadant, BetterBee, BrushyMountain)',
+      ],
+    },
+    {
+      step: '7. Order bees in winter',
+      details: [
+        'Packages: 3-lb wire-screened box of bees with a caged queen ($150-200). Available April-May.',
+        'Nucs: 4-5 frames of brood, comb, bees, and queen ($150-250). Better for beginners. Available May-June.',
+        'Splits from local beekeepers: ideal — known genetics, local-adapted, often mentor-supported',
+      ],
+    },
+    {
+      step: '8. Site selection',
+      details: [
+        'Morning sun, afternoon shade (in summer)',
+        'Wind break to the north',
+        'Flat, dry ground; level the hive slightly tilted forward',
+        '50+ feet from neighbors\' high-traffic areas',
+        'Water source nearby (within 100 feet)',
+      ],
+    },
+    {
+      step: '9. Install and inspect carefully',
+      details: [
+        'Install bees on a warm, calm day (60°F+, no rain)',
+        'First inspection 1 week later: verify queen is laying',
+        'Inspect every 1-2 weeks during active season; watch for swarming signs',
+        'Less is often more — don\'t over-inspect',
+      ],
+    },
+    {
+      step: '10. Plan for year 2+',
+      details: [
+        'Year 1: build comb, build population. Don\'t expect to harvest much honey.',
+        'Year 2: should be your first significant honey crop',
+        'Treat for varroa starting late summer',
+        'Plan winter prep by August',
+      ],
+    },
+  ];
+
+  // ─── Beekeeping costs (realistic budget) ───────────────────────────────
+  var BEEKEEPING_COSTS = [
+    {
+      category: 'Initial setup (per hive)',
+      items: [
+        { item: '2 deep brood boxes + frames + foundation', cost: '$80-100' },
+        { item: '2 medium honey supers + frames + foundation', cost: '$60-80' },
+        { item: 'Bottom board (screened)', cost: '$20-30' },
+        { item: 'Inner cover', cost: '$15-20' },
+        { item: 'Outer cover (telescoping)', cost: '$20-30' },
+        { item: 'Entrance reducer + mouse guard', cost: '$5-10' },
+        { item: 'Bees (nuc, locally)', cost: '$180-250' },
+        { item: 'Stand (cinder blocks or pressure-treated)', cost: '$15-30' },
+      ],
+      subtotal: '$395-550 per hive',
+    },
+    {
+      category: 'Personal gear',
+      items: [
+        { item: 'Bee jacket with veil', cost: '$60-120' },
+        { item: 'Gloves', cost: '$10-25' },
+        { item: 'Hive tool', cost: '$8-15' },
+        { item: 'Smoker', cost: '$30-50' },
+        { item: 'Bee brush', cost: '$5-10' },
+        { item: 'First aid kit (epinephrine if allergic)', cost: '$10+ or RX' },
+      ],
+      subtotal: '$120-220',
+    },
+    {
+      category: 'Ongoing annual',
+      items: [
+        { item: 'Sugar for fall/winter feeding', cost: '$10-30' },
+        { item: 'Varroa treatments', cost: '$15-40' },
+        { item: 'Replacement queen if needed', cost: '$35-50' },
+        { item: 'Extracting equipment rental or club use', cost: 'often free with membership' },
+        { item: 'Bottles and labels for selling honey', cost: '$20-100' },
+        { item: 'State registration', cost: '$5-25 depending on state' },
+      ],
+      subtotal: '$85-245 per year',
+    },
+    {
+      category: 'Honey harvest (year 2+)',
+      items: [
+        { item: 'Average per-hive yield in Maine', stat: '20-60 lbs/year' },
+        { item: 'Retail value of local honey', stat: '$8-15/lb' },
+        { item: 'Gross revenue per hive', stat: '$160-900/year' },
+      ],
+      note: 'Break-even on initial investment usually takes 2-3 years for a single-hive hobbyist',
+    },
+    {
+      category: 'Cost-saving tips',
+      list: [
+        'Buy from local beekeepers selling used equipment (inspect for AFB first)',
+        'Build your own hive boxes from rough lumber',
+        'Catch swarms (free bees!)',
+        'Trade pollination services for honey with local farmers',
+        'Join a club that owns shared extracting equipment',
+      ],
+    },
+  ];
+
   window.StemLab.registerTool('beehive', {
     icon: '\uD83D\uDC1D',
     label: 'Beehive Simulator',
