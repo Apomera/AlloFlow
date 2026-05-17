@@ -182,7 +182,8 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   const handleSetupOfflineSubmissions = async () => {
     const SC = window.AlloModules && window.AlloModules.SubmissionCrypto;
     if (!SC || typeof SC.generateClassKeypair !== "function") {
-      if (window.AlloFlowUX) window.AlloFlowUX.toast("Submission crypto module not loaded yet. Please refresh and try again.", 'error'); else alert("Submission crypto module not loaded yet. Please refresh and try again.");
+      if (window.AlloFlowUX) window.AlloFlowUX.toast("Submission crypto module not loaded yet. Please refresh and try again.", "error");
+      else alert("Submission crypto module not loaded yet. Please refresh and try again.");
       return;
     }
     if (rosterKey?.submissionKey?.publicJwk) {
@@ -227,7 +228,8 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
       );
     } catch (err) {
       console.error("handleSetupOfflineSubmissions failed:", err);
-      if (window.AlloFlowUX) window.AlloFlowUX.toast("Could not set up submissions: " + (err && err.message ? err.message : "unknown error"), 'error'); else alert("Could not set up submissions: " + (err && err.message ? err.message : "unknown error"));
+      if (window.AlloFlowUX) window.AlloFlowUX.toast("Could not set up submissions: " + (err && err.message ? err.message : "unknown error"), "error");
+      else alert("Could not set up submissions: " + (err && err.message ? err.message : "unknown error"));
     }
   };
   const handleAddGroup = () => {
@@ -332,7 +334,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
       className: "flex-1 px-2 py-1 rounded-lg border border-slate-400 text-slate-700 text-xs focus:ring-2 focus:ring-indigo-400 focus:outline-none"
     }
   ));
-  return /* @__PURE__ */ React.createElement("div", { ref: panelRef, role: "dialog", "aria-modal": "true", className: "fixed inset-0 z-[260] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col border-2 border-indigo-100 animate-in zoom-in-95 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between p-5 border-b border-slate-100" }, /* @__PURE__ */ React.createElement("div", { "data-help-key": "roster_panel_header" }, /* @__PURE__ */ React.createElement("h2", { className: "text-lg font-black text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(ClipboardList, { size: 20, className: "text-indigo-500" }), " ", isParentMode ? "Family Learning Profiles" : isIndependentMode ? "My Learning Profile" : t("roster.title") || "Class Roster & Progress Tracking"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-0.5" }, isParentMode ? "Manage family member profiles and track learning progress" : isIndependentMode ? "Manage your learning profile and track your progress" : t("roster.subtitle") || "Organize student groups with differentiated profiles for instruction")), /* @__PURE__ */ React.createElement("button", { onClick: onClose, className: "p-2 rounded-full hover:bg-slate-100 transition-colors", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 20, className: "text-slate-600" }))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 px-5 py-3 border-b border-slate-50 bg-slate-50/50" }, /* @__PURE__ */ React.createElement("button", { onClick: () => fileInputRef.current?.click(), className: "px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-colors flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Upload, { size: 14 }), " ", t("roster.import") || "Import JSON"), /* @__PURE__ */ React.createElement("button", { onClick: handleExport, disabled: !rosterKey, className: "px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-xs font-bold hover:bg-green-100 transition-colors flex items-center gap-1.5 disabled:opacity-40" }, /* @__PURE__ */ React.createElement(Download, { size: 14 }), " ", t("roster.export") || "Export JSON"), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { ref: panelRef, role: "dialog", "aria-modal": "true", "aria-labelledby": "teacher-roster-panel-title", className: "fixed inset-0 z-[260] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col border-2 border-indigo-100 animate-in zoom-in-95 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between p-5 border-b border-slate-100" }, /* @__PURE__ */ React.createElement("div", { "data-help-key": "roster_panel_header" }, /* @__PURE__ */ React.createElement("h2", { id: "teacher-roster-panel-title", className: "text-lg font-black text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(ClipboardList, { size: 20, className: "text-indigo-500" }), " ", isParentMode ? "Family Learning Profiles" : isIndependentMode ? "My Learning Profile" : t("roster.title") || "Class Roster & Progress Tracking"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-0.5" }, isParentMode ? "Manage family member profiles and track learning progress" : isIndependentMode ? "Manage your learning profile and track your progress" : t("roster.subtitle") || "Organize student groups with differentiated profiles for instruction")), /* @__PURE__ */ React.createElement("button", { onClick: onClose, className: "p-2 rounded-full hover:bg-slate-100 transition-colors", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 20, className: "text-slate-600" }))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 px-5 py-3 border-b border-slate-50 bg-slate-50/50" }, /* @__PURE__ */ React.createElement("button", { onClick: () => fileInputRef.current?.click(), className: "px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-colors flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Upload, { size: 14 }), " ", t("roster.import") || "Import JSON"), /* @__PURE__ */ React.createElement("button", { onClick: handleExport, disabled: !rosterKey, className: "px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-xs font-bold hover:bg-green-100 transition-colors flex items-center gap-1.5 disabled:opacity-40" }, /* @__PURE__ */ React.createElement(Download, { size: 14 }), " ", t("roster.export") || "Export JSON"), /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: handleSetupOfflineSubmissions,
@@ -390,7 +392,9 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
         key: c,
         onClick: () => handleUpdateGroupMeta(gId, "color", c),
         className: `w-5 h-5 rounded-full border-2 transition-all ${group.color === c ? "border-slate-800 scale-110" : "border-transparent hover:scale-105"}`,
-        style: { backgroundColor: c }
+        style: { backgroundColor: c },
+        "aria-label": (t("roster.set_group_color") || "Set group color") + " " + c,
+        "aria-pressed": group.color === c
       }
     )))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 gap-2 bg-slate-50 p-3 rounded-xl" }, /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.grade") || "Grade", value: group.profile?.gradeLevel, field: "gradeLevel", gId, type: "select", options: GRADE_OPTIONS }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.language") || "Language", value: group.profile?.leveledTextLanguage, field: "leveledTextLanguage", gId, type: "select", options: LANG_OPTIONS }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.reading") || "Reading Lvl", value: group.profile?.readingLevel, field: "readingLevel", gId }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.interests") || "Interests", value: group.profile?.studentInterests, field: "studentInterests", gId }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.dok") || "DOK Level", value: group.profile?.dokLevel, field: "dokLevel", gId, type: "select", options: ["1", "2", "3", "4"] }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.tts_speed") || "TTS Speed", value: group.profile?.ttsSpeed, field: "ttsSpeed", gId, type: "range" }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.karaoke") || "Karaoke", value: group.profile?.karaokeMode, field: "karaokeMode", gId, type: "toggle" }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.simplify") || "Simplify", value: group.profile?.simplifyLevel, field: "simplifyLevel", gId, type: "select", options: ["basic", "intermediate", "advanced"] }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.custom") || "Custom Instr.", value: group.profile?.leveledTextCustomInstructions, field: "leveledTextCustomInstructions", gId })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("roster.students_in_group") || "Students"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, gStudents.map((name) => /* @__PURE__ */ React.createElement("span", { key: name, className: "inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-medium" }, name, rosterKey?.progressHistory?.[name]?.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-indigo-100 text-indigo-500 px-1 py-0.5 rounded-full font-mono", title: `${rosterKey.progressHistory[name].length} sessions` }, rosterKey.progressHistory[name].length, "s"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleMoveStudent(name, ""), className: "hover:text-red-500 transition-colors ml-0.5", "aria-label": "Remove " + name }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), gStudents.length === 0 && /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 italic" }, t("roster.no_students") || "No students assigned"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 pt-2 border-t border-slate-100" }, /* @__PURE__ */ React.createElement("button", { onClick: () => onApplyGroup(gId), className: "px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition-colors flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 12 }), " ", t("roster.apply_to_generator") || "Apply to Generator"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleRemoveGroup(gId), className: "px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors ml-auto flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Trash2, { size: 12 }), " ", t("roster.delete_group") || "Delete Group"))));
   }), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 items-center p-3 border-2 border-dashed border-slate-200 rounded-xl hover:border-indigo-300 transition-colors" }, /* @__PURE__ */ React.createElement(
@@ -410,7 +414,9 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
       key: c,
       onClick: () => setNewGroupColor(c),
       className: `w-4 h-4 rounded-full border-2 ${newGroupColor === c ? "border-slate-800" : "border-transparent"}`,
-      style: { backgroundColor: c }
+      style: { backgroundColor: c },
+      "aria-label": (t("roster.new_group_color") || "New group color") + " " + c,
+      "aria-pressed": newGroupColor === c
     }
   ))), /* @__PURE__ */ React.createElement(
     "button",
@@ -1105,7 +1111,7 @@ const EscapeRoomTeacherControls = React.memo(({ sessionData, activeSessionCode, 
     t("escape_room.end_game")
   )))));
 });
-const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, activeSessionCode, appId: appId2, onGenerateImage, onRefineImage, onCreateGroup, onAssignStudent, onSetGroupResource, isPushingResource = {}, onSetGroupLanguage, onSetGroupProfile, onDeleteGroup }) => {
+const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, activeSessionCode, appId: appId2, onGenerateImage, onRefineImage, onCreateGroup, onAssignStudent, onSetGroupResource, isPushingResource = {}, onSetGroupLanguage, onSetGroupProfile, onDeleteGroup, history = [] }) => {
   const { t } = useContext(LanguageContext);
   const { quizState, roster } = sessionData;
   const { currentQuestionIndex, phase, responses, mode, bossStats, teamScores } = quizState;
@@ -1156,6 +1162,20 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
       return next;
     });
   };
+  const toggleQuizRoutingRuleHiddenId = (rid, resourceId) => {
+    setQuizRoutingRulesByQ((prev) => {
+      const next = { ...prev };
+      next[currentQuestionIndex] = (next[currentQuestionIndex] || []).map((r) => {
+        if (r.id !== rid) return r;
+        const current = Array.isArray(r.then.hiddenResourceIds) ? r.then.hiddenResourceIds : [];
+        const has = current.indexOf(resourceId) !== -1;
+        const updated = has ? current.filter((x) => x !== resourceId) : current.concat([resourceId]);
+        return { ...r, then: { ...r.then, hiddenResourceIds: updated } };
+      });
+      return next;
+    });
+  };
+  const hideableResources = (Array.isArray(history) ? history : []).filter((item) => item && item.id && item.type && !["udl-advice", "brainstorm", "alignment-report"].includes(item.type));
   const totalStudents = roster ? Object.keys(roster).length : 0;
   const answeredCount = responses ? Object.keys(responses).length : 0;
   const percentage = totalStudents > 0 ? Math.round(answeredCount / totalStudents * 100) : 0;
@@ -1585,45 +1605,61 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     /* @__PURE__ */ React.createElement("span", null, showQuizRoutingPanel ? "\u25BE" : "\u25B8"),
     /* @__PURE__ */ React.createElement("span", null, "\u{1F4CA} Auto-routing rules for this question"),
     /* @__PURE__ */ React.createElement("span", { className: "font-normal text-amber-700" }, "(", currentRules.length, " rule", currentRules.length === 1 ? "" : "s", ")")
-  ), showQuizRoutingPanel && /* @__PURE__ */ React.createElement("div", { className: "mt-2 space-y-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-700 leading-snug" }, "When a student answers, auto-assign them to a group. Use this for ", /* @__PURE__ */ React.createElement("strong", null, "choice"), ' (e.g., "Pirate Crew vs Space Crew") or ', /* @__PURE__ */ React.createElement("strong", null, "formative-assessment"), " routing. Group resources can then be staged per group via the Groups panel above."), groupEntriesForRouting.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-red-700 italic" }, t("teacher.quiz_routing.no_groups_warning") || "Create at least one group in the Groups panel above before adding routing rules."), currentRules.map((rule) => /* @__PURE__ */ React.createElement("div", { key: rule.id, className: "flex flex-wrap items-center gap-1 bg-white border border-amber-200 rounded p-1.5 text-xs" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, t("teacher.quiz_routing.when_answer_label") || "When answer"), /* @__PURE__ */ React.createElement(
-    "select",
-    {
-      "aria-label": "Predicate",
-      value: rule.when.predicate,
-      onChange: (e) => updateQuizRoutingRule(rule.id, { when: { predicate: e.target.value } }),
-      className: "px-1 py-0.5 border border-slate-300 rounded text-xs"
-    },
-    /* @__PURE__ */ React.createElement("option", { value: "eq" }, "is"),
-    /* @__PURE__ */ React.createElement("option", { value: "in" }, "is one of")
-  ), /* @__PURE__ */ React.createElement(
-    "select",
-    {
-      "aria-label": t("teacher.quiz_routing.answer_option_aria") || "Answer option",
-      value: rule.when.predicate === "in" ? "" : rule.when.value,
-      onChange: (e) => updateQuizRoutingRule(rule.id, { when: { value: e.target.value } }),
-      className: "px-1 py-0.5 border border-slate-300 rounded text-xs"
-    },
-    /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014 pick option \u2014"),
-    (question?.options || []).map((opt, oi) => /* @__PURE__ */ React.createElement("option", { key: oi, value: opt }, String.fromCharCode(65 + oi), ": ", opt))
-  ), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "\u2192 assign to"), /* @__PURE__ */ React.createElement(
-    "select",
-    {
-      "aria-label": t("teacher.quiz_routing.target_group_aria") || "Target group",
-      value: rule.then.groupId,
-      onChange: (e) => updateQuizRoutingRule(rule.id, { then: { groupId: e.target.value } }),
-      className: "px-1 py-0.5 border border-slate-300 rounded text-xs"
-    },
-    /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014 pick group \u2014"),
-    groupEntriesForRouting.map(([gid, g2]) => /* @__PURE__ */ React.createElement("option", { key: gid, value: gid }, g2.name || gid))
-  ), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      onClick: () => removeQuizRoutingRule(rule.id),
-      "aria-label": t("teacher.quiz_routing.remove_rule_aria") || "Remove rule",
-      className: "ml-auto px-1.5 py-0.5 text-red-700 hover:bg-red-50 rounded border border-red-200"
-    },
-    "\u2715"
-  ))), /* @__PURE__ */ React.createElement(
+  ), showQuizRoutingPanel && /* @__PURE__ */ React.createElement("div", { className: "mt-2 space-y-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-700 leading-snug" }, "When a student answers, auto-assign them to a group. Use this for ", /* @__PURE__ */ React.createElement("strong", null, "choice"), ' (e.g., "Pirate Crew vs Space Crew") or ', /* @__PURE__ */ React.createElement("strong", null, "formative-assessment"), " routing. Group resources can then be staged per group via the Groups panel above."), groupEntriesForRouting.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-red-700 italic" }, t("teacher.quiz_routing.no_groups_warning") || "Create at least one group in the Groups panel above before adding routing rules."), currentRules.map((rule) => {
+    const hiddenIds = Array.isArray(rule.then.hiddenResourceIds) ? rule.then.hiddenResourceIds : [];
+    return /* @__PURE__ */ React.createElement("div", { key: rule.id, className: "bg-white border border-amber-200 rounded p-1.5 text-xs space-y-1" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, t("teacher.quiz_routing.when_answer_label") || "When answer"), /* @__PURE__ */ React.createElement(
+      "select",
+      {
+        "aria-label": "Predicate",
+        value: rule.when.predicate,
+        onChange: (e) => updateQuizRoutingRule(rule.id, { when: { predicate: e.target.value } }),
+        className: "px-1 py-0.5 border border-slate-300 rounded text-xs"
+      },
+      /* @__PURE__ */ React.createElement("option", { value: "eq" }, "is"),
+      /* @__PURE__ */ React.createElement("option", { value: "in" }, "is one of")
+    ), /* @__PURE__ */ React.createElement(
+      "select",
+      {
+        "aria-label": t("teacher.quiz_routing.answer_option_aria") || "Answer option",
+        value: rule.when.predicate === "in" ? "" : rule.when.value,
+        onChange: (e) => updateQuizRoutingRule(rule.id, { when: { value: e.target.value } }),
+        className: "px-1 py-0.5 border border-slate-300 rounded text-xs"
+      },
+      /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014 pick option \u2014"),
+      (question?.options || []).map((opt, oi) => /* @__PURE__ */ React.createElement("option", { key: oi, value: opt }, String.fromCharCode(65 + oi), ": ", opt))
+    ), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "\u2192 assign to"), /* @__PURE__ */ React.createElement(
+      "select",
+      {
+        "aria-label": t("teacher.quiz_routing.target_group_aria") || "Target group",
+        value: rule.then.groupId || "",
+        onChange: (e) => updateQuizRoutingRule(rule.id, { then: { groupId: e.target.value } }),
+        className: "px-1 py-0.5 border border-slate-300 rounded text-xs"
+      },
+      /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014 pick group \u2014"),
+      groupEntriesForRouting.map(([gid, g2]) => /* @__PURE__ */ React.createElement("option", { key: gid, value: gid }, g2.name || gid))
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => removeQuizRoutingRule(rule.id),
+        "aria-label": t("teacher.quiz_routing.remove_rule_aria") || "Remove rule",
+        className: "ml-auto px-1.5 py-0.5 text-red-700 hover:bg-red-50 rounded border border-red-200"
+      },
+      "\u2715"
+    )), hideableResources.length > 0 && /* @__PURE__ */ React.createElement("details", { className: "mt-1" }, /* @__PURE__ */ React.createElement("summary", { className: "text-[11px] text-slate-600 cursor-pointer hover:text-slate-800" }, hiddenIds.length > 0 ? `\u2192 Also hide ${hiddenIds.length} resource${hiddenIds.length === 1 ? "" : "s"}` : "\u2192 Also hide resources (optional)"), /* @__PURE__ */ React.createElement("div", { className: "mt-1 pl-2 pt-1 border-t border-amber-100 space-y-0.5 max-h-32 overflow-y-auto" }, /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 italic mb-1" }, "Students whose answer matches this rule won't see the checked resources in their history panel. Other students still see everything."), hideableResources.map((item) => {
+      const isChecked = hiddenIds.indexOf(item.id) !== -1;
+      const label = item.title || item.data && item.data.title || item.type || item.id;
+      return /* @__PURE__ */ React.createElement("label", { key: item.id, className: "flex items-center gap-1.5 text-[11px] text-slate-700 hover:bg-amber-50 rounded px-1 py-0.5 cursor-pointer" }, /* @__PURE__ */ React.createElement(
+        "input",
+        {
+          type: "checkbox",
+          checked: isChecked,
+          onChange: () => toggleQuizRoutingRuleHiddenId(rule.id, item.id),
+          "aria-label": `Hide ${label} from students matching this rule`,
+          className: "cursor-pointer"
+        }
+      ), /* @__PURE__ */ React.createElement("span", { className: "text-slate-500 uppercase text-[9px] font-bold min-w-[40px]" }, item.type), /* @__PURE__ */ React.createElement("span", { className: "truncate flex-1" }, label));
+    }))));
+  }), /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: addQuizRoutingRule,
@@ -3666,9 +3702,10 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
       ref: modalRef,
       role: "dialog",
       "aria-modal": "true",
+      "aria-labelledby": "teacher-grading-dashboard-title",
       className: "fixed inset-0 z-[200] bg-slate-100 flex flex-col animate-in fade-in duration-300"
     },
-    /* @__PURE__ */ React.createElement("div", { className: "bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm shrink-0 z-10 flex flex-col" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 sm:p-4 flex flex-wrap justify-between items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 sm:gap-3 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-100 p-2 rounded-lg text-indigo-600 shrink-0" }, /* @__PURE__ */ React.createElement(Layout, { size: 24 })), /* @__PURE__ */ React.createElement("h2", { className: "text-base sm:text-xl font-black text-slate-800 truncate" }, t("dashboard.grading_dashboard"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 sm:gap-2 flex-wrap" }, dashboardData.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { className: "bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm shrink-0 z-10 flex flex-col" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 sm:p-4 flex flex-wrap justify-between items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 sm:gap-3 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-100 p-2 rounded-lg text-indigo-600 shrink-0" }, /* @__PURE__ */ React.createElement(Layout, { size: 24 })), /* @__PURE__ */ React.createElement("h2", { id: "teacher-grading-dashboard-title", className: "text-base sm:text-xl font-black text-slate-800 truncate" }, t("dashboard.grading_dashboard"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 sm:gap-2 flex-wrap" }, dashboardData.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: handleExportCSV,
@@ -4187,7 +4224,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
         })), st.teacherNote && /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 italic mt-2" }, '"', st.teacherNote, '"'));
       }));
     })()))))),
-    showClearConfirm && /* @__PURE__ */ React.createElement("div", { role: "button", tabIndex: 0, className: "fixed inset-0 z-[300] bg-black/50 flex items-center justify-center animate-in fade-in duration-200", onClick: () => setShowClearConfirm(false) }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl p-6 max-w-sm mx-4 animate-in zoom-in-95 duration-200", role: "dialog", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-red-100 p-3 rounded-full" }, /* @__PURE__ */ React.createElement(Trash2, { size: 24, className: "text-red-600" })), /* @__PURE__ */ React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, t("dashboard.clear_all"))), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 mb-6" }, t("dashboard.clear_confirm")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3" }, /* @__PURE__ */ React.createElement(
+    showClearConfirm && /* @__PURE__ */ React.createElement("div", { role: "button", tabIndex: 0, className: "fixed inset-0 z-[300] bg-black/50 flex items-center justify-center animate-in fade-in duration-200", onClick: () => setShowClearConfirm(false) }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl p-6 max-w-sm mx-4 animate-in zoom-in-95 duration-200", role: "dialog", "aria-modal": "true", "aria-labelledby": "teacher-clear-confirm-title", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-red-100 p-3 rounded-full" }, /* @__PURE__ */ React.createElement(Trash2, { size: 24, className: "text-red-600" })), /* @__PURE__ */ React.createElement("h3", { id: "teacher-clear-confirm-title", className: "text-lg font-bold text-slate-800" }, t("dashboard.clear_all"))), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 mb-6" }, t("dashboard.clear_confirm")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3" }, /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: () => setShowClearConfirm(false),

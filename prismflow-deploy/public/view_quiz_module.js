@@ -2641,7 +2641,8 @@
     isPushingResource: isPushingResource,
     onSetGroupLanguage: handleSetGroupLanguage,
     onSetGroupProfile: handleSetGroupProfile,
-    onDeleteGroup: handleDeleteGroup
+    onDeleteGroup: handleDeleteGroup,
+    history: props.history
   })), /*#__PURE__*/React.createElement("div", {
     className: "flex justify-end px-4"
   }, /*#__PURE__*/React.createElement("button", {
