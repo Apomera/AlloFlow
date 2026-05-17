@@ -1016,9 +1016,9 @@
     // Header
     h += '<h1>\uD83E\uDDF1 ' + (lesson.title || 'Geometry World Worksheet') + '</h1>';
     h += '<div class="header">';
-    h += '<div><label>Name:</label> <input type="text" placeholder=""></div>';
-    h += '<div><label>Date:</label> <input type="text" placeholder=""></div>';
-    h += '<div><label>Player #:</label> <input type="text" placeholder="" style="width:50px"></div>';
+    h += '<div><label for="gw-ws-name">Name:</label> <input id="gw-ws-name" type="text" placeholder="" aria-label="Name"></div>';
+    h += '<div><label for="gw-ws-date">Date:</label> <input id="gw-ws-date" type="text" placeholder="" aria-label="Date"></div>';
+    h += '<div><label for="gw-ws-player">Player #:</label> <input id="gw-ws-player" type="text" placeholder="" style="width:50px" aria-label="Player number"></div>';
     h += '</div>';
 
     // Description

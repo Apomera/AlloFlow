@@ -391,6 +391,7 @@ const TeacherGate = React.memo(({ isOpen, onClose, onUnlock }) => {
             <div>
                 <input
                     type="password"
+                    autoComplete="current-password"
                     value={passwordInput}
                     onChange={(e) => {
                         setPasswordInput(e.target.value);
@@ -464,6 +465,7 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired }) => {
     ref={roleRef}
     role="dialog"
     aria-modal="true"
+    aria-labelledby="role-selection-title"
     className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-md overflow-y-auto py-8 px-4 animate-in fade-in duration-300"
   >
     <div className="min-h-full flex items-center justify-center">
@@ -476,7 +478,7 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired }) => {
            <Layers size={48} className="text-indigo-600" />
         </div>
       </div>
-      <h2 className="text-3xl font-black text-slate-800 mb-2 tracking-tight">{t('roles.title')}</h2>
+      <h2 id="role-selection-title" className="text-3xl font-black text-slate-800 mb-2 tracking-tight">{t('roles.title')}</h2>
       <p className="text-slate-600 mb-8 font-medium">{t('roles.subtitle')}</p>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <button

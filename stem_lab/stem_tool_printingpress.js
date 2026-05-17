@@ -587,7 +587,125 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         sameFears:       [{ id: 'beforeAfter', hook: 'See the real-world events the critics feared — Reformation, religious wars, scientific revolution.' },
                           { id: 'economics', hook: 'The economics of mass print — the same cost-collapse argument we now have about AI.' }],
         dayInShop:       [{ id: 'people', hook: 'Meet the actual people who made these decisions — Gutenberg, Fust, Schöffer, Guillard.' },
-                          { id: 'economics', hook: 'See the financial math behind the decisions you just made.' }]
+                          { id: 'economics', hook: 'See the financial math behind the decisions you just made.' }],
+        globalPrinting:  [{ id: 'beforeAfter', hook: 'Now see how the European print revolution unfolded — knowing it was not the first.' },
+                          { id: 'people', hook: 'Meet the Korean, Chinese, and Japanese figures who deserve as much space as Gutenberg.' }],
+        paperMaking:     [{ id: 'economics', hook: 'See how the paper-price collapse drove the book-cost collapse.' },
+                          { id: 'pressMechanism', hook: 'Watch the paper you just made travel through the press.' }],
+        typeFoundry:     [{ id: 'castingType', hook: 'See the actual three-step casting process behind every sort you designed.' },
+                          { id: 'setType', hook: 'Take type into the composing stick and set a phrase by hand.' }],
+        bookbinding:     [{ id: 'economics', hook: 'Bookbinding doubled the cost of every book — see why.' },
+                          { id: 'pressMechanism', hook: 'See where bound pages start: the press itself.' }],
+        censorship:      [{ id: 'sameFears', hook: 'The same anti-print fears that motivated censorship are alive today against the internet + AI.' },
+                          { id: 'beforeAfter', hook: 'See what the censors most feared — Reformation, scientific revolution, vernacular Bibles.' }],
+        firstNews:       [{ id: 'broadside', hook: 'Compose your own period news sheet using the broadside builder.' },
+                          { id: 'beforeAfter', hook: 'See where the first newspapers fit on the print-history timeline.' }],
+        apprenticeJourney: [{ id: 'dayInShop', hook: 'A single day in the shop — see the day-to-day texture of the years you just simulated.' },
+                            { id: 'people', hook: 'Meet the historical figures whose career arcs your journey paralleled.' }],
+        mainePrinters:   [{ id: 'beforeAfter', hook: 'See where Maine fits on the global print-history timeline.' },
+                          { id: 'people', hook: 'Meet the national printers whose techniques Maine inherited.' }],
+        musicPrinting:   [{ id: 'castingType', hook: 'See how staff lines + notes had to be cast separately as type sorts.' },
+                          { id: 'people', hook: 'Meet Ottaviano Petrucci, who solved music printing in 1501.' }],
+        mapsAtlases:     [{ id: 'beforeAfter', hook: 'See how maps changed worldview in the print era.' },
+                          { id: 'people', hook: 'Meet Mercator, Ortelius, and the cartographers of the 1500s-1600s.' }],
+        childrensBooks:  [{ id: 'broadside', hook: 'Make your own period broadside — chapbooks were essentially broadsides folded.' },
+                          { id: 'typographyToday', hook: 'See how children\'s book typography differs from adult typography.' }],
+        sciPublishing:   [{ id: 'firstNews', hook: 'See how scientific journals diverged from general newspapers in the 1600s.' },
+                          { id: 'censorship', hook: 'See how scientific publishing has resisted censorship across history.' }],
+        letterpressToday: [{ id: 'pressMechanism', hook: 'See the press technology that letterpress artists still use today.' },
+                           { id: 'broadside', hook: 'Design a broadside — many letterpress shops would gladly print yours.' }],
+        pressVariants:   [{ id: 'pressMechanism', hook: 'Start with the original wooden screw press, then see how it evolved.' },
+                          { id: 'letterpressToday', hook: 'See which press variants letterpress artists still use today.' }],
+        reformation:     [{ id: 'beforeAfter', hook: 'See where the Reformation print war fits in print history.' },
+                          { id: 'censorship', hook: 'See how Catholic authorities tried (+ failed) to censor Protestant pamphlets.' }],
+        colorPrinting:   [{ id: 'mapsAtlases', hook: 'See how color printing transformed cartography.' },
+                          { id: 'childrensBooks', hook: 'See how color printing enabled the modern picture book.' }],
+        booksChanged:    [{ id: 'beforeAfter', hook: 'See the timeline of each book\'s impact.' },
+                          { id: 'people', hook: 'Meet the authors who shaped the world through print.' }],
+        printRevolution: [{ id: 'firstNews', hook: 'See how newspapers became revolutionary infrastructure.' },
+                          { id: 'broadside', hook: 'See the broadside form that shaped political organizing.' }],
+        bookObject:      [{ id: 'bookbinding', hook: 'See how the binding choices we just covered affect a book\'s value.' },
+                          { id: 'paperMaking', hook: 'See why early-paper analysis is core to dating + authenticating books.' }],
+        inkMaterials:    [{ id: 'castingType', hook: 'See the metal type that ink was developed to print well from.' },
+                          { id: 'pressMechanism', hook: 'See the press the ink had to work in.' }],
+        translation:     [{ id: 'people', hook: 'Meet specific translators (Tyndale + Luther) whose work changed languages.' },
+                          { id: 'reformation', hook: 'See how vernacular Bible translation was central to the Reformation print war.' }],
+        propaganda:      [{ id: 'sameFears', hook: 'See the long pattern of using print to scare + persuade.' },
+                          { id: 'censorship', hook: 'See how authorities respond to propaganda they didn\'t print.' }],
+        comics:          [{ id: 'colorPrinting', hook: 'See how chromolithography + later color printing enabled comics.' },
+                          { id: 'childrensBooks', hook: 'See how comics + children\'s books co-evolved.' }],
+        futurePrint:     [{ id: 'pressVariants', hook: 'See where digital + AI fit on the long timeline of press technology.' },
+                          { id: 'sameFears', hook: 'See how every new printing technology arrived with the same warnings.' }],
+        famousShops:     [{ id: 'people', hook: 'Meet the famous people who worked in these famous shops.' },
+                          { id: 'pressMechanism', hook: 'See the press technology these shops actually operated.' }],
+        printReligion:   [{ id: 'translation', hook: 'See how Bible translation drove vernacular religious print.' },
+                          { id: 'beforeAfter', hook: 'See where religious print sits on the broader print-history timeline.' }],
+        printEducation:  [{ id: 'childrensBooks', hook: 'See how children\'s books + textbooks co-evolved.' },
+                          { id: 'economics', hook: 'See how textbook economics differ from book-trade economics.' }],
+        printMoney:      [{ id: 'colorPrinting', hook: 'See the color + printing techniques used for security printing.' },
+                          { id: 'famousShops', hook: 'See major security-printing firms among the famous shops.' }],
+        libraryHistory:  [{ id: 'bookObject', hook: 'See the books that libraries collect + preserve.' },
+                          { id: 'censorship', hook: 'See the long history of libraries vs censors.' }],
+        magazines:       [{ id: 'firstNews', hook: 'See where magazines fit on the newspaper/periodical timeline.' },
+                          { id: 'comics', hook: 'See how magazines + comics co-evolved.' }],
+        encyclopedias:   [{ id: 'famousShops', hook: 'See the printers who produced major encyclopedias.' },
+                          { id: 'libraryHistory', hook: 'See why encyclopedias are central to library reference collections.' }],
+        dictionaries:    [{ id: 'translation', hook: 'See how dictionary work intersects with translation.' },
+                          { id: 'typographyToday', hook: 'See typography conventions used in dictionary layout.' }],
+        cookbooks:       [{ id: 'selfhelp', hook: 'See how cookbooks + self-help share the practical-instruction tradition.' },
+                          { id: 'people', hook: 'Meet famous food writers across centuries.' }],
+        selfhelp:        [{ id: 'cookbooks', hook: 'See how self-help shares roots with the cookbook tradition.' },
+                          { id: 'beforeAfter', hook: 'See almanacs + self-help on the long timeline of practical print.' }],
+        paperSustain:    [{ id: 'paperMaking', hook: 'See how paper has always been a sustainability question.' },
+                          { id: 'mainePrinters', hook: 'See where Maine paper mills sit in the modern industry.' }],
+        comicStrips:     [{ id: 'comics', hook: 'See how comic strips + comic books co-evolved.' },
+                          { id: 'magazines', hook: 'See where comic strips fit in periodical publishing.' }],
+        printWar:        [{ id: 'propaganda', hook: 'See the propaganda side of wartime print.' },
+                          { id: 'firstNews', hook: 'See how war reporting shaped newspaper journalism.' }],
+        famousBinders:   [{ id: 'bookbinding', hook: 'Back to the technical basics of bookbinding.' },
+                          { id: 'bookObject', hook: 'See how famous bindings affect book-collecting value.' }],
+        maineAuthors:    [{ id: 'mainePrinters', hook: 'See the Maine printers who produced these authors\' books.' },
+                          { id: 'people', hook: 'Meet more authors from the broader print-history tour.' }],
+        printTourism:    [{ id: 'mapsAtlases', hook: 'See how maps + guidebooks evolved together.' },
+                          { id: 'magazines', hook: 'See how travel magazines fit alongside guidebooks.' }],
+        printHealthcare: [{ id: 'sciPublishing', hook: 'See how medical publishing fits within scientific publishing.' },
+                          { id: 'selfhelp', hook: 'See how patient education fits within how-to publishing.' }],
+        fontIdentification: [{ id: 'typeFoundry', hook: 'Practice identifying the typefaces you can now design.' },
+                             { id: 'typographyToday', hook: 'Build typography vocabulary through the quiz.' }],
+        printPostage:    [{ id: 'printMoney', hook: 'See how postage stamps fit alongside other security printing.' },
+                          { id: 'propaganda', hook: 'See how direct mail has been used for political persuasion.' }],
+        printSports:     [{ id: 'magazines', hook: 'See sports magazines in the broader magazine context.' },
+                          { id: 'firstNews', hook: 'See how sports journalism fits in newspaper history.' }],
+        printArch:       [{ id: 'mapsAtlases', hook: 'See how architectural drawing relates to cartography.' },
+                          { id: 'famousShops', hook: 'See premier architecture publishers.' }],
+        printLaw:        [{ id: 'sciPublishing', hook: 'See how legal publishing parallels scientific publishing.' },
+                          { id: 'censorship', hook: 'See how legal print intersects with censorship law.' }],
+        genreRomance:    [{ id: 'magazines', hook: 'See romance magazine + serial fiction in periodical history.' },
+                          { id: 'genreMystery', hook: 'Compare romance + mystery genre conventions.' }],
+        genreSciFi:      [{ id: 'futurePrint', hook: 'See how sci-fi has shaped expectations of print\'s future.' },
+                          { id: 'magazines', hook: 'See pulp + sci-fi magazine traditions.' }],
+        genreMystery:    [{ id: 'genreRomance', hook: 'Compare mystery + romance genre conventions.' },
+                          { id: 'magazines', hook: 'See mystery magazine traditions.' }],
+        mangaDeep:       [{ id: 'comics', hook: 'See how manga fits in global comics context.' },
+                          { id: 'globalPrinting', hook: 'See manga as part of Japanese print tradition.' }],
+        photoBooks:      [{ id: 'magazines', hook: 'See photo magazines + photo-book traditions.' },
+                          { id: 'colorPrinting', hook: 'See color printing technology behind photo books.' }],
+        fanzines:        [{ id: 'comics', hook: 'See how zines + comics co-evolved.' },
+                          { id: 'genreSciFi', hook: 'See sci-fi fanzines that started the zine tradition.' }],
+        forgeries:       [{ id: 'bookObject', hook: 'See the book-as-artifact knowledge forgers must defeat.' },
+                          { id: 'paperMaking', hook: 'See how paper-dating catches many forgeries.' }],
+        manuscripts:     [{ id: 'libraryHistory', hook: 'See how libraries preserve manuscripts.' },
+                          { id: 'bookbinding', hook: 'See how manuscripts were bound + preserved.' }],
+        bookplates:      [{ id: 'bookObject', hook: 'See how bookplates affect collector value.' },
+                          { id: 'usedBooks', hook: 'See bookplate hunting in used bookstores.' }],
+        usedBooks:       [{ id: 'bookObject', hook: 'See how used-book hunting + collecting overlap.' },
+                          { id: 'libraryHistory', hook: 'See libraries\' role in used-book economies.' }],
+        cardCatalog:     [{ id: 'libraryHistory', hook: 'See the broader library history that catalogs serve.' },
+                          { id: 'encyclopedias', hook: 'See how catalog systems relate to reference works.' }],
+        diaryTradition:  [{ id: 'people', hook: 'Meet famous diarists.' },
+                          { id: 'magazines', hook: 'See how diary tradition relates to memoir + magazine writing.' }],
+        tarotOracle:     [{ id: 'colorPrinting', hook: 'See the color printing behind oracle decks.' },
+                          { id: 'fanzines', hook: 'See indie-press culture parallel to indie tarot.' }]
       };
       function crossLinkFooter(currentModId) {
         var links = CROSS_LINKS[currentModId];
@@ -691,6 +809,124 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           desc: 'Every new information technology arrives with the same warnings. The 1450 print critics and the 2026 internet/AI critics often share an argument. Some critics were right. Some were wrong. The grown-up question is: how do you tell which is which in your own time?', ready: true },
         { id: 'dayInShop', icon: '⚒️', label: 'A Day in the Shop', section: 'modules',
           desc: 'It is 1455 in a Mainz print shop. Choose a role — apprentice, compositor, pressman, or master printer — and walk through four decisions across a working day. Your choices shape who you become. Pure role-play history.', ready: true },
+        { id: 'globalPrinting', icon: '🌏', label: 'The Globe Goes Pressed', section: 'modules',
+          desc: 'Gutenberg was not first. Korea cast movable metal type in 1377 (Jikji). China had movable clay type by 1040. Japan printed in 770. The world had been printing for 700 years when a German goldsmith perfected the screw press.', ready: true },
+        { id: 'paperMaking', icon: '📃', label: 'Paper Making', section: 'modules',
+          desc: 'No press without paper. Rag paper supply chain from cotton/linen waste → pulp → sheet → press. Why paper price collapse before 1450 made Gutenberg even possible. Interactive sheet-forming sim.', ready: true },
+        { id: 'typeFoundry', icon: '🛠', label: 'Type Foundry Workshop', section: 'modules',
+          desc: 'Design your own typeface. Adjust x-height, weight, contrast, serifs. Watch how each decision affects readability + cost + period style. Goes deeper than the casting module.', ready: true },
+        { id: 'bookbinding', icon: '📖', label: 'Bookbinding Lab', section: 'modules',
+          desc: 'Printing made the pages — but a stack of paper is not a book. Fold (folio, quarto, octavo), gather, sew, bind. Interactive simulator of the bindery work that followed every print run.', ready: true },
+        { id: 'censorship', icon: '🚫', label: 'Censorship & The Index', section: 'modules',
+          desc: 'When books spread fast, authorities tried to control them. Imprimatur (license to print), 1559 Index of Forbidden Books, banned authors, samizdat smuggling. The 1500-year cat-and-mouse between print and power.', ready: true },
+        { id: 'firstNews', icon: '🗞', label: 'The First News Wave', section: 'modules',
+          desc: 'Newspapers did not exist for 150 years after Gutenberg. The first periodicals (1605 Strasbourg, 1622 London) invented how to publish news weekly. Walk through 4 historic front pages and the choices each editor made.', ready: true },
+        { id: 'apprenticeJourney', icon: '🎓', label: "Apprentice's Journey", section: 'modules',
+          desc: 'Take a 7-year journey from 14-year-old apprentice to journeyman printer. Choose your master, navigate the workshop hierarchy, accumulate skills, face career-defining decisions. Multi-year role-play sim.', ready: true },
+        { id: 'mainePrinters', icon: '🦞', label: 'Maine Printers Deep Dive', section: 'modules',
+          desc: 'Beyond the Falmouth Gazette. The printers of Portland, Bangor, Augusta, Belfast — newspaper presses, book printers, broadside makers across 250 years of Maine print history. Local connection.', ready: true },
+        { id: 'musicPrinting', icon: '🎼', label: 'Music Printing', section: 'modules',
+          desc: 'Ottaviano Petrucci printed the first polyphonic music in 1501 — a feat requiring three separate impressions per page. How sheet music got from medieval manuscript to your music stand.', ready: true },
+        { id: 'mapsAtlases', icon: '🗺', label: 'Maps + Atlases', section: 'modules',
+          desc: 'Cartographic printing — copperplate engraving, the 1570 Ortelius atlas (first modern atlas), Mercator projection (1569). How printed maps changed worldview.', ready: true },
+        { id: 'childrensBooks', icon: '🧸', label: "Children's Books", section: 'modules',
+          desc: 'Hornbooks (1500s reading primers) → chapbooks (penny stories) → Newbery + Caldecott era. A 500-year history of how children\'s books became their own form.', ready: true },
+        { id: 'sciPublishing', icon: '🔬', label: 'Scientific Publishing', section: 'modules',
+          desc: 'Royal Society Philosophical Transactions (1665) was the first scientific journal. How peer review + preprint servers + open access reshape what counts as scientific knowledge.', ready: true },
+        { id: 'letterpressToday', icon: '⚒️', label: 'Letterpress Today', section: 'modules',
+          desc: 'The 21st-century letterpress revival. Hatch Show Print (Nashville since 1879). Wedding invitations + art prints + craft brewery labels. Letterpress is alive.', ready: true },
+        { id: 'pressVariants', icon: '🏗', label: 'Press Variants Through Time', section: 'modules',
+          desc: 'Gutenberg\'s wooden screw press (1450) → Stanhope iron press (1800) → Adana tabletop (1922) → Heidelberg Windmill (1923) → digital. Every major press, what it did better.', ready: true },
+        { id: 'reformation', icon: '⚔️', label: 'The Reformation Print War', section: 'modules',
+          desc: '1517-1555: pamphlet war between Luther + Rome that the Reformers won partly because they printed faster + cheaper. The first information war.', ready: true },
+        { id: 'colorPrinting', icon: '🌈', label: 'Color Printing History', section: 'modules',
+          desc: 'Hand-coloring (1450-) → chromolithography (1837-) → photogravure (1880s) → CMYK offset (1950s) → digital RGB. How color got into print.', ready: true },
+        { id: 'booksChanged', icon: '📖', label: 'Books That Changed The World', section: 'modules',
+          desc: '15 specific books that altered history: from the Gutenberg Bible to Origin of Species to Silent Spring. Each one\'s story.', ready: true },
+        { id: 'printRevolution', icon: '🏴', label: 'Print + Revolution', section: 'modules',
+          desc: 'How print made the English Civil War, the American Revolution, the French Revolution, the 1848 European revolutions. Pamphlets + newspapers as political infrastructure.', ready: true },
+        { id: 'bookObject', icon: '📕', label: 'The Book As Object', section: 'modules',
+          desc: 'Incunabula, illuminated manuscripts, first editions, rare books. How to read a book as a physical artifact + how to start collecting.', ready: true },
+        { id: 'inkMaterials', icon: '🛢', label: 'Ink + Press Materials', section: 'modules',
+          desc: 'Lampblack + linseed oil + varnish. How printing ink was made for 500 years, why oil-based ink was Gutenberg\'s breakthrough, and modern formulations.', ready: true },
+        { id: 'translation', icon: '🔄', label: 'Translation + Translators', section: 'modules',
+          desc: 'Tyndale + Luther + the King James committee + modern Bible translation + literary translation today. How language crosses through print.', ready: true },
+        { id: 'propaganda', icon: '🗳', label: 'Print + Propaganda', section: 'modules',
+          desc: 'WWI posters, Nazi propaganda, Soviet posters, civil rights pamphlets, modern political ads. Print as instrument of persuasion + manipulation.', ready: true },
+        { id: 'comics', icon: '💥', label: 'Comics + Graphic Novels', section: 'modules',
+          desc: 'Yellow Kid (1896) → comic strips → superhero comics → underground comix → graphic novels. The text-image hybrid that became its own form.', ready: true },
+        { id: 'futurePrint', icon: '🔮', label: 'The Future of Print', section: 'modules',
+          desc: 'AI-generated print, 3D printing, e-ink + e-paper, print-on-demand, programmable matter. What might "printing" mean in 50 years.', ready: true },
+        { id: 'famousShops', icon: '🏪', label: 'Famous Print Shops Tour', section: 'modules',
+          desc: '12 historic print shops in detail: Gutenberg\'s Mainz workshop, the Aldine Press, Plantin Antwerp, Estienne Paris, Imprimerie Royale, Kelmscott, more. Each with founding date, output, surviving evidence.', ready: true },
+        { id: 'printReligion', icon: '✝', label: 'Print + Religion Beyond Bibles', section: 'modules',
+          desc: 'Hymnals, devotional tracts, theological treatises, Catechisms, Sunday-school papers. The Bible was only part of religious print — denominational publishing built modern religious infrastructure.', ready: true },
+        { id: 'printEducation', icon: '🎒', label: 'Print + Education', section: 'modules',
+          desc: 'McGuffey Readers, university press history, K-12 textbook market, modern open educational resources. How books built modern schooling.', ready: true },
+        { id: 'printMoney', icon: '💵', label: 'Print + Money (Security Printing)', section: 'modules',
+          desc: 'Banknotes, government bonds, postage stamps, passport printing. The high-stakes specialty of security printing — anti-counterfeiting features + their long arms race.', ready: true },
+        { id: 'libraryHistory', icon: '📚', label: 'The Library Through History', section: 'modules',
+          desc: 'Alexandria → monastery libraries → universities → Carnegie public libraries → digital archives. The institutional partner of print.', ready: true },
+        { id: 'magazines', icon: '🪧', label: 'The Modern Magazine', section: 'modules',
+          desc: 'Saturday Evening Post → New Yorker → Vogue → Wired → digital. The magazine as cultural institution.', ready: true },
+        { id: 'encyclopedias', icon: '🔍', label: 'Encyclopedias', section: 'modules',
+          desc: 'Pliny\'s Natural History → Diderot → Britannica → World Book → Wikipedia. The 2000-year project of compiling all knowledge.', ready: true },
+        { id: 'dictionaries', icon: '📝', label: 'Dictionaries', section: 'modules',
+          desc: 'Johnson\'s 1755 dictionary → Webster → OED → Merriam-Webster online. How language gets standardized into print.', ready: true },
+        { id: 'cookbooks', icon: '🍳', label: 'Cookbooks', section: 'modules',
+          desc: 'Apicius (ancient Rome) → Mrs. Beeton (1861) → Julia Child → modern celebrity chef cookbooks. Food + print history.', ready: true },
+        { id: 'selfhelp', icon: '💪', label: 'Self-Help + How-To', section: 'modules',
+          desc: 'How-to + self-help: a 200-year publishing tradition. Almanacs → home-improvement → diet books → modern self-help bestsellers.', ready: true },
+        { id: 'paperSustain', icon: '♻️', label: 'Paper Sustainability', section: 'modules',
+          desc: 'Forest management, recycled paper, the environmental impact of print. Why Maine\'s paper industry matters + where it\'s going.', ready: true },
+        { id: 'comicStrips', icon: '🐱', label: 'The Newspaper Comic Strip', section: 'modules',
+          desc: 'Peanuts → Garfield → Calvin & Hobbes → modern. The shrinking-but-enduring newspaper comic strip.', ready: true },
+        { id: 'printWar', icon: '⚔️', label: 'Print + War', section: 'modules',
+          desc: 'War correspondents, war posters, soldier newspapers, war photography. Print at the front + the home front.', ready: true },
+        { id: 'famousBinders', icon: '👜', label: 'Famous Bookbinders + Their Work', section: 'modules',
+          desc: 'Le Gascon, Padeloup, Cobden-Sanderson, Sangorski + Sutcliffe, Philip Smith. The art-binding tradition.', ready: true },
+        { id: 'maineAuthors', icon: '🦞', label: 'Maine Authors + Their Publishers', section: 'modules',
+          desc: 'Hawthorne, Longfellow, Stowe, Millay, King. The Maine literary tradition + how it has been published.', ready: true },
+        { id: 'printTourism', icon: '🧳', label: 'Print + Tourism', section: 'modules',
+          desc: 'Guidebooks (Baedeker, Murray, Lonely Planet), brochures, postcards. The travel-information industry.', ready: true },
+        { id: 'printHealthcare', icon: '⚕️', label: 'Print + Healthcare', section: 'modules',
+          desc: 'Medical reference, patient education, pharmaceutical inserts. The specialized world of medical publishing.', ready: true },
+        { id: 'fontIdentification', icon: '🔠', label: 'Font Identification Quiz', section: 'modules',
+          desc: 'Look at type samples. Identify the typeface. Build typography vision through 12 progressively harder rounds.', ready: true },
+        { id: 'printPostage', icon: '📬', label: 'Postage + Direct Mail', section: 'modules',
+          desc: 'Postage stamps, direct-mail advertising, junk mail. The 19th-c. shift that made print + the mail interlock.', ready: true },
+        { id: 'printSports', icon: '⚾', label: 'Print + Sports', section: 'modules',
+          desc: 'Sports journalism, baseball cards, programs, sports magazines, fan publications. Print + sports culture.', ready: true },
+        { id: 'printArch', icon: '🏛', label: 'Print + Architecture', section: 'modules',
+          desc: 'Architectural plans, blueprints, monographs, design magazines. How architects communicate visually.', ready: true },
+        { id: 'printLaw', icon: '⚖', label: 'Print + Law', section: 'modules',
+          desc: 'Legal codes, court reports, contracts, statutes. The specialized print of the legal profession.', ready: true },
+        { id: 'genreRomance', icon: '💖', label: 'Romance Novels', section: 'modules',
+          desc: 'Harlequin, Mills + Boon, modern romance. Biggest US fiction category by units; understudied.', ready: true },
+        { id: 'genreSciFi', icon: '🚀', label: 'Sci-Fi + Fantasy', section: 'modules',
+          desc: 'Pulp era → Tolkien → modern. Hugo + Nebula awards. The genre history.', ready: true },
+        { id: 'genreMystery', icon: '🔍', label: 'Mystery + Crime Fiction', section: 'modules',
+          desc: 'Poe + Conan Doyle → Christie + Hammett → modern. The 180-year crime-fiction tradition.', ready: true },
+        { id: 'mangaDeep', icon: '🎌', label: 'Manga Deep Dive', section: 'modules',
+          desc: 'Japanese manga: history, formats, major titles, global influence, Maine connections.', ready: true },
+        { id: 'photoBooks', icon: '📸', label: 'Photography Books', section: 'modules',
+          desc: 'Photo-books as art form. Robert Frank, Annie Leibovitz, Sebastião Salgado. The photo-book renaissance.', ready: true },
+        { id: 'fanzines', icon: '✂', label: 'Zines + Fanzines', section: 'modules',
+          desc: 'Sci-fi fanzines → punk zines → modern. DIY publishing tradition + the riot grrrl + early-90s zine boom.', ready: true },
+        { id: 'forgeries', icon: '🎭', label: 'Famous Forgeries + Fakes', section: 'modules',
+          desc: 'Vinland Map, Mark Hofmann, Hitler Diaries, Konrad Kujau. The history of book + manuscript forgery + how forgers got caught.', ready: true },
+        { id: 'manuscripts', icon: '🪶', label: 'Manuscripts + Calligraphy', section: 'modules',
+          desc: 'Pre-print writing tradition. Scriptoria, illuminated manuscripts, scribal arts. The Lindisfarne Gospels + Book of Kells.', ready: true },
+        { id: 'bookplates', icon: '🏷', label: 'Bookplates + Marginalia', section: 'modules',
+          desc: 'Ex libris bookplates, owners\' inscriptions, marginalia. The personal histories preserved in books.', ready: true },
+        { id: 'usedBooks', icon: '🏚', label: 'The Used Book Trade', section: 'modules',
+          desc: 'Powell\'s, Strand, secondhand bookstores. The economy of pre-owned books. Maine used bookstores.', ready: true },
+        { id: 'cardCatalog', icon: '🗂', label: 'The Library Card Catalog', section: 'modules',
+          desc: 'The 100+ year reference system that died. Dewey + Library of Congress classification. Why catalog cards mattered.', ready: true },
+        { id: 'diaryTradition', icon: '✒', label: 'Diaries + Journals', section: 'modules',
+          desc: 'Pepys, Anne Frank, modern bullet journals. The 400-year diary tradition + its modern descendants.', ready: true },
+        { id: 'tarotOracle', icon: '🔮', label: 'Tarot + Oracle Decks', section: 'modules',
+          desc: 'Tarot cards as printed objects — Visconti decks → Rider-Waite (1909) → modern indie decks. Major printed-card subculture.', ready: true },
         { id: 'cumulative', icon: '🎯', label: 'Cumulative Quiz', section: 'practice',
           desc: '15 questions across all 10 modules. Missed answers link you back to the module you need to review.', ready: true },
         { id: 'askPrinter', icon: '🤖', label: 'Ask the Printer (AI)', section: 'practice',
@@ -721,7 +957,66 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         people: 'The People Behind the Press',
         broadside: 'Build a Broadside',
         sameFears: 'The Same Fears',
-        dayInShop: 'A Day in the Shop'
+        dayInShop: 'A Day in the Shop',
+        globalPrinting: 'The Globe Goes Pressed',
+        paperMaking: 'Paper Making',
+        typeFoundry: 'Type Foundry Workshop',
+        bookbinding: 'Bookbinding Lab',
+        censorship: 'Censorship & The Index',
+        firstNews: 'The First News Wave',
+        apprenticeJourney: "Apprentice's Journey",
+        mainePrinters: 'Maine Printers Deep Dive',
+        musicPrinting: 'Music Printing',
+        mapsAtlases: 'Maps + Atlases',
+        childrensBooks: "Children's Books",
+        sciPublishing: 'Scientific Publishing',
+        letterpressToday: 'Letterpress Today',
+        pressVariants: 'Press Variants Through Time',
+        reformation: 'The Reformation Print War',
+        colorPrinting: 'Color Printing History',
+        booksChanged: 'Books That Changed The World',
+        printRevolution: 'Print + Revolution',
+        bookObject: 'The Book As Object',
+        inkMaterials: 'Ink + Press Materials',
+        translation: 'Translation + Translators',
+        propaganda: 'Print + Propaganda',
+        comics: 'Comics + Graphic Novels',
+        futurePrint: 'The Future of Print',
+        famousShops: 'Famous Print Shops Tour',
+        printReligion: 'Print + Religion Beyond Bibles',
+        printEducation: 'Print + Education',
+        printMoney: 'Print + Money (Security Printing)',
+        libraryHistory: 'The Library Through History',
+        magazines: 'The Modern Magazine',
+        encyclopedias: 'Encyclopedias',
+        dictionaries: 'Dictionaries',
+        cookbooks: 'Cookbooks',
+        selfhelp: 'Self-Help + How-To',
+        paperSustain: 'Paper Sustainability',
+        comicStrips: 'The Newspaper Comic Strip',
+        printWar: 'Print + War',
+        famousBinders: 'Famous Bookbinders + Their Work',
+        maineAuthors: 'Maine Authors + Their Publishers',
+        printTourism: 'Print + Tourism',
+        printHealthcare: 'Print + Healthcare',
+        fontIdentification: 'Font Identification Quiz',
+        printPostage: 'Postage + Direct Mail',
+        printSports: 'Print + Sports',
+        printArch: 'Print + Architecture',
+        printLaw: 'Print + Law',
+        genreRomance: 'Romance Novels',
+        genreSciFi: 'Sci-Fi + Fantasy',
+        genreMystery: 'Mystery + Crime Fiction',
+        mangaDeep: 'Manga Deep Dive',
+        photoBooks: 'Photography Books',
+        fanzines: 'Zines + Fanzines',
+        forgeries: 'Famous Forgeries + Fakes',
+        manuscripts: 'Manuscripts + Calligraphy',
+        bookplates: 'Bookplates + Marginalia',
+        usedBooks: 'The Used Book Trade',
+        cardCatalog: 'The Library Card Catalog',
+        diaryTradition: 'Diaries + Journals',
+        tarotOracle: 'Tarot + Oracle Decks'
       };
 
       function renderMenu() {
@@ -8414,7 +8709,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                           '.date-line { font-size: 13px; color: #5c4630; margin-top: 36px; letter-spacing: 0.08em; text-transform: uppercase; }' +
                           '.motto { font-style: italic; color: #c9a14a; letter-spacing: 0.05em; margin-top: 12px; font-size: 14px; }' +
                           '</style></head><body><div class="cert">' +
-                          '<svg class="dolphin" viewBox="0 0 38 46" xmlns="http://www.w3.org/2000/svg" style="margin: 0 auto; display: block;">' +
+                          '<svg class="dolphin" viewBox="0 0 38 46" xmlns="http://www.w3.org/2000/svg" style="margin: 0 auto; display: block;" aria-hidden="true">' +
                           '<line x1="19" y1="6" x2="19" y2="38" stroke="#7c2d12" stroke-width="2" stroke-linecap="round"/>' +
                           '<line x1="11" y1="12" x2="27" y2="12" stroke="#7c2d12" stroke-width="1.5" stroke-linecap="round"/>' +
                           '<circle cx="19" cy="5" r="2.5" fill="none" stroke="#7c2d12" stroke-width="1.2"/>' +
@@ -9097,6 +9392,8382 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
       // hooks per (component-type + key) instance — so each view gets its own
       // hook tracking, independent of every other view. Without this wrapper,
       // hooks called inside renderXxx() were charged to StemPluginBridge,
+      // ═════════════════════════════════════════════════════════════════════
+      // GLOBAL PRINTING — non-Western printing history (Korea, China, Japan,
+      // Islamic World, India, Africa, Pre-Columbian Americas)
+      // Decenters the Gutenberg-as-first narrative without diminishing the
+      // press itself. Every region gets historical context, signature works,
+      // and a "what changed because of this" reflection.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderGlobalPrinting() {
+        var gpRegionRaw = useState('korea');
+        var gpRegion = gpRegionRaw[0], setGpRegion = gpRegionRaw[1];
+        var gpTimelineRaw = useState(false);
+        var gpTimeline = gpTimelineRaw[0], setGpTimeline = gpTimelineRaw[1];
+
+        var regions = [
+          { id: 'korea',    label: 'Korea',                 emoji: '🇰🇷', flagYear: 1377, flagWork: 'Jikji (oldest extant metal-type book)' },
+          { id: 'china',    label: 'China',                 emoji: '🇨🇳', flagYear: 868,  flagWork: 'Diamond Sutra (oldest dated woodblock book)' },
+          { id: 'japan',    label: 'Japan',                 emoji: '🇯🇵', flagYear: 770,  flagWork: 'Hyakumantō Darani (oldest dated print)' },
+          { id: 'islamic',  label: 'The Islamic World',     emoji: '🕌', flagYear: 1727, flagWork: 'Müteferrika press, Istanbul' },
+          { id: 'india',    label: 'India',                 emoji: '🇮🇳', flagYear: 1556, flagWork: 'Goa Jesuit press (Tamil + Konkani)' },
+          { id: 'africa',   label: 'Africa',                emoji: '🌍', flagYear: 1822, flagWork: "Ethiopia's Amharic typography" },
+          { id: 'americas', label: 'Pre-Columbian Americas', emoji: '🌎', flagYear: 600,  flagWork: 'Maya codices on amate paper' }
+        ];
+        var current = regions.find(function(r) { return r.id === gpRegion; }) || regions[0];
+
+        // ── Timeline data for the comparison view ──
+        var timelineEvents = [
+          { year: 105,  region: 'china',    event: 'Cai Lun documents papermaking process (China). Hemp + mulberry pulp.' },
+          { year: 600,  region: 'americas', event: 'Maya codices flourish — folded screen books on amate fig-bark paper.' },
+          { year: 770,  region: 'japan',    event: 'Hyakumantō Darani: Empress Shōtoku orders 1 million dharani prayer scrolls printed.' },
+          { year: 868,  region: 'china',    event: 'Diamond Sutra printed in China — oldest dated complete printed book (woodblock).' },
+          { year: 1040, region: 'china',    event: 'Bi Sheng invents movable clay type (Song dynasty). ~400 years before Gutenberg.' },
+          { year: 1234, region: 'korea',    event: 'Goryeo dynasty Korea: movable metal type used for Sangjeong Yemun (lost — earliest documented).' },
+          { year: 1297, region: 'china',    event: 'Wang Zhen creates wooden movable type with rotating composing table.' },
+          { year: 1377, region: 'korea',    event: 'Jikji printed in Korea with movable metal type — oldest surviving metal-type book. 78 years before Gutenberg Bible.' },
+          { year: 1403, region: 'korea',    event: 'King Taejong of Korea: state-sponsored bronze-type foundry. Hundreds of thousands of types cast.' },
+          { year: 1450, region: 'china',    event: 'Gutenberg perfects screw press + oil-based ink + movable type alloy in Mainz — likely without contact with East Asian methods.' },
+          { year: 1455, region: 'china',    event: 'Gutenberg Bible (B42) printed.' },
+          { year: 1485, region: 'islamic',  event: 'Ottoman Sultan Bayezid II bans printing in Arabic script for Muslims (allows non-Muslim minorities).' },
+          { year: 1500, region: 'india',    event: 'First printing in India: Jesuit press at Goa, soon producing Tamil + Konkani works.' },
+          { year: 1556, region: 'india',    event: 'Goa Jesuit press prints in Tamil — first South Indian language in movable type.' },
+          { year: 1593, region: 'japan',    event: 'Korean metal-type captures during Imjin War spark a brief Japanese metal-type tradition (Suruga edition).' },
+          { year: 1605, region: 'china',    event: 'First true newspaper (Strasbourg "Relation") publishes weekly — but in Europe; Asian information networks differ.' },
+          { year: 1727, region: 'islamic',  event: 'İbrahim Müteferrika opens first Ottoman Turkish printing press in Istanbul under Sultan Ahmed III.' },
+          { year: 1798, region: 'africa',   event: 'Napoleon brings printing press to Egypt during French invasion. Press becomes tool of subsequent reform.' },
+          { year: 1822, region: 'africa',   event: 'Ethiopian Amharic printing develops — Ge\'ez script printed by missionaries; royal patronage follows.' },
+          { year: 1860, region: 'china',    event: 'European-style mechanical presses reach late-Qing China; classical woodblock continues alongside.' },
+          { year: 1873, region: 'japan',    event: 'Meiji Japan adopts Western printing wholesale; Edo woodblock tradition (ukiyo-e) shifts to art-only market.' }
+        ];
+
+        // Per-region content blocks
+        var regionContent;
+        if (gpRegion === 'korea') {
+          regionContent = h('div', null,
+            dropCapPara('Korea is where movable metal type was first cast — about 78 years before Gutenberg. The Jikji, printed in 1377 in the temple Heungdeok-sa in Cheongju, is the oldest extant book printed with movable metal type anywhere in the world. UNESCO Memory of the World register entry, 2001. The single surviving volume (the second of two; the first is lost) sits in the Bibliothèque nationale de France in Paris.'),
+            sectionHeader('📜', 'Why Korea was first'),
+            keyPointBlock('Three preconditions, all earlier in Korea than in Europe:', [
+              { k: 'State paper supply', v: 'Goryeo dynasty maintained a state paper bureau supplying official scribes since 8th-9th century. Reliable, cheap, mass-produced paper made movable type economically viable.' },
+              { k: 'Goryeo dynasty bronze metallurgy', v: 'Korean bronze-working was world-class — Korean temple bells are still some of the most resonant bronze castings ever made. The same metallurgical sophistication produced uniform metal type.' },
+              { k: 'Buddhist text demand', v: 'Korean Buddhism had massive demand for sutra reproduction. The Tripitaka Koreana (1236-1251) was woodblock — 81,258 wood blocks still preserved today. Demand for faster reproduction pushed innovation.' }
+            ]),
+            sectionHeader('⚙️', 'The Korean process'),
+            h('p', { style: { color: T.muted, fontSize: 14, lineHeight: 1.7, margin: '0 0 12px' } },
+              'Wax casting (similar to Gutenberg) was already mature in Korea. The Korean process: carve type characters in beech wood → press into a wax bowl to create matrices → pour molten bronze into the matrix cavities → finish and stack into a forme (composing tray). The technical sophistication was already there decades before any plausible knowledge could have reached Europe.'),
+            sectionHeader('📚', 'The Jikji itself'),
+            keyPointBlock('What is the Jikji?', [
+              { k: 'Full title', v: 'Baegun Hwasang Chorok Buljo Jikji Simche Yojeol — "Selected Sayings of Buddhist Masters on the Direct Pointing of the Mind"' },
+              { k: 'Author', v: 'Compiled by Baegun (a Korean Seon Buddhist monk, 1298-1374). Printed posthumously.' },
+              { k: 'Content', v: 'Anthology of teachings from prominent Buddhist masters across China + Korea covering the Seon (Zen) tradition.' },
+              { k: 'Surviving copy', v: 'Only the second volume survives. Acquired by French diplomat Collin de Plancy ~1887; bequeathed to France. Korea has formally requested return; France has not agreed.' }
+            ]),
+            sectionHeader('🤔', 'The hard question'),
+            calloutBox('info', 'Why is Gutenberg famous and Korean printing barely known?',
+              h('p', { style: { margin: 0, lineHeight: 1.6 } },
+                'Several reasons, none flattering to the Eurocentric historical record: (1) the Korean tradition stayed largely within state + religious use rather than seeding a commercial print boom; (2) Korean printing did not coincide with the Reformation, scientific revolution, or rise of vernacular publishing as Gutenberg\'s did; (3) Western historiography written in the 1700-1900s simply did not include Korea in the global narrative; (4) the Jikji itself spent most of the modern era in a single Paris collection rather than in active scholarship. Recognition started shifting in 1972 when UNESCO\'s Year of the Book brought Park Byeong-seon\'s research on the Jikji to global attention.')
+            ),
+            sectionHeader('💬', 'What if Korea had been the model?'),
+            h('p', { style: { color: T.muted, fontSize: 14, lineHeight: 1.7, margin: '0 0 12px' } },
+              'It is fair to say Korean printing existed first; it is not fair to say it would have done what Gutenberg\'s did. The Korean tradition served different needs (state, temple, scholarly) in a different social structure. Gutenberg arrived at a moment when European cities had merchant classes, growing literacy, a Latin-reading church-and-university audience, and the social fuel for an information revolution. Same technology in different soil produces different harvests. Korean printing was a parallel invention, not a path not taken.')
+          );
+        } else if (gpRegion === 'china') {
+          regionContent = h('div', null,
+            dropCapPara('China invented paper (Cai Lun, 105 CE), woodblock printing (full books by 868 CE), and movable type (Bi Sheng, 1040 CE) — every major technology of the print revolution, centuries before Europe. China also chose, repeatedly, not to industrialize them the way Gutenberg\'s Europe would. Understanding why requires understanding what Chinese printing actually did.'),
+            sectionHeader('📜', 'Three foundational inventions'),
+            keyPointBlock('The Chinese print toolkit by 1300 CE', [
+              { k: 'Paper (105 CE)', v: 'Cai Lun, court eunuch of the Han dynasty, documented papermaking with mulberry bark + hemp + fishing nets. Spread west slowly: Samarkand 8th century, Baghdad 9th, Cordoba 11th, Italy 13th, Germany 14th.' },
+              { k: 'Woodblock (~7th c.)', v: 'Full-page woodblock printing on paper. The Diamond Sutra (868 CE) is the oldest dated complete printed book in the world — a 17-foot scroll with intricate illustrations.' },
+              { k: 'Movable clay type (1040)', v: 'Bi Sheng (Song dynasty) created the first movable type system. Carved characters in clay → fired hard → arranged in an iron frame with wax + resin base → printed → reheated, reset. Documented by Shen Kuo in the Dream Pool Essays (1088).' }
+            ]),
+            sectionHeader('🪙', "Wang Zhen's wooden-type advance"),
+            h('p', { style: { color: T.muted, fontSize: 14, lineHeight: 1.7, margin: '0 0 12px' } },
+              'Wang Zhen (~1290-1333) was a Chinese local magistrate who applied movable type to an agricultural treatise, the Nong Shu (Book of Agriculture). He developed: (1) more durable wooden type (vs Bi Sheng\'s clay), (2) a rotating round composing table — type sorted into wedge-shaped compartments around a vertical axle, so the compositor could spin to find characters faster, (3) a systematic character classification scheme by rhyme group. The composing table was a workflow innovation Western printers would not match for centuries.'),
+            sectionHeader('🤔', "Why didn't China have a print revolution?"),
+            calloutBox('info', 'The Chinese-script problem (and what else mattered)',
+              h('div', null,
+                h('p', { style: { margin: '0 0 8px', lineHeight: 1.6 } },
+                  'The standard answer: Chinese script needs thousands of characters (Latin needs only 26 letters + punctuation), so movable type is much more expensive to cast and harder to compose. Real, but partial.'),
+                h('p', { style: { margin: 0, lineHeight: 1.6 } },
+                  'Other factors: (1) China already had a mature woodblock industry producing books cheaply; (2) Chinese scholarly culture revered handwriting + calligraphy in ways that resisted mechanical reproduction; (3) imperial centralization meant the state controlled what got printed (no Reformation, no merchant pamphlets); (4) no equivalent of Latin-as-elite-vernacular meant no widespread literate demand bridging social classes. The technology existed; the social fuel did not.')
+              )
+            ),
+            sectionHeader('📰', 'But China did have print culture'),
+            keyPointBlock('What Chinese print actually produced — not nothing', [
+              { k: 'Tripitaka editions', v: 'Massive Buddhist scripture editions — the Kaibao Tripitaka (971-983) was 130,000 woodblocks. Reproduced multiple times across centuries.' },
+              { k: 'Imperial almanacs', v: 'State-printed agricultural + astronomical almanacs distributed annually. The dominant printed form.' },
+              { k: 'Civil-service exam study guides', v: 'Massive market for printed Confucian classics + commentary editions tied to the examination system.' },
+              { k: 'Vernacular fiction (late Ming/Qing)', v: 'Romance of the Three Kingdoms, Journey to the West, Dream of the Red Chamber — all distributed in cheap printed editions to broad audiences by the 1600-1700s.' }
+            ])
+          );
+        } else if (gpRegion === 'japan') {
+          regionContent = h('div', null,
+            dropCapPara('Japan\'s oldest dated printed text predates the Gutenberg Bible by 685 years. The Hyakumantō Darani (770 CE) is one million miniature dharani prayers, each printed and placed in a tiny wooden pagoda, commissioned by Empress Shōtoku and distributed to ten major temples. Most pagodas have been lost; ~43,000 still exist, mostly at Hōryū-ji temple in Nara. The texts themselves are some of the oldest printed words in any language.'),
+            sectionHeader('📜', 'Three eras of Japanese print'),
+            keyPointBlock('Japanese printing in three waves', [
+              { k: 'Religious era (770-1500s)', v: 'Almost all printing was Buddhist temple work — sutras, dharanis, talismans. Woodblock, often single-purpose, sometimes destroyed after use as religious offering.' },
+              { k: 'Edo print boom (1600s-1860s)', v: 'Peace + urbanization + rising merchant class created mass market for printed books. Ukiyo-e woodblock prints (Hokusai, Hiroshige) emerge. Lending libraries spread literacy widely. Edo arguably had higher per-capita literacy than London by 1850.' },
+              { k: 'Meiji modernization (1868-)', v: 'Wholesale adoption of Western mechanical presses + movable type for newspapers + magazines. Woodblock tradition shrinks to art-print market. Modern Japanese print typography invented in this period.' }
+            ]),
+            sectionHeader('🎨', 'The ukiyo-e tradition'),
+            h('p', { style: { color: T.muted, fontSize: 14, lineHeight: 1.7, margin: '0 0 12px' } },
+              'Ukiyo-e ("pictures of the floating world") were full-color woodblock prints made by teams: designer drew the master image, carvers cut a separate block for each color, printer registered each block onto the same paper in sequence. A single complex Hokusai print might use 15-20 blocks. The technical sophistication was unmatched globally until photogravure in the 1880s.'),
+            sectionHeader('🌊', 'A famous example: The Great Wave'),
+            h('p', { style: { color: T.muted, fontSize: 14, lineHeight: 1.7, margin: '0 0 12px' } },
+              'Katsushika Hokusai\'s "The Great Wave off Kanagawa" (1830-1832) was made with around 8 blocks, printed in editions of about 5,000-8,000 over several years. Sold cheaply (about the price of a bowl of noodles), it was mass-market entertainment, not high art. When Japanese ukiyo-e arrived in Europe in the 1850s-60s, they shocked artists like Whistler, Monet, and Van Gogh — sparking japonisme and reshaping Western painting.'),
+            sectionHeader('📖', 'Edo lending libraries (kashihon-ya)'),
+            keyPointBlock('How books actually moved', [
+              { k: 'The business', v: 'By 1808 Edo had at least 656 commercial lending libraries (kashihon-ya). Customers paid a small fee to borrow books for 5-10 days.' },
+              { k: 'What was loaned', v: 'Novels, illustrated romances, travel guides, conduct manuals, comic books. The lending model was how most Japanese encountered print.' },
+              { k: 'Compared to Europe', v: 'Western Europe did not develop comparable mass lending until the 1800s — Edo was a century ahead.' }
+            ])
+          );
+        } else if (gpRegion === 'islamic') {
+          regionContent = h('div', null,
+            dropCapPara('The Islamic world is the most interesting case in global print history because it deliberately resisted printing for almost 300 years. Ottoman sultans banned printing in Arabic script for Muslims (1485 Bayezid II ban) while permitting it for Jewish, Armenian, and Greek minorities. The Turkish-language Müteferrika press did not open until 1727 — a 277-year delay after Gutenberg. The reasons are revealing and contested.'),
+            sectionHeader('📜', 'The handwritten tradition that printing threatened'),
+            keyPointBlock('Why Arabic-script manuscript culture resisted print', [
+              { k: 'Calligraphic prestige', v: 'Calligraphy was the most respected art form in Islamic culture — religious, aesthetic, spiritual. Mechanical reproduction was seen as desacralizing the divine word.' },
+              { k: 'Manuscript economy', v: 'A guild of scribes (around 70,000-90,000 in Istanbul alone) had economic + political weight. Printing threatened a major livelihood.' },
+              { k: 'Quran-specific concerns', v: 'Reproducing the Quran mechanically was seen as potentially error-introducing — and any error in scripture is catastrophic. The Quran specifically remained handwritten until the 1800s in most Muslim-majority regions.' },
+              { k: 'Connected-script challenges', v: 'Arabic script is connected (letters change form based on position). Movable type was technically very hard for Arabic, requiring hundreds of contextual variants per letter. Even when allowed, the typography was clumsy until the 1800s.' }
+            ]),
+            sectionHeader('🏛', 'Müteferrika: the breakthrough printer'),
+            h('p', { style: { color: T.muted, fontSize: 14, lineHeight: 1.7, margin: '0 0 12px' } },
+              'İbrahim Müteferrika (~1670-1747) was a Hungarian-born Ottoman convert + scholar who finally won permission from Sultan Ahmed III in 1727 to open the first Turkish-language printing press. The fatwa permitting it was carefully narrow: he could print on history, geography, dictionaries, and sciences — but not religious texts. The press printed 17 titles before Müteferrika\'s death; output was modest. Print expansion really accelerated only in the 19th century.'),
+            sectionHeader('📚', 'But Islamic printing happened anyway — for minorities'),
+            keyPointBlock('Non-Muslim printing in the Ottoman Empire', [
+              { k: 'Jewish printers', v: 'Sephardi refugees from Spain (post-1492) brought printing to Istanbul + Salonica. Hebrew presses operated continuously from 1493.' },
+              { k: 'Armenian printers', v: 'First Armenian-language Bible printed in Amsterdam 1666; presses operated in Constantinople from early 1700s.' },
+              { k: 'Greek printers', v: 'Greek Orthodox printers operated presses in Venice and later Constantinople producing liturgical works for the Patriarchate.' }
+            ]),
+            sectionHeader('🤔', 'The "delay" question'),
+            calloutBox('info', 'Did Islamic resistance to print "cause" Islamic technological decline?',
+              h('p', { style: { margin: 0, lineHeight: 1.6 } },
+                'This is a hotly debated claim, often deployed politically. The honest scholarly answer: print delay was one factor among many in Islamic technological + economic shifts from 1500-1800, but it is reductive to treat it as the cause. The Islamic world had complex book culture (handwritten manuscripts were excellent + numerous), regional differences (printing happened earlier in some places), and economic dynamics that involved trade routes, taxation, urbanization, and political organization. The print question is interesting; the "Islamic world declined because of it" framing usually oversimplifies.')
+            )
+          );
+        } else if (gpRegion === 'india') {
+          regionContent = h('div', null,
+            dropCapPara('Indian printing has two distinct roots: a centuries-old palm-leaf manuscript tradition that long predates Gutenberg, and a colonial-era European-introduced printing press tradition starting at Goa in the mid-1500s. The two worlds eventually merged into modern Indian printing — but the relationship between them is more complex than a "Europe brought printing to India" narrative.'),
+            sectionHeader('🌴', 'The palm-leaf tradition'),
+            keyPointBlock('Pre-print Indian book-making', [
+              { k: 'Materials', v: 'Talipot or palmyra palm leaves, prepared by boiling, drying, smoothing. Each leaf became a "page." Stacked between wooden boards, threaded with cord.' },
+              { k: 'Inscription technique', v: 'Iron stylus scratched letters into the leaf. Lampblack or turmeric rubbed in to make characters visible. Could last 200-400 years in dry climates.' },
+              { k: 'Centers', v: 'Major manuscript centers across South India + Sri Lanka — Tanjore, Madurai, Anuradhapura. Some libraries had tens of thousands of manuscripts.' },
+              { k: 'Limitations', v: 'Hot/humid climates rot palm leaves fast. Many were re-copied every 50-100 years. Massive quantities of Sanskrit, Tamil, Sinhala, Malayalam literature survived this way.' }
+            ]),
+            sectionHeader('⛪', 'The Jesuit press at Goa (1556)'),
+            h('p', { style: { color: T.muted, fontSize: 14, lineHeight: 1.7, margin: '0 0 12px' } },
+              'The first printing press in India was set up by the Jesuit mission at Goa in 1556 — originally intended for Ethiopia but kept at Goa when that mission was delayed. By 1557 it was printing in Portuguese. Indian-language printing followed: Tamil script type was cast (in metal) by a Spanish Jesuit named João de Faria in 1577 — the first non-Latin-script printing in Asia. Tamil works followed within years.'),
+            sectionHeader('📚', 'Indian-language print: a colonial-era surge'),
+            keyPointBlock('How Indian languages got into print', [
+              { k: 'Tamil (1577)', v: 'First — Jesuit Goa press cast Tamil metal type. Early works: Christian doctrine + grammars.' },
+              { k: 'Konkani (1622)', v: 'Jesuit Father Thomas Stephens published a long Marathi-Konkani poem on the life of Christ.' },
+              { k: 'Bengali (1778)', v: 'Charles Wilkins cut Bengali type for an East India Company grammar. Bengali print culture surges in 1800s.' },
+              { k: 'Hindi-Urdu (mid-1800s)', v: 'Devanagari + Nastaliq type developed for emerging vernacular newspapers in Banaras, Lucknow, Delhi.' },
+              { k: 'Sanskrit', v: 'Printed only after vernaculars — scholarly conservatism resisted printing scripture for decades.' }
+            ]),
+            sectionHeader('🇮🇳', 'Modern Indian publishing'),
+            h('p', { style: { color: T.muted, fontSize: 14, lineHeight: 1.7, margin: '0 0 12px' } },
+              'By 1900 India had hundreds of presses publishing in dozens of languages — Bengali was the literary powerhouse, but Tamil, Marathi, Gujarati, Hindi, and Urdu had vibrant newspaper + book cultures. Indian printing took on its own character: bilingual editions, devotional pamphlets in vast quantities, the rise of mass-circulation newspapers in the 1880s-1920s tied to the nationalist movement. By the 1947 independence, print was central to political organizing — Gandhi\'s Harijan, Tilak\'s Kesari, Nehru\'s many works were all critical political infrastructure.')
+          );
+        } else if (gpRegion === 'africa') {
+          regionContent = h('div', null,
+            dropCapPara('African printing history is the least-told globally and the most varied internally. North Africa had Arabic-script printing tied to the Islamic-world story (delayed for the same religious-cultural reasons). Sub-Saharan Africa had no pre-colonial printing — but had rich oral, manuscript (Ge\'ez, Manding), and visual-textual traditions. Colonial-era presses arrived along three routes: missionary, colonial-administrative, and military. The story is incomplete without including each.'),
+            sectionHeader('📜', 'Ethiopia: the manuscript exception'),
+            keyPointBlock('Ge\'ez manuscript culture', [
+              { k: 'The script', v: 'Ge\'ez (or Ethiopic) script — used for Amharic, Tigrinya, Tigre, and others. Syllabary of 200+ glyphs. Continuously used since the 4th century CE.' },
+              { k: 'Christian manuscripts', v: 'Ethiopian Orthodox Church kept a continuous manuscript tradition for 1500+ years. The Garima Gospels (~390-660 CE) are among the oldest surviving illuminated Christian manuscripts.' },
+              { k: 'When printing arrived', v: 'Ge\'ez printing started with European missionaries in the 1500s-1600s but did not take hold inside Ethiopia until the 1800s. Royal patronage under Menelik II (late 1800s) finally established Amharic printing.' }
+            ]),
+            sectionHeader('🏛', 'North African printing'),
+            h('p', { style: { color: T.muted, fontSize: 14, lineHeight: 1.7, margin: '0 0 12px' } },
+              'Napoleon\'s 1798 invasion of Egypt brought the first major Arabic-script printing press to North Africa (the Imprimerie de l\'Armée d\'Orient). The press was originally for French propaganda + military use but its existence accelerated Egyptian + Ottoman adoption of print. Muhammad Ali Pasha (Egyptian ruler 1805-1848) established the Bulaq Press in 1820 — Egypt\'s first government press. By 1850, Cairo + Beirut had become Arabic-language publishing centers; Arabic newspapers + journals proliferated from 1860s onward.'),
+            sectionHeader('🌍', 'Missionary + colonial presses, sub-Saharan'),
+            keyPointBlock('How printing came to sub-Saharan Africa', [
+              { k: 'Sierra Leone (1820s)', v: 'British missionaries set up presses in Freetown for English + indigenous-language Bibles + tracts.' },
+              { k: 'South Africa (1800)', v: 'Cape Town: first press for Dutch Reformed church, then Xhosa + Zulu language works mid-1800s.' },
+              { k: 'West African presses', v: 'Yoruba printing in Lagos 1846; Asante kingdom printing in late 1800s; Twi (Akan) language presses.' },
+              { k: 'Newspaper culture', v: 'By 1900 dozens of African-language + colonial-language newspapers operated. Many became key sites of anti-colonial organizing in the 1920s-1950s.' }
+            ]),
+            sectionHeader('📚', 'The Mali / Songhai manuscript libraries'),
+            h('p', { style: { color: T.muted, fontSize: 14, lineHeight: 1.7, margin: '0 0 12px' } },
+              'West Africa had a deep Arabic-script manuscript tradition centered on Timbuktu (Mali) and Djenné. The Mali Empire + Songhai Empire (1200s-1500s) supported scholarly culture: Sankore + Djinguereber mosques in Timbuktu functioned as universities. Tens of thousands of Arabic-language manuscripts in mathematics, astronomy, jurisprudence, medicine, history. Many still survive in private family libraries; major preservation effort began in the 2000s after Mali political instability threatened the collections. This is "writing without print" but not without scholarship.')
+          );
+        } else { // americas
+          regionContent = h('div', null,
+            dropCapPara('Pre-Columbian Americas had developed sophisticated writing + book traditions thousands of years before European contact. The Maya wrote codices (folded screen books) on bark-paper (amate). The Aztec maintained vast administrative + religious texts. The Inca recorded information on quipu (knotted cords) — a writing system without ink. Spanish conquest in the 1500s systematically destroyed most of these traditions. Understanding what was lost matters as much as understanding what survived.'),
+            sectionHeader('📜', 'Maya codices'),
+            keyPointBlock('Maya book-making', [
+              { k: 'The material', v: 'Amate (Ficus + Trema bark) beaten into paper. Sized with lime. White ground, painted with mineral pigments.' },
+              { k: 'The format', v: 'Long strip folded accordion-style ("screenfold"). Read left-to-right + top-to-bottom across panels. Bound between wood boards.' },
+              { k: 'Content', v: 'Astronomical observations (Venus cycles, eclipses), ritual calendars (260-day Tzolkin + 365-day Haab), divination, history, mythology.' },
+              { k: 'How many existed', v: 'Hundreds of Maya codices existed at Spanish contact. Bishop Diego de Landa burned massive quantities at the 1562 Auto da Fé in Maní, Yucatán. Today only four pre-conquest Maya codices survive worldwide: Dresden, Madrid, Paris, and Grolier.' }
+            ]),
+            sectionHeader('🌎', 'Aztec / Mexica codices'),
+            h('p', { style: { color: T.muted, fontSize: 14, lineHeight: 1.7, margin: '0 0 12px' } },
+              'The Aztec (Mexica) empire maintained extensive book traditions: tribute records, historical chronicles, religious texts, divinatory almanacs, land deeds. After conquest, some traditions continued under Spanish supervision — the Florentine Codex (1545-1590), compiled by Franciscan friar Bernardino de Sahagún with Nahua scholars, is a 12-volume ethnographic encyclopedia in Nahuatl + Spanish. It is the most extensive surviving documentation of pre-conquest Mesoamerican civilization. Sahagún\'s collaborators (named in the text) deserve as much credit as he does.'),
+            sectionHeader('📊', 'Inca quipu: writing without ink'),
+            keyPointBlock('A different writing system', [
+              { k: 'The format', v: 'Knotted cotton or alpaca cords. A main horizontal cord with hanging pendant cords; the pendant cords carry knots that encode information.' },
+              { k: 'What was encoded', v: 'Numerical data (population, tribute, calendars) used decimal place-value through knot type + position. Recent scholarship argues quipu also encoded narrative + historical information (not just numbers).' },
+              { k: 'Why few survive', v: 'Most quipu were burned by Spanish authorities who could not read them and treated them as pagan tools. About 600 survive today, mostly in European museums.' },
+              { k: 'Modern decoding', v: 'Decoding effort is ongoing. Several modern scholars (Gary Urton, Sabine Hyland) have made significant progress on the narrative quipu question.' }
+            ]),
+            sectionHeader('🚫', 'The conquest erasure'),
+            calloutBox('danger', 'What was deliberately destroyed',
+              h('div', null,
+                h('p', { style: { margin: '0 0 8px', lineHeight: 1.6 } },
+                  'Bishop Diego de Landa (Yucatán, 1562) ordered the burning of Maya codices at Maní — perhaps 5,000 or more books destroyed in a single event. The Aztec library at Texcoco was burned earlier (1530s) by Bishop Juan de Zumárraga. Inca quipu collections were repeatedly burned through the 1500s-1600s.'),
+                h('p', { style: { margin: 0, lineHeight: 1.6 } },
+                  'Landa later wrote his own ethnographic account ("Relación de las cosas de Yucatán", 1566), which became the main scholarly source for early Maya studies — meaning a primary record of Maya civilization comes filtered through the man who destroyed its books.')
+              )
+            )
+          );
+        }
+
+        // ── Timeline view (toggle) ──
+        var timelineColor = {
+          china: '#dc2626', korea: '#2563eb', japan: '#db2777',
+          islamic: '#16a34a', india: '#ea580c', africa: '#ca8a04',
+          americas: '#7c3aed'
+        };
+        var minYear = 100, maxYear = 1900;
+        function yearToPct(y) { return ((y - minYear) / (maxYear - minYear)) * 100; }
+
+        return h('div', null,
+          backBar('🌏 The Globe Goes Pressed'),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 18, marginBottom: 14 } },
+            dropCapPara('Gutenberg perfected the screw press, type-metal alloy, and oil-based ink at Mainz in the 1440s — but he was not first to print, not first to use movable type, and not first to mass-produce books. The full picture of print history is global, deeper, and weirder than the Eurocentric version. This module walks through seven regions, each on its own terms.'),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginTop: 14 } },
+              h('span', { style: { fontSize: 12, color: T.dim, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginRight: 8 } }, 'Pick a region:'),
+              regions.map(function(r) {
+                var sel = (gpRegion === r.id);
+                return h('button', { key: r.id,
+                  onClick: function() { setGpRegion(r.id); announce(r.label + ': ' + r.flagYear + ', ' + r.flagWork); },
+                  style: btn({ padding: '7px 12px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                  r.emoji + ' ' + r.label
+                );
+              }),
+              h('button', { onClick: function() { setGpTimeline(!gpTimeline); announce(gpTimeline ? 'Timeline closed' : 'Timeline opened'); },
+                style: btn({ padding: '7px 12px', fontSize: 12, marginLeft: 'auto', background: gpTimeline ? T.accent : T.cardAlt, color: gpTimeline ? T.ink : T.text, borderColor: gpTimeline ? T.accent : T.border }) },
+                gpTimeline ? '× Close timeline' : '📅 Global timeline')
+            )
+          ),
+
+          // Timeline (when toggled on)
+          gpTimeline && h('div', { style: { background: T.card, border: '1px solid ' + T.accent, borderRadius: 12, padding: 18, marginBottom: 14 } },
+            h('div', { style: { fontSize: 14, fontWeight: 700, color: T.accentHi, marginBottom: 4, fontFamily: 'Georgia, serif' } }, 'Global print history at a glance'),
+            h('div', { style: { fontSize: 12, color: T.muted, marginBottom: 14, lineHeight: 1.55 } },
+              'Each dot is one event in print history, colored by region. The Gutenberg Bible (1455) is one mark among many.'),
+            // Year axis
+            h('div', { style: { position: 'relative', height: 50, background: T.bg, borderRadius: 6, marginBottom: 12, padding: '0 16px' } },
+              [100, 400, 700, 1000, 1300, 1600, 1900].map(function(y) {
+                return h('div', { key: y, style: { position: 'absolute', left: yearToPct(y) + '%', top: 6, fontSize: 10, color: T.dim, transform: 'translateX(-50%)', fontFamily: 'ui-monospace, monospace' } }, y);
+              }),
+              h('div', { style: { position: 'absolute', left: 0, right: 0, bottom: 16, height: 2, background: T.accent, opacity: 0.35 } }),
+              timelineEvents.map(function(e, i) {
+                return h('div', { key: i,
+                  title: e.year + ': ' + e.event,
+                  style: { position: 'absolute', left: yearToPct(e.year) + '%', bottom: 12, width: 10, height: 10, borderRadius: '50%', background: timelineColor[e.region] || T.accent, border: '1.5px solid ' + T.bg, transform: 'translateX(-50%)', cursor: 'pointer' }
+                });
+              })
+            ),
+            // Legend
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 14 } },
+              regions.map(function(r) {
+                return h('div', { key: r.id, style: { display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: T.muted } },
+                  h('span', { style: { width: 10, height: 10, borderRadius: '50%', background: timelineColor[r.id] || T.accent, display: 'inline-block' } }),
+                  r.label
+                );
+              })
+            ),
+            // Event list
+            h('div', { style: { maxHeight: 300, overflowY: 'auto', paddingRight: 6 } },
+              timelineEvents.map(function(e, i) {
+                return h('div', { key: i,
+                  onClick: function() { setGpRegion(e.region); announce('Region selected: ' + e.region); },
+                  style: { cursor: 'pointer', padding: '6px 10px', marginBottom: 4, borderRadius: 6, background: T.cardAlt, borderLeft: '3px solid ' + (timelineColor[e.region] || T.accent), fontSize: 12, color: T.muted } },
+                  h('span', { style: { fontFamily: 'ui-monospace, monospace', color: T.accentHi, marginRight: 8, fontWeight: 700 } }, e.year),
+                  e.event
+                );
+              })
+            )
+          ),
+
+          // Current region banner
+          h('div', { style: { background: 'linear-gradient(90deg, ' + (timelineColor[gpRegion] || T.accent) + '22 0%, transparent 100%)', borderLeft: '4px solid ' + (timelineColor[gpRegion] || T.accent), borderRadius: 8, padding: '14px 18px', marginBottom: 18 } },
+            h('div', { style: { fontSize: 22, fontWeight: 700, color: T.text, fontFamily: 'Georgia, serif' } },
+              current.emoji + ' ' + current.label),
+            h('div', { style: { fontSize: 13, color: T.muted, marginTop: 4, fontFamily: 'Georgia, serif', fontStyle: 'italic' } },
+              'Flagship: ' + current.flagYear + ' — ' + current.flagWork)
+          ),
+
+          // Region content
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            regionContent
+          ),
+
+          // Mini-quiz
+          miniQuizBlock('globalPrinting', [
+            { q: 'Which book is the oldest extant book printed with movable metal type?',
+              opts: ['Gutenberg Bible (1455)', 'Jikji (1377, Korea)', 'Diamond Sutra (868, China)', 'Hyakumantō Darani (770, Japan)'],
+              ans: 1, explain: 'The Jikji, printed in Korea in 1377, is the oldest extant book printed with movable metal type — 78 years before the Gutenberg Bible. The Diamond Sutra is older but woodblock, not movable type.' },
+            { q: 'Who is documented as inventing movable type (in clay)?',
+              opts: ['Johannes Gutenberg', 'Wang Zhen', 'Bi Sheng', 'Aldus Manutius'],
+              ans: 2, explain: 'Bi Sheng (China, Song dynasty) developed movable clay type around 1040 CE, documented by Shen Kuo in the Dream Pool Essays (1088). Wang Zhen later improved on this with wooden type and the rotating composing table.' },
+            { q: 'Why did Ottoman sultans restrict Arabic-script printing for almost 300 years?',
+              opts: ['They had no paper supply', 'Movable type for Arabic was technically very difficult, calligraphy held high prestige, scribes had economic and political weight, and Quran printing raised religious concerns', 'They lacked access to printing presses', 'European powers prevented them from printing'],
+              ans: 1, explain: 'All of those factors contributed. The technical, economic, prestige, and religious considerations all played roles in the delay. The presses were available; the social fuel for adoption took time.' },
+            { q: 'What event destroyed the largest documented collection of Maya codices?',
+              opts: ['A natural disaster', 'Bishop Diego de Landa\'s 1562 Auto da Fé at Maní', 'Trade route disruption', 'A civil war'],
+              ans: 1, explain: 'Bishop Diego de Landa ordered the burning of Maya codices at Maní, Yucatán in 1562. Perhaps thousands of books destroyed. Only four pre-conquest Maya codices survive today globally.' },
+            { q: 'What was the format of pre-Columbian Maya books?',
+              opts: ['Bound western-style with sewn signatures', 'Long strip of amate (fig-bark paper) folded accordion-style between wood boards', 'Stone tablets', 'Knotted-cord quipu'],
+              ans: 1, explain: 'Maya codices were "screenfold" books: a long strip of amate paper folded accordion-style, bound between wooden boards. Quipu were the Inca knotted-cord recording system — a different technology.' }
+          ]),
+
+          sourcesBlock([
+            { label: 'Jikji entry, UNESCO Memory of the World register (2001)', url: 'https://en.unesco.org/memoryoftheworld/registry/239' },
+            { label: 'Tsien Tsuen-Hsuin, "Paper and Printing" in Joseph Needham, Science and Civilisation in China vol. 5 part 1 (1985)' },
+            { label: "Christopher Reed, Gutenberg in Shanghai: Chinese Print Capitalism, 1876-1937 (2004)" },
+            { label: 'Peter Burke, A Social History of Knowledge: from Gutenberg to Diderot (2000) — global comparative framing' },
+            { label: 'Encyclopedia Britannica, "Müteferrika, Ibrahim"', url: 'https://www.britannica.com/biography/Ibrahim-Muteferrika' },
+            { label: 'British Library Codex Dresden facsimile + scholarship', url: 'https://www.bl.uk/treasures/festivalbooks/' },
+            { label: 'Ge\'ez script scholarship via Beta Maṣāḥǝft project, Universität Hamburg' }
+          ]),
+
+          h(TeacherNotes, {
+            standards: ['NCSS D2.His.2.6-8 (historical context)', 'C3 D2.His.5.6-8 (perspectives)', 'CCSS RH.6-8.6 (point of view)'],
+            discussion: [
+              'Why do you think Gutenberg gets named in textbooks but Bi Sheng usually does not? What does this say about how history is written?',
+              'Korea had metal-type printing for 78 years before Europe. Why did Korean printing not produce a Reformation-equivalent? What was different about the social context?',
+              'Bishop de Landa burned thousands of Maya books and then wrote the main scholarly account of Maya civilization. What problems does this create for how we know what we know?'
+            ],
+            misconceptions: [
+              { wrong: 'Gutenberg invented printing', right: 'Gutenberg perfected a specific package — screw press, type-metal alloy, oil-based ink — for European needs. Printing existed for centuries before in China, Korea, and Japan.' },
+              { wrong: 'The Islamic world rejected printing because of religious backwardness', right: 'The reasons were complex (calligraphic prestige, scribal economy, technical challenges with Arabic script, religious concerns about scripture errors) and shaped by specific economic + political contexts, not simple resistance to modernity.' },
+              { wrong: 'Pre-Columbian Americans had no writing', right: 'The Maya had a full writing system (now mostly decoded), wrote bark-paper books, and produced thousands of codices. Most were destroyed by Spanish conquest, not absent from the start.' }
+            ],
+            extension: 'Pick one of the seven regions and write a 1-paragraph "alternate history": what would have happened differently in the world if that region\'s print tradition had become globally dominant instead of Gutenberg\'s? Cite at least three specific historical events.'
+          }),
+
+          crossLinkFooter('globalPrinting'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // PAPER MAKING — the invisible prerequisite to the print revolution.
+      // Covers history (Cai Lun → European arrival), materials (rag supply
+      // chain), the 6-stage process, paper grades, economics. Interactive
+      // rag-to-sheet calculator + process visualizer.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderPaperMaking() {
+        var pmSectRaw = useState('overview');
+        var pmSect = pmSectRaw[0], setPmSect = pmSectRaw[1];
+        // Calculator state
+        var pmRagWeightRaw = useState(100);  // pounds of dry rag
+        var pmRagWeight = pmRagWeightRaw[0], setPmRagWeight = pmRagWeightRaw[1];
+        var pmRagQualityRaw = useState('linen');  // 'linen' | 'mixed' | 'cotton' | 'rough'
+        var pmRagQuality = pmRagQualityRaw[0], setPmRagQuality = pmRagQualityRaw[1];
+        var pmSheetSizeRaw = useState('chancery');  // 'chancery' | 'royal' | 'imperial'
+        var pmSheetSize = pmSheetSizeRaw[0], setPmSheetSize = pmSheetSizeRaw[1];
+        // Process stage state
+        var pmStageRaw = useState(0);
+        var pmStage = pmStageRaw[0], setPmStage = pmStageRaw[1];
+
+        var sections = [
+          { id: 'overview',   label: 'Overview',      icon: '📃' },
+          { id: 'history',    label: 'History',       icon: '🏛' },
+          { id: 'rags',       label: 'The rag trade', icon: '🧵' },
+          { id: 'process',    label: 'The process',   icon: '⚙️' },
+          { id: 'calculator', label: 'Calculator',    icon: '🧮' },
+          { id: 'grades',     label: 'Paper grades',  icon: '📐' },
+          { id: 'economics',  label: 'Economics',     icon: '💰' }
+        ];
+
+        // Process stages — 6-step hand papermaking
+        var processStages = [
+          { name: 'Collect rags', emoji: '🧺', body: 'Rag pickers + rag-and-bone-men collect worn-out linen, hemp, and cotton textiles from households, hospitals, and ships. Linen is best — long, strong fibers. Wool is useless (felts when beaten). Quality is sorted at collection — white linen separately from coarse hemp.' },
+            { name: 'Retting + boiling', emoji: '💧', body: 'Rags are sorted, cut, and soaked in lime water for days to weeks ("retting") to break down sizing + soften fibers. Then boiled in lye for several hours to remove dirt + lignin. The boiling smell of a 15th-century paper mill was famously terrible — half the reason mills were built downstream of towns.' },
+            { name: 'Beating to pulp', emoji: '🔨', body: 'The retted rags are beaten in a water-powered stamper mill — heavy wooden hammers tipped with iron, dropping into a stone trough of rag-and-water. Beating cycles: 12-30 hours depending on paper grade. The fibers separate + fibrillate, and the slurry becomes "pulp" or "stuff."' },
+            { name: 'Forming the sheet', emoji: '🥢', body: 'The vatman dips a wire-mesh mould (a wooden frame with a metal-wire screen) into the pulp vat, lifts it level, shakes it side-to-side ("the shake") to interlock fibers, and tilts to drain water. The pulp settles into a thin even sheet on the wire. Skill takes years — uneven shake = uneven paper.' },
+            { name: 'Couching + pressing', emoji: '📚', body: 'The coucher carefully transfers (couches) the wet sheet off the mould onto a felt blanket. Sheets + felts are stacked into a "post" of ~144 sheets, then squeezed in a screw press to drive out water. The post emerges as wet but cohesive paper.' },
+            { name: 'Loft drying + sizing', emoji: '🌬', body: 'Sheets are hung individually in a loft to air-dry for days. Then dipped in animal-glue sizing (made from boiled bone/hide scraps) to make paper non-absorbent enough for writing/printing. Final pressing + finishing produces the marketable sheet.' }
+        ];
+
+        // Rag quality settings drive yield + quality multipliers
+        var ragGrades = {
+          linen:  { name: 'White linen (premium)', yieldPct: 65, qualityScore: 95, color: '#fef3c7', note: 'Pure white linen rags — bedsheets, shirts. Best fiber, highest yield, premium paper.' },
+          mixed:  { name: 'Mixed linen + cotton',  yieldPct: 55, qualityScore: 80, color: '#fde68a', note: 'Standard mix — most paper of the era. Solid commercial grade.' },
+          cotton: { name: 'Cotton-heavy mix',      yieldPct: 50, qualityScore: 65, color: '#fed7aa', note: 'More cotton, shorter fibers. Newspaper-grade if you had to compare to modern.' },
+          rough:  { name: 'Rough hemp + canvas',   yieldPct: 40, qualityScore: 45, color: '#cbd5e1', note: 'Coarse fibers, dark color. Wrapping paper, cheapest grades.' }
+        };
+        // Sheet sizes (historical European)
+        var sheetSizes = {
+          chancery:  { name: 'Chancery (12×17")',   pounds: 0.02, name2: 'Standard book paper. Most common 15th-century size.' },
+          royal:     { name: 'Royal (19×24")',      pounds: 0.05, name2: 'Larger format, premium books, atlases.' },
+          imperial:  { name: 'Imperial (22×30")',   pounds: 0.08, name2: 'Largest standard. Big atlases, broadsides, posters.' }
+        };
+
+        var grade = ragGrades[pmRagQuality];
+        var sheet = sheetSizes[pmSheetSize];
+        var paperYield = pmRagWeight * (grade.yieldPct / 100);
+        var sheetCount = Math.floor(paperYield / sheet.pounds);
+        var beatHours = pmRagQuality === 'linen' ? 30 : pmRagQuality === 'mixed' ? 22 : pmRagQuality === 'cotton' ? 18 : 12;
+        var totalLaborDays = Math.ceil((beatHours / 8) + (sheetCount * 0.00007 * 8) + 7);  // beat + form + 7d dry
+
+        // Section content
+        var content;
+        if (pmSect === 'overview') {
+          content = h('div', null,
+            dropCapPara('No press without paper. Gutenberg\'s invention only worked because a parallel revolution had already happened: paper had become cheap. Around 1300 a sheet of paper cost about 1/6 the price of an equivalent sheet of parchment. By 1450 — when Gutenberg printed the 42-line Bible — paper was a tenth the price. Without that price collapse, mechanical printing would have been economically impossible.'),
+            sectionHeader('📜', 'The under-told prerequisite'),
+            h('p', { style: { color: T.muted, fontSize: 14, lineHeight: 1.7, margin: '0 0 12px' } },
+              'Most histories of the print revolution focus on the press itself — the screw, the type, the ink. They underrate the supply chain. Paper had to travel a 1,300-year route from Cai Lun (China, 105 CE) through Samarkand, Baghdad, Cordoba, Fabriano in Italy (1276), Nuremberg (1390), and finally to Mainz before Gutenberg could afford to print 180 copies of a 1,272-page Bible. Every step of that journey is a story.'),
+            sectionHeader('🔑', 'What this module covers'),
+            keyPointBlock(null, [
+              { k: 'History', v: 'Cai Lun (105 CE) to Fabriano (1276) to Mainz (1450) — the slow westward spread of papermaking technology.' },
+              { k: 'The rag trade', v: 'Where the raw material came from. Why every village had rag-and-bone-men by 1500.' },
+              { k: 'The process', v: 'The 6 hand-papermaking stages that produced every sheet of paper Gutenberg printed on.' },
+              { k: 'Calculator', v: 'Input rag weight + quality → see paper output. Same math the foreman did.' },
+              { k: 'Paper grades', v: 'Chancery, royal, imperial. Why book paper was different from broadside paper.' },
+              { k: 'Economics', v: 'Why paper price collapsed from 1300 to 1450 — and what that enabled.' }
+            ])
+          );
+        } else if (pmSect === 'history') {
+          content = h('div', null,
+            dropCapPara('Cai Lun, eunuch official of the Han imperial court, is traditionally credited with documenting papermaking in China in 105 CE. Recent archaeology shows paper-like material in China from ~200 BCE — so Cai Lun likely systematized + standardized a craft already centuries old. Either way, paper went from informal Chinese craft to a documented technology then.'),
+            sectionHeader('🌍', "Paper's long walk west"),
+            keyPointBlock('Major milestones of paper\'s spread to Europe', [
+              { k: '105 CE — China (Cai Lun)', v: 'Documented papermaking with mulberry bark, hemp, rag, fishnets. Han imperial court adopts paper for government records.' },
+              { k: '751 CE — Samarkand', v: 'Battle of Talas: Tang Chinese forces lose to Abbasid Caliphate. Chinese paper-makers captured. Paper technology enters the Islamic world via Samarkand.' },
+              { k: '8th-9th c. — Baghdad', v: 'Abbasid Caliphate establishes first non-Chinese paper mills. Baghdad becomes major paper production center; House of Wisdom uses paper for the great Arabic translation project.' },
+              { k: '11th c. — Cordoba', v: 'Islamic Spain (al-Andalus): paper mills at Játiva. First papermaking in what is now Europe — but in Arab hands.' },
+              { k: '1276 — Fabriano, Italy', v: 'The earliest known Christian-European paper mill, in Fabriano (Marche). Italian mills add 3 key innovations: water-powered stamper mills (vs hand-beating), animal-glue sizing (vs starch), and watermarks (date the mill + serve as quality mark).' },
+              { k: '1390 — Nuremberg', v: 'First documented paper mill in German lands (Stromer mill). Now Europe has multiple production centers.' },
+              { k: '1450 — Mainz', v: 'Paper has been cheap enough for ~50 years. Gutenberg presses the 42-line Bible. ~180 copies, 1,272 pages each — about 200,000 sheets of paper. Affordable only because the supply chain matured first.' }
+            ]),
+            sectionHeader('💡', 'The Fabriano innovations'),
+            calloutBox('info', 'Why Italian paper became world-standard',
+              h('div', null,
+                h('p', { style: { margin: '0 0 8px', lineHeight: 1.6 } },
+                  '1. Water-powered stampers. Mediterranean Italian mountain streams could drive heavy wooden hammers. This replaced hand-beating with a 24-hour mechanical process. Output: roughly 5x what hand-beating could produce.'),
+                h('p', { style: { margin: '0 0 8px', lineHeight: 1.6 } },
+                  '2. Animal-glue (gelatin) sizing. Made paper non-absorbent enough for writing with iron-gall ink and for printing with oil-based ink. Critical — earlier Arabic papers used starch sizing which absorbed too much ink.'),
+                h('p', { style: { margin: 0, lineHeight: 1.6 } },
+                  '3. Watermarks. Wire designs sewn onto the mould left a faint translucent image in each sheet. Originally a mill\'s quality + provenance signature. Today the principal way historians date and authenticate undated period documents.')
+              )
+            )
+          );
+        } else if (pmSect === 'rags') {
+          content = h('div', null,
+            dropCapPara('Where did the rags actually come from? In 1500, the answer was: from every household, every hospital, every ship, every poor person who died. The rag-and-bone-man (or chiffonnier in France, Lumpensammler in German lands) walked house-to-house exchanging small coin or sewing pins for any old textile. Linen sheets were premium. Hospital sheets were paid extra (high turnover). Ships\' rotted sails were a major source. Without this network, the press could not have printed.'),
+            sectionHeader('🧵', 'What worked, what did not'),
+            keyPointBlock('Fiber sources ranked by paper quality', [
+              { k: 'Linen (best)', v: 'Long, strong, white fibers. Premium white paper. Bed linens, shirts, shrouds, table linens. Wealthier households + hospitals were the main supply.' },
+              { k: 'Hemp', v: 'Strong, coarse, darker fiber. Rope, sail canvas, sacking. Good for cheaper grades + wrapping paper.' },
+              { k: 'Cotton', v: 'Shorter fibers, softer paper. Increasing supply from 1500s as cotton textile imports grew. Heavily mixed with linen.' },
+              { k: 'Wool (useless)', v: 'Wool felts when beaten — the fibers mat into a clot, not a sheet. Wool textiles were not paper material.' },
+              { k: 'Esparto grass (later)', v: '1800s-only. Spanish/Algerian grass became important for British paper-making after the cotton famine of the 1860s.' }
+            ]),
+            sectionHeader('🏘', 'The economy of rags'),
+            h('p', { style: { color: T.muted, fontSize: 14, lineHeight: 1.7, margin: '0 0 12px' } },
+              'A 1500 European town of 10,000 people produced perhaps 20-40 tonnes of recyclable rag per year. Bremen, Hamburg, Nuremberg, Venice, Lyon all had organized rag merchants by 1450. Larger paper mills sent buyers as far as 200+ miles from the mill, especially during periods of paper-price spikes. The poorer classes who turned over rags for paper were unknowingly funding the Reformation, the scientific revolution, the rise of the newspaper.'),
+            sectionHeader('💀', 'The dark history: cholera + rag panic'),
+            calloutBox('warn', 'Rags carried disease',
+              h('div', null,
+                h('p', { style: { margin: '0 0 8px', lineHeight: 1.6 } },
+                  'Rag piles + paper mills were repeatedly identified as cholera + typhus vectors during 19th-century epidemics. The 1832 cholera outbreak in Europe spread along rag-collection routes; the 1854 London Broad Street outbreak had multiple sources, but rag mills were among the suspects (later research confirmed water, not rags).'),
+                h('p', { style: { margin: 0, lineHeight: 1.6 } },
+                  'By 1880s most European states required boiling or chemical disinfection of rag shipments. The "rag trade" survived as a regulated industry until mechanical wood-pulp papermaking (1860s onward) eventually displaced rag paper for most commercial use.')
+              )
+            ),
+            sectionHeader('📜', 'Maine connection: rag papermaking'),
+            h('p', { style: { color: T.muted, fontSize: 14, lineHeight: 1.7, margin: '0 0 12px' } },
+              'Maine had multiple rag-based paper mills in the 1800s — Yarmouth Paper Mill, Eldridge Mill (Pittsfield), and several along the Kennebec. Maine\'s shift from rag to wood-pulp papermaking in the late 1800s — driven by the abundance of spruce + the technology of Hugh Burgess and J. C. Mengel — is one chapter in why central Maine became a paper-mill economy that lasted into the 21st century. Modern Sappi (Westbrook + Skowhegan) descended from these wood-pulp pioneers.')
+          );
+        } else if (pmSect === 'process') {
+          var stage = processStages[pmStage] || processStages[0];
+          content = h('div', null,
+            dropCapPara('Hand papermaking — the process Gutenberg\'s paper was made by — takes about 6 distinct stages, often weeks from start to finish. Each stage required a specialist. A 1500 paper mill had a dozen+ workers — beater, vatman, coucher, layman, presser, sizer, lofter, finisher — each with years of training. Watch the stages.'),
+            // Stage tabs
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+              processStages.map(function(s, i) {
+                var sel = (i === pmStage);
+                return h('button', { key: i,
+                  onClick: function() { setPmStage(i); announce('Stage ' + (i+1) + ': ' + s.name); },
+                  style: btn({ padding: '8px 12px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                  (i + 1) + '. ' + s.emoji + ' ' + s.name);
+              })
+            ),
+            // Visual representation of the stage
+            h('div', { style: { background: T.cardAlt, border: '2px solid ' + T.accent, borderRadius: 12, padding: 24, marginBottom: 14, textAlign: 'center' } },
+              h('div', { style: { fontSize: 64, marginBottom: 10 } }, stage.emoji),
+              h('div', { style: { fontSize: 18, fontWeight: 700, color: T.accentHi, fontFamily: 'Georgia, serif', marginBottom: 4 } },
+                'Stage ' + (pmStage + 1) + ' of ' + processStages.length),
+              h('div', { style: { fontSize: 22, fontWeight: 700, color: T.text, fontFamily: 'Georgia, serif' } }, stage.name)
+            ),
+            // Stage description
+            h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 10, padding: 18, marginBottom: 14 } },
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 14, lineHeight: 1.7 } }, stage.body)
+            ),
+            // Stage navigation
+            h('div', { style: { display: 'flex', gap: 10, justifyContent: 'space-between', flexWrap: 'wrap' } },
+              h('button', {
+                disabled: pmStage <= 0,
+                onClick: function() { setPmStage(Math.max(0, pmStage - 1)); },
+                style: btn({ padding: '10px 18px', fontSize: 13, opacity: pmStage <= 0 ? 0.4 : 1 }) }, '← Previous stage'),
+              h('div', { style: { fontSize: 11, color: T.dim, alignSelf: 'center' } }, (pmStage + 1) + ' / ' + processStages.length),
+              h('button', {
+                disabled: pmStage >= processStages.length - 1,
+                onClick: function() { setPmStage(Math.min(processStages.length - 1, pmStage + 1)); },
+                style: btnPrimary({ padding: '10px 18px', fontSize: 13, opacity: pmStage >= processStages.length - 1 ? 0.4 : 1 }) },
+                pmStage >= processStages.length - 1 ? 'Process complete →' : 'Next stage →')
+            )
+          );
+        } else if (pmSect === 'calculator') {
+          content = h('div', null,
+            dropCapPara('The 15th-century paper mill foreman did this math every morning. How much rag came in? What quality? How much paper of what grade will it produce? Set the inputs below and see.'),
+            sectionHeader('🧮', 'Input your batch'),
+            // Rag weight slider
+            h('div', { style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 10, padding: 16, marginBottom: 12 } },
+              h('div', { style: { fontSize: 13, color: T.muted, marginBottom: 8, fontWeight: 700 } }, 'Dry rag weight: ' + pmRagWeight + ' lb'),
+              h('input', { type: 'range', min: 10, max: 500, step: 10, value: pmRagWeight,
+                onChange: function(e) { setPmRagWeight(parseInt(e.target.value, 10)); },
+                style: { width: '100%', accentColor: T.accent } }),
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: T.dim, marginTop: 4 } },
+                h('span', null, '10 lb'),
+                h('span', null, '500 lb'))
+            ),
+            // Rag quality picker
+            h('div', { style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 10, padding: 16, marginBottom: 12 } },
+              h('div', { style: { fontSize: 13, color: T.muted, marginBottom: 8, fontWeight: 700 } }, 'Rag quality:'),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+                Object.keys(ragGrades).map(function(k) {
+                  var g = ragGrades[k];
+                  var sel = (k === pmRagQuality);
+                  return h('button', { key: k,
+                    onClick: function() { setPmRagQuality(k); announce(g.name); },
+                    style: btn({ padding: '7px 11px', fontSize: 12,
+                      background: sel ? T.accent : T.card, color: sel ? T.ink : T.text,
+                      borderColor: sel ? T.accent : T.border }) }, g.name);
+                })
+              ),
+              h('div', { style: { fontSize: 11, color: T.dim, marginTop: 8, fontStyle: 'italic' } }, grade.note)
+            ),
+            // Sheet size picker
+            h('div', { style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 10, padding: 16, marginBottom: 12 } },
+              h('div', { style: { fontSize: 13, color: T.muted, marginBottom: 8, fontWeight: 700 } }, 'Target sheet size:'),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+                Object.keys(sheetSizes).map(function(k) {
+                  var s = sheetSizes[k];
+                  var sel = (k === pmSheetSize);
+                  return h('button', { key: k,
+                    onClick: function() { setPmSheetSize(k); announce(s.name); },
+                    style: btn({ padding: '7px 11px', fontSize: 12,
+                      background: sel ? T.accent : T.card, color: sel ? T.ink : T.text,
+                      borderColor: sel ? T.accent : T.border }) }, s.name);
+                })
+              ),
+              h('div', { style: { fontSize: 11, color: T.dim, marginTop: 8, fontStyle: 'italic' } }, sheet.name2)
+            ),
+            // Results
+            sectionHeader('📊', 'Your batch will produce'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 14 } },
+              h('div', { style: { background: T.card, border: '2px solid ' + T.accent, borderRadius: 10, padding: 14, textAlign: 'center' } },
+                h('div', { style: { fontSize: 11, color: T.dim, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 } }, 'Paper yield'),
+                h('div', { style: { fontSize: 28, fontWeight: 800, color: T.accentHi, fontFamily: 'Georgia, serif', marginTop: 4 } }, paperYield.toFixed(1) + ' lb'),
+                h('div', { style: { fontSize: 11, color: T.muted, marginTop: 4 } }, grade.yieldPct + '% of rag weight')),
+              h('div', { style: { background: T.card, border: '2px solid ' + T.accent, borderRadius: 10, padding: 14, textAlign: 'center' } },
+                h('div', { style: { fontSize: 11, color: T.dim, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 } }, 'Sheets produced'),
+                h('div', { style: { fontSize: 28, fontWeight: 800, color: T.accentHi, fontFamily: 'Georgia, serif', marginTop: 4 } }, sheetCount.toLocaleString()),
+                h('div', { style: { fontSize: 11, color: T.muted, marginTop: 4 } }, sheet.name.split(' ')[0] + ' sheets')),
+              h('div', { style: { background: T.card, border: '2px solid ' + T.accent, borderRadius: 10, padding: 14, textAlign: 'center' } },
+                h('div', { style: { fontSize: 11, color: T.dim, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 } }, 'Paper quality'),
+                h('div', { style: { fontSize: 28, fontWeight: 800, color: T.accentHi, fontFamily: 'Georgia, serif', marginTop: 4 } }, grade.qualityScore + '/100'),
+                h('div', { style: { fontSize: 11, color: T.muted, marginTop: 4 } }, grade.qualityScore >= 90 ? 'Premium' : grade.qualityScore >= 70 ? 'Commercial' : grade.qualityScore >= 50 ? 'Newsprint' : 'Wrapping')),
+              h('div', { style: { background: T.card, border: '2px solid ' + T.accent, borderRadius: 10, padding: 14, textAlign: 'center' } },
+                h('div', { style: { fontSize: 11, color: T.dim, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 } }, 'Labor needed'),
+                h('div', { style: { fontSize: 28, fontWeight: 800, color: T.accentHi, fontFamily: 'Georgia, serif', marginTop: 4 } }, totalLaborDays + ' days'),
+                h('div', { style: { fontSize: 11, color: T.muted, marginTop: 4 } }, 'beat + form + dry + size'))
+            ),
+            // Interpretation
+            h('div', { style: { background: 'rgba(201,161,74,0.06)', border: '1px solid ' + T.accent, borderRadius: 10, padding: 14 } },
+              h('div', { style: { fontSize: 12, fontWeight: 700, color: T.accentHi, marginBottom: 6 } }, 'What this output could print:'),
+              h('p', { style: { margin: 0, fontSize: 13, color: T.muted, lineHeight: 1.6 } },
+                'A Gutenberg Bible (B42) used about 1,272 sheets per 2-volume copy. Your batch (' + sheetCount.toLocaleString() + ' sheets) could print about ' + Math.floor(sheetCount / 1272) + ' complete Bibles, or ' + Math.floor(sheetCount / 32) + ' books of 32 pages each (typical pamphlet length), or roughly ' + Math.floor(sheetCount / 1) + ' broadsides (single-sheet posters).')
+            )
+          );
+        } else if (pmSect === 'grades') {
+          content = h('div', null,
+            dropCapPara('Not all paper was equal. The 1500 paper trade had a dozen+ named grades, each with conventional sizes, quality grades, and prices. Knowing the grade vocabulary was as essential to a 1500 buyer as knowing the difference between letter-size and ledger today.'),
+            sectionHeader('📐', 'Standard sheet sizes'),
+            keyPointBlock('European paper sizes (Italian + Northern), 1500 standards', [
+              { k: 'Foolscap (8.5×13.5")', v: 'Light writing paper, schools, accounts. Watermarked with a fool\'s cap + bells originally — hence the name.' },
+              { k: 'Chancery (12×17")', v: 'Common book paper. Most early-printed books used Chancery or close variants.' },
+              { k: 'Crown (15×20")', v: 'Larger book paper, atlases. Watermarked with a crown.' },
+              { k: 'Royal (19×24")', v: 'Premium grade, expensive books, royal commissions. Approximately 19th-century "elephant folio" size.' },
+              { k: 'Imperial (22×30")', v: 'Largest standard sheet. Used for the very largest atlases, posters, broadsides.' }
+            ]),
+            sectionHeader('📑', 'Quality grades'),
+            keyPointBlock('Quality tiers within each size', [
+              { k: 'Superfine (premium)', v: 'White linen rag only. Bright white, even surface, careful sizing. Top 5-10% of output. Highest-priced.' },
+              { k: 'Fine', v: 'Linen-dominant, well-finished. Standard for premium books, Bibles, legal documents.' },
+              { k: 'Common', v: 'Mixed rag, less careful finishing. Standard commercial books, schoolbooks.' },
+              { k: 'Coarse', v: 'Cotton-heavy + hemp. Newspaper-equivalent. Cheap pamphlets, broadsides.' },
+              { k: 'Brown / wrapping', v: 'Hemp + coarsest rag, unbleached. Wrapping paper, baker\'s paper, throwaway use.' }
+            ]),
+            sectionHeader('💧', 'Watermarks — the original quality mark'),
+            h('p', { style: { color: T.muted, fontSize: 14, lineHeight: 1.7, margin: '0 0 12px' } },
+              'A watermark is a faint translucent design pressed into paper while still wet. Made by sewing a wire shape onto the wire mould — fibers settle thinner where the wire raises them, leaving a "shadow" visible when held to light. Watermarks served as: (1) the mill\'s mark of ownership, (2) a quality guarantee (rep depended on the mark), and (3) the buyer\'s way of telling grades apart at-a-glance. Today, watermarks are still the principal way historians date and authenticate period documents — different mills used different marks in different years, and the catalog (e.g., Briquet\'s Les Filigranes, 1907) is the standard reference.')
+          );
+        } else { // economics
+          content = h('div', null,
+            dropCapPara('The economic story is the clearest. From 1300 to 1450, the price of paper relative to wages in major European cities fell by approximately 90%. The same century saw parchment (animal-skin) prices roughly stable. By the time Gutenberg was working, a printable sheet of paper cost about 1/10 the equivalent parchment sheet. Without that collapse, no print revolution.'),
+            sectionHeader('📉', 'The paper price collapse, 1300-1450'),
+            h('div', { style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 10, padding: 16, marginBottom: 12 } },
+              h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 13, color: T.muted } },
+                h('thead', null,
+                  h('tr', { style: { borderBottom: '1px solid ' + T.border } },
+                    h('th', { style: { textAlign: 'left', padding: 6, color: T.accentHi } }, 'Year'),
+                    h('th', { style: { textAlign: 'left', padding: 6, color: T.accentHi } }, 'Paper sheet cost (1 chancery)'),
+                    h('th', { style: { textAlign: 'left', padding: 6, color: T.accentHi } }, 'Comparable parchment cost'),
+                    h('th', { style: { textAlign: 'left', padding: 6, color: T.accentHi } }, 'Paper as % of parchment'))),
+                h('tbody', null,
+                  [
+                    { y: '1300', p: '~6 denarii', pa: '~36 denarii', pct: '17%' },
+                    { y: '1350', p: '~5 denarii', pa: '~36 denarii', pct: '14%' },
+                    { y: '1400', p: '~3 denarii', pa: '~33 denarii', pct: '9%' },
+                    { y: '1450', p: '~2 denarii', pa: '~30 denarii', pct: '7%' },
+                    { y: '1500', p: '~1 denarius',  pa: '~28 denarii', pct: '4%' }
+                  ].map(function(row, i) {
+                    return h('tr', { key: i, style: { borderBottom: '1px solid ' + T.border } },
+                      h('td', { style: { padding: 6, fontFamily: 'ui-monospace, monospace', color: T.text, fontWeight: 700 } }, row.y),
+                      h('td', { style: { padding: 6 } }, row.p),
+                      h('td', { style: { padding: 6 } }, row.pa),
+                      h('td', { style: { padding: 6, fontFamily: 'ui-monospace, monospace', color: T.accent, fontWeight: 700 } }, row.pct));
+                  })
+                )
+              ),
+              h('div', { style: { marginTop: 8, fontSize: 11, color: T.dim, fontStyle: 'italic' } },
+                'Approximate Florentine prices, denarii (1/240 lira). Exact prices varied across cities + over time. Source: Carlo Cipolla, "Money in Sixteenth-Century Florence" + comparative studies.')
+            ),
+            sectionHeader('🚀', 'What this enabled'),
+            keyPointBlock('Cost collapse → demand explosion', [
+              { k: 'Universities expand', v: 'Cheaper paper meant cheaper notebooks, account books, course materials. Bologna + Paris + Oxford grew enrollment substantially in 1300-1450.' },
+              { k: 'Merchant correspondence', v: 'Italian merchants started keeping double-entry books (Pacioli\'s 1494 treatise) — possible only with cheap paper. The Medici archives are mostly paper, not parchment.' },
+              { k: 'Bureaucratic records', v: 'State + church record-keeping moved from parchment to paper. Modern archives full of 1400-1500 paper documents.' },
+              { k: 'Personal letters', v: 'Letter-writing became normal among literate non-elites. Petrarch + Erasmus + many others left vast paper letter collections.' },
+              { k: 'The press itself', v: 'Without paper at 1/10 parchment price, no Gutenberg Bible was economically possible. Each Bible used about 1,272 paper sheets — would have required ~12,000+ parchment sheets at much higher price.' }
+            ]),
+            sectionHeader('🏭', 'The next disruption: wood pulp'),
+            h('p', { style: { color: T.muted, fontSize: 14, lineHeight: 1.7, margin: '0 0 12px' } },
+              'Rag paper held the market for ~600 years (1276 Fabriano to ~1880). The next paper revolution was wood-pulp papermaking — invented in stages by Friedrich Gottlob Keller (Germany, 1844, ground wood) and Hugh Burgess + Charles Watt (Britain + USA, 1854, chemical pulping). Wood pulp was vastly cheaper than rag, kicked off the mass-circulation newspaper era of 1870-1920, and made paper price collapse another order of magnitude. Maine\'s paper-mill industry (Sappi, Verso) descends from this wood-pulp tradition.')
+          );
+        }
+
+        return h('div', null,
+          backBar('📃 Paper Making'),
+          // Section picker
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) {
+              var sel = (pmSect === s.id);
+              return h('button', { key: s.id,
+                onClick: function() { setPmSect(s.id); announce(s.label); },
+                style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                s.icon + ' ' + s.label);
+            })
+          ),
+          // Content
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            content
+          ),
+          // Mini-quiz
+          miniQuizBlock('paperMaking', [
+            { q: 'Who is traditionally credited with documenting papermaking?',
+              opts: ['Johannes Gutenberg', 'Cai Lun (China, 105 CE)', 'Bi Sheng', 'The Roman emperor Augustus'],
+              ans: 1, explain: 'Cai Lun, eunuch official of the Han imperial court, documented papermaking in 105 CE. Recent archaeology shows paper-like material in China earlier — Cai Lun likely systematized an existing craft.' },
+            { q: 'What was the principal raw material for European paper from 1276-1880?',
+              opts: ['Wood pulp', 'Linen, cotton, and hemp rags', 'Papyrus', 'Mulberry bark'],
+              ans: 1, explain: 'Rag paper was the European standard for ~600 years. Wood pulp did not displace it for newspapers and books until the 1860s-1880s.' },
+            { q: 'Why did Italian Fabriano paper (1276 onward) become world-standard?',
+              opts: ['It was the only paper available', 'Three innovations: water-powered stamper mills, animal-glue sizing, and watermarks', 'It was made from special Italian rags', 'It was personally endorsed by the Pope'],
+              ans: 1, explain: 'The Fabriano paper-makers introduced three innovations that made Italian paper higher quality + lower cost than competitors: water-powered stampers replaced hand-beating, animal-glue sizing made paper non-absorbent enough for ink, and watermarks served as quality marks + provenance.' },
+            { q: 'About what fraction of equivalent parchment did paper cost in 1450 (when Gutenberg printed)?',
+              opts: ['Same price as parchment', 'About 1/2 the price', 'About 1/10 the price', 'More expensive than parchment'],
+              ans: 2, explain: 'By 1450 paper cost roughly 1/10 of equivalent parchment. This price collapse over 150 years (1300-1450) was the economic prerequisite for the print revolution. Without it, the Gutenberg Bible would have been impossibly expensive.' },
+            { q: 'Why was wool useless for papermaking?',
+              opts: ['Wool was too valuable to recycle', 'Wool fibers felt (mat into a clot) when beaten, instead of separating into a smooth slurry', 'Wool is too expensive', 'Wool burned during the beating process'],
+              ans: 1, explain: 'Wool fibers have natural scales that interlock when beaten — they felt into a mat rather than separating into the smooth slurry needed for paper. Linen, hemp, and cotton fibers separate properly. This is why rag paper used plant-fiber textiles, not wool.' }
+          ]),
+          sourcesBlock([
+            { label: 'Dard Hunter, Papermaking: The History and Technique of an Ancient Craft (1943, reprint 1978)' },
+            { label: 'Tsien Tsuen-Hsuin, "Paper and Printing" in Joseph Needham, Science and Civilisation in China vol. 5 part 1 (1985)' },
+            { label: 'Carlo Cipolla, Money in Sixteenth-Century Florence (1989)' },
+            { label: 'Briquet, Les Filigranes — standard watermark catalog (1907, still in use)' },
+            { label: 'Robert L. Mott, Hand Papermaking Magazine archives', url: 'https://www.handpapermaking.org/' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['NGSS HS-ETS1-3 (technology systems)', 'CCSS RH.6-8.7 (integrate visual + text)', 'NCSS D2.Eco.1.6-8 (economic concepts)'],
+            discussion: [
+              'Why does paper get less attention than the press in most histories of the print revolution?',
+              'Walk through what would have happened differently if paper had stayed at parchment prices.',
+              'Compare the rag trade (textile waste → paper) with modern paper recycling. Same principles? Different scale?'
+            ],
+            misconceptions: [
+              { wrong: 'Paper was always made from wood', right: 'Wood-pulp papermaking only became common after 1860. For most of paper\'s history, the raw material was textile rag (linen, cotton, hemp).' },
+              { wrong: 'Gutenberg invented paper as well as the press', right: 'Paper arrived in Europe via the Arab world about 200 years before Gutenberg. He used existing paper-making technology — it was the press, type-metal, and ink that were his contribution.' }
+            ],
+            extension: 'Make rag paper yourself using a kitchen blender, an old cotton t-shirt, and a window screen + wood frame. Many YouTube tutorials show the home method. Compare what you get to commercial paper — texture, strength, absorbency. Why is yours different?'
+          }),
+          crossLinkFooter('paperMaking'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // BOOKBINDING LAB — what happens after the printing press is done.
+      // Folding, gathering, sewing, binding, finishing. Interactive sheet-
+      // folding visualizer + binding-decision calculator.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderBookbinding() {
+        var bbSectRaw = useState('overview');
+        var bbSect = bbSectRaw[0], setBbSect = bbSectRaw[1];
+        var bbFoldRaw = useState('quarto');  // 'folio'|'quarto'|'octavo'|'duodecimo'|'sextodecimo'
+        var bbFold = bbFoldRaw[0], setBbFold = bbFoldRaw[1];
+        var bbBindingRaw = useState('full_leather');
+        var bbBinding = bbBindingRaw[0], setBbBinding = bbBindingRaw[1];
+        var bbPagesRaw = useState(320);
+        var bbPages = bbPagesRaw[0], setBbPages = bbPagesRaw[1];
+
+        var sections = [
+          { id: 'overview',   label: 'Overview',     icon: '📖' },
+          { id: 'history',    label: 'History',      icon: '🏛' },
+          { id: 'folding',    label: 'Folding',      icon: '📐' },
+          { id: 'gathering',  label: 'Gathering',    icon: '🧮' },
+          { id: 'sewing',     label: 'Sewing',       icon: '🪡' },
+          { id: 'binding',    label: 'Binding',      icon: '📚' },
+          { id: 'decoration', label: 'Decoration',   icon: '✨' },
+          { id: 'calculator', label: 'Calculator',   icon: '💰' }
+        ];
+
+        // Fold types - sheet → page math
+        var folds = {
+          folio:        { name: 'Folio (2°)',         folds: 1,  pagesPerSheet: 4,  size: 'Largest (15-24" tall)', use: 'Atlases, Bibles, royal commissions', cost: 'High (more paper per book)' },
+          quarto:       { name: 'Quarto (4°)',        folds: 2,  pagesPerSheet: 8,  size: '10-13" tall',          use: 'Scholarly books, premium novels',     cost: 'Medium-high' },
+          octavo:       { name: 'Octavo (8°)',        folds: 3,  pagesPerSheet: 16, size: '8-10" tall',           use: 'Most general books, hardcover novels', cost: 'Standard' },
+          duodecimo:    { name: 'Duodecimo (12°)',    folds: 4,  pagesPerSheet: 24, size: '5-7" tall',            use: 'Pocket books, school texts',           cost: 'Low' },
+          sextodecimo:  { name: 'Sextodecimo (16°)',  folds: 4,  pagesPerSheet: 32, size: '4-6" tall',            use: 'Miniature devotional books, pocket Bibles', cost: 'Very low' }
+        };
+        var fold = folds[bbFold];
+
+        var bindings = {
+          full_leather: { name: 'Full leather',     cost: 1.00, durability: 95, time: 14, look: 'Premium', desc: 'Calf, goat, or sheep skin covering entire book. Often gilded, embossed, gold-lettered. Top of the bookbinding craft — used for Bibles, legal volumes, libraries.' },
+          half_leather: { name: 'Half leather',     cost: 0.65, durability: 75, time: 8,  look: 'Standard quality', desc: 'Leather spine + corners, paper or cloth covered boards. The 1800s-1900s middle-class standard. Affordable but durable.' },
+          cloth:        { name: 'Cloth (publisher)', cost: 0.30, durability: 50, time: 3, look: 'Industrial', desc: 'Bookcloth (calico or buckram) over hardboard. Mass production after ~1820. Modern hardcover descends from this.' },
+          paper:        { name: 'Paper boards',     cost: 0.12, durability: 25, time: 2,  look: 'Cheap', desc: 'Paper-covered hardboard or pulpboard. School texts, cheap novels. Wears out fast.' },
+          paperback:    { name: 'Paperback (wraps)', cost: 0.05, durability: 10, time: 0.5, look: 'Disposable', desc: 'Paper wrapper glued or stitched. 1500s pamphlets and 20th-century mass-market paperbacks both fit here.' }
+        };
+        var binding = bindings[bbBinding];
+
+        var sheetsNeeded = Math.ceil(bbPages / fold.pagesPerSheet);
+        // Cost model (relative units): paper + sewing + binding + finishing
+        var baseCost = sheetsNeeded * 0.03;  // paper
+        var sewingCost = Math.ceil(sheetsNeeded / 8) * 0.10;  // sewing per gathering
+        var bindingCost = binding.cost * 2.5;  // binding material + labor
+        var totalCost = baseCost + sewingCost + bindingCost;
+        var laborDays = Math.ceil(0.5 + (sheetsNeeded * 0.005) + binding.time);
+
+        var content;
+        if (bbSect === 'overview') {
+          content = h('div', null,
+            dropCapPara('When the printing press finished a job, it produced stacks of printed sheets — not books. A book is made by folding those sheets, gathering them in order, sewing them together at the spine, then binding the sewn block between protective covers. Each of these steps took skill, time, and tools that the print shop usually did not have. Bookbinding was a separate craft, often done in a separate shop, with its own apprenticeships and guilds. This module walks through it.'),
+            sectionHeader('📖', 'The bookbinder\'s craft'),
+            keyPointBlock('Why bookbinding was its own trade', [
+              { k: 'Different tools', v: 'Bone folders, awls, sewing frames, bookbinder\'s knives, plough cutters, finishing presses. Hundreds of specialized tools.' },
+              { k: 'Different skills', v: 'Folding precision, sewing in 6+ different patterns, leather selection + paring, gold tooling, gilding. Years to learn.' },
+              { k: 'Different timing', v: 'Printers worked fast (a press could print 240 sheets/hour). Binders worked slow (a leather binding took 2 weeks).' },
+              { k: 'Different customer', v: 'Printers sold to booksellers in unbound sheets. Booksellers + private customers commissioned binding separately — so the same edition might have a hundred different bindings.' }
+            ]),
+            sectionHeader('🔑', 'What this module covers'),
+            keyPointBlock(null, [
+              { k: 'History', v: 'From codex (3rd-4th c.) to industrial case binding (1820s).' },
+              { k: 'Folding', v: 'Interactive: see how 1 sheet becomes 4, 8, 16, or 32 pages.' },
+              { k: 'Gathering', v: 'Why pages need signature marks + how the binder kept them in order.' },
+              { k: 'Sewing', v: 'The thread structures that hold a book together. Raised cords vs recessed sewing.' },
+              { k: 'Binding', v: 'Full leather, half leather, cloth, boards, paper. The price + durability trade-off.' },
+              { k: 'Decoration', v: 'Gold tooling, marbled endpapers, gilt edges. The visual language of book ownership.' },
+              { k: 'Calculator', v: 'Spec a book — see what it costs.' }
+            ])
+          );
+        } else if (bbSect === 'history') {
+          content = h('div', null,
+            dropCapPara('The codex (bound book, as opposed to a scroll) appeared in the Roman world around the 1st-2nd centuries CE — replacing the scroll because it was random-access (jump to any page) and could hold more text. By the 4th century the codex was the standard book form throughout the Mediterranean. From there, bookbinding gradually developed for ~1,000 years before the printing press arrived to multiply the work.'),
+            sectionHeader('🏛', 'Bookbinding milestones'),
+            keyPointBlock('Key periods in Western bookbinding', [
+              { k: '1st-3rd c. CE — codex emerges', v: 'Wooden or papyrus pages folded + stitched between covers. Replaces scroll for portability + random access.' },
+              { k: '4th-6th c. — Coptic binding', v: 'Egyptian Coptic Christians develop chain-stitch binding still used today by hand-binders. Allows book to lay flat when open.' },
+              { k: '7th-12th c. — Carolingian + Romanesque', v: 'Wooden boards, leather covers, often metal corners + clasps. Heavy + durable. Limited to monastic + royal libraries.' },
+              { k: '13th-15th c. — Gothic + scholarly', v: 'University-driven demand for textbooks. Lighter bindings (leather over pasteboard), faster production methods.' },
+              { k: '1450 — Press arrives', v: 'Bookbinding suddenly scales. Demand explodes. Bindery work standardizes across Europe by 1500.' },
+              { k: '1500-1700 — Renaissance bindings', v: 'Gold tooling, blind tooling, painted edges, dyed leathers. The peak of artisan bookbinding. Major bindings from this era are museum pieces.' },
+              { k: '1820s — Case binding industrialized', v: 'William Pickering + Archibald Leighton develop publisher\'s cloth case binding. Machine-made cases ship books pre-bound for the first time — collapses bookbinding from "weeks" to "minutes" and ends the artisan tradition for mass-market books.' },
+              { k: '1850s — Perfect binding emerges', v: 'Adhesive-only spine binding (no sewing). Massively cheap. Used for cheap paperbacks + magazines from then onward.' }
+            ]),
+            sectionHeader('🔧', 'Two parallel traditions today'),
+            calloutBox('info', 'Artisan + industrial coexist',
+              h('p', { style: { margin: 0, lineHeight: 1.6 } },
+                'Hand bookbinding (often called "fine binding") never died. Practitioners working in the 1500-style sewn-board-leather tradition exist today at conservation labs (Library of Congress, British Library), at private artisan studios, and in book arts programs (North Bennet Street School in Boston, the Center for Book Arts in New York, Penland in North Carolina). A high-end hand binding still takes weeks + costs $300-$3,000 per book. Industrial case-bound + perfect-bound books are produced by the million on automated lines for $0.50-$3 each. Both descend from the medieval codex.')
+            )
+          );
+        } else if (bbSect === 'folding') {
+          content = h('div', null,
+            dropCapPara('The first step after printing: fold the printed sheets so they become page-sized leaves. The number of folds determines the page count per sheet, the book\'s size, and the cost. A book printed "in folio" has 4 pages per sheet; "in quarto" has 8; "in octavo" has 16. The terms are still standard in rare-book catalogs.'),
+            sectionHeader('📐', 'Interactive: fold-to-size visualizer'),
+            // Fold type picker
+            h('div', { style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 10, padding: 16, marginBottom: 14 } },
+              h('div', { style: { fontSize: 13, color: T.muted, marginBottom: 8, fontWeight: 700 } }, 'Fold type:'),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+                Object.keys(folds).map(function(k) {
+                  var f = folds[k];
+                  var sel = (k === bbFold);
+                  return h('button', { key: k,
+                    onClick: function() { setBbFold(k); announce(f.name); },
+                    style: btn({ padding: '8px 12px', fontSize: 12,
+                      background: sel ? T.accent : T.card,
+                      color: sel ? T.ink : T.text,
+                      borderColor: sel ? T.accent : T.border }) },
+                    f.name);
+                })
+              )
+            ),
+            // Visual representation
+            h('div', { style: { background: T.cardAlt, border: '2px solid ' + T.accent, borderRadius: 12, padding: 24, marginBottom: 14, textAlign: 'center' } },
+              h('div', { style: { fontSize: 14, color: T.dim, marginBottom: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' } },
+                '1 printed sheet → ' + fold.folds + ' fold' + (fold.folds === 1 ? '' : 's') + ' → ' + fold.pagesPerSheet + ' pages'),
+              // SVG: visual fold diagram
+              h('svg', { viewBox: '0 0 320 180', style: { maxWidth: 360, width: '100%', height: 'auto', display: 'block', margin: '0 auto' } },
+                // Original full sheet
+                h('rect', { x: 10, y: 30, width: 100, height: 120, fill: '#f5f1e6', stroke: T.accent, strokeWidth: 2 }),
+                h('text', { x: 60, y: 18, textAnchor: 'middle', fontSize: 11, fill: T.text, fontFamily: 'Georgia, serif' }, '1 sheet'),
+                // Fold lines (dotted)
+                fold.folds >= 1 && h('line', { x1: 60, y1: 30, x2: 60, y2: 150, stroke: T.accent, strokeDasharray: '4,3', opacity: 0.6 }),
+                fold.folds >= 2 && h('line', { x1: 10, y1: 90, x2: 110, y2: 90, stroke: T.accent, strokeDasharray: '4,3', opacity: 0.6 }),
+                fold.folds >= 3 && [h('line', { key: 'h1', x1: 35, y1: 30, x2: 35, y2: 150, stroke: T.accent, strokeDasharray: '3,2', opacity: 0.4 }),
+                                    h('line', { key: 'h2', x1: 85, y1: 30, x2: 85, y2: 150, stroke: T.accent, strokeDasharray: '3,2', opacity: 0.4 })],
+                fold.folds >= 4 && [h('line', { key: 'v1', x1: 10, y1: 60, x2: 110, y2: 60, stroke: T.accent, strokeDasharray: '3,2', opacity: 0.4 }),
+                                    h('line', { key: 'v2', x1: 10, y1: 120, x2: 110, y2: 120, stroke: T.accent, strokeDasharray: '3,2', opacity: 0.4 })],
+                // Arrow
+                h('path', { d: 'M 130 90 L 165 90 M 158 84 L 165 90 L 158 96', stroke: T.accent, strokeWidth: 2, fill: 'none' }),
+                // Result: stacked pages
+                (function() {
+                  var pageW = fold.pagesPerSheet >= 16 ? 40 : 50;
+                  var pageH = fold.pagesPerSheet >= 16 ? 60 : 80;
+                  var x0 = 200, y0 = 100 - pageH/2;
+                  var stack = [];
+                  for (var i = 0; i < Math.min(fold.pagesPerSheet / 4, 8); i++) {
+                    stack.push(h('rect', { key: 'p'+i,
+                      x: x0 + i * 2, y: y0 - i * 2,
+                      width: pageW, height: pageH,
+                      fill: '#f5f1e6', stroke: T.accent, strokeWidth: 1, opacity: 0.85 }));
+                  }
+                  return stack;
+                })(),
+                h('text', { x: 240, y: 18, textAnchor: 'middle', fontSize: 11, fill: T.text, fontFamily: 'Georgia, serif' },
+                  fold.pagesPerSheet + ' pages')
+              ),
+              h('div', { style: { marginTop: 14, fontSize: 14, color: T.muted } },
+                h('div', { style: { fontWeight: 700, color: T.text } }, fold.name),
+                h('div', null, fold.size),
+                h('div', { style: { fontSize: 12, marginTop: 4, fontStyle: 'italic' } }, 'Typical use: ' + fold.use),
+                h('div', { style: { fontSize: 12, marginTop: 2 } }, 'Cost: ' + fold.cost)
+              )
+            ),
+            sectionHeader('💡', 'Why folio vs octavo?'),
+            keyPointBlock('What determined the fold choice', [
+              { k: 'Reader use case', v: 'A scholar reading at a desk needs a folio (large page, room for marginalia). A traveler reading on horseback needs an octavo or smaller (fits in a saddlebag).' },
+              { k: 'Cost discipline', v: 'A smaller fold = more pages per sheet of paper = cheaper book. A novel printed in octavo cost roughly 1/4 of the same novel in folio.' },
+              { k: 'Status signaling', v: 'Folio + quarto bindings projected authority. Octavo + smaller projected accessibility. A religious tract aimed at common readers was always octavo or smaller.' },
+              { k: 'Type readability', v: 'Bigger fold supports bigger type + bigger margins. Smaller fold required tinier type + tighter layout. Older readers preferred folio for the legibility.' }
+            ]),
+            sectionHeader('📖', 'Aldus Manutius and the pocket book'),
+            calloutBox('info', 'The invention of the portable book',
+              h('p', { style: { margin: 0, lineHeight: 1.6 } },
+                'Aldus Manutius of Venice (1452-1515) is credited with popularizing the octavo edition for serious literature. Before Aldus, classical Latin + Greek texts were always printed in folio or quarto — large, expensive, library-bound. Starting around 1501, Aldus printed classical texts in compact octavo editions priced for individual scholars + traveling clerics. The Aldine octavo is the direct ancestor of the modern paperback. Cost: roughly 1/8 of an equivalent folio. Result: an explosion in personal libraries among the educated middle class.')
+            )
+          );
+        } else if (bbSect === 'gathering') {
+          content = h('div', null,
+            dropCapPara('Once sheets are folded, they have to be gathered in order. A book that prints in 320 pages requires 40 octavo sheets (8 pages each) gathered in correct sequence. One sheet out of order and the book is unusable — but the only way to tell at a glance is to know the signature marks: small letters or numbers printed at the bottom of certain pages that signal which sheet they belong to. The binder reads the signatures, sorts the gathered sheets, and binds in order.'),
+            sectionHeader('🧮', 'Signature marks'),
+            keyPointBlock('How the binder kept order', [
+              { k: 'A signature is one folded sheet', v: 'Also called a "section" or "gathering." A book of 40 sheets has 40 signatures.' },
+              { k: 'Each signature gets a letter or number', v: 'First sheet = A, second = B, etc. The mark appears on page 1 of each sheet, sometimes also on page 3.' },
+              { k: 'Compositors set the marks during typesetting', v: 'When type was set for a forme, the signature mark was added to the bottom of the page. Critical reference.' },
+              { k: 'Modern books still have them', v: 'Look at the bottom of the first page of most hardcover books — you\'ll see a tiny letter or number. Same convention, 575 years later.' }
+            ]),
+            sectionHeader('🪟', 'Catchwords'),
+            h('p', { style: { color: T.muted, fontSize: 14, lineHeight: 1.7, margin: '0 0 12px' } },
+              'A second order-checking device: the catchword. At the bottom of every right-hand page, the printer set the first word of the next page. The binder (or reader) flipping pages could verify the next page matched the catchword — and would catch a missing page or signature instantly. Catchwords were standard from ~1450-1800 then gradually dropped. Some scholarly + rare-book reprints still include them as period authenticity.'),
+            sectionHeader('🚨', 'When things went wrong'),
+            calloutBox('warn', 'Famous misbinding errors',
+              h('p', { style: { margin: 0, lineHeight: 1.6 } },
+                'Even with signatures + catchwords, misbinding happens. Several copies of the Gutenberg Bible (1455) have known binding errors — pages out of order, missing leaves, duplicate sheets — all from binders working too fast 500 years ago. These errors are now prized: they help scholars trace which copy was bound where and when. The same is true for many famous editions: misbound copies of Shakespeare\'s First Folio (1623), Newton\'s Principia (1687), and Darwin\'s Origin of Species (1859) all exist + are catalogued.')
+            )
+          );
+        } else if (bbSect === 'sewing') {
+          content = h('div', null,
+            dropCapPara('Sewn binding is what holds a book together for centuries. The binder takes the gathered signatures, lines them up on a sewing frame (a wooden frame with vertical cords or tapes), and stitches through the spine of each signature in turn, looping the thread around the cords to lock all signatures into a unified block. A good sewn binding can survive 500+ years.'),
+            sectionHeader('🪡', 'Sewing methods'),
+            keyPointBlock('Common period sewing structures', [
+              { k: 'Sewing on raised cords', v: 'The premium method 1450-1800. 4-6 cords stretched vertically on the sewing frame. Thread loops around each cord as it passes through the signature. Cords show as horizontal ridges on the spine — visible on antique books.' },
+              { k: 'Sewing on recessed cords', v: '1700s onward. Cords are set into grooves sawn into the spine, so the spine is flush. Cheaper, faster, but slightly less strong.' },
+              { k: 'Sewing on tapes', v: 'Modern hardcover standard. Linen or cotton tapes replace cords. Used in case-bound publisher\'s editions.' },
+              { k: 'Coptic chain stitch', v: 'No cords or tapes. Chain stitch links signatures directly. Allows book to lay flat. Ancient Coptic Christian technique, still used by hand binders.' },
+              { k: 'Stab stitch', v: 'Quick + crude — needle punches through entire book at once. Used for cheap pamphlets + thin books. Cannot lay open flat.' },
+              { k: 'Perfect binding', v: 'No sewing at all. Spine ground flat then glued. Cheap modern paperbacks. Lasts 5-20 years before pages fall out.' }
+            ]),
+            sectionHeader('🧵', 'Thread + materials'),
+            keyPointBlock('What goes into a sewn binding', [
+              { k: 'Linen thread', v: 'Best — strong, ages well. Used for premium bindings. Still the conservator\'s choice today.' },
+              { k: 'Hemp cords', v: 'Period standard for the raised cords. Strong, traditional.' },
+              { k: 'Beeswax', v: 'Thread is waxed before sewing — smooths it, reduces friction, protects from rot.' },
+              { k: 'Bone folders', v: 'Used to crease folds + smooth the sewn block. Curved bone tool, ergonomic for hours of repetitive use.' },
+              { k: 'Sewing frame', v: 'Vertical wooden frame, 18-24" tall. Cords or tapes stretch from a base to a top bar. Sewing happens on this frame.' }
+            ]),
+            sectionHeader('⏱', 'How long does it take?'),
+            h('p', { style: { color: T.muted, fontSize: 14, lineHeight: 1.7, margin: '0 0 12px' } },
+              'A skilled bookbinder can sew a 40-signature book on raised cords in 2-4 hours. Modern hand-binders typically allow a full day for sewing alone on a quality book. Pamphlets stab-sewn take 5-10 minutes. Industrial Smyth-sewn machines (the standard for quality modern hardcovers) sew 30-50 books per hour. Adhesive perfect-binding lines run 2,000-10,000 books per hour. The technology has gotten dramatically faster + the books proportionally less durable.')
+          );
+        } else if (bbSect === 'binding') {
+          content = h('div', null,
+            dropCapPara('The sewn block of signatures is a flexible brick of paper held together at the spine. To become a book, it needs covers — protective material that wraps the block and gives the book its identity. Cover material was the principal cost + status signal of any book from 1450 to 1850.'),
+            sectionHeader('📚', 'Binding choices'),
+            // Binding picker
+            h('div', { style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 10, padding: 16, marginBottom: 14 } },
+              h('div', { style: { fontSize: 13, color: T.muted, marginBottom: 8, fontWeight: 700 } }, 'Binding type:'),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+                Object.keys(bindings).map(function(k) {
+                  var b = bindings[k];
+                  var sel = (k === bbBinding);
+                  return h('button', { key: k,
+                    onClick: function() { setBbBinding(k); announce(b.name); },
+                    style: btn({ padding: '8px 12px', fontSize: 12,
+                      background: sel ? T.accent : T.card,
+                      color: sel ? T.ink : T.text,
+                      borderColor: sel ? T.accent : T.border }) },
+                    b.name);
+                })
+              )
+            ),
+            // Selected binding detail
+            h('div', { style: { background: T.cardAlt, border: '2px solid ' + T.accent, borderRadius: 12, padding: 20, marginBottom: 14 } },
+              h('div', { style: { fontSize: 20, fontWeight: 700, color: T.text, fontFamily: 'Georgia, serif', marginBottom: 10 } }, binding.name),
+              h('p', { style: { margin: '0 0 14px', color: T.muted, fontSize: 14, lineHeight: 1.6 } }, binding.desc),
+              // Stats bars
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+                [
+                  { label: 'Cost (relative)', value: binding.cost * 100, color: T.warn },
+                  { label: 'Durability', value: binding.durability, color: T.ok },
+                  { label: 'Labor days', value: Math.min(binding.time * 7, 100), color: T.accent }
+                ].map(function(stat, i) {
+                  return h('div', { key: i },
+                    h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 12, color: T.muted, marginBottom: 3 } },
+                      h('span', null, stat.label),
+                      h('span', { style: { fontFamily: 'ui-monospace, monospace', fontWeight: 700, color: T.text } },
+                        stat.label === 'Cost (relative)' ? (binding.cost.toFixed(2) + '×') :
+                        stat.label === 'Durability' ? (binding.durability + '/100') :
+                        (binding.time + ' days'))),
+                    h('div', { style: { height: 6, background: T.bg, borderRadius: 3, overflow: 'hidden' } },
+                      h('div', { style: { height: '100%', width: Math.min(stat.value, 100) + '%', background: stat.color, opacity: 0.85, transition: 'width 0.3s' } })));
+                })
+              )
+            ),
+            sectionHeader('🎨', 'Period leather palettes'),
+            keyPointBlock('Leather + color choices through history', [
+              { k: 'Brown calf', v: 'Most common 1500-1900. Light to dark brown. Workhorse leather.' },
+              { k: 'Russet calf', v: 'Reddish-brown. Premium late 1700s + 1800s. Often seen on English novels.' },
+              { k: 'Black morocco (goatskin)', v: 'Imported from North Africa. Tougher than calf, distinctive grain pattern. Premium 1600-1900.' },
+              { k: 'Red morocco', v: 'Dyed Moroccan goat. Status signal — used on royal commissions, expensive editions.' },
+              { k: 'Vellum', v: 'Calfskin parchment, untanned. Cream/white color. Used for early modern + scholarly bindings.' },
+              { k: 'Sheepskin', v: 'Cheaper than calf. Soft, less durable. Used for affordable bindings.' }
+            ])
+          );
+        } else if (bbSect === 'decoration') {
+          content = h('div', null,
+            dropCapPara('A finished binding is a blank canvas. Decoration — gold tooling, blind tooling, gilt edges, marbled endpapers — turns it into a personal or institutional statement. The decoration vocabulary developed across 4 centuries; learning it is how rare-book dealers + scholars place a binding to time + place.'),
+            sectionHeader('✨', 'Tools + techniques'),
+            keyPointBlock('How decoration is applied', [
+              { k: 'Blind tooling', v: 'Hot brass tool pressed into damp leather — no gold. Leaves a darker indented impression. Most common method.' },
+              { k: 'Gold tooling', v: 'Same brass tool, but with gold leaf laid down first. Heat melts a layer of leaf into the leather. Premium technique. Requires gilt prep — glaire (egg white) sizing.' },
+              { k: 'Filets', v: 'Long roll-tool — creates parallel lines around the cover border. Standard.' },
+              { k: 'Stamps', v: 'Large brass stamps for single impressions — central medallions, family crests, publisher marks.' },
+              { k: 'Hand-painted edges', v: 'Painted designs on the page edges visible when book is closed. Often hidden — fanning the pages reveals the painting.' },
+              { k: 'Gilt edges', v: 'Pages\' top edge (or top + fore-edge + tail) gilded gold. Both decorative + protective (keeps dust out).' },
+              { k: 'Marbled endpapers', v: 'Paste-down + free endleaf decorated with marbled paper — fascinating swirls made by floating ink on water. Each sheet unique.' }
+            ]),
+            sectionHeader('🏛', 'Period styles to recognize'),
+            keyPointBlock('Style by period', [
+              { k: 'Gothic (1450-1500)', v: 'Heavy iron-bound boards, leather over wood, often dark monastery work.' },
+              { k: 'Italian Renaissance (1500-1600)', v: 'Refined gold tooling, geometric + classical motifs. Florentine + Venetian centers.' },
+              { k: 'French Royal (1600-1750)', v: 'Elaborate gold tooling on red morocco. Le Gascon, Padeloup, Derome — famous binders.' },
+              { k: 'English country house (1700-1850)', v: 'Brown calf + tree calf (acid-stained marbled effect on calf leather), simple gilt spines.' },
+              { k: 'American 1800s', v: 'Less elaborate, often cloth, embossed pictorial covers (especially Lippincott + Harper publishers).' },
+              { k: 'Modern hand-binding (1920s-)', v: 'Art deco, modernist, contemporary. Often designed pieces — Cobden-Sanderson, Sangorski + Sutcliffe, Philip Smith.' }
+            ])
+          );
+        } else { // calculator
+          content = h('div', null,
+            dropCapPara('Spec a book. The math the bindery did for every commission. Pages + fold + binding type → cost + labor.'),
+            // Pages slider
+            h('div', { style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 10, padding: 16, marginBottom: 12 } },
+              h('div', { style: { fontSize: 13, color: T.muted, marginBottom: 8, fontWeight: 700 } }, 'Target page count: ' + bbPages),
+              h('input', { type: 'range', min: 32, max: 1500, step: 16, value: bbPages,
+                onChange: function(e) { setBbPages(parseInt(e.target.value, 10)); },
+                style: { width: '100%', accentColor: T.accent } }),
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: T.dim, marginTop: 4 } },
+                h('span', null, '32 (pamphlet)'),
+                h('span', null, '1500 (Bible)'))
+            ),
+            // Fold picker
+            h('div', { style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 10, padding: 16, marginBottom: 12 } },
+              h('div', { style: { fontSize: 13, color: T.muted, marginBottom: 8, fontWeight: 700 } }, 'Fold: ' + fold.name),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+                Object.keys(folds).map(function(k) {
+                  var sel = (k === bbFold);
+                  return h('button', { key: k,
+                    onClick: function() { setBbFold(k); },
+                    style: btn({ padding: '6px 10px', fontSize: 11,
+                      background: sel ? T.accent : T.card,
+                      color: sel ? T.ink : T.text,
+                      borderColor: sel ? T.accent : T.border }) }, folds[k].name);
+                })
+              )
+            ),
+            // Binding picker
+            h('div', { style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 10, padding: 16, marginBottom: 14 } },
+              h('div', { style: { fontSize: 13, color: T.muted, marginBottom: 8, fontWeight: 700 } }, 'Binding: ' + binding.name),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+                Object.keys(bindings).map(function(k) {
+                  var sel = (k === bbBinding);
+                  return h('button', { key: k,
+                    onClick: function() { setBbBinding(k); },
+                    style: btn({ padding: '6px 10px', fontSize: 11,
+                      background: sel ? T.accent : T.card,
+                      color: sel ? T.ink : T.text,
+                      borderColor: sel ? T.accent : T.border }) }, bindings[k].name);
+                })
+              )
+            ),
+            sectionHeader('📊', 'Your book'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10, marginBottom: 14 } },
+              h('div', { style: { background: T.card, border: '2px solid ' + T.accent, borderRadius: 10, padding: 12, textAlign: 'center' } },
+                h('div', { style: { fontSize: 10, color: T.dim, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 } }, 'Sheets needed'),
+                h('div', { style: { fontSize: 24, fontWeight: 800, color: T.accentHi, fontFamily: 'Georgia, serif', marginTop: 4 } }, sheetsNeeded),
+                h('div', { style: { fontSize: 11, color: T.muted, marginTop: 4 } }, fold.pagesPerSheet + ' pp/sheet')),
+              h('div', { style: { background: T.card, border: '2px solid ' + T.accent, borderRadius: 10, padding: 12, textAlign: 'center' } },
+                h('div', { style: { fontSize: 10, color: T.dim, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 } }, 'Labor days'),
+                h('div', { style: { fontSize: 24, fontWeight: 800, color: T.accentHi, fontFamily: 'Georgia, serif', marginTop: 4 } }, laborDays),
+                h('div', { style: { fontSize: 11, color: T.muted, marginTop: 4 } }, 'per copy')),
+              h('div', { style: { background: T.card, border: '2px solid ' + T.accent, borderRadius: 10, padding: 12, textAlign: 'center' } },
+                h('div', { style: { fontSize: 10, color: T.dim, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 } }, 'Relative cost'),
+                h('div', { style: { fontSize: 24, fontWeight: 800, color: T.accentHi, fontFamily: 'Georgia, serif', marginTop: 4 } }, totalCost.toFixed(2)),
+                h('div', { style: { fontSize: 11, color: T.muted, marginTop: 4 } }, 'units')),
+              h('div', { style: { background: T.card, border: '2px solid ' + T.accent, borderRadius: 10, padding: 12, textAlign: 'center' } },
+                h('div', { style: { fontSize: 10, color: T.dim, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 } }, 'Expected life'),
+                h('div', { style: { fontSize: 24, fontWeight: 800, color: T.accentHi, fontFamily: 'Georgia, serif', marginTop: 4 } }, binding.durability >= 90 ? '500yr' : binding.durability >= 60 ? '150yr' : binding.durability >= 30 ? '50yr' : '15yr'),
+                h('div', { style: { fontSize: 11, color: T.muted, marginTop: 4 } }, 'with care'))
+            ),
+            calloutBox('info', 'How to read these results',
+              h('p', { style: { margin: 0, lineHeight: 1.6 } },
+                'Cost is relative — a full-leather binding on a 1500-page folio runs about 100× a paperback on a 32-page pamphlet. Labor scales with both binding choice + page count. Expected life with normal handling reflects what conservation experience says: a properly-bound full-leather book from 1500 can still be read in 2026, while a paperback from 2000 may already be falling apart.')
+            )
+          );
+        }
+
+        return h('div', null,
+          backBar('📖 Bookbinding Lab'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) {
+              var sel = (bbSect === s.id);
+              return h('button', { key: s.id,
+                onClick: function() { setBbSect(s.id); announce(s.label); },
+                style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                s.icon + ' ' + s.label);
+            })
+          ),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            content
+          ),
+          miniQuizBlock('bookbinding', [
+            { q: 'How many pages does a "quarto" sheet produce after folding?',
+              opts: ['4 pages', '8 pages', '16 pages', '32 pages'],
+              ans: 1, explain: 'A quarto sheet is folded twice (in half, then in half again), producing 4 leaves = 8 pages. Folio = 4 pages, octavo = 16 pages, sextodecimo = 32 pages.' },
+            { q: 'Who is credited with popularizing the octavo edition for serious literature?',
+              opts: ['Johannes Gutenberg', 'William Caxton', 'Aldus Manutius', 'Christopher Plantin'],
+              ans: 2, explain: 'Aldus Manutius of Venice started printing classical Latin + Greek texts in compact octavo editions ~1501. The Aldine octavo is the direct ancestor of the modern paperback — affordable, portable, scholarly.' },
+            { q: 'What is a "signature" in bookbinding?',
+              opts: ['The author\'s autograph', 'One folded sheet that becomes part of the book', 'The bookbinder\'s personal mark', 'A legal certification'],
+              ans: 1, explain: 'A signature (also called a section or gathering) is one folded sheet. A 320-page octavo book uses 40 signatures. Each gets a letter mark (A, B, C...) on its first page so the binder can keep them in order.' },
+            { q: 'What does "perfect binding" actually mean?',
+              opts: ['A binding that lasts forever', 'A flawless, error-free binding', 'Adhesive-only spine binding with no sewing', 'A binding signed by the author'],
+              ans: 2, explain: 'Perfect binding = the spine is glued (perfecto adhesive) with no sewing. Used for modern paperbacks + magazines. Cheap, fast (industrial lines do 10,000/hr) — but much less durable than sewn bindings. The "perfect" is a marketing claim, not a quality claim.' },
+            { q: 'About when did publisher\'s cloth case binding become standard?',
+              opts: ['1450 (with Gutenberg)', '1820s (Pickering + Leighton)', '1900', '1950'],
+              ans: 1, explain: 'William Pickering + Archibald Leighton introduced machine-made cloth case binding in the 1820s. Before this, books shipped from printers unbound — buyers commissioned binding separately. After 1820s, hardcover books shipped pre-bound. This is the origin of the modern publisher\'s hardcover.' }
+          ]),
+          sourcesBlock([
+            { label: 'Bernard C. Middleton, A History of English Craft Bookbinding Technique (1996)' },
+            { label: 'David Pearson, English Bookbinding Styles 1450-1800 (2005)' },
+            { label: 'The Center for Book Arts (NYC) tutorials + scholarship', url: 'https://centerforbookarts.org/' },
+            { label: 'American Academy of Bookbinding workshops', url: 'https://bookbindingacademy.org/' },
+            { label: 'Library of Congress Conservation Division — bookbinding resources', url: 'https://www.loc.gov/preservation/' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['NGSS HS-ETS1-3 (technology systems)', 'CCSS RH.6-8.7 (integrate visual + text)', 'NCAS Visual Arts (craft tradition)'],
+            discussion: [
+              'Why was bookbinding a separate craft from printing? What did that mean for who profited from book production?',
+              'Compare a sewn, leather-bound book from 1500 with a modern paperback. Which is "better"? Define "better" first.',
+              'A 1500 buyer commissioned binding separately from buying the printed sheets. Why might modern buyers want a return to this practice?'
+            ],
+            misconceptions: [
+              { wrong: 'Books always came pre-bound', right: 'Before the 1820s, books shipped unbound from printers. Buyers paid a binder separately. The same edition might exist in dozens of different bindings depending on the original owner.' },
+              { wrong: 'Sewing books together is obsolete', right: 'Modern hardcovers are still Smyth-sewn (a machine-version of hand-sewing). Only cheap paperbacks use glue-only "perfect" binding. Premium books today are sewn.' }
+            ],
+            extension: 'Visit a local rare book library (Bowdoin\'s Hawthorne-Longfellow Library, Bates Special Collections, Colby\'s Miller Library all have rare books). Ask the librarian to show you a 1500-1700 book + a 1900 book + a modern book. Compare bindings hands-on. Take notes.'
+          }),
+          crossLinkFooter('bookbinding'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // CENSORSHIP & THE INDEX — banned books, imprimatur, samizdat, the 500-
+      // year cat-and-mouse between print and power. Interactive: "should you
+      // print this?" 1543 scenarios + banned-book era-guessing game.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderCensorship() {
+        var cSectRaw = useState('overview');
+        var cSect = cSectRaw[0], setCSect = cSectRaw[1];
+        var cScenarioRaw = useState(0);
+        var cScenario = cScenarioRaw[0], setCScenario = cScenarioRaw[1];
+        var cScChoiceRaw = useState(null);
+        var cScChoice = cScChoiceRaw[0], setCScChoice = cScChoiceRaw[1];
+        var cGuessRaw = useState(0);
+        var cGuess = cGuessRaw[0], setCGuess = cGuessRaw[1];
+        var cGuessChoiceRaw = useState(null);
+        var cGuessChoice = cGuessChoiceRaw[0], setCGuessChoice = cGuessChoiceRaw[1];
+        var cGuessScoreRaw = useState(0);
+        var cGuessScore = cGuessScoreRaw[0], setCGuessScore = cGuessScoreRaw[1];
+
+        var sections = [
+          { id: 'overview',   label: 'Overview',          icon: '🚫' },
+          { id: 'history',    label: 'History',           icon: '🏛' },
+          { id: 'index',      label: 'The Index',         icon: '📑' },
+          { id: 'banned',     label: 'Banned books',      icon: '📚' },
+          { id: 'samizdat',   label: 'Smuggling',         icon: '🕯' },
+          { id: 'scenario',   label: 'Should you print?', icon: '⚖️' },
+          { id: 'guess',      label: 'Era guesser',       icon: '🎲' },
+          { id: 'modern',     label: 'Modern parallels',  icon: '💻' }
+        ];
+
+        // Printing-decision scenarios — should you accept this manuscript?
+        var printerScenarios = [
+          {
+            year: 1517, place: 'Wittenberg',
+            text: 'A 33-year-old Augustinian monk named Martin Luther has nailed 95 theses to the door of Castle Church, then sent you a manuscript expanding the argument. He is requesting 500 copies for distribution to bishops + universities. The Pope has not yet responded.',
+            choices: [
+              { id: 'print', label: 'Print 500 copies as requested', outcome: 'You print. Within months Luther\'s ideas spread across Germany. You make significant profit. Within 3 years your shop is one of the central Reformation publishers. You are eventually excommunicated alongside Luther. By 1530 you are a wealthy heretic in a Protestant city, dying happy at age 67.' },
+              { id: 'refuse', label: 'Refuse the manuscript', outcome: 'You stay safe — for now. Another Wittenberg printer takes the job. By 1525 Reformation publishing is the largest print market in Europe and you have missed all of it. Your shop never grows. You die at 56 unknown.' },
+              { id: 'small', label: 'Print 50 copies privately, no shop name', outcome: 'A compromise. The 50 copies circulate among university clerics. Luther\'s ideas spread through other channels regardless. You participate without bearing risk — but also without bearing profit. Modest career, no major consequences either way.' }
+            ],
+            historical: 'Hans Lufft was Luther\'s principal printer in Wittenberg from 1525 onward. He printed Luther\'s German Bible (1534) + most of his other major works. Made a fortune; founded a publishing dynasty.'
+          },
+          {
+            year: 1543, place: 'Nuremberg',
+            text: 'Copernicus has sent you the manuscript of "De Revolutionibus Orbium Coelestium" — a treatise arguing the Earth orbits the Sun. This contradicts the Aristotelian + biblical model in use everywhere. He has just died (he received the first printed copy on his deathbed). His friend Andreas Osiander has added an unauthorized preface calling the heliocentric model "a mere mathematical convenience."',
+            choices: [
+              { id: 'asis', label: 'Print as Osiander prepared, with the disclaimer preface', outcome: 'You print 400 copies. The preface gets you past most theologians for 70 years — Galileo will not face trouble until 1616 when the Church specifically condemns the book. Your edition becomes the foundation text of modern astronomy. Lasting fame.' },
+              { id: 'authorPreface', label: 'Restore Copernicus\'s original preface (no disclaimer)', outcome: 'A bolder choice. The book is condemned by Catholic authorities within 5 years. You are exiled from Catholic territories. Copernicus is still cited as the start of the scientific revolution — but your shop closes by 1555.' },
+              { id: 'refuse', label: 'Refuse — too risky', outcome: 'Petreius (another Nuremberg printer) takes the manuscript. He prints, becomes famous. You stay safe. By 1620 you are a footnote, he is a household name.' }
+            ],
+            historical: 'Johannes Petreius printed De Revolutionibus in 1543 with Osiander\'s disclaimer. The disclaimer probably saved Copernicus from immediate condemnation; he died days after seeing the printed copy. The Church added the book to the Index in 1616.'
+          },
+          {
+            year: 1633, place: 'Leiden',
+            text: 'Galileo Galilei has been sentenced by the Roman Inquisition to house arrest. His Dialogue Concerning the Two Chief World Systems is on the Index. A Dutch agent approaches you with a smuggled copy of Galileo\'s next manuscript — "Two New Sciences" — covering mechanics + materials. The Inquisition has not yet condemned it. Galileo himself sent it via underground channels.',
+            choices: [
+              { id: 'print', label: 'Print it openly in Leiden (Protestant Netherlands)', outcome: 'You print in 1638. The Netherlands has no Index. Galileo\'s mechanics get into European scholarly hands. The book becomes a foundation text of Newtonian + later physics. You become known throughout Europe as a friend to science.' },
+              { id: 'covert', label: 'Print without Galileo\'s name, hidden imprint', outcome: 'Cautious. Less profitable. Less prestigious. The book circulates but is harder for scholars to find. Galileo\'s contribution is initially under-credited.' },
+              { id: 'refuse', label: 'Refuse — Inquisition might extend reach', outcome: 'The Elzevir family (your Leiden competitors) take the job. They become Europe\'s most famous scholarly publishers. You missed the defining commission of your career.' }
+            ],
+            historical: 'The Elzevir house in Leiden printed Two New Sciences in 1638. The Dutch Republic\'s freedom from Catholic authority made it the safe haven for forbidden European scholarship throughout the 1600s.'
+          },
+          {
+            year: 1762, place: 'Geneva',
+            text: 'Jean-Jacques Rousseau has sent you "Émile" — a treatise on education that includes the Profession of Faith of the Savoyard Vicar, arguing for natural religion outside the Catholic Church. Geneva is Protestant + relatively tolerant, but other European states have condemned the book. The Sorbonne has issued a warrant against Rousseau.',
+            choices: [
+              { id: 'print', label: 'Print + ship Europe-wide', outcome: 'The book is burned publicly in Paris + Geneva. Rousseau flees to England. You face fines + bookshop seizures in France + Catholic Switzerland. But Émile becomes one of the most influential education works ever written. By 1770 your name is associated with Enlightenment publishing.' },
+              { id: 'geneva_only', label: 'Print for Geneva only', outcome: 'Distribution stops at Geneva\'s borders. Sales are tiny. Rousseau\'s ideas still spread through other publishers + clandestine routes. You are remembered as cautious. Mid-tier shop.' },
+              { id: 'refuse', label: 'Refuse the commission', outcome: 'Marc-Michel Rey in Amsterdam takes it. The Dutch print runs become the master editions for the rest of Europe. Rey makes the fortune that should have been yours.' }
+            ],
+            historical: 'Marc-Michel Rey in Amsterdam was Rousseau\'s principal publisher for Émile + most other major works. The Geneva edition was simultaneously printed but smaller. Both editions were widely banned + widely smuggled.'
+          },
+          {
+            year: 1845, place: 'Brussels',
+            text: 'A 27-year-old exiled Prussian named Karl Marx has approached you with a manuscript co-written with Friedrich Engels: "The Holy Family." It critiques the Young Hegelian philosophers. Marx is already known to Prussian authorities + monitored by their intelligence service. Selling the book in German states is risky.',
+            choices: [
+              { id: 'print', label: 'Print + distribute via the network of German political exile booksellers', outcome: 'The book sells few copies — most readers find it dense + academic. But Marx + Engels return three years later with the Communist Manifesto (1848) which they ask you to print first. Your shop becomes the most important publisher of Marxist literature in Europe. Your descendants run a publishing house into the 20th century.' },
+              { id: 'safe', label: 'Print, distribute Belgium + France only', outcome: 'Limited reach. The book has modest impact. Marx finds another publisher for the Communist Manifesto. Your shop stays small + profitable, never famous.' },
+              { id: 'refuse', label: 'Refuse — too political', outcome: 'A Frankfurt publisher takes the book. Marx + Engels move on. You miss the Communist Manifesto. Your shop is forgotten by history.' }
+            ],
+            historical: 'The Holy Family was printed in Frankfurt by Literarische Anstalt, 1845. The Communist Manifesto (1848) was printed in London. Marx + Engels worked with multiple printers across Europe to evade censorship.'
+          }
+        ];
+
+        // Banned books era-guessing game
+        var bannedGuesses = [
+          { title: 'The Catcher in the Rye (J.D. Salinger)', reason: 'Profanity, sexual content, "anti-American" sentiment',
+            options: [{ era: '1450s-1500s' }, { era: '1700s-1800s' }, { era: '1950s-2000s' }, { era: 'Ancient Rome' }],
+            correct: 2, explain: 'Salinger\'s 1951 novel was banned in many US schools + public libraries from the 1960s onward. Still on contested-book lists in 2026. The fights over Catcher are a US-specific late-20th-century pattern.' },
+          { title: 'The Communist Manifesto (Marx + Engels)', reason: 'Subversive political content',
+            options: [{ era: '1848-1900s in monarchies' }, { era: 'Ancient Greece' }, { era: '1450s' }, { era: 'Never banned' }],
+            correct: 0, explain: 'The Communist Manifesto was banned in essentially all monarchies + most authoritarian states from publication in 1848 onward. Most often banned by 1848-1918 European monarchies + fascist regimes 1920s-40s.' },
+          { title: 'Galileo\'s Dialogue Concerning the Two Chief World Systems', reason: 'Defends Copernican heliocentrism, contradicts biblical cosmology',
+            options: [{ era: '1633 (Index)' }, { era: '1850s (Darwin era)' }, { era: '1950s (McCarthy era)' }, { era: '2026 (modern)' }],
+            correct: 0, explain: 'Galileo\'s Dialogue (1632) was added to the Catholic Index in 1633 + Galileo personally tried by the Inquisition. The book stayed on the Index until 1835 — over 200 years. Full official Church admission of error: John Paul II, 1992.' },
+          { title: 'Common Sense (Thomas Paine)', reason: 'Sedition, treason against the British Crown',
+            options: [{ era: '1776 (American colonies under British)' }, { era: '1450s' }, { era: '1900s' }, { era: 'Never banned' }],
+            correct: 0, explain: 'Common Sense (1776) was treasonable in any British territory. Possessing or selling it could mean imprisonment + hanging. In the Thirteen Colonies it became one of the most-read pamphlets ever published — sold approximately 500,000 copies in a population of 2.5 million.' },
+          { title: 'Animal Farm (George Orwell)', reason: 'Anti-Soviet satire',
+            options: [{ era: 'Soviet bloc 1945-1989' }, { era: 'Catholic Index 1500s' }, { era: 'Ancient world' }, { era: 'McCarthy-era USA' }],
+            correct: 0, explain: 'Animal Farm (1945) was banned throughout the Soviet bloc from publication until 1989. Smuggled in via samizdat. Allegedly read by Stalin himself, who allegedly "did not laugh."' },
+          { title: 'Tyndale\'s English New Testament (1526)', reason: 'Vernacular Bible translation contradicting Church monopoly',
+            options: [{ era: '1500s (Henry VIII era)' }, { era: '1800s' }, { era: '2026' }, { era: 'Ancient Rome' }],
+            correct: 0, explain: 'William Tyndale translated the New Testament into English (1526) + was burned at the stake in 1536 for it. Possessing a Tyndale Bible meant arrest in early Tudor England. Tyndale\'s text became the basis of the 1611 King James Bible.' },
+          { title: 'Ulysses (James Joyce)', reason: 'Obscenity (sexual content + profanity)',
+            options: [{ era: '1922-1933 USA + UK' }, { era: 'Catholic Index 1500s' }, { era: 'Never banned' }, { era: 'Soviet 1950s' }],
+            correct: 0, explain: 'Ulysses (1922) was banned in the US + UK from publication until the 1933 court case United States v. One Book Called Ulysses ruled it not obscene. Major free-speech precedent.' },
+          { title: 'Origin of Species (Charles Darwin)', reason: 'Contradicts religious creation accounts',
+            options: [{ era: 'Catholic Church (briefly)' }, { era: '1925 Scopes trial era US schools' }, { era: 'Some 21st-century school districts' }, { era: 'All three above' }],
+            correct: 3, explain: 'All three. Origin of Species (1859) faced varying degrees of restriction across the world for ~150 years. The Catholic Church never officially Indexed it but discouraged it; US public schools repeatedly fought over teaching it (1925 Scopes trial; ongoing 21st-century school board battles).' },
+          { title: 'Maus (Art Spiegelman)', reason: 'Profanity, nudity, depictions of violence',
+            options: [{ era: 'Soviet bloc' }, { era: 'Nazi Germany' }, { era: 'US school districts 2022-present' }, { era: 'Catholic Index' }],
+            correct: 2, explain: 'Maus (1986, Pulitzer Prize 1992) — a graphic-novel memoir of the Holocaust — was removed from several US school district libraries starting 2022 (notably McMinn County, Tennessee), citing profanity + nudity. Controversial; the bans drove the book to bestseller lists again 36 years after publication.' },
+          { title: '1984 (George Orwell)', reason: 'Subversive content',
+            options: [{ era: 'Soviet bloc 1949-1989' }, { era: 'Apartheid South Africa' }, { era: '2025-26 various countries' }, { era: 'All three above' }],
+            correct: 3, explain: 'All three + many others. 1984 (1949) has been banned by authoritarian states essentially continuously since publication. Demand surges during periods of political stress — sold out repeatedly during 2016-2020 in the US, during the 2022 Russian invasion of Ukraine. The book has the curious distinction of being equally feared by far-left + far-right governments.' }
+        ];
+
+        var curScenario = printerScenarios[cScenario] || printerScenarios[0];
+        var curGuess = bannedGuesses[cGuess] || bannedGuesses[0];
+
+        var content;
+        if (cSect === 'overview') {
+          content = h('div', null,
+            dropCapPara('Within ten years of Gutenberg\'s Bible, authorities across Europe were trying to control what got printed. By 1559 the Catholic Church had published the first edition of the Index Librorum Prohibitorum — the formal list of books Catholics were forbidden to read. The Index would be revised + expanded for 407 years before its final 1966 edition. The same period saw secular states create their own censorship regimes. The cat-and-mouse between print and power is one of the longest-running stories in the history of media.'),
+            sectionHeader('🚫', 'What this module covers'),
+            keyPointBlock(null, [
+              { k: 'History', v: 'Censorship pre-print (oral + manuscript era) → 1450 onward (the print era) → digital era.' },
+              { k: 'The Index', v: 'The 407-year Catholic list of forbidden books — and what got on it (Galileo, Erasmus, Voltaire, all eventually).' },
+              { k: 'Banned books', v: 'Thirty-plus famous bans across history, with what they were banned for.' },
+              { k: 'Smuggling + samizdat', v: 'How forbidden books actually reached readers — underground networks, false imprints, smuggled manuscripts.' },
+              { k: 'Should you print?', v: 'Five historical scenarios. You\'re the printer. Should you take the manuscript? What happens?' },
+              { k: 'Era guesser', v: 'Look at a banned book + reason. Guess what era banned it. The answers will surprise you.' },
+              { k: 'Modern parallels', v: 'Internet censorship, deplatforming, US school-library bans 2020-present, China\'s Great Firewall, AI content moderation. The pattern continues.' }
+            ])
+          );
+        } else if (cSect === 'history') {
+          content = h('div', null,
+            dropCapPara('Information control predates the printing press by thousands of years. Roman emperors burned philosophers\' books. Medieval monasteries indexed which manuscripts could be copied. But print created a new kind of problem — books could now exist in thousands of identical copies scattered across countries, making suppression vastly harder. The response was elaborate, expensive, and ultimately mostly futile.'),
+            sectionHeader('🏛', 'Censorship across the centuries'),
+            keyPointBlock('Major censorship eras', [
+              { k: '~213 BCE — Qin dynasty book-burning', v: 'Emperor Qin Shi Huang ordered the burning of Confucian + historical works to consolidate power. Hundreds of scholars allegedly buried alive.' },
+              { k: '~393 CE — Theodosius bans paganism', v: 'Roman Emperor Theodosius ordered destruction of pagan texts + temples. Loss of Greco-Roman scholarly works in the process.' },
+              { k: '1487 — Pope Innocent VIII Bull', v: 'First papal mandate requiring church approval before printing (the imprimatur system).' },
+              { k: '1525 — Worms Edict (German Empire)', v: 'Charles V outlaws Luther\'s writings throughout the Holy Roman Empire.' },
+              { k: '1559 — First Index Librorum Prohibitorum', v: 'Catholic Church publishes the formal list of forbidden books. Updated until 1966.' },
+              { k: '1644 — Areopagitica', v: 'John Milton publishes his speech against pre-publication censorship in England. The foundational pro-press-freedom argument.' },
+              { k: '1719 — Lawful press freedom in Sweden', v: 'Sweden becomes first European state to legally guarantee press freedom (Freedom of the Press Act).' },
+              { k: '1791 — First Amendment', v: 'US Constitution\'s First Amendment ratified, including the press-freedom clause.' },
+              { k: '1842 — Communist Manifesto era', v: 'European states institutionalize political censorship targeting socialist + anarchist publications.' },
+              { k: '1933 — Nazi book burnings', v: 'Public burnings of "un-German" books — Jewish authors, communists, modernists, sexologists. Approximately 25,000 titles destroyed.' },
+              { k: '1949-1989 — Soviet samizdat era', v: 'Soviet bloc censorship + underground self-publishing. Solzhenitsyn, Brodsky, hundreds of others.' },
+              { k: '1989 — Berlin Wall falls', v: 'End of Soviet-bloc censorship. Brief optimism that print censorship was ending globally.' },
+              { k: '2020-present — School library bans + AI moderation', v: 'New wave of US school-district book restrictions; global debates over internet platform moderation; AI-generated content moderation.' }
+            ]),
+            sectionHeader('⚖️', 'Two kinds of censorship'),
+            keyPointBlock('How censorship works', [
+              { k: 'Prior restraint', v: 'Restricting publication BEFORE it happens. Imprimatur system, modern broadcast licensing.' },
+              { k: 'Post-publication suppression', v: 'Banning + seizing copies AFTER publication. Most historical book burnings.' },
+              { k: 'Imprisonment + execution of authors/printers', v: 'Personal punishment. Common 1500-1900, still used in some authoritarian states.' },
+              { k: 'Economic strangulation', v: 'Denying licenses, distribution rights, advertising access. The favored 21st-century method.' },
+              { k: 'Algorithmic suppression', v: 'Modern: search engines + social platforms reduce visibility without explicit banning. The most contested current form.' }
+            ])
+          );
+        } else if (cSect === 'index') {
+          content = h('div', null,
+            dropCapPara('The Index Librorum Prohibitorum — "List of Prohibited Books" — was the Catholic Church\'s official catalog of books Catholics could not read without permission. Established 1559 under Pope Paul IV. Last full revised edition: 1948. Officially abolished by Pope Paul VI in 1966. Over its 407-year run, the Index named approximately 4,000 individual books + many more by entire authorial bodies of work. Reading the Index today is a guided tour of European intellectual history.'),
+            sectionHeader('📑', 'How the Index worked'),
+            keyPointBlock('Key mechanics', [
+              { k: 'Who maintained it', v: 'Sacred Congregation of the Index (1571-1917), then Holy Office. Cardinals + theologians voted on submissions.' },
+              { k: 'How books got on', v: 'Bishops + secular accusers submitted nominations. The Congregation evaluated, voted, published in periodic revisions.' },
+              { k: 'What the penalty was', v: 'For laity: prohibited from reading without dispensation. Excommunication for distributing. For printers: severe penalties varying by state.' },
+              { k: 'Dispensation', v: 'Scholars, clerics, + others could obtain permission to read Index books for study. Bureaucratic process; selective grants.' },
+              { k: 'Where it had force', v: 'Catholic states enforced it through state law (Spain, Portugal, France until 1789, Italy until 1870, Habsburg lands). Protestant + Orthodox states ignored it.' }
+            ]),
+            sectionHeader('📚', 'Famous authors entirely banned'),
+            keyPointBlock('Sometimes ENTIRE BODIES of work were Indexed', [
+              { k: 'Erasmus of Rotterdam', v: 'All works added 1559. The Christian humanist, scholar of the Greek New Testament, friend of bishops + popes — fully banned because his theological writings + biblical scholarship questioned Catholic positions.' },
+              { k: 'Niccolò Machiavelli', v: 'All works added 1559. The Prince + Discourses on Livy — too cynical about church power.' },
+              { k: 'Voltaire', v: 'All works banned. The arch-Enlightenment skeptic.' },
+              { k: 'Denis Diderot + Encyclopédistes', v: 'The Encyclopédie + most contributors\' works. Enlightenment threat to clerical authority.' },
+              { k: 'Jean-Jacques Rousseau', v: 'Émile, Social Contract, Confessions — all banned.' },
+              { k: 'David Hume', v: 'All works. Scottish Enlightenment skepticism.' },
+              { k: 'Immanuel Kant', v: 'Critique of Pure Reason + others. German Enlightenment.' },
+              { k: 'Gustave Flaubert', v: 'Madame Bovary. Obscenity charges.' },
+              { k: 'Émile Zola', v: 'All works after 1898. Reformist French novelist.' },
+              { k: 'Sartre, Simone de Beauvoir', v: 'All works (banned during their lifetimes).' }
+            ]),
+            sectionHeader('📜', 'Famous specific bans'),
+            keyPointBlock('Individual books on the Index', [
+              { k: 'Copernicus, De Revolutionibus (1543, Indexed 1616)', v: 'Heliocentric model. Stayed on Index until 1758.' },
+              { k: 'Galileo, Dialogue (1632, Indexed 1633)', v: 'Defended Copernicus. On Index until 1835.' },
+              { k: 'Pascal, Provincial Letters (1657, Indexed 1657)', v: 'Critique of Jesuit theology by Catholic theologian.' },
+              { k: 'Locke, Essay Concerning Human Understanding (1690, Indexed 1734)', v: 'Empiricism + religious tolerance.' },
+              { k: 'Adam Smith, Wealth of Nations (1776, never Indexed but discouraged)', v: 'Free-market economics.' },
+              { k: 'Darwin, Origin of Species (1859, never officially Indexed)', v: 'Catholic Church declined to Index Darwin, but many Catholic schools + dioceses unofficially restricted his works.' }
+            ]),
+            sectionHeader('🛑', 'Why it ended'),
+            calloutBox('info', 'The slow death of the Index',
+              h('div', null,
+                h('p', { style: { margin: '0 0 8px', lineHeight: 1.6 } },
+                  'By 1900 the Index was being widely ignored even by Catholic intellectuals. The 20th century made it unsustainable: too much rapid scholarly + scientific publishing for any committee to evaluate, growing acceptance that condemned books often were the books worth reading, increasing irrelevance of state enforcement.'),
+                h('p', { style: { margin: 0, lineHeight: 1.6 } },
+                  'In 1966 Pope Paul VI formally abolished the Index. The Vatican stated that Catholics still had a moral obligation to avoid harmful reading, but the formal apparatus was gone. Today the Index is studied as a primary source — a 407-year map of what authorities most feared.')
+              )
+            )
+          );
+        } else if (cSect === 'banned') {
+          content = h('div', null,
+            dropCapPara('A short tour through banned books — what was banned, by whom, why, and what happened next. The pattern is remarkable: most banned books became more famous BECAUSE they were banned (the Streisand Effect at historical scale), and bans almost never stopped circulation in the long term. Censors have a remarkably poor batting average.'),
+            sectionHeader('📚', 'Famous bans across history'),
+            // 20 famous banned books, formatted as a long list
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+              [
+                { t: 'Tyndale\'s New Testament (1526)', who: 'Henry VIII\'s England', why: 'Unauthorized English Bible translation', outcome: 'Tyndale burned at the stake 1536. His translation became the basis of the 1611 King James Bible — the most-printed English book ever.' },
+                { t: 'De Revolutionibus (Copernicus, 1543)', who: 'Catholic Church (Index 1616)', why: 'Heliocentric model contradicted Aristotelian + biblical cosmology', outcome: 'Banned 1616-1758. Modern astronomy is built on it.' },
+                { t: 'Dialogue Concerning Two Chief World Systems (Galileo, 1632)', who: 'Catholic Inquisition', why: 'Defended Copernican heliocentrism', outcome: 'Galileo convicted, house arrest until death 1642. Book stayed on Index until 1835. Pope John Paul II formally apologized 1992.' },
+                { t: 'Areopagitica (Milton, 1644)', who: 'Indirectly banned by Parliamentary licensing', why: 'Argued FOR press freedom — circular irony', outcome: 'Slow influence; foundational text for First Amendment thinkers 150 years later.' },
+                { t: 'Common Sense (Paine, 1776)', who: 'British Crown', why: 'Sedition, treason', outcome: 'Sold ~500,000 in colonies of 2.5 million. Argument for American independence.' },
+                { t: 'The Sorrows of Young Werther (Goethe, 1774)', who: 'Multiple German cities', why: 'Allegedly inspired suicides — early "moral panic" book ban', outcome: 'Some research suggests no actual suicide spike. The novel became one of the most influential of German Romanticism.' },
+                { t: 'Marquis de Sade (multiple works)', who: 'France throughout 1800s', why: 'Obscenity, violence', outcome: 'Sade himself imprisoned 27 years. Works continuously banned + smuggled. Still controversial.' },
+                { t: 'Madame Bovary (Flaubert, 1856)', who: 'France', why: 'Obscenity (depicted adultery sympathetically)', outcome: 'Flaubert tried in 1857 but acquitted. Book never banned again; became canonical realist novel.' },
+                { t: 'Leaves of Grass (Whitman, 1855)', who: 'US bookstores, US Post Office', why: 'Sexual content, blasphemy', outcome: 'Whitman fired from federal job for it. Now seen as foundational American poetry.' },
+                { t: 'Origin of Species (Darwin, 1859)', who: 'Various religious authorities + 20th-century US states', why: 'Contradicted creation', outcome: 'Repeatedly banned + restricted in schools 1925 (Scopes) onward. Still contested in some 2026 US school districts.' },
+                { t: 'Ulysses (Joyce, 1922)', who: 'US, UK, others', why: 'Obscenity', outcome: 'US v. One Book Called Ulysses 1933 ruled not obscene. Watershed obscenity-law case.' },
+                { t: 'All Quiet on the Western Front (Remarque, 1929)', who: 'Nazi Germany', why: 'Anti-war perspective, "defeatism"', outcome: 'Burned 1933. Remarque exiled to Switzerland then USA. Best-selling anti-war novel of the 20th century.' },
+                { t: 'Mein Kampf (Hitler, 1925)', who: 'Post-WWII Germany + Austria', why: 'Nazi propaganda', outcome: 'Banned 1945-2016 in Germany (copyright held by Bavarian state). Heavily-annotated scholarly edition released 2016.' },
+                { t: 'Animal Farm (Orwell, 1945)', who: 'Soviet bloc 1945-1989, UAE, others', why: 'Anti-Soviet satire', outcome: 'Smuggled samizdat. Read by Stalin. Now a school staple in most democracies.' },
+                { t: '1984 (Orwell, 1949)', who: 'Same as Animal Farm + Soviet sphere', why: 'Anti-totalitarian satire', outcome: 'Sales spike during every political crisis since publication.' },
+                { t: 'Catcher in the Rye (Salinger, 1951)', who: 'US school districts since 1960s', why: 'Profanity, sexual references', outcome: 'Still on many contested-book lists. Continues to be assigned + challenged.' },
+                { t: 'Lady Chatterley\'s Lover (Lawrence, 1928)', who: 'UK, US, others', why: 'Sexual explicitness', outcome: 'UK Penguin Books trial 1960 acquitted; major censorship-law precedent.' },
+                { t: 'Lolita (Nabokov, 1955)', who: 'France 1956-1958, UK 1955-1959', why: 'Sexual content involving minor', outcome: 'Bans lifted after literary defense. Continues to be controversial.' },
+                { t: 'Maus (Spiegelman, 1986)', who: 'McMinn County TN schools, others (2022-)', why: 'Profanity, nudity in Holocaust depictions', outcome: 'Bans drove book back to bestseller lists 2022. Pulitzer Prize 1992.' },
+                { t: 'Gender Queer (Kobabe, 2019)', who: 'Many US public + school libraries 2021-', why: 'LGBTQ+ themes, sexual content', outcome: 'Most-challenged book in US 2021-2023 per American Library Association.' }
+              ].map(function(b, i) {
+                return h('div', { key: i, style: { background: T.cardAlt, border: '1px solid ' + T.border, borderLeft: '3px solid ' + T.warn, borderRadius: 8, padding: 12 } },
+                  h('div', { style: { fontSize: 14, fontWeight: 700, color: T.text, fontFamily: 'Georgia, serif', marginBottom: 4 } }, b.t),
+                  h('div', { style: { fontSize: 12, color: T.muted, marginBottom: 4 } }, h('strong', null, 'Who: '), b.who, ' · ', h('strong', null, 'Why: '), b.why),
+                  h('div', { style: { fontSize: 12, color: T.muted, fontStyle: 'italic' } }, h('strong', { style: { color: T.accentHi } }, 'Outcome: '), b.outcome));
+              })
+            )
+          );
+        } else if (cSect === 'samizdat') {
+          content = h('div', null,
+            dropCapPara('How did forbidden books actually reach readers? Five centuries of underground networks, false imprints, smuggled manuscripts, and dedicated copyists. Samizdat ("self-publishing" in Russian) is the modern name for an ancient practice — and a remarkably consistent set of tactics across centuries.'),
+            sectionHeader('🕯', 'Tactics used to evade censorship'),
+            keyPointBlock('How forbidden books got around the system', [
+              { k: 'False imprints', v: 'Printers in Catholic territories would list a fake city ("Cologne" or "Amsterdam") on the title page even when printed locally. The 1500s-1700s saw thousands of false imprints.' },
+              { k: 'Anonymous + pseudonymous authorship', v: 'Many controversial works were published anonymously or under invented author names. Voltaire used hundreds of pseudonyms during his career.' },
+              { k: 'Pirate editions in safe states', v: 'The Netherlands + Switzerland printed many books banned elsewhere. Once printed there, they crossed back into Catholic Europe by smuggling routes.' },
+              { k: 'Bookseller networks', v: 'Underground bookseller networks across Europe carried banned books. The Swiss Société typographique de Neuchâtel (1769-1789) was a famous case study; Robert Darnton documented their full operations in his 1979 book The Business of Enlightenment.' },
+              { k: 'Smuggling routes', v: 'Banned books traveled with legitimate cargo — wine barrels, cloth bales, even Bibles. Border guards could be bribed; some smugglers were caught + executed.' },
+              { k: 'Personal copying / scribal samizdat', v: 'Soviet-era samizdat: a banned book typed by hand on a typewriter (often 5+ carbon copies at once), passed reader-to-reader. Solzhenitsyn\'s Gulag Archipelago circulated this way for years.' },
+              { k: 'Microfilm + photocopy', v: '1960s-80s: dissidents in Eastern Europe + USSR used microfilm + smuggled photocopiers to reproduce forbidden books. The Catholic Polish church secretly photocopied John Paul II\'s 1979 visit transcripts under Soviet rule.' },
+              { k: 'Digital piracy + tor / VPN', v: 'Modern: PDF + EPUB files distributed via BitTorrent, encrypted messengers, the Tor network. Library Genesis (Libgen) + Z-Library have made huge percentages of academic + popular literature available regardless of regional restrictions.' }
+            ]),
+            sectionHeader('📚', 'The Société typographique de Neuchâtel'),
+            h('p', { style: { color: T.muted, fontSize: 14, lineHeight: 1.7, margin: '0 0 12px' } },
+              'The Société typographique de Neuchâtel (STN) was a Swiss publishing house that operated 1769-1789, specializing in pirated + forbidden editions for the French market. Their internal records — saved nearly complete because they happened to survive — became the most-studied censorship-era publishing archive in the world. Princeton historian Robert Darnton spent decades documenting their work, especially in The Business of Enlightenment (1979) + The Forbidden Best-Sellers of Pre-Revolutionary France (1995). What did the STN sell? Rousseau, Voltaire, Diderot — the Enlightenment canon — plus a substantial volume of clandestine erotica + political libels. The mix tells us what French readers actually paid money for under censorship: serious philosophy + sex + scandal, in roughly equal measure.'),
+            sectionHeader('🇷🇺', 'Soviet samizdat'),
+            h('p', { style: { color: T.muted, fontSize: 14, lineHeight: 1.7, margin: '0 0 12px' } },
+              'The Soviet samizdat era (~1956-1986) produced one of the most extraordinary clandestine literary movements in history. Banned works — Solzhenitsyn, Brodsky, Bulgakov, foreign authors like Orwell + Pasternak — were typed by hand on typewriters, often 5+ carbon copies per typing session. A reader received the book, was given a deadline (often 24-48 hours), then passed it on. A single original book might pass through hundreds of readers over months. Tamizdat (printed abroad and smuggled in) was the parallel pipeline. The accumulated samizdat literature kept entire bodies of work alive that the Soviet state had committed to erasing. After the Soviet fall, samizdat editions became collectors\' items + primary historical sources.')
+          );
+        } else if (cSect === 'scenario') {
+          content = h('div', null,
+            dropCapPara('You are a master printer. A manuscript arrives. The author is controversial; the contents are dangerous. Do you take the commission? Five real historical scenarios. Pick your decision and see what happened (in history + in your fictional shop).'),
+            sectionHeader('⚖️', 'Scenario ' + (cScenario + 1) + ' of ' + printerScenarios.length),
+            // Scenario navigation
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+              h('button', {
+                disabled: cScenario <= 0,
+                onClick: function() { setCScenario(Math.max(0, cScenario - 1)); setCScChoice(null); },
+                style: btn({ padding: '6px 12px', fontSize: 12, opacity: cScenario <= 0 ? 0.4 : 1 }) }, '← Previous'),
+              h('div', { style: { fontSize: 12, color: T.muted, alignSelf: 'center' } },
+                printerScenarios.map(function(_, i) {
+                  return h('span', { key: i, onClick: function() { setCScenario(i); setCScChoice(null); },
+                    style: { cursor: 'pointer', display: 'inline-block', width: 28, height: 22, lineHeight: '22px', textAlign: 'center', borderRadius: 4, margin: '0 2px', background: (i === cScenario) ? T.accent : T.cardAlt, color: (i === cScenario) ? T.ink : T.text, fontWeight: 700 } }, i + 1);
+                })
+              ),
+              h('button', {
+                disabled: cScenario >= printerScenarios.length - 1,
+                onClick: function() { setCScenario(Math.min(printerScenarios.length - 1, cScenario + 1)); setCScChoice(null); },
+                style: btn({ padding: '6px 12px', fontSize: 12, opacity: cScenario >= printerScenarios.length - 1 ? 0.4 : 1 }) }, 'Next →')
+            ),
+            // Scenario card
+            h('div', { style: { background: 'rgba(201,161,74,0.06)', border: '2px solid ' + T.accent, borderRadius: 12, padding: 18, marginBottom: 14 } },
+              h('div', { style: { fontSize: 13, fontWeight: 700, color: T.accentHi, marginBottom: 8, fontFamily: 'ui-monospace, monospace', textTransform: 'uppercase', letterSpacing: '0.05em' } },
+                curScenario.year + ' · ' + curScenario.place),
+              h('p', { style: { margin: 0, color: T.text, fontSize: 14, lineHeight: 1.65, fontFamily: 'Georgia, serif' } }, curScenario.text)
+            ),
+            // Choices
+            !cScChoice && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 } },
+              curScenario.choices.map(function(c, i) {
+                return h('button', { key: c.id,
+                  onClick: function() { setCScChoice(c.id); announce('Selected: ' + c.label); },
+                  style: btn({ padding: '12px 14px', fontSize: 13, textAlign: 'left' }) },
+                  h('strong', { style: { color: T.accentHi } }, String.fromCharCode(65 + i) + '. '),
+                  c.label);
+              })
+            ),
+            // Outcome
+            cScChoice && h('div', null,
+              h('div', { style: { background: T.card, border: '2px solid ' + T.accent, borderRadius: 10, padding: 14, marginBottom: 10 } },
+                h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 6, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'You chose: ' + curScenario.choices.find(function(c) { return c.id === cScChoice; }).label),
+                h('p', { style: { margin: 0, color: T.text, fontSize: 13, lineHeight: 1.7 } },
+                  curScenario.choices.find(function(c) { return c.id === cScChoice; }).outcome)),
+              h('div', { style: { background: 'rgba(127,176,105,0.08)', border: '1px solid ' + T.ok, borderRadius: 10, padding: 12, marginBottom: 14 } },
+                h('div', { style: { fontSize: 11, color: T.ok, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 } }, '📖 What actually happened in history'),
+                h('p', { style: { margin: 0, color: T.text, fontSize: 13, lineHeight: 1.65 } }, curScenario.historical)),
+              h('button', {
+                onClick: function() { setCScChoice(null); },
+                style: btn({ padding: '8px 14px', fontSize: 12 }) }, '↺ Try a different choice')
+            )
+          );
+        } else if (cSect === 'guess') {
+          content = h('div', null,
+            dropCapPara('Look at the banned book + the reason it was banned. Guess what era + place did the banning. The answers may surprise you — books banned for "obscenity" in 1922 are taught in high schools today; books banned in 2022 may be classics tomorrow.'),
+            sectionHeader('🎲', 'Round ' + (cGuess + 1) + ' of ' + bannedGuesses.length + ' · Score: ' + cGuessScore + '/' + bannedGuesses.length),
+            h('div', { style: { background: 'rgba(201,161,74,0.06)', border: '2px solid ' + T.accent, borderRadius: 12, padding: 18, marginBottom: 14 } },
+              h('div', { style: { fontSize: 18, fontWeight: 700, color: T.text, fontFamily: 'Georgia, serif', marginBottom: 8 } }, curGuess.title),
+              h('div', { style: { fontSize: 13, color: T.muted, fontStyle: 'italic' } }, h('strong', { style: { color: T.accentHi } }, 'Reason for banning: '), curGuess.reason)
+            ),
+            cGuessChoice == null && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 } },
+              h('div', { style: { fontSize: 13, color: T.muted, fontWeight: 700, marginBottom: 4 } }, 'When/where was this banned?'),
+              curGuess.options.map(function(opt, i) {
+                return h('button', { key: i,
+                  onClick: function() {
+                    setCGuessChoice(i);
+                    if (i === curGuess.correct) { setCGuessScore(cGuessScore + 1); announce('Correct!'); }
+                    else announce('Not quite — see the explanation.');
+                  },
+                  style: btn({ padding: '12px 14px', fontSize: 13, textAlign: 'left' }) },
+                  h('strong', { style: { color: T.accentHi } }, String.fromCharCode(65 + i) + '. '),
+                  opt.era);
+              })
+            ),
+            cGuessChoice != null && h('div', null,
+              h('div', { style: { background: cGuessChoice === curGuess.correct ? 'rgba(127,176,105,0.12)' : 'rgba(212,153,0,0.10)', border: '2px solid ' + (cGuessChoice === curGuess.correct ? T.ok : T.warn), borderRadius: 10, padding: 14, marginBottom: 10 } },
+                h('div', { style: { fontSize: 13, fontWeight: 700, color: cGuessChoice === curGuess.correct ? T.ok : T.warn, marginBottom: 8 } },
+                  cGuessChoice === curGuess.correct ? '✓ Correct.' : '✗ Not quite.'),
+                h('div', { style: { fontSize: 13, color: T.text, marginBottom: 8 } },
+                  h('strong', null, 'Right answer: '),
+                  curGuess.options[curGuess.correct].era),
+                h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.65 } }, curGuess.explain)),
+              h('div', { style: { display: 'flex', gap: 8 } },
+                cGuess < bannedGuesses.length - 1 && h('button', {
+                  onClick: function() { setCGuess(cGuess + 1); setCGuessChoice(null); },
+                  style: btnPrimary({ padding: '10px 16px', fontSize: 13 }) }, 'Next book →'),
+                cGuess >= bannedGuesses.length - 1 && h('div', { style: { fontSize: 14, fontWeight: 700, color: T.accent } },
+                  '🎯 Complete! Final score: ' + cGuessScore + '/' + bannedGuesses.length),
+                h('button', {
+                  onClick: function() { setCGuess(0); setCGuessChoice(null); setCGuessScore(0); },
+                  style: btn({ padding: '10px 16px', fontSize: 13 }) }, '↺ Start over')
+              )
+            )
+          );
+        } else { // modern
+          content = h('div', null,
+            dropCapPara('Print censorship persists in 2026, in evolving forms. State-level bans of physical books continue (US school districts, China, Russia, Iran). Digital-platform content moderation is the dominant new form. Algorithmic suppression — making content harder to find without explicitly banning it — is the most-contested current method. The 500-year cat-and-mouse continues in new clothes.'),
+            sectionHeader('💻', 'Modern censorship forms'),
+            keyPointBlock('How information control happens in 2026', [
+              { k: 'US school library bans (2020-present)', v: 'Per American Library Association (ALA), 4,240 unique titles challenged in 2023 — a record. Most-challenged: LGBTQ+ memoirs (Gender Queer, All Boys Aren\'t Blue), antiracism texts (Stamped, The Bluest Eye), Maus (1986 Pulitzer Prize-winning Holocaust graphic novel). Focused in Florida, Texas, Utah, Iowa, Missouri.' },
+              { k: 'China Great Firewall', v: 'National-scale internet filtering since ~2000. Blocks Google, Facebook, NYT, Wikipedia (selectively), most foreign news. Domestic platforms (WeChat, Weibo) heavily moderated. Topics like Tiananmen 1989, Tibet independence, Xinjiang re-education systematically suppressed.' },
+              { k: 'Russia (2022-present)', v: 'Post-Ukraine-invasion crackdown on independent media. Almost all major Russian independent outlets shut down or moved abroad. "Fake news" laws criminalize calling the war a war. Many remaining outlets self-censor heavily.' },
+              { k: 'Iran', v: 'Periodic internet shutdowns (multiple in 2022-2024). VPN use prohibited but widespread. Print + digital media subject to Ministry of Culture review.' },
+              { k: 'Saudi Arabia, UAE, Qatar', v: 'State censorship of religious + political topics. Selective bans on LGBTQ+ content, criticism of royal families.' },
+              { k: 'Platform moderation (US, EU, etc.)', v: 'Twitter/X, Facebook, YouTube, TikTok enforce content policies — sometimes mandated by law (EU DSA), sometimes voluntary. Heated debate over what counts as legitimate moderation vs censorship.' },
+              { k: 'Algorithmic suppression', v: 'Content not removed but de-ranked in search + recommendation. Often invisible to creators + readers. The most contested current practice.' },
+              { k: 'AI content moderation (2024-present)', v: 'Automated systems detect + remove content at scale. Acknowledged false-positive rates 1-10% depending on system. Most platforms now rely heavily on AI moderation due to volume.' }
+            ]),
+            sectionHeader('⚖️', 'Continuities + discontinuities'),
+            calloutBox('info', 'What is + isn\'t similar to past eras',
+              h('div', null,
+                h('p', { style: { margin: '0 0 8px', lineHeight: 1.6 } },
+                  h('strong', { style: { color: T.accentHi } }, 'Similar: '),
+                  'Authorities still want to control what people read. Underground networks still find ways around it. Bans still often backfire (Streisand effect). The arguments for + against censorship rhyme strikingly across centuries.'),
+                h('p', { style: { margin: 0, lineHeight: 1.6 } },
+                  h('strong', { style: { color: T.accentHi } }, 'Different: '),
+                  'Scale is unrecognizable — billions of pieces of content per day vs hundreds of books per year. Speed of distribution is global + instant. Algorithmic suppression is invisible in ways print bans weren\'t. AI-generated content creates new questions (who is "the author" of an AI-generated text that gets banned?). Cross-border enforcement is harder + easier simultaneously.')
+              )
+            ),
+            sectionHeader('📊', 'Major present-day organizations'),
+            keyPointBlock('Who tracks + fights censorship today', [
+              { k: 'American Library Association (ALA)', v: 'Tracks US book challenges + bans. Annual State of America\'s Libraries report. Office for Intellectual Freedom. ala.org.' },
+              { k: 'PEN America', v: 'Tracks bans + advocates for writers globally. pen.org.' },
+              { k: 'Index on Censorship (UK)', v: 'Quarterly magazine + ongoing research since 1972. indexoncensorship.org.' },
+              { k: 'Reporters Without Borders (RSF)', v: 'Annual World Press Freedom Index. rsf.org.' },
+              { k: 'Committee to Protect Journalists (CPJ)', v: 'Tracks journalists imprisoned, killed, censored globally. cpj.org.' },
+              { k: 'Electronic Frontier Foundation (EFF)', v: 'Digital-rights focused. eff.org.' },
+              { k: 'Wikipedia + the Internet Archive', v: 'Preservation infrastructure that resists takedowns. archive.org.' }
+            ])
+          );
+        }
+
+        return h('div', null,
+          backBar('🚫 Censorship & The Index'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) {
+              var sel = (cSect === s.id);
+              return h('button', { key: s.id,
+                onClick: function() { setCSect(s.id); announce(s.label); },
+                style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                s.icon + ' ' + s.label);
+            })
+          ),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            content
+          ),
+          miniQuizBlock('censorship', [
+            { q: 'When was the first edition of the Catholic Index Librorum Prohibitorum published?',
+              opts: ['1450', '1517', '1559', '1633'],
+              ans: 2, explain: 'Pope Paul IV published the first edition of the Index in 1559 — about a century after Gutenberg. The Index was revised + expanded for 407 years before being formally abolished by Pope Paul VI in 1966.' },
+            { q: 'What was the British Crown\'s charge against Thomas Paine for Common Sense (1776)?',
+              opts: ['Obscenity', 'Sedition + treason', 'Heresy', 'Libel'],
+              ans: 1, explain: 'Common Sense (1776) was a treasonable text by British law. Possessing or selling it in British territories could mean imprisonment + hanging. In the Thirteen Colonies it sold ~500,000 copies in a population of 2.5 million.' },
+            { q: 'What is samizdat?',
+              opts: ['A Catholic Church publishing imprint', 'Self-published forbidden literature, especially in Soviet bloc 1956-1989', 'A type of 17th-century French novel', 'A Latin term for "ban list"'],
+              ans: 1, explain: 'Samizdat ("self-publishing" in Russian) refers to literature that was banned by the Soviet government + reproduced + circulated clandestinely. Often typed on typewriters with carbon copies. Solzhenitsyn, Brodsky, and many others reached readers this way.' },
+            { q: 'Galileo\'s Dialogue (1632) was on the Catholic Index until what year?',
+              opts: ['1700', '1750', '1835', '1992'],
+              ans: 2, explain: 'Galileo\'s Dialogue was removed from the Index in 1835 — 200+ years after publication. The Catholic Church formally apologized for the Galileo affair under Pope John Paul II in 1992.' },
+            { q: 'According to the American Library Association, what was the most-challenged book in US libraries 2021-2023?',
+              opts: ['1984', 'Gender Queer (Maia Kobabe)', 'The Catcher in the Rye', 'Animal Farm'],
+              ans: 1, explain: 'Gender Queer (2019) was the most-challenged book in US libraries for three consecutive years per ALA tracking. The current wave of book challenges concentrates on LGBTQ+ memoirs + antiracism texts + classic Holocaust works like Maus.' }
+          ]),
+          sourcesBlock([
+            { label: 'Index Librorum Prohibitorum (1559-1948 editions) — primary source' },
+            { label: 'Robert Darnton, The Business of Enlightenment: A Publishing History of the Encyclopédie 1775-1800 (1979)' },
+            { label: 'Robert Darnton, The Forbidden Best-Sellers of Pre-Revolutionary France (1995)' },
+            { label: 'American Library Association State of America\'s Libraries report (annual)', url: 'https://www.ala.org/news/state-americas-libraries-report' },
+            { label: 'PEN America Banned Books List', url: 'https://pen.org/banned-books-list/' },
+            { label: 'Index on Censorship (UK quarterly, founded 1972)', url: 'https://www.indexoncensorship.org/' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['NCSS D2.His.2.6-8 (historical context)', 'C3 D2.Civ.5.6-8 (civic principles)', 'CCSS RH.6-8.6 (point of view)'],
+            discussion: [
+              'Why do most bans actually backfire over time? Walk through 2-3 examples of banned books that became more famous because of the ban.',
+              'Is algorithmic suppression — a search engine making content harder to find — the same as a state ban? Different? In what ways?',
+              'If you were a printer in 1543 Nuremberg + Copernicus sent you his manuscript, which choice would you actually make? Why?'
+            ],
+            misconceptions: [
+              { wrong: 'Censorship only happens in authoritarian states', right: 'Censorship + content restriction happen across all political systems. The US has active school + library book challenges; EU mandates platform content removal; democracies + dictatorships both use it. The form differs; the impulse is common.' },
+              { wrong: 'Banned books are rare historical curiosities', right: 'Book challenges in US schools + libraries hit record highs in 2023 (4,240 unique titles per ALA). Censorship is not a finished historical chapter — it is an ongoing live practice in 2026.' }
+            ],
+            extension: 'Check your local public library + school library. What books have been challenged or banned there? Most libraries publish their challenge lists. Pick one + research: why was it challenged? What was the outcome?'
+          }),
+          crossLinkFooter('censorship'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // FIRST NEWS WAVE — gazettes + early newspapers (1605-1800). Why
+      // newspapers took 150 years after Gutenberg, and what the first ones
+      // looked like. Interactive: editor's choices + period-front-page sim.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderFirstNews() {
+        var fnSectRaw = useState('overview');
+        var fnSect = fnSectRaw[0], setFnSect = fnSectRaw[1];
+        var fnPaperRaw = useState(0);
+        var fnPaper = fnPaperRaw[0], setFnPaper = fnPaperRaw[1];
+        var fnEditorRaw = useState(0);
+        var fnEditor = fnEditorRaw[0], setFnEditor = fnEditorRaw[1];
+        var fnEditorChoiceRaw = useState(null);
+        var fnEditorChoice = fnEditorChoiceRaw[0], setFnEditorChoice = fnEditorChoiceRaw[1];
+
+        var sections = [
+          { id: 'overview',  label: 'Overview',           icon: '🗞' },
+          { id: 'history',   label: 'Why it took 150yr',  icon: '⏳' },
+          { id: 'papers',    label: 'The first papers',   icon: '📰' },
+          { id: 'editor',    label: 'Editor decisions',   icon: '✍' },
+          { id: 'reading',   label: 'Reading old papers', icon: '🔍' },
+          { id: 'business',  label: 'The news business',  icon: '💰' },
+          { id: 'modern',    label: 'Modern echo',        icon: '📱' }
+        ];
+
+        // Famous early newspapers
+        var firstPapers = [
+          {
+            name: 'Relation aller Fürnemmen und gedenckwürdigen Historien',
+            short: 'Relation',
+            city: 'Strasbourg',
+            year: 1605,
+            editor: 'Johann Carolus',
+            language: 'German',
+            freq: 'Weekly',
+            blurb: 'The first true newspaper. Johann Carolus was originally a writer of handwritten newsletters for wealthy subscribers (a niche service for merchants + diplomats). When his handwriting workload became unmanageable, he bought a press in 1604 and started printing the weekly newsletter as the Relation. The format: 6-8 small pages, news from various European cities, plain prose, no illustrations. Petitioned the city council in 1605 for a printing monopoly, including the surviving copy that historians now use to date the founding.',
+            sampleHeadlines: ['From Cologne, 22 October: An imperial courier has arrived from Vienna', 'From Antwerp, 25 October: A great storm at sea has wrecked seven vessels', 'From Rome, 18 October: His Holiness the Pope has granted audience to ambassadors', 'From London, 20 October: Parliament debates a new subsidy bill'],
+            interesting: 'For 400+ years scholars debated which paper was "first." UNESCO formally recognized the Relation as the first newspaper in 2005, making 1605 the official birth year of the form.'
+          },
+          {
+            name: 'Courante uyt Italien, Duytslandt, &c.',
+            short: 'Courante (Amsterdam)',
+            city: 'Amsterdam',
+            year: 1618,
+            editor: 'Caspar van Hilten',
+            language: 'Dutch',
+            freq: 'Weekly',
+            blurb: 'The first newspaper published in the Dutch Republic, the trade + intellectual capital of the early 17th century. Amsterdam\'s position as a global trade hub made it a natural news exchange. The Courante had correspondents (informal, mostly merchants) across Europe. Format: 1-2 large folio sheets, dense text, news in geographic sections. Highly influential — inspired similar papers in London, Hamburg, Cologne within years.',
+            sampleHeadlines: ['Out of Constantinople, the 15th of August', 'Out of Venice, the 22nd of August', 'Out of Cologne, the 5th of September', 'Out of Spain, news of the New World fleet'],
+            interesting: 'Amsterdam Couranten regularly carried news from Asia + the Americas via the Dutch East India Company (VOC) + Dutch West India Company (WIC). Globally-sourced news from day one.'
+          },
+          {
+            name: 'Weekly Newes from Italy, Germanie, Hungaria, Bohemia, the Palatinate, France and the Low Countreys',
+            short: 'Weekly Newes (London)',
+            city: 'London',
+            year: 1622,
+            editor: 'Nathaniel Butter + Nicholas Bourne',
+            language: 'English',
+            freq: 'Weekly',
+            blurb: 'The first English-language periodical published in England. Butter + Bourne had been printing single "corantos" (news pamphlets) since 1620, but the Weekly Newes was the first true periodical with a continuous numbered run. Format: 8-24 small pages, foreign news only (printing English domestic news was banned by Star Chamber until 1641). Subject to heavy royal licensing.',
+            sampleHeadlines: ['Newes from Prague: The Battle of White Mountain', 'Out of France: The Hugenots besieged at La Rochelle', 'From Constantinople: The Sultan\'s mother dies', 'Italian newes: The Pope\'s nephews promoted'],
+            interesting: 'English law forbade publishing domestic news until 1641 (when the Civil War effectively ended Star Chamber). For 20+ years, English readers got news of their own country only through foreign papers + manuscript letters. The first English domestic newsbook (Mercurius Britanicus) appeared 1643.'
+          },
+          {
+            name: 'Boston News-Letter',
+            short: 'Boston News-Letter',
+            city: 'Boston, Mass. Bay Colony',
+            year: 1704,
+            editor: 'John Campbell',
+            language: 'English',
+            freq: 'Weekly',
+            blurb: 'The first continuously-published newspaper in British North America. John Campbell was Boston\'s postmaster; he had access to mail (a natural news source) + leveraged that into a weekly paper. Format: 1 folio sheet, both sides, dense type. Content: mostly news from London (3+ months old by the time it reached Boston), shipping arrivals + departures, advertisements. Royal licensing applied — every issue printed "Published by Authority."',
+            sampleHeadlines: ['From London: His Majesty the Queen\'s address to Parliament', 'Arrivals from Bristol + Liverpool', 'Notice: Slave for sale; inquire of the printer', 'Captain Smith reports French ships sighted off Cape Cod'],
+            interesting: 'The Boston News-Letter ran for 72 years (1704-1776). The American Revolution killed it — Tory politics meant the paper folded when British troops evacuated Boston. The colonial newspaper boom (1720s-1770s) made the Stamp Act crisis (1765) possible by creating a print public.'
+          }
+        ];
+
+        // Editor decisions — you are the editor of a 1750 paper
+        var editorScenarios = [
+          {
+            year: 1750, paper: 'London Daily Advertiser',
+            situation: 'You receive 4 stories for tomorrow\'s front page. The page has room for 3. Which do you cut?',
+            choices: [
+              { id: 'royal', label: 'King George II grants an audience to the Russian ambassador (3 weeks old)' },
+              { id: 'war', label: 'War of the Austrian Succession: French defeat in Bohemia (4 weeks old)' },
+              { id: 'crime', label: 'Highway robbery on the road to Bath (3 days old, dramatic detail)' },
+              { id: 'commerce', label: 'New East India Company stock subscription opening Monday (immediate commercial interest)' }
+            ],
+            best: 'royal',
+            explain: '1750 newspapers operated on a strict hierarchy: court news (royalty + ambassadors) first, foreign war news second, commercial news third, local crime + curiosities last. The royal-audience story would never be cut from a quality London paper of this era. The crime story or commerce story would more likely be reduced or cut. Crime + commerce eventually moved up over the next 100 years — by 1850 it was the reverse hierarchy.'
+          },
+          {
+            year: 1789, paper: 'Pennsylvania Gazette',
+            situation: 'It is July 17, 1789. Two pieces of news just arrived by ship from France: (1) The Bastille was stormed on July 14 — a Paris mob has seized + destroyed the royal prison. (2) Russia\'s new tariff schedule has been published. Both stories will fit but you can only highlight one as page-1 lead.',
+            choices: [
+              { id: 'bastille', label: 'Bastille storming lead, prominent type, "From Paris" dateline' },
+              { id: 'tariff', label: 'Russian tariff lead — commercial readers will pay closest attention' },
+              { id: 'split', label: 'Equal coverage, both above the fold, no clear lead' },
+              { id: 'wait', label: 'Hold Bastille story for next issue — verify the news first' }
+            ],
+            best: 'bastille',
+            explain: 'In hindsight, the Bastille story was world-historical and the tariff was a footnote. But contemporary editors did make this exact choice — and many got it wrong. The Pennsylvania Gazette (Benjamin Franklin\'s former paper) did lead with Bastille news when it arrived; other less-attentive papers buried it. Editorial judgment under time pressure on news whose significance is not yet known is the hardest part of journalism in any era.'
+          },
+          {
+            year: 1830, paper: 'New York Evening Post',
+            situation: 'New steam-powered printing presses just allowed your competitor to drop their price from 6 cents to 1 cent per copy. The "Penny Press" revolution has begun. How do you respond?',
+            choices: [
+              { id: 'follow', label: 'Drop your price to 1 cent + shift to mass-circulation content (crime, gossip, sensation)' },
+              { id: 'premium', label: 'Stay at 6 cents + emphasize political analysis + foreign correspondence for elite readers' },
+              { id: 'halfway', label: 'Drop to 3 cents + keep current content mix' },
+              { id: 'wait', label: 'Wait + watch — see if penny press is a fad' }
+            ],
+            best: 'premium',
+            explain: 'There is no single right answer — both paths produced lasting newspapers. The New York Sun (penny press, 1833) reached far more readers but became sensational + politically narrow. The New York Times (1851) chose the premium path + remains a global newspaper of record. Most papers that tried the middle path failed. The "fad" choice is wrong: by 1850 the penny press was the dominant US newspaper form. The premium path is harder but produced more durable institutions.'
+          },
+          {
+            year: 1898, paper: 'New York Journal',
+            situation: 'A US battleship (the Maine) has just exploded in Havana harbor. Cause unknown. William Randolph Hearst (your boss) wants a banner headline blaming Spain. The reporter on scene cannot confirm a cause. The Navy will not commit. What do you write?',
+            choices: [
+              { id: 'sensational', label: '"DESTRUCTION OF THE WAR SHIP MAINE WAS THE WORK OF AN ENEMY" — bold, banner type' },
+              { id: 'careful', label: '"USS Maine Destroyed in Harbor; Investigation Pending"' },
+              { id: 'suggestive', label: '"Spanish Treachery Suspected in Battleship Disaster"' },
+              { id: 'minimal', label: '"USS Maine Lost in Havana" — restrained until facts known' }
+            ],
+            best: 'careful',
+            explain: 'The "yellow journalism" era of Hearst + Pulitzer produced sensational headlines that helped push the US into the Spanish-American War (1898). The actual cause of the Maine explosion was probably an internal coal-bunker fire, not Spanish sabotage. Hearst chose the sensational headline + the war followed. The careful headline is what responsible journalism required even in 1898 — but Hearst-style editors made the other choice + it sold papers. Same dilemma exists today in social-media-era news.'
+          },
+          {
+            year: 2010, paper: 'Online newsroom (Chicago)',
+            situation: 'Newsroom budget cut 40% in 3 years. Print subscriptions down 60%. Web ads pay 1/10 what print ads paid. You can keep either: 6 foreign correspondents (Africa, Mexico, China, etc.) or 12 metro reporters covering city hall + suburbs. Which do you cut?',
+            choices: [
+              { id: 'cut_foreign', label: 'Cut foreign — local readers care more about city hall. Wire services can cover foreign.' },
+              { id: 'cut_local', label: 'Cut metro — local TV + new digital news cover city hall. Differentiate via foreign.' },
+              { id: 'cut_both_half', label: 'Cut both by half + try to keep skeleton coverage' },
+              { id: 'cut_neither', label: 'Refuse to cut journalists — cut from production + marketing instead' }
+            ],
+            best: 'cut_neither',
+            explain: 'Trick question — the correct answer was probably to fight harder against cuts, but the actual industry path was a brutal mix of all the wrong choices. By 2010-2020, most US daily newspapers cut both foreign + metro coverage substantially. Pew Research: US newspaper newsroom employment fell 57% from 2008-2020. The institutional capacity for local + foreign reporting collapsed simultaneously. The reverberations are still being measured. This is not ancient history — this is the news environment you grew up in.'
+          }
+        ];
+
+        var paper = firstPapers[fnPaper] || firstPapers[0];
+        var es = editorScenarios[fnEditor] || editorScenarios[0];
+
+        var content;
+        if (fnSect === 'overview') {
+          content = h('div', null,
+            dropCapPara('Newspapers did not exist for 150 years after Gutenberg. The first true periodical newspaper appeared in Strasbourg in 1605 — almost 160 years after the Gutenberg Bible. The intervening century-and-a-half produced almanacs, news pamphlets, broadside ballads, government decrees, all on the same presses — but no weekly newspaper. Understanding why the form took so long, and what it looked like when it finally arrived, is a window into how news + print actually intersect.'),
+            sectionHeader('🗞', 'What this module covers'),
+            keyPointBlock(null, [
+              { k: 'Why 150 years', v: 'Why the press existed long before the newspaper, and what infrastructure had to develop first.' },
+              { k: 'The first papers', v: '4 detailed profiles: Relation (1605 Strasbourg), Courante (1618 Amsterdam), Weekly Newes (1622 London), Boston News-Letter (1704 colonial America).' },
+              { k: 'Editor decisions', v: 'Step into the editor\'s chair. 5 historical scenarios where editors had to choose. Compare your choice to what history actually did.' },
+              { k: 'Reading old papers', v: 'How to actually read a 1700 newspaper — conventions, sections, what to look for.' },
+              { k: 'The news business', v: 'How papers made money (or didn\'t) in different eras.' },
+              { k: 'Modern echo', v: 'Why digital-news disruption in 2010-2025 looks remarkably like print-news disruption in 1830 + 1890. Same patterns, new technology.' }
+            ])
+          );
+        } else if (fnSect === 'history') {
+          content = h('div', null,
+            dropCapPara('The 150-year gap between Gutenberg + the first newspaper is the most under-told story in print history. Six things had to come together to make newspapers possible: cheap paper, fast press technology, postal networks, regular news supply, literate audiences, and political tolerance. Each came at its own pace.'),
+            sectionHeader('⏳', 'The six prerequisites for newspapers'),
+            keyPointBlock('What had to exist before "newspaper" could happen', [
+              { k: '1. Cheap paper', v: 'Already covered in the Paper Making module. Paper prices needed to fall ~90% (1300-1450) before regular periodicals were economically viable.' },
+              { k: '2. Press technology with weekly output capacity', v: 'A 1450 wooden screw press could print ~240 sheets/hour. Sustainable for occasional books — not for weekly newspapers across multiple cities. By 1600 some presses doubled this rate.' },
+              { k: '3. Postal networks', v: 'No news without a way for news to reach the editor + the paper to reach readers. The Habsburg imperial post (Thurn und Taxis, ~1500) + the French royal post (~1600) created the first transcontinental mail networks. Before that, news traveled at the speed of individual messengers.' },
+              { k: '4. Regular news supply (correspondents)', v: 'Editors needed someone reporting from foreign cities. The merchant + diplomatic correspondence networks of the 1500-1600s provided early correspondents — often the same merchants who needed news for their business.' },
+              { k: '5. Literate audience', v: 'Newspapers need readers who can afford a weekly publication. Pre-Reformation Europe had limited lay literacy outside elite circles. The Reformation + Counter-Reformation drove literacy up — both sides wanted lay readers reading their pamphlets. By 1600 enough literate urban readers existed to support periodicals.' },
+              { k: '6. Political tolerance (or its loopholes)', v: 'Pre-1605 Europe heavily restricted printed news. Newspapers could only appear where some combination of weak central authority, political tolerance, or sophisticated licensing existed. Strasbourg in 1605 had a relatively liberal imperial-city government. Amsterdam in 1618 was newly free from Habsburg control. London in 1622 had a weakening Star Chamber.' }
+            ]),
+            sectionHeader('📅', '1605: why this year?'),
+            calloutBox('info', 'Why the Relation appeared when it did',
+              h('div', null,
+                h('p', { style: { margin: '0 0 8px', lineHeight: 1.6 } },
+                  'Johann Carolus had been writing handwritten newsletters by hand for a small subscription audience (wealthy merchants + diplomats) since the 1590s. By 1604 he had so many subscribers that hand-copying was unsustainable. He bought a press, started printing the newsletter as the Relation, and petitioned the Strasbourg city council in late 1605 for a printing monopoly. The petition (which survives) is the founding document of the newspaper as a form.'),
+                h('p', { style: { margin: 0, lineHeight: 1.6 } },
+                  'Within 20 years similar papers had appeared in Wolfenbüttel (1609), Amsterdam (1618), London (1622), Cologne (1620), Berlin (1626), Hamburg (1630), Stockholm (1645), and Boston (1704). The form spread fast once one printer had proven it worked.')
+              )
+            )
+          );
+        } else if (fnSect === 'papers') {
+          content = h('div', null,
+            dropCapPara('Four detailed profiles of pioneering newspapers. Each one was first-of-its-kind for its language or region. Together they show how the newspaper form emerged + evolved across 100 years.'),
+            // Paper picker
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+              firstPapers.map(function(p, i) {
+                var sel = (i === fnPaper);
+                return h('button', { key: i,
+                  onClick: function() { setFnPaper(i); announce(p.short); },
+                  style: btn({ padding: '8px 12px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                  p.year + ' · ' + p.short);
+              })
+            ),
+            // Selected paper detail
+            h('div', { style: { background: T.cardAlt, border: '2px solid ' + T.accent, borderRadius: 12, padding: 20, marginBottom: 14 } },
+              h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 6, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', fontFamily: 'ui-monospace, monospace' } },
+                paper.year + ' · ' + paper.city + ' · ' + paper.language + ' · ' + paper.freq),
+              h('h3', { style: { fontSize: 22, fontWeight: 700, color: T.text, fontFamily: 'Georgia, serif', margin: '0 0 4px' } }, paper.short),
+              h('div', { style: { fontSize: 13, color: T.muted, fontStyle: 'italic', marginBottom: 4 } }, paper.name),
+              h('div', { style: { fontSize: 13, color: T.accentHi, marginBottom: 14 } }, 'Editor: ' + paper.editor),
+              h('p', { style: { margin: '0 0 14px', color: T.muted, fontSize: 14, lineHeight: 1.65 } }, paper.blurb),
+              // Sample headlines
+              h('div', { style: { background: 'rgba(245,241,230,0.95)', color: '#222', padding: 14, borderRadius: 6, marginBottom: 12 } },
+                h('div', { style: { fontSize: 10, color: '#666', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, fontFamily: 'ui-monospace, monospace' } }, '— Sample headlines from this paper —'),
+                paper.sampleHeadlines.map(function(hl, i) {
+                  return h('div', { key: i, style: { fontFamily: 'Georgia, "Times New Roman", serif', fontSize: 13, lineHeight: 1.5, marginBottom: 6, fontStyle: 'italic', color: '#333' } },
+                    '• ' + hl);
+                })
+              ),
+              h('div', { style: { fontSize: 12, color: T.dim, fontStyle: 'italic' } },
+                h('span', { style: { color: T.accentHi, fontWeight: 700 } }, '🔍 Interesting: '), paper.interesting)
+            )
+          );
+        } else if (fnSect === 'editor') {
+          content = h('div', null,
+            dropCapPara('Editorial judgment is the heart of journalism. The editor decides what runs, how prominently, with what headline. These decisions shape what readers know — and how. Here are 5 historical scenarios from across the news era. You make the call. See what history did.'),
+            // Editor scenario picker
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 14 } },
+              h('button', { disabled: fnEditor <= 0,
+                onClick: function() { setFnEditor(Math.max(0, fnEditor - 1)); setFnEditorChoice(null); },
+                style: btn({ padding: '6px 12px', fontSize: 12, opacity: fnEditor <= 0 ? 0.4 : 1 }) }, '← Previous era'),
+              h('div', { style: { fontSize: 12, color: T.muted, alignSelf: 'center' } },
+                editorScenarios.map(function(_, i) {
+                  return h('span', { key: i, onClick: function() { setFnEditor(i); setFnEditorChoice(null); },
+                    style: { cursor: 'pointer', display: 'inline-block', width: 36, height: 22, lineHeight: '22px', textAlign: 'center', borderRadius: 4, margin: '0 2px', background: (i === fnEditor) ? T.accent : T.cardAlt, color: (i === fnEditor) ? T.ink : T.text, fontWeight: 700, fontSize: 11 } }, editorScenarios[i].year);
+                })
+              ),
+              h('button', { disabled: fnEditor >= editorScenarios.length - 1,
+                onClick: function() { setFnEditor(Math.min(editorScenarios.length - 1, fnEditor + 1)); setFnEditorChoice(null); },
+                style: btn({ padding: '6px 12px', fontSize: 12, opacity: fnEditor >= editorScenarios.length - 1 ? 0.4 : 1 }) }, 'Next era →')
+            ),
+            // Scenario card
+            h('div', { style: { background: 'rgba(201,161,74,0.06)', border: '2px solid ' + T.accent, borderRadius: 12, padding: 18, marginBottom: 14 } },
+              h('div', { style: { fontSize: 13, fontWeight: 700, color: T.accentHi, marginBottom: 8, fontFamily: 'ui-monospace, monospace', textTransform: 'uppercase', letterSpacing: '0.05em' } },
+                es.year + ' · ' + es.paper),
+              h('p', { style: { margin: 0, color: T.text, fontSize: 14, lineHeight: 1.65, fontFamily: 'Georgia, serif' } }, es.situation)
+            ),
+            // Choices
+            !fnEditorChoice && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 } },
+              es.choices.map(function(c, i) {
+                return h('button', { key: c.id,
+                  onClick: function() { setFnEditorChoice(c.id); announce('Choice: ' + c.label); },
+                  style: btn({ padding: '12px 14px', fontSize: 13, textAlign: 'left' }) },
+                  h('strong', { style: { color: T.accentHi } }, String.fromCharCode(65 + i) + '. '),
+                  c.label);
+              })
+            ),
+            // Outcome
+            fnEditorChoice && h('div', null,
+              h('div', { style: { background: fnEditorChoice === es.best ? 'rgba(127,176,105,0.12)' : 'rgba(212,153,0,0.10)', border: '2px solid ' + (fnEditorChoice === es.best ? T.ok : T.warn), borderRadius: 10, padding: 14, marginBottom: 10 } },
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: fnEditorChoice === es.best ? T.ok : T.warn, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' } },
+                  fnEditorChoice === es.best ? '✓ Defensible' : '◐ Consider this'),
+                h('div', { style: { fontSize: 13, color: T.text, marginBottom: 8 } },
+                  h('strong', null, 'You chose: '),
+                  es.choices.find(function(c) { return c.id === fnEditorChoice; }).label)),
+              h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 10, padding: 14, marginBottom: 14 } },
+                h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 6, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '📜 What history actually did'),
+                h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.65 } }, es.explain)),
+              h('button', { onClick: function() { setFnEditorChoice(null); },
+                style: btn({ padding: '8px 14px', fontSize: 12 }) }, '↺ Try a different choice')
+            )
+          );
+        } else if (fnSect === 'reading') {
+          content = h('div', null,
+            dropCapPara('Reading a 1700 newspaper requires knowing the conventions. Section structure, dateline formats, the absence of headlines, the meaning of italic vs roman type — all carry information that modern readers miss. Here is how to read what you see.'),
+            sectionHeader('🔍', 'Front-page anatomy (1700 vs 2025)'),
+            keyPointBlock('What was different', [
+              { k: 'No headlines (until ~1830)', v: 'Pre-1830 newspapers ran continuous text — no headlines, no story breaks, no banner type. Section breaks were marked by datelines only. You read the paper start to finish in the order it was set.' },
+              { k: 'Datelines as headlines', v: 'The "headline" was the dateline: "From Vienna, the 25th of October." Modern equivalent would be calling stories "From London" + nothing else. The reader had to infer what the story was about.' },
+              { k: 'No bylines (mostly)', v: 'Authors were anonymous. Editors signed editorials sometimes. Reporters didn\'t get personal credit until late 1800s.' },
+              { k: 'No photographs (until 1880s)', v: 'Engravings were occasional + expensive. Most papers were text-only. The "all news fit to print" was literal — text-only meant news + opinion + advertising + ship arrivals + price lists.' },
+              { k: 'Mixed content in one column', v: 'A column might contain foreign war news, then advertising, then a poem, then a death notice, all in the same flow without section markers.' },
+              { k: 'Long blocks of dense type', v: 'No paragraph breaks for visual rest. Reading required focused attention.' }
+            ]),
+            sectionHeader('📰', 'Conventions you still see today'),
+            keyPointBlock('What survived (sometimes oddly)', [
+              { k: 'The masthead', v: 'Paper name in large + ornate type at the top of page 1. Originated 1600s. Still standard.' },
+              { k: 'The dateline', v: 'City + date at the start of each story. 1600s convention, still used.' },
+              { k: '30 at the end of stories', v: 'Used by telegraphers (1800s) + printers to mark "end of story." Some old newspapers still print it. Originated as "XXX" or "—30—".' },
+              { k: 'Above the fold', v: '1830s broadsheet convention — pages were folded in half on newsstands, so the top half was the visible "above the fold" content. Still used metaphorically for web design.' },
+              { k: 'Editorial page on left', v: '1800s convention. The right page faced the reader on the bound morning paper; opinions went on the left so news got the prominent placement.' }
+            ])
+          );
+        } else if (fnSect === 'business') {
+          content = h('div', null,
+            dropCapPara('How did papers make money? Different in each era. The shifts in newspaper business models drove most of the shifts in how news was presented. Five distinct business eras:'),
+            sectionHeader('💰', 'Five newspaper business eras'),
+            keyPointBlock('How newspapers paid for themselves', [
+              { k: '1605-1830: Subscription + government', v: 'Papers cost 4-12 pence per copy (significant money). Few subscribers. Government subsidies or licensing fees common. Papers served elite readers + government propaganda needs.' },
+              { k: '1830s-1890s: Penny press', v: 'Steam-powered presses dropped per-copy cost. Penny papers (1 cent) reached mass audiences. Revenue split: copy sales (~40%), advertising (~60%). Content shifted toward crime + sensation to drive sales.' },
+              { k: '1890s-1960s: Display-advertising boom', v: 'Department stores + mass-consumer-goods advertising dominated. Big urban papers had 10-20 separate sections (women\'s, sports, classified, real estate, etc.) — each section a vehicle for category-specific ads. Newsroom employment peaked.' },
+              { k: '1960s-2000s: Decline of mass advertising', v: 'TV displaced display ads. Classified ads (the cash cow) collapsed when Craigslist launched in 1995. By 2000 most US dailies were losing money. Many merged or closed.' },
+              { k: '2010s-present: Digital + paywall', v: 'Display ads pay 1/10 what print ads paid. Newspapers experimented with paywalls (NYT 2011 — major success), grants + foundations, niche-paid newsletters (Substack), nonprofits (ProPublica, Texas Tribune). The dominant model isn\'t settled. Local journalism has collapsed; national journalism has restructured.' }
+            ]),
+            sectionHeader('📉', 'The local-news collapse'),
+            calloutBox('warn', '"News deserts" — a 21st-century crisis',
+              h('p', { style: { margin: 0, lineHeight: 1.6 } },
+                'Per the Northwestern Local News Initiative + UNC Hussman School: the US lost more than 2,500 daily + weekly newspapers between 2005 and 2024 — roughly one-third of US local newsrooms. About 70 million Americans now live in "news deserts" or "limited-news areas" — counties with no local newspaper. Maine has lost smaller weeklies in many rural counties; the surviving papers have cut newsroom staff dramatically. The civic + democratic consequences of this collapse are still being measured.')
+            )
+          );
+        } else { // modern
+          content = h('div', null,
+            dropCapPara('Newspaper history rhymes. The disruption of 2010-2025 looks remarkably similar to the disruption of 1830 (penny press) + 1890 (yellow journalism). New technology + new economics + new audiences = panic + experiment + a few winners + many losers. Recognizing the pattern doesn\'t solve the problem, but it does demystify it.'),
+            sectionHeader('📱', 'Pattern matches: 1830, 1890, 2010'),
+            keyPointBlock('What changed in each disruption', [
+              { k: '1830s — Penny Press', v: 'Steam presses dropped cost 10x. Mass-market papers emerged. Sensational content drove sales. Established 6-cent dailies either adapted (NY Times, founded 1851) or died. Public-service journalism vs entertainment journalism debate raged.' },
+              { k: '1890s — Yellow Journalism', v: 'Hearst + Pulitzer rivalries pushed sensationalism to extremes. Spanish-American War partly press-driven. Public-trust crisis. Reform era followed — Lippmann, Mencken, NYT redefining "responsible" journalism.' },
+              { k: '2010s-2020s — Digital disruption', v: 'Internet collapsed advertising + classifieds. Social media reshapes news distribution. Algorithmic feeds drive sensational content. Misinformation crisis. Trust in journalism at all-time lows. Continuing reform + experimentation.' }
+            ]),
+            sectionHeader('🔄', 'Reform efforts each time'),
+            keyPointBlock('How journalism has tried to rebuild trust', [
+              { k: '1830s reforms', v: 'James Gordon Bennett at NY Herald: structured beats, paid reporters, news independent of advertisers. Created the modern reporting style.' },
+              { k: '1890s-1910s reforms', v: 'Adolph Ochs at NY Times: "All the News That\'s Fit to Print" (1897), aggressive separation of news + opinion, hiring serious reporters. Walter Lippmann + Charles Merz, "A Test of the News" (1920), founded modern journalism criticism.' },
+              { k: '2010s-2020s reforms', v: 'Nonprofit + foundation-funded journalism (ProPublica, Texas Tribune, The Marshall Project). Newsletter platforms (Substack, Beehiiv). Slow news + magazine-style long-form (The Atavist, The New Yorker). AI-assisted reporting tools. Solutions journalism. Citizen + community media.' }
+            ]),
+            sectionHeader('💡', 'What stays the same'),
+            h('p', { style: { color: T.muted, fontSize: 14, lineHeight: 1.7, margin: '0 0 12px' } },
+              'Across every era of news disruption, certain things stay true. Audiences want information about what is happening + what it means. Bad-faith actors try to game the news system. Good journalism is expensive + hard to fund. Editorial judgment matters more than any technology. The same skills that mattered in 1605 — verifying sources, weighing significance, writing clearly under deadline, balancing access with independence — still matter in 2026. The medium changes; the craft doesn\'t.')
+          );
+        }
+
+        return h('div', null,
+          backBar('🗞 The First News Wave'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) {
+              var sel = (fnSect === s.id);
+              return h('button', { key: s.id,
+                onClick: function() { setFnSect(s.id); announce(s.label); },
+                style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                s.icon + ' ' + s.label);
+            })
+          ),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            content
+          ),
+          miniQuizBlock('firstNews', [
+            { q: 'When was the first true periodical newspaper published?',
+              opts: ['1455 (Gutenberg Bible era)', '1605 (Strasbourg Relation)', '1704 (Boston News-Letter)', '1830s (penny press)'],
+              ans: 1, explain: 'The Relation was first published in Strasbourg in 1605 by Johann Carolus. Almost 160 years AFTER Gutenberg printed his Bible. The newspaper as a continuous-publication form required infrastructure (postal networks, correspondents, literate urban readers) that took 150 years to develop.' },
+            { q: 'Why couldn\'t the first newspapers exist immediately after Gutenberg?',
+              opts: ['Paper was too expensive', 'Postal networks + correspondent supply + literate urban readers + political tolerance + faster presses all had to develop first', 'The technology hadn\'t been invented yet', 'No one wanted to read news'],
+              ans: 1, explain: 'Six prerequisites had to come together: cheap paper, faster press technology, postal networks, regular news supply (correspondents), literate audiences, political tolerance. Each took decades. The Reformation + Counter-Reformation drove literacy up; postal networks emerged ~1500-1600; political tolerance emerged in scattered cities like Strasbourg + Amsterdam.' },
+            { q: 'The first newspaper in British North America was:',
+              opts: ['Boston News-Letter (1704)', 'New York Daily News (1801)', 'Pennsylvania Gazette (1728)', 'Boston Tea-Party Times (1773)'],
+              ans: 0, explain: 'The Boston News-Letter (1704), edited by Boston postmaster John Campbell, was the first continuously-published newspaper in British North America. It ran for 72 years (until the American Revolution killed it in 1776).' },
+            { q: 'What was unique about pre-1830 newspaper format?',
+              opts: ['Pages were folded into a triangle', 'No headlines existed — text ran continuously with only datelines marking section breaks', 'Pages were always pink', 'They were illustrated more than modern newspapers'],
+              ans: 1, explain: 'Pre-1830 papers ran continuous prose with no headlines, no story breaks, no visual hierarchy. The dateline ("From Vienna, the 25th of October") was the only signpost. The modern banner-headline-driven format emerged in the penny-press era (1830s) when papers needed to compete on newsstands.' },
+            { q: 'About how many US daily + weekly newspapers were lost between 2005-2024?',
+              opts: ['~50', '~250', '~1,000', 'More than 2,500'],
+              ans: 3, explain: 'Per Northwestern Local News Initiative + UNC Hussman School research, the US lost more than 2,500 newspapers in 2005-2024 — roughly one-third of all local newsrooms. About 70 million Americans now live in "news deserts" or limited-news areas.' }
+          ]),
+          sourcesBlock([
+            { label: 'Wolfgang Behringer, "Communications Revolutions: A Historiographical Concept" (2006)' },
+            { label: 'Michael Schudson, Discovering the News: A Social History of American Newspapers (1978)' },
+            { label: 'Tarleton Gillespie, Custodians of the Internet (2018)' },
+            { label: 'Penelope Muse Abernathy, The Expanding News Desert (UNC Hussman, 2018-)', url: 'https://www.usnewsdeserts.com/' },
+            { label: 'Pew Research Center News Industry data', url: 'https://www.pewresearch.org/journalism/' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['NCSS D2.His.4.6-8 (causation)', 'CCSS RH.6-8.6 (point of view)', 'C3 D4.6.6-8 (research)'],
+            discussion: [
+              'Why did newspapers take 150 years to appear after the printing press?',
+              'Compare the 1830s penny press disruption to the 2010s digital disruption. What\'s similar? Different?',
+              'A 1622 editor couldn\'t print English domestic news (Star Chamber). What was lost by that restriction? What did readers get instead?'
+            ],
+            misconceptions: [
+              { wrong: 'Newspapers existed as soon as Gutenberg printed', right: 'Newspapers required 150 years of infrastructure development. The Relation in 1605 is the founding date — almost 160 years after the Gutenberg Bible.' },
+              { wrong: 'Sensational journalism is a modern problem', right: 'Yellow journalism (Hearst, Pulitzer, 1890s) was as sensational as anything online today + arguably pushed the US into a war (Spanish-American War 1898). The pattern is centuries old.' }
+            ],
+            extension: 'Find a copy of a local newspaper from 100 years ago (Maine State Library, Library of Congress Chronicling America online: chroniclingamerica.loc.gov). Compare front-page layout + story selection to today\'s paper. What\'s the same? What\'s different?'
+          }),
+          crossLinkFooter('firstNews'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // APPRENTICE'S JOURNEY — 7-year career sim from age 14 → journeyman.
+      // Choose master, navigate decision points, accumulate skills + savings
+      // + reputation. Multiple endings based on choices. Rich historical
+      // detail about apprenticeship culture.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderApprenticeJourney() {
+        // ── State ──
+        var ajStartedRaw = useState(false);
+        var ajStarted = ajStartedRaw[0], setAjStarted = ajStartedRaw[1];
+        var ajMasterRaw = useState(null);  // 'schmidt' | 'rugerin' | 'manutius'
+        var ajMaster = ajMasterRaw[0], setAjMaster = ajMasterRaw[1];
+        var ajYearRaw = useState(0);  // 0-7
+        var ajYear = ajYearRaw[0], setAjYear = ajYearRaw[1];
+        var ajStatsRaw = useState({ comp: 5, press: 5, biz: 5, rep: 50, money: 0, health: 100 });
+        var ajStats = ajStatsRaw[0], setAjStats = ajStatsRaw[1];
+        var ajChoicesRaw = useState({});  // { [year]: choiceId }
+        var ajChoices = ajChoicesRaw[0], setAjChoices = ajChoicesRaw[1];
+        var ajPendingRaw = useState(null);  // pending decision text after choice
+        var ajPending = ajPendingRaw[0], setAjPending = ajPendingRaw[1];
+
+        // ── Masters to choose from ──
+        var masters = [
+          { id: 'schmidt', name: 'Heinrich Schmidt', city: 'Mainz', emoji: '👨‍🦳',
+            shop: 'Schmidt Press, established 1455. One of the original Mainz print shops, slowly declining since the founder\'s death. Specializes in Latin religious texts + legal documents. Slow + traditional.',
+            style: 'Strict + traditional. Beats apprentices who err. Knows everyone in the trade. Demands long hours + perfect work. Will fight to give you good training. Will also fight you over wages forever.',
+            startStats: { comp: 10, press: 5, biz: 0 },  // Strong on composition discipline
+            cityBlurb: 'Mainz, the birthplace of European printing. By your time (let\'s say ~1480) the city has 8 print shops, but Mainz has been losing ground to Venice + Augsburg. Old prestige, declining business.'
+          },
+          { id: 'rugerin', name: 'Anna Rügerin', city: 'Augsburg', emoji: '👩‍🦰',
+            shop: 'Rügerin Press, Augsburg. Anna inherited the press from her husband Johann (died 1484) — she is one of about 18 known women printers running their own shops in the late 15th century. Modest but innovative shop.',
+            style: 'Practical, businesslike, fair. Has the unusual reputation as a woman printer; she knows you joined for the chance + expects effort. Teaches by example. Less drinking, more focus. Wages on time.',
+            startStats: { comp: 5, press: 10, biz: 5 },
+            cityBlurb: 'Augsburg, the Renaissance commercial heart of Germany. Fugger banking family transforms the city. Print shops cluster around the merchant trade. Mixed clientele — religious texts, almanacs, merchant manuals.'
+          },
+          { id: 'manutius', name: 'Aldus Manutius', city: 'Venice', emoji: '📜',
+            shop: 'Aldine Press, Venice. Founded 1494 to print classical Greek + Latin texts. Famous, prestigious, internationally connected. Aldus himself is a scholar before he is a printer — works on the same floor as the apprentices.',
+            style: 'Demanding intellectually but generous in spirit. Expects apprentices to learn Greek + Latin alongside the press work. Pays poorly + works long hours but apprentices who finish here become famous.',
+            startStats: { comp: 5, press: 5, biz: 5 },  // Balanced + adds language skill bonus over time
+            cityBlurb: 'Venice, the global print capital ~1490-1520. Hundreds of presses. Aldus Manutius pioneers the octavo edition + italic type. Working at the Aldine Press is the most prestigious apprenticeship in Europe.'
+          }
+        ];
+
+        // ── Years 1-7: scenes with decisions ──
+        // Each scene has 2 decisions. After both, year ends; advance to next.
+        var yearScenes = [
+          { // Year 1 — first year, sweeping + errands + learning letters
+            year: 1, age: 15,
+            blurb: 'Your first year. You sweep ink-spattered floors at 5 AM. You haul paper. You learn the letter pieces by touch — you must know every drawer of the upper- + lower-case by next month or be whipped. You earn no wage but get bed + board.',
+            decisions: [
+              { id: 'bully',
+                prompt: 'Klaus, a 17-year-old senior apprentice, has been short-changing you on lunch + giving you the worst chores. You discover he is also stealing small amounts of paper to sell. What do you do?',
+                choices: [
+                  { id: 'tell', label: 'Tell the master directly', stats: { rep: +5, comp: 0 }, outcome: 'Klaus is dismissed. You inherit the responsibility you were due. Your master regards you as honorable. The other apprentices regard you as a snitch. Mixed reputation; +5 rep with master, -5 socially.' },
+                  { id: 'confront', label: 'Confront Klaus privately', stats: { rep: +2, health: -5 }, outcome: 'Klaus takes a swing at you. You fight + lose. Klaus stops short-changing you but you have bruises for a week. Klaus eventually moves on. Some respect from peers; -5 health, +2 rep.' },
+                  { id: 'ignore', label: 'Endure quietly. Eat less + work harder.', stats: { health: -3, rep: 0 }, outcome: 'You suffer the imbalance for the year. Klaus eventually moves on. You learn endurance + nothing else. -3 health, 0 effect on other stats.' },
+                  { id: 'join', label: 'Quietly take a small share of the paper sales', stats: { money: +3, rep: -8 }, outcome: 'You earn 3 florins in petty cash but compromise your reputation if caught. You are not caught this year but the shadow follows you. +3 money, -8 rep.' }
+                ]
+              },
+              { id: 'customer',
+                prompt: 'A wealthy customer (a city notary) asks you to bring extra ink to his manuscript shop "off the books" — he tips you a florin to do so. The master would punish you if he knew.',
+                choices: [
+                  { id: 'take', label: 'Take the tip + bring the ink quietly', stats: { money: +5, rep: -3 }, outcome: 'You earn small but unauthorized money over the year — 5 florins. The notary becomes a useful future contact. Risk: if the master notices the ink shortfall + traces it to you, you face severe penalties.' },
+                  { id: 'refuse', label: 'Refuse — explain you cannot do this', stats: { rep: +3 }, outcome: 'The notary respects your integrity + remembers you. Years later this becomes a useful introduction. No immediate gain; +3 rep.' },
+                  { id: 'tell_master', label: 'Tell the master about the offer', stats: { rep: +5, money: -1 }, outcome: 'The master accepts the contract on the open books + the notary becomes a regular shop customer. You get a small share but missed the bigger tip. +5 rep, +1 money (vs the secret +5).' }
+                ]
+              }
+            ]
+          },
+          { // Year 2 — basic composition begins
+            year: 2, age: 16,
+            blurb: 'You begin setting type. Your hands hurt from holding the composing stick all day. Mistakes earn you whippings or wage docks. But the master is teaching you the trade.',
+            decisions: [
+              { id: 'typo',
+                prompt: 'You set the type for a 200-page Latin grammar. After the first 50 pages are printed, you discover a typo on page 38 — "amat" should be "amet." Reprinting 50 pages costs the master 2 florins in paper + 2 days of labor. The error is small (a tense difference) + might be missed in proofing.',
+                choices: [
+                  { id: 'confess', label: 'Confess immediately + accept the cost', stats: { rep: +8, money: -2 }, outcome: 'The master is furious but he respects you for telling him. Pages reprinted. The lesson is etched in your skull — you never make this mistake again. +8 rep, -2 money.' },
+                  { id: 'hide', label: 'Hide the typo + hope no one notices', stats: { rep: -5, comp: -2 }, outcome: 'A scholar in Frankfurt notices the error in a copy. Word spreads. The master discovers it eventually + suspects you. He says nothing but withholds promotion you would have otherwise earned. -5 rep, -2 comp confidence (you stop trusting your own work).' },
+                  { id: 'fix_partial', label: 'Fix in remaining copies, say nothing about the printed 50', stats: { rep: -2, comp: +3 }, outcome: 'Pragmatic. The 50 errored copies go out + most readers do not notice. The master never discovers. You learn to fix forward. Mid-tier integrity; +3 comp from the focus.' }
+                ]
+              },
+              { id: 'romance',
+                prompt: 'Anna, a 17-year-old baker\'s daughter, signals interest in walking with you. But apprentices are forbidden to court or marry by guild rules. If caught, you lose 6 months of progress.',
+                choices: [
+                  { id: 'secret', label: 'Court her secretly', stats: { health: +5, rep: -3 }, outcome: 'You meet at night for several months. You are happy. Eventually word reaches the master. You are fined + warned. The relationship cools under pressure. +5 health (love), -3 rep, no progress lost.' },
+                  { id: 'refuse', label: 'Tell her you cannot until your apprenticeship ends', stats: { rep: +2 }, outcome: 'She is disappointed but understands. She may or may not wait 5 years. You stay focused on work. Reputational gain; emotional cost is unmeasured.' },
+                  { id: 'caught', label: 'Pursue openly + accept consequences', stats: { health: +3, rep: -10, money: -8 }, outcome: 'You are caught quickly. The master fines you 8 florins + extends your apprenticeship by 6 months. You + Anna eventually marry but the journey is harder. Major rep + money hit but life-changing relationship.' }
+                ]
+              }
+            ]
+          },
+          { // Year 3
+            year: 3, age: 17,
+            blurb: 'You are now a competent compositor for routine work. Your hands have hardened. You begin seeing the press itself in operation. Real skills emerging.',
+            decisions: [
+              { id: 'poach',
+                prompt: 'A wealthier rival print shop in the same city offers to poach you — they will pay you a small wage (your master pays you nothing yet) + complete your training. Leaving breaches your contract; the rival shop swears the master won\'t find out.',
+                choices: [
+                  { id: 'leave', label: 'Leave for the rival', stats: { money: +12, rep: -15, comp: -3 }, outcome: 'You earn real money for the first time. But word spreads. Your reputation as oath-breaker follows you. The rival shop discovers you don\'t have all the skills they thought + treats you poorly. You finish your training but always under a shadow. +12 money, -15 rep, -3 comp (rushed training).' },
+                  { id: 'stay', label: 'Stay loyal to your master', stats: { rep: +8, comp: +5 }, outcome: 'The master eventually learns of the offer (small towns). He never forgets your loyalty. Your apprenticeship continues steadily + you become his trusted apprentice. +8 rep, +5 comp.' },
+                  { id: 'leverage', label: 'Tell your master + negotiate for actual wages', stats: { money: +6, rep: +5, comp: +2 }, outcome: 'The master is surprised but recognizes you would leave otherwise. He agrees to a modest 2 florins/month. Your apprenticeship continues with real income. +6 money, +5 rep, +2 comp.' }
+                ]
+              },
+              { id: 'greek',
+                prompt: 'Your master is taking on a Greek-Latin edition (rare + prestigious). He needs help with Greek typesetting. Greek type is brutal — different letterforms, more ligatures, longer hours. Mastering it would set you apart. Or you could relax in the evenings with the other apprentices at the tavern.',
+                choices: [
+                  { id: 'greek_yes', label: 'Volunteer for the Greek work — extra unpaid hours', stats: { comp: +12, rep: +5, health: -5 }, outcome: 'After 4 months of evenings + weekends you can set passable Greek. Your master is impressed. You are exhausted. The skill is rare + valuable. +12 comp, +5 rep, -5 health.' },
+                  { id: 'social', label: 'Maintain social ties — go to the tavern', stats: { rep: +3, health: +5 }, outcome: 'You build friendships with fellow apprentices that last your career. You miss the Greek opportunity but you are happier + better-connected. The friendships pay off later in business contacts. +3 rep, +5 health.' },
+                  { id: 'balance', label: 'Take on some Greek work — but not all evenings', stats: { comp: +5, rep: +2, health: 0 }, outcome: 'You get useful Greek skill without burning out. You miss the deepest mastery + the deepest friendships. Mid-tier on both. +5 comp, +2 rep.' }
+                ]
+              }
+            ]
+          },
+          { // Year 4
+            year: 4, age: 18,
+            blurb: 'Mid-apprenticeship. You are now expected to work substantially independently. Your master tests you with harder commissions.',
+            decisions: [
+              { id: 'big_commission',
+                prompt: 'A Florentine scholar commissions a 400-page Latin edition — 4-month project, premium pay. The master wants to assign you as lead compositor. You\'ve never done a commission this size. Mistakes will be expensive + visible. Decline + the work goes to the senior apprentice.',
+                choices: [
+                  { id: 'accept', label: 'Accept the commission', stats: { comp: +10, rep: +10, health: -5 }, outcome: 'You drive yourself for 4 months. Quality is good. Master + customer are pleased. Your reputation in the trade grows. +10 comp, +10 rep, -5 health.' },
+                  { id: 'decline', label: 'Decline + suggest the senior apprentice', stats: { rep: +2, comp: +2 }, outcome: 'The master is mildly disappointed but respects the self-awareness. You watch the senior\'s work + learn from it. Limited gain but no risk. +2 each.' },
+                  { id: 'accept_help', label: 'Accept + ask the master for ongoing guidance', stats: { comp: +8, rep: +5 }, outcome: 'The master appreciates the maturity of asking for help. The project goes smoothly. You learn deeply by working alongside the master. +8 comp, +5 rep.' }
+                ]
+              },
+              { id: 'guild_dinner',
+                prompt: 'The local printers\' guild holds an annual dinner. Your master takes you for the first time. Drinks flow. A master from a rival shop praises your Greek work + offers to introduce you to a Frankfurt printer for future contacts. He also asks you to share a few details about your master\'s commissions. The "few details" are not damaging but they are guild gossip you should not share.',
+                choices: [
+                  { id: 'share', label: 'Share the details — it\'s just gossip', stats: { biz: +3, rep: -5 }, outcome: 'The Frankfurt introduction happens + leads to useful contacts. But the rival uses the information later to compete on a contract. Your master figures it out. -5 rep with master, +3 business contacts.' },
+                  { id: 'decline_share', label: 'Politely refuse to share', stats: { rep: +5, biz: +5 }, outcome: 'The rival respects your discretion + introduces you to Frankfurt anyway (because you handled the moment well). You gain everything you wanted without compromising your master. +5 rep, +5 biz.' },
+                  { id: 'redirect', label: 'Talk only about your own Greek work, not the master\'s commissions', stats: { biz: +3, rep: +3 }, outcome: 'You demonstrate professional discretion + still build contacts. Mid-tier outcome. +3 each.' }
+                ]
+              }
+            ]
+          },
+          { // Year 5
+            year: 5, age: 19,
+            blurb: 'Specialization. You can choose which path to deepen — composition, presswork, business — and apprenticeships often shape lifelong specialties at this stage.',
+            decisions: [
+              { id: 'specialty',
+                prompt: 'Your master gives you the choice of which area to deepen for your final two years.',
+                choices: [
+                  { id: 'comp', label: 'Composition + typography (will become a compositor for life)', stats: { comp: +15, press: 0, biz: 0 }, outcome: 'You spend a year setting complex multi-language texts + learning sophisticated layout. Your speed + accuracy become exceptional. +15 comp.' },
+                  { id: 'press', label: 'Presswork + ink (will become a pressman, hands-on, hard physical labor)', stats: { press: +15, health: -3 }, outcome: 'You learn the physical craft — pulling the bar, adjusting the platen, mixing ink for different papers. Hard on the body but pays well. +15 press, -3 health.' },
+                  { id: 'biz', label: 'Business + arithmetic (will become a shop foreman or own a shop)', stats: { biz: +15, comp: -2 }, outcome: 'You learn accounting, customer relations, contract negotiation, paper buying. You don\'t deepen craft skills but you learn how shops actually work. +15 biz, -2 comp.' }
+                ]
+              },
+              { id: 'commission_decline',
+                prompt: 'A Cologne customer wants a heretical theological tract printed (denying purgatory). The master is hesitant — the work pays well but could attract church inquiry. He asks your opinion.',
+                choices: [
+                  { id: 'take_it', label: '"Take the commission — money is money"', stats: { money: +8, rep: -5, biz: +3 }, outcome: 'The master takes it. The tract sells + earns 8 florins. But a Dominican friar takes note. Future church business gets harder. +8 money, -5 rep, +3 biz (you learn risk).' },
+                  { id: 'decline_it', label: '"Decline — too risky"', stats: { rep: +5, biz: +2 }, outcome: 'The master declines. He respects your judgment. The Cologne customer takes the work to a Wittenberg printer who later becomes wealthy. Mixed lesson: cautious is safe but slow. +5 rep.' },
+                  { id: 'compromise', label: '"Take it but use a fake imprint"', stats: { money: +6, biz: +5, rep: -2 }, outcome: 'You print with no name attached. The work sells. You both make money + avoid church attention. Morally gray but professionally savvy. +6 money, +5 biz, -2 rep (you know what you did).' }
+                ]
+              }
+            ]
+          },
+          { // Year 6
+            year: 6, age: 20,
+            blurb: 'Near the end. You begin preparing your journeyman piece — the work you will present to qualify as a full journeyman.',
+            decisions: [
+              { id: 'journeyman_piece',
+                prompt: 'You must produce a journeyman piece — a printed work that demonstrates your full skill. What do you choose?',
+                choices: [
+                  { id: 'religious', label: 'A small psalter (psalm book) in Latin with red-and-black initials', stats: { comp: +5, rep: +8 }, outcome: 'Classic, safe, demonstrates competence. The psalter is admired + you receive standard journeyman status. +5 comp, +8 rep.' },
+                  { id: 'scholarly', label: 'A small Greek-Latin edition of an Aesop fable', stats: { comp: +10, rep: +12 }, outcome: 'Hard. Greek typesetting + bilingual layout. If you survived Year 3 Greek work, this is achievable. The piece becomes admired in scholarly circles. +10 comp, +12 rep.' },
+                  { id: 'vernacular', label: 'A vernacular German ballad with woodcut illustration', stats: { comp: +5, biz: +8, rep: +5 }, outcome: 'You commission a woodcut from a local artist. The piece is popular + sells well. You demonstrate business sense + popular appeal. +5 comp, +8 biz, +5 rep.' },
+                  { id: 'broadside', label: 'A single broadside political poem against a corrupt local official', stats: { rep: +5, money: -3, biz: +3 }, outcome: 'Bold. The official is annoyed but cannot punish you. The piece becomes locally famous. Mixed reception: bold + popular but professionally risky. +5 rep, -3 money (small fine).' }
+                ]
+              },
+              { id: 'travel_consideration',
+                prompt: 'You are eligible to do the "Wanderjahre" (travel years) after qualifying — wandering as a journeyman through different shops in different cities for 2-4 years before settling. This is the traditional path. Some apprentices skip it + take immediate journeyman jobs locally.',
+                choices: [
+                  { id: 'wander', label: '"Yes — I will wander Europe"', stats: { biz: +5, comp: +3 }, outcome: 'You will travel after qualifying. Mentally prepare. The experience will broaden you. +5 biz (you\'ll learn many shops), +3 comp.' },
+                  { id: 'local', label: '"No — stay home, take a local journeyman job"', stats: { money: +3, biz: -2 }, outcome: 'Safer. You\'ll save money faster + see less of the world. +3 money, -2 biz (narrower experience).' }
+                ]
+              }
+            ]
+          },
+          { // Year 7 — final year + qualification
+            year: 7, age: 21,
+            blurb: 'Your final year as an apprentice. You complete your journeyman piece, the guild evaluates, you receive your qualification. Now choose your path forward.',
+            decisions: [
+              { id: 'final_path',
+                prompt: 'You qualify as a journeyman. What now? (This decision shapes your career.)',
+                choices: [
+                  { id: 'stay_journeyman', label: 'Stay with your master as a paid journeyman', stats: { money: +15, rep: +5 }, outcome: 'You earn 12 florins/year + bed. Comfortable + stable. Your master expects you for 2-4 years more. +15 money, +5 rep.' },
+                  { id: 'wander', label: 'Travel as a wandering journeyman across Europe', stats: { biz: +10, comp: +5, money: -5 }, outcome: 'You spend 2-4 years working in different shops — Augsburg, Nuremberg, Frankfurt, perhaps Venice. You learn many techniques + many cities. Money is tight but experience is priceless. +10 biz, +5 comp, -5 money.' },
+                  { id: 'own_shop', label: 'Open your own shop immediately', stats: { biz: +5, money: -25, comp: -2 }, outcome: 'Ambitious + risky. You take loans + buy a small press. The first 2 years are brutal. You make many mistakes. Many such shops fail within 5 years. If yours survives, you are independent. -25 money, +5 biz, -2 comp (no peers to learn from).' },
+                  { id: 'marry_in', label: 'Marry the daughter of a master printer + inherit a shop', stats: { money: +20, biz: +10, rep: -3 }, outcome: 'A common path. Marriage gives you direct entry to shop ownership. Some grumbling in the trade about how you got there. But the path works + many famous printers took it. +20 money, +10 biz, -3 rep.' }
+                ]
+              }
+            ]
+          }
+        ];
+
+        // ── Helpers ──
+        function selectedMaster() { return masters.find(function(m) { return m.id === ajMaster; }); }
+        function applyChoice(year, decId, choiceId) {
+          var scene = yearScenes.find(function(s) { return s.year === year; });
+          if (!scene) return;
+          var dec = scene.decisions.find(function(d) { return d.id === decId; });
+          if (!dec) return;
+          var ch = dec.choices.find(function(c) { return c.id === choiceId; });
+          if (!ch) return;
+          // Apply stat changes
+          var newStats = Object.assign({}, ajStats);
+          Object.keys(ch.stats || {}).forEach(function(k) {
+            newStats[k] = Math.max(0, Math.min(100, (newStats[k] || 0) + ch.stats[k]));
+          });
+          if (k === 'money') {} // not used; just safety
+          setAjStats(newStats);
+          var nc = Object.assign({}, ajChoices);
+          nc[year + '_' + decId] = choiceId;
+          setAjChoices(nc);
+          setAjPending({ year: year, decId: decId, choiceId: choiceId, outcome: ch.outcome });
+          announce('Choice recorded.');
+        }
+        function startJourney(masterId) {
+          var m = masters.find(function(mm) { return mm.id === masterId; });
+          if (!m) return;
+          var startStats = Object.assign({ comp: 5, press: 5, biz: 5, rep: 50, money: 0, health: 100 }, m.startStats);
+          setAjMaster(masterId);
+          setAjStats(startStats);
+          setAjChoices({});
+          setAjYear(1);
+          setAjStarted(true);
+          announce('Journey begun with ' + m.name);
+        }
+        function advanceYear() {
+          setAjYear(ajYear + 1);
+          setAjPending(null);
+          announce('Year ' + (ajYear + 1) + ' begins.');
+        }
+        function resetJourney() {
+          setAjStarted(false);
+          setAjMaster(null);
+          setAjYear(0);
+          setAjStats({ comp: 5, press: 5, biz: 5, rep: 50, money: 0, health: 100 });
+          setAjChoices({});
+          setAjPending(null);
+          announce('Journey reset.');
+        }
+
+        // ── Determine ending if year 7 final decision made ──
+        function calcEnding() {
+          var finalChoice = ajChoices['7_final_path'];
+          var s = ajStats;
+          var endings = {
+            stay_journeyman: {
+              title: 'You become a senior journeyman, then foreman of your master\'s shop',
+              body: 'Eight years after qualifying you are the trusted foreman. Your master makes you a partial partner. When he dies in 1502 you inherit a share + keep the shop running with his widow until she remarries. Comfortable, respected, never famous. Your name is in one surviving guild ledger.',
+              analog: 'Historical analog: thousands of journeymen took this path. Most never had biographies written. Steady + invisible.'
+            },
+            wander: {
+              title: 'Your wanderjahre take you across Europe — and shape your career',
+              body: 'You work in Augsburg, Nuremberg, Frankfurt, Lyon, Venice over 3 years. You see many shops + meet many printers. When you finally settle (at 24), you have unmatched practical knowledge. You open a small shop in your home city + specialize in the unusual genre you discovered abroad.',
+              analog: 'Historical analog: this is the path of many of the most-traveled printers, including some of the people in the People Behind the Press module.'
+            },
+            own_shop: {
+              title: 'You open your own shop at 21 — a long, hard climb',
+              body: 'The first 3 years are brutal. You sleep at the shop. You make business mistakes that nearly bankrupt you. But by year 5 you have a customer base. By year 10 you are profitable. Your shop runs for 35 years. You teach 8 apprentices yourself. One of them becomes more famous than you.',
+              analog: 'Historical analog: Hans Lufft, Anton Koberger, Henri Estienne all took this path. High risk, high reward — for the few who survive the early years.'
+            },
+            marry_in: {
+              title: 'You marry into ownership — and prove yourself fast',
+              body: 'You marry Lena, daughter of master printer Konrad Müller. Within 2 years his health fails + you take over the shop. The trade grumbles about how you got there. Within 5 years your work speaks for itself + the grumbling fades. You run a successful shop for 30 years + your children inherit.',
+              analog: 'Historical analog: a common period path. Many printer dynasties (Stephanus, Plantin, Aldine in some senses) involved marriage-into-the-trade as part of the early career.'
+            }
+          };
+          if (!finalChoice) return null;
+          var e = endings[finalChoice];
+          if (!e) return null;
+          // Add summary based on stats
+          var summary = 'Your end-of-apprenticeship stats: Composition ' + s.comp + ', Press ' + s.press + ', Business ' + s.biz + ', Reputation ' + s.rep + ', Money ' + s.money + ' florins, Health ' + s.health + '.';
+          if (s.comp >= 40) summary += ' Your typesetting skill is exceptional.';
+          if (s.press >= 40) summary += ' Your press skill is exceptional.';
+          if (s.biz >= 40) summary += ' Your business sense is exceptional.';
+          if (s.rep >= 75) summary += ' Your reputation is sterling.';
+          if (s.rep <= 30) summary += ' Your reputation is troubled.';
+          if (s.money <= 0) summary += ' You leave with no savings.';
+          else if (s.money >= 25) summary += ' You leave with substantial savings (' + s.money + ' florins).';
+          if (s.health <= 60) summary += ' Your health is poor.';
+          return { ending: e, summary: summary };
+        }
+
+        // ── Sub-components for rendering ──
+        function statBar(label, val, max, color) {
+          var pct = Math.min(100, (val / (max || 100)) * 100);
+          return h('div', { style: { marginBottom: 6 } },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: T.muted, marginBottom: 2 } },
+              h('span', null, label),
+              h('span', { style: { fontFamily: 'ui-monospace, monospace', fontWeight: 700, color: T.text } }, val + (max && max !== 100 ? ' / ' + max : ''))),
+            h('div', { style: { height: 6, background: T.bg, borderRadius: 3, overflow: 'hidden' } },
+              h('div', { style: { height: '100%', width: pct + '%', background: color, opacity: 0.85, transition: 'width 0.3s' } })));
+        }
+
+        var content;
+        if (!ajStarted) {
+          // ── Intro screen — pick a master ──
+          content = h('div', null,
+            dropCapPara('It is 1480. You are 14 years old. Your father has arranged your apprenticeship with one of three printing masters. The shop you join shapes the next 7 years of your life. It is the most important career decision you will ever make.'),
+            sectionHeader('👨‍🏭', 'Choose your master'),
+            h('p', { style: { color: T.muted, fontSize: 13, lineHeight: 1.65, margin: '0 0 14px' } },
+              'Each master offers different training, different working conditions, different opportunities. Read carefully. Once you choose you cannot change.'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 12 } },
+              masters.map(function(m) {
+                return h('div', { key: m.id, style: { background: T.cardAlt, border: '2px solid ' + T.border, borderRadius: 12, padding: 18, display: 'flex', flexDirection: 'column' } },
+                  h('div', { style: { fontSize: 32, marginBottom: 8 } }, m.emoji),
+                  h('div', { style: { fontSize: 16, fontWeight: 700, color: T.text, fontFamily: 'Georgia, serif', marginBottom: 2 } }, m.name),
+                  h('div', { style: { fontSize: 12, color: T.accentHi, marginBottom: 8 } }, m.city),
+                  h('p', { style: { margin: '0 0 8px', fontSize: 12, color: T.muted, lineHeight: 1.5 } }, m.shop),
+                  h('p', { style: { margin: '0 0 8px', fontSize: 12, color: T.muted, fontStyle: 'italic', lineHeight: 1.5 } }, m.style),
+                  h('p', { style: { margin: '0 0 12px', fontSize: 11, color: T.dim, lineHeight: 1.5 } }, m.cityBlurb),
+                  h('div', { style: { fontSize: 11, color: T.accentHi, marginBottom: 10 } },
+                    'Starting bonus: ',
+                    Object.keys(m.startStats).filter(function(k) { return m.startStats[k] > 0; }).map(function(k) { return '+' + m.startStats[k] + ' ' + k; }).join(', ') || 'balanced'),
+                  h('button', {
+                    onClick: function() { startJourney(m.id); },
+                    style: btnPrimary({ padding: '10px 16px', fontSize: 13, marginTop: 'auto' }) }, 'Apprentice to ' + m.name.split(' ')[0] + ' →'));
+              })
+            )
+          );
+        } else if (ajYear <= 7) {
+          // ── Year scene ──
+          var scene = yearScenes.find(function(s) { return s.year === ajYear; });
+          var masterObj = selectedMaster();
+          // Find current decision (first one that hasn't been decided yet for this year)
+          var decisions = scene ? scene.decisions : [];
+          var currentDec = null;
+          for (var i = 0; i < decisions.length; i++) {
+            if (ajChoices[ajYear + '_' + decisions[i].id] === undefined) {
+              currentDec = decisions[i];
+              break;
+            }
+          }
+          var yearComplete = (currentDec == null);
+          content = h('div', null,
+            // Top dashboard: stats + master
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10, marginBottom: 14 } },
+              h('div', { style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 10, padding: 10 } },
+                h('div', { style: { fontSize: 11, color: T.dim, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 } }, 'Apprentice'),
+                h('div', { style: { fontSize: 14, fontWeight: 700, color: T.text, fontFamily: 'Georgia, serif' } }, 'You (age ' + (scene ? scene.age : 21) + ')'),
+                h('div', { style: { fontSize: 11, color: T.muted, marginTop: 2 } }, 'Year ' + ajYear + ' / 7')),
+              h('div', { style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 10, padding: 10 } },
+                h('div', { style: { fontSize: 11, color: T.dim, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 } }, 'Master'),
+                h('div', { style: { fontSize: 14, fontWeight: 700, color: T.text, fontFamily: 'Georgia, serif' } }, masterObj.emoji + ' ' + masterObj.name),
+                h('div', { style: { fontSize: 11, color: T.muted, marginTop: 2 } }, masterObj.city)),
+              h('div', { style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 10, padding: 10 } },
+                h('div', { style: { fontSize: 11, color: T.dim, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 } }, 'Skills'),
+                statBar('Composition', ajStats.comp, 100, T.accent),
+                statBar('Press', ajStats.press, 100, T.accent),
+                statBar('Business', ajStats.biz, 100, T.accent)),
+              h('div', { style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 10, padding: 10 } },
+                h('div', { style: { fontSize: 11, color: T.dim, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 } }, 'State'),
+                statBar('Reputation', ajStats.rep, 100, T.ok),
+                statBar('Health', ajStats.health, 100, T.warn),
+                h('div', { style: { fontSize: 11, color: T.muted, marginTop: 4 } }, 'Money: ', h('strong', { style: { color: T.accentHi, fontFamily: 'ui-monospace, monospace' } }, ajStats.money + ' florins')))
+            ),
+            // Year header + blurb
+            h('div', { style: { background: 'rgba(201,161,74,0.06)', border: '2px solid ' + T.accent, borderRadius: 12, padding: 18, marginBottom: 14 } },
+              h('div', { style: { fontSize: 12, color: T.accentHi, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontFamily: 'ui-monospace, monospace' } },
+                'Year ' + ajYear + ' · age ' + (scene ? scene.age : 21)),
+              h('p', { style: { margin: 0, fontSize: 14, color: T.text, lineHeight: 1.65, fontFamily: 'Georgia, serif' } }, scene ? scene.blurb : '')
+            ),
+            // Active decision OR pending outcome
+            currentDec && !ajPending && h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 10, padding: 16, marginBottom: 12 } },
+              h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 6, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Decision'),
+              h('p', { style: { margin: '0 0 12px', fontSize: 14, color: T.text, lineHeight: 1.65, fontFamily: 'Georgia, serif' } }, currentDec.prompt),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+                currentDec.choices.map(function(c, ci) {
+                  return h('button', { key: c.id,
+                    onClick: function() { applyChoice(ajYear, currentDec.id, c.id); },
+                    style: btn({ padding: '10px 14px', fontSize: 13, textAlign: 'left' }) },
+                    h('strong', { style: { color: T.accentHi } }, String.fromCharCode(65 + ci) + '. '),
+                    c.label);
+                })
+              )
+            ),
+            ajPending && h('div', null,
+              h('div', { style: { background: 'rgba(127,176,105,0.10)', border: '2px solid ' + T.ok, borderRadius: 10, padding: 14, marginBottom: 10 } },
+                h('div', { style: { fontSize: 11, color: T.ok, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 } }, 'Outcome'),
+                h('p', { style: { margin: 0, fontSize: 13, color: T.text, lineHeight: 1.65 } }, ajPending.outcome)),
+              h('div', { style: { display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' } },
+                h('button', {
+                  onClick: function() { setAjPending(null); },
+                  style: btn({ padding: '8px 14px', fontSize: 13 }) },
+                  ((function() {
+                    var unanswered = (scene && scene.decisions) ? scene.decisions.filter(function(d) { return ajChoices[ajYear + '_' + d.id] === undefined; }).length : 0;
+                    return unanswered > 0 ? 'Next decision →' : 'Continue';
+                  })())
+                )
+              )
+            ),
+            yearComplete && !ajPending && h('div', { style: { background: T.card, border: '2px solid ' + T.accent, borderRadius: 12, padding: 18, marginBottom: 14, textAlign: 'center' } },
+              h('div', { style: { fontSize: 14, color: T.accentHi, fontFamily: 'Georgia, serif', marginBottom: 4 } }, 'Year ' + ajYear + ' complete'),
+              h('p', { style: { margin: '0 0 12px', fontSize: 13, color: T.muted } }, 'Decisions made. Year ends. Time advances.'),
+              ajYear < 7 ? h('button', {
+                onClick: advanceYear,
+                style: btnPrimary({ padding: '12px 24px', fontSize: 14 }) }, 'Begin Year ' + (ajYear + 1) + ' →')
+              : h('button', {
+                onClick: function() { setAjYear(8); },
+                style: btnPrimary({ padding: '12px 24px', fontSize: 14 }) }, 'See your career outcome →')
+            )
+          );
+        } else {
+          // ── Final ending screen ──
+          var ending = calcEnding();
+          var masterObj2 = selectedMaster();
+          content = h('div', null,
+            sectionHeader('🎓', 'Your journeyman qualification'),
+            ending ? h('div', null,
+              h('div', { style: { background: 'rgba(201,161,74,0.10)', border: '2px solid ' + T.accent, borderRadius: 12, padding: 20, marginBottom: 14 } },
+                h('h3', { style: { margin: '0 0 10px', fontSize: 20, fontWeight: 700, color: T.accentHi, fontFamily: 'Georgia, serif' } },
+                  ending.ending.title),
+                h('p', { style: { margin: '0 0 12px', fontSize: 14, color: T.text, lineHeight: 1.7, fontFamily: 'Georgia, serif' } }, ending.ending.body),
+                h('div', { style: { background: T.cardAlt, padding: 12, borderRadius: 8, marginBottom: 10 } },
+                  h('div', { style: { fontSize: 11, color: T.dim, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 } }, 'Final stats'),
+                  h('p', { style: { margin: 0, fontSize: 13, color: T.muted, lineHeight: 1.6 } }, ending.summary)),
+                h('div', { style: { background: 'rgba(127,176,105,0.10)', border: '1px solid ' + T.ok, borderRadius: 8, padding: 10, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+                  h('strong', { style: { color: T.ok } }, 'Historical context: '), ending.ending.analog)
+              ),
+              h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 10, padding: 14, marginBottom: 14 } },
+                h('div', { style: { fontSize: 12, color: T.dim, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 } }, 'Your master throughout'),
+                h('div', { style: { fontSize: 14, color: T.text, fontFamily: 'Georgia, serif' } }, masterObj2.emoji + ' ' + masterObj2.name + ' (' + masterObj2.city + ')')),
+              h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', marginTop: 14 } },
+                h('button', {
+                  onClick: resetJourney,
+                  style: btnPrimary({ padding: '12px 24px', fontSize: 14 }) }, '↺ Start a new journey with a different master'))
+            ) : h('div', { style: { padding: 20, textAlign: 'center', color: T.muted } }, 'You did not complete the final decision in Year 7. Use the back button to return + finish.')
+          );
+        }
+
+        return h('div', null,
+          backBar("🎓 Apprentice's Journey"),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            content
+          ),
+          // Always-visible info panel
+          !ajStarted ? null : h('div', { style: { background: T.cardAlt, border: '1px dashed ' + T.border, borderRadius: 10, padding: 12, marginBottom: 14 } },
+            h('div', { style: { fontSize: 11, color: T.dim, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 } }, '📜 About apprenticeship in 1480'),
+            h('p', { style: { margin: 0, fontSize: 11, color: T.muted, lineHeight: 1.5 } },
+              'A typical printer\'s apprenticeship lasted 7 years (varied by city + guild). Apprentices started 12-16, lived with the master, received no wages but bed + board + training. Master could whip, fine, or extend contracts for disobedience. Marriage forbidden until journeyman status. After 7 years apprentices presented their journeyman piece + were tested by the guild. Successful apprentices became journeymen — wage-earning craftsmen who could travel + work — and eventually masters with their own shops.')
+          ),
+          ajStarted && ajYear > 0 && ajYear <= 7 && h('div', { style: { textAlign: 'center', marginBottom: 14 } },
+            h('button', { onClick: resetJourney,
+              style: btn({ padding: '6px 12px', fontSize: 11 }) }, '↺ Start over (will lose progress)')
+          ),
+          sourcesBlock([
+            { label: 'Sigfrid Steinberg, Five Hundred Years of Printing (1955)' },
+            { label: 'Elizabeth Eisenstein, The Printing Press as an Agent of Change (1979)' },
+            { label: "Brian Richardson, Printing, Writers and Readers in Renaissance Italy (1999)" },
+            { label: 'Sheila Edmunds, "The Apprentice in 16th-Century Cologne" — Renaissance Quarterly' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['NCSS D2.His.16.6-8 (perspectives)', 'CCSS RH.6-8.7 (integrate visual + text)', 'C3 D4.5.6-8 (decisions)'],
+            discussion: [
+              'Compare your career trajectory with a classmate\'s — same starting age, same era, very different outcomes. Why?',
+              'Apprenticeship traded 7 years of unpaid labor for skills + future earning. What\'s the modern equivalent? Is the trade still fair?',
+              'You chose certain decisions; the simulation gave you outcomes. In real life, outcomes are far more uncertain. How would the simulation be different if outcomes were probabilistic?'
+            ],
+            misconceptions: [
+              { wrong: 'Apprentices were paid', right: 'Apprentices typically received only bed + board for the entire 7-year period. Wages came at journeyman qualification. Lasting independence (own shop) might take another 5-15 years.' },
+              { wrong: 'Apprentices could quit any time', right: 'Apprenticeship contracts were legally binding. Quitting meant penalties, loss of training, often pursuit by authorities. The trade-off was that quality training was guaranteed.' }
+            ],
+            extension: 'Look at modern apprenticeship-equivalent paths: union electrician apprenticeships, surgical residency, BAR exam preparation for lawyers. Compare structure, duration, compensation, social contract with a 1480 printer\'s apprenticeship. What\'s the same? What\'s different?'
+          }),
+          crossLinkFooter('apprenticeJourney'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // TYPE FOUNDRY WORKSHOP — interactive type designer. Adjust x-height,
+      // weight, contrast, serif style + see live SVG preview of a sample
+      // letter. Covers anatomy, history, famous typefaces, modern design.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderTypeFoundry() {
+        var tfSectRaw = useState('overview');
+        var tfSect = tfSectRaw[0], setTfSect = tfSectRaw[1];
+        // Designer state
+        var tfXHeightRaw = useState(50);  // 0-100 → maps to x-height ratio
+        var tfXHeight = tfXHeightRaw[0], setTfXHeight = tfXHeightRaw[1];
+        var tfWeightRaw = useState(50);
+        var tfWeight = tfWeightRaw[0], setTfWeight = tfWeightRaw[1];
+        var tfContrastRaw = useState(50);  // 0 = uniform stroke, 100 = high contrast
+        var tfContrast = tfContrastRaw[0], setTfContrast = tfContrastRaw[1];
+        var tfSerifRaw = useState('bracketed');  // 'none'|'slab'|'bracketed'|'hairline'|'wedge'
+        var tfSerif = tfSerifRaw[0], setTfSerif = tfSerifRaw[1];
+        var tfWidthRaw = useState(50);
+        var tfWidth = tfWidthRaw[0], setTfWidth = tfWidthRaw[1];
+        // Game state
+        var tfGameRaw = useState(0);
+        var tfGame = tfGameRaw[0], setTfGame = tfGameRaw[1];
+        var tfGameChoiceRaw = useState(null);
+        var tfGameChoice = tfGameChoiceRaw[0], setTfGameChoice = tfGameChoiceRaw[1];
+        var tfGameScoreRaw = useState(0);
+        var tfGameScore = tfGameScoreRaw[0], setTfGameScore = tfGameScoreRaw[1];
+        // Typeface tour state
+        var tfTourRaw = useState(0);
+        var tfTour = tfTourRaw[0], setTfTour = tfTourRaw[1];
+
+        var sections = [
+          { id: 'overview',  label: 'Overview',       icon: '🔤' },
+          { id: 'anatomy',   label: 'Letter anatomy', icon: '🦴' },
+          { id: 'history',   label: 'Type history',   icon: '🏛' },
+          { id: 'designer',  label: 'Type designer',  icon: '🎨' },
+          { id: 'tour',      label: 'Famous faces',   icon: '⭐' },
+          { id: 'game',      label: 'Name that face', icon: '🎮' },
+          { id: 'modern',    label: 'Modern type',    icon: '💻' }
+        ];
+
+        // Famous typefaces tour
+        var typefaces = [
+          { name: 'Jenson (Nicolas Jenson, Venice 1470)',
+            designer: 'Nicolas Jenson',
+            year: 1470,
+            classification: 'Humanist (Venetian Old Style)',
+            blurb: 'The first roman type that broke completely from blackletter calligraphy. Nicolas Jenson, a Frenchman who learned type-cutting from the Mainz tradition + set up shop in Venice, cut a roman face based on humanist scribe handwriting. The proportions, the spacing, the readability — Jenson\'s roman is widely considered the most beautiful type ever cut. Adobe Jenson + Centaur are modern digital revivals based on it.',
+            recognizable: 'Calligraphic stress (angled), modest contrast, slightly heavy serifs. Looks "handwritten" compared to later faces.',
+            modernUses: 'Used in fine-print editions, art books, classical-themed design. Slow-reading premium contexts.'
+          },
+          { name: 'Garamond (Claude Garamond, Paris ~1530s)',
+            designer: 'Claude Garamond',
+            year: 1532,
+            classification: 'Garalde (French Old Style)',
+            blurb: 'Refined roman type cut by Claude Garamond + others in 1530s Paris. More refined than Jenson — thinner verticals, more contrast, more readable at small sizes. Became the dominant European book face for almost 300 years. Many modern Garamonds (Stempel Garamond, Adobe Garamond, EB Garamond) are still in heavy use today.',
+            recognizable: 'Bracketed serifs, oblique stress, narrow proportions, very readable at small sizes. The "default book typeface" of imagination.',
+            modernUses: 'Most premium novels + non-fiction set in book form. Apple\'s typography in early years. Apple\'s logo (until 2015) was an italic Garamond.'
+          },
+          { name: 'Caslon (William Caslon, London 1722)',
+            designer: 'William Caslon',
+            year: 1722,
+            classification: 'Garalde / Old Style English',
+            blurb: 'England\'s first major homegrown typeface. William Caslon\'s 1722 specimen sheet made him famous + replaced Dutch typefaces (which had dominated English printing) overnight. "When in doubt, use Caslon" became the printing-shop rule. The US Declaration of Independence (1776) was printed in Caslon.',
+            recognizable: 'Bracketed serifs but more pronounced than Garamond, slightly more vertical stress, slight quirky imperfection in some letters. Distinctive italics with subtle character variation.',
+            modernUses: 'Adobe Caslon Pro is industry-standard. Used for many literary fiction publishers. Has a "trustworthy + classical" associative meaning.'
+          },
+          { name: 'Baskerville (John Baskerville, Birmingham 1757)',
+            designer: 'John Baskerville',
+            year: 1757,
+            classification: 'Transitional',
+            blurb: 'A British innovator who challenged English Old Style by making serifs sharper, contrast greater, axis more vertical. Caused controversy in its day — Benjamin Franklin (a printer himself, by then living in London) was an early defender. Modern Baskerville digital revivals (Berthold, ITC) carry his name forward.',
+            recognizable: 'Higher contrast than Caslon, sharper bracketed serifs, more nearly vertical stress, ample x-height. Bridges Old Style + Modern.',
+            modernUses: 'Considered "elegant + readable" — used for editorial design, premium magazines, formal invitations. Mrs Eaves (Zuzana Licko, 1996) is a tribute design.'
+          },
+          { name: 'Bodoni (Giambattista Bodoni, Parma 1790s)',
+            designer: 'Giambattista Bodoni',
+            year: 1798,
+            classification: 'Modern / Didone',
+            blurb: 'The Italian master who pushed contrast to its logical extreme — hairline serifs + ultra-thin horizontals + thick verticals. Bodoni\'s late 18th-century cuts looked nothing like Jenson or Garamond — they were a new aesthetic, geometric + ratio-driven. Set the template for "Modern" classification (which paradoxically means ~1790s).',
+            recognizable: 'Sharp, unbracketed (or barely bracketed) hairline serifs. Maximum contrast — verticals very thick, horizontals very thin. Vertical stress. Looks formal + cold + elegant.',
+            modernUses: 'Vogue, Harper\'s Bazaar mastheads. Fashion industry standard. Hard to read at small sizes (hairlines disappear); ideal for big display work.'
+          },
+          { name: 'Clarendon (Robert Besley, London 1845)',
+            designer: 'Robert Besley',
+            year: 1845,
+            classification: 'Slab Serif (Clarendon style)',
+            blurb: 'The 19th-century Industrial Revolution needed type that worked on posters + signage — bold, attention-grabbing, readable from a distance. Slab serifs (also called "Egyptian" in some early 19th-century catalogs) had block-shaped serifs with curved brackets. Clarendon (1845) became the genre-defining slab serif.',
+            recognizable: 'Heavy bracketed slab serifs. Solid + sturdy + visible at distance. Often used for emphasis + posters + signs.',
+            modernUses: 'Sundance Resort branding. Whole Foods logo. Many sports + outdoor brands. Wells Fargo wordmark uses a Clarendon-style face.'
+          },
+          { name: 'Times New Roman (Stanley Morison + Victor Lardent, 1932)',
+            designer: 'Stanley Morison + Victor Lardent',
+            year: 1932,
+            classification: 'Transitional',
+            blurb: 'Commissioned by The Times of London for its 1932 redesign. Morison wanted a face that was more legible + economical of space than what The Times had been using. The result was so successful it became one of the most-used typefaces in history — installed on every Microsoft Office system from 1992 onward.',
+            recognizable: 'Bracketed serifs, moderate contrast, slightly condensed proportions. Highly readable + space-efficient.',
+            modernUses: 'Default Office font for ~30 years. Has fallen out of fashion as the "default" font (Calibri replaced it in 2007). Still ubiquitous in legal + academic contexts where consistency matters.'
+          },
+          { name: 'Futura (Paul Renner, 1927)',
+            designer: 'Paul Renner',
+            year: 1927,
+            classification: 'Geometric Sans-Serif',
+            blurb: 'The Bauhaus-era pursuit of pure geometric letterforms. Renner studied Greek + Roman inscriptional letters + tried to derive their essential shapes from circles + triangles + lines. Futura was the result. Geometric, rational, "modern" in the Bauhaus sense. Widely imitated; ITC Futura, Berthold Futura are major digital cuts.',
+            recognizable: 'Pure geometric forms — circular O, triangular A. No serifs. Equal stroke weight. Often looks "1930s German" or "spacey-futuristic."',
+            modernUses: 'Volkswagen branding for decades. Stanley Kubrick used Futura on most of his film titles (2001, A Clockwork Orange, Eyes Wide Shut). Apollo 11 plaque on the Moon: in Futura.'
+          },
+          { name: 'Helvetica (Max Miedinger + Eduard Hoffmann, Switzerland 1957)',
+            designer: 'Max Miedinger + Eduard Hoffmann',
+            year: 1957,
+            classification: 'Neo-Grotesque Sans-Serif',
+            blurb: 'Originally called "Neue Haas Grotesk" — renamed "Helvetica" (from Latin Helvetia, Switzerland) for international marketing. Designed at the Haas Type Foundry. Became the dominant typeface of 20th-century corporate identity. Subject of a 2007 documentary film. Either the most beloved or most overused typeface in history depending on who you ask.',
+            recognizable: 'Tight curves, generous x-height, uniform stroke weight, "neutral" — looks not very characterful. Famously hard to identify from other neo-grotesques.',
+            modernUses: 'NYC Subway signage (since 1970). American Airlines, BMW (corporate), Lufthansa, Microsoft (in some contexts), Apple (until 2014 when Apple switched to its own San Francisco). The default look of corporate identity for half a century.'
+          },
+          { name: 'Comic Sans (Vincent Connare, Microsoft 1994)',
+            designer: 'Vincent Connare',
+            year: 1994,
+            classification: 'Casual Script (Microsoft personality)',
+            blurb: 'Designed by Vincent Connare for Microsoft Bob (a 1995 children\'s software product) because Times New Roman looked too formal for cartoon characters\' speech bubbles. Got shipped with Windows 95 as a default font + became simultaneously the most-used + most-hated typeface in history. Connare himself has said the criticism is unfair — it was designed for a specific purpose, and using it for legal documents was never the intent.',
+            recognizable: 'Casual, slightly irregular, looks "handwritten" but not really. Each letter has slight idiosyncrasies — Wikipedia, restaurant menus, school worksheets.',
+            modernUses: 'Despite hate, has accessibility uses — research suggests it can be helpful for dyslexic readers (irregular letterforms harder to confuse). The character of Robin Williams used it in Mrs. Doubtfire. Used in scientific announcements of the discovery of the Higgs boson (2012), to widespread reaction.'
+          }
+        ];
+
+        // Name-that-typeface game
+        var gameTypefaces = [
+          { name: 'Helvetica', clue: 'Designed in Switzerland 1957. Neo-grotesque sans-serif. NYC Subway signs. Generic + neutral feel.',
+            options: ['Helvetica', 'Arial', 'Univers', 'Frutiger'], correct: 0,
+            explain: 'Helvetica (Miedinger + Hoffmann, 1957). Arial (1982) is Microsoft\'s clone — visually nearly identical but technically a different typeface. The differences are subtle: Arial\'s tail on R curves outward more; Helvetica\'s G has a spur.' },
+          { name: 'Garamond', clue: 'Cut in Paris 1530s. Garalde / French Old Style. Has been the dominant European book typeface for almost 300 years.',
+            options: ['Times New Roman', 'Bodoni', 'Garamond', 'Baskerville'], correct: 2,
+            explain: 'Garamond (Claude Garamond, ~1530s). Times New Roman was 1932 — 400 years later. Bodoni (1798) is much higher contrast. Baskerville (1757) is sharper + more vertical.' },
+          { name: 'Bodoni', clue: 'Italian 1790s. Modern / Didone classification. Hairline serifs. Maximum contrast. Vogue + Harper\'s Bazaar mastheads.',
+            options: ['Bodoni', 'Garamond', 'Caslon', 'Centaur'], correct: 0,
+            explain: 'Bodoni (Giambattista Bodoni, Parma, 1798). The extreme thin/thick contrast is the giveaway. Garamond + Caslon have much more even stroke weight.' },
+          { name: 'Futura', clue: 'Designed 1927 in Germany. Geometric sans-serif derived from circles + triangles. Used on the Apollo 11 lunar plaque.',
+            options: ['Helvetica', 'Futura', 'Avenir', 'Univers'], correct: 1,
+            explain: 'Futura (Paul Renner, 1927). The perfectly circular O is the dead giveaway — Helvetica + Univers have slightly oval Os. Avenir (1988) is the closest "geometric sans" cousin.' },
+          { name: 'Comic Sans', clue: 'Microsoft 1994. Casual script. Was originally for cartoon speech bubbles. Beloved + loathed.',
+            options: ['Comic Sans', 'Chalkboard', 'Marker Felt', 'Bradley Hand'], correct: 0,
+            explain: 'Comic Sans (Vincent Connare, 1994). Microsoft\'s typeface — shipped with Windows 95. The other three are macOS counterparts; some look similar but Comic Sans is distinctive in its proportions.' },
+          { name: 'Times New Roman', clue: 'Commissioned for The Times of London 1932. Default Microsoft Word font from 1992 to 2007.',
+            options: ['Times New Roman', 'Garamond', 'Baskerville', 'Caslon'], correct: 0,
+            explain: 'Times New Roman (Stanley Morison + Victor Lardent, 1932). Probably the most-used typeface in document history because of Microsoft. Garamond predates it by 400 years.' },
+          { name: 'Caslon', clue: 'England 1722. The US Declaration of Independence was printed in this typeface.',
+            options: ['Caslon', 'Baskerville', 'Garamond', 'Bembo'], correct: 0,
+            explain: 'Caslon (William Caslon, 1722). The Declaration of Independence (printed July 4, 1776 by John Dunlap in Philadelphia) used Caslon. "When in doubt, use Caslon" was the period rule.' },
+          { name: 'Helvetica', clue: 'Designed in Switzerland 1957. Subject of a 2007 documentary film.',
+            options: ['Univers', 'Helvetica', 'Frutiger', 'Akzidenz Grotesk'], correct: 1,
+            explain: 'Helvetica (Miedinger + Hoffmann, 1957). The 2007 documentary by Gary Hustwit examines the typeface\'s cultural impact. Akzidenz Grotesk (1898) was the German typeface Helvetica was designed to compete with.' }
+          ];
+        var gameQ = gameTypefaces[tfGame] || gameTypefaces[0];
+
+        // ── Type designer SVG generator ──
+        // Given the slider values, render an "M" with the chosen attributes.
+        function generateDesignSvg() {
+          // Map sliders to actual values
+          // xHeight: 0-100 → 0.4-0.75 of cap height
+          var xH = 0.4 + (tfXHeight / 100) * 0.35;
+          // weight: 0-100 → stem thickness 4-22
+          var stem = 4 + (tfWeight / 100) * 18;
+          // contrast: 0 = uniform stroke (stem same as thin), 100 = thin stroke 1/4 of stem
+          var thin = stem * (1 - (tfContrast / 100) * 0.7);
+          // width: 0-100 → letter width factor 0.6-1.4
+          var widthFactor = 0.6 + (tfWidth / 100) * 0.8;
+          // Compose an "M" with stem, thin diagonals + serif option
+          var canvasW = 240, canvasH = 200;
+          var letterW = 140 * widthFactor, letterH = 140;
+          var x0 = (canvasW - letterW) / 2, y0 = (canvasH - letterH) / 2;
+          var paths = [];
+          // Left stem
+          paths.push(h('rect', { key: 'ls', x: x0, y: y0, width: stem, height: letterH, fill: T.text }));
+          // Right stem
+          paths.push(h('rect', { key: 'rs', x: x0 + letterW - stem, y: y0, width: stem, height: letterH, fill: T.text }));
+          // Diagonals (the V in the M)
+          var diagPoints = [
+            (x0 + stem) + ',' + y0,
+            (x0 + stem + thin) + ',' + y0,
+            (x0 + letterW / 2) + ',' + (y0 + letterH * 0.7),
+            (x0 + letterW - stem - thin) + ',' + y0,
+            (x0 + letterW - stem) + ',' + y0,
+            (x0 + letterW / 2 + thin / 2) + ',' + (y0 + letterH * 0.8),
+            (x0 + letterW / 2 - thin / 2) + ',' + (y0 + letterH * 0.8)
+          ];
+          paths.push(h('polygon', { key: 'dia',
+            points: diagPoints.join(' '),
+            fill: T.text
+          }));
+          // Serifs
+          if (tfSerif !== 'none') {
+            var sH = (tfSerif === 'slab' || tfSerif === 'wedge') ? Math.max(3, stem * 0.8) : Math.max(2, stem * 0.45);
+            var sW = (tfSerif === 'hairline') ? stem * 1.6 : (tfSerif === 'slab') ? stem * 2.2 : stem * 1.9;
+            // Top serifs
+            paths.push(h('rect', { key: 'ts1', x: x0 + stem/2 - sW/2, y: y0 - sH, width: sW, height: sH, fill: T.text }));
+            paths.push(h('rect', { key: 'ts2', x: x0 + letterW - stem/2 - sW/2, y: y0 - sH, width: sW, height: sH, fill: T.text }));
+            // Bottom serifs
+            paths.push(h('rect', { key: 'bs1', x: x0 + stem/2 - sW/2, y: y0 + letterH, width: sW, height: sH, fill: T.text }));
+            paths.push(h('rect', { key: 'bs2', x: x0 + letterW - stem/2 - sW/2, y: y0 + letterH, width: sW, height: sH, fill: T.text }));
+          }
+          // Baseline + x-height + cap-height guides
+          var guides = [
+            h('line', { key: 'g1', x1: 10, y1: y0, x2: canvasW - 10, y2: y0, stroke: T.accent, opacity: 0.2, strokeDasharray: '3,3' }),
+            h('line', { key: 'g2', x1: 10, y1: y0 + letterH * (1 - xH), x2: canvasW - 10, y2: y0 + letterH * (1 - xH), stroke: T.accent, opacity: 0.3, strokeDasharray: '3,3' }),
+            h('line', { key: 'g3', x1: 10, y1: y0 + letterH, x2: canvasW - 10, y2: y0 + letterH, stroke: T.accent, opacity: 0.3 }),
+            h('text', { key: 't1', x: canvasW - 5, y: y0 + 4, fontSize: 8, fill: T.dim, textAnchor: 'end', fontFamily: 'ui-monospace, monospace' }, 'cap'),
+            h('text', { key: 't2', x: canvasW - 5, y: y0 + letterH * (1 - xH) + 4, fontSize: 8, fill: T.dim, textAnchor: 'end', fontFamily: 'ui-monospace, monospace' }, 'x'),
+            h('text', { key: 't3', x: canvasW - 5, y: y0 + letterH - 2, fontSize: 8, fill: T.dim, textAnchor: 'end', fontFamily: 'ui-monospace, monospace' }, 'base')
+          ];
+          return h('svg', { viewBox: '0 0 ' + canvasW + ' ' + canvasH, style: { background: '#f5f1e6', borderRadius: 8, maxWidth: 380, width: '100%', height: 'auto' } },
+            guides.concat(paths)
+          );
+        }
+
+        // ── Identify which historical typeface the current settings approximate ──
+        function identifyDesign() {
+          var w = tfWeight, c = tfContrast, x = tfXHeight, s = tfSerif;
+          if (s === 'none' && c < 30) return { name: 'Geometric sans (Futura, Avenir, Gotham)', confidence: w > 60 ? 80 : 70 };
+          if (s === 'none' && c >= 30 && c < 70) return { name: 'Neo-grotesque sans (Helvetica, Univers)', confidence: 75 };
+          if (s === 'slab' && w >= 50) return { name: 'Slab-serif (Clarendon, Rockwell)', confidence: 80 };
+          if (s === 'hairline' && c >= 75) return { name: 'Didone / Modern (Bodoni, Didot)', confidence: 85 };
+          if (s === 'bracketed' && c >= 55 && c < 75) return { name: 'Transitional (Baskerville, Times)', confidence: 75 };
+          if (s === 'bracketed' && c < 55) return { name: 'Old Style (Garamond, Caslon, Jenson)', confidence: 80 };
+          if (s === 'wedge') return { name: 'Humanist serif (Centaur, Hoefler Text)', confidence: 65 };
+          return { name: 'Custom / unclassified', confidence: 50 };
+        }
+        var design = identifyDesign();
+        var curFace = typefaces[tfTour] || typefaces[0];
+
+        var content;
+        if (tfSect === 'overview') {
+          content = h('div', null,
+            dropCapPara('Type design is one of the oldest professions in the printing trade — and one of the few that has continued essentially unchanged from 1450 to today. The vocabulary you use to describe a typeface in 2026 is the same vocabulary Garamond + Caslon used. The decisions a designer makes — x-height vs descender, serif style, weight, contrast — are the same. The tools have changed (chisel → AI-assisted vector design), the craft has not.'),
+            sectionHeader('🔤', 'What this module covers'),
+            keyPointBlock(null, [
+              { k: 'Letter anatomy', v: 'The vocabulary — x-height, ascender, descender, stem, bowl, counter, serif, terminal. Names for every part of a letter.' },
+              { k: 'Type history', v: 'From Jenson (1470) to Garamond, Caslon, Baskerville, Bodoni, Clarendon, Times, Futura, Helvetica, Comic Sans. 9 typefaces that shaped how the world reads.' },
+              { k: 'Type designer', v: 'Adjust 5 sliders (x-height, weight, contrast, serif style, width) + see the result as a live SVG letter. Approximates what a real type designer does.' },
+              { k: 'Famous faces', v: 'Detailed tour of 10 historically important typefaces — who designed them, what they look like, where they were used.' },
+              { k: 'Name that face', v: 'A game: read the description, identify the typeface. Surprisingly hard.' },
+              { k: 'Modern type', v: 'Variable fonts, AI-assisted design, screen vs print considerations, the contemporary type-design industry.' }
+            ])
+          );
+        } else if (tfSect === 'anatomy') {
+          content = h('div', null,
+            dropCapPara('The vocabulary of letters is precise + standard. Type designers + typographers + printers all use the same terms. Learning the vocabulary makes the rest of type design legible.'),
+            sectionHeader('🦴', 'The parts of a letter'),
+            // SVG diagram of an annotated letter
+            h('div', { style: { background: '#f5f1e6', borderRadius: 10, padding: 16, marginBottom: 14 } },
+              h('svg', { viewBox: '0 0 420 240', style: { width: '100%', maxWidth: 500, height: 'auto', display: 'block', margin: '0 auto' } },
+                // Horizontal guides
+                h('line', { x1: 30, y1: 60, x2: 380, y2: 60, stroke: '#888', strokeDasharray: '3,2' }),
+                h('line', { x1: 30, y1: 100, x2: 380, y2: 100, stroke: '#888', strokeDasharray: '3,2' }),
+                h('line', { x1: 30, y1: 180, x2: 380, y2: 180, stroke: '#222', strokeWidth: 1.5 }),
+                h('line', { x1: 30, y1: 210, x2: 380, y2: 210, stroke: '#888', strokeDasharray: '3,2' }),
+                // Labels for guides
+                h('text', { x: 20, y: 63, fontSize: 9, fill: '#666', textAnchor: 'end', fontFamily: 'ui-monospace, monospace' }, 'ascender'),
+                h('text', { x: 20, y: 103, fontSize: 9, fill: '#666', textAnchor: 'end', fontFamily: 'ui-monospace, monospace' }, 'cap-height'),
+                h('text', { x: 20, y: 183, fontSize: 9, fill: '#666', textAnchor: 'end', fontFamily: 'ui-monospace, monospace' }, 'baseline'),
+                h('text', { x: 20, y: 213, fontSize: 9, fill: '#666', textAnchor: 'end', fontFamily: 'ui-monospace, monospace' }, 'descender'),
+                // Word "type" rendered manually
+                // "t" - ascender visible
+                h('rect', { x: 100, y: 60, width: 10, height: 120, fill: '#222' }),
+                h('rect', { x: 90, y: 90, width: 30, height: 6, fill: '#222' }),
+                h('path', { d: 'M 105 180 Q 110 178 113 175', stroke: '#222', strokeWidth: 6, fill: 'none' }),
+                // "y" - descender visible
+                h('path', { d: 'M 145 100 L 165 165 L 185 100 L 175 100 L 165 145 L 155 100 Z', fill: '#222' }),
+                h('path', { d: 'M 165 165 L 155 210', stroke: '#222', strokeWidth: 6, fill: 'none' }),
+                // "p" - descender visible
+                h('rect', { x: 220, y: 100, width: 10, height: 110, fill: '#222' }),
+                h('ellipse', { cx: 245, cy: 135, rx: 22, ry: 18, fill: 'none', stroke: '#222', strokeWidth: 8 }),
+                // "e" - x-height only
+                h('ellipse', { cx: 305, cy: 140, rx: 22, ry: 22, fill: 'none', stroke: '#222', strokeWidth: 7 }),
+                h('rect', { x: 285, y: 138, width: 40, height: 5, fill: '#f5f1e6' }),
+                h('line', { x1: 283, y1: 140, x2: 327, y2: 140, stroke: '#222', strokeWidth: 5 }),
+                // Annotations with arrows
+                h('text', { x: 130, y: 50, fontSize: 11, fill: '#7a3300', fontFamily: 'Georgia, serif' }, '↑ ascender (t)'),
+                h('text', { x: 165, y: 230, fontSize: 11, fill: '#7a3300', fontFamily: 'Georgia, serif' }, '↑ descender (y, p)'),
+                h('text', { x: 305, y: 230, fontSize: 11, fill: '#7a3300', fontFamily: 'Georgia, serif' }, '↑ x-height (e)')
+              ),
+              h('div', { style: { fontSize: 11, color: '#444', textAlign: 'center', marginTop: 4, fontStyle: 'italic' } }, 'Anatomy: the word "type"')
+            ),
+            sectionHeader('📐', 'Vocabulary checklist'),
+            keyPointBlock('The essential terms', [
+              { k: 'Baseline', v: 'The invisible line letters sit on. Reference for all measurements.' },
+              { k: 'x-height', v: 'Height of lowercase letters without ascenders/descenders. The "x" defines it. Higher x-height = more legible at small sizes; lower = more elegant.' },
+              { k: 'Cap-height', v: 'Height of uppercase letters. Always greater than x-height; ratio varies.' },
+              { k: 'Ascender', v: 'The part of letters like b, d, f, h, k, l that rises above x-height.' },
+              { k: 'Descender', v: 'The part of letters like g, j, p, q, y that drops below baseline.' },
+              { k: 'Stem', v: 'The main vertical stroke of a letter (the "I" stroke).' },
+              { k: 'Bowl', v: 'The rounded enclosed shape of letters like b, d, o, p, q.' },
+              { k: 'Counter', v: 'The enclosed (or partially enclosed) negative space inside a letter (the white space inside an "o").' },
+              { k: 'Serif', v: 'The small projection at the end of a stroke. Bracketed (gentle curve), slab (rectangular), hairline (thin), wedge (angled), or absent (sans-serif).' },
+              { k: 'Terminal', v: 'The end of a stroke that does not have a serif. Can be flat, curved, ball, swash, etc.' },
+              { k: 'Stress / axis', v: 'The angle of thickest-to-thinnest in a letter like O. Old Style faces have oblique stress; Modern faces have vertical stress.' },
+              { k: 'Contrast', v: 'The ratio of thickest to thinnest stroke. High contrast = thick + thin (Bodoni). Low contrast = uniform (Futura).' },
+              { k: 'Aperture', v: 'How open a letter is at its mouth (e.g., the gap in c, e, s, a). Wide aperture = readable. Narrow = stylized.' },
+              { k: 'Ligature', v: 'Two letters joined as one glyph: fi, fl, ffi. Common in serif typography.' },
+              { k: 'Kerning', v: 'Adjusting space between specific letter pairs (e.g., "AV" needs less space than "AN").' },
+              { k: 'Tracking', v: 'Adjusting space between ALL letters in a string. Different from kerning.' },
+              { k: 'Leading', v: 'Space between baselines (i.e., line height). Originally "lead" because printers put thin lead strips between lines.' }
+            ])
+          );
+        } else if (tfSect === 'history') {
+          content = h('div', null,
+            dropCapPara('Type design history is a sequence of stylistic revolutions, each tied to printing technology + cultural mood. The progression from blackletter to Roman to Old Style to Transitional to Modern to Sans-Serif to Geometric is the visual history of how Europe + then the world thought a printed page should look.'),
+            sectionHeader('🏛', 'Five hundred years of typefaces'),
+            keyPointBlock('The major eras', [
+              { k: '1450-1500: Blackletter (Textura)', v: 'Gutenberg\'s type imitated formal German blackletter calligraphy. Heavy, dense, "Gothic" looking. Standard for German + early French + English work for ~50 years.' },
+              { k: '1465-1500: Humanist + Roman', v: 'Italian humanist scribes had developed a lighter, rounder, classical-looking hand. Nicholas Jenson cut it as roman type in Venice (1470). By 1490 roman type dominated Italian + later European printing.' },
+              { k: '1500-1700: Old Style (Garalde)', v: 'Refined Italian + French roman cuts — Garamond, Caslon, Janson. Moderate contrast, oblique axis, bracketed serifs. The "natural" look of a book for 200+ years.' },
+              { k: '1700-1800: Transitional', v: 'Baskerville (1757) + others sharpened the contrast, made stress more vertical, made serifs sharper. A bridge between Old Style + Modern.' },
+              { k: '1790-1850: Modern (Didone)', v: 'Bodoni + Didot pushed contrast to its limit — hairline serifs, vertical axis, geometric construction. Pristine + cold + elegant. Set the template for "neoclassical" book design.' },
+              { k: '1810-1900: Slab Serif (Egyptian)', v: 'Heavy industrial sans-serif derivatives. Used for posters, signage, anything needing to grab attention. Clarendon (1845) is the genre-defining face.' },
+              { k: '1816-1900: Sans-Serif emerges', v: 'William Caslon IV cut the first sans-serif in 1816 ("Egyptian"). 19th-century sans-serifs were often called "grotesque" because they looked weird without serifs. Akzidenz Grotesk (1898) became the dominant grotesque.' },
+              { k: '1920s-30s: Geometric Sans + Bauhaus', v: 'Futura (1927), Kabel (1928), Erbar (1922). Pure geometric construction. Aligned with modernist architecture + design philosophy.' },
+              { k: '1950s-60s: International Style (Swiss)', v: 'Helvetica (1957), Univers (1957). Neutral, gridded, professional. Became the global corporate-identity standard.' },
+              { k: '1970s-90s: Postmodern + digital', v: 'Emigre + David Carson + other designers challenged Swiss neutrality. Digital typesetting (1985 PostScript) democratized type design.' },
+              { k: '2000s-2020s: Screen-first + variable fonts', v: 'Typefaces designed primarily for screen rendering (Roboto, San Francisco, Inter). Variable fonts (OpenType FVAR, 2016) let one font file produce infinite weights + widths.' }
+            ])
+          );
+        } else if (tfSect === 'designer') {
+          content = h('div', null,
+            dropCapPara('Adjust the sliders. Watch the letter change. You\'re doing what type designers have done for 600 years — though they did it with chisels + matrices instead of dragging a slider.'),
+            sectionHeader('🎨', 'Your design'),
+            // Live SVG preview
+            h('div', { style: { background: T.cardAlt, border: '2px solid ' + T.accent, borderRadius: 12, padding: 20, marginBottom: 14, textAlign: 'center' } },
+              generateDesignSvg(),
+              h('div', { style: { fontSize: 12, color: T.muted, marginTop: 10, fontStyle: 'italic' } },
+                'Closest historical classification: ',
+                h('strong', { style: { color: T.accentHi } }, design.name),
+                ' (' + design.confidence + '% confidence)')
+            ),
+            // Sliders
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, marginBottom: 12 } },
+              // x-height
+              h('div', { style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 10, padding: 12 } },
+                h('div', { style: { fontSize: 12, color: T.muted, marginBottom: 6, fontWeight: 700 } }, 'x-height: ' + tfXHeight + (tfXHeight >= 65 ? ' (tall)' : tfXHeight >= 35 ? ' (medium)' : ' (low)')),
+                h('input', { type: 'range', min: 0, max: 100, value: tfXHeight,
+                  onChange: function(e) { setTfXHeight(parseInt(e.target.value, 10)); },
+                  style: { width: '100%', accentColor: T.accent } }),
+                h('div', { style: { fontSize: 10, color: T.dim, fontStyle: 'italic', marginTop: 4 } }, 'Tall = readable at small sizes; low = elegant at large sizes')),
+              // weight
+              h('div', { style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 10, padding: 12 } },
+                h('div', { style: { fontSize: 12, color: T.muted, marginBottom: 6, fontWeight: 700 } }, 'Weight: ' + tfWeight + (tfWeight >= 75 ? ' (bold)' : tfWeight >= 50 ? ' (regular)' : tfWeight >= 25 ? ' (light)' : ' (thin)')),
+                h('input', { type: 'range', min: 0, max: 100, value: tfWeight,
+                  onChange: function(e) { setTfWeight(parseInt(e.target.value, 10)); },
+                  style: { width: '100%', accentColor: T.accent } }),
+                h('div', { style: { fontSize: 10, color: T.dim, fontStyle: 'italic', marginTop: 4 } }, 'Heavy stroke vs delicate stroke')),
+              // contrast
+              h('div', { style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 10, padding: 12 } },
+                h('div', { style: { fontSize: 12, color: T.muted, marginBottom: 6, fontWeight: 700 } }, 'Contrast: ' + tfContrast + (tfContrast >= 75 ? ' (Bodoni-like)' : tfContrast >= 40 ? ' (transitional)' : ' (uniform)')),
+                h('input', { type: 'range', min: 0, max: 100, value: tfContrast,
+                  onChange: function(e) { setTfContrast(parseInt(e.target.value, 10)); },
+                  style: { width: '100%', accentColor: T.accent } }),
+                h('div', { style: { fontSize: 10, color: T.dim, fontStyle: 'italic', marginTop: 4 } }, 'Difference between thick + thin strokes')),
+              // width
+              h('div', { style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 10, padding: 12 } },
+                h('div', { style: { fontSize: 12, color: T.muted, marginBottom: 6, fontWeight: 700 } }, 'Width: ' + tfWidth + (tfWidth >= 75 ? ' (extended)' : tfWidth >= 35 ? ' (regular)' : ' (condensed)')),
+                h('input', { type: 'range', min: 0, max: 100, value: tfWidth,
+                  onChange: function(e) { setTfWidth(parseInt(e.target.value, 10)); },
+                  style: { width: '100%', accentColor: T.accent } }),
+                h('div', { style: { fontSize: 10, color: T.dim, fontStyle: 'italic', marginTop: 4 } }, 'Horizontal extent of letters'))
+            ),
+            // Serif style picker
+            h('div', { style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 10, padding: 12, marginBottom: 14 } },
+              h('div', { style: { fontSize: 12, color: T.muted, marginBottom: 8, fontWeight: 700 } }, 'Serif style:'),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+                [
+                  { id: 'none', label: 'None (sans-serif)' },
+                  { id: 'slab', label: 'Slab (heavy rectangle)' },
+                  { id: 'bracketed', label: 'Bracketed (curved)' },
+                  { id: 'hairline', label: 'Hairline (thin)' },
+                  { id: 'wedge', label: 'Wedge (angled)' }
+                ].map(function(s) {
+                  var sel = (s.id === tfSerif);
+                  return h('button', { key: s.id,
+                    onClick: function() { setTfSerif(s.id); announce(s.label); },
+                    style: btn({ padding: '7px 11px', fontSize: 11,
+                      background: sel ? T.accent : T.card,
+                      color: sel ? T.ink : T.text,
+                      borderColor: sel ? T.accent : T.border }) }, s.label);
+                })
+              )
+            ),
+            // Reset to presets
+            h('div', { style: { background: 'rgba(201,161,74,0.05)', border: '1px solid ' + T.border, borderRadius: 10, padding: 12, marginBottom: 14 } },
+              h('div', { style: { fontSize: 12, color: T.muted, marginBottom: 8, fontWeight: 700 } }, 'Or load a historical preset:'),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+                [
+                  { name: 'Garamond-like (1530)', xh: 45, w: 50, c: 40, s: 'bracketed', width: 45 },
+                  { name: 'Bodoni-like (1798)', xh: 50, w: 60, c: 90, s: 'hairline', width: 50 },
+                  { name: 'Clarendon-like (1845)', xh: 55, w: 70, c: 30, s: 'slab', width: 55 },
+                  { name: 'Futura-like (1927)', xh: 50, w: 50, c: 10, s: 'none', width: 50 },
+                  { name: 'Helvetica-like (1957)', xh: 60, w: 60, c: 20, s: 'none', width: 50 }
+                ].map(function(p) {
+                  return h('button', { key: p.name,
+                    onClick: function() {
+                      setTfXHeight(p.xh); setTfWeight(p.w); setTfContrast(p.c);
+                      setTfSerif(p.s); setTfWidth(p.width);
+                      announce('Loaded preset: ' + p.name);
+                    },
+                    style: btn({ padding: '6px 10px', fontSize: 11 }) }, p.name);
+                })
+              )
+            )
+          );
+        } else if (tfSect === 'tour') {
+          content = h('div', null,
+            dropCapPara('Ten typefaces that shaped how the world reads. Each one represents a distinctive moment in type history. Click between them.'),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+              typefaces.map(function(t, i) {
+                var sel = (i === tfTour);
+                return h('button', { key: i,
+                  onClick: function() { setTfTour(i); announce(t.name.split(' ')[0]); },
+                  style: btn({ padding: '6px 10px', fontSize: 11, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                  t.name.split(' (')[0]);
+              })
+            ),
+            // Selected typeface card
+            h('div', { style: { background: T.cardAlt, border: '2px solid ' + T.accent, borderRadius: 12, padding: 20, marginBottom: 14 } },
+              h('div', { style: { fontSize: 11, color: T.accentHi, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, fontFamily: 'ui-monospace, monospace' } },
+                curFace.classification),
+              h('h3', { style: { fontSize: 22, fontWeight: 700, color: T.text, fontFamily: 'Georgia, serif', margin: '0 0 4px' } }, curFace.name.split(' (')[0]),
+              h('div', { style: { fontSize: 13, color: T.muted, fontStyle: 'italic', marginBottom: 14 } },
+                'Designed by ' + curFace.designer + ' · ' + curFace.year),
+              h('p', { style: { margin: '0 0 12px', color: T.muted, fontSize: 14, lineHeight: 1.7 } }, curFace.blurb),
+              h('div', { style: { background: T.card, padding: 12, borderRadius: 8, marginBottom: 10 } },
+                h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 4, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'How to recognize it'),
+                h('p', { style: { margin: 0, fontSize: 13, color: T.muted, lineHeight: 1.6 } }, curFace.recognizable)),
+              h('div', { style: { background: T.card, padding: 12, borderRadius: 8 } },
+                h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 4, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Modern uses'),
+                h('p', { style: { margin: 0, fontSize: 13, color: T.muted, lineHeight: 1.6 } }, curFace.modernUses))
+            )
+          );
+        } else if (tfSect === 'game') {
+          content = h('div', null,
+            dropCapPara('A description of a typeface. Four candidates. Pick the right one. (Real typeface recognition is surprisingly hard — even professional designers debate.)'),
+            sectionHeader('🎮', 'Round ' + (tfGame + 1) + ' of ' + gameTypefaces.length + ' · Score: ' + tfGameScore + '/' + gameTypefaces.length),
+            h('div', { style: { background: 'rgba(201,161,74,0.06)', border: '2px solid ' + T.accent, borderRadius: 12, padding: 18, marginBottom: 14 } },
+              h('div', { style: { fontSize: 11, color: T.dim, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 } }, 'Description'),
+              h('p', { style: { margin: 0, fontSize: 15, color: T.text, lineHeight: 1.65, fontFamily: 'Georgia, serif' } }, gameQ.clue)
+            ),
+            tfGameChoice == null && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 } },
+              gameQ.options.map(function(opt, i) {
+                return h('button', { key: i,
+                  onClick: function() {
+                    setTfGameChoice(i);
+                    if (i === gameQ.correct) { setTfGameScore(tfGameScore + 1); announce('Correct!'); }
+                    else announce('Not quite.');
+                  },
+                  style: btn({ padding: '12px 14px', fontSize: 14, textAlign: 'left' }) },
+                  h('strong', { style: { color: T.accentHi } }, String.fromCharCode(65 + i) + '. '),
+                  opt);
+              })
+            ),
+            tfGameChoice != null && h('div', null,
+              h('div', { style: { background: tfGameChoice === gameQ.correct ? 'rgba(127,176,105,0.12)' : 'rgba(212,153,0,0.10)', border: '2px solid ' + (tfGameChoice === gameQ.correct ? T.ok : T.warn), borderRadius: 10, padding: 14, marginBottom: 10 } },
+                h('div', { style: { fontSize: 13, fontWeight: 700, color: tfGameChoice === gameQ.correct ? T.ok : T.warn, marginBottom: 8 } },
+                  tfGameChoice === gameQ.correct ? '✓ Correct.' : '✗ Not quite.'),
+                h('div', { style: { fontSize: 13, color: T.text, marginBottom: 8 } },
+                  h('strong', null, 'Right answer: '),
+                  gameQ.options[gameQ.correct]),
+                h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.65 } }, gameQ.explain)),
+              h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+                tfGame < gameTypefaces.length - 1 && h('button', {
+                  onClick: function() { setTfGame(tfGame + 1); setTfGameChoice(null); },
+                  style: btnPrimary({ padding: '10px 16px', fontSize: 13 }) }, 'Next →'),
+                tfGame >= gameTypefaces.length - 1 && h('div', { style: { fontSize: 14, fontWeight: 700, color: T.accent } },
+                  '🎯 Complete! Final: ' + tfGameScore + '/' + gameTypefaces.length),
+                h('button', {
+                  onClick: function() { setTfGame(0); setTfGameChoice(null); setTfGameScore(0); },
+                  style: btn({ padding: '10px 16px', fontSize: 13 }) }, '↺ Start over')
+              )
+            )
+          );
+        } else { // modern
+          content = h('div', null,
+            dropCapPara('Type design in 2026 looks remarkably similar to type design in 1926 — except for the technology underneath. The art + the vocabulary + the design decisions are the same. The tools are unrecognizable.'),
+            sectionHeader('💻', 'What\'s changed in the digital era'),
+            keyPointBlock('Modern type design realities', [
+              { k: 'Screen-first design', v: 'Most type today is designed for screen rendering first, print second. Hinting (specific instructions for screen rasterization) is its own subfield. Apple\'s San Francisco + Google\'s Roboto are explicitly screen-first.' },
+              { k: 'Variable fonts (2016 onward)', v: 'OpenType Font Variations (FVAR) lets one font file contain a continuous spectrum of weights + widths + other axes. Instead of having "Regular," "Bold," "Black" as separate files, you have one variable font that can produce any weight you want.' },
+              { k: 'AI-assisted design', v: 'Tools like Glyphs + RoboFont increasingly include AI components for things like interpolating between extremes, suggesting alternate glyphs, generating ornaments. Not replacing designers; augmenting workflow.' },
+              { k: 'Internationalization burden', v: 'Modern professional typefaces ship with characters for 30+ scripts (Latin, Cyrillic, Greek, Arabic, Hebrew, Devanagari, Han, Hangul, Thai, etc.). A typeface like Adobe Source Han Sans has 65,000+ glyphs.' },
+              { k: 'Open source typefaces', v: 'Many high-quality typefaces are now open source (SIL Open Font License). Google Fonts hosts 1,400+ free fonts. The accessibility gap between professional design + amateur design has narrowed dramatically.' },
+              { k: 'Accessibility-focused design', v: 'Dyslexie + OpenDyslexic + Lexie Readable target dyslexic readers. Atkinson Hyperlegible (Braille Institute, 2020) maximizes legibility for low-vision users. Type design is increasingly seen as accessibility work.' }
+            ]),
+            sectionHeader('🌐', 'The contemporary type industry'),
+            keyPointBlock('Who designs type today', [
+              { k: 'Independent type foundries', v: 'Hoefler & Co (NYC), Process Type Foundry (Minneapolis), Klim Type Foundry (New Zealand), Type Network (San Francisco). Sell to publishers, brands, designers.' },
+              { k: 'Big tech in-house', v: 'Apple designs San Francisco. Google designs Roboto + Google Sans. Microsoft designs Cascadia Code. Each has type design teams.' },
+              { k: 'Corporate brand commissions', v: 'Custom typefaces for major brands — Audi (Audi Type), Coca-Cola (Coca-Cola Cursive), Netflix (Netflix Sans). Often six-figure commissions.' },
+              { k: 'Open-source designers', v: 'Many designers work primarily on open-source faces. Google Fonts has commissioned hundreds. Designers like David Berlow, Christian Schwartz, Erik Spiekermann, Tobias Frere-Jones span open + commercial work.' },
+              { k: 'Academic + training programs', v: 'Type Media (KABK, Netherlands), Reading MA Typeface Design (UK), Cooper Type (NYC) train new type designers. Programs are small + competitive — type design remains a specialized craft.' }
+            ])
+          );
+        }
+
+        return h('div', null,
+          backBar('🛠 Type Foundry Workshop'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) {
+              var sel = (tfSect === s.id);
+              return h('button', { key: s.id,
+                onClick: function() { setTfSect(s.id); announce(s.label); },
+                style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                s.icon + ' ' + s.label);
+            })
+          ),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            content
+          ),
+          miniQuizBlock('typeFoundry', [
+            { q: 'What does "x-height" measure?',
+              opts: ['The total height of the typeface', 'The height of lowercase letters without ascenders or descenders', 'The height of the letter "x" specifically (only "x" matters)', 'The space between lines of text'],
+              ans: 1, explain: 'x-height = height of lowercase letters without ascenders/descenders, measured against the baseline. Called x-height because the letter "x" has no ascender or descender, making it the easy reference. Higher x-height = more readable at small sizes; lower = more elegant at large sizes.' },
+            { q: 'Which typeface classification has hairline serifs + maximum contrast?',
+              opts: ['Old Style', 'Transitional', 'Modern (Didone)', 'Slab Serif'],
+              ans: 2, explain: 'Modern (also called Didone, after Didot + Bodoni) typefaces have hairline serifs, vertical stress, + maximum contrast (very thick verticals, very thin horizontals). Bodoni (1798) is the genre-defining face. Old Style is the opposite — moderate contrast, oblique axis.' },
+            { q: 'Why is Helvetica considered "neutral"?',
+              opts: ['It is invisible', 'It has uniform stroke weight + minimal expressive character; reads as professional without making a strong statement', 'It is the most ancient typeface', 'It is the only sans-serif'],
+              ans: 1, explain: 'Helvetica\'s tight curves + uniform stroke weight + lack of expressive flourishes make it read as professional without making a strong statement. The "neutral corporate" quality made it the dominant 20th-century corporate-identity face. Critics argue this "neutrality" is itself an aesthetic stance.' },
+            { q: 'What is a variable font?',
+              opts: ['A font that changes color', 'A single font file that contains a continuous spectrum of weights, widths, or other axes — letting one file produce infinite variations', 'A font for which the license is variable', 'A font that displays differently on each computer'],
+              ans: 1, explain: 'Variable fonts (OpenType FVAR, 2016) let one font file contain a continuous range of weights, widths, slants, or custom axes. Instead of needing separate "Regular," "Bold," "Black" files, you have one file that can produce any weight along the spectrum. Significant size + performance improvement.' },
+            { q: 'Which typeface was the US Declaration of Independence printed in?',
+              opts: ['Times New Roman', 'Garamond', 'Caslon', 'Helvetica'],
+              ans: 2, explain: 'The Declaration of Independence (printed July 4, 1776 by John Dunlap in Philadelphia) was printed in Caslon. Times New Roman did not exist until 1932. Helvetica did not exist until 1957. Caslon was the standard English-language typeface of the colonial American era.' }
+          ]),
+          sourcesBlock([
+            { label: 'Robert Bringhurst, The Elements of Typographic Style (1992, multiple editions) — standard reference' },
+            { label: 'Stephen Coles, The Anatomy of Type (2012)' },
+            { label: 'Phil Baines + Andrew Haslam, Type & Typography (2002, 2nd ed 2005)' },
+            { label: 'Klim Type Foundry resources', url: 'https://klim.co.nz/' },
+            { label: 'I Love Typography (online type design publication)', url: 'https://ilovetypography.com/' },
+            { label: 'Type@Cooper at the Cooper Union — type-design education', url: 'https://typeatcooper.org/' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['NCAS Visual Arts (design literacy)', 'CCSS RH.6-8.7 (integrate visual + text)', 'NGSS HS-ETS1-3 (technology systems)'],
+            discussion: [
+              'Look at the typefaces on your phone right now. Can you name any of them? What does the choice say about the brand?',
+              'Compare Garamond (1530) + Helvetica (1957) + Comic Sans (1994). What\'s the same? What\'s different?',
+              'Why are some typefaces "controversial" (Comic Sans, Papyrus)? What gets a typeface mocked vs respected?'
+            ],
+            misconceptions: [
+              { wrong: 'Fonts and typefaces are the same thing', right: 'A typeface is the design (e.g., Garamond). A font is a specific instance — typically a size + weight combination (e.g., 12-point Garamond Bold). The distinction matters in professional design + collapsed in everyday speech.' },
+              { wrong: 'Sans-serif is "modern" + serif is "old"', right: 'Some sans-serifs are very old (1816). Many serif typefaces are very new. The classification matters more than the era. Old Style serifs (Garamond, Caslon) coexist with modern sans-serifs (Inter, Roboto) every day.' }
+            ],
+            extension: 'Visit fonts.google.com + browse the library. Pick 3 typefaces — one serif, one sans-serif, one display. Use them on a one-page mockup of a poster or web page. Notice how the choice affects mood, readability, formality.'
+          }),
+          crossLinkFooter('typeFoundry'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // MAINE PRINTERS DEEP DIVE — beyond the Falmouth Gazette. Newspapers,
+      // book printers, broadside makers from 1785 to 2026.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderMainePrinters() {
+        var mpSectRaw = useState('overview');
+        var mpSect = mpSectRaw[0], setMpSect = mpSectRaw[1];
+        var mpPaperRaw = useState(0);
+        var mpPaper = mpPaperRaw[0], setMpPaper = mpPaperRaw[1];
+
+        var sections = [
+          { id: 'overview',   label: 'Overview',         icon: '🦞' },
+          { id: 'falmouth',   label: 'Falmouth Gazette', icon: '📰' },
+          { id: 'newspapers', label: 'Newspapers',       icon: '🗞' },
+          { id: 'books',      label: 'Book printers',    icon: '📚' },
+          { id: 'broadsides', label: 'Broadsides',       icon: '📜' },
+          { id: 'modern',     label: 'Modern Maine',     icon: '🛠' }
+        ];
+
+        // Major Maine newspapers + their printers
+        var mainePapers = [
+          {
+            name: 'Falmouth Gazette + Weekly Advertiser',
+            city: 'Falmouth (now Portland), Maine',
+            founded: 1785, closed: 1786,
+            printer: 'Benjamin Titcomb + Thomas Wait',
+            blurb: 'The first newspaper in what would become Maine (Maine was part of Massachusetts until 1820). Founded by Benjamin Titcomb + Thomas Wait. Falmouth had been burned by the British in 1775 (the Burning of Falmouth) — by 1785 the town was rebuilding + needed information infrastructure. The Gazette covered shipping, town meetings, foreign news (mostly from Boston papers), advertisements. Short-lived; folded after one year, but proved Maine could sustain a newspaper.',
+            interesting: 'Surviving copies are held at the Maine Historical Society in Portland. The Society\'s digital collection includes facsimiles. Wait went on to print other papers + remained in Portland printing for decades.'
+          },
+          {
+            name: 'Eastern Argus',
+            city: 'Portland',
+            founded: 1803, closed: 1921,
+            printer: 'Various (Calvin Day, others)',
+            blurb: 'A Democratic-Republican newspaper founded to counter the dominant Federalist papers of Portland. Ran for over 100 years. Covered the War of 1812 from the Maine perspective, Maine\'s separation from Massachusetts (1820), the Civil War, the early industrial era. Daily by the late 1800s.',
+            interesting: 'Argus + Portland Press Herald lineages eventually merged. Today\'s Portland Press Herald (founded 1862) is the direct successor of the institutional newspaper tradition that included the Argus.'
+          },
+          {
+            name: 'Portland Daily Press',
+            city: 'Portland',
+            founded: 1862, closed: '(still publishing as Press Herald)',
+            printer: 'Multiple; modern owners include the Portland Press Herald LLC',
+            blurb: 'Founded during the Civil War as the Portland Daily Press. Renamed multiple times. Became Portland Press Herald in 1921. Still Maine\'s largest daily newspaper in 2026 (though circulation has fallen substantially from peak). Owner since 2018: Maine Trust for Local News, a nonprofit foundation that bought the paper from previous owners.',
+            interesting: 'In 2023 the Press Herald + several other Maine papers transitioned to nonprofit ownership under the Maine Trust for Local News — a national experiment in saving local journalism by removing the profit-maximization pressure. Early results: stabilized newsroom employment, slight uptick in subscriptions.'
+          },
+          {
+            name: 'Bangor Daily News',
+            city: 'Bangor',
+            founded: 1889, closed: '(still publishing)',
+            printer: 'Bangor Daily News Inc.',
+            blurb: 'Founded 1889 by Joseph P. Bass. Has remained family-owned (Bass family) for over 130 years — one of the few US daily newspapers still in original-family ownership. Covers northern + central Maine. Notable for being one of the few US newspapers to maintain (small) statehouse + Washington bureaus into the 2020s.',
+            interesting: 'BDN was an early adopter of digital paywalls (2016) + has been studied by Pew + Nieman Lab as a model for medium-market newspaper sustainability. Family ownership has been credited with enabling longer-term strategy than publicly-traded competitors.'
+          },
+          {
+            name: 'Aroostook Republican (Caribou)',
+            city: 'Caribou',
+            founded: 1885, closed: '(merged 2019)',
+            printer: 'Star-Herald Inc., later MaineToday Media',
+            blurb: 'For 134 years the weekly newspaper of Aroostook County (Maine\'s northernmost + largest county). Covered potato farming, forestry, French-Canadian-American community, US-Canada border issues. Merged with the Houlton-based Star-Herald in 2019 — both papers had become economically unsustainable as separate entities. Now publishes as the Star-Herald with Aroostook coverage.',
+            interesting: 'The 2019 merger was part of the broader pattern of Maine local-newspaper collapse: per UNC News Deserts research, Maine has lost about 25% of its local newspapers since 2005. Aroostook County is now considered a "news desert" by some metrics — limited coverage relative to population + geography.'
+          }
+        ];
+
+        var paper = mainePapers[mpPaper] || mainePapers[0];
+
+        var content;
+        if (mpSect === 'overview') {
+          content = h('div', null,
+            dropCapPara('Maine print history is more than the Falmouth Gazette. Across 250 years from 1785 to today, Maine has supported a remarkably dense newspaper culture (dozens of dailies + weeklies at various times), a smaller but persistent book-printing trade, broadside printers serving political + commercial needs, and currently a creative letterpress + book-arts community. This module is the local detail behind the broader print-history story.'),
+            sectionHeader('🦞', 'What this module covers'),
+            keyPointBlock(null, [
+              { k: 'Falmouth Gazette (1785)', v: 'The first newspaper in what became Maine. Predates Maine statehood by 35 years.' },
+              { k: 'Newspapers', v: '5 major Maine papers from 1785 to today. Their printers, their politics, their fates.' },
+              { k: 'Book printers', v: 'Maine has had small but significant book-printing tradition — religious books, regional histories, fishing + farming manuals.' },
+              { k: 'Broadsides', v: 'Political posters, religious tracts, ship-arrival sheets. The everyday print of Maine ports + towns.' },
+              { k: 'Modern Maine', v: 'Today\'s letterpress studios, book artists, paper mills, + the surprising number of national-quality presses operating in Maine right now.' }
+            ])
+          );
+        } else if (mpSect === 'falmouth') {
+          content = h('div', null,
+            dropCapPara('On January 1, 1785, Benjamin Titcomb + Thomas Wait published the first issue of the Falmouth Gazette + Weekly Advertiser in the rebuilding port town of Falmouth (today\'s Portland). It was a single folio sheet, printed in English, in roughly the format of the Boston Independent Chronicle of the era. It was Maine\'s first newspaper — though Maine itself would not exist as a state for another 35 years.'),
+            sectionHeader('📰', 'The context of 1785'),
+            keyPointBlock('What was happening when the Gazette appeared', [
+              { k: 'Aftermath of Burning of Falmouth (1775)', v: 'British naval forces under Lt. Henry Mowat had burned 200+ buildings in Falmouth in October 1775 as punishment for revolutionary activities. 10 years later, the town was substantially rebuilt — the Gazette appeared as part of that civic recovery.' },
+              { k: 'Maine as part of Massachusetts', v: 'Maine was the "District of Maine" of Massachusetts Commonwealth. Maine residents elected representatives to the Massachusetts General Court. Statehood was a popular but not yet active cause. (Maine became a state March 15, 1820, under the Missouri Compromise.)' },
+              { k: 'Post-Revolutionary federal politics', v: 'The Constitution had not yet been written. The Articles of Confederation governed. State politics + economic disputes dominated. Federalist vs Anti-Federalist debates were beginning.' },
+              { k: 'Maine economy', v: 'Shipping, fishing, lumber, shipbuilding. Falmouth was Maine\'s leading port + commercial center.' }
+            ]),
+            sectionHeader('🖨', 'What the Gazette printed'),
+            keyPointBlock('Content of the early issues', [
+              { k: 'Foreign news', v: 'Copied from Boston papers (which copied from London papers). News was 6-10 weeks old by the time it reached Falmouth readers.' },
+              { k: 'Shipping arrivals + departures', v: 'Essential commercial information. Lists of vessels in + out of port, captains\' names, cargoes.' },
+              { k: 'Town meetings + official notices', v: 'Falmouth town government notices, court announcements.' },
+              { k: 'Advertisements', v: 'Local merchants, runaway servant notices, lost-property notices. Often half the paper.' },
+              { k: 'Religious + educational announcements', v: 'Notices of sermons, school openings, debate-club meetings.' },
+              { k: 'Almost no editorial content', v: '1785 newspapers rarely editorialized. The Falmouth Gazette was a vehicle for republishing information from other sources, not original commentary.' }
+            ]),
+            sectionHeader('📉', 'Why it folded'),
+            calloutBox('warn', 'The Falmouth Gazette lasted only one year',
+              h('p', { style: { margin: 0, lineHeight: 1.6 } },
+                'Single-year survival was actually common for early American newspapers. The Gazette\'s subscribers were too few (Falmouth had ~3,000 residents); advertising revenue was inadequate; the partnership of Titcomb + Wait dissolved over financial pressure. Wait continued in Portland printing under various titles for decades; Titcomb left the trade. The next sustained Portland paper would be the Gazette of Maine (1790), followed by many others. The institutional lineage that eventually became today\'s Portland Press Herald began at this scale.')
+            )
+          );
+        } else if (mpSect === 'newspapers') {
+          content = h('div', null,
+            dropCapPara('Five Maine newspapers across 240 years. Each one represents a different era of journalism. Together they tell the story of Maine\'s information infrastructure from colonial port to industrial state to news desert.'),
+            // Paper picker
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+              mainePapers.map(function(p, i) {
+                var sel = (i === mpPaper);
+                return h('button', { key: i,
+                  onClick: function() { setMpPaper(i); announce(p.name); },
+                  style: btn({ padding: '7px 11px', fontSize: 11, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                  p.founded + ' · ' + p.city.split(' (')[0]);
+              })
+            ),
+            // Selected paper
+            h('div', { style: { background: T.cardAlt, border: '2px solid ' + T.accent, borderRadius: 12, padding: 18, marginBottom: 14 } },
+              h('div', { style: { fontSize: 11, color: T.accentHi, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, fontFamily: 'ui-monospace, monospace' } },
+                paper.founded + ' – ' + (typeof paper.closed === 'number' ? paper.closed : paper.closed) + ' · ' + paper.city),
+              h('h3', { style: { fontSize: 20, fontWeight: 700, color: T.text, fontFamily: 'Georgia, serif', margin: '0 0 4px' } }, paper.name),
+              h('div', { style: { fontSize: 12, color: T.muted, fontStyle: 'italic', marginBottom: 12 } }, 'Printed by ' + paper.printer),
+              h('p', { style: { margin: '0 0 12px', color: T.muted, fontSize: 14, lineHeight: 1.65 } }, paper.blurb),
+              h('div', { style: { background: 'rgba(127,176,105,0.08)', border: '1px solid ' + T.ok, borderRadius: 8, padding: 10, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.ok } }, '🔍 Interesting: '), paper.interesting)
+            )
+          );
+        } else if (mpSect === 'books') {
+          content = h('div', null,
+            dropCapPara('Maine book printing has always been smaller than newspaper printing — but it has been continuous + has produced distinctive regional works. Religious books, town histories, fishing + farming manuals, Maine literature.'),
+            sectionHeader('📚', 'Notable Maine book printing'),
+            keyPointBlock('Selected printers + works', [
+              { k: 'Bowdoin College Press (Brunswick)', v: 'Bowdoin College, founded 1794, has had a press for most of its history. Notable for scholarly publications + the Bowdoin Orient (student paper, founded 1871).' },
+              { k: 'Loring, Short + Harmon (Portland, 1840s-1900s)', v: 'Portland\'s major 19th-century publisher. Maine-related history + literature, religious texts, schoolbooks.' },
+              { k: 'Augusta + State printers', v: 'State government printing — laws, reports, legislative records — has been done in Augusta since 1832. Multiple firms held the contract over the years.' },
+              { k: 'Smith & Sale Publishers (Portland)', v: 'Fine-press publishers of Maine literature 1890s-1950s. Sarah Orne Jewett, Mary Ellen Chase, others.' },
+              { k: 'Down East Books (Camden)', v: 'Founded 1954, published regional non-fiction (Maine history, cooking, photography). Acquired by Rowman & Littlefield in 2010.' },
+              { k: 'Tilbury House Publishers (Thomaston)', v: 'Independent literary + children\'s book publisher founded 1990. Maine + New England focus.' },
+              { k: 'Islandport Press (Yarmouth)', v: 'Independent publisher founded 2000. Maine memoir, history, fiction. Notable: published Edna St. Vincent Millay critical editions.' }
+            ])
+          );
+        } else if (mpSect === 'broadsides') {
+          content = h('div', null,
+            dropCapPara('Broadsides — single-sheet printed pages — were the everyday print of Maine. Political announcements during elections, religious tracts during revivals, ship-arrival sheets at every port, runaway-slave + lost-property notices, town-meeting agendas, theater playbills. Maine broadsides from the 1700s-1800s are now major historical archives.'),
+            sectionHeader('📜', 'Where to see Maine broadsides today'),
+            keyPointBlock('Major Maine broadside collections', [
+              { k: 'Maine Historical Society (Portland)', v: 'Holds thousands of Maine broadsides 1785-present. Searchable digital collection at mainehistory.org.' },
+              { k: 'Maine State Archives (Augusta)', v: 'Government broadsides + proclamations from 1820 statehood onward.' },
+              { k: 'Bowdoin College Special Collections (Brunswick)', v: 'Academic + Bowdoin-related broadsides + early American imprints.' },
+              { k: 'Bates College Muskie Archives (Lewiston)', v: 'Maine political broadsides, especially related to Senator Edmund Muskie + Maine Democratic politics.' },
+              { k: 'Maine Memory Network (statewide digital archive)', v: 'mainemmorynetwork.org pools digitized collections from 280+ Maine museums + libraries. Including thousands of broadsides.' }
+            ]),
+            sectionHeader('🎭', 'Notable broadside types'),
+            keyPointBlock('Common broadside genres in Maine', [
+              { k: 'Election broadsides', v: 'Especially heavy in 1820 (Maine statehood debates), 1854 (slavery + Maine Liquor Law), 1860 (Lincoln campaign), every major election since.' },
+              { k: 'Religious revival', v: 'Camp-meeting + revival announcements, especially mid-1800s. Methodist + Baptist + Adventist movements all generated broadsides.' },
+              { k: 'Shipping + maritime', v: 'Ship arrivals, packet schedules, captain-for-hire notices. Maine port towns all generated these.' },
+              { k: 'Theater playbills', v: 'Touring company performances in Bangor, Portland, Lewiston. Often beautifully designed.' },
+              { k: 'Public-meeting agendas', v: 'Town-meeting broadsides distributed before meetings. Detail of 19th-century Maine civic life.' },
+              { k: 'Anti-slavery + Civil War broadsides', v: 'Maine had active abolitionist organizations. Many Maine-printed broadsides from this period.' }
+            ])
+          );
+        } else { // modern
+          content = h('div', null,
+            dropCapPara('Maine print + book arts in 2026: a smaller daily-newspaper presence, a surprising number of book artists + small presses, persistent letterpress activity, two major paper mills, + an active book-arts community centered on Portland + the Maine College of Art + Design.'),
+            sectionHeader('🛠', 'Maine print + book arts today'),
+            keyPointBlock('Notable contemporary Maine printers + book artists', [
+              { k: 'Center for Furniture Craftsmanship (Rockport)', v: 'Includes letterpress + book-arts programs. Trains contemporary book artists in traditional + experimental methods.' },
+              { k: 'MECA&D (Maine College of Art & Design, Portland)', v: 'Has letterpress + printmaking facilities. Active in regional book-arts community. Many alumni now operate small presses across Maine.' },
+              { k: 'Anvil Press Poetry (Brunswick)', v: 'Letterpress poetry chapbooks. Several titles distributed nationally.' },
+              { k: 'Curlew Press (Portland)', v: 'Letterpress + design studio. Wedding stationery, broadsides, art prints.' },
+              { k: 'Saltbox Press (Brunswick)', v: 'Letterpress shop running vintage Vandercook + Heidelberg presses. Workshops + commissions.' },
+              { k: 'Mary Beauregard / Bookmark Studio (Portland)', v: 'Book artist + binder. Workshops + custom binding work.' },
+              { k: 'Maine Paper Industry (Sappi Westbrook + Skowhegan; ND Paper, Old Town)', v: 'Two major paper mills. Sappi descends from the 1854 Hugh Burgess wood-pulp tradition. Among Maine\'s largest manufacturing employers.' },
+              { k: 'Portland Press Herald (Maine Trust for Local News)', v: 'Nonprofit-owned since 2023. Maine\'s largest daily. Continuing newsroom-stabilization experiments under nonprofit model.' },
+              { k: 'Bangor Daily News', v: 'Family-owned (Bass family) since 1889. Notable for being one of the few US daily papers still in original-family ownership.' }
+            ]),
+            sectionHeader('📚', 'Where to see + buy Maine letterpress today'),
+            keyPointBlock('Maine letterpress + craft-print outlets', [
+              { k: 'Saturday markets', v: 'Portland Public Market (in season), Common Ground Country Fair (Unity, September), Maine Crafts Association events.' },
+              { k: 'Online via Etsy + Squarespace', v: 'Most Maine letterpress studios sell direct-to-consumer through their own websites.' },
+              { k: 'Galleries', v: 'Greenhut Galleries (Portland), Speedwell Projects (Portland), Maine Crafts Association galleries.' },
+              { k: 'Maine Crafts Association directory', v: 'mainecrafts.org has a directory of working Maine artisans including many printers + binders.' }
+            ])
+          );
+        }
+
+        return h('div', null,
+          backBar('🦞 Maine Printers Deep Dive'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) {
+              var sel = (mpSect === s.id);
+              return h('button', { key: s.id,
+                onClick: function() { setMpSect(s.id); announce(s.label); },
+                style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                s.icon + ' ' + s.label);
+            })
+          ),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            content
+          ),
+          miniQuizBlock('mainePrinters', [
+            { q: 'When was the first newspaper in what would become Maine published?',
+              opts: ['1620 (Pilgrim era)', '1785 (Falmouth Gazette)', '1820 (Maine statehood)', '1862 (Civil War)'],
+              ans: 1, explain: 'The Falmouth Gazette & Weekly Advertiser, founded 1785 in what is now Portland. Maine was still part of Massachusetts then; statehood came in 1820.' },
+            { q: 'Which Maine newspaper has remained in family ownership since 1889?',
+              opts: ['Portland Press Herald', 'Bangor Daily News', 'Lewiston Sun Journal', 'Kennebec Journal'],
+              ans: 1, explain: 'The Bangor Daily News has been family-owned (Bass family) since 1889 — one of the few US daily newspapers still in original-family ownership. Studied as a model for medium-market newspaper sustainability.' },
+            { q: 'In 2023, the Portland Press Herald transitioned to what ownership structure?',
+              opts: ['Public stock', 'Nonprofit (Maine Trust for Local News)', 'Owned by a tech billionaire', 'Owned by the State of Maine'],
+              ans: 1, explain: 'In 2023, the Portland Press Herald + several other Maine papers were acquired by the Maine Trust for Local News, a nonprofit foundation. Part of a national experiment in saving local journalism through nonprofit ownership.' },
+            { q: 'Where can you see thousands of Maine broadsides today?',
+              opts: ['Library of Congress only', 'Maine Historical Society + Maine Memory Network', 'No surviving copies exist', 'Only at Bowdoin College'],
+              ans: 1, explain: 'Maine Historical Society in Portland holds thousands of Maine broadsides with a searchable digital collection. Maine Memory Network (mainememory.net) pools digitized collections from 280+ Maine institutions.' }
+          ]),
+          sourcesBlock([
+            { label: 'Maine Historical Society, Portland', url: 'https://www.mainehistory.org/' },
+            { label: 'Maine Memory Network — digitized Maine archives', url: 'https://www.mainememory.net/' },
+            { label: 'Maine State Archives, Augusta', url: 'https://www.maine.gov/sos/arc/' },
+            { label: 'Bangor Daily News history pages', url: 'https://www.bangordailynews.com/' },
+            { label: 'Maine Trust for Local News', url: 'https://www.mainetrust.org/' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['Maine SS 2019 (state history)', 'NCSS D2.His.4.6-8 (causation)', 'CCSS RH.6-8.9 (compare sources)'],
+            discussion: [
+              'Why was Maine\'s first newspaper founded in Falmouth specifically? What did that town need + provide?',
+              'Compare the Bangor Daily News (family-owned 130+ years) with the Portland Press Herald (multiple ownership changes). What do the different paths suggest?',
+              'Aroostook County\'s newspaper merged in 2019, leaving the county with limited local news coverage. What\'s lost when a county becomes a news desert?'
+            ],
+            misconceptions: [
+              { wrong: 'Maine\'s first newspaper was the Portland Press Herald', right: 'The Falmouth Gazette (1785) preceded the Portland Press Herald (1862) by 77 years. The Press Herald is the largest current Maine paper; not the oldest.' }
+            ],
+            extension: 'Visit Maine Memory Network online + find 3 broadsides from your home county. What were they advertising or announcing? What does each tell you about that era?'
+          }),
+          crossLinkFooter('mainePrinters'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // MUSIC PRINTING — Petrucci 1501, hymn books, modern sheet music.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderMusicPrinting() {
+        var muSectRaw = useState('overview');
+        var muSect = muSectRaw[0], setMuSect = muSectRaw[1];
+        var sections = [
+          { id: 'overview',  label: 'Overview',           icon: '🎼' },
+          { id: 'petrucci',  label: 'Petrucci (1501)',    icon: '🎻' },
+          { id: 'methods',   label: 'Methods compared',   icon: '⚙️' },
+          { id: 'hymnbooks', label: 'Hymn books',         icon: '⛪' },
+          { id: 'modern',    label: 'Modern sheet music', icon: '🎹' }
+        ];
+
+        var content;
+        if (muSect === 'overview') {
+          content = h('div', null,
+            dropCapPara('Printing music looks deceptively simple — just lines + notes + words. In practice, it is one of the hardest typographic problems ever solved. Music requires multiple horizontal layers (5-line staff, words underneath, sometimes 2-3 voices stacked) + dozens of specialized symbols (notes, rests, accidentals, articulations) + complex spatial relationships. Solving music printing took 50 years after Gutenberg + remained a separate specialty trade for centuries.'),
+            sectionHeader('🎼', 'What this module covers'),
+            keyPointBlock(null, [
+              { k: 'Petrucci 1501', v: 'Ottaviano Petrucci\'s solution to polyphonic music printing in Venice — required THREE separate impressions per page.' },
+              { k: 'Methods compared', v: 'Woodcut, movable type, copperplate engraving, lithography, photo-engraving, modern computer engraving. Six methods, each with trade-offs.' },
+              { k: 'Hymn books', v: 'The single largest category of music printing for 300+ years. How hymn-book publishers drove music printing technology.' },
+              { k: 'Modern sheet music', v: 'Schirmer, Hal Leonard, Bärenreiter, Henle. Today\'s music-publishing landscape + digital sheet-music distribution.' }
+            ])
+          );
+        } else if (muSect === 'petrucci') {
+          content = h('div', null,
+            dropCapPara('Ottaviano Petrucci (1466-1539) was a Venetian printer who in 1501 published Harmonice Musices Odhecaton — the first polyphonic music book ever printed with movable type. The achievement was monumental. He invented a triple-impression process: first the staff lines, then the words, then the notes — three passes through the press for every page, each perfectly registered with the previous. The result was beautiful, expensive, slow, and not really commercially scalable. But it proved music could be mechanically reproduced.'),
+            sectionHeader('🎻', 'How Petrucci\'s process worked'),
+            keyPointBlock('Three impressions per page', [
+              { k: 'Impression 1: staff lines', v: 'A separate forme with type sorts cut as horizontal 5-line staff segments. Print + dry.' },
+              { k: 'Impression 2: text', v: 'Lyrics below each staff. Standard movable type. Print + dry.' },
+              { k: 'Impression 3: notes + symbols', v: 'A separate forme with type sorts cut as notes, rests, clefs, accidentals. Each note had to register perfectly with the staff line + text already printed. Print + dry.' }
+            ]),
+            sectionHeader('📚', 'What Petrucci printed'),
+            keyPointBlock('Petrucci\'s output 1501-1520', [
+              { k: 'Odhecaton (1501)', v: '96 polyphonic pieces — chansons, motets, mass settings. First commercially-printed polyphonic music. ~500 copies.' },
+              { k: 'Canti B + Canti C (1502, 1504)', v: 'Two more collections following Odhecaton model. Increasingly broad European repertoire.' },
+              { k: 'Misse Josquin (1502 + later)', v: 'Multi-volume editions of mass settings by Josquin des Prez — at the time, the most famous composer in Europe. Petrucci had the publishing rights through patron connections.' },
+              { k: '~60+ titles total before 1520', v: 'Petrucci printed an astonishing body of polyphonic music in his career. He moved to Fossombrone (near Urbino) in 1511 + continued printing until ~1520.' }
+            ]),
+            sectionHeader('🤔', 'Why didn\'t the method spread fast?'),
+            calloutBox('info', 'Petrucci\'s expensive, slow, beautiful technique',
+              h('p', { style: { margin: 0, lineHeight: 1.6 } },
+                'Triple-impression printing was 3× the labor + 3× the registration challenges of normal text printing. Petrucci\'s books were beautiful + expensive — accessible only to wealthy patrons + institutional libraries. Within decades simpler methods (single-impression with notes integrated into staff-line sorts) emerged + dominated commercial music printing. Petrucci\'s legacy: he proved music could be printed; the specific method gave way to cheaper alternatives.')
+            )
+          );
+        } else if (muSect === 'methods') {
+          content = h('div', null,
+            dropCapPara('Six methods have been used to print music. Each one solved different problems + had different trade-offs. The progression is also the history of printing technology generally — woodcut → metal type → engraving → lithography → photo-engraving → computer engraving.'),
+            keyPointBlock('Music printing methods through history', [
+              { k: 'Woodcut (pre-1500 + occasional later)', v: 'Carved wooden blocks. Works for single-impression music but inflexible — every change requires re-carving. Used for early chant books + some 16th-c. work.' },
+              { k: 'Triple-impression movable type (Petrucci, 1501)', v: 'Three impressions per page. Beautiful but slow + expensive. Rare after ~1530.' },
+              { k: 'Single-impression movable type (~1530s onward)', v: 'Each note is cast as a single sort with the staff lines included. One impression per page. Cheaper + faster. Some loss of beauty but commercially scalable. Dominant for hymn books + common music printing 1530-1800s.' },
+              { k: 'Copperplate engraving (~1700 onward)', v: 'Music engraved into copper plates with a burin. Slow to make plates but allowed unlimited fine detail + curves. The dominant method for serious + complex music 1700-1900.' },
+              { k: 'Lithography (1796 onward)', v: 'Music drawn on limestone (then offset plates). Quicker than engraving. Used heavily for 19th-century sheet music.' },
+              { k: 'Photo-engraving + offset (1880s-1990s)', v: 'Mechanical reproduction from masters made by hand or photographic methods. Quality varied; mass production became cheap.' },
+              { k: 'Computer engraving (1985-)', v: 'Finale (1988), Sibelius (1993), Dorico (2016) — software that produces high-quality music notation matching the visual quality of 19th-c. engraving. Now the universal method for new music + most reprints.' }
+            ])
+          );
+        } else if (muSect === 'hymnbooks') {
+          content = h('div', null,
+            dropCapPara('For 300+ years (~1530-1850), hymn book printing was the single largest segment of music publishing. Every Protestant denomination + every parish needed congregational hymnals. The economics drove music-printing technology — what worked for hymn books became the standard music-printing method.'),
+            keyPointBlock('Famous hymn books that shaped music printing', [
+              { k: 'Bay Psalm Book (Cambridge, MA 1640)', v: 'First book printed in British North America. A metrical psalter — no music notation in the first edition; later editions added tunes. Survives in 11 known copies; one sold at auction for $14.2M in 2013.' },
+              { k: 'Watts hymnals (England + colonies, 1707+)', v: 'Isaac Watts (1674-1748) hymns shaped English-language Protestant worship. Printed in countless editions.' },
+              { k: 'Methodist Hymn Books (1780+)', v: 'John + Charles Wesley\'s hymn collection. Methodism\'s rapid 18th-c. growth drove hundreds of editions across British Empire + USA.' },
+              { k: 'Shape Note hymnals (US South, 1800s+)', v: 'The Sacred Harp (1844) + others used shape-note notation (each scale degree a different shape) to teach sight-singing to communities without trained musicians. Still actively used in 2026 Southern + Maine + other singing communities.' },
+              { k: 'Cantus + parts (Bach\'s Leipzig, 1700s)', v: 'Bach\'s chorale settings circulated in printed hymn books across Protestant Germany. Many copies survive + are foundational for music education.' }
+            ])
+          );
+        } else { // modern
+          content = h('div', null,
+            dropCapPara('Today\'s sheet music industry: a smaller-than-its-peak but still substantial industry. Three big trends: digital sheet music distribution, the decline of physical sheet music sales, and the rise of computer engraving as the universal production method.'),
+            keyPointBlock('Modern sheet music publishing', [
+              { k: 'Major publishers', v: 'Hal Leonard (USA, world\'s largest), Schirmer (USA), Boosey & Hawkes (UK/US), Bärenreiter (Germany — classical specialty), Henle (Germany — classical urtext), Edition Peters, Universal Edition.' },
+              { k: 'Digital distribution', v: 'Sheet Music Plus, Musicnotes, IMSLP (free, public-domain), Sheet Music Direct. Most sheet music sold today is sold digitally + printed at home or read on tablet.' },
+              { k: 'IMSLP / Petrucci Music Library', v: 'imslp.org (named in honor of Petrucci) hosts over 700,000 scores of public-domain music. Has democratized access to music globally.' },
+              { k: 'Software', v: 'Finale (1988), Sibelius (1993), Dorico (2016), MuseScore (open source, 2002) — these are how virtually all new music is engraved today. Output quality matches 19th-c. hand engraving.' },
+              { k: 'Self-publishing renaissance', v: 'Composers + arrangers self-publish directly via Sheet Music Plus, Etsy, their own websites. Similar to the music-publishing equivalent of the chapbook era.' }
+            ])
+          );
+        }
+
+        return h('div', null,
+          backBar('🎼 Music Printing'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) {
+              var sel = (muSect === s.id);
+              return h('button', { key: s.id,
+                onClick: function() { setMuSect(s.id); announce(s.label); },
+                style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                s.icon + ' ' + s.label);
+            })
+          ),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            content
+          ),
+          miniQuizBlock('musicPrinting', [
+            { q: 'Who invented the first commercially-printed polyphonic music?',
+              opts: ['Johannes Gutenberg', 'Ottaviano Petrucci (Venice, 1501)', 'Johann Sebastian Bach', 'William Caxton'],
+              ans: 1, explain: 'Ottaviano Petrucci printed Harmonice Musices Odhecaton in Venice in 1501 — the first commercially-printed polyphonic music. His triple-impression method (staff lines + text + notes as separate impressions) was beautiful + expensive.' },
+            { q: 'How many separate impressions did Petrucci use per page?',
+              opts: ['One', 'Two', 'Three', 'Five'],
+              ans: 2, explain: 'Three impressions per page: staff lines first, lyrics second, notes + symbols third. Each had to register perfectly with the previous. Hugely labor-intensive but produced beautiful results.' },
+            { q: 'What is IMSLP?',
+              opts: ['A music school in Italy', 'A free online library of public-domain music scores, named in honor of Petrucci', 'A copyright enforcement agency', 'A modern publishing company'],
+              ans: 1, explain: 'IMSLP (International Music Score Library Project) is a free online archive of public-domain music scores at imslp.org. As of 2026 it holds over 700,000 scores. Named the "Petrucci Music Library" in honor of Ottaviano Petrucci, the first music printer.' }
+          ]),
+          sourcesBlock([
+            { label: 'Stanley Boorman, Ottaviano Petrucci: A Catalogue Raisonné (2005)' },
+            { label: 'Richard Crawford, America\'s Musical Life: A History (2001)' },
+            { label: 'IMSLP / Petrucci Music Library', url: 'https://imslp.org/' },
+            { label: 'Library of Congress Music Division resources', url: 'https://www.loc.gov/research-centers/performing-arts/' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['NCAS Music (notation literacy)', 'NCSS D2.His.16.6-8 (perspectives)'],
+            discussion: [
+              'Why was music printing so much harder than text printing?',
+              'How does free access to public-domain scores via IMSLP change who can become a musician?',
+              'Compare a hand-engraved 1880 score with a Dorico 2024 score. What\'s the same? What\'s different?'
+            ],
+            misconceptions: [
+              { wrong: 'Music was always notated on a 5-line staff', right: 'Pre-1200, music was notated in many ways — neumes (curved gestures above text), tablatures, letter notation. The 5-line staff developed in the 1100s-1300s and became standard much later.' }
+            ],
+            extension: 'Visit IMSLP + find a score from a composer you know. Notice the engraver\'s name + year if listed. Compare with a modern published edition of the same work. What did the engraver decide differently?'
+          }),
+          crossLinkFooter('musicPrinting'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // MAPS + ATLASES — cartographic printing 1470-2026.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderMapsAtlases() {
+        var maSectRaw = useState('overview');
+        var maSect = maSectRaw[0], setMaSect = maSectRaw[1];
+        var sections = [
+          { id: 'overview',  label: 'Overview',          icon: '🗺' },
+          { id: 'methods',   label: 'Engraving methods', icon: '⚙️' },
+          { id: 'ortelius',  label: 'Ortelius (1570)',   icon: '🌍' },
+          { id: 'mercator',  label: 'Mercator (1569)',   icon: '📐' },
+          { id: 'modern',    label: 'Modern maps',       icon: '📱' }
+        ];
+
+        var content;
+        if (maSect === 'overview') {
+          content = h('div', null,
+            dropCapPara('Printed maps changed how Europeans understood the world. The first printed map appeared around 1470 (a woodcut). By 1600 atlases were being mass-produced + standardizing how distant places were understood. The Mercator projection (1569) + Ortelius\'s first modern atlas (1570) defined cartographic conventions still used today. Maps print is a special case because the visual + textual content are nearly inseparable.'),
+            sectionHeader('🗺', 'What this module covers'),
+            keyPointBlock(null, [
+              { k: 'Methods', v: 'Woodcut → copperplate engraving → lithography → photogrammetry → digital. How map printing has worked.' },
+              { k: 'Ortelius (1570)', v: 'First modern atlas — Theatrum Orbis Terrarum. Compiled from many sources into a unified work.' },
+              { k: 'Mercator (1569)', v: 'The projection that still dominates modern world maps. Its strengths + distortions.' },
+              { k: 'Modern maps', v: 'From Rand McNally to Google Maps to OpenStreetMap. How maps are made + distributed in 2026.' }
+            ])
+          );
+        } else if (maSect === 'methods') {
+          content = h('div', null,
+            dropCapPara('Map-printing methods have always been at the leading edge of printing technology — maps require ultra-fine detail + careful registration of color overlays. Each new printing technology was applied to maps quickly.'),
+            keyPointBlock('Cartographic printing through history', [
+              { k: 'Woodcut (1470-1600s)', v: 'Early printed maps were woodcuts. Limited detail, hard to update, but cheap. The 1472 Saint-Dié Cosmographia world map (one of the earliest printed) is a woodcut.' },
+              { k: 'Copperplate engraving (1500-1850)', v: 'Detailed maps engraved on copper plates. Allowed fine lines, dense lettering, complex coastlines. The dominant method for the great age of cartography. Mercator + Ortelius + Blaeu + de Wit all used copperplate.' },
+              { k: 'Steel engraving (early 1800s)', v: 'Copper plates wore out fast. Steel plates lasted longer + supported larger print runs. Used heavily for 19th-c. road maps + atlases.' },
+              { k: 'Lithography (1796+)', v: 'Drawn on limestone, allowed gradients + textures. Critical for the explosion of mid-19th-c. tourist maps + decorative cartography.' },
+              { k: 'Color printing (late 1800s)', v: 'Chromolithography + later color offset enabled multi-color maps. Distinguishing political boundaries, elevation, vegetation became visually possible.' },
+              { k: 'Photogrammetry + aerial photo (1900+)', v: 'Aerial photographs (WWI onward) became the basis for accurate topographic maps. USGS adopted aerial photo as primary survey method by 1930s.' },
+              { k: 'Digital + GIS (1980+)', v: 'Geographic Information Systems (GIS) replaced printed master maps. Digital maps now update continuously. Printed maps are derivatives of digital sources.' }
+            ])
+          );
+        } else if (maSect === 'ortelius') {
+          content = h('div', null,
+            dropCapPara('Abraham Ortelius published Theatrum Orbis Terrarum — "Theater of the World" — in Antwerp in 1570. It was the first modern atlas: a single bound book containing maps of different parts of the world, all to similar scale + presentation, with text describing each region. Before Ortelius, maps were sold individually + collected ad hoc. After Ortelius, the atlas form was established + spread rapidly.'),
+            keyPointBlock('What Ortelius did', [
+              { k: 'Compilation, not original', v: 'Ortelius did not survey any of the maps himself. He compiled work by 30+ other cartographers — Gerardus Mercator, Caspar Vopel, Domenicus Niger + others. He standardized them to similar scale + presentation.' },
+              { k: 'Bound atlas format', v: 'Maps as separate copperplate engravings, all bound between covers, with descriptive text. The form is so familiar today that we forget how innovative it was.' },
+              { k: 'Successive editions', v: 'Ortelius issued 31 editions in 7 languages (Latin, Dutch, German, French, Spanish, English, Italian) between 1570 and 1612. Each edition updated maps based on new survey + exploration.' },
+              { k: 'Source attribution', v: 'Ortelius included a "Catalogus Auctorum" listing all cartographers whose work he compiled. This was unusual transparency for the time + established the principle of map attribution.' },
+              { k: 'Commercial success', v: 'The Theatrum was a publishing sensation across Europe. ~7,000 copies sold (massive for atlas-format books). Made Ortelius wealthy + influential at the Spanish court of Philip II (who appointed him royal geographer).' }
+            ])
+          );
+        } else if (maSect === 'mercator') {
+          content = h('div', null,
+            dropCapPara('Gerardus Mercator (1512-1594) was a Flemish cartographer who in 1569 published a world map using a new projection now called the Mercator projection. It preserves angles (any compass course is a straight line on the map) at the cost of dramatically exaggerating areas near the poles. Greenland looks the same size as Africa on a Mercator map; in reality Africa is about 14x larger. The projection became the standard for nautical navigation, then for general world maps, then for digital web maps. Google Maps + Bing Maps + OpenStreetMap all use a Mercator variant.'),
+            keyPointBlock('Mercator: features + criticisms', [
+              { k: 'What it preserves', v: 'Angles + shapes locally. Compass courses appear as straight lines (huge benefit for navigation).' },
+              { k: 'What it distorts', v: 'Areas, especially near poles. Greenland looks ~14× larger than reality vs Africa. Antarctica appears as a giant horizontal band rather than a continent.' },
+              { k: 'Why it dominated nautical navigation', v: 'A constant-bearing course (rhumb line) appears as a straight line on a Mercator chart. For 16th-c. ships sailing on compass bearings, this was invaluable.' },
+              { k: 'Modern criticism', v: 'The area exaggeration near the poles has been criticized as reinforcing Eurocentric world view — Europe + North America appear disproportionately large.' },
+              { k: 'Alternatives that exist', v: 'Gall-Peters projection (1885) preserves area; Robinson projection (1963) is a "compromise" used by National Geographic 1988-1998; Winkel Tripel (1921) is current National Geographic standard.' },
+              { k: 'Why Mercator persists', v: 'Despite alternatives, Mercator remains dominant for web mapping because its mathematical properties (any rectangle is a valid map tile) suit the Google Maps tile-pyramid architecture.' }
+            ])
+          );
+        } else { // modern
+          content = h('div', null,
+            dropCapPara('Today\'s map-publishing landscape: digital-first, real-time-updated, supplemented (not replaced) by print. Major modern map publishers + projects:'),
+            keyPointBlock('Modern map publishing + sources', [
+              { k: 'Google Maps', v: 'World\'s most-used digital map. Underpinned by satellite imagery + Street View vehicles + community-submitted edits. Modified Mercator projection.' },
+              { k: 'OpenStreetMap', v: 'Open-source Wikipedia-style map of the world. Edited by 3+ million contributors globally. Underpins many commercial maps that license OSM data.' },
+              { k: 'Apple Maps', v: 'Apple\'s alternative to Google Maps; uses TomTom + open data + its own surveys. Quality has improved substantially since 2018 rebuild.' },
+              { k: 'USGS (US Geological Survey)', v: 'US federal mapping agency. Produces topographic maps + the National Map (online tile service). Open-data: most USGS maps are free.' },
+              { k: 'National Geographic Maps', v: 'Premier US publisher of physical printed maps. Educational + reference market. Subscription-based digital edition.' },
+              { k: 'Rand McNally', v: 'Founded 1856. Once dominated US road-map publishing. Pivoted to GPS + trucking-industry products after consumer GPS made road atlases largely obsolete.' },
+              { k: 'DeLorme Atlas & Gazetteer (Maine!)', v: 'Maine-based mapping company (Yarmouth) founded 1976. Detailed state-by-state Atlas & Gazetteers became iconic among hikers + outdoor users. Acquired by Garmin in 2016. Some Maine staff remain.' }
+            ])
+          );
+        }
+
+        return h('div', null,
+          backBar('🗺 Maps + Atlases'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) {
+              var sel = (maSect === s.id);
+              return h('button', { key: s.id,
+                onClick: function() { setMaSect(s.id); announce(s.label); },
+                style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                s.icon + ' ' + s.label);
+            })
+          ),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            content
+          ),
+          miniQuizBlock('mapsAtlases', [
+            { q: 'Who published the first modern atlas?',
+              opts: ['Gerardus Mercator (1569)', 'Abraham Ortelius (1570 Theatrum Orbis Terrarum)', 'Ptolemy (150 CE)', 'Captain Cook (1770s)'],
+              ans: 1, explain: 'Abraham Ortelius\'s Theatrum Orbis Terrarum (Antwerp, 1570) is considered the first modern atlas — a unified bound book of standardized maps. Mercator published his world map in 1569 (a single map, not an atlas).' },
+            { q: 'Why does Greenland look so large on most world maps?',
+              opts: ['It really is that large', 'The Mercator projection (still standard) exaggerates areas near the poles', 'Greenland is closer to the sky', 'Cartographers historically inflated it'],
+              ans: 1, explain: 'The Mercator projection (1569) preserves angles + compass courses but dramatically exaggerates areas near the poles. Greenland appears ~14× larger than reality relative to Africa. The projection persists because of its mathematical properties suiting modern web mapping (Google Maps, etc.).' },
+            { q: 'What is OpenStreetMap?',
+              opts: ['A proprietary commercial map service', 'Apple\'s map service', 'A community-built open-source map of the world edited by millions of contributors', 'A NASA project'],
+              ans: 2, explain: 'OpenStreetMap (OSM) is a community-built, open-source map edited by over 3 million contributors globally. Many commercial maps license OSM data (or use OSM directly). The Wikipedia equivalent for geographic data.' }
+          ]),
+          sourcesBlock([
+            { label: 'Jerry Brotton, A History of the World in Twelve Maps (2012)' },
+            { label: 'Edward Tufte, Envisioning Information (1990) — cartographic design' },
+            { label: 'OpenStreetMap project', url: 'https://www.openstreetmap.org/' },
+            { label: 'USGS National Map', url: 'https://www.usgs.gov/programs/national-geospatial-program' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['NCSS D2.Geo.1.6-8 (geographic representations)', 'NCAS Visual Arts (visual literacy)'],
+            discussion: [
+              'Open Google Maps + zoom out to the world view. What projection are you looking at? What\'s distorted?',
+              'Find Mercator vs Peters vs Robinson projections online. Pick which one you\'d use for a textbook + defend your choice.',
+              'Why do most maps still use Mercator if everyone knows it distorts areas?'
+            ],
+            misconceptions: [
+              { wrong: 'There\'s one correct world map', right: 'Every map is a projection — a 2D representation of a 3D sphere. ALL projections distort something. Picking a projection is picking which distortion you can live with.' }
+            ],
+            extension: 'Visit the OpenStreetMap "Edit" tool + try improving the map of your neighborhood. You can add a missing footpath or fix a closed business. You\'re now contributing to a community-maintained world map.'
+          }),
+          crossLinkFooter('mapsAtlases'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // CHILDREN'S BOOKS — hornbooks → chapbooks → modern picture books.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderChildrensBooks() {
+        var cbSectRaw = useState('overview');
+        var cbSect = cbSectRaw[0], setCbSect = cbSectRaw[1];
+        var sections = [
+          { id: 'overview',   label: 'Overview',          icon: '🧸' },
+          { id: 'hornbook',   label: 'Hornbooks',         icon: '📕' },
+          { id: 'chapbooks',  label: 'Chapbooks',         icon: '📒' },
+          { id: 'newbery',    label: 'Newbery + golden',  icon: '🏅' },
+          { id: 'caldecott',  label: 'Caldecott era',     icon: '🎨' },
+          { id: 'modern',     label: 'Modern',            icon: '📖' }
+        ];
+
+        var content;
+        if (cbSect === 'overview') {
+          content = h('div', null,
+            dropCapPara('Children\'s books as a recognized genre are surprisingly recent — the term didn\'t mean what we think until ~1750. Before that, children encountered print through religious primers, hornbooks (a single-sheet ABC + Lord\'s Prayer), and chapbooks (cheap pamphlets meant for all ages). The intentional design of books FOR children developed across the 1700-1800s + reached the modern picture-book form in the early 1900s.'),
+            sectionHeader('🧸', 'What this module covers'),
+            keyPointBlock(null, [
+              { k: 'Hornbooks', v: '1500s-1700s wooden paddles with a single ABC printed under translucent horn. The first dedicated "children\'s" book form.' },
+              { k: 'Chapbooks', v: 'Cheap pamphlets 1500s-1850s. Fairy tales, ballads, simple morality tales. Read by children + adults alike.' },
+              { k: 'Newbery + golden age', v: 'The Newbery Medal (US 1922) marks the institutional recognition of children\'s literature as worthy of artistic + literary attention.' },
+              { k: 'Caldecott era', v: 'The Caldecott Medal (US 1938) launched the era of the modern picture book — text + image fully integrated.' },
+              { k: 'Modern', v: 'Today\'s children\'s book industry, diversity in representation, digital + interactive formats, the Maine children\'s book community.' }
+            ])
+          );
+        } else if (cbSect === 'hornbook') {
+          content = h('div', null,
+            dropCapPara('A hornbook (1500s-1700s) was a wooden paddle, about 4×6 inches, with a printed sheet glued to the front + protected by a thin layer of translucent horn. The printed sheet showed: the alphabet (capitals + lowercase), the vowels, basic syllables, the Lord\'s Prayer. Children carried hornbooks to school, the horn protecting the print from grubby hands. It was the universal primer of English-language education for 250 years.'),
+            keyPointBlock('What the hornbook taught', [
+              { k: 'The alphabet', v: 'Both capital + lowercase letters across the top.' },
+              { k: 'Basic syllables', v: 'Two-letter combinations like "ab, eb, ib, ob, ub" — phonics practice before the term existed.' },
+              { k: 'The Lord\'s Prayer', v: 'The principal text children memorized. Religious instruction interwoven with literacy from the start.' },
+              { k: 'Sometimes more', v: 'Some hornbooks added the cross + Roman numerals + multiplication tables. Variations were many.' }
+            ]),
+            sectionHeader('🔧', 'Construction'),
+            h('p', { style: { color: T.muted, fontSize: 14, lineHeight: 1.7, margin: '0 0 12px' } },
+              'A 1650 hornbook was made by: printing the lesson sheet on paper or parchment; mounting it on a wooden paddle (oak or beech); cutting a thin sheet of transparent cow horn to size; nailing the horn over the print with small brass tacks. The result was durable enough to last a child\'s entire primary education. By the 1700s mass-produced hornbooks were sold for a few pence in market towns; by the early 1800s the form was largely replaced by printed primers like the New England Primer.')
+          );
+        } else if (cbSect === 'chapbooks') {
+          content = h('div', null,
+            dropCapPara('Chapbooks (from "chap" = trader; sold by chapmen, traveling peddlers) were the cheapest form of printed book from the 1500s to the 1850s. Typically 16-24 small pages, woodcut illustrations, sold for a penny or two. They contained ballads, fairy tales, simple histories, religious moralities, jest books, romances. They were read by everyone — children, adults, the partially-literate. They are the direct ancestor of comic books, pulp paperbacks, + much modern children\'s literature.'),
+            keyPointBlock('What chapbooks contained', [
+              { k: 'Fairy tales + folk stories', v: 'Cinderella, Jack the Giant-Killer, Tom Thumb, Little Red Riding Hood — all spread via chapbook editions before being collected by the Grimms in 1812.' },
+              { k: 'Ballads + songs', v: 'Robin Hood ballads, religious hymns, popular love songs. Often included tunes to be sung.' },
+              { k: 'Religious morality', v: 'Pilgrim\'s Progress (1678) became a chapbook genre. The Bay Psalm Book (1640) was also widely chapbooked.' },
+              { k: 'Historical romances', v: 'Stories of King Arthur, of Charlemagne, of the Seven Champions of Christendom. Compressed for the chapbook format.' },
+              { k: 'Jest books', v: 'Joke collections. Often surprisingly bawdy.' },
+              { k: 'Almanacs', v: 'Yearly predictions + calendars + practical info. Benjamin Franklin\'s Poor Richard\'s Almanack (1732-1758) is a chapbook descendant.' }
+            ]),
+            sectionHeader('🎨', 'Why they mattered'),
+            calloutBox('info', 'Chapbooks democratized literature',
+              h('p', { style: { margin: 0, lineHeight: 1.6 } },
+                'For ~350 years (1500-1850), chapbooks were the only books many people could afford. They circulated fairy tales + ballads across continents. They were beloved by Wordsworth + Coleridge + Robert Louis Stevenson as childhood reading. Many authors\' first published works appeared in chapbook form. They are the direct ancestor of mass-market paperback fiction.')
+            )
+          );
+        } else if (cbSect === 'newbery') {
+          content = h('div', null,
+            dropCapPara('The Newbery Medal — established by the American Library Association in 1922 — recognized the most distinguished American children\'s book of the year. Named after John Newbery (1713-1767), the British publisher widely considered the founder of children\'s publishing as a distinct industry. The Newbery institutionalized children\'s literature as worthy of artistic + literary attention. The "golden age" of children\'s books (~1900-1950) followed.'),
+            keyPointBlock('Newbery-era milestones', [
+              { k: 'John Newbery (1713-1767)', v: 'British publisher who established children\'s books as a commercial category. His Little Pretty Pocket-Book (1744) was the first commercially-printed book explicitly for children.' },
+              { k: 'McGuffey Readers (USA, 1836-1900s)', v: 'William Holmes McGuffey\'s graded readers became the dominant US school text. 122 million copies sold by 1920. Set the standard for "graded" reading instruction.' },
+              { k: 'Alice in Wonderland (Lewis Carroll, 1865)', v: 'Marked the shift from morality-tale children\'s books to imaginative fiction. Hugely influential on subsequent children\'s literature.' },
+              { k: 'Adventures of Pinocchio (Carlo Collodi, 1883)', v: 'First serialized in an Italian children\'s magazine. Italian translation conventions shaped later international children\'s publishing.' },
+              { k: 'Newbery Medal established (1922)', v: 'First Newbery: The Story of Mankind by Hendrik Willem van Loon. Marked institutional recognition of children\'s literature.' },
+              { k: 'Golden age authors', v: 'L. M. Montgomery, A. A. Milne, Beatrix Potter, E. B. White, C. S. Lewis, J. R. R. Tolkien — all working between ~1900 and 1955.' }
+            ])
+          );
+        } else if (cbSect === 'caldecott') {
+          content = h('div', null,
+            dropCapPara('The Caldecott Medal (established 1938) was the picture-book counterpart to the Newbery — recognizing the most distinguished American picture book. Named after Randolph Caldecott (1846-1886), British illustrator whose work pioneered the modern integration of text + picture. The Caldecott era (~1938-present) is the modern picture book era — text + image as unified artistic form.'),
+            keyPointBlock('Caldecott-era picture book milestones', [
+              { k: 'Randolph Caldecott (British, 1846-1886)', v: 'Pioneered modern picture book design. His "toy books" (1878 onwards) integrated text + illustration in ways that became standard.' },
+              { k: 'Wanda Gág\'s Millions of Cats (1928)', v: 'Pre-Caldecott but credited as the first true modern American picture book. Hand-lettered text integrated with illustration on every spread.' },
+              { k: 'Caldecott Medal established (1938)', v: 'First winner: Animals of the Bible by Helen Dean Fish.' },
+              { k: 'Where the Wild Things Are (Maurice Sendak, 1963)', v: 'Caldecott 1964. Often cited as the most influential picture book of the 20th century.' },
+              { k: 'Eric Carle (1969 The Very Hungry Caterpillar)', v: 'Caterpillar has sold over 50 million copies. Pioneered the use of textured paper + collage for picture books.' },
+              { k: 'Ezra Jack Keats\'s The Snowy Day (1962)', v: 'Caldecott 1963. First mainstream American picture book to feature a Black child as protagonist. Major milestone in representation.' },
+              { k: 'Mo Willems (2003+)', v: 'Don\'t Let the Pigeon Drive the Bus + Knuffle Bunny + Elephant & Piggie series defined early-21st-c. picture book voice. Caldecott + many other awards.' }
+            ])
+          );
+        } else { // modern
+          content = h('div', null,
+            dropCapPara('Today\'s children\'s book industry is one of the largest segments of publishing — children\'s + young adult books are about 40% of all unit sales in US publishing (Publishers Weekly). Major trends: increased diversity in representation, the rise of YA as its own category, board books + interactive books for very young children, the picture book as art form.'),
+            keyPointBlock('Today\'s children\'s book landscape', [
+              { k: 'Major US publishers', v: 'Penguin Random House Children\'s, HarperCollins Children\'s, Scholastic, Hachette Book Group Children\'s, Simon & Schuster Children\'s.' },
+              { k: 'Representation movement', v: 'We Need Diverse Books (founded 2014) has accelerated publishing of books by + about underrepresented communities. Cooperative Children\'s Book Center (UW-Madison) tracks diversity statistics — substantial improvement since 2015, still much room.' },
+              { k: 'Tilbury House Publishers (Maine!)', v: 'Independent Maine publisher (founded 1990, based in Thomaston) producing children\'s + middle-grade fiction with strong representation + Maine connections.' },
+              { k: 'Islandport Press (Maine!)', v: 'Yarmouth-based publisher of Maine children\'s + adult literature. Publishes the popular Maine illustrator Chris Van Dusen + many other Maine authors.' },
+              { k: 'Maine illustrators of national note', v: 'Chris Van Dusen (Camden — King Bidgood\'s in the Bathtub illustrator), Maxwell Eaton III (Castine), Lynn Plourde (Winthrop), Jamie Hogan (Peaks Island). Maine has a remarkably dense children\'s illustrator community.' },
+              { k: 'Digital + interactive', v: 'iBooks Author, ePUB picture books, Apple Books, Amazon Kindle Kids editions. Plus interactive iPad picture book apps. Format experimentation continues.' }
+            ])
+          );
+        }
+
+        return h('div', null,
+          backBar("🧸 Children's Books"),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) {
+              var sel = (cbSect === s.id);
+              return h('button', { key: s.id,
+                onClick: function() { setCbSect(s.id); announce(s.label); },
+                style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                s.icon + ' ' + s.label);
+            })
+          ),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            content
+          ),
+          miniQuizBlock('childrensBooks', [
+            { q: 'What was a hornbook?',
+              opts: ['A book bound with cow horn covers', 'A 1500s-1700s wooden paddle with a printed primer (ABC + Lord\'s Prayer) protected by a sheet of translucent horn', 'A book about hunting', 'A modern children\'s app'],
+              ans: 1, explain: 'Hornbooks were the dominant primer of English-language childhood education for ~250 years (1500s-1700s). A wooden paddle with the alphabet + basic phonics + Lord\'s Prayer printed on paper, protected by a thin sheet of translucent cow horn.' },
+            { q: 'Who is considered the founder of children\'s publishing as a distinct industry?',
+              opts: ['Maurice Sendak', 'John Newbery (1713-1767)', 'Lewis Carroll', 'Beatrix Potter'],
+              ans: 1, explain: 'John Newbery, British publisher 1713-1767, established children\'s books as a commercial category. The American Library Association\'s Newbery Medal (1922) honors his role.' },
+            { q: 'The first mainstream American picture book to feature a Black child as protagonist was:',
+              opts: ['The Cat in the Hat (1957)', 'Where the Wild Things Are (1963)', 'The Snowy Day (Ezra Jack Keats, 1962)', 'Millions of Cats (1928)'],
+              ans: 2, explain: 'Ezra Jack Keats\'s The Snowy Day (1962, Caldecott 1963) was the first mainstream American picture book with a Black child as protagonist. Major milestone in representation.' }
+          ]),
+          sourcesBlock([
+            { label: 'Cooperative Children\'s Book Center (UW-Madison)', url: 'https://ccbc.education.wisc.edu/' },
+            { label: 'We Need Diverse Books', url: 'https://diversebooks.org/' },
+            { label: 'American Library Association — Newbery + Caldecott', url: 'https://www.ala.org/awardsgrants' },
+            { label: 'Maine Reads / Maine State Library children\'s lit collection', url: 'https://www.maine.gov/msl/' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['NCSS D2.His.2.6-8 (context)', 'NCAS Visual Arts (illustration analysis)', 'CCSS RL.5.7 (text + visual)'],
+            discussion: [
+              'How is a 1700 chapbook similar to a modern picture book? How is it different?',
+              'Why did "children\'s literature" not exist as a recognized form until the mid-1700s?',
+              'Look at the Caldecott winners from any decade. What do they tell you about that decade\'s values for childhood?'
+            ],
+            misconceptions: [
+              { wrong: 'Books for children have always existed', right: 'Children\'s books as a distinct, commercial publishing category emerged in the 1700s with John Newbery. Before that, children mostly read hornbooks, chapbooks, religious primers, + occasional adult books accessible to them.' }
+            ],
+            extension: 'Find 5 children\'s book authors from Maine (start with Chris Van Dusen, Maxwell Eaton III, Lynn Plourde, Jamie Hogan, + look up more at Maine Crafts). Visit your library + check out one of their books. Why might Maine have such a strong children\'s book community?'
+          }),
+          crossLinkFooter('childrensBooks'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // SCIENTIFIC PUBLISHING — Royal Society 1665 → preprints + open access.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderSciPublishing() {
+        var spSectRaw = useState('overview');
+        var spSect = spSectRaw[0], setSpSect = spSectRaw[1];
+        var sections = [
+          { id: 'overview',  label: 'Overview',          icon: '🔬' },
+          { id: 'royal',     label: 'Royal Society 1665', icon: '🏛' },
+          { id: 'peer',      label: 'Peer review',       icon: '⚖️' },
+          { id: 'oa',        label: 'Open access',       icon: '🔓' },
+          { id: 'preprints', label: 'Preprints + AI',    icon: '📡' }
+        ];
+
+        var content;
+        if (spSect === 'overview') {
+          content = h('div', null,
+            dropCapPara('Scientific publishing as a distinct genre is exactly 361 years old in 2026. The Royal Society of London\'s Philosophical Transactions (founded 1665) was the first scientific journal — establishing the conventions of dated, attributed, peer-validated scientific communication that still govern science today. Every modern scientific paper inherits something from those first issues.'),
+            sectionHeader('🔬', 'What this module covers'),
+            keyPointBlock(null, [
+              { k: 'Royal Society 1665', v: 'How the first scientific journal was founded + what it did.' },
+              { k: 'Peer review', v: 'The institution that defines scientific publishing — its history, mechanics, criticisms.' },
+              { k: 'Open access', v: 'The 2000s movement to free scientific publications from paywalls.' },
+              { k: 'Preprints + AI', v: 'arXiv, bioRxiv, OSF Preprints — the 21st-century pre-publication infrastructure. + how AI tools (ChatGPT, Claude) are reshaping scientific publishing.' }
+            ])
+          );
+        } else if (spSect === 'royal') {
+          content = h('div', null,
+            dropCapPara('The Royal Society of London was founded 1660 — a group of natural philosophers (the term "scientist" didn\'t exist yet) who met to discuss experiments + observations. In 1665, the Society\'s first secretary, Henry Oldenburg, started the Philosophical Transactions — a regular publication of letters about scientific discoveries. Issue #1, published March 6, 1665, set the conventions that scientific publishing has followed ever since.'),
+            keyPointBlock('Philosophical Transactions: founding conventions', [
+              { k: 'Dated publication', v: 'Each issue had a specific publication date — critical for priority claims.' },
+              { k: 'Attribution', v: 'Letters were attributed to specific authors. Anonymous science was discouraged.' },
+              { k: 'Editorial selection', v: 'Oldenburg + later editors decided what to publish. The forerunner of peer review.' },
+              { k: 'Distribution', v: 'Issued in print, distributed to fellows + interested parties across Europe. The first international scientific communication channel.' },
+              { k: 'Topical range', v: 'Astronomy, anatomy, chemistry, mathematics, mechanics, natural history. The full range of natural philosophy.' },
+              { k: 'Letters as primary form', v: 'Most submissions were formal letters reporting observations + experiments. The genre persists today as the "letter to the editor" of journals like Nature + Science.' }
+            ]),
+            sectionHeader('📚', 'Continuous since 1665'),
+            h('p', { style: { color: T.muted, fontSize: 14, lineHeight: 1.7, margin: '0 0 12px' } },
+              'Philosophical Transactions has published continuously since 1665 — one of the longest continuously-published periodicals of any kind. Split into Philosophical Transactions A (mathematical + physical sciences) + Philosophical Transactions B (biological sciences) in 1887. Both are still publishing in 2026. Notable papers across the centuries: Newton on optics (1671), Maxwell on electromagnetism (1865), Watson + Crick on DNA structure (1953 — actually Nature, but Roy Soc journals had similar pieces).')
+          );
+        } else if (spSect === 'peer') {
+          content = h('div', null,
+            dropCapPara('Peer review — sending a submitted paper to anonymous expert reviewers before publication — is the modern hallmark of scientific publishing. But it is more recent than people think. Peer review as a routine practice across all journals developed only in the 1960s-70s. Before that, editors made decisions largely alone or with informal advice.'),
+            keyPointBlock('History of peer review', [
+              { k: 'Editorial decision (1660s-1900s)', v: 'For most of scientific publishing history, the editor (sometimes with informal consultation) decided what to publish. Many famous papers were never peer-reviewed in the modern sense.' },
+              { k: 'Some early peer review (1700s-1800s)', v: 'Royal Society of London + Académie des Sciences sometimes consulted internal committees on submissions, but inconsistently.' },
+              { k: 'Modern peer review formalized (1960s-70s)', v: 'Routine peer review across all major journals developed in this period, accelerated by growing scientific output that editors alone could not evaluate.' },
+              { k: 'Double-blind variant (1970s+)', v: 'Some journals adopted reviewers + authors anonymous to each other ("double-blind") to reduce bias. Practice varies by field.' },
+              { k: 'Open peer review (2000s+)', v: 'PLOS, eLife, others publish reviewer reports + author responses alongside the paper. Aims for accountability + transparency.' },
+              { k: 'Post-publication review (2010s+)', v: 'PubPeer + other platforms allow ongoing critique of published papers. Has uncovered many flawed papers + retractions.' }
+            ]),
+            sectionHeader('🤔', 'Modern criticism + reform'),
+            calloutBox('info', 'Peer review is being reformed',
+              h('p', { style: { margin: 0, lineHeight: 1.6 } },
+                'Standard concerns: peer review is slow (months to years), unevenly rigorous (different reviewers reach different conclusions), biased (toward established figures + Western institutions + native English-speakers), uncompensated (reviewers work free). Reform efforts include paid peer review (some journals), automated triage (using AI to identify obviously-flawed papers before human review), and registered reports (review the methodology BEFORE the experiment runs, then commit to publishing regardless of result).')
+            )
+          );
+        } else if (spSect === 'oa') {
+          content = h('div', null,
+            dropCapPara('Until the 2000s, scientific journals were sold by subscription — often $5,000-$30,000/year per journal. Universities paid huge sums; individuals + the public usually had no access. Open Access (OA) — making scientific articles free to read on publication — emerged as a major reform movement around 2000-2005 + has steadily grown. As of 2026, around half of new scientific papers are open access.'),
+            keyPointBlock('Open access milestones', [
+              { k: '1991 — arXiv', v: 'Paul Ginsparg launches arXiv (Los Alamos) for free distribution of physics preprints. Original open-access precedent.' },
+              { k: '2002 — Budapest Open Access Initiative', v: 'Foundational OA manifesto — defines "open access" as free + with reuse rights.' },
+              { k: '2003 — PLOS One', v: 'First major fully-OA megajournal. Publishes any scientifically-sound paper regardless of perceived importance.' },
+              { k: '2006 — Bethesda + Berlin Declarations', v: 'Major institutional commitments to OA. NIH (2008) requires NIH-funded papers be deposited in PubMed Central within 1 year.' },
+              { k: '2018 — Plan S (Europe)', v: 'cOAlition S (group of European research funders) requires that all funded research be published OA. Major shift in EU + UK research-publishing landscape.' },
+              { k: '2023 — White House OSTP memo', v: 'US federal mandate: all federally-funded research must be freely available on publication. Implementation through 2025.' },
+              { k: '2026 (today)', v: 'Roughly 50-55% of new scientific papers are OA. Mix of "Gold OA" (journal-published with article-processing charge), "Green OA" (deposit in repository), "Diamond OA" (free to read + free to publish, often community-supported).' }
+            ])
+          );
+        } else { // preprints
+          content = h('div', null,
+            dropCapPara('Preprints — papers posted publicly before peer review — used to be limited to physics + math (arXiv since 1991). In the 2010s the practice spread to biology (bioRxiv 2013), medicine (medRxiv 2019, exploded during COVID-19), and many other fields. Now preprints are normal scientific communication, fundamentally changing how research is communicated + critiqued. Meanwhile AI tools are reshaping publishing in their own way.'),
+            keyPointBlock('Preprint servers + AI in publishing', [
+              { k: 'arXiv (1991)', v: 'Physics, math, computer science, statistics. As of 2026 hosts ~2.3 million papers. Free to submit, free to read. The original.' },
+              { k: 'bioRxiv (2013)', v: 'Biology preprint server. Major shift in life sciences communication. ~200,000+ papers as of 2026.' },
+              { k: 'medRxiv (2019)', v: 'Medical preprint server. Exploded during COVID-19 — first hosting of pandemic research before peer review.' },
+              { k: 'OSF Preprints, ChemRxiv, SSRN', v: 'Other major preprint servers covering social sciences, chemistry, economics, etc.' },
+              { k: 'AI-generated papers (2023+)', v: 'ChatGPT + similar tools can generate scientifically-plausible-looking papers. Some have been published in legitimate journals + later retracted. Major ongoing challenge for publishing infrastructure.' },
+              { k: 'AI-assisted writing (2023+)', v: 'Many authors use AI tools to draft + revise legitimate papers. Increasingly accepted as a tool, like spell-check. Journals developing policies on disclosure.' },
+              { k: 'AI peer review (2024+)', v: 'Some journals piloting AI tools to identify methodological flaws + check statistics. Used as triage tool, not as replacement for human reviewers.' },
+              { k: 'Image manipulation detection', v: 'Tools like Proofig + ImaCheck use AI to detect figure manipulation in submitted papers. Have led to many retractions of papers with falsified figures.' }
+            ])
+          );
+        }
+
+        return h('div', null,
+          backBar('🔬 Scientific Publishing'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) {
+              var sel = (spSect === s.id);
+              return h('button', { key: s.id,
+                onClick: function() { setSpSect(s.id); announce(s.label); },
+                style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                s.icon + ' ' + s.label);
+            })
+          ),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            content
+          ),
+          miniQuizBlock('sciPublishing', [
+            { q: 'When was the first scientific journal founded?',
+              opts: ['1450 (Gutenberg era)', '1665 (Royal Society Philosophical Transactions)', '1700s (Enlightenment)', '1900 (industrial era)'],
+              ans: 1, explain: 'The Royal Society of London\'s Philosophical Transactions, founded 1665 by Henry Oldenburg, was the first scientific journal. Still publishing in 2026 — one of the longest continuously-published periodicals of any kind.' },
+            { q: 'When did peer review become routine practice across scientific journals?',
+              opts: ['1665 (founding of Phil Trans)', '1700s', '1900s', '1960s-70s'],
+              ans: 3, explain: 'Routine peer review across all major journals developed in the 1960s-70s, accelerated by growing scientific output that editors could not evaluate alone. Before this, editors made publication decisions largely by themselves with informal consultation.' },
+            { q: 'What is arXiv?',
+              opts: ['A commercial scientific publisher', 'A free physics + math + CS preprint server, founded 1991', 'A peer-review journal', 'An AI tool for writing papers'],
+              ans: 1, explain: 'arXiv (pronounced "archive") is a free preprint server founded 1991 by Paul Ginsparg at Los Alamos. It hosts physics, math, computer science + related fields. ~2.3 million papers as of 2026. The original open-access precedent.' }
+          ]),
+          sourcesBlock([
+            { label: 'Royal Society Publishing — Philosophical Transactions archive', url: 'https://royalsocietypublishing.org/' },
+            { label: 'arXiv', url: 'https://arxiv.org/' },
+            { label: 'bioRxiv', url: 'https://www.biorxiv.org/' },
+            { label: 'PLOS (Public Library of Science)', url: 'https://plos.org/' },
+            { label: 'Retraction Watch', url: 'https://retractionwatch.com/' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['NGSS HS-LS4-1 (scientific evidence)', 'CCSS RST.11-12.7 (integrate quantitative + textual info)'],
+            discussion: [
+              'Why does dated, attributed, peer-validated communication matter for science?',
+              'During COVID-19, preprints exploded — researchers needed to share data fast. What did society lose + gain from this?',
+              'AI tools can generate scientifically-plausible-looking papers. How should journals handle this? How should peer reviewers handle this?'
+            ],
+            misconceptions: [
+              { wrong: 'Peer review has always existed in science', right: 'Peer review as routine practice across all journals only developed in the 1960s-70s. Many famous papers (Newton\'s optics, Einstein\'s 1905 papers) were never peer-reviewed in the modern sense.' }
+            ],
+            extension: 'Visit arxiv.org. Find a paper in a field you\'re curious about. Notice: was it later peer-reviewed? Published in a journal? How can you tell? What\'s the role of arXiv vs the journal in this case?'
+          }),
+          crossLinkFooter('sciPublishing'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // LETTERPRESS TODAY — the modern revival of hand-press printing.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderLetterpressToday() {
+        var ltSectRaw = useState('overview');
+        var ltSect = ltSectRaw[0], setLtSect = ltSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview',           icon: '⚒️' },
+          { id: 'hatch',    label: 'Hatch Show Print',   icon: '🎸' },
+          { id: 'studios',  label: 'Letterpress studios', icon: '🛠' },
+          { id: 'learn',    label: 'How to learn',       icon: '🎓' },
+          { id: 'maine',    label: 'Maine letterpress',  icon: '🦞' }
+        ];
+
+        var content;
+        if (ltSect === 'overview') {
+          content = h('div', null,
+            dropCapPara('Letterpress printing — printing from raised type or wood blocks, pressed onto paper — was the dominant printing method for 500 years (1450-1950). It was largely displaced by offset lithography in the 1950s-60s. But it never disappeared. By the 1990s a revival was underway. Today letterpress is a thriving artisanal craft: wedding invitations, art prints, broadsides, craft brewery labels, custom stationery. The texture of impression — letters pressed into thick cotton paper — has become its own aesthetic, distinct from offset or digital print.'),
+            sectionHeader('⚒️', 'What this module covers'),
+            keyPointBlock(null, [
+              { k: 'Hatch Show Print (Nashville)', v: 'America\'s most famous letterpress shop, continuously operating since 1879. Country music posters defining the medium.' },
+              { k: 'Letterpress studios', v: 'Contemporary studios across the US + globally. What they print, how they work, who they serve.' },
+              { k: 'How to learn', v: 'Workshops, schools, online resources. Where to start if you want to letterpress yourself.' },
+              { k: 'Maine letterpress', v: 'The Maine letterpress + book-arts scene, centered in Portland + Brunswick + Camden + Rockport.' }
+            ])
+          );
+        } else if (ltSect === 'hatch') {
+          content = h('div', null,
+            dropCapPara('Hatch Show Print, founded 1879 in Nashville, is America\'s longest continuously-operating letterpress shop + the most famous letterpress studio in the world. It started printing posters for Nashville theaters + tobacco companies + has been printing posters continuously ever since. Today it operates as part of the Country Music Hall of Fame; runs apprenticeships; sells reproductions internationally; and remains a working print shop, producing posters with the same wood + metal type used since the late 1800s.'),
+            keyPointBlock('What Hatch is + how it works', [
+              { k: 'Continuously operating since 1879', v: 'The press never closed. Same building (mostly) for 145+ years. Inherited tradition of poster design + printing.' },
+              { k: 'Famous for country + bluegrass posters', v: 'Hank Williams, Johnny Cash, Dolly Parton, Bob Dylan — Hatch printed posters for all of them at various points. The posters have become iconic.' },
+              { k: 'Style: wood type + bold blocks', v: 'Hatch posters use 19th-c. wood type in big sizes + simple bold blocks of color. Very recognizable aesthetic.' },
+              { k: 'Owned by Country Music Hall of Fame (since 1992)', v: 'Acquired by the Hall of Fame to preserve the operation. Hatch is now both working print shop + museum.' },
+              { k: 'Apprenticeship program', v: 'Hatch trains new generation of letterpress printers. Tours + workshops open to public.' },
+              { k: 'Modern commissions', v: 'Hatch still prints posters for current country + rock + bluegrass artists. Also prints reproductions of historic Hatch posters for sale.' }
+            ])
+          );
+        } else if (ltSect === 'studios') {
+          content = h('div', null,
+            dropCapPara('Today\'s letterpress landscape is hundreds of independent studios across the US + globally. Most are 1-3 person operations. They serve wedding stationery + custom invitation markets, art prints, broadsides, craft brewery labels + branding, fine-press books + chapbooks. A short tour of notable studios:'),
+            keyPointBlock('Selected contemporary letterpress studios', [
+              { k: 'Hatch Show Print (Nashville, TN)', v: 'See previous section. The grand old man of American letterpress.' },
+              { k: 'Hammerpress (Kansas City, MO)', v: 'Founded 1994. Wood-type posters for concerts + bands. Active in the contemporary letterpress + design community.' },
+              { k: 'Gigposters / Spike Press (Chicago, IL)', v: 'Concert + band posters. Major archive of contemporary letterpress poster art.' },
+              { k: 'Yee-Haw Industries (Knoxville, TN)', v: 'Letterpress + design studio. Wedding stationery + custom posters.' },
+              { k: 'Studio On Fire (Minneapolis, MN)', v: 'Premium custom letterpress. Wedding + branding work. Highly regarded design + print quality.' },
+              { k: 'Smock (Syracuse, NY)', v: 'Wedding stationery letterpress + bamboo-paper experiments. Innovative materials work.' },
+              { k: 'Center for Book Arts (NYC)', v: 'Not a commercial studio but a major workshop + exhibition space for letterpress + book arts. Education programs.' },
+              { k: 'Penland School of Craft (NC)', v: 'Major workshop facility with multiple letterpress shops. Workshops for all levels.' },
+              { k: 'Letterpress everywhere', v: 'Beyond named studios, letterpress is alive in hundreds of small markets globally. Most major cities have at least 1-3 working letterpress shops.' }
+            ])
+          );
+        } else if (ltSect === 'learn') {
+          content = h('div', null,
+            dropCapPara('If you want to learn letterpress, you have many options. Workshops (1 day to 2 weeks), schools (semester programs), apprenticeships at working shops, online courses + tutorials. The community is welcoming + most experienced letterpress printers actively want to teach the next generation.'),
+            keyPointBlock('Ways to learn letterpress', [
+              { k: 'Workshops at book-arts centers', v: 'Center for Book Arts (NYC), Penland (NC), Haystack (Deer Isle, ME), San Francisco Center for the Book — all offer letterpress workshops. Weekend to 2-week formats. Cost: $200-$2,000.' },
+              { k: 'Academic programs', v: 'Many art schools include letterpress facilities. Maine College of Art & Design (Portland), Rhode Island School of Design, North Bennet Street School (Boston), University of Iowa, Mills College.' },
+              { k: 'Working-shop apprenticeships', v: 'Some commercial letterpress studios take apprentices. Inquire directly. Hatch Show Print, Studio On Fire, others have formal or informal programs.' },
+              { k: 'YouTube + online tutorials', v: 'Many letterpress printers post tutorials. Searches for "letterpress tutorial" return hundreds of videos. Free + valuable for fundamentals.' },
+              { k: 'Briar Press (online community)', v: 'briarpress.org — long-running online community of letterpress printers. Forums + classified ads for presses + type for sale. Best place to find a small press to buy.' },
+              { k: 'Maine Crafts Association', v: 'mainecrafts.org has Maine-based workshops + studio visits. Several Maine letterpress printers offer workshops.' }
+            ])
+          );
+        } else { // maine
+          content = h('div', null,
+            dropCapPara('Maine has a remarkably active letterpress + book-arts community given its small population. Centers: Portland (MECA&D, Curlew Press, several small studios), Brunswick (Anvil Press, Bowdoin), Camden + Rockport (Center for Furniture Craftsmanship), the Penobscot region (Haystack Mountain School of Crafts on Deer Isle). Both working printers + book artists thrive.'),
+            keyPointBlock('Maine letterpress + book arts', [
+              { k: 'Haystack Mountain School of Crafts (Deer Isle)', v: 'Internationally renowned crafts school on Deer Isle. Summer workshops include letterpress + book arts taught by national-level instructors.' },
+              { k: 'Center for Furniture Craftsmanship (Rockport)', v: 'Book arts + letterpress as adjacent programs. Workshops + residency program.' },
+              { k: 'Maine College of Art & Design (MECA&D, Portland)', v: 'Active letterpress + printmaking facilities. Many alumni operate small Maine studios.' },
+              { k: 'Saltbox Press (Brunswick)', v: 'Working letterpress shop with vintage Vandercook + Heidelberg presses. Workshops + commissions.' },
+              { k: 'Curlew Press (Portland)', v: 'Letterpress + design studio. Wedding stationery, custom broadsides, art prints.' },
+              { k: 'Anvil Press Poetry (Brunswick)', v: 'Letterpress poetry chapbooks. Several titles distributed nationally.' },
+              { k: 'Bookmark Studio / Mary Beauregard (Portland)', v: 'Book artist + binder. Workshops in book binding + box-making.' },
+              { k: 'Common Ground Country Fair (Unity, MOFGA, every September)', v: 'Maine\'s largest crafts fair. Multiple letterpress + book-arts artisans exhibit + sell.' }
+            ]),
+            calloutBox('info', 'Visit working letterpress shops in person',
+              h('p', { style: { margin: 0, lineHeight: 1.6 } },
+                'Most working letterpress shops will welcome visitors who call ahead. Many offer single-day workshops. The cost is modest; the experience is transformative — you leave knowing what it feels like to set type, ink a press, pull a print. The Falmouth Gazette\'s ghost runs through these shops; the technology has not changed in any fundamental way for 500 years.')
+            )
+          );
+        }
+
+        return h('div', null,
+          backBar('⚒️ Letterpress Today'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) {
+              var sel = (ltSect === s.id);
+              return h('button', { key: s.id,
+                onClick: function() { setLtSect(s.id); announce(s.label); },
+                style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                s.icon + ' ' + s.label);
+            })
+          ),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            content
+          ),
+          miniQuizBlock('letterpressToday', [
+            { q: 'America\'s longest continuously-operating letterpress shop is:',
+              opts: ['Studio On Fire (Minneapolis)', 'Hatch Show Print (Nashville, since 1879)', 'Centro Stampa (NYC)', 'Saltbox Press (Brunswick, ME)'],
+              ans: 1, explain: 'Hatch Show Print in Nashville has been continuously operating since 1879 — 145+ years. Now owned by the Country Music Hall of Fame. Famous for country music posters with bold wood-type design.' },
+            { q: 'Why has letterpress survived after offset printing replaced it commercially?',
+              opts: ['It is now cheaper than offset', 'Its physical impression (raised letter pressed into thick paper) has become a distinct aesthetic prized for wedding invitations, art prints, + craft branding', 'The federal government mandates it', 'Only one type of paper works'],
+              ans: 1, explain: 'Letterpress nearly died in the 1950s-60s when offset printing replaced it commercially. By the 1990s it had revived as an art + craft form. The tactile impression in thick cotton paper has become a distinct aesthetic prized for premium printed work — wedding invitations, broadsides, art prints, craft beer labels.' },
+            { q: 'Where can a beginner learn letterpress?',
+              opts: ['Only at a few specialized US institutions', 'Workshops at book-arts centers, academic programs, working-shop apprenticeships, online tutorials, + craft schools', 'It cannot be learned outside Germany', 'Through video games only'],
+              ans: 1, explain: 'Letterpress can be learned through many paths: weekend workshops at book-arts centers (Center for Book Arts NYC, Penland NC, Haystack ME, etc.), semester programs at art schools, working-shop apprenticeships, YouTube tutorials, the Briar Press online community.' }
+          ]),
+          sourcesBlock([
+            { label: 'Hatch Show Print', url: 'https://www.hatchshowprint.com/' },
+            { label: 'Briar Press community + forums', url: 'http://www.briarpress.org/' },
+            { label: 'Center for Book Arts (NYC)', url: 'https://centerforbookarts.org/' },
+            { label: 'Haystack Mountain School of Crafts', url: 'https://www.haystack-mtn.org/' },
+            { label: 'Penland School of Craft', url: 'https://penland.org/' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['NCAS Visual Arts (craft + design)', 'Common career exploration (CTE adjacent)'],
+            discussion: [
+              'Why might handcraft survive after machines replace it commercially?',
+              'How is a 2026 letterpress wedding invitation similar to a 1500 broadside? How different?',
+              'What does the survival of letterpress say about what people value in printed material?'
+            ],
+            misconceptions: [
+              { wrong: 'Letterpress died with offset printing', right: 'Letterpress nearly died commercially but never disappeared. It revived in the 1990s as a thriving craft. Today hundreds of working letterpress studios exist across the US + globally.' }
+            ],
+            extension: 'Find your nearest letterpress shop (try mainecrafts.org for Maine, or a Google search for your area). Call + ask for a tour. Most will welcome you. Experience the smell of ink + the heft of metal type for yourself.'
+          }),
+          crossLinkFooter('letterpressToday'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // PRESS VARIANTS THROUGH TIME — Gutenberg → Stanhope → Adana →
+      // Heidelberg → digital. Interactive press picker with specs + history.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderPressVariants() {
+        var pvIdxRaw = useState(0);
+        var pvIdx = pvIdxRaw[0], setPvIdx = pvIdxRaw[1];
+        var presses = [
+          { name: 'Gutenberg wooden screw press', year: 1450, region: 'Mainz', emoji: '🪵',
+            rate: '~240 sheets/hour', force: '~1 ton', size: '6-9 ft tall, ~250 kg',
+            innovation: 'Adapted from wine + olive-oil presses. First mechanical advantage applied to printing.',
+            tradeoff: 'Slow setup (each impression manual). Limited force = limited paper thickness.',
+            blurb: 'Gutenberg\'s original — a heavy wooden frame with a vertical screw that drove a flat platen down onto inked type laid in a forme. The pressman pulled a bar to turn the screw, the platen pressed the paper against the type, the bar reversed to lift. Every motion done by hand. The press did not change fundamentally for 350 years.'
+          },
+          { name: 'Blaeu Dutch press', year: 1620, region: 'Amsterdam', emoji: '🇳🇱',
+            rate: '~250 sheets/hour', force: '~1.5 tons', size: 'Similar to Gutenberg but more refined',
+            innovation: 'Counterweight system that made screw return automatic (released pressman from a step).',
+            tradeoff: 'Still wood; still hand-powered.',
+            blurb: 'Willem Blaeu, the Dutch master cartographer + printer, redesigned the Gutenberg press in the early 1600s with a counterweight that returned the screw automatically after each impression. Small change; significant productivity gain. Most European presses adopted variations of the Blaeu design within decades.'
+          },
+          { name: 'Stanhope iron press', year: 1800, region: 'England', emoji: '⚙️',
+            rate: '~250 sheets/hour', force: '~4 tons', size: '~6 ft, all iron, ~1 ton',
+            innovation: 'First all-iron press. Cast iron frame replaced wood. Compound lever system multiplied the pressman\'s force.',
+            tradeoff: 'Heavy + expensive (initial cost), but allowed bigger forms + thicker paper.',
+            blurb: 'Charles Mahon, 3rd Earl Stanhope, designed the first iron press around 1800. The all-iron construction was rigid + permanent. The compound lever turned modest pressman effort into 4 tons of force on the platen. The Stanhope press allowed bigger sheets (royal + larger), heavier papers, more durable forms. Standard in serious print shops by 1820.'
+          },
+          { name: 'Columbian / Albion press', year: 1813, region: 'USA + UK', emoji: '🦅',
+            rate: '~250 sheets/hour', force: '~5 tons', size: '~6 ft iron',
+            innovation: 'Refined iron designs. Columbian (American, 1813) used a bald-eagle counterweight. Albion (British, 1820) used a toggle-lever system.',
+            tradeoff: 'Manual pressmen — still slow.',
+            blurb: 'Two iron-press refinements competed in the early 1800s. The Columbian (George Clymer, Philadelphia, 1813) used a distinctive bald-eagle counterweight that made the press visually iconic. The Albion (Richard Cope, London, 1820) used a sliding-toggle mechanism. Both reigned in fine-press + private-press work for over a century; both are still actively used by letterpress artists today.'
+          },
+          { name: 'Steam-powered Koenig press', year: 1814, region: 'London', emoji: '🚂',
+            rate: '~1,100 sheets/hour', force: 'Cylinder-roller, very high', size: 'Industrial, ~2 tons',
+            innovation: 'First steam-powered press. Cylinder rolled over flat forme instead of platen pressing down. Massive speed gain.',
+            tradeoff: 'Required steam infrastructure + much higher capital investment.',
+            blurb: 'Friedrich Koenig + Andreas Friedrich Bauer demonstrated their steam-powered press to The Times of London in 1814. The Times immediately adopted it. Output: ~1,100 sheets/hour vs ~250 for hand presses — a 4× speed gain. Steam printing made the penny-press era (1830s onward) possible. Books + newspapers became affordable to ordinary readers.'
+          },
+          { name: 'Hoe rotary press', year: 1846, region: 'New York', emoji: '🔄',
+            rate: '~8,000 newspapers/hour', force: 'Roller-on-curved-cylinder',
+            size: 'Multi-ton, room-sized',
+            innovation: 'Cylindrical type carrier (curved plates of stereotype) rotating against paper roll. Continuous feed.',
+            tradeoff: 'Required pre-prepared stereotypes (no flat-type setup).',
+            blurb: 'Richard March Hoe of New York built the first true rotary press in 1846. Curved stereotype plates (cast metal duplicates of the type forme) wrapped around a cylinder; paper fed continuously between cylinders. Massive newspapers were now possible. By 1880s the New York World was running 60,000+ papers/hour on Hoe presses.'
+          },
+          { name: 'Adana tabletop letterpress', year: 1922, region: 'England', emoji: '🪑',
+            rate: '~200 impressions/hour', force: 'Modest, hand-lever',
+            size: '~25 cm tall, sits on a desk',
+            innovation: 'Small, affordable, designed for home + hobbyist use. The accessibility revolution for letterpress.',
+            tradeoff: 'Small forme size limits work.',
+            blurb: 'Donald Aspinall founded Adana Ltd in 1922 to make small tabletop letterpresses for amateur use. Adanas could be bought for the price of a good camera + run in a domestic workshop. They sparked the amateur letterpress hobby that became today\'s artisan letterpress revival. Adanas are still highly prized; vintage models sell for $400-$1,200.'
+          },
+          { name: 'Heidelberg Windmill', year: 1923, region: 'Germany', emoji: '💨',
+            rate: '~5,000 impressions/hour', force: 'Powerful, automated',
+            size: 'Cast iron, ~1.5 m tall, ~1 ton',
+            innovation: 'Automated paper feed via swinging gripper arms (the "windmill"). Combined letterpress quality with industrial throughput.',
+            tradeoff: 'Required skilled operator + maintenance.',
+            blurb: 'The Heidelberg Original Platen press, introduced in 1923, became the global standard for industrial letterpress. Distinctive swinging gripper arms (which gave it the nickname "Windmill") took fresh paper sheets from a stack, fed them through the press, + caught them on the exit side. Heidelbergs were built in massive numbers; many are still working today in letterpress studios + small printers worldwide. The yellow-painted Heidelberg Windmill is one of the most recognized industrial machines of the 20th century.'
+          },
+          { name: 'Linotype hot-metal composition', year: 1886, region: 'USA', emoji: '⌨️',
+            rate: '~6 lines/minute (vs ~30 sec per line by hand)', force: 'Press-coupled, automated',
+            size: 'Massive cabinet, ~2 m tall, room-required',
+            innovation: 'Cast a "line of type" (slug) from molten metal as the operator typed. Replaced laborious hand-composition.',
+            tradeoff: 'Hot metal (300°C+); required skilled operators + ongoing maintenance.',
+            blurb: 'Ottmar Mergenthaler invented the Linotype in 1886. A keyboard operator typed; brass matrices dropped into a line; the line was filled with molten lead-tin-antimony alloy; out came a single "slug" of solid metal type. Linotype made newspaper composition fast enough for daily papers to grow to 60+ pages. Most major US newspapers used Linotypes until phototypesetting + computer composition replaced them in the 1960s-80s.'
+          },
+          { name: 'Offset lithography', year: '1875 (concept), 1903 (commercial)', region: 'USA + Germany', emoji: '🖨',
+            rate: '~10,000+ sheets/hour', force: 'Roller-based, indirect',
+            size: 'Industrial, room-sized',
+            innovation: 'Image transferred from plate to rubber blanket to paper (indirect = "offset"). Replaces letterpress for most commercial printing.',
+            tradeoff: 'Different aesthetic (no impression). Different prepress workflow.',
+            blurb: 'Offset lithography uses a flexible aluminum plate with the image drawn (now created photographically/digitally) in a water-repelling material. Inks adhere to the image areas; water keeps non-image areas clean. The image transfers from plate to rubber blanket to paper. Ira Washington Rubel built the first offset press in 1903 (originally for tin can labels). By the 1950s offset had displaced letterpress for nearly all commercial book + magazine printing.'
+          },
+          { name: 'Digital + inkjet press', year: 1993, region: 'USA + Israel + Japan', emoji: '💻',
+            rate: 'Variable: 100-50,000+ pages/hour', force: 'No physical impression',
+            size: 'From desktop to industrial',
+            innovation: 'No plate. Image transferred from digital file directly to paper via toner (Indigo, HP) or inkjet (Xerox, Canon, HP).',
+            tradeoff: 'Per-unit cost higher than offset for big runs; far cheaper for short runs.',
+            blurb: 'Benny Landa demonstrated the Indigo digital press at Drupa 1993 — first commercially viable digital printing press. HP acquired Indigo in 2001. Digital + inkjet presses now dominate short-run printing (1-1,000 copies); offset still dominates large runs (5,000+). Print-on-demand services like Amazon KDP, IngramSpark, Lulu use this technology to print individual books on order — a paradigm shift in book publishing.'
+          }
+        ];
+        var p = presses[pvIdx] || presses[0];
+
+        return h('div', null,
+          backBar('🏗 Press Variants Through Time'),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            dropCapPara('Eleven major press designs across 575 years. Each one solved a specific problem the previous press could not. Together they trace how a wooden wine-press derivative became a room-sized industrial machine became a desktop laser printer.')
+          ),
+          // Press picker
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            presses.map(function(pp, i) {
+              var sel = (i === pvIdx);
+              return h('button', { key: i,
+                onClick: function() { setPvIdx(i); announce(pp.name); },
+                style: btn({ padding: '7px 10px', fontSize: 11, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                pp.year + ' · ' + pp.name.split(' ')[0]);
+            })
+          ),
+          // Selected press detail
+          h('div', { style: { background: T.cardAlt, border: '2px solid ' + T.accent, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            h('div', { style: { fontSize: 64, textAlign: 'center', marginBottom: 8 } }, p.emoji),
+            h('div', { style: { fontSize: 11, color: T.accentHi, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, fontFamily: 'ui-monospace, monospace', textAlign: 'center' } },
+              p.year + ' · ' + p.region),
+            h('h3', { style: { fontSize: 22, fontWeight: 700, color: T.text, fontFamily: 'Georgia, serif', margin: '0 0 14px', textAlign: 'center' } }, p.name),
+            h('p', { style: { margin: '0 0 14px', color: T.muted, fontSize: 14, lineHeight: 1.7 } }, p.blurb),
+            // Spec table
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10, marginBottom: 12 } },
+              [
+                { lbl: 'Output rate', val: p.rate },
+                { lbl: 'Force', val: p.force },
+                { lbl: 'Size', val: p.size }
+              ].map(function(stat, i) {
+                return h('div', { key: i, style: { background: T.card, padding: 10, borderRadius: 8, textAlign: 'center' } },
+                  h('div', { style: { fontSize: 10, color: T.dim, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' } }, stat.lbl),
+                  h('div', { style: { fontSize: 13, color: T.accentHi, fontFamily: 'ui-monospace, monospace', marginTop: 4, fontWeight: 700 } }, stat.val));
+              })
+            ),
+            h('div', { style: { background: 'rgba(127,176,105,0.08)', border: '1px solid ' + T.ok, borderRadius: 8, padding: 10, marginBottom: 8 } },
+              h('strong', { style: { color: T.ok } }, '🔧 Innovation: '),
+              h('span', { style: { color: T.muted, fontSize: 13 } }, p.innovation)),
+            h('div', { style: { background: 'rgba(212,153,0,0.10)', border: '1px solid ' + T.warn, borderRadius: 8, padding: 10 } },
+              h('strong', { style: { color: T.warn } }, '⚖ Trade-off: '),
+              h('span', { style: { color: T.muted, fontSize: 13 } }, p.tradeoff))
+          ),
+          // Timeline navigation
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 14 } },
+            h('button', { disabled: pvIdx <= 0,
+              onClick: function() { setPvIdx(Math.max(0, pvIdx - 1)); },
+              style: btn({ padding: '8px 14px', fontSize: 13, opacity: pvIdx <= 0 ? 0.4 : 1 }) }, '← Older press'),
+            h('div', { style: { fontSize: 12, color: T.muted, alignSelf: 'center' } }, (pvIdx + 1) + ' / ' + presses.length),
+            h('button', { disabled: pvIdx >= presses.length - 1,
+              onClick: function() { setPvIdx(Math.min(presses.length - 1, pvIdx + 1)); },
+              style: btnPrimary({ padding: '8px 14px', fontSize: 13, opacity: pvIdx >= presses.length - 1 ? 0.4 : 1 }) }, 'Newer press →')
+          ),
+          miniQuizBlock('pressVariants', [
+            { q: 'What was the principal innovation of the Stanhope iron press (~1800)?',
+              opts: ['First steam-powered press', 'First all-iron construction with compound lever — replaced wood + multiplied force', 'First color printing', 'First digital press'],
+              ans: 1, explain: 'Charles Stanhope (3rd Earl Stanhope) designed the first all-iron press around 1800. Cast iron frame replaced wood + compound lever multiplied pressman force to ~4 tons. Allowed bigger sheets + heavier papers.' },
+            { q: 'Who invented the first steam-powered printing press?',
+              opts: ['Gutenberg', 'Friedrich Koenig + Andreas Bauer (1814)', 'Stanhope', 'Edison'],
+              ans: 1, explain: 'Friedrich Koenig + Andreas Bauer demonstrated their steam press to The Times of London in 1814. Output jumped from ~250 sheets/hour (hand press) to ~1,100. Made the penny-press era possible.' },
+            { q: 'What is special about the Heidelberg Windmill press (1923+)?',
+              opts: ['It runs on wind', 'Automated paper feed via swinging gripper arms — combined letterpress quality with industrial throughput. Many still operating today.', 'It was the first color press', 'It uses no ink'],
+              ans: 1, explain: 'The Heidelberg Original Platen ("Windmill") press has swinging gripper arms that automatically feed + remove paper. Standard global letterpress for industrial work since 1923. Many still operating in letterpress studios + small printers in 2026.' }
+          ]),
+          sourcesBlock([
+            { label: 'Sigfrid Steinberg, Five Hundred Years of Printing (1955, revised 1996)' },
+            { label: 'Frank Romano, History of the Linotype Company (2014)' },
+            { label: 'James Moran, Printing Presses: History and Development from the Fifteenth Century to Modern Times (1973)' },
+            { label: 'The International Printing Museum (Carson, CA)', url: 'https://www.printmuseum.org/' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['NGSS HS-ETS1-3 (technology systems)', 'NCSS D2.His.5.6-8 (cause + effect)'],
+            discussion: [
+              'Compare the speed gain Gutenberg→Stanhope→Koenig→Hoe→digital. Each is roughly 4× the previous. What enables each jump?',
+              'Why did the Heidelberg Windmill survive in regular use for 100+ years when many other industrial machines did not?',
+              'Digital + inkjet printing is making offset (the dominant printing method for 70 years) decline. What\'s replacing what?'
+            ],
+            misconceptions: [
+              { wrong: 'Printing technology is settled — has not changed much', right: 'Printing technology changes every generation. The transition from offset to digital + inkjet that happened 2000-2025 is comparable in scale to the transition from hand press to steam press in 1814-1850.' }
+            ],
+            extension: 'Visit a working printing operation near you — a newspaper, a print shop, a copy/print store. Ask what equipment they use + how long it has been there. Compare with the timeline you just saw.'
+          }),
+          crossLinkFooter('pressVariants'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // THE REFORMATION PRINT WAR — Luther vs Rome pamphlet battle 1517-1555.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderReformation() {
+        var rfSectRaw = useState('overview');
+        var rfSect = rfSectRaw[0], setRfSect = rfSectRaw[1];
+        var sections = [
+          { id: 'overview',  label: 'Overview',           icon: '⚔️' },
+          { id: 'timeline',  label: 'Timeline',           icon: '📅' },
+          { id: 'lutherwin', label: "Why Luther's side won the print war", icon: '🏆' },
+          { id: 'catholic',  label: 'Catholic response',  icon: '⛪' },
+          { id: 'echo',      label: 'Modern echo',        icon: '📢' }
+        ];
+
+        var content;
+        if (rfSect === 'overview') {
+          content = h('div', null,
+            dropCapPara('When Martin Luther nailed his 95 Theses to the door of Castle Church at Wittenberg on October 31, 1517, he probably did not expect to start a global religious revolution. He certainly did not expect the printing press to be the medium that made the revolution global within months. The Reformation print war (~1517-1555) was the first time information technology was decisive in changing world history. Luther + the Reformers won partly because they printed faster + cheaper + in the vernacular. Rome eventually caught up but lost ground that was never fully recovered.'),
+            sectionHeader('⚔️', 'What this module covers'),
+            keyPointBlock(null, [
+              { k: 'Timeline', v: '1517 Theses to 1555 Peace of Augsburg. Decade by decade.' },
+              { k: 'Why Luther\'s side won the print war', v: 'Speed, vernacular language, distribution networks, mass-pamphlet form, integration with sermons.' },
+              { k: 'Catholic response', v: 'How Rome eventually responded — Council of Trent, Index of Prohibited Books, Jesuit education, Counter-Reformation art + architecture.' },
+              { k: 'Modern echo', v: 'Why the dynamics of the Reformation print war keep getting compared to the internet + AI era. What\'s similar; what\'s different.' }
+            ])
+          );
+        } else if (rfSect === 'timeline') {
+          content = h('div', null,
+            dropCapPara('Decade by decade. 1517-1555 is the heart of the Reformation print war.'),
+            keyPointBlock('Print war timeline', [
+              { k: '1517 Oct 31', v: 'Luther posts 95 Theses (in Latin) on indulgences. He sends copies to bishops + universities. Hans Lufft + Melchior Lotter print German + Latin pamphlet editions of the Theses within weeks; they spread across Germany.' },
+              { k: '1518', v: 'Luther writes 5+ more pamphlets. Most print in 1,000-2,000 copy editions. Some go through multiple editions. Total Luther-pamphlet output 1517-1520: ~30 titles, several hundred thousand copies.' },
+              { k: '1520', v: 'Luther publishes 3 foundational pamphlets — Address to the Christian Nobility (1520), On the Babylonian Captivity, On the Freedom of a Christian. Pope Leo X issues the bull Exsurge Domine threatening Luther with excommunication.' },
+              { k: '1521 January', v: 'Luther excommunicated. April: Diet of Worms. Luther refuses to recant — "Here I stand." Edict of Worms outlaws his writings. Frederick the Wise hides Luther at the Wartburg castle.' },
+              { k: '1521-22', v: 'At the Wartburg, Luther translates the New Testament into German in 11 weeks (September Bible, published Sept 1522). 5,000 copies in first edition; 200,000+ in revisions across Luther\'s lifetime.' },
+              { k: '1525', v: 'Luther\'s German New Testament joins his full German Bible project. Peasants\' War — Luther disavows the peasants. Reformation enters its first internal crisis.' },
+              { k: '1526', v: 'Diet of Speyer — German states allowed to choose between Catholic + Reformed. First tolerance of Reformation as legitimate alternative.' },
+              { k: '1530', v: 'Augsburg Confession — formal Lutheran statement of faith. Printed + distributed across Europe in dozens of editions.' },
+              { k: '1531', v: 'Schmalkaldic League — Protestant German states form military alliance against Holy Roman Empire.' },
+              { k: '1534', v: 'Luther\'s complete German Bible published. The translation will become the defining German-language Bible — comparable in impact to the King James Bible in English.' },
+              { k: '1540', v: 'Society of Jesus (Jesuits) approved by Pope Paul III. Catholic intellectual counterattack begins.' },
+              { k: '1545-1563', v: 'Council of Trent. Catholic Church\'s formal response — clarifying doctrine, reforming clergy, condemning Protestant theology. The institutional Counter-Reformation begins.' },
+              { k: '1555', v: 'Peace of Augsburg — German princes given right to decide their territories\' religion (cuius regio, eius religio). Lutheranism legally recognized. Calvinism + Anabaptism still illegal. The Peace will hold until the Thirty Years\' War (1618).' }
+            ])
+          );
+        } else if (rfSect === 'lutherwin') {
+          content = h('div', null,
+            dropCapPara('Why did the Protestant side win the print war? Speed, language, distribution, format, integration with preaching. Catholic authorities had the same press technology, but they used it slower + more selectively. By the time Rome organized its print response, Lutheran ideas had a 20-year head start in Germany + much of Northern Europe.'),
+            keyPointBlock('Why Luther\'s side dominated the print war', [
+              { k: 'Speed of response', v: 'Luther wrote fast. A new pamphlet would appear within weeks of any event needing comment. Catholic responses often took months. By the time the response printed, Luther\'s next pamphlet had already shaped reader opinion.' },
+              { k: 'Vernacular language', v: 'Luther wrote in German. Most Catholic responses were in Latin. German pamphlets reached ordinary literate Germans (merchants, artisans, urban workers) who could not read Latin. The Catholic response reached only the clerical + scholarly elite.' },
+              { k: 'Distribution networks', v: 'Protestant printers worked across Germany — Wittenberg, Augsburg, Nuremberg, Strasbourg. Pamphlets traveled via merchant networks, packhorses, traveling preachers. Catholic distribution depended more on church hierarchies, which were slower + more controlled.' },
+              { k: 'Pamphlet format', v: 'Luther + his followers used short pamphlets (4-32 pages), cheap, accessible, with simple woodcut illustrations. Catholic responses often used longer scholarly treatises that ordinary readers found impenetrable.' },
+              { k: 'Integration with preaching', v: 'Protestant printers worked closely with preachers. A new pamphlet would be read aloud in churches the following Sunday + then distributed. Print + preaching reinforced each other. Catholic preaching + printing were less synchronized.' },
+              { k: 'Strategic use of woodcut images', v: 'Lucas Cranach the Elder + others produced anti-Catholic woodcut images for the Reformation. Cheap, vivid, often satirical. The combination of text + image hit harder than pure text. Pope Leo X depicted with donkey ears, etc.' },
+              { k: 'Print as confession-of-faith', v: 'Owning Reformation pamphlets became a signal of political + religious identity in many German cities. Print served not just to inform but to mark you as a Lutheran.' }
+            ])
+          );
+        } else if (rfSect === 'catholic') {
+          content = h('div', null,
+            dropCapPara('Catholic authorities did not lack for printing capacity — Rome had presses, Catholic Spain + Italy had presses. What they lacked was speed + adaptability. Rome\'s response to Luther took decades to organize. When it came, it was massive + sophisticated + ultimately recaptured much of Europe. But the German-speaking heart of Protestantism was permanently lost.'),
+            keyPointBlock('The Catholic response, organized + delayed', [
+              { k: 'Initial response: condemnation + censorship', v: 'Papal bulls + Diet decrees outlawing Luther + his writings. Effective in Catholic regions but unenforceable in Protestant ones. Index of Prohibited Books (1559) formalized the censorship system but was decades late.' },
+              { k: 'Council of Trent (1545-1563)', v: '18 years of intermittent church councils clarifying Catholic doctrine on every point Luther had attacked — justification by faith, sacraments, role of scripture vs tradition, ecclesiastical structure. The Tridentine decrees became Catholic doctrine for 400+ years.' },
+              { k: 'Catholic vernacular printing', v: 'Catholic vernacular printing eventually arrived but late. Catholic Bibles in German (1534+ Eck), French (1530+), Polish, Czech, etc. — but typically after Protestant versions had already circulated for years.' },
+              { k: 'Jesuit education', v: 'Society of Jesus (founded 1540) focused on education at the schoolboy level. By 1600 the Jesuits ran hundreds of schools + universities across Europe + the Americas. Reformed students through educational institutions rather than pamphlet warfare.' },
+              { k: 'Counter-Reformation art + architecture', v: 'Baroque art + architecture became Catholic propaganda — emotionally overwhelming, theatrically lit, designed to overpower Reformed plainness. Caravaggio, Bernini, the Gesù church. The visual response to Protestant minimalism.' },
+              { k: 'Inquisition', v: 'Roman Inquisition + Spanish Inquisition + Portuguese Inquisition imprisoned + executed Protestant + suspected-Protestant readers. Burned books. Drove Reformation print underground in Catholic regions but did not eliminate it.' }
+            ]),
+            sectionHeader('🌍', 'Geographic outcome'),
+            calloutBox('info', 'By 1600, Europe was permanently divided',
+              h('p', { style: { margin: 0, lineHeight: 1.6 } },
+                'Northern Europe — Germany, Scandinavia, England, Scotland, Netherlands — stayed Protestant. Southern + Mediterranean Europe — Italy, Spain, Portugal, France (after 1685 expulsion of Huguenots), Austria — stayed Catholic. Central Europe — Poland, Hungary, Bohemia — became Catholic again via Counter-Reformation success. The division held for the next 400 years + persists to this day in church membership + cultural patterns.')
+            )
+          );
+        } else { // modern echo
+          content = h('div', null,
+            dropCapPara('The Reformation print war keeps being compared to modern information wars — the internet era, social media, AI-generated content. The analogies are imperfect but instructive. Both involve sudden technology making information cheap + distributed. Both involve authorities trying to control what cannot be controlled. Both involve winners + losers being decided by speed + format + reach as much as by truth.'),
+            keyPointBlock('Reformation print war + modern parallels', [
+              { k: 'Speed advantage', v: 'Luther printed in weeks while Rome took months. Social media now operates in hours; news cycles in minutes. Both eras: faster wins.' },
+              { k: 'Vernacular + plain language', v: 'Luther chose German over Latin. Modern: plain-spoken accessible content beats expert-credentialed analysis in reach (if not in accuracy).' },
+              { k: 'Distribution network advantages', v: 'Reformation printers worked the merchant + university networks. Modern: platform algorithms determine reach. Owning the distribution network is owning the war.' },
+              { k: 'Visual reinforcement', v: 'Reformers used woodcuts to amplify text. Modern: memes + video amplify text + reduce arguments to images. Same pattern.' },
+              { k: 'Authority lag', v: 'Rome took 30+ years to organize a coherent response. Modern: regulatory + media authorities consistently lag tech-platform reality by 5-10 years.' },
+              { k: 'Permanent geographic split', v: 'Reformation split Europe religiously for 400+ years. Modern: information ecosystems are increasingly fragmented by political identity in ways that persist.' },
+              { k: 'Disinformation + manipulation', v: 'Reformation pamphlets included sensational rumors + crude exaggerations. Modern: same patterns, with AI-generated images + video amplifying the problem.' }
+            ]),
+            sectionHeader('🤔', 'Important caveats'),
+            calloutBox('warn', 'The analogy is imperfect',
+              h('p', { style: { margin: 0, lineHeight: 1.6 } },
+                'Be careful with the analogy. The Reformation was driven by genuine theological + political grievances, not just by new technology. Print accelerated trends already in motion. The same caveat applies to digital + AI: technology amplifies; it rarely creates the underlying forces. The Reformation print war is instructive about how information technology interacts with institutional change — not about whether technology by itself is the cause of change.')
+            )
+          );
+        }
+
+        return h('div', null,
+          backBar('⚔️ The Reformation Print War'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) {
+              var sel = (rfSect === s.id);
+              return h('button', { key: s.id,
+                onClick: function() { setRfSect(s.id); announce(s.label); },
+                style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                s.icon + ' ' + s.label);
+            })
+          ),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            content
+          ),
+          miniQuizBlock('reformation', [
+            { q: 'When did Luther post the 95 Theses?',
+              opts: ['October 31, 1517', '1450', '1599', '1640'],
+              ans: 0, explain: 'Luther posted his 95 Theses (in Latin) on the door of Castle Church at Wittenberg on October 31, 1517. Within weeks German + Latin pamphlet editions printed. The print war was underway.' },
+            { q: 'In what language did Luther primarily write his pamphlets after 1518?',
+              opts: ['Latin', 'German', 'Greek', 'French'],
+              ans: 1, explain: 'Luther wrote in German (with some early Latin). This vernacular choice was a major reason his pamphlets reached ordinary literate Germans while Catholic responses (mostly in Latin) reached only clerical + scholarly elite.' },
+            { q: 'When did the Peace of Augsburg recognize Lutheranism as a legitimate religion in German states?',
+              opts: ['1517', '1530', '1555', '1648'],
+              ans: 2, explain: 'Peace of Augsburg (1555) ended the first phase of the Reformation print war. German princes given the right to decide their territory\'s religion (cuius regio, eius religio). Lutheranism formally recognized; Calvinism + Anabaptism still illegal.' }
+          ]),
+          sourcesBlock([
+            { label: 'Andrew Pettegree, Brand Luther: How an Unheralded Monk Turned His Small Town into a Center of Publishing (2015)' },
+            { label: 'Mark Edwards Jr., Printing, Propaganda, and Martin Luther (1994)' },
+            { label: 'Diarmaid MacCulloch, The Reformation: A History (2003)' },
+            { label: 'Robert Scribner, For the Sake of Simple Folk: Popular Propaganda for the German Reformation (1981)' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['NCSS D2.His.4.6-8 (causation)', 'NCSS D2.His.5.6-8 (contextualization)'],
+            discussion: [
+              'Compare the speed of Luther + the Catholic response. Why was Luther so much faster?',
+              'Could the Catholic Church have won the print war if it had been faster? What if it had also printed pamphlets in German?',
+              'Apply the Reformation print war pattern to a modern information conflict you know about. What\'s the same? What\'s different?'
+            ],
+            misconceptions: [
+              { wrong: 'The Reformation was just about religion', right: 'The Reformation was equally about politics, economics (church property), national identity (German vs Italian), + technology (print). All bundled together.' }
+            ],
+            extension: 'Find a digital scan of a Luther pamphlet from 1520 (Wolfenbüttel Digital Library, HAB, has many). Notice the layout, the woodcut imagery, the short length. Why might this have been more effective at reaching ordinary readers than a Latin scholarly treatise?'
+          }),
+          crossLinkFooter('reformation'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // COLOR PRINTING HISTORY — hand-coloring → chromolithography → CMYK.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderColorPrinting() {
+        var cpSectRaw = useState('overview');
+        var cpSect = cpSectRaw[0], setCpSect = cpSectRaw[1];
+        var sections = [
+          { id: 'overview',  label: 'Overview',           icon: '🌈' },
+          { id: 'hand',      label: 'Hand-coloring',      icon: '🖌' },
+          { id: 'chromo',    label: 'Chromolithography',  icon: '🎨' },
+          { id: 'photo',     label: 'Photogravure + halftone', icon: '📷' },
+          { id: 'cmyk',      label: 'CMYK offset',        icon: '🖨' },
+          { id: 'digital',   label: 'Digital RGB',        icon: '💻' }
+        ];
+
+        var content;
+        if (cpSect === 'overview') {
+          content = h('div', null,
+            dropCapPara('Color printing has been one of the hardest problems in print. Every step from Gutenberg to today\'s digital RGB has involved figuring out a new way to put color onto paper. Six eras of color printing technology — each with its own technical breakthroughs, its own aesthetic, its own production economics.'),
+            sectionHeader('🌈', 'What this module covers'),
+            keyPointBlock(null, [
+              { k: 'Hand-coloring (1450-1850)', v: 'For 400 years, books with color had it painted in by hand after black-line printing.' },
+              { k: 'Chromolithography (1837+)', v: 'Multi-stone lithography enabled true mass color printing. Sparked the late-Victorian color-print explosion.' },
+              { k: 'Photogravure + halftone (1880s+)', v: 'Photographic methods for reproducing photographs in print — the technology that made photojournalism possible.' },
+              { k: 'CMYK offset (1950s+)', v: '4-color process printing — cyan/magenta/yellow/black — became standard for offset lithography. The dominant commercial method 1950-2010.' },
+              { k: 'Digital RGB (2000+)', v: 'Inkjet + digital + screen color. Why your screen RGB looks different from a printed CMYK + how designers work around it.' }
+            ])
+          );
+        } else if (cpSect === 'hand') {
+          content = h('div', null,
+            dropCapPara('For the first 400 years of European printing, "color printing" meant printing in black + having someone paint colors in afterward. Specialist colorists worked for stationers + booksellers; some books were sold either uncolored or hand-colored at different price points. Hand-coloring continued for high-end botanical, ornithological, atlas, + costume books well into the 1850s.'),
+            keyPointBlock('Famous hand-colored books', [
+              { k: 'Audubon, Birds of America (1827-1838)', v: 'Most famous hand-colored work ever printed. ~435 life-size bird plates, each hand-colored by Robert Havell\'s London team. Original "double elephant folio" edition — 200 copies, only 119 known surviving. A 2010 Sotheby\'s sale: $11.5 million.' },
+              { k: 'Ortelius, Theatrum Orbis Terrarum (1570)', v: 'Sold both colored + uncolored. Colored copies cost roughly 2× uncolored. Major libraries today have multiple copies in different coloring states.' },
+              { k: 'Blaeu Atlas Maior (1662)', v: 'Massive 11-volume Dutch atlas. Hand-colored copies were among the most expensive books ever printed in the 17th century.' },
+              { k: 'Levaillant, Histoire Naturelle des Oiseaux d\'Afrique (1796-1808)', v: 'Major hand-colored African ornithology work. Colorists working on these spent years per copy.' },
+              { k: 'Botanical works through 1850', v: 'Maria Sibylla Merian (1705), Pierre-Joseph Redouté (Les Roses 1817-1824), Walter Hood Fitch — botanical illustration tradition was hand-colored until chromolithography displaced it mid-1800s.' }
+            ])
+          );
+        } else if (cpSect === 'chromo') {
+          content = h('div', null,
+            dropCapPara('Lithography (invented 1796 by Alois Senefelder) was a flat-surface printing method — the image drawn on limestone in a greasy crayon, the stone wetted, ink applied (it stuck to the greasy areas + not the wet). In the 1830s-40s, Godefroy Engelmann + others extended this to multi-color printing — chromolithography. Each color used a separate stone; the paper was printed multiple times, once per color. By 1840 the method was producing color prints in commercial quantities for the first time.'),
+            keyPointBlock('Chromolithography: technology + impact', [
+              { k: 'How it worked', v: 'A separate limestone for each color (typically 6-15+ stones per image). Print one color → dry → print next → dry → repeat. Each stone had to register perfectly with the previous. Required exceptional craft skill.' },
+              { k: 'Cost vs hand-coloring', v: 'For a print run of 1,000+, chromolithography was 1/10 the cost of hand-coloring. Made color printing affordable for the first time.' },
+              { k: 'Late-Victorian color explosion (1860s-1900)', v: 'Children\'s books, advertising trade cards, religious prints, sheet music covers, theater playbills, fruit-crate labels — all suddenly available in color. Color became a normal part of everyday print life.' },
+              { k: 'Trade cards', v: 'Chromolithographed trade cards (small advertising cards) were a major collecting craze 1875-1895. Companies like Liebig\'s Extract of Meat issued thousands of designs. The 19th-c. equivalent of Pokemon cards.' },
+              { k: 'Decline', v: 'Photogravure + halftone (1880s+) enabled photo reproduction. Chromolithography declined for general use by 1920 but persisted for high-end fine prints + posters.' }
+            ])
+          );
+        } else if (cpSect === 'photo') {
+          content = h('div', null,
+            dropCapPara('Photography existed from 1839 (Daguerre) but for 40 years could not be reproduced in books. Each daguerreotype was a unique image; only manual engraving could approximate photos in print. The breakthrough came with halftone photography (Frederic Eugene Ives, 1881) — converting continuous-tone photographs into a pattern of dots of varying sizes that could be printed via standard ink-on-paper methods. Newspapers had high-quality photo reproduction by 1900. Magazines were full-color photographic by 1920s. The world saw itself differently.'),
+            keyPointBlock('Photo-reproduction in print', [
+              { k: 'Daguerreotype (1839)', v: 'First commercial photography. Each plate unique; no reproduction.' },
+              { k: 'Wood engraving from photos (1850s-1880s)', v: 'Skilled engravers manually engraved wood blocks based on photographic prints. Slow + expensive but enabled some photo-based illustration before halftone.' },
+              { k: 'Halftone (Ives, 1881)', v: 'Photographic process: photo → halftone screen → metal printing plate. The pattern of dots simulates continuous tone. Standard for photo reproduction in print for 100+ years.' },
+              { k: 'Photogravure (Karl Klič, 1879)', v: 'High-quality photo-reproduction method. Used for fine-art photo books + premium magazines. National Geographic standard from 1905 onward.' },
+              { k: '4-color halftone (1890s+)', v: 'Combining 4 halftone screens (CMYK) reproduced full-color photographs. By 1910 was commercially viable; by 1920s standard for magazines + advertising.' }
+            ])
+          );
+        } else if (cpSect === 'cmyk') {
+          content = h('div', null,
+            dropCapPara('CMYK — Cyan, Magenta, Yellow, Black — is the 4-color process used by all standard commercial color offset printing. The image is separated into 4 plates (one per color), each printed at a slight angle to its neighbors (typically 15°, 45°, 75°, 90° offsets), with halftone screens. The eye combines the dots into a continuous-tone full-color image. The same process underlies inkjet + laser color printing today (with K = black ink for crispness + economy).'),
+            keyPointBlock('CMYK + commercial color printing', [
+              { k: 'Why CMYK + not RGB', v: 'Print uses subtractive color (inks absorb colors of light). Screen uses additive color (light emits colors). Cyan + magenta + yellow together make near-black (theoretically); add K (key, black) ink for crisp black + grayscale economy.' },
+              { k: 'Color separation', v: 'A photo is digitally separated into 4 channels (C, M, Y, K). Each becomes a halftone screen + a printing plate. Color separations were a specialized skill before digital workflows; now done automatically.' },
+              { k: 'Screen angles', v: 'Each color\'s halftone screen is at a different angle (typically 15° for cyan, 45° for black, 75° for magenta, 90° for yellow) to prevent moiré patterns. Get the angles wrong + you get visible rosettes.' },
+              { k: 'Bleed + trim', v: 'Color images that go to the edge of the page must extend beyond the trim line by ~1/8" (the "bleed") to avoid white margins after cutting. Designers learn this early.' },
+              { k: 'Color matching standards', v: 'Pantone Matching System (PMS) for spot colors. ICC color profiles for consistency across devices. Press proofs to verify color before full print run.' }
+            ])
+          );
+        } else { // digital
+          content = h('div', null,
+            dropCapPara('Digital + RGB color in 2026 is the dominant color experience — most images people see are on screens, in RGB color space. Print is now a small fraction of how color is consumed. But the underlying physics are different + designers + photographers have to constantly translate between systems.'),
+            keyPointBlock('Digital color + the RGB-CMYK gap', [
+              { k: 'RGB (screen) vs CMYK (print)', v: 'RGB has a wider gamut (range of representable colors) than CMYK. Many vivid screen colors cannot be printed on standard CMYK presses. Conversions are lossy.' },
+              { k: 'Color management (ICC profiles)', v: 'A photo taken with a camera → edited on a monitor → printed at a print shop must travel through multiple color spaces. ICC profiles (developed 1993+) describe each device\'s color characteristics + enable consistent translation.' },
+              { k: 'Wide-gamut printing', v: 'Modern inkjet printers can use 6-12+ inks (CMYK + light cyan + light magenta + orange + green + violet + matte black + photo black + etc.) to expand the gamut beyond standard CMYK. Fine-art inkjet output now rivals traditional photographic prints.' },
+              { k: 'Digital displays + HDR', v: 'Modern HDR displays can show very wide color gamuts (Rec. 2020, DCI-P3) far beyond CMYK. The gap between what we see on screen + what can be printed is widening.' },
+              { k: 'Variable + on-demand printing', v: 'Digital presses can change content image-by-image. Each printed copy of a book or photo book can have unique content. Personalization at scale.' },
+              { k: 'Soft proofing', v: 'Designers preview their work on a calibrated monitor with a print simulation (showing how it will look on press). Saves expensive proof iterations.' }
+            ])
+          );
+        }
+
+        return h('div', null,
+          backBar('🌈 Color Printing History'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) {
+              var sel = (cpSect === s.id);
+              return h('button', { key: s.id,
+                onClick: function() { setCpSect(s.id); announce(s.label); },
+                style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                s.icon + ' ' + s.label);
+            })
+          ),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            content
+          ),
+          miniQuizBlock('colorPrinting', [
+            { q: 'What does CMYK stand for in color printing?',
+              opts: ['Color Mode + Key', 'Cyan, Magenta, Yellow, Key (black) — the 4 process colors used in commercial offset printing', 'Camera Mounted Yellow Key', 'A US Postal Service code'],
+              ans: 1, explain: 'CMYK = Cyan, Magenta, Yellow, Key (black). The 4 process colors used in standard commercial color printing. Each gets a separate printing plate; halftone screens at different angles combine in the eye into full-color images. K = "key" plate (provides image alignment + black + crispness).' },
+            { q: 'When was halftone printing — making continuous-tone photo reproduction possible — invented?',
+              opts: ['1839 with photography', '1881 (Frederic Eugene Ives)', '1900', '1950'],
+              ans: 1, explain: 'Frederic Eugene Ives developed the halftone screen process in 1881. Photographs could now be reproduced in print using standard ink-on-paper methods. Newspapers had high-quality halftone photo reproduction by 1900; magazines were full-color halftone by the 1920s.' },
+            { q: 'Why do screen RGB and print CMYK look different for the same image?',
+              opts: ['They don\'t — they look identical', 'Screens use additive color (emitting light) + print uses subtractive color (absorbing light). RGB has a wider color gamut than CMYK; many screen colors cannot be reproduced in print.', 'Screens are always brighter', 'It\'s a manufacturing defect'],
+              ans: 1, explain: 'Screens emit colored light (additive) + can reproduce a wide color range. Print uses inks that absorb specific wavelengths of light (subtractive) + can reproduce a smaller range. Many vivid screen colors literally cannot be matched by CMYK inks. Color management (ICC profiles) handles the translation.' }
+          ]),
+          sourcesBlock([
+            { label: 'Bamber Gascoigne, How to Identify Prints (1986, multiple editions) — color print methods reference' },
+            { label: 'Michael Twyman, A History of Chromolithography (2013)' },
+            { label: 'International Color Consortium (ICC) standards', url: 'https://www.color.org/' },
+            { label: 'Pantone color systems', url: 'https://www.pantone.com/' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['NGSS HS-PS4 (waves + color)', 'NCAS Visual Arts (color theory)'],
+            discussion: [
+              'Why was hand-coloring so much more expensive than chromolithography for the same image?',
+              'How would the world look different if color printing had emerged 200 years earlier?',
+              'Pick a vivid image from your phone + try to imagine printing it. What would be lost in the RGB → CMYK translation?'
+            ],
+            misconceptions: [
+              { wrong: 'Color printing always existed', right: 'For 400 years (1450-1850), most color in books was hand-painted after printing. True mass color printing began with chromolithography in the 1840s-50s.' }
+            ],
+            extension: 'Visit a Maine museum with a print collection (Portland Museum of Art, Bowdoin Museum, Bates Museum). Find an example of chromolithography (look for late-1800s trade cards or sheet music) + compare to a modern color print. What\'s the same? What\'s different?'
+          }),
+          crossLinkFooter('colorPrinting'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // BOOKS THAT CHANGED THE WORLD — 15 specific famous books.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderBooksChanged() {
+        var bcIdxRaw = useState(0);
+        var bcIdx = bcIdxRaw[0], setBcIdx = bcIdxRaw[1];
+        var books = [
+          { title: 'Gutenberg Bible (1455)', author: 'Johannes Gutenberg', emoji: '📖',
+            blurb: 'The first major book printed with movable metal type in Europe. ~180 copies, 1,272 pages each, in Latin. About 48 partial or complete copies survive today. Worth $30-$50 million per surviving copy. Its real importance: not the book itself, but proof that mechanical mass-reproduction was viable. Every printed book since descends from it.' },
+          { title: 'Luther\'s German Bible (1534)', author: 'Martin Luther', emoji: '📗',
+            blurb: 'Luther translated the entire Bible into German over 12 years. The translation became the defining German Bible (comparable to KJV in English) + arguably did more than any other work to fix the German vernacular literary language. Print runs in the hundreds of thousands across Luther\'s lifetime.' },
+          { title: 'Don Quixote (1605, Part I)', author: 'Miguel de Cervantes', emoji: '🐎',
+            blurb: 'Often called the first modern novel. Combined humor + philosophy + social criticism in vernacular Spanish. Mass-printed across Europe within decades. Direct influence on every subsequent novelistic tradition. Many call it the most important work of fiction in any language.' },
+          { title: 'Galileo\'s Dialogue (1632)', author: 'Galileo Galilei', emoji: '🔭',
+            blurb: 'Defended the Copernican (Sun-centered) system in a fictional dialogue between three characters. Banned by the Catholic Church 1633; Galileo personally tried + sentenced to house arrest. The book is now widely seen as a founding text of modern science + a key episode in the church-science conflict.' },
+          { title: 'King James Bible (1611)', author: 'Various translators', emoji: '📕',
+            blurb: 'English-language Bible translation commissioned by King James I. Built on the work of earlier translators (esp. Tyndale, who was burned at the stake in 1536 partly for his unauthorized English Bible). The KJV has profoundly shaped English literary style for 400 years. Probably the most-printed book in any language.' },
+          { title: 'Newton\'s Principia Mathematica (1687)', author: 'Isaac Newton', emoji: '🍎',
+            blurb: 'Newton\'s laws of motion + universal gravitation. Published in Latin. Initial print run only ~400 copies but profound + immediate impact on natural philosophy across Europe. Foundation text of classical physics + a model for subsequent scientific publication.' },
+          { title: 'Common Sense (1776)', author: 'Thomas Paine', emoji: '🇺🇸',
+            blurb: 'Plain-language pamphlet arguing for American independence from Britain. Sold ~500,000 copies in colonies of 2.5 million population. Massively influential on revolutionary opinion. Demonstrated the political power of cheap mass-market vernacular pamphlets.' },
+          { title: 'Wealth of Nations (1776)', author: 'Adam Smith', emoji: '💰',
+            blurb: 'Foundation text of modern economics. Argued for free markets + division of labor + the "invisible hand." Same year as Common Sense. Has influenced 250 years of economic thought, regulation, + policy — often in ways Smith himself would not have endorsed.' },
+          { title: 'Origin of Species (1859)', author: 'Charles Darwin', emoji: '🐢',
+            blurb: 'Articulated the theory of evolution by natural selection. First edition sold out in one day. Reshaped biology, theology, social thought. Still controversial in some US school districts in 2026. Probably the most influential single science book ever written.' },
+          { title: 'Uncle Tom\'s Cabin (1852)', author: 'Harriet Beecher Stowe', emoji: '🏠',
+            blurb: 'Anti-slavery novel by Maine\'s Harriet Beecher Stowe (she lived in Brunswick when she wrote it). Sold 300,000 in the US first year + a million in Britain. Hugely influential on American + British attitudes toward slavery. Lincoln reportedly greeted Stowe with "So you\'re the little woman who wrote the book that started this great war."' },
+          { title: 'Das Kapital (1867)', author: 'Karl Marx', emoji: '⚒',
+            blurb: 'Marx\'s analysis of capitalism. Volume 1 published 1867. Volumes 2 + 3 published posthumously by Engels (1885, 1894). Has shaped 20th-century political movements, governments, conflicts. Continues to influence political + economic thought.' },
+          { title: 'The Feminine Mystique (1963)', author: 'Betty Friedan', emoji: '👩',
+            blurb: 'Articulated "the problem that has no name" — the dissatisfaction of mid-century American suburban women confined to domestic roles. Helped launch second-wave feminism. Sold 3 million in first three years. Reshaped American debates about gender + work.' },
+          { title: 'Silent Spring (1962)', author: 'Rachel Carson', emoji: '🌱',
+            blurb: 'Carson documented the environmental damage caused by widespread pesticide use, especially DDT. Triggered the modern environmental movement; led to the EPA founding (1970) + the US DDT ban (1972). Carson herself was attacked by chemical industries; the book\'s influence outlasted the attacks.' },
+          { title: 'Diary of a Young Girl (Anne Frank, 1947)', author: 'Anne Frank (Otto Frank, ed.)', emoji: '📔',
+            blurb: 'Anne Frank\'s diary, kept in hiding in Amsterdam during the Nazi occupation 1942-1944. She died in Bergen-Belsen at 15. Her father Otto edited + published the diary in 1947. Translated into 70+ languages, has sold 35+ million copies. Personalizes the Holocaust for generations of readers.' },
+          { title: 'The Color Purple (1982)', author: 'Alice Walker', emoji: '💜',
+            blurb: 'Epistolary novel about Black women in early 20th-century rural Georgia. Won the Pulitzer Prize 1983 — Walker the first Black woman to receive it. Frequently challenged in US schools for sexual content but widely taught + read. Shaped American + global discussions of race, gender, abuse, faith.' }
+        ];
+        var b = books[bcIdx] || books[0];
+
+        return h('div', null,
+          backBar('📖 Books That Changed The World'),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            dropCapPara('15 specific books that altered history. Not the only books that mattered — these are starting points. Click between them. Each one demonstrates print\'s power to reshape thought + politics + culture.')
+          ),
+          // Book picker
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            books.map(function(bb, i) {
+              var sel = (i === bcIdx);
+              return h('button', { key: i,
+                onClick: function() { setBcIdx(i); announce(bb.title); },
+                style: btn({ padding: '7px 10px', fontSize: 11, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                bb.emoji + ' ' + bb.title.split(' (')[0]);
+            })
+          ),
+          // Selected book
+          h('div', { style: { background: T.cardAlt, border: '2px solid ' + T.accent, borderRadius: 12, padding: 20, marginBottom: 14, textAlign: 'center' } },
+            h('div', { style: { fontSize: 56, marginBottom: 6 } }, b.emoji),
+            h('h3', { style: { fontSize: 22, fontWeight: 700, color: T.text, fontFamily: 'Georgia, serif', margin: '0 0 4px' } }, b.title),
+            h('div', { style: { fontSize: 13, color: T.muted, fontStyle: 'italic', marginBottom: 14 } }, 'by ' + b.author),
+            h('p', { style: { margin: 0, color: T.text, fontSize: 14, lineHeight: 1.7, fontFamily: 'Georgia, serif', textAlign: 'left' } }, b.blurb)
+          ),
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 14 } },
+            h('button', { disabled: bcIdx <= 0,
+              onClick: function() { setBcIdx(Math.max(0, bcIdx - 1)); },
+              style: btn({ padding: '8px 14px', fontSize: 13, opacity: bcIdx <= 0 ? 0.4 : 1 }) }, '← Previous'),
+            h('div', { style: { fontSize: 12, color: T.muted, alignSelf: 'center' } }, (bcIdx + 1) + ' / ' + books.length),
+            h('button', { disabled: bcIdx >= books.length - 1,
+              onClick: function() { setBcIdx(Math.min(books.length - 1, bcIdx + 1)); },
+              style: btnPrimary({ padding: '8px 14px', fontSize: 13, opacity: bcIdx >= books.length - 1 ? 0.4 : 1 }) }, 'Next →')
+          ),
+          miniQuizBlock('booksChanged', [
+            { q: 'Which Maine resident wrote a book that helped shape American attitudes toward slavery?',
+              opts: ['Henry Wadsworth Longfellow', 'Harriet Beecher Stowe (Brunswick, 1852)', 'Edna St. Vincent Millay', 'Stephen King'],
+              ans: 1, explain: 'Harriet Beecher Stowe wrote Uncle Tom\'s Cabin while living in Brunswick, Maine (her husband Calvin taught at Bowdoin College). Published 1852 — sold 300,000 in the US first year, 1 million in Britain. Hugely influential on anti-slavery opinion.' },
+            { q: 'Which book\'s first edition sold out in one day?',
+              opts: ['Origin of Species (Darwin, 1859)', 'Gutenberg Bible (1455)', 'King James Bible (1611)', 'Don Quixote (1605)'],
+              ans: 0, explain: 'The first edition of Darwin\'s On the Origin of Species sold out the day it was published in 1859. Reshaped biology, theology, social thought. Continues to be one of the most influential single science books ever written.' },
+            { q: 'Approximately how many copies did Thomas Paine\'s Common Sense (1776) sell?',
+              opts: ['500', '5,000', '50,000', '~500,000 (in colonies of 2.5 million)'],
+              ans: 3, explain: 'Common Sense sold approximately 500,000 copies in colonies of 2.5 million people — a per-capita reach that no political pamphlet has matched since. Demonstrated the political power of cheap mass-market vernacular pamphlets.' }
+          ]),
+          sourcesBlock([
+            { label: 'Encyclopedia Britannica articles on each book' },
+            { label: 'Library of Congress, Books That Shaped America', url: 'https://www.loc.gov/exhibits/books-that-shaped-america/' },
+            { label: 'Modern Library 100 Best Lists', url: 'https://www.modernlibrary.com/top-100/' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['CCSS RH.6-8.9 (compare sources)', 'NCSS D2.His.2.6-8 (context)'],
+            discussion: [
+              'Pick one book from the list. Research what was happening politically + socially when it appeared. What made it land at that moment?',
+              'Which book in this list do you think had the biggest impact? Why?',
+              'What\'s a book published in the last 20 years that might join this list in 2100?'
+            ],
+            misconceptions: [
+              { wrong: 'Books that changed the world were all old', right: '11 of the 15 books listed are from the 20th century. The most influential book of any decade is rarely recognized as such at the time.' }
+            ],
+            extension: 'Pick a book from this list + read just the first chapter (most are available online or via your library). What do you notice about the author\'s voice, the prose style, the choice of opening?'
+          }),
+          crossLinkFooter('booksChanged'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // PRINT + REVOLUTION — pamphlets + newspapers as political infrastructure.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderPrintRevolution() {
+        var prSectRaw = useState('overview');
+        var prSect = prSectRaw[0], setPrSect = prSectRaw[1];
+        var sections = [
+          { id: 'overview',  label: 'Overview',           icon: '🏴' },
+          { id: 'english',   label: 'English Civil War (1642)', icon: '🇬🇧' },
+          { id: 'american',  label: 'American Revolution (1776)', icon: '🇺🇸' },
+          { id: 'french',    label: 'French Revolution (1789)', icon: '🇫🇷' },
+          { id: 'eighteen48', label: '1848 Revolutions', icon: '🌍' },
+          { id: 'pattern',   label: 'The pattern',         icon: '📊' }
+        ];
+
+        var content;
+        if (prSect === 'overview') {
+          content = h('div', null,
+            dropCapPara('Print did not cause political revolutions, but every major modern revolution has been enabled by print infrastructure. Pamphlets organized supporters. Newspapers reported events + sustained ongoing political coordination. Broadsides + posters mobilized crowds. Without the press, the politics of the modern era — popular sovereignty, ideological mass movements, organized political parties — would have looked very different.'),
+            sectionHeader('🏴', 'What this module covers'),
+            keyPointBlock(null, [
+              { k: 'English Civil War (1642-1651)', v: 'Star Chamber collapsed in 1641. Pamphlet output exploded — ~30,000 titles printed during the Civil War years.' },
+              { k: 'American Revolution (1763-1783)', v: 'Pamphlets + newspapers were the principal media of revolutionary organizing. Common Sense + many more.' },
+              { k: 'French Revolution (1789-1799)', v: 'When print restrictions ended, hundreds of newspapers + thousands of pamphlets emerged within months. Often the difference between living + executed factions.' },
+              { k: '1848 Revolutions', v: 'Wave of liberal-nationalist uprisings across Europe. Driven + organized through newspaper + telegraph networks.' },
+              { k: 'The pattern', v: 'Common dynamics across all four. What print enables in political revolution + what limits it cannot overcome.' }
+            ])
+          );
+        } else if (prSect === 'english') {
+          content = h('div', null,
+            dropCapPara('Pre-1641 English print was tightly controlled by the Stationers\' Company + the Crown\'s Star Chamber. Books required pre-publication approval. Political pamphlets were rare; criticisms of the King were treasonous. In 1641, Parliament abolished Star Chamber as part of the conflict with Charles I. Pre-publication censorship collapsed overnight. The result was a print explosion — perhaps 30,000+ pamphlet titles during the Civil War years (1642-1651). It was the first time English readers had access to a fully open political press.'),
+            keyPointBlock('Pamphlet war during the English Civil War', [
+              { k: 'Royalist pamphlets', v: 'Defended the King\'s prerogative. Printed in Oxford (Royalist capital) + smuggled into London. Mercurius Aulicus was the leading Royalist newspaper.' },
+              { k: 'Parliamentarian pamphlets', v: 'Defended Parliament + (later) the Republic. Mercurius Britanicus was the leading Parliamentary newspaper. Heavy output throughout the war.' },
+              { k: 'Independent + radical pamphlets', v: 'Levellers (John Lilburne, Richard Overton) advocated for radical extensions of voting rights, written constitution, religious tolerance. Diggers (Gerrard Winstanley) advocated communal land ownership. Quakers (early Quaker movement) emerged in this period.' },
+              { k: 'Volume', v: 'George Thomason, a London bookseller, collected ~22,000 pamphlets + newsbooks 1640-1661. His collection (now at British Library) is the principal source for studying English Civil War print.' },
+              { k: 'Long-term impact', v: 'Even after Charles II restored the monarchy (1660) + censorship returned, the genie was partly out of the bottle. The 1688 Glorious Revolution + 1695 lapse of the Licensing Act made English print effectively free again. Modern English-language journalism descends from this period.' }
+            ])
+          );
+        } else if (prSect === 'american') {
+          content = h('div', null,
+            dropCapPara('By 1775, the 13 American colonies had 35 newspapers + several dozen active print shops — substantial infrastructure for a population of 2.5 million. Pamphlets + newspapers were the principal media of revolutionary organizing. The Stamp Act crisis (1765) demonstrated how quickly colonial print could mobilize political opinion. By 1776 Thomas Paine\'s Common Sense was selling at unprecedented rates.'),
+            keyPointBlock('American Revolution print infrastructure', [
+              { k: 'Colonial newspapers (1700s)', v: 'Boston had 5 newspapers by 1770. Philadelphia 4. New York 3. Plus weeklies in smaller cities. Most printed by Patriot-aligned editors by 1775.' },
+              { k: 'Stamp Act crisis (1765-1766)', v: 'British attempt to tax printed materials, including newspapers. Triggered intense pamphlet + newspaper protest. Massive boycotts. Forced Britain to repeal in 1766. Established print as organizing infrastructure.' },
+              { k: 'Committees of Correspondence (1772-)', v: 'Samuel Adams + others established intercolonial committees that exchanged news + coordinated political action. The committees\' work depended on letters + printed bulletins.' },
+              { k: 'Thomas Paine\'s Common Sense (Jan 1776)', v: 'Sold ~500,000 in colonies of 2.5 million. Plain language argument for independence. Probably the most influential political pamphlet of the era.' },
+              { k: 'Declaration of Independence (July 1776)', v: 'Printed by John Dunlap in Philadelphia, July 4-5. ~200 "Dunlap broadsides" produced; ~26 known to survive. Original printing in Caslon typeface.' },
+              { k: 'The Federalist Papers (1787-1788)', v: 'Hamilton, Madison, Jay. 85 essays defending the proposed Constitution. Originally published in NY newspapers; reprinted as books. Still studied today.' }
+            ])
+          );
+        } else if (prSect === 'french') {
+          content = h('div', null,
+            dropCapPara('Pre-1789 French print was heavily censored by the royal government. Many of the most important political works of the late Enlightenment (Rousseau, Voltaire, Diderot) were printed in Switzerland or the Netherlands + smuggled into France. When the Bastille fell in July 1789 + royal authority collapsed, French print exploded. By 1791 ~250 new newspapers had appeared in Paris alone. The radical press — Marat\'s L\'Ami du Peuple, Hébert\'s Le Père Duchesne — became principal actors in revolutionary politics.'),
+            keyPointBlock('Revolutionary French press', [
+              { k: 'Pre-1789 censorship', v: 'Royal Bureau of Censorship reviewed all publications. Permission required. Many books printed in Switzerland (Société typographique de Neuchâtel) + smuggled in. Heavy clandestine market.' },
+              { k: 'July 1789 — Bastille falls', v: 'Royal authority collapses. Censorship effectively ends overnight.' },
+              { k: '1789-1791 newspaper explosion', v: '~250 new newspapers in Paris alone. Most short-lived but several long-running.' },
+              { k: 'Le Patriote français (Brissot)', v: 'Major moderate revolutionary paper. Founded 1789, lasted to 1793.' },
+              { k: 'L\'Ami du Peuple (Marat)', v: 'Radical, sensational, populist. Marat\'s paper was hugely influential on Parisian crowd politics. Marat was assassinated by Charlotte Corday in 1793; his paper closed.' },
+              { k: 'Le Père Duchesne (Hébert)', v: 'Even more radical than Marat\'s paper. Used vulgar street-French to reach lower-class readers. Hébert executed 1794; paper closed.' },
+              { k: '1793-1794 Terror censorship', v: 'Revolutionary government (Committee of Public Safety) imposed new censorship on counter-revolutionary press. Many editors guillotined.' },
+              { k: '1799-1815 Napoleonic press control', v: 'Napoleon massively reduced press freedom. By 1810 only 13 newspapers allowed in all France. Press freedom returned only after Bourbon restoration.' }
+            ])
+          );
+        } else if (prSect === 'eighteen48') {
+          content = h('div', null,
+            dropCapPara('1848 was the "year of revolution" in Europe. Within months, liberal-nationalist uprisings broke out in France, the German states, Habsburg Austria + Hungary, Italy, Poland. Most were suppressed within 18 months. But the print + telegraph infrastructure of 1848 enabled coordination across countries on a scale impossible in earlier revolutions. The revolutions failed politically but transformed European print + political culture lastingly.'),
+            keyPointBlock('1848 + print infrastructure', [
+              { k: 'February 1848 — Paris revolution', v: 'Louis-Philippe (Citizen King) overthrown. Second Republic proclaimed. Censorship abolished. Press explosion.' },
+              { k: 'March 1848 — German states', v: 'Liberal-nationalist uprisings in Berlin, Vienna, Munich + dozens of smaller capitals. Frankfurt Parliament convened (May) to draft a German constitution.' },
+              { k: 'March 1848 — Hungary + Italy', v: 'Hungarian War of Independence under Lajos Kossuth. Italian uprisings in Milan + Venice + the Papal States.' },
+              { k: 'Newspapers explode again', v: 'Brief end of censorship saw thousands of new newspapers + pamphlets across Europe.' },
+              { k: 'Telegraph + revolution', v: 'Telegraph (commercial since 1840s) carried revolutionary news across Europe in hours. Paris uprising news reached Berlin within days. Cross-border revolutionary coordination was a new phenomenon.' },
+              { k: 'Defeat by 1849-1851', v: 'Most uprisings crushed by year-end 1849. Conservative regimes restored. New censorship laws imposed across Europe. But the experience changed political consciousness permanently.' },
+              { k: 'Long-term impact', v: 'The 1848 generation became the leaders of later European liberalism + nationalism. Marx + Engels published the Communist Manifesto on the eve of 1848. The patterns of newspaper + pamphlet political organizing established in 1848 persisted into the 1900s.' }
+            ])
+          );
+        } else { // pattern
+          content = h('div', null,
+            dropCapPara('Four revolutionary moments. Common dynamics:'),
+            keyPointBlock('The recurring pattern', [
+              { k: '1. Pre-revolution censorship', v: 'Authorities try to control print + suppress dissident voices. Some success but incomplete — clandestine print exists.' },
+              { k: '2. Crisis breaks authority', v: 'Political crisis (Bastille, Civil War, Stamp Act) weakens or removes censorship enforcement.' },
+              { k: '3. Print explosion', v: 'Newspapers + pamphlets multiply rapidly. Political organizing accelerates dramatically.' },
+              { k: '4. Coordination + identity formation', v: 'Pamphlets define ideological camps. Newspapers coordinate ongoing political action. Identity-marking via print consumption.' },
+              { k: '5. Counter-revolution + new censorship', v: 'When revolutionary moment ends (or stabilizes), new censorship imposes. Often less complete than before.' },
+              { k: '6. Permanent infrastructure remains', v: 'Print + journalism infrastructure built during revolutionary moments rarely fully disappears. Each revolution leaves a denser print environment than before.' }
+            ]),
+            calloutBox('info', 'Print enables but does not cause',
+              h('p', { style: { margin: 0, lineHeight: 1.6 } },
+                'Important caveat: print made revolutions possible at scales not previously possible, but did not cause them. Underlying political grievances drove the revolutions. Without those grievances, even massive print infrastructure would have produced no revolution. With those grievances + without print, revolutions would have happened but looked very different — smaller, slower, more localized. Print is a powerful enabling technology + a poor explanation for political change on its own.')
+            )
+          );
+        }
+
+        return h('div', null,
+          backBar('🏴 Print + Revolution'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) {
+              var sel = (prSect === s.id);
+              return h('button', { key: s.id,
+                onClick: function() { setPrSect(s.id); announce(s.label); },
+                style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                s.icon + ' ' + s.label);
+            })
+          ),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            content
+          ),
+          miniQuizBlock('printRevolution', [
+            { q: 'Approximately how many pamphlets are estimated to have been printed during the English Civil War years (1642-1651)?',
+              opts: ['~100', '~3,000', '~30,000+', '~1 million'],
+              ans: 2, explain: 'About 30,000+ pamphlet + newsbook titles were printed during the English Civil War years. The George Thomason collection (~22,000 items) is the principal scholarly archive. Star Chamber\'s 1641 collapse + the war\'s polarization drove an unprecedented pamphlet explosion.' },
+            { q: 'Which pamphlet is widely cited as the most influential political pamphlet of the American Revolution?',
+              opts: ['The Federalist Papers', 'Common Sense (Paine, 1776)', 'Plain Truth', 'Letters from a Pennsylvania Farmer'],
+              ans: 1, explain: 'Thomas Paine\'s Common Sense (January 1776) sold approximately 500,000 copies in colonies of 2.5 million population — a per-capita reach that no political pamphlet has since matched. Often cited as the catalyst that converted colonial opinion from grievances to independence.' },
+            { q: 'About how many new newspapers appeared in Paris within 2 years after the fall of the Bastille (1789)?',
+              opts: ['10', '50', '~250', '~5,000'],
+              ans: 2, explain: 'About 250 new newspapers appeared in Paris alone within 2 years after the Bastille fell (July 1789) + censorship collapsed. Many short-lived but several (Le Patriote français, L\'Ami du Peuple, Le Père Duchesne) became major political actors.' }
+          ]),
+          sourcesBlock([
+            { label: 'Bernard Bailyn, The Ideological Origins of the American Revolution (1967)' },
+            { label: 'Robert Darnton, The Literary Underground of the Old Regime (1982)' },
+            { label: 'Jeremy Popkin, Revolutionary News: The Press in France, 1789-1799 (1990)' },
+            { label: 'Joad Raymond, ed., The Cambridge Companion to British Civil War Print (2015)' },
+            { label: 'George Thomason collection — British Library', url: 'https://www.bl.uk/collection-guides/thomason-tracts' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['NCSS D2.His.5.6-8 (cause + effect)', 'NCSS D2.Civ.5.6-8 (civic principles)'],
+            discussion: [
+              'Could the American Revolution have happened without colonial newspapers + Paine\'s Common Sense? What would have been different?',
+              'In 1789 France, censorship collapsed + 250 newspapers appeared within 2 years. What does this suggest about pre-revolutionary suppressed demand for political discussion?',
+              'Compare the print + revolution pattern with modern social-media + political movements (Arab Spring, BLM, MAGA, etc). What\'s the same? What\'s different?'
+            ],
+            misconceptions: [
+              { wrong: 'Print caused revolutions', right: 'Print enabled revolutions at scales not previously possible. Underlying political grievances were the cause. Without those grievances, print would have produced no revolution; without print, revolutions would have happened but looked very different.' }
+            ],
+            extension: 'Pick one of the four revolutions + find an actual revolutionary pamphlet from that era online (many are digitized). Read the first page. Notice the rhetorical style, the assumed audience, the political appeal. Compare to a modern political pamphlet or campaign piece.'
+          }),
+          crossLinkFooter('printRevolution'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // THE BOOK AS OBJECT — incunabula, first editions, rare books.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderBookObject() {
+        var boSectRaw = useState('overview');
+        var boSect = boSectRaw[0], setBoSect = boSectRaw[1];
+        var sections = [
+          { id: 'overview',   label: 'Overview',         icon: '📕' },
+          { id: 'incunabula', label: 'Incunabula',       icon: '🐣' },
+          { id: 'firsts',     label: 'First editions',   icon: '⭐' },
+          { id: 'reading',    label: 'Reading a book',   icon: '🔍' },
+          { id: 'collecting', label: 'How to collect',   icon: '🏠' },
+          { id: 'libraries',  label: 'Rare-book libraries', icon: '🏛' }
+        ];
+
+        var content;
+        if (boSect === 'overview') {
+          content = h('div', null,
+            dropCapPara('A book is a physical artifact as much as a text. Its paper, its binding, its typography, its margins, its annotations, its provenance — all carry information. Rare-book scholars + collectors read books as objects: who made it, when, with what materials, who owned it, what its history tells us. This module covers the basics of bibliographic reading: what to look for + how to start.'),
+            sectionHeader('📕', 'What this module covers'),
+            keyPointBlock(null, [
+              { k: 'Incunabula', v: 'Books printed before 1501 — the "cradle" period of European printing. About 30,000 incunable editions known, ~500,000 copies surviving.' },
+              { k: 'First editions', v: 'What makes a "first edition" — printing terms, what collectors look for.' },
+              { k: 'Reading a book as object', v: 'How to examine a book the way a librarian or rare-book dealer does. What you can learn just from holding it.' },
+              { k: 'How to collect', v: 'How collectors get started, what mistakes to avoid, where to find quality material at sensible prices.' },
+              { k: 'Rare-book libraries in Maine + nearby', v: 'Where to see + study original early books in person.' }
+            ])
+          );
+        } else if (boSect === 'incunabula') {
+          content = h('div', null,
+            dropCapPara('Incunabula (from Latin "in the cradle") are books printed in Europe before January 1, 1501 — the first 50 years of printing. The term was coined in the late 17th century when it became clear that the first generation of printed books was historically distinct + worth studying as a category. About 30,000 editions of incunables are documented globally; perhaps 500,000+ individual copies survive in libraries.'),
+            keyPointBlock('Incunabula essentials', [
+              { k: 'Time period', v: 'Books printed 1450-1500 (some scholars use 1455-1500). The first 50 years of European printing.' },
+              { k: 'How many exist', v: '~30,000 distinct editions documented. ~500,000-700,000 surviving individual copies in libraries + private collections globally.' },
+              { k: 'ISTC database', v: 'Incunabula Short Title Catalogue, maintained by the British Library, lists known incunable editions + holdings. Online at istc.bl.uk.' },
+              { k: 'Major collections', v: 'Bibliothèque nationale de France, British Library, Library of Congress, Bavarian State Library (Munich), Vatican Library, Houghton Library at Harvard, Beinecke at Yale.' },
+              { k: 'Typical features', v: 'Often "incunable" books had blank spaces left for hand-illuminated initials or rubricated (red-ink) capitals to be added by a separate hand after printing. The "look" was deliberately manuscript-like.' },
+              { k: 'Most copies survived', v: 'Survival rate of incunables is high — they were valued as luxury objects, kept in libraries + monasteries, often rebound multiple times. The first generation of printed books are often easier to find than 19th-century novels in original condition.' }
+            ])
+          );
+        } else if (boSect === 'firsts') {
+          content = h('div', null,
+            dropCapPara('A "first edition" is the first published version of a book — typically meaning the first printing of the first edition. Collectors prize firsts because they have priority + because subsequent editions often differ in small ways (corrected typos, revised text, different binding). Identifying firsts requires knowing the conventions of each publisher + era.'),
+            keyPointBlock('First-edition conventions', [
+              { k: 'Number line', v: '1900s+ books often have a "number line" on the copyright page: e.g., "1 2 3 4 5 6 7 8 9 10" or "1 3 5 7 9 8 6 4 2." The lowest number remaining indicates the printing. "1 2 3..." = first printing.' },
+              { k: 'Stated first edition', v: 'Some publishers print "First Edition" or "First Printing" on the copyright page. Note: stated FIRST does not always mean true first; check number line + other points.' },
+              { k: '"Points of issue"', v: 'Specific features that distinguish first printings — typos that were corrected, wording changes, binding details. Collectors\' guides (Ahearn\'s Collected Books, etc.) document the points for famous books.' },
+              { k: 'Dust jackets matter (1920s+)', v: 'For books published from ~1920 onward, the dust jacket is essential to first-edition value. A first-edition Great Gatsby with original dust jacket: $250,000+. Without jacket: $5,000-$15,000.' },
+              { k: 'Limited editions', v: 'Some "first editions" are limited + signed at publication. Often clearly numbered (e.g., "Copy 47 of 250"). Premium for low numbers or special copies (author\'s own, dedicatee\'s copy).' },
+              { k: 'Reprint vs new edition', v: 'A "second printing" of the first edition is not the same as a "second edition" (where text was changed). Collectors distinguish carefully.' }
+            ])
+          );
+        } else if (boSect === 'reading') {
+          content = h('div', null,
+            dropCapPara('When a rare-book librarian or dealer examines a book, they look at far more than the text. Each physical feature tells a story. Here\'s how to examine a book + learn from it.'),
+            keyPointBlock('What to examine + what it tells you', [
+              { k: 'Title page', v: 'Author, title, publisher, place, date. Compare with bibliographies to identify the edition. Some titles changed in later printings.' },
+              { k: 'Copyright page', v: 'Number line, printing statements, ISBN (post-1968), Library of Congress catalog data. Tells you the printing + publication details.' },
+              { k: 'Paper', v: 'Touch + look. 1500s-1700s rag paper is distinct (laid lines visible when held to light, watermarks). 1850s+ wood-pulp paper feels different + yellows differently. Briquet\'s watermark catalog dates paper to mill + period.' },
+              { k: 'Typography', v: 'What typefaces? Where set? Bibliographies often note specific typefaces used. Early modern books used identifiable type families.' },
+              { k: 'Binding', v: 'Original or rebound? Pre-1820 books typically rebound multiple times. Original publisher\'s cloth (1820s+) is collectible. Custom binding by famous binders (Sangorski + Sutcliffe, etc.) raises value.' },
+              { k: 'Provenance', v: 'Inscriptions, bookplates, ownership signatures, library stamps. Provenance can dramatically affect value — a Hemingway book inscribed to Gertrude Stein is worth far more than the same book without provenance.' },
+              { k: 'Marginalia', v: 'Notes + underlinings. Sometimes from famous owners (a Coleridge-annotated book is rare + valuable). Otherwise reduces collector value but adds scholarly interest.' },
+              { k: 'Condition', v: 'Damage: foxing (brown spots from paper aging), staining, repairs, missing pages, loose hinges. Condition can affect value 10-100×.' },
+              { k: 'Signatures + gathering marks', v: 'Bottom of certain pages — used by binders to keep sheets in order. Also useful for verifying completeness.' }
+            ])
+          );
+        } else if (boSect === 'collecting') {
+          content = h('div', null,
+            dropCapPara('Book collecting is one of the more accessible historical pursuits — most collectors start in the $10-$50 per book range + work up gradually. The pleasure is part scholarship, part hunt, part curating a personal library. Some practical advice for getting started.'),
+            keyPointBlock('Starting a book collection', [
+              { k: 'Pick a focus', v: 'A theme — a specific author, a specific era, a specific genre, a specific publisher (Modern Library, Library of America, Penguin classics), a specific region (Maine books, regional Americana). Focus makes hunting + appreciating easier.' },
+              { k: 'Buy what you love', v: 'Books you actually want to read + own. The best collections come from genuine interest, not investment speculation.' },
+              { k: 'Learn condition vocabulary', v: 'Fine, Very Good, Good, Fair, Poor — book-trade terminology. Online dealers list everything by these grades. Mistake: thinking "Good" means "good condition" (it actually means "average shelf-worn copy").' },
+              { k: 'Start with online sources', v: 'AbeBooks (huge inventory), Biblio, Alibris, eBay (caveat emptor — read seller reviews carefully). For high-end: Heritage Auctions, Christie\'s, Swann, Sotheby\'s.' },
+              { k: 'Used book shops', v: 'Smaller cities still have used bookshops. Even chain stores (Half Price Books) carry occasional gems. Maine examples: Carlson + Turner Books (Portland), Pemberton House Books (Wells), several others.' },
+              { k: 'Book fairs', v: 'New England Antiquarian Book Fair (annual, varies location). Boston Book Fair. Many smaller regional fairs.' },
+              { k: 'Library book sales', v: 'Friends-of-the-library annual sales. Sometimes have surprising material at cheap prices.' },
+              { k: 'Don\'t over-clean books', v: 'Resist the urge to "restore" old books. Original wear is often part of value; amateur repairs reduce value. Conservator work is sometimes appropriate but expensive.' }
+            ])
+          );
+        } else { // libraries
+          content = h('div', null,
+            dropCapPara('Rare-book libraries are where the originals live. Most accept appointment visits by anyone with serious scholarly interest. Several Maine + nearby libraries have major collections worth visiting.'),
+            keyPointBlock('Maine + New England rare-book libraries', [
+              { k: 'Maine Historical Society (Portland)', v: 'Strong Maine-related collection. Books, broadsides, manuscripts. Open to researchers by appointment.' },
+              { k: 'Bowdoin College Special Collections (Brunswick)', v: 'Strong Americana + Maine collections. Hawthorne, Longfellow, Stowe materials. Open to researchers.' },
+              { k: 'Bates College Edmund Muskie Archives (Lewiston)', v: 'Strong Maine political history collection. Books, papers, photographs.' },
+              { k: 'Colby College Miller Library Special Collections (Waterville)', v: 'Strong literary + Maine collections.' },
+              { k: 'Maine State Library (Augusta)', v: 'State documents + Maine reference collection.' },
+              { k: 'Houghton Library at Harvard (Cambridge, MA)', v: 'Premier US literary + rare-book library. Includes the Keats collection, the Emily Dickinson collection, much more.' },
+              { k: 'Beinecke Rare Book Library at Yale (New Haven, CT)', v: 'Yale\'s rare-book library. Premier US collections of European incunables + many others.' },
+              { k: 'John Carter Brown Library at Brown (Providence, RI)', v: 'Specialized in pre-1825 Americas materials. Major incunabula + Americana collections.' },
+              { k: 'Boston Public Library Special Collections', v: 'Strong literary + historical collections. Online catalog + appointment access.' },
+              { k: 'Library of Congress Rare Book + Special Collections (Washington, DC)', v: 'The largest US rare-book library. Free + open to researchers.' }
+            ]),
+            calloutBox('info', 'How to visit + use a rare-book library',
+              h('p', { style: { margin: 0, lineHeight: 1.6 } },
+                'Most rare-book libraries are open to any serious researcher. Steps: (1) check the library website for collection scope + access procedures, (2) make an appointment + describe what you want to see, (3) bring photo ID + relevant credentials, (4) follow handling rules (often: pencil only, weights to hold pages open, no eating/drinking). Library staff are usually delighted to share their collections with visitors who have serious interest.')
+            )
+          );
+        }
+
+        return h('div', null,
+          backBar('📕 The Book As Object'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) {
+              var sel = (boSect === s.id);
+              return h('button', { key: s.id,
+                onClick: function() { setBoSect(s.id); announce(s.label); },
+                style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                s.icon + ' ' + s.label);
+            })
+          ),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            content
+          ),
+          miniQuizBlock('bookObject', [
+            { q: 'What are incunabula?',
+              opts: ['Books with illustrations', 'Books printed in Europe before January 1, 1501 — the first 50 years of European printing', 'Books printed on parchment instead of paper', 'Modern reprints of medieval books'],
+              ans: 1, explain: 'Incunabula (Latin "in the cradle") are books printed in Europe before 1501. ~30,000 distinct editions documented; ~500,000+ surviving copies in libraries globally. The Incunabula Short Title Catalogue (ISTC) is the standard reference.' },
+            { q: 'For a 20th-century first edition, what dramatically affects collector value?',
+              opts: ['The original dust jacket', 'Whether the book is hardcover', 'The author\'s nationality', 'The publisher\'s logo size'],
+              ans: 0, explain: 'For 20th-century books (~1920 onward), the original dust jacket is often essential to first-edition value. A first-edition Great Gatsby with dust jacket: $250,000+. Without: $5,000-15,000. The fragility of paper jackets makes surviving ones rare.' },
+            { q: 'Which Maine library has the strongest Maine-related book + manuscript collection?',
+              opts: ['Bowdoin College Special Collections', 'Maine Historical Society (Portland)', 'Maine State Library', 'All three have important Maine collections (different strengths)'],
+              ans: 3, explain: 'All three (+ several others) have major Maine collections with different strengths. Maine Historical Society is strongest on early Maine + Portland materials. Bowdoin focuses on Maine literary figures + Americana. Maine State Library has state documents + reference materials. Together they constitute a strong Maine bibliographic infrastructure.' }
+          ]),
+          sourcesBlock([
+            { label: 'Allen + Patricia Ahearn, Collected Books: The Guide to Identification + Values (multiple editions)' },
+            { label: 'Incunabula Short Title Catalogue', url: 'https://data.cerl.org/istc/_search' },
+            { label: 'Antiquarian Booksellers Association of America (ABAA)', url: 'https://www.abaa.org/' },
+            { label: 'Boston Antiquarian Book Fair', url: 'https://bostonbookfair.com/' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['NCSS D2.His.10.6-8 (analyze sources)', 'CCSS RH.6-8.1 (cite evidence)'],
+            discussion: [
+              'Visit a rare-book library (or your school library special collection). Hold a 100-year-old book + a new one. What differences do you notice?',
+              'Why do collectors value the original dust jacket so much for 20th-century books?',
+              'A book has been annotated by a previous owner. Should the library remove the annotations? Why or why not?'
+            ],
+            misconceptions: [
+              { wrong: 'Old books are always valuable', right: '500-year-old books can be cheap if common; 50-year-old books can be expensive if rare. Value depends on: edition, condition, demand, provenance. Age alone is not the main factor.' }
+            ],
+            extension: 'Find an old book in your house (grandparents\' books work well). Examine it: title page, copyright page, paper, binding, any inscriptions. What can you learn from just the physical object before reading any text?'
+          }),
+          crossLinkFooter('bookObject'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // INK + PRESS MATERIALS — composition, history, recipes.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderInkMaterials() {
+        var imSectRaw = useState('overview');
+        var imSect = imSectRaw[0], setImSect = imSectRaw[1];
+        var sections = [
+          { id: 'overview',  label: 'Overview',       icon: '🛢' },
+          { id: 'recipe',    label: 'Period recipe',  icon: '📜' },
+          { id: 'gutenberg', label: "Gutenberg's ink",icon: '⚗️' },
+          { id: 'colors',    label: 'Colored inks',   icon: '🎨' },
+          { id: 'modern',    label: 'Modern inks',    icon: '🧪' },
+          { id: 'tools',     label: 'Tools + supplies', icon: '🛠' }
+        ];
+        var content;
+        if (imSect === 'overview') {
+          content = h('div', null,
+            dropCapPara('Printing ink is the unsung star of the press revolution. Manuscript scribes used water-based iron-gall ink that worked beautifully on parchment with a quill but blotched on paper + slid off metal type. Gutenberg\'s real innovation may not have been the press at all — it may have been his oil-based ink, formulated to stick to metal type + transfer cleanly to paper.'),
+            sectionHeader('🛢', 'What this module covers'),
+            keyPointBlock(null, [
+              { k: 'Period ink recipe', v: 'How printers made ink in the shop — soot + linseed oil + varnish.' },
+              { k: "Gutenberg's ink", v: 'Why his oil-based formula was the actual breakthrough enabling movable type.' },
+              { k: 'Colored inks', v: 'Red, blue, gold, yellow — how color inks were made + when each became affordable.' },
+              { k: 'Modern inks', v: 'Today\'s soy-based + UV-cured + inkjet inks. What replaced lampblack-and-linseed.' },
+              { k: 'Tools + supplies', v: 'Ink balls, brayers, ink slabs — what was on the inking table of every print shop.' }
+            ])
+          );
+        } else if (imSect === 'recipe') {
+          content = h('div', null,
+            dropCapPara('A 1550 printer\'s ink recipe — a slow + smelly process spread over weeks. Done in batches; one batch could ink a press for a year of normal work. The smell of a working print shop in 1550 had three sources: hot lead-tin alloy (for type), aged horse urine (for type cleaning + hide preparation), + burning linseed oil. Print shops were typically downwind of residential areas.'),
+            keyPointBlock('A typical period black-ink recipe', [
+              { k: 'Step 1: Boil linseed oil', v: 'Cold-pressed linseed oil heated to ~300°C for hours, sometimes days. Drives off volatile components + polymerizes the oil into a thick varnish ("burnt linseed oil"). Could catch fire — dangerous step.' },
+              { k: 'Step 2: Make lampblack', v: 'Burn pine resin, tar, or oil in a chamber. Collect the soot (lampblack) from inside the chamber walls. Fine-grained pure carbon.' },
+              { k: 'Step 3: Mix into ink stone', v: 'Combine boiled oil + lampblack on a stone slab. Grind with a muller (heavy stone) to disperse particles into oil completely. Hours of grinding per batch.' },
+              { k: 'Step 4: Age the ink', v: 'Mix is stored in covered crocks for weeks to months. Air oxidation completes the polymerization. Ink stiffens + becomes "tacky" — proper press consistency.' },
+              { k: 'Step 5: Test + adjust', v: 'Trial print on scrap paper. Too soft = add more lampblack or use stiffer oil. Too dry = add fresh oil. Print shops had house formulas refined over decades.' }
+            ])
+          );
+        } else if (imSect === 'gutenberg') {
+          content = h('div', null,
+            dropCapPara('Gutenberg\'s ink was unusual. Modern analysis of surviving Gutenberg Bible pages shows the ink has very high lead + copper content — much more than period inks before or after. Why is unclear. Theories: the metals improved drying, or improved tack, or improved blackness, or all three. Whatever the reason, his ink set a quality standard that competitors needed years to match.'),
+            keyPointBlock('What we know about Gutenberg ink', [
+              { k: 'Composition', v: 'Lampblack (carbon) base + linseed oil binder, with significant lead + copper content. Modern Bruker XRF analysis of Bibles confirms these heavy metals.' },
+              { k: 'Why metals', v: 'Possibly Gutenberg discovered that metal salts improved drying + bonding to paper. The exact reason for the high lead + copper is not certain.' },
+              { k: 'Color stability', v: 'Gutenberg Bible ink remains intensely black 575+ years later. Many later printers\' ink has faded or browned. Quality of formulation visible across centuries.' },
+              { k: 'Difficulty to replicate', v: 'Other printers spent decades refining their inks. Lead-tin-antimony alloy for type + oil-based ink + screw-press were all Gutenberg innovations; competitors learned them gradually.' },
+              { k: 'Health implications', v: 'Lead + copper exposure for printers + pressmen had real long-term health consequences. Not understood at the time. Lead exposure in print trades persisted as a workplace hazard into the 1800s + 1900s.' }
+            ])
+          );
+        } else if (imSect === 'colors') {
+          content = h('div', null,
+            keyPointBlock('Colored inks through history', [
+              { k: 'Red (cinnabar / vermilion)', v: 'Mercuric sulfide. Expensive — used for rubrics, drop caps, titles. Still standard for early-printed religious texts (rubric red).' },
+              { k: 'Red (madder lake)', v: 'Plant-based red from madder root. Cheaper than vermilion but less vibrant.' },
+              { k: 'Blue (azurite)', v: 'Mineral pigment. Used for decorated initials, illumination. Expensive.' },
+              { k: 'Blue (ultramarine)', v: 'From lapis lazuli stone, mined in Afghanistan. Most expensive pigment in pre-modern world. Used sparingly for premium work.' },
+              { k: 'Gold + gold leaf', v: 'Hammered gold foil applied to printed pages or initials. Used for premium religious + royal works. Expensive + showy.' },
+              { k: 'Yellow (yellow ochre, orpiment)', v: 'Ochre (iron oxide) was cheap; orpiment (arsenic sulfide) was vivid but toxic. Yellow used less than red or blue in printing.' },
+              { k: 'Green (verdigris)', v: 'Copper acetate, made by exposing copper to vinegar fumes. Used for woodcut hand-coloring + some printed work.' },
+              { k: '19th-century chemical pigments', v: 'Prussian blue (1704), cobalt blue (1802), chrome yellow (1809), cadmium red (1817) + many others — synthetic mineral pigments dramatically expanded color printing range + dropped cost.' },
+              { k: 'Aniline dyes (1856+)', v: 'William Henry Perkin\'s discovery of mauveine launched coal-tar dye chemistry. Made vivid color printing economical + universal by 1900.' }
+            ])
+          );
+        } else if (imSect === 'modern') {
+          content = h('div', null,
+            keyPointBlock('Modern printing inks', [
+              { k: 'Offset lithography inks', v: 'Oil-based or soy-based, pigment + resin binder. Cyan/magenta/yellow/black (CMYK) for process printing. Spot colors per Pantone for brand identity.' },
+              { k: 'Soy-based inks (1980s+)', v: 'Substitute soybean oil for petroleum oil. Lower VOC emissions, easier de-inking for recycling. Most newspapers now use soy-based ink. Iowa was an early adopter (1987).' },
+              { k: 'UV-cured inks', v: 'Acrylate monomers that polymerize when exposed to UV light. Print dries instantly. Used for commercial offset, packaging, screen printing. Often considered more environmentally friendly than solvent inks.' },
+              { k: 'Inkjet inks (1990s+)', v: 'Aqueous (water-based) with dye or pigment. Dye inks: vivid color but fade. Pigment inks: more permanent. Most modern inkjet printers use 6-12+ colors for wide gamut.' },
+              { k: 'Toner (laser printing)', v: 'Powdered pigment + plastic, electrostatically attracted to drum + fused to paper with heat. Used in laser printers + digital offset (HP Indigo).' },
+              { k: 'Specialty inks', v: 'Conductive inks (for printed electronics), magnetic inks (MICR for check printing), thermochromic inks (color changes with temperature), fluorescent inks (security printing), edible inks (food + cake decoration).' }
+            ])
+          );
+        } else {
+          content = h('div', null,
+            keyPointBlock('Tools of the period inking table', [
+              { k: 'Ink balls', v: 'Sheepskin balls stuffed with wool, mounted on wooden handles. Pressmen dabbed ink onto type using two balls — one held in each hand. The Press Mechanism module shows them in action.' },
+              { k: 'Ink stone', v: 'Flat marble or slate slab where ink was mixed + thinned. Stayed beside the press for adjustments throughout the day.' },
+              { k: 'Muller', v: 'Heavy stone with a flat bottom, used to grind pigment into oil on the ink stone. Looked like a giant pestle.' },
+              { k: 'Composing brayer (1810s+)', v: 'Roller used for inking small forms, eventually replacing ink balls for most commercial work. Easier to use + more uniform inking.' },
+              { k: 'Type cleaner', v: 'Lye, urine, or other strong alkalis used to clean dried ink from type after a print run. Highly corrosive — wore down type over the years.' },
+              { k: 'Tympan + frisket', v: 'Two thin frames hinged to the press bed. Tympan (paper-covered) was inside, against the type; frisket (paper window) covered margins to prevent excess ink. Both used together to register paper + protect margins.' }
+            ])
+          );
+        }
+        return h('div', null,
+          backBar('🛢 Ink + Press Materials'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) {
+              var sel = (imSect === s.id);
+              return h('button', { key: s.id,
+                onClick: function() { setImSect(s.id); announce(s.label); },
+                style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                s.icon + ' ' + s.label);
+            })
+          ),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            content
+          ),
+          miniQuizBlock('inkMaterials', [
+            { q: 'What was unusual about Gutenberg\'s ink?',
+              opts: ['It was water-based', 'It had high lead + copper content compared to other period inks', 'It was bright red', 'It dried slowly'],
+              ans: 1, explain: 'Modern XRF analysis of Gutenberg Bible pages shows unusually high lead + copper content. Possibly improved drying + tack + bonding to paper. The exact reason is not certain but the ink quality is visible 575+ years later — still intensely black.' },
+            { q: 'Before chemical pigments, what was the most expensive blue pigment?',
+              opts: ['Prussian blue', 'Cobalt blue', 'Ultramarine (from lapis lazuli, Afghanistan)', 'Sky blue'],
+              ans: 2, explain: 'Ultramarine, made from lapis lazuli mined in Afghanistan, was the most expensive pigment in the pre-modern world. Synthetic blues (Prussian blue 1704, cobalt blue 1802) dropped the price dramatically.' },
+            { q: 'What replaced ink balls for inking most commercial presses in the 1800s?',
+              opts: ['The composing brayer (roller)', 'Spray inking', 'Quill brushes', 'No tool — done by hand'],
+              ans: 0, explain: 'The composing brayer (a rubber roller) replaced ink balls for most commercial inking by mid-1800s. Faster + more uniform than the two-ball method that had been standard since Gutenberg.' }
+          ]),
+          sourcesBlock([
+            { label: 'Joseph Moxon, Mechanick Exercises on the Whole Art of Printing (1683-84) — primary source on period inks' },
+            { label: 'Adam Smyth, ed., A History of the Book in 100 Books (2014)' },
+            { label: 'Library of Congress conservation notes on Gutenberg Bible ink', url: 'https://www.loc.gov/preservation/' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['NGSS HS-PS1-1 (atoms + molecules)', 'NGSS HS-PS1-3 (properties of matter)'],
+            discussion: [
+              'Why did paper-printing need a different ink than parchment-writing?',
+              'A 1550 print shop had health hazards from lead + copper + linseed oil. Compare with modern print shop hazards.',
+              'How might "ink" be defined in 50 years (with 3D printing + inkjet + e-ink)?'
+            ],
+            misconceptions: [
+              { wrong: 'Ink is always just colored water', right: 'Most printing ink is oil-based, with pigment ground into oil. Water-based inks (inkjet, some art inks) are a special case + relatively recent.' }
+            ],
+            extension: 'Make your own simple ink: soot from a candle + a few drops of liquid + an egg yolk binder (for tempera-like writing ink). Try writing with it. Now imagine making enough to print thousands of pages.'
+          }),
+          crossLinkFooter('inkMaterials'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // TRANSLATION + TRANSLATORS — Tyndale, Luther, KJV, modern translation.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderTranslation() {
+        var trSectRaw = useState('overview');
+        var trSect = trSectRaw[0], setTrSect = trSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview',           icon: '🔄' },
+          { id: 'bible',    label: 'Bible translation',  icon: '📖' },
+          { id: 'tyndale',  label: 'William Tyndale',    icon: '⚖' },
+          { id: 'kjv',      label: 'King James Bible',   icon: '👑' },
+          { id: 'literary', label: 'Literary translation', icon: '📚' },
+          { id: 'modern',   label: 'Modern translation', icon: '🌐' }
+        ];
+
+        var content;
+        if (trSect === 'overview') {
+          content = h('div', null,
+            dropCapPara('Translation through print is one of the great stories of the modern world. The Bible into vernacular languages drove the Reformation. Classical Greek + Latin into vernacular drove the Renaissance. World literature crossing borders depends on the work of translators — sometimes celebrated, more often invisible. Print made translation matter at scale.'),
+            sectionHeader('🔄', 'What this module covers'),
+            keyPointBlock(null, [
+              { k: 'Bible translation', v: 'A 1700-year story from Jerome\'s Vulgate to modern translations.' },
+              { k: 'William Tyndale', v: 'The first English Bible from original Greek + Hebrew. Burned at the stake 1536. His translation became 84% of the King James Bible (Daniell\'s figure).' },
+              { k: 'King James Bible (1611)', v: 'Committee translation. Has shaped English language + literature for 400+ years. Probably the most-printed book in any language.' },
+              { k: 'Literary translation', v: 'Don Quixote, the Iliad, Tolstoy. How great literature crosses languages.' },
+              { k: 'Modern translation', v: 'Today\'s translation industry. Machine translation. The interpreter\'s booth at the UN.' }
+            ])
+          );
+        } else if (trSect === 'bible') {
+          content = h('div', null,
+            keyPointBlock('Bible translation through history', [
+              { k: 'Septuagint (LXX) (~280 BCE)', v: 'Hebrew Old Testament translated into Greek by Jewish scholars in Alexandria. Used by early Christians + Greek-speaking Jews. The first major translation of a sacred text.' },
+              { k: 'Vulgate (Jerome, ~382-405 CE)', v: 'Jerome translated the full Bible into Latin from Hebrew + Greek originals. Became the official Catholic Bible for 1,500+ years. Council of Trent (1546) formally declared it authoritative.' },
+              { k: 'Wycliffe Bible (1382)', v: 'John Wycliffe + followers translated the Vulgate into Middle English. Hand-copied — predates printing. Wycliffe declared heretic; his bones dug up + burned in 1428.' },
+              { k: 'Luther\'s German Bible (1522 NT, 1534 complete)', v: 'Luther translated from Greek + Hebrew, in vivid German vernacular. Hugely influential on the German language.' },
+              { k: 'Tyndale\'s English NT (1526)', v: 'Translated from Greek (with reference to Luther) into English. See Tyndale section for details.' },
+              { k: 'King James Bible (1611)', v: 'Committee translation under James I. Built heavily on Tyndale. See KJV section.' },
+              { k: 'Modern English translations', v: 'Revised Standard Version (1952), New International Version (1978), New Revised Standard Version (1989), English Standard Version (2001), New English Translation (2005, NET Bible, fully online with translator notes). Each addresses different audiences + scholarly standards.' },
+              { k: 'Worldwide Bible translation today', v: 'United Bible Societies + Wycliffe Bible Translators are major modern translation organizations. The Bible (whole or parts) has been translated into 3,500+ of the world\'s estimated 7,000 living languages — vastly more than any other book.' }
+            ])
+          );
+        } else if (trSect === 'tyndale') {
+          content = h('div', null,
+            dropCapPara('William Tyndale (~1494-1536) was the first person to translate the New Testament from original Greek into English. He had to flee England to do it (English Bible translation was illegal) + was eventually captured + burned at the stake in Antwerp. His translation became the foundation of the King James Bible — David Daniell\'s scholarship shows about 84% of the KJV New Testament + 76% of the KJV Old Testament parts Tyndale completed are essentially Tyndale\'s words.'),
+            keyPointBlock("Tyndale's translation + its legacy", [
+              { k: 'Why illegal', v: 'English Bible translation was forbidden by the 1408 Constitutions of Oxford (response to Wycliffe). Tyndale needed church permission to translate; Bishop of London refused. Tyndale went to Germany + Antwerp.' },
+              { k: 'NT printed 1526', v: 'Worms, Germany (Peter Schöffer, Jr.). Quickly smuggled into England. Bishops bought + burned copies; Tyndale used the money for revised editions.' },
+              { k: 'OT incomplete', v: 'Tyndale translated Pentateuch + Jonah (printed 1530, 1531) + drafted Joshua-2 Chronicles before his arrest in 1535.' },
+              { k: 'Arrest + execution', v: 'Tyndale arrested in Antwerp May 1535 by imperial agents. Tried for heresy. Strangled + burned at the stake October 6, 1536. Last words reportedly: "Lord, open the king of England\'s eyes."' },
+              { k: 'Henry VIII\'s reversal (1539)', v: 'Within 3 years of Tyndale\'s execution, Henry VIII authorized the Great Bible in English — built on Tyndale\'s work. The prayer "Lord, open the king of England\'s eyes" had effectively been answered.' },
+              { k: 'Tyndale phrases that became English', v: '"Let there be light." "My brother\'s keeper." "Salt of the earth." "Good Samaritan." "Eat, drink, and be merry." "Powers that be." "The signs of the times." Hundreds of phrases that entered English via Tyndale + remain idioms today.' }
+            ])
+          );
+        } else if (trSect === 'kjv') {
+          content = h('div', null,
+            dropCapPara('The King James Bible (1611) — the "Authorised Version" — was the result of a 7-year committee project commissioned by King James I. 47 translators worked in 6 committees in Westminster, Oxford, Cambridge. They consulted earlier English translations (especially Tyndale + the 1568 Bishops\' Bible), original Greek + Hebrew + Latin sources, + each other. The result became the most-printed English-language book in history + arguably the single most influential work on the English language.'),
+            keyPointBlock("KJV translation + impact", [
+              { k: 'Commissioned 1604', v: 'James I called the Hampton Court Conference in 1604; one outcome was authorization of a new translation. Aim: replace the Catholic Douay-Rheims + the popular-but-Puritan Geneva Bible with one Anglican standard text.' },
+              { k: '47 translators, 6 committees', v: 'Translators worked in committees of 7-8, each assigned different sections. Their work was cross-checked by a general review committee. ~7 years of work.' },
+              { k: 'Built on Tyndale', v: 'Per Daniell + other modern scholarship, ~80% of the KJV NT is essentially Tyndale\'s words. The KJV translators acknowledged the debt; many of them had Tyndale\'s versions on their desks.' },
+              { k: 'Published 1611', v: 'Robert Barker, royal printer, printed the first edition. Two known print runs in 1611 — distinguished by 2 small typos ("She" vs "He" at Ruth 3:15). Few first-edition copies survive.' },
+              { k: 'Cadence + literary power', v: 'The KJV used a deliberately slightly-archaic prose style for solemnity. Sentences are structured for reading aloud. The translation is regularly cited as among the greatest works of English prose ever produced.' },
+              { k: 'Impact on English', v: '"The salt of the earth." "Apple of his eye." "A fly in the ointment." "Sour grapes." "Bite the dust." "The blind leading the blind." All from KJV (some via Tyndale before). The language of English literature for 300+ years.' }
+            ])
+          );
+        } else if (trSect === 'literary') {
+          content = h('div', null,
+            keyPointBlock('Major literary translations through history', [
+              { k: 'Chapman\'s Homer (1598-1616)', v: 'George Chapman\'s English translations of the Iliad + Odyssey. Influential on Keats + later poets. Keats wrote a famous sonnet ("On First Looking into Chapman\'s Homer") about discovering them.' },
+              { k: 'Pope\'s Iliad + Odyssey (1715-1726)', v: 'Alexander Pope\'s polished verse translations made him wealthy + famous. Long the standard English Homer until the 1800s.' },
+              { k: 'Don Quixote in English', v: 'First translated by Thomas Shelton (1612) — within 7 years of original. Most recent major translation: Edith Grossman (2003).' },
+              { k: 'Lattimore + Fitzgerald (Iliad + Odyssey)', v: 'Mid-20th-c. translations now standard for English-language readers. Richmond Lattimore (1951 Iliad) + Robert Fitzgerald (1961 Odyssey) emphasized different aspects.' },
+              { k: 'Constance Garnett (Russian, ~1900-1934)', v: 'Translated 71 volumes from Russian — most of Tolstoy, Dostoevsky, Chekhov, Turgenev. Brought Russian literature to English-language readers wholesale.' },
+              { k: 'Pevear + Volokhonsky (Russian, 1990s+)', v: 'Husband-wife team. Translation of Tolstoy, Dostoevsky, others, often replacing Garnett as standard. Sometimes controversial in scholarly discussions.' },
+              { k: 'Edith Grossman (Spanish, 1990s+)', v: 'Translator of García Márquez, Vargas Llosa, Carlos Fuentes, + a celebrated 2003 Don Quixote. Major essay collections on translation theory + practice.' },
+              { k: 'Jhumpa Lahiri working in Italian (2010s+)', v: 'Pulitzer Prize-winning Bengali-American writer began writing original Italian + translating both ways. Reflective essays on the experience of working between languages.' }
+            ])
+          );
+        } else {
+          content = h('div', null,
+            keyPointBlock('Modern translation today', [
+              { k: 'Translation as a profession', v: 'American Translators Association (ATA) certifies professional translators across dozens of language pairs. Median income varies enormously — literary translators often paid little, technical/legal/medical translators paid well.' },
+              { k: 'CAT tools (Computer-Assisted Translation)', v: 'Software like Trados, MemoQ, Wordfast assist human translators with translation memory + glossary management. Standard tools for professional technical/commercial translation.' },
+              { k: 'Machine translation (Google Translate, DeepL, etc.)', v: 'Statistical machine translation since 2006; neural machine translation since 2016 (significantly better). Now good enough for casual + many professional uses, but still inferior to good human translation for nuanced texts.' },
+              { k: 'Post-editing', v: 'A common modern workflow: machine translation produces draft → human translator edits for accuracy + naturalness. Most efficient mode for high-volume technical content.' },
+              { k: 'Literary translation funding', v: 'PEN American Center, English PEN, Banff International Literary Translation Centre, + various national arts councils fund literary translation. Not financially sustainable without subsidy in most cases.' },
+              { k: 'Subtitle + dubbing translation', v: 'Netflix + global streaming has dramatically expanded the audiovisual translation market. Korean-to-English Squid Game (2021), Spanish-to-English Money Heist, French-to-English Lupin all reached massive global audiences via translation.' },
+              { k: 'Conference interpretation', v: 'Simultaneous interpretation at UN, EU, international organizations. Requires extraordinary skill — translating at speech pace, between languages, in real time. Often considered the hardest cognitive job in the world.' }
+            ])
+          );
+        }
+
+        return h('div', null,
+          backBar('🔄 Translation + Translators'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) {
+              var sel = (trSect === s.id);
+              return h('button', { key: s.id,
+                onClick: function() { setTrSect(s.id); announce(s.label); },
+                style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                s.icon + ' ' + s.label);
+            })
+          ),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            content
+          ),
+          miniQuizBlock('translation', [
+            { q: 'What happened to William Tyndale after he translated the New Testament into English?',
+              opts: ['He was knighted', 'He was strangled + burned at the stake in Antwerp (1536) for heresy', 'He retired to Italy', 'He was made Archbishop of Canterbury'],
+              ans: 1, explain: 'Tyndale was arrested in Antwerp 1535 + executed 1536 for heresy (unauthorized Bible translation). Within 3 years Henry VIII authorized an English Bible based largely on Tyndale\'s work. His dying prayer — "Lord, open the king of England\'s eyes" — was effectively answered posthumously.' },
+            { q: 'Approximately what fraction of the King James Bible\'s NT is essentially Tyndale\'s words?',
+              opts: ['~10%', '~30%', '~50%', '~80%+'],
+              ans: 3, explain: 'Per scholarly analysis (David Daniell + others), about 84% of the KJV New Testament is essentially Tyndale\'s words. The KJV translators built heavily on his work — though they were not always allowed to publicly acknowledge it.' },
+            { q: 'Approximately how many of the world\'s living languages have at least part of the Bible translated into them?',
+              opts: ['~100', '~500', '~1,500', '~3,500+'],
+              ans: 3, explain: 'The Bible (whole or parts) has been translated into approximately 3,500 of the world\'s 7,000 living languages. The most-translated text in history by orders of magnitude. United Bible Societies + Wycliffe Bible Translators are major modern translation organizations.' }
+          ]),
+          sourcesBlock([
+            { label: 'David Daniell, William Tyndale: A Biography (1994)' },
+            { label: 'Adam Nicolson, God\'s Secretaries: The Making of the King James Bible (2003)' },
+            { label: 'Edith Grossman, Why Translation Matters (2010)' },
+            { label: 'Wycliffe Bible Translators', url: 'https://www.wycliffe.org/' },
+            { label: 'American Translators Association', url: 'https://www.atanet.org/' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['CCSS RL.6-12.4 (figurative + connotative meaning)', 'NCSS D2.His.16.6-8 (perspectives)'],
+            discussion: [
+              'Why was Tyndale\'s English Bible illegal? What did the authorities fear?',
+              'How does a translator make choices when one language has a word + the other doesn\'t?',
+              'Pick a phrase from Tyndale\'s translation that became an English idiom (e.g., "salt of the earth"). Why does it work in English?'
+            ],
+            misconceptions: [
+              { wrong: 'King James personally translated the King James Bible', right: 'James I authorized + commissioned the translation. 47 scholars in 6 committees did the actual work over 7 years. They built heavily on William Tyndale (executed 75 years earlier).' }
+            ],
+            extension: 'Find a famous passage (Psalm 23, the Sermon on the Mount, anything you know) in 3 different English translations (KJV, NIV, NRSV, or other). Compare. Notice the choices each translator made + what each choice emphasizes.'
+          }),
+          crossLinkFooter('translation'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // PRINT + PROPAGANDA — political posters, propaganda, persuasion.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderPropaganda() {
+        var ppSectRaw = useState('overview');
+        var ppSect = ppSectRaw[0], setPpSect = ppSectRaw[1];
+        var sections = [
+          { id: 'overview',  label: 'Overview',           icon: '🗳' },
+          { id: 'wwi',       label: 'WWI posters',        icon: '🪖' },
+          { id: 'wwii',      label: 'WWII propaganda',    icon: '🛡' },
+          { id: 'soviet',    label: 'Soviet posters',     icon: '🚩' },
+          { id: 'civilrights', label: 'Civil rights movement', icon: '✊' },
+          { id: 'modern',    label: 'Modern propaganda',  icon: '📱' }
+        ];
+
+        var content;
+        if (ppSect === 'overview') {
+          content = h('div', null,
+            dropCapPara('Print propaganda — using printed material to persuade, mobilize, or manipulate — is as old as the press. The Reformation pamphlet war was propaganda. So was Common Sense. So were the Eastern Argus\'s Civil War editorials. The 20th century made propaganda visual + omnipresent — WWI + WWII recruitment posters, Soviet socialist-realist posters, fascist + Nazi propaganda, civil rights movement printed material. Today\'s social-media political content carries the same tradition forward.'),
+            sectionHeader('🗳', 'What this module covers'),
+            keyPointBlock(null, [
+              { k: 'WWI posters', v: 'Britain + USA + France + Germany + others. James Montgomery Flagg\'s Uncle Sam ("I Want You"), British "Lord Kitchener Wants You," Howard Chandler Christy navy posters.' },
+              { k: 'WWII propaganda', v: 'Massive printing operations in all combatant countries. Norman Rockwell Saturday Evening Post covers. Soviet socialist-realist. Nazi Sturmer. British "Keep Calm and Carry On."' },
+              { k: 'Soviet posters', v: 'Constructivist 1920s → socialist realism 1930s-50s → late Soviet. Pioneering political graphic design + ideological art.' },
+              { k: 'Civil rights movement', v: 'SNCC + SCLC + later groups produced printed pamphlets + posters as core organizing infrastructure. Atlanta + Selma + Montgomery printers.' },
+              { k: 'Modern propaganda', v: 'Print campaign material, digital memes, AI-generated political imagery. The same persuasive impulse in new media.' }
+            ])
+          );
+        } else if (ppSect === 'wwi') {
+          content = h('div', null,
+            keyPointBlock('World War I propaganda posters', [
+              { k: 'Britain — Lord Kitchener', v: 'Alfred Leete\'s 1914 poster "Your Country Needs You" featuring Lord Kitchener pointing at the viewer. Iconic + much-imitated. Reproduced in tens of thousands.' },
+              { k: 'USA — Uncle Sam', v: 'James Montgomery Flagg\'s 1917 "I Want You for U.S. Army" poster. ~4 million printed. The image became permanent US iconography.' },
+              { k: 'France — multiple', v: 'Heavy use of patriotic + sacrificial imagery. Charles Léandre + Sem (Georges Goursat) produced famous posters.' },
+              { k: 'Germany — Hindenburg + others', v: 'German posters emphasized national unity + sacrifice. Influenced later Nazi propaganda visual language.' },
+              { k: 'Russia (1914-1917)', v: 'Imperial Russian posters before the 1917 revolution. Mixed religious + patriotic imagery. Many later destroyed by Soviets.' },
+              { k: 'Production methods', v: 'Chromolithography mostly. Large print runs (10,000-50,000 per design) posted on city walls + train stations + factory bulletin boards.' },
+              { k: 'Impact', v: 'WWI poster culture established the visual template for 20th-century political communication. Recruitment, war bond sales, food conservation, factory production, anti-spy vigilance — all promoted via poster.' }
+            ])
+          );
+        } else if (ppSect === 'wwii') {
+          content = h('div', null,
+            keyPointBlock('World War II propaganda', [
+              { k: 'British — Keep Calm and Carry On', v: '~2.5 million printed in 1939 for use if Britain was invaded. Never widely distributed during the war (kept in reserve). Rediscovered + became iconic in the 2000s.' },
+              { k: 'British — Ministry of Information posters', v: 'Many other British WWII posters by designers including Abram Games, Pat Keely, Reginald Mount. Often striking modernist designs.' },
+              { k: 'USA — Office of War Information', v: 'Federal agency coordinating WWII propaganda. Norman Rockwell\'s "Four Freedoms" Saturday Evening Post covers (1943). J. Howard Miller\'s "We Can Do It!" (the basis of the later Rosie the Riveter iconography). Massive print operations.' },
+              { k: 'USA — Norman Rockwell', v: 'Saturday Evening Post covers + war-bond posters. Iconic Americana imagery serving war mobilization.' },
+              { k: 'Soviet — multiple designers', v: 'Massive Soviet WWII (Great Patriotic War) propaganda. Famous artists: Viktor Koretsky, Iraklii Toidze, the Kukryniksy collective. Iconic "The Motherland Calls" image (Toidze, 1941).' },
+              { k: 'Nazi Germany', v: 'Sturmer + Völkischer Beobachter newspapers were principal Nazi propaganda outlets. Antisemitic content + heroic Aryan imagery + cult-of-Hitler material. Some images are too disturbing to discuss casually but historically critical to understand.' },
+              { k: 'Japanese propaganda', v: 'Japanese WWII propaganda emphasized emperor-worship + anti-Western themes. Posters + films + radio. Heavy military influence over civilian print.' }
+            ])
+          );
+        } else if (ppSect === 'soviet') {
+          content = h('div', null,
+            keyPointBlock('Soviet poster design across eras', [
+              { k: '1917-1921 Civil War posters', v: 'Revolutionary period. Vladimir Mayakovsky, Dmitri Moor, Viktor Deni produced powerful early Soviet posters. Often hand-stenciled.' },
+              { k: '1920s Constructivism', v: 'El Lissitzky + Alexander Rodchenko + others created experimental abstract designs influenced by + influencing Bauhaus + de Stijl. Pioneering political graphic design.' },
+              { k: '1930s Socialist Realism', v: 'Stalin-era turn to representational, heroic-realist style. Idealized workers, soldiers, peasants. The Constructivist experimentation suppressed.' },
+              { k: '1940s WWII (Great Patriotic War)', v: 'Massive print operation. See WWII section.' },
+              { k: '1950s-80s Late Soviet', v: 'Continuing socialist realism. More polished + glossy production. Some artistic experimentation slowly returns 1960s onward.' },
+              { k: 'Subversive samizdat counter-graphics', v: 'Dissidents produced underground samizdat with subversive graphic art. Often hand-drawn or photocopied. Sergei Parajanov, Erik Bulatov, other Soviet artists worked at the edges.' }
+            ])
+          );
+        } else if (ppSect === 'civilrights') {
+          content = h('div', null,
+            keyPointBlock('Civil Rights movement print', [
+              { k: 'SNCC (Student Nonviolent Coordinating Committee)', v: 'Founded 1960. Produced enormous quantities of pamphlets, organizing materials, photographs. Atlanta-based print operations. Key in voter registration + protest organizing.' },
+              { k: 'SCLC (Southern Christian Leadership Conference)', v: 'King + colleagues. Produced position papers, sermons in print, training materials for nonviolence workshops.' },
+              { k: 'The Crisis (NAACP magazine, founded 1910)', v: 'Founded by W.E.B. Du Bois. Print magazine documenting + advocating against racism + injustice for over 100 years. Still publishing in 2026.' },
+              { k: "Ebony + Jet magazines", v: 'John H. Johnson Publishing (founded 1942). Mass-circulation magazines aimed at Black readers. Major print presence + cultural force across 70+ years.' },
+              { k: 'Underground newspapers (1960s-70s)', v: 'Berkeley Barb, East Village Other, many others. Counterculture + civil rights overlap. Mimeograph + offset printing made underground press accessible.' },
+              { k: 'Black Power era posters + flyers', v: 'Emory Douglas (Black Panther Party Minister of Culture, 1967-1980) produced iconic graphic art for the Panther newspaper + posters. Visual vocabulary of Black liberation.' }
+            ])
+          );
+        } else {
+          content = h('div', null,
+            keyPointBlock('Modern political print + propaganda', [
+              { k: 'Campaign printed materials', v: 'Lawn signs, mailers, door hangers, brochures — campaign print continues in every election cycle. US presidential campaigns spend hundreds of millions on print + targeted mail.' },
+              { k: 'Political advertising', v: 'Newspaper + magazine political ads (still significant); endorsement ads; opposition research booklets. Print advertising shrinking but not gone.' },
+              { k: 'Memes + image macros', v: 'Modern digital "propaganda" often takes meme form. Shared on social media at zero marginal cost. Influence comparable to 1900s posters but distribution mechanism is different.' },
+              { k: 'AI-generated political imagery', v: 'Since ~2023, AI tools can generate political images at near-zero cost. Watermark + detection tools emerging but imperfect. Major emerging challenge for democratic information ecosystem.' },
+              { k: 'Disinformation campaigns', v: 'State-sponsored + private-sector disinformation operations producing fake news websites, fake social media accounts, fake "grassroots" movements. Documented Russian operations 2014-present, similar from other state + non-state actors.' },
+              { k: 'Counter-disinformation', v: 'Fact-checking organizations (PolitiFact, FactCheck.org, Snopes), platform content-moderation efforts, academic research (e.g., Stanford Internet Observatory). Ongoing institutional response.' },
+              { k: 'The democratic dilemma', v: 'How to enable free speech (essential to democracy) while preventing weaponized disinformation (also threat to democracy). No clean answer. Active debate in 2026.' }
+            ])
+          );
+        }
+
+        return h('div', null,
+          backBar('🗳 Print + Propaganda'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) {
+              var sel = (ppSect === s.id);
+              return h('button', { key: s.id,
+                onClick: function() { setPpSect(s.id); announce(s.label); },
+                style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                s.icon + ' ' + s.label);
+            })
+          ),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            content
+          ),
+          miniQuizBlock('propaganda', [
+            { q: 'Who designed the famous WWI "I Want You" Uncle Sam US Army recruitment poster?',
+              opts: ['Norman Rockwell', 'James Montgomery Flagg (1917)', 'Howard Chandler Christy', 'Andy Warhol'],
+              ans: 1, explain: 'James Montgomery Flagg designed the "I Want You for U.S. Army" poster in 1917. ~4 million printed. The Uncle Sam image became permanent US iconography.' },
+            { q: 'What movement produced the W.E.B. Du Bois-founded magazine The Crisis (1910-present)?',
+              opts: ['Suffragette movement', 'NAACP (National Association for the Advancement of Colored People)', 'Labor movement', 'Temperance movement'],
+              ans: 1, explain: 'The Crisis is the NAACP\'s magazine, founded 1910 by W.E.B. Du Bois. Still publishing in 2026. Documents + advocates against racism + injustice for over 110 years. Major print presence in the Black civil rights movement.' },
+            { q: 'When did AI-generated political imagery become a major emerging challenge for democratic information?',
+              opts: ['1960s', '1990s', '~2023+', 'Not yet a real problem'],
+              ans: 2, explain: 'Generative AI image tools became publicly accessible + capable around 2022-2023. Political-image AI generation at near-zero cost has been a major + growing emerging concern for democratic processes in the 2024 election cycle + ongoing.' }
+          ]),
+          sourcesBlock([
+            { label: 'Pamela Smith Aldrich, James Montgomery Flagg: Uncle Sam And Beyond (2007)' },
+            { label: 'Anthony Rhodes, Propaganda: The Art of Persuasion: World War II (1976)' },
+            { label: 'Stephen White, The Bolshevik Poster (1988)' },
+            { label: 'Emory Douglas, Black Panther: The Revolutionary Art of Emory Douglas (2007)' },
+            { label: 'Stanford Internet Observatory research', url: 'https://cyber.fsi.stanford.edu/io' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['NCSS D2.His.4.6-8 (causation)', 'NCSS D4.6.6-8 (taking informed action)'],
+            discussion: [
+              'Compare a WWI poster + a modern political meme. What\'s similar? What\'s different?',
+              'When does political speech become "propaganda"? Is there a useful distinction?',
+              'How should a democratic society respond to AI-generated political disinformation?'
+            ],
+            misconceptions: [
+              { wrong: 'Propaganda is something only enemies do', right: 'All political communication has persuasive intent. "Propaganda" tends to be the label we apply to opposing views. The interesting question is: which persuasive techniques cross into manipulation?' }
+            ],
+            extension: 'Find 3 political posters from different eras (Library of Congress Prints & Photographs Online catalog has many). Compare techniques: visual hierarchy, color choices, emotional appeals, calls to action.'
+          }),
+          crossLinkFooter('propaganda'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // COMICS + GRAPHIC NOVELS — Yellow Kid to graphic novel.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderComics() {
+        var coSectRaw = useState('overview');
+        var coSect = coSectRaw[0], setCoSect = coSectRaw[1];
+        var sections = [
+          { id: 'overview',  label: 'Overview',          icon: '💥' },
+          { id: 'origins',   label: 'Origins',           icon: '🟡' },
+          { id: 'comicbooks', label: 'Comic books',      icon: '📓' },
+          { id: 'underground', label: 'Underground comix', icon: '🐱' },
+          { id: 'graphic',   label: 'Graphic novels',    icon: '📕' },
+          { id: 'modern',    label: 'Modern comics',     icon: '🎨' }
+        ];
+
+        var content;
+        if (coSect === 'overview') {
+          content = h('div', null,
+            dropCapPara('Comics — the integration of words + sequential images into a unified narrative form — emerged in the late 1800s as newspaper Sunday-supplement entertainment + became one of the dominant pop-cultural art forms of the 20th + 21st centuries. The form spans from Yellow Kid (1896) to superhero comics to underground comix to literary graphic novels to digital webcomics. A 130-year history of word + image working together.'),
+            sectionHeader('💥', 'What this module covers'),
+            keyPointBlock(null, [
+              { k: 'Origins', v: 'Newspaper comic strips 1890s. Yellow Kid, Hogan\'s Alley, Krazy Kat, Little Nemo.' },
+              { k: 'Comic books', v: '1930s-present. Action Comics #1 (1938 Superman debut). Golden + Silver + Bronze + Modern ages of superhero comics.' },
+              { k: 'Underground comix', v: '1960s-70s counterculture. R. Crumb, Art Spiegelman (pre-Maus), Lynda Barry. Adult themes + radical politics.' },
+              { k: 'Graphic novels', v: 'Modern long-form comics literature. Maus, Persepolis, Watchmen, Fun Home, Sandman.' },
+              { k: 'Modern comics', v: 'Webcomics, manga (Japanese comics), Marvel/DC, indie scene, modern graphic memoir.' }
+            ])
+          );
+        } else if (coSect === 'origins') {
+          content = h('div', null,
+            keyPointBlock('The first generation of comics', [
+              { k: 'Hogan\'s Alley / Yellow Kid (Outcault, 1895-)', v: 'Richard F. Outcault\'s comic in the New York World. The character (a bald kid in a yellow nightshirt) was an early breakout star. Started a newspaper-comics circulation war between the World + Hearst\'s Journal. Some scholars cite Yellow Kid as the first true comic strip.' },
+              { k: 'Katzenjammer Kids (Dirks, 1897-)', v: 'Rudolph Dirks\' German-American kids strip. First strip to consistently use word balloons + sequential panels.' },
+              { k: 'Little Nemo in Slumberland (McCay, 1905-1914)', v: 'Winsor McCay\'s Sunday strip about a boy\'s dreams. Considered one of the artistic peaks of newspaper comics — McCay\'s draftsmanship + page layouts are still taught in comics programs.' },
+              { k: 'Krazy Kat (Herriman, 1913-1944)', v: 'George Herriman\'s surreal love triangle between a cat, mouse, + dog. Beloved by intellectuals (Picasso, e e cummings, Jack Kerouac all praised it). Considered by many critics the greatest American newspaper comic.' },
+              { k: 'Polly and Her Pals (Sterrett, 1912-1958)', v: 'Cliff Sterrett\'s formally innovative strip. Brought avant-garde visual ideas (cubism, surrealism) into the newspaper page.' },
+              { k: 'Sunday color supplements', v: 'Newspaper Sunday "comics" sections developed in the 1890s-1900s. Color printing made them visually striking + drove circulation. By 1920, every major newspaper had a Sunday comics section.' }
+            ])
+          );
+        } else if (coSect === 'comicbooks') {
+          content = h('div', null,
+            keyPointBlock('Comic book history', [
+              { k: 'Famous Funnies (1934)', v: 'First successful US comic book. Originally compiled newspaper strips. Pioneered the standalone comic-book format.' },
+              { k: 'Action Comics #1 (1938)', v: 'Superman debuts. Jerry Siegel + Joe Shuster\'s creation triggered the superhero genre. Original copies of Action Comics #1 sell for $3M+ today.' },
+              { k: 'Golden Age (1938-1956)', v: 'Superhero boom. Superman, Batman (1939), Wonder Woman (1941), Captain America (1941). Massive sales. Anti-comics moral panic by mid-1950s (Wertham\'s Seduction of the Innocent, 1954) led to Comics Code Authority (1954).' },
+              { k: 'Silver Age (1956-1970)', v: 'Marvel Comics renaissance. Fantastic Four (1961), Spider-Man (1962), X-Men (1963). Stan Lee + Jack Kirby + Steve Ditko developed the Marvel style — flawed, conflicted superheroes.' },
+              { k: 'Bronze Age (1970-1985)', v: 'Mature themes return. Green Lantern/Green Arrow tackles racism + drug addiction. Watchmen + The Dark Knight Returns (both 1986) push superheroes toward grim psychological complexity.' },
+              { k: 'Modern Age (1985-present)', v: 'Continued superhero dominance, Image Comics founding (1992), Vertigo line at DC, manga influence, digital distribution. Comic-book films (Marvel Cinematic Universe, 2008+) bring comic-book IP to mass audiences.' },
+              { k: 'Maine connection', v: 'Stephen King has written comics scripts (American Vampire, Talisman). Maine comics shops include Casablanca Comics (Portland), Comic Outpost (Bangor).' }
+            ])
+          );
+        } else if (coSect === 'underground') {
+          content = h('div', null,
+            keyPointBlock('Underground comix (1960s-70s)', [
+              { k: 'What "underground" meant', v: 'Comix (with x) — distinguished from Code-approved mainstream "comics." Distributed outside newsstand systems via head shops, record stores, college campuses. Adult content + radical politics.' },
+              { k: 'R. Crumb (1960s-)', v: 'Robert Crumb\'s Zap Comix (1968) was foundational. Mr. Natural, Fritz the Cat, Keep On Truckin\' iconography. Crumb\'s influence on subsequent alternative comics is incalculable.' },
+              { k: 'Art Spiegelman (1970s-)', v: 'Worked in underground comix scene with RAW magazine (with Françoise Mouly, 1980s) before producing Maus (1980-1991). Continues to define alternative-comics scene.' },
+              { k: 'Lynda Barry (1970s-)', v: 'Funk + chronological depiction of childhood + adolescence. Influence on later graphic memoir.' },
+              { k: 'Trina Robbins + Wimmen\'s Comix (1972-)', v: 'First all-women comic. Challenged male-dominated underground scene + created space for women cartoonists.' },
+              { k: 'Bill Griffith\'s Zippy the Pinhead (1971-)', v: 'Surreal newspaper-syndicated strip with underground sensibility. Still running.' },
+              { k: 'Impact', v: 'Underground comix proved that comics could be adult art form + political commentary, not just kids\' entertainment. Direct predecessor of graphic novel as serious literary form.' }
+            ])
+          );
+        } else if (coSect === 'graphic') {
+          content = h('div', null,
+            keyPointBlock('Major graphic novels', [
+              { k: 'A Contract With God (Eisner, 1978)', v: 'Will Eisner is widely credited with coining "graphic novel" for this book. Four interconnected stories of life in a Bronx tenement.' },
+              { k: 'Maus (Spiegelman, 1980-1991)', v: 'Graphic memoir of the Holocaust through Art Spiegelman\'s father\'s account. Cats + mice + pigs allegory. Pulitzer Prize 1992. Pushed graphic novels into serious literary attention.' },
+              { k: 'Watchmen (Moore + Gibbons, 1986-1987)', v: 'Alan Moore + Dave Gibbons. Deconstructed superhero genre. Time magazine listed it among the 100 best English-language novels.' },
+              { k: 'The Dark Knight Returns (Miller, 1986)', v: 'Frank Miller. Reimagined Batman as aging, grim. Influenced subsequent superhero cinema dramatically.' },
+              { k: 'Persepolis (Satrapi, 2000-2003)', v: 'Marjane Satrapi\'s autobiographical comics about growing up during the Iranian Revolution. Translated into 30+ languages.' },
+              { k: 'Fun Home (Bechdel, 2006)', v: 'Alison Bechdel\'s memoir about her closeted father + her own coming-out. Pulitzer Prize for Drama for the musical adaptation (2015).' },
+              { k: 'Sandman (Gaiman, 1989-1996)', v: 'Neil Gaiman\'s mythological-fantasy comics. Multiple major literary awards. Adapted to Netflix (2022+).' },
+              { k: 'March (Lewis + Aydin + Powell, 2013-2016)', v: 'John Lewis (Congressman + civil rights leader) co-authored this 3-volume autobiographical comics work. Won the National Book Award.' }
+            ])
+          );
+        } else {
+          content = h('div', null,
+            keyPointBlock('Modern comics + their landscape', [
+              { k: 'Manga (Japanese comics)', v: 'Massive global market. Naruto, One Piece, Dragon Ball, Attack on Titan, Demon Slayer. Manga sales exceed Western comics; account for ~40% of US graphic-novel sales now (per Publishers Weekly).' },
+              { k: 'Webcomics', v: 'Online comics distributed free. xkcd, Penny Arcade, Order of the Stick, hundreds of others. Some authors monetize via Patreon, merchandise, or print collections. Long tail of niche content.' },
+              { k: 'Indie comics', v: 'Image Comics, Boom! Studios, Oni Press + many smaller publishers. Saga (Brian K. Vaughan + Fiona Staples), Lumberjanes, Bone, Walking Dead (originally Image).' },
+              { k: 'Graphic memoir + literary comics', v: 'Continuing literary-comics tradition. Roz Chast\'s Can\'t We Talk About Something More Pleasant? Adrian Tomine, Daniel Clowes, Chris Ware.' },
+              { k: 'Marvel/DC + cinema', v: 'Marvel Cinematic Universe (2008+) + DC films + television have brought superhero comic IP to massive global audiences. Print comic sales have not necessarily benefited proportionally.' },
+              { k: 'Digital comics', v: 'ComiXology (acquired by Amazon 2014), Marvel Unlimited, DC Universe Infinite. Subscription + à-la-carte. The streaming model applied to comics.' },
+              { k: 'Webtoons + vertical-scroll', v: 'Korean platform (Naver Webtoon) pioneered vertical-scroll comics designed for phone reading. Now massive global audience. Different formal grammar than traditional Western panel comics.' }
+            ])
+          );
+        }
+
+        return h('div', null,
+          backBar('💥 Comics + Graphic Novels'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) {
+              var sel = (coSect === s.id);
+              return h('button', { key: s.id,
+                onClick: function() { setCoSect(s.id); announce(s.label); },
+                style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                s.icon + ' ' + s.label);
+            })
+          ),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            content
+          ),
+          miniQuizBlock('comics', [
+            { q: 'Which Sunday newspaper strip is widely cited as the first true American comic strip?',
+              opts: ['Yellow Kid / Hogan\'s Alley (Outcault, 1895)', 'Peanuts (Schulz, 1950)', 'Doonesbury (Trudeau, 1970)', 'Garfield (Davis, 1978)'],
+              ans: 0, explain: 'Richard F. Outcault\'s Yellow Kid (in Hogan\'s Alley) starting 1895 in New York World is widely cited as the first true comic strip. Triggered a newspaper-comics circulation war between the World + Hearst\'s Journal.' },
+            { q: 'When was Superman first published in Action Comics #1?',
+              opts: ['1928', '1938', '1948', '1958'],
+              ans: 1, explain: 'Action Comics #1, with Superman\'s debut by Jerry Siegel + Joe Shuster, was published in 1938. Triggered the superhero genre that has defined comic books since. Original copies of Action Comics #1 sell for $3M+ today.' },
+            { q: 'Which graphic novel won the Pulitzer Prize?',
+              opts: ['Watchmen (Moore + Gibbons)', 'Maus (Spiegelman, won Pulitzer 1992)', 'The Dark Knight Returns', 'Persepolis'],
+              ans: 1, explain: 'Art Spiegelman\'s Maus won the Pulitzer Prize in 1992 — the only graphic novel to do so. Established graphic novels as serious literary form. Maus also got banned from a Tennessee school district in 2022, returning it to bestseller lists.' }
+          ]),
+          sourcesBlock([
+            { label: 'Scott McCloud, Understanding Comics: The Invisible Art (1993) — foundational comics theory' },
+            { label: 'Will Eisner, Comics and Sequential Art (1985)' },
+            { label: 'Hillary Chute, Why Comics? (2017)' },
+            { label: 'Comic Book Legal Defense Fund', url: 'https://cbldf.org/' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['CCSS RL.5.7 (integrate text + visual)', 'NCAS Visual Arts (sequential art)'],
+            discussion: [
+              'How does sequential art (panels) tell a story differently than prose alone?',
+              'Compare a 1940s Superman comic with a 2010s superhero comic. What\'s the same? What\'s different?',
+              'Why might a graphic memoir (Maus, Persepolis, Fun Home) be a uniquely powerful form for telling difficult personal stories?'
+            ],
+            misconceptions: [
+              { wrong: 'Comics are just for kids', right: 'Comics span from kids\' material to literary masterpieces. Maus, Persepolis, Watchmen, Fun Home are sophisticated adult literature.' }
+            ],
+            extension: 'Visit your library + check out one graphic novel. Read it. Compare the reading experience with reading prose-only fiction. What does the form do that prose can\'t?'
+          }),
+          crossLinkFooter('comics'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // THE FUTURE OF PRINT — AI, 3D, e-ink, print-on-demand, what's next.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderFuturePrint() {
+        var fpSectRaw = useState('overview');
+        var fpSect = fpSectRaw[0], setFpSect = fpSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview',           icon: '🔮' },
+          { id: 'eink',     label: 'E-ink + e-paper',    icon: '📱' },
+          { id: 'pod',      label: 'Print-on-demand',    icon: '📚' },
+          { id: 'd3',       label: '3D printing',        icon: '🧱' },
+          { id: 'ai',       label: 'AI + print',         icon: '🤖' },
+          { id: 'next',     label: 'What might be next', icon: '🚀' }
+        ];
+
+        var content;
+        if (fpSect === 'overview') {
+          content = h('div', null,
+            dropCapPara('Print is not dying. It is becoming something else. E-ink readers offer the readability of print on programmable surfaces. Print-on-demand collapses publishing\'s old economics. 3D printing has expanded "printing" to mean fabrication. AI tools change what gets printed + how. The future of print is more interesting than either "print is doomed" or "nothing has changed" stories suggest.'),
+            sectionHeader('🔮', 'What this module covers'),
+            keyPointBlock(null, [
+              { k: 'E-ink + e-paper', v: 'Programmable surfaces that look + read like paper. Kindle, Boox, e-paper signage, e-paper full-color emerging.' },
+              { k: 'Print-on-demand', v: 'Books printed individually as ordered. Amazon KDP + IngramSpark have made it the dominant form of independent publishing.' },
+              { k: '3D printing', v: 'Has reshaped what "printing" means. From prototyping to manufacturing to medical (organs!) to construction.' },
+              { k: 'AI + print', v: 'AI tools writing + illustrating + designing print material. AI-generated books on Amazon. The good + the troubling.' },
+              { k: 'What might be next', v: 'Programmable matter, neural interfaces, holography, things we have not invented yet. Speculation grounded in current trajectories.' }
+            ])
+          );
+        } else if (fpSect === 'eink') {
+          content = h('div', null,
+            keyPointBlock('E-ink + e-paper technology', [
+              { k: 'How e-ink works', v: 'Microscopic capsules contain charged black + white particles. Applying voltage moves particles up or down, changing pixel appearance. The display holds its image without continuous power.' },
+              { k: 'E Ink Corporation', v: 'Founded MIT 1997. Originator of the dominant commercial e-paper technology. Most major e-readers (Kindle, Kobo, Boox) use E Ink displays under license.' },
+              { k: 'Why "like paper"', v: 'Reflective display (uses ambient light, like paper) rather than emissive (backlit, like LCD/OLED). Easier on eyes for long reading. No eye strain like screens.' },
+              { k: 'Kindle (2007)', v: 'Amazon\'s e-reader launched November 2007. Multiple generations since. Default e-reader for global market.' },
+              { k: 'Boox + Remarkable + others', v: 'Larger-format e-paper devices for note-taking + reading. Boox uses Android; Remarkable has its own OS. Some support handwriting input on e-paper surface.' },
+              { k: 'E-paper signage', v: 'Train stations, store-shelf labels, electronic price tags — all increasingly e-paper. Power-efficient + readable.' },
+              { k: 'Color e-paper (2020+)', v: 'Color e-paper exists but lower contrast + slower refresh than monochrome. Kaleido + Gallery 3 are E Ink\'s color technologies. Still gap from full-color print but narrowing.' }
+            ])
+          );
+        } else if (fpSect === 'pod') {
+          content = h('div', null,
+            keyPointBlock('Print-on-demand revolution', [
+              { k: 'How it works', v: 'Book digital file stored. Customer orders. A digital press prints + binds 1 copy + ships within days. No inventory. No remainder risk.' },
+              { k: 'Amazon KDP (Kindle Direct Publishing) Print', v: 'Amazon\'s print-on-demand service. Free to authors; Amazon takes share of royalty. Has made it possible for anyone to publish a book + reach global market.' },
+              { k: 'IngramSpark', v: 'Lightning Source\'s author-facing service. Distributes to bookstores + libraries via Ingram\'s book wholesale network. Used by many independent publishers.' },
+              { k: 'Lulu, Blurb, BookBaby', v: 'Other major print-on-demand platforms. Some specialize (photo books, art books, custom textbooks).' },
+              { k: 'Economic impact', v: 'Self-publishing was rare + suspect 25 years ago. Now: thousands of self-published authors earn full-time income. Bowker (ISBN agency) reports 1+ million ISBN-tracked self-published books in US 2024.' },
+              { k: 'Quality concerns', v: 'POD has dramatically lowered the barrier to publishing — including for low-quality content + literal scams. Most POD-published books sell <100 copies. The challenge for readers is signal vs noise.' },
+              { k: 'Long-tail availability', v: 'Many books that would be "out of print" in traditional publishing remain available via POD indefinitely. Major win for academic + niche books.' }
+            ])
+          );
+        } else if (fpSect === 'd3') {
+          content = h('div', null,
+            keyPointBlock('3D printing expanded "printing"', [
+              { k: 'Stereolithography (Hull, 1986)', v: 'Chuck Hull invented the first 3D printing technology. UV laser hardens liquid photopolymer layer by layer. Founded 3D Systems Corp.' },
+              { k: 'Fused deposition modeling (Crump, 1988)', v: 'Scott Crump\'s heated-filament approach. Less expensive than stereolithography. Founded Stratasys. The dominant consumer 3D printing method.' },
+              { k: 'Selective laser sintering, multi-jet fusion', v: 'Other commercial 3D printing methods using lasers + powdered materials. Used for production parts in aerospace, automotive, medical.' },
+              { k: 'Consumer 3D printers (2010+)', v: 'MakerBot (2009, acquired by Stratasys 2013), Prusa (Czech, 2012), many others. Affordable enough for home + classroom use. Maker movement adopted 3D printing as core tool.' },
+              { k: 'Medical 3D printing', v: 'Patient-specific implants, surgical guides, prosthetics, bioprinted tissues. 3D-printed living tissue is becoming reality in research labs.' },
+              { k: 'Construction 3D printing', v: 'House-scale 3D printing of concrete walls. Habitat for Humanity 3D-printed houses (2021+). Affordable housing potential.' },
+              { k: 'Food 3D printing', v: 'Chocolate, pasta, certain savory foods can be 3D-printed. Mostly novelty + research; not mainstream.' },
+              { k: 'Maine 3D printing', v: 'MIT, UMaine Composites Center has been a major US research center for 3D-printed boats + large-format printing. Notable: the largest 3D-printed boat ever (3Dirigo, 2019).' }
+            ])
+          );
+        } else if (fpSect === 'ai') {
+          content = h('div', null,
+            keyPointBlock('AI + print intersection', [
+              { k: 'AI-written books', v: 'Since ~2022, Amazon KDP has been flooded with AI-generated books. Amazon has implemented disclosure requirements + limits per author per day, but the problem persists. Quality varies enormously; some AI-generated books are useful (technical manuals from training data), some are scams.' },
+              { k: 'AI-illustrated books', v: 'Midjourney, DALL-E, Stable Diffusion enable book illustration without commissioning artists. Used legitimately for indie publishers; also used in ways that have generated controversy among illustrators.' },
+              { k: 'AI-translated books', v: 'Modern neural machine translation (Google, DeepL) produces usable translations of many genres. Literary translation still requires human + AI workflow. The category-by-category question of "is this good enough?" is still being settled.' },
+              { k: 'AI editing + writing assistance', v: 'Grammarly, ProWritingAid, Sudowrite + many others. Helpful tools that augment human writers. Distinct from AI generating whole books.' },
+              { k: 'AI in publishing workflows', v: 'Publishers + agents experimenting with AI for: slush-pile triage, marketing copy generation, jacket-design ideation, audiobook narration (voice cloning).' },
+              { k: 'AI audiobooks', v: 'AI voice technologies (ElevenLabs, Resemble.AI + others) now produce convincing audiobook narration. Authors can produce audiobooks at fraction of voice-actor cost. Controversial in audiobook industry.' },
+              { k: 'Disclosure + provenance', v: 'Growing demand for clear AI-disclosure: "this book was written with AI assistance." Some publishers require disclosure; some readers (+ award programs) reject AI-generated work entirely. Active debate.' }
+            ])
+          );
+        } else {
+          content = h('div', null,
+            keyPointBlock('What might be next for print', [
+              { k: 'Programmable matter', v: 'Speculative: surfaces that can change their physical properties on demand. Pages that can become hardcovers, etc. Not yet practical but research underway.' },
+              { k: 'Higher-quality color e-paper', v: 'Color e-paper is improving each generation. Full-color reflective displays approaching print quality may arrive within 5-10 years.' },
+              { k: 'Personalized + dynamic print', v: 'Print that customizes per reader. Already happening in advertising + direct mail. Could expand to books (personalized novels, custom textbooks per student).' },
+              { k: 'Neural interfaces', v: 'Speculative: direct brain-to-information interfaces could change what reading even means. Currently far from practical but Neuralink + others working on it.' },
+              { k: 'Sustainable + circular print', v: 'Bioplastics, recycled fibers, more efficient inks. Print industry is one of many under pressure to reduce environmental impact. Some progress; more needed.' },
+              { k: 'Local maker culture continuing', v: 'Letterpress + book arts + zines + small press continue alongside high-tech print. The future of print is plural — high-tech + low-tech coexist.' },
+              { k: 'Print as anti-distraction', v: 'As digital becomes more invasive + attention-fragmented, print may grow as an intentional anti-distraction medium. The market for slow + deep reading may expand.' }
+            ])
+          );
+        }
+
+        return h('div', null,
+          backBar('🔮 The Future of Print'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) {
+              var sel = (fpSect === s.id);
+              return h('button', { key: s.id,
+                onClick: function() { setFpSect(s.id); announce(s.label); },
+                style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                s.icon + ' ' + s.label);
+            })
+          ),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            content
+          ),
+          miniQuizBlock('futurePrint', [
+            { q: 'How does e-ink technology work?',
+              opts: ['Backlit LCD pixels', 'Microscopic capsules contain charged black + white particles; voltage moves them to change appearance; image holds without continuous power', 'Photographic projection', 'Mechanical flipping cards'],
+              ans: 1, explain: 'E-ink uses microscopic capsules containing charged black + white particles. Voltage moves the particles up or down, changing each pixel\'s appearance. Critically, the display holds its image without continuous power — that\'s why Kindles get weeks of battery life.' },
+            { q: 'About when did 3D printing technology begin commercially?',
+              opts: ['1950s', '1986 (Chuck Hull stereolithography) → 1988 (Scott Crump FDM)', '2010s', 'Not yet practical'],
+              ans: 1, explain: '3D printing began commercially in the mid-1980s. Chuck Hull invented stereolithography in 1986 + founded 3D Systems. Scott Crump invented FDM in 1988 + founded Stratasys. Both founders\' companies remain industry leaders.' },
+            { q: 'What is print-on-demand?',
+              opts: ['A request system at libraries', 'A model where a book is printed individually as ordered — no inventory, no remainder risk', 'A government printing program', 'A 1970s photocopying business'],
+              ans: 1, explain: 'Print-on-demand prints each book individually as ordered. Amazon KDP Print, IngramSpark, Lulu + others have made it the dominant form of independent publishing. Has enabled millions of self-published authors + kept many academic + niche books in print indefinitely.' }
+          ]),
+          sourcesBlock([
+            { label: 'Boon Sheridan + Hugh McGuire, eds., Book: A Futurist\'s Manifesto (2012)' },
+            { label: 'Author Earnings reports', url: 'https://www.authorearnings.com/' },
+            { label: 'E Ink Corporation', url: 'https://www.eink.com/' },
+            { label: 'Authors Guild on AI + publishing', url: 'https://authorsguild.org/' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['NGSS HS-ETS1-3 (technology systems)', 'C3 D2.6.6-8 (taking action)'],
+            discussion: [
+              'Will print physical books still exist in 50 years? In what form?',
+              'AI can now write a book in minutes. What does this do to the value of authorship?',
+              'If you could redesign the book as a technology, what would you change about it?'
+            ],
+            misconceptions: [
+              { wrong: 'E-readers are replacing physical books', right: 'Both coexist + grow. Physical book sales in 2024 were higher than in 2014 in absolute terms. E-books captured part of the market but did not displace print.' }
+            ],
+            extension: 'Try using an e-reader (Kindle, library e-book on phone, etc.) for a week. Compare the reading experience with print. What\'s different? What do you prefer? Why?'
+          }),
+          crossLinkFooter('futurePrint'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // FAMOUS PRINT SHOPS TOUR — 12 historic print shops with detail.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderFamousShops() {
+        var fsIdxRaw = useState(0);
+        var fsIdx = fsIdxRaw[0], setFsIdx = fsIdxRaw[1];
+        var shops = [
+          { name: 'Gutenberg Workshop', city: 'Mainz, Germany', founded: '~1450',
+            principal: 'Johannes Gutenberg', emoji: '⚒️',
+            output: 'Mainz Psalter, Indulgences, 42-line Bible (~180 copies, 1455), 36-line Bible, other liturgical works.',
+            innovation: 'The original — combined screw press, oil-based ink, type-metal alloy, individual movable letter sorts. Every modern print shop descends from this.',
+            blurb: 'The actual physical workshop where Gutenberg printed the 42-line Bible has not survived. Period documentation is limited. What we know comes from the 1455 lawsuit between Gutenberg + financier Johann Fust (who took the shop in payment of debts) + from analysis of the surviving Bibles + other works. Reconstruction: at its peak, the workshop probably had 6-8 assistants (compositors + pressmen + apprentices), 1-2 presses, multiple cases of type. Output: ~180 Bibles in ~3 years would have required steady disciplined work. Fust + Gutenberg\'s former apprentice Peter Schöffer continued the shop after the lawsuit; Gutenberg himself eventually opened a new shop.',
+            visit: 'Gutenberg Museum, Mainz, holds the most extensive Gutenberg-era artifacts collection + scholarship. Includes a working replica press. Open most days.'
+          },
+          { name: 'Aldine Press', city: 'Venice', founded: 1494,
+            principal: 'Aldus Manutius (~1452-1515)', emoji: '⚓',
+            output: 'Octavo classics of Greek + Latin literature. The Aldine editions of Virgil, Cicero, Homer, Plato, Aristotle, Dante, Petrarch. Hypnerotomachia Poliphili (1499) — one of the most beautifully designed books ever printed.',
+            innovation: 'Popularized the octavo edition as the format for serious literature. Introduced italic type (designed by Francesco Griffo, ~1500) — originally for octavo Virgil. Pioneered scholarly editions of Greek texts.',
+            blurb: 'Aldus Manutius set up his print shop in Venice in 1494, by which time Venice was the print capital of Europe (~250 print shops + ~half of all books printed in Europe). Aldus had been a tutor to a wealthy family; he turned to printing in his 40s with a mission: publish the classics of Greek + Roman literature affordably, in portable formats. The octavo edition of Virgil (1501) was the founding moment of modern portable book publishing. The Aldine printer\'s mark — dolphin + anchor + motto "festina lente" (make haste slowly) — became one of the most-imitated printer\'s marks ever.',
+            visit: 'Biblioteca Marciana (Venice) holds many surviving Aldine editions. Many major rare-book libraries globally have substantial Aldine collections.'
+          },
+          { name: 'Plantin-Moretus Press', city: 'Antwerp', founded: 1555,
+            principal: 'Christophe Plantin (~1520-1589), then Jan Moretus + descendants', emoji: '🏛',
+            output: 'Antwerp Polyglot Bible (1568-1572, 8 volumes in 5 languages). Hundreds of major scholarly + commercial editions. Catalog of botanical + atlas works.',
+            innovation: 'Industrial-scale printing in the 16th century. At its peak Plantin operated 22 presses + employed 50+ workers — possibly the largest print operation in Europe.',
+            blurb: 'Christophe Plantin opened his Antwerp shop in 1555 + ran it until his death in 1589. The shop continued under his son-in-law Jan Moretus + descendants until 1867 — a 300+ year family business. Plantin\'s Antwerp Polyglot Bible (1568-1572) printed the Old + New Testaments in Hebrew, Aramaic, Greek, Latin, + Syriac across 8 volumes — a scholarly + technical masterpiece. The Plantin shop building has survived essentially intact + is now the Plantin-Moretus Museum, recognized by UNESCO as a World Heritage Site (2005) — the only museum to receive that designation. Original presses, type, printer\'s marks still in place.',
+            visit: 'Plantin-Moretus Museum, Antwerp. World Heritage Site. The most complete surviving early-modern print shop in the world.'
+          },
+          { name: 'Estienne Press', city: 'Paris + later Geneva', founded: 1502,
+            principal: 'Henri Estienne, then Robert (1503-1559), then Henri Estienne II (1528-1598)', emoji: '📜',
+            output: 'Major scholarly editions of Bible, Greek classical authors, Hebrew works. Robert\'s 1551 Greek New Testament introduced the verse numbering still used today. Henri II\'s Greek lexicon (Thesaurus Linguae Graecae, 1572) remained authoritative for centuries.',
+            innovation: 'Verse numbering of biblical text (1551). Major advances in Hebrew + Greek typography. Greek lexicography.',
+            blurb: 'The Estienne (Stephanus) family ran the leading scholarly print shop in Paris (then in Geneva after religious troubles) for nearly a century. Robert Estienne is the most famous member — King Francis I\'s royal printer until religious conflict forced him to flee to Calvinist Geneva in 1550. Robert\'s 1551 Greek New Testament introduced the chapter + verse numbering system still used in every modern Bible. Henri Estienne II compiled the Thesaurus Linguae Graecae (1572), the foundational Greek dictionary for European scholarship — the LSJ Greek-English Lexicon used today by classics students is a direct descendant.',
+            visit: 'Bibliothèque nationale de France has major Estienne holdings. University rare-book libraries worldwide have Estienne editions.'
+          },
+          { name: 'Elzevir Press', city: 'Leiden, Netherlands', founded: 1583,
+            principal: 'Louis Elzevir + 5 generations of family', emoji: '🇳🇱',
+            output: 'Hundreds of scholarly editions in Latin + Greek. Famous "Elzevir editions" — compact, elegant, mass-produced. Galileo\'s Two New Sciences (1638), Hugo Grotius works, Descartes, classical authors.',
+            innovation: 'Production of high-quality affordable scholarly editions for the European student + scholar market. Standardized typography + format. Effectively created the affordable scholarly book market.',
+            blurb: 'The Elzevir family ran a Leiden printing dynasty across 5 generations (1583-1712, with the Amsterdam branch continuing to 1681). Leiden University (founded 1575) had become a major Protestant scholarly center, attracting students + scholars Europe-wide. The Elzevirs produced editions priced for that market — compact, well-printed, durable bindings. Many books banned in Catholic territories (Galileo, Descartes\' Latin works) were printed safely by the Elzevirs + smuggled across borders. The Elzevir typeface design influenced subsequent typography substantially. The publisher Elsevier today (acquired by RELX) takes its name from this family, though it has no direct corporate descent.',
+            visit: 'Leiden University libraries + the Royal Library in The Hague hold extensive Elzevir editions. Many surviving copies in private + institutional collections globally.'
+          },
+          { name: 'Imprimerie Royale (later Imprimerie Nationale)', city: 'Paris', founded: 1640,
+            principal: 'Founded by Cardinal Richelieu under King Louis XIII', emoji: '👑',
+            output: 'Royal + state publications, scholarly editions, major French dictionary editions. Specially-commissioned typography (notably the Romain du Roi typeface, 1690s).',
+            innovation: 'First state-sponsored printing operation in France. Major typographic patron — commissioned the Romain du Roi (King\'s Roman), a typeface designed by committee based on mathematical principles, which influenced subsequent transitional + modern typography.',
+            blurb: 'Established by Cardinal Richelieu in 1640 as the official state printer for France. Survived the French Revolution (renamed Imprimerie Nationale after 1789) + continues today as a French state agency. Has printed the official Journal of the French Republic, key state documents, + major scholarly editions across nearly 400 years. The Romain du Roi typeface, commissioned by Louis XIV in the 1690s + cut by Philippe Grandjean over decades, is considered one of the great moments of French typographic history — the first major typeface designed by committee using mathematical principles. The Imprimerie Nationale still operates a typographic museum in Paris.',
+            visit: 'Imprimerie Nationale archives + Atelier du Livre d\'Art. Bibliothèque nationale de France has comprehensive holdings.'
+          },
+          { name: 'Caslon Type Foundry', city: 'London', founded: 1720,
+            principal: 'William Caslon (1692-1766)', emoji: '🦁',
+            output: 'Caslon typefaces — Old Style English type that became standard in 18th-c. English-language printing. The US Declaration of Independence was printed in Caslon.',
+            innovation: 'Made English printing typographically independent of Dutch + German type imports. Caslon\'s 1734 specimen sheet established his face as the English standard.',
+            blurb: 'William Caslon trained as a metal-engraver before turning to type cutting. His first English type specimen (1734) is one of the most-reproduced printed pages in history — a single sheet showing 38 different sizes + weights of Caslon\'s designs. Within years "When in doubt, use Caslon" had become a printing-shop rule throughout the English-speaking world. Caslon\'s descendants continued the foundry into the 20th century. The Caslon designs were periodically revived (the Caslon Old Face revival of the 1840s + many 20th-c. digital revivals). The Declaration of Independence (1776) was printed in Caslon — appropriately, given the colonial American printer\'s heavy reliance on Caslon faces.',
+            visit: 'St Bride Library (London) has extensive Caslon archives + specimens. Many major typography collections worldwide.'
+          },
+          { name: 'Bodoni Press', city: 'Parma, Italy', founded: 1768,
+            principal: 'Giambattista Bodoni (1740-1813)', emoji: '🎩',
+            output: 'Elegant editions of classical + Italian literature. Massive Manuale Tipografico (published posthumously, 1818) — a 2-volume folio specimen of Bodoni\'s typefaces + designs.',
+            innovation: 'Cut the typeface that defined the "Modern" classification — hairline serifs, vertical stress, maximum contrast. Bodoni faces have been continuously revived + are still in heavy use today (Vogue, Harper\'s Bazaar mastheads).',
+            blurb: 'Giambattista Bodoni ran the press of the Duke of Parma for 45+ years. He cut hundreds of typefaces over his career + printed lavish editions for European royal + aristocratic patrons. His widow + collaborators published the Manuale Tipografico after his death in 1813 — a 2-volume folio specimen book showing all of his designs. The book is one of the most beautiful typography books ever made. Bodoni typefaces influenced subsequent typographic history dramatically — Didot in France was a parallel + interrelated tradition. "Modern" typography classification (Bodoni, Didot, Walbaum) all traces back to this period.',
+            visit: 'Museo Bodoniano, Parma. Holds Bodoni\'s original punches, matrices, type, presses, + manuscripts. Comprehensive Bodoni collection.'
+          },
+          { name: 'Riverside Press (Houghton Mifflin)', city: 'Cambridge, MA', founded: 1852,
+            principal: 'Henry Oscar Houghton (1823-1895)', emoji: '🌊',
+            output: 'Premier US scholarly + literary book printing. The Atlantic Monthly + Houghton Mifflin publishing imprint. Editions of Longfellow, Emerson, Hawthorne, Whittier + most major 19th-c. American authors.',
+            innovation: 'Brought European typographic standards to American printing. The Riverside Editions of major American authors set the production standard for serious American books.',
+            blurb: 'Henry Oscar Houghton founded the Riverside Press in 1852 in Cambridge, Massachusetts. By 1870 it was the most prestigious literary book printer in the US, producing the Atlantic Monthly + the major editions of New England Transcendentalist authors. The Riverside imprint denoted quality + scholarship for over a century. Bruce Rogers (1870-1957), one of the great American book designers of the 20th century, learned typography at Riverside. The press continued operating until 1971; Houghton Mifflin (the publishing arm, now Houghton Mifflin Harcourt) continues today.',
+            visit: 'Cambridge Historical Society + Houghton Library at Harvard hold Riverside Press materials. Many surviving Riverside Editions in libraries + private collections.'
+          },
+          { name: 'Kelmscott Press', city: 'Hammersmith, London', founded: 1891,
+            principal: 'William Morris (1834-1896)', emoji: '🌹',
+            output: '53 books in 7 years. The Works of Geoffrey Chaucer (1896, "Kelmscott Chaucer") — Morris\'s masterpiece. News from Nowhere, Story of the Glittering Plain, classics of English literature.',
+            innovation: 'Founded the modern fine-press / private-press movement. Reaction against industrial book design. Hand-set type, hand-made paper, ornament-rich design. Inspired Doves Press, Ashendene Press, many others.',
+            blurb: 'William Morris was already famous as a designer, poet, + socialist when he founded the Kelmscott Press in 1891 at age 57. His concern: industrial books (1880s commercial production) had become typographically dull + visually impoverished. Kelmscott set out to revive the typographic + decorative standards of 1470-1530 incunabula. Morris designed three typefaces (Golden, Troy, Chaucer), commissioned hand-made paper, used hand-set type + iron hand presses. The Kelmscott Chaucer (1896) is one of the most-admired books ever produced — large folio, intricate ornament by Edward Burne-Jones, Morris-designed typography throughout. Morris died shortly after; the press closed in 1898. But the model — quality fine-press production as artistic statement — has continued through dozens of private presses worldwide.',
+            visit: 'V&A Museum (London) has Morris + Kelmscott materials. Many libraries hold Kelmscott Press editions (often the major surviving copies of any private-press edition).'
+          },
+          { name: 'Officina Bodoni', city: 'Verona, Italy', founded: 1923,
+            principal: 'Giovanni Mardersteig (1892-1977)', emoji: '🦅',
+            output: 'Limited editions of Italian + Latin classical literature. Cardona, the Officina edition of Petrarch, many bibliophile classics.',
+            innovation: 'Mid-20th-c. revival of fine-press + scholarly bibliophilic publishing. Mardersteig was both designer + printer + scholar. His typefaces (Griffo, Zeno, others) revived Renaissance Italian typographic traditions.',
+            blurb: 'Giovanni Mardersteig (born German, naturalized Italian) founded the Officina Bodoni in 1923. The press took its name from Bodoni\'s presses (which Mardersteig had been allowed to use for some early projects). Operated for over 50 years producing limited-edition scholarly + literary books in classical + Italian languages. Mardersteig himself designed typefaces (Griffo named after Francesco Griffo, who cut Aldus Manutius\'s first italic; Zeno; others). Considered one of the greatest book designers + fine-press printers of the 20th century. Daughter Hella Mardersteig + son Martino Mardersteig continued the press after his death.',
+            visit: 'Officina Bodoni archive + study center, Verona. Major libraries internationally hold Officina Bodoni editions.'
+          },
+          { name: 'Knopf / Vintage', city: 'New York', founded: 1915, principal: 'Alfred A. Knopf + Blanche Knopf', emoji: '🐕',
+            output: 'Premier American literary publisher 1915-present. Camus, Sartre, García Márquez (English-language Anglo first publisher), Updike, Toni Morrison, many more. The Borzoi Books imprint.',
+            innovation: 'Brought international literature to American readers. Translated + introduced many European + Latin American authors. High book-design standards (the Borzoi mark + careful typography).',
+            blurb: 'Alfred Knopf + his wife Blanche founded Knopf in 1915 with a focus on quality + international scope. Blanche traveled extensively + actively sought new writers + translations from Europe + Latin America. The firm published the first English editions of many Nobel + major authors — Camus, Sartre, Beauvoir, García Márquez, José Saramago, Yasunari Kawabata. American authors like Willa Cather, John Updike, Anne Tyler, Toni Morrison were Knopf authors. Acquired by Random House (1960); Random House subsequently absorbed by Bertelsmann (1998); now part of Penguin Random House. The Knopf imprint continues with its Borzoi mark + literary reputation intact.',
+            visit: 'Knopf publishing archives at Harry Ransom Center, University of Texas at Austin.'
+          }
+        ];
+        var s = shops[fsIdx] || shops[0];
+        return h('div', null,
+          backBar('🏪 Famous Print Shops Tour'),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            dropCapPara('Twelve historically important print shops + presses, spanning Gutenberg (1450) to Knopf (1915). Each one shaped the printing trade in its era. Some operations have survived 500+ years; others lasted decades. All left bookshelves richer.')
+          ),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            shops.map(function(sh, i) {
+              var sel = (i === fsIdx);
+              return h('button', { key: i,
+                onClick: function() { setFsIdx(i); announce(sh.name); },
+                style: btn({ padding: '7px 10px', fontSize: 11, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                sh.founded + ' · ' + sh.name.split(' ')[0]);
+            })
+          ),
+          h('div', { style: { background: T.cardAlt, border: '2px solid ' + T.accent, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            h('div', { style: { fontSize: 60, marginBottom: 8, textAlign: 'center' } }, s.emoji),
+            h('div', { style: { fontSize: 11, color: T.accentHi, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, fontFamily: 'ui-monospace, monospace', textAlign: 'center' } },
+              'Est. ' + s.founded + ' · ' + s.city),
+            h('h3', { style: { fontSize: 22, fontWeight: 700, color: T.text, fontFamily: 'Georgia, serif', margin: '0 0 4px', textAlign: 'center' } }, s.name),
+            h('div', { style: { fontSize: 13, color: T.muted, fontStyle: 'italic', marginBottom: 14, textAlign: 'center' } }, 'Principal: ' + s.principal),
+            h('p', { style: { margin: '0 0 14px', color: T.muted, fontSize: 14, lineHeight: 1.7 } }, s.blurb),
+            h('div', { style: { background: T.card, padding: 12, borderRadius: 8, marginBottom: 10 } },
+              h('div', { style: { fontSize: 11, color: T.accentHi, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 } }, 'Notable output'),
+              h('p', { style: { margin: 0, fontSize: 13, color: T.muted, lineHeight: 1.6 } }, s.output)),
+            h('div', { style: { background: T.card, padding: 12, borderRadius: 8, marginBottom: 10 } },
+              h('div', { style: { fontSize: 11, color: T.accentHi, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 } }, 'Innovation'),
+              h('p', { style: { margin: 0, fontSize: 13, color: T.muted, lineHeight: 1.6 } }, s.innovation)),
+            h('div', { style: { background: 'rgba(127,176,105,0.08)', border: '1px solid ' + T.ok, borderRadius: 8, padding: 10 } },
+              h('strong', { style: { color: T.ok } }, '📍 Where to see today: '),
+              h('span', { style: { color: T.muted, fontSize: 13 } }, s.visit))
+          ),
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 14 } },
+            h('button', { disabled: fsIdx <= 0,
+              onClick: function() { setFsIdx(Math.max(0, fsIdx - 1)); },
+              style: btn({ padding: '8px 14px', fontSize: 13, opacity: fsIdx <= 0 ? 0.4 : 1 }) }, '← Earlier shop'),
+            h('div', { style: { fontSize: 12, color: T.muted, alignSelf: 'center' } }, (fsIdx + 1) + ' / ' + shops.length),
+            h('button', { disabled: fsIdx >= shops.length - 1,
+              onClick: function() { setFsIdx(Math.min(shops.length - 1, fsIdx + 1)); },
+              style: btnPrimary({ padding: '8px 14px', fontSize: 13, opacity: fsIdx >= shops.length - 1 ? 0.4 : 1 }) }, 'Later shop →')
+          ),
+          miniQuizBlock('famousShops', [
+            { q: 'Which press is recognized as a UNESCO World Heritage Site — the only museum to receive that designation?',
+              opts: ['Gutenberg Workshop (Mainz)', 'Plantin-Moretus Museum (Antwerp)', 'Aldine Press (Venice)', 'Officina Bodoni (Verona)'],
+              ans: 1, explain: 'The Plantin-Moretus Museum in Antwerp was recognized by UNESCO as a World Heritage Site in 2005 — the only museum to receive that designation. The Plantin print shop building has survived essentially intact since the 1500s with original presses, type, + printer\'s marks in place.' },
+            { q: 'Who is credited with introducing chapter + verse numbering of the Bible?',
+              opts: ['Aldus Manutius (1502)', 'Robert Estienne (1551 Greek NT)', 'Christophe Plantin (1568)', 'William Caslon (1722)'],
+              ans: 1, explain: 'Robert Estienne (Stephanus) introduced verse numbering in his 1551 Greek New Testament edition. This numbering system is still used in every modern Bible — chapter + verse references work because of Estienne\'s system.' },
+            { q: 'Who founded the Kelmscott Press + the modern fine-press movement?',
+              opts: ['Bruce Rogers', 'William Morris (1891)', 'Eric Gill', 'Cobden-Sanderson'],
+              ans: 1, explain: 'William Morris founded the Kelmscott Press in 1891 at age 57. His Kelmscott Chaucer (1896) is one of the most-admired books ever produced. The press inspired dozens of subsequent private presses + established quality fine-press production as artistic + cultural statement.' }
+          ]),
+          sourcesBlock([
+            { label: 'Plantin-Moretus Museum, Antwerp', url: 'https://www.museumplantinmoretus.be/' },
+            { label: 'Gutenberg Museum, Mainz', url: 'https://www.gutenberg-museum.de/' },
+            { label: 'Museo Bodoniano, Parma', url: 'https://www.museobodoniano.it/' },
+            { label: 'Officina Bodoni (Verona) study center' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['NCSS D2.His.2.6-8 (context)', 'NCSS D2.His.4.6-8 (causation)'],
+            discussion: [
+              'Why have some print shops (Plantin-Moretus, Imprimerie Nationale) survived for centuries while others lasted only decades?',
+              'Pick a shop. What was the printer\'s motivation? Profit? Religious mission? Scholarly purpose? Royal patronage?'
+            ],
+            misconceptions: [
+              { wrong: 'Print shops were always small craft operations', right: 'By the late 1500s some shops (Plantin Antwerp) had 22 presses + 50+ employees — industrial-scale operations.' }
+            ],
+            extension: 'Pick a shop + research one famous book it printed. Find a digital scan online (most major shops\' famous works are digitized). What does the book physically look like? What\'s on the title page?'
+          }),
+          crossLinkFooter('famousShops'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // PRINT + RELIGION BEYOND BIBLES — hymnals, devotional, theological.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderPrintReligion() {
+        var prSectRaw = useState('overview');
+        var prSect = prSectRaw[0], setPrSect = prSectRaw[1];
+        var sections = [
+          { id: 'overview',   label: 'Overview',          icon: '✝' },
+          { id: 'hymnals',    label: 'Hymnals',           icon: '🎵' },
+          { id: 'devotional', label: 'Devotional',        icon: '📿' },
+          { id: 'theological', label: 'Theological',      icon: '📚' },
+          { id: 'catechism',  label: 'Catechisms',        icon: '❓' },
+          { id: 'sunday',     label: 'Sunday school print', icon: '🏫' },
+          { id: 'modern',     label: 'Modern religious print', icon: '⛪' }
+        ];
+
+        var content;
+        if (prSect === 'overview') {
+          content = h('div', null,
+            dropCapPara('Bibles get the attention, but the bulk of religious print is everything else — hymnals, devotional tracts, theological treatises, catechisms, Sunday-school papers, prayer books, denominational magazines. For most of the print era, religious publishing was the largest segment of the book trade. Denominational publishing houses built infrastructure that still operates today.'),
+            sectionHeader('✝', 'What this module covers'),
+            keyPointBlock(null, [
+              { k: 'Hymnals', v: 'Watts, Wesley, modern denominational hymnals. The single largest music-printing category for 300+ years.' },
+              { k: 'Devotional', v: 'Prayer books, daily readings, retreat materials. Often higher print quantities than Bibles.' },
+              { k: 'Theological', v: 'Calvin\'s Institutes, Aquinas\'s Summa, modern academic theology. Specialized scholarly publishing.' },
+              { k: 'Catechisms', v: 'Question-and-answer doctrine summaries. Heidelberg, Westminster, Baltimore, Luther\'s Small Catechism.' },
+              { k: 'Sunday school print', v: 'A 200-year tradition of weekly papers + curriculum materials, especially Protestant. The Sunday School Times, denominational magazines.' },
+              { k: 'Modern religious print', v: 'Today\'s religious publishing — denominational presses, evangelical bestsellers, study Bibles, devotionals. Christian publishing alone is ~$1.2B/yr industry.' }
+            ])
+          );
+        } else if (prSect === 'hymnals') {
+          content = h('div', null,
+            keyPointBlock('Hymnals across denominations + history', [
+              { k: 'Bay Psalm Book (1640, Cambridge MA)', v: 'First book printed in British North America. Metrical psalter. Survives in 11 known copies; one sold $14.2M (2013). Religious-print foundation moment.' },
+              { k: 'Isaac Watts Hymns (1707+)', v: 'British Independent (Congregationalist) minister Watts wrote hymns including "When I Survey the Wondrous Cross," "Joy to the World." His hymnals went through dozens of editions on both sides of the Atlantic.' },
+              { k: 'Wesley hymnals (1737+)', v: 'John + Charles Wesley\'s collections. Methodism\'s 18th-c. growth drove massive hymn-book production. Hundreds of editions across denominations.' },
+              { k: 'Sacred Harp (1844)', v: 'Southern shape-note hymnal using shape-note notation (each scale degree a distinctive shape). Still actively used in 2026 in Southern + Maine + other singing communities. Maine has active Sacred Harp singings.' },
+              { k: 'Methodist Episcopal hymnal', v: 'Multiple editions across 19th + 20th centuries. The 1989 United Methodist Hymnal is still widely used.' },
+              { k: 'Lutheran Service Book (2006)', v: 'Lutheran Church-Missouri Synod current hymnal. Replaced the 1982 Lutheran Worship.' },
+              { k: 'Catholic missalettes', v: 'Cheap weekly liturgical booklets distributed at Catholic masses. Hundreds of millions printed annually for US + international Catholic parishes.' },
+              { k: 'Modern praise-music projection', v: 'Many contemporary evangelical churches project hymn lyrics rather than printing hymnals — a major shift in religious print since ~2000.' }
+            ])
+          );
+        } else if (prSect === 'devotional') {
+          content = h('div', null,
+            keyPointBlock('Devotional print', [
+              { k: 'The Imitation of Christ (Thomas à Kempis, ~1418)', v: 'Manuscript circulation pre-print; printed editions from 1471. After the Bible, often called the most-translated + most-widely-read Christian devotional book in history.' },
+              { k: 'Daily Light on the Daily Path (Bagster, 1875)', v: 'Daily devotional consisting entirely of Bible verses arranged thematically. Has been in continuous print for nearly 150 years.' },
+              { k: 'My Utmost for His Highest (Oswald Chambers, 1935)', v: 'Daily devotional from Chambers\'s lectures (compiled posthumously by his wife). Massively popular in evangelical Protestantism — 13 million+ copies in print.' },
+              { k: 'Jesus Calling (Sarah Young, 2004)', v: 'Modern evangelical devotional. 30+ million copies. Controversial in some theological circles for first-person voice ("Jesus" speaking).' },
+              { k: 'Catholic prayer books', v: 'Numerous editions — Saint Joseph Daily Missal, Magnificat (monthly subscription), Liturgy of the Hours. Continuing major print volumes.' },
+              { k: 'Jewish prayer books (siddur)', v: 'Daily + holiday prayer books. Major editions: ArtScroll Siddur (Orthodox, 1984+), Conservative Movement\'s Sim Shalom (1989+), Reform Mishkan T\'filah (2007+). Sizeable Jewish-publishing market.' },
+              { k: 'Islamic du\'a books', v: 'Collections of prayers + supplications. Many Arabic + translation editions.' }
+            ])
+          );
+        } else if (prSect === 'theological') {
+          content = h('div', null,
+            keyPointBlock('Major theological works in print history', [
+              { k: 'Summa Theologica (Aquinas, ~1265-1273)', v: 'Pre-print manuscript circulation. Printed editions from 1485. Definitive Catholic theological synthesis; still studied at Catholic seminaries today.' },
+              { k: 'Institutes of the Christian Religion (Calvin, 1536-1559)', v: 'Five editions over 23 years, each expanded. Foundation of Reformed/Calvinist tradition. Many subsequent editions + translations.' },
+              { k: 'Book of Concord (Lutheran, 1580)', v: 'Compilation of Lutheran confessional statements (including Luther\'s Small Catechism, Augsburg Confession, others). The definitive Lutheran confessional document.' },
+              { k: 'Karl Barth, Church Dogmatics (1932-1967)', v: '14 volumes (4 parts in multiple half-volumes). Most influential 20th-c. Protestant theology. Continues to be read + debated.' },
+              { k: 'Catechism of the Catholic Church (1992)', v: 'First official Catholic catechism since the Council of Trent (16th c.). Compendium of Catholic doctrine. Substantial print + digital distribution.' },
+              { k: 'NA28 / UBS5 Greek New Testament', v: 'Standard scholarly Greek New Testament editions. Latest revisions: NA28 (Nestle-Aland 28th ed, 2012) + UBS5 (United Bible Societies 5th ed, 2014). Foundation for modern Bible translation + biblical scholarship.' }
+            ])
+          );
+        } else if (prSect === 'catechism') {
+          content = h('div', null,
+            keyPointBlock('Catechisms — question + answer doctrine', [
+              { k: "Luther's Small Catechism (1529)", v: 'Q&A summary of Lutheran doctrine for ordinary believers. Has been in continuous print + memorization across 500 years.' },
+              { k: 'Heidelberg Catechism (1563)', v: 'Reformed catechism (Protestant). Used by Dutch Reformed, German Reformed, Presbyterian + many other Reformed traditions. 129 questions in 52 sections (for 1 per Sunday).' },
+              { k: 'Westminster Shorter Catechism (1647)', v: 'Reformed / Presbyterian catechism. 107 questions. The longer Westminster Larger Catechism (196 questions) + the Westminster Confession of Faith together form the Westminster Standards used by many Presbyterian churches.' },
+              { k: 'Baltimore Catechism (1885)', v: 'Standard US Catholic catechism for ~80 years. Used in Catholic schools through Vatican II reforms (1960s). Many US Catholics in their 70s-80s+ still remember the format from childhood.' },
+              { k: 'Vatican II Catholic catechetics', v: 'Post-Vatican II catechetical materials moved away from rigid Q&A format toward narrative + experiential approaches. The 1992 Catechism of the Catholic Church partly restored the systematic Q&A approach.' }
+            ])
+          );
+        } else if (prSect === 'sunday') {
+          content = h('div', null,
+            keyPointBlock('Sunday school + denominational print', [
+              { k: 'Sunday School movement (early 1800s)', v: 'Founded as charity schools teaching reading + religion to poor children. Eventually became universal denominational Sunday-morning religious-instruction infrastructure.' },
+              { k: "American Sunday School Union (founded 1824)", v: 'Major nondenominational publisher of Sunday-school materials. Distributed across denominations for decades.' },
+              { k: 'Quarterly + weekly Sunday-school papers', v: 'Each major Protestant denomination produced its own weekly papers for adults + children. Methodist Quarterly Review, Presbyterian Sunday School Times, Baptist Standard. Often produced lifelong readers.' },
+              { k: 'David C. Cook + Standard Publishing', v: 'Major 19th-20th-c. Sunday-school curriculum publishers. David C. Cook (founded 1875) still operates as a major evangelical curriculum publisher.' },
+              { k: 'Group Publishing + Lifeway', v: 'Major modern US Sunday-school + church-resource publishers. Group founded 1974. Lifeway (Southern Baptist) is the largest Christian retailer/publisher.' },
+              { k: 'Catholic religious-education curriculum', v: 'Loyola Press, Sadlier Religion, RCL Benziger — major Catholic K-12 religious-education curriculum publishers.' },
+              { k: 'Vacation Bible School (VBS) materials', v: 'Annual summer programs. Each major denominational publisher produces yearly VBS curriculum kits. Industry-wide annual revenues in tens of millions.' }
+            ])
+          );
+        } else {
+          content = h('div', null,
+            keyPointBlock('Today\'s religious publishing landscape', [
+              { k: 'Christian publishing (~$1.2B annual US revenue)', v: 'HarperCollins Christian Publishing (Zondervan + Thomas Nelson), Penguin Random House Christian publishing (Multnomah, Waterbrook, Convergent), Lifeway, Baker Publishing Group, Crossway, IVP. Hundreds of smaller publishers.' },
+              { k: 'Best-selling Christian non-fiction', v: 'Rick Warren\'s Purpose Driven Life (30M+), C.S. Lewis Mere Christianity (in continuous print since 1952), Eugene Peterson The Message (Bible paraphrase). Steady markets.' },
+              { k: 'Christian fiction', v: 'Frank Peretti, Karen Kingsbury, Francine Rivers, Beverly Lewis. The Amish-romance subgenre is consistently strong.' },
+              { k: 'Study Bibles', v: 'NIV Study Bible, ESV Study Bible, Catholic Study Bible. Major sellers — often $40-$60/copy, hardcover.' },
+              { k: 'Catholic publishing', v: 'Our Sunday Visitor, Liturgical Press, Paulist Press, Loyola Press, Ave Maria Press. Substantial Catholic publishing market.' },
+              { k: 'Jewish publishing', v: 'ArtScroll/Mesorah, Jewish Publication Society, Schocken. Specialized Jewish publishing serves denominational + scholarly markets.' },
+              { k: 'Islamic publishing', v: 'Several major US-based publishers (IIIT, Islamic Foundation, others). Translated + original works.' },
+              { k: 'Digital expansion', v: 'YouVersion Bible app (200M+ installs). Logos Bible Software for clergy + scholars. Most modern hymnals available digitally. Religious publishing has substantial + growing digital component.' }
+            ])
+          );
+        }
+
+        return h('div', null,
+          backBar('✝ Print + Religion Beyond Bibles'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(sx) {
+              var sel = (prSect === sx.id);
+              return h('button', { key: sx.id,
+                onClick: function() { setPrSect(sx.id); announce(sx.label); },
+                style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                sx.icon + ' ' + sx.label);
+            })
+          ),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            content
+          ),
+          miniQuizBlock('printReligion', [
+            { q: 'After the Bible, what is often called the most-translated + most-widely-read Christian devotional work?',
+              opts: ['Pilgrim\'s Progress', 'The Imitation of Christ (Thomas à Kempis, ~1418)', 'My Utmost for His Highest', 'The Confessions of St. Augustine'],
+              ans: 1, explain: 'The Imitation of Christ, attributed to Thomas à Kempis (~1418), is often called the most-translated + most-widely-read Christian devotional work after the Bible. Has been in continuous print since 1471.' },
+            { q: 'What is the Sacred Harp?',
+              opts: ['A musical instrument used at Catholic mass', 'A Southern shape-note hymnal (1844) still actively used in singing communities including in Maine', 'A medieval prayer book', 'A modern evangelical worship band'],
+              ans: 1, explain: 'The Sacred Harp is a Southern shape-note hymnal first published 1844. Uses shape-note notation (each scale degree has a distinctive shape) to help untrained singers find pitches. Still actively used in singing communities across the US, including Maine.' },
+            { q: 'About how large is the US Christian publishing industry annually?',
+              opts: ['~$100M', '~$1.2B', '~$10B', '~$50B'],
+              ans: 1, explain: 'US Christian publishing is approximately a $1.2B/year industry — substantial niche in publishing overall. HarperCollins Christian Publishing (Zondervan + Thomas Nelson) is the largest US Christian publisher. Christian publishing has been comparatively resilient as other publishing segments have contracted.' }
+          ]),
+          sourcesBlock([
+            { label: 'David Daniell, The Bible in English (2003)' },
+            { label: 'Religious News Service publishing coverage', url: 'https://religionnews.com/' },
+            { label: 'ECPA (Evangelical Christian Publishers Association) statistics', url: 'https://www.ecpa.org/' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['NCSS D2.His.2.6-8 (context)', 'CCSS RH.6-8.6 (point of view)'],
+            discussion: [
+              'Why has religious publishing been so resilient compared to other publishing segments?',
+              'A church in 1850 had hymnals, prayer books, devotionals, denominational papers, catechisms, Sunday-school papers. Today many churches project lyrics + use phone apps. What\'s lost? What\'s gained?'
+            ],
+            misconceptions: [
+              { wrong: 'Religious print was just Bibles', right: 'Bibles were a small fraction. Hymnals, prayer books, devotionals, catechisms, denominational papers all together dwarfed Bible sales for most of print history.' }
+            ],
+            extension: 'Visit a local church or place of worship. Notice what printed materials they have. Hymnals? Prayer books? Weekly bulletins? Devotional pamphlets? Compare with a different denomination.'
+          }),
+          crossLinkFooter('printReligion'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // PRINT + EDUCATION — textbooks, university press, modern OER.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderPrintEducation() {
+        var peSectRaw = useState('overview');
+        var peSect = peSectRaw[0], setPeSect = peSectRaw[1];
+        var sections = [
+          { id: 'overview',   label: 'Overview',           icon: '🎒' },
+          { id: 'primers',    label: 'Primers + readers',  icon: '📕' },
+          { id: 'mcguffey',   label: 'McGuffey Readers',   icon: '📘' },
+          { id: 'textbooks',  label: 'Modern textbooks',   icon: '📚' },
+          { id: 'university', label: 'University presses', icon: '🎓' },
+          { id: 'oer',        label: 'Open educational resources', icon: '🔓' }
+        ];
+
+        var content;
+        if (peSect === 'overview') {
+          content = h('div', null,
+            dropCapPara('Print + education are interwoven so deeply that it\'s hard to imagine one without the other. Without printed textbooks, schoolwide standardized curricula are impossible. Without educational publishing, universal literacy + universal education would not have been achievable. Modern schooling — K-12, college, professional training — runs on infrastructure built by educational publishers across 250 years.'),
+            sectionHeader('🎒', 'What this module covers'),
+            keyPointBlock(null, [
+              { k: 'Primers + readers', v: 'Hornbook, New England Primer, McGuffey, early reading instruction.' },
+              { k: 'McGuffey Readers', v: '122 million sold by 1920. Standardized US reading instruction for 80+ years.' },
+              { k: 'Modern textbooks', v: 'Today\'s K-12 + college textbook market. Pearson, McGraw Hill, Cengage, Houghton Mifflin Harcourt.' },
+              { k: 'University presses', v: 'Cambridge, Oxford, Harvard, Princeton, Yale, Chicago, MIT — academic scholarship + monographs.' },
+              { k: 'Open educational resources', v: 'OpenStax, MIT OpenCourseWare, Wikipedia. Free educational content challenging traditional textbook publishing.' }
+            ])
+          );
+        } else if (peSect === 'primers') {
+          content = h('div', null,
+            keyPointBlock('Early reading instruction', [
+              { k: 'Hornbook (1500s-1700s)', v: 'Wooden paddle with printed ABC + Lord\'s Prayer protected by translucent horn. Universal early-reading primer in English-speaking world for ~250 years. See Children\'s Books module.' },
+              { k: 'New England Primer (1690-1830s)', v: 'Calvinist primer for colonial American + early-republic children. Combined alphabet + religious instruction ("In Adam\'s fall We sinned all"). 6+ million copies printed across its lifespan.' },
+              { k: 'Webster\'s Speller (Blue-backed Speller) (1783-)', v: 'Noah Webster\'s American Spelling Book. 100 million+ copies across various editions. Standardized American English spelling. Together with the New England Primer, defined early American literacy.' },
+              { k: 'Old-line British primers (1700s-1800s)', v: 'British equivalents — Mavor\'s Spelling Book, Goldsmith\'s readers. Distinct US-vs-UK educational publishing emerged ~1800.' },
+              { k: 'Catholic primers', v: 'Catechism-based primers used in Catholic schools across centuries. Baltimore Catechism (1885) + earlier editions served as both religious + reading instruction.' }
+            ])
+          );
+        } else if (peSect === 'mcguffey') {
+          content = h('div', null,
+            dropCapPara('William Holmes McGuffey\'s Eclectic Readers — published in 6 graded levels starting 1836 — became the dominant US elementary-school reading text for the next 80+ years. Total sales by 1920: estimated 122 million copies. Comparable per-capita reach to the King James Bible in the US. The McGuffey Readers shaped American literacy + cultural values for generations.'),
+            keyPointBlock('McGuffey Readers + their impact', [
+              { k: 'Six graded levels', v: 'First Reader through Sixth Reader, increasing in difficulty. Each level designed for a specific elementary grade.' },
+              { k: 'Reading + character', v: 'Stories + poems chosen for moral + civic instruction as much as for literary merit. "Industrious," "honest," "kind" recurring themes.' },
+              { k: 'Anthology format', v: 'Selections from American + British literature — Bryant, Longfellow, Whittier, Hawthorne, Shakespeare, Milton, Dickens. Introduced generations of US children to literary writing.' },
+              { k: 'Revised editions across decades', v: 'Major revisions 1843, 1853, 1879. Each revision updated selections + reflected changing pedagogy.' },
+              { k: 'Cultural impact', v: 'Politicians (William McKinley, William Jennings Bryan, Henry Ford) credited the McGuffey Readers as foundational to their reading lives + values. Many quoted favorite passages decades later.' },
+              { k: 'Decline + revival', v: 'Displaced by progressive-education readers in the early 1900s. Periodic revivals in homeschool + Christian-school markets. Still in print + use today via Mott Media + others.' }
+            ])
+          );
+        } else if (peSect === 'textbooks') {
+          content = h('div', null,
+            keyPointBlock('Modern textbook industry', [
+              { k: 'Major K-12 publishers', v: 'Pearson Education, McGraw Hill Education, Houghton Mifflin Harcourt, Cengage, Savvas (formerly Pearson K-12 division). Consolidated industry — a few giants dominate.' },
+              { k: 'State adoption process', v: '~20 US states have "adoption" — state-level review + approval of K-12 textbooks. Texas + California + Florida are the largest adoption states + drive national textbook content (their preferences become national defaults).' },
+              { k: 'College textbook costs', v: 'Have outpaced inflation by ~3x since 1980s. College textbook avg cost ~$1,200/year per student. Heavy contributor to college affordability crisis.' },
+              { k: 'Used + rental markets', v: 'Amazon, Chegg, Barnes & Noble, others compete with new-textbook sales. Publishers respond with frequent edition updates to obsolete used copies.' },
+              { k: 'Inclusive Access', v: 'College model where the textbook fee is included in tuition + students automatically receive digital access. Helps publishers preserve revenue; controversial with student-affordability advocates.' },
+              { k: 'Major textbook scandals', v: 'Texas textbook content battles, US history-book debates over slavery + civil rights coverage, evolution-vs-creationism battles in biology textbooks. Ongoing political fights.' }
+            ])
+          );
+        } else if (peSect === 'university') {
+          content = h('div', null,
+            keyPointBlock('University presses', [
+              { k: 'Cambridge University Press (1534)', v: 'World\'s oldest continuously operating publisher. Founded by royal charter from Henry VIII. Major academic publisher across nearly 500 years.' },
+              { k: 'Oxford University Press (1586)', v: 'Major academic + reference publisher (Oxford English Dictionary, Oxford Companion to..., Bibles). Now the world\'s largest university press.' },
+              { k: 'Harvard University Press (1913)', v: 'US scholarly publisher across humanities + social sciences. The Loeb Classical Library (Greek + Latin classics with facing English translation) is a flagship series.' },
+              { k: 'Princeton University Press (1905)', v: 'Strong in mathematics, philosophy, economics. Long-running Princeton Mathematical Series + many other distinguished series.' },
+              { k: 'MIT Press (1962)', v: 'Strong in technology, science, design. Many influential books on computing + cognitive science.' },
+              { k: 'University of Chicago Press (1891)', v: 'Major US scholarly publisher. Chicago Manual of Style (1906 first edition; current 17th ed, 2017) is industry-standard editorial reference.' },
+              { k: 'Modern UP economics', v: 'University presses face pressure as library budgets contract + academic-book sales decline. Many UPs subsidized by their universities. Recent decades: increased open-access initiatives.' }
+            ])
+          );
+        } else {
+          content = h('div', null,
+            keyPointBlock('Open educational resources (OER)', [
+              { k: 'MIT OpenCourseWare (2002)', v: 'MIT\'s decision to put its course materials online free. Founded the OER movement. Now hosts ~2,500 courses\' materials.' },
+              { k: 'OpenStax (Rice University, 2012)', v: 'Free, peer-reviewed open college textbooks. Has saved students over $1.2 billion in textbook costs (per OpenStax). Available for many introductory college courses.' },
+              { k: 'Khan Academy (2008)', v: 'Sal Khan\'s free online educational video + practice platform. K-12 + early college coverage. 18M+ registered learners.' },
+              { k: 'Wikipedia (2001)', v: 'World\'s largest open knowledge encyclopedia. ~62 million articles across 300+ languages (English Wikipedia alone has ~6.8M articles). Reshapes how students access reference information.' },
+              { k: 'edX, Coursera, Udacity (2012+)', v: 'Massive Open Online Courses (MOOCs). Mixed commercial + open. Some courses free; some pay-only for certification.' },
+              { k: 'Maine OER initiatives', v: 'University of Maine system has OER adoption programs. Faculty incentives for converting from commercial textbooks to OER. Maine state library coordinates OER for K-12 + public libraries.' },
+              { k: 'OER vs commercial publishing tension', v: 'Major commercial publishers (Pearson, McGraw Hill, Cengage) face existential challenge from OER + open access movements. Their response has included acquisition of digital learning platforms + Inclusive Access models.' }
+            ])
+          );
+        }
+
+        return h('div', null,
+          backBar('🎒 Print + Education'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) {
+              var sel = (peSect === s.id);
+              return h('button', { key: s.id,
+                onClick: function() { setPeSect(s.id); announce(s.label); },
+                style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                s.icon + ' ' + s.label);
+            })
+          ),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            content
+          ),
+          miniQuizBlock('printEducation', [
+            { q: 'How many copies of the McGuffey Readers were sold by 1920?',
+              opts: ['~1 million', '~10 million', '~50 million', '~122 million'],
+              ans: 3, explain: 'McGuffey Readers sold approximately 122 million copies by 1920 across multiple editions + grade levels. Comparable per-capita reach to the King James Bible in the US. Shaped American literacy + cultural values for generations.' },
+            { q: 'What is the world\'s oldest continuously operating publisher?',
+              opts: ['Oxford University Press', 'Cambridge University Press (founded 1534 by royal charter)', 'Penguin Books', 'Random House'],
+              ans: 1, explain: 'Cambridge University Press was founded in 1534 by royal charter from Henry VIII — the world\'s oldest continuously operating publisher. Oxford University Press was founded later (1586). Both major academic publishers nearly 500 years later.' },
+            { q: 'Approximately how much have OpenStax\'s free textbooks saved US college students?',
+              opts: ['~$10 million', '~$100 million', '~$1.2 billion', '~$10 billion'],
+              ans: 2, explain: 'OpenStax (free open textbooks from Rice University) has saved US college students over $1.2 billion in textbook costs (per OpenStax). Major example of how OER (Open Educational Resources) challenges commercial textbook publishing.' }
+          ]),
+          sourcesBlock([
+            { label: 'David B. Tyack, Turning Points in American Educational History (1967)' },
+            { label: 'OpenStax', url: 'https://openstax.org/' },
+            { label: 'Association of University Presses', url: 'https://aupresses.org/' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['NCSS D2.His.2.6-8 (context)', 'C3 D2.6.6-8 (taking informed action)'],
+            discussion: [
+              'Why is the textbook market so consolidated? What does this mean for educational diversity?',
+              'Should K-12 textbooks be open educational resources (free, available, modifiable)? Make the case for + against.'
+            ],
+            misconceptions: [
+              { wrong: 'College textbook prices have always been high', right: 'College textbook prices have risen ~3x faster than inflation since the 1980s. The current cost crisis is a relatively recent development.' }
+            ],
+            extension: 'Find a free OpenStax college textbook in a subject you\'re curious about (Intro Sociology, Calculus, US History). Browse a chapter. Compare what you find with what you remember from your textbooks.'
+          }),
+          crossLinkFooter('printEducation'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // PRINT + MONEY (Security printing) — banknotes, bonds, stamps.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderPrintMoney() {
+        var pmSectRaw = useState('overview');
+        var pmSect = pmSectRaw[0], setPmSect = pmSectRaw[1];
+        var sections = [
+          { id: 'overview',  label: 'Overview',          icon: '💵' },
+          { id: 'history',   label: 'History',           icon: '🏛' },
+          { id: 'features',  label: 'Security features', icon: '🔒' },
+          { id: 'stamps',    label: 'Postage stamps',    icon: '📮' },
+          { id: 'modern',    label: 'Modern + digital',  icon: '💳' }
+        ];
+
+        var content;
+        if (pmSect === 'overview') {
+          content = h('div', null,
+            dropCapPara('Security printing — banknotes, government bonds, postage stamps, passports, vital documents — is one of the most specialized + technically demanding categories of printing. The stakes are enormous: a printer who falls behind in the anti-counterfeit arms race can have their currency replicated by criminals + criminal organizations. The history of security printing is a 350-year story of innovation against constant adversarial pressure.'),
+            sectionHeader('💵', 'What this module covers'),
+            keyPointBlock(null, [
+              { k: 'History', v: 'Goldsmiths\' receipts → Bank of England notes (1694) → modern central-bank issuance.' },
+              { k: 'Security features', v: 'Watermarks, microprinting, security threads, holograms, color-shifting inks. The anti-counterfeit toolkit.' },
+              { k: 'Postage stamps', v: '1840 Penny Black to modern stamps. The other major government-printed item.' },
+              { k: 'Modern + digital', v: 'Polymer notes, digital currencies, central bank digital currencies (CBDCs).' }
+            ])
+          );
+        } else if (pmSect === 'history') {
+          content = h('div', null,
+            keyPointBlock('Paper money history', [
+              { k: 'Chinese flying cash (10th c.)', v: 'Early paper money in Song-dynasty China. State-issued credit notes that could be redeemed for hard cash elsewhere. Long predates European paper money.' },
+              { k: 'Goldsmiths\' notes (1600s England)', v: 'London goldsmiths held depositors\' gold + issued written receipts. The receipts became transferable — proto-banknotes. Bank of England formalized this in 1694.' },
+              { k: 'Bank of England banknotes (1694+)', v: 'BoE founded 1694 to lend money to William III. Issued banknotes against deposits + government securities. The format + concept spread to other countries\' central banks.' },
+              { k: 'Continental Currency (1775-1781)', v: 'Continental Congress\'s paper money during the American Revolution. Massively over-issued, became near-worthless ("not worth a Continental"). Lesson in fiat-currency risks.' },
+              { k: 'Greenbacks (1862)', v: 'US Civil War government notes. The first universal US federal paper currency. Federal Reserve Notes (1913+) replaced earlier issuance.' },
+              { k: 'Modern central-bank issuance', v: 'Today essentially all paper money is issued by national central banks (Federal Reserve, ECB, Bank of Japan, People\'s Bank of China, etc.). Strict security protocols.' },
+              { k: 'Polymer banknotes (1988+)', v: 'Australia issued the first polymer (plastic) banknote in 1988. More durable + harder to counterfeit than paper. Many countries now use polymer (UK switched to polymer 2016).' }
+            ])
+          );
+        } else if (pmSect === 'features') {
+          content = h('div', null,
+            keyPointBlock('Anti-counterfeiting features', [
+              { k: 'Watermarks (period feature)', v: 'Translucent images in the paper, visible when held to light. Original anti-counterfeit feature dating to medieval paper-making. Still used.' },
+              { k: 'Intaglio printing', v: 'Engraved plate with ink in recessed lines. Produces raised ink on paper that can be felt. Standard for currency since 1700s. Requires specialized equipment.' },
+              { k: 'Microprinting', v: 'Extremely small text (often the country name or denomination) printed in lines that look solid at normal viewing distance. Invisible without magnification. Hard to reproduce.' },
+              { k: 'Security threads', v: 'Plastic strips embedded in the paper during manufacturing. Often have microprinted text + are partially visible when held to light. US currency $5+ has security threads.' },
+              { k: 'Holograms', v: 'Light-reflective images that change appearance with viewing angle. Standard on credit cards + many modern banknotes.' },
+              { k: 'Color-shifting inks (OVI)', v: 'Optically Variable Inks that change color when tilted. US $100 bill\'s denomination numeral uses this.' },
+              { k: 'UV-fluorescent features', v: 'Markings invisible under normal light but visible under UV. Bank teller machines check for these.' },
+              { k: 'Latent image', v: 'Image visible only at certain angles (like the EURion constellation pattern on euro notes).' },
+              { k: 'Digital watermarks', v: 'EURion constellation + similar patterns are detected by modern copiers/scanners + Photoshop, blocking reproduction of currency.' }
+            ])
+          );
+        } else if (pmSect === 'stamps') {
+          content = h('div', null,
+            keyPointBlock('Postage stamps + their history', [
+              { k: 'Penny Black (1840 Britain)', v: 'The first adhesive postage stamp. Designed by Henry Cole. Featured Queen Victoria\'s profile. Sold at 1 penny for prepaid postage. Revolutionary — before this, postage was paid by recipient + cost varied by distance.' },
+              { k: 'First US stamps (1847)', v: '5-cent (Benjamin Franklin) + 10-cent (George Washington). Established US Postal Service philatelic tradition. Many later commemorative + definitive issues.' },
+              { k: 'Why stamps need security', v: 'Stamps function as payment. Counterfeit stamps defraud postal services + ultimately taxpayers. Most major postal services treat stamps with similar security as currency.' },
+              { k: 'Engraved stamps (mid-1800s through 20th c.)', v: 'Intaglio engraving on copper plates. Distinctive look — finely detailed line work. American Bank Note Company + others were major US stamp printers.' },
+              { k: 'Modern stamp printing', v: 'Combination of offset + engraving + flexographic methods. Anti-counterfeit features include microprinting + UV-reactive ink.' },
+              { k: 'Stamp collecting (philately)', v: 'Long-standing hobby. Catalog publishers (Scott Stamp Catalog in US, Stanley Gibbons in UK) date back to 1860s. Rare stamps can sell for millions — Treskilling Yellow (Sweden, 1855) is the most valuable, ~$2.3M at auction.' },
+              { k: 'Self-adhesive stamps (1989+)', v: 'Replaced lick-and-stick gum stamps over the 1990s-2000s. Now standard.' },
+              { k: 'US Postal Service today', v: 'Issues ~30+ new stamp designs annually. Forever stamps (introduced 2007) don\'t require updating face value.' }
+            ])
+          );
+        } else {
+          content = h('div', null,
+            keyPointBlock('Modern + digital monetary printing', [
+              { k: 'Polymer banknotes', v: '~40 countries now use polymer instead of paper. Polymer is more durable + has better security feature options.' },
+              { k: 'Stranded inks + UV inks', v: 'Modern security inks have multiple security features built in. Some respond to UV, some to IR, some change color.' },
+              { k: 'Holograms + kinegrams', v: 'Diffractive optical elements increasingly standard on banknotes. Hard to reproduce with conventional printing equipment.' },
+              { k: 'Central bank digital currencies (CBDCs)', v: 'Major emerging area. China\'s e-CNY (digital yuan) is most-deployed. ECB + Federal Reserve studying CBDC options. Could fundamentally change "money."' },
+              { k: 'Cryptocurrencies', v: 'Bitcoin (2009), Ethereum (2015), others. Digital "money" not issued by any central bank. Controversial as both speculative assets + payment medium.' },
+              { k: 'Cash use decline', v: 'Per Federal Reserve, cash use as payment has dropped substantially since 2010 — many transactions now digital (Apple Pay, Venmo, debit cards). Cash still important for low-value, anonymous, + low-income transactions.' },
+              { k: 'Counterfeit detection', v: 'Modern banknote authentication uses spectroscopy + machine-learning image analysis. Counterfeit detection has become technical + automated.' }
+            ])
+          );
+        }
+
+        return h('div', null,
+          backBar('💵 Print + Money'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) {
+              var sel = (pmSect === s.id);
+              return h('button', { key: s.id,
+                onClick: function() { setPmSect(s.id); announce(s.label); },
+                style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                s.icon + ' ' + s.label);
+            })
+          ),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            content
+          ),
+          miniQuizBlock('printMoney', [
+            { q: 'What was the first adhesive postage stamp?',
+              opts: ['1840 Penny Black (Britain)', '1847 US 5-cent Franklin', '1900 Christmas stamp', '1840 Inverted Jenny'],
+              ans: 0, explain: 'The Penny Black (Britain, 1840) was the first adhesive postage stamp. Designed by Henry Cole, featuring Queen Victoria\'s profile, sold at 1 penny for prepaid postage. Revolutionary because before this, postage was paid by recipient + cost varied by distance.' },
+            { q: 'What is intaglio printing?',
+              opts: ['Printing with multiple colors', 'Printing from an engraved plate with ink in recessed lines, producing raised ink on paper', 'Italian Renaissance printing', 'A modern digital method'],
+              ans: 1, explain: 'Intaglio printing uses an engraved plate where ink sits in recessed lines (the opposite of relief printing). When pressed against paper, the ink transfers + sits raised on the paper surface — you can feel the relief. Standard for currency since the 1700s because it requires specialized equipment counterfeiters typically lack.' },
+            { q: 'When was the first polymer (plastic) banknote issued?',
+              opts: ['1900', '1950', '1988 (Australia)', '2020'],
+              ans: 2, explain: 'Australia issued the first polymer banknote in 1988. Polymer is more durable than paper + has better security feature options. About 40 countries now use polymer. UK switched to polymer in 2016.' }
+          ]),
+          sourcesBlock([
+            { label: 'Smithsonian National Numismatic Collection', url: 'https://americanhistory.si.edu/coins' },
+            { label: 'US Bureau of Engraving and Printing', url: 'https://www.bep.gov/' },
+            { label: 'Bank of England banknote history', url: 'https://www.bankofengland.co.uk/banknotes' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['NCSS D2.Eco.6.6-8 (economic decisions)', 'NGSS HS-ETS1-3 (technology systems)'],
+            discussion: [
+              'A currency that anyone can copy is worthless. How do anti-counterfeit features balance the goals of trust + accessibility?',
+              'If most money is digital, do we still need physical printing? Why or why not?'
+            ],
+            misconceptions: [
+              { wrong: 'Counterfeit currency is rare', right: 'Counterfeit detection efforts confiscate millions of dollars in fake currency annually globally. The arms race is constant.' }
+            ],
+            extension: 'Examine a $20 bill (or any banknote you have). Look for: watermark (hold to light), security thread, color-shifting numeral, microprinting (look at the portrait\'s collar with magnifier). How many security features can you identify?'
+          }),
+          crossLinkFooter('printMoney'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // THE LIBRARY THROUGH HISTORY — Alexandria to modern digital archives.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderLibraryHistory() {
+        var lhSectRaw = useState('overview');
+        var lhSect = lhSectRaw[0], setLhSect = lhSectRaw[1];
+        var sections = [
+          { id: 'overview',  label: 'Overview',           icon: '📚' },
+          { id: 'ancient',   label: 'Ancient libraries',  icon: '🏛' },
+          { id: 'medieval',  label: 'Medieval + monastic', icon: '⛪' },
+          { id: 'university', label: 'University libraries', icon: '🎓' },
+          { id: 'public',    label: 'Public libraries',   icon: '🏛' },
+          { id: 'carnegie',  label: 'Carnegie era',       icon: '🏗' },
+          { id: 'modern',    label: 'Digital libraries',  icon: '💻' }
+        ];
+
+        var content;
+        if (lhSect === 'overview') {
+          content = h('div', null,
+            dropCapPara('Libraries are the institutional partner of print. Without libraries, the cumulative knowledge of writing + printing would have been lost over the centuries. The Library of Alexandria preserved Greek + Egyptian wisdom. Medieval monasteries kept classical Latin + Greek texts alive through manuscript copying. Universities organized knowledge for scholarship. Public libraries democratized access in the 1800s-1900s. Digital libraries are doing it again in our era. Each is an institutional response to the question: how does a civilization preserve + share what it has learned?'),
+            sectionHeader('📚', 'What this module covers'),
+            keyPointBlock(null, [
+              { k: 'Ancient libraries', v: 'Alexandria, Pergamum, Nineveh. The world\'s first major libraries — what they were + what was lost.' },
+              { k: 'Medieval + monastic', v: 'How European libraries survived (or didn\'t) the fall of Rome. Monastic scriptorium copying.' },
+              { k: 'University libraries', v: 'The reading + scholarly infrastructure of medieval + modern universities.' },
+              { k: 'Public libraries', v: 'The 1800s movement to make books available to all. Benjamin Franklin\'s 1731 Library Company; later state + city libraries.' },
+              { k: 'Carnegie era', v: 'Andrew Carnegie funded 1,700+ free public library buildings (1883-1929). Made libraries universally accessible across the US.' },
+              { k: 'Digital libraries', v: 'Internet Archive, HathiTrust, Project Gutenberg, Google Books. Modern preservation + access infrastructure.' }
+            ])
+          );
+        } else if (lhSect === 'ancient') {
+          content = h('div', null,
+            keyPointBlock('Ancient libraries', [
+              { k: 'Library of Ashurbanipal (Nineveh, ~650 BCE)', v: 'Assyrian king Ashurbanipal\'s royal library in Nineveh. ~30,000 clay tablets including the Epic of Gilgamesh. Library destroyed when Nineveh fell in 612 BCE; tablets buried + preserved underground; rediscovered by archaeologists in 1840s.' },
+              { k: 'Library of Alexandria (Egypt, ~280 BCE founding)', v: 'Founded by Ptolemy I; expanded under Ptolemy II + III. Estimated 400,000-700,000 scrolls at its peak. Centerpiece of the Mouseion (Museum). Multiple fires + destructions across centuries (most famously the 48 BCE fire during Caesar\'s Egyptian campaign). The "burning of Alexandria" probably happened in multiple stages over centuries.' },
+              { k: 'Library of Pergamum (Pergamon, ~200 BCE)', v: 'Major rival to Alexandria. ~200,000 scrolls. Pergamum developed parchment (named for the city) when Ptolemies cut off papyrus supply.' },
+              { k: 'Roman public + private libraries', v: 'Wealthy Romans collected libraries. Julius Caesar planned a public library in Rome (built after his death by Asinius Pollio, ~39 BCE). Later imperial libraries: Library of Trajan (109 CE), Library of Hadrian. Most destroyed by fire, war, decay.' },
+              { k: 'Library of Celsus (Ephesus, 117 CE)', v: 'Famous façade still standing today (reconstructed). Held ~12,000 scrolls at peak. Library was a monument as well as a working library.' },
+              { k: 'Persian + Sassanid libraries', v: 'Major Persian libraries existed at Ctesiphon (Sassanid capital). Destroyed during Arab conquest 637 CE. Some scholarship survived via translation movements into Arabic.' },
+              { k: 'Library of Constantinople', v: 'Founded by Constantine I + Constantius II (4th c.). Multiple destructions across 1,000+ years culminating in 1204 (Fourth Crusade sack of Constantinople) + 1453 (Ottoman conquest).' }
+            ])
+          );
+        } else if (lhSect === 'medieval') {
+          content = h('div', null,
+            keyPointBlock('Medieval + monastic libraries', [
+              { k: 'Monastic scriptoria (~500-1500)', v: 'Catholic monasteries (Benedictine + later Cistercian) preserved classical + religious texts through manuscript copying. Scribes worked in scriptoria — dedicated copying rooms.' },
+              { k: 'St. Gall (Switzerland)', v: 'Major Carolingian-era monastic library. ~600 surviving manuscripts including some of the most beautiful illuminated works of medieval Europe.' },
+              { k: 'Monte Cassino (Italy)', v: 'Benedictine monastery founded by St. Benedict ~529. Long history of book copying + scholarship. Library survived (with damage) WWII bombing.' },
+              { k: 'Cluny (France)', v: 'Largest medieval European monastic library at peak — ~570 volumes recorded by 12th-c. inventory.' },
+              { k: 'Cassiodorus + Vivarium', v: 'Cassiodorus (~480-575) founded Vivarium monastery as a center for preserving classical learning. Pioneered the systematic copying of classical works alongside religious texts.' },
+              { k: 'Manuscript transmission', v: 'How most surviving classical Greek + Latin literature reaches us — copied by medieval monks who preserved texts they may not always have agreed with. Without monastic copying, we would have almost no classical literature today.' }
+            ])
+          );
+        } else if (lhSect === 'university') {
+          content = h('div', null,
+            keyPointBlock('University libraries through history', [
+              { k: 'Bologna (1088)', v: 'University founded. Library developed gradually over centuries.' },
+              { k: 'Paris (~1150)', v: 'University of Paris formed. Sorbonne library founded 1257 by Robert de Sorbon. Major medieval university library.' },
+              { k: 'Oxford (~1167) + Cambridge (1209)', v: 'English universities. Oxford\'s Bodleian Library (refounded 1602 by Sir Thomas Bodley) became one of the great libraries of Europe.' },
+              { k: 'Bologna University of Library', v: 'Many medieval Italian universities developed substantial libraries through the 1300s-1500s.' },
+              { k: 'Modern research universities', v: 'Harvard (1638), Yale (1701), MIT (1861), Stanford (1885) all developed substantial libraries integral to research mission. Many millions of volumes each.' },
+              { k: 'Library of Congress (1800)', v: 'US national library, originally to serve Congress. Now world\'s largest library (~170+ million items). Free + open to researchers.' },
+              { k: 'Modern academic library struggles', v: 'University library budgets contracting. Subscription journal costs (Elsevier, etc.) growing faster than budgets. Open-access journals + preprint servers reshaping research access.' }
+            ])
+          );
+        } else if (lhSect === 'public') {
+          content = h('div', null,
+            keyPointBlock('Public library development', [
+              { k: 'Library Company of Philadelphia (1731)', v: 'Founded by Benjamin Franklin + Junto club members as a subscription library (members paid annual fee). First "public" library in colonial America. Still operating in 2026.' },
+              { k: 'Boston Public Library (1848)', v: 'First US tax-supported municipal library. Built in 1854. Established the model of free-to-the-public library funded by local taxes.' },
+              { k: 'Free Library of Philadelphia (1891)', v: 'Major early municipal library system. Continued the Boston Public Library model.' },
+              { k: 'New York Public Library (1895)', v: 'Merger of multiple existing libraries (Astor, Lenox, Tilden Foundation) into single major institution. Iconic Bryant Park building completed 1911.' },
+              { k: 'Maine libraries', v: 'Portland Public Library (1867), Maine State Library (1839), Bangor Public Library (1883). Maine had small-town libraries by 1850 — substantial early presence.' },
+              { k: 'ALA (American Library Association) founded (1876)', v: 'Professional library association. Sets standards, advocates for libraries, supports Banned Books Week.' }
+            ])
+          );
+        } else if (lhSect === 'carnegie') {
+          content = h('div', null,
+            dropCapPara('Andrew Carnegie — Scottish-American steel magnate — funded the construction of 1,689 free public library buildings across the US between 1883 and 1929 (plus another ~800 elsewhere globally). This single philanthropic project transformed American library access. About half of US public libraries today operate in buildings descended from Carnegie\'s gift.'),
+            keyPointBlock('Carnegie library program', [
+              { k: 'The bargain', v: 'Carnegie funded the building; the local community had to provide the site + commit 10% of the building cost annually for ongoing operations. Required commitment to keeping the library open + free.' },
+              { k: 'Distribution', v: '1,689 US Carnegie library buildings between 1883-1929. Located in every state. Many in small towns that previously had no library.' },
+              { k: 'Maine Carnegie libraries', v: '14 Carnegie-funded library buildings in Maine, including Bangor Public Library (built 1913 with Carnegie funds), Bath, Rumford, Westbrook, others. About half are still operating as libraries; others repurposed.' },
+              { k: 'Why "Carnegie"', v: 'Carnegie himself had grown up poor + been transformed by access to a local library in Pittsburgh. He wrote that he\'d wanted to ensure others had similar access.' },
+              { k: 'Total cost', v: '~$60M (~$1.6B in 2024 dollars). Massive philanthropic effort. Carnegie also funded universities, music halls, peace foundations.' },
+              { k: 'Lasting impact', v: 'Carnegie libraries became the institutional infrastructure that made US libraries universally accessible. Many still in original buildings 100+ years later. Defined how communities expected libraries to be built + run.' }
+            ])
+          );
+        } else {
+          content = h('div', null,
+            keyPointBlock('Digital libraries + modern preservation', [
+              { k: 'Project Gutenberg (1971)', v: 'Michael Hart\'s project to digitize public-domain texts. Started by typing the Declaration of Independence into a Univeral mainframe. Now hosts ~75,000+ titles. Pioneer of digital library work.' },
+              { k: 'Internet Archive (1996)', v: 'Brewster Kahle\'s nonprofit. Wayback Machine (web archive) + general digital archive of books, films, software, audio. ~40+ million books accessible. Free to all.' },
+              { k: 'Google Books (2004)', v: 'Massive book-scanning project — Google partnered with major university libraries (Harvard, Michigan, Oxford, Stanford, NYPL) to digitize their collections. Snippet view + full view depending on copyright. Court cases (Authors Guild v Google, 2015) ruled the project a fair use.' },
+              { k: 'HathiTrust (2008)', v: 'Consortium of research libraries pooling digital book collections. ~17+ million volumes. Available to member-institution users; some access for everyone.' },
+              { k: 'Digital Public Library of America (DPLA, 2013)', v: 'Aggregator + portal for digitized US library + archival collections. Includes content from hundreds of institutions.' },
+              { k: 'Wikipedia (2001)', v: 'World\'s largest open knowledge work. Not a "library" exactly but functions as encyclopedic reference. 62M+ articles across 300+ languages.' },
+              { k: 'Library functions in digital era', v: 'Libraries today: not just book lending. Also: digital literacy education, public computing access, social services referrals, community meeting space, business + nonprofit support. Often the public\'s only access point for many services in rural America.' },
+              { k: 'Maine libraries today', v: 'Maine State Library + Maine InfoNet provide statewide resource sharing. Most Maine towns have free public libraries. Continued community institutions despite budget pressures.' }
+            ])
+          );
+        }
+
+        return h('div', null,
+          backBar('📚 The Library Through History'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) {
+              var sel = (lhSect === s.id);
+              return h('button', { key: s.id,
+                onClick: function() { setLhSect(s.id); announce(s.label); },
+                style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                s.icon + ' ' + s.label);
+            })
+          ),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            content
+          ),
+          miniQuizBlock('libraryHistory', [
+            { q: 'Approximately how many US public library buildings did Andrew Carnegie fund?',
+              opts: ['~10', '~100', '~1,700', '~10,000'],
+              ans: 2, explain: 'Andrew Carnegie funded the construction of 1,689 US public library buildings between 1883 and 1929. Approximately half of US public libraries today operate in buildings descended from Carnegie\'s gift.' },
+            { q: 'Who founded the first "public" library in colonial America (subscription model)?',
+              opts: ['George Washington', 'Benjamin Franklin (Library Company of Philadelphia, 1731)', 'Thomas Jefferson', 'Andrew Carnegie'],
+              ans: 1, explain: 'Benjamin Franklin + members of his Junto club founded the Library Company of Philadelphia in 1731 as a subscription library (members paid annual fee). First "public" library in colonial America. Still operating in 2026.' },
+            { q: 'How many books did Project Gutenberg (founded 1971) host as of 2024?',
+              opts: ['~100', '~5,000', '~75,000+', '~10 million'],
+              ans: 2, explain: 'Project Gutenberg hosts approximately 75,000+ digitized public-domain texts. Founded 1971 by Michael Hart — pioneer of digital library work. Continues today as a free resource.' }
+          ]),
+          sourcesBlock([
+            { label: 'Lionel Casson, Libraries in the Ancient World (2001)' },
+            { label: 'Internet Archive', url: 'https://archive.org/' },
+            { label: 'Project Gutenberg', url: 'https://www.gutenberg.org/' },
+            { label: 'Maine InfoNet (Maine libraries digital consortium)', url: 'https://www.maineinfonet.org/' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['NCSS D2.His.2.6-8 (context)', 'C3 D2.6.6-8 (taking informed action)'],
+            discussion: [
+              'Visit your local public library. Find out: how long has it been there? Was it built with Carnegie funds? Look around — what services do you see?',
+              'In 50 years, will physical libraries still exist? What might they look like?'
+            ],
+            misconceptions: [
+              { wrong: 'Libraries are obsolete in the internet era', right: 'Library visits + circulation remain substantial in most US communities. Libraries provide many services beyond book lending — digital access, social services, community space.' }
+            ],
+            extension: 'Get a library card if you don\'t have one. Check out 1 physical book + 1 digital book through your library\'s app (most libraries use Libby or hoopla). Notice the experience.'
+          }),
+          crossLinkFooter('libraryHistory'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // THE MODERN MAGAZINE — Saturday Evening Post → New Yorker → digital.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderMagazines() {
+        var mgIdxRaw = useState(0);
+        var mgIdx = mgIdxRaw[0], setMgIdx = mgIdxRaw[1];
+        var mgSectRaw = useState('overview');
+        var mgSect = mgSectRaw[0], setMgSect = mgSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '🪧' },
+          { id: 'history',  label: 'History',  icon: '📅' },
+          { id: 'tour',     label: 'Famous magazines', icon: '⭐' },
+          { id: 'design',   label: 'Magazine design', icon: '🎨' },
+          { id: 'modern',   label: 'Modern + digital', icon: '📱' }
+        ];
+        var magazines = [
+          { name: 'The Saturday Evening Post', founded: 1821, closed: '1969 print (revived 1971 + still publishing)', country: 'USA',
+            blurb: 'America\'s premier general-interest magazine for over 100 years. Norman Rockwell painted ~321 covers between 1916 + 1963 — these became the iconic visual record of 20th-c. American middle-class life. Sold over 6.5 million copies per issue at peak.', icon: '🇺🇸' },
+          { name: 'The New Yorker', founded: 1925, closed: null, country: 'USA',
+            blurb: 'Founded by Harold Ross + Jane Grant. Defined the modern long-form essay + literary magazine. Famous covers, single-panel cartoons, fact-checking culture. Tracks high US literary + cultural conversation.', icon: '🗞' },
+          { name: 'Vogue', founded: 1892, closed: null, country: 'USA (Condé Nast)',
+            blurb: 'High-fashion magazine. Edited by Anna Wintour since 1988. Vogue mastheads have used Didone (Bodoni-style) typography since the early 20th c. — visual shorthand for elite fashion.', icon: '👗' },
+          { name: 'Life', founded: 1936, closed: '1972 weekly (occasional special issues since)', country: 'USA',
+            blurb: 'Henry Luce\'s photographic news magazine. Brought photojournalism to mass audiences. Margaret Bourke-White + W. Eugene Smith + Robert Capa published in Life. Peak circulation 8.5 million weekly.', icon: '📷' },
+          { name: 'Time', founded: 1923, closed: null, country: 'USA',
+            blurb: 'Henry Luce\'s weekly news magazine. Distinctive red-border cover. Person of the Year tradition since 1927. Defined US news-magazine format imitated globally.', icon: '⏰' },
+          { name: 'National Geographic', founded: 1888, closed: null, country: 'USA',
+            blurb: 'Yellow-bordered magazine of the National Geographic Society. Photographic exploration of cultures + nature + science. Major archive of 20th-c. visual documentation.', icon: '🌎' },
+          { name: 'Wired', founded: 1993, closed: null, country: 'USA',
+            blurb: 'Magazine of technology + digital culture. Defined the visual + intellectual vocabulary of the early internet era. Now part of Condé Nast.', icon: '💻' },
+          { name: 'Punch', founded: 1841, closed: '2002', country: 'UK',
+            blurb: 'British satirical magazine. Coined the term "cartoon" for humorous illustrations. Major influence on subsequent satirical journalism + comics.', icon: '🤡' },
+          { name: 'Hello! / People', founded: '1988 (Hello!) / 1974 (People)', closed: null, country: 'UK + USA',
+            blurb: 'Celebrity-focused weekly magazines. Massively profitable + culturally influential through 1990s-2010s. Both still publishing in 2026 though print circulation has declined.', icon: '🌟' }
+        ];
+        var m = magazines[mgIdx] || magazines[0];
+        var content;
+        if (mgSect === 'overview') {
+          content = h('div', null,
+            dropCapPara('Magazines occupy a distinct print niche between newspapers (daily news) + books (longer-form). They have shaped 20th-century cultural life as much as either — defining what was fashionable, what was newsworthy, what counted as serious. Magazines have also been the principal venue for many forms of writing — long-form journalism, short fiction, essays, photography, cartoons. The magazine as a form has been one of the great cultural inventions of the modern print era.'),
+            sectionHeader('🪧', 'What this module covers'),
+            keyPointBlock(null, [
+              { k: 'History', v: 'Periodical history from 1700s gentleman\'s magazines through 1900s general-interest peaks to modern niche markets.' },
+              { k: 'Famous magazines', v: '9 detailed profiles: Saturday Evening Post, New Yorker, Vogue, Life, Time, National Geographic, Wired, Punch, Hello!/People.' },
+              { k: 'Magazine design', v: 'Cover design, masthead typography, photo essays, layout principles. The visual grammar of magazines.' },
+              { k: 'Modern + digital', v: 'Today\'s magazine landscape — closures, pivots to digital, surviving print magazines, the rise of substack newsletters as magazine descendants.' }
+            ])
+          );
+        } else if (mgSect === 'history') {
+          content = h('div', null,
+            keyPointBlock('Periodical history', [
+              { k: '1731 — Gentleman\'s Magazine (London)', v: 'Edward Cave\'s monthly. First magazine to use "magazine" in its title (from Arabic makhazin, "storehouse"). Mixed reviews + commentary + literary writing.' },
+              { k: '1741 — General Magazine (Benjamin Franklin)', v: 'First magazine published in British North America. Lasted only 6 issues but established the form.' },
+              { k: '1821 — Saturday Evening Post (founding)', v: 'Founded Philadelphia. Became America\'s premier general-interest weekly for over 100 years.' },
+              { k: '1850s-1880s — illustrated weeklies', v: 'Harper\'s Weekly (1857), Leslie\'s Illustrated (1855). Brought engraved + later photographic news illustration to mass audiences. Thomas Nast political cartoons.' },
+              { k: '1888 — National Geographic', v: 'National Geographic Society magazine. Yellow border established 1910s.' },
+              { k: '1892 — Vogue', v: 'Founded as society weekly; transformed by Edna Woolman Chase (editor 1914-1952) + later Diana Vreeland into fashion authority.' },
+              { k: '1922 — Reader\'s Digest', v: 'DeWitt Wallace\'s monthly condensation of articles. Peak circulation 18M+. Was largest US magazine for decades.' },
+              { k: '1923 — Time', v: 'Henry Luce + Briton Hadden\'s news-magazine experiment. Defined a new genre.' },
+              { k: '1925 — The New Yorker', v: 'Harold Ross + Jane Grant. Defined modern literary magazine.' },
+              { k: '1933 — Esquire', v: 'Men\'s lifestyle magazine. Published Hemingway, Fitzgerald, many others.' },
+              { k: '1936 — Life', v: 'Henry Luce\'s photographic news magazine. Defined photojournalism.' },
+              { k: '1953 — Playboy', v: 'Hugh Hefner\'s adult magazine. Beyond its sexual content, was a serious literary magazine — published interviews + fiction by major writers.' },
+              { k: '1962 — Cosmopolitan relaunch (Helen Gurley Brown)', v: 'Brown transformed Cosmo into a single-young-women\'s magazine. Became hugely profitable + influential through 1970s-90s.' },
+              { k: '1989+ — magazine industry peak then decline', v: 'US magazine ad revenue peaked late 1990s. Steady print circulation decline since 2000s. Many beloved magazines folded — Gourmet (2009), Newsweek print (2012), Life (multiple times). Some pivoted to digital.' }
+            ])
+          );
+        } else if (mgSect === 'tour') {
+          content = h('div', null,
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+              magazines.map(function(mm, i) {
+                var sel = (i === mgIdx);
+                return h('button', { key: i,
+                  onClick: function() { setMgIdx(i); announce(mm.name); },
+                  style: btn({ padding: '7px 11px', fontSize: 11, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                  mm.icon + ' ' + mm.name);
+              })
+            ),
+            h('div', { style: { background: T.cardAlt, border: '2px solid ' + T.accent, borderRadius: 12, padding: 20 } },
+              h('div', { style: { fontSize: 48, marginBottom: 8, textAlign: 'center' } }, m.icon),
+              h('h3', { style: { fontSize: 22, fontWeight: 700, color: T.text, fontFamily: 'Georgia, serif', margin: '0 0 4px', textAlign: 'center' } }, m.name),
+              h('div', { style: { fontSize: 12, color: T.muted, fontStyle: 'italic', marginBottom: 14, textAlign: 'center' } },
+                'Founded ' + m.founded + ' · ' + (m.closed ? 'Closed: ' + m.closed : 'Still publishing') + ' · ' + m.country),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 14, lineHeight: 1.7 } }, m.blurb)
+            )
+          );
+        } else if (mgSect === 'design') {
+          content = h('div', null,
+            keyPointBlock('Magazine design conventions', [
+              { k: 'The cover', v: 'Cover is the magazine\'s billboard — designed to grab a newsstand customer\'s attention. Conventions: dominant masthead (magazine name), striking image (photo or illustration), 3-5 cover lines (article teasers), price + date. Cover redesign is a major event.' },
+              { k: 'The masthead typography', v: 'A magazine\'s name in distinctive typography. Often the most identifying visual element. Vogue\'s Didone-style masthead; New Yorker\'s elegant Caslon-influenced lettering; Time\'s red border + bold sans-serif.' },
+              { k: 'Departments', v: 'Recurring sections (Letters to the Editor, Talk of the Town in New Yorker, Person of the Week in Time). Build reader familiarity + return visits.' },
+              { k: 'Feature wells', v: 'Long-form articles given full design treatment — photographic spreads, custom typography, leisurely page count. The Atlantic + Harper\'s + New Yorker all use this convention.' },
+              { k: 'Photo essays', v: 'Photographs as primary content. Life invented the form (1936+). Continued by National Geographic, Time photo issues, others.' },
+              { k: 'Front of book', v: 'First pages — short pieces, news, briefs. "FOB" in magazine-publishing slang.' },
+              { k: 'Back of book', v: 'Last pages — usually reviews, columns, regular features. "BOB" in publishing slang.' },
+              { k: 'Advertising integration', v: 'Magazine ads were traditionally integrated with editorial content (full-page ads adjacent to articles). Modern magazines often segregate ads more clearly to distinguish editorial from advertising.' }
+            ])
+          );
+        } else {
+          content = h('div', null,
+            keyPointBlock('Modern + digital magazine landscape', [
+              { k: 'Print magazine decline', v: 'US magazine ad revenue peaked late 1990s. Steady decline since 2000s. Many beloved magazines folded — Gourmet (2009), Newsweek print (2012), Life (multiple times). Print survives where readers value tactile/visual quality (National Geographic, Vogue, Bon Appétit).' },
+              { k: 'Digital pivots', v: 'Many magazines now publish primarily online — The Atlantic, Wired, Vox, Slate. Subscription paywall models. Some succeed (Atlantic), others struggle.' },
+              { k: 'Substack + newsletter platforms', v: 'Substack (2017+) lets writers self-publish paid newsletters. Many former magazine writers (Bari Weiss, Andrew Sullivan, Heather Cox Richardson, Casey Newton) now run substantial paid newsletters. Functionally magazine-like.' },
+              { k: 'Niche print magazines surviving', v: 'Some niche print magazines have grown — small-print-run beautifully-designed quarterlies focused on specific lifestyles, professions, interests. Examples: Kinfolk, Cabin Life, Cereal, The Gentlewoman.' },
+              { k: 'Magazine archives', v: 'Most major surviving magazines have digitized their back issues + offer online archive access. National Geographic Archive, New Yorker Archive, Vogue Archive — substantial historical resources.' }
+            ])
+          );
+        }
+        return h('div', null,
+          backBar('🪧 The Modern Magazine'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) {
+              var sel = (mgSect === s.id);
+              return h('button', { key: s.id,
+                onClick: function() { setMgSect(s.id); announce(s.label); },
+                style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                s.icon + ' ' + s.label);
+            })
+          ),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            content
+          ),
+          miniQuizBlock('magazines', [
+            { q: 'Who painted ~321 Saturday Evening Post covers between 1916 + 1963?',
+              opts: ['Andy Warhol', 'Norman Rockwell', 'Jackson Pollock', 'Edward Hopper'],
+              ans: 1, explain: 'Norman Rockwell painted ~321 covers for the Saturday Evening Post between 1916 + 1963. These became the iconic visual record of 20th-c. American middle-class life.' },
+            { q: 'Where does the word "magazine" come from?',
+              opts: ['French magazin (store)', 'Arabic makhazin (storehouse)', 'Latin magnus (great)', 'Old English maga (stomach)'],
+              ans: 1, explain: '"Magazine" comes from Arabic makhazin (storehouse) — the same root as the French/English "magazine" meaning storehouse (e.g., powder magazine for gunpowder). The Gentleman\'s Magazine (1731) first used it for a periodical, suggesting it was a "storehouse" of various writings.' }
+          ]),
+          sourcesBlock([
+            { label: 'Theodore Peterson, Magazines in the Twentieth Century (1964)' },
+            { label: 'David Reed, The Popular Magazine in Britain and the United States 1880-1960 (1997)' },
+            { label: 'Magazine Publishers of America (MPA)', url: 'https://www.magazine.org/' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['NCSS D2.His.5.6-8 (cause + effect)', 'NCAS Visual Arts (design analysis)'],
+            discussion: [
+              'Pick a magazine you (or family) read. Look at one issue closely. Front cover, masthead, departments. What conventions do you see?',
+              'Will print magazines still exist in 20 years? Which categories will survive?'
+            ],
+            misconceptions: [],
+            extension: 'Visit your library + flip through 100-year-old magazine archives (most major libraries have bound back issues). Compare with a modern equivalent. What\'s the same? What\'s different?'
+          }),
+          crossLinkFooter('magazines'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // ENCYCLOPEDIAS — Pliny → Diderot → Britannica → Wikipedia.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderEncyclopedias() {
+        var encSectRaw = useState('overview');
+        var encSect = encSectRaw[0], setEncSect = encSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '🔍' },
+          { id: 'ancient',  label: 'Ancient + medieval', icon: '📜' },
+          { id: 'diderot',  label: "Diderot's Encyclopédie", icon: '🇫🇷' },
+          { id: 'britannica', label: 'Britannica', icon: '🇬🇧' },
+          { id: 'modern',   label: 'World Book + others', icon: '📚' },
+          { id: 'wikipedia', label: 'Wikipedia', icon: '🌍' }
+        ];
+        var content;
+        if (encSect === 'overview') {
+          content = h('div', null,
+            dropCapPara('Encyclopedias attempt the great project of compiling all knowledge in one work. Pliny the Elder\'s Natural History (~77 CE) was the first major Western attempt. Diderot\'s Encyclopédie (1751-1772) was the most politically influential. Britannica was the longest-running commercial encyclopedia. Wikipedia is the largest. The project keeps reinventing itself.'),
+            sectionHeader('🔍', 'What this module covers'),
+            keyPointBlock(null, [
+              { k: 'Ancient + medieval', v: 'Pliny\'s Natural History, Isidore of Seville\'s Etymologiae, Vincent of Beauvais\'s Speculum Maius.' },
+              { k: "Diderot's Encyclopédie (1751-1772)", v: 'The Enlightenment encyclopedia. 28 volumes, 71,818 articles, 140+ contributors including Voltaire, Rousseau, Montesquieu.' },
+              { k: 'Britannica (1768-)', v: 'The longest-running commercial encyclopedia. 15 editions across 250+ years. Print ceased 2012; continues digital-only.' },
+              { k: 'World Book + others', v: 'American encyclopedia tradition. Family + library reference shelf for 100 years.' },
+              { k: 'Wikipedia (2001+)', v: 'Community-edited open encyclopedia. 62M+ articles in 300+ languages. The current era of the encyclopedia.' }
+            ])
+          );
+        } else if (encSect === 'ancient') {
+          content = h('div', null,
+            keyPointBlock('Ancient + medieval encyclopedias', [
+              { k: 'Pliny the Elder, Natural History (~77 CE)', v: '37 books covering astronomy, geography, anthropology, zoology, botany, mineralogy, medicine, art. The first major Western encyclopedia. Pliny died at the eruption of Vesuvius in 79 CE while observing the disaster.' },
+              { k: 'Isidore of Seville, Etymologiae (~600 CE)', v: '20-book encyclopedia by the bishop of Seville. Knowledge organized by word origins. Hugely influential through Middle Ages — preserved much classical knowledge. The patron saint of the internet, named by Pope John Paul II.' },
+              { k: 'Vincent of Beauvais, Speculum Maius (~1244)', v: 'Massive 3-part encyclopedia: Mirror of Nature, Mirror of Doctrine, Mirror of History. About 4.5 million words. The largest encyclopedia of the medieval era.' },
+              { k: 'Chinese encyclopedias (lèi shū)', v: 'Major Chinese encyclopedic tradition. Imperial Encyclopedia (Gujin Tushu Jicheng, ~10,000 sections, completed 1726) was the largest reference work ever printed before Wikipedia.' },
+              { k: 'Islamic encyclopedias (~800-1200)', v: 'Major Arabic encyclopedic works. Al-Khwarizmi\'s Mafatih al-Ulum (~975), Ibn al-Nadim\'s Fihrist (~987) catalogued books + scholarship across the Islamic world.' }
+            ])
+          );
+        } else if (encSect === 'diderot') {
+          content = h('div', null,
+            dropCapPara('Denis Diderot + Jean le Rond d\'Alembert edited the Encyclopédie, ou dictionnaire raisonné des sciences, des arts et des métiers from 1751 to 1772. 28 volumes (17 of text + 11 of plates). 71,818 articles. 140+ contributors including Voltaire, Rousseau, Montesquieu. Most influential single Enlightenment publication.'),
+            keyPointBlock('Diderot\'s Encyclopédie + its impact', [
+              { k: 'Scope', v: 'Aimed to "change the way men think" — collected all human knowledge with a critical, rationalist, anti-clerical sensibility.' },
+              { k: 'Contributors', v: '140+ identified contributors. Voltaire wrote ~45 articles. Rousseau wrote on music. Many anonymous contributors.' },
+              { k: 'Engravings', v: '11 volumes of plates — illustrated technical processes (mining, weaving, printing) in unprecedented detail. Visual record of 18th-c. crafts + industries.' },
+              { k: 'Censorship + suppression', v: 'Authorized + suppressed + re-authorized multiple times during publication. Diderot was imprisoned briefly. Some volumes published clandestinely.' },
+              { k: 'Sales', v: 'Sold over 25,000 sets in original + subsequent editions. Major commercial success. Made the publishers wealthy.' },
+              { k: 'Political impact', v: 'Helped shape Enlightenment political thinking that influenced both American + French Revolutions. Provided intellectual ammunition against arbitrary authority + religious orthodoxy.' },
+              { k: 'Modern access', v: 'Digital editions available free online (e.g., the ARTFL Encyclopédie Project at the University of Chicago).' }
+            ])
+          );
+        } else if (encSect === 'britannica') {
+          content = h('div', null,
+            keyPointBlock('Encyclopædia Britannica history', [
+              { k: 'First edition (Edinburgh, 1768-1771)', v: '3 volumes. Compiled by William Smellie + others.' },
+              { k: 'Major editions', v: '9th edition (1875-1889) is often cited as the high point — many scholarly contributors. 11th edition (1910-1911) is widely admired for literary quality.' },
+              { k: 'US ownership', v: 'Britannica ownership moved from UK to US in 1901; final owner was Encyclopædia Britannica, Inc. of Chicago.' },
+              { k: 'Door-to-door sales (1900s-1990s)', v: 'Britannica was sold primarily door-to-door + via subscription. Sets cost thousands of dollars; financing widely offered. A status symbol for middle-class American families through mid-20th century.' },
+              { k: 'CD-ROM (1989+)', v: 'Britannica was one of the first major reference works on CD-ROM. Microsoft Encarta + others competed.' },
+              { k: 'Online + Wikipedia', v: 'Britannica.com launched 1994. By 2005, Wikipedia was approaching equivalent scope at zero cost. Britannica struggled.' },
+              { k: '2012: print ceased', v: 'Britannica announced end of print edition March 2012, after 244 years. Now digital-only. Subscription-based access.' }
+            ])
+          );
+        } else if (encSect === 'modern') {
+          content = h('div', null,
+            keyPointBlock('Other major modern encyclopedias', [
+              { k: 'World Book Encyclopedia (1917-)', v: 'US encyclopedia aimed at schools + families. Widely sold door-to-door + via subscription mid-20th-c. Still produces a print edition (final 2024 + digital). One of the last surviving traditional print encyclopedias.' },
+              { k: 'Funk & Wagnalls New World Encyclopedia (1912-)', v: 'Mass-market US encyclopedia. The Funk & Wagnalls publisher famously printed an encyclopedia volume to give away with each year\'s grocery store coupons in the mid-20th c. Made the F&W reference shelf affordable for many families.' },
+              { k: 'Microsoft Encarta (1993-2009)', v: 'Microsoft\'s multimedia encyclopedia on CD-ROM, then DVD, then online. Substantial 1990s-2000s presence. Killed by Wikipedia. Microsoft discontinued 2009.' },
+              { k: 'Compton\'s Pictured Encyclopedia (1922-)', v: 'Children\'s + schools encyclopedia. Long-running. Still in print editions in some markets.' },
+              { k: 'Brockhaus Enzyklopädie (Germany, 1796-2014)', v: 'German encyclopedia of similar prestige to Britannica. Ceased print publication 2014.' },
+              { k: 'Grand dictionnaire universel du XIXe siècle (Larousse, 1866-1876)', v: 'Major 17-volume French encyclopedia. Larousse continues today as a major French reference + dictionary publisher.' },
+              { k: 'Many specialized encyclopedias', v: 'Beyond general reference encyclopedias, hundreds of specialized works: encyclopedias of philosophy (Stanford Encyclopedia of Philosophy, Routledge), religion (Encyclopedia of Religion), music (Grove Music), arts, sciences. Many now primarily online.' }
+            ])
+          );
+        } else {
+          content = h('div', null,
+            dropCapPara('Wikipedia (founded January 15, 2001 by Jimmy Wales + Larry Sanger) is the largest reference work ever compiled. Over 62 million articles in 300+ languages. English Wikipedia alone has ~6.8 million articles. Edited by ~280,000+ active editors. Hosted by the nonprofit Wikimedia Foundation, supported by donations. Probably the single most-used reference work in human history.'),
+            keyPointBlock('Wikipedia + the open-encyclopedia model', [
+              { k: 'How it works', v: 'Anyone can edit. Disputes resolved by community processes (talk pages, request for comment, dispute resolution). Maintained by volunteer editors organized into projects.' },
+              { k: 'Quality vs traditional encyclopedias', v: 'Initial skepticism. Nature 2005 study found Wikipedia roughly comparable to Britannica in factual accuracy (3 errors per article vs 2.92 for Britannica). Quality has improved since.' },
+              { k: 'Strengths', v: 'Scope vastly exceeds any traditional encyclopedia. Update speed (current events documented within hours). Free + accessible globally. Multiple languages.' },
+              { k: 'Weaknesses', v: 'Inconsistent coverage (some niche topics deep, others superficial). Bias toward topics editors care about (overrepresentation of pop culture, English-language sources, certain demographics). Vandalism + edit wars on contested topics.' },
+              { k: 'Citogenesis', v: 'A particular problem: Wikipedia cites a source; the source then cites Wikipedia; the loop creates "true" facts with no original support. Constant vigilance.' },
+              { k: 'AI + Wikipedia', v: 'LLMs trained heavily on Wikipedia. AI tools assist editors. Some concern that AI-generated content could degrade quality if widely adopted.' },
+              { k: 'Funding model', v: 'Donation-based. ~$100M+ annual revenue from individual + foundation donations. No advertising. The Wikimedia Foundation operates conservatively.' },
+              { k: 'Other Wikimedia projects', v: 'Wiktionary (dictionary), Wikiquote, Wikisource (primary sources), Commons (media), Wikidata (structured data). All open + free.' }
+            ])
+          );
+        }
+        return h('div', null,
+          backBar('🔍 Encyclopedias'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) {
+              var sel = (encSect === s.id);
+              return h('button', { key: s.id,
+                onClick: function() { setEncSect(s.id); announce(s.label); },
+                style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                s.icon + ' ' + s.label);
+            })
+          ),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            content
+          ),
+          miniQuizBlock('encyclopedias', [
+            { q: 'Who edited the Enlightenment Encyclopédie (1751-1772)?',
+              opts: ['Voltaire', 'Denis Diderot + Jean le Rond d\'Alembert', 'Adam Smith', 'Rousseau'],
+              ans: 1, explain: 'Diderot + d\'Alembert edited the Encyclopédie, with 140+ contributors including Voltaire, Rousseau, Montesquieu. 28 volumes, 71,818 articles. The most politically influential Enlightenment publication.' },
+            { q: 'When did Britannica end its print edition?',
+              opts: ['1995', '2005', '2012', 'Still printing in 2026'],
+              ans: 2, explain: 'Britannica announced the end of its print edition in March 2012, after 244 years. Continues as digital-only subscription. Killed by Wikipedia\'s combination of broader scope + zero cost.' },
+            { q: 'Approximately how many articles are in English Wikipedia (2026)?',
+              opts: ['~50,000', '~500,000', '~6.8 million', '~50 million'],
+              ans: 2, explain: 'English Wikipedia has approximately 6.8 million articles. Total across all language editions: 62+ million articles. The largest reference work ever compiled.' }
+          ]),
+          sourcesBlock([
+            { label: 'Robert Darnton, The Business of Enlightenment: A Publishing History of the Encyclopédie 1775-1800 (1979)' },
+            { label: 'Stanford Encyclopedia of Philosophy', url: 'https://plato.stanford.edu/' },
+            { label: 'Wikipedia statistics', url: 'https://stats.wikimedia.org/' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['CCSS RH.6-8.9 (compare sources)', 'NCSS D4.6.6-8 (taking informed action)'],
+            discussion: [
+              'Compare Wikipedia + Britannica on a topic you know well. Which is better? Why?',
+              'Wikipedia depends on volunteer editors. What does this mean for what gets covered well + what doesn\'t?'
+            ],
+            misconceptions: [
+              { wrong: 'Wikipedia is unreliable', right: 'Wikipedia is generally comparable to Britannica in factual accuracy (per multiple studies). Reliability varies by article + topic. Always check sources cited.' }
+            ],
+            extension: 'Edit Wikipedia! Find a minor error or add a citation. Most edits are accepted. You\'ve now contributed to the world\'s largest reference work.'
+          }),
+          crossLinkFooter('encyclopedias'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // DICTIONARIES — Johnson, Webster, OED.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderDictionaries() {
+        var diSectRaw = useState('overview');
+        var diSect = diSectRaw[0], setDiSect = diSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '📝' },
+          { id: 'johnson',  label: 'Johnson (1755)', icon: '🇬🇧' },
+          { id: 'webster',  label: 'Webster (1828)', icon: '🇺🇸' },
+          { id: 'oed',      label: 'Oxford English Dictionary', icon: '🔬' },
+          { id: 'modern',   label: 'Modern dictionaries', icon: '💻' }
+        ];
+        var content;
+        if (diSect === 'overview') {
+          content = h('div', null,
+            dropCapPara('Dictionaries standardize languages. Before printed dictionaries, spelling + usage varied by region + writer. Samuel Johnson\'s 1755 dictionary largely standardized British English. Noah Webster\'s 1828 dictionary largely standardized American English. The Oxford English Dictionary (1857-1928 first edition) attempted comprehensive scholarly documentation of English. All three are foundational works for English-speaking culture.'),
+            sectionHeader('📝', 'What this module covers'),
+            keyPointBlock(null, [
+              { k: 'Johnson (1755)', v: 'Samuel Johnson\'s Dictionary of the English Language. 8 years of work. Personal but defining.' },
+              { k: 'Webster (1828)', v: 'Noah Webster\'s American Dictionary of the English Language. Defined American English spelling + usage as distinct from British.' },
+              { k: 'Oxford English Dictionary', v: '1857 conception, 1928 first complete edition. Scholarly historical dictionary tracing every English word through documented uses across centuries.' },
+              { k: 'Modern dictionaries', v: 'Merriam-Webster, OED Online, free online dictionaries, machine translation interfaces. Where dictionary work lives today.' }
+            ])
+          );
+        } else if (diSect === 'johnson') {
+          content = h('div', null,
+            dropCapPara('Samuel Johnson (1709-1784) compiled A Dictionary of the English Language single-handedly (with a handful of clerks) between 1746 + 1755. 42,773 entries. Took 8 years. Johnson worked on commission from a syndicate of London booksellers for £1,575 (a substantial sum, but Johnson lived in poverty during most of the work). The result was the defining English dictionary for over a century until the OED began.'),
+            keyPointBlock('Johnson\'s dictionary + its impact', [
+              { k: 'Scope', v: '42,773 word entries. Definitions illustrated with 114,000+ quotations from authors Johnson admired (Shakespeare, Milton, Bacon, Dryden).' },
+              { k: 'Method', v: 'Johnson read through major English authors marking quotations. Quotations served as evidence for word usage. Modern lexicography\'s evidence-based approach inherits from Johnson.' },
+              { k: 'Famous + idiosyncratic definitions', v: 'Some definitions reflect Johnson\'s humor or biases. "Oats: A grain, which in England is generally given to horses, but in Scotland appears to support the people." "Lexicographer: A writer of dictionaries; a harmless drudge."' },
+              { k: 'Length of entries', v: 'Some entries (especially common verbs) ran for several pages. Johnson\'s definition of "to take" is famous for its complexity.' },
+              { k: 'Impact on standardization', v: 'Johnson\'s dictionary became the standard British English dictionary for ~100+ years. Standardized many spellings + usages.' },
+              { k: 'Editions', v: 'Multiple editions across Johnson\'s lifetime + after. Foreshadowed the cycle of dictionary revision that continues today.' }
+            ])
+          );
+        } else if (diSect === 'webster') {
+          content = h('div', null,
+            dropCapPara('Noah Webster (1758-1843) compiled the American Dictionary of the English Language, published 1828, after roughly 30 years of work. 70,000 entries (substantially more than Johnson\'s). Webster\'s deliberate goal: define American English as distinct from British English. He simplified spellings (color instead of colour, center instead of centre, theater instead of theatre, plow instead of plough, music instead of musick). Modern American English orthography is largely Webster\'s.'),
+            keyPointBlock('Webster\'s American Dictionary + its impact', [
+              { k: 'Scope + content', v: '70,000 entries. Included Americanisms unknown in British English (skunk, opossum, presidential, sequoia, hickory, succotash). Featured American + biblical usage examples.' },
+              { k: 'Spelling reforms', v: 'Webster believed simpler spellings made English more rational + more democratic. Many reforms succeeded (color, honor, defense, plow, theater, jail). Others failed (tung for tongue; soup for soop; wimmen for women).' },
+              { k: 'Publication + sales', v: 'First edition sold ~2,500 copies. Subsequent editions sold massively. Merriam Co. bought publication rights after Webster\'s death; became Merriam-Webster, today\'s major US dictionary publisher.' },
+              { k: 'Webster as nationalist project', v: 'Webster believed an independent American culture required independent American language standards. Dictionary was deliberate cultural-nationalist work.' },
+              { k: 'Webster\'s Speller (1783-)', v: 'Webster\'s earlier work — the American Spelling Book (or "Blue-backed Speller"). Sold 100M+ copies across various editions across decades. Foundational US literacy text.' }
+            ])
+          );
+        } else if (diSect === 'oed') {
+          content = h('div', null,
+            dropCapPara('The Oxford English Dictionary (OED) is the most comprehensive scholarly dictionary of English ever attempted. Conceived 1857 by the Philological Society. First complete edition (10 volumes) published 1928 — 71 years after conception. Second edition (1989, 20 volumes). Third edition (online + ongoing revision since 2000). Documents every English word through historical quotations showing how meaning + usage evolved across centuries.'),
+            keyPointBlock('OED features + history', [
+              { k: 'Founding (1857)', v: 'Philological Society proposed a new English dictionary on historical principles — documenting word histories through quotations.' },
+              { k: 'James Murray (chief editor 1879-1915)', v: 'Murray dedicated his life to the dictionary. Worked in a corrugated-iron shed ("the Scriptorium") receiving thousands of quotation slips from volunteer readers worldwide. The Professor and the Madman (Simon Winchester, 1998) tells the story of Murray + his most prolific volunteer contributor, Dr. William Chester Minor (who contributed from inside Broadmoor Hospital for the Criminally Insane).' },
+              { k: 'First complete edition (1928)', v: '10 volumes after 71 years of work. Subsequent supplements + revisions.' },
+              { k: 'Second edition (1989)', v: '20 volumes. Major revision. 290,000+ headwords; 615,000+ word forms; ~2.4 million quotations.' },
+              { k: 'OED Online (1992+)', v: 'Continuous online revision. Subscription-based access (institutional + individual). Third edition is being completed online; not planned as print.' },
+              { k: 'Volunteer reader program', v: 'OED continues to depend on volunteer readers contributing quotations of words in use. Now coordinated via online platforms.' },
+              { k: 'Impact', v: 'OED is the scholarly reference standard for English word histories. Influence on scholarship in literature, history, linguistics, philosophy.' }
+            ])
+          );
+        } else {
+          content = h('div', null,
+            keyPointBlock('Modern dictionaries + lexicography', [
+              { k: 'Merriam-Webster (USA)', v: 'Direct descendant of Webster\'s 1828 dictionary. Major print + online presence. Annual word-of-the-year announcements get widespread press coverage.' },
+              { k: 'OED Online + Oxford Dictionary', v: 'OED Online for scholarly work; Oxford Dictionary (formerly New Oxford American Dictionary) for general use. Both subscription-based.' },
+              { k: 'Free online dictionaries', v: 'Dictionary.com, Wiktionary (open community-edited), Cambridge Dictionary Online (free). Provide basic dictionary work for free.' },
+              { k: 'Translation tools as dictionaries', v: 'Google Translate, DeepL, Bing Translator. Function as bilingual dictionaries for most users. Increasingly capable for full translation.' },
+              { k: 'Specialized dictionaries', v: 'Black\'s Law Dictionary (legal), Stedman\'s Medical Dictionary, Encyclopedia of Library + Information Science. Hundreds of specialized dictionaries.' },
+              { k: 'Slang + new-word tracking', v: 'Online Slang Dictionary, Urban Dictionary (community-contributed, often comedic), regional slang dictionaries. Different conventions than scholarly lexicography.' },
+              { k: 'AI + dictionaries', v: 'LLMs (ChatGPT, Claude) increasingly used as dictionary substitutes — answer "what does this word mean" naturally + with examples. Some concerns about hallucination vs verified citation.' }
+            ])
+          );
+        }
+        return h('div', null,
+          backBar('📝 Dictionaries'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) {
+              var sel = (diSect === s.id);
+              return h('button', { key: s.id,
+                onClick: function() { setDiSect(s.id); announce(s.label); },
+                style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                s.icon + ' ' + s.label);
+            })
+          ),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            content
+          ),
+          miniQuizBlock('dictionaries', [
+            { q: 'How long did Samuel Johnson take to compile his 1755 Dictionary?',
+              opts: ['~6 months', '~2 years', '~8 years', '~30 years'],
+              ans: 2, explain: 'Samuel Johnson worked on his Dictionary of the English Language for 8 years (1746-1755). He worked essentially single-handedly with a few clerks. 42,773 entries, 114,000+ illustrative quotations.' },
+            { q: 'Which Webster spelling reform did NOT survive into modern American English?',
+              opts: ['color (vs colour)', 'theater (vs theatre)', 'tung (for tongue)', 'jail (vs gaol)'],
+              ans: 2, explain: 'Webster\'s "tung" for "tongue" did not catch on. Others (color, theater, plow, defense, jail, music) did survive + became standard American spellings.' },
+            { q: 'Who was the OED\'s most prolific volunteer contributor (subject of The Professor and the Madman)?',
+              opts: ['James Murray', 'Dr. William Chester Minor (contributed from inside Broadmoor Hospital)', 'Samuel Johnson', 'Noah Webster'],
+              ans: 1, explain: 'Dr. William Chester Minor was the OED\'s most prolific volunteer contributor, sending tens of thousands of quotations to editor James Murray. Minor contributed from inside Broadmoor Hospital for the Criminally Insane (he had killed a man in a paranoid episode). Story told in Simon Winchester\'s The Professor and the Madman (1998).' }
+          ]),
+          sourcesBlock([
+            { label: 'Simon Winchester, The Professor and the Madman (1998)' },
+            { label: 'Simon Winchester, The Meaning of Everything: The Story of the Oxford English Dictionary (2003)' },
+            { label: 'OED Online (subscription required for full)', url: 'https://www.oed.com/' },
+            { label: 'Merriam-Webster Online (free)', url: 'https://www.merriam-webster.com/' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['CCSS L.6-12.4 (vocabulary acquisition)', 'CCSS L.6-12.6 (vocabulary use)'],
+            discussion: [
+              'Pick a common word + look it up in 3 different dictionaries. Compare the definitions. What\'s different?',
+              'Will AI replace traditional dictionaries? Should it?'
+            ],
+            misconceptions: [
+              { wrong: 'Dictionaries set what words mean', right: 'Dictionaries describe how words are actually used. Lexicographers track usage; they don\'t prescribe it. Words mean what they mean because of usage, not because of dictionaries.' }
+            ],
+            extension: 'Use OED Online (most libraries provide free access) to look up a word\'s history. Find a word whose meaning has changed significantly over centuries.'
+          }),
+          crossLinkFooter('dictionaries'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // COOKBOOKS — Apicius → Mrs. Beeton → Julia Child → modern.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderCookbooks() {
+        var ckSectRaw = useState('overview');
+        var ckSect = ckSectRaw[0], setCkSect = ckSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '🍳' },
+          { id: 'ancient', label: 'Ancient + medieval', icon: '📜' },
+          { id: 'beeton', label: 'Mrs. Beeton (1861)', icon: '🇬🇧' },
+          { id: 'fannie', label: 'Fannie Farmer (1896)', icon: '🇺🇸' },
+          { id: 'julia', label: 'Julia Child + modern', icon: '🐔' },
+          { id: 'today', label: 'Today + digital', icon: '📱' }
+        ];
+        var content;
+        if (ckSect === 'overview') {
+          content = h('div', null,
+            dropCapPara('Cookbooks are one of the oldest + longest-running publishing categories. The Roman Apicius collection (~1st-5th c. CE) is the earliest substantial Western cookbook. Medieval European + Islamic cookbooks survived in manuscript. Printing made cookbooks mass-market by the 1500s. Today cookbook publishing is a substantial industry with celebrity chefs as major authors.'),
+            sectionHeader('🍳', 'What this module covers'),
+            keyPointBlock(null, [
+              { k: 'Ancient + medieval', v: 'Apicius, Le Viandier (1300s), early printed cookbooks.' },
+              { k: 'Mrs. Beeton (1861)', v: 'The Book of Household Management. Defined Victorian middle-class English domestic + culinary expectations.' },
+              { k: 'Fannie Farmer (1896)', v: 'The Boston Cooking-School Cook Book. Standardized US recipe format with precise measurements.' },
+              { k: 'Julia Child + modern era', v: 'Mastering the Art of French Cooking (1961) + television + the modern celebrity-chef era.' },
+              { k: 'Today + digital', v: 'Today\'s cookbook publishing landscape, food blogs, YouTube + Instagram cooking content.' }
+            ])
+          );
+        } else if (ckSect === 'ancient') {
+          content = h('div', null,
+            keyPointBlock('Ancient + medieval cookbooks', [
+              { k: 'Apicius (~1st-5th c. CE)', v: 'Roman collection of recipes attributed to Marcus Gavius Apicius (though actually compiled over centuries). 10 books, ~470 recipes. Survived in medieval manuscripts; first printed edition 1498. Translated into many modern languages.' },
+              { k: 'Medieval European cookery books', v: 'Le Viandier de Taillevent (~1300s, France), The Forme of Cury (~1390, England), Liber de Coquina (~1300s, Italy). Aristocratic kitchen manuals — assumed servants + court resources.' },
+              { k: 'Islamic medieval cooking books', v: "Al-Baghdadi's Kitab al-Tabikh (~1226). Catalan Llibre de Sent Soví (~1324). Major Mediterranean culinary traditions documented." },
+              { k: 'Early printed cookbooks (1500s)', v: 'Bartolomeo Scappi\'s Opera (1570) — major Italian cookbook with engraved kitchen-equipment illustrations. Multiple French + German cookbooks established national culinary identities.' },
+              { k: 'The American Frugal Housewife (Lydia Maria Child, 1829)', v: 'Best-selling American cookbook of early 19th c. Emphasized economy + waste-not approach. Survived through dozens of editions.' },
+              { k: 'White House Cook Book (1887)', v: 'F.L. Gillette + Hugo Ziemann. Sold millions. Standard US household cookbook for decades.' }
+            ])
+          );
+        } else if (ckSect === 'beeton') {
+          content = h('div', null,
+            dropCapPara('Mrs. Isabella Beeton\'s Book of Household Management was first published in 1861 (after serialization 1859-1861). 1,112 pages. Cookbook + housekeeping manual + medical-advice book combined. Defined Victorian middle-class English domestic + culinary expectations. Sold massively across multiple editions. Mrs. Beeton herself died at 28 in 1865; her husband + later publishers continued the franchise across 150+ years.'),
+            keyPointBlock("Mrs. Beeton's Book", [
+              { k: 'Sales', v: '~60,000 copies in first year. Multiple millions across subsequent editions.' },
+              { k: 'Scope', v: 'Recipes (~1,000), plus household management — staff, budgets, etiquette, sanitation, medicine. The defining Victorian household manual.' },
+              { k: 'Recipe format', v: 'Beeton standardized recipe format — ingredients list separated from method, costs noted, seasonal availability indicated.' },
+              { k: 'Plagiarism', v: 'Beeton sourced many recipes from earlier cookbooks (often without attribution). Modern scholarship documents the borrowing.' },
+              { k: 'Domestic ideology', v: 'Beeton\'s book promoted a specific middle-class English domestic ideal — wife as household manager, hierarchical servant relationships, social class consciousness. Influence on Anglo-American domestic norms persisted for generations.' },
+              { k: 'Legacy', v: '"Mrs. Beeton" became synonymous with English domestic competence for over a century. Modern editions (heavily revised) continue to be published.' }
+            ])
+          );
+        } else if (ckSect === 'fannie') {
+          content = h('div', null,
+            dropCapPara('Fannie Merritt Farmer published The Boston Cooking-School Cook Book in 1896. The book\'s major innovation: precise standardized measurements. Before Farmer, recipes used approximations ("a small teacup of sugar," "butter the size of a walnut," "a goodly pinch of salt"). Farmer insisted on level measuring cups + spoons — replicable, scientific recipes. She became known as "the Mother of Level Measurements." US recipe-writing convention since 1896 essentially follows Farmer.'),
+            keyPointBlock("Fannie Farmer's contribution", [
+              { k: 'The measurement revolution', v: 'Before Farmer: approximate volumes by sight. After Farmer: level measuring cups + spoons. Pioneered standardization that made recipes reliably reproducible.' },
+              { k: 'The Boston Cooking-School', v: 'Farmer led the Boston Cooking-School (later Simmons College) — major institution for systematic culinary training. Her cookbook embodied the school\'s scientific approach.' },
+              { k: 'Sales', v: '~360 copies in first year (a slow start). Eventually sold ~4 million copies across editions. Has stayed in print since 1896 — 130+ years.' },
+              { k: 'Recipe format', v: 'Ingredients list with precise measures. Numbered steps. Cooking time. Yield. The modern American recipe format.' },
+              { k: 'Scientific approach', v: 'Farmer thought of cooking as applied chemistry + nutrition. Many recipes included nutritional notes — early-20th-c. food-science approach.' }
+            ])
+          );
+        } else if (ckSect === 'julia') {
+          content = h('div', null,
+            keyPointBlock('Julia Child + the modern celebrity-chef era', [
+              { k: 'Julia Child (1912-2004)', v: 'American who studied French cooking at Le Cordon Bleu after WWII. Co-wrote Mastering the Art of French Cooking (1961, with Simone Beck + Louisette Bertholle). Pioneered French cooking for American home cooks.' },
+              { k: 'Mastering the Art of French Cooking', v: 'Vol. 1 published 1961, ~700 pages. Vol. 2 published 1970. Sold millions. Established the careful exhaustive technique-explaining approach to cookbook writing.' },
+              { k: 'The French Chef (TV, 1963-1973)', v: 'Julia Child\'s WGBH Boston cooking show. Pioneered TV-cooking format. Made Child a household name. Foundation of subsequent cooking-show television.' },
+              { k: 'Joy of Cooking (Irma Rombauer + Marion Becker, 1931+)', v: 'American cookbook bible. Multiple revised editions. ~20 million copies sold. Encyclopedic + family-friendly approach.' },
+              { k: 'The Silver Palate Cookbook (Rosso + Lukins, 1982)', v: 'NYC food-shop cookbook. Helped define 1980s American food-trend cooking — Mediterranean + bistro influences.' },
+              { k: 'Mark Bittman, How to Cook Everything (1998)', v: 'NY Times food writer\'s comprehensive home-cook reference. Updated editions; vegetarian + vegan variations.' },
+              { k: 'Yotam Ottolenghi (2000s+)', v: 'Israeli-British chef\'s cookbooks (Plenty, Jerusalem, Simple, others) reshaped vegetable-forward home cooking globally.' },
+              { k: 'Samin Nosrat, Salt Fat Acid Heat (2017)', v: 'Cooking-fundamentals book + Netflix series. Reshaped how home cooks think about cooking technique.' }
+            ])
+          );
+        } else {
+          content = h('div', null,
+            keyPointBlock('Today\'s cookbook + food publishing landscape', [
+              { k: 'Major publishers', v: 'Clarkson Potter (Random House), Ten Speed Press, William Morrow Cookbooks (HarperCollins), Chronicle Books, Workman, America\'s Test Kitchen.' },
+              { k: 'Cookbooks as gift books', v: 'Cookbooks function as visual + aspirational gifts as much as practical references. Premium design + photography. Heavily concentrated holiday + Mother\'s Day sales.' },
+              { k: 'Celebrity chef cookbooks', v: 'Major book deals for celebrity chefs continue. Ina Garten, Ree Drummond (Pioneer Woman), Bobby Flay, Gordon Ramsay all produce regular cookbooks.' },
+              { k: 'America\'s Test Kitchen', v: 'Cook\'s Illustrated magazine + Cook\'s Country + TV shows + cookbook publishing. Recipe-development-heavy approach. Multiple subscription products.' },
+              { k: 'Food blogs', v: 'Smitten Kitchen (Deb Perelman), Pioneer Woman (Ree Drummond), Half Baked Harvest (Tieghan Gerard), Bon Appétit\'s online recipes. Many bloggers have built books + media empires.' },
+              { k: 'NYT Cooking', v: 'NY Times\'s subscription cooking site/app. Substantial cookbook-publisher disruption. Has rebuilt the recipe-search experience.' },
+              { k: 'YouTube + Instagram + TikTok cooking', v: 'Major venues for recipe + technique content. Adam Ragusea, Bon Appétit, Babish Culinary Universe, Maangchi (Korean cooking), Ottolenghi videos. Print + video forms now co-evolve.' },
+              { k: 'Maine cookbook publishing', v: 'Down East Books, Islandport Press publish Maine-focused cookbooks (lobster, blueberries, Maine farm cuisine). Substantial regional cookbook market.' }
+            ])
+          );
+        }
+        return h('div', null,
+          backBar('🍳 Cookbooks'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) {
+              var sel = (ckSect === s.id);
+              return h('button', { key: s.id,
+                onClick: function() { setCkSect(s.id); announce(s.label); },
+                style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                s.icon + ' ' + s.label);
+            })
+          ),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            content
+          ),
+          miniQuizBlock('cookbooks', [
+            { q: 'What was the major innovation of Fannie Farmer\'s 1896 cookbook?',
+              opts: ['First color photographs', 'Precise standardized measurements (level measuring cups + spoons)', 'First vegetarian cookbook', 'First ethnic cookbook'],
+              ans: 1, explain: 'Fannie Farmer pioneered standardized measurements in The Boston Cooking-School Cook Book (1896). Before Farmer, recipes used approximate volumes ("a teacup of sugar"). Farmer insisted on level measuring cups + spoons — replicable recipes. She is known as "the Mother of Level Measurements."' },
+            { q: 'When was Julia Child\'s Mastering the Art of French Cooking first published?',
+              opts: ['1931', '1961', '1981', '2001'],
+              ans: 1, explain: 'Mastering the Art of French Cooking, by Julia Child with Simone Beck + Louisette Bertholle, was published in 1961. ~700 pages. Established the careful exhaustive technique-explaining approach to cookbook writing. Coupled with the WGBH TV show (1963-1973), made Child a household name.' },
+            { q: 'How many copies of Joy of Cooking (Rombauer + Becker, 1931+) have been sold?',
+              opts: ['~2,000', '~200,000', '~2 million', '~20 million'],
+              ans: 3, explain: 'Joy of Cooking has sold approximately 20 million copies across its multiple editions since 1931. The American cookbook bible. Multiple revised editions across nearly a century.' }
+          ]),
+          sourcesBlock([
+            { label: 'Anne Mendelson, Stand Facing the Stove: The Story of the Women Who Gave America the Joy of Cooking (1996)' },
+            { label: 'Bob Spitz, Dearie: The Remarkable Life of Julia Child (2012)' },
+            { label: 'Smith College Source Cookbooks Collection', url: 'https://libraries.smith.edu/' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['NCSS D2.His.5.6-8 (cause + effect)', 'NCAS Visual Arts (photography analysis)'],
+            discussion: [
+              'Why has the cookbook category survived (even thrived) as so many other publishing categories have contracted?',
+              'Compare a recipe from a cookbook + a recipe from a food blog. Which works better for you? Why?'
+            ],
+            misconceptions: [],
+            extension: 'Cook a recipe from a 100-year-old cookbook (many on archive.org). Compare experience with a modern recipe. What do you notice?'
+          }),
+          crossLinkFooter('cookbooks'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // SELF-HELP + HOW-TO — almanacs, DIY, modern self-help.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderSelfhelp() {
+        var shSectRaw = useState('overview');
+        var shSect = shSectRaw[0], setShSect = shSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '💪' },
+          { id: 'almanacs', label: 'Almanacs', icon: '📅' },
+          { id: 'howto', label: 'How-to books', icon: '🔧' },
+          { id: 'classic', label: 'Classic self-help', icon: '🌟' },
+          { id: 'modern', label: 'Modern self-help', icon: '📈' }
+        ];
+        var content;
+        if (shSect === 'overview') {
+          content = h('div', null,
+            dropCapPara('Self-help + how-to books are one of the largest print categories. The roots go deep: almanacs (which have existed for 500+ years) combined calendars + weather predictions with practical advice. The 19th + 20th c. produced modern how-to books (gardening, cooking, home repair, financial). Modern self-help (Dale Carnegie, Stephen Covey, Brené Brown, modern wellness) descends from these traditions.'),
+            sectionHeader('💪', 'What this module covers'),
+            keyPointBlock(null, [
+              { k: 'Almanacs', v: 'Poor Richard\'s, Old Farmer\'s Almanac, modern weather + tide tables.' },
+              { k: 'How-to books', v: 'DIY tradition. Home repair, gardening, sports, hobbies — 200+ years of practical instruction print.' },
+              { k: 'Classic self-help', v: 'Carnegie, Hill, Peale, Covey. The foundations of modern self-help.' },
+              { k: 'Modern self-help', v: 'Today\'s self-help bestsellers. Wellness publishing. Productivity. Personal-development industry.' }
+            ])
+          );
+        } else if (shSect === 'almanacs') {
+          content = h('div', null,
+            keyPointBlock('Almanacs through history', [
+              { k: 'Medieval European almanacs', v: 'Calendar + church-feast tables + astronomical data. Manuscript era; eventually printed.' },
+              { k: "Poor Richard's Almanack (Benjamin Franklin, 1732-1758)", v: 'Annual almanac by "Poor Richard" (Franklin\'s pseudonym). Mixed weather predictions + tide tables + jokes + proverbs. Sold ~10,000 copies per year — massive for colonial America. Franklin\'s pithy proverbs ("A penny saved is a penny earned") entered the language.' },
+              { k: 'Old Farmer\'s Almanac (1792-)', v: 'Founded by Robert B. Thomas. Has published continuously since 1792 — 230+ years. Weather predictions + tide tables + planting calendars + folksy advice. ~3 million copies annually still.' },
+              { k: 'Farmers\' Almanac (1818-)', v: 'Competitor to Old Farmer\'s Almanac (note slightly different name). Also continuously publishing.' },
+              { k: 'World Almanac and Book of Facts (1868-)', v: 'Annual US reference work. Sports records, statistics, government info. Adapted to digital but print continues.' },
+              { k: 'Maine almanacs', v: 'Maine specifically has had multiple regional almanacs across centuries — fishing + tide tables, farming + planting calendars, town directories.' }
+            ])
+          );
+        } else if (shSect === 'howto') {
+          content = h('div', null,
+            keyPointBlock('How-to book traditions', [
+              { k: 'Gardening books', v: 'Long tradition. Modern: Square Foot Gardening (Mel Bartholomew), Vegetable Gardener\'s Bible (Edward Smith), Maine\'s John Bunker on apples.' },
+              { k: 'Home repair', v: 'Reader\'s Digest Complete Do-It-Yourself Manual, This Old House books, Bob Vila era. Habitat for Humanity\'s How to Build a House.' },
+              { k: 'Sports + fitness', v: 'How to Master Skiing, Couch to 5K, Yoga for Beginners. Hundreds of fitness + sport titles.' },
+              { k: 'Crafts + hobbies', v: 'Knitting, woodworking, model railroading. Substantial niche publishing categories with passionate audiences.' },
+              { k: 'Self-publishing how-to', v: 'Many specialized how-to books are now self-published (Amazon KDP). Often profitable niche.' },
+              { k: 'YouTube replacement', v: 'YouTube has substantially replaced print how-to books for many topics. Video instruction is more effective for many physical tasks. Print how-to publishing has declined but not vanished.' }
+            ])
+          );
+        } else if (shSect === 'classic') {
+          content = h('div', null,
+            keyPointBlock('Classic self-help books', [
+              { k: 'Samuel Smiles, Self-Help (1859)', v: 'Coined the category name. Victorian work celebrating thrift, hard work, character. Sold ~250,000 copies in author\'s lifetime.' },
+              { k: 'Russell Conwell, Acres of Diamonds (1890s, originally a lecture)', v: 'Inspirational lecture given ~6,000+ times. Theme: opportunities exist in your own backyard. Hugely influential on Gilded Age self-improvement culture.' },
+              { k: 'Dale Carnegie, How to Win Friends and Influence People (1936)', v: 'Most influential self-help book ever. Sold ~30 million copies. Continues to sell in 2026. Defined modern American self-help genre.' },
+              { k: 'Napoleon Hill, Think and Grow Rich (1937)', v: 'Wealth-creation guide. Sold ~100 million copies. Major influence on subsequent wealth/business self-help.' },
+              { k: 'Norman Vincent Peale, The Power of Positive Thinking (1952)', v: 'Christian-influenced positivity. Sold 7 million+. Major mid-century cultural force.' },
+              { k: 'Stephen Covey, The 7 Habits of Highly Effective People (1989)', v: 'Sold 40+ million copies. Defined late-20th-c. self-help genre + corporate training.' }
+            ])
+          );
+        } else {
+          content = h('div', null,
+            keyPointBlock('Modern self-help bestsellers + landscape', [
+              { k: 'Tim Ferriss, The 4-Hour Workweek (2007)', v: 'Lifestyle-design movement. Productivity + entrepreneurship + minimalism.' },
+              { k: 'Brené Brown (Daring Greatly 2012, others)', v: 'Vulnerability + shame + courage. Hugely influential in 2010s wellness + self-development.' },
+              { k: 'Mark Manson, The Subtle Art of Not Giving a F*ck (2016)', v: 'Anti-self-help self-help. Sold 15M+ copies.' },
+              { k: 'James Clear, Atomic Habits (2018)', v: 'Habit formation. Sold 15M+ copies. Major late-2010s self-help bestseller.' },
+              { k: 'Cal Newport (Deep Work 2016, Slow Productivity 2024)', v: 'Productivity + attention. Influence on professional self-help market.' },
+              { k: 'Wellness publishing', v: 'Goop, Marie Kondo (The Life-Changing Magic of Tidying Up, 2011 ~14M), wellness-influencer cookbooks, breathing/meditation/sleep books. Major category.' },
+              { k: 'Therapy + mental-health books', v: 'Lori Gottlieb (Maybe You Should Talk to Someone), Bessel van der Kolk (The Body Keeps the Score). Therapist-authored books for general audience.' },
+              { k: 'Financial self-help', v: 'Dave Ramsey, Suze Orman, Vicki Robin (Your Money or Your Life), I Will Teach You to Be Rich (Ramit Sethi). Substantial sub-genre.' },
+              { k: 'Substack + newsletters as self-help', v: 'Modern self-help often delivered via paid newsletters (Tim Ferriss, James Clear, Cal Newport all have major newsletters). The form is evolving.' }
+            ])
+          );
+        }
+        return h('div', null,
+          backBar('💪 Self-Help + How-To'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) {
+              var sel = (shSect === s.id);
+              return h('button', { key: s.id,
+                onClick: function() { setShSect(s.id); announce(s.label); },
+                style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                s.icon + ' ' + s.label);
+            })
+          ),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            content
+          ),
+          miniQuizBlock('selfhelp', [
+            { q: 'Who is the author of Poor Richard\'s Almanack (1732-1758)?',
+              opts: ['George Washington', 'Benjamin Franklin (writing as "Poor Richard")', 'Thomas Jefferson', 'John Adams'],
+              ans: 1, explain: 'Benjamin Franklin published Poor Richard\'s Almanack annually 1732-1758. Mixed weather predictions + tides + jokes + proverbs. Many of Franklin\'s pithy proverbs ("A penny saved is a penny earned") entered the English language.' },
+            { q: 'About how many copies has Dale Carnegie\'s How to Win Friends and Influence People (1936) sold?',
+              opts: ['~30,000', '~300,000', '~3 million', '~30 million'],
+              ans: 3, explain: 'How to Win Friends and Influence People has sold approximately 30 million copies since 1936. Most-influential self-help book ever. Defined modern American self-help genre + continues to sell in 2026.' },
+            { q: 'How long has the Old Farmer\'s Almanac been published?',
+              opts: ['~50 years', '~100 years', '~230 years (since 1792)', '~500 years'],
+              ans: 2, explain: 'The Old Farmer\'s Almanac has published continuously since 1792 — 230+ years. Founded by Robert B. Thomas. Still sells ~3 million copies annually. Weather predictions + tide tables + folksy advice format unchanged in essence.' }
+          ]),
+          sourcesBlock([
+            { label: 'Steven Starker, Oracle at the Supermarket: The American Preoccupation with Self-Help Books (1989)' },
+            { label: 'Old Farmer\'s Almanac', url: 'https://www.almanac.com/' },
+            { label: 'Library of America, Benjamin Franklin: Writings (1987)' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['CCSS RI.6-8.2 (central idea)', 'CCSS L.6-12.4 (vocabulary)'],
+            discussion: [
+              'Why do self-help books keep selling generation after generation?',
+              'Pick a famous self-help book + read just the first chapter. Does the advice hold up?'
+            ],
+            misconceptions: [],
+            extension: 'Track a self-help bestseller list (NY Times, Amazon) for one month. What\'s consistently there? What\'s new?'
+          }),
+          crossLinkFooter('selfhelp'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // PAPER SUSTAINABILITY — environmental impact + Maine industry today.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderPaperSustain() {
+        var psSectRaw = useState('overview');
+        var psSect = psSectRaw[0], setPsSect = psSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '♻️' },
+          { id: 'impact', label: 'Environmental impact', icon: '🌳' },
+          { id: 'recycle', label: 'Recycling', icon: '🔄' },
+          { id: 'cert', label: 'Certifications', icon: '✓' },
+          { id: 'maine', label: 'Maine paper industry', icon: '🌲' }
+        ];
+        var content;
+        if (psSect === 'overview') {
+          content = h('div', null,
+            dropCapPara('Paper has always been a sustainability question. The shift from rag paper to wood-pulp paper (~1860 onward) made paper cheap by sacrificing forest resources. Today\'s paper industry faces continuing questions: forest management, recycling rates, alternative fibers, the role of digital. Maine — with two major paper mills (Sappi, ND Paper) + a long history of forest-products manufacturing — is in the middle of these questions.'),
+            sectionHeader('♻️', 'What this module covers'),
+            keyPointBlock(null, [
+              { k: 'Environmental impact', v: 'Forest harvesting, water + energy use, chemical pollution, GHG emissions. The footprint of paper.' },
+              { k: 'Recycling', v: 'Where recycled paper actually goes. Why some paper grades cannot be recycled.' },
+              { k: 'Certifications', v: 'FSC (Forest Stewardship Council), SFI (Sustainable Forestry Initiative). What labels mean.' },
+              { k: 'Maine paper industry', v: 'Sappi, ND Paper, employment, future. Maine\'s relationship with paper as economic + environmental issue.' }
+            ])
+          );
+        } else if (psSect === 'impact') {
+          content = h('div', null,
+            keyPointBlock('Environmental impact of paper production', [
+              { k: 'Forest harvesting', v: 'About 40% of all wood harvested globally is for paper + paperboard. Sustainable vs unsustainable forest management is the question.' },
+              { k: 'Water use', v: 'Paper-making is water-intensive — historically 50-100 gallons per pound of paper. Modern mills use 5-15 gallons per pound (closed-loop systems).' },
+              { k: 'Energy use', v: 'Paper manufacturing is energy-intensive (drying paper is the largest cost). Many mills use biomass (wood waste) for energy.' },
+              { k: 'Chemical use', v: 'Pulping uses bleaching chemicals (chlorine dioxide replaced chlorine in most modern mills, dramatically reducing dioxin pollution).' },
+              { k: 'GHG emissions', v: 'Paper industry accounts for ~3% of global industrial emissions. Mostly from energy use + chemical processing.' },
+              { k: 'Comparison with digital', v: 'Digital is not zero-impact. Data centers, devices, e-waste all have environmental costs. Direct comparisons are complex; depends on use case.' }
+            ])
+          );
+        } else if (psSect === 'recycle') {
+          content = h('div', null,
+            keyPointBlock('Paper recycling realities', [
+              { k: 'US recycling rate', v: 'US recycles ~68% of paper (2024 EPA data) — highest of any commodity. Cardboard 91% recycled; newspaper ~70%.' },
+              { k: 'Why some paper cannot be recycled', v: 'Wax-coated paper (juice boxes), plastic-coated paper (some coffee cups), glossy magazine paper with heavy ink loadings, paper contaminated with food (pizza boxes). All require specific processing or go to landfill.' },
+              { k: 'Recycling fiber limit', v: 'Each paper-recycling cycle shortens cellulose fibers. After 5-7 cycles, fibers become too short to make paper. Recycled paper supply requires constant injection of new virgin fiber.' },
+              { k: 'De-inking', v: 'Recycled paper must be de-inked (chemicals + flotation separation). Some ink residues remain — recycled-paper grays are often slightly grayer than virgin.' },
+              { k: 'China import ban (2018)', v: 'China was world\'s largest importer of recycled paper. Banned most paper imports 2018. US recycled-paper market disrupted; some recyclables went to landfill before alternative markets developed.' }
+            ])
+          );
+        } else if (psSect === 'cert') {
+          content = h('div', null,
+            keyPointBlock('Sustainability certifications', [
+              { k: 'FSC (Forest Stewardship Council)', v: 'Most rigorous certification. NGO-led; independent third-party verification. FSC-certified forests must meet biodiversity, indigenous-rights, worker-safety standards. Major brands use FSC certification.' },
+              { k: 'SFI (Sustainable Forestry Initiative)', v: 'Industry-supported certification standard. Less stringent than FSC; widely used in US.' },
+              { k: 'PEFC (Programme for the Endorsement of Forest Certification)', v: 'European-origin certification. Mutually recognized with SFI in some cases.' },
+              { k: 'Recycled-content labels', v: 'PCR (post-consumer recycled) labels indicate % recycled content. PCW (post-consumer waste). Standards vary.' },
+              { k: 'Carbon neutral / carbon footprint', v: 'Some paper products labeled carbon-neutral via offset purchases. Quality of underlying offsets varies enormously.' },
+              { k: 'Greenwashing concerns', v: 'Some labels are reliable; others mostly marketing. Consumer should check label issuer + actual standards.' }
+            ])
+          );
+        } else {
+          content = h('div', null,
+            keyPointBlock('Maine paper industry today', [
+              { k: 'Sappi North America (Westbrook + Skowhegan)', v: 'Major Maine paper-mill employer. Westbrook + Skowhegan mills. Produces coated paper for high-quality printing. Substantial Maine economic + environmental presence.' },
+              { k: 'ND Paper (Old Town + Rumford)', v: 'Chinese-parent (Nine Dragons) acquired former Verso/Catalyst mills in 2018-2020 (Old Town, Rumford). Investments in modernization. Pulp + containerboard production.' },
+              { k: 'Pixelle Specialty Solutions (Jay)', v: 'Specialty papers. Smaller mill but operating since 1898.' },
+              { k: 'Maine paper-mill employment', v: 'Maine paper-mill employment ~3,000-4,000 today, down from ~15,000+ in 1980s. Mill closures across decades (Madison, Lincoln, others). Remaining mills are economically significant for their communities.' },
+              { k: 'Mill closures + transitions', v: 'Madison Paper Industries (2016), Lincoln Pulp + Paper (2015), Verso\'s Jay mill (chronic struggles). Mill closures have devastated host communities.' },
+              { k: 'Forest-products industry beyond paper', v: 'Maine forest-products industry includes lumber, biomass energy, engineered wood. Diversifying from straight paper into products like wood-fiber insulation + cross-laminated timber.' },
+              { k: 'Climate considerations', v: 'Maine forests sequester substantial carbon. Sustainable forestry can be net-positive for climate. Maine is on the front lines of debates about how to value forests.' },
+              { k: 'Maine Forest Service + DEP', v: 'State agencies overseeing forest management + mill emissions. Active regulatory regime.' }
+            ])
+          );
+        }
+        return h('div', null,
+          backBar('♻️ Paper Sustainability'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) {
+              var sel = (psSect === s.id);
+              return h('button', { key: s.id,
+                onClick: function() { setPsSect(s.id); announce(s.label); },
+                style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                s.icon + ' ' + s.label);
+            })
+          ),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            content
+          ),
+          miniQuizBlock('paperSustain', [
+            { q: 'What percentage of paper does the US recycle (2024 EPA data)?',
+              opts: ['~20%', '~40%', '~68% (highest of any commodity)', '~95%'],
+              ans: 2, explain: 'US recycles ~68% of paper as of 2024 EPA data — the highest recycling rate of any commodity. Cardboard 91%; newspaper ~70%. Some grades cannot be recycled (wax-coated, plastic-coated, contaminated).' },
+            { q: 'Why can\'t recycled paper indefinitely substitute for virgin paper?',
+              opts: ['Recycled paper is illegal in some places', 'Each recycling cycle shortens cellulose fibers; after 5-7 cycles fibers are too short. Constant injection of virgin fiber needed.', 'Recycled paper is too expensive', 'Recycled paper doesn\'t print well'],
+              ans: 1, explain: 'Each paper-recycling cycle shortens cellulose fibers a little. After 5-7 cycles, fibers become too short to bond into paper. So recycled-paper supply requires constant injection of new virgin fiber from forests. Closed-loop paper without virgin input is impossible.' },
+            { q: 'About how many Maine paper-mill jobs exist today vs the 1980s peak?',
+              opts: ['About the same', '~3,000-4,000 today vs ~15,000+ in 1980s — major contraction', '~50,000 today (industry has grown)', '~500 today (industry has nearly disappeared)'],
+              ans: 1, explain: 'Maine paper-mill employment is ~3,000-4,000 today, down from ~15,000+ in 1980s. Multiple mill closures across decades. Remaining mills (Sappi, ND Paper, Pixelle) are still major employers for their host communities but the industry overall has substantially contracted.' }
+          ]),
+          sourcesBlock([
+            { label: 'EPA Paper Recycling data', url: 'https://www.epa.gov/recycle' },
+            { label: 'Forest Stewardship Council', url: 'https://www.fsc.org/' },
+            { label: 'Maine Pulp and Paper Association', url: 'https://www.mainepaper.org/' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['NGSS HS-ESS3-4 (human impact on environment)', 'NCSS D2.Eco.13.6-8 (interdependence)'],
+            discussion: [
+              'Is digital reading more environmentally friendly than print? Walk through the considerations.',
+              'Maine\'s forest-products industry is contracting. What might replace it? What should communities + government do?'
+            ],
+            misconceptions: [
+              { wrong: 'Digital is automatically more sustainable than print', right: 'Digital has substantial environmental impact too — data centers, devices, e-waste. Direct comparisons depend on use case + assumptions.' }
+            ],
+            extension: 'Check the paper products in your house — copy paper, books, magazines. Are any FSC-certified? Look for the logo.'
+          }),
+          crossLinkFooter('paperSustain'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // THE NEWSPAPER COMIC STRIP — Peanuts, Garfield, Calvin & Hobbes.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderComicStrips() {
+        var csSectRaw = useState('overview');
+        var csSect = csSectRaw[0], setCsSect = csSectRaw[1];
+        var csStripIdxRaw = useState(0);
+        var csStripIdx = csStripIdxRaw[0], setCsStripIdx = csStripIdxRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '🐱' },
+          { id: 'history',  label: 'History',  icon: '📅' },
+          { id: 'tour',     label: 'Famous strips', icon: '⭐' },
+          { id: 'syndication', label: 'How syndication works', icon: '🔁' },
+          { id: 'modern',   label: 'Modern era',  icon: '📱' }
+        ];
+        var strips = [
+          { name: 'Peanuts (Charles Schulz, 1950-2000)', emoji: '⚾',
+            blurb: 'Charles Schulz drew Peanuts daily for ~50 years — 17,897 strips, every one solo. Reached ~2,600 newspapers + 350 million readers across 75 countries at peak. The most-syndicated comic strip in history. Schulz drew the last new Peanuts strip the day before he died (February 13, 2000). Peanuts continues in syndication via reruns.' },
+          { name: 'Garfield (Jim Davis, 1978-present)', emoji: '🐈',
+            blurb: 'Jim Davis\'s lasagna-loving orange cat. ~2,580 newspapers at peak. Davis early on built a massive licensing operation — Garfield plush toys, mugs, calendars are the larger business than the strip itself. Strip continues in 2026 (Davis still officially the creator).' },
+          { name: 'Calvin and Hobbes (Bill Watterson, 1985-1995)', emoji: '🐯',
+            blurb: 'A boy + his tiger. ~2,400 newspapers at peak. Watterson famously refused all merchandising — no Calvin lunchboxes or t-shirts. Ended the strip on his terms after 10 years. Has stayed out of public life since. Considered by many the greatest American comic strip ever.' },
+          { name: 'Doonesbury (Garry Trudeau, 1970-present)', emoji: '🎓',
+            blurb: 'Political satire. First comic strip to win a Pulitzer Prize for Editorial Cartooning (1975). Substantial cultural + political influence across 50+ years.' },
+          { name: 'The Far Side (Gary Larson, 1980-1995)', emoji: '🐮',
+            blurb: 'Single-panel surreal humor. Cows + cavemen + scientists. Larson retired the strip in 1995. Has selectively licensed for digital revival 2020+.' },
+          { name: 'Bloom County (Berkeley Breathed, 1980-1989 + 2015+)', emoji: '🐧',
+            blurb: 'Political + cultural satire. Penguins, dandelions, surrealism. Won Pulitzer 1987. Breathed revived it on Facebook 2015 + continues sporadically.' },
+          { name: 'Cathy (Cathy Guisewite, 1976-2010)', emoji: '👜',
+            blurb: 'Single-woman-life strip. Workplace + dating + body-image humor. ~1,400 newspapers at peak. Guisewite retired the strip in 2010 to spend more time with family.' },
+          { name: 'Pearls Before Swine (Stephan Pastis, 2002-present)', emoji: '🐷',
+            blurb: 'Pun-based + meta humor. Modern strip that has built substantial following in the post-newspaper-decline era. Distributed across newspapers, webcomics platforms, GoComics.com.' }
+        ];
+        var sp = strips[csStripIdx] || strips[0];
+        var content;
+        if (csSect === 'overview') {
+          content = h('div', null,
+            dropCapPara('Newspaper comic strips are a 130-year-old print tradition. At their peak (1950s-80s), syndicated comic strips reached hundreds of millions of daily newspaper readers globally. Newspapers paid significant fees for popular strips; syndication agencies (King Features, Universal Press, United Features) distributed strips to hundreds of newspapers. As newspaper circulation has declined, comic strips have contracted — but persist through reruns, online platforms, + dedicated readers.'),
+            sectionHeader('🐱', 'What this module covers'),
+            keyPointBlock(null, [
+              { k: 'History', v: 'Yellow Kid (1895) through golden age (1930s-60s) through contraction era (2000s-).' },
+              { k: 'Famous strips', v: '8 detailed profiles: Peanuts, Garfield, Calvin and Hobbes, Doonesbury, The Far Side, Bloom County, Cathy, Pearls Before Swine.' },
+              { k: 'How syndication works', v: 'King Features + Universal Press + United Features — the syndicates that built the strip industry.' },
+              { k: 'Modern era', v: 'Strip decline, online platforms (GoComics), webcomics descendants, what the form looks like in 2026.' }
+            ])
+          );
+        } else if (csSect === 'history') {
+          content = h('div', null,
+            keyPointBlock('Comic-strip history', [
+              { k: '1895 — Yellow Kid (Outcault)', v: 'Richard F. Outcault\'s comic in NY World launches modern comic-strip form. See Comics + Graphic Novels module.' },
+              { k: '1907 — Mutt and Jeff (Fisher)', v: 'First successful daily comic strip. Bud Fisher\'s strip launched daily comic strip as its own genre.' },
+              { k: '1924 — Little Orphan Annie', v: 'Harold Gray. Featured continuing storylines + serious topics — broke from gag-only formula.' },
+              { k: '1937 — Prince Valiant', v: 'Hal Foster. Sunday-only adventure strip. Considered artistic high point of dramatic comic strip art.' },
+              { k: '1950 — Peanuts launches', v: 'Charles Schulz\'s Peanuts begins. Defines mid-century comic-strip era.' },
+              { k: '1960s-1980s — Golden age', v: 'Comic strips at peak influence + economic value. New York Times + LA Times + Chicago Tribune sections often 8+ pages of comics.' },
+              { k: '1995 — Calvin and Hobbes + Far Side end', v: 'Two beloved strips end on creators\' terms. Era of "creator retires + strip ends" begins.' },
+              { k: '2000 — Schulz dies, Peanuts goes to reruns', v: 'Peanuts continues in newspapers as reruns of vintage strips.' },
+              { k: '2005-2025 — Newspaper-circulation decline', v: 'As newspaper circulation falls, strip-syndication revenues fall. Many strips end. Webcomics + digital platforms (GoComics) take some of the slack.' }
+            ])
+          );
+        } else if (csSect === 'tour') {
+          content = h('div', null,
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+              strips.map(function(sx, i) {
+                var sel = (i === csStripIdx);
+                return h('button', { key: i,
+                  onClick: function() { setCsStripIdx(i); announce(sx.name); },
+                  style: btn({ padding: '7px 10px', fontSize: 11, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                  sx.emoji + ' ' + sx.name.split(' (')[0]);
+              })
+            ),
+            h('div', { style: { background: T.cardAlt, border: '2px solid ' + T.accent, borderRadius: 12, padding: 20 } },
+              h('div', { style: { fontSize: 48, marginBottom: 8, textAlign: 'center' } }, sp.emoji),
+              h('h3', { style: { fontSize: 20, fontWeight: 700, color: T.text, fontFamily: 'Georgia, serif', margin: '0 0 12px', textAlign: 'center' } }, sp.name),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 14, lineHeight: 1.7 } }, sp.blurb)
+            )
+          );
+        } else if (csSect === 'syndication') {
+          content = h('div', null,
+            keyPointBlock('Comic-strip syndication explained', [
+              { k: 'The syndicate', v: 'Major US syndicates: King Features (Hearst), Universal Press / Universal Uclick, United Features, Tribune Content Agency. Acquire strips from cartoonists + license to hundreds of newspapers.' },
+              { k: 'Revenue split', v: 'Typical: syndicate takes ~50% of newspaper licensing fees. Newspaper pays $5-$50/week per strip depending on size of paper + popularity of strip. Top strips earn cartoonists $100K-$1M+/year.' },
+              { k: 'How strips get distributed', v: 'Daily + Sunday strips delivered to newspapers in advance (often 4-6 weeks). Syndicate provides art files + ready-to-print sizes.' },
+              { k: 'Newspaper choice', v: 'Each newspaper picks a comics section based on local taste + budget. Most papers have 6-15 strips. Editor + sometimes reader survey decides which strips to add/drop.' },
+              { k: 'Cartoonist contract terms', v: 'Standard syndicate contracts have favored syndicates historically — cartoonists\' merchandising rights, ownership of characters, ability to take strip elsewhere have been points of contention. Bill Watterson + others fought publicly over these issues.' },
+              { k: 'Reader complaints', v: 'When newspapers drop a popular strip, reader outcry is intense. Newspaper editors often more cautious about strip changes than other content changes.' }
+            ])
+          );
+        } else {
+          content = h('div', null,
+            keyPointBlock('Modern era of comic strips', [
+              { k: 'GoComics.com', v: 'Universal Press / Andrews McMeel\'s online platform. Free + paid versions. Hosts hundreds of current + classic strips. Major surviving distribution channel as newspapers decline.' },
+              { k: 'Comics Kingdom (King Features)', v: 'Hearst\'s competitor to GoComics. Hosts King Features strips (Beetle Bailey, Hagar the Horrible, Family Circus, others).' },
+              { k: 'Webcomics', v: 'xkcd (Randall Munroe, 2005+), Saturday Morning Breakfast Cereal (Zach Weinersmith), Penny Arcade, The Oatmeal. Largely distinct from newspaper-strip culture but inherits the form.' },
+              { k: 'Korean webtoons', v: 'Naver Webtoon\'s vertical-scroll format. Massive global audience. Different formal grammar than Western strips. Substantial industry.' },
+              { k: 'Instagram + TikTok comic art', v: 'Comic strip-like content on social media. Sarah\'s Scribbles (Sarah Andersen), Adam Ellis. Newer artists often build audience on social before/instead of syndication.' },
+              { k: 'Strip continuation post-creator', v: 'Common practice: a strip continues with new artist after original creator dies or retires. Hi and Lois, Beetle Bailey, Blondie all continue this way. Calvin and Hobbes notably does not (Watterson refuses).' },
+              { k: 'Decline of newspaper comics sections', v: 'Many US daily newspapers have reduced comics sections from 8+ pages to 2-3 pages over 1990-2025. Some smaller dailies have dropped comics entirely.' }
+            ])
+          );
+        }
+        return h('div', null,
+          backBar('🐱 The Newspaper Comic Strip'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) {
+              var sel = (csSect === s.id);
+              return h('button', { key: s.id,
+                onClick: function() { setCsSect(s.id); announce(s.label); },
+                style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                s.icon + ' ' + s.label);
+            })
+          ),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            content
+          ),
+          miniQuizBlock('comicStrips', [
+            { q: 'How many Peanuts strips did Charles Schulz draw solo?',
+              opts: ['~500', '~5,000', '~17,897 (every one solo over 50 years)', '~50,000'],
+              ans: 2, explain: 'Charles Schulz drew every Peanuts strip himself — 17,897 over ~50 years (1950-2000). Reached ~2,600 newspapers + 350 million readers at peak. Schulz drew the last new Peanuts strip the day before he died (February 13, 2000).' },
+            { q: 'Which strip notably refused all merchandising (no plush toys, no lunchboxes)?',
+              opts: ['Garfield', 'Calvin and Hobbes (Watterson refused all licensing)', 'Peanuts', 'The Far Side'],
+              ans: 1, explain: 'Bill Watterson famously refused all merchandising for Calvin and Hobbes during its 10-year run (1985-1995). No Calvin t-shirts, lunchboxes, plush tigers (the bootleg "Calvin peeing on logo" stickers were entirely unauthorized). Watterson ended the strip on his own terms + has stayed out of public life since.' }
+          ]),
+          sourcesBlock([
+            { label: 'David Michaelis, Schulz and Peanuts: A Biography (2007)' },
+            { label: 'GoComics', url: 'https://www.gocomics.com/' },
+            { label: 'King Features Syndicate', url: 'https://www.kingfeatures.com/' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['NCAS Visual Arts (sequential art)', 'CCSS RL.5.7 (text + visual)'],
+            discussion: [
+              'Why did Bill Watterson refuse merchandising for Calvin and Hobbes? Was he right?',
+              'Pick a daily strip from your local paper. Look at it across 1 week. What do you notice about its rhythm?'
+            ],
+            misconceptions: [],
+            extension: 'Read Charles Schulz\'s last Peanuts strip + his statement (widely available online). The strip and the man ended together — what does that say about the relationship between creator and work?'
+          }),
+          crossLinkFooter('comicStrips'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // PRINT + WAR — war correspondents, soldier newspapers, photography.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderPrintWar() {
+        var pwSectRaw = useState('overview');
+        var pwSect = pwSectRaw[0], setPwSect = pwSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '⚔️' },
+          { id: 'correspondents', label: 'War correspondents', icon: '✍' },
+          { id: 'photo', label: 'War photography', icon: '📷' },
+          { id: 'soldiers', label: 'Soldier newspapers', icon: '🪖' },
+          { id: 'modern', label: 'Modern war reporting', icon: '📡' }
+        ];
+        var content;
+        if (pwSect === 'overview') {
+          content = h('div', null,
+            dropCapPara('War + print have shaped each other for centuries. War correspondents bring information from battle to civilian readers. War photography (since the 1850s) confronts civilians with battlefield reality. Soldier newspapers (Stars and Stripes, others) provide news + morale for troops. War reporting has expanded what journalism could do + also revealed its limits.'),
+            sectionHeader('⚔️', 'What this module covers'),
+            keyPointBlock(null, [
+              { k: 'War correspondents', v: 'William Howard Russell (Crimean War), Ernie Pyle (WWII), Marie Colvin (modern). The tradition of embedded + independent war reporting.' },
+              { k: 'War photography', v: 'Roger Fenton (Crimea), Mathew Brady (US Civil War), Robert Capa (WWII + Vietnam). Photographic confrontation with war.' },
+              { k: 'Soldier newspapers', v: 'Stars and Stripes (US, since 1861), Yank magazine (WWII), troop newspapers in many wars. News + entertainment for active-duty troops.' },
+              { k: 'Modern war reporting', v: 'Embedded reporting in Iraq, Afghanistan. Citizen journalism. Russia-Ukraine war reporting. The current state of war journalism.' }
+            ])
+          );
+        } else if (pwSect === 'correspondents') {
+          content = h('div', null,
+            keyPointBlock('Major war correspondents', [
+              { k: 'William Howard Russell (Crimean War, 1853-1856)', v: 'Times of London. First major modern war correspondent. His reports on British military incompetence + medical neglect helped trigger reforms + made the British public newly aware of war\'s realities.' },
+              { k: 'US Civil War correspondents (1861-1865)', v: 'New York Tribune, Harper\'s, others. Murat Halstead, George Smalley, others. Helped form modern journalism\'s combat-correspondent role.' },
+              { k: 'Richard Harding Davis (1890s-1916)', v: 'Spanish-American War + Boer War + WWI. Helped create the celebrity war-correspondent role.' },
+              { k: 'Edward R. Murrow (WWII)', v: 'CBS Radio. "London Calling" broadcasts during the Blitz brought European war into American homes nightly. Helped shift US public opinion toward Allied support.' },
+              { k: 'Ernie Pyle (WWII)', v: 'Pulitzer Prize. Embedded with US troops. Wrote with deep empathy for ordinary soldiers. Killed by Japanese machine-gun fire on Ie Shima in 1945.' },
+              { k: 'Martha Gellhorn (1930s-90s)', v: 'Spanish Civil War, WWII (Normandy), Vietnam, others. One of the great war reporters of the 20th c. Married to Hemingway for a time but had her own distinguished career.' },
+              { k: 'David Halberstam, Neil Sheehan, others (Vietnam)', v: 'Vietnam War-era reporting that often contradicted official accounts. Established the modern adversarial relationship between war correspondents + military.' },
+              { k: 'Marie Colvin (1980s-2012)', v: 'Sunday Times of London. Reported from Sri Lanka, Chechnya, Sierra Leone, Libya, Syria. Wore eyepatch after losing left eye to Sri Lankan grenade fragment (2001). Killed by Syrian government artillery in Homs, 2012.' },
+              { k: 'Lyse Doucet (1980s-present)', v: 'BBC chief international correspondent. Major Middle East + Afghanistan reporting. One of the most experienced living war correspondents.' }
+            ])
+          );
+        } else if (pwSect === 'photo') {
+          content = h('div', null,
+            keyPointBlock('War photography milestones', [
+              { k: 'Roger Fenton (Crimean War, 1855)', v: 'First major war photographer. Wet-collodion process required long exposures — could not capture battle action. Photographed landscapes + portraits + sometimes posed scenes (Fenton\'s "The Valley of the Shadow of Death" is famously a posed photograph of cannonballs on a road).' },
+              { k: 'Mathew Brady + team (US Civil War, 1861-1865)', v: 'Brady\'s photographic team documented the Civil War extensively. The Dead of Antietam exhibit (1862) confronted New York viewers with battlefield dead — a national photographic event. Many of the photographs attributed to Brady were actually taken by his employees (Alexander Gardner, Timothy O\'Sullivan, others).' },
+              { k: 'Jacob Riis, Lewis Hine (1890s-1920s)', v: 'Not war specifically but pioneered social-documentary photography. Riis\'s How the Other Half Lives (1890) used photography to expose tenement poverty. Hine documented child labor + immigration. Established photo-journalism as social-reform tool.' },
+              { k: 'Robert Capa (1930s-1954)', v: 'Spanish Civil War + WWII + Vietnam. Capa\'s "The Falling Soldier" (1936) is one of the most famous war photographs ever (though authenticity has been debated). Killed by landmine in Indochina, 1954. Founded Magnum Photos (1947) with Cartier-Bresson + others.' },
+              { k: 'Margaret Bourke-White (1930s-1971)', v: 'Life magazine star. Photographed Dust Bowl, WWII, Buchenwald liberation, partition of India, Korean War. First woman authorized to work in WWII combat zones.' },
+              { k: 'Eddie Adams (Vietnam)', v: '1968 photograph of General Loan executing a Viet Cong prisoner (the "Saigon execution"). Won Pulitzer Prize. Became one of the iconic images of Vietnam.' },
+              { k: 'Nick Ut (Vietnam)', v: '"Napalm Girl" photograph (Kim Phuc, 1972). Won Pulitzer. Among the most-recognized photographs ever taken.' },
+              { k: 'James Nachtwey, Lynsey Addario (1990s-present)', v: 'Modern war photographers. Bosnia, Iraq, Afghanistan, Syria. Continuing tradition.' }
+            ])
+          );
+        } else if (pwSect === 'soldiers') {
+          content = h('div', null,
+            keyPointBlock('Soldier + military newspapers', [
+              { k: 'Stars and Stripes (1861-)', v: 'US military newspaper founded by Union soldiers during Civil War. Revived during WWI, WWII, Korea, Vietnam. Still publishes daily for US service members globally.' },
+              { k: 'Yank magazine (WWII, 1942-1945)', v: 'US Army weekly magazine produced by + for enlisted soldiers. 4.5M copies per issue at peak. Major morale + information resource. Bill Mauldin\'s Willie + Joe cartoons (depicting weary GI infantrymen) became iconic.' },
+              { k: 'Bill Mauldin\'s Willie and Joe', v: 'Cartoons of two weary GIs. Captured infantry experience with rare honesty. Won Pulitzer Prize 1945. General Patton famously despised the cartoons; General Eisenhower defended them.' },
+              { k: 'Trench newspapers (WWI)', v: 'British + French + German soldiers in WWI trenches produced underground newspapers — humor, gripes, news, poetry. Some printed on captured German presses. Hundreds of titles documented.' },
+              { k: 'Drum (South Africa, 1951+)', v: 'Major Black South African magazine during apartheid era. Documented Black urban culture + politics. Significant social impact through the Soweto Uprising (1976).' },
+              { k: 'Modern military media', v: 'Stars and Stripes continues; many service branches have official + unofficial publications. Military.com + other online resources. Digital + print continues.' }
+            ])
+          );
+        } else {
+          content = h('div', null,
+            keyPointBlock('Modern war reporting', [
+              { k: 'Embedded reporting (Iraq 2003+)', v: 'Pentagon program assigning journalists to military units. Provided unprecedented access; critics argued it compromised independence. Both sides made valid points.' },
+              { k: 'Citizen journalism (2000s+)', v: 'Smartphones + social media enable anyone to publish. Arab Spring protests (2010-2012) heavily covered by participants. Russia-Ukraine war (2022-) extensively documented by Ukrainians + Russians + international observers.' },
+              { k: 'Open-source intelligence (OSINT)', v: 'Bellingcat (founded Eliot Higgins, 2014) + others investigate conflicts using publicly available digital evidence (satellite imagery, social media posts, leaked documents). New form of war journalism.' },
+              { k: 'War correspondent deaths', v: 'Committee to Protect Journalists tracks journalist deaths in war zones. ~30+ killed per year in active conflict zones (varies). Russia-Ukraine war + Gaza have been especially deadly.' },
+              { k: 'Disinformation challenges', v: 'AI-generated war imagery, fabricated battlefield videos, organized state-sponsored disinformation campaigns. Verification standards increasingly important.' }
+            ])
+          );
+        }
+        return h('div', null,
+          backBar('⚔️ Print + War'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) {
+              var sel = (pwSect === s.id);
+              return h('button', { key: s.id,
+                onClick: function() { setPwSect(s.id); announce(s.label); },
+                style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                s.icon + ' ' + s.label);
+            })
+          ),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            content
+          ),
+          miniQuizBlock('printWar', [
+            { q: 'Who is widely considered the first major modern war correspondent?',
+              opts: ['Ernie Pyle (WWII)', 'William Howard Russell (Times of London, Crimean War 1853-56)', 'Edward R. Murrow', 'Martha Gellhorn'],
+              ans: 1, explain: 'William Howard Russell of the Times of London during the Crimean War (1853-1856) is widely cited as the first major modern war correspondent. His reports on British military + medical incompetence helped trigger reforms.' },
+            { q: 'Who took the "Napalm Girl" photograph during the Vietnam War (1972)?',
+              opts: ['Robert Capa', 'Nick Ut (Pulitzer Prize)', 'Eddie Adams', 'Margaret Bourke-White'],
+              ans: 1, explain: 'Nick Ut took the photograph of Kim Phuc fleeing a napalm attack in June 1972. Won the Pulitzer Prize. Among the most-recognized photographs ever taken.' }
+          ]),
+          sourcesBlock([
+            { label: 'Phillip Knightley, The First Casualty (1975, multiple updates) — history of war reporting' },
+            { label: 'Committee to Protect Journalists', url: 'https://cpj.org/' },
+            { label: 'Bellingcat', url: 'https://www.bellingcat.com/' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['NCSS D2.His.4.6-8 (causation)', 'NCSS D4.6.6-8 (taking informed action)'],
+            discussion: [
+              'Compare embedded reporting + independent reporting. What does each give up + gain?',
+              'Should photojournalists publish graphic war images? Why or why not?'
+            ],
+            misconceptions: [],
+            extension: 'Find one famous war photograph + research its backstory. Who took it? When? What happened to the people in the photograph after?'
+          }),
+          crossLinkFooter('printWar'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // FAMOUS BOOKBINDERS — Le Gascon, Padeloup, Cobden-Sanderson, Smith.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderFamousBinders() {
+        var fbSectRaw = useState('overview');
+        var fbSect = fbSectRaw[0], setFbSect = fbSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '👜' },
+          { id: 'french', label: 'French masters', icon: '🇫🇷' },
+          { id: 'english', label: 'English masters', icon: '🇬🇧' },
+          { id: 'modern', label: 'Modern designers', icon: '✨' }
+        ];
+        var content;
+        if (fbSect === 'overview') {
+          content = h('div', null,
+            dropCapPara('A book\'s value can lie as much in its binding as in its text. Famous binders — Le Gascon, Padeloup, Derome, Bedford, Cobden-Sanderson, Sangorski + Sutcliffe, Philip Smith — created bindings that are themselves works of art. Many bindings on important books have made the books more valuable than they otherwise would be. The history of artistic bookbinding parallels the history of fine printing — both are about elevating the book as physical artifact.'),
+            sectionHeader('👜', 'What this module covers'),
+            keyPointBlock(null, [
+              { k: 'French masters', v: 'Le Gascon (1620s), Padeloup family (1700s), Derome family (1700s). Defined Continental European fine-binding tradition.' },
+              { k: 'English masters', v: 'Roger Payne (1700s), Francis Bedford (1800s), Cobden-Sanderson (1900s), Sangorski + Sutcliffe (1900s+). The English fine-binding tradition.' },
+              { k: 'Modern designers', v: 'Philip Smith, Faith Shannon, Edwin Heim, contemporary book-binding artists. Continuing the tradition into the 21st c.' }
+            ])
+          );
+        } else if (fbSect === 'french') {
+          content = h('div', null,
+            keyPointBlock('French master bookbinders', [
+              { k: 'Le Gascon (active 1620s-1640s)', v: 'Pseudonym for a French binder whose identity has been long debated. Pioneered "fanfare" binding style + the small-tool gold-tooling technique. Considered the founder of French fine binding.' },
+              { k: 'Antoine-Michel Padeloup (1685-1758)', v: 'Royal binder to Louis XV. Distinctive lace-pattern bindings ("dentelle"). Padeloup family ran a multi-generation binding shop.' },
+              { k: 'Derome family (1700s)', v: 'Major Parisian binders. Nicolas-Denis Derome (1731-1790) was the most famous family member. Distinctive dentelle borders.' },
+              { k: 'Étienne-Augustin Carayon (1843-1909)', v: '19th-c. French binder. Modernized binding while honoring classical tradition.' },
+              { k: 'Pierre Legrain (1889-1929)', v: 'Modernist French binder. Brought Art Deco aesthetics to bookbinding. Influence on subsequent modern book design.' },
+              { k: 'Paul Bonet (1889-1971)', v: 'Modernist French binder. Continued Legrain\'s innovations.' }
+            ])
+          );
+        } else if (fbSect === 'english') {
+          content = h('div', null,
+            keyPointBlock('English master bookbinders', [
+              { k: 'Roger Payne (1738-1797)', v: 'Eccentric, eccentric English binder. Notoriously drunk + difficult but bound spectacular books for English collectors. Distinctive elaborate gold-tooling style.' },
+              { k: 'Francis Bedford (1799-1883)', v: '19th-c. London binder. Major restorations + new bindings for prestigious collectors. Sang Bedford bindings still appear at auctions.' },
+              { k: 'Charles Lewis (1786-1836)', v: 'Major English binder of the early 19th c. Trained Bedford.' },
+              { k: 'Thomas James Cobden-Sanderson (1840-1922)', v: 'Founded the Doves Bindery (1893) + Doves Press (1900) in Hammersmith, London. Arts + Crafts movement binder. Famously dumped the Doves Press type into the Thames in 1916-17 to prevent its further use after partnership dissolved.' },
+              { k: 'Sangorski + Sutcliffe (founded 1901, London)', v: 'Francis Sangorski + George Sutcliffe formed major fine-binding shop. Notorious "Great Omar" — extravagant jewel-encrusted binding of Edward FitzGerald\'s Rubaiyat of Omar Khayyam — went down with the Titanic in 1912. Firm continues today as part of Shepherds Bookbinders.' },
+              { k: 'Douglas Cockerell (1870-1945)', v: 'Trained at the Doves Bindery. Wrote influential Bookbinding and the Care of Books (1901) — has remained in print since. Bookbinder + theorist.' }
+            ])
+          );
+        } else {
+          content = h('div', null,
+            keyPointBlock('Modern + contemporary bookbinders', [
+              { k: 'Philip Smith (1928-2025)', v: 'British binder. Pioneered "feathered onlay" technique using fine leather strips. Major figure in 20th-c. modernist fine binding.' },
+              { k: 'Faith Shannon (1938-2011)', v: 'Major contemporary British binder. Founded Designer Bookbinders\' international competition.' },
+              { k: 'Edwin Heim (Switzerland)', v: 'Swiss modernist binder. Major influence on contemporary European fine binding.' },
+              { k: 'Hedi Kyle (b. 1937)', v: 'German-American book artist. Invented the flag book + Blizzard Book + other artist-book structures. Major influence on contemporary book arts.' },
+              { k: 'Daniel Kelm (USA, b. 1951)', v: 'American book artist + binder. Founded the Garage Annex School for Book Arts. Major teacher + practitioner.' },
+              { k: 'Tim Ely (USA, b. 1949)', v: 'American book artist. One-of-a-kind manuscript codex books. Internationally collected.' },
+              { k: 'Designer Bookbinders (UK organization)', v: 'Premier international fine-binding organization. Regular exhibitions + international competition.' },
+              { k: 'Guild of Book Workers (USA, 1906)', v: 'US organization of bookbinders + book artists. Quarterly journal + national + regional meetings.' }
+            ])
+          );
+        }
+        return h('div', null,
+          backBar('👜 Famous Bookbinders'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) {
+              var sel = (fbSect === s.id);
+              return h('button', { key: s.id,
+                onClick: function() { setFbSect(s.id); announce(s.label); },
+                style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                s.icon + ' ' + s.label);
+            })
+          ),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            content
+          ),
+          miniQuizBlock('famousBinders', [
+            { q: 'What happened to Sangorski + Sutcliffe\'s "Great Omar" binding?',
+              opts: ['It was lost in WWII', 'It went down with the Titanic (1912)', 'It was stolen', 'It\'s on display at the British Library'],
+              ans: 1, explain: 'The Sangorski + Sutcliffe "Great Omar" — an extravagant jewel-encrusted binding of Edward FitzGerald\'s Rubaiyat of Omar Khayyam — went down with the Titanic in 1912. The firm later attempted to recreate it; that copy was destroyed in the WWII London Blitz.' },
+            { q: 'What did Cobden-Sanderson notoriously do with the Doves Press type?',
+              opts: ['Sold it to a museum', 'Dumped it into the Thames (1916-17) to prevent further use', 'Buried it in a garden', 'Donated it to the British Library'],
+              ans: 1, explain: 'After his partnership with Emery Walker dissolved, Thomas James Cobden-Sanderson dumped the Doves Press type into the Thames in 1916-1917 to prevent its further use. Robert Green recovered some pieces from the river bed in 2014 + recreated the typeface digitally as Doves Type.' }
+          ]),
+          sourcesBlock([
+            { label: 'Bernard C. Middleton, A History of English Craft Bookbinding Technique (1996)' },
+            { label: 'Designer Bookbinders', url: 'https://designerbookbinders.org.uk/' },
+            { label: 'Guild of Book Workers', url: 'https://guildofbookworkers.org/' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['NCAS Visual Arts (craft tradition)', 'NCSS D2.His.4.6-8 (causation)'],
+            discussion: [
+              'Why would someone spend thousands of dollars on a binding for a book whose text is freely available?',
+              'Pick a famous binder. Find an image of one of their bindings online. What design choices do you notice?'
+            ],
+            misconceptions: [],
+            extension: 'Visit a local rare-book library + ask to see fine bindings from different eras. Notice differences in materials + techniques.'
+          }),
+          crossLinkFooter('famousBinders'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // MAINE AUTHORS + THEIR PUBLISHERS — Hawthorne, Longfellow, Stowe, King.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderMaineAuthors() {
+        var maIdxRaw = useState(0);
+        var maIdx = maIdxRaw[0], setMaIdx = maIdxRaw[1];
+        var authors = [
+          { name: 'Nathaniel Hawthorne (1804-1864)', town: 'Salem, MA (born); Brunswick (Bowdoin student 1821-1825)', emoji: '🌲',
+            blurb: 'Born in Salem, Massachusetts. Studied at Bowdoin College in Brunswick, ME (1821-1825) — classmates included future president Franklin Pierce + poet Henry Wadsworth Longfellow. The Maine years shaped him. The Scarlet Letter (1850), The House of the Seven Gables (1851), The Blithedale Romance (1852). Published primarily by Ticknor + Fields (Boston).' },
+          { name: 'Henry Wadsworth Longfellow (1807-1882)', town: 'Portland (born + raised)', emoji: '⚓',
+            blurb: 'Born + raised in Portland, Maine. Studied at Bowdoin (1821-1825) alongside Hawthorne. Most popular American poet of 19th century. The Song of Hiawatha (1855), Paul Revere\'s Ride (1860, in Tales of a Wayside Inn 1863), Evangeline (1847). Published primarily by Ticknor + Fields + Houghton Mifflin. Wadsworth-Longfellow House in Portland is a museum.' },
+          { name: 'Harriet Beecher Stowe (1811-1896)', town: 'Brunswick (1850-1852, wrote Uncle Tom\'s Cabin there)', emoji: '🏠',
+            blurb: 'Born Connecticut. Lived in Brunswick, Maine 1850-1852 while husband Calvin Stowe taught at Bowdoin. Wrote Uncle Tom\'s Cabin in Brunswick. Serialized in National Era (1851-52), published as a book by John P. Jewett (Boston) March 1852. Sold 300,000 in US first year, 1 million in Britain. Stowe House is now Bowdoin College administrative building + bookstore.' },
+          { name: 'Sarah Orne Jewett (1849-1909)', town: 'South Berwick (lifelong home)', emoji: '🌾',
+            blurb: 'Born + lived most of life in South Berwick, Maine. Major regionalist writer. The Country of the Pointed Firs (1896) is her masterpiece — quiet, deeply Maine, profoundly observed. Published mainly by Houghton Mifflin. Jewett House Museum in South Berwick.' },
+          { name: 'Edna St. Vincent Millay (1892-1950)', town: 'Rockland (born), Camden (raised)', emoji: '🌹',
+            blurb: 'Born Rockland, raised Camden. Major 20th-c. lyric poet. "My candle burns at both ends." Renascence (1912, written age 19 from Camden). A Few Figs from Thistles (1920). Pulitzer Prize 1923 (first woman to win for poetry). Published mostly by Harper + Brothers.' },
+          { name: 'E.B. White (1899-1985)', town: 'North Brooklin (1933-1985)', emoji: '🐷',
+            blurb: 'Moved to North Brooklin saltwater farm 1933 + lived there ~52 years. New Yorker essayist + author of Charlotte\'s Web (1952), Stuart Little (1945), The Trumpet of the Swan (1970). Updated Elements of Style (Strunk + White, 1959) became the writing-style bible. Published by HarperCollins.' },
+          { name: 'Stephen King (b. 1947)', town: 'Bangor (lives there since 1979)', emoji: '👻',
+            blurb: 'Born Portland, raised in multiple Maine towns. Lives in Bangor since 1979. Has written 60+ novels + many stories. Setting many in fictional Maine towns (Castle Rock, Derry, Jerusalem\'s Lot). Published primarily by Scribner (Simon + Schuster imprint). One of the best-selling authors in history.' },
+          { name: 'Richard Russo (b. 1949)', town: 'Camden (lives there)', emoji: '🏘',
+            blurb: 'Lives in Camden, Maine. Pulitzer Prize for fiction 2002 (Empire Falls, set in fictional Maine mill town). Published by Knopf. Major contemporary American novelist with deep Maine sensibility.' },
+          { name: 'Elizabeth Strout (b. 1956)', town: 'Portland (born), Maine settings', emoji: '📖',
+            blurb: 'Born Portland. Olive Kitteridge (2008, Pulitzer 2009; sequel Olive, Again 2019) — interconnected short stories set in fictional Crosby, Maine. My Name Is Lucy Barton (2016), Anything Is Possible (2017). Published by Random House.' },
+          { name: 'Sebastian Junger (b. 1962)', town: 'Maine connections via subjects', emoji: '🌊',
+            blurb: 'Wrote The Perfect Storm (1997) about Gloucester, MA + Maine fishing fleet (Hannah Boden, Andrea Gail). War (2010), Tribe (2016). Maine fishing community heavily featured. Published by W.W. Norton.' }
+        ];
+        var au = authors[maIdx] || authors[0];
+        return h('div', null,
+          backBar('🦞 Maine Authors + Their Publishers'),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            dropCapPara('Maine has been home to an outsize number of major American writers. From Longfellow + Hawthorne + Stowe (the 19th-c. Maine connections of the Boston-Bowdoin literary circle) through Jewett + Millay (regionalist + modernist) to King + Strout + Russo (contemporary). Most of their books were published by major Boston + New York publishers, but the Maine settings + sensibilities are stamped in the work.')
+          ),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            authors.map(function(a, i) {
+              var sel = (i === maIdx);
+              return h('button', { key: i,
+                onClick: function() { setMaIdx(i); announce(a.name); },
+                style: btn({ padding: '7px 10px', fontSize: 11, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                a.emoji + ' ' + a.name.split(' (')[0]);
+            })
+          ),
+          h('div', { style: { background: T.cardAlt, border: '2px solid ' + T.accent, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            h('div', { style: { fontSize: 48, marginBottom: 8, textAlign: 'center' } }, au.emoji),
+            h('h3', { style: { fontSize: 22, fontWeight: 700, color: T.text, fontFamily: 'Georgia, serif', margin: '0 0 4px', textAlign: 'center' } }, au.name),
+            h('div', { style: { fontSize: 12, color: T.muted, fontStyle: 'italic', marginBottom: 14, textAlign: 'center' } }, au.town),
+            h('p', { style: { margin: 0, color: T.muted, fontSize: 14, lineHeight: 1.7 } }, au.blurb)
+          ),
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 14 } },
+            h('button', { disabled: maIdx <= 0,
+              onClick: function() { setMaIdx(Math.max(0, maIdx - 1)); },
+              style: btn({ padding: '8px 14px', fontSize: 13, opacity: maIdx <= 0 ? 0.4 : 1 }) }, '← Previous'),
+            h('div', { style: { fontSize: 12, color: T.muted, alignSelf: 'center' } }, (maIdx + 1) + ' / ' + authors.length),
+            h('button', { disabled: maIdx >= authors.length - 1,
+              onClick: function() { setMaIdx(Math.min(authors.length - 1, maIdx + 1)); },
+              style: btnPrimary({ padding: '8px 14px', fontSize: 13, opacity: maIdx >= authors.length - 1 ? 0.4 : 1 }) }, 'Next →')
+          ),
+          miniQuizBlock('maineAuthors', [
+            { q: 'Where did Harriet Beecher Stowe live when she wrote Uncle Tom\'s Cabin?',
+              opts: ['Connecticut', 'Brunswick, Maine (her husband Calvin taught at Bowdoin)', 'Boston', 'Cincinnati'],
+              ans: 1, explain: 'Stowe lived in Brunswick, Maine 1850-1852 while her husband Calvin Stowe taught at Bowdoin College. Wrote Uncle Tom\'s Cabin there. The Stowe House is now a Bowdoin College administrative building + bookstore.' },
+            { q: 'Where does Stephen King live + base much of his fiction?',
+              opts: ['Boston', 'Bangor, Maine (since 1979)', 'New York City', 'Massachusetts'],
+              ans: 1, explain: 'Stephen King has lived in Bangor, Maine since 1979. Many of his novels are set in fictional Maine towns (Castle Rock, Derry, Jerusalem\'s Lot). His sense of place is deeply Maine.' },
+            { q: 'Who is the only Maine-born author to win the Pulitzer Prize for poetry as the first woman?',
+              opts: ['Sarah Orne Jewett', 'Edna St. Vincent Millay (Pulitzer 1923)', 'Elizabeth Strout', 'Marsden Hartley'],
+              ans: 1, explain: 'Edna St. Vincent Millay (born Rockland, raised Camden) won the Pulitzer Prize for Poetry in 1923 — the first woman to win the poetry Pulitzer. Major 20th-c. lyric poet ("My candle burns at both ends").' }
+          ]),
+          sourcesBlock([
+            { label: 'Maine Writers and Publishers Alliance', url: 'https://www.mainewriters.org/' },
+            { label: 'Maine Historical Society — author collections', url: 'https://www.mainehistory.org/' },
+            { label: 'Harriet Beecher Stowe House (Brunswick)' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['Maine SS 2019 (state literature)', 'CCSS RL.5.9 (compare authors)'],
+            discussion: [
+              'What is it about Maine that has produced + attracted so many major writers?',
+              'Pick a Maine author + read one piece. What\'s Maine about their work?'
+            ],
+            misconceptions: [],
+            extension: 'Visit one Maine author museum or house — Wadsworth-Longfellow House (Portland), Stowe House (Brunswick), Jewett House (South Berwick). Many are free or low-cost.'
+          }),
+          crossLinkFooter('maineAuthors'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // PRINT + TOURISM — Baedeker, Murray, Lonely Planet, postcards.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderPrintTourism() {
+        var ptSectRaw = useState('overview');
+        var ptSect = ptSectRaw[0], setPtSect = ptSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '🧳' },
+          { id: 'guidebooks', label: 'Guidebooks', icon: '📕' },
+          { id: 'postcards', label: 'Postcards', icon: '📮' },
+          { id: 'modern', label: 'Modern + digital', icon: '📱' }
+        ];
+        var content;
+        if (ptSect === 'overview') {
+          content = h('div', null,
+            dropCapPara('Travel + print have built each other up. Guidebooks (Baedeker, Murray, Michelin, Lonely Planet, Frommer\'s, Fodor\'s) made travel accessible to ordinary middle-class readers from the 1830s onward. Postcards (especially 1900-1940s) created visual + emotional infrastructure of mass tourism. Modern digital travel — TripAdvisor, Google Maps, Instagram — extends + replaces these print forms.'),
+            sectionHeader('🧳', 'What this module covers'),
+            keyPointBlock(null, [
+              { k: 'Guidebooks', v: 'Baedeker (1830s+), Murray, Michelin (1900+), Frommer\'s, Fodor\'s, Lonely Planet (1972+). Print travel\'s most enduring form.' },
+              { k: 'Postcards', v: 'Bridgman\'s 1893 chromolithograph postcards launched the form. Peak 1900-1940; substantial industry. Maine postcard tradition.' },
+              { k: 'Modern + digital', v: 'TripAdvisor, Google Maps, Instagram. The travel-information industry today.' }
+            ])
+          );
+        } else if (ptSect === 'guidebooks') {
+          content = h('div', null,
+            keyPointBlock('Major guidebook series', [
+              { k: 'Murray\'s Handbooks (1836-)', v: 'John Murray III published the first modern English travel guidebook (Handbook for Travellers on the Continent, 1836). Practical, factual, no-nonsense. Set the genre standards. Continued until 1916.' },
+              { k: 'Baedeker (German + English, 1832+)', v: 'Karl Baedeker founded German travel-guide series. By late 1800s the global standard. Distinctive red bindings. Famously detailed + accurate. Continues today (Karl Baedeker Verlag).' },
+              { k: 'Michelin Guides (1900+)', v: 'Originally promotional book for automobile drivers (by tire company). Red Guides rate hotels + restaurants; Green Guides cover destinations. Michelin stars (1 to 3) for restaurants became global gold standard.' },
+              { k: 'Fodor\'s (1936+)', v: 'Eugene Fodor\'s On the Continent. Built into major US-facing travel-guide series. Continues today.' },
+              { k: 'Frommer\'s Europe on $5 a Day (1957)', v: 'Arthur Frommer\'s budget-travel revolution. Made European travel accessible to ordinary middle-class Americans. Updated annually. Continues today (Frommer\'s on $50/$80/$100 a Day for various decades).' },
+              { k: 'Lonely Planet (1972+)', v: 'Tony + Maureen Wheeler\'s budget + backpacker focus. Across Asia on the Cheap (1973) launched the series. Became the global backpacker bible. Now part of NC2 Media (acquired from Wheeler family + later BBC).' },
+              { k: 'Rough Guides (1982+)', v: 'British competitor to Lonely Planet. Slightly less budget-focused; more cultural depth.' },
+              { k: 'Rick Steves (US PBS series + books)', v: 'Rick Steves\' Europe TV + books. Major US destination-travel publisher since 1980s. Heavy focus on independent travel + cultural immersion.' }
+            ])
+          );
+        } else if (ptSect === 'postcards') {
+          content = h('div', null,
+            keyPointBlock('Postcards as print form', [
+              { k: 'Origins', v: 'Postcards (cards with image on one side + space for address + brief message on other) emerged late 19th c. Various national postal services authorized them at different dates.' },
+              { k: 'US: 1893 World\'s Columbian Exposition', v: 'First US postcards sold at Chicago World\'s Fair. Sparked the postcard craze.' },
+              { k: 'Golden Age (1900-1920)', v: 'Massive postcard craze in US + Europe. Postcards exchanged routinely as personal correspondence. Postcard albums + collections became common household items.' },
+              { k: 'Print methods', v: 'Chromolithography (1893-1915 peak), then halftone offset (1915+), then full-color offset (1950s+). Postcard quality varies dramatically across eras.' },
+              { k: 'Maine postcards', v: 'Maine has been a major postcard subject — lighthouses (Portland Head Light, Pemaquid Point, Bass Harbor Head), coastal scenes, foliage, lobsters. Maine postcards from 1900-1940 are major collectors\' items.' },
+              { k: 'Modern decline + revival', v: 'Postcard mailing declined dramatically with email + photo-sharing. But postcards have small craft revival — letterpress + handmade + Etsy.' },
+              { k: 'Deltiology', v: 'The hobby of postcard collecting. Substantial international community. Regular postcard shows + exchanges. Some rare postcards sell for $100s-$1,000s.' }
+            ])
+          );
+        } else {
+          content = h('div', null,
+            keyPointBlock('Modern + digital travel information', [
+              { k: 'TripAdvisor (2000+)', v: 'User-review platform for hotels + restaurants + attractions. Has fundamentally reshaped how travelers research destinations.' },
+              { k: 'Google Maps + Travel', v: 'Has integrated nearly all destination information — places, reviews, photos, directions, booking. The default travel research tool for most travelers.' },
+              { k: 'Airbnb (2008+)', v: 'Disrupted hospitality industry by enabling individual property rental. Significant impact on travel patterns + on tourism economics in many destinations.' },
+              { k: 'Instagram travel', v: '"Instagram tourism" — destinations promoted (or overrun) by viral photos. Some destinations actively manage this (Iceland\'s "Inspired by Iceland" campaign) + others suffer from it (Trolltunga, Norway became dangerously over-touristed).' },
+              { k: 'Print guidebook survival', v: 'Print travel guides have contracted but survived. Lonely Planet, Rough Guides, Fodor\'s continue. Many travelers still prefer print for offline reference + browsing.' },
+              { k: 'Maine tourism publishing', v: 'Maine tourism magazines (Down East, Yankee Magazine New England-wide, Visit Maine), guidebooks (Maine Atlas + Gazetteer, Maine: Off the Beaten Path). Substantial regional travel-publishing market.' }
+            ])
+          );
+        }
+        return h('div', null,
+          backBar('🧳 Print + Tourism'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) {
+              var sel = (ptSect === s.id);
+              return h('button', { key: s.id,
+                onClick: function() { setPtSect(s.id); announce(s.label); },
+                style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                s.icon + ' ' + s.label);
+            })
+          ),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            content
+          ),
+          miniQuizBlock('printTourism', [
+            { q: 'Which budget-travel guidebook revolutionized backpacker travel beginning in the 1970s?',
+              opts: ['Frommer\'s', 'Lonely Planet (1972+)', 'Fodor\'s', 'Baedeker'],
+              ans: 1, explain: 'Tony + Maureen Wheeler founded Lonely Planet in 1972 with Across Asia on the Cheap (1973). Backpacker-focused. Became the global budget-travel bible. Now part of NC2 Media.' },
+            { q: 'What launched the US postcard craze?',
+              opts: ['World War I', 'The 1893 World\'s Columbian Exposition in Chicago', 'The Pony Express', 'The first US Post Office'],
+              ans: 1, explain: 'First US postcards sold at the 1893 World\'s Columbian Exposition in Chicago. Sparked the postcard craze. By 1900-1920 (Golden Age), postcards were exchanged routinely as personal correspondence.' }
+          ]),
+          sourcesBlock([
+            { label: 'Edmund Swinglehurst, The Romantic Journey: The Story of Thomas Cook + Victorian Travel (1974)' },
+            { label: 'Frank Staff, The Picture Postcard and Its Origins (1966)' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['NCSS D2.Geo.4.6-8 (places + regions)', 'NCSS D2.His.4.6-8 (causation)'],
+            discussion: [
+              'Has TripAdvisor + Google Maps replaced guidebooks? When do you still want a guidebook?',
+              'Why did people send postcards from vacation? What replaced that practice?'
+            ],
+            misconceptions: [],
+            extension: 'Find an old Maine postcard (eBay, antique stores, family albums). Look at the image + message. What can you learn about that era from a vacation postcard?'
+          }),
+          crossLinkFooter('printTourism'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // PRINT + HEALTHCARE — medical reference, patient education, inserts.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderPrintHealthcare() {
+        var phSectRaw = useState('overview');
+        var phSect = phSectRaw[0], setPhSect = phSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '⚕️' },
+          { id: 'medical', label: 'Medical reference', icon: '🩺' },
+          { id: 'patient', label: 'Patient education', icon: '📋' },
+          { id: 'pharma', label: 'Pharma inserts + ads', icon: '💊' },
+          { id: 'modern', label: 'Modern + digital', icon: '📱' }
+        ];
+        var content;
+        if (phSect === 'overview') {
+          content = h('div', null,
+            dropCapPara('Medical publishing is one of the largest specialized print categories. Medical reference (Merck Manual, Harrison\'s Principles of Internal Medicine), nursing textbooks, medical journals, patient-education materials, pharmaceutical package inserts. Regulated content with specific safety + accuracy requirements. Has been somewhat insulated from broader publishing-industry contraction because of specialized + regulated needs.'),
+            sectionHeader('⚕️', 'What this module covers'),
+            keyPointBlock(null, [
+              { k: 'Medical reference', v: 'Merck Manual (1899+), Harrison\'s, Lange, Up-to-Date. Long-running reference works.' },
+              { k: 'Patient education', v: 'Pamphlets + brochures + booklets in waiting rooms. Patient-instruction materials.' },
+              { k: 'Pharma inserts + ads', v: 'Drug package inserts (legally mandated). Direct-to-consumer pharmaceutical advertising (US-only standard since 1997).' },
+              { k: 'Modern + digital', v: 'UpToDate (subscription medical reference), MedlinePlus (free patient education), telehealth visit summaries. Where medical print is now.' }
+            ])
+          );
+        } else if (phSect === 'medical') {
+          content = h('div', null,
+            keyPointBlock('Major medical reference works', [
+              { k: 'Merck Manual (1899+)', v: 'Merck pharmaceutical company\'s medical reference. Now in 20th edition. Both Professional Version (clinicians) + Consumer Version (general public). Long-running standard.' },
+              { k: 'Harrison\'s Principles of Internal Medicine (1950+)', v: 'Tinsley Harrison\'s textbook. Now in 21st edition (2022). The standard internal-medicine reference globally. ~3,000 pages.' },
+              { k: 'Lange Medical Books series', v: 'Series of clinical references. Yellow-jacketed paperbacks familiar to medical students for decades. Acquired by McGraw Hill.' },
+              { k: 'Sabiston Textbook of Surgery (1936+)', v: 'Standard surgical reference. Now in 21st edition.' },
+              { k: 'PDR — Physicians\' Desk Reference (1947-2017)', v: 'Pharmaceutical drug reference. Now discontinued in print; replaced by online services.' },
+              { k: 'New England Journal of Medicine (1812+)', v: 'Premier medical journal. Has published continuously since 1812. Foundational publication of US medical practice + research.' },
+              { k: 'JAMA (Journal of the American Medical Association, 1883+)', v: 'AMA\'s flagship publication. Major medical journal.' },
+              { k: 'The Lancet (1823+)', v: 'British medical journal. Premier international medical journal. Has published continuously since 1823.' }
+            ])
+          );
+        } else if (phSect === 'patient') {
+          content = h('div', null,
+            keyPointBlock('Patient education print', [
+              { k: 'Waiting-room brochures', v: 'Branded brochures from pharmaceutical companies + nonprofits + government health agencies (CDC, NIH). Free distribution model — distribution costs paid by sponsors.' },
+              { k: 'KH (Krames Health) + Wolters Kluwer', v: 'Major US publishers of patient-education brochures + booklets. Library of hundreds of titles licensed to hospitals + clinics.' },
+              { k: 'Patient-instruction sheets', v: 'Discharge instructions + medication instructions + procedure prep instructions. Often hospital-developed; sometimes vendor-provided.' },
+              { k: 'Plain-language requirements', v: 'Modern patient education emphasizes plain language — typically 6th-8th grade reading level for general audiences. Health-literacy research drove the shift.' },
+              { k: 'Translation requirements', v: 'Patient education for non-English speakers — Spanish + many other languages. Federal regulations require accessible language access in many healthcare contexts.' },
+              { k: 'Maine context', v: 'Maine General + MaineHealth + others have substantial patient-education programs. Significant Somali + French + Arabic-speaking patient populations.' }
+            ])
+          );
+        } else if (phSect === 'pharma') {
+          content = h('div', null,
+            keyPointBlock('Pharmaceutical print', [
+              { k: 'Package inserts', v: 'Legally required FDA-approved drug information that comes with every prescription drug. Notoriously dense + technical — usually printed in small type on thin paper.' },
+              { k: 'Patient package inserts (PPIs)', v: 'Plain-language patient-focused information for certain drug categories (oral contraceptives, etc.). Newer addition.' },
+              { k: 'Direct-to-consumer (DTC) pharmaceutical advertising', v: 'US + New Zealand are essentially the only countries that allow DTC pharma ads. Became standard in US after 1997 FDA rule clarification. Major source of magazine + TV revenue.' },
+              { k: 'Pharma sales-rep materials', v: 'Glossy brochures + sample handouts + clinical reprints. Significant pharma print marketing budget despite digital shift.' },
+              { k: 'Clinical trial protocols + IRB packets', v: 'Substantial printed documentation for clinical trials. Required regulatory documentation.' },
+              { k: 'Medical journal pharma advertising', v: 'Pharmaceutical advertisements in medical journals — historically major revenue stream for journals. Some journals (NEJM, JAMA) accept this; many academic + open-access journals do not.' }
+            ])
+          );
+        } else {
+          content = h('div', null,
+            keyPointBlock('Digital + modern healthcare information', [
+              { k: 'UpToDate (1992+)', v: 'Wolters Kluwer\'s subscription clinical decision-support service. Used by most US physicians + hospitals. Continuously updated. Effectively replaced static medical-reference books.' },
+              { k: 'MedlinePlus (US NLM)', v: 'Free patient-education website from US National Library of Medicine. Comprehensive health-topic information in plain language. Major free resource.' },
+              { k: 'WebMD', v: 'Commercial health-information website. Major destination for patient self-research. Often criticized for triggering health anxiety ("cyberchondria").' },
+              { k: 'Mayo Clinic, Cleveland Clinic, Johns Hopkins websites', v: 'Major medical center websites function as comprehensive health-information resources. Generally high-quality.' },
+              { k: 'Electronic health records (EHRs)', v: 'Epic, Cerner, others. Have largely replaced paper medical records. Patient-portal access lets patients view records + lab results directly.' },
+              { k: 'AI symptom checkers + chatbots', v: 'WebMD Symptom Checker, Ada Health, others. Increasingly used. Quality varies. AI medical advice (ChatGPT, etc.) is emerging concern + opportunity.' },
+              { k: 'Telehealth visit summaries', v: 'After telehealth appointments, electronic summaries sent to patients. New form of medical communication.' }
+            ])
+          );
+        }
+        return h('div', null,
+          backBar('⚕️ Print + Healthcare'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) {
+              var sel = (phSect === s.id);
+              return h('button', { key: s.id,
+                onClick: function() { setPhSect(s.id); announce(s.label); },
+                style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                s.icon + ' ' + s.label);
+            })
+          ),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            content
+          ),
+          miniQuizBlock('printHealthcare', [
+            { q: 'How long has the Merck Manual been published?',
+              opts: ['Since 1950', 'Since 1900 (first published 1899)', 'Since 2000', 'Only published online'],
+              ans: 1, explain: 'The Merck Manual was first published in 1899 (the year before 1900). Now in 20th edition + has Consumer Version (general public) + Professional Version (clinicians). Long-running standard medical reference.' },
+            { q: 'How long has the New England Journal of Medicine published?',
+              opts: ['Since 1950', 'Since 1900', 'Since 1812 (continuously)', 'Since 2000'],
+              ans: 2, explain: 'The NEJM has published continuously since 1812 — 210+ years. Premier medical journal. Foundational publication of US medical practice + research.' },
+            { q: 'In which countries is direct-to-consumer (DTC) pharmaceutical advertising essentially the only allowed?',
+              opts: ['US + UK', 'US + New Zealand', 'US + Germany', 'US + Japan'],
+              ans: 1, explain: 'US + New Zealand are essentially the only countries that allow direct-to-consumer pharmaceutical advertising. Most other countries prohibit it. US DTC pharma ads became standard after 1997 FDA rule clarification — major source of magazine + TV revenue since.' }
+          ]),
+          sourcesBlock([
+            { label: 'New England Journal of Medicine', url: 'https://www.nejm.org/' },
+            { label: 'MedlinePlus (US National Library of Medicine)', url: 'https://medlineplus.gov/' },
+            { label: 'UpToDate (subscription)', url: 'https://www.uptodate.com/' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['NGSS HS-LS1-3 (homeostasis + medicine)', 'CCSS RST.11-12.7 (integrate quantitative + text)'],
+            discussion: [
+              'Why is medical publishing more regulated than other publishing?',
+              'Compare looking up a health topic on WebMD vs MedlinePlus vs ChatGPT. Which do you trust? Why?'
+            ],
+            misconceptions: [],
+            extension: 'Find a medication you or family takes + read the package insert. What\'s in it? What\'s hard to understand?'
+          }),
+          crossLinkFooter('printHealthcare'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // FONT IDENTIFICATION QUIZ — visual typography recognition.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderFontIdentification() {
+        var fiRoundRaw = useState(0);
+        var fiRound = fiRoundRaw[0], setFiRound = fiRoundRaw[1];
+        var fiPickedRaw = useState(null);
+        var fiPicked = fiPickedRaw[0], setFiPicked = fiPickedRaw[1];
+        var fiScoreRaw = useState(0);
+        var fiScore = fiScoreRaw[0], setFiScore = fiScoreRaw[1];
+        var rounds = [
+          { display: 'The quick brown fox jumps over the lazy dog', font: '"Times New Roman", Times, serif',
+            options: ['Helvetica', 'Times New Roman', 'Arial', 'Garamond'], correct: 1,
+            explain: 'Times New Roman — designed by Stanley Morison + Victor Lardent for The Times of London (1932). Bracketed serifs, moderate contrast, slightly condensed proportions. The default Word font for ~30 years.' },
+          { display: 'The quick brown fox jumps over the lazy dog', font: 'Arial, Helvetica, sans-serif',
+            options: ['Times New Roman', 'Garamond', 'Arial / Helvetica', 'Bodoni'], correct: 2,
+            explain: 'Arial (or Helvetica — visually nearly identical). Neo-grotesque sans-serif. Uniform stroke weight, tight curves, generous x-height. The dominant 20th-c. neutral sans-serif.' },
+          { display: 'The quick brown fox jumps over the lazy dog', font: 'Georgia, "Times New Roman", serif',
+            options: ['Georgia', 'Times New Roman', 'Caslon', 'Baskerville'], correct: 0,
+            explain: 'Georgia — designed by Matthew Carter (1996) for Microsoft, optimized for screen reading. Generous x-height, sturdy serifs, slightly heavier than Times. Distinguishable from Times by its larger x-height + softer serifs.' },
+          { display: 'The quick brown fox jumps over the lazy dog', font: '"Courier New", Courier, monospace',
+            options: ['Verdana', 'Courier New', 'Helvetica', 'Garamond'], correct: 1,
+            explain: 'Courier New — monospaced (every letter the same width). Originally designed for typewriters; standardized as Courier for IBM (1955). Now associated with code + screenplays.' },
+          { display: 'The quick brown fox jumps over the lazy dog', font: '"Comic Sans MS", "Comic Sans", cursive',
+            options: ['Comic Sans', 'Marker Felt', 'Bradley Hand', 'Papyrus'], correct: 0,
+            explain: 'Comic Sans — designed by Vincent Connare (Microsoft, 1994). Casual hand-written feel. Beloved + hated. Originally designed for cartoon speech bubbles in Microsoft Bob (1995). Shipped with Windows 95 + became simultaneously the most-used + most-mocked typeface in history.' },
+          { display: 'The quick brown fox jumps over the lazy dog', font: 'Verdana, "DejaVu Sans", sans-serif',
+            options: ['Helvetica', 'Verdana', 'Arial', 'Tahoma'], correct: 1,
+            explain: 'Verdana — designed by Matthew Carter (Microsoft, 1996) for screen readability at small sizes. Generous spacing + large x-height + distinguishable letterforms. Designed specifically to be readable at 8-10pt on screen.' },
+          { display: 'The quick brown fox jumps over the lazy dog', font: '"Trebuchet MS", "Lucida Grande", Tahoma, sans-serif',
+            options: ['Verdana', 'Arial', 'Trebuchet MS', 'Helvetica'], correct: 2,
+            explain: 'Trebuchet MS — designed by Vincent Connare (Microsoft, 1996). Humanist sans-serif. Curvier than Helvetica/Arial. Distinctive lowercase letterforms. Sometimes mistaken for Verdana but more characterful.' },
+          { display: 'The quick brown fox jumps over the lazy dog', font: 'Impact, "Arial Narrow Bold", sans-serif',
+            options: ['Impact', 'Helvetica Bold', 'Arial Black', 'Bebas Neue'], correct: 0,
+            explain: 'Impact — designed by Geoffrey Lee (1965). Condensed, bold, all-caps look. The "image macro" / "demotivational poster" / "Internet meme" font. Famously used in early-2000s image macros.' },
+          { display: 'Lorem ipsum dolor sit amet', font: 'Palatino, "Palatino Linotype", "Book Antiqua", serif',
+            options: ['Garamond', 'Palatino', 'Times', 'Baskerville'], correct: 1,
+            explain: 'Palatino — designed by Hermann Zapf (1949). Named after Renaissance Italian calligrapher Giambattista Palatino. Often used as a sophisticated alternative to Times. Heavier + more characterful than Times.' },
+          { display: 'Lorem ipsum dolor sit amet', font: 'Tahoma, "DejaVu Sans Condensed", sans-serif',
+            options: ['Verdana', 'Tahoma', 'Helvetica', 'Arial'], correct: 1,
+            explain: 'Tahoma — designed by Matthew Carter (Microsoft, 1994). Slightly narrower than Verdana but designed by the same designer for similar purposes. Used as Windows OS default for many years.' },
+          { display: 'CONTACT US', font: '"Brush Script MT", "Brush Script Std", cursive',
+            options: ['Brush Script', 'Lucida Handwriting', 'Comic Sans', 'Monotype Corsiva'], correct: 0,
+            explain: 'Brush Script — designed by Robert E. Smith (1942). Casual script imitating brush lettering. Often paired with serif body text for invitations + casual headers.' },
+          { display: 'fi fl ffi ffl', font: 'Georgia, serif',
+            options: ['ligatures (fi fl ffi ffl combine into single glyphs in many fonts)', 'misprints', 'foreign characters', 'fractions'], correct: 0,
+            explain: 'Ligatures — combined letterform glyphs where 2+ letters render as a single shape. fi + fl + ffi + ffl are the most common Latin ligatures. Many fonts include them automatically. Original purpose: avoid the f\'s overhang colliding with the i\'s dot + the l\'s ascender.' }
+        ];
+        var r = rounds[fiRound] || rounds[0];
+        return h('div', null,
+          backBar('🔠 Font Identification Quiz'),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            dropCapPara('Visual typography recognition is a real skill — type designers + graphic designers can identify hundreds of typefaces on sight. Beginners can train it. Below: 12 progressively harder rounds. The sample text is rendered in different typefaces; you pick the right one.')
+          ),
+          h('div', { style: { background: 'rgba(201,161,74,0.06)', border: '2px solid ' + T.accent, borderRadius: 12, padding: 24, marginBottom: 14 } },
+            h('div', { style: { fontSize: 12, color: T.dim, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 } },
+              'Round ' + (fiRound + 1) + ' of ' + rounds.length + ' · Score: ' + fiScore + ' / ' + rounds.length),
+            h('div', { style: { background: '#f5f1e6', color: '#222', padding: '24px 16px', borderRadius: 8, marginBottom: 16, textAlign: 'center', fontSize: 28, fontFamily: r.font } }, r.display)
+          ),
+          fiPicked == null && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 } },
+            r.options.map(function(opt, i) {
+              return h('button', { key: i,
+                onClick: function() { setFiPicked(i); if (i === r.correct) { setFiScore(fiScore + 1); announce('Correct.'); } else announce('Not quite.'); },
+                style: btn({ padding: '12px 14px', fontSize: 14, textAlign: 'left' }) },
+                h('strong', { style: { color: T.accentHi } }, String.fromCharCode(65 + i) + '. '),
+                opt);
+            })
+          ),
+          fiPicked != null && h('div', null,
+            h('div', { style: { background: fiPicked === r.correct ? 'rgba(127,176,105,0.12)' : 'rgba(212,153,0,0.10)', border: '2px solid ' + (fiPicked === r.correct ? T.ok : T.warn), borderRadius: 10, padding: 14, marginBottom: 10 } },
+              h('div', { style: { fontSize: 13, fontWeight: 700, color: fiPicked === r.correct ? T.ok : T.warn, marginBottom: 8 } },
+                fiPicked === r.correct ? '✓ Correct.' : '✗ Not quite.'),
+              h('div', { style: { fontSize: 13, color: T.text, marginBottom: 8 } },
+                h('strong', null, 'Right answer: '),
+                r.options[r.correct]),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.65 } }, r.explain)),
+            h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+              fiRound < rounds.length - 1 && h('button', {
+                onClick: function() { setFiRound(fiRound + 1); setFiPicked(null); },
+                style: btnPrimary({ padding: '10px 16px', fontSize: 13 }) }, 'Next round →'),
+              fiRound >= rounds.length - 1 && h('div', { style: { fontSize: 14, fontWeight: 700, color: T.accent } },
+                '🎯 Complete! Final: ' + fiScore + ' / ' + rounds.length),
+              h('button', {
+                onClick: function() { setFiRound(0); setFiPicked(null); setFiScore(0); },
+                style: btn({ padding: '10px 16px', fontSize: 13 }) }, '↺ Start over')
+            )
+          ),
+          sourcesBlock([
+            { label: 'I Love Typography', url: 'https://ilovetypography.com/' },
+            { label: 'Stephen Coles, The Anatomy of Type (2012)' },
+            { label: 'WhatTheFont (font identification tool)', url: 'https://www.myfonts.com/pages/whatthefont' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['NCAS Visual Arts (visual literacy)', 'CCSS RH.6-8.7 (integrate visual + text)'],
+            discussion: [
+              'After taking the quiz, look at any printed material around you. Can you identify the typeface?'
+            ],
+            misconceptions: [],
+            extension: 'Try WhatTheFont (myfonts.com/whatthefont). Upload an image of any printed text + see what fonts are matched.'
+          }),
+          crossLinkFooter('fontIdentification'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // POSTAGE + DIRECT MAIL — stamps, direct mail, the postal-print link.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderPrintPostage() {
+        var ppoSectRaw = useState('overview');
+        var ppoSect = ppoSectRaw[0], setPpoSect = ppoSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '📬' },
+          { id: 'stamps', label: 'Stamps + history', icon: '📮' },
+          { id: 'directmail', label: 'Direct mail', icon: '✉' },
+          { id: 'catalogs', label: 'Catalogs', icon: '📒' },
+          { id: 'modern', label: 'Modern + digital', icon: '📱' }
+        ];
+        var content;
+        if (ppoSect === 'overview') {
+          content = h('div', null,
+            dropCapPara('Postage + print have been linked since 1840 (the Penny Black). Adhesive stamps + prepaid postage made mass-mailing economical for the first time. The next century-and-a-half built up the infrastructure of mass-circulation publishing (newspapers + magazines mailed at subsidized rates) + direct-mail advertising + mail-order catalogs. The decline of mail in the digital era has been one of the major print-industry shifts of the 21st c.'),
+            sectionHeader('📬', 'What this module covers'),
+            keyPointBlock(null, [
+              { k: 'Stamps + history', v: 'Penny Black (1840) onward. Stamp design + commemorative stamps + collecting.' },
+              { k: 'Direct mail', v: 'Junk mail, political mailers, charity solicitation. The economics + the controversies.' },
+              { k: 'Catalogs', v: 'Sears + Montgomery Ward + LL Bean catalogs. The 19th-c. invention of mail-order shopping.' },
+              { k: 'Modern + digital', v: 'USPS volume decline, marketing email + SMS replacing some direct mail, the postal-system future.' }
+            ])
+          );
+        } else if (ppoSect === 'stamps') {
+          content = h('div', null,
+            keyPointBlock('Postage stamps + their history', [
+              { k: 'Penny Black (1840 Britain)', v: 'First adhesive postage stamp. Designed by Henry Cole. Featured Queen Victoria\'s profile. Sold at 1 penny for prepaid postage. Revolutionized postal economics.' },
+              { k: 'First US stamps (1847)', v: '5-cent (Benjamin Franklin) + 10-cent (George Washington). Established US Postal Service philatelic tradition.' },
+              { k: 'Why prepaid postage was revolutionary', v: 'Before adhesive prepaid stamps, postage was paid by recipient + cost varied by distance. Recipients sometimes refused mail (could not afford to pay). Prepayment shifted cost to sender + standardized at fixed rates. Made mass-mailing economical.' },
+              { k: 'Commemorative stamps', v: 'Stamps issued for specific events + people + topics — beyond regular postage. Significant philatelic + cultural impact. Most countries issue dozens of commemoratives annually.' },
+              { k: 'Stamp collecting (philately)', v: 'Long-running hobby. Catalog publishers (Scott Stamp Catalog in US, Stanley Gibbons in UK) date back to 1860s. Rare stamps can sell for millions.' },
+              { k: 'Maine stamps', v: 'Maine subjects appearing on US stamps: Acadia National Park, lobster, Mount Katahdin, Longfellow + Stowe (literary), various others. Maine philatelic community active through Maine Postal History Society.' },
+              { k: 'Self-adhesive stamps (1989+)', v: 'Replaced lick-and-stick gum stamps over the 1990s-2000s. Now standard.' },
+              { k: 'Forever stamps (2007+)', v: 'US postal innovation: stamps that don\'t require updating face value when rates change. Always valid for current First-Class rate.' }
+            ])
+          );
+        } else if (ppoSect === 'directmail') {
+          content = h('div', null,
+            keyPointBlock('Direct mail + advertising mail', [
+              { k: 'Origins (mid-1800s)', v: 'Mail-order catalogs (next section) launched the form. By 1900 substantial direct-marketing industry existed.' },
+              { k: '20th-c. growth', v: 'Postal subsidies for "Standard Mail" (third-class) made direct mail economical. Magazines + retailers + nonprofits used it heavily.' },
+              { k: 'Political direct mail', v: 'Campaign mailers reach millions of US voters each election cycle. Direct mail + targeted mail remain significant campaign-spending categories.' },
+              { k: 'Nonprofit fundraising', v: 'Direct mail is core fundraising channel for many nonprofits. Mass appeals to large mailing lists, with carefully tested copy + offers.' },
+              { k: 'Database + targeting', v: 'Direct-mail industry pioneered consumer database segmentation. Acxiom, Experian, others maintain massive databases enabling targeted mailings.' },
+              { k: 'Junk mail criticism', v: 'Direct mail criticized as wasteful (environmental impact of paper waste) + intrusive. Do-not-mail movements + legislation in many jurisdictions.' },
+              { k: 'Effectiveness', v: 'Direct mail surprisingly effective vs digital advertising for some categories. Higher engagement + response rates per impression (though much higher cost per impression).' }
+            ])
+          );
+        } else if (ppoSect === 'catalogs') {
+          content = h('div', null,
+            keyPointBlock('Mail-order catalogs', [
+              { k: 'Sears, Roebuck and Company (catalog 1888-1993)', v: 'Richard Sears\'s catalog became the dominant US mail-order retailer. Peak catalog ~1,500 pages. Sold everything from groceries to houses (Sears prefab houses 1908-1942). Made consumer goods accessible to rural America.' },
+              { k: 'Montgomery Ward (catalog 1872-1985)', v: 'Sears\'s major competitor. Slightly older. Defined mail-order retail alongside Sears.' },
+              { k: 'L.L. Bean (catalog 1912-)', v: 'Maine\'s own. Leon Leonwood Bean founded Bean in Freeport, Maine. Catalog distribution from 1912. Major US outdoor + lifestyle retailer. Still produces multiple seasonal catalogs annually.' },
+              { k: 'Spiegel (catalog 1905-2000s)', v: 'Major US mid-market catalog retailer. Initially "Spiegel\'s House Furnishing Company." Multiple seasonal catalogs across decades.' },
+              { k: 'JCPenney (catalog 1962-2009)', v: 'JCPenney was relatively late to catalog. Phased out catalog 2009 in favor of digital.' },
+              { k: 'IKEA catalog (1951-2021)', v: 'Annual IKEA catalog was massive cultural artifact in many countries. 200M+ printed annually at peak. Discontinued in 2021 as IKEA shifted fully to digital.' },
+              { k: 'Niche catalogs continuing', v: 'Patagonia, Land\'s End, Eddie Bauer, J. Crew, Restoration Hardware, Pottery Barn — many specialty retailers continue substantial catalog mailings. Catalogs serve as inspirational + brand-building media as much as ordering vehicles.' },
+              { k: 'Specialty catalogs', v: 'B&H Photo, Harbor Freight, garden supply (Burpee, Park Seed), seed catalogs. Many niche markets sustained by ongoing catalog mailings.' }
+            ])
+          );
+        } else {
+          content = h('div', null,
+            keyPointBlock('Modern + digital postal landscape', [
+              { k: 'USPS mail volume decline', v: 'US Postal Service First-Class Mail volume has declined ~50% since 2001 peak. Marketing Mail also declining but more slowly. Package volume up (Amazon + e-commerce).' },
+              { k: 'Email marketing', v: 'Replaced much direct-mail advertising. Mailchimp, Constant Contact, Klaviyo + others enable mass email at near-zero marginal cost.' },
+              { k: 'SMS marketing', v: 'Text marketing growing rapidly. Higher open rates than email; some regulatory restrictions.' },
+              { k: 'Targeted digital advertising', v: 'Facebook + Google + others enable behavioral + demographic targeting at scale impossible for direct mail.' },
+              { k: 'Postal-system future', v: 'USPS facing financial challenges + Congressional debate over its future. Universal-service mandate; package growth as opportunity; First-Class decline as challenge.' },
+              { k: 'Maine postal context', v: 'Rural Maine heavily dependent on USPS for delivery. Closure of small-town post offices a major rural-community concern.' }
+            ])
+          );
+        }
+        return h('div', null,
+          backBar('📬 Postage + Direct Mail'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) {
+              var sel = (ppoSect === s.id);
+              return h('button', { key: s.id,
+                onClick: function() { setPpoSect(s.id); announce(s.label); },
+                style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
+                s.icon + ' ' + s.label);
+            })
+          ),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } },
+            content
+          ),
+          miniQuizBlock('printPostage', [
+            { q: 'Where was L.L. Bean founded?',
+              opts: ['Portland', 'Freeport, Maine (1912)', 'Bangor', 'Boston'],
+              ans: 1, explain: 'Leon Leonwood Bean founded L.L. Bean in Freeport, Maine in 1912. Catalog distribution started 1912. Still headquartered in Freeport. Maine\'s most famous retailer.' },
+            { q: 'About how much has US First-Class Mail volume declined since its 2001 peak?',
+              opts: ['~10%', '~25%', '~50%', 'Has actually increased'],
+              ans: 2, explain: 'USPS First-Class Mail volume has declined approximately 50% since its 2001 peak. Driven primarily by email + digital communications replacing personal + business mail. Marketing Mail also declining, more slowly. Package volume has grown (Amazon + e-commerce).' }
+          ]),
+          sourcesBlock([
+            { label: 'US Postal Service annual reports', url: 'https://about.usps.com/' },
+            { label: 'Smithsonian National Postal Museum', url: 'https://postalmuseum.si.edu/' }
+          ]),
+          h(TeacherNotes, {
+            standards: ['NCSS D2.His.5.6-8 (cause + effect)', 'NCSS D2.Eco.6.6-8 (economic decisions)'],
+            discussion: [
+              'Should USPS continue to provide universal mail service to rural areas given declining volume + revenue?',
+              'Why has direct mail persisted as a marketing channel despite the rise of email + digital advertising?'
+            ],
+            misconceptions: [],
+            extension: 'Look at the postage stamp on a piece of mail you receive. What\'s the design? Look up the back story online.'
+          }),
+          crossLinkFooter('printPostage'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // PRINT + SPORTS
+      // ═════════════════════════════════════════════════════════════════════
+      function renderPrintSports() {
+        var spSectRaw = useState('overview');
+        var spSect = spSectRaw[0], setSpSect = spSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '⚾' },
+          { id: 'newspapers', label: 'Sports pages', icon: '📰' },
+          { id: 'magazines', label: 'Sports magazines', icon: '🏆' },
+          { id: 'cards', label: 'Trading cards', icon: '🎴' },
+          { id: 'modern', label: 'Modern + digital', icon: '📱' }
+        ];
+        var content;
+        if (spSect === 'overview') {
+          content = h('div', null, dropCapPara('Sports + print have grown together since the late 19th c. Sports pages helped grow daily newspaper circulation. Sports magazines (Sports Illustrated) defined sports culture. Baseball cards + programs became collectibles + cultural objects.'),
+            sectionHeader('⚾', 'Coverage'),
+            keyPointBlock(null, [
+              { k: 'Sports pages', v: 'Damon Runyon, Grantland Rice, Red Smith, Roger Angell. Major sportswriting tradition.' },
+              { k: 'Sports magazines', v: 'Sporting News (1886+), Sports Illustrated (1954-2024 print), ESPN The Magazine (1998-2019).' },
+              { k: 'Trading cards', v: 'Topps (1951+), Bowman, Fleer. Honus Wagner T206 card sold $7.25M (2022).' },
+              { k: 'Modern digital', v: 'ESPN.com, The Athletic (NY Times-owned 2022+, 3.2M subscribers), Bleacher Report.' }
+            ]));
+        } else if (spSect === 'newspapers') {
+          content = h('div', null, keyPointBlock('Sports pages history', [
+            { k: 'Late 1800s', v: 'Joseph Pulitzer\'s NY World created dedicated sports section. Other major papers followed.' },
+            { k: 'Damon Runyon (1880-1946)', v: 'NY American sports columnist. Coined sports phrases. Also wrote fiction.' },
+            { k: 'Grantland Rice (1880-1954)', v: '"When the One Great Scorer comes to write against your name." Defined heroic sportswriting.' },
+            { k: 'Red Smith (1905-1982)', v: 'NY Herald Tribune + NY Times sports columnist. Pulitzer 1976.' },
+            { k: 'Roger Angell (1920-2022)', v: 'New Yorker baseball writer for ~60 years. Made baseball writing literary form.' }
+          ]));
+        } else if (spSect === 'magazines') {
+          content = h('div', null, keyPointBlock('Sports magazines', [
+            { k: 'Sporting News (1886-)', v: 'Major US baseball weekly. Print ended 2008.' },
+            { k: 'Sports Illustrated (1954-2024 print)', v: 'Henry Luce. Iconic covers. Swimsuit edition 1989+ annual cultural event.' },
+            { k: 'ESPN The Magazine (1998-2019)', v: 'Biweekly. Distinctive design + photography.' },
+            { k: 'Baseball America (1981-)', v: 'Specialized baseball-prospect coverage.' },
+            { k: 'Specialty magazines', v: 'Runner\'s World, Bicycling, Golf Digest, fishing, hunting. Niche but sustainable.' }
+          ]));
+        } else if (spSect === 'cards') {
+          content = h('div', null, keyPointBlock('Baseball + trading cards', [
+            { k: 'Origins (1880s)', v: 'Cigarette companies included player cards as premiums.' },
+            { k: 'T206 Honus Wagner (1909)', v: 'American Tobacco Company. Wagner had card pulled. Only ~50-200 survive. Sold $7.25M (2022).' },
+            { k: 'Goudey (1933+)', v: 'Replaced tobacco with bubble gum premiums during Depression.' },
+            { k: 'Topps (1951+)', v: 'Founded 1938 (gum company). Dominated US baseball cards for decades.' },
+            { k: 'Card boom 1985-95', v: 'Speculative investment frenzy. Over-produced + crashed.' },
+            { k: 'Modern 2020s', v: 'Selective resurgence. PSA + BGS grading services define values.' }
+          ]));
+        } else {
+          content = h('div', null, keyPointBlock('Modern digital sports media', [
+            { k: 'ESPN.com (1995+)', v: 'Major sports-news website.' },
+            { k: 'The Athletic (2016+)', v: 'NY Times-owned (2022). Subscription long-form. 3.2M subs.' },
+            { k: 'Bleacher Report', v: 'TBS Sports-owned. Aggregation site.' },
+            { k: 'Sports gambling apps', v: 'Post-2018 PASPA repeal. DraftKings, FanDuel.' },
+            { k: 'Maine sports', v: 'BDN + Press Herald cover Maine high-school + Maine Black Bears.' }
+          ]));
+        }
+        return h('div', null, backBar('⚾ Print + Sports'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) { var sel = (spSect === s.id); return h('button', { key: s.id, onClick: function() { setSpSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
+          miniQuizBlock('printSports', [
+            { q: 'High-grade Honus Wagner T206 baseball card sold for?', opts: ['$10K', '$100K', '$1M', '$7M+ (2022)'], ans: 3, explain: 'Sold $7.25M in 2022.' }
+          ]),
+          crossLinkFooter('printSports'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // PRINT + ARCHITECTURE
+      // ═════════════════════════════════════════════════════════════════════
+      function renderPrintArch() {
+        var paSectRaw = useState('overview');
+        var paSect = paSectRaw[0], setPaSect = paSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '🏛' },
+          { id: 'plans', label: 'Plans + blueprints', icon: '📐' },
+          { id: 'magazines', label: 'Architecture magazines', icon: '🪧' },
+          { id: 'modern', label: 'Modern + digital', icon: '💻' }
+        ];
+        var content;
+        if (paSect === 'overview') {
+          content = h('div', null, dropCapPara('Architectural communication is fundamentally visual. Plans, sections, elevations, renderings, photographs of finished buildings. Print has been the primary medium of architectural ideas for centuries — Vitruvius\'s De Architectura (~30 BCE), Palladio\'s I Quattro Libri (1570), to modern monographs of Frank Lloyd Wright + Le Corbusier + Rem Koolhaas.'));
+        } else if (paSect === 'plans') {
+          content = h('div', null, keyPointBlock('Architectural plans + reproduction', [
+            { k: 'Plan, section, elevation', v: 'Plan = horizontal cut. Section = vertical. Elevation = facade. Standard architectural drawing types.' },
+            { k: 'Blueprints (1842+)', v: 'Herschel\'s cyanotype process. White lines on blue background. Easier than tracing. Largely obsolete by 1990s; name persists.' },
+            { k: 'Diazo prints (1880s+)', v: 'Dark lines on light background. "Blueline" prints.' },
+            { k: 'CAD + BIM', v: 'AutoCAD (1982+), Revit + BIM. Digital plans now standard.' }
+          ]));
+        } else if (paSect === 'magazines') {
+          content = h('div', null, keyPointBlock('Architecture magazines', [
+            { k: 'Architectural Record (1891+)', v: 'Premier US architecture trade magazine.' },
+            { k: 'Architectural Review (UK, 1896+)', v: 'British architecture magazine. Internationally influential.' },
+            { k: 'Dwell (2000+)', v: 'Modernist-residential architecture + design.' },
+            { k: 'Dezeen (online only, 2006+)', v: 'Most-visited architecture site globally.' },
+            { k: 'ArchDaily (online only, 2008+)', v: 'Chilean architecture website. Massive global audience.' }
+          ]));
+        } else {
+          content = h('div', null, keyPointBlock('Modern digital architectural communication', [
+            { k: 'CAD', v: 'AutoCAD, VectorWorks. Replaced hand drafting starting ~1990s.' },
+            { k: 'BIM', v: 'Revit (Autodesk). 3D model with metadata for every component. Current standard.' },
+            { k: 'Parametric design', v: 'Rhino + Grasshopper. Algorithmic design + complex geometries.' },
+            { k: '3D rendering', v: 'V-Ray, Lumion, Enscape. Photorealistic visualization.' },
+            { k: 'VR architectural review', v: 'Clients walk through virtual buildings before construction.' }
+          ]));
+        }
+        return h('div', null, backBar('🏛 Print + Architecture'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) { var sel = (paSect === s.id); return h('button', { key: s.id, onClick: function() { setPaSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
+          miniQuizBlock('printArch', [
+            { q: 'Why are architectural drawings called "blueprints"?', opts: ['Always blue ink', 'Herschel\'s 1842 cyanotype process — white lines on blue background', 'Architects preferred blue', 'A trademark'], ans: 1, explain: 'John Herschel\'s 1842 cyanotype process produced white lines on blue. Adopted for architectural reproduction late 19th c. Process largely obsolete but name persists.' }
+          ]),
+          crossLinkFooter('printArch'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // PRINT + LAW
+      // ═════════════════════════════════════════════════════════════════════
+      function renderPrintLaw() {
+        var plSectRaw = useState('overview');
+        var plSect = plSectRaw[0], setPlSect = plSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '⚖' },
+          { id: 'codes', label: 'Legal codes', icon: '📜' },
+          { id: 'reports', label: 'Court reports', icon: '👨‍⚖️' },
+          { id: 'reference', label: 'Legal reference', icon: '📚' },
+          { id: 'modern', label: 'Modern + digital', icon: '💻' }
+        ];
+        var content;
+        if (plSect === 'overview') {
+          content = h('div', null, dropCapPara('Legal publishing is a specialized + lucrative print category. Legal codes (statutes), court opinions (case law), legal reference works (Black\'s Law Dictionary, Restatements), bar exam prep. Major publishers (West, LexisNexis, Wolters Kluwer Law) built large businesses around legal information. Digital is reshaping but not replacing this market.'));
+        } else if (plSect === 'codes') {
+          content = h('div', null, keyPointBlock('Legal codes', [
+            { k: 'US Code (1926-)', v: 'Codified federal statutes. 54 titles. Annual supplements.' },
+            { k: 'CFR', v: 'Code of Federal Regulations. 50 titles. Annual revisions.' },
+            { k: 'State codes', v: 'Each state has its own. Maine Revised Statutes, etc.' },
+            { k: 'Annotated codes', v: 'Statutes with editorial annotations. The standard working format for lawyers.' }
+          ]));
+        } else if (plSect === 'reports') {
+          content = h('div', null, keyPointBlock('Court reports', [
+            { k: 'Reporter series', v: 'US Reports (Supreme Court), F.3d (circuit), F. Supp. (district), regional reporters (P.3d).' },
+            { k: 'Case citation', v: 'Standardized format ("Brown v. Board of Educ., 347 U.S. 483 (1954)").' },
+            { k: 'West Publishing (1872+)', v: 'Major US legal publisher. Created West Key Number System. Acquired by Thomson Reuters 1996.' },
+            { k: 'LexisNexis (1973+)', v: 'Original online legal-research service.' },
+            { k: 'Free access', v: 'Google Scholar Cases. CourtListener (Free Law Project).' }
+          ]));
+        } else if (plSect === 'reference') {
+          content = h('div', null, keyPointBlock('Legal reference', [
+            { k: 'Black\'s Law Dictionary (1891+)', v: 'Premier US legal dictionary. Now 12th ed. Bryan A. Garner editor.' },
+            { k: 'Restatements of Law (ALI, 1923+)', v: 'Scholarly summaries of common law. Influential — though not binding.' },
+            { k: 'Williston on Contracts', v: 'Multi-volume contract treatise.' },
+            { k: 'Wright + Miller, Federal Practice + Procedure', v: 'Federal procedure treatise.' },
+            { k: 'Casebooks', v: 'Law-school textbooks. Aspen, Foundation Press, West.' }
+          ]));
+        } else {
+          content = h('div', null, keyPointBlock('Modern digital legal info', [
+            { k: 'Westlaw (Thomson Reuters)', v: 'Premier US legal-research service. Standard for law firms.' },
+            { k: 'LexisNexis', v: 'Main competitor. Similar services.' },
+            { k: 'Bloomberg Law (2009)', v: 'Newer entrant. Strong in legal news + business law.' },
+            { k: 'Free resources', v: 'Google Scholar, CourtListener, Justia, FindLaw.' },
+            { k: 'AI legal research (2023+)', v: 'Harvey AI, Casetext CoCounsel. Promising but problematic — hallucinated cases.' }
+          ]));
+        }
+        return h('div', null, backBar('⚖ Print + Law'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) { var sel = (plSect === s.id); return h('button', { key: s.id, onClick: function() { setPlSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
+          miniQuizBlock('printLaw', [
+            { q: 'What is the standard US legal dictionary?', opts: ['Webster\'s Legal', "Black's Law Dictionary (1891+)", 'Oxford Legal', 'No standard'], ans: 1, explain: "Black's Law Dictionary (1891+), now 12th edition. Premier US legal dictionary." }
+          ]),
+          crossLinkFooter('printLaw'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // ROMANCE NOVELS
+      // ═════════════════════════════════════════════════════════════════════
+      function renderGenreRomance() {
+        var rSectRaw = useState('overview');
+        var rSect = rSectRaw[0], setRSect = rSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '💖' },
+          { id: 'history', label: 'History', icon: '📅' },
+          { id: 'harlequin', label: 'Harlequin', icon: '👑' },
+          { id: 'subgenres', label: 'Subgenres', icon: '🌹' },
+          { id: 'modern', label: 'Modern', icon: '📱' }
+        ];
+        var content;
+        if (rSect === 'overview') {
+          content = h('div', null, dropCapPara('Romance is the largest US fiction publishing category by units sold. Romance Writers of America estimates 25-30% of all US fiction sales. The genre is hugely profitable + influential, but often dismissed or invisible in mainstream-literary conversations. Self-publishing has reshaped the genre dramatically.'));
+        } else if (rSect === 'history') {
+          content = h('div', null, keyPointBlock('Romance history', [
+            { k: 'Samuel Richardson, Pamela (1740)', v: 'Often cited as first English romance novel.' },
+            { k: 'Jane Austen (1811-1817)', v: 'Pride and Prejudice + others. Foundational.' },
+            { k: 'Bronte sisters (1840s)', v: 'Jane Eyre, Wuthering Heights. Gothic + romantic.' },
+            { k: 'Mills + Boon (UK, 1908+)', v: 'British romance publisher.' },
+            { k: 'Harlequin (Canada, 1949+)', v: 'Built modern category-romance market.' },
+            { k: '2008+ Kindle + self-publishing', v: 'Romance earliest + heaviest adopter.' }
+          ]));
+        } else if (rSect === 'harlequin') {
+          content = h('div', null, keyPointBlock('Harlequin', [
+            { k: 'Acquired Mills + Boon (1971)', v: 'Merged the two major mass-market romance publishers.' },
+            { k: 'Category lines', v: 'Themed monthly lines: Presents, Desire, Romance, Historical, Inspirational, Suspense.' },
+            { k: 'Subscription + grocery-store racks', v: 'Multiple new titles per line per month.' },
+            { k: 'Author economics', v: 'Mostly work-for-hire or category-contract. Modest payments. Reliable income.' },
+            { k: 'Acquired by HarperCollins (2014)', v: 'News Corp/HarperCollins acquired Harlequin from Torstar.' }
+          ]));
+        } else if (rSect === 'subgenres') {
+          content = h('div', null, keyPointBlock('Romance subgenres', [
+            { k: 'Historical', v: 'Regency (Georgette Heyer), Scottish Highlands, Victorian, Western.' },
+            { k: 'Contemporary', v: 'Small-town, billionaire, second-chance, fake-relationship, enemies-to-lovers.' },
+            { k: 'Paranormal', v: 'Vampires, werewolves. Twilight era.' },
+            { k: 'Romantic suspense', v: 'Mystery + romance combined. Nora Roberts is master.' },
+            { k: 'Christian + Inspirational', v: 'Faith-based content. Major sub-market.' },
+            { k: 'Erotic romance', v: 'Explicit sexual content. Sylvia Day reached mainstream.' },
+            { k: 'LGBTQ+ romance', v: 'M/M, F/F, trans-protagonist. Casey McQuiston (Red White & Royal Blue 2019) hit mainstream.' }
+          ]));
+        } else {
+          content = h('div', null, keyPointBlock('Modern + digital romance', [
+            { k: 'Self-publishing dominance', v: 'Some romance authors earn $50,000-$1M+/year self-published.' },
+            { k: 'BookTok (TikTok)', v: 'Drove massive sales of Colleen Hoover + others 2020+.' },
+            { k: 'RWA', v: 'Romance Writers of America. 9,000+ members.' },
+            { k: 'Subscription apps', v: 'Kindle Unlimited. Romance authors heavily participate.' },
+            { k: 'Illustrated covers', v: 'Romcoms boom 2018+. Stylistic shift in cover design.' }
+          ]));
+        }
+        return h('div', null, backBar('💖 Romance Novels'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) { var sel = (rSect === s.id); return h('button', { key: s.id, onClick: function() { setRSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
+          miniQuizBlock('genreRomance', [
+            { q: 'Approximately what fraction of US fiction sales is romance?', opts: ['~5%', '~15%', '~25-30%', '~50%'], ans: 2, explain: 'Romance is ~25-30% of all US fiction sales — largest fiction category by units.' }
+          ]),
+          crossLinkFooter('genreRomance'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // SCI-FI + FANTASY
+      // ═════════════════════════════════════════════════════════════════════
+      function renderGenreSciFi() {
+        var sfSectRaw = useState('overview');
+        var sfSect = sfSectRaw[0], setSfSect = sfSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '🚀' },
+          { id: 'pulp', label: 'Pulp era', icon: '📕' },
+          { id: 'golden', label: 'Golden Age', icon: '🌟' },
+          { id: 'newwave', label: 'New Wave', icon: '🌊' },
+          { id: 'fantasy', label: 'Fantasy', icon: '🐉' },
+          { id: 'modern', label: 'Modern', icon: '🌐' }
+        ];
+        var content;
+        if (sfSect === 'overview') {
+          content = h('div', null, dropCapPara('Sci-fi + fantasy emerged from 19th-c. proto-sci-fi (Shelley\'s Frankenstein, Verne, Wells), through pulp magazines, Golden Age (Asimov + Heinlein + Clarke), New Wave (Le Guin + Dick + Delany), modern (Octavia Butler, Liu Cixin, N.K. Jemisin). Tolkien made fantasy a major commercial genre. Today massive publishing categories + cultural forces.'));
+        } else if (sfSect === 'pulp') {
+          content = h('div', null, keyPointBlock('Pulp era', [
+            { k: 'Pulp magazines (1920s-50s)', v: 'Amazing Stories (1926+), Astounding (1930+), Weird Tales (1923-1954).' },
+            { k: 'Hugo Gernsback', v: 'Founded Amazing Stories. Coined "science fiction." Hugo Award named for him.' },
+            { k: 'John W. Campbell', v: 'Editor of Astounding (1937-1971). Cultivated Golden Age generation.' }
+          ]));
+        } else if (sfSect === 'golden') {
+          content = h('div', null, keyPointBlock('Golden Age (1940s-50s)', [
+            { k: 'Isaac Asimov (1920-1992)', v: 'Foundation series, Robot series. Three Laws of Robotics. Hundreds of books.' },
+            { k: 'Robert A. Heinlein (1907-1988)', v: 'Stranger in a Strange Land (1961), Starship Troopers (1959).' },
+            { k: 'Arthur C. Clarke (1917-2008)', v: '2001: A Space Odyssey (1968), Childhood\'s End (1953), Rendezvous with Rama (1973).' },
+            { k: 'Ray Bradbury (1920-2012)', v: 'Fahrenheit 451 (1953), Martian Chronicles (1950).' },
+            { k: 'Frank Herbert, Dune (1965)', v: 'Epic political-ecological sci-fi. Multiple film adaptations.' }
+          ]));
+        } else if (sfSect === 'newwave') {
+          content = h('div', null, keyPointBlock('New Wave (1960s-70s)', [
+            { k: 'Ursula K. Le Guin (1929-2018)', v: 'Earthsea, Left Hand of Darkness (1969), Dispossessed (1974). Feminist + anthropological themes.' },
+            { k: 'Philip K. Dick (1928-1982)', v: 'Man in the High Castle, Do Androids Dream of Electric Sheep (Blade Runner basis), Ubik. Paranoid metaphysics.' },
+            { k: 'Samuel R. Delany (b. 1942)', v: 'Dhalgren (1975), Babel-17 (1966). One of first Black sci-fi writers.' },
+            { k: 'William Gibson, Neuromancer (1984)', v: 'Defined cyberpunk. Coined "cyberspace."' }
+          ]));
+        } else if (sfSect === 'fantasy') {
+          content = h('div', null, keyPointBlock('Fantasy', [
+            { k: 'Tolkien, Hobbit (1937), LOTR (1954-55)', v: 'Defined modern epic fantasy. 150M+ copies.' },
+            { k: 'C.S. Lewis, Narnia (1950-56)', v: '100M+ copies. Major children\'s fantasy influence.' },
+            { k: 'Robert Jordan, Wheel of Time (1990-2013)', v: '14 volumes. Sanderson finished after Jordan\'s death.' },
+            { k: 'George R.R. Martin, Game of Thrones (1996+)', v: 'HBO adaptation made fantasy mass-cultural.' },
+            { k: 'J.K. Rowling, Harry Potter (1997-2007)', v: 'Best-selling book series ever. 600M+ copies.' },
+            { k: 'Brandon Sanderson', v: 'Most successful current epic-fantasy author. $42M Kickstarter (2022).' }
+          ]));
+        } else {
+          content = h('div', null, keyPointBlock('Modern + diverse', [
+            { k: 'Octavia Butler (1947-2006)', v: 'Black American sci-fi. Patternmaster, Kindred, Parable series.' },
+            { k: 'N.K. Jemisin', v: 'First author to win Hugo Best Novel 3 years in a row (2016-2018).' },
+            { k: 'Ann Leckie, Ancillary Justice (2013)', v: 'Hugo + Nebula + Arthur C. Clarke Award.' },
+            { k: 'Liu Cixin, Three-Body Problem (translated 2014)', v: 'First Asian author to win Hugo Best Novel.' },
+            { k: 'Becky Chambers, Wayfarers', v: 'Cozy + character-focused sci-fi.' }
+          ]));
+        }
+        return h('div', null, backBar('🚀 Sci-Fi + Fantasy'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) { var sel = (sfSect === s.id); return h('button', { key: s.id, onClick: function() { setSfSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
+          miniQuizBlock('genreSciFi', [
+            { q: 'First author to win Hugo Best Novel 3 years in a row?', opts: ['Asimov', 'N.K. Jemisin (2016-18 Broken Earth)', 'Heinlein', 'Le Guin'], ans: 1, explain: 'N.K. Jemisin won the Hugo Award for Best Novel in 2016, 2017, + 2018 for the Broken Earth trilogy. First author ever to achieve this.' }
+          ]),
+          crossLinkFooter('genreSciFi'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // MYSTERY + CRIME FICTION
+      // ═════════════════════════════════════════════════════════════════════
+      function renderGenreMystery() {
+        var mySectRaw = useState('overview');
+        var mySect = mySectRaw[0], setMySect = mySectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '🔍' },
+          { id: 'origins', label: 'Origins', icon: '🎩' },
+          { id: 'golden', label: 'Golden Age', icon: '🕵️' },
+          { id: 'hardboiled', label: 'Hardboiled', icon: '🔫' },
+          { id: 'modern', label: 'Modern', icon: '🌙' }
+        ];
+        var content;
+        if (mySect === 'overview') {
+          content = h('div', null, dropCapPara('Mystery + crime fiction is a 180-year tradition. Edgar Allan Poe invented the modern detective story with "Murders in the Rue Morgue" (1841). Conan Doyle\'s Sherlock Holmes (1887+) created the template. Christie + Sayers (Golden Age 1920s-30s). Hammett + Chandler defined hardboiled.'));
+        } else if (mySect === 'origins') {
+          content = h('div', null, keyPointBlock('Origins', [
+            { k: 'Edgar Allan Poe (1809-1849)', v: '"Murders in the Rue Morgue" (1841) — first modern detective story. C. Auguste Dupin = first detective.' },
+            { k: 'Wilkie Collins, The Moonstone (1868)', v: 'Often called first English-language detective novel.' },
+            { k: 'Arthur Conan Doyle (1859-1930)', v: 'Sherlock Holmes debut A Study in Scarlet (1887). 60 stories + 4 novels.' },
+            { k: 'G.K. Chesterton, Father Brown (1911+)', v: '~50 stories. Catholic priest detective.' }
+          ]));
+        } else if (mySect === 'golden') {
+          content = h('div', null, keyPointBlock('Golden Age', [
+            { k: 'Agatha Christie (1890-1976)', v: 'Best-selling fiction author ever (~2 billion copies). Poirot + Marple. And Then There Were None (1939) best-selling mystery novel ever.' },
+            { k: 'Dorothy L. Sayers (1893-1957)', v: 'Lord Peter Wimsey. Whose Body? (1923), Gaudy Night (1935).' },
+            { k: 'Detection Club (1930)', v: 'British literary society. Christie, Sayers, Chesterton + others. Swore to play fair with readers.' }
+          ]));
+        } else if (mySect === 'hardboiled') {
+          content = h('div', null, keyPointBlock('Hardboiled', [
+            { k: 'Dashiell Hammett (1894-1961)', v: 'Red Harvest (1929), Maltese Falcon (1930), Thin Man (1934). Sam Spade.' },
+            { k: 'Raymond Chandler (1888-1959)', v: 'Philip Marlowe — Big Sleep (1939), Farewell My Lovely (1940), Long Goodbye (1953).' },
+            { k: 'James M. Cain', v: 'Postman Always Rings Twice (1934), Double Indemnity (1936).' },
+            { k: 'Patricia Highsmith', v: 'Talented Mr. Ripley (1955).' }
+          ]));
+        } else {
+          content = h('div', null, keyPointBlock('Modern', [
+            { k: 'Sue Grafton (1940-2017)', v: 'Alphabet series (A is for Alibi 1982 through Y).' },
+            { k: 'Walter Mosley', v: 'Easy Rawlins series. Black detective 1940s-50s LA.' },
+            { k: 'Tana French', v: 'Dublin Murder Squad series.' },
+            { k: 'Scandinavian noir', v: 'Stieg Larsson (Girl with Dragon Tattoo), Jo Nesbø, Henning Mankell.' },
+            { k: 'Stephen King', v: 'Mr. Mercedes trilogy, Joyland, Billy Summers. Maine settings.' },
+            { k: 'Psychological thrillers', v: 'Gillian Flynn (Gone Girl 2012), Paula Hawkins (Girl on Train 2015).' }
+          ]));
+        }
+        return h('div', null, backBar('🔍 Mystery + Crime Fiction'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) { var sel = (mySect === s.id); return h('button', { key: s.id, onClick: function() { setMySect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
+          miniQuizBlock('genreMystery', [
+            { q: 'Best-selling fiction author of all time?', opts: ['Shakespeare', 'Agatha Christie (~2 billion copies)', 'King', 'Rowling'], ans: 1, explain: 'Agatha Christie has sold approximately 2 billion copies. And Then There Were None (1939) is best-selling mystery novel ever.' }
+          ]),
+          crossLinkFooter('genreMystery'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // MANGA DEEP DIVE
+      // ═════════════════════════════════════════════════════════════════════
+      function renderMangaDeep() {
+        var mdSectRaw = useState('overview');
+        var mdSect = mdSectRaw[0], setMdSect = mdSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '🎌' },
+          { id: 'history', label: 'History', icon: '📅' },
+          { id: 'tezuka', label: 'Tezuka era', icon: '🦁' },
+          { id: 'major', label: 'Major titles', icon: '⭐' },
+          { id: 'global', label: 'Global impact', icon: '🌍' }
+        ];
+        var content;
+        if (mdSect === 'overview') {
+          content = h('div', null, dropCapPara('Manga (Japanese comics) is a massive cultural + commercial phenomenon. Japanese comics sales account for ~25% of all Japanese publishing. Globally, manga has become one of the dominant comic formats — accounting for ~40% of US graphic-novel sales.'));
+        } else if (mdSect === 'history') {
+          content = h('div', null, keyPointBlock('Manga history', [
+            { k: 'Edo roots', v: 'Hokusai\'s Manga (1814-1878 sketchbooks) coined the term. Ukiyo-e narrative prints.' },
+            { k: 'Post-WWII', v: 'American occupation introduced Disney + Western styles. Japanese artists synthesized.' },
+            { k: 'Magazine boom 1950s-60s', v: 'Weekly Shōnen Jump (1968+) became dominant.' },
+            { k: 'Tankōbon (1960s+)', v: 'Bound paperback collections. Standard manga book format.' },
+            { k: 'Global expansion 1990s+', v: 'Tokyopop, Viz Media, Yen Press major US publishers.' }
+          ]));
+        } else if (mdSect === 'tezuka') {
+          content = h('div', null, keyPointBlock('Tezuka era', [
+            { k: 'Osamu Tezuka (1928-1989)', v: '"Godfather of manga." Astro Boy (1952), Phoenix (1967-1988), Buddha (1972-1983), Black Jack.' },
+            { k: 'Visual conventions', v: 'Cinematic techniques — pacing, panel rhythm, expressive faces. Big eyes (Disney-influenced) became manga standard.' },
+            { k: 'Gekiga movement', v: 'Late 1950s-60s. Realistic adult-themed manga. Yoshihiro Tatsumi (A Drifting Life).' }
+          ]));
+        } else if (mdSect === 'major') {
+          content = h('div', null, keyPointBlock('Major manga titles', [
+            { k: 'Astro Boy (1952-1968)', v: 'Defining shonen manga. Tezuka.' },
+            { k: 'Dragon Ball (1984-1995)', v: 'Akira Toriyama. ~350M copies globally.' },
+            { k: 'Akira (1982-1990)', v: 'Cyberpunk classic. Otomo. 1988 anime film globally influential.' },
+            { k: 'Sailor Moon (1991-1997)', v: 'Defined shojo manga international appeal.' },
+            { k: 'One Piece (1997-)', v: 'Eiichiro Oda. ~525M copies — best-selling comic series in any country, any genre.' },
+            { k: 'Naruto (1999-2014)', v: 'Ninja shonen. ~250M copies.' },
+            { k: 'Death Note (2003-2006)', v: 'Psychological thriller. Famous internationally.' },
+            { k: 'Attack on Titan (2009-2021)', v: 'Dark fantasy. ~120M copies.' },
+            { k: 'Demon Slayer (2016-2020)', v: '~150M copies. Recent massive hit.' }
+          ]));
+        } else {
+          content = h('div', null, keyPointBlock('Global impact', [
+            { k: 'US manga market', v: '~40% of US graphic-novel sales per Publishers Weekly.' },
+            { k: 'Crunchyroll, Shonen Jump app', v: 'Subscription anime + manga apps reaching massive Western audiences.' },
+            { k: 'Tokyopop, Viz, Yen Press', v: 'Major US manga publishers.' },
+            { k: 'Korean manhwa + webtoons', v: 'Naver Webtoon massive global platform.' },
+            { k: 'Visual influence', v: 'Manga conventions (big eyes, sound effects, specific poses) influenced Western comics + animation + games + design.' }
+          ]));
+        }
+        return h('div', null, backBar('🎌 Manga Deep Dive'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) { var sel = (mdSect === s.id); return h('button', { key: s.id, onClick: function() { setMdSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
+          miniQuizBlock('mangaDeep', [
+            { q: 'Best-selling comic series in any country/genre?', opts: ['Dragon Ball', 'One Piece (~525M)', 'Naruto', 'Akira'], ans: 1, explain: 'One Piece by Eiichiro Oda has sold ~525M copies since 1997.' }
+          ]),
+          crossLinkFooter('mangaDeep'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // PHOTOGRAPHY BOOKS
+      // ═════════════════════════════════════════════════════════════════════
+      function renderPhotoBooks() {
+        var pbSectRaw = useState('overview');
+        var pbSect = pbSectRaw[0], setPbSect = pbSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '📸' },
+          { id: 'classics', label: 'Classic books', icon: '🏆' },
+          { id: 'photographers', label: 'Major photographers', icon: '👤' },
+          { id: 'modern', label: 'Modern', icon: '📚' }
+        ];
+        var content;
+        if (pbSect === 'overview') {
+          content = h('div', null, dropCapPara('Photo books are a distinct + serious art form. Robert Frank\'s The Americans (1958), Walker Evans\'s American Photographs (1938) defined the form. Photo books have had a renaissance since the 2000s.'));
+        } else if (pbSect === 'classics') {
+          content = h('div', null, keyPointBlock('Classic photo books', [
+            { k: 'Walker Evans, American Photographs (1938)', v: 'Sequence + page-pairing as artistic statements.' },
+            { k: 'Robert Frank, The Americans (1958)', v: '83 photographs cross-country. Kerouac wrote intro. Most important post-WWII photo book.' },
+            { k: 'Cartier-Bresson, Decisive Moment (1952)', v: 'Defined the "decisive moment" philosophy.' },
+            { k: 'William Eggleston Guide (1976)', v: 'First color photo book taken seriously by fine-art world.' },
+            { k: 'Diane Arbus Monograph (1972)', v: 'Posthumous. Established Arbus as major photographer.' },
+            { k: 'Sally Mann, Immediate Family (1992)', v: 'Photographs of her children. Controversial + influential.' }
+          ]));
+        } else if (pbSect === 'photographers') {
+          content = h('div', null, keyPointBlock('Major photographers', [
+            { k: 'Ansel Adams (1902-1984)', v: 'Yosemite. Camera/Negative/Print technical series.' },
+            { k: 'Diane Arbus (1923-1971)', v: 'Outsider portraits. New York.' },
+            { k: 'Sebastião Salgado (b. 1944)', v: 'Workers (1993), Migrations (2000), Genesis (2013).' },
+            { k: 'Annie Leibovitz', v: 'Rolling Stone + Vanity Fair portraits.' },
+            { k: 'Steve McCurry', v: 'National Geographic. "Afghan Girl" (1985).' },
+            { k: 'Vivian Maier (1926-2009)', v: 'Chicago nanny. 100,000+ photos. Discovered posthumously.' }
+          ]));
+        } else {
+          content = h('div', null, keyPointBlock('Modern photo-book renaissance', [
+            { k: 'Aperture Foundation', v: 'Major US photo-book publisher.' },
+            { k: 'Steidl (Germany)', v: 'Premier photo-book publisher. Heavyweight production.' },
+            { k: 'MACK Books (UK)', v: 'Many award-winning titles.' },
+            { k: 'Self-published photo books', v: 'Print-on-demand + small-print-run proliferated.' },
+            { k: 'Photo-book stores + fairs', v: 'Dashwood NYC, photo-eye Santa Fe. Paris Photo, NY Art Book Fair.' }
+          ]));
+        }
+        return h('div', null, backBar('📸 Photography Books'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) { var sel = (pbSect === s.id); return h('button', { key: s.id, onClick: function() { setPbSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
+          miniQuizBlock('photoBooks', [
+            { q: 'Most important post-WWII photo book?', opts: ['Family of Man (1955)', 'The Americans (Frank, 1958)', 'Arbus Monograph (1972)', 'Decisive Moment (1952)'], ans: 1, explain: 'Robert Frank\'s The Americans (1958) is widely cited as the most important post-WWII photo book.' }
+          ]),
+          crossLinkFooter('photoBooks'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // ZINES + FANZINES
+      // ═════════════════════════════════════════════════════════════════════
+      function renderFanzines() {
+        var fzSectRaw = useState('overview');
+        var fzSect = fzSectRaw[0], setFzSect = fzSectRaw[1];
+        var sections = [
+          { id: 'overview', label: 'Overview', icon: '✂' },
+          { id: 'scifi', label: 'Sci-fi fanzines', icon: '🚀' },
+          { id: 'punk', label: 'Punk zines', icon: '🤘' },
+          { id: 'riotgrrrl', label: 'Riot grrrl', icon: '⚡' },
+          { id: 'modern', label: 'Modern zines', icon: '📋' }
+        ];
+        var content;
+        if (fzSect === 'overview') {
+          content = h('div', null, dropCapPara('Zines + fanzines (small self-published periodicals) have been an underground print form for ~90 years. Sci-fi fanzines (1930s+) defined the form. Punk zines (1970s-80s) made zine culture broadly visible. Riot grrrl zines (early 1990s) shaped feminist + queer subculture.'));
+        } else if (fzSect === 'scifi') {
+          content = h('div', null, keyPointBlock('Sci-fi fanzines', [
+            { k: 'The Comet (1930)', v: 'Often cited as first sci-fi fanzine. Chicago. Raymond A. Palmer.' },
+            { k: 'Mimeograph era', v: 'Cheap + accessible. Print runs typically 50-200.' },
+            { k: 'Fanwriting tradition', v: 'Essays, reviews, fiction, art, letters. Active correspondence networks. Many sci-fi authors started here.' },
+            { k: 'Worldcon (1939+)', v: 'World Science Fiction Convention. Hugo Awards include Best Fanzine + Best Fan Writer.' }
+          ]));
+        } else if (fzSect === 'punk') {
+          content = h('div', null, keyPointBlock('Punk zines', [
+            { k: 'Sniffin\' Glue (UK, 1976-77)', v: 'Mark Perry. London punk scene. Defining punk zine.' },
+            { k: 'Maximumrocknroll (1982-2019)', v: 'San Francisco. Most influential US punk zine. 37 years.' },
+            { k: 'Slash (LA, 1977-1980)', v: 'LA punk scene. Notable graphic design.' },
+            { k: 'Production', v: 'Cut-and-paste layout (literally). Photocopied. Distributed at shows + mail order.' }
+          ]));
+        } else if (fzSect === 'riotgrrrl') {
+          content = h('div', null, keyPointBlock('Riot grrrl zines (early 1990s)', [
+            { k: 'Movement', v: 'Feminist punk-influenced. Olympia + DC + later Portland origins. Bikini Kill, Bratmobile, Heavens to Betsy.' },
+            { k: 'Riot Grrrl zine (1991-)', v: 'Foundational. Multiple authors.' },
+            { k: 'Girl Germs, Jigsaw, Bikini Kill', v: 'Major riot grrrl zines.' },
+            { k: 'Content', v: 'Personal essays, feminist analysis, music coverage, body politics, queer identity.' },
+            { k: 'Archives', v: 'Sallie Bingham Center (Duke), Barnard Zine Library, Riot Grrrl Collection (Fales NYU).' }
+          ]));
+        } else {
+          content = h('div', null, keyPointBlock('Modern zines', [
+            { k: 'Zine fests', v: 'NYC Feminist Zinefest, Portland Zine Symposium, LA Zine Fest, many more.' },
+            { k: 'University zine collections', v: 'Barnard Zine Library, NYU Riot Grrrl Collection, others.' },
+            { k: 'Maine zines', v: 'Portland Zine Symposium annually. SPACE Gallery, Bull Moose, Apohadion Theater.' },
+            { k: 'Microcosm Publishing (Portland OR)', v: 'Republishes zine compilations + zine-related books.' },
+            { k: 'Digital zines', v: 'PDF zines, web zines, Substack as zine descendant.' }
+          ]));
+        }
+        return h('div', null, backBar('✂ Zines + Fanzines'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+            sections.map(function(s) { var sel = (fzSect === s.id); return h('button', { key: s.id, onClick: function() { setFzSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
+          miniQuizBlock('fanzines', [
+            { q: 'When did first sci-fi fanzines appear?', opts: ['1900s', '1930 (The Comet)', '1950s', '1970s'], ans: 1, explain: 'The Comet (1930) is often cited as the first sci-fi fanzine. Chicago.' }
+          ]),
+          crossLinkFooter('fanzines'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
       // and hook count varying per view triggered "Rendered more/fewer hooks
       // than during the previous render" errors on navigation.
       // ═════════════════════════════════════════════════════════════════════
@@ -9112,6 +17783,65 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
       else if (view === 'broadside')       content = h(_ViewWrapper, { key: 'broadside',       _render: renderBroadside });
       else if (view === 'sameFears')       content = h(_ViewWrapper, { key: 'sameFears',       _render: renderSameFears });
       else if (view === 'dayInShop')       content = h(_ViewWrapper, { key: 'dayInShop',       _render: renderDayInShop });
+      else if (view === 'globalPrinting')  content = h(_ViewWrapper, { key: 'globalPrinting',  _render: renderGlobalPrinting });
+      else if (view === 'bookbinding')     content = h(_ViewWrapper, { key: 'bookbinding',     _render: renderBookbinding });
+      else if (view === 'paperMaking')     content = h(_ViewWrapper, { key: 'paperMaking',     _render: renderPaperMaking });
+      else if (view === 'censorship')      content = h(_ViewWrapper, { key: 'censorship',      _render: renderCensorship });
+      else if (view === 'firstNews')       content = h(_ViewWrapper, { key: 'firstNews',       _render: renderFirstNews });
+      else if (view === 'apprenticeJourney') content = h(_ViewWrapper, { key: 'apprenticeJourney', _render: renderApprenticeJourney });
+      else if (view === 'typeFoundry')     content = h(_ViewWrapper, { key: 'typeFoundry',     _render: renderTypeFoundry });
+      else if (view === 'mainePrinters')   content = h(_ViewWrapper, { key: 'mainePrinters',   _render: renderMainePrinters });
+      else if (view === 'musicPrinting')   content = h(_ViewWrapper, { key: 'musicPrinting',   _render: renderMusicPrinting });
+      else if (view === 'mapsAtlases')     content = h(_ViewWrapper, { key: 'mapsAtlases',     _render: renderMapsAtlases });
+      else if (view === 'childrensBooks')  content = h(_ViewWrapper, { key: 'childrensBooks',  _render: renderChildrensBooks });
+      else if (view === 'sciPublishing')   content = h(_ViewWrapper, { key: 'sciPublishing',   _render: renderSciPublishing });
+      else if (view === 'letterpressToday') content = h(_ViewWrapper, { key: 'letterpressToday', _render: renderLetterpressToday });
+      else if (view === 'pressVariants')   content = h(_ViewWrapper, { key: 'pressVariants',   _render: renderPressVariants });
+      else if (view === 'reformation')     content = h(_ViewWrapper, { key: 'reformation',     _render: renderReformation });
+      else if (view === 'colorPrinting')   content = h(_ViewWrapper, { key: 'colorPrinting',   _render: renderColorPrinting });
+      else if (view === 'booksChanged')    content = h(_ViewWrapper, { key: 'booksChanged',    _render: renderBooksChanged });
+      else if (view === 'printRevolution') content = h(_ViewWrapper, { key: 'printRevolution', _render: renderPrintRevolution });
+      else if (view === 'bookObject')      content = h(_ViewWrapper, { key: 'bookObject',      _render: renderBookObject });
+      else if (view === 'inkMaterials')    content = h(_ViewWrapper, { key: 'inkMaterials',    _render: renderInkMaterials });
+      else if (view === 'translation')     content = h(_ViewWrapper, { key: 'translation',     _render: renderTranslation });
+      else if (view === 'propaganda')      content = h(_ViewWrapper, { key: 'propaganda',      _render: renderPropaganda });
+      else if (view === 'comics')          content = h(_ViewWrapper, { key: 'comics',          _render: renderComics });
+      else if (view === 'futurePrint')     content = h(_ViewWrapper, { key: 'futurePrint',     _render: renderFuturePrint });
+      else if (view === 'famousShops')     content = h(_ViewWrapper, { key: 'famousShops',     _render: renderFamousShops });
+      else if (view === 'printReligion')   content = h(_ViewWrapper, { key: 'printReligion',   _render: renderPrintReligion });
+      else if (view === 'printEducation')  content = h(_ViewWrapper, { key: 'printEducation',  _render: renderPrintEducation });
+      else if (view === 'printMoney')      content = h(_ViewWrapper, { key: 'printMoney',      _render: renderPrintMoney });
+      else if (view === 'libraryHistory')  content = h(_ViewWrapper, { key: 'libraryHistory',  _render: renderLibraryHistory });
+      else if (view === 'magazines')       content = h(_ViewWrapper, { key: 'magazines',       _render: renderMagazines });
+      else if (view === 'encyclopedias')   content = h(_ViewWrapper, { key: 'encyclopedias',   _render: renderEncyclopedias });
+      else if (view === 'dictionaries')    content = h(_ViewWrapper, { key: 'dictionaries',    _render: renderDictionaries });
+      else if (view === 'cookbooks')       content = h(_ViewWrapper, { key: 'cookbooks',       _render: renderCookbooks });
+      else if (view === 'selfhelp')        content = h(_ViewWrapper, { key: 'selfhelp',        _render: renderSelfhelp });
+      else if (view === 'paperSustain')    content = h(_ViewWrapper, { key: 'paperSustain',    _render: renderPaperSustain });
+      else if (view === 'comicStrips')     content = h(_ViewWrapper, { key: 'comicStrips',     _render: renderComicStrips });
+      else if (view === 'printWar')        content = h(_ViewWrapper, { key: 'printWar',        _render: renderPrintWar });
+      else if (view === 'famousBinders')   content = h(_ViewWrapper, { key: 'famousBinders',   _render: renderFamousBinders });
+      else if (view === 'maineAuthors')    content = h(_ViewWrapper, { key: 'maineAuthors',    _render: renderMaineAuthors });
+      else if (view === 'printTourism')    content = h(_ViewWrapper, { key: 'printTourism',    _render: renderPrintTourism });
+      else if (view === 'printHealthcare') content = h(_ViewWrapper, { key: 'printHealthcare', _render: renderPrintHealthcare });
+      else if (view === 'fontIdentification') content = h(_ViewWrapper, { key: 'fontIdentification', _render: renderFontIdentification });
+      else if (view === 'printPostage')    content = h(_ViewWrapper, { key: 'printPostage',    _render: renderPrintPostage });
+      else if (view === 'printSports')     content = h(_ViewWrapper, { key: 'printSports',     _render: renderPrintSports });
+      else if (view === 'printArch')       content = h(_ViewWrapper, { key: 'printArch',       _render: renderPrintArch });
+      else if (view === 'printLaw')        content = h(_ViewWrapper, { key: 'printLaw',        _render: renderPrintLaw });
+      else if (view === 'genreRomance')    content = h(_ViewWrapper, { key: 'genreRomance',    _render: renderGenreRomance });
+      else if (view === 'genreSciFi')      content = h(_ViewWrapper, { key: 'genreSciFi',      _render: renderGenreSciFi });
+      else if (view === 'genreMystery')    content = h(_ViewWrapper, { key: 'genreMystery',    _render: renderGenreMystery });
+      else if (view === 'mangaDeep')       content = h(_ViewWrapper, { key: 'mangaDeep',       _render: renderMangaDeep });
+      else if (view === 'photoBooks')      content = h(_ViewWrapper, { key: 'photoBooks',      _render: renderPhotoBooks });
+      else if (view === 'fanzines')        content = h(_ViewWrapper, { key: 'fanzines',        _render: renderFanzines });
+      else if (view === 'forgeries')       content = h(_ViewWrapper, { key: 'forgeries',       _render: renderForgeries });
+      else if (view === 'manuscripts')     content = h(_ViewWrapper, { key: 'manuscripts',     _render: renderManuscripts });
+      else if (view === 'bookplates')      content = h(_ViewWrapper, { key: 'bookplates',      _render: renderBookplates });
+      else if (view === 'usedBooks')       content = h(_ViewWrapper, { key: 'usedBooks',       _render: renderUsedBooks });
+      else if (view === 'cardCatalog')     content = h(_ViewWrapper, { key: 'cardCatalog',     _render: renderCardCatalog });
+      else if (view === 'diaryTradition')  content = h(_ViewWrapper, { key: 'diaryTradition',  _render: renderDiaryTradition });
+      else if (view === 'tarotOracle')     content = h(_ViewWrapper, { key: 'tarotOracle',     _render: renderTarotOracle });
       else if (view === 'cumulative')      content = h(_ViewWrapper, { key: 'cumulative',      _render: renderCumulative });
       else if (view === 'askPrinter')      content = h(_ViewWrapper, { key: 'askPrinter',      _render: renderAskPrinter });
       else if (view === 'resources')       content = h(_ViewWrapper, { key: 'resources',       _render: renderResources });
@@ -9130,7 +17860,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
       // so it reads as texture, not pattern. backgroundAttachment: fixed
       // keeps the lighting stable as the student scrolls.
       var paperGrainSvg = 'data:image/svg+xml;utf8,' + encodeURIComponent(
-        '<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220">' +
+        '<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220" aria-hidden="true">' +
           '<filter id="g">' +
             '<feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7"/>' +
             '<feColorMatrix values="0 0 0 0 0.35   0 0 0 0 0.27   0 0 0 0 0.16   0 0 0 0.10 0"/>' +

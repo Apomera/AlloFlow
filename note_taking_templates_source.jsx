@@ -884,13 +884,13 @@ Generate 2-4 patterns. Quality over quantity — one really specific pattern is 
 const _NoteInsightsModal = ({ isOpen, onClose, insights, isLoading, t }) => {
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4" role="dialog" aria-modal="true">
+    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="note-insights-modal-title">
       <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden border border-slate-200">
         <div className="flex items-start justify-between p-5 border-b border-slate-200 bg-gradient-to-r from-emerald-50 to-violet-50">
           <div>
             <div className="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">Note-Taking Insights</div>
-            <h2 className="text-2xl font-black text-slate-800 mt-0.5">📊 {t('note_insights.title') || 'Your note-taking patterns'}</h2>
+            <h2 id="note-insights-modal-title" className="text-2xl font-black text-slate-800 mt-0.5">📊 {t('note_insights.title') || 'Your note-taking patterns'}</h2>
             <p className="text-xs text-slate-600 mt-1 leading-snug">{t('note_insights.subtitle') || 'Growth-focused observations across your saved entries. Not a grade — a mirror.'}</p>
           </div>
           <button onClick={onClose} className="text-slate-600 hover:text-slate-700 text-2xl leading-none p-1 -mt-1 -mr-1 rounded hover:bg-slate-100" aria-label={t('note_insights.close_aria') || 'Close insights'}>✕</button>

@@ -254,7 +254,7 @@ const FocusReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
                     )}
                 </div>
             </div>
-            <div className="flex-1 flex flex-col items-center justify-center cursor-pointer select-none px-8 relative" onClick={handlePlayToggle}>
+            <div className="flex-1 flex flex-col items-center justify-center cursor-pointer select-none px-8 relative" onClick={handlePlayToggle} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handlePlayToggle(); } }} aria-label={(typeof t === 'function' ? t('immersive.toggle_play_aria') : null) || 'Play or pause reading'}>
                 {/* 3-2-1 countdown. Only fires at the very start of a fresh read
                     so mid-document pauses/resumes aren't penalized. */}
                 {countdown > 0 && (
@@ -874,6 +874,8 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
                 className="flex-1 relative overflow-hidden cursor-pointer select-none"
                 style={{ perspective: '900px', perspectiveOrigin: '50% 100%' }}
                 role="button"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); togglePlay(); } }}
                 aria-label={isPlaying ? 'Pause crawl' : 'Play crawl'}
             >
                 {/* Starfield backdrop — three layered box-shadow dot fields drifting at
@@ -1188,6 +1190,9 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl })
                     key={idx}
                     ref={el => { activeSentenceRef.current = el; }}
                     aria-current="true"
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSentenceIdx(idx); setSweepPct(0); if (!isPlaying) setIsPlaying(true); } }}
                     onClick={() => { setSentenceIdx(idx); setSweepPct(0); if (!isPlaying) setIsPlaying(true); }}
                     style={{
                         backgroundImage: bgImage,
@@ -1208,6 +1213,9 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl })
         return (
             <span
                 key={idx}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSentenceIdx(idx); setSweepPct(0); } }}
                 onClick={() => { setSentenceIdx(idx); setSweepPct(0); }}
                 style={{
                     color: c.dim,

@@ -225,7 +225,7 @@ const LargeFileTranscriptionModal = React.memo(({
         >
             <div
                 className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-indigo-100 transition-all animate-in zoom-in-95 duration-200"
-                role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}
+                role="dialog" aria-modal="true" aria-labelledby="large-file-modal-title" onClick={e => e.stopPropagation()}
             >
                 <button
                     aria-label={t('common.close')}
@@ -240,7 +240,7 @@ const LargeFileTranscriptionModal = React.memo(({
                         <span className="text-2xl">{isVideo ? '🎬' : '🎵'}</span>
                     </div>
                     <div>
-                        <h3 className="text-lg font-black text-slate-800">
+                        <h3 id="large-file-modal-title" className="text-lg font-black text-slate-800">
                             {isVideo
                                 ? (t?.('large_file.title_video') || 'Large Video File Detected')
                                 : (t?.('large_file.title') || 'Large Audio File Detected')}

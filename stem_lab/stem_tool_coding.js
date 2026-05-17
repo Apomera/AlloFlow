@@ -1296,7 +1296,7 @@
             var svgLines = drawnLines.map(function(l) {
               return '<line x1="' + l.x1 + '" y1="' + l.y1 + '" x2="' + l.x2 + '" y2="' + l.y2 + '" stroke="' + l.color + '" stroke-width="' + l.width + '" stroke-linecap="round"/>';
             }).join('\n  ');
-            var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500">\n  <rect width="500" height="500" fill="#0f172a"/>\n  ' + svgLines + '\n</svg>';
+            var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500" aria-hidden="true">\n  <rect width="500" height="500" fill="#0f172a"/>\n  ' + svgLines + '\n</svg>';
             var blob = new Blob([svg], { type: 'image/svg+xml' });
             var url = URL.createObjectURL(blob);
             var link = document.createElement('a');

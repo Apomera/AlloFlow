@@ -5060,7 +5060,7 @@ Create student-friendly language and return ONLY valid JSON:
                         const clone = el.cloneNode(true);
                         clone.querySelectorAll('textarea, input').forEach(n => n.remove());
                         const html = clone.outerHTML;
-                        const svgStr = `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800"><foreignObject width="100%" height="100%"><div xmlns="http://www.w3.org/1999/xhtml" style="font-family:system-ui,sans-serif;padding:16px;background:white">${html}</div></foreignObject></svg>`;
+                        const svgStr = `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" aria-hidden="true"><foreignObject width="100%" height="100%"><div xmlns="http://www.w3.org/1999/xhtml" style="font-family:system-ui,sans-serif;padding:16px;background:white">${html}</div></foreignObject></svg>`;
                         const canvas = document.createElement('canvas');
                         canvas.width = 1200; canvas.height = 1600;
                         const ctx = canvas.getContext('2d');
@@ -22643,7 +22643,7 @@ Format as a numbered list. Be concise but specific.`;
             const xS = (i) => PAD + (i / Math.max(data.length - 1, 1)) * chartW;
             const yS = (v) => PAD + chartH - (v / maxCount) * chartH;
 
-            let svg = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-height:300px;background:#fafbfc;border:1px solid #e2e8f0;border-radius:8px;">`;
+            let svg = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-height:300px;background:#fafbfc;border:1px solid #e2e8f0;border-radius:8px;" aria-hidden="true">`;
             // Grid
             [0, 0.25, 0.5, 0.75, 1].forEach(pct => {
                 const y = yS(pct * maxCount);

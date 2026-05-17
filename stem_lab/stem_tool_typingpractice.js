@@ -2291,7 +2291,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
   // module load. Returns a CSS background-image url string.
   var TP_PAPER_GRAIN_URI = (function() {
     var svg =
-      '<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220">' +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220" aria-hidden="true">' +
         '<filter id="g">' +
           '<feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="13"/>' +
           '<feColorMatrix values="0 0 0 0 0.55   0 0 0 0 0.6   0 0 0 0 0.7   0 0 0 0.06 0"/>' +

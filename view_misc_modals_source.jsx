@@ -354,6 +354,7 @@ function AIBackendModal(props) {
                         data-help-key="ai_backend_api_key_input"
                         id="ai-backend-apikey" aria-label={t('ai_backend.api_key_aria') || 'Custom AI backend API key'}
                         type="password"
+                        autoComplete="off"
                         placeholder={t('ai_backend.api_key_placeholder') || 'Your API key...'}
                         defaultValue={(() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').apiKey || ''; } catch { return ''; } })()}
                         onChange={(e) => {

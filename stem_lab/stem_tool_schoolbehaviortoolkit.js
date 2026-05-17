@@ -1382,7 +1382,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
       // the radial keeps the lighting stable while content scrolls.
       var sbtGrainSvg = (function() {
         var svg =
-          '<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220">' +
+          '<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220" aria-hidden="true">' +
             '<filter id="g">' +
               '<feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="19"/>' +
               '<feColorMatrix values="0 0 0 0 0.4   0 0 0 0 0.7   0 0 0 0 0.7   0 0 0 0.06 0"/>' +

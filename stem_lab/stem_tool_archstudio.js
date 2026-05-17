@@ -1250,7 +1250,7 @@
       blocks.forEach(function (b) { var key = b.x + ',' + b.z; if (!topView[key] || b.y > topView[key].y) topView[key] = b; });
       var shapeIconLookup = {};
       shapes.forEach(function (s) { shapeIconLookup[s.id] = s.icon; });
-      var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + svgW + '" height="' + svgH + '" viewBox="0 0 ' + svgW + ' ' + svgH + '">\n';
+      var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + svgW + '" height="' + svgH + '" viewBox="0 0 ' + svgW + ' ' + svgH + '" aria-hidden="true">\n';
       svg += '<style>text{font-family:Arial,Helvetica,sans-serif;}</style>\n';
       svg += '<rect width="' + svgW + '" height="' + svgH + '" fill="#0f172a"/>\n';
       svg += '<text x="' + (svgW / 2) + '" y="28" text-anchor="middle" fill="#f8fafc" font-size="16" font-weight="bold">' + (styleMode === 'bricks' ? 'Brick Builder' : 'Architecture Studio') + ' \u2014 Floor Plan</text>\n';
@@ -1299,7 +1299,7 @@
       });
       var shapeIconLookup = {};
       shapes.forEach(function (s) { shapeIconLookup[s.id] = s.icon; });
-      var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + svgW + '" height="' + svgH + '" viewBox="0 0 ' + svgW + ' ' + svgH + '">\n';
+      var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + svgW + '" height="' + svgH + '" viewBox="0 0 ' + svgW + ' ' + svgH + '" aria-hidden="true">\n';
       svg += '<style>text{font-family:Arial,Helvetica,sans-serif;}</style>\n';
       svg += '<rect width="' + svgW + '" height="' + svgH + '" fill="#0f172a"/>\n';
       svg += '<text x="' + (svgW / 2) + '" y="28" text-anchor="middle" fill="#f8fafc" font-size="16" font-weight="bold">' + (styleMode === 'bricks' ? 'Brick Builder' : 'Architecture Studio') + ' \u2014 Front Elevation</text>\n';

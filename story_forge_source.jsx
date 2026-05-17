@@ -3039,6 +3039,8 @@ show();
                             pi === focusParagraphIdx ? 'bg-indigo-600 scale-125' : pp.text.trim().length > 10 ? 'bg-green-400' : 'bg-slate-300'
                           }`}
                           title={`Jump to paragraph ${pi + 1}${pp.text.trim().length > 10 ? ' (written)' : ' (empty)'}`}
+                          aria-label={`Jump to paragraph ${pi + 1}${pp.text.trim().length > 10 ? ' (written)' : ' (empty)'}`}
+                          aria-current={pi === focusParagraphIdx ? 'true' : undefined}
                         />
                       ))}
                     </div>

@@ -271,12 +271,13 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
         ref={wizardRef}
         role="dialog"
         aria-modal="true"
+        aria-labelledby="quickstart-wizard-title"
         className="fixed inset-0 z-[200] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300"
     >
       <div className="bg-white w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-300 border border-slate-400 max-h-[90vh]">
           <div className="bg-slate-50 px-8 py-6 border-b border-slate-100 flex justify-between items-center shrink-0">
               <div>
-                  <h2 className="text-xl font-black text-slate-800 flex items-center gap-2">
+                  <h2 id="quickstart-wizard-title" className="text-xl font-black text-slate-800 flex items-center gap-2">
                     <Sparkles className="text-yellow-500 fill-current" size={20} /> {t('wizard.title')}
                   </h2>
                   <div className="flex gap-1 mt-2">
@@ -476,6 +477,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                               <div className="flex gap-2 mb-6">
                                   <input aria-label={t('common.enter_url_input')}
                                       type="url"
+                                      autoComplete="url"
                                       value={urlInput}
                                       onChange={(e) => setUrlInput(e.target.value)}
                                       data-help-key="wizard_url_input"
@@ -900,6 +902,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                               <Wrench size={14} className="text-slate-600" />
                                           </div>
                                           <textarea
+                                              aria-label={t('wizard.input_instructions_label') || 'Custom instructions'}
                                               value={localData.sourceCustomInstructions}
                                               onChange={(e) => setLocalData(prev => ({ ...prev, sourceCustomInstructions: e.target.value }))}
                                               data-help-key="wizard_instructions_input"

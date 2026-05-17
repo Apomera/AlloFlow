@@ -1258,7 +1258,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       // adds atmospheric grain so the whole panel reads as planet-and-
       // atmosphere rather than a flat color slab.
       var ceGrainSvg = 'data:image/svg+xml;utf8,' + encodeURIComponent(
-        '<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240">' +
+        '<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" aria-hidden="true">' +
           '<filter id="g">' +
             '<feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="11"/>' +
             '<feColorMatrix values="0 0 0 0 0.55   0 0 0 0 0.85   0 0 0 0 0.7   0 0 0 0.06 0"/>' +

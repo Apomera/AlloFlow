@@ -2302,6 +2302,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                         ref={moveMenuRef}
                         className="bg-white p-6 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-3 animate-in zoom-in duration-200"
                         role="dialog"
+                        aria-modal="true"
                         aria-label={t('concept_map.venn.choose_dest_aria')}
                         onClick={e => e.stopPropagation()}
                     >
@@ -2683,6 +2684,7 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                         ref={moveMenuRef}
                         className="bg-white p-4 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-2 animate-in zoom-in duration-200 max-w-md w-full pointer-events-auto"
                         role="dialog"
+                        aria-modal="true"
                         aria-label={t('games.choose_zone_aria') || 'Choose a zone'}
                     >
                         <h4 className="text-xs font-bold text-slate-700 text-center mb-1">{t('concept_sort.tap_target') || 'Tap a zone above, or pick one here:'}</h4>
@@ -3106,7 +3108,7 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
         )}
         {keyboardSelectedItemId && (
           <div className="absolute inset-x-0 bottom-4 z-50 flex justify-center pointer-events-none px-4">
-            <div ref={moveMenuRef} className="bg-white p-4 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-2 animate-in zoom-in duration-200 pointer-events-auto max-w-md w-full" role="dialog" aria-label={t('games.choose_column_aria') || 'Choose a column'}>
+            <div ref={moveMenuRef} className="bg-white p-4 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-2 animate-in zoom-in duration-200 pointer-events-auto max-w-md w-full" role="dialog" aria-modal="true" aria-label={t('games.choose_column_aria') || 'Choose a column'}>
               <h4 className="text-xs font-bold text-slate-700 text-center mb-1">{t('concept_sort.tap_target') || 'Tap a column above, or pick one here:'}</h4>
               <div className="grid grid-cols-2 gap-2">
                 <button onClick={() => handleKeyboardMove('left')} className="px-4 py-3 bg-cyan-100 hover:bg-cyan-200 text-cyan-800 rounded-xl font-bold text-xs transition-colors border border-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-500">{leftTitle}</button>
@@ -3370,7 +3372,7 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
         )}
         {keyboardSelectedItemId && (
           <div className="fixed inset-x-0 bottom-4 z-50 flex justify-center pointer-events-none px-4">
-            <div ref={moveMenuRef} className="bg-white p-4 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-2 animate-in zoom-in duration-200 max-w-md w-full pointer-events-auto" role="dialog" aria-label={t('games.choose_destination_aria') || 'Choose a destination'}>
+            <div ref={moveMenuRef} className="bg-white p-4 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-2 animate-in zoom-in duration-200 max-w-md w-full pointer-events-auto" role="dialog" aria-modal="true" aria-label={t('games.choose_destination_aria') || 'Choose a destination'}>
               <h4 className="text-xs font-bold text-slate-700 text-center mb-1">{t('concept_sort.tap_target') || 'Tap a bucket above, or pick one here:'}</h4>
               <div className="grid grid-cols-2 gap-2">
                 {buckets.map(b => (

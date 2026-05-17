@@ -385,7 +385,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 var c1 = color || '#22d3ee', c2 = color || '#0891b2';
 
-                return '<svg viewBox="0 0 440 260" xmlns="http://www.w3.org/2000/svg">' +
+                return '<svg viewBox="0 0 440 260" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
 
                   '<defs>' +
 
@@ -475,7 +475,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               svg: function (w, h, color) {
 
-                return '<svg viewBox="0 0 460 230" xmlns="http://www.w3.org/2000/svg">' +
+                return '<svg viewBox="0 0 460 230" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
 
                   '<defs>' +
 
@@ -559,7 +559,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 var c1 = color || '#c4b5fd', c2 = color || '#8b5cf6';
 
-                return '<svg viewBox="0 0 320 340" xmlns="http://www.w3.org/2000/svg">' +
+                return '<svg viewBox="0 0 320 340" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
 
                   '<defs>' +
 
@@ -625,7 +625,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 var c1 = color || '#ec4899', c2 = color || '#be185d';
 
-                return '<svg viewBox="0 0 340 360" xmlns="http://www.w3.org/2000/svg">' +
+                return '<svg viewBox="0 0 340 360" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
 
                   '<defs>' +
 
@@ -715,7 +715,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 var c1 = color || '#f97316', c2 = color || '#dc2626';
 
-                return '<svg viewBox="0 0 400 280" xmlns="http://www.w3.org/2000/svg">' +
+                return '<svg viewBox="0 0 400 280" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
 
                   '<defs>' +
 
@@ -781,7 +781,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 var c1 = color || '#f472b6', c2 = color || '#be185d';
 
-                return '<svg viewBox="0 0 320 360" xmlns="http://www.w3.org/2000/svg">' +
+                return '<svg viewBox="0 0 320 360" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
 
                   '<defs>' +
 
@@ -863,7 +863,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 var c1 = color || '#f97316', c2 = color || '#ea580c';
 
-                return '<svg viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg">' +
+                return '<svg viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
 
                   '<defs>' +
 
@@ -929,7 +929,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               svg: function (w, h, color) {
 
-                return '<svg viewBox="0 0 480 220" xmlns="http://www.w3.org/2000/svg">' +
+                return '<svg viewBox="0 0 480 220" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
 
                   '<defs>' +
 
@@ -985,7 +985,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 var sh = color || '#4d7c0f';
 
-                return '<svg viewBox="0 0 420 300" xmlns="http://www.w3.org/2000/svg">' +
+                return '<svg viewBox="0 0 420 300" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
 
                   '<defs>' +
 
@@ -1109,7 +1109,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 var c1 = color || '#7c3aed', c2 = color || '#5b21b6';
 
-                return '<svg viewBox="0 0 420 300" xmlns="http://www.w3.org/2000/svg">' +
+                return '<svg viewBox="0 0 420 300" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
 
                   '<defs>' +
 
@@ -1175,7 +1175,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 var c1 = color || '#f59e0b', c2 = color || '#d97706';
 
-                return '<svg viewBox="0 0 280 380" xmlns="http://www.w3.org/2000/svg">' +
+                return '<svg viewBox="0 0 280 380" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
 
                   '<defs>' +
 
@@ -1237,7 +1237,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 var c1 = color || '#eab308', c2 = color || '#a16207';
 
-                return '<svg viewBox="0 0 400 320" xmlns="http://www.w3.org/2000/svg">' +
+                return '<svg viewBox="0 0 400 320" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
 
                   '<defs>' +
 
@@ -1319,7 +1319,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 var c1 = color || '#1c1917', c2 = color || '#0c0a09';
 
-                return '<svg viewBox="0 0 420 320" xmlns="http://www.w3.org/2000/svg">' +
+                return '<svg viewBox="0 0 420 320" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
 
                   '<defs>' +
 
@@ -1389,7 +1389,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 var c1 = color || '#fbbf24', c2 = color || '#b45309';
 
-                return '<svg viewBox="0 0 360 400" xmlns="http://www.w3.org/2000/svg">' +
+                return '<svg viewBox="0 0 360 400" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
 
                   '<defs>' +
 
@@ -1457,7 +1457,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 var c1 = color || '#38bdf8', c2 = color || '#0284c7';
 
-                return '<svg viewBox="0 0 380 200" xmlns="http://www.w3.org/2000/svg">' +
+                return '<svg viewBox="0 0 380 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
 
                   '<defs>' +
 
@@ -1515,7 +1515,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 var c1 = color || '#f97316', c2 = color || '#c2410c';
 
-                return '<svg viewBox="0 0 380 220" xmlns="http://www.w3.org/2000/svg">' +
+                return '<svg viewBox="0 0 380 220" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
 
                   '<defs>' +
 
@@ -1575,7 +1575,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 var c1 = color || '#57534e', c2 = color || '#292524';
 
-                return '<svg viewBox="0 0 420 200" xmlns="http://www.w3.org/2000/svg">' +
+                return '<svg viewBox="0 0 420 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
 
                   '<defs>' +
 
@@ -1639,7 +1639,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 var c1 = color || '#78716c', c2 = color || '#57534e';
 
-                return '<svg viewBox="0 0 460 200" xmlns="http://www.w3.org/2000/svg">' +
+                return '<svg viewBox="0 0 460 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
 
                   '<defs>' +
 
@@ -1687,7 +1687,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 var c1 = color || '#1e293b', c2 = color || '#0f172a';
 
-                return '<svg viewBox="0 0 440 280" xmlns="http://www.w3.org/2000/svg">' +
+                return '<svg viewBox="0 0 440 280" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
 
                   '<defs>' +
 
@@ -1745,7 +1745,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 var c1 = color || '#3b82f6', c2 = color || '#1d4ed8';
 
-                return '<svg viewBox="0 0 460 220" xmlns="http://www.w3.org/2000/svg">' +
+                return '<svg viewBox="0 0 460 220" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
 
                   '<defs>' +
 
@@ -1803,7 +1803,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 var c1 = color || '#dc2626', c2 = color || '#7f1d1d';
 
-                return '<svg viewBox="0 0 300 380" xmlns="http://www.w3.org/2000/svg">' +
+                return '<svg viewBox="0 0 300 380" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
 
                   '<defs>' +
 
@@ -1865,7 +1865,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 var c1 = color || '#f97316', c2 = color || '#c2410c';
 
-                return '<svg viewBox="0 0 360 260" xmlns="http://www.w3.org/2000/svg">' +
+                return '<svg viewBox="0 0 360 260" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
 
                   '<defs>' +
 
@@ -1927,7 +1927,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 var c1 = color || '#b45309', c2 = color || '#78350f';
 
-                return '<svg viewBox="0 0 420 280" xmlns="http://www.w3.org/2000/svg">' +
+                return '<svg viewBox="0 0 420 280" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
 
                   '<defs>' +
 
@@ -2009,7 +2009,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 var c1 = color || '#f59e0b', c2 = color || '#d97706';
 
-                return '<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">' +
+                return '<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
 
                   '<defs>' +
 
@@ -2079,7 +2079,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 var c1 = color || '#475569', c2 = color || '#1e293b';
 
-                return '<svg viewBox="0 0 500 220" xmlns="http://www.w3.org/2000/svg">' +
+                return '<svg viewBox="0 0 500 220" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
 
                   '<defs>' +
 
@@ -2145,7 +2145,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 var c1 = color || '#a78bfa', c2 = color || '#7c3aed';
 
-                return '<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">' +
+                return '<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
 
                   '<defs>' +
 

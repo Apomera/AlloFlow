@@ -61,6 +61,7 @@ const GoldenThreadPanel = ({ config, isEditing, onUpdate }) => {
                 <p className="text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-0.5">{t('persona.essential_question') || 'Essential Question'}</p>
                 {isEditing ? (
                     <textarea
+                        aria-label={t('persona.essential_question') || 'Essential Question'}
                         value={eq}
                         onChange={(e) => writeDNA({ essentialQuestion: e.target.value })}
                         placeholder={t('persona.essential_question_placeholder') || 'The ONE main learning question students will answer...'}
@@ -92,6 +93,7 @@ const GoldenThreadPanel = ({ config, isEditing, onUpdate }) => {
                         <span className="inline-flex items-center gap-1">
                             <input
                                 type="text"
+                                aria-label={t('persona.add_concept_placeholder') || 'Add concept'}
                                 value={newConcept}
                                 onChange={(e) => setNewConcept(e.target.value)}
                                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addConcept(); } }}
@@ -124,6 +126,7 @@ const GoldenThreadPanel = ({ config, isEditing, onUpdate }) => {
                         <span className="inline-flex items-center gap-1">
                             <input
                                 type="text"
+                                aria-label={t('persona.add_term_placeholder') || 'Add term'}
                                 value={newTerm}
                                 onChange={(e) => setNewTerm(e.target.value)}
                                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTerm(); } }}

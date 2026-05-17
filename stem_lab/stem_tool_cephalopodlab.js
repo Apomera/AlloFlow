@@ -523,7 +523,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // Deep-ocean indigo + faint scale-pattern grain
       var clGrainSvg = (function() {
         var svg =
-          '<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220">' +
+          '<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220" aria-hidden="true">' +
             '<filter id="g">' +
               '<feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="2" seed="11"/>' +
               '<feColorMatrix values="0 0 0 0 0.3   0 0 0 0 0.4   0 0 0 0 0.7   0 0 0 0.06 0"/>' +

@@ -247,6 +247,7 @@ const DraftFeedbackInterface = React.memo(({
             </div>
             <div className="p-6">
                 <textarea
+                    aria-label={t('mastery.draft_aria') || t('mastery.placeholder') || 'Draft response'}
                     value={draftText}
                     onChange={(e) => setDraftText(e.target.value)}
                     className="w-full h-64 p-4 border-2 border-slate-200 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 outline-none resize-none text-base leading-relaxed"
@@ -323,6 +324,7 @@ const DraftFeedbackInterface = React.memo(({
                 </label>
                 <div className="relative h-96">
                     <textarea
+                        aria-label={t('mastery.new_draft', { count: draftCount + 1 }) || 'New draft'}
                         value={draftText}
                         onChange={(e) => setDraftText(e.target.value)}
                         className="w-full h-full p-6 border-2 border-indigo-200 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 outline-none resize-none font-serif text-lg leading-relaxed shadow-sm bg-white"
