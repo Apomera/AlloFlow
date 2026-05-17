@@ -19178,6 +19178,7 @@ ${_toolList}
         isInteractiveFrayerSort, setIsInteractiveFrayerSort,
         isInteractiveSeeThinkWonderSort, setIsInteractiveSeeThinkWonderSort,
         isInteractiveStoryMapSort, setIsInteractiveStoryMapSort,
+        broadcastInteractiveOrganizer,
         handleGenerateFrayerImage,
         handleRemoveFrayerImage,
       });
