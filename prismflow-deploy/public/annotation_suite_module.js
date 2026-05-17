@@ -1,9 +1,44 @@
 (function() {
 'use strict';
 if (window.AlloModules && window.AlloModules.AnnotationSuiteModule) { console.log('[CDN] AnnotationSuiteModule already loaded, skipping'); return; }
-const STICKER_ICONS = { star: "\u2B50", check: "\u2705", idea: "\u{1F4A1}", love: "\u2764\uFE0F" };
-const STICKER_TYPES = ["star", "check", "idea", "love"];
-const ANNOTATION_KINDS = ["sticker", "note", "highlight", "voice"];
+const STICKER_ICONS = {
+  star: "\u2B50",
+  check: "\u2705",
+  idea: "\u{1F4A1}",
+  love: "\u2764\uFE0F",
+  question: "\u2753",
+  important: "\u2757",
+  fire: "\u{1F525}",
+  target: "\u{1F3AF}",
+  thumbsup: "\u{1F44D}",
+  party: "\u{1F389}",
+  rocket: "\u{1F680}",
+  flag: "\u{1F6A9}"
+};
+const STICKER_TYPES = [
+  "star",
+  "check",
+  "idea",
+  "love",
+  "question",
+  "important",
+  "fire",
+  "target",
+  "thumbsup",
+  "party",
+  "rocket",
+  "flag"
+];
+const ANNOTATION_KINDS = ["sticker", "note", "highlight", "voice", "draw"];
+const DRAW_COLORS = {
+  red: "#dc2626",
+  blue: "#2563eb",
+  green: "#16a34a",
+  yellow: "#ca8a04",
+  black: "#111827"
+};
+const DRAW_COLOR_KEYS = ["red", "blue", "green", "yellow", "black"];
+const DRAW_WIDTHS = [2, 4, 6, 10];
 const VOICE_MAX_SECONDS = 60;
 const VOICE_MAX_BYTES = 500 * 1024;
 (function injectAnnotationSuiteStyles() {
@@ -505,7 +540,155 @@ function HighlightOverlay({ a, onDelete }) {
     }
   ));
 }
-function Overlay({ annotations, mode, isTeacher, onNoteChange, onNoteDelete, onHighlightDelete, onVoiceDelete, onMove }) {
+function DrawingOverlay({ a, onDelete }) {
+  if (!a || !Array.isArray(a.points) || a.points.length < 2) return null;
+  const stroke = DRAW_COLORS[a.color] || "#dc2626";
+  const w = typeof a.width === "number" ? a.width : 4;
+  let bbx = a.x, bby = a.y, bbw = a.w, bbh = a.h;
+  if (bbx == null || bby == null || bbw == null || bbh == null) {
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (let i = 0; i < a.points.length; i++) {
+      const p = a.points[i];
+      if (p.x < minX) minX = p.x;
+      if (p.y < minY) minY = p.y;
+      if (p.x > maxX) maxX = p.x;
+      if (p.y > maxY) maxY = p.y;
+    }
+    bbx = minX - w;
+    bby = minY - w;
+    bbw = maxX - minX + w * 2;
+    bbh = maxY - minY + w * 2;
+  }
+  const pad = w + 2;
+  const svgX = bbx - pad, svgY = bby - pad;
+  const svgW = bbw + pad * 2, svgH = bbh + pad * 2;
+  let d = "";
+  for (let i = 0; i < a.points.length; i++) {
+    const p = a.points[i];
+    const px = (p.x - svgX).toFixed(1);
+    const py = (p.y - svgY).toFixed(1);
+    d += (i === 0 ? "M" : " L") + px + " " + py;
+  }
+  const title = buildStickerTitle(a) || "Drawing";
+  return /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      className: "absolute pointer-events-none z-40",
+      style: { top: svgY, left: svgX, width: svgW, height: svgH },
+      "aria-label": "Drawing: " + title,
+      title
+    },
+    /* @__PURE__ */ React.createElement("svg", { width: svgW, height: svgH, style: { display: "block", overflow: "visible" }, "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("path", { d, fill: "none", stroke, strokeWidth: w, strokeLinecap: "round", strokeLinejoin: "round" })),
+    typeof onDelete === "function" && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: function(e) {
+          e.stopPropagation();
+          onDelete(a.id);
+        },
+        className: "absolute pointer-events-auto opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity",
+        style: {
+          top: 0,
+          right: 0,
+          width: 18,
+          height: 18,
+          borderRadius: "50%",
+          background: "white",
+          border: "1px solid " + stroke,
+          fontSize: 11,
+          fontWeight: 700,
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "#475569",
+          lineHeight: 1
+        },
+        onMouseEnter: function(e) {
+          e.currentTarget.style.opacity = "1";
+        },
+        onMouseLeave: function(e) {
+          e.currentTarget.style.opacity = "0";
+        },
+        "aria-label": "Delete drawing",
+        title: "Delete drawing"
+      },
+      "\u2715"
+    )
+  );
+}
+function DrawingCapture({ active, color, width, onCommit }) {
+  const [stroke, setStroke] = React.useState(null);
+  const hostRef = React.useRef(null);
+  const drawingRef = React.useRef(false);
+  if (!active) return null;
+  const c = DRAW_COLORS[color] || "#dc2626";
+  function pointerDown(e) {
+    if (e.button !== 0 && e.pointerType === "mouse") return;
+    e.preventDefault();
+    e.stopPropagation();
+    drawingRef.current = true;
+    const host = e.currentTarget;
+    const rect = host.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    setStroke({ points: [{ x, y }], color, width });
+    try {
+      host.setPointerCapture(e.pointerId);
+    } catch (_) {
+    }
+  }
+  function pointerMove(e) {
+    if (!drawingRef.current) return;
+    const host = e.currentTarget;
+    const rect = host.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    setStroke(function(prev) {
+      if (!prev) return prev;
+      const last = prev.points[prev.points.length - 1];
+      if (last && Math.abs(last.x - x) < 1.2 && Math.abs(last.y - y) < 1.2) return prev;
+      return { points: prev.points.concat([{ x, y }]), color: prev.color, width: prev.width };
+    });
+  }
+  function pointerUp(e) {
+    if (!drawingRef.current) return;
+    drawingRef.current = false;
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    } catch (_) {
+    }
+    setStroke(function(prev) {
+      if (prev && prev.points.length >= 2 && typeof onCommit === "function") {
+        onCommit(prev);
+      }
+      return null;
+    });
+  }
+  let d = "";
+  if (stroke && stroke.points.length > 0) {
+    for (let i = 0; i < stroke.points.length; i++) {
+      const p = stroke.points[i];
+      d += (i === 0 ? "M" : " L") + p.x.toFixed(1) + " " + p.y.toFixed(1);
+    }
+  }
+  return /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      ref: hostRef,
+      className: "absolute inset-0 z-[60]",
+      style: { cursor: "crosshair", touchAction: "none" },
+      onPointerDown: pointerDown,
+      onPointerMove: pointerMove,
+      onPointerUp: pointerUp,
+      onPointerCancel: pointerUp,
+      "aria-label": "Drawing surface"
+    },
+    stroke && /* @__PURE__ */ React.createElement("svg", { width: "100%", height: "100%", style: { display: "block", position: "absolute", inset: 0, overflow: "visible", pointerEvents: "none" }, "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("path", { d, fill: "none", stroke: c, strokeWidth: width, strokeLinecap: "round", strokeLinejoin: "round" }))
+  );
+}
+function Overlay({ annotations, mode, isTeacher, onNoteChange, onNoteDelete, onHighlightDelete, onVoiceDelete, onDrawDelete, onMove }) {
   if (!Array.isArray(annotations) || annotations.length === 0) return null;
   const migrated = migrateLegacyShape(annotations);
   const dragMode = !mode || mode === "off";
@@ -525,6 +708,9 @@ function Overlay({ annotations, mode, isTeacher, onNoteChange, onNoteDelete, onH
     if (a.kind === "voice") {
       if (a.pending) return null;
       return /* @__PURE__ */ React.createElement(VoiceNoteBubble, { key: a.id, a, onDelete: onVoiceDelete, draggable: canDrag(a), onMove });
+    }
+    if (a.kind === "draw") {
+      return /* @__PURE__ */ React.createElement(DrawingOverlay, { key: a.id, a, onDelete: onDrawDelete });
     }
     return /* @__PURE__ */ React.createElement(StickerNode, { key: a.id, s: a, draggable: canDrag(a), onMove });
   }));
@@ -555,6 +741,12 @@ function Toolbar(props) {
   };
   const noteTemplate = props.noteTemplate || "";
   const isTeacher = !!props.isTeacher;
+  const drawColor = props.drawColor || "red";
+  const drawWidth = typeof props.drawWidth === "number" ? props.drawWidth : 4;
+  const onPickDrawColor = props.onPickDrawColor || function() {
+  };
+  const onPickDrawWidth = props.onPickDrawWidth || function() {
+  };
   const templateSet = isTeacher ? TEACHER_NOTE_TEMPLATES : STUDENT_NOTE_TEMPLATES;
   const onToggleMode = props.onToggleMode;
   const toggleStickerMode = function() {
@@ -572,6 +764,9 @@ function Toolbar(props) {
   };
   const toggleVoiceMode = function() {
     onSetMode(mode === "voice" ? "" : "voice");
+  };
+  const toggleDrawMode = function() {
+    onSetMode(mode === "draw" ? "" : "draw");
   };
   return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
     "button",
@@ -617,6 +812,17 @@ function Toolbar(props) {
     Mic ? /* @__PURE__ */ React.createElement(Mic, { size: 14 }) : /* @__PURE__ */ React.createElement("span", null, "\u{1F3A4}"),
     " ",
     "Voice"
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: toggleDrawMode,
+      className: "p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 mr-1 " + (mode === "draw" ? "bg-fuchsia-100 text-fuchsia-700 ring-2 ring-fuchsia-200" : "text-slate-600 hover:bg-slate-100"),
+      title: "Drawing: freehand pen overlay",
+      "aria-pressed": mode === "draw"
+    },
+    /* @__PURE__ */ React.createElement("span", null, "\u270F\uFE0F"),
+    " ",
+    "Draw"
   ), mode === "sticker" && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 animate-in slide-in-from-left-2 duration-200 border-l border-slate-200 pl-1" }, STICKER_TYPES.map(function(type) {
     return /* @__PURE__ */ React.createElement(
       "button",
@@ -703,6 +909,45 @@ function Toolbar(props) {
       "aria-label": "Clear all annotations"
     },
     Trash2 ? /* @__PURE__ */ React.createElement(Trash2, { size: 12 }) : /* @__PURE__ */ React.createElement("span", null, "\u{1F5D1}")
+  )), mode === "draw" && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 animate-in slide-in-from-left-2 duration-200 border-l border-slate-200 pl-1" }, DRAW_COLOR_KEYS.map(function(key) {
+    const c = DRAW_COLORS[key];
+    return /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        key,
+        "aria-label": "Draw color " + key,
+        onClick: function() {
+          onPickDrawColor(key);
+        },
+        className: "w-5 h-5 rounded-full transition-transform hover:scale-125 " + (drawColor === key ? "ring-2 ring-fuchsia-500 scale-110" : "opacity-70 hover:opacity-100"),
+        style: { background: c, border: "2px solid " + c },
+        title: key
+      }
+    );
+  }), /* @__PURE__ */ React.createElement("div", { className: "w-px h-4 bg-slate-200 mx-1" }), DRAW_WIDTHS.map(function(w) {
+    return /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        key: "w" + w,
+        "aria-label": "Line width " + w + "px",
+        onClick: function() {
+          onPickDrawWidth(w);
+        },
+        className: "flex items-center justify-center rounded transition-transform hover:scale-125 " + (drawWidth === w ? "ring-2 ring-fuchsia-500 scale-110 bg-fuchsia-50" : "opacity-70 hover:opacity-100"),
+        style: { width: 22, height: 22 },
+        title: w + "px"
+      },
+      /* @__PURE__ */ React.createElement("span", { style: { display: "inline-block", width: 12, height: w, borderRadius: w / 2, background: "#374151" } })
+    );
+  }), /* @__PURE__ */ React.createElement("div", { className: "w-px h-4 bg-slate-200 mx-1" }), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: onClear,
+      className: "p-1 text-slate-600 hover:text-red-500 rounded-full",
+      title: "Clear all annotations",
+      "aria-label": "Clear all annotations"
+    },
+    Trash2 ? /* @__PURE__ */ React.createElement(Trash2, { size: 12 }) : /* @__PURE__ */ React.createElement("span", null, "\u{1F5D1}")
   )));
 }
 function createStickerFromClick(hostEl, evt, opts) {
@@ -748,6 +993,34 @@ function createNoteFromClick(hostEl, evt, opts) {
     // the inline editor open for typing.
     content: typeof o.templateContent === "string" ? o.templateContent : "",
     color,
+    author: o.isTeacher ? "teacher" : "student",
+    authorName: !o.isTeacher ? o.authorName || "" : "",
+    createdAt: (/* @__PURE__ */ new Date()).toISOString()
+  };
+}
+function createDrawingFromStroke(stroke, opts) {
+  if (!stroke || !Array.isArray(stroke.points) || stroke.points.length < 2) return null;
+  const o = opts || {};
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (let i = 0; i < stroke.points.length; i++) {
+    const p = stroke.points[i];
+    if (p.x < minX) minX = p.x;
+    if (p.y < minY) minY = p.y;
+    if (p.x > maxX) maxX = p.x;
+    if (p.y > maxY) maxY = p.y;
+  }
+  const w = typeof stroke.width === "number" ? stroke.width : 4;
+  return {
+    id: Date.now(),
+    kind: "draw",
+    points: stroke.points.slice(),
+    color: stroke.color || "red",
+    width: w,
+    // Bounding box used by DrawingOverlay for SVG sizing + delete button placement
+    x: minX - w,
+    y: minY - w,
+    w: maxX - minX + w * 2,
+    h: maxY - minY + w * 2,
     author: o.isTeacher ? "teacher" : "student",
     authorName: !o.isTeacher ? o.authorName || "" : "",
     createdAt: (/* @__PURE__ */ new Date()).toISOString()
@@ -1094,6 +1367,9 @@ window.AlloModules.AnnotationSuite = {
   NOTE_COLOR_KEYS,
   HIGHLIGHT_COLORS,
   HIGHLIGHT_COLOR_KEYS,
+  DRAW_COLORS,
+  DRAW_COLOR_KEYS,
+  DRAW_WIDTHS,
   TEACHER_NOTE_TEMPLATES,
   STUDENT_NOTE_TEMPLATES,
   VOICE_MAX_SECONDS,
@@ -1103,6 +1379,8 @@ window.AlloModules.AnnotationSuite = {
   HighlightOverlay,
   VoiceNoteBubble,
   RecordingOverlay,
+  DrawingOverlay,
+  DrawingCapture,
   Overlay,
   Toolbar,
   Sidebar,
@@ -1110,6 +1388,7 @@ window.AlloModules.AnnotationSuite = {
   createNoteFromClick,
   createHighlightFromSelection,
   createVoicePlaceholder,
+  createDrawingFromStroke,
   attachAudioToVoiceNote,
   importAnnotations,
   updateAnnotation,

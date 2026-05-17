@@ -17,14 +17,38 @@
 // doc_pipeline so annotations made in-app round-trip to the standalone
 // HTML handout.
 
-const STICKER_ICONS = { star: '⭐', check: '✅', idea: '💡', love: '❤️' };
-const STICKER_TYPES = ['star', 'check', 'idea', 'love'];
+// Sticker library — 12 icons spanning emotional reactions (love, party),
+// evaluative marks (check, important, warning), questioning (?, thinking),
+// goal-tracking (target, rocket, flag), and ideation (idea, fire).
+// Order matters: pickable left→right in the toolbar.
+const STICKER_ICONS = {
+  star: '⭐', check: '✅', idea: '💡', love: '❤️',
+  question: '❓', important: '❗', fire: '🔥', target: '🎯',
+  thumbsup: '👍', party: '🎉', rocket: '🚀', flag: '🚩',
+};
+const STICKER_TYPES = [
+  'star', 'check', 'idea', 'love',
+  'question', 'important', 'fire', 'target',
+  'thumbsup', 'party', 'rocket', 'flag',
+];
 
-// Annotation kinds. 'sticker' is the legacy 4-emoji overlay; 'note' is a
-// click-to-place sticky-note bubble with editable text content;
-// 'highlight' wraps a text-selection bounding box; 'voice' is a recorded
-// audio note stored as base64 (local-only, never network).
-const ANNOTATION_KINDS = ['sticker', 'note', 'highlight', 'voice'];
+// Annotation kinds. 'sticker' is the emoji overlay; 'note' is a click-to-
+// place sticky-note bubble with editable text content; 'highlight' wraps a
+// text-selection bounding box; 'voice' is a recorded audio note stored as
+// base64 (local-only, never network); 'draw' is a freehand SVG stroke.
+const ANNOTATION_KINDS = ['sticker', 'note', 'highlight', 'voice', 'draw'];
+
+// Drawing palette — same 4 colors as note/highlight so the tool families
+// feel paired. Width is in pixels of the SVG stroke.
+const DRAW_COLORS = {
+  red:    '#dc2626',
+  blue:   '#2563eb',
+  green:  '#16a34a',
+  yellow: '#ca8a04',
+  black:  '#111827',
+};
+const DRAW_COLOR_KEYS = ['red', 'blue', 'green', 'yellow', 'black'];
+const DRAW_WIDTHS = [2, 4, 6, 10];
 
 // Voice-note recording cap. Mirrors a reasonable audio-clip length for
 // teacher feedback or student reflection. Enforced at recording-start
@@ -593,11 +617,157 @@ function HighlightOverlay({ a, onDelete }) {
   );
 }
 
+// DrawingOverlay: renders a single freehand stroke as an SVG path.
+// Stroke is stored as a `points` array on the annotation: [{x,y}, ...].
+// Bounding box (x, y, w, h) is precomputed at commit-time for hit testing.
+// Tiny hover-revealed delete X at the top-right of the bounding box.
+function DrawingOverlay({ a, onDelete }) {
+  if (!a || !Array.isArray(a.points) || a.points.length < 2) return null;
+  const stroke = DRAW_COLORS[a.color] || '#dc2626';
+  const w = typeof a.width === 'number' ? a.width : 4;
+  // Bounding box (fall back to computing from points if not stored)
+  let bbx = a.x, bby = a.y, bbw = a.w, bbh = a.h;
+  if (bbx == null || bby == null || bbw == null || bbh == null) {
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (let i = 0; i < a.points.length; i++) {
+      const p = a.points[i];
+      if (p.x < minX) minX = p.x;
+      if (p.y < minY) minY = p.y;
+      if (p.x > maxX) maxX = p.x;
+      if (p.y > maxY) maxY = p.y;
+    }
+    bbx = minX - w; bby = minY - w; bbw = (maxX - minX) + w * 2; bbh = (maxY - minY) + w * 2;
+  }
+  // Pad SVG so the stroke isn't clipped
+  const pad = w + 2;
+  const svgX = bbx - pad, svgY = bby - pad;
+  const svgW = bbw + pad * 2, svgH = bbh + pad * 2;
+  // Build the path d-string relative to the SVG origin
+  let d = '';
+  for (let i = 0; i < a.points.length; i++) {
+    const p = a.points[i];
+    const px = (p.x - svgX).toFixed(1);
+    const py = (p.y - svgY).toFixed(1);
+    d += (i === 0 ? 'M' : ' L') + px + ' ' + py;
+  }
+  const title = buildStickerTitle(a) || 'Drawing';
+  return (
+    <div
+      className="absolute pointer-events-none z-40"
+      style={{ top: svgY, left: svgX, width: svgW, height: svgH }}
+      aria-label={'Drawing: ' + title}
+      title={title}
+    >
+      <svg width={svgW} height={svgH} style={{ display: 'block', overflow: 'visible' }} aria-hidden="true">
+        <path d={d} fill="none" stroke={stroke} strokeWidth={w} strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+      {typeof onDelete === 'function' && (
+        <button
+          type="button"
+          onClick={function (e) { e.stopPropagation(); onDelete(a.id); }}
+          className="absolute pointer-events-auto opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity"
+          style={{
+            top: 0, right: 0,
+            width: 18, height: 18,
+            borderRadius: '50%',
+            background: 'white',
+            border: '1px solid ' + stroke,
+            fontSize: 11, fontWeight: 700,
+            cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: '#475569', lineHeight: 1,
+          }}
+          onMouseEnter={function (e) { e.currentTarget.style.opacity = '1'; }}
+          onMouseLeave={function (e) { e.currentTarget.style.opacity = '0'; }}
+          aria-label="Delete drawing"
+          title="Delete drawing"
+        >✕</button>
+      )}
+    </div>
+  );
+}
+
+// DrawingCapture: invisible overlay layer that captures pointer events when
+// the toolbar is in `draw` mode. Tracks active stroke as a points array;
+// renders the in-progress stroke as a temporary SVG path; on pointerup,
+// calls onCommit with the finished stroke. The host then appends it to
+// the annotations array as a new {kind:'draw', points, color, width, ...}.
+function DrawingCapture({ active, color, width, onCommit }) {
+  const [stroke, setStroke] = React.useState(null); // {points, color, width} | null
+  const hostRef = React.useRef(null);
+  const drawingRef = React.useRef(false);
+  if (!active) return null;
+  const c = DRAW_COLORS[color] || '#dc2626';
+  function pointerDown(e) {
+    if (e.button !== 0 && e.pointerType === 'mouse') return; // left only
+    e.preventDefault();
+    e.stopPropagation();
+    drawingRef.current = true;
+    const host = e.currentTarget;
+    const rect = host.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    setStroke({ points: [{ x, y }], color, width });
+    try { host.setPointerCapture(e.pointerId); } catch (_) {}
+  }
+  function pointerMove(e) {
+    if (!drawingRef.current) return;
+    const host = e.currentTarget;
+    const rect = host.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    setStroke(function (prev) {
+      if (!prev) return prev;
+      // Skip near-duplicate points (smoothing)
+      const last = prev.points[prev.points.length - 1];
+      if (last && Math.abs(last.x - x) < 1.2 && Math.abs(last.y - y) < 1.2) return prev;
+      return { points: prev.points.concat([{ x, y }]), color: prev.color, width: prev.width };
+    });
+  }
+  function pointerUp(e) {
+    if (!drawingRef.current) return;
+    drawingRef.current = false;
+    try { e.currentTarget.releasePointerCapture(e.pointerId); } catch (_) {}
+    setStroke(function (prev) {
+      if (prev && prev.points.length >= 2 && typeof onCommit === 'function') {
+        onCommit(prev);
+      }
+      return null;
+    });
+  }
+  // Render in-progress stroke as an SVG path inside the capture layer
+  let d = '';
+  if (stroke && stroke.points.length > 0) {
+    for (let i = 0; i < stroke.points.length; i++) {
+      const p = stroke.points[i];
+      d += (i === 0 ? 'M' : ' L') + p.x.toFixed(1) + ' ' + p.y.toFixed(1);
+    }
+  }
+  return (
+    <div
+      ref={hostRef}
+      className="absolute inset-0 z-[60]"
+      style={{ cursor: 'crosshair', touchAction: 'none' }}
+      onPointerDown={pointerDown}
+      onPointerMove={pointerMove}
+      onPointerUp={pointerUp}
+      onPointerCancel={pointerUp}
+      aria-label="Drawing surface"
+    >
+      {stroke && (
+        <svg width="100%" height="100%" style={{ display: 'block', position: 'absolute', inset: 0, overflow: 'visible', pointerEvents: 'none' }} aria-hidden="true">
+          <path d={d} fill="none" stroke={c} strokeWidth={width} strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      )}
+    </div>
+  );
+}
+
 // Overlay layer: renders every annotation in the given array dispatched by
 // `kind`. The parent content area must be position:relative so absolute
 // children land in the right place. Migrates legacy shape on the fly so
 // projects saved before Phase 3 still render correctly.
-function Overlay({ annotations, mode, isTeacher, onNoteChange, onNoteDelete, onHighlightDelete, onVoiceDelete, onMove }) {
+function Overlay({ annotations, mode, isTeacher, onNoteChange, onNoteDelete, onHighlightDelete, onVoiceDelete, onDrawDelete, onMove }) {
   if (!Array.isArray(annotations) || annotations.length === 0) return null;
   const migrated = migrateLegacyShape(annotations);
   // Drag is only enabled when no annotation-creation mode is active
@@ -626,6 +796,9 @@ function Overlay({ annotations, mode, isTeacher, onNoteChange, onNoteDelete, onH
           // once audio is attached.
           if (a.pending) return null;
           return <VoiceNoteBubble key={a.id} a={a} onDelete={onVoiceDelete} draggable={canDrag(a)} onMove={onMove} />;
+        }
+        if (a.kind === 'draw') {
+          return <DrawingOverlay key={a.id} a={a} onDelete={onDrawDelete} />;
         }
         // Default = sticker (kind missing on legacy data is caught by migrator).
         return <StickerNode key={a.id} s={a} draggable={canDrag(a)} onMove={onMove} />;
@@ -663,6 +836,11 @@ function Toolbar(props) {
   const onPickTemplate = props.onPickTemplate || function () {};
   const noteTemplate = props.noteTemplate || ''; // empty = freeform
   const isTeacher = !!props.isTeacher;
+  // Drawing tool props (Phase 9, May 2026)
+  const drawColor = props.drawColor || 'red';
+  const drawWidth = typeof props.drawWidth === 'number' ? props.drawWidth : 4;
+  const onPickDrawColor = props.onPickDrawColor || function () {};
+  const onPickDrawWidth = props.onPickDrawWidth || function () {};
   // Pick role-appropriate templates so students see reflection prompts
   // and teachers see grading-oriented feedback stamps.
   const templateSet = isTeacher ? TEACHER_NOTE_TEMPLATES : STUDENT_NOTE_TEMPLATES;
@@ -681,6 +859,9 @@ function Toolbar(props) {
   };
   const toggleVoiceMode = function () {
     onSetMode(mode === 'voice' ? '' : 'voice');
+  };
+  const toggleDrawMode = function () {
+    onSetMode(mode === 'draw' ? '' : 'draw');
   };
   return (
     <React.Fragment>
@@ -727,6 +908,17 @@ function Toolbar(props) {
         {Mic ? <Mic size={14} /> : <span>🎤</span>}
         {' '}
         Voice
+      </button>
+      {/* Draw mode toggle */}
+      <button
+        onClick={toggleDrawMode}
+        className={'p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 mr-1 ' + (mode === 'draw' ? 'bg-fuchsia-100 text-fuchsia-700 ring-2 ring-fuchsia-200' : 'text-slate-600 hover:bg-slate-100')}
+        title="Drawing: freehand pen overlay"
+        aria-pressed={mode === 'draw'}
+      >
+        <span>✏️</span>
+        {' '}
+        Draw
       </button>
       {/* Sticker sub-controls */}
       {mode === 'sticker' && (
@@ -825,6 +1017,48 @@ function Toolbar(props) {
           </button>
         </div>
       )}
+      {/* Draw sub-controls: color swatches + line-width picker */}
+      {mode === 'draw' && (
+        <div className="flex items-center gap-1 animate-in slide-in-from-left-2 duration-200 border-l border-slate-200 pl-1">
+          {DRAW_COLOR_KEYS.map(function (key) {
+            const c = DRAW_COLORS[key];
+            return (
+              <button
+                key={key}
+                aria-label={'Draw color ' + key}
+                onClick={function () { onPickDrawColor(key); }}
+                className={'w-5 h-5 rounded-full transition-transform hover:scale-125 ' + (drawColor === key ? 'ring-2 ring-fuchsia-500 scale-110' : 'opacity-70 hover:opacity-100')}
+                style={{ background: c, border: '2px solid ' + c }}
+                title={key}
+              />
+            );
+          })}
+          <div className="w-px h-4 bg-slate-200 mx-1"></div>
+          {DRAW_WIDTHS.map(function (w) {
+            return (
+              <button
+                key={'w' + w}
+                aria-label={'Line width ' + w + 'px'}
+                onClick={function () { onPickDrawWidth(w); }}
+                className={'flex items-center justify-center rounded transition-transform hover:scale-125 ' + (drawWidth === w ? 'ring-2 ring-fuchsia-500 scale-110 bg-fuchsia-50' : 'opacity-70 hover:opacity-100')}
+                style={{ width: 22, height: 22 }}
+                title={w + 'px'}
+              >
+                <span style={{ display: 'inline-block', width: 12, height: w, borderRadius: w / 2, background: '#374151' }} />
+              </button>
+            );
+          })}
+          <div className="w-px h-4 bg-slate-200 mx-1"></div>
+          <button
+            onClick={onClear}
+            className="p-1 text-slate-600 hover:text-red-500 rounded-full"
+            title="Clear all annotations"
+            aria-label="Clear all annotations"
+          >
+            {Trash2 ? <Trash2 size={12} /> : <span>🗑</span>}
+          </button>
+        </div>
+      )}
     </React.Fragment>
   );
 }
@@ -892,6 +1126,40 @@ function createNoteFromClick(hostEl, evt, opts) {
 // Audio is attached separately via attachAudioToVoiceNote once recording
 // finishes. Same safety filter as the other click factories (skip
 // interactive elements).
+// Helper: build a new drawing annotation from a DrawingCapture commit.
+// `stroke` is { points: [{x,y}], color, width }. Computes the bounding
+// box once at commit-time so DrawingOverlay can render + hit-test
+// without recomputing. Returns null if the stroke has <2 points.
+function createDrawingFromStroke(stroke, opts) {
+  if (!stroke || !Array.isArray(stroke.points) || stroke.points.length < 2) return null;
+  const o = opts || {};
+  // Bounding box
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (let i = 0; i < stroke.points.length; i++) {
+    const p = stroke.points[i];
+    if (p.x < minX) minX = p.x;
+    if (p.y < minY) minY = p.y;
+    if (p.x > maxX) maxX = p.x;
+    if (p.y > maxY) maxY = p.y;
+  }
+  const w = typeof stroke.width === 'number' ? stroke.width : 4;
+  return {
+    id: Date.now(),
+    kind: 'draw',
+    points: stroke.points.slice(),
+    color: stroke.color || 'red',
+    width: w,
+    // Bounding box used by DrawingOverlay for SVG sizing + delete button placement
+    x: minX - w,
+    y: minY - w,
+    w: (maxX - minX) + w * 2,
+    h: (maxY - minY) + w * 2,
+    author: o.isTeacher ? 'teacher' : 'student',
+    authorName: !o.isTeacher ? (o.authorName || '') : '',
+    createdAt: new Date().toISOString(),
+  };
+}
+
 function createVoicePlaceholder(hostEl, evt, opts) {
   if (!hostEl || !evt) return null;
   const target = evt.target;
@@ -1265,6 +1533,9 @@ window.AlloModules.AnnotationSuite = {
   NOTE_COLOR_KEYS: NOTE_COLOR_KEYS,
   HIGHLIGHT_COLORS: HIGHLIGHT_COLORS,
   HIGHLIGHT_COLOR_KEYS: HIGHLIGHT_COLOR_KEYS,
+  DRAW_COLORS: DRAW_COLORS,
+  DRAW_COLOR_KEYS: DRAW_COLOR_KEYS,
+  DRAW_WIDTHS: DRAW_WIDTHS,
   TEACHER_NOTE_TEMPLATES: TEACHER_NOTE_TEMPLATES,
   STUDENT_NOTE_TEMPLATES: STUDENT_NOTE_TEMPLATES,
   VOICE_MAX_SECONDS: VOICE_MAX_SECONDS,
@@ -1274,6 +1545,8 @@ window.AlloModules.AnnotationSuite = {
   HighlightOverlay: HighlightOverlay,
   VoiceNoteBubble: VoiceNoteBubble,
   RecordingOverlay: RecordingOverlay,
+  DrawingOverlay: DrawingOverlay,
+  DrawingCapture: DrawingCapture,
   Overlay: Overlay,
   Toolbar: Toolbar,
   Sidebar: Sidebar,
@@ -1281,6 +1554,7 @@ window.AlloModules.AnnotationSuite = {
   createNoteFromClick: createNoteFromClick,
   createHighlightFromSelection: createHighlightFromSelection,
   createVoicePlaceholder: createVoicePlaceholder,
+  createDrawingFromStroke: createDrawingFromStroke,
   attachAudioToVoiceNote: attachAudioToVoiceNote,
   importAnnotations: importAnnotations,
   updateAnnotation: updateAnnotation,
