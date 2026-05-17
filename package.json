@@ -5,6 +5,8 @@
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:report": "playwright show-report",
+    "build:lang": "node dev-tools/build_language_pack.cjs",
+    "build:lang:dry": "node dev-tools/build_language_pack.cjs --dry-run",
     "verify": "node dev-tools/verify_all.cjs",
     "verify:all": "node dev-tools/verify_all.cjs --all",
     "verify:registry": "node dev-tools/verify_module_registry.cjs",
