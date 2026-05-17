@@ -410,6 +410,48 @@
         return function() { var el = document.getElementById(id); if (el) el.remove(); };
       }, [isDark, isContrast]);
 
+      // ── Dark-shell text contrast (always-on, scoped to per-tool dark navy wrapper) ──
+      // The tool shell at renderTool() forces background:#0f172a on every tool,
+      // but Tailwind classes like text-slate-800 stay dark — invisible on dark navy.
+      // Trick: make dark text classes inside the shell `color: inherit`, then have
+      // each light-bg card set its own dark color so descendants inherit dark.
+      // Result: bare headers on the shell → light; headers inside white cards → dark.
+      React.useEffect(function() {
+        var id = 'stem-tool-shell-contrast';
+        if (document.getElementById(id)) return;
+        var s = document.createElement('style');
+        s.id = id;
+        var DARK_TEXT_CLASSES = [
+          'text-slate-700','text-slate-800','text-slate-900',
+          'text-gray-700','text-gray-800','text-gray-900',
+          'text-zinc-700','text-zinc-800','text-zinc-900',
+          'text-neutral-700','text-neutral-800','text-neutral-900',
+          'text-stone-700','text-stone-800','text-stone-900'
+        ];
+        var LIGHT_BG_CLASSES = [
+          'bg-white',
+          'bg-slate-50','bg-slate-100',
+          'bg-gray-50','bg-gray-100',
+          'bg-zinc-50','bg-neutral-50','bg-stone-50',
+          'bg-indigo-50','bg-blue-50','bg-sky-50','bg-cyan-50',
+          'bg-teal-50','bg-emerald-50','bg-green-50','bg-lime-50',
+          'bg-yellow-50','bg-amber-50','bg-orange-50',
+          'bg-red-50','bg-rose-50','bg-pink-50',
+          'bg-fuchsia-50','bg-purple-50','bg-violet-50',
+          'from-white','from-slate-50','from-blue-50','from-indigo-50',
+          'from-purple-50','from-green-50','from-amber-50'
+        ];
+        var inheritRule = DARK_TEXT_CLASSES.map(function(c) {
+          return '[data-stem-tool-shell] .' + c;
+        }).join(', ') + ' { color: inherit; }';
+        var lightBgRule = LIGHT_BG_CLASSES.map(function(c) {
+          return '[data-stem-tool-shell] .' + c;
+        }).join(', ') + ' { color: #1e293b; }';
+        s.textContent = inheritRule + '\n' + lightBgRule;
+        document.head.appendChild(s);
+        return function() { var el = document.getElementById(id); if (el) el.remove(); };
+      }, []);
+
       // ── STEM Lab XP System (per-activity cap: 100 XP) ──
       var stemXpData = (labToolData && labToolData._stemXP) || {};
       function awardStemXP(activityId, points, reason) {
