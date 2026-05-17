@@ -6028,7 +6028,8 @@
           return (c.front || '').trim() && (c.back || '').trim();
         });
         if (nonEmpty.length === 0) {
-          alert('Add at least one card with both a front and back.');
+          if (window.AlloFlowUX) window.AlloFlowUX.toast('Add at least one card with both a front and back.', 'warning');
+          else alert('Add at least one card with both a front and back.');
           return;
         }
         var cleaned = Object.assign({}, draft, { data: { cards: nonEmpty } });
@@ -6036,7 +6037,8 @@
       } else if (draft.type === 'acronym') {
         var letters = (draft.data.letters || '').trim();
         if (!letters) {
-          alert('Type a word or letter sequence first.');
+          if (window.AlloFlowUX) window.AlloFlowUX.toast('Type a word or letter sequence first.', 'warning');
+          else alert('Type a word or letter sequence first.');
           return;
         }
         var paddedMeanings = letters.split('').map(function(_, i) {
@@ -6047,7 +6049,8 @@
       } else if (draft.type === 'notes') {
         var text = (draft.data.text || '').trim();
         if (!text) {
-          alert('Write something first.');
+          if (window.AlloFlowUX) window.AlloFlowUX.toast('Write something first.', 'warning');
+          else alert('Write something first.');
           return;
         }
         p.onSave(Object.assign({}, draft, { data: { text: text } }));
@@ -6055,11 +6058,13 @@
         var targetId = (draft.data && draft.data.targetDecorationId) || null;
         var assoc = (draft.data && draft.data.association || '').trim();
         if (!targetId) {
-          alert('Pick a decoration to link to first.');
+          if (window.AlloFlowUX) window.AlloFlowUX.toast('Pick a decoration to link to first.', 'warning');
+          else alert('Pick a decoration to link to first.');
           return;
         }
         if (!assoc) {
-          alert('Write a short association — what does this remind you of?');
+          if (window.AlloFlowUX) window.AlloFlowUX.toast('Write a short association — what does this remind you of?', 'warning');
+          else alert('Write a short association — what does this remind you of?');
           return;
         }
         var preserved = (existing && existing.type === 'image-link' && existing.data) || {};

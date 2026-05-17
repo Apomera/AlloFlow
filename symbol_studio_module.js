@@ -4931,7 +4931,7 @@
         html += '<div class="words">';
         words.forEach(function (w) {
           html += '<div class="word" style="border:2px solid ' + gl.border + '">';
-          if (w.image) html += '<img src="' + w.image + '" style="width:48px;height:48px;object-fit:contain;border-radius:8px" />';
+          if (w.image) html += '<img src="' + w.image + '" alt="' + String(w.displayLabel || w.label || 'word').replace(/"/g, '&quot;') + '" style="width:48px;height:48px;object-fit:contain;border-radius:8px" />';
           else html += '<div class="icon">' + gl.icon + '</div>';
           html += '<div class="label">' + w.displayLabel + '</div></div>';
         });

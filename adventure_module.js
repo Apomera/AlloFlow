@@ -729,7 +729,7 @@ var CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGenera
     if (!file) return;
     if (!file.type.startsWith("image/")) return;
     if (file.size > 5 * 1024 * 1024) {
-      alert("Image too large (max 5MB). Please use a smaller image.");
+      if (window.AlloFlowUX) window.AlloFlowUX.toast("Image too large (max 5MB). Please use a smaller image.", 'error'); else alert("Image too large (max 5MB). Please use a smaller image.");
       return;
     }
     const reader = new FileReader();

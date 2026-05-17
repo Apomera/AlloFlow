@@ -1027,7 +1027,7 @@
       html += '<h2>Cast of Characters</h2><div class="cast">';
       chars.forEach(function (c) {
         html += '<div class="cast-card" style="border-color:' + c.color + '">'
-          + (c.portrait ? '<img src="' + c.portrait + '" style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:8px" />' : '')
+          + (c.portrait ? '<img src="' + c.portrait + '" alt="Portrait of ' + (c.name || 'character').replace(/"/g, '&quot;') + '" style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:8px" />' : '')
           + '<div style="font-weight:bold;color:' + c.color + '">' + c.name + '</div>'
           + '<div style="font-size:0.85em;color:#6b7280">' + (c.description || '') + '</div></div>';
       });

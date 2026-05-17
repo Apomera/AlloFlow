@@ -1533,6 +1533,64 @@ remain for per-instance review.
 | WCAG AA contrast issues | ~938 text + 134 host gaps | **~391 long-tail only** | 70% closure |
 | Total personalized student "Kit" tools | 0 | **~360+** | +360 |
 
+### 13.12.1 Polish-pass infrastructure (May 16 2026)
+
+Comprehensive polish-gap audit produced both audit findings and shipped fixes.
+
+**Audit script:** `c:/tmp/audit_polish_gaps.cjs` scans 291 source files
+across 11 polish dimensions: native dialogs, console pollution, TODO
+comments, raw loading text, swallowed catches, img-no-alt, "coming soon"
+placeholders, prefers-reduced-motion gaps, transition durations.
+
+**Findings baseline:**
+- 163 native `alert()` / `confirm()` / `prompt()` calls
+- 64 `<img>` tags without alt (52 real after JSX-aware brace pass)
+- 82 files animate but no `prefers-reduced-motion` handling
+- 1,069 catch blocks with no body (mostly intentional — long tail)
+- 828 `console.log` calls (mostly dev tools and audits — long tail)
+
+**Infrastructure shipped:**
+
+1. **`window.AlloFlowUX` global helper** — exposes `.toast(msg, type)`,
+   `.confirm(msg, opts) → Promise<bool>`, `.prompt(msg, default, opts) →
+   Promise<string|null>`. Available to every CDN module without ctx
+   plumbing. Gracefully falls back to native dialogs if React not mounted.
+2. **Enhanced `ConfirmDialog`** — added `tone` ('danger'/'warning'/'info'),
+   custom `title`/`detail`/`confirmText`/`cancelText`, `onCancel` callback,
+   keyboard handling (Escape cancels, Enter confirms), focus management,
+   proper ARIA labels/described-by, focus-visible rings.
+3. **New `PromptDialog` module** — polished replacement for `window.prompt()`.
+   Supports `multiline` (textarea), `inputType` (text/url/email/number),
+   `placeholder`, `maxLength`, inline `validate(value) → errorMsg|null`,
+   Escape/Enter keyboard, auto-focus + select.
+4. **Global a11y CSS baseline** added to App.jsx style block:
+   - `@media (prefers-reduced-motion: reduce)` — disables all animations
+     and transitions for users with vestibular disorders
+   - `:focus-visible` outline ring for sighted keyboard users (mouse
+     focus stays default; only keyboard focus gets the high-vis ring)
+   - `.alloflow-skeleton` shimmer class for loading states
+
+**Mechanical fixes shipped:**
+
+- 46 `alert()` calls migrated to `window.AlloFlowUX.toast()` fallback
+  pattern across 21 files (doc_pipeline, allohaven, teacher,
+  ui_modals, etc.)
+- Hand-migrated allohaven_module.js 5 validation alerts
+- 4 AlloFlowANTI.txt alerts (language pack import/export + microphone
+  access denied) migrated to AlloFlowUX
+- 2 string-built `<img>` tags fixed with descriptive alt text
+  (story_stage character portraits, symbol_studio word images)
+
+**What was deliberately deferred:**
+
+- `confirm()` / `prompt()` migration requires async refactor of caller —
+  not safely automatable. Existing native dialogs remain functional.
+  New code should use `window.AlloFlowUX.confirm()` / `.prompt()` directly.
+- `console.log` cleanup — most live in dev tools and audit scripts, not
+  production paths. Long tail.
+- 1,069 empty `catch` blocks — vast majority intentional (best-effort
+  localStorage, JSON.parse, etc.). Long-tail review only.
+
 ### 13.13 Architectural patterns introduced or hardened
 
 - **Host-level dark-shell wrap pattern** (STEM + SEL) — single change at

@@ -182,7 +182,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   const handleSetupOfflineSubmissions = async () => {
     const SC = window.AlloModules && window.AlloModules.SubmissionCrypto;
     if (!SC || typeof SC.generateClassKeypair !== "function") {
-      alert("Submission crypto module not loaded yet. Please refresh and try again.");
+      if (window.AlloFlowUX) window.AlloFlowUX.toast("Submission crypto module not loaded yet. Please refresh and try again.", 'error'); else alert("Submission crypto module not loaded yet. Please refresh and try again.");
       return;
     }
     if (rosterKey?.submissionKey?.publicJwk) {
@@ -227,7 +227,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
       );
     } catch (err) {
       console.error("handleSetupOfflineSubmissions failed:", err);
-      alert("Could not set up submissions: " + (err && err.message ? err.message : "unknown error"));
+      if (window.AlloFlowUX) window.AlloFlowUX.toast("Could not set up submissions: " + (err && err.message ? err.message : "unknown error"), 'error'); else alert("Could not set up submissions: " + (err && err.message ? err.message : "unknown error"));
     }
   };
   const handleAddGroup = () => {

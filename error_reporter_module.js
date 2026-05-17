@@ -392,7 +392,7 @@
         if (!win) {
           // Pop-up blocked — copy URL to clipboard and tell user
           try { navigator.clipboard && navigator.clipboard.writeText(url); } catch (_) {}
-          alert('Pop-up blocked. The pre-filled report URL has been copied to your clipboard — paste it into a new browser tab.');
+          if (window.AlloFlowUX) window.AlloFlowUX.toast('Pop-up blocked. The pre-filled report URL has been copied to your clipboard — paste it into a new browser tab.', 'error'); else alert('Pop-up blocked. The pre-filled report URL has been copied to your clipboard — paste it into a new browser tab.');
         }
       } catch (e) {
         origConsoleError('[ErrorReporter] Submit failed:', e);

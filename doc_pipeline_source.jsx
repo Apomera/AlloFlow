@@ -15109,7 +15109,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     };
                     btn.addEventListener('click', async function() {
                         if (typeof window.__alloflowEncryptSubmission !== 'function') {
-                            alert('Encryption not available in this browser. You may need a more modern browser to save submissions.');
+                            if (window.AlloFlowUX) window.AlloFlowUX.toast('Encryption not available in this browser. You may need a more modern browser to save submissions.', 'error'); else alert('Encryption not available in this browser. You may need a more modern browser to save submissions.');
                             return;
                         }
                         var urlParams = new URLSearchParams(window.location.search);
@@ -15154,7 +15154,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         } catch (e) {
                             btn.disabled = false;
                             btn.textContent = '📝 Save my work';
-                            alert('Could not save your work: ' + (e && e.message ? e.message : 'unknown error'));
+                            if (window.AlloFlowUX) window.AlloFlowUX.toast('Could not save your work: ' + (e && e.message ? e.message : 'unknown error'), 'error'); else alert('Could not save your work: ' + (e && e.message ? e.message : 'unknown error'));
                         }
                     });
                 })();
@@ -15873,7 +15873,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                 note.setAttribute('aria-label', 'Sticky note: ' + (a.content || '(empty)') + ' from ' + buildTitle(a));
                 note.addEventListener('click', function (e) {
                   e.stopPropagation();
-                  alert((a.content || '(empty note)') + (buildTitle(a) ? '\n\n— ' + buildTitle(a) : ''));
+                  if (window.AlloFlowUX) window.AlloFlowUX.toast((a.content || '(empty note)') + (buildTitle(a) ? '\n\n— ' + buildTitle(a) : ''), 'error'); else alert((a.content || '(empty note)') + (buildTitle(a) ? '\n\n— ' + buildTitle(a) : ''));
                 });
                 attachDrag(note, a);
                 return note;
@@ -16082,7 +16082,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             function startVoiceAt(x, y) {
               if (voiceRec) return; // already recording
               if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                alert('Voice recording is not supported in this browser.');
+                if (window.AlloFlowUX) window.AlloFlowUX.toast('Voice recording is not supported in this browser.', 'error'); else alert('Voice recording is not supported in this browser.');
                 return;
               }
               snapshot();
@@ -16109,7 +16109,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   studentAnno = studentAnno.filter(function (a) { return a && a.id !== id; });
                   saveStudent();
                   render();
-                  alert('Voice recording is not supported on this device.');
+                  if (window.AlloFlowUX) window.AlloFlowUX.toast('Voice recording is not supported on this device.', 'error'); else alert('Voice recording is not supported on this device.');
                   return;
                 }
                 voiceChunks = [];
@@ -16123,7 +16123,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                 studentAnno = studentAnno.filter(function (a) { return a && a.id !== id; });
                 saveStudent();
                 render();
-                alert('Microphone access was denied. Allow microphone access in your browser settings to record voice notes.');
+                if (window.AlloFlowUX) window.AlloFlowUX.toast('Microphone access was denied. Allow microphone access in your browser settings to record voice notes.', 'error'); else alert('Microphone access was denied. Allow microphone access in your browser settings to record voice notes.');
               });
             }
 
@@ -16143,7 +16143,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       cleanupVoice();
                       saveStudent();
                       render();
-                      alert('Voice note too long to save (over 500KB). Try a shorter clip.');
+                      if (window.AlloFlowUX) window.AlloFlowUX.toast('Voice note too long to save (over 500KB). Try a shorter clip.', 'error'); else alert('Voice note too long to save (over 500KB). Try a shorter clip.');
                       return;
                     }
                     if (!b64) {
@@ -16152,7 +16152,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       cleanupVoice();
                       saveStudent();
                       render();
-                      alert('Voice recording was empty.');
+                      if (window.AlloFlowUX) window.AlloFlowUX.toast('Voice recording was empty.', 'error'); else alert('Voice recording was empty.');
                       return;
                     }
                     // Attach audio to the placeholder.
@@ -16471,7 +16471,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             // teacher (manual workflow — student saves, emails/uploads file).
             function downloadStudentAnno() {
               if (studentAnno.length === 0) {
-                alert('No annotations to save yet — add a note or highlight first.');
+                if (window.AlloFlowUX) window.AlloFlowUX.toast('No annotations to save yet — add a note or highlight first.', 'error'); else alert('No annotations to save yet — add a note or highlight first.');
                 return;
               }
               var payload = {
@@ -16491,7 +16491,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                 document.body.removeChild(link);
                 setTimeout(function () { try { URL.revokeObjectURL(url); } catch (e) {} }, 1000);
               } catch (e) {
-                alert('Could not save annotations. Try a different browser.');
+                if (window.AlloFlowUX) window.AlloFlowUX.toast('Could not save annotations. Try a different browser.', 'error'); else alert('Could not save annotations. Try a different browser.');
               }
             }
 

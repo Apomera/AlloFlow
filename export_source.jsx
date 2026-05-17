@@ -875,7 +875,7 @@ const createExport = (deps) => {
         });
         const languagesList = Array.from(allLanguages);
         if (isLanguageMode && languagesList.length === 0) {
-            alert(t('flashcards.no_translations'));
+            if (window.AlloFlowUX) window.AlloFlowUX.toast(t('flashcards.no_translations'), 'error'); else alert(t('flashcards.no_translations'));
             return;
         }
         const renderSet = (lang = null) => {

@@ -1218,7 +1218,7 @@ const WordSoundsReviewPanel = ({
               onRegenerateWord(idx);
             } else {
               warnLog("\u274C onRegenerateWord is not a function:", typeof onRegenerateWord);
-              alert("Error: Regenerate function missing or invalid");
+              if (window.AlloFlowUX) window.AlloFlowUX.toast("Error: Regenerate function missing or invalid", 'error'); else alert("Error: Regenerate function missing or invalid");
             }
           },
           disabled: regeneratingIndex === idx,

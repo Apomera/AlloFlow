@@ -369,7 +369,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                         onRegenerateWord(idx);
                                                     } else {
                                                         warnLog("❌ onRegenerateWord is not a function:", typeof onRegenerateWord);
-                                                        alert("Error: Regenerate function missing or invalid");
+                                                        if (window.AlloFlowUX) window.AlloFlowUX.toast("Error: Regenerate function missing or invalid", 'error'); else alert("Error: Regenerate function missing or invalid");
                                                     }
                                                 }}
                                                 disabled={regeneratingIndex === idx}

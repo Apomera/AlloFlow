@@ -1298,7 +1298,7 @@ const createExport = deps => {
     });
     const languagesList = Array.from(allLanguages);
     if (isLanguageMode && languagesList.length === 0) {
-      alert(t('flashcards.no_translations'));
+      if (window.AlloFlowUX) window.AlloFlowUX.toast(t('flashcards.no_translations'), 'error'); else alert(t('flashcards.no_translations'));
       return;
     }
     const renderSet = (lang = null) => {
@@ -1353,7 +1353,7 @@ const createExport = deps => {
                 }
               });
             });
-            return allRel.length > 0 ? `<div class="etym-related"><strong>Related words:</strong> ${allRel.slice(0, 6).map(w => cleanText(w)).join(', ')}</div>` : '';
+            return allRel.length > 0 ? `<div class="etym-related"><strong>${t('export.related_words_label') || 'Related words:'}</strong> ${allRel.slice(0, 6).map(w => cleanText(w)).join(', ')}</div>` : '';
           })()}` : ''}
                     `;
         }

@@ -124,7 +124,7 @@ const StudentQuizOverlay = React.memo(({
       warnLog("Error submitting quiz response:", e);
       setHasAnswered(false);
       setSelectedOptionIndex(null);
-      alert(t('errors.quiz_submit_failed'));
+      if (window.AlloFlowUX) window.AlloFlowUX.toast(t('errors.quiz_submit_failed'), 'error'); else alert(t('errors.quiz_submit_failed'));
     }
   };
   const getModeStyles = () => {
@@ -464,7 +464,7 @@ const RoleSelectionModal = React.memo(({
   const handleMicCheck = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      alert(t('roles.voice_not_supported'));
+      if (window.AlloFlowUX) window.AlloFlowUX.toast(t('roles.voice_not_supported'), 'error'); else alert(t('roles.voice_not_supported'));
       return;
     }
     setMicStatus('requesting');

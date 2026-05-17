@@ -110,7 +110,7 @@ var VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onUpdateLabel, on
     if (!file) return;
     if (!file.type.startsWith("image/")) return;
     if (file.size > 10 * 1024 * 1024) {
-      alert("Image too large (max 10MB). Please use a smaller image.");
+      if (window.AlloFlowUX) window.AlloFlowUX.toast("Image too large (max 10MB). Please use a smaller image.", 'error'); else alert("Image too large (max 10MB). Please use a smaller image.");
       return;
     }
     const reader = new FileReader();

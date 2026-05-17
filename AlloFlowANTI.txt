@@ -1049,7 +1049,8 @@ const useTranslation = (targetLanguage, apiKey) => {
   }, []);
   const exportLanguagePack = useCallback(() => {
     if (!languagePack) {
-      alert(t('language_selector.no_data_export'));
+      if (window.AlloFlowUX) window.AlloFlowUX.toast(t('language_selector.no_data_export'), 'warning');
+      else alert(t('language_selector.no_data_export'));
       return;
     }
     const dataStr = JSON.stringify(languagePack, null, 2);
@@ -1075,11 +1076,13 @@ const useTranslation = (targetLanguage, apiKey) => {
           setIsTranslating(false);
           setIsTranslating(false);
         } else {
-          alert(t('language_selector.alert_invalid_json'));
+          if (window.AlloFlowUX) window.AlloFlowUX.toast(t('language_selector.alert_invalid_json'), 'error');
+          else alert(t('language_selector.alert_invalid_json'));
         }
       } catch (err) {
         warnLog("Import failed", err);
-        alert(t('language_selector.alert_parse_error'));
+        if (window.AlloFlowUX) window.AlloFlowUX.toast(t('language_selector.alert_parse_error'), 'error');
+        else alert(t('language_selector.alert_parse_error'));
       }
     };
     reader.readAsText(file);
@@ -1781,7 +1784,8 @@ const useAudioRecorder = () => {
       setIsRecording(true);
     } catch (err) {
       warnLog("Error accessing microphone:", err);
-      alert(t('errors.microphone_access_denied'));
+      if (window.AlloFlowUX) window.AlloFlowUX.toast(t('errors.microphone_access_denied'), 'error');
+      else alert(t('errors.microphone_access_denied'));
     }
   };
   const stopRecording = () => {

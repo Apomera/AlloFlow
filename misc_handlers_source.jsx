@@ -444,12 +444,12 @@ const handleLoadProject = (e, deps) => {
                     setActiveView('input');
                 }
             } else {
-                alert(t('errors.project_file_invalid'));
+                if (window.AlloFlowUX) window.AlloFlowUX.toast(t('errors.project_file_invalid'), 'error'); else alert(t('errors.project_file_invalid'));
                 addToast(t('toasts.invalid_project_file'), "error");
             }
         } catch (err) {
             warnLog("Failed to parse project file", err);
-            alert(t('errors.project_file_load_failed'));
+            if (window.AlloFlowUX) window.AlloFlowUX.toast(t('errors.project_file_load_failed'), 'error'); else alert(t('errors.project_file_load_failed'));
             addToast(t('toasts.project_load_failed'), "error");
         }
         if (projectFileInputRef.current) projectFileInputRef.current.value = '';
