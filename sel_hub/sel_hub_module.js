@@ -37,7 +37,34 @@
         renderTool: function(id, ctx) {
           var tool = this._registry[id];
           if (!tool || !tool.render) return null;
-          try { return tool.render(ctx); } catch(e) { console.error('[SelHub] Error rendering ' + id, e); return null; }
+          var rendered;
+          try { rendered = tool.render(ctx); }
+          catch(e) { console.error('[SelHub] Error rendering ' + id, e); return null; }
+          if (rendered == null) return null;
+          // ── WCAG dark-shell auto-wrap ──
+          // Same vulnerability + fix as STEM Lab's host-level wrap. 69 of 70
+          // SEL tools (audit May 2026) hardcode dark-mode text colors that
+          // would fail WCAG AA on the default light SEL Hub host page
+          // (#86efac on white = 1.6:1, need 4.5:1).
+          //
+          // Zero of the 70 tools use the _t theme palette this module provides
+          // (audit confirmed). Migration to theme-aware would be 70 tools ×
+          // dozens of color refs each = thousands of edits. A single host-
+          // level dark shell achieves the same fix in one place.
+          //
+          // Opt out by setting `lightBackground: true` in registerTool config
+          // (intended for any future tool that genuinely needs a light surface).
+          if (tool.lightBackground === true) return rendered;
+          if (!ctx || !ctx.React) return rendered;
+          return ctx.React.createElement('div', {
+            style: {
+              background: '#0f172a',
+              color: '#e2e8f0',
+              borderRadius: 12,
+              minHeight: 'calc(100vh - 32px)'
+            },
+            'data-sel-tool-shell': id
+          }, rendered);
         }
       };
     }
