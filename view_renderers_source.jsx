@@ -190,7 +190,7 @@ const renderFormattedText = (text, enableGlossary = true, isDarkBg = false, deps
 };
 
 const renderOutlineContent = (deps) => {
-  const { ErrorBoundary, KeyConceptMapView, VennGame, generatedContent, isInteractiveVenn, isProcessing, isTeacherMode, isVennPlaying, leveledTextLanguage, outlineTranslationMode, vennGameData, vennInputs, isEditingOutline, isMapLocked, setOutlineTranslationMode, setVennInputs, closeVenn, handleAddVennItem, handleGameCompletion, handleGameScoreUpdate, handleGenerateOutcome, handleInitializeVenn, handleOutlineChange, handleRemoveVennItem, handleSetIsVennPlayingToTrue, playSound, t, isCESortPlaying, ceGameData, closeCESort, setIsCESortPlaying, setCeGameData, isPipelinePlaying, setIsPipelinePlaying, closePipeline, isTChartPlaying, setIsTChartPlaying, closeTChart, isConceptMapSortPlaying, setIsConceptMapSortPlaying, closeConceptMapSort, isOutlineSortPlaying, setIsOutlineSortPlaying, closeOutlineSort, isFishboneSortPlaying, setIsFishboneSortPlaying, closeFishboneSort, isProblemSolutionSortPlaying, setIsProblemSolutionSortPlaying, closeProblemSolutionSort, isFrayerSortPlaying, setIsFrayerSortPlaying, closeFrayerSort, isSeeThinkWonderSortPlaying, setIsSeeThinkWonderSortPlaying, closeSeeThinkWonderSort, isStoryMapSortPlaying, setIsStoryMapSortPlaying, closeStoryMapSort } = deps;
+  const { ErrorBoundary, KeyConceptMapView, VennGame, generatedContent, isInteractiveVenn, isProcessing, isTeacherMode, isVennPlaying, leveledTextLanguage, outlineTranslationMode, vennGameData, vennInputs, isEditingOutline, isMapLocked, setOutlineTranslationMode, setVennInputs, closeVenn, handleAddVennItem, handleGameCompletion, handleGameScoreUpdate, handleGenerateOutcome, handleInitializeVenn, handleOutlineChange, handleRemoveVennItem, handleSetIsVennPlayingToTrue, playSound, t, isCESortPlaying, ceGameData, closeCESort, setIsCESortPlaying, setCeGameData, isPipelinePlaying, setIsPipelinePlaying, closePipeline, isTChartPlaying, setIsTChartPlaying, closeTChart, isConceptMapSortPlaying, setIsConceptMapSortPlaying, closeConceptMapSort, isOutlineSortPlaying, setIsOutlineSortPlaying, closeOutlineSort, isFishboneSortPlaying, setIsFishboneSortPlaying, closeFishboneSort, isProblemSolutionSortPlaying, setIsProblemSolutionSortPlaying, closeProblemSolutionSort, isFrayerSortPlaying, setIsFrayerSortPlaying, closeFrayerSort, isSeeThinkWonderSortPlaying, setIsSeeThinkWonderSortPlaying, closeSeeThinkWonderSort, isStoryMapSortPlaying, setIsStoryMapSortPlaying, closeStoryMapSort, isInteractiveTChart, setIsInteractiveTChart, isInteractiveCESort, setIsInteractiveCESort, isInteractivePipeline, setIsInteractivePipeline, isInteractiveConceptMapSort, setIsInteractiveConceptMapSort, isInteractiveOutlineSort, setIsInteractiveOutlineSort, isInteractiveFishboneSort, setIsInteractiveFishboneSort, isInteractiveProblemSolutionSort, setIsInteractiveProblemSolutionSort, isInteractiveFrayerSort, setIsInteractiveFrayerSort, isInteractiveSeeThinkWonderSort, setIsInteractiveSeeThinkWonderSort, isInteractiveStoryMapSort, setIsInteractiveStoryMapSort } = deps;
   const CauseEffectSortGame = window.AlloModules && window.AlloModules.CauseEffectSortGame ? (function() { const _C = window.AlloModules.CauseEffectSortGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
   const PipelineBuilderGame = window.AlloModules && window.AlloModules.PipelineBuilderGame ? (function() { const _C = window.AlloModules.PipelineBuilderGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
   const TChartSortGame = window.AlloModules && window.AlloModules.TChartSortGame ? (function() { const _C = window.AlloModules.TChartSortGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
@@ -307,7 +307,7 @@ const renderOutlineContent = (deps) => {
         ));
         if (type === 'Flow Chart' || type === 'Process Flow / Sequence') {
             // ── Pipeline Builder game rendering ──
-            if (isPipelinePlaying) {
+            if (isPipelinePlaying || (isInteractivePipeline && !isTeacherMode)) {
                 const stepData = branches.map(b => ({ title: b.title, items: b.items || [] }));
                 return (
                     <ErrorBoundary fallbackMessage="Pipeline Builder encountered an error.">
@@ -328,7 +328,7 @@ const renderOutlineContent = (deps) => {
                     <div className="flex justify-center mb-4">
                         <GameButtonHint />
                         <button
-                            onClick={() => setIsPipelinePlaying(true)}
+                            onClick={() => { setIsInteractivePipeline(true); setIsPipelinePlaying(true); }}
                             className="flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
                             aria-describedby="game-btn-hint"
                             aria-label={t('games.pipeline.title') || 'Pipeline Builder'}
@@ -662,7 +662,7 @@ const renderOutlineContent = (deps) => {
             const rightItems = (right.items || []).map(itemText).filter(Boolean);
             const showBilingual = leveledTextLanguage !== 'English' || left.title_en || right.title_en;
             // ── T-Chart Sort Game rendering ──
-            if (isTChartPlaying) {
+            if (isTChartPlaying || (isInteractiveTChart && !isTeacherMode)) {
                 return (
                     <ErrorBoundary fallbackMessage="T-Chart Sort encountered an error.">
                         <TChartSortGame
@@ -759,7 +759,7 @@ const renderOutlineContent = (deps) => {
                         <div className="flex justify-center mb-4">
                             <GameButtonHint />
                             <button
-                                onClick={() => setIsTChartPlaying(true)}
+                                onClick={() => { setIsInteractiveTChart(true); setIsTChartPlaying(true); }}
                                 className="flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-indigo-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
                                 aria-describedby="game-btn-hint"
                                 aria-label={t('games.tchart_sort.play_btn') || 'Play T-Chart Sort Game'}
@@ -790,7 +790,7 @@ const renderOutlineContent = (deps) => {
             const itemText = (it) => typeof it === 'object' ? (it?.text || '') : String(it);
             const showBilingual = leveledTextLanguage !== 'English' || branches.some(b => b.title_en);
             // ── Fishbone Sort Game rendering ──
-            if (isFishboneSortPlaying) {
+            if (isFishboneSortPlaying || (isInteractiveFishboneSort && !isTeacherMode)) {
                 return (
                     <ErrorBoundary fallbackMessage="Fishbone Sort encountered an error.">
                         <FishboneSortGame
@@ -830,7 +830,7 @@ const renderOutlineContent = (deps) => {
                         <div className="flex justify-center mb-4">
                             <GameButtonHint />
                             <button
-                                onClick={() => setIsFishboneSortPlaying(true)}
+                                onClick={() => { setIsInteractiveFishboneSort(true); setIsFishboneSortPlaying(true); }}
                                 className="flex items-center gap-2 bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
                                 aria-describedby="game-btn-hint"
                                 aria-label={t('games.fishbone_sort.play_btn') || 'Play Fishbone Sort Game'}
@@ -957,7 +957,7 @@ const renderOutlineContent = (deps) => {
             const chains = branches.filter(b => b.title.toLowerCase().includes('chain') || b.title.toLowerCase().includes('sequence'));
             const isLegacy = causes.length === 0 && effects.length === 0 && chains.length === 0;
             // ── Sort Game rendering ──
-            if (isCESortPlaying) {
+            if (isCESortPlaying || (isInteractiveCESort && !isTeacherMode)) {
                 const causeItems = [];
                 const effectItems = [];
                 if (isLegacy) {
@@ -993,7 +993,7 @@ const renderOutlineContent = (deps) => {
                         <div className="flex justify-center mb-4">
                             <GameButtonHint />
                             <button
-                                onClick={() => setIsCESortPlaying(true)}
+                                onClick={() => { setIsInteractiveCESort(true); setIsCESortPlaying(true); }}
                                 className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
                                 aria-describedby="game-btn-hint"
                                 aria-label={t('games.ce_sort.title') || 'Sort Causes and Effects'}
@@ -1049,7 +1049,7 @@ const renderOutlineContent = (deps) => {
                     <div className="flex justify-center mb-6">
                         <GameButtonHint />
                         <button
-                            onClick={() => setIsCESortPlaying(true)}
+                            onClick={() => { setIsInteractiveCESort(true); setIsCESortPlaying(true); }}
                             className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
                             aria-describedby="game-btn-hint"
                             aria-label={t('games.ce_sort.title') || 'Sort Causes and Effects'}
@@ -1114,7 +1114,7 @@ const renderOutlineContent = (deps) => {
             const totalSolutionItems = solutionBranches.reduce((s, b) => s + ((b.items || []).filter(it => (typeof it === 'object' ? it.text : it)).length), 0);
             // Game needs at least 6 solutions so the thirds are meaningful (2 per bucket).
             const showPSGame = totalSolutionItems >= 6;
-            if (isProblemSolutionSortPlaying) {
+            if (isProblemSolutionSortPlaying || (isInteractiveProblemSolutionSort && !isTeacherMode)) {
                 return (
                     <ErrorBoundary fallbackMessage="Solution Prioritize encountered an error.">
                         <ProblemSolutionSortGame
@@ -1134,7 +1134,7 @@ const renderOutlineContent = (deps) => {
                          <div className="flex justify-center mb-6">
                              <GameButtonHint />
                              <button
-                                 onClick={() => setIsProblemSolutionSortPlaying(true)}
+                                 onClick={() => { setIsInteractiveProblemSolutionSort(true); setIsProblemSolutionSortPlaying(true); }}
                                  className="flex items-center gap-2 bg-gradient-to-r from-rose-500 to-pink-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
                                  aria-describedby="game-btn-hint"
                                  aria-label={t('games.problem_solution_sort.play_btn') || 'Prioritize the Solutions'}
@@ -1230,7 +1230,7 @@ const renderOutlineContent = (deps) => {
                     </div>
                 );
             }
-            if (isConceptMapSortPlaying) {
+            if (isConceptMapSortPlaying || (isInteractiveConceptMapSort && !isTeacherMode)) {
                 return (
                     <ErrorBoundary fallbackMessage="Concept Map Sort encountered an error.">
                         <ConceptMapSortGame
@@ -1250,7 +1250,7 @@ const renderOutlineContent = (deps) => {
                         <div className="flex justify-center mb-4">
                             <GameButtonHint />
                             <button
-                                onClick={() => setIsConceptMapSortPlaying(true)}
+                                onClick={() => { setIsInteractiveConceptMapSort(true); setIsConceptMapSortPlaying(true); }}
                                 className="flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
                                 aria-describedby="game-btn-hint"
                                 aria-label={t('games.concept_map_sort.play_btn') || 'Play Concept Map Sort Game'}
@@ -1280,7 +1280,7 @@ const renderOutlineContent = (deps) => {
             const onRemoveFrayerVisual = () => {
                 if (typeof handleRemoveFrayerImage === 'function') handleRemoveFrayerImage();
             };
-            if (isFrayerSortPlaying) {
+            if (isFrayerSortPlaying || (isInteractiveFrayerSort && !isTeacherMode)) {
                 return (
                     <ErrorBoundary fallbackMessage="Frayer Sort encountered an error.">
                         <FrayerSortGame
@@ -1341,7 +1341,7 @@ const renderOutlineContent = (deps) => {
                         <div className="flex justify-center mb-4">
                             <GameButtonHint />
                             <button
-                                onClick={() => setIsFrayerSortPlaying(true)}
+                                onClick={() => { setIsInteractiveFrayerSort(true); setIsFrayerSortPlaying(true); }}
                                 className="flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-emerald-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
                                 aria-describedby="game-btn-hint"
                                 aria-label={t('games.frayer_sort.play_btn') || 'Play Frayer Sort Game'}
@@ -1406,7 +1406,7 @@ const renderOutlineContent = (deps) => {
 
         // ── See-Think-Wonder: 3-column observation routine ──
         if (type === 'See-Think-Wonder' && !isEditingOutline) {
-            if (isSeeThinkWonderSortPlaying) {
+            if (isSeeThinkWonderSortPlaying || (isInteractiveSeeThinkWonderSort && !isTeacherMode)) {
                 return (
                     <ErrorBoundary fallbackMessage="See-Think-Wonder Sort encountered an error.">
                         <SeeThinkWonderSortGame
@@ -1456,7 +1456,7 @@ const renderOutlineContent = (deps) => {
                         <div className="flex justify-center mb-4">
                             <GameButtonHint />
                             <button
-                                onClick={() => setIsSeeThinkWonderSortPlaying(true)}
+                                onClick={() => { setIsInteractiveSeeThinkWonderSort(true); setIsSeeThinkWonderSortPlaying(true); }}
                                 className="flex items-center gap-2 bg-gradient-to-r from-sky-500 to-amber-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
                                 aria-describedby="game-btn-hint"
                                 aria-label={t('games.see_think_wonder_sort.play_btn') || 'Play See-Think-Wonder Sort Game'}
@@ -1522,7 +1522,7 @@ const renderOutlineContent = (deps) => {
 
         // ── Story Map: arc visualization of narrative tension ──
         if (type === 'Story Map' && !isEditingOutline) {
-            if (isStoryMapSortPlaying) {
+            if (isStoryMapSortPlaying || (isInteractiveStoryMapSort && !isTeacherMode)) {
                 return (
                     <ErrorBoundary fallbackMessage="Story Map Sort encountered an error.">
                         <StoryMapSortGame
@@ -1551,7 +1551,7 @@ const renderOutlineContent = (deps) => {
                         <div className="flex justify-center mb-4">
                             <GameButtonHint />
                             <button
-                                onClick={() => setIsStoryMapSortPlaying(true)}
+                                onClick={() => { setIsInteractiveStoryMapSort(true); setIsStoryMapSortPlaying(true); }}
                                 className="flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-rose-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
                                 aria-describedby="game-btn-hint"
                                 aria-label={t('games.story_map_sort.play_btn') || 'Play Story Map Sort Game'}
@@ -1602,7 +1602,7 @@ const renderOutlineContent = (deps) => {
                 const lookup = ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
                 return lookup[num] || num;
             };
-            if (isOutlineSortPlaying) {
+            if (isOutlineSortPlaying || (isInteractiveOutlineSort && !isTeacherMode)) {
                 return (
                     <ErrorBoundary fallbackMessage="Outline Sort encountered an error.">
                         <OutlineSortGame
@@ -1623,7 +1623,7 @@ const renderOutlineContent = (deps) => {
                         <div className="flex justify-center mb-4">
                             <GameButtonHint />
                             <button
-                                onClick={() => setIsOutlineSortPlaying(true)}
+                                onClick={() => { setIsInteractiveOutlineSort(true); setIsOutlineSortPlaying(true); }}
                                 className="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
                                 aria-describedby="game-btn-hint"
                                 aria-label={t('games.outline_sort.play_btn') || 'Play Outline Sort Game'}

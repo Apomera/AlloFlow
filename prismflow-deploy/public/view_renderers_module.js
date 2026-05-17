@@ -185,7 +185,7 @@ const renderFormattedText = (text, enableGlossary = true, isDarkBg = false, deps
   return elements;
 };
 const renderOutlineContent = (deps) => {
-  const { ErrorBoundary, KeyConceptMapView, VennGame, generatedContent, isInteractiveVenn, isProcessing, isTeacherMode, isVennPlaying, leveledTextLanguage, outlineTranslationMode, vennGameData, vennInputs, isEditingOutline, isMapLocked, setOutlineTranslationMode, setVennInputs, closeVenn, handleAddVennItem, handleGameCompletion, handleGameScoreUpdate, handleGenerateOutcome, handleInitializeVenn, handleOutlineChange, handleRemoveVennItem, handleSetIsVennPlayingToTrue, playSound, t, isCESortPlaying, ceGameData, closeCESort, setIsCESortPlaying, setCeGameData, isPipelinePlaying, setIsPipelinePlaying, closePipeline, isTChartPlaying, setIsTChartPlaying, closeTChart, isConceptMapSortPlaying, setIsConceptMapSortPlaying, closeConceptMapSort, isOutlineSortPlaying, setIsOutlineSortPlaying, closeOutlineSort, isFishboneSortPlaying, setIsFishboneSortPlaying, closeFishboneSort, isProblemSolutionSortPlaying, setIsProblemSolutionSortPlaying, closeProblemSolutionSort, isFrayerSortPlaying, setIsFrayerSortPlaying, closeFrayerSort, isSeeThinkWonderSortPlaying, setIsSeeThinkWonderSortPlaying, closeSeeThinkWonderSort, isStoryMapSortPlaying, setIsStoryMapSortPlaying, closeStoryMapSort } = deps;
+  const { ErrorBoundary, KeyConceptMapView, VennGame, generatedContent, isInteractiveVenn, isProcessing, isTeacherMode, isVennPlaying, leveledTextLanguage, outlineTranslationMode, vennGameData, vennInputs, isEditingOutline, isMapLocked, setOutlineTranslationMode, setVennInputs, closeVenn, handleAddVennItem, handleGameCompletion, handleGameScoreUpdate, handleGenerateOutcome, handleInitializeVenn, handleOutlineChange, handleRemoveVennItem, handleSetIsVennPlayingToTrue, playSound, t, isCESortPlaying, ceGameData, closeCESort, setIsCESortPlaying, setCeGameData, isPipelinePlaying, setIsPipelinePlaying, closePipeline, isTChartPlaying, setIsTChartPlaying, closeTChart, isConceptMapSortPlaying, setIsConceptMapSortPlaying, closeConceptMapSort, isOutlineSortPlaying, setIsOutlineSortPlaying, closeOutlineSort, isFishboneSortPlaying, setIsFishboneSortPlaying, closeFishboneSort, isProblemSolutionSortPlaying, setIsProblemSolutionSortPlaying, closeProblemSolutionSort, isFrayerSortPlaying, setIsFrayerSortPlaying, closeFrayerSort, isSeeThinkWonderSortPlaying, setIsSeeThinkWonderSortPlaying, closeSeeThinkWonderSort, isStoryMapSortPlaying, setIsStoryMapSortPlaying, closeStoryMapSort, isInteractiveTChart, setIsInteractiveTChart, isInteractiveCESort, setIsInteractiveCESort, isInteractivePipeline, setIsInteractivePipeline, isInteractiveConceptMapSort, setIsInteractiveConceptMapSort, isInteractiveOutlineSort, setIsInteractiveOutlineSort, isInteractiveFishboneSort, setIsInteractiveFishboneSort, isInteractiveProblemSolutionSort, setIsInteractiveProblemSolutionSort, isInteractiveFrayerSort, setIsInteractiveFrayerSort, isInteractiveSeeThinkWonderSort, setIsInteractiveSeeThinkWonderSort, isInteractiveStoryMapSort, setIsInteractiveStoryMapSort } = deps;
   const CauseEffectSortGame = window.AlloModules && window.AlloModules.CauseEffectSortGame ? (function() {
     const _C = window.AlloModules.CauseEffectSortGame;
     return React.memo((props) => React.createElement(_C, props));
@@ -294,7 +294,7 @@ const renderOutlineContent = (deps) => {
     }
   )) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", null, item), branch.items_en?.[iIdx] && /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 italic" }, "(", branch.items_en[iIdx], ")"))))))));
   if (type === "Flow Chart" || type === "Process Flow / Sequence") {
-    if (isPipelinePlaying) {
+    if (isPipelinePlaying || isInteractivePipeline && !isTeacherMode) {
       const stepData = branches.map((b) => ({ title: b.title, items: b.items || [] }));
       return /* @__PURE__ */ React.createElement(ErrorBoundary, { fallbackMessage: "Pipeline Builder encountered an error." }, /* @__PURE__ */ React.createElement(
         PipelineBuilderGame,
@@ -311,7 +311,10 @@ const renderOutlineContent = (deps) => {
     return /* @__PURE__ */ React.createElement("div", { className: "max-w-3xl mx-auto" }, showGameButton && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement(GameButtonHint, null), /* @__PURE__ */ React.createElement(
       "button",
       {
-        onClick: () => setIsPipelinePlaying(true),
+        onClick: () => {
+          setIsInteractivePipeline(true);
+          setIsPipelinePlaying(true);
+        },
         className: "flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]",
         "aria-describedby": "game-btn-hint",
         "aria-label": t("games.pipeline.title") || "Pipeline Builder"
@@ -498,7 +501,7 @@ const renderOutlineContent = (deps) => {
     const leftItems = (left.items || []).map(itemText).filter(Boolean);
     const rightItems = (right.items || []).map(itemText).filter(Boolean);
     const showBilingual = leveledTextLanguage !== "English" || left.title_en || right.title_en;
-    if (isTChartPlaying) {
+    if (isTChartPlaying || isInteractiveTChart && !isTeacherMode) {
       return /* @__PURE__ */ React.createElement(ErrorBoundary, { fallbackMessage: "T-Chart Sort encountered an error." }, /* @__PURE__ */ React.createElement(
         TChartSortGame,
         {
@@ -558,7 +561,10 @@ const renderOutlineContent = (deps) => {
     return /* @__PURE__ */ React.createElement("div", { className: "max-w-5xl mx-auto px-2" }, /* @__PURE__ */ React.createElement(MainTitle, null), showGameButton && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement(GameButtonHint, null), /* @__PURE__ */ React.createElement(
       "button",
       {
-        onClick: () => setIsTChartPlaying(true),
+        onClick: () => {
+          setIsInteractiveTChart(true);
+          setIsTChartPlaying(true);
+        },
         className: "flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-indigo-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]",
         "aria-describedby": "game-btn-hint",
         "aria-label": t("games.tchart_sort.play_btn") || "Play T-Chart Sort Game"
@@ -574,7 +580,7 @@ const renderOutlineContent = (deps) => {
     }
     const itemText = (it) => typeof it === "object" ? it?.text || "" : String(it);
     const showBilingual = leveledTextLanguage !== "English" || branches.some((b) => b.title_en);
-    if (isFishboneSortPlaying) {
+    if (isFishboneSortPlaying || isInteractiveFishboneSort && !isTeacherMode) {
       return /* @__PURE__ */ React.createElement(ErrorBoundary, { fallbackMessage: "Fishbone Sort encountered an error." }, /* @__PURE__ */ React.createElement(
         FishboneSortGame,
         {
@@ -606,7 +612,10 @@ const renderOutlineContent = (deps) => {
     return /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto px-2" }, /* @__PURE__ */ React.createElement(MainTitle, null), showGameButton && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement(GameButtonHint, null), /* @__PURE__ */ React.createElement(
       "button",
       {
-        onClick: () => setIsFishboneSortPlaying(true),
+        onClick: () => {
+          setIsInteractiveFishboneSort(true);
+          setIsFishboneSortPlaying(true);
+        },
         className: "flex items-center gap-2 bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]",
         "aria-describedby": "game-btn-hint",
         "aria-label": t("games.fishbone_sort.play_btn") || "Play Fishbone Sort Game"
@@ -677,7 +686,7 @@ const renderOutlineContent = (deps) => {
     const effects = branches.filter((b) => b.title.toLowerCase().includes("effect") || b.title.toLowerCase().includes("consequence"));
     const chains = branches.filter((b) => b.title.toLowerCase().includes("chain") || b.title.toLowerCase().includes("sequence"));
     const isLegacy = causes.length === 0 && effects.length === 0 && chains.length === 0;
-    if (isCESortPlaying) {
+    if (isCESortPlaying || isInteractiveCESort && !isTeacherMode) {
       const causeItems = [];
       const effectItems = [];
       if (isLegacy) {
@@ -709,7 +718,10 @@ const renderOutlineContent = (deps) => {
       return /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto px-2" }, showGameButton && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement(GameButtonHint, null), /* @__PURE__ */ React.createElement(
         "button",
         {
-          onClick: () => setIsCESortPlaying(true),
+          onClick: () => {
+            setIsInteractiveCESort(true);
+            setIsCESortPlaying(true);
+          },
           className: "flex items-center gap-2 bg-gradient-to-r from-orange-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]",
           "aria-describedby": "game-btn-hint",
           "aria-label": t("games.ce_sort.title") || "Sort Causes and Effects"
@@ -730,7 +742,10 @@ const renderOutlineContent = (deps) => {
     return /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto px-4 py-8" }, showGameButton && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-6" }, /* @__PURE__ */ React.createElement(GameButtonHint, null), /* @__PURE__ */ React.createElement(
       "button",
       {
-        onClick: () => setIsCESortPlaying(true),
+        onClick: () => {
+          setIsInteractiveCESort(true);
+          setIsCESortPlaying(true);
+        },
         className: "flex items-center gap-2 bg-gradient-to-r from-orange-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]",
         "aria-describedby": "game-btn-hint",
         "aria-label": t("games.ce_sort.title") || "Sort Causes and Effects"
@@ -748,7 +763,7 @@ const renderOutlineContent = (deps) => {
     const solutionBranches = branches.filter((_, i) => i !== outcomeIndex);
     const totalSolutionItems = solutionBranches.reduce((s, b) => s + (b.items || []).filter((it) => typeof it === "object" ? it.text : it).length, 0);
     const showPSGame = totalSolutionItems >= 6;
-    if (isProblemSolutionSortPlaying) {
+    if (isProblemSolutionSortPlaying || isInteractiveProblemSolutionSort && !isTeacherMode) {
       return /* @__PURE__ */ React.createElement(ErrorBoundary, { fallbackMessage: "Solution Prioritize encountered an error." }, /* @__PURE__ */ React.createElement(
         ProblemSolutionSortGame,
         {
@@ -764,7 +779,10 @@ const renderOutlineContent = (deps) => {
     return /* @__PURE__ */ React.createElement("div", { className: "max-w-5xl mx-auto px-4 py-12" }, showPSGame && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-6" }, /* @__PURE__ */ React.createElement(GameButtonHint, null), /* @__PURE__ */ React.createElement(
       "button",
       {
-        onClick: () => setIsProblemSolutionSortPlaying(true),
+        onClick: () => {
+          setIsInteractiveProblemSolutionSort(true);
+          setIsProblemSolutionSortPlaying(true);
+        },
         className: "flex items-center gap-2 bg-gradient-to-r from-rose-500 to-pink-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]",
         "aria-describedby": "game-btn-hint",
         "aria-label": t("games.problem_solution_sort.play_btn") || "Prioritize the Solutions"
@@ -791,7 +809,7 @@ const renderOutlineContent = (deps) => {
     if (!Array.isArray(branches) || branches.length === 0) {
       return /* @__PURE__ */ React.createElement("div", { className: "max-w-2xl mx-auto px-4 py-8" }, /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border-2 border-amber-200 rounded-2xl p-6 text-center" }, /* @__PURE__ */ React.createElement("h3", { className: "text-lg font-black text-amber-800 mb-2" }, t("outline.cmap_fallback_title") || "This concept map came back empty"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-amber-700" }, t("outline.cmap_fallback_desc") || "Try regenerating with more text, or pick a different organizer type.")));
     }
-    if (isConceptMapSortPlaying) {
+    if (isConceptMapSortPlaying || isInteractiveConceptMapSort && !isTeacherMode) {
       return /* @__PURE__ */ React.createElement(ErrorBoundary, { fallbackMessage: "Concept Map Sort encountered an error." }, /* @__PURE__ */ React.createElement(
         ConceptMapSortGame,
         {
@@ -807,7 +825,10 @@ const renderOutlineContent = (deps) => {
     return /* @__PURE__ */ React.createElement("div", null, showGameButton && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement(GameButtonHint, null), /* @__PURE__ */ React.createElement(
       "button",
       {
-        onClick: () => setIsConceptMapSortPlaying(true),
+        onClick: () => {
+          setIsInteractiveConceptMapSort(true);
+          setIsConceptMapSortPlaying(true);
+        },
         className: "flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]",
         "aria-describedby": "game-btn-hint",
         "aria-label": t("games.concept_map_sort.play_btn") || "Play Concept Map Sort Game"
@@ -831,7 +852,7 @@ const renderOutlineContent = (deps) => {
     const onRemoveFrayerVisual = () => {
       if (typeof handleRemoveFrayerImage === "function") handleRemoveFrayerImage();
     };
-    if (isFrayerSortPlaying) {
+    if (isFrayerSortPlaying || isInteractiveFrayerSort && !isTeacherMode) {
       return /* @__PURE__ */ React.createElement(ErrorBoundary, { fallbackMessage: "Frayer Sort encountered an error." }, /* @__PURE__ */ React.createElement(
         FrayerSortGame,
         {
@@ -864,7 +885,10 @@ const renderOutlineContent = (deps) => {
     return /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto px-4 py-6 relative" }, showGameButton && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement(GameButtonHint, null), /* @__PURE__ */ React.createElement(
       "button",
       {
-        onClick: () => setIsFrayerSortPlaying(true),
+        onClick: () => {
+          setIsInteractiveFrayerSort(true);
+          setIsFrayerSortPlaying(true);
+        },
         className: "flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-emerald-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]",
         "aria-describedby": "game-btn-hint",
         "aria-label": t("games.frayer_sort.play_btn") || "Play Frayer Sort Game"
@@ -902,7 +926,7 @@ const renderOutlineContent = (deps) => {
     )) : null, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 italic text-center mt-3" }, t("outline.frayer_caption") || "Frayer Model: vocabulary term in the center, definition + characteristics + examples + non-examples in the four quadrants."));
   }
   if (type === "See-Think-Wonder" && !isEditingOutline) {
-    if (isSeeThinkWonderSortPlaying) {
+    if (isSeeThinkWonderSortPlaying || isInteractiveSeeThinkWonderSort && !isTeacherMode) {
       return /* @__PURE__ */ React.createElement(ErrorBoundary, { fallbackMessage: "See-Think-Wonder Sort encountered an error." }, /* @__PURE__ */ React.createElement(
         SeeThinkWonderSortGame,
         {
@@ -932,7 +956,10 @@ const renderOutlineContent = (deps) => {
     return /* @__PURE__ */ React.createElement("div", { className: "max-w-5xl mx-auto px-4 py-6" }, /* @__PURE__ */ React.createElement(MainTitle, null), showGameButton && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement(GameButtonHint, null), /* @__PURE__ */ React.createElement(
       "button",
       {
-        onClick: () => setIsSeeThinkWonderSortPlaying(true),
+        onClick: () => {
+          setIsInteractiveSeeThinkWonderSort(true);
+          setIsSeeThinkWonderSortPlaying(true);
+        },
         className: "flex items-center gap-2 bg-gradient-to-r from-sky-500 to-amber-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]",
         "aria-describedby": "game-btn-hint",
         "aria-label": t("games.see_think_wonder_sort.play_btn") || "Play See-Think-Wonder Sort Game"
@@ -960,7 +987,7 @@ const renderOutlineContent = (deps) => {
     return /* @__PURE__ */ React.createElement("div", { className: "max-w-5xl mx-auto px-4 py-6" }, /* @__PURE__ */ React.createElement(MainTitle, null), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 border-2 border-slate-400 rounded-2xl overflow-hidden shadow-lg bg-white divide-y md:divide-y-0 md:divide-x divide-slate-200" }, renderColumn(knowBranch, "sky", null), renderColumn(wantBranch, "violet", null), renderColumn(learnedBranch, "emerald", t("outline.kwl_learned_placeholder") || "(students fill this in after the lesson)")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 italic text-center mt-3" }, t("outline.kwl_caption") || "KWL Chart: prior knowledge on the left, anticipated questions in the middle, learning captured on the right after the lesson."));
   }
   if (type === "Story Map" && !isEditingOutline) {
-    if (isStoryMapSortPlaying) {
+    if (isStoryMapSortPlaying || isInteractiveStoryMapSort && !isTeacherMode) {
       return /* @__PURE__ */ React.createElement(ErrorBoundary, { fallbackMessage: "Story Map Sort encountered an error." }, /* @__PURE__ */ React.createElement(
         StoryMapSortGame,
         {
@@ -984,7 +1011,10 @@ const renderOutlineContent = (deps) => {
     return /* @__PURE__ */ React.createElement("div", { className: "max-w-5xl mx-auto px-4 py-6" }, /* @__PURE__ */ React.createElement(MainTitle, null), showGameButton && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement(GameButtonHint, null), /* @__PURE__ */ React.createElement(
       "button",
       {
-        onClick: () => setIsStoryMapSortPlaying(true),
+        onClick: () => {
+          setIsInteractiveStoryMapSort(true);
+          setIsStoryMapSortPlaying(true);
+        },
         className: "flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-rose-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]",
         "aria-describedby": "game-btn-hint",
         "aria-label": t("games.story_map_sort.play_btn") || "Play Story Map Sort Game"
@@ -1002,7 +1032,7 @@ const renderOutlineContent = (deps) => {
       const lookup = ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
       return lookup[num] || num;
     };
-    if (isOutlineSortPlaying) {
+    if (isOutlineSortPlaying || isInteractiveOutlineSort && !isTeacherMode) {
       return /* @__PURE__ */ React.createElement(ErrorBoundary, { fallbackMessage: "Outline Sort encountered an error." }, /* @__PURE__ */ React.createElement(
         OutlineSortGame,
         {
@@ -1018,7 +1048,10 @@ const renderOutlineContent = (deps) => {
     return /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto px-4 py-6" }, /* @__PURE__ */ React.createElement(MainTitle, null), showGameButton && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement(GameButtonHint, null), /* @__PURE__ */ React.createElement(
       "button",
       {
-        onClick: () => setIsOutlineSortPlaying(true),
+        onClick: () => {
+          setIsInteractiveOutlineSort(true);
+          setIsOutlineSortPlaying(true);
+        },
         className: "flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]",
         "aria-describedby": "game-btn-hint",
         "aria-label": t("games.outline_sort.play_btn") || "Play Outline Sort Game"
