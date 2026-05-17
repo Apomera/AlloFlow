@@ -1242,38 +1242,66 @@ const useTranslation = (targetLanguage, apiKey) => {
         }
         setIsTranslating(true);
         setStatusMessage(t('language_selector.status_checking', { lang: targetLanguage }));
+
+        // ─── Fuzzy match the user's input against the known-pack manifest ───
+        // User types "spanis" → matches "spanish_latin_america". User types
+        // "haitan creole" → matches "haitian_creole". User types "yoruba"
+        // and we have no pack → falls through to live generation.
+        let langSlug = targetLanguage.toLowerCase().replace(/\s+/g, '_');
+        let resolvedDisplay = targetLanguage;
         try {
-            const langSlug = targetLanguage.toLowerCase().replace(/\s+/g, '_');
-            const githubUrl = `https://raw.githubusercontent.com/Apomera/AlloFlow/main/lang/${langSlug}.js`;
-            const ghResp = await fetch(githubUrl);
-            if (ghResp.ok) {
-                const ghText = await ghResp.text();
-                let ghPack = null;
+            if (window.AlloLangMatcher && typeof window.AlloLangMatcher.match === 'function') {
+                const matched = await window.AlloLangMatcher.match(targetLanguage);
+                if (matched && matched.slug) {
+                    langSlug = matched.slug;
+                    resolvedDisplay = matched.display || targetLanguage;
+                    if (matched.confidence < 1.0 && matched.confidence >= 0.7) {
+                        debugLog('[useTranslation] Fuzzy-matched "' + targetLanguage + '" → "' + resolvedDisplay + '" (slug=' + langSlug + ', conf=' + matched.confidence.toFixed(2) + ')');
+                    }
+                }
+            }
+        } catch (matchErr) { warnLog('Language matcher error (using raw slug):', matchErr?.message); }
+
+        // ─── Try Cloudflare CDN first (faster + cheaper than GitHub raw) ───
+        const PACK_URLS = [
+            'https://alloflow-cdn.pages.dev/lang/' + langSlug + '.js',
+            'https://raw.githubusercontent.com/Apomera/AlloFlow/main/lang/' + langSlug + '.js'
+        ];
+        let loaded = false;
+        for (const packUrl of PACK_URLS) {
+            try {
+                const resp = await fetch(packUrl);
+                if (!resp.ok) continue;
+                const text = await resp.text();
+                let pack = null;
                 try {
-                    ghPack = JSON.parse(ghText);
+                    pack = JSON.parse(text);
                 } catch (parseErr) {
                     try {
-                        ghPack = new Function('return ' + ghText)();
+                        pack = new Function('return ' + text)();
                     } catch (evalErr) {
                         try {
-                            const cleaned = ghText.replace(/^\s*\/\/.*$/gm, '').trim();
-                            ghPack = JSON.parse(cleaned);
+                            const cleaned = text.replace(/^\s*\/\/.*$/gm, '').trim();
+                            pack = JSON.parse(cleaned);
                         } catch (e2) {
-                            warnLog('GitHub language pack parse failed:', e2?.message);
+                            warnLog('Pack parse failed for ' + packUrl + ':', e2?.message);
+                            continue;
                         }
                     }
                 }
-                if (ghPack && Object.keys(ghPack).length > 10) {
-                    debugLog(`[useTranslation] Loaded ${targetLanguage} from GitHub.`);
-                    setLanguagePack(ghPack);
+                if (pack && Object.keys(pack).length > 10) {
+                    debugLog('[useTranslation] Loaded ' + resolvedDisplay + ' from ' + packUrl);
+                    setLanguagePack(pack);
                     setIsTranslating(false);
-                    try { await storageDB.set(storageKey, ghPack); } catch(e) { warnLog('Cache save error:', e?.message || e); }
-                    return;
+                    try { await storageDB.set(storageKey, pack); } catch(e) { warnLog('Cache save error:', e?.message || e); }
+                    loaded = true;
+                    break;
                 }
+            } catch (fetchErr) {
+                warnLog('Pack fetch failed (' + packUrl + '):', fetchErr?.message);
             }
-        } catch (ghErr) {
-            warnLog('GitHub language pack not available:', ghErr?.message);
         }
+        if (loaded) return;
         setStatusMessage(t('language_selector.status_generating', { lang: targetLanguage }));
         setProgress(5);
         let _helpStrings = {};
@@ -4085,6 +4113,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ClozeInteractionPanel', 'https://alloflow-cdn.pages.dev/view_cloze_interaction_panel_module.js');
     loadModule('LabelPositions', 'https://alloflow-cdn.pages.dev/label_positions_module.js');
     loadModule('UILanguageSelector', 'https://alloflow-cdn.pages.dev/ui_language_selector_module.js');
+    // Fuzzy-match user-typed language strings against known packs (typos, endonyms, variants)
+    loadModule('LanguageMatcher', 'https://alloflow-cdn.pages.dev/language_matcher_module.js');
     loadModule('AudioBanks', 'https://alloflow-cdn.pages.dev/audio_banks_module.js');
     loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js');
     loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js');
