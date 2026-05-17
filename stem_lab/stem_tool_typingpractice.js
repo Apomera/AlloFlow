@@ -6940,6 +6940,149 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           );
         }
 
+        // ── Festival-mode hooks (top-level so they fire every render, drill view or not) ──
+        var festActive = !!state.festivalMode;
+        var festShellRef = useRef(null);
+        var festConfettiRef = useRef([]);
+        var festSparkleRef = useRef([]);
+        var festPhraseRef = useRef(null);
+        var festBubbleRef = useRef(null);
+        var festTickTuple = useState(0);
+        var festTick = festTickTuple[0], setFestTick = festTickTuple[1];
+        var festFinaleTuple = useState(false);
+        var festFinale = festFinaleTuple[0], setFestFinale = festFinaleTuple[1];
+        var typedLenRef = useRef(0);
+        var bumpTick = function() { setFestTick(function(t) { return t + 1; }); };
+
+        useEffect(function() {
+          if (!festActive) return;
+          if (wordPulse.key === 0) return;
+          var palette2 = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#a855f7', '#ec4899'];
+          var pieces = [];
+          for (var i = 0; i < 14; i++) {
+            pieces.push({
+              key: wordPulse.key + ':' + i + ':' + Date.now(),
+              color: palette2[i % palette2.length],
+              dx: (Math.random() * 200 - 100) + 'px',
+              top: Math.round(80 + Math.random() * 40),
+              left: Math.round(20 + Math.random() * 60)
+            });
+          }
+          festConfettiRef.current = festConfettiRef.current.concat(pieces);
+          bumpTick();
+          try { audioFestivalWord(); } catch (_) {}
+          setTimeout(function() {
+            festConfettiRef.current = festConfettiRef.current.filter(function(p) {
+              return pieces.indexOf(p) === -1;
+            });
+            bumpTick();
+          }, 1300);
+        }, [festActive, wordPulse.key]);
+
+        useEffect(function() {
+          if (!festActive) {
+            typedLenRef.current = typed.length;
+            return;
+          }
+          if (typed.length <= typedLenRef.current) {
+            typedLenRef.current = typed.length;
+            return;
+          }
+          typedLenRef.current = typed.length;
+          var glyphs = ['✨', '⭐', '💫', '✦', '·'];
+          var n = 1 + Math.floor(Math.random() * 2);
+          var sparkles = [];
+          for (var i = 0; i < n; i++) {
+            sparkles.push({
+              key: 'sp-' + typed.length + '-' + i + '-' + Math.random(),
+              glyph: glyphs[Math.floor(Math.random() * glyphs.length)],
+              top: Math.round(220 + Math.random() * 90),
+              left: Math.round(35 + Math.random() * 30),
+              kdx: ((Math.random() * 80 - 40) | 0) + 'px'
+            });
+          }
+          festSparkleRef.current = festSparkleRef.current.concat(sparkles);
+          bumpTick();
+          try { audioFestivalKey(); } catch (_) {}
+          setTimeout(function() {
+            festSparkleRef.current = festSparkleRef.current.filter(function(p) {
+              return sparkles.indexOf(p) === -1;
+            });
+            bumpTick();
+          }, 700);
+        }, [festActive, typed.length]);
+
+        useEffect(function() {
+          if (!festActive) return;
+          if (streak === 0) return;
+          var phrase = null;
+          if (streak === 5)        phrase = '🔥 HOT!';
+          else if (streak === 10)  phrase = '⚡ ON FIRE!';
+          else if (streak === 25)  phrase = '💫 UNSTOPPABLE!';
+          else if (streak === 50)  phrase = '👑 LEGEND!';
+          else if (streak === 100) phrase = '🌟 MYTH!';
+          else if (streak === 200) phrase = '🌌 GODMODE!';
+          if (phrase) {
+            festPhraseRef.current = { key: 'phrase-' + streak + '-' + Date.now(), text: phrase };
+            bumpTick();
+            setTimeout(function() { festPhraseRef.current = null; bumpTick(); }, 1700);
+          }
+          if (streak % 10 === 0) {
+            var el = festShellRef.current;
+            if (el) {
+              el.classList.add('tp-fest-shake');
+              setTimeout(function() { el.classList.remove('tp-fest-shake'); }, 460);
+            }
+            try {
+              if (streak >= 100)      { audioFestivalVictory(); audioFestivalAirhorn(); }
+              else if (streak >= 50)  { audioFestivalCheer(); audioFestivalBoom(); }
+              else if (streak >= 25)  { audioFestivalBassDrop(); audioFestivalPowerUp(); }
+              else if (streak >= 10)  { audioFestivalAirhorn(); }
+              else                    { audioFestivalCombo(); }
+            } catch (_) {}
+          }
+          if (phrase) {
+            try { audioFestivalPartyHorn(); } catch (_) {}
+          }
+        }, [festActive, streak]);
+
+        useEffect(function() {
+          if (!festActive) return;
+          if (drillComplete || paused) return;
+          var cheers = ['YEAH!', 'KEEP GOING!', 'NICE!', 'WOOO!', "LET'S GO!", 'AMAZING!', 'YOU GOT THIS!', 'BOOM!', 'HECK YES!', 'GO GO GO!'];
+          var int = setInterval(function() {
+            if (!festShellRef.current) return;
+            festBubbleRef.current = {
+              key: 'bub-' + Date.now(),
+              mascotIdx: Math.floor(Math.random() * 5),
+              text: cheers[Math.floor(Math.random() * cheers.length)]
+            };
+            bumpTick();
+            setTimeout(function() {
+              festBubbleRef.current = null;
+              bumpTick();
+            }, 1800);
+          }, 5000);
+          return function() { clearInterval(int); };
+        }, [festActive, drillComplete, paused]);
+
+        useEffect(function() {
+          if (!festActive) return;
+          if (!drillComplete) { setFestFinale(false); return; }
+          var totalKeystrokes = typed.length + errorCount;
+          var acc = totalKeystrokes > 0 ? Math.round((typed.length / totalKeystrokes) * 100) : 0;
+          if (acc >= 100 && !festFinale) {
+            setFestFinale(true);
+            try {
+              audioFestivalFinale();
+              setTimeout(function() { try { audioFestivalVictory(); } catch (_) {} }, 250);
+              setTimeout(function() { try { audioFestivalAirhorn(); } catch (_) {} }, 900);
+              setTimeout(function() { try { audioFestivalDing(); } catch (_) {} }, 1700);
+            } catch (_) {}
+            setTimeout(function() { setFestFinale(false); }, 3000);
+          }
+        }, [festActive, drillComplete, typed.length, errorCount]);
+
         // ═════════════════════════════════════════════════════
         // VIEW: DRILL — real typing surface with keystroke capture
         // ═════════════════════════════════════════════════════
@@ -7102,154 +7245,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               label: 'Companion mascot — ' + companionState
             });
           }
-          // ── 🌈 Festival mode overlay state ──
-          // Hooks `wordPulse.key` for confetti bursts + `streak` for shake +
-          // milestone phrases. `typed.length` change spawns sparkles. A
-          // setInterval drops random mascot speech bubbles every ~5s.
-          // Lives next to drill state so it picks up the same change signals
-          // already in use by the calm mode (word pulse, streak chip).
-          var festActive = !!state.festivalMode;
-          var festShellRef = useRef(null);
-          var festConfettiRef = useRef([]);   // [{key, color, dx, top, left}]
-          var festSparkleRef = useRef([]);    // [{key, glyph, top, left, kdx}]
-          var festPhraseRef = useRef(null);   // {key, text} | null
-          var festBubbleRef = useRef(null);   // {key, mascotIdx, text} | null
-          var [festTick, setFestTick] = useState(0);
-          var [festFinale, setFestFinale] = useState(false);
-          var typedLenRef = useRef(0);
-          var bumpTick = function() { setFestTick(function(t) { return t + 1; }); };
-          // Word complete → spawn ~14 confetti pieces + fanfare audio.
-          useEffect(function() {
-            if (!festActive) return;
-            if (wordPulse.key === 0) return;
-            var palette2 = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#a855f7', '#ec4899'];
-            var pieces = [];
-            for (var i = 0; i < 14; i++) {
-              pieces.push({
-                key: wordPulse.key + ':' + i + ':' + Date.now(),
-                color: palette2[i % palette2.length],
-                dx: (Math.random() * 200 - 100) + 'px',
-                top: Math.round(80 + Math.random() * 40),
-                left: Math.round(20 + Math.random() * 60)
-              });
-            }
-            festConfettiRef.current = festConfettiRef.current.concat(pieces);
-            bumpTick();
-            try { audioFestivalWord(); } catch (_) {}
-            // GC pieces after animation
-            setTimeout(function() {
-              festConfettiRef.current = festConfettiRef.current.filter(function(p) {
-                return pieces.indexOf(p) === -1;
-              });
-              bumpTick();
-            }, 1300);
-          }, [festActive, wordPulse.key]);
-          // Per-keystroke → spawn 1-2 sparkles + keystroke chime. Triggers
-          // off typed.length growth (cheap signal we already have).
-          useEffect(function() {
-            if (!festActive) {
-              typedLenRef.current = typed.length;
-              return;
-            }
-            if (typed.length <= typedLenRef.current) {
-              typedLenRef.current = typed.length;
-              return; // backspace or no change
-            }
-            typedLenRef.current = typed.length;
-            var glyphs = ['✨', '⭐', '💫', '✦', '·'];
-            var n = 1 + Math.floor(Math.random() * 2);
-            var sparkles = [];
-            for (var i = 0; i < n; i++) {
-              sparkles.push({
-                key: 'sp-' + typed.length + '-' + i + '-' + Math.random(),
-                glyph: glyphs[Math.floor(Math.random() * glyphs.length)],
-                top: Math.round(220 + Math.random() * 90),
-                left: Math.round(35 + Math.random() * 30),
-                kdx: ((Math.random() * 80 - 40) | 0) + 'px'
-              });
-            }
-            festSparkleRef.current = festSparkleRef.current.concat(sparkles);
-            bumpTick();
-            try { audioFestivalKey(); } catch (_) {}
-            setTimeout(function() {
-              festSparkleRef.current = festSparkleRef.current.filter(function(p) {
-                return sparkles.indexOf(p) === -1;
-              });
-              bumpTick();
-            }, 700);
-          }, [festActive, typed.length]);
-          // Combo milestones → screen shake + phrase + horn fanfare.
-          useEffect(function() {
-            if (!festActive) return;
-            if (streak === 0) return;
-            var phrase = null;
-            if (streak === 5)        phrase = '🔥 HOT!';
-            else if (streak === 10)  phrase = '⚡ ON FIRE!';
-            else if (streak === 25)  phrase = '💫 UNSTOPPABLE!';
-            else if (streak === 50)  phrase = '👑 LEGEND!';
-            else if (streak === 100) phrase = '🌟 MYTH!';
-            else if (streak === 200) phrase = '🌌 GODMODE!';
-            if (phrase) {
-              festPhraseRef.current = { key: 'phrase-' + streak + '-' + Date.now(), text: phrase };
-              bumpTick();
-              setTimeout(function() { festPhraseRef.current = null; bumpTick(); }, 1700);
-            }
-            if (streak % 10 === 0) {
-              var el = festShellRef.current;
-              if (el) {
-                el.classList.add('tp-fest-shake');
-                setTimeout(function() { el.classList.remove('tp-fest-shake'); }, 460);
-              }
-              try {
-                if (streak >= 100)      { audioFestivalVictory(); audioFestivalAirhorn(); }
-                else if (streak >= 50)  { audioFestivalCheer(); audioFestivalBoom(); }
-                else if (streak >= 25)  { audioFestivalBassDrop(); audioFestivalPowerUp(); }
-                else if (streak >= 10)  { audioFestivalAirhorn(); }
-                else                    { audioFestivalCombo(); }
-              } catch (_) {}
-            }
-            if (phrase) {
-              try { audioFestivalPartyHorn(); } catch (_) {}
-            }
-          }, [festActive, streak]);
-          // Mascot speech bubbles — every ~5s during drilling, a random
-          // mascot in the row shouts a random cheer.
-          useEffect(function() {
-            if (!festActive) return;
-            if (drillComplete || paused) return;
-            var cheers = ['YEAH!', 'KEEP GOING!', 'NICE!', 'WOOO!', "LET'S GO!", 'AMAZING!', 'YOU GOT THIS!', 'BOOM!', 'HECK YES!', 'GO GO GO!'];
-            var int = setInterval(function() {
-              if (!festShellRef.current) return;
-              festBubbleRef.current = {
-                key: 'bub-' + Date.now(),
-                mascotIdx: Math.floor(Math.random() * 5),
-                text: cheers[Math.floor(Math.random() * cheers.length)]
-              };
-              bumpTick();
-              setTimeout(function() {
-                festBubbleRef.current = null;
-                bumpTick();
-              }, 1800);
-            }, 5000);
-            return function() { clearInterval(int); };
-          }, [festActive, drillComplete, paused]);
-          // Perfect-drill grand finale — drillComplete + 100% accuracy.
-          useEffect(function() {
-            if (!festActive) return;
-            if (!drillComplete) { setFestFinale(false); return; }
-            var totalKeystrokes = typed.length + errorCount;
-            var acc = totalKeystrokes > 0 ? Math.round((typed.length / totalKeystrokes) * 100) : 0;
-            if (acc >= 100 && !festFinale) {
-              setFestFinale(true);
-              try {
-                audioFestivalFinale();
-                setTimeout(function() { try { audioFestivalVictory(); } catch (_) {} }, 250);
-                setTimeout(function() { try { audioFestivalAirhorn(); } catch (_) {} }, 900);
-                setTimeout(function() { try { audioFestivalDing(); } catch (_) {} }, 1700);
-              } catch (_) {}
-              setTimeout(function() { setFestFinale(false); }, 3000);
-            }
-          }, [festActive, drillComplete, typed.length, errorCount]);
           return h('div', {
             ref: festShellRef,
             className: 'tp-battle-stage tp-battle-stage-' + (state.theme || 'default') + ' tp-drill-stage' + (festActive ? ' tp-fest-shell' : '') + (festActive && festFinale ? ' tp-fest-finale-active' : ''),
