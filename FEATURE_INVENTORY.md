@@ -1324,4 +1324,231 @@ The Learning Tools card's `onClick` deferred `setShowLearningHub(true)` through 
 
 ---
 
-**End of inventory.** Total documented features: ~570+ user-facing across ~165 files (98 monolith CDN modules + 95 STEM Lab tools + 34 SEL Hub items + 1 annotation suite cross-cutting + expanded doc pipeline export runtime, with overlap).
+## 13. May 14 – May 17 2026 additions (this inventory revision)
+
+This section catalogs the substantial feature work landed in the 3-day window
+following the May 14 inventory baseline. ~200 commits across new "20K MILESTONE"
+curriculum tools, teacher-dashboard expansion (10 rounds), comprehensive WCAG
+contrast audit + bulk fixes, two-pass i18n localization, help-mode coverage
+expansion, single-source-of-truth tool catalog, and architectural cleanup.
+
+### 13.1 New "20K MILESTONE" curriculum platforms (8 tools, ~160K lines)
+
+Each tool below crossed the 20,000-line threshold and is now a self-contained
+multi-week curriculum platform rather than a single-purpose simulator. All 8
+share a hub-and-spoke navigation pattern (category cards → filtered subnav →
+breadcrumb + search) added in commit `794d2214` to eliminate the
+"90-button-in-a-row scan problem."
+
+| Tool | Lines | Focus |
+|---|---|---|
+| `stem_tool_chembalance.js` | 20,377 | 38 subtools incl 118-element encyclopedia, periodic table, AP chem, 200+ quiz Qs, 60+ chemists, 120 compounds, 100 reactions, 50 history events, 80 careers, 100 safety scenarios, 80 mechanisms, lab kits, mythbusters, organic/biochem/thermo/kinetics/equilibrium/gas laws/solutions/nuclear/env chem/pharma/materials/food/forensic |
+| `stem_tool_raptorhunt.js` | 20,350 | 90+ sections incl Rescue Tree (12 scenarios), Age & Plumage (14 species), Molt Atlas, Wing Formula, Audio Guide (16), Hot Spots (10 regions), 200+ vocabulary, Banding Codes (40); first-person view, target lock, zoom, underwater fish, arrow-key steering, ground physics |
+| `stem_tool_cell.js` | 20,210 | 13 modes incl 60-organism encyclopedia, biologists, lab techniques, disease, ecology, organism filtering, compare mode, history, glossary, finale; uniform microscope-slide vignette across modes |
+| `stem_tool_platetectonics.js` | 20,008 | 30+ topical tabs incl faults, tsunamis, hotspots, volcanoes, mountains, rocks, fossils, Maine geology, Cascadia, indigenous knowledge, women in geoscience, expeditions, national parks, critical minerals, preparedness |
+| `stem_tool_applab.js` | 20,006 | App-building curriculum with v3.0 UX reorg, hub navigation, search across 100+ sections |
+| `stem_tool_nutritionlab.js` | 20,004 | My Nutrition Kit — 249 personal tools + 8 reference libraries; physiology-first NEDA-aligned |
+| `stem_tool_cephalopodlab.js` | 20,004 | Comprehensive cephalopod biology + behavior + research curriculum |
+| `stem_tool_learning_lab.js` | 20,037 | My Toolkit — 99 personalized student tools shipped across 22 deployment waves |
+
+### 13.2 SEL Hub personalization "Kit" pattern (3 new tools)
+
+Following Learning Lab's My Toolkit precedent:
+
+| Tool | What |
+|---|---|
+| `sel_tool_selfadvocacy.js` "My Advocacy Kit" | 8 personalized student tools as default tab (+858 lines) |
+| `sel_tool_crisiscompanion.js` "My Safety Kit" | 6 personal crisis-support tools |
+| `stem_tool_nutritionlab.js` "My Nutrition Kit" | 249 personalized nutrition tools |
+| `stem_tool_learning_lab.js` "My Toolkit" | 99 personalized learning tools |
+
+Combined: **~360+ personalized student tools** following the same authoring
+pattern — student-facing default tab with their own scaffolds that persist
+across sessions. Counter to the typical EdTech "teacher creates content"
+default — this puts authoring power in student hands.
+
+### 13.3 Teacher Dashboard — 10-round expansion
+
+10 deploys, ~1,200 net lines added to `teacher_module.js` (3001 → 4222).
+
+**Round 0 — Visibility fixes** (`01fa5f38`):
+- `generateResourceHTML` extended with full renderers for note-taking (all 3
+  templates) and anchor-chart (sections + bullets + critique annotations).
+  Closes a multi-month bug where student work in those tools was invisible
+  to teachers reviewing the dashboard.
+- **Notebook Activity tile** + **📓 badge** + CSV columns + Research PDF row
+
+**Round 1 — Deterministic Quality Signals** (`c92275b9`):
+6 research-thresholded class-wide signals, color-coded green/amber/red:
+Cornell summary fill rate (Pauk/Kiewra ≥20 words), cue density (≥5),
+Lab CER reasoning length (McNeill & Krajcik ≥30 words), Reading Response
+evidence rate (≥70%), Connection variety (Keene & Zimmermann ≥50% using 2+
+types), Self-assessment use (Hattie ≥50% using AI feedback).
+
+**Round 2 — Mobile responsiveness** (`6cb6294b`):
+Header / tab bar / detail header / 5-tile grid tightened for phone.
+
+**Round 3 — Bulk teacher actions** (`17ef197e`):
+4 actions on currently-filtered student set: mark all graded, clear graded,
+**export notebooks PDF** (cut-apart classroom set or IEP packet), **AI
+feedback sheets** (AI generates one short hand-back per student in 30 sec).
+
+**Round 4 — Private teacher comment threads** (`c1850937`):
+Per-student-per-resource teacher annotations, stored in localStorage (never
+synced to student or cloud), threaded with timestamps. **💬 indicator**
+in student-list row. Use cases: IEP team prep, parent conference, longitudinal
+pattern tracking.
+
+**Round 5 — Cross-tool misconception detection** (`7f455888`):
+Note-taking field gaps (≥40% missing), sentence-frames response gaps (≥30%
+blank), concept-sort per-item misplacement patterns (≥3× AND ≥20%).
+
+**Round A — Quick wins** (`cf3a38fb`): bulk PDF includes teacher comments,
+mobile bulk-actions toolbar.
+
+**Round B — Concept-sort misconception pipeline** (`ed7a6cd1`): end-to-end
+data capture in ConceptSortGame → submission JSON → dashboard aggregation.
+
+**Round C — Behavior + STEM Stations tabs mobile** (`780d54fb`).
+
+**Round D — TEACHER_METRIC_REGISTRY** (`b62f831f`, `494ed89b`, `e814834e`):
+Single source of truth for per-tool dashboard metrics. Each entry can
+declare `count(s)`, `qualitySignals(dd)`, `misconceptions(dd)`. 17 built-in
+tools registered. Published on `window.AlloModules.TeacherMetricRegistry`
+so external CDN modules can self-register via `.push()`. Drives the
+AllToolActivityPanel, CSV columns, Class Quality Signals card grid, and
+Cross-Tool Pattern Detection section uniformly.
+
+### 13.4 Note-taking AI feedback + longitudinal Insights (`995b61cb`)
+
+**Per-instance feedback** — "💬 Get AI Feedback" button on each note-taking
+template:
+- Strengths-first (Hattie research)
+- Soft source-alignment check
+- XP: completion floor (3) + quality (0-15) + alignment (0-5) + first-time
+  bonus (5) = 3-28 XP per request
+- Rubric scores INTERNAL ONLY — student never sees a number
+
+**Longitudinal "Note-Taking Insights"** — 📊 button on Notebook overlay:
+AI scans saved history, returns 2-4 patterns + growth-focused suggestions.
+NOT a grade, NOT XP-bearing. Requires 2+ saved entries.
+
+**Class-wide AI Insights** (teacher-side): cross-roster patterns + mini-lesson
+suggestions; doesn't name individuals unless flagging equity disparity.
+
+### 13.5 Tool Catalog single source of truth (`f1b9e381` + follow-ups)
+
+New `tool_catalog_source.jsx` + `tool_catalog_module.js`. 20 tools
+registered. Powers AlloBot autofill prompt (`phase_k_helpers_source.jsx`)
+and blueprint-modify prompt (`modifyBlueprintWithAI` in AlloFlowANTI.txt).
+
+**Bug closed:** note-taking + anchor-chart were silently absent from BOTH
+AlloBot prompts for their entire existence. Plus 5 other tools (math,
+lesson-plan, dbq, persona, gemini-bridge, alignment-report) were missing
+from one or the other.
+
+New `_check_tool_catalog.cjs` validates dispatcher/catalog sync, sidebar
+key resolution, and entry sanity.
+
+### 13.6 i18n localization pass (`f1b9e381`, multiple)
+
+**Pass 1 — t() fallback fix + 32 missing keys** (32 keys):
+6-month-old bug — `t()` returned the key string itself when missing, so
+`t('key') || 'fallback'` was dead. Fixed: returns `undefined` (fallbacks
+work) + `console.warn` on localhost.
+
+**Pass 2 — Raw English wrapping** (615 strings across 17 source files):
+17 `*_source.jsx` files audited for hardcoded English, wrapped in t() form.
+
+**Net:** 675 new translation keys (ui_strings.js 8714 → 9539 lines).
+
+### 13.7 Help-mode coverage expansion (`81df5d65`, `124788f5`, `f4aae336`)
+
+**Three rounds:**
+- Pass 1 — 27 missing entries for new tools (note-taking, anchor-chart, DBQ,
+  header items, immersive reader overlays, etc.)
+- Pass 2 — **107 entries** for 14 previously help-mode-blind components
+  (BridgeSendModal, AIBackendModal, EducatorHubModal, AnchorChartView, etc.)
+- Pass 3 — Cleanup + audit regex fix: 20 truly-orphaned deleted, 5
+  newly-discovered missing added. Audit regex was missing the compiled
+  React.createElement object syntax — 156 false-alarm "dead" entries
+  identified and resolved.
+
+**Net:** help_strings.js 652 → 786 keys (+134).
+
+### 13.8 Three new audit scripts installed in repo
+
+| Script | What it does |
+|---|---|
+| `_audit_help_keys.cjs` | Finds key/string sync mismatches between code references and help_strings.js |
+| `_audit_help_anchors.cjs` | Finds Panel/Modal/Card/View/Overlay components with zero data-help-key |
+| `_check_tool_catalog.cjs` | Validates ToolCatalog sync against dispatcher + sidebar keys |
+
+All exit non-zero on errors. Reports written to `a11y-audit/`.
+
+### 13.9 Annotation Suite expansion (`a7088746`)
+
+- **Stickers: 12** (was 4) — broader student/teacher emotion + acknowledgment palette
+- **Freehand drawing tool** added as fourth annotation kind
+
+### 13.10 Visual Organizers — teacher-armed interactive mode (`ad4b6afd`, `8d9e13df`)
+
+All 10 graphic organizers (Frayer, Venn, KWL, Story Map, See/Think/Wonder,
+T-Chart, Fishbone, Concept Map, Flow Chart, Structured Outline) gained:
+teacher-armed interactive mode + auto-unarm on completion. New game variants:
+Frayer Sort, See-Think-Wonder Sort, Story Map Sort.
+
+### 13.11 Comprehensive WCAG AA contrast audit + fix
+
+5 deploys closing a vulnerability class across the entire app:
+
+- `c6b303ca` — Stewardship tool per-view dark shells (original screenshot fix)
+- `28ac691b` — STEM Lab host-level dark shell at `renderTool()`: single
+  architectural fix covers **65 vulnerable tools** with `lightBackground: true`
+  opt-out
+- `7711be80` — SEL Hub host-level dark shell (same pattern): **69 of 70 tools**
+- `5c0cbacc` — Optics Lab encyclopedia + STEM contrast pass
+- `df347335` — Bulk text-contrast fix across **134 files** (659 replacements):
+  Tailwind `text-{palette}-{200|300|400}` → `text-{palette}-{600|700}`;
+  inline hex `color: '#94a3b8'` etc. → AA-passing equivalents. Safety
+  constraints: only inside `className="..."` contexts (not CSS rule strings),
+  only `color:` property, excludes print stylesheets + SVG fill/stroke.
+
+**Final state:** ~270+ files now WCAG-compliant. ~391 long-tail findings
+remain for per-instance review.
+
+### 13.12 Updated totals
+
+| Metric | Previous (May 14) | Current (May 17) | Delta |
+|---|---|---|---|
+| Documented user-facing features | ~570+ | **~720+** | +150 |
+| STEM Lab tools | 95 | **104** | +9 |
+| 20K+ MILESTONE curriculum tools | 0 | **8** | +8 |
+| SEL Hub items | 34 | **70+ (with personalization Kit tools)** | substantial |
+| Total source lines (approx) | ~656K | **~880K+** | +224K |
+| Total i18n keys | 8,714 | **9,539** | +825 |
+| Help strings | 652 | **786** | +134 |
+| Teacher dashboard size | ~3,001 lines | **~4,222 lines** | +1,221 |
+| Help-mode coverage gaps | 29 components blind | **0 priority** | full closure |
+| WCAG AA contrast issues | ~938 text + 134 host gaps | **~391 long-tail only** | 70% closure |
+| Total personalized student "Kit" tools | 0 | **~360+** | +360 |
+
+### 13.13 Architectural patterns introduced or hardened
+
+- **Host-level dark-shell wrap pattern** (STEM + SEL) — single change at
+  `renderTool` funnel covers every tool's render output
+- **Hub-and-spoke navigation** on mega-tools — category cards → filtered
+  subnav → breadcrumb + search; eliminates 90-button-in-a-row problem
+- **Personalized student "Kit" pattern** — student-facing default tab with
+  their own scaffolds that persist across sessions
+- **Single source of truth registries** (Tool Catalog + Teacher Metric
+  Registry) — each replaces 5+ inline locations with one entry
+- **Drift validators** — exit non-zero on errors, wired to surface regressions
+
+---
+
+**End of inventory.** Total documented features: **~720+** user-facing across
+~165+ files (104 STEM Lab tools + 70+ SEL Hub items + 98 monolith CDN
+modules + 1 annotation suite cross-cutting + expanded doc pipeline export
+runtime + 10 rounds of teacher dashboard expansion + tool catalog single
+source of truth + ~360 personalized student kit tools, with overlap).
